@@ -1,0 +1,10 @@
+export { Hero } from './hero';
+export { NewsCarousel } from './news-carousel';
+export { PianoGallery } from './piano-gallery';
+export { BrandPhilosophy } from './brand-philosophy';
+export { PianoCollection } from './piano-collection';
+export { InnovationShowcase } from './innovation-showcase';
+export { HeritageTimeline } from './heritage-timeline';
+export { ContactForm } from './contact-form';
+export { ShowroomLocation } from './showroom-location';
+export { CallToAction } from './call-to-action';

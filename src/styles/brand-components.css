@@ -1,0 +1,396 @@
+/**
+ * Kawai Brand Components - Tailwind v4 Simplified
+ * "Instrumental to Life" - Sophisticated with a touch of whimsy
+ * 
+ * Philosophy: Use @utility sparingly for truly complex components.
+ * Most styling should use generated utilities: bg-kawai-red, text-kawai-black, etc.
+ */
+
+/* ==========================================================================
+   COMPLEX BRAND COMPONENTS - Using @utility for multi-property components
+   ========================================================================== */
+
+@utility btn-brand-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, var(--color-kawai-red) 0%, var(--color-kawai-red-700) 100%);
+  border: 1px solid color-mix(in srgb, var(--color-kawai-red) 30%, transparent);
+  border-radius: 0.375rem;
+  box-shadow: var(--shadow-brand-red-glow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  
+  &:hover {
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--color-kawai-red) 30%, transparent);
+    transform: translateY(-2px);
+  }
+}
+
+/* Hover states defined within the main utility using & syntax */
+
+@utility btn-brand-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-kawai-black);
+  background: color-mix(in srgb, white 80%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--color-kawai-neutral) 50%, transparent);
+  border-radius: 0.375rem;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  
+  &:hover {
+    border-color: var(--color-kawai-red);
+    background: color-mix(in srgb, var(--color-kawai-red) 5%, transparent);
+    transform: translateY(-1px);
+  }
+}
+
+/* Hover state moved inside btn-brand-secondary */
+
+@utility nav-brand-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 2px;
+    background: var(--color-kawai-red);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  &:hover {
+    color: var(--color-kawai-red);
+    transform: translateY(-1px);
+    
+    &::after {
+      width: 100%;
+    }
+  }
+}
+
+/* Hover states and pseudo-elements moved inside nav-brand-trigger */
+
+@utility card-brand-news {
+  position: relative;
+  background: white;
+  border-radius: 1rem;
+  box-shadow: var(--shadow-brand-medium);
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  
+  &:hover {
+    box-shadow: var(--shadow-brand-premium);
+    transform: translateY(-4px);
+  }
+}
+
+@utility overlay-brand-news {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--color-kawai-black) 80%, transparent) 0%,
+    color-mix(in srgb, var(--color-kawai-black) 20%, transparent) 50%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================================================
+   SIMPLE BRAND COMPONENTS - Using regular CSS + Tailwind utilities
+   ========================================================================== */
+
+.card-brand-intimate {
+  @apply bg-kawai-pearl rounded-lg p-6 md:p-8 shadow-brand-medium transition-all duration-300;
+}
+
+.card-brand-dynamic {
+  @apply bg-kawai-black-800 rounded-lg overflow-hidden shadow-brand-premium transition-all duration-300;
+}
+
+.card-brand-dynamic:hover {
+  @apply -translate-y-1 scale-[1.02];
+  box-shadow: 0 16px 64px color-mix(in srgb, var(--color-kawai-black) 16%, transparent);
+}
+
+.card-brand-cinematic {
+  @apply rounded-lg p-6 md:p-8 border border-kawai-neutral/30 shadow-brand-premium;
+  background: color-mix(in srgb, white 80%, transparent);
+  backdrop-filter: blur(12px);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.logo-brand-container {
+  @apply transition-all duration-300;
+}
+
+.logo-brand-container:hover {
+  @apply scale-[1.02];
+  filter: drop-shadow(0 4px 8px color-mix(in srgb, var(--color-kawai-black) 10%, transparent));
+}
+
+.header-brand {
+  background: color-mix(in srgb, white 95%, transparent);
+  backdrop-filter: blur(20px);
+  @apply border-b border-kawai-neutral/50;
+}
+
+.nav-brand-content {
+  background: color-mix(in srgb, white 98%, transparent);
+  backdrop-filter: blur(24px);
+  @apply border border-kawai-neutral/30 shadow-brand-premium;
+}
+
+.nav-brand-link {
+  @apply block rounded-lg p-3 transition-all duration-200 relative overflow-hidden;
+}
+
+.nav-brand-link:hover {
+  @apply bg-kawai-black/5 translate-x-1;
+}
+
+.nav-brand-link:hover::before {
+  content: '';
+  @apply absolute left-0 top-0 bottom-0 w-1 bg-kawai-red;
+}
+
+/* ==========================================================================
+   ANIMATIONS & KEYFRAMES
+   ========================================================================== */
+
+@keyframes piano-key-press {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(2px); }
+  100% { transform: translateY(0); }
+}
+
+.piano-interaction {
+  @apply transition-all duration-200;
+}
+
+.piano-interaction:hover {
+  animation: piano-key-press 0.3s ease-in-out;
+}
+
+/* ==========================================================================
+   FORM COMPONENTS
+   ========================================================================== */
+
+.fieldset-brand {
+  @apply border-0 m-0 p-0 flex flex-col gap-2;
+}
+
+.label-brand {
+  @apply text-sm font-medium text-kawai-black mb-1;
+  font-family: var(--font-brand-sans);
+}
+
+.input-brand-primary {
+  @apply w-full px-4 py-3 border-2 border-kawai-neutral/50 rounded-md bg-white text-base transition-all duration-200;
+  font-family: var(--font-brand-sans);
+}
+
+.input-brand-primary:focus {
+  @apply outline-none border-kawai-red;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-kawai-red) 10%, transparent);
+}
+
+/* ==========================================================================
+   MISSING BRAND UTILITIES - Used in components but not defined
+   ========================================================================== */
+
+.section-brand-primary {
+  @apply relative overflow-hidden;
+}
+
+.bg-brand-gradient-premium {
+  background: linear-gradient(135deg, var(--color-kawai-black-900) 0%, var(--color-kawai-black-800) 50%, var(--color-kawai-black-900) 100%);
+}
+
+.container-brand {
+  @apply container mx-auto px-4;
+}
+
+.heading-brand-hero {
+  font-family: var(--font-brand-serif);
+  @apply font-bold leading-tight;
+}
+
+.heading-brand-luxury {
+  font-family: var(--font-brand-luxury);
+  @apply font-medium leading-tight;
+}
+
+.text-brand-musical {
+  font-family: var(--font-brand-music);
+  @apply font-medium;
+}
+
+.text-brand-light {
+  @apply text-white;
+}
+
+.text-brand-sophisticated {
+  font-family: var(--font-brand-sans);
+  @apply text-lg leading-relaxed;
+}
+
+.text-brand-primary {
+  @apply text-kawai-red;
+}
+
+.mb-brand-sm {
+  margin-bottom: var(--spacing-brand-sm);
+}
+
+.mb-brand-md {
+  margin-bottom: var(--spacing-brand-md);
+}
+
+.mb-brand-lg {
+  margin-bottom: var(--spacing-brand-lg);
+}
+
+.mb-brand-xl {
+  margin-bottom: var(--spacing-brand-xl);
+}
+
+.mb-brand-2xl {
+  margin-bottom: var(--spacing-brand-2xl);
+}
+
+.mb-brand-3xl {
+  margin-bottom: var(--spacing-brand-3xl);
+}
+
+.mb-brand-4xl {
+  margin-bottom: var(--spacing-brand-4xl);
+}
+
+.gap-brand-sm {
+  gap: var(--spacing-brand-sm);
+}
+
+.gap-brand-md {
+  gap: var(--spacing-brand-md);
+}
+
+.gap-brand-lg {
+  gap: var(--spacing-brand-lg);
+}
+
+.gap-brand-xl {
+  gap: var(--spacing-brand-xl);
+}
+
+/* ==========================================================================
+   MISSING SPACING UTILITIES - Used in PianoGallery component
+   ========================================================================== */
+
+.py-brand-3xl {
+  padding-top: var(--spacing-brand-3xl);
+  padding-bottom: var(--spacing-brand-3xl);
+}
+
+.py-brand-4xl {
+  padding-top: var(--spacing-brand-4xl);
+  padding-bottom: var(--spacing-brand-4xl);
+}
+
+.gap-brand-2xl {
+  gap: var(--spacing-brand-2xl);
+}
+
+.md\:pl-brand-3xl {
+  @media (min-width: 768px) {
+    padding-left: var(--spacing-brand-3xl);
+  }
+}
+
+.md\:pr-brand-3xl {
+  @media (min-width: 768px) {
+    padding-right: var(--spacing-brand-3xl);
+  }
+}
+
+.top-brand-lg {
+  top: var(--spacing-brand-lg);
+}
+
+.left-brand-lg {
+  left: var(--spacing-brand-lg);
+}
+
+.bottom-brand-lg {
+  bottom: var(--spacing-brand-lg);
+}
+
+.right-brand-lg {
+  right: var(--spacing-brand-lg);
+}
+
+.px-brand-md {
+  padding-left: var(--spacing-brand-md);
+  padding-right: var(--spacing-brand-md);
+}
+
+.py-brand-sm {
+  padding-top: var(--spacing-brand-sm);
+  padding-bottom: var(--spacing-brand-sm);
+}
+
+.pt-brand-lg {
+  padding-top: var(--spacing-brand-lg);
+}
+
+.mt-brand-lg {
+  margin-top: var(--spacing-brand-lg);
+}
+
+.space-y-brand-lg > :not([hidden]) ~ :not([hidden]) {
+  margin-top: var(--spacing-brand-lg);
+}
+
+.space-y-brand-2xl > :not([hidden]) ~ :not([hidden]) {
+  margin-top: var(--spacing-brand-2xl);
+}
+
+/* ==========================================================================
+   MISSING COMPONENT UTILITIES - Used in PianoGallery component
+   ========================================================================== */
+
+.heading-brand-section {
+  font-family: var(--font-brand-serif);
+  @apply text-kawai-black text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6;
+}
+
+.shadow-brand-cinematic {
+  box-shadow: 0 16px 64px rgb(30 27 22 / 0.16), 0 8px 24px rgb(30 27 22 / 0.20);
+}

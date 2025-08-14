@@ -1,0 +1,158 @@
+@import "tailwindcss";
+
+@theme {
+  /* Official Kawai Brand Colors - Standard Namespace for Auto-generation */
+  --color-kawai-red: #E11922;        /* Official Kawai Red */
+  --color-kawai-black: #1E1B16;      /* Deep Black */
+  --color-kawai-pearl: #FFFFFF;      /* Pure White */
+  --color-kawai-neutral: #DBDBDB;    /* Light Grey */
+
+  /* Extended Kawai Red Scale */
+  --color-kawai-red-50: #fef2f2;
+  --color-kawai-red-100: #fee2e2;
+  --color-kawai-red-200: #fecaca;
+  --color-kawai-red-300: #fca5a5;
+  --color-kawai-red-400: #f87171;
+  --color-kawai-red-500: #E11922;    /* Primary brand red */
+  --color-kawai-red-600: #dc2626;
+  --color-kawai-red-700: #b91c1c;
+  --color-kawai-red-800: #991b1b;
+  --color-kawai-red-900: #7f1d1d;
+
+  /* Extended Kawai Black Scale */
+  --color-kawai-black-50: #fafafa;
+  --color-kawai-black-100: #f5f5f5;
+  --color-kawai-black-200: #e5e5e5;
+  --color-kawai-black-300: #d4d4d4;
+  --color-kawai-black-400: #a3a3a3;
+  --color-kawai-black-500: #737373;
+  --color-kawai-black-600: #525252;
+  --color-kawai-black-700: #404040;
+  --color-kawai-black-800: #262626;
+  --color-kawai-black-900: #1E1B16;
+
+  /* Shadcn UI Variables */
+  --color-card: #FFFFFF;
+  --color-card-foreground: #1E1B16;
+  --color-muted: #f5f5f5;
+  --color-muted-foreground: #737373;
+
+  /* Brand Typography */
+  --font-brand-serif: var(--font-crimson), Georgia, "Times New Roman", serif;
+  --font-brand-luxury: var(--font-bodoni), Georgia, "Times New Roman", serif;
+  --font-brand-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-brand-music: var(--font-inter), sans-serif;
+
+  /* Japanese Ma Spacing Scale - Auto-generates spacing utilities */
+  --spacing-brand-xs: 0.25rem;       /* 4px */
+  --spacing-brand-sm: 0.5rem;        /* 8px */
+  --spacing-brand-md: 1rem;          /* 16px */
+  --spacing-brand-lg: 1.5rem;        /* 24px - Ma space */
+  --spacing-brand-xl: 2rem;          /* 32px */
+  --spacing-brand-2xl: 3rem;         /* 48px */
+  --spacing-brand-3xl: 4rem;         /* 64px */
+  --spacing-brand-4xl: 6rem;         /* 96px */
+
+  /* Auto-generate Tailwind utilities for brand spacing */
+  --spacing-brand-xs: 0.25rem;
+  --spacing-brand-sm: 0.5rem;
+  --spacing-brand-md: 1rem;
+  --spacing-brand-lg: 1.5rem;
+  --spacing-brand-xl: 2rem;
+  --spacing-brand-2xl: 3rem;
+  --spacing-brand-3xl: 4rem;
+  --spacing-brand-4xl: 6rem;
+
+  /* Custom Breakpoints */
+  --breakpoint-3xl: 120rem;
+
+  /* Animation Easings */
+  --ease-piano: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-elegant: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  /* Shadow Scale */
+  --shadow-brand-subtle: 0 2px 8px rgb(30 27 22 / 0.04), 0 1px 3px rgb(30 27 22 / 0.08);
+  --shadow-brand-medium: 0 4px 16px rgb(30 27 22 / 0.08), 0 2px 6px rgb(30 27 22 / 0.12);
+  --shadow-brand-premium: 0 8px 32px rgb(30 27 22 / 0.12), 0 4px 12px rgb(30 27 22 / 0.16);
+  --shadow-brand-red-glow: 0 4px 12px rgb(225 25 34 / 0.2), 0 2px 6px rgb(225 25 34 / 0.1);
+}
+
+/* Safelist @utility components, custom classes, and generated color utilities */
+@source inline("{
+  btn-brand-primary,
+  btn-brand-secondary,
+  nav-brand-trigger,
+  card-brand-intimate,
+  card-brand-dynamic,
+  card-brand-cinematic,
+  logo-brand-container,
+  header-brand,
+  nav-brand-content,
+  nav-brand-link,
+  piano-interaction,
+  fieldset-brand,
+  label-brand,
+  input-brand-primary,
+  section-brand-primary,
+  bg-brand-gradient-premium,
+  container-brand,
+  heading-brand-hero,
+  heading-brand-luxury,
+  heading-brand-section,
+  text-brand-musical,
+  text-brand-light,
+  text-brand-sophisticated,
+  text-brand-primary,
+  mb-brand-sm,
+  mb-brand-md,
+  mb-brand-lg,
+  mb-brand-xl,
+  mb-brand-2xl,
+  mb-brand-3xl,
+  mb-brand-4xl,
+  py-brand-3xl,
+  py-brand-4xl,
+  gap-brand-sm,
+  gap-brand-md,
+  gap-brand-lg,
+  gap-brand-xl,
+  gap-brand-2xl,
+  md:pl-brand-3xl,
+  md:pr-brand-3xl,
+  top-brand-lg,
+  left-brand-lg,
+  bottom-brand-lg,
+  right-brand-lg,
+  px-brand-md,
+  py-brand-sm,
+  pt-brand-lg,
+  mt-brand-lg,
+  space-y-brand-lg,
+  space-y-brand-2xl,
+  shadow-brand-cinematic,
+  bg-kawai-red,
+  bg-kawai-black,
+  bg-kawai-pearl,
+  bg-kawai-neutral,
+  bg-card,
+  text-kawai-red,
+  text-kawai-black,
+  text-kawai-pearl,
+  text-kawai-neutral,
+  text-card-foreground,
+  text-muted-foreground,
+  border-kawai-red,
+  border-kawai-black,
+  border-kawai-neutral,
+  card-brand-news,
+  overlay-brand-news
+}");
+
+@import "../styles/brand-components.css";
+
+
+body {
+  font-family: var(--font-brand-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+}
