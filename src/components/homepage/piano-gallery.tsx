@@ -15,36 +15,36 @@ interface PianoModel {
 
 const pianoModels: PianoModel[] = [
   {
-    id: "ca401",
-    model: "CA401",
-    title: "CA401 Digital Piano",
-    description: "Where Innovation Meets Tradition - Experience the perfect blend of acoustic piano heritage and cutting-edge digital technology. The CA401 delivers an authentic piano experience for modern musicians.",
-    image: "/images/banners/CA401-bench-styling.webp",
-    href: "/pianos/digital/ca401"
+    id: "grand",
+    model: "Grand",
+    title: "Grand Pianos",
+    description: "Professional acoustic grand pianos for concert halls, studios, and discerning homes. Experience the ultimate in touch, tone, and musical expression with instruments trusted by professional musicians worldwide.",
+    image: "/images/banners/SK-EX-grand-styling.webp",
+    href: "/pianos/grand"
   },
   {
-    id: "ca701",
-    model: "CA701",
-    title: "CA701 Digital Piano", 
-    description: "Advanced Concert Artist series piano featuring Grand Feel III action and Shigeru Kawai SK-EX sampling. Professional-grade performance for serious musicians and institutions.",
-    image: "/images/banners/CA701-bench-styling.webp",
-    href: "/pianos/digital/ca701"
-  },
-  {
-    id: "ca701mw",
-    model: "CA701MW", 
-    title: "CA701MW Digital Piano",
-    description: "Sophisticated modern white finish variant of the CA701, bringing concert hall acoustics and premium touch response to contemporary living spaces.",
-    image: "/images/banners/CA701MW-bench-styling.webp",
-    href: "/pianos/digital/ca701mw"
-  },
-  {
-    id: "ca901ep",
-    model: "CA901EP",
-    title: "CA901EP Digital Piano",
-    description: "Flagship Concert Artist model with ebony polish finish. Features the ultimate in digital piano technology with wooden keys and advanced sound modeling.",
+    id: "digital",
+    model: "Digital",
+    title: "Digital Pianos",
+    description: "Advanced digital pianos featuring realistic wooden-key actions and premium sound systems. Combining authentic acoustic piano experience with modern technology and convenient features for today's musicians.",
     image: "/images/banners/CA901EP-bench-styling.webp", 
-    href: "/pianos/digital/ca901ep"
+    href: "/pianos/digital"
+  },
+  {
+    id: "upright",
+    model: "Upright",
+    title: "Upright Pianos",
+    description: "Space-efficient acoustic pianos delivering exceptional touch and tone quality. Perfect for homes, studios, schools, and institutions where space is at a premium but musical excellence cannot be compromised.",
+    image: "/images/banners/K800-upright-styling.webp",
+    href: "/pianos/upright"
+  },
+  {
+    id: "hybrid",
+    model: "Hybrid",
+    title: "Hybrid Pianos",
+    description: "Revolutionary instruments combining real grand piano actions with advanced digital sound technology. Experience the authentic touch of acoustic keys with the versatility and innovation of digital sound.",
+    image: "/images/banners/NV10S-hybrid-styling.webp",
+    href: "/pianos/hybrid"
   }
 ];
 
@@ -117,7 +117,7 @@ function PianoSection({ piano, index }: PianoSectionProps) {
                 href={piano.href}
                 className="inline-flex items-center px-8 py-4 bg-kawai-black hover:bg-kawai-black/80 text-kawai-pearl font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"
               >
-                <span>Explore {piano.model}</span>
+                <span>Explore {piano.model} Pianos</span>
                 <svg
                   className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1"
                   fill="none"
@@ -185,14 +185,14 @@ export function PianoGallery() {
               ? 'opacity-100 translate-y-0' 
               : 'opacity-0 translate-y-8'
           }`}>
-            Concert Artist Series
+            Explore Our Piano Collection
           </h1>
           <p className={`text-xl md:text-2xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto transition-all duration-700 ease-out delay-200 ${
             isHeroVisible 
               ? 'opacity-100 translate-y-0' 
               : 'opacity-0 translate-y-8'
           }`}>
-            Discover our premium digital piano collection, where cutting-edge technology meets traditional craftsmanship to deliver an unparalleled musical experience.
+            Discover the full range of Kawai pianos, from handcrafted grand pianos to innovative digital and hybrid instruments. Each piano represents our commitment to exceptional craftsmanship and musical excellence.
           </p>
         </div>
       </section>

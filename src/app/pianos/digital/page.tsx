@@ -1,461 +1,431 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Piano, ArrowRight, Star, Headphones, Volume2, Bluetooth } from "lucide-react"
+"use client";
 
-const digitalPianos = [
-  {
-    slug: "ca99",
-    name: "CA99",
-    series: "Concert Artist Series",
-    price: "$12,999",
-    rating: 5,
-    reviews: 89,
-    badge: "Flagship Digital",
-    image: "/api/placeholder/400/300",
-    description: "The ultimate digital piano with revolutionary Grand Feel III action and premium audio",
-    keyFeatures: [
-      "88-key Grand Feel III wooden-key action with let-off",
-      "Shigeru Kawai SK-EX, SK-5, EX, and more concert grands",
-      "Advanced Onkyo audio system with 8 speakers",
-      "TwinDrive soundboard speaker system",
-      "Spatial Headphone Sound technology",
-      "Bluetooth MIDI and Audio connectivity"
-    ],
-    specifications: {
-      keys: 88,
-      voices: "Over 100 voices",
-      polyphony: 256,
-      dimensions: "57-1/8\" x 18-1/2\" x 37\"",
-      weight: "198 lbs"
-    }
-  },
+import { CategoryHero } from "@/components/piano/category-hero";
+import { CleanSeriesBrowser } from "@/components/piano/clean-series-browser";
+import { useScrollAnimation, fadeUpClass, slideInClass, scaleInClass } from "@/lib/hooks/useScrollAnimation";
+import { useEffect, useRef, useState } from "react";
+
+// Featured digital pianos - highlighting the best from each series
+const featuredDigitalPianos = [
   {
     slug: "ca901",
     name: "CA901",
     series: "Concert Artist Series",
-    price: "$6,999",
-    originalPrice: "$7,999",
     rating: 5,
     reviews: 124,
-    badge: "Best Seller",
-    image: "/api/placeholder/400/300",
+    image: "/images/banners/CA901EP-bench-styling.webp",
     description: "Professional Concert Artist with Grand Feel III action and premium sound system",
     keyFeatures: [
       "88-key Grand Feel III wooden-key action",
       "Shigeru Kawai SK-EX, SK-5, EX concert grand piano sounds",
       "Onkyo audio system with 6 speakers",
-      "Bluetooth MIDI and Audio connectivity"
-    ],
-    specifications: {
-      keys: 88,
-      voices: 128,
-      polyphony: 256,
-      dimensions: "57-1/8\" x 18-1/2\" x 36-1/4\"",
-      weight: "187 lbs"
-    }
-  },
-  {
-    slug: "ca701",
-    name: "CA701",
-    series: "Concert Artist Series",
-    price: "$4,999",
-    rating: 5,
-    reviews: 89,
-    badge: "Popular",
-    image: "/api/placeholder/400/300",
-    description: "Premium digital piano with authentic grand piano action and exceptional sound",
-    keyFeatures: [
-      "88-key Grand Feel III wooden-key action",
-      "Shigeru Kawai SK-EX rendering",
+      "Bluetooth MIDI and Audio connectivity",
       "Spatial Headphone Sound technology",
-      "Dual headphone jacks"
-    ],
-    specifications: {
-      keys: 88,
-      voices: 38,
-      polyphony: 256,
-      dimensions: "57-1/8\" x 17-3/4\" x 36-1/4\"",
-      weight: "172 lbs"
-    }
-  },
-  {
-    slug: "ca501",
-    name: "CA501",
-    series: "Concert Artist Series",
-    price: "$3,999",
-    rating: 4.8,
-    reviews: 67,
-    image: "/api/placeholder/400/300",
-    description: "Entry-level Concert Artist with Grand Feel Compact action",
-    keyFeatures: [
-      "88-key Grand Feel Compact wooden-key action",
-      "Shigeru Kawai SK-EX rendering",
-      "Built-in lesson function",
-      "USB audio recording"
-    ],
-    specifications: {
-      keys: 88,
-      voices: 19,
-      polyphony: 192,
-      dimensions: "53-1/2\" x 17-3/4\" x 34-1/2\"",
-      weight: "145 lbs"
-    }
+      "Professional recording capabilities"
+    ]
   },
   {
     slug: "cn301",
     name: "CN301",
     series: "CN Series",
-    price: "$2,999",
     rating: 4.7,
     reviews: 156,
-    badge: "Great Value",
-    image: "/api/placeholder/400/300",
+    image: "/images/banners/CN301-styling.webp",
     description: "Advanced CN series piano with Responsive Hammer III action",
     keyFeatures: [
       "88-key Responsive Hammer III action",
       "Progressive Harmonic Imaging sound technology",
-      "Dual headphone jacks",
-      "Built-in Bluetooth MIDI"
-    ],
-    specifications: {
-      keys: 88,
-      voices: 19,
-      polyphony: 192,
-      dimensions: "53-1/2\" x 16-1/2\" x 34\"",
-      weight: "99 lbs"
-    }
-  },
-  {
-    slug: "cn201",
-    name: "CN201",
-    series: "CN Series",
-    price: "$1,999",
-    rating: 4.6,
-    reviews: 203,
-    badge: "Budget Friendly",
-    image: "/api/placeholder/400/300",
-    description: "Entry-level digital piano with authentic touch and sound",
-    keyFeatures: [
-      "88-key Responsive Hammer Compact action",
-      "Progressive Harmonic Imaging",
-      "Dual headphone jacks",
-      "Compact design"
-    ],
-    specifications: {
-      keys: 88,
-      voices: 15,
-      polyphony: 192,
-      dimensions: "53-1/2\" x 15-3/4\" x 31\"",
-      weight: "84 lbs"
-    }
-  },
-  {
-    slug: "cl36",
-    name: "CL36",
-    series: "CL Series",
-    price: "$2,199",
-    rating: 4.6,
-    reviews: 67,
-    badge: "Compact Console",
-    image: "/api/placeholder/400/300",
-    description: "Compact console digital piano with authentic touch and quality sound",
-    keyFeatures: [
-      "88-key Responsive Hammer Compact action",
-      "Progressive Harmonic Imaging sound",
-      "Compact console design with bench",
-      "USB connectivity and recording"
-    ],
-    specifications: {
-      keys: 88,
-      voices: 19,
-      polyphony: 192,
-      dimensions: "53-1/2\" x 16-1/2\" x 32\"",
-      weight: "89 lbs"
-    }
-  },
-  {
-    slug: "cl26",
-    name: "CL26",
-    series: "CL Series", 
-    price: "$1,799",
-    rating: 4.4,
-    reviews: 54,
-    badge: "Entry Console",
-    image: "/api/placeholder/400/300",
-    description: "Entry-level console digital piano perfect for beginning musicians",
-    keyFeatures: [
-      "88-key Responsive Hammer Compact action",
-      "Progressive Harmonic Imaging",
-      "Compact footprint with storage bench",
-      "Simple operation and controls"
-    ],
-    specifications: {
-      keys: 88,
-      voices: 15,
-      polyphony: 192,
-      dimensions: "53-1/2\" x 15-3/4\" x 31\"",
-      weight: "79 lbs"
-    }
+      "Dual headphone jacks for silent practice",
+      "Built-in Bluetooth MIDI connectivity",
+      "Compact design perfect for home use",
+      "Recording and lesson functions"
+    ]
   },
   {
     slug: "es920",
     name: "ES920",
     series: "ES Series",
-    price: "$2,499",
     rating: 4.5,
     reviews: 78,
-    image: "/api/placeholder/400/300",
+    image: "/images/banners/ES920-styling.webp",
     description: "Professional portable piano with premium sound and features",
     keyFeatures: [
       "88-key Responsive Hammer III action",
-      "Harmonic Imaging XL sound technology", 
-      "Lightweight portable design",
-      "Line outputs for stage use"
-    ],
-    specifications: {
-      keys: 88,
-      voices: 38,
-      polyphony: 256,
-      dimensions: "52\" x 11-1/2\" x 6\"",
-      weight: "38 lbs"
-    }
+      "Harmonic Imaging XL sound technology",
+      "Lightweight portable design at just 38 lbs",
+      "Line outputs for professional stage use",
+      "USB connectivity and recording",
+      "Professional sound library"
+    ]
   }
-]
+];
 
-const digitalPianoFeatures = [
+// Piano series with complete piano data for browsing
+const digitalPianoSeries = [
   {
-    icon: Piano,
-    title: "Authentic Piano Action",
-    description: "From Grand Feel III wooden keys to Responsive Hammer actions, experience the authentic touch of an acoustic piano."
+    name: "Concert Artist Series",
+    description: "The pinnacle of digital piano technology, featuring Grand Feel III wooden-key action and premium Shigeru Kawai concert grand sounds. Professional instruments trusted by musicians worldwide.",
+    pianos: [
+      {
+        slug: "ca901",
+        name: "CA901",
+        series: "Concert Artist Series",
+        rating: 5,
+        reviews: 124,
+        image: "/images/banners/CA901EP-bench-styling.webp",
+        description: "Professional Concert Artist with Grand Feel III action and premium sound system",
+        keyFeatures: [
+          "88-key Grand Feel III wooden-key action",
+          "Shigeru Kawai SK-EX, SK-5, EX concert grand piano sounds",
+          "Onkyo audio system with 6 speakers",
+          "Bluetooth MIDI and Audio connectivity",
+          "Spatial Headphone Sound technology",
+          "Professional recording capabilities"
+        ]
+      },
+      {
+        slug: "ca701",
+        name: "CA701",
+        series: "Concert Artist Series",
+        rating: 4.9,
+        reviews: 89,
+        image: "/images/banners/CA701-styling.webp",
+        description: "Advanced Concert Artist model with premium features and realistic touch",
+        keyFeatures: [
+          "88-key Grand Feel III wooden-key action",
+          "Shigeru Kawai SK-EX and SK-5 sounds",
+          "High-quality speaker system",
+          "Advanced connectivity options",
+          "Professional recording features",
+          "Spatial headphone technology"
+        ]
+      },
+      {
+        slug: "ca501",
+        name: "CA501",
+        series: "Concert Artist Series",
+        rating: 4.8,
+        reviews: 76,
+        image: "/images/banners/CA501-styling.webp",
+        description: "Entry-level Concert Artist with authentic grand piano experience",
+        keyFeatures: [
+          "88-key Grand Feel II action",
+          "Shigeru Kawai SK-EX sampling",
+          "Quality speaker system",
+          "Bluetooth connectivity",
+          "Lesson functions",
+          "Recording capabilities"
+        ]
+      }
+    ]
   },
   {
-    icon: Volume2,
-    title: "Premium Sound Systems",
-    description: "Advanced sampling technology captures every nuance of our world-renowned Shigeru Kawai concert grands."
+    name: "CN Series",
+    description: "Advanced digital pianos offering exceptional value with Responsive Hammer III action and Progressive Harmonic Imaging sound technology. Perfect for serious musicians and students.",
+    pianos: [
+      {
+        slug: "cn301",
+        name: "CN301",
+        series: "CN Series",
+        rating: 4.7,
+        reviews: 156,
+        image: "/images/banners/CN301-styling.webp",
+        description: "Advanced CN series piano with Responsive Hammer III action",
+        keyFeatures: [
+          "88-key Responsive Hammer III action",
+          "Progressive Harmonic Imaging sound technology",
+          "Dual headphone jacks for silent practice",
+          "Built-in Bluetooth MIDI connectivity",
+          "Compact design perfect for home use",
+          "Recording and lesson functions"
+        ]
+      },
+      {
+        slug: "cn201",
+        name: "CN201",
+        series: "CN Series",
+        rating: 4.6,
+        reviews: 134,
+        image: "/images/banners/CN201-styling.webp",
+        description: "Compact CN model with essential features and quality touch",
+        keyFeatures: [
+          "88-key Responsive Hammer III action",
+          "Progressive Harmonic Imaging sounds",
+          "Dual headphone outputs",
+          "USB connectivity",
+          "Compact cabinet design",
+          "Educational features"
+        ]
+      }
+    ]
   },
   {
-    icon: Headphones,
-    title: "Silent Practice",
-    description: "Practice anytime with high-quality headphones and spatial sound technology for immersive experience."
+    name: "CL Console Series",
+    description: "Elegant console digital pianos with traditional furniture styling and authentic piano action. Designed to complement your home while delivering professional performance.",
+    pianos: [
+      {
+        slug: "cl36",
+        name: "CL36",
+        series: "CL Console Series",
+        rating: 4.5,
+        reviews: 67,
+        image: "/images/banners/CL36-styling.webp",
+        description: "Traditional console design with modern digital technology",
+        keyFeatures: [
+          "88-key Responsive Hammer action",
+          "Harmonic Imaging sound technology",
+          "Traditional cabinet styling",
+          "Built-in music rest",
+          "Headphone connectivity",
+          "Compact footprint"
+        ]
+      }
+    ]
   },
   {
-    icon: Bluetooth,
-    title: "Smart Connectivity",
-    description: "Bluetooth MIDI and audio connectivity for seamless integration with apps, devices, and recording software."
+    name: "ES Portable Series",
+    description: "Professional portable digital pianos perfect for performing musicians. Lightweight designs with advanced action technology and premium sounds for studio and stage use.",
+    pianos: [
+      {
+        slug: "es920",
+        name: "ES920",
+        series: "ES Portable Series",
+        rating: 4.5,
+        reviews: 78,
+        image: "/images/banners/ES920-styling.webp",
+        description: "Professional portable piano with premium sound and features",
+        keyFeatures: [
+          "88-key Responsive Hammer III action",
+          "Harmonic Imaging XL sound technology",
+          "Lightweight portable design at just 38 lbs",
+          "Line outputs for professional stage use",
+          "USB connectivity and recording",
+          "Professional sound library"
+        ]
+      },
+      {
+        slug: "es520",
+        name: "ES520",
+        series: "ES Portable Series",
+        rating: 4.4,
+        reviews: 92,
+        image: "/images/banners/ES520-styling.webp",
+        description: "Compact portable piano with essential features for performers",
+        keyFeatures: [
+          "88-key Responsive Hammer action",
+          "Harmonic Imaging sounds",
+          "Ultra-portable at 31 lbs",
+          "Battery operation capability",
+          "Bluetooth connectivity",
+          "Stage-ready outputs"
+        ]
+      }
+    ]
   }
-]
+];
+
+// Animated Section Component
+function AnimatedSection({ children, className, delay = 0 }: { children: React.ReactNode, className?: string, delay?: number }) {
+  const animation = useScrollAnimation({ threshold: 0.2, delay });
+  
+  return (
+    <section ref={animation.ref} className={className}>
+      <div className={fadeUpClass(animation.isVisible)}>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+// Enhanced Feature Grid Component
+function FeatureGrid() {
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  const features = [
+    {
+      title: "Grand Feel III Action",
+      description: "Real wooden keys with let-off simulation and authentic hammer weighting for the most realistic grand piano touch.",
+      delay: 0
+    },
+    {
+      title: "Shigeru Kawai Sampling",
+      description: "Every nuance of our world-renowned SK-EX and SK-5 concert grands captured with stunning realism and dynamic expression.",
+      delay: 200
+    },
+    {
+      title: "Spatial Headphone Sound",
+      description: "Advanced crossfeed technology creates natural acoustic ambience through headphones for comfortable extended practice.",
+      delay: 400
+    }
+  ];
+
+  return (
+    <div ref={sectionRef} className="grid md:grid-cols-3 gap-8 mb-12">
+      {features.map((feature, index) => (
+        <div 
+          key={index}
+          className={`text-center transition-all duration-700 ease-out ${
+            isVisible 
+              ? 'opacity-100 translate-y-0' 
+              : 'opacity-0 translate-y-8'
+          }`}
+          style={{ transitionDelay: `${feature.delay}ms` }}
+        >
+          <div className="w-20 h-20 bg-kawai-red rounded-full flex items-center justify-center mx-auto mb-4 transform transition-transform duration-500 hover:scale-110">
+            <svg className="h-10 w-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+              {index === 0 && (
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+              )}
+              {index === 1 && (
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 6L12 10.5 8.5 8 12 5.5 15.5 8zM8.5 16L12 13.5 15.5 16 12 18.5 8.5 16z"/>
+              )}
+              {index === 2 && (
+                <path d="M7 4V2C7 1.45 7.45 1 8 1S9 1.45 9 2V4H15V2C15 1.45 15.45 1 16 1S17 1.45 17 2V4H19C20.1 4 21 4.9 21 6V20C21 21.1 20.1 22 19 22H5C3.9 22 3 21.1 3 20V6C3 4.9 3.9 4 5 4H7ZM5 8V20H19V8H5Z"/>
+              )}
+            </svg>
+          </div>
+          <h3 className="text-xl font-bold mb-3 text-kawai-red">{feature.title}</h3>
+          <p className="text-kawai-pearl/80">{feature.description}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function DigitalPianosPage() {
+  const heroAnimation = useScrollAnimation({ threshold: 0.1 });
+  
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-900 via-gray-900 to-black text-white py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl">
-            <div className="mb-4">
-              <span className="text-blue-300 font-semibold">Digital Pianos</span>
+      {/* Hero Section with Animation */}
+      <section 
+        ref={heroAnimation.ref} 
+        className="relative py-24 lg:py-32 bg-cover bg-center bg-no-repeat bg-[url('/images/banners/CA901EP-bench-styling.webp')]"
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-kawai-black/60 via-kawai-black/30 to-transparent" />
+        <div className="relative max-w-7xl mx-auto px-6">
+          <div className="max-w-3xl">
+            <div className={`inline-block bg-kawai-red text-white px-4 py-2 rounded-full text-sm font-medium mb-4 ${scaleInClass(heroAnimation.isVisible)}`}>
+              Digital Pianos
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              Modern Innovation
-              <span className="block text-blue-400">Classic Performance</span>
+            <h1 className={`text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white mb-6 ${fadeUpClass(heroAnimation.isVisible, 200)}`}>
+              Innovation Meets Tradition
             </h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-8">
-              Experience the perfect blend of traditional piano craftsmanship and cutting-edge 
-              digital technology. Our digital pianos deliver authentic acoustic piano experience 
-              with modern convenience and connectivity.
+            <p className={`text-xl md:text-2xl leading-relaxed text-white/90 mb-8 max-w-2xl ${fadeUpClass(heroAnimation.isVisible, 400)}`}>
+              Experience the perfect blend of traditional piano craftsmanship and cutting-edge digital technology. Our digital pianos deliver authentic acoustic piano experience with modern convenience and connectivity.
             </p>
-            <div className="flex flex-wrap gap-4">
-              <Button variant="default" size="lg">
-                Shop Digital Pianos
-              </Button>
-              <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-black">
-                Compare Models
-              </Button>
+            <div className={`flex flex-wrap gap-8 mb-8 ${fadeUpClass(heroAnimation.isVisible, 600)}`}>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-kawai-red mb-1">4</div>
+                <div className="text-sm text-white/80">Piano Series</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-kawai-red mb-1">12+</div>
+                <div className="text-sm text-white/80">Professional Models</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-kawai-red mb-1">SK-EX</div>
+                <div className="text-sm text-white/80">Sound Sources</div>
+              </div>
+            </div>
+            <div className={fadeUpClass(heroAnimation.isVisible, 800)}>
+              <a
+                href="#series"
+                className="inline-flex items-center px-8 py-4 bg-kawai-red hover:bg-kawai-red/80 text-white font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"
+              >
+                <span>Explore Series</span>
+                <svg className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </a>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Overview */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Why Choose Kawai Digital Pianos
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Kawai digital pianos combine over 95 years of piano-making expertise with 
-              innovative digital technology to deliver an unmatched playing experience.
-            </p>
-          </div>
+      {/* Clean Series Browser */}
+      <CleanSeriesBrowser
+        title="Explore Digital Piano Series"
+        description="Discover our complete collection of digital piano series. Each series showcases distinct technologies and features for different musical needs."
+        series={digitalPianoSeries}
+        categorySlug="digital"
+      />
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {digitalPianoFeatures.map((feature, index) => {
-              const Icon = feature.icon
-              return (
-                <div key={index} className="text-center">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Icon className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-                  <p className="text-gray-600">{feature.description}</p>
-                </div>
-              )
-            })}
-          </div>
+      {/* Technology Showcase */}
+      <AnimatedSection className="py-16 lg:py-24 bg-gradient-to-br from-kawai-black to-kawai-neutral text-kawai-pearl">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
+            Advanced Digital Piano Technology
+          </h2>
+          <p className="text-xl md:text-2xl leading-relaxed text-kawai-pearl/80 mb-12">
+            Kawai's innovative technologies bring you closer to the authentic grand piano experience than ever before.
+          </p>
+          
+          <FeatureGrid />
+
+          <a
+            href="/technology"
+            className="inline-flex items-center px-8 py-4 bg-kawai-red hover:bg-kawai-red/80 text-white font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"
+          >
+            <span>Explore Technology</span>
+            <svg
+              className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </a>
         </div>
-      </section>
+      </AnimatedSection>
 
-      {/* Piano Grid */}
-      <section className="py-16 lg:py-24">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Our Digital Piano Collection
-            </h2>
-            <p className="text-xl text-gray-600">
-              From entry-level to professional concert instruments
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {digitalPianos.map((piano) => (
-              <div key={piano.slug} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                {piano.badge && (
-                  <div className="relative">
-                    <div className="absolute top-3 left-3 z-10">
-                      <span className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                        {piano.badge}
-                      </span>
-                    </div>
-                  </div>
-                )}
-                
-                <div className="aspect-[4/3] bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                  <Piano className="h-16 w-16 text-gray-500" />
-                </div>
-                
-                <div className="p-6">
-                  <div className="mb-4">
-                    <p className="text-sm text-blue-600 font-semibold">{piano.series}</p>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{piano.name}</h3>
-                    <p className="text-gray-600 text-sm">{piano.description}</p>
-                  </div>
-                  
-                  <div className="flex items-center mb-4">
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`h-4 w-4 ${i < Math.floor(piano.rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
-                      ))}
-                    </div>
-                    <span className="text-sm text-gray-500 ml-2">({piano.reviews})</span>
-                  </div>
-
-                  <div className="mb-4">
-                    <h4 className="font-semibold text-gray-900 mb-2">Key Features:</h4>
-                    <ul className="space-y-1">
-                      {piano.keyFeatures.slice(0, 3).map((feature, idx) => (
-                        <li key={idx} className="text-sm text-gray-600 flex items-start">
-                          <span className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-2 mt-1.5 flex-shrink-0" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 mb-4 text-xs text-gray-500">
-                    <div>Keys: {piano.specifications.keys}</div>
-                    <div>Voices: {piano.specifications.voices}</div>
-                    <div>Polyphony: {piano.specifications.polyphony}</div>
-                    <div>Weight: {piano.specifications.weight}</div>
-                  </div>
-
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <p className="text-2xl font-bold text-gray-900">{piano.price}</p>
-                      {piano.originalPrice && (
-                        <p className="text-sm text-gray-500 line-through">{piano.originalPrice}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button className="flex-1" asChild>
-                      <Link href={`/pianos/digital/${piano.slug}`}>
-                        View Details
-                      </Link>
-                    </Button>
-                    <Button variant="outline" className="flex-1">
-                      Compare
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Technology Section */}
-      <section className="py-16 lg:py-24 bg-gray-900 text-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Advanced Digital Piano Technology
-            </h2>
-            <p className="text-xl text-gray-300 mb-12">
-              Kawai's innovative technologies bring you closer to the authentic grand piano experience.
-            </p>
-            
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <h3 className="text-xl font-semibold mb-4 text-blue-400">Grand Feel III Action</h3>
-                <p className="text-gray-300">
-                  Real wooden keys with let-off simulation and authentic hammer weighting 
-                  for the most realistic grand piano touch.
-                </p>
-              </div>
-              <div className="text-center">
-                <h3 className="text-xl font-semibold mb-4 text-blue-400">Shigeru Kawai Sampling</h3>
-                <p className="text-gray-300">
-                  Every nuance of our world-renowned SK-EX and SK-5 concert grands captured 
-                  with stunning realism and dynamic expression.
-                </p>
-              </div>
-              <div className="text-center">
-                <h3 className="text-xl font-semibold mb-4 text-blue-400">Spatial Headphone Sound</h3>
-                <p className="text-gray-300">
-                  Advanced crossfeed technology creates natural acoustic ambience 
-                  through headphones for comfortable extended practice.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 lg:py-24 bg-blue-50">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+      {/* Call to Action */}
+      <AnimatedSection className="py-16 lg:py-24 bg-kawai-pearl text-center">
+        <div className="max-w-4xl mx-auto px-6">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-kawai-black mb-6">
             Experience Digital Excellence
           </h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Visit our showroom to experience the touch, sound, and features of our digital pianos. 
-            Compare models side-by-side and find your perfect match.
+          <p className="text-xl md:text-2xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto mb-12">
+            Visit our showroom to experience the touch, sound, and features of our digital pianos. Compare models side-by-side and find your perfect match.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="default" asChild>
-              <Link href="/contact/schedule-visit">
-                Schedule Visit <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link href="/financing">Financing Options</Link>
-            </Button>
-          </div>
+          
+          <a
+            href="/showroom"
+            className="inline-flex items-center px-8 py-4 bg-kawai-black hover:bg-kawai-black/80 text-kawai-pearl font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"
+          >
+            <span>Visit Showroom</span>
+            <svg
+              className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </a>
         </div>
-      </section>
+      </AnimatedSection>
     </div>
-  )
+  );
 }

@@ -1,6 +1,10 @@
+"use client";
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Piano, ArrowRight, Star, Filter, Award, Crown, Music, Zap } from "lucide-react"
+import { Piano, ArrowRight, Star, Filter, Award, Crown, Music, Zap, ChevronLeft, ChevronRight } from "lucide-react"
+import { useScrollAnimation, fadeUpClass, slideInClass } from "@/lib/hooks/useScrollAnimation"
+import { useEffect, useRef, useState } from "react"
 
 const pianoCategories = [
   {
@@ -67,391 +71,459 @@ const pianoCategories = [
 
 const featuredModels = [
   {
-    name: "SK-EX",
-    category: "Shigeru Kawai",
-    price: "Contact for Price",
-    rating: 5,
-    reviews: 47,
-    image: "/api/placeholder/300/200",
-    badge: "Concert Grand",
-    description: "9' concert grand used in international competitions"
-  },
-  {
     name: "GX-7 BLAK",
-    category: "Grand Piano",
-    price: "Contact for Price",
-    rating: 5,
-    reviews: 63,
-    image: "/api/placeholder/300/200",
+    category: "GX BLAK Performance Series",
+    image: "/images/banners/GX-7-BLAK-grand-styling.webp",
     badge: "Performance Series",
-    description: "7'6\" professional grand with carbon fiber action"
+    description: "Professional concert grand featuring revolutionary carbon fiber action technology, delivering unprecedented responsiveness and durability for the modern virtuoso."
   },
   {
     name: "CA99",
-    category: "Digital Piano",
-    price: "$12,999",
-    rating: 5,
-    reviews: 89,
-    image: "/api/placeholder/300/200",
+    category: "Concert Artist Digital",
+    image: "/images/banners/CA99-digital-styling.webp",
     badge: "Flagship Digital",
-    description: "Ultimate Concert Artist with wooden keys"
+    description: "The ultimate digital piano experience with Grand Feel III wooden-key action and authentic concert grand samples captured in stunning detail."
   },
   {
     name: "NOVUS NV-10S",
-    category: "Hybrid Piano",
-    price: "$24,999",
-    rating: 5,
-    reviews: 34,
-    image: "/api/placeholder/300/200",
+    category: "Hybrid Innovation",
+    image: "/images/banners/NV10S_along the keyboard_whiteBG.jpg",
     badge: "Revolutionary",
-    description: "Real grand action with silent practice"
-  },
-  {
-    name: "K-800",
-    category: "Upright Piano",
-    price: "$34,999",
-    rating: 5,
-    reviews: 72,
-    image: "/api/placeholder/300/200",
-    badge: "Professional",
-    description: "51\" professional upright with Millennium III"
-  },
-  {
-    name: "CA901",
-    category: "Digital Piano",
-    price: "$6,999",
-    originalPrice: "$7,999",
-    rating: 5,
-    reviews: 124,
-    image: "/api/placeholder/300/200",
-    badge: "Best Seller",
-    description: "Concert Artist with Grand Feel III action"
+    description: "Revolutionary hybrid piano combining a real grand piano action with advanced digital technology, offering the authentic touch of an acoustic grand with silent practice capabilities."
   }
 ]
 
+// Image Placeholder Grid Component
+function ImagePlaceholderGrid({ category }: { category: string }) {
+  const getPlaceholderTheme = (cat: string) => {
+    switch (cat) {
+      case 'grand':
+        return {
+          gradient: 'bg-gradient-to-br from-kawai-neutral/15 via-kawai-neutral/8 to-kawai-neutral/3',
+          pattern: 'piano-curve',
+          description: 'Grand piano showcase placeholder'
+        };
+      case 'digital':
+        return {
+          gradient: 'bg-gradient-to-r from-kawai-neutral/12 via-kawai-neutral/6 to-kawai-neutral/4',
+          pattern: 'digital-grid',
+          description: 'Digital piano showcase placeholder'
+        };
+      case 'upright':
+        return {
+          gradient: 'bg-gradient-to-b from-kawai-neutral/10 via-kawai-neutral/8 to-kawai-neutral/5',
+          pattern: 'upright-lines',
+          description: 'Upright piano showcase placeholder'
+        };
+      case 'hybrid':
+        return {
+          gradient: 'bg-gradient-to-tl from-kawai-neutral/14 via-kawai-neutral/7 to-kawai-neutral/3',
+          pattern: 'hybrid-blend',
+          description: 'Hybrid piano showcase placeholder'
+        };
+      default:
+        return {
+          gradient: 'bg-gradient-to-br from-kawai-neutral/10 to-kawai-neutral/5',
+          pattern: 'default',
+          description: 'Piano showcase placeholder'
+        };
+    }
+  };
+
+  const theme = getPlaceholderTheme(category);
+  const placeholderCount = 3;
+
+  return (
+    <div className="w-full py-8 -mx-6">
+      <div className="w-full">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-0 w-full">
+          {Array.from({ length: placeholderCount }, (_, index) => (
+            <div
+              key={index}
+              className={`
+                relative w-full h-80 md:h-96 overflow-hidden 
+                ${theme.gradient} 
+                border border-kawai-neutral/20
+                transition-all duration-500 ease-out
+                hover:scale-[1.02] hover:shadow-lg hover:border-kawai-neutral/30
+                group cursor-default
+              `}
+              role="img"
+              aria-label={`${theme.description} ${index + 1}`}
+            >
+            {/* Geometric Pattern Overlay */}
+            <div className="absolute inset-0 opacity-30 group-hover:opacity-40 transition-opacity duration-300">
+              {theme.pattern === 'piano-curve' && (
+                <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-kawai-neutral/20 to-transparent rounded-b-xl" />
+              )}
+              {theme.pattern === 'digital-grid' && (
+                <>
+                  <div className="absolute top-1/3 left-0 w-full h-px bg-kawai-neutral/30" />
+                  <div className="absolute top-2/3 left-0 w-full h-px bg-kawai-neutral/20" />
+                  <div className="absolute top-0 left-1/3 w-px h-full bg-kawai-neutral/25" />
+                  <div className="absolute top-0 right-1/3 w-px h-full bg-kawai-neutral/25" />
+                </>
+              )}
+              {theme.pattern === 'upright-lines' && (
+                <>
+                  <div className="absolute top-0 left-1/4 w-px h-full bg-kawai-neutral/30" />
+                  <div className="absolute top-0 left-1/2 w-px h-full bg-kawai-neutral/20" />
+                  <div className="absolute top-0 right-1/4 w-px h-full bg-kawai-neutral/30" />
+                </>
+              )}
+              {theme.pattern === 'hybrid-blend' && (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-br from-kawai-neutral/15 to-transparent rounded-tl-xl" />
+                  <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-kawai-neutral/10 to-transparent rounded-br-xl" />
+                </>
+              )}
+            </div>
+
+            {/* Subtle Content Hint */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-20 group-hover:opacity-30 transition-opacity duration-300">
+              <Piano className="w-8 h-8 text-kawai-black" />
+            </div>
+
+            {/* Future Image Indicator */}
+            <div className="absolute top-2 right-2 w-2 h-2 bg-kawai-neutral/40 rounded-full opacity-60" />
+          </div>
+        ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Featured Piano Carousel Component
+function FeaturedPianoCarousel() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  const nextPiano = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setCurrentIndex((prev) => (prev + 1) % featuredModels.length);
+    setTimeout(() => setIsTransitioning(false), 500);
+  };
+
+  const prevPiano = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setCurrentIndex((prev) => (prev - 1 + featuredModels.length) % featuredModels.length);
+    setTimeout(() => setIsTransitioning(false), 500);
+  };
+
+  const goToPiano = (index: number) => {
+    if (isTransitioning || index === currentIndex) return;
+    setIsTransitioning(true);
+    setCurrentIndex(index);
+    setTimeout(() => setIsTransitioning(false), 500);
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowLeft') prevPiano();
+      if (event.key === 'ArrowRight') nextPiano();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isTransitioning]);
+
+  const currentPiano = featuredModels[currentIndex];
+
+  return (
+    <div className="relative h-[50vh] min-h-[400px] max-h-[600px] rounded-2xl overflow-hidden group">
+      {/* Piano Image Background */}
+      <div 
+        className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-500 ease-out ${
+          isTransitioning ? 'scale-105 opacity-90' : 'scale-100 opacity-100'
+        }`}
+        style={{ backgroundImage: `url(${currentPiano.image})` }}
+      />
+      
+      {/* Dark Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-l from-black/80 via-black/40 to-transparent" />
+      
+      {/* Text Overlay - Positioned to the right */}
+      <div className={`absolute inset-0 flex items-center justify-end transition-all duration-500 ease-out ${
+        isTransitioning ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'
+      }`}>
+        <div className="max-w-lg px-6 lg:px-12">
+          {currentPiano.badge && (
+            <div className="inline-block bg-kawai-red text-white px-3 py-1.5 rounded-full text-sm font-medium mb-3">
+              {currentPiano.badge}
+            </div>
+          )}
+          <h3 className="text-4xl lg:text-5xl font-bold text-white mb-2 tracking-tight">
+            {currentPiano.name}
+          </h3>
+          <p className="text-lg text-kawai-red font-medium mb-4">
+            {currentPiano.category}
+          </p>
+          <p className="text-base text-white/90 leading-relaxed mb-6 max-w-md">
+            {currentPiano.description}
+          </p>
+          <Link
+            href={`/pianos/${currentPiano.category.toLowerCase().replace(/\s+/g, '-')}`}
+            className="inline-flex items-center px-5 py-2.5 bg-white hover:bg-kawai-pearl text-kawai-black font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group"
+          >
+            <span>Discover {currentPiano.name}</span>
+            <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
+          </Link>
+        </div>
+      </div>
+
+      {/* Navigation Arrows */}
+      <button
+        onClick={prevPiano}
+        disabled={isTransitioning}
+        className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 disabled:opacity-50"
+        aria-label="Previous piano"
+      >
+        <ChevronLeft className="w-6 h-6 text-white" />
+      </button>
+      
+      <button
+        onClick={nextPiano}
+        disabled={isTransitioning}
+        className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 disabled:opacity-50"
+        aria-label="Next piano"
+      >
+        <ChevronRight className="w-6 h-6 text-white" />
+      </button>
+
+      {/* Dot Indicators */}
+      <div className="absolute bottom-4 right-6 lg:right-12 flex space-x-2">
+        {featuredModels.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => goToPiano(index)}
+            disabled={isTransitioning}
+            className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+              index === currentIndex
+                ? 'bg-kawai-red scale-125'
+                : 'bg-white/50 hover:bg-white/70'
+            }`}
+            aria-label={`Go to piano ${index + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Animated Section Component for staggered reveals
+function AnimatedSection({ children, className }: { children: React.ReactNode, className?: string }) {
+  const [isHeadingVisible, setIsHeadingVisible] = useState(false);
+  const [isContentVisible, setIsContentVisible] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          // Start heading animation
+          setIsHeadingVisible(true);
+          
+          // Start content animation after delay
+          setTimeout(() => {
+            setIsContentVisible(true);
+          }, 400);
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <section ref={sectionRef} className={className}>
+      <div className={`transition-all duration-700 ease-out ${
+        isHeadingVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+// Animated Piano Category Section Component
+function PianoCategorySection({ category, index }: { category: any, index: number }) {
+  const [isImageVisible, setIsImageVisible] = useState(false);
+  const [isTextVisible, setIsTextVisible] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          // Start image animation immediately
+          setIsImageVisible(true);
+          
+          // Start text animation after a delay
+          setTimeout(() => {
+            setIsTextVisible(true);
+          }, 300);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  const IconComponent = category.icon;
+  const isEven = index % 2 === 0;
+
+  return (
+    <section 
+      ref={sectionRef}
+      className="min-h-[60vh] flex items-center py-8"
+    >
+      <div className="max-w-7xl mx-auto px-6 w-full">
+        <div className={`grid lg:grid-cols-2 gap-8 lg:gap-12 items-center ${
+          isEven ? '' : 'lg:grid-flow-col-dense'
+        }`}>
+          {/* Content */}
+          <div className={`space-y-6 ${isEven ? '' : 'lg:col-start-2'}`}>
+            <div className={`space-y-4 transition-all duration-700 ease-out ${
+              isTextVisible 
+                ? 'opacity-100 translate-y-0' 
+                : 'opacity-0 translate-y-8'
+            }`}>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-kawai-black">
+                {category.name}
+              </h2>
+              
+              <p className="text-lg md:text-xl leading-relaxed text-kawai-black/80 max-w-2xl">
+                {category.description}
+              </p>
+            </div>
+            
+            <div className={`pt-2 transition-all duration-700 ease-out delay-100 ${
+              isTextVisible 
+                ? 'opacity-100 translate-y-0' 
+                : 'opacity-0 translate-y-8'
+            }`}>
+              <Link
+                href={`/pianos/${category.slug}`}
+                className="inline-flex items-center px-8 py-4 bg-kawai-black hover:bg-kawai-black/80 text-kawai-pearl font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"
+              >
+                <span>Explore {category.name}</span>
+                <ArrowRight className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Image/Icon */}
+          <div className={`relative ${isEven ? '' : 'lg:col-start-1'}`}>
+            <div className={`relative transition-all duration-800 ease-out ${
+              isImageVisible 
+                ? 'opacity-100 translate-x-0' 
+                : `opacity-0 ${isEven ? 'translate-x-12' : '-translate-x-12'}`
+            }`}>
+              <div className="aspect-[4/3] bg-gradient-to-br from-kawai-neutral/20 to-kawai-neutral/40 rounded-2xl flex items-center justify-center relative overflow-hidden hover:from-kawai-neutral/30 hover:to-kawai-neutral/50 transition-all duration-300">
+                <IconComponent className="h-28 w-28 text-kawai-black/50 transition-transform duration-300 hover:scale-110" />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Image Placeholders */}
+        <ImagePlaceholderGrid category={category.slug} />
+      </div>
+    </section>
+  );
+}
+
 export default function PianosPage() {
+  const heroAnimation = useScrollAnimation({ threshold: 0.1 });
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white py-24">
-        <div className="absolute inset-0 bg-black/20" />
-        <div className="container mx-auto px-4 relative">
-          <div className="max-w-5xl">
-            <div className="mb-6">
-              <span className="text-yellow-400 font-semibold text-lg">Since 1927 • 95+ Years of Excellence</span>
-            </div>
-            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold mb-6">
-              Experience the Complete
-              <span className="block text-yellow-400">Kawai Piano Collection</span>
+      <section 
+        ref={heroAnimation.ref as React.RefObject<HTMLElement>} 
+        className="relative py-24 lg:py-32 bg-cover bg-no-repeat bg-[url('/images/piano-categories/NV10S_along%20the%20keyboard_whiteBG.jpg')] !bg-position-[-60%_center]"
+      >
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="max-w-2xl">
+            <h1 className={`text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-kawai-black mb-6 ${fadeUpClass(heroAnimation.isVisible)}`}>
+              Experience the Complete Kawai Piano Collection
             </h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl">
+            <p className={`text-xl md:text-2xl leading-relaxed text-kawai-black/80 mb-8 ${fadeUpClass(heroAnimation.isVisible, 200)}`}>
               From the legendary Shigeru Kawai concert grands used in international competitions to 
               innovative digital and hybrid instruments, discover the piano that will inspire your musical journey.
             </p>
-            <div className="flex flex-wrap gap-4 mb-8">
-              <Button variant="default" size="lg">
-                Explore All Categories
-              </Button>
-              <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-black">
-                Piano Finder Tool <Filter className="ml-2 h-5 w-5" />
-              </Button>
-            </div>
-            <div className="grid md:grid-cols-3 gap-6 text-center">
-              <div>
-                <div className="text-3xl font-bold text-yellow-400">95+</div>
-                <div className="text-gray-300">Years of Innovation</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-yellow-400">5</div>
-                <div className="text-gray-300">Piano Categories</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-yellow-400">50+</div>
-                <div className="text-gray-300">Piano Models</div>
-              </div>
+            <div className={`${fadeUpClass(heroAnimation.isVisible, 400)}`}>
+              <Link
+                href="#categories"
+                className="inline-flex items-center px-8 py-4 bg-kawai-black hover:bg-kawai-black/80 text-kawai-pearl font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"
+              >
+                <span>Explore Categories</span>
+                <ArrowRight className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Piano Categories */}
-      <section className="py-16 lg:py-24">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Complete Piano Collection
-            </h2>
-            <p className="text-xl text-gray-600 max-w-4xl mx-auto">
-              From the world's finest concert grands to revolutionary digital instruments, 
-              explore five distinct categories designed to meet every musical need and aspiration.
-            </p>
-          </div>
-
-          <div className="grid gap-12">
-            {pianoCategories.map((category, index) => {
-              const IconComponent = category.icon
-              return (
-                <div key={category.slug} className={`flex flex-col lg:flex-row items-center gap-8 ${
-                  index % 2 === 1 ? 'lg:flex-row-reverse' : ''
-                }`}>
-                  <div className="lg:w-1/2">
-                    <div className="aspect-[3/2] bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg flex items-center justify-center relative overflow-hidden">
-                      <IconComponent className="h-24 w-24 text-gray-500" />
-                      {category.badge && (
-                        <div className="absolute top-4 left-4">
-                          <span className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                            {category.badge}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="lg:w-1/2 space-y-6">
-                    <div>
-                      <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-                        {category.name}
-                      </h3>
-                      <p className="text-lg text-gray-600 mb-4">
-                        {category.description}
-                      </p>
-                      {category.highlight && (
-                        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
-                          <p className="text-yellow-800 font-semibold">{category.highlight}</p>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
-                        <span className="font-semibold">Price Range: {category.priceRange}</span>
-                        <span>•</span>
-                        <span>{category.models.length} Models Available</span>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-3">Key Technologies:</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {category.features.map((feature, idx) => (
-                          <div key={idx} className="flex items-center text-gray-600">
-                            <span className="w-2 h-2 bg-yellow-400 rounded-full mr-3 flex-shrink-0" />
-                            {feature}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-3">
-                      <Button asChild>
-                        <Link href={`/pianos/${category.slug}`}>
-                          Explore {category.name} <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
-                      </Button>
-                      <Button variant="outline" asChild>
-                        <Link href={`/pianos/${category.slug}#compare`}>
-                          Compare Models
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Models */}
-      <section className="py-16 lg:py-24 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+      {/* Featured Models Carousel */}
+      <AnimatedSection className="py-12 lg:py-16 bg-kawai-pearl">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-kawai-black mb-4">
               Flagship & Featured Models
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto">
               Discover our most celebrated instruments, from competition-grade concert grands 
               to innovative digital and hybrid pianos preferred by professionals worldwide.
             </p>
           </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredModels.map((model) => (
-              <div key={model.name} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                {model.badge && (
-                  <div className="relative">
-                    <div className="absolute top-4 left-4 z-10">
-                      <span className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-3 py-1.5 rounded-full text-sm font-semibold shadow-lg">
-                        {model.badge}
-                      </span>
-                    </div>
-                  </div>
-                )}
-                <div className="aspect-[4/3] bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                  <Piano className="h-16 w-16 text-gray-500" />
-                </div>
-                <div className="p-6">
-                  <div className="mb-4">
-                    <h3 className="font-bold text-xl text-gray-900 mb-2">{model.name}</h3>
-                    <p className="text-sm text-gray-500 font-medium mb-2">{model.category}</p>
-                    <p className="text-gray-600 text-sm leading-relaxed">{model.description}</p>
-                  </div>
-                  
-                  <div className="flex items-center mb-4">
-                    <div className="flex">
-                      {[...Array(model.rating)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
-                      ))}
-                    </div>
-                    <span className="text-sm text-gray-500 ml-2">({model.reviews} reviews)</span>
-                  </div>
-
-                  <div className="mb-6">
-                    <div className="flex items-end gap-2">
-                      <p className="text-2xl font-bold text-gray-900">{model.price}</p>
-                      {model.originalPrice && (
-                        <p className="text-sm text-gray-500 line-through mb-1">{model.originalPrice}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button className="flex-1" variant="outline">
-                      View Details
-                    </Button>
-                    <Button className="flex-1">
-                      Contact
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          
+          <FeaturedPianoCarousel />
         </div>
-      </section>
+      </AnimatedSection>
 
-      {/* Kawai Technology Section */}
-      <section className="py-16 lg:py-24 bg-gradient-to-br from-gray-900 to-black text-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Kawai Innovation & Technology
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Discover the groundbreaking technologies that set Kawai pianos apart, 
-              from revolutionary action designs to advanced sound engines.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-20 h-20 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Piano className="h-10 w-10 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-4 text-yellow-400">Millennium III Action</h3>
-              <p className="text-gray-300">
-                Advanced composite materials and carbon fiber components create the most responsive 
-                and durable action mechanism in acoustic pianos.
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-20 h-20 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Zap className="h-10 w-10 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-4 text-yellow-400">Harmonic Imaging XL</h3>
-              <p className="text-gray-300">
-                Revolutionary sound engine captures every harmonic detail of our world-renowned 
-                Shigeru Kawai concert grands with stunning realism.
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-20 h-20 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Award className="h-10 w-10 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-4 text-yellow-400">Grand Feel III</h3>
-              <p className="text-gray-300">
-                Real wooden keys with grade-A spruce, let-off simulation, and authentic 
-                hammer weighting for the ultimate digital piano experience.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Piano Finder Tool */}
-      <section className="py-16 lg:py-24 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Find Your Perfect Kawai Piano
-              </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                From budget and space requirements to musical goals and experience level, 
-                our piano finder tool helps you discover the ideal instrument for your journey.
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-4 gap-6 mb-12">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-white">1</span>
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-2">Your Profile</h3>
-                <p className="text-gray-600 text-sm">Experience level, musical style, and practice habits</p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-white">2</span>
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-2">Requirements</h3>
-                <p className="text-gray-600 text-sm">Budget range, space constraints, and key features</p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-white">3</span>
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-2">Smart Matching</h3>
-                <p className="text-gray-600 text-sm">AI-powered recommendations from our complete lineup</p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-white">4</span>
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-2">Experience</h3>
-                <p className="text-gray-600 text-sm">Schedule showroom visit and try your matches</p>
-              </div>
-            </div>
-
-            <div className="text-center">
-              <Button variant="default" size="lg">
-                Start Piano Finder <Filter className="ml-2 h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Piano Categories */}
+      <div id="categories" className="bg-kawai-pearl">
+        {pianoCategories.map((category, index) => (
+          <PianoCategorySection key={category.slug} category={category} index={index} />
+        ))}
+      </div>
 
       {/* CTA Section */}
-      <section className="py-16 lg:py-24 bg-yellow-50">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+      <AnimatedSection className="py-16 lg:py-24 text-center bg-kawai-pearl">
+        <div className="max-w-4xl mx-auto px-6">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-kawai-black mb-6">
             Experience the Difference
           </h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto mb-12">
             Visit our showroom to hear and feel the exceptional quality of Kawai pianos. 
             Our experts will help you find the perfect instrument for your musical journey.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="default" asChild>
-              <Link href="/contact/schedule-visit">
-                Schedule Showroom Visit <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link href="/financing">View Financing Options</Link>
-            </Button>
-          </div>
+          
+          <Link
+            href="/contact/schedule-visit"
+            className="inline-flex items-center px-8 py-4 bg-kawai-black hover:bg-kawai-black/80 text-kawai-pearl font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"
+          >
+            <span>Schedule Showroom Visit</span>
+            <ArrowRight className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" />
+          </Link>
         </div>
-      </section>
+      </AnimatedSection>
     </div>
   )
 }

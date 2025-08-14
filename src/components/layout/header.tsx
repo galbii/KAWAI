@@ -1,9 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Menu, X } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useScroll, useMotionValueEvent, useMotionValue } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import {
   NavigationMenu,
@@ -64,11 +64,11 @@ const ListItem = ({ className, title, children, ...props }: {
 const navigation: NavigationItem[] = [
   {
     label: 'Pianos',
+    href: '/pianos',
     dropdown: [
       {
         label: 'By Type',
         items: [
-          { label: 'Acoustic Pianos', href: '/pianos/acoustic', description: 'Traditional craftsmanship' },
           { label: 'Grand Pianos', href: '/pianos/grand', description: 'Concert-quality instruments' },
           { label: 'Upright Pianos', href: '/pianos/upright', description: 'Home & studio pianos' },
           { label: 'Digital Pianos', href: '/pianos/digital', description: 'Modern technology' },
@@ -139,6 +139,41 @@ const navigation: NavigationItem[] = [
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  
+  // Detect reduced motion preference
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setPrefersReducedMotion(mediaQuery.matches)
+    
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches)
+    }
+    
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
+  
+  // Scroll detection with throttling
+  const { scrollY } = useScroll()
+  
+  // Track scroll state for header transformations
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    setIsScrolled(latest > 50)
+  })
+  
+  // Motion values for smooth animations
+  const mouseX = useMotionValue(0)
+  const mouseY = useMotionValue(0)
+  
+  // Handle mouse movement for magnetic effects
+  const handleMouseMove = (event: React.MouseEvent) => {
+    if (!prefersReducedMotion) {
+      mouseX.set(event.clientX)
+      mouseY.set(event.clientY)
+    }
+  }
 
   // Animation variants for premium interactions
   const headerVariants = {
@@ -188,23 +223,45 @@ export function Header() {
 
   return (
     <motion.header 
-      className="sticky top-0 z-50 w-full backdrop-blur-md bg-white/95 border-b border-gray-200/50 shadow-sm"
+      className={`sticky top-0 z-50 w-full border-b border-gray-200/50 transition-all duration-300 ${
+        isScrolled 
+          ? 'backdrop-blur-lg bg-white/98 shadow-lg' 
+          : 'backdrop-blur-md bg-white/95 shadow-sm'
+      }`}
       variants={headerVariants}
       initial="initial"
       animate="animate"
+      style={{
+        willChange: 'transform, height',
+      }}
     >
       {/* Main Header */}
       <div className="container mx-auto px-6">
-        <div className="flex h-20 items-center justify-between">
+        <div className={`flex items-center justify-between transition-all duration-300 ${
+          isScrolled ? 'h-16' : 'h-20'
+        }`}>
           {/* Logo */}
-          <KawaiLogo size="md" animated={true} />
+          <motion.div
+            animate={{
+              scale: prefersReducedMotion ? 1 : (isScrolled ? 0.9 : 1),
+            }}
+            transition={{
+              duration: prefersReducedMotion ? 0 : 0.3,
+              ease: "easeInOut"
+            }}
+            style={{
+              willChange: 'transform',
+            }}
+          >
+            <KawaiLogo size="md" animated={true} />
+          </motion.div>
 
           {/* Desktop Navigation */}
           <NavigationMenu className="hidden lg:flex">
             <NavigationMenuList>
               {navigation.map((item) => (
                 <NavigationMenuItem key={item.label}>
-                  {item.href ? (
+                  {item.href && !item.dropdown ? (
                     <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                       <Link href={item.href} className="font-medium">
                         {item.label}
@@ -212,8 +269,14 @@ export function Header() {
                     </NavigationMenuLink>
                   ) : (
                     <>
-                      <NavigationMenuTrigger className="font-medium text-gray-700 hover:text-gray-900 transition-colors bg-transparent hover:bg-gray-50/50 px-4 py-2 rounded-md">
-                        {item.label}
+                      <NavigationMenuTrigger className="font-medium text-gray-700 hover:text-gray-900 transition-all duration-200 bg-transparent hover:bg-gray-50/50 px-4 py-2 rounded-md">
+                        {item.href ? (
+                          <Link href={item.href} className="block w-full h-full">
+                            {item.label}
+                          </Link>
+                        ) : (
+                          item.label
+                        )}
                       </NavigationMenuTrigger>
                       <NavigationMenuContent className="backdrop-blur-md bg-white/95 border border-gray-200/50 shadow-xl rounded-xl p-0 overflow-hidden">
                         {item.label === 'Pianos' ? (
@@ -264,16 +327,31 @@ export function Header() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3, duration: 0.4 }}
+            onMouseMove={handleMouseMove}
           >
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 px-6" asChild>
+            <motion.div 
+              whileHover={prefersReducedMotion ? {} : { scale: 1.02, y: -2 }} 
+              whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            >
+              <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 px-6 transition-all duration-200" asChild>
                 <Link href="/contact/schedule-visit">Schedule Visit</Link>
               </Button>
             </motion.div>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button className="bg-kawai-red hover:bg-kawai-red/90 text-white px-6 shadow-md hover:shadow-lg transition-all" asChild>
+            <motion.div 
+              whileHover={prefersReducedMotion ? {} : { scale: 1.05, y: -3 }} 
+              whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              className="relative group"
+              style={{
+                willChange: 'transform',
+              }}
+            >
+              <Button className="bg-kawai-red hover:bg-kawai-red/90 text-white px-6 shadow-md hover:shadow-xl transition-all duration-300 relative z-10" asChild>
                 <Link href="/contact">Contact Us</Link>
               </Button>
+              {/* Magnetic glow effect */}
+              <div className="absolute inset-0 bg-kawai-red rounded-md opacity-0 group-hover:opacity-30 transition-opacity duration-300 blur-sm scale-110"></div>
             </motion.div>
           </motion.div>
 
@@ -290,20 +368,30 @@ export function Header() {
               {isMenuOpen ? (
                 <motion.div
                   key="close"
-                  initial={{ rotate: -90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: 90, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
+                  initial={{ rotate: -180, opacity: 0, scale: 0.8 }}
+                  animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                  exit={{ rotate: 180, opacity: 0, scale: 0.8 }}
+                  transition={{ 
+                    duration: 0.3, 
+                    type: "spring", 
+                    stiffness: 300, 
+                    damping: 20 
+                  }}
                 >
                   <X className="h-6 w-6" />
                 </motion.div>
               ) : (
                 <motion.div
                   key="menu"
-                  initial={{ rotate: 90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: -90, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
+                  initial={{ rotate: 180, opacity: 0, scale: 0.8 }}
+                  animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                  exit={{ rotate: -180, opacity: 0, scale: 0.8 }}
+                  transition={{ 
+                    duration: 0.3, 
+                    type: "spring", 
+                    stiffness: 300, 
+                    damping: 20 
+                  }}
                 >
                   <Menu className="h-6 w-6" />
                 </motion.div>
@@ -354,7 +442,7 @@ export function Header() {
                   variants={fadeInUp}
                   transition={{ delay: index * 0.05 }}
                 >
-                  {item.href ? (
+                  {item.href && !item.dropdown ? (
                     <Link
                       href={item.href}
                       className="block py-2 text-gray-800 hover:text-gray-900 font-medium text-lg transition-colors"
@@ -365,7 +453,17 @@ export function Header() {
                   ) : (
                     <>
                       <div className="py-2 font-semibold text-gray-900 text-lg border-b border-gray-200">
-                        {item.label}
+                        {item.href ? (
+                          <Link
+                            href={item.href}
+                            className="text-gray-800 hover:text-gray-900 transition-colors"
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            {item.label}
+                          </Link>
+                        ) : (
+                          <span>{item.label}</span>
+                        )}
                       </div>
                       {item.dropdown && (
                         <div className="pl-4 space-y-4">

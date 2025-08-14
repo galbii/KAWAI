@@ -1,22 +1,74 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Music, ArrowRight, Star, Home, School, Award } from "lucide-react"
+import { CategoryHero } from "@/components/piano/category-hero";
+import { CleanSeriesBrowser } from "@/components/piano/clean-series-browser";
 
+// Featured upright pianos - highlighting the best from each series
+const featuredUprightPianos = [
+  {
+    slug: "k-800",
+    name: "K-800",
+    series: "K Professional Series",
+    rating: 5,
+    reviews: 72,
+    image: "/images/banners/K800-upright-styling.webp",
+    description: "The ultimate professional upright with concert-quality performance",
+    keyFeatures: [
+      "51\" professional upright with exceptional projection",
+      "Millennium III action preparation",
+      "Extended length keys for grand piano feel",
+      "Premium German Roslau strings",
+      "Solid spruce soundboard construction",
+      "Soft-close fallboard with hydraulic system"
+    ]
+  },
+  {
+    slug: "k-500",
+    name: "K-500",
+    series: "K Professional Series",
+    rating: 4.8,
+    reviews: 93,
+    image: "/images/banners/K500-upright-styling.webp",
+    description: "Versatile studio upright perfect for serious musicians and institutions",
+    keyFeatures: [
+      "45\" studio upright with powerful sound",
+      "Enhanced action mechanism",
+      "Extended length keys for improved control",
+      "Quality German strings",
+      "Solid construction throughout",
+      "Professional-grade components"
+    ]
+  },
+  {
+    slug: "k-300",
+    name: "K-300",
+    series: "K Professional Series",
+    rating: 4.6,
+    reviews: 105,
+    image: "/images/banners/K300-upright-styling.webp",
+    description: "Professional home studio upright offering exceptional quality",
+    keyFeatures: [
+      "44\" home studio upright with warm tone",
+      "Quality construction standards",
+      "Extended length keys",
+      "Premium materials selection",
+      "Good tuning stability",
+      "Attractive cabinet design"
+    ]
+  }
+];
+
+// Upright piano series with complete piano data for browsing
 const uprightPianoSeries = [
   {
     name: "K Professional Series",
-    description: "Professional upright pianos featuring advanced action technology and premium materials",
-    badge: "Professional Series",
-    highlight: "Millennium III Preparation",
-    models: [
+    description: "Professional upright pianos featuring advanced action technology, premium materials, and exceptional craftsmanship. From the flagship K-800 to the entry-level K-200, each model delivers professional performance.",
+    pianos: [
       {
         slug: "k-800",
         name: "K-800",
-        size: "51\" Professional Upright",
-        price: "$34,999",
+        series: "K Professional Series",
         rating: 5,
         reviews: 72,
-        badge: "Flagship",
+        image: "/images/banners/K800-upright-styling.webp",
         description: "The ultimate professional upright with concert-quality performance",
         keyFeatures: [
           "51\" professional upright with exceptional projection",
@@ -24,54 +76,16 @@ const uprightPianoSeries = [
           "Extended length keys for grand piano feel",
           "Premium German Roslau strings",
           "Solid spruce soundboard construction",
-          "Soft-close fallboard with hydraulic system",
-          "Professional-grade tuning stability"
-        ],
-        specifications: {
-          "Height": "51\" (130 cm)",
-          "Width": "60\" (153 cm)",
-          "Depth": "26\" (66 cm)",
-          "Weight": "573 lbs (260 kg)",
-          "Keys": "88 keys with extended length",
-          "Action": "Millennium III preparation",
-          "Pedals": "3 pedals with half-pedal support"
-        }
-      },
-      {
-        slug: "k-600",
-        name: "K-600",
-        size: "48\" Professional Upright",
-        price: "$28,999",
-        rating: 4.9,
-        reviews: 64,
-        description: "Professional upright offering excellent performance in a compact size",
-        keyFeatures: [
-          "48\" professional upright with rich tone",
-          "Advanced action technology",
-          "Extended length keys",
-          "Premium materials throughout",
-          "Excellent tuning stability", 
-          "Professional cabinet finish",
-          "Enhanced string scaling"
-        ],
-        specifications: {
-          "Height": "48\" (122 cm)",
-          "Width": "58\" (147 cm)", 
-          "Depth": "25\" (64 cm)",
-          "Weight": "507 lbs (230 kg)",
-          "Keys": "88 keys with extended length",
-          "Action": "Professional upright action",
-          "Pedals": "3 pedals with soft-close"
-        }
+          "Soft-close fallboard with hydraulic system"
+        ]
       },
       {
         slug: "k-500",
         name: "K-500",
-        size: "45\" Studio Upright",
-        price: "$22,999",
+        series: "K Professional Series",
         rating: 4.8,
         reviews: 93,
-        badge: "Popular Choice",
+        image: "/images/banners/K500-upright-styling.webp",
         description: "Versatile studio upright perfect for serious musicians and institutions",
         keyFeatures: [
           "45\" studio upright with powerful sound",
@@ -79,54 +93,16 @@ const uprightPianoSeries = [
           "Extended length keys for improved control",
           "Quality German strings",
           "Solid construction throughout",
-          "Professional-grade components",
-          "Excellent value proposition"
-        ],
-        specifications: {
-          "Height": "45\" (114 cm)",
-          "Width": "58\" (147 cm)",
-          "Depth": "24\" (61 cm)", 
-          "Weight": "463 lbs (210 kg)",
-          "Keys": "88 keys with extended length",
-          "Action": "Enhanced upright action",
-          "Pedals": "3 pedals including sostenuto"
-        }
-      },
-      {
-        slug: "k-400",
-        name: "K-400",
-        size: "44\" Console Upright",
-        price: "$18,999",
-        rating: 4.7,
-        reviews: 87,
-        description: "Professional console upright with excellent touch and tone",
-        keyFeatures: [
-          "44\" console upright with clear projection",
-          "Quality action mechanism",
-          "Extended length keys",
-          "Premium hammer construction",
-          "Solid wood components",
-          "Reliable tuning stability",
-          "Classic cabinet styling"
-        ],
-        specifications: {
-          "Height": "44\" (112 cm)",
-          "Width": "58\" (147 cm)",
-          "Depth": "24\" (61 cm)",
-          "Weight": "441 lbs (200 kg)",
-          "Keys": "88 keys with extended length", 
-          "Action": "Professional console action",
-          "Pedals": "3 pedals with half-pedal"
-        }
+          "Professional-grade components"
+        ]
       },
       {
         slug: "k-300",
         name: "K-300",
-        size: "44\" Home Studio",
-        price: "$15,999",
+        series: "K Professional Series",
         rating: 4.6,
         reviews: 105,
-        badge: "Best Value",
+        image: "/images/banners/K300-upright-styling.webp",
         description: "Professional home studio upright offering exceptional quality",
         keyFeatures: [
           "44\" home studio upright with warm tone",
@@ -134,356 +110,249 @@ const uprightPianoSeries = [
           "Extended length keys",
           "Premium materials selection",
           "Good tuning stability",
-          "Attractive cabinet design",
-          "Professional performance capability"
-        ],
-        specifications: {
-          "Height": "44\" (112 cm)",
-          "Width": "58\" (147 cm)",
-          "Depth": "24\" (61 cm)",
-          "Weight": "419 lbs (190 kg)",
-          "Keys": "88 keys with extended length",
-          "Action": "Quality upright action", 
-          "Pedals": "3 pedals including practice"
-        }
+          "Attractive cabinet design"
+        ]
       },
       {
         slug: "k-200",
         name: "K-200",
-        size: "43\" Compact Upright",
-        price: "$12,999",
-        rating: 4.5,
-        reviews: 118,
-        description: "Entry-level professional upright perfect for home use",
+        series: "K Professional Series",
+        rating: 4.4,
+        reviews: 127,
+        image: "/images/banners/K200-upright-styling.webp",
+        description: "Entry-level professional upright with excellent value",
         keyFeatures: [
-          "43\" compact upright with good sound",
-          "Reliable action mechanism",
+          "43\" compact upright design",
+          "Professional action mechanism",
           "Extended length keys",
-          "Quality construction",
-          "Stable tuning performance",
-          "Space-efficient design",
-          "Professional entry point"
-        ],
-        specifications: {
-          "Height": "43\" (109 cm)",
-          "Width": "58\" (147 cm)",
-          "Depth": "24\" (61 cm)",
-          "Weight": "397 lbs (180 kg)",
-          "Keys": "88 keys with extended length",
-          "Action": "Compact upright action",
-          "Pedals": "3 pedals standard"
-        }
+          "Quality materials and construction",
+          "Reliable tuning stability",
+          "Excellent beginner-to-intermediate choice"
+        ]
       }
     ]
   },
   {
-    name: "Designer & Continental Series", 
-    description: "Elegant upright pianos combining beautiful aesthetics with quality performance",
-    badge: "Aesthetic Excellence",
-    highlight: "Style Meets Performance",
-    models: [
+    name: "Designer & Continental Series",
+    description: "Elegant upright pianos combining beautiful aesthetics with quality performance. Available in multiple cabinet styles and finishes to complement any décor while delivering professional musical capabilities.",
+    pianos: [
       {
-        slug: "designer-series",
-        name: "Designer Series",
-        size: "Various Heights",
-        price: "$16,999 - $28,999",
-        rating: 4.6,
-        reviews: 134,
-        description: "Elegant upright pianos with premium finishes and classic styling",
+        slug: "k-15e",
+        name: "K-15E",
+        series: "Designer Series",
+        rating: 4.5,
+        reviews: 58,
+        image: "/images/banners/K15E-upright-styling.webp",
+        description: "Designer upright with elegant styling and quality performance",
         keyFeatures: [
-          "Multiple cabinet styles and finishes",
-          "Premium wood construction",
-          "Quality action mechanisms",
-          "Extended length keys",
-          "Elegant aesthetic designs",
-          "Professional performance capability",
-          "Various size options available"
+          "45\" designer upright with premium aesthetics",
+          "Quality action mechanism",
+          "Beautiful cabinet finishes available",
+          "Solid construction methods",
+          "Home-friendly design",
+          "Good value for money"
         ]
       },
       {
-        slug: "continental-series", 
-        name: "Continental Series",
-        size: "Traditional Heights",
-        price: "$14,999 - $24,999",
-        rating: 4.5,
-        reviews: 89,
-        description: "Classic continental styling with reliable performance",
+        slug: "k-18e",
+        name: "K-18E",
+        series: "Designer Series",
+        rating: 4.3,
+        reviews: 41,
+        image: "/images/banners/K18E-upright-styling.webp",
+        description: "Compact designer upright perfect for smaller spaces",
         keyFeatures: [
-          "Traditional continental cabinet design",
-          "Quality materials and construction", 
-          "Reliable action performance",
-          "Extended length keys",
-          "Classic aesthetic appeal",
-          "Good tuning stability",
-          "Professional entry-level option"
+          "43\" compact designer upright",
+          "Elegant cabinet styling",
+          "Quality action and sound",
+          "Multiple finish options",
+          "Space-efficient design",
+          "Ideal for home use"
         ]
       }
     ]
   }
-]
-
-const uprightFeatures = [
-  {
-    icon: Music,
-    title: "Extended Length Keys",
-    description: "Longer keys provide better leverage and control, delivering a playing experience closer to grand piano touch and responsiveness."
-  },
-  {
-    icon: Award,
-    title: "Millennium III Prep",
-    description: "Select models feature Millennium III action preparation with advanced materials for enhanced responsiveness and durability."
-  },
-  {
-    icon: Home,
-    title: "Space Efficient Design",
-    description: "Compact footprint allows placement in smaller spaces while maintaining full 88-key performance and professional sound quality."
-  }
-]
+];
 
 export default function UprightPianosPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-green-900 via-gray-900 to-black text-white py-24">
-        <div className="absolute inset-0 bg-black/20" />
-        <div className="container mx-auto px-4 relative">
-          <div className="max-w-5xl">
-            <div className="mb-6 flex items-center">
-              <Music className="h-8 w-8 text-green-400 mr-3" />
-              <span className="text-green-400 font-semibold text-lg">Acoustic Upright Pianos</span>
+      <CategoryHero
+        category="Upright Pianos"
+        title="Professional Performance"
+        description="Experience the perfect balance of space efficiency and professional performance. Our K Professional Series and elegant Designer collections deliver exceptional touch, tone, and craftsmanship in a compact footprint."
+        backgroundImage="/images/banners/K800-upright-styling.webp"
+        stats={[
+          { label: "Upright Models", value: "8+" },
+          { label: "Height Range", value: "43\" - 51\"" },
+          { label: "Distinct Series", value: "2" }
+        ]}
+      />
+
+      {/* Clean Series Browser */}
+      <CleanSeriesBrowser
+        title="Explore Upright Piano Series"
+        description="Find the perfect balance of space efficiency and professional performance across our distinguished upright piano families."
+        series={uprightPianoSeries}
+        categorySlug="upright"
+      />
+
+      {/* Benefits Showcase */}
+      <section className="py-16 lg:py-24 bg-gradient-to-br from-kawai-black to-kawai-neutral text-kawai-pearl">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
+            Space-Efficient Excellence
+          </h2>
+          <p className="text-xl md:text-2xl leading-relaxed text-kawai-pearl/80 mb-12">
+            Kawai upright pianos deliver professional performance in a compact design, featuring advanced technologies and premium materials typically found in grand pianos.
+          </p>
+          
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            <div className="text-center">
+              <div className="w-20 h-20 bg-kawai-red rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="h-10 w-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-kawai-red">Extended Length Keys</h3>
+              <p className="text-kawai-pearl/80">
+                Longer keys provide better leverage and control, delivering a playing experience closer to grand piano touch and responsiveness.
+              </p>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold mb-6">
-              Professional Upright Pianos
-              <span className="block text-green-400">For Every Space</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl">
-              Experience the perfect balance of space efficiency and professional performance. 
-              Our K Professional Series and elegant Designer collections deliver exceptional 
-              touch, tone, and craftsmanship in a compact footprint.
-            </p>
-            <div className="flex flex-wrap gap-4 mb-8">
-              <Button variant="default" size="lg">
-                Explore Upright Pianos
-              </Button>
-              <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-black">
-                Size Comparison Guide
-              </Button>
+            <div className="text-center">
+              <div className="w-20 h-20 bg-kawai-red rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="h-10 w-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-kawai-red">Millennium III Prep</h3>
+              <p className="text-kawai-pearl/80">
+                Select models feature Millennium III action preparation with advanced materials for enhanced responsiveness and durability.
+              </p>
             </div>
-            <div className="grid md:grid-cols-3 gap-6 text-center">
-              <div>
-                <div className="text-3xl font-bold text-green-400">8+</div>
-                <div className="text-gray-300">Upright Models</div>
+            <div className="text-center">
+              <div className="w-20 h-20 bg-kawai-red rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="h-10 w-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                </svg>
               </div>
-              <div>
-                <div className="text-3xl font-bold text-green-400">43" - 51"</div>
-                <div className="text-gray-300">Height Range</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-green-400">2</div>
-                <div className="text-gray-300">Distinct Series</div>
-              </div>
+              <h3 className="text-xl font-bold mb-3 text-kawai-red">Space Efficient Design</h3>
+              <p className="text-kawai-pearl/80">
+                Compact footprint allows placement in smaller spaces while maintaining full 88-key performance and professional sound quality.
+              </p>
             </div>
           </div>
+
+          <a
+            href="/technology"
+            className="inline-flex items-center px-8 py-4 bg-kawai-red hover:bg-kawai-red/80 text-white font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"
+          >
+            <span>Explore Technology</span>
+            <svg
+              className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </a>
         </div>
       </section>
 
-      {/* Upright Piano Benefits */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Why Choose Kawai Upright Pianos
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Kawai upright pianos deliver professional performance in a space-efficient design, 
-              featuring advanced technologies and premium materials typically found in grand pianos.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {uprightFeatures.map((feature, index) => {
-              const Icon = feature.icon
-              return (
-                <div key={index} className="text-center">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Icon className="h-8 w-8 text-green-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-                  <p className="text-gray-600">{feature.description}</p>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Piano Series */}
-      <section className="py-16 lg:py-24">
-        <div className="container mx-auto px-4">
-          {uprightPianoSeries.map((series) => (
-            <div key={series.name} className="mb-20">
-              <div className="text-center mb-12">
-                <div className="mb-4">
-                  <span className="bg-green-500 text-white px-4 py-2 rounded-full text-sm font-semibold">
-                    {series.badge}
-                  </span>
-                </div>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                  {series.name}
-                </h2>
-                <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-4">
-                  {series.description}
-                </p>
-                <div className="bg-green-50 border-l-4 border-green-400 p-4 max-w-md mx-auto">
-                  <p className="text-green-800 font-semibold">{series.highlight}</p>
-                </div>
+      {/* Perfect Settings Section */}
+      <section className="py-16 lg:py-24 bg-kawai-pearl">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-kawai-black mb-6">
+            Perfect for Every Setting
+          </h2>
+          <p className="text-xl md:text-2xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto mb-12">
+            Kawai upright pianos are ideal for homes, studios, schools, and institutions where space is at a premium but professional performance is essential.
+          </p>
+          
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            <div className="text-center">
+              <div className="w-24 h-24 bg-kawai-red/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="h-12 w-12 text-kawai-red" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
               </div>
-
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {series.models.map((piano) => (
-                  <div key={piano.slug} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                    {'badge' in piano && piano.badge && (
-                      <div className="relative">
-                        <div className="absolute top-4 left-4 z-10">
-                          <span className="bg-green-500 text-white px-3 py-1.5 rounded-full text-sm font-semibold">
-                            {piano.badge}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                    
-                    <div className="aspect-[4/3] bg-gradient-to-br from-green-200 to-green-300 flex items-center justify-center">
-                      <Music className="h-16 w-16 text-green-600" />
-                    </div>
-                    
-                    <div className="p-6">
-                      <div className="mb-4">
-                        <h3 className="text-xl font-bold text-gray-900 mb-1">{piano.name}</h3>
-                        <p className="text-green-600 font-semibold text-sm mb-2">{piano.size}</p>
-                        <p className="text-gray-600 text-sm">{piano.description}</p>
-                      </div>
-                      
-                      <div className="flex items-center mb-4">
-                        <div className="flex">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} className={`h-4 w-4 ${i < Math.floor(piano.rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
-                          ))}
-                        </div>
-                        <span className="text-sm text-gray-500 ml-2">({piano.reviews})</span>
-                      </div>
-
-                      <div className="mb-4">
-                        <h4 className="font-semibold text-gray-900 mb-2">Key Features:</h4>
-                        <ul className="space-y-1">
-                          {piano.keyFeatures.slice(0, 3).map((feature, idx) => (
-                            <li key={idx} className="text-sm text-gray-600 flex items-start">
-                              <span className="w-1.5 h-1.5 bg-green-400 rounded-full mr-2 mt-1.5 flex-shrink-0" />
-                              {feature}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <p className="text-xl font-bold text-gray-900">{piano.price}</p>
-                          <p className="text-sm text-gray-500">Financing available</p>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Button className="flex-1" asChild>
-                          <Link href={`/pianos/upright/${piano.slug}`}>
-                            Learn More
-                          </Link>
-                        </Button>
-                        <Button variant="outline" className="flex-1">
-                          Compare
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <h3 className="text-2xl font-bold text-kawai-black mb-3">Home Practice</h3>
+              <p className="text-kawai-black/70">
+                Perfect for home musicians who want professional quality in a compact footprint that fits comfortably in living spaces.
+              </p>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Placement Guide */}
-      <section className="py-16 lg:py-24 bg-gradient-to-br from-green-900 to-black text-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Perfect for Every Setting
-            </h2>
-            <p className="text-xl text-gray-300 mb-12">
-              Kawai upright pianos are ideal for homes, studios, schools, and institutions 
-              where space is at a premium but professional performance is essential.
-            </p>
-            
-            <div className="grid md:grid-cols-3 gap-8 mb-12">
-              <div className="text-center">
-                <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Home className="h-10 w-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold mb-3 text-green-400">Home Practice</h3>
-                <p className="text-gray-300">
-                  Perfect for home musicians who want professional quality in a compact footprint 
-                  that fits comfortably in living spaces.
-                </p>
+            <div className="text-center">
+              <div className="w-24 h-24 bg-kawai-red/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="h-12 w-12 text-kawai-red" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>
+                </svg>
               </div>
-              <div className="text-center">
-                <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <School className="h-10 w-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold mb-3 text-green-400">Educational Institutions</h3>
-                <p className="text-gray-300">
-                  Ideal for music schools, universities, and practice rooms where space efficiency 
-                  and reliability are crucial for daily use.
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Music className="h-10 w-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold mb-3 text-green-400">Professional Studios</h3>
-                <p className="text-gray-300">
-                  Excellent for recording studios and teaching studios where professional sound 
-                  quality is needed in a space-conscious design.
-                </p>
-              </div>
+              <h3 className="text-2xl font-bold text-kawai-black mb-3">Educational Institutions</h3>
+              <p className="text-kawai-black/70">
+                Ideal for music schools, universities, and practice rooms where space efficiency and reliability are crucial for daily use.
+              </p>
             </div>
-
-            <Button variant="default" size="lg">
-              Find Your Perfect Size <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+            <div className="text-center">
+              <div className="w-24 h-24 bg-kawai-red/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="h-12 w-12 text-kawai-red" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-kawai-black mb-3">Professional Studios</h3>
+              <p className="text-kawai-black/70">
+                Excellent for recording studios and teaching studios where professional sound quality is needed in a space-conscious design.
+              </p>
+            </div>
           </div>
+
+          <a
+            href="#featured-products"
+            className="inline-flex items-center px-8 py-4 bg-kawai-black hover:bg-kawai-black/80 text-kawai-pearl font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"
+          >
+            <span>Find Your Perfect Size</span>
+            <svg
+              className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </a>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 lg:py-24 bg-green-50">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+      {/* Call to Action */}
+      <section className="py-16 lg:py-24 bg-kawai-pearl text-center">
+        <div className="max-w-4xl mx-auto px-6">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-kawai-black mb-6">
             Experience Upright Excellence
           </h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Visit our showroom to experience the touch, tone, and compact elegance of Kawai upright pianos. 
-            Our specialists will help you find the perfect model for your space and musical needs.
+          <p className="text-xl md:text-2xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto mb-12">
+            Visit our showroom to experience the touch, tone, and compact elegance of Kawai upright pianos. Our specialists will help you find the perfect model for your space and musical needs.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="default" asChild>
-              <Link href="/contact/schedule-visit">
-                Schedule Showroom Visit <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link href="/space-planning">Space Planning Guide</Link>
-            </Button>
-          </div>
+          
+          <a
+            href="/showroom"
+            className="inline-flex items-center px-8 py-4 bg-kawai-black hover:bg-kawai-black/80 text-kawai-pearl font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"
+          >
+            <span>Schedule Showroom Visit</span>
+            <svg
+              className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </a>
         </div>
       </section>
     </div>
-  )
+  );
 }

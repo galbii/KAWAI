@@ -1,24 +1,74 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Award, ArrowRight, Star, Volume2, VolumeX, Piano, Zap } from "lucide-react"
+import { CategoryHero } from "@/components/piano/category-hero";
+import { CleanSeriesBrowser } from "@/components/piano/clean-series-browser";
 
+// Featured hybrid pianos - highlighting the best from each series
+const featuredHybridPianos = [
+  {
+    slug: "nv-10s",
+    name: "NOVUS NV-10S",
+    series: "NOVUS Series",
+    rating: 5,
+    reviews: 34,
+    image: "/images/banners/NV10S-hybrid-styling.webp",
+    description: "The world's first upright piano with real grand piano action mechanism",
+    keyFeatures: [
+      "Real Millennium III grand piano action in upright form",
+      "Authentic acoustic piano touch and feel",
+      "Silent practice with headphones",
+      "Shigeru Kawai SK-EX and other premium sounds",
+      "Advanced digital recording capabilities",
+      "Bluetooth MIDI and Audio connectivity"
+    ]
+  },
+  {
+    slug: "nv-5s",
+    name: "NOVUS NV-5S",
+    series: "NOVUS Series",
+    rating: 4.9,
+    reviews: 42,
+    image: "/images/banners/NV5S-hybrid-styling.webp",
+    description: "Advanced hybrid piano with wooden-key action and premium digital features",
+    keyFeatures: [
+      "Grand Feel III wooden-key action",
+      "Hybrid sensor technology for ultimate expression",
+      "Premium Shigeru Kawai concert grand sounds",
+      "Advanced Spatial Headphone Sound",
+      "Professional recording capabilities",
+      "Concert Performer mode"
+    ]
+  },
+  {
+    slug: "atx4",
+    name: "AnyTime ATX4",
+    series: "AnyTime Series",
+    rating: 4.8,
+    reviews: 28,
+    image: "/images/banners/ATX4-grand-styling.webp",
+    description: "Professional grand piano with integrated silent practice system",
+    keyFeatures: [
+      "6'1\" acoustic grand piano with full acoustic performance",
+      "Integrated AnyTime silent practice system",
+      "Millennium III action with sensor technology",
+      "Switch between acoustic and silent modes instantly",
+      "Premium digital piano sounds for silent practice",
+      "Professional acoustic piano when desired"
+    ]
+  }
+];
+
+// Hybrid piano series with complete piano data for browsing
 const hybridPianoSeries = [
   {
-    name: "NOVUS Series", 
-    description: "Revolutionary hybrid pianos featuring real grand piano action with digital versatility",
-    badge: "Revolutionary Technology",
-    highlight: "Real Grand Piano Action",
-    models: [
+    name: "NOVUS Series",
+    description: "Revolutionary hybrid pianos featuring real grand piano action with digital versatility. The world's first upright piano with authentic grand piano action mechanism and advanced digital technology.",
+    pianos: [
       {
         slug: "nv-10s",
         name: "NOVUS NV-10S",
         series: "NOVUS Series",
-        size: "Upright Hybrid",
-        price: "$24,999",
         rating: 5,
         reviews: 34,
-        badge: "Revolutionary",
-        image: "/api/placeholder/500/400",
+        image: "/images/banners/NV10S-hybrid-styling.webp",
         description: "The world's first upright piano with real grand piano action mechanism",
         keyFeatures: [
           "Real Millennium III grand piano action in upright form",
@@ -26,37 +76,16 @@ const hybridPianoSeries = [
           "Silent practice with headphones",
           "Shigeru Kawai SK-EX and other premium sounds",
           "Advanced digital recording capabilities",
-          "Bluetooth MIDI and Audio connectivity",
-          "Professional speaker system"
-        ],
-        specifications: {
-          "Action": "Real Millennium III grand piano action",
-          "Sound Engine": "SK-EX Rendering with 88-key sampling",
-          "Voices": "38 voices including multiple grands",
-          "Polyphony": "256 notes maximum",
-          "Speakers": "6 speakers with amplified sound system",
-          "Dimensions": "58\" W x 24\" D x 49\" H",
-          "Weight": "485 lbs (220 kg)",
-          "Pedals": "3 pedals with half-pedal support",
-          "Silent Mode": "Complete silent practice capability"
-        },
-        uniqueFeatures: [
-          "World's first upright with grand action",
-          "Patented hybrid technology design",
-          "Acoustic and digital modes seamlessly integrated",
-          "Professional recording studio features"
+          "Bluetooth MIDI and Audio connectivity"
         ]
       },
       {
         slug: "nv-5s",
         name: "NOVUS NV-5S",
-        series: "NOVUS Series", 
-        size: "Digital Hybrid",
-        price: "$15,999",
+        series: "NOVUS Series",
         rating: 4.9,
         reviews: 42,
-        badge: "Innovation Award",
-        image: "/api/placeholder/500/400",
+        image: "/images/banners/NV5S-hybrid-styling.webp",
         description: "Advanced hybrid piano with wooden-key action and premium digital features",
         keyFeatures: [
           "Grand Feel III wooden-key action",
@@ -64,45 +93,22 @@ const hybridPianoSeries = [
           "Premium Shigeru Kawai concert grand sounds",
           "Advanced Spatial Headphone Sound",
           "Professional recording capabilities",
-          "Bluetooth connectivity",
           "Concert Performer mode"
-        ],
-        specifications: {
-          "Action": "Grand Feel III wooden-key hybrid action",
-          "Sound Engine": "SK-EX Rendering with harmonic imaging",
-          "Voices": "Over 40 premium voices",
-          "Polyphony": "256 notes maximum",
-          "Speakers": "6 speakers with premium amplification",
-          "Dimensions": "57\" W x 19\" D x 36\" H",
-          "Weight": "198 lbs (90 kg)",
-          "Pedals": "3 pedals with advanced sensing",
-          "Recording": "Multi-track MIDI and audio recording"
-        },
-        uniqueFeatures: [
-          "Hybrid sensing technology",
-          "Wooden key construction with sensors",
-          "Advanced sound modeling",
-          "Professional connectivity options"
         ]
       }
     ]
   },
   {
     name: "AnyTime Series",
-    description: "Acoustic grand and upright pianos with integrated silent practice systems",
-    badge: "Silent Practice Technology",
-    highlight: "Acoustic + Silent Practice",
-    models: [
+    description: "Acoustic grand and upright pianos with integrated silent practice systems. Experience the full acoustic piano performance with the ability to practice silently using headphones.",
+    pianos: [
       {
         slug: "atx4",
         name: "AnyTime ATX4",
         series: "AnyTime Series",
-        size: "6'1\" Grand with Silent System",
-        price: "Contact for Price",
         rating: 4.8,
         reviews: 28,
-        badge: "Silent Grand",
-        image: "/api/placeholder/500/400",
+        image: "/images/banners/ATX4-grand-styling.webp",
         description: "Professional grand piano with integrated silent practice system",
         keyFeatures: [
           "6'1\" acoustic grand piano with full acoustic performance",
@@ -110,332 +116,198 @@ const hybridPianoSeries = [
           "Millennium III action with sensor technology",
           "Switch between acoustic and silent modes instantly",
           "Premium digital piano sounds for silent practice",
-          "Recording and playback capabilities",
           "Professional acoustic piano when desired"
-        ],
-        specifications: {
-          "Piano Type": "6'1\" acoustic grand with silent system",
-          "Action": "Millennium III with digital sensors",
-          "Silent Voices": "Multiple premium piano voices",
-          "Acoustic Mode": "Full acoustic grand piano performance",
-          "Dimensions": "6'1\" x 4'11\" x 3'4\" (piano dimensions)",
-          "Silent Features": "Headphone output, recording, voices",
-          "Pedals": "3 pedals with acoustic and digital sensing",
-          "Installation": "Professional installation required"
-        },
-        uniqueFeatures: [
-          "Real acoustic grand piano",
-          "Silent practice without compromise",
-          "Seamless mode switching",
-          "Professional installation and setup"
         ]
       },
       {
         slug: "atx3",
         name: "AnyTime ATX3",
         series: "AnyTime Series",
-        size: "48\" Upright with Silent System", 
-        price: "Contact for Price",
         rating: 4.7,
-        reviews: 36,
-        badge: "Silent Upright",
-        image: "/api/placeholder/500/400",
-        description: "Professional upright piano with integrated silent practice capabilities",
+        reviews: 31,
+        image: "/images/banners/ATX3-grand-styling.webp",
+        description: "Compact grand piano with AnyTime silent practice technology",
         keyFeatures: [
-          "48\" professional acoustic upright piano",
-          "Integrated AnyTime silent system technology",
-          "Advanced action with digital sensors",
-          "Instant switching between acoustic and silent",
-          "Quality digital sounds for silent practice",
-          "MIDI recording and connectivity",
-          "Full acoustic performance when desired"
-        ],
-        specifications: {
-          "Piano Type": "48\" acoustic upright with silent system",
-          "Action": "Professional upright with digital sensors",
-          "Silent Voices": "Premium digital piano sounds",
-          "Acoustic Mode": "Full acoustic upright performance",
-          "Dimensions": "58\" W x 25\" D x 48\" H",
-          "Silent Features": "Headphone practice, recording, voices",
-          "Pedals": "3 pedals with dual sensing",
-          "Installation": "Professional setup included"
-        },
-        uniqueFeatures: [
-          "Real acoustic upright piano",
-          "Silent practice system integrated",
-          "Professional acoustic sound",
-          "Compact upright footprint"
+          "5'8\" acoustic grand piano",
+          "AnyTime silent practice system",
+          "Professional action with sensor technology",
+          "Dual-mode operation: acoustic and silent",
+          "Quality digital sounds for practice",
+          "Space-efficient grand piano solution"
         ]
       }
     ]
   }
-]
-
-const hybridFeatures = [
-  {
-    icon: Piano,
-    title: "Real Piano Action",
-    description: "Experience authentic acoustic piano touch and feel with advanced sensor technology that captures every nuance of your playing."
-  },
-  {
-    icon: VolumeX,
-    title: "Silent Practice Mode",
-    description: "Practice anytime with headphones while maintaining the authentic feel of an acoustic piano action mechanism."
-  },
-  {
-    icon: Zap,
-    title: "Hybrid Technology",
-    description: "Seamlessly switch between acoustic and digital modes, combining the best of both worlds in one remarkable instrument."
-  }
-]
+];
 
 export default function HybridPianosPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-indigo-900 via-purple-900 to-black text-white py-24">
-        <div className="absolute inset-0 bg-black/20" />
-        <div className="container mx-auto px-4 relative">
-          <div className="max-w-5xl">
-            <div className="mb-6 flex items-center">
-              <Award className="h-8 w-8 text-indigo-400 mr-3" />
-              <span className="text-indigo-400 font-semibold text-lg">Hybrid Piano Technology</span>
-            </div>
-            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold mb-6">
-              Revolutionary Hybrid Pianos
-              <span className="block text-indigo-400">Best of Both Worlds</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl">
-              Experience groundbreaking instruments that combine authentic acoustic piano action 
-              with cutting-edge digital technology. Practice silently with headphones or enjoy 
-              full acoustic performance - the choice is yours.
-            </p>
-            <div className="flex flex-wrap gap-4 mb-8">
-              <Button variant="default" size="lg">
-                Explore Hybrid Innovation
-              </Button>
-              <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-black">
-                Technology Demo
-              </Button>
-            </div>
-            <div className="grid md:grid-cols-3 gap-6 text-center">
-              <div>
-                <div className="text-3xl font-bold text-indigo-400">4</div>
-                <div className="text-gray-300">Hybrid Models</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-indigo-400">2</div>
-                <div className="text-gray-300">Revolutionary Series</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-indigo-400">100%</div>
-                <div className="text-gray-300">Silent Practice</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <CategoryHero
+        category="Hybrid Pianos"
+        title="Revolutionary Innovation"
+        description="Experience groundbreaking instruments that combine authentic acoustic piano action with cutting-edge digital technology. Practice silently with headphones or enjoy full acoustic performance – the choice is yours."
+        backgroundImage="/images/banners/NV10S-hybrid-styling.webp"
+        stats={[
+          { label: "Hybrid Models", value: "4" },
+          { label: "Revolutionary Series", value: "2" },
+          { label: "Silent Practice", value: "100%" }
+        ]}
+      />
 
-      {/* Hybrid Technology Benefits */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Why Choose Hybrid Piano Technology
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Hybrid pianos represent the ultimate evolution in piano technology, offering the authentic 
-              touch of acoustic instruments with the convenience and versatility of digital features.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {hybridFeatures.map((feature, index) => {
-              const Icon = feature.icon
-              return (
-                <div key={index} className="text-center">
-                  <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Icon className="h-8 w-8 text-indigo-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-                  <p className="text-gray-600">{feature.description}</p>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Piano Series */}
-      <section className="py-16 lg:py-24">
-        <div className="container mx-auto px-4">
-          {hybridPianoSeries.map((series) => (
-            <div key={series.name} className="mb-20">
-              <div className="text-center mb-12">
-                <div className="mb-4">
-                  <span className="bg-indigo-500 text-white px-4 py-2 rounded-full text-sm font-semibold">
-                    {series.badge}
-                  </span>
-                </div>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                  {series.name}
-                </h2>
-                <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-4">
-                  {series.description}
-                </p>
-                <div className="bg-indigo-50 border-l-4 border-indigo-400 p-4 max-w-md mx-auto">
-                  <p className="text-indigo-800 font-semibold">{series.highlight}</p>
-                </div>
-              </div>
-
-              <div className="space-y-16">
-                {series.models.map((piano, index) => (
-                  <div key={piano.slug} className={`flex flex-col lg:flex-row items-center gap-12 ${
-                    index % 2 === 1 ? 'lg:flex-row-reverse' : ''
-                  }`}>
-                    <div className="lg:w-1/2">
-                      <div className="aspect-[4/3] bg-gradient-to-br from-indigo-200 to-indigo-300 rounded-lg flex items-center justify-center relative overflow-hidden">
-                        <Award className="h-24 w-24 text-indigo-600" />
-                        {piano.badge && (
-                          <div className="absolute top-4 left-4">
-                            <span className="bg-indigo-500 text-white px-3 py-1.5 rounded-full text-sm font-semibold">
-                              {piano.badge}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="lg:w-1/2 space-y-6">
-                      <div>
-                        <h3 className="text-3xl font-bold text-gray-900 mb-2">{piano.name}</h3>
-                        <p className="text-lg text-indigo-600 font-semibold mb-4">{piano.size}</p>
-                        <p className="text-lg text-gray-600 mb-6">{piano.description}</p>
-                        
-                        <div className="flex items-center mb-6">
-                          <div className="flex">
-                            {[...Array(5)].map((_, i) => (
-                              <Star key={i} className={`h-5 w-5 ${i < Math.floor(piano.rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
-                            ))}
-                          </div>
-                          <span className="text-gray-600 ml-2">({piano.reviews} reviews)</span>
-                        </div>
-                      </div>
-
-                      <div>
-                        <h4 className="font-semibold text-gray-900 mb-3">Revolutionary Features:</h4>
-                        <div className="space-y-2">
-                          {piano.keyFeatures.slice(0, 5).map((feature, idx) => (
-                            <div key={idx} className="flex items-start">
-                              <span className="w-2 h-2 bg-indigo-400 rounded-full mr-3 mt-2 flex-shrink-0" />
-                              <span className="text-gray-600">{feature}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-                        <h4 className="font-semibold text-indigo-900 mb-2">Unique Innovation:</h4>
-                        <ul className="space-y-1">
-                          {piano.uniqueFeatures.slice(0, 3).map((feature, idx) => (
-                            <li key={idx} className="text-indigo-700 text-sm flex items-start">
-                              <Zap className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
-                              {feature}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-2xl font-bold text-gray-900">{piano.price}</p>
-                          <p className="text-sm text-gray-500">Professional installation included</p>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-3">
-                        <Button asChild className="flex-1">
-                          <Link href={`/pianos/hybrid/${piano.slug}`}>
-                            Learn More <ArrowRight className="ml-2 h-4 w-4" />
-                          </Link>
-                        </Button>
-                        <Button variant="outline" className="flex-1">
-                          Schedule Demo
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* Clean Series Browser */}
+      <CleanSeriesBrowser
+        title="Explore Hybrid Piano Series"
+        description="Experience groundbreaking instruments that seamlessly blend authentic acoustic piano action with cutting-edge digital technology."
+        series={hybridPianoSeries}
+        categorySlug="hybrid"
+      />
 
       {/* Innovation Showcase */}
-      <section className="py-16 lg:py-24 bg-gradient-to-br from-indigo-900 to-purple-900 text-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              The Future of Piano Technology
-            </h2>
-            <p className="text-xl text-gray-300 mb-12">
-              Kawai hybrid pianos represent decades of innovation, combining traditional 
-              piano craftsmanship with cutting-edge digital technology for an unparalleled musical experience.
-            </p>
-            
-            <div className="grid md:grid-cols-2 gap-8 mb-12">
-              <div className="text-center">
-                <div className="w-20 h-20 bg-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Piano className="h-10 w-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold mb-3 text-indigo-400">Authentic Touch</h3>
-                <p className="text-gray-300">
-                  Real acoustic piano actions and mechanisms provide the authentic feel 
-                  musicians demand, with advanced sensor technology for digital integration.
-                </p>
+      <section className="py-16 lg:py-24 bg-gradient-to-br from-kawai-black to-kawai-neutral text-kawai-pearl">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
+            The Future of Piano Technology
+          </h2>
+          <p className="text-xl md:text-2xl leading-relaxed text-kawai-pearl/80 mb-12">
+            Kawai hybrid pianos represent decades of innovation, combining traditional piano craftsmanship with cutting-edge digital technology for an unparalleled musical experience.
+          </p>
+          
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            <div className="text-center">
+              <div className="w-20 h-20 bg-kawai-red rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="h-10 w-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
               </div>
-              <div className="text-center">
-                <div className="w-20 h-20 bg-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Volume2 className="h-10 w-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold mb-3 text-indigo-400">Versatile Performance</h3>
-                <p className="text-gray-300">
-                  Switch instantly between acoustic and silent modes, record performances, 
-                  and access premium digital sounds while maintaining authentic piano touch.
-                </p>
-              </div>
+              <h3 className="text-xl font-bold mb-3 text-kawai-red">Authentic Touch</h3>
+              <p className="text-kawai-pearl/80">
+                Real acoustic piano actions and mechanisms provide the authentic feel musicians demand, with advanced sensor technology for digital integration.
+              </p>
             </div>
-
-            <Button variant="default" size="lg">
-              Experience Hybrid Innovation <Award className="ml-2 h-5 w-5" />
-            </Button>
+            <div className="text-center">
+              <div className="w-20 h-20 bg-kawai-red rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="h-10 w-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-kawai-red">Silent Practice Mode</h3>
+              <p className="text-kawai-pearl/80">
+                Practice anytime with headphones while maintaining the authentic feel of an acoustic piano action mechanism.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-20 h-20 bg-kawai-red rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="h-10 w-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-kawai-red">Hybrid Technology</h3>
+              <p className="text-kawai-pearl/80">
+                Seamlessly switch between acoustic and digital modes, combining the best of both worlds in one remarkable instrument.
+              </p>
+            </div>
           </div>
+
+          <a
+            href="/technology/hybrid"
+            className="inline-flex items-center px-8 py-4 bg-kawai-red hover:bg-kawai-red/80 text-white font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"
+          >
+            <span>Explore Hybrid Technology</span>
+            <svg
+              className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </a>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 lg:py-24 bg-indigo-50">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Experience Revolutionary Hybrid Technology
+      {/* Benefits Section */}
+      <section className="py-16 lg:py-24 bg-kawai-pearl">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-kawai-black mb-6">
+            Best of Both Worlds
           </h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Visit our showroom to experience the remarkable innovation of Kawai hybrid pianos. 
-            Feel the authentic action and discover the versatility that's changing the piano world.
+          <p className="text-xl md:text-2xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto mb-12">
+            Hybrid pianos offer unprecedented versatility, allowing you to enjoy authentic acoustic piano performance and silent digital practice in one remarkable instrument.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="default" asChild>
-              <Link href="/contact/schedule-demo">
-                Schedule Technology Demo <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link href="/technology/hybrid">Learn More About Hybrid Tech</Link>
-            </Button>
+          
+          <div className="grid md:grid-cols-2 gap-12 mb-12">
+            <div className="text-center">
+              <div className="w-24 h-24 bg-kawai-red/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="h-12 w-12 text-kawai-red" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 6L12 10.5 8.5 8 12 5.5 15.5 8zM8.5 16L12 13.5 15.5 16 12 18.5 8.5 16z"/>
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-kawai-black mb-3">Acoustic Performance</h3>
+              <p className="text-kawai-black/70">
+                Experience the full richness and resonance of an acoustic piano with traditional soundboard, strings, and hammers when you want authentic acoustic sound.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-24 h-24 bg-kawai-red/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="h-12 w-12 text-kawai-red" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-kawai-black mb-3">Silent Practice</h3>
+              <p className="text-kawai-black/70">
+                Switch to silent mode for practice with headphones using premium digital sounds, recording capabilities, and educational features – perfect for any time of day.
+              </p>
+            </div>
           </div>
+
+          <a
+            href="#featured-products"
+            className="inline-flex items-center px-8 py-4 bg-kawai-black hover:bg-kawai-black/80 text-kawai-pearl font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"
+          >
+            <span>Discover Hybrid Models</span>
+            <svg
+              className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </a>
+        </div>
+      </section>
+
+      {/* Call to Action */}
+      <section className="py-16 lg:py-24 bg-kawai-pearl text-center">
+        <div className="max-w-4xl mx-auto px-6">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-kawai-black mb-6">
+            Experience Revolutionary Innovation
+          </h2>
+          <p className="text-xl md:text-2xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto mb-12">
+            Visit our showroom to experience the remarkable innovation of Kawai hybrid pianos. Feel the authentic action and discover the versatility that's changing the piano world.
+          </p>
+          
+          <a
+            href="/showroom"
+            className="inline-flex items-center px-8 py-4 bg-kawai-black hover:bg-kawai-black/80 text-kawai-pearl font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"
+          >
+            <span>Schedule Technology Demo</span>
+            <svg
+              className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </a>
         </div>
       </section>
     </div>
-  )
+  );
 }
