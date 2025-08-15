@@ -10,7 +10,7 @@ interface UseScrollAnimationOptions {
 
 interface AnimationState {
   isVisible: boolean;
-  ref: React.RefObject<HTMLElement>;
+  ref: React.RefObject<HTMLElement | null>;
 }
 
 export function useScrollAnimation(options: UseScrollAnimationOptions = {}): AnimationState {
