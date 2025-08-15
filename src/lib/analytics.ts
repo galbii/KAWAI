@@ -1,8 +1,10 @@
 // Analytics tracking infrastructure for piano interest and user journey
 
+import type { Piano, AnalyticsProperties, SearchFilters, RecommendationCriteria, FacebookPixelFunction } from './types'
+
 export interface AnalyticsEvent {
   name: string
-  properties?: Record<string, any>
+  properties?: AnalyticsProperties
   userId?: string
   sessionId?: string
   timestamp?: Date
@@ -28,12 +30,12 @@ export interface UserJourneyEvent extends AnalyticsEvent {
 export interface SearchEvent extends AnalyticsEvent {
   query: string
   resultsCount: number
-  filters?: Record<string, any>
+  filters?: SearchFilters
   selectedResult?: string
 }
 
 export interface RecommendationEvent extends AnalyticsEvent {
-  criteria: Record<string, any>
+  criteria: RecommendationCriteria
   recommendedPianos: string[]
   selectedPiano?: string
 }
@@ -85,12 +87,20 @@ export class KawaiAnalytics {
 
   private initializeFBPixel(pixelId: string): void {
     // Facebook Pixel initialization
-    const fbq = function(...args: any[]) {
-      (window as any).fbq = (window as any).fbq || {}
-      ;(window as any).fbq.callMethod ? (window as any).fbq.callMethod.apply((window as any).fbq, args) : (window as any).fbq.queue.push(args)
+    const fbq: FacebookPixelFunction = function(...args: unknown[]) {
+      const currentFbq = window.fbq as FacebookPixelFunction | undefined
+      if (currentFbq?.callMethod) {
+        currentFbq.callMethod(...args)
+      } else {
+        const fbqWithQueue = window.fbq as FacebookPixelFunction | undefined
+        if (!fbqWithQueue?.queue) {
+          (window.fbq as FacebookPixelFunction).queue = []
+        }
+        ;(window.fbq as FacebookPixelFunction).queue?.push(args)
+      }
     }
     
-    if (!(window as any).fbq) (window as any).fbq = fbq
+    if (!window.fbq) window.fbq = fbq
     fbq('init', pixelId)
     fbq('track', 'PageView')
   }
@@ -100,7 +110,7 @@ export class KawaiAnalytics {
   }
 
   // Piano Interaction Tracking
-  trackPianoView(piano: any): void {
+  trackPianoView(piano: Piano): void {
     const event: PianoInteractionEvent = {
       name: 'piano_view',
       pianoId: piano.id,
@@ -150,7 +160,7 @@ export class KawaiAnalytics {
     }
   }
 
-  trackPianoComparison(pianos: any[]): void {
+  trackPianoComparison(pianos: Piano[]): void {
     const event: AnalyticsEvent = {
       name: 'piano_comparison',
       properties: {
@@ -178,7 +188,7 @@ export class KawaiAnalytics {
     }
   }
 
-  trackPianoInquiry(piano: any, inquiryType: 'contact' | 'quote' | 'demo' | 'availability'): void {
+  trackPianoInquiry(piano: Piano, inquiryType: 'contact' | 'quote' | 'demo' | 'availability'): void {
     const event: PianoInteractionEvent = {
       name: 'piano_inquiry',
       pianoId: piano.id,
@@ -218,7 +228,7 @@ export class KawaiAnalytics {
     }
   }
 
-  trackAudioPlay(piano: any, audioTitle: string, duration?: number): void {
+  trackAudioPlay(piano: Piano, audioTitle: string, duration?: number): void {
     const event: PianoInteractionEvent = {
       name: 'audio_play',
       pianoId: piano.id,
@@ -247,7 +257,7 @@ export class KawaiAnalytics {
     }
   }
 
-  trackVideoPlay(piano: any, videoTitle: string, duration?: number): void {
+  trackVideoPlay(piano: Piano, videoTitle: string, duration?: number): void {
     const event: PianoInteractionEvent = {
       name: 'video_play',
       pianoId: piano.id,
@@ -277,7 +287,7 @@ export class KawaiAnalytics {
   }
 
   // Search Tracking
-  trackSearch(query: string, resultsCount: number, filters?: Record<string, any>): void {
+  trackSearch(query: string, resultsCount: number, filters?: SearchFilters): void {
     const event: SearchEvent = {
       name: 'piano_search',
       query: query,
@@ -329,7 +339,7 @@ export class KawaiAnalytics {
   }
 
   // User Journey Tracking
-  trackUserJourney(step: string, properties?: Record<string, any>): void {
+  trackUserJourney(step: string, properties?: AnalyticsProperties): void {
     const event: UserJourneyEvent = {
       name: 'user_journey',
       step: step,
@@ -350,7 +360,7 @@ export class KawaiAnalytics {
     }
   }
 
-  trackRecommendationView(criteria: Record<string, any>, recommendedPianos: string[]): void {
+  trackRecommendationView(criteria: RecommendationCriteria, recommendedPianos: string[]): void {
     const event: RecommendationEvent = {
       name: 'recommendation_view',
       criteria: criteria,
@@ -429,7 +439,7 @@ export class KawaiAnalytics {
     }
   }
 
-  trackBrochureDownload(piano: any): void {
+  trackBrochureDownload(piano: Piano): void {
     const event: PianoInteractionEvent = {
       name: 'brochure_download',
       pianoId: piano.id,
@@ -542,7 +552,7 @@ export class ConversionFunnel {
     this.analytics = analytics
   }
 
-  trackStep(step: string, properties?: Record<string, any>): void {
+  trackStep(step: string, properties?: AnalyticsProperties): void {
     this.analytics.trackUserJourney(step, {
       funnel_step: step,
       funnel_position: this.funnelSteps.indexOf(step) + 1,
@@ -612,11 +622,3 @@ export function initializeAnalytics(config: {
   return analytics
 }
 
-// Declare global types for TypeScript
-declare global {
-  interface Window {
-    dataLayer: any[]
-    gtag: Function
-    fbq: Function
-  }
-}

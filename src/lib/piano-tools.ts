@@ -1,5 +1,7 @@
 // Piano comparison, filtering, and selection tools
 
+import type { Piano, Finish, RecommendationCriteria } from './types'
+
 export interface PianoFilter {
   type?: string[]
   series?: string[]
@@ -20,10 +22,10 @@ export interface ComparisonPiano {
   type: string
   price: number
   image: string
-  specifications: Record<string, any>
+  specifications: Record<string, unknown>
   features: string[]
-  awards: any[]
-  innovations: any[]
+  awards: Array<{ id: string; name: string; year?: number; organization?: string }>
+  innovations: Array<{ id: string; innovation?: { name: string; description: string } }>
   score?: number
 }
 
@@ -45,14 +47,14 @@ export interface FilterGroup {
 }
 
 export class PianoFilterEngine {
-  private pianos: any[]
+  private pianos: Piano[]
   private filters: PianoFilter = {}
 
-  constructor(pianos: any[]) {
+  constructor(pianos: Piano[]) {
     this.pianos = pianos
   }
 
-  setFilter(key: keyof PianoFilter, value: any): this {
+  setFilter<K extends keyof PianoFilter>(key: K, value: PianoFilter[K]): this {
     this.filters[key] = value
     return this
   }
@@ -71,7 +73,7 @@ export class PianoFilterEngine {
     return { ...this.filters }
   }
 
-  apply(): any[] {
+  apply(): Piano[] {
     return this.pianos.filter(piano => {
       // Type filter
       if (this.filters.type && this.filters.type.length > 0) {
@@ -80,7 +82,7 @@ export class PianoFilterEngine {
 
       // Series filter
       if (this.filters.series && this.filters.series.length > 0) {
-        if (!this.filters.series.includes(piano.series?.slug)) return false
+        if (!piano.series?.slug || !this.filters.series.includes(piano.series.slug)) return false
       }
 
       // Price range filter
@@ -94,12 +96,12 @@ export class PianoFilterEngine {
 
       // Keys filter
       if (this.filters.keys && this.filters.keys.length > 0) {
-        if (!this.filters.keys.includes(piano.specifications?.keys)) return false
+        if (!piano.specifications?.keys || !this.filters.keys.includes(piano.specifications.keys)) return false
       }
 
       // Finishes filter
       if (this.filters.finishes && this.filters.finishes.length > 0) {
-        const pianoFinishes = piano.specifications?.finishes?.map((f: any) => f.finish) || []
+        const pianoFinishes = piano.specifications?.finishes?.map((f: Finish) => f.finish) || []
         if (!this.filters.finishes.some(finish => pianoFinishes.includes(finish))) return false
       }
 
@@ -111,7 +113,7 @@ export class PianoFilterEngine {
 
       // Status filter
       if (this.filters.status && this.filters.status.length > 0) {
-        if (!this.filters.status.includes(piano.status)) return false
+        if (!piano.status || !this.filters.status.includes(piano.status)) return false
       }
 
       // Pre-owned filter
@@ -121,7 +123,7 @@ export class PianoFilterEngine {
 
       // Availability filter
       if (this.filters.availability && this.filters.availability.length > 0) {
-        const pianoAvailability = piano.availabilityRegions?.map((r: any) => r.availability) || []
+        const pianoAvailability = piano.availabilityRegions?.map(r => r.availability) || []
         if (!this.filters.availability.some(avail => pianoAvailability.includes(avail))) return false
       }
 
@@ -180,39 +182,42 @@ export class PianoFilterEngine {
   }
 
   private generateOptions(
-    allPianos: any[], 
-    field: string | ((piano: any) => any),
-    filteredPianos: any[],
-    valueField?: string | ((piano: any) => any)
+    allPianos: Piano[], 
+    field: string | ((piano: Piano) => unknown),
+    filteredPianos: Piano[],
+    valueField?: string | ((piano: Piano) => unknown)
   ): FilterOption[] {
     const getValue = typeof field === 'function' ? field : (piano: any) => this.getNestedValue(piano, field)
     const getValueForOption = valueField 
-      ? (typeof valueField === 'function' ? valueField : (piano: any) => this.getNestedValue(piano, valueField))
+      ? (typeof valueField === 'function' ? valueField : (piano: Piano) => this.getNestedValue(piano, valueField))
       : getValue
 
     const allValues = [...new Set(allPianos.map(getValue).filter(Boolean))]
     const filteredValues = new Set(filteredPianos.map(getValue).filter(Boolean))
 
-    return allValues.map(value => ({
-      label: this.formatOptionLabel(value),
-      value: getValueForOption(allPianos.find(p => getValue(p) === value)),
-      count: filteredPianos.filter(p => getValue(p) === value).length,
-      disabled: !filteredValues.has(value)
-    }))
+    return allValues.map(value => {
+      const foundPiano = allPianos.find(p => getValue(p) === value)
+      return {
+        label: this.formatOptionLabel(value),
+        value: String(foundPiano ? getValueForOption(foundPiano) : value),
+        count: filteredPianos.filter(p => getValue(p) === value).length,
+        disabled: !filteredValues.has(value)
+      }
+    })
   }
 
-  private generateFinishOptions(filteredPianos: any[]): FilterOption[] {
+  private generateFinishOptions(filteredPianos: Piano[]): FilterOption[] {
     const allFinishes = new Set<string>()
     const filteredFinishes = new Set<string>()
 
     this.pianos.forEach(piano => {
-      piano.specifications?.finishes?.forEach((f: any) => {
+      piano.specifications?.finishes?.forEach((f: Finish) => {
         allFinishes.add(f.finish)
       })
     })
 
     filteredPianos.forEach(piano => {
-      piano.specifications?.finishes?.forEach((f: any) => {
+      piano.specifications?.finishes?.forEach((f: Finish) => {
         filteredFinishes.add(f.finish)
       })
     })
@@ -221,17 +226,17 @@ export class PianoFilterEngine {
       label: finish,
       value: finish,
       count: filteredPianos.filter(p => 
-        p.specifications?.finishes?.some((f: any) => f.finish === finish)
+        p.specifications?.finishes?.some((f: Finish) => f.finish === finish)
       ).length,
       disabled: !filteredFinishes.has(finish)
     }))
   }
 
-  private getNestedValue(obj: any, path: string): any {
-    return path.split('.').reduce((current, key) => current?.[key], obj)
+  private getNestedValue(obj: unknown, path: string): unknown {
+    return path.split('.').reduce((current: any, key) => current?.[key], obj)
   }
 
-  private formatOptionLabel(value: any): string {
+  private formatOptionLabel(value: unknown): string {
     if (typeof value === 'string') {
       return value.charAt(0).toUpperCase() + value.slice(1).replace('-', ' ')
     }
@@ -241,15 +246,15 @@ export class PianoFilterEngine {
   private getMinPrice(): number {
     const prices = this.pianos
       .map(p => p.pricing?.salePrice || p.pricing?.msrp)
-      .filter(Boolean)
-    return Math.min(...prices, 0)
+      .filter((price): price is number => Boolean(price))
+    return prices.length > 0 ? Math.min(...prices) : 0
   }
 
   private getMaxPrice(): number {
     const prices = this.pianos
       .map(p => p.pricing?.salePrice || p.pricing?.msrp)
-      .filter(Boolean)
-    return Math.max(...prices, 100000)
+      .filter((price): price is number => Boolean(price))
+    return prices.length > 0 ? Math.max(...prices) : 100000
   }
 }
 
@@ -323,7 +328,10 @@ export class PianoComparison {
       },
       ...specKeys.map(key => ({
         label: this.formatSpecLabel(key),
-        values: this.pianos.map(p => p.specifications[key] || 'N/A')
+        values: this.pianos.map(p => {
+          const value = p.specifications[key]
+          return value !== undefined ? String(value) : 'N/A'
+        })
       }))
     ]
 
@@ -354,19 +362,13 @@ export class PianoComparison {
 }
 
 export class PianoRecommendationEngine {
-  private pianos: any[]
+  private pianos: Piano[]
 
-  constructor(pianos: any[]) {
+  constructor(pianos: Piano[]) {
     this.pianos = pianos
   }
 
-  recommend(criteria: {
-    budget?: number
-    experience?: 'beginner' | 'intermediate' | 'advanced' | 'professional'
-    usage?: 'practice' | 'performance' | 'recording' | 'teaching'
-    space?: 'apartment' | 'house' | 'studio' | 'concert-hall'
-    preferences?: string[]
-  }): any[] {
+  recommend(criteria: RecommendationCriteria): Piano[] {
     return this.pianos
       .map(piano => ({
         ...piano,
@@ -377,7 +379,7 @@ export class PianoRecommendationEngine {
       .slice(0, 6)
   }
 
-  private calculateScore(piano: any, criteria: any): number {
+  private calculateScore(piano: Piano, criteria: RecommendationCriteria): number {
     let score = 50 // Base score
 
     // Budget scoring
@@ -421,7 +423,7 @@ export class PianoRecommendationEngine {
     return Math.max(0, score)
   }
 
-  private getExperienceScores(piano: any, experience: string): number {
+  private getExperienceScores(piano: Piano, experience: string): number {
     const typeScores = {
       beginner: {
         digital: 15,
@@ -456,7 +458,7 @@ export class PianoRecommendationEngine {
     return typeScores[experience as keyof typeof typeScores]?.[piano.pianoType as keyof typeof typeScores.beginner] || 0
   }
 
-  private getUsageScores(piano: any, usage: string): number {
+  private getUsageScores(piano: Piano, usage: string): number {
     const usageScores = {
       practice: {
         digital: 15,
@@ -491,7 +493,7 @@ export class PianoRecommendationEngine {
     return usageScores[usage as keyof typeof usageScores]?.[piano.pianoType as keyof typeof usageScores.practice] || 0
   }
 
-  private getSpaceScores(piano: any, space: string): number {
+  private getSpaceScores(piano: Piano, space: string): number {
     const spaceScores = {
       apartment: {
         digital: 20,
@@ -526,13 +528,13 @@ export class PianoRecommendationEngine {
     return spaceScores[space as keyof typeof spaceScores]?.[piano.pianoType as keyof typeof spaceScores.apartment] || 0
   }
 
-  private getPreferenceScores(piano: any, preferences: string[]): number {
+  private getPreferenceScores(piano: Piano, preferences: string[]): number {
     let score = 0
     
     preferences.forEach(preference => {
       if (piano.features?.includes(preference)) score += 5
       if (piano.series?.name?.toLowerCase().includes(preference.toLowerCase())) score += 8
-      if (piano.innovations?.some((i: any) => i.innovation?.name?.toLowerCase().includes(preference.toLowerCase()))) score += 10
+      if (piano.innovations?.some(i => i.innovation?.name?.toLowerCase().includes(preference.toLowerCase()))) score += 10
     })
 
     return score

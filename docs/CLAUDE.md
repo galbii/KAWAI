@@ -8,7 +8,7 @@ This is a **Kawai Piano website** built with Next.js 15, Payload CMS v3, and Tai
 
 ## Development Commands
 
-**This project uses Bun as the primary package manager and runtime.**
+**This project uses Bun as the primary package manager and runtime. NEVER use npm or yarn commands.**
 
 **IMPORTANT: Do not start development servers (`bun run dev`) or run builds (`bun run build`) unless explicitly asked by the user.**
 
@@ -52,7 +52,7 @@ bun ci
 - **Payload CMS v3** for content management
 - **MongoDB** as the database (via Mongoose adapter)
 - **Tailwind CSS v4** for styling
-- **TypeScript** for type safety
+- **TypeScript 5** for comprehensive type safety
 - **Bun** as package manager and runtime (not npm)
 
 ### Project Structure
@@ -118,6 +118,21 @@ Payload CMS manages the following content types:
 - API routes at `/api`
 - Database connection via `DATABASE_URI` environment variable
 - Media uploads handled by Sharp
+- **TypeScript Types**: Payload generates types automatically to `types/payload-types.ts`
+
+### TypeScript Architecture
+
+**Type Organization:**
+- **Custom Types**: Centralized in `src/lib/types.ts` with comprehensive interfaces
+- **Payload Types**: Auto-generated to `types/payload-types.ts` (configured in `payload.config.ts`)
+- **Component Types**: Inline types for component props using Next.js and React types
+- **API Types**: Server action and route handler types using Next.js Request/Response types
+
+**Key Type Definitions:**
+- `Piano`, `Series`, `Category`, `Media` - Core content types
+- `FilterCriteria`, `SearchFilters` - Search and filtering interfaces  
+- `StructuredData` - SEO and schema markup types
+- Global window extensions for analytics (GTM, Facebook Pixel)
 
 ### Design System
 
@@ -171,8 +186,11 @@ DATABASE_URI=mongodb://localhost:27017/kawai-piano
 
 ## Development Guidelines
 
-### Bun Best Practices
+### Bun Best Practices - CRITICAL
+- **NEVER use npm or yarn commands** - this project exclusively uses Bun
 - **Use `bun run` prefix** for all script execution instead of npm/yarn
+- **Use `bun add`** instead of `npm install` for adding packages
+- **Use `bun install`** instead of `npm install` for installing dependencies
 - **Prefer `bun ci`** in CI/CD environments for reproducible builds
 - **Use `bun add -d`** for development dependencies (shorter than `--dev`)
 - **Trust packages when needed** with `bun pm trust <package>` for lifecycle scripts
@@ -180,6 +198,17 @@ DATABASE_URI=mongodb://localhost:27017/kawai-piano
 - **Use absolute paths** in file operations when working with Bun APIs
 - **Leverage Bun's speed** - installs are significantly faster than npm/yarn
 - **IMPORTANT: Only run `bun run dev` or `bun run build` when explicitly requested by the user**
+
+### TypeScript Best Practices - CRITICAL
+- **Maintain Strict Type Safety**: Always use proper TypeScript types, never use `any`
+- **Use Project Type Definitions**: Import types from `src/lib/types.ts` for consistency
+- **Path Aliases**: Use `@/` for absolute imports (configured in `tsconfig.json`)
+- **Component Props**: Always type component props using interfaces or type aliases
+- **Payload Types**: Import generated Payload types from `types/payload-types.ts` when available
+- **Next.js Types**: Use official Next.js types for pages, API routes, and configuration
+- **Type-Only Imports**: Use `import type` for type-only imports to optimize bundles
+- **Strict Configuration**: Never modify `tsconfig.json` strict settings or disable type checking
+- **Performance**: Leverage `skipLibCheck: true` for faster compilation (already configured)
 
 ### Component Organization
 - Place piano-specific components in `src/components/piano/`
@@ -191,24 +220,32 @@ DATABASE_URI=mongodb://localhost:27017/kawai-piano
 - Functions include price formatting, piano model formatting, search/filter logic
 - Use existing utilities before creating new ones
 
+### TypeScript Development Workflow
+- **Type Checking**: Use `bun run lint` to check for TypeScript errors
+- **Auto-completion**: Leverage IDE TypeScript integration for better DX
+- **Type Generation**: Payload CMS types are auto-generated on build
+- **Import Organization**: Use `@/` path aliases for clean imports
+- **Type Safety**: All API endpoints, components, and utilities should be fully typed
+
 ### Content Management
 - All content should be manageable via Payload admin
 - Use relationships between collections (piano → series → category)
 - Media assets should be uploaded through the CMS
+- **Type Safety**: Use generated Payload types for all CMS data operations
 
 ### SEO and Performance
-- All pages include comprehensive metadata
+- All pages include comprehensive metadata using Next.js typed metadata API
 - Images are optimized using Sharp
-- Use Next.js Image component for all media
-- Implement proper semantic HTML structure
+- Use Next.js Image component for all media with proper TypeScript props
+- Implement proper semantic HTML structure with TypeScript JSX types
 
 ## Common Tasks
 
-### Package Management with Bun
+### Package Management with Bun (NOT npm/yarn)
 ```bash
-# Add packages faster than npm/yarn
-bun add react-query              # Production dependency
-bun add -d @types/node          # Development dependency
+# ALWAYS use Bun commands - NEVER npm or yarn
+bun add react-query              # Production dependency (NOT npm install)
+bun add -d @types/node          # Development dependency (NOT npm install --save-dev)
 bun add react@18.2.0            # Specific version
 bun add git+ssh://git@github.com/owner/repo.git  # Git dependency
 
@@ -223,14 +260,34 @@ bun update react               # Update specific package
 # Package management utilities
 bun pm trust <package>         # Trust package for lifecycle scripts
 bun pm version patch          # Bump version and create git tag
+
+# INCORRECT COMMANDS - DO NOT USE:
+# npm install                   # ❌ Use "bun install" instead
+# npm run dev                   # ❌ Use "bun run dev" instead
+# yarn add                      # ❌ Use "bun add" instead
+```
+
+### TypeScript Development Tasks
+```bash
+# Type checking and linting
+bun run lint                    # Runs ESLint with TypeScript rules
+
+# Adding typed dependencies
+bun add @types/package-name -d  # Add TypeScript type definitions
+bun add zod                     # Add runtime type validation library
+
+# Generating Payload types
+# Types are auto-generated during build process to types/payload-types.ts
+# Manual generation (if needed): bun run payload generate:types
 ```
 
 ### Adding New Piano Models
 1. Use Payload admin to create new piano entry
-2. Associate with appropriate series and category
+2. Associate with appropriate series and category using typed relationships
 3. Upload media assets (images, brochures, audio)
-4. Define specifications and features
-5. Set pricing and availability
+4. Define specifications and features with proper TypeScript interfaces
+5. Set pricing and availability using typed fields
+6. **Type Safety**: Use `Piano` interface from `src/lib/types.ts` for consistency
 
 ### Modifying Design System
 - Update brand colors in `src/app/globals.css`
@@ -239,9 +296,43 @@ bun pm version patch          # Bump version and create git tag
 - Use existing Kawai utility classes (`kawai-red`, `kawai-heading`, etc.)
 
 ### Adding New Collections
-1. Create collection file in `src/collections/`
-2. Import and register in `payload.config.ts`
-3. Generate TypeScript types with Payload
+1. Create collection file in `src/collections/` with proper TypeScript interfaces
+2. Import and register in `payload.config.ts` 
+3. Generate TypeScript types with Payload (automatic on build)
+4. **Type Safety**: Define custom interfaces in `src/lib/types.ts` for additional type safety
+5. Use generated Payload types for database operations
+
+### Creating New Components
+```tsx
+// Example: Properly typed React component
+import type { Piano } from '@/lib/types'
+import type { FC } from 'react'
+
+interface PianoCardProps {
+  piano: Piano
+  className?: string
+  onClick?: (pianoId: string) => void
+}
+
+const PianoCard: FC<PianoCardProps> = ({ piano, className, onClick }) => {
+  // Component implementation
+}
+
+export default PianoCard
+```
+
+### API Route Development
+```ts
+// Example: Typed Next.js API route
+import type { NextRequest } from 'next/server'
+import type { Piano } from '@/lib/types'
+
+export async function GET(request: NextRequest) {
+  // Properly typed API logic
+  const pianos: Piano[] = await fetchPianos()
+  return Response.json(pianos)
+}
+```
 
 ## Tailwind v4 Component Usage
 

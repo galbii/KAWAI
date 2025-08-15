@@ -3,7 +3,7 @@
 import { CategoryHero } from "@/components/piano/category-hero";
 import { UnifiedPianoSeries } from "@/components/piano/unified-piano-series";
 import { useScrollAnimation, fadeUpClass, slideInClass, scaleInClass } from "@/lib/hooks/useScrollAnimation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Featured digital pianos - highlighting the best from each series
 const featuredDigitalPianos = [

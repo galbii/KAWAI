@@ -1,5 +1,7 @@
 // SEO optimization utilities for Kawai piano website
 
+import type { Piano, Series, Artist, Technology, Location, StructuredData } from './types'
+
 export interface SEOData {
   title: string
   description: string
@@ -7,7 +9,7 @@ export interface SEOData {
   canonicalUrl?: string
   openGraph?: OpenGraphData
   twitter?: TwitterCardData
-  structuredData?: any
+  structuredData?: StructuredData
 }
 
 export interface OpenGraphData {
@@ -47,15 +49,15 @@ export const KAWAI_SEO_CONFIG = {
   ]
 } as const
 
-function generateSEOTitle(piano: any): string {
+function generateSEOTitle(piano: Piano): string {
   return `${piano.name} - ${piano.category?.name || 'Piano'} | Kawai Piano`
 }
 
-function generateSEODescription(piano: any): string {
+function generateSEODescription(piano: Piano): string {
   return `Discover the ${piano.name} by Kawai. ${piano.shortDescription || piano.description || 'Premium piano craftsmanship with exceptional sound quality.'} View specifications and pricing.`
 }
 
-function generateSEOKeywords(piano: any): string {
+function generateSEOKeywords(piano: Piano): string {
   const keywords = [
     ...KAWAI_SEO_CONFIG.brandKeywords,
     piano.name,
@@ -69,7 +71,7 @@ function generateSEOKeywords(piano: any): string {
   return keywords.join(', ')
 }
 
-export function generatePianoSEO(piano: any): SEOData {
+export function generatePianoSEO(piano: Piano): SEOData {
   const title = generateSEOTitle(piano)
   const description = generateSEODescription(piano)
   const keywords = generateSEOKeywords(piano)
@@ -100,7 +102,7 @@ export function generatePianoSEO(piano: any): SEOData {
   }
 }
 
-export function generateSeriesSEO(series: any): SEOData {
+export function generateSeriesSEO(series: Series): SEOData {
   const title = `${series.name} - Premium Piano Series | Kawai Piano`
   const description = `Explore the ${series.name} piano series by Kawai. ${series.shortDescription || 'Exceptional craftsmanship and innovative technology.'} View models and specifications.`
   const keywords = [
@@ -139,7 +141,7 @@ export function generateSeriesSEO(series: any): SEOData {
   }
 }
 
-export function generateArtistSEO(artist: any): SEOData {
+export function generateArtistSEO(artist: Artist): SEOData {
   const title = `${artist.name} - Kawai Artist | ${artist.category.replace('-', ' ')}`
   const description = `Meet ${artist.name}, a renowned ${artist.category.replace('-', ' ')} and Kawai piano artist. ${artist.shortBio || 'Discover their musical journey and performances on Kawai pianos.'}`
   const keywords = [
@@ -179,7 +181,7 @@ export function generateArtistSEO(artist: any): SEOData {
   }
 }
 
-export function generateTechnologySEO(technology: any): SEOData {
+export function generateTechnologySEO(technology: Technology): SEOData {
   const title = `${technology.name} - Piano Innovation | Kawai Technology`
   const description = `Learn about ${technology.name}, an innovative piano technology by Kawai. ${technology.shortDescription} Discover how it enhances piano performance.`
   const keywords = [
@@ -219,7 +221,7 @@ export function generateTechnologySEO(technology: any): SEOData {
 }
 
 // Structured Data Generation
-export function generatePianoStructuredData(piano: any) {
+export function generatePianoStructuredData(piano: Piano): StructuredData {
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -255,7 +257,7 @@ export function generatePianoStructuredData(piano: any) {
   }
 }
 
-export function generateSeriesStructuredData(series: any) {
+export function generateSeriesStructuredData(series: Series): StructuredData {
   return {
     '@context': 'https://schema.org',
     '@type': 'ProductCollection',
@@ -273,7 +275,7 @@ export function generateSeriesStructuredData(series: any) {
   }
 }
 
-export function generateArtistStructuredData(artist: any) {
+export function generateArtistStructuredData(artist: Artist): StructuredData {
   return {
     '@context': 'https://schema.org',
     '@type': 'Person',
@@ -281,7 +283,7 @@ export function generateArtistStructuredData(artist: any) {
     jobTitle: artist.title || artist.category.replace('-', ' '),
     description: artist.biography,
     image: artist.media?.profileImage?.url,
-    sameAs: artist.contact?.socialMedia?.map((social: any) => social.url) || [],
+    sameAs: artist.contact?.socialMedia?.map(social => social.url) || [],
     affiliation: {
       '@type': 'Organization',
       name: 'Kawai Piano'
@@ -289,7 +291,7 @@ export function generateArtistStructuredData(artist: any) {
   }
 }
 
-export function generateTechnologyStructuredData(technology: any) {
+export function generateTechnologyStructuredData(technology: Technology): StructuredData {
   return {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -387,7 +389,7 @@ export function analyzeSEO(content: string, targetKeywords: string[]): {
   return { score, recommendations }
 }
 
-export function generateLocalBusinessStructuredData(location: any) {
+export function generateLocalBusinessStructuredData(location: Location): StructuredData {
   return {
     '@context': 'https://schema.org',
     '@type': 'MusicStore',
@@ -441,10 +443,10 @@ export const KAWAI_SEARCH_TERMS = {
 } as const
 
 export function generateSitemapData(collections: {
-  pianos: any[]
-  series: any[]
-  artists: any[]
-  technologies: any[]
+  pianos: Piano[]
+  series: Series[]
+  artists: Artist[]
+  technologies: Technology[]
 }) {
   const baseUrl = KAWAI_SEO_CONFIG.siteUrl
   const urls = []

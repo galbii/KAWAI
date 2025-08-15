@@ -19,7 +19,7 @@ const pianoModels: PianoModel[] = [
     model: "Grand",
     title: "Grand Pianos",
     description: "Professional acoustic grand pianos for concert halls, studios, and discerning homes. Experience the ultimate in touch, tone, and musical expression with instruments trusted by professional musicians worldwide.",
-    image: "/images/banners/SK-EX-grand-styling.webp",
+    image: "/images/piano-categories/grand.jpg",
     href: "/pianos/grand"
   },
   {
@@ -27,7 +27,7 @@ const pianoModels: PianoModel[] = [
     model: "Digital",
     title: "Digital Pianos",
     description: "Advanced digital pianos featuring realistic wooden-key actions and premium sound systems. Combining authentic acoustic piano experience with modern technology and convenient features for today's musicians.",
-    image: "/images/banners/CA901EP-bench-styling.webp", 
+    image: "/images/piano-categories/digital.png", 
     href: "/pianos/digital"
   },
   {
@@ -35,7 +35,7 @@ const pianoModels: PianoModel[] = [
     model: "Upright",
     title: "Upright Pianos",
     description: "Space-efficient acoustic pianos delivering exceptional touch and tone quality. Perfect for homes, studios, schools, and institutions where space is at a premium but musical excellence cannot be compromised.",
-    image: "/images/banners/K800-upright-styling.webp",
+    image: "/images/piano-categories/upright.png",
     href: "/pianos/upright"
   },
   {
@@ -43,7 +43,7 @@ const pianoModels: PianoModel[] = [
     model: "Hybrid",
     title: "Hybrid Pianos",
     description: "Revolutionary instruments combining real grand piano actions with advanced digital sound technology. Experience the authentic touch of acoustic keys with the versatility and innovation of digital sound.",
-    image: "/images/banners/NV10S-hybrid-styling.webp",
+    image: "/images/piano-categories/hybrid.jpg",
     href: "/pianos/hybrid"
   }
 ];

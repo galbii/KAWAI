@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import type { Piano, FilterCriteria, Finish } from './types'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -50,12 +51,12 @@ export function formatWeight(weight: string, unit: string = 'lbs'): string {
   return `${weight} ${unit}`
 }
 
-export function calculatePriceRange(pianos: any[]): { min: number; max: number } {
+export function calculatePriceRange(pianos: Piano[]): { min: number; max: number } {
   if (!pianos || pianos.length === 0) return { min: 0, max: 0 }
   
   const prices = pianos
     .map(piano => piano.pricing?.salePrice || piano.pricing?.msrp)
-    .filter(price => price && price > 0)
+    .filter((price): price is number => Boolean(price && price > 0))
   
   if (prices.length === 0) return { min: 0, max: 0 }
   
@@ -96,14 +97,7 @@ export function getSeriesLabel(seriesSlug: string): string {
   return seriesLabels[seriesSlug] || seriesSlug
 }
 
-export function filterPianosBySpecs(pianos: any[], filters: {
-  type?: string[]
-  series?: string[]
-  priceMin?: number
-  priceMax?: number
-  keys?: number[]
-  finishes?: string[]
-}): any[] {
+export function filterPianosBySpecs(pianos: Piano[], filters: FilterCriteria): Piano[] {
   return pianos.filter(piano => {
     // Filter by type
     if (filters.type && filters.type.length > 0) {
@@ -112,7 +106,7 @@ export function filterPianosBySpecs(pianos: any[], filters: {
     
     // Filter by series
     if (filters.series && filters.series.length > 0) {
-      if (!filters.series.includes(piano.series?.slug)) return false
+      if (!piano.series?.slug || !filters.series.includes(piano.series.slug)) return false
     }
     
     // Filter by price range
@@ -124,12 +118,12 @@ export function filterPianosBySpecs(pianos: any[], filters: {
     
     // Filter by number of keys
     if (filters.keys && filters.keys.length > 0) {
-      if (!filters.keys.includes(piano.specifications?.keys)) return false
+      if (!piano.specifications?.keys || !filters.keys.includes(piano.specifications.keys)) return false
     }
     
     // Filter by finishes
     if (filters.finishes && filters.finishes.length > 0) {
-      const pianoFinishes = piano.specifications?.finishes?.map((f: any) => f.finish) || []
+      const pianoFinishes = piano.specifications?.finishes?.map((f: Finish) => f.finish) || []
       if (!filters.finishes.some(finish => pianoFinishes.includes(finish))) return false
     }
     
@@ -137,7 +131,7 @@ export function filterPianosBySpecs(pianos: any[], filters: {
   })
 }
 
-export function sortPianos(pianos: any[], sortBy: 'name' | 'price-asc' | 'price-desc' | 'newest' | 'featured'): any[] {
+export function sortPianos(pianos: Piano[], sortBy: 'name' | 'price-asc' | 'price-desc' | 'newest' | 'featured'): Piano[] {
   const sorted = [...pianos]
   
   switch (sortBy) {
@@ -159,7 +153,11 @@ export function sortPianos(pianos: any[], sortBy: 'name' | 'price-asc' | 'price-
       })
     
     case 'newest':
-      return sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      return sorted.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+        return dateB - dateA
+      })
     
     case 'featured':
       return sorted.sort((a, b) => {
@@ -173,7 +171,28 @@ export function sortPianos(pianos: any[], sortBy: 'name' | 'price-asc' | 'price-
   }
 }
 
-export function generateComparisonData(pianos: any[]): any[] {
+export function generateComparisonData(pianos: Piano[]): Array<{
+  id: string
+  name: string
+  model: string
+  image?: import('./types').MediaItem
+  price?: number
+  type: string
+  series?: string
+  specs: {
+    keys?: number
+    pedals?: number
+    voices?: number
+    polyphony?: number
+    dimensions?: import('./types').Specifications['dimensions']
+    weight?: import('./types').Specifications['weight']
+    actionType?: string
+    soundEngine?: string
+  }
+  features: string[]
+  awards: import('./types').Award[]
+  innovations: import('./types').Innovation[]
+}> {
   return pianos.map(piano => ({
     id: piano.id,
     name: piano.name,
@@ -198,7 +217,10 @@ export function generateComparisonData(pianos: any[]): any[] {
   }))
 }
 
-export function generatePianoSearchIndex(pianos: any[]): any[] {
+export function generatePianoSearchIndex(pianos: Piano[]): Array<{
+  id: string
+  searchTerms: string
+}> {
   return pianos.map(piano => ({
     id: piano.id,
     searchTerms: [
@@ -208,14 +230,14 @@ export function generatePianoSearchIndex(pianos: any[]): any[] {
       piano.category?.name,
       piano.pianoType,
       ...(piano.features || []),
-      ...(piano.specifications?.finishes?.map((f: any) => f.finish) || []),
+      ...(piano.specifications?.finishes?.map((f: Finish) => f.finish) || []),
       piano.specifications?.actionType,
       piano.specifications?.soundEngine
     ].filter(Boolean).join(' ').toLowerCase()
   }))
 }
 
-export function searchPianos(pianos: any[], query: string): any[] {
+export function searchPianos(pianos: Piano[], query: string): Piano[] {
   if (!query.trim()) return pianos
   
   const searchIndex = generatePianoSearchIndex(pianos)
@@ -249,16 +271,16 @@ export function formatAudioDuration(seconds: number): string {
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
 }
 
-export function generateSEOTitle(piano: any): string {
+export function generateSEOTitle(piano: Piano): string {
   return `${piano.name} - ${piano.series?.name || 'Kawai Piano'} | Premium ${getPianoTypeLabel(piano.pianoType)}`
 }
 
-export function generateSEODescription(piano: any): string {
+export function generateSEODescription(piano: Piano): string {
   const features = piano.features?.slice(0, 3).join(', ') || 'Premium craftsmanship'
   return `Discover the ${piano.name} by Kawai. ${features}. Experience exceptional sound quality and performance. View specifications and pricing.`
 }
 
-export function generateSEOKeywords(piano: any): string {
+export function generateSEOKeywords(piano: Piano): string {
   const keywords = [
     'Kawai piano',
     piano.name,
