@@ -4,57 +4,24 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import sharp from 'sharp'
 import path from 'path'
 
-// Collections
+// Test with just Users collection first
 import { Users } from './src/collections/Users'
-import { Media } from './src/collections/Media'
-import { Pianos } from './src/collections/Pianos'
-import { PianoCategories } from './src/collections/PianoCategories'
-import { PianoSeries } from './src/collections/PianoSeries'
-import { Technologies } from './src/collections/Technologies'
-import { Artists } from './src/collections/Artists'
-import { Awards } from './src/collections/Awards'
-import { Heritage } from './src/collections/Heritage'
-import { Pages } from './src/collections/Pages'
-import { Posts } from './src/collections/Posts'
-import { Testimonials } from './src/collections/Testimonials'
-import { Services } from './src/collections/Services'
-import { Locations } from './src/collections/Locations'
 
-// Globals
-import { Header } from './src/globals/Header'
-import { Footer } from './src/globals/Footer'
-import { Settings } from './src/globals/Settings'
+console.log('Attempting to build config...')
 
-export default buildConfig({
+const config = buildConfig({
+  serverURL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+  debug: process.env.NODE_ENV === 'development',
   admin: {
     user: Users.slug,
     importMap: {
-      baseDir: path.resolve(process.cwd()),
+      baseDir: path.resolve(process.cwd(), 'src'),
     },
   },
-  collections: [
-    Users,
-    Media,
-    Pianos,
-    PianoCategories,
-    PianoSeries,
-    Technologies,
-    Artists,
-    Awards,
-    Heritage,
-    Pages,
-    Posts,
-    Testimonials,
-    Services,
-    Locations,
-  ],
-  globals: [
-    Header,
-    Footer,
-    Settings,
-  ],
+  collections: [Users],
+  globals: [],
   editor: lexicalEditor({}),
-  secret: process.env.PAYLOAD_SECRET || '',
+  secret: process.env.PAYLOAD_SECRET || 'fallback-secret-change-in-production',
   typescript: {
     outputFile: path.resolve(process.cwd(), 'types/payload-types.ts'),
   },
@@ -64,3 +31,10 @@ export default buildConfig({
   sharp,
   plugins: [],
 })
+
+console.log('buildConfig successful')
+console.log('Config keys after build:', Object.keys(config))
+console.log('Payload config - buildConfig result:', !!config)
+console.log('Payload config - config keys:', config ? Object.keys(config) : 'none')
+
+export default config

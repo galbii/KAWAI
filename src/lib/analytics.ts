@@ -74,7 +74,7 @@ export class KawaiAnalytics {
     // Initialize gtag
     window.dataLayer = window.dataLayer || []
     this.gtag = function() {
-      window.dataLayer.push(arguments)
+      window.dataLayer?.push(arguments)
     }
     this.gtag('js', new Date())
     this.gtag('config', gaId, {

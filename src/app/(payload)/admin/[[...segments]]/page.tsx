@@ -12,13 +12,20 @@ type Args = {
   searchParams: Promise<{ [key: string]: string | string[] }>
 }
 
-export const generateMetadata = ({ params, searchParams }: Args): Promise<Metadata> =>
-  generatePageMetadata({ config, params, searchParams })
+export const generateMetadata = async ({ params, searchParams }: Args): Promise<Metadata> => {
+  const resolvedConfig = await config
+  return generatePageMetadata({ config: resolvedConfig, params, searchParams })
+}
 
 const Page = async ({ params, searchParams }: Args) => {
   const resolvedConfig = await config
+  console.log('Admin page - resolvedConfig:', !!resolvedConfig)
+  console.log('Admin page - config keys:', resolvedConfig ? Object.keys(resolvedConfig) : 'none')
+  console.log('Admin page - serverURL:', resolvedConfig?.serverURL)
+  console.log('Admin page - admin config:', !!resolvedConfig?.admin)
+  
   return RootPage({ 
-    config, 
+    config: resolvedConfig, 
     importMap: resolvedConfig.admin?.importMap || { baseDir: process.cwd() },
     params, 
     searchParams 

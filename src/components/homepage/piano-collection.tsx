@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { YouTubeEmbed } from '@next/third-parties/google';
 
 export function PianoCollection() {
   return (
@@ -6,8 +7,8 @@ export function PianoCollection() {
       <div className="container mx-auto px-6 max-w-7xl">
         
         {/* Featured Pianos with Video */}
-        <div className="grid lg:grid-cols-5 gap-16 items-center">
-          <div className="lg:col-span-2 lg:pl-1">
+        <div className="grid lg:grid-cols-3 gap-16 items-center">
+          <div className="lg:col-span-1">
             <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-6">
               Featured Models
             </div>
@@ -29,15 +30,13 @@ export function PianoCollection() {
             </Link>
           </div>
           
-          {/* YouTube Video Embed - Takes 3/5 of the space */}
-          <div className="lg:col-span-3 relative">
-            <div className="aspect-video w-full">
-              <iframe
-                src="https://www.youtube.com/embed/1cmwb6evs2A"
-                title="Kawai Piano Showcase"
-                className="w-full h-full rounded-lg shadow-2xl"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
+          {/* YouTube Video Embed - Takes 2/3 of the space */}
+          <div className="lg:col-span-2 relative">
+            <div className="aspect-video w-full overflow-hidden">
+              <YouTubeEmbed 
+                videoid="1cmwb6evs2A" 
+                height={500}
+                width={800}
               />
             </div>
           </div>

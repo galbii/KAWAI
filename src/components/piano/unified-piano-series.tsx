@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
 import Image from "next/image";
+import { useKeenSlider } from "keen-slider/react";
+import "keen-slider/keen-slider.min.css";
 import {
   Tabs,
   TabsContent,
@@ -31,12 +33,11 @@ interface Series {
   pianos: Piano[];
 }
 
-interface CleanSeriesBrowserProps {
+interface UnifiedPianoSeriesProps {
   title: string;
   description: string;
   series: Series[];
   categorySlug: string;
-  onActiveSeriesChange?: (activeSeriesData: Series) => void;
 }
 
 interface SeriesCardProps {
@@ -48,7 +49,6 @@ interface SeriesCardProps {
 
 function SeriesCard({ series, index, categorySlug, isActive }: SeriesCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-
   const isEven = index % 2 === 0;
 
   return (
@@ -218,7 +218,6 @@ function SeriesCard({ series, index, categorySlug, isActive }: SeriesCardProps) 
                       priority={index === 0}
                     />
                   </motion.div>
-
                 </div>
               </motion.div>
             </div>
@@ -229,16 +228,71 @@ function SeriesCard({ series, index, categorySlug, isActive }: SeriesCardProps) 
   );
 }
 
-export function CleanSeriesBrowser({ 
+export function UnifiedPianoSeries({ 
   title, 
   description, 
   series, 
-  categorySlug,
-  onActiveSeriesChange
-}: CleanSeriesBrowserProps) {
+  categorySlug
+}: UnifiedPianoSeriesProps) {
   const [isTitleVisible, setIsTitleVisible] = useState(false);
   const [selectedTab, setSelectedTab] = useState(series[0]?.name.toLowerCase().replace(/\s+/g, '-') || '');
   const titleRef = useRef<HTMLDivElement>(null);
+  const animationRef = useRef<number | null>(null);
+
+  // Get current active series data
+  const activeSeriesData = series.find(s => 
+    s.name.toLowerCase().replace(/\s+/g, '-') === selectedTab
+  ) || series[0];
+
+  // Carousel setup with continuous scrolling
+  const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>(
+    {
+      loop: true,
+      drag: false,
+      slides: {
+        perView: "auto",
+        spacing: 0,
+      },
+      created(s) {
+        startSmoothScroll(s);
+      },
+      updated(s) {
+        startSmoothScroll(s);
+      },
+    }
+  );
+
+  const startSmoothScroll = (slider: any) => {
+    // Cancel any existing animation
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+    }
+    
+    const tryStart = () => {
+      if (!slider?.track?.details) {
+        // Retry if track details not ready yet
+        setTimeout(tryStart, 100);
+        return;
+      }
+      
+      const animate = () => {
+        if (slider.track && slider.track.details) {
+          // Use track.add() for relative movement - works better with loop
+          const increment = 0.0006; // Ultra slow, smooth scrolling
+          
+          // Use track.add() to add relative movement
+          slider.track.add(increment);
+          
+          animationRef.current = requestAnimationFrame(animate);
+        }
+      };
+      
+      animationRef.current = requestAnimationFrame(animate);
+    };
+    
+    tryStart();
+  };
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -257,15 +311,32 @@ export function CleanSeriesBrowser({
     return () => observer.disconnect();
   }, []);
 
-  // Notify parent when active series changes
   useEffect(() => {
-    const activeSeriesData = series.find(s => 
-      s.name.toLowerCase().replace(/\s+/g, '-') === selectedTab
-    );
-    if (activeSeriesData && onActiveSeriesChange) {
-      onActiveSeriesChange(activeSeriesData);
+    // Force start animation when component mounts and slider is ready
+    const timer = setTimeout(() => {
+      if (instanceRef.current) {
+        startSmoothScroll(instanceRef.current);
+      }
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, []);
+
+  // Update carousel content when active series changes WITHOUT restarting animation
+  useEffect(() => {
+    if (instanceRef.current && activeSeriesData) {
+      // Update the slides content but keep animation running
+      instanceRef.current.update();
     }
-  }, [selectedTab, series, onActiveSeriesChange]);
+  }, [selectedTab, activeSeriesData]);
+
+  // Get pianos for current series for carousel
+  const carouselPianos = activeSeriesData ? [...activeSeriesData.pianos, ...activeSeriesData.pianos, ...activeSeriesData.pianos] : [];
 
   return (
     <section className="pt-16 lg:pt-24 pb-0 bg-kawai-pearl" id="series">
@@ -344,6 +415,29 @@ export function CleanSeriesBrowser({
           ))}
         </Tabs>
       </motion.div>
+
+      {/* Continuous Scrolling Carousel */}
+      <section className="bg-kawai-pearl overflow-hidden mt-16">
+        <div ref={sliderRef} className="keen-slider">
+          {carouselPianos.map((piano, index) => (
+            <div 
+              key={`${piano.slug}-${index}`} 
+              className="keen-slider__slide relative aspect-square min-w-[250px] md:min-w-[300px] lg:min-w-[350px] xl:min-w-[400px]"
+            >
+              <img 
+                src={piano.image} 
+                alt={piano.name}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/80 via-transparent to-transparent" />
+              <div className="absolute bottom-3 left-3 text-white">
+                <h3 className="text-sm md:text-base lg:text-lg font-bold">{piano.name}</h3>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
     </section>
   );
 }

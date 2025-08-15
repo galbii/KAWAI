@@ -1,5 +1,7 @@
+"use client";
+
 import { CategoryHero } from "@/components/piano/category-hero";
-import { CleanSeriesBrowser } from "@/components/piano/clean-series-browser";
+import { UnifiedPianoSeries } from "@/components/piano/unified-piano-series";
 
 // Featured hybrid pianos - highlighting the best from each series
 const featuredHybridPianos = [
@@ -99,41 +101,41 @@ const hybridPianoSeries = [
     ]
   },
   {
-    name: "AnyTime Series",
+    name: "AnyTime Silent Series",
     description: "Acoustic grand and upright pianos with integrated silent practice systems. Experience the full acoustic piano performance with the ability to practice silently using headphones.",
     pianos: [
       {
-        slug: "atx4",
-        name: "AnyTime ATX4",
-        series: "AnyTime Series",
+        slug: "k-500-aures",
+        name: "K-500 AURES",
+        series: "AnyTime Silent Series",
         rating: 4.8,
         reviews: 28,
-        image: "/images/banners/ATX4-grand-styling.webp",
-        description: "Professional grand piano with integrated silent practice system",
+        image: "/images/banners/K500-AURES-styling.webp",
+        description: "Silent acoustic upright piano with AnyTime technology",
         keyFeatures: [
-          "6'1\" acoustic grand piano with full acoustic performance",
+          "51\" acoustic upright piano (130cm)",
           "Integrated AnyTime silent practice system",
           "Millennium III action with sensor technology",
           "Switch between acoustic and silent modes instantly",
           "Premium digital piano sounds for silent practice",
-          "Professional acoustic piano when desired"
+          "Professional acoustic upright when desired"
         ]
       },
       {
-        slug: "atx3",
-        name: "AnyTime ATX3",
-        series: "AnyTime Series",
+        slug: "gl-30-aures-2",
+        name: "GL-30 AURES 2",
+        series: "AnyTime Silent Series",
         rating: 4.7,
         reviews: 31,
-        image: "/images/banners/ATX3-grand-styling.webp",
-        description: "Compact grand piano with AnyTime silent practice technology",
+        image: "/images/banners/GL30-AURES2-styling.webp",
+        description: "Silent acoustic grand piano with advanced AnyTime technology",
         keyFeatures: [
-          "5'8\" acoustic grand piano",
-          "AnyTime silent practice system",
+          "5'5\" acoustic grand piano",
+          "AnyTime AURES 2 silent practice system",
           "Professional action with sensor technology",
           "Dual-mode operation: acoustic and silent",
-          "Quality digital sounds for practice",
-          "Space-efficient grand piano solution"
+          "Enhanced digital sounds for practice",
+          "Premium grand piano solution"
         ]
       }
     ]
@@ -141,6 +143,7 @@ const hybridPianoSeries = [
 ];
 
 export default function HybridPianosPage() {
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -156,8 +159,8 @@ export default function HybridPianosPage() {
         ]}
       />
 
-      {/* Clean Series Browser */}
-      <CleanSeriesBrowser
+      {/* Unified Series Browser with Carousel */}
+      <UnifiedPianoSeries
         title="Explore Hybrid Piano Series"
         description="Experience groundbreaking instruments that seamlessly blend authentic acoustic piano action with cutting-edge digital technology."
         series={hybridPianoSeries}

@@ -187,7 +187,8 @@ export function ContactForm() {
             Find Your Perfect <span className="text-kawai-red">Piano</span>
           </h2>
           <p className="text-xl text-kawai-black/70 max-w-2xl mx-auto">
-            Get your free Piano Buying Guide and personalized recommendations from our experts.
+            Get your free Piano Buying Guide and personalized recommendations from our Lake St. Louis piano experts. 
+            Serving the St. Louis area for over 95 years.
           </p>
         </div>
 
@@ -581,14 +582,14 @@ export function ContactForm() {
         {/* Trust Elements */}
         <div className="mt-12 text-center">
           <p className="text-sm text-kawai-black/60 mb-4">
-            Trusted by piano players worldwide since 1927
+            Trusted by St. Louis area piano families since 1927
           </p>
           <div className="flex justify-center items-center space-x-8 opacity-60">
-            <div className="text-xs text-kawai-black/40">100+ Awards</div>
+            <div className="text-xs text-kawai-black/40">Lake St. Louis Showroom</div>
             <div className="w-px h-4 bg-kawai-black/20"></div>
             <div className="text-xs text-kawai-black/40">95+ Years Experience</div>
             <div className="w-px h-4 bg-kawai-black/20"></div>
-            <div className="text-xs text-kawai-black/40">World's #3 Piano Brand</div>
+            <div className="text-xs text-kawai-black/40">Missouri's Kawai Experts</div>
           </div>
         </div>
       </div>

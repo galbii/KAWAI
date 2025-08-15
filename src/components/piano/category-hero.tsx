@@ -45,7 +45,7 @@ export function CategoryHero({
   return (
     <section 
       ref={heroRef}
-      className="relative min-h-[80vh] flex items-center bg-kawai-pearl overflow-hidden"
+      className="relative min-h-[50vh] flex items-center bg-kawai-pearl overflow-hidden py-16"
     >
       {/* Background Image */}
       {backgroundImage && (
@@ -124,7 +124,7 @@ export function CategoryHero({
               initial={{ opacity: 0, y: 30 }}
               animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
               transition={{ duration: 0.8, delay: 0.8 }}
-              className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-2xl"
+              className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8"
             >
               {stats.map((stat, index) => (
                 <div key={index} className="text-center">

@@ -51,7 +51,7 @@
 
   /* Brand Typography */
   --font-brand-serif: var(--font-crimson), Georgia, "Times New Roman", serif;
-  --font-brand-luxury: var(--font-bodoni), Georgia, "Times New Roman", serif;
+  --font-brand-luxury: var(--font-crimson), Georgia, "Times New Roman", serif;
   --font-brand-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-brand-music: var(--font-inter), sans-serif;
 

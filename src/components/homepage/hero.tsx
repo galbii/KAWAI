@@ -67,16 +67,19 @@ export function Hero() {
       
       {/* Content - Left Aligned */}
       <div className="container-brand max-w-8xl mx-auto px-8 lg:px-16 relative z-20">
-        {/* Est. 1927 - Aligned with text */}
+        {/* Local positioning and Est. 1927 */}
         <motion.div 
-          className="absolute -top-16 left-1 z-10"
+          className="absolute -top-24 left-1 z-10"
           variants={contentReveal}
           custom={0}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
         >
+          <p className="text-brand-musical text-kawai-pearl tracking-wider text-sm font-semibold uppercase mb-2">
+            St. Louis's Premier Kawai Piano Dealer
+          </p>
           <p className="text-brand-musical text-kawai-red tracking-wider text-sm font-semibold uppercase">
-            Est. 1927
+            Est. 1927 • Lake St. Louis, Missouri
           </p>
         </motion.div>
 
@@ -93,13 +96,13 @@ export function Hero() {
                 The
               </motion.span>
               <motion.span 
-                className="block text-8xl md:text-9xl lg:text-[12rem] xl:text-[14rem] font-black tracking-[-0.02em] leading-[0.8]"
+                className="block text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black tracking-[-0.02em] leading-[0.8]"
                 variants={wordReveal}
                 custom={1.6}
                 initial="hidden"
                 animate={isInView ? "visible" : "hidden"}
               >
-                FUTURE
+                INSTRUMENTAL
               </motion.span>
               <motion.div 
                 className="block text-3xl md:text-4xl lg:text-5xl font-light mt-4 tracking-[0.1em] opacity-90"
@@ -108,7 +111,7 @@ export function Hero() {
                 initial="hidden"
                 animate={isInView ? "visible" : "hidden"}
               >
-                of the Piano
+                to Life
               </motion.div>
             </h1>
           </div>
@@ -121,7 +124,8 @@ export function Hero() {
             animate={isInView ? "visible" : "hidden"}
           >
             Every musician harbors a vision. Every performance seeks perfection. 
-            Since 1927, we've been crafting the instruments that transform inspiration into reality.
+            Since 1927, we've been crafting the instruments that transform inspiration into reality. 
+            Visit our Lake St. Louis showroom and discover why we're Missouri's trusted Kawai piano experts.
           </motion.p>
           
           <div className="flex flex-col sm:flex-row gap-brand-lg items-start">
@@ -133,7 +137,7 @@ export function Hero() {
             >
               <Button size="lg" className="btn-brand-primary" asChild>
                 <Link href="/pianos">
-                  View Our Pianos
+                  View Our Piano Collection
                 </Link>
               </Button>
             </motion.div>
@@ -144,8 +148,8 @@ export function Hero() {
               animate={isInView ? "visible" : "hidden"}
             >
               <Button size="lg" className="btn-brand-secondary" asChild>
-                <Link href="/about">
-                  Learn More
+                <Link href="/contact">
+                  Visit Our St. Louis Showroom
                 </Link>
               </Button>
             </motion.div>

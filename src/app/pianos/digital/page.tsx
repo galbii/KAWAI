@@ -1,9 +1,9 @@
 "use client";
 
 import { CategoryHero } from "@/components/piano/category-hero";
-import { CleanSeriesBrowser } from "@/components/piano/clean-series-browser";
+import { UnifiedPianoSeries } from "@/components/piano/unified-piano-series";
 import { useScrollAnimation, fadeUpClass, slideInClass, scaleInClass } from "@/lib/hooks/useScrollAnimation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 // Featured digital pianos - highlighting the best from each series
 const featuredDigitalPianos = [
@@ -63,7 +63,7 @@ const featuredDigitalPianos = [
 // Piano series with complete piano data for browsing
 const digitalPianoSeries = [
   {
-    name: "Concert Artist Series",
+    name: "CA Series",
     description: "The pinnacle of digital piano technology, featuring Grand Feel III wooden-key action and premium Shigeru Kawai concert grand sounds. Professional instruments trusted by musicians worldwide.",
     pianos: [
       {
@@ -160,7 +160,7 @@ const digitalPianoSeries = [
     ]
   },
   {
-    name: "CL Console Series",
+    name: "KDP Series",
     description: "Elegant console digital pianos with traditional furniture styling and authentic piano action. Designed to complement your home while delivering professional performance.",
     pianos: [
       {
@@ -183,7 +183,7 @@ const digitalPianoSeries = [
     ]
   },
   {
-    name: "ES Portable Series",
+    name: "ES Series",
     description: "Professional portable digital pianos perfect for performing musicians. Lightweight designs with advanced action technology and premium sounds for studio and stage use.",
     pianos: [
       {
@@ -318,11 +318,11 @@ export default function DigitalPianosPage() {
       {/* Hero Section with Animation */}
       <section 
         ref={heroAnimation.ref} 
-        className="relative py-24 lg:py-32 bg-cover bg-center bg-no-repeat bg-[url('/images/banners/CA901EP-bench-styling.webp')]"
+        className="relative py-12 lg:py-16 bg-cover bg-center bg-no-repeat bg-[url('/images/banners/CA901EP-bench-styling.webp')]"
       >
         <div className="absolute inset-0 bg-gradient-to-r from-kawai-black/60 via-kawai-black/30 to-transparent" />
         <div className="relative max-w-7xl mx-auto px-6">
-          <div className="max-w-3xl">
+          <div className="max-w-4xl">
             <div className={`inline-block bg-kawai-red text-white px-4 py-2 rounded-full text-sm font-medium mb-4 ${scaleInClass(heroAnimation.isVisible)}`}>
               Digital Pianos
             </div>
@@ -332,18 +332,18 @@ export default function DigitalPianosPage() {
             <p className={`text-xl md:text-2xl leading-relaxed text-white/90 mb-8 max-w-2xl ${fadeUpClass(heroAnimation.isVisible, 400)}`}>
               Experience the perfect blend of traditional piano craftsmanship and cutting-edge digital technology. Our digital pianos deliver authentic acoustic piano experience with modern convenience and connectivity.
             </p>
-            <div className={`flex flex-wrap gap-8 mb-8 ${fadeUpClass(heroAnimation.isVisible, 600)}`}>
+            <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mb-8 ${fadeUpClass(heroAnimation.isVisible, 600)}`}>
               <div className="text-center">
-                <div className="text-3xl font-bold text-kawai-red mb-1">4</div>
-                <div className="text-sm text-white/80">Piano Series</div>
+                <div className="text-3xl md:text-4xl font-bold text-kawai-red mb-1">5</div>
+                <div className="text-sm text-white/80 font-medium">Piano Series</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-kawai-red mb-1">12+</div>
-                <div className="text-sm text-white/80">Professional Models</div>
+                <div className="text-3xl md:text-4xl font-bold text-kawai-red mb-1">16</div>
+                <div className="text-sm text-white/80 font-medium">Digital Models</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-kawai-red mb-1">SK-EX</div>
-                <div className="text-sm text-white/80">Sound Sources</div>
+                <div className="text-3xl md:text-4xl font-bold text-kawai-red mb-1">SK-EX</div>
+                <div className="text-sm text-white/80 font-medium">Sound Sources</div>
               </div>
             </div>
             <div className={fadeUpClass(heroAnimation.isVisible, 800)}>
@@ -361,8 +361,8 @@ export default function DigitalPianosPage() {
         </div>
       </section>
 
-      {/* Clean Series Browser */}
-      <CleanSeriesBrowser
+      {/* Unified Series Browser with Carousel */}
+      <UnifiedPianoSeries
         title="Explore Digital Piano Series"
         description="Discover our complete collection of digital piano series. Each series showcases distinct technologies and features for different musical needs."
         series={digitalPianoSeries}

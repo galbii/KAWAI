@@ -11,11 +11,11 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <Hero />
-      <PianoCollection />
-      <NewsCarousel />
-      <PianoGallery />
-      <ContactForm />
       <ShowroomLocation />
+      <PianoCollection />
+      <PianoGallery />
+      <NewsCarousel />
+      <ContactForm />
     </div>
   );
 }

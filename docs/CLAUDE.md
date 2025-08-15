@@ -10,20 +10,22 @@ This is a **Kawai Piano website** built with Next.js 15, Payload CMS v3, and Tai
 
 **This project uses Bun as the primary package manager and runtime.**
 
+**IMPORTANT: Do not start development servers (`bun run dev`) or run builds (`bun run build`) unless explicitly asked by the user.**
+
 ```bash
 # Install dependencies
 bun install
 
-# Development server with Turbopack (preferred)
+# Development server with Turbopack (only when user requests)
 bun run dev
 
-# Production build
+# Production build (only when user requests)
 bun run build
 
-# Start production server
+# Start production server (only when user requests)
 bun run start
 
-# Linting
+# Linting (safe to run for code quality)
 bun run lint
 
 # Add new dependencies
@@ -51,18 +53,37 @@ bun ci
 - **MongoDB** as the database (via Mongoose adapter)
 - **Tailwind CSS v4** for styling
 - **TypeScript** for type safety
+- **Bun** as package manager and runtime (not npm)
 
 ### Project Structure
+
+**Next.js App Router Routing:**
+- Each page is located at `src/app/[route]/page.tsx`
+- Pages follow App Router directory structure:
+  - `/` → `src/app/page.tsx`
+  - `/pianos` → `src/app/pianos/page.tsx` 
+  - `/pianos/digital` → `src/app/pianos/digital/page.tsx`
+  - `/product/[model]` → `src/app/product/[model]/page.tsx` (specific piano models)
 
 ```
 src/
 ├── app/                    # Next.js App Router pages
-│   ├── (payload)/         # Payload admin routes
+│   ├── (payload)/         # Payload admin routes (grouped route)
+│   │   └── admin/[[...segments]]/page.tsx  # Payload CMS admin
 │   ├── pianos/            # Piano catalog pages
-│   │   ├── digital/       # Digital piano category
-│   │   ├── grand/         # Grand piano category
-│   │   ├── hybrid/        # Hybrid piano category
-│   │   └── upright/       # Upright piano category
+│   │   ├── digital/page.tsx # Digital piano category
+│   │   ├── grand/page.tsx # Grand piano category
+│   │   ├── hybrid/page.tsx # Hybrid piano category
+│   │   ├── upright/page.tsx # Upright piano category
+│   │   ├── shigeru-kawai/ # Premium series
+│   │   │   └── page.tsx   # Series overview
+│   │   ├── compare/page.tsx # Piano comparison tool
+│   │   ├── search/page.tsx  # Piano search
+│   │   └── page.tsx       # Main piano catalog
+│   ├── product/           # Individual piano model pages
+│   │   └── [model]/page.tsx # Dynamic route for specific models (e.g., /product/ca901, /product/sk-ex)
+│   ├── about/page.tsx     # About page
+│   ├── showroom/page.tsx  # Showroom info
 │   └── layout.tsx         # Root layout with fonts and metadata
 ├── collections/           # Payload CMS collections
 ├── components/            # React components
@@ -158,6 +179,7 @@ DATABASE_URI=mongodb://localhost:27017/kawai-piano
 - **Check package versions** with `bun pm version` for version management
 - **Use absolute paths** in file operations when working with Bun APIs
 - **Leverage Bun's speed** - installs are significantly faster than npm/yarn
+- **IMPORTANT: Only run `bun run dev` or `bun run build` when explicitly requested by the user**
 
 ### Component Organization
 - Place piano-specific components in `src/components/piano/`

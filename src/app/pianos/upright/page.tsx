@@ -1,5 +1,7 @@
+"use client";
+
 import { CategoryHero } from "@/components/piano/category-hero";
-import { CleanSeriesBrowser } from "@/components/piano/clean-series-browser";
+import { UnifiedPianoSeries } from "@/components/piano/unified-piano-series";
 
 // Featured upright pianos - highlighting the best from each series
 const featuredUprightPianos = [
@@ -59,115 +61,189 @@ const featuredUprightPianos = [
 // Upright piano series with complete piano data for browsing
 const uprightPianoSeries = [
   {
-    name: "K Professional Series",
-    description: "Professional upright pianos featuring advanced action technology, premium materials, and exceptional craftsmanship. From the flagship K-800 to the entry-level K-200, each model delivers professional performance.",
+    name: "K Series Professional",
+    description: "Professional upright pianos featuring advanced action technology, premium materials, and exceptional craftsmanship. From the flagship K-800 to the entry-level K-15 Continental, each model delivers professional performance. Named 'Acoustic Piano Line of the Year' four years running.",
     pianos: [
       {
         slug: "k-800",
         name: "K-800",
-        series: "K Professional Series",
+        series: "K Series Professional",
         rating: 5,
         reviews: 72,
         image: "/images/banners/K800-upright-styling.webp",
-        description: "The ultimate professional upright with concert-quality performance",
+        description: "Top K Series model with ultimate professional performance (52\"/132cm)",
         keyFeatures: [
-          "51\" professional upright with exceptional projection",
+          "52\" professional upright with exceptional projection",
           "Millennium III action preparation",
-          "Extended length keys for grand piano feel",
+          "Extended length keysticks for grand piano feel",
           "Premium German Roslau strings",
-          "Solid spruce soundboard construction",
-          "Soft-close fallboard with hydraulic system"
+          "Tapered solid spruce soundboard",
+          "Built in Japan - premium construction"
         ]
       },
       {
         slug: "k-500",
         name: "K-500",
-        series: "K Professional Series",
+        series: "K Series Professional",
         rating: 4.8,
         reviews: 93,
         image: "/images/banners/K500-upright-styling.webp",
-        description: "Versatile studio upright perfect for serious musicians and institutions",
+        description: "Studio/advanced player model perfect for serious musicians (51\"/130cm)",
         keyFeatures: [
-          "45\" studio upright with powerful sound",
+          "51\" studio upright with powerful sound",
           "Enhanced action mechanism",
-          "Extended length keys for improved control",
+          "Extended length keysticks for improved control",
           "Quality German strings",
-          "Solid construction throughout",
+          "Built in Japan - solid construction",
           "Professional-grade components"
+        ]
+      },
+      {
+        slug: "k-400",
+        name: "K-400",
+        series: "K Series Professional",
+        rating: 4.7,
+        reviews: 89,
+        image: "/images/banners/K400-upright-styling.webp",
+        description: "Professional upright with grand-style music rack (48\"/122cm)",
+        keyFeatures: [
+          "48\" professional upright with grand-style music rack",
+          "Advanced action technology",
+          "Extended length keysticks",
+          "Premium materials selection",
+          "Built in Japan quality",
+          "Elegant cabinet design"
         ]
       },
       {
         slug: "k-300",
         name: "K-300",
-        series: "K Professional Series",
+        series: "K Series Professional",
         rating: 4.6,
         reviews: 105,
         image: "/images/banners/K300-upright-styling.webp",
-        description: "Professional home studio upright offering exceptional quality",
+        description: "4x Piano of the Year winner offering exceptional quality (48\"/122cm)",
         keyFeatures: [
-          "44\" home studio upright with warm tone",
-          "Quality construction standards",
-          "Extended length keys",
-          "Premium materials selection",
-          "Good tuning stability",
+          "48\" home studio upright with warm tone",
+          "Piano of the Year winner (4 years running)",
+          "Extended length keysticks",
+          "Tapered solid spruce soundboard",
+          "Built in Japan construction",
           "Attractive cabinet design"
         ]
       },
       {
         slug: "k-200",
         name: "K-200",
-        series: "K Professional Series",
+        series: "K Series Professional",
         rating: 4.4,
         reviews: 127,
         image: "/images/banners/K200-upright-styling.webp",
-        description: "Entry-level professional upright with excellent value",
+        description: "Redesigned 2014 model with excellent value (45\"/114cm)",
         keyFeatures: [
-          "43\" compact upright design",
+          "45\" redesigned upright (2014 model)",
           "Professional action mechanism",
-          "Extended length keys",
+          "Extended length keysticks",
           "Quality materials and construction",
-          "Reliable tuning stability",
+          "Assembled in Indonesia - reliable quality",
           "Excellent beginner-to-intermediate choice"
+        ]
+      },
+      {
+        slug: "k-15-continental",
+        name: "K-15 Continental",
+        series: "K Series Professional",
+        rating: 4.3,
+        reviews: 94,
+        image: "/images/banners/K15-Continental-styling.webp",
+        description: "Entry professional model with Continental styling (43.3\"/110cm)",
+        keyFeatures: [
+          "43.3\" compact upright design",
+          "Continental cabinet styling",
+          "Professional entry-level features",
+          "Extended length keysticks",
+          "Assembled in Indonesia - good value",
+          "Perfect for smaller spaces"
         ]
       }
     ]
   },
   {
-    name: "Designer & Continental Series",
-    description: "Elegant upright pianos combining beautiful aesthetics with quality performance. Available in multiple cabinet styles and finishes to complement any décor while delivering professional musical capabilities.",
+    name: "ND Series",
+    description: "Value-oriented professional upright pianos offering quality construction and performance at an accessible price point. Designed for students, schools, and home use.",
     pianos: [
       {
-        slug: "k-15e",
-        name: "K-15E",
-        series: "Designer Series",
-        rating: 4.5,
-        reviews: 58,
-        image: "/images/banners/K15E-upright-styling.webp",
-        description: "Designer upright with elegant styling and quality performance",
+        slug: "nd-21",
+        name: "ND-21",
+        series: "ND Series",
+        rating: 4.2,
+        reviews: 76,
+        image: "/images/banners/ND21-upright-styling.webp",
+        description: "Value-oriented professional upright (48\"/121cm)",
         keyFeatures: [
-          "45\" designer upright with premium aesthetics",
+          "48\" value-oriented professional upright",
           "Quality action mechanism",
-          "Beautiful cabinet finishes available",
           "Solid construction methods",
-          "Home-friendly design",
-          "Good value for money"
+          "Reliable tuning stability",
+          "Excellent educational choice",
+          "Affordable professional quality"
+        ]
+      }
+    ]
+  },
+  {
+    name: "Master Series",
+    description: "Kawai's highest-tier acoustic uprights when released. Three new models previewed at NAMM 2025 representing the pinnacle of upright piano innovation and craftsmanship.",
+    pianos: [
+      {
+        slug: "master-series-model-1",
+        name: "Master Series Model 1",
+        series: "Master Series",
+        rating: 5,
+        reviews: 2,
+        image: "/images/banners/Master-Series-1-styling.webp",
+        description: "Premium Master Series upright (details TBA)",
+        keyFeatures: [
+          "Highest-tier acoustic upright construction",
+          "Advanced materials and technology",
+          "Premium craftsmanship throughout",
+          "Professional performance capability",
+          "2025 release - details to be announced",
+          "NAMM 2025 preview model"
         ]
       },
       {
-        slug: "k-18e",
-        name: "K-18E",
-        series: "Designer Series",
-        rating: 4.3,
-        reviews: 41,
-        image: "/images/banners/K18E-upright-styling.webp",
-        description: "Compact designer upright perfect for smaller spaces",
+        slug: "master-series-model-2",
+        name: "Master Series Model 2",
+        series: "Master Series",
+        rating: 5,
+        reviews: 1,
+        image: "/images/banners/Master-Series-2-styling.webp",
+        description: "Advanced Master Series upright (details TBA)",
         keyFeatures: [
-          "43\" compact designer upright",
-          "Elegant cabinet styling",
-          "Quality action and sound",
-          "Multiple finish options",
-          "Space-efficient design",
-          "Ideal for home use"
+          "Highest-tier acoustic upright design",
+          "Innovative action technology",
+          "Premium materials selection",
+          "Professional grade construction",
+          "2025 release - specifications TBA",
+          "NAMM 2025 preview model"
+        ]
+      },
+      {
+        slug: "master-series-model-3",
+        name: "Master Series Model 3",
+        series: "Master Series",
+        rating: 5,
+        reviews: 1,
+        image: "/images/banners/Master-Series-3-styling.webp",
+        description: "Elite Master Series upright (details TBA)",
+        keyFeatures: [
+          "Elite acoustic upright construction",
+          "Advanced engineering features",
+          "Premium quality throughout",
+          "Professional performance standard",
+          "2025 release - details forthcoming",
+          "NAMM 2025 preview model"
         ]
       }
     ]
@@ -175,6 +251,7 @@ const uprightPianoSeries = [
 ];
 
 export default function UprightPianosPage() {
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -184,14 +261,14 @@ export default function UprightPianosPage() {
         description="Experience the perfect balance of space efficiency and professional performance. Our K Professional Series and elegant Designer collections deliver exceptional touch, tone, and craftsmanship in a compact footprint."
         backgroundImage="/images/banners/K800-upright-styling.webp"
         stats={[
-          { label: "Upright Models", value: "8+" },
-          { label: "Height Range", value: "43\" - 51\"" },
-          { label: "Distinct Series", value: "2" }
+          { label: "Upright Models", value: "10" },
+          { label: "Height Range", value: "43\" - 52\"" },
+          { label: "Distinct Series", value: "3" }
         ]}
       />
 
-      {/* Clean Series Browser */}
-      <CleanSeriesBrowser
+      {/* Unified Series Browser with Carousel */}
+      <UnifiedPianoSeries
         title="Explore Upright Piano Series"
         description="Find the perfect balance of space efficiency and professional performance across our distinguished upright piano families."
         series={uprightPianoSeries}
