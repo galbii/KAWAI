@@ -20,8 +20,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
     meta: {
-      // Prevent Payload from rendering its own HTML structure
-      suppressHydrationWarning: true,
+      // Payload meta configuration for HTML metadata
     },
   },
   collections: [Users, Media],
