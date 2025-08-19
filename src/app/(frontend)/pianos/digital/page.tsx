@@ -4,6 +4,8 @@ import { CategoryHero } from "@/components/piano/category-hero";
 import { UnifiedPianoSeries } from "@/components/piano/unified-piano-series";
 import { useScrollAnimation, fadeUpClass, slideInClass, scaleInClass } from "@/lib/hooks/useScrollAnimation";
 import { useEffect, useRef, useState } from "react";
+import { getProductlines, transformProductlinesToSeries } from "@/lib/payload";
+import { Productline } from "@/lib/types";
 
 // Featured digital pianos - highlighting the best from each series
 const featuredDigitalPianos = [
@@ -312,6 +314,39 @@ function FeatureGrid() {
 
 export default function DigitalPianosPage() {
   const heroAnimation = useScrollAnimation({ threshold: 0.1 });
+  const [productlines, setProductlines] = useState<Productline[]>([]);
+  const [series, setSeries] = useState(digitalPianoSeries);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchProductlines() {
+      try {
+        setLoading(true);
+        const data = await getProductlines('digital');
+        setProductlines(data);
+        
+        if (data.length > 0) {
+          // Transform CMS data and use it, otherwise fallback to hardcoded data
+          const transformedSeries = transformProductlinesToSeries(data);
+          // Add slides from CMS data
+          const seriesWithSlides = transformedSeries.map((series, index) => ({
+            ...series,
+            slides: data[index]?.slides || []
+          }));
+          setSeries(seriesWithSlides);
+        }
+      } catch (err) {
+        console.error('Failed to fetch productlines:', err);
+        setError('Failed to load product data');
+        // Keep using hardcoded data as fallback
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProductlines();
+  }, []);
   
   return (
     <div className="min-h-screen">
@@ -362,12 +397,38 @@ export default function DigitalPianosPage() {
       </section>
 
       {/* Unified Series Browser with Carousel */}
-      <UnifiedPianoSeries
-        title="Explore Digital Piano Series"
-        description="Discover our complete collection of digital piano series. Each series showcases distinct technologies and features for different musical needs."
-        series={digitalPianoSeries}
-        categorySlug="digital"
-      />
+      {loading ? (
+        <section className="py-16 lg:py-24 bg-kawai-pearl text-center">
+          <div className="max-w-4xl mx-auto px-6">
+            <div className="animate-pulse">
+              <div className="h-8 bg-kawai-neutral/20 rounded-lg mb-4 max-w-md mx-auto" />
+              <div className="h-4 bg-kawai-neutral/20 rounded-lg mb-8 max-w-lg mx-auto" />
+              <div className="grid md:grid-cols-3 gap-6">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-64 bg-kawai-neutral/20 rounded-lg" />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : error ? (
+        <section className="py-16 lg:py-24 bg-kawai-pearl text-center">
+          <div className="max-w-4xl mx-auto px-6">
+            <div className="bg-kawai-red/10 border border-kawai-red/20 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-kawai-red mb-2">Unable to load product data</h3>
+              <p className="text-kawai-black/70">{error}</p>
+            </div>
+          </div>
+        </section>
+      ) : (
+        <UnifiedPianoSeries
+          title="Explore Digital Piano Series"
+          description="Discover our complete collection of digital piano series. Each series showcases distinct technologies and features for different musical needs."
+          series={series}
+          categorySlug="digital"
+          productlines={productlines}
+        />
+      )}
 
       {/* Technology Showcase */}
       <AnimatedSection className="py-16 lg:py-24 bg-gradient-to-br from-kawai-black to-kawai-neutral text-kawai-pearl">

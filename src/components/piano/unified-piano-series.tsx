@@ -12,6 +12,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import { Productline } from "@/lib/types";
 
 interface Piano {
   slug: string;
@@ -31,6 +32,10 @@ interface Series {
   modelCount?: number;
   href?: string;
   pianos: Piano[];
+  slides?: Array<{
+    title: string;
+    image: string;
+  }>;
 }
 
 interface UnifiedPianoSeriesProps {
@@ -38,6 +43,7 @@ interface UnifiedPianoSeriesProps {
   description: string;
   series: Series[];
   categorySlug: string;
+  productlines?: Productline[];
 }
 
 interface SeriesCardProps {
@@ -335,8 +341,12 @@ export function UnifiedPianoSeries({
     }
   }, [selectedTab, activeSeriesData]);
 
-  // Get pianos for current series for carousel
-  const carouselPianos = activeSeriesData ? [...activeSeriesData.pianos, ...activeSeriesData.pianos, ...activeSeriesData.pianos] : [];
+  // Get carousel content - prioritize slides if available, fallback to pianos
+  const carouselItems = activeSeriesData ? 
+    (activeSeriesData.slides && activeSeriesData.slides.length > 0 
+      ? [...activeSeriesData.slides, ...activeSeriesData.slides, ...activeSeriesData.slides]
+      : [...activeSeriesData.pianos, ...activeSeriesData.pianos, ...activeSeriesData.pianos]
+    ) : [];
 
   return (
     <section className="pt-16 lg:pt-24 pb-0 bg-kawai-pearl" id="series">
@@ -419,23 +429,31 @@ export function UnifiedPianoSeries({
       {/* Continuous Scrolling Carousel */}
       <section className="bg-kawai-pearl overflow-hidden mt-16">
         <div ref={sliderRef} className="keen-slider">
-          {carouselPianos.map((piano, index) => (
-            <div 
-              key={`${piano.slug}-${index}`} 
-              className="keen-slider__slide relative aspect-square min-w-[250px] md:min-w-[300px] lg:min-w-[350px] xl:min-w-[400px]"
-            >
-              <img 
-                src={piano.image} 
-                alt={piano.name}
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/80 via-transparent to-transparent" />
-              <div className="absolute bottom-3 left-3 text-white">
-                <h3 className="text-sm md:text-base lg:text-lg font-bold">{piano.name}</h3>
+          {carouselItems.map((item, index) => {
+            // Check if item is a slide or piano
+            const isSlide = 'title' in item;
+            const imageUrl = isSlide ? item.image : item.image;
+            const title = isSlide ? item.title : item.name;
+            const key = isSlide ? `${item.title}-${index}` : `${item.slug}-${index}`;
+            
+            return (
+              <div 
+                key={key} 
+                className="keen-slider__slide relative aspect-square min-w-[250px] md:min-w-[300px] lg:min-w-[350px] xl:min-w-[400px]"
+              >
+                <img 
+                  src={imageUrl} 
+                  alt={title}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/80 via-transparent to-transparent" />
+                <div className="absolute bottom-3 left-3 text-white">
+                  <h3 className="text-sm md:text-base lg:text-lg font-bold">{title}</h3>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
     </section>

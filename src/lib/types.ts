@@ -240,3 +240,57 @@ export interface StructuredData {
   '@type': string
   [key: string]: unknown
 }
+
+// Payload CMS Productlines types
+export interface ProductlineMedia {
+  id: string
+  url: string
+  alt?: string
+  filename: string
+  width?: number
+  height?: number
+}
+
+export interface ProductlinePiano {
+  slug: string
+  name: string
+  series: string
+  rating: number
+  reviews: number
+  image: ProductlineMedia | string // Can be populated object or just ID string
+  description: string
+  keyFeatures: Array<{ feature: string }>
+}
+
+export interface ProductlineSlide {
+  title: string
+  image: ProductlineMedia | string // Can be populated object or just ID string
+}
+
+export interface Productline {
+  id: string
+  name: string
+  slug: string
+  category: 'digital' | 'grand' | 'hybrid' | 'upright'
+  description: string
+  highlight?: string
+  image: ProductlineMedia | string // Can be populated object or just ID string
+  slides?: ProductlineSlide[]
+  featured: boolean
+  sortOrder?: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ProductlinesResponse {
+  docs: Productline[]
+  totalDocs: number
+  limit: number
+  totalPages: number
+  page: number
+  pagingCounter: number
+  hasPrevPage: boolean
+  hasNextPage: boolean
+  prevPage?: number
+  nextPage?: number
+}

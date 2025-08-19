@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    productlines: Productline;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -77,6 +78,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    productlines: ProductlinesSelect<false> | ProductlinesSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -143,7 +145,100 @@ export interface User {
  */
 export interface Media {
   id: string;
+  /**
+   * Alternative text for accessibility and SEO. Describe what the image shows.
+   */
   alt: string;
+  /**
+   * Optional caption displayed with the image
+   */
+  caption?: string | null;
+  /**
+   * Detailed description for administrative purposes
+   */
+  description?: string | null;
+  /**
+   * Type of media for better organization
+   */
+  mediaType?: ('image' | 'video' | 'audio' | 'document') | null;
+  /**
+   * Where this media is intended to be used
+   */
+  usage?:
+    | ('hero' | 'product' | 'category' | 'carousel' | 'background' | 'thumbnail' | 'technical' | 'marketing')[]
+    | null;
+  /**
+   * Video-specific metadata
+   */
+  videoMeta?: {
+    /**
+     * Video duration in seconds
+     */
+    duration?: number | null;
+    /**
+     * Custom thumbnail for the video
+     */
+    thumbnail?: (string | null) | Media;
+    /**
+     * Should this video autoplay (use sparingly)
+     */
+    autoplay?: boolean | null;
+    /**
+     * Start video muted (recommended for autoplay)
+     */
+    muted?: boolean | null;
+  };
+  /**
+   * Responsive image variants (generated automatically when uploaded)
+   */
+  variants?: {
+    /**
+     * Optimized for mobile devices (480px width)
+     */
+    mobile?: (string | null) | Media;
+    /**
+     * Optimized for tablets (768px width)
+     */
+    tablet?: (string | null) | Media;
+    /**
+     * Optimized for desktop (1200px width)
+     */
+    desktop?: (string | null) | Media;
+    /**
+     * Optimized for large screens (1920px width)
+     */
+    largeDesktop?: (string | null) | Media;
+  };
+  /**
+   * SEO and technical metadata
+   */
+  seoMeta?: {
+    /**
+     * Keywords this image relates to (comma-separated)
+     */
+    focusKeywords?: string | null;
+    /**
+     * Photo credit information
+     */
+    photographerCredit?: string | null;
+    /**
+     * Copyright or licensing information
+     */
+    copyrightInfo?: string | null;
+    /**
+     * Original source or URL if external
+     */
+    originalSource?: string | null;
+  };
+  /**
+   * Mark as featured media for easy access
+   */
+  featured?: boolean | null;
+  /**
+   * Tags for organization and search (e.g., "grand-piano", "black-finish")
+   */
+  tags?: string[] | null;
+  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -155,6 +250,97 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    card?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    tablet?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    desktop?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "productlines".
+ */
+export interface Productline {
+  id: string;
+  /**
+   * Series name (e.g., "CA Series", "Shigeru Kawai SK Series")
+   */
+  name: string;
+  /**
+   * URL-friendly version of name
+   */
+  slug: string;
+  /**
+   * Piano category for organizing series
+   */
+  category: 'digital' | 'grand' | 'hybrid' | 'upright';
+  /**
+   * Main series description for the browser
+   */
+  description: string;
+  /**
+   * Optional highlighted callout text
+   */
+  highlight?: string | null;
+  /**
+   * Main series image displayed in the browser
+   */
+  image: string | Media;
+  /**
+   * Additional slides for the clean series browser carousel
+   */
+  slides?:
+    | {
+        /**
+         * Title for this slide
+         */
+        title: string;
+        /**
+         * Slide image
+         */
+        image: string | Media;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Feature this series prominently
+   */
+  featured?: boolean | null;
+  /**
+   * Display order (lower numbers first)
+   */
+  sortOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -170,6 +356,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: string | Media;
+      } | null)
+    | ({
+        relationTo: 'productlines';
+        value: string | Productline;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -241,6 +431,37 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  caption?: T;
+  description?: T;
+  mediaType?: T;
+  usage?: T;
+  videoMeta?:
+    | T
+    | {
+        duration?: T;
+        thumbnail?: T;
+        autoplay?: T;
+        muted?: T;
+      };
+  variants?:
+    | T
+    | {
+        mobile?: T;
+        tablet?: T;
+        desktop?: T;
+        largeDesktop?: T;
+      };
+  seoMeta?:
+    | T
+    | {
+        focusKeywords?: T;
+        photographerCredit?: T;
+        copyrightInfo?: T;
+        originalSource?: T;
+      };
+  featured?: T;
+  tags?: T;
+  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -252,6 +473,73 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        card?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        tablet?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        desktop?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "productlines_select".
+ */
+export interface ProductlinesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  category?: T;
+  description?: T;
+  highlight?: T;
+  image?: T;
+  slides?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        id?: T;
+      };
+  featured?: T;
+  sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

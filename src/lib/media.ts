@@ -1,11 +1,30 @@
 // Media optimization utilities for high-quality piano images and videos
+// Enhanced with Cloudflare R2 CDN support
+
+import { 
+  generateR2ImageUrl, 
+  getOptimizedImageProps, 
+  getVideoProps,
+  R2_PUBLIC_URL,
+  PIANO_RESPONSIVE_PRESETS,
+  type R2TransformOptions 
+} from './media/r2-utils'
 
 export interface ImageOptimizationConfig {
   quality: number
   width?: number
   height?: number
-  format?: 'webp' | 'jpg' | 'png'
+  format?: 'webp' | 'jpg' | 'png' | 'avif'
   responsive?: boolean
+}
+
+// Re-export R2 utilities for backward compatibility
+export { 
+  generateR2ImageUrl, 
+  getOptimizedImageProps as getR2OptimizedImageProps, 
+  getVideoProps as getR2VideoProps,
+  R2_PUBLIC_URL,
+  PIANO_RESPONSIVE_PRESETS 
 }
 
 export interface VideoOptimizationConfig {
@@ -99,6 +118,19 @@ export function buildImageUrl(
   baseUrl: string, 
   config: ImageOptimizationConfig
 ): string {
+  // Check if this is an R2 URL, use R2 utilities if so
+  if (baseUrl.includes(R2_PUBLIC_URL) || baseUrl.includes('r2.dev')) {
+    const filename = baseUrl.replace(R2_PUBLIC_URL, '').replace(/^\//, '')
+    return generateR2ImageUrl(filename, {
+      width: config.width,
+      height: config.height,
+      quality: config.quality,
+      format: config.format as R2TransformOptions['format'],
+      fit: 'cover'
+    })
+  }
+  
+  // Fallback to original implementation
   const params = new URLSearchParams()
   
   if (config.width) params.set('w', config.width.toString())
