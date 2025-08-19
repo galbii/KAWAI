@@ -6,7 +6,6 @@ import type { MediaGalleryProps } from '@/lib/media/types'
 import { ResponsiveImage } from './ResponsiveImage'
 import { MediaLightbox } from './MediaLightbox'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 
 /**
  * Flexible media gallery component optimized for piano imagery
@@ -192,8 +191,8 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                   />
                 ) : (
                   <video
-                    src={typeof item === 'string' ? item : item.url}
-                    poster={typeof item === 'object' && item.videoMeta?.thumbnail?.url}
+                    src={typeof item === 'string' ? item : item.url || ''}
+                    poster={typeof item === 'object' && item && 'videoMeta' in item && typeof item !== 'string' ? (item as any)?.videoMeta?.thumbnail?.url || undefined : undefined}
                     className="w-full h-full object-cover"
                     muted
                     playsInline
@@ -286,8 +285,8 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                   />
                 ) : (
                   <video
-                    src={typeof item === 'string' ? item : item.url}
-                    poster={typeof item === 'object' && item.videoMeta?.thumbnail?.url}
+                    src={typeof item === 'string' ? item : item.url || ''}
+                    poster={typeof item === 'object' && item && 'videoMeta' in item && typeof item !== 'string' ? (item as any)?.videoMeta?.thumbnail?.url || undefined : undefined}
                     className="w-full h-full object-cover"
                     muted
                     playsInline
@@ -355,8 +354,8 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                   />
                 ) : (
                   <video
-                    src={typeof item === 'string' ? item : item.url}
-                    poster={typeof item === 'object' && item.videoMeta?.thumbnail?.url}
+                    src={typeof item === 'string' ? item : item.url || ''}
+                    poster={typeof item === 'object' && item && 'videoMeta' in item && typeof item !== 'string' ? (item as any)?.videoMeta?.thumbnail?.url || undefined : undefined}
                     className="w-full h-full object-cover"
                     muted
                     playsInline

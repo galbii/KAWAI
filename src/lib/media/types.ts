@@ -12,7 +12,7 @@ export interface MediaRendererProps {
   'aria-label'?: string
 }
 
-export interface ResponsiveImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src' | 'srcSet' | 'sizes'> {
+export interface ResponsiveImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src' | 'srcSet' | 'sizes' | 'onError'> {
   media: Media | string
   preset?: 'hero' | 'gallery' | 'thumbnail' | 'card'
   fallback?: string
@@ -24,7 +24,7 @@ export interface ResponsiveImageProps extends Omit<React.ImgHTMLAttributes<HTMLI
   onError?: (error: Error) => void
 }
 
-export interface VideoPlayerProps extends Omit<React.VideoHTMLAttributes<HTMLVideoElement>, 'src' | 'poster'> {
+export interface VideoPlayerProps extends Omit<React.VideoHTMLAttributes<HTMLVideoElement>, 'src' | 'poster' | 'onTimeUpdate' | 'onVolumeChange'> {
   media: Media | string
   poster?: boolean | string
   thumbnailPreset?: 'gallery' | 'card' | 'hero'
@@ -272,7 +272,7 @@ export interface UseMediaGalleryReturn {
 }
 
 export interface UseIntersectionObserverReturn {
-  ref: React.RefObject<HTMLElement>
+  ref: React.RefObject<HTMLElement | null>
   isIntersecting: boolean
   hasIntersected: boolean
 }

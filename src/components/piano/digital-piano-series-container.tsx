@@ -1,5 +1,5 @@
 import { UnifiedPianoSeries } from './unified-piano-series'
-import { getProductlinesServer, transformProductlinesToSeriesServer } from '@/lib/payload-server'
+import { getProductlinesWithPianoModelsServer } from '@/lib/payload-server'
 
 // Hardcoded fallback data in case CMS is unavailable
 const fallbackDigitalPianoSeries = [
@@ -54,21 +54,18 @@ const fallbackDigitalPianoSeries = [
 ]
 
 export async function DigitalPianoSeriesContainer() {
-  // Try to fetch data from CMS
-  const productlines = await getProductlinesServer('digital')
+  // Fetch productlines with their piano models from CMS
+  const series = await getProductlinesWithPianoModelsServer('digital')
   
-  // Transform CMS data or use fallback
-  const series = productlines.length > 0 
-    ? transformProductlinesToSeriesServer(productlines)
-    : fallbackDigitalPianoSeries
+  // Use fallback only if no data from CMS
+  const finalSeries = series.length > 0 ? series : fallbackDigitalPianoSeries
 
   return (
     <UnifiedPianoSeries
       title="Explore Digital Piano Series"
       description="Discover our complete collection of digital piano series. Each series showcases distinct technologies and features for different musical needs."
-      series={series}
+      series={finalSeries}
       categorySlug="digital"
-      productlines={productlines}
     />
   )
 }

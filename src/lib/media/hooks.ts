@@ -188,7 +188,7 @@ export function useVideoPlayer(
   }, [])
 
   return {
-    videoProps: videoProps || { src: '' },
+    videoProps: videoProps ? { ...videoProps, src: videoProps.src || '' } : { src: '' },
     state,
     actions: {
       play,
@@ -274,7 +274,7 @@ export function useIntersectionObserver(
 ): UseIntersectionObserverReturn {
   const [isIntersecting, setIsIntersecting] = useState(false)
   const [hasIntersected, setHasIntersected] = useState(false)
-  const ref = useRef<HTMLElement>(null)
+  const ref = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     const element = ref.current

@@ -1,28 +1,30 @@
-// Comprehensive type definitions for Kawai Piano website
+// Frontend-specific type definitions for Kawai Piano website
+// Note: Core CMS types are auto-generated in payload-types.ts
 
+// Import Payload generated types
+import type { 
+  Productline, 
+  PianoModel, 
+  Media as PayloadMedia,
+  User,
+  PianosPage 
+} from '@/payload-types'
+
+// Re-export for convenience
+export type { 
+  Productline, 
+  PianoModel, 
+  User,
+  PianosPage 
+}
+
+// Legacy interfaces for existing code compatibility
 export interface MediaItem {
   url: string
   alt?: string
   caption?: string
   width?: number
   height?: number
-}
-
-export interface Media {
-  featuredImage?: MediaItem
-  profileImage?: MediaItem
-  images?: MediaItem[]
-  videos?: Array<{
-    url: string
-    title: string
-    duration?: number
-    thumbnail?: string
-  }>
-  audio?: Array<{
-    url: string
-    title: string
-    duration?: number
-  }>
 }
 
 export interface Pricing {
@@ -94,7 +96,7 @@ export interface Series {
   description?: string
   shortDescription?: string
   category?: string
-  media?: Media
+  media?: any // Generic media type for legacy compatibility
   updatedAt?: string
   featured?: boolean
 }
@@ -132,7 +134,7 @@ export interface Piano {
   pianoType: string
   pricing?: Pricing
   specifications?: Specifications
-  media?: Media
+  media?: any // Generic media type for legacy compatibility
   series?: Series
   category?: Category
   features?: string[]
@@ -171,7 +173,7 @@ export interface Artist {
   category: string
   biography?: string
   shortBio?: string
-  media?: Media
+  media?: any // Generic media type for legacy compatibility
   contact?: Contact
   featured?: boolean
   updatedAt?: string
@@ -184,7 +186,7 @@ export interface Technology {
   description?: string
   shortDescription?: string
   category?: string
-  media?: Media
+  media?: any // Generic media type for legacy compatibility
   isInnovation?: boolean
   updatedAt?: string
 }
@@ -241,49 +243,46 @@ export interface StructuredData {
   [key: string]: unknown
 }
 
-// Payload CMS Productlines types
-export interface ProductlineMedia {
-  id: string
-  url: string
-  alt?: string
-  filename: string
-  width?: number
-  height?: number
+// Frontend component interfaces that work with Payload data
+export interface ComponentSeries {
+  name: string
+  description: string
+  highlight?: string | null
+  href?: string
+  slides?: Array<{
+    title: string
+    image: string
+  }>
+  pianos: ComponentPiano[]
 }
 
-export interface ProductlinePiano {
+export interface ComponentPiano {
   slug: string
   name: string
   series: string
   rating: number
   reviews: number
-  image: ProductlineMedia | string // Can be populated object or just ID string
+  image: string
   description: string
-  keyFeatures: Array<{ feature: string }>
+  keyFeatures: string[]
 }
 
-export interface ProductlineSlide {
-  title: string
-  image: ProductlineMedia | string // Can be populated object or just ID string
-}
-
-export interface Productline {
-  id: string
-  name: string
-  slug: string
-  category: 'digital' | 'grand' | 'hybrid' | 'upright'
-  description: string
-  highlight?: string
-  image: ProductlineMedia | string // Can be populated object or just ID string
-  slides?: ProductlineSlide[]
-  featured: boolean
-  sortOrder?: number
-  createdAt: string
-  updatedAt: string
-}
-
+// API Response types (using Payload generated types)
 export interface ProductlinesResponse {
   docs: Productline[]
+  totalDocs: number
+  limit: number
+  totalPages: number
+  page: number
+  pagingCounter: number
+  hasPrevPage: boolean
+  hasNextPage: boolean
+  prevPage?: number
+  nextPage?: number
+}
+
+export interface PianoModelsResponse {
+  docs: PianoModel[]
   totalDocs: number
   limit: number
   totalPages: number

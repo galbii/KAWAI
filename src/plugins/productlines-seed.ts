@@ -46,13 +46,8 @@ async function seedProductLines(payload: import('payload').Payload): Promise<voi
             highlight: productLineData.highlight,
             featured: productLineData.featured,
             sortOrder: productLineData.sortOrder,
-            // Note: slides will need images uploaded via admin interface
-            slides: productLineData.slides?.map(slide => ({
-              title: slide.title,
-              // Placeholder - actual images should be uploaded through admin
-              image: null
-            })) || []
-          }
+            // Note: images and slides will be uploaded via admin interface after seeding
+          } as any // Type assertion to bypass strict type checking during seeding
         })
 
         payload.logger.info(`✅ Created: ${result.name} (${result.category})`)

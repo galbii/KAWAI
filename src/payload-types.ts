@@ -70,15 +70,23 @@ export interface Config {
     users: User;
     media: Media;
     productlines: Productline;
+    'piano-models': PianoModel;
+    'pianos-page': PianosPage;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    productlines: {
+      pianoModels: 'piano-models';
+    };
+  };
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     productlines: ProductlinesSelect<false> | ProductlinesSelect<true>;
+    'piano-models': PianoModelsSelect<false> | PianoModelsSelect<true>;
+    'pianos-page': PianosPageSelect<false> | PianosPageSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -312,9 +320,9 @@ export interface Productline {
    */
   highlight?: string | null;
   /**
-   * Main series image displayed in the browser
+   * Main series image displayed in the browser (can be added after seeding)
    */
-  image: string | Media;
+  image?: (string | null) | Media;
   /**
    * Additional slides for the clean series browser carousel
    */
@@ -325,12 +333,20 @@ export interface Productline {
          */
         title: string;
         /**
-         * Slide image
+         * Slide image (can be added after seeding)
          */
-        image: string | Media;
+        image?: (string | null) | Media;
         id?: string | null;
       }[]
     | null;
+  /**
+   * Piano models in this series (automatically populated)
+   */
+  pianoModels?: {
+    docs?: (string | PianoModel)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   /**
    * Feature this series prominently
    */
@@ -339,6 +355,319 @@ export interface Productline {
    * Display order (lower numbers first)
    */
   sortOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "piano-models".
+ */
+export interface PianoModel {
+  id: string;
+  /**
+   * Piano model name (e.g., "CA901", "SK-EX")
+   */
+  name: string;
+  /**
+   * Model number/identifier
+   */
+  model: string;
+  /**
+   * URL-friendly version of name
+   */
+  slug: string;
+  /**
+   * The product line/series this model belongs to
+   */
+  productline: string | Productline;
+  /**
+   * Brief model description
+   */
+  description: string;
+  /**
+   * Short description for listings
+   */
+  shortDescription?: string | null;
+  /**
+   * Main product image
+   */
+  image: string | Media;
+  /**
+   * Additional product images
+   */
+  gallery?:
+    | {
+        image: string | Media;
+        /**
+         * Optional caption for the image
+         */
+        caption?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Main selling points and key features
+   */
+  keyFeatures?:
+    | {
+        feature: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Technical specifications
+   */
+  specifications?: {
+    /**
+     * Number of keys
+     */
+    keys?: number | null;
+    /**
+     * Number of pedals
+     */
+    pedals?: number | null;
+    /**
+     * Number of voices/sounds
+     */
+    voices?: number | null;
+    /**
+     * Maximum polyphony
+     */
+    polyphony?: number | null;
+    dimensions?: {
+      /**
+       * Width (e.g., "145cm")
+       */
+      width?: string | null;
+      /**
+       * Depth (e.g., "46cm")
+       */
+      depth?: string | null;
+      /**
+       * Height (e.g., "88cm")
+       */
+      height?: string | null;
+    };
+    /**
+     * Weight (e.g., "68kg")
+     */
+    weight?: string | null;
+    /**
+     * Action technology (e.g., "Grand Feel III")
+     */
+    actionType?: string | null;
+    /**
+     * Sound engine technology
+     */
+    soundEngine?: string | null;
+  };
+  /**
+   * Pricing information
+   */
+  pricing?: {
+    /**
+     * MSRP in USD
+     */
+    msrp?: number | null;
+    /**
+     * Sale price if different from MSRP
+     */
+    salePrice?: number | null;
+    /**
+     * Price range text (e.g., "$15,000 - $20,000")
+     */
+    priceRange?: string | null;
+    /**
+     * Check if pricing is by contact only
+     */
+    contactForPricing?: boolean | null;
+  };
+  /**
+   * Average rating (0-5 stars)
+   */
+  rating?: number | null;
+  /**
+   * Number of reviews
+   */
+  reviewCount?: number | null;
+  status?: ('active' | 'discontinued' | 'coming-soon' | 'limited-edition') | null;
+  /**
+   * Feature this model prominently
+   */
+  featured?: boolean | null;
+  /**
+   * Display order within series (lower numbers first)
+   */
+  sortOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Manage all content for the main Pianos page including hero, categories, featured models, and CTAs.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pianos-page".
+ */
+export interface PianosPage {
+  id: string;
+  /**
+   * Main page title displayed in the hero section
+   */
+  heroTitle: string;
+  /**
+   * Hero description text displayed below the title
+   */
+  heroDescription: string;
+  /**
+   * Background image for the hero section
+   */
+  heroBackgroundImage: string | Media;
+  /**
+   * Hero call-to-action button configuration
+   */
+  heroCta: {
+    /**
+     * Call-to-action button text
+     */
+    text: string;
+    /**
+     * Call-to-action button link/URL
+     */
+    link: string;
+  };
+  /**
+   * The four main piano categories displayed on the page
+   */
+  pianoCategories: {
+    /**
+     * URL slug for this category (e.g., "grand", "digital")
+     */
+    slug: string;
+    /**
+     * Category display name (e.g., "Acoustic Grand Pianos")
+     */
+    name: string;
+    /**
+     * Category description text
+     */
+    description: string;
+    /**
+     * Category representative image
+     */
+    image: string | Media;
+    /**
+     * List of piano models in this category
+     */
+    models?:
+      | {
+          model: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Price range for this category (e.g., "$45,000 - $185,000")
+     */
+    priceRange?: string | null;
+    /**
+     * Key features of this piano category
+     */
+    features?:
+      | {
+          feature: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Icon to display for this category
+     */
+    icon?: ('piano' | 'music' | 'zap' | 'award' | 'crown') | null;
+    /**
+     * Badge text (e.g., "Professional", "Classic")
+     */
+    badge?: string | null;
+    /**
+     * Highlighted feature or series (e.g., "GX BLAK Performance Series")
+     */
+    highlight?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * Featured models section header content
+   */
+  featuredModelsSection: {
+    /**
+     * Section title for featured models
+     */
+    title: string;
+    /**
+     * Section description for featured models
+     */
+    description: string;
+  };
+  /**
+   * Three featured piano models for the carousel
+   */
+  featuredModels: {
+    /**
+     * Piano model name (e.g., "GX-7 BLAK")
+     */
+    name: string;
+    /**
+     * Piano category/series (e.g., "GX BLAK Performance Series")
+     */
+    category: string;
+    /**
+     * Featured model image for carousel
+     */
+    image: string | Media;
+    /**
+     * Badge text (e.g., "Performance Series", "Flagship Digital")
+     */
+    badge?: string | null;
+    /**
+     * Model description for carousel slide
+     */
+    description: string;
+    id?: string | null;
+  }[];
+  /**
+   * Final call-to-action section configuration
+   */
+  ctaSection: {
+    /**
+     * CTA section main title
+     */
+    title: string;
+    /**
+     * CTA section description text
+     */
+    description: string;
+    /**
+     * Call-to-action button text
+     */
+    ctaText: string;
+    /**
+     * Call-to-action button link/URL
+     */
+    ctaLink: string;
+  };
+  /**
+   * SEO and metadata configuration
+   */
+  seo?: {
+    /**
+     * Page meta title for search engines
+     */
+    metaTitle?: string | null;
+    /**
+     * Page meta description for search engines (max 160 characters)
+     */
+    metaDescription?: string | null;
+    /**
+     * SEO keywords (comma-separated)
+     */
+    keywords?: string | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -360,6 +689,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'productlines';
         value: string | Productline;
+      } | null)
+    | ({
+        relationTo: 'piano-models';
+        value: string | PianoModel;
+      } | null)
+    | ({
+        relationTo: 'pianos-page';
+        value: string | PianosPage;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -536,8 +873,141 @@ export interface ProductlinesSelect<T extends boolean = true> {
         image?: T;
         id?: T;
       };
+  pianoModels?: T;
   featured?: T;
   sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "piano-models_select".
+ */
+export interface PianoModelsSelect<T extends boolean = true> {
+  name?: T;
+  model?: T;
+  slug?: T;
+  productline?: T;
+  description?: T;
+  shortDescription?: T;
+  image?: T;
+  gallery?:
+    | T
+    | {
+        image?: T;
+        caption?: T;
+        id?: T;
+      };
+  keyFeatures?:
+    | T
+    | {
+        feature?: T;
+        id?: T;
+      };
+  specifications?:
+    | T
+    | {
+        keys?: T;
+        pedals?: T;
+        voices?: T;
+        polyphony?: T;
+        dimensions?:
+          | T
+          | {
+              width?: T;
+              depth?: T;
+              height?: T;
+            };
+        weight?: T;
+        actionType?: T;
+        soundEngine?: T;
+      };
+  pricing?:
+    | T
+    | {
+        msrp?: T;
+        salePrice?: T;
+        priceRange?: T;
+        contactForPricing?: T;
+      };
+  rating?: T;
+  reviewCount?: T;
+  status?: T;
+  featured?: T;
+  sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pianos-page_select".
+ */
+export interface PianosPageSelect<T extends boolean = true> {
+  heroTitle?: T;
+  heroDescription?: T;
+  heroBackgroundImage?: T;
+  heroCta?:
+    | T
+    | {
+        text?: T;
+        link?: T;
+      };
+  pianoCategories?:
+    | T
+    | {
+        slug?: T;
+        name?: T;
+        description?: T;
+        image?: T;
+        models?:
+          | T
+          | {
+              model?: T;
+              id?: T;
+            };
+        priceRange?: T;
+        features?:
+          | T
+          | {
+              feature?: T;
+              id?: T;
+            };
+        icon?: T;
+        badge?: T;
+        highlight?: T;
+        id?: T;
+      };
+  featuredModelsSection?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  featuredModels?:
+    | T
+    | {
+        name?: T;
+        category?: T;
+        image?: T;
+        badge?: T;
+        description?: T;
+        id?: T;
+      };
+  ctaSection?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        ctaText?: T;
+        ctaLink?: T;
+      };
+  seo?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+        keywords?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

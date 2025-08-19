@@ -57,7 +57,7 @@ export const VideoPlayer = React.forwardRef<
     muted: props.muted,
     controls: !customControls && showControls,
     loop: props.loop,
-    preload: props.preload
+    preload: (props.preload as "auto" | "metadata" | "none") || "metadata"
   })
 
   if (!videoProps?.src) {
@@ -261,6 +261,7 @@ export const VideoPlayer = React.forwardRef<
       <video
         ref={videoRef}
         {...videoProps}
+        src={videoProps?.src || ''}
         className="w-full h-full"
         onPlay={handlePlay}
         onPause={handlePause}

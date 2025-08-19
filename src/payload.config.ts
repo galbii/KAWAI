@@ -11,7 +11,10 @@ import sharp from 'sharp'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Productlines } from './collections/Productlines'
+import { PianoModels } from './collections/PianoModels'
+import { PianosPage } from './collections/PianosPage'
 import { productlinesSeedPlugin } from './plugins/productlines-seed'
+import { pianoModelsSeedPlugin } from './plugins/piano-models-seed'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -26,7 +29,7 @@ export default buildConfig({
       // Payload meta configuration for HTML metadata
     },
   },
-  collections: [Users, Media, Productlines],
+  collections: [Users, Media, Productlines, PianoModels, PianosPage],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -39,13 +42,12 @@ export default buildConfig({
   plugins: [
     payloadCloudPlugin(),
     productlinesSeedPlugin(),
+    pianoModelsSeedPlugin(),
     // storage-adapter-placeholder
     s3Storage({
       collections: {
         'media': {
           prefix: 'media',
-          // Enable client-side uploads for files >4.5MB to bypass Vercel limits
-          clientUploads: process.env.NODE_ENV === 'production',
         },
       },
       bucket: process.env.S3_BUCKET || '',

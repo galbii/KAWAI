@@ -70,9 +70,9 @@ export const Productlines: CollectionConfig = {
       name: 'image',
       type: 'upload',
       relationTo: 'media',
-      required: true,
+      required: false,
       admin: {
-        description: 'Main series image displayed in the browser'
+        description: 'Main series image displayed in the browser (can be added after seeding)'
       }
     },
     
@@ -102,12 +102,23 @@ export const Productlines: CollectionConfig = {
           name: 'image',
           type: 'upload',
           relationTo: 'media',
-          required: true,
+          required: false,
           admin: {
-            description: 'Slide image'
+            description: 'Slide image (can be added after seeding)'
           }
         }
       ]
+    },
+    
+    // Related Piano Models (Virtual Join Field)
+    {
+      name: 'pianoModels',
+      type: 'join',
+      collection: 'piano-models',
+      on: 'productline',
+      admin: {
+        description: 'Piano models in this series (automatically populated)'
+      }
     },
     
     // Meta Fields

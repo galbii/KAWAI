@@ -28,7 +28,7 @@ interface Piano {
 interface Series {
   name: string;
   description: string;
-  highlight?: string;
+  highlight?: string | null;
   modelCount?: number;
   href?: string;
   pianos: Piano[];
@@ -441,10 +441,12 @@ export function UnifiedPianoSeries({
                 key={key} 
                 className="keen-slider__slide relative aspect-square min-w-[250px] md:min-w-[300px] lg:min-w-[350px] xl:min-w-[400px]"
               >
-                <img 
+                <Image
                   src={imageUrl} 
                   alt={title}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 250px, (max-width: 1024px) 300px, (max-width: 1200px) 350px, 400px"
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/80 via-transparent to-transparent" />

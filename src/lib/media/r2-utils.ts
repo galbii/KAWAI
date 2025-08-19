@@ -256,7 +256,7 @@ export function getVideoProps(
   let posterUrl: string | undefined
   if (finalOptions.poster && typeof media === 'object' && media.videoMeta?.thumbnail) {
     posterUrl = generateR2ImageUrl(
-      extractFilename(media.videoMeta.thumbnail.url || ''),
+      extractFilename((media.videoMeta.thumbnail as any)?.url || ''),
       { width: 1280, height: 720, quality: 80 }
     )
   }

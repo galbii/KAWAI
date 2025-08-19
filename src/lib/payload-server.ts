@@ -1,4 +1,12 @@
-import { Productline, ProductlinesResponse } from './types'
+import type { 
+  Productline, 
+  PianoModel
+} from '@/payload-types'
+
+import type { 
+  ProductlinesResponse,
+  PianoModelsResponse 
+} from './types'
 
 // Server-side Payload CMS API functions
 // These run on the server and can use server-side environment variables
@@ -91,6 +99,50 @@ export async function getFeaturedProductlinesServer(category?: string): Promise<
   }
 }
 
+// Piano Model server functions
+
+// Server-side fetch all piano models with optional filtering by productline
+export async function getPianoModelsServer(productlineSlug?: string): Promise<PianoModel[]> {
+  try {
+    const queryParams = new URLSearchParams()
+    
+    if (productlineSlug) {
+      queryParams.append('where[productline.slug][equals]', productlineSlug)
+    }
+    
+    queryParams.append('sort', 'sortOrder,name')
+    queryParams.append('limit', '100')
+    queryParams.append('depth', '2') // Populate productline relationship
+    
+    const endpoint = `/piano-models?${queryParams.toString()}`
+    const response = await payloadServerFetch<PianoModelsResponse>(endpoint)
+    
+    return response.docs
+  } catch (error) {
+    console.error('Failed to fetch piano models on server:', error)
+    return []
+  }
+}
+
+// Server-side fetch piano models for a specific productline
+export async function getPianoModelsByProductlineServer(productlineId: string): Promise<PianoModel[]> {
+  try {
+    const queryParams = new URLSearchParams()
+    queryParams.append('where[productline][equals]', productlineId)
+    queryParams.append('sort', 'sortOrder,name')
+    queryParams.append('limit', '100')
+    queryParams.append('depth', '1')
+    
+    const endpoint = `/piano-models?${queryParams.toString()}`
+    const response = await payloadServerFetch<PianoModelsResponse>(endpoint)
+    
+    return response.docs
+  } catch (error) {
+    console.error('Failed to fetch piano models by productline on server:', error)
+    return []
+  }
+}
+
 // Helper function to extract image URL from various formats
 function getImageUrl(image: any): string {
   if (typeof image === 'string') {
@@ -99,8 +151,33 @@ function getImageUrl(image: any): string {
   return image?.url || `/images/banners/default-piano.webp`
 }
 
+// Transform Piano Model to component format for server
+function transformPianoModelToComponentServer(pianoModel: PianoModel) {
+  return {
+    slug: pianoModel.slug,
+    name: pianoModel.name,
+    series: typeof pianoModel.productline === 'object' ? pianoModel.productline.name : 'Unknown Series',
+    rating: pianoModel.rating || 0,
+    reviews: pianoModel.reviewCount || 0,
+    image: getImageUrl(pianoModel.image),
+    description: pianoModel.description,
+    keyFeatures: (pianoModel.keyFeatures || []).map(kf => kf.feature)
+  }
+}
+
 // Transform server-fetched data to component format
-export function transformProductlineToSeriesServer(productline: Productline) {
+export function transformProductlineToSeriesServer(productline: Productline, pianoModels?: PianoModel[]) {
+  // Use provided piano models or extract from join field
+  let pianos: any[] = []
+  
+  if (pianoModels) {
+    pianos = pianoModels.map(transformPianoModelToComponentServer)
+  } else if (productline.pianoModels?.docs) {
+    pianos = productline.pianoModels.docs
+      .filter((model): model is PianoModel => typeof model === 'object')
+      .map(transformPianoModelToComponentServer)
+  }
+
   return {
     name: productline.name,
     description: productline.description,
@@ -110,11 +187,35 @@ export function transformProductlineToSeriesServer(productline: Productline) {
       title: slide.title,
       image: getImageUrl(slide.image)
     })),
-    pianos: [] // Empty array since pianos are now managed separately
+    pianos: pianos
   }
 }
 
 // Transform multiple Productlines to Series array for server components
-export function transformProductlinesToSeriesServer(productlines: Productline[]) {
-  return productlines.map(transformProductlineToSeriesServer)
+export function transformProductlinesToSeriesServer(productlines: Productline[], pianoModelsByProductline?: Record<string, PianoModel[]>) {
+  return productlines.map(productline => {
+    const pianoModels = pianoModelsByProductline?.[productline.id]
+    return transformProductlineToSeriesServer(productline, pianoModels)
+  })
+}
+
+// New server function to fetch productlines with their piano models
+export async function getProductlinesWithPianoModelsServer(category?: string): Promise<any[]> {
+  try {
+    // Get productlines
+    const productlines = await getProductlinesServer(category)
+    
+    // Get piano models for each productline
+    const seriesWithPianos = await Promise.all(
+      productlines.map(async (productline) => {
+        const pianoModels = await getPianoModelsByProductlineServer(productline.id)
+        return transformProductlineToSeriesServer(productline, pianoModels)
+      })
+    )
+    
+    return seriesWithPianos
+  } catch (error) {
+    console.error('Failed to fetch productlines with piano models on server:', error)
+    return []
+  }
 }

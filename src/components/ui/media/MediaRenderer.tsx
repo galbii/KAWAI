@@ -42,7 +42,7 @@ export const MediaRenderer = React.forwardRef<
             media={media}
             showControls
             onPlay={onLoad}
-            onError={onError}
+            onError={onError ? () => onError(new Error('Video load error')) : undefined}
             poster={placeholder}
           />
         </div>
@@ -62,7 +62,7 @@ export const MediaRenderer = React.forwardRef<
           priority={priority}
           placeholder={placeholder}
           onLoad={onLoad}
-          onError={onError}
+          onError={onError ? () => onError(new Error('Video load error')) : undefined}
         />
       </div>
     )
@@ -89,7 +89,7 @@ export const MediaRenderer = React.forwardRef<
           muted={media.videoMeta?.muted !== false}
           poster={placeholder}
           onPlay={onLoad}
-          onError={onError}
+          onError={onError ? () => onError(new Error('Video load error')) : undefined}
         />
       </div>
     )
@@ -107,7 +107,7 @@ export const MediaRenderer = React.forwardRef<
         {...props}
       >
         <audio
-          src={media.url}
+          src={media.url || ''}
           controls
           preload="metadata"
           className="w-full"

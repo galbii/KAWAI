@@ -1,0 +1,1 @@
+- only use bun do not use npm to run build or install the project

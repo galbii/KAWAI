@@ -144,7 +144,7 @@ export function buildImageUrl(
   return `${baseUrl}?${params.toString()}`
 }
 
-export function getOptimizedImageProps(
+export function getLegacyOptimizedImageProps(
   media: any,
   configKey: keyof typeof PIANO_IMAGE_CONFIGS
 ) {
@@ -294,7 +294,7 @@ export function optimizePianoGallery(gallery: any[]): any[] {
     optimized: {
       thumbnail: getOptimizedImageProps(item.image, 'thumbnail'),
       gallery: getOptimizedImageProps(item.image, 'gallery'),
-      detail: getOptimizedImageProps(item.image, 'detail')
+      detail: getOptimizedImageProps(item.image, 'card')
     },
     priority: index < 3 // Prioritize first 3 images
   }))

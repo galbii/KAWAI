@@ -8,7 +8,7 @@ interface Series {
   name: string;
   description: string;
   badge?: string;
-  highlight?: string;
+  highlight?: string | null;
   modelCount?: number;
   href?: string;
 }

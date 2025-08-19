@@ -66,33 +66,11 @@ const navigation: NavigationItem[] = [
     label: 'Pianos',
     href: '/pianos',
     dropdown: [
-      {
-        label: 'By Type',
-        items: [
-          { label: 'Grand Pianos', href: '/pianos/grand', description: 'Concert-quality instruments' },
-          { label: 'Upright Pianos', href: '/pianos/upright', description: 'Home & studio pianos' },
-          { label: 'Digital Pianos', href: '/pianos/digital', description: 'Modern technology' },
-          { label: 'Hybrid Pianos', href: '/pianos/hybrid', description: 'Acoustic meets digital' },
-        ]
-      },
-      {
-        label: 'By Series',
-        items: [
-          { label: 'Shigeru Kawai', href: '/pianos/series/shigeru-kawai', description: 'Handcrafted masterpieces' },
-          { label: 'GX Series', href: '/pianos/series/gx', description: 'Professional grands' },
-          { label: 'CA Series', href: '/pianos/series/ca', description: 'Premium digital' },
-          { label: 'K Series', href: '/pianos/series/k', description: 'Traditional uprights' },
-          { label: 'CN Series', href: '/pianos/series/cn', description: 'Compact digital' },
-        ]
-      },
-      {
-        label: 'Special Offerings',
-        items: [
-          { label: 'Pre-Owned Pianos', href: '/pianos/pre-owned', description: 'Quality certified instruments' },
-          { label: 'Piano Finder', href: '/piano-finder', description: 'Find your perfect piano' },
-          { label: 'Compare Models', href: '/pianos/compare', description: 'Side-by-side comparison' },
-        ]
-      }
+      { label: 'Grand Pianos', href: '/pianos/grand', description: 'Concert-quality instruments' },
+      { label: 'Digital Pianos', href: '/pianos/digital', description: 'Modern technology' },
+      { label: 'Upright Pianos', href: '/pianos/upright', description: 'Home & studio pianos' },
+      { label: 'Hybrid Pianos', href: '/pianos/hybrid', description: 'Acoustic meets digital' },
+      { label: 'View Our Gallery', href: '/gallery', description: 'Explore our piano collection' },
     ]
   },
   {
@@ -225,8 +203,8 @@ export function Header() {
     <motion.header 
       className={`sticky top-0 z-50 w-full border-b border-gray-200/50 transition-all duration-300 ${
         isScrolled 
-          ? 'backdrop-blur-lg bg-white/98 shadow-lg' 
-          : 'backdrop-blur-md bg-white/95 shadow-sm'
+          ? 'bg-white shadow-lg' 
+          : 'bg-white shadow-sm'
       }`}
       variants={headerVariants}
       initial="initial"
@@ -278,41 +256,18 @@ export function Header() {
                           item.label
                         )}
                       </NavigationMenuTrigger>
-                      <NavigationMenuContent className="backdrop-blur-md bg-white/95 border border-gray-200/50 shadow-xl rounded-xl p-0 overflow-hidden">
-                        {item.label === 'Pianos' ? (
-                          <div className="grid gap-6 p-8 md:w-[600px] lg:w-[800px] lg:grid-cols-3">
-                            {item.dropdown?.map((section) => (
-                              <div key={section.label} className="space-y-4">
-                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide border-b border-gray-200/60 pb-2">
-                                  {section.label}
-                                </h3>
-                                <ul className="space-y-2">
-                                  {section.items?.map((subItem) => (
-                                    <ListItem
-                                      key={subItem.href}
-                                      title={subItem.label}
-                                      href={subItem.href}
-                                    >
-                                      {subItem.description}
-                                    </ListItem>
-                                  ))}
-                                </ul>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <ul className="grid gap-2 p-6 md:w-[500px] md:grid-cols-1">
-                            {item.dropdown?.map((dropdownItem) => (
-                              <ListItem
-                                key={dropdownItem.href}
-                                title={dropdownItem.label}
-                                href={dropdownItem.href || '#'}
-                              >
-                                {dropdownItem.description}
-                              </ListItem>
-                            ))}
-                          </ul>
-                        )}
+                      <NavigationMenuContent className="bg-white border border-gray-200/50 shadow-xl rounded-xl p-0 overflow-hidden">
+                        <ul className="grid gap-2 p-6 md:w-[500px] md:grid-cols-1">
+                          {item.dropdown?.map((dropdownItem) => (
+                            <ListItem
+                              key={dropdownItem.href}
+                              title={dropdownItem.label}
+                              href={dropdownItem.href || '#'}
+                            >
+                              {dropdownItem.description}
+                            </ListItem>
+                          ))}
+                        </ul>
                       </NavigationMenuContent>
                     </>
                   )}
@@ -406,21 +361,32 @@ export function Header() {
         {isMenuOpen && (
           <>
             <motion.div 
-              className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-40 bg-black/20 lg:hidden"
+              style={{
+                top: 'env(safe-area-inset-top)',
+                bottom: 'env(safe-area-inset-bottom)',
+                left: 'env(safe-area-inset-left)',
+                right: 'env(safe-area-inset-right)'
+              }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsMenuOpen(false)}
             />
             <motion.div 
-              className="fixed top-0 right-0 bottom-0 z-50 w-80 max-w-[80vw] lg:hidden backdrop-blur-md bg-white/95 border-l border-gray-200/50 shadow-2xl overflow-y-auto"
+              className="fixed right-0 z-50 w-[min(85vw,24rem)] lg:hidden bg-white border-l border-gray-200/50 shadow-2xl overflow-hidden flex flex-col"
+              style={{
+                top: 'env(safe-area-inset-top)',
+                bottom: 'env(safe-area-inset-bottom)',
+                right: 'env(safe-area-inset-right)'
+              }}
               variants={mobileMenuVariants}
               initial="closed"
               animate="open"
               exit="closed"
             >
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-8">
+              <div className="flex-shrink-0 p-6 border-b border-gray-200/50">
+                <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
                   <button
                     onClick={() => setIsMenuOpen(false)}
@@ -429,8 +395,10 @@ export function Header() {
                     <X className="h-5 w-5" />
                   </button>
                 </div>
+              </div>
+              <div className="flex-1 overflow-y-auto">
                 <motion.nav 
-                  className="flex flex-col gap-6"
+                  className="flex flex-col gap-6 p-6"
                   variants={staggerChildren}
                   initial="closed"
                   animate="open"
@@ -466,7 +434,7 @@ export function Header() {
                         )}
                       </div>
                       {item.dropdown && (
-                        <div className="pl-4 space-y-4">
+                        <div className="pl-2 space-y-4">
                           {item.dropdown.map((dropdownItem) => (
                             <div key={dropdownItem.label} className="space-y-2">
                               {dropdownItem.items ? (
@@ -479,12 +447,12 @@ export function Header() {
                                       <Link
                                         key={subItem.href}
                                         href={subItem.href}
-                                        className="block py-2 px-3 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-all"
+                                        className="block py-2 px-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-all break-words"
                                         onClick={() => setIsMenuOpen(false)}
                                       >
-                                        <div className="font-medium">{subItem.label}</div>
+                                        <div className="font-medium leading-tight">{subItem.label}</div>
                                         {subItem.description && (
-                                          <div className="text-xs text-gray-500 mt-1">{subItem.description}</div>
+                                          <div className="text-xs text-gray-500 mt-1 leading-tight">{subItem.description}</div>
                                         )}
                                       </Link>
                                     ))}
@@ -493,12 +461,12 @@ export function Header() {
                               ) : (
                                 <Link
                                   href={dropdownItem.href || '#'}
-                                  className="block py-2 px-3 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-all"
+                                  className="block py-2 px-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-all break-words"
                                   onClick={() => setIsMenuOpen(false)}
                                 >
-                                  <div className="font-medium">{dropdownItem.label}</div>
+                                  <div className="font-medium leading-tight">{dropdownItem.label}</div>
                                   {dropdownItem.description && (
-                                    <div className="text-xs text-gray-500 mt-1">{dropdownItem.description}</div>
+                                    <div className="text-xs text-gray-500 mt-1 leading-tight">{dropdownItem.description}</div>
                                   )}
                                 </Link>
                               )}
@@ -510,8 +478,11 @@ export function Header() {
                   )}
                 </motion.div>
               ))}
+                </motion.nav>
+              </div>
+              <div className="flex-shrink-0 border-t border-gray-200 p-6">
                 <motion.div 
-                  className="border-t border-gray-200 pt-6 flex flex-col gap-3"
+                  className="flex flex-col gap-3"
                   variants={fadeInUp}
                   transition={{ delay: navigation.length * 0.05 + 0.1 }}
                 >
@@ -522,7 +493,6 @@ export function Header() {
                     <Link href="/contact">Contact Us</Link>
                   </Button>
                 </motion.div>
-                </motion.nav>
               </div>
             </motion.div>
           </>
