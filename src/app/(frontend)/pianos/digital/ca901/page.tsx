@@ -105,6 +105,38 @@ export default function CA901Page() {
         </div>
       </section>
 
+      {/* Hero Section */}
+      <section className="py-12 bg-gradient-to-br from-blue-900 to-black text-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl">
+            <div className="flex items-center mb-4">
+              <Piano className="h-8 w-8 text-blue-400 mr-3" />
+              <span className="text-blue-400 font-semibold text-lg">{pianoData.series}</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              {pianoData.fullName}
+            </h1>
+            <p className="text-xl text-gray-300 mb-6">{pianoData.shortDescription}</p>
+            
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-6">
+              <div className="flex items-center">
+                <Star className="h-5 w-5 text-blue-400 mr-2" />
+                <span className="text-blue-200 font-semibold">Flagship Concert Artist Digital Piano</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-6">
+              <div className="flex">
+                {[...Array(pianoData.rating)].map((_, i) => (
+                  <Star key={i} className="h-6 w-6 text-yellow-400 fill-current" />
+                ))}
+              </div>
+              <span className="text-gray-300">({pianoData.reviews} reviews)</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Main Product Section */}
       <section className="py-8 lg:py-16">
         <div className="container mx-auto px-4">
@@ -125,23 +157,6 @@ export default function CA901Page() {
 
             {/* Product Details */}
             <div className="space-y-6">
-              <div>
-                <p className="text-blue-600 font-semibold mb-2">{pianoData.series}</p>
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                  {pianoData.fullName}
-                </h1>
-                
-                <div className="flex items-center mb-4">
-                  <div className="flex">
-                    {[...Array(pianoData.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                  <span className="text-gray-600 ml-2">({pianoData.reviews} reviews)</span>
-                </div>
-
-                <p className="text-lg text-gray-600 mb-6">{pianoData.shortDescription}</p>
-              </div>
 
               <div className="border-t border-b py-6">
                 <div className="flex items-center justify-between mb-4">

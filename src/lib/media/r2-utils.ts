@@ -135,9 +135,19 @@ export function extractFilename(url: string): string {
     return parts[parts.length - 1]
   }
   
-  // Fallback: extract from any URL structure
-  const urlObj = new URL(url)
-  return urlObj.pathname.replace(/^\//, '')
+  // Handle relative paths (like fallback images)
+  if (url.startsWith('/')) {
+    return url.replace(/^\//, '')
+  }
+  
+  // Handle full URLs
+  try {
+    const urlObj = new URL(url)
+    return urlObj.pathname.replace(/^\//, '')
+  } catch (error) {
+    // If URL parsing fails, just return the original string without leading slash
+    return url.replace(/^\//, '')
+  }
 }
 
 /**
@@ -148,9 +158,24 @@ export function getOptimizedImageProps(
   preset: keyof typeof PIANO_RESPONSIVE_PRESETS,
   customOptions: Partial<R2TransformOptions> = {}
 ) {
-  const filename = typeof media === 'string' 
-    ? extractFilename(media)
-    : extractFilename(media.url || '')
+  const mediaUrl = typeof media === 'string' ? media : media.url || ''
+  
+  // Handle fallback/static images - don't process through R2
+  if (mediaUrl.startsWith('/images/') || mediaUrl.startsWith('/static/')) {
+    const alt = typeof media === 'object' ? media.alt : ''
+    return {
+      src: mediaUrl,
+      srcSet: '', // No responsive srcSet for static images
+      sizes: '', // No sizes for static images
+      width: undefined,
+      height: undefined,
+      alt,
+      loading: preset === 'hero' ? 'eager' as const : 'lazy' as const,
+      decoding: 'async' as const
+    }
+  }
+
+  const filename = extractFilename(mediaUrl)
 
   if (!filename) {
     return null

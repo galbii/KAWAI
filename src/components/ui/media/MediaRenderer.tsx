@@ -25,6 +25,22 @@ export const MediaRenderer = React.forwardRef<
   'aria-label': ariaLabel,
   ...props
 }, ref) => {
+  // Handle undefined or null media
+  if (!media) {
+    return (
+      <div
+        ref={ref}
+        className={cn('media-renderer media-renderer--placeholder', className)}
+        aria-label={ariaLabel || 'No media available'}
+        {...props}
+      >
+        <div className="flex items-center justify-center bg-muted text-muted-foreground h-full min-h-[200px]">
+          <span>No media available</span>
+        </div>
+      </div>
+    )
+  }
+
   // Handle string URLs
   if (typeof media === 'string') {
     // Determine media type from URL extension

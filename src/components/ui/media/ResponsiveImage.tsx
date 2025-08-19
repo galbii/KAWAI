@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useCallback, useRef, useEffect } from 'react'
+import Image from 'next/image'
 import type { Media } from '@/payload-types'
 import type { ResponsiveImageProps } from '@/lib/media/types'
 import { 
@@ -50,11 +51,21 @@ export const ResponsiveImage = React.forwardRef<
   const imageRef = useRef<HTMLImageElement>(null)
   const intersectionRef = useRef<HTMLDivElement>(null)
 
+  // Helper to safely extract filename, avoiding fallback images
+  const safeExtractFilename = useCallback((media: Media | string): string => {
+    const url = typeof media === 'string' ? media : media.url || ''
+    // Don't process fallback images
+    if (url.startsWith('/images/') || url.startsWith('/static/')) {
+      return url
+    }
+    return extractFilename(url)
+  }, [])
+
   // All callbacks declared at top level
   const handleLoad = useCallback((event: React.SyntheticEvent<HTMLImageElement>) => {
     if (loadStartTime.current) {
       const loadTime = Date.now() - loadStartTime.current
-      const filename = typeof media === 'string' ? extractFilename(media) : extractFilename(media.url || '')
+      const filename = safeExtractFilename(media)
       trackImageLoad(filename, loadTime)
     }
 
@@ -62,13 +73,13 @@ export const ResponsiveImage = React.forwardRef<
     setHasError(false)
     setShowLQIP(false)
     onLoad?.()
-  }, [media, onLoad])
+  }, [media, onLoad, safeExtractFilename])
 
   const handleError = useCallback((event: React.SyntheticEvent<HTMLImageElement>) => {
     setIsLoading(false)
     setHasError(true)
 
-    const filename = typeof media === 'string' ? extractFilename(media) : extractFilename(media.url || '')
+    const filename = safeExtractFilename(media)
     const error = new MediaLoadError(
       `Failed to load image: ${filename}`,
       filename
@@ -125,7 +136,14 @@ export const ResponsiveImage = React.forwardRef<
 
   // Progressive loading with LQIP
   useEffect(() => {
-    const filename = typeof media === 'string' ? extractFilename(media) : extractFilename(media.url || '')
+    const mediaUrl = typeof media === 'string' ? media : media.url || ''
+    
+    // Don't generate LQIP for fallback images
+    if (mediaUrl.startsWith('/images/') || mediaUrl.startsWith('/static/')) {
+      return
+    }
+    
+    const filename = safeExtractFilename(media)
     const lqipSrc = placeholder && filename ? generateLQIP(filename) : undefined
     
     if (lqipSrc && isIntersecting && placeholder) {
@@ -138,16 +156,18 @@ export const ResponsiveImage = React.forwardRef<
       }
       lqipImage.src = lqipSrc
     }
-  }, [media, placeholder, isIntersecting])
+  }, [media, placeholder, isIntersecting, safeExtractFilename])
 
   // Combine refs
   React.useImperativeHandle(ref, () => imageRef.current!)
 
-  // Get optimized image properties
-  const imageProps = getOptimizedImageProps(media, preset)
-  const filename = typeof media === 'string' ? extractFilename(media) : extractFilename(media.url || '')
-  const lqipSrc = placeholder && filename ? generateLQIP(filename) : undefined
-
+  // Determine if this is a Media object or string URL
+  const isMediaObject = typeof media === 'object' && media !== null
+  const isStringUrl = typeof media === 'string'
+  
+  // Extract URL for Media objects
+  const mediaUrl = isMediaObject ? media.url || '' : (isStringUrl ? media : '')
+  
   // Placeholder styles
   const placeholderStyle = aspectRatio ? { aspectRatio } : undefined
   const imageStyle = {
@@ -159,12 +179,89 @@ export const ResponsiveImage = React.forwardRef<
   // Render content using conditional components instead of early returns
   let content
 
-  if (!imageProps) {
+  // Handle Media objects with Next.js Image
+  if (isMediaObject && mediaUrl) {
+    // For Media objects, use Next.js Image directly
+    const imageSizes = `
+      (max-width: 768px) 100vw,
+      (max-width: 1200px) 50vw,
+      33vw
+    `
+    
     content = (
-      <div className={cn('flex items-center justify-center bg-muted text-muted-foreground', className)}>
-        <span>Invalid image</span>
+      <div className={cn('relative overflow-hidden', className)} style={placeholderStyle}>
+        <Image
+          ref={imageRef}
+          src={mediaUrl}
+          alt={media.alt || ''}
+          width={media.width || 800}
+          height={media.height || 600}
+          sizes={imageSizes}
+          priority={priority}
+          loading={priority ? 'eager' : 'lazy'}
+          className={cn('w-full h-full transition-opacity duration-300', {
+            'opacity-0': isLoading,
+            'opacity-100': !isLoading
+          })}
+          style={imageStyle}
+          onLoad={handleLoad}
+          onError={handleError}
+          onLoadStart={handleLoadStart}
+          {...props}
+        />
       </div>
     )
+  } else if (isStringUrl && mediaUrl) {
+    // For string URLs, use existing R2 optimization logic
+    const imageProps = getOptimizedImageProps(media, preset)
+    const filename = safeExtractFilename(media)
+    
+    // Don't generate LQIP for fallback images
+    const lqipSrc = placeholder && filename && !mediaUrl.startsWith('/images/') && !mediaUrl.startsWith('/static/') 
+      ? generateLQIP(filename) 
+      : undefined
+
+    if (!imageProps) {
+      content = (
+        <div className={cn('flex items-center justify-center bg-muted text-muted-foreground', className)}>
+          <span>Invalid image URL</span>
+        </div>
+      )
+    } else {
+      content = (
+        <div className={cn('relative overflow-hidden', className)} style={placeholderStyle}>
+          {/* LQIP Background */}
+          {showLQIP && lqipSrc && (
+            <img
+              src={lqipSrc}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover filter blur-sm scale-110 transition-opacity duration-300"
+              style={{ opacity: isLoading ? 1 : 0 }}
+            />
+          )}
+
+          {/* Main Image */}
+          <img
+            ref={imageRef}
+            src={imageProps.src}
+            srcSet={imageProps.srcSet}
+            sizes={imageProps.sizes}
+            alt={imageProps.alt}
+            className={cn('w-full h-full transition-opacity duration-300', {
+              'opacity-0': isLoading,
+              'opacity-100': !isLoading
+            })}
+            style={imageStyle}
+            onLoad={handleLoad}
+            onError={handleError}
+            onLoadStart={handleLoadStart}
+            loading={priority ? 'eager' : 'lazy'}
+            {...props}
+          />
+        </div>
+      )
+    }
   } else if (!isIntersecting && !priority) {
     content = (
       <div
@@ -183,12 +280,13 @@ export const ResponsiveImage = React.forwardRef<
       </div>
     )
   } else if (hasError && retryCount >= 2) {
+    // Error handling - show fallback or error message
     if (fallback) {
       content = (
         <img
           ref={imageRef}
           src={fallback}
-          alt={imageProps.alt}
+          alt={isMediaObject ? media.alt || '' : 'Fallback image'}
           className={cn('w-full h-full', className)}
           style={imageStyle}
           onLoad={handleLoad}
@@ -223,9 +321,8 @@ export const ResponsiveImage = React.forwardRef<
               setHasError(false)
               setIsLoading(true)
               setRetryCount(0)
-              if (imageRef.current) {
-                imageRef.current.src = imageProps.src
-              }
+              // Retry by refreshing the component
+              window.location.reload()
             }}
             className="mt-2 text-xs text-primary hover:underline"
           >
@@ -235,44 +332,10 @@ export const ResponsiveImage = React.forwardRef<
       )
     }
   } else {
+    // No valid media provided
     content = (
-      <div className={cn('relative overflow-hidden', className)} style={placeholderStyle}>
-        {/* LQIP Background */}
-        {showLQIP && lqipSrc && (
-          <img
-            src={lqipSrc}
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 w-full h-full object-cover filter blur-sm scale-110 transition-opacity duration-300"
-            style={{ opacity: isLoading ? 1 : 0 }}
-          />
-        )}
-
-        {/* Main Image */}
-        <img
-          ref={imageRef}
-          src={imageProps.src}
-          srcSet={imageProps.srcSet}
-          sizes={imageProps.sizes}
-          alt={imageProps.alt}
-          className={cn('w-full h-full transition-opacity duration-300', {
-            'opacity-0': isLoading,
-            'opacity-100': !isLoading
-          })}
-          style={imageStyle}
-          onLoad={handleLoad}
-          onError={handleError}
-          onLoadStart={handleLoadStart}
-          loading={priority ? 'eager' : 'lazy'}
-          {...props}
-        />
-
-        {/* Loading Indicator */}
-        {isLoading && (
-          <div className="absolute inset-0 bg-muted animate-pulse flex items-center justify-center">
-            <div className="w-8 h-8 bg-muted-foreground/20 rounded" />
-          </div>
-        )}
+      <div className={cn('flex items-center justify-center bg-muted text-muted-foreground', className)}>
+        <span>No media available</span>
       </div>
     )
   }

@@ -13,6 +13,7 @@ import {
   LoadingState 
 } from '@/components/ui/loading-states'
 import { cn } from '@/lib/utils'
+import { getPianosPageData } from '@/lib/payload'
 
 // Types for API responses
 interface LegacyPianoCategory {
@@ -469,8 +470,7 @@ function PianoCategorySection({ category, index }: { category: LegacyPianoCatego
 
 // Main Piano Page Component
 export default function PianosPageCMS() {
-  const [categories, setCategories] = useState<LegacyPianoCategory[]>([])
-  const [featuredModels, setFeaturedModels] = useState<LegacyFeaturedModel[]>([])
+  const [pageData, setPageData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -483,13 +483,9 @@ export default function PianosPageCMS() {
         setLoading(true)
         setError(null)
 
-        const [categoriesData, modelsData] = await Promise.all([
-          fetchPianoCategories(),
-          fetchFeaturedModels()
-        ])
-
-        setCategories(categoriesData)
-        setFeaturedModels(modelsData)
+        // Use the new getPianosPageData function instead of separate API calls
+        const data = await getPianosPageData()
+        setPageData(data)
       } catch (err) {
         console.error('Error loading piano page data:', err)
         setError(err instanceof Error ? err.message : 'Failed to load piano data')
@@ -509,11 +505,11 @@ export default function PianosPageCMS() {
     )
   }
 
-  if (error) {
+  if (error || !pageData) {
     return (
       <div className="min-h-screen">
         <LoadingState 
-          message={`Error: ${error}`}
+          message={`Error: ${error || 'Failed to load data'}`}
           showSpinner={false}
           className="min-h-[50vh]"
         />
@@ -526,7 +522,11 @@ export default function PianosPageCMS() {
       {/* Hero Section */}
       <section 
         ref={heroAnimation.ref as React.RefObject<HTMLElement>} 
-        className="relative py-24 lg:py-32 bg-cover bg-no-repeat bg-[url('/images/piano-categories/NV10S_along%20the%20keyboard_whiteBG.jpg')] !bg-position-[-60%_center]"
+        className="relative py-24 lg:py-32 bg-cover bg-no-repeat bg-center"
+        style={{
+          backgroundImage: `url('${pageData.hero.heroBackgroundImage}')`,
+          backgroundPosition: '-60% center'
+        }}
       >
         <div className="max-w-7xl mx-auto px-6">
           <div className="max-w-2xl">
@@ -534,21 +534,20 @@ export default function PianosPageCMS() {
               'text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-kawai-black mb-6',
               fadeUpClass(heroAnimation.isVisible)
             )}>
-              Experience the Complete Kawai Piano Collection
+              {pageData.hero.heroTitle}
             </h1>
             <p className={cn(
               'text-xl md:text-2xl leading-relaxed text-kawai-black/80 mb-8',
               fadeUpClass(heroAnimation.isVisible, 200)
             )}>
-              From the legendary Shigeru Kawai concert grands used in international competitions to 
-              innovative digital and hybrid instruments, discover the piano that will inspire your musical journey.
+              {pageData.hero.heroDescription}
             </p>
             <div className={fadeUpClass(heroAnimation.isVisible, 400)}>
               <Link
-                href="#categories"
+                href={pageData.hero.heroCta?.link || "#categories"}
                 className="inline-flex items-center px-8 py-4 bg-kawai-black hover:bg-kawai-black/80 text-kawai-pearl font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"
               >
-                <span>Explore Categories</span>
+                <span>{pageData.hero.heroCta?.text || "Explore Categories"}</span>
                 <ArrowRight className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </div>
@@ -561,23 +560,22 @@ export default function PianosPageCMS() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-10">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-kawai-black mb-4">
-              Flagship & Featured Models
+              {pageData.featuredModelsSection?.title || "Flagship & Featured Models"}
             </h2>
             <p className="text-lg md:text-xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto">
-              Discover our most celebrated instruments, from competition-grade concert grands 
-              to innovative digital and hybrid pianos preferred by professionals worldwide.
+              {pageData.featuredModelsSection?.description || "Discover our most celebrated instruments, from competition-grade concert grands to innovative digital and hybrid pianos preferred by professionals worldwide."}
             </p>
           </div>
           
           <ErrorBoundary fallback={PianoSectionErrorFallback}>
-            <FeaturedPianoCarousel models={featuredModels} />
+            <FeaturedPianoCarousel models={pageData.featuredModels} />
           </ErrorBoundary>
         </div>
       </AnimatedSection>
 
       {/* Piano Categories */}
       <div id="categories" className="bg-kawai-pearl">
-        {categories.map((category, index) => (
+        {pageData.categories.map((category: any, index: number) => (
           <ErrorBoundary key={category.slug} fallback={PianoSectionErrorFallback}>
             <PianoCategorySection category={category} index={index} />
           </ErrorBoundary>
@@ -588,18 +586,17 @@ export default function PianosPageCMS() {
       <AnimatedSection className="py-16 lg:py-24 text-center bg-kawai-pearl">
         <div className="max-w-4xl mx-auto px-6">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-kawai-black mb-6">
-            Experience the Difference
+            {pageData.cta.title}
           </h2>
           <p className="text-xl md:text-2xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto mb-12">
-            Visit our showroom to hear and feel the exceptional quality of Kawai pianos. 
-            Our experts will help you find the perfect instrument for your musical journey.
+            {pageData.cta.description}
           </p>
           
           <Link
-            href="/contact/schedule-visit"
+            href={pageData.cta.ctaLink}
             className="inline-flex items-center px-8 py-4 bg-kawai-black hover:bg-kawai-black/80 text-kawai-pearl font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"
           >
-            <span>Schedule Showroom Visit</span>
+            <span>{pageData.cta.ctaText}</span>
             <ArrowRight className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
         </div>

@@ -15,6 +15,7 @@ import { PianoModels } from './collections/PianoModels'
 import { PianosPage } from './collections/PianosPage'
 import { productlinesSeedPlugin } from './plugins/productlines-seed'
 import { pianoModelsSeedPlugin } from './plugins/piano-models-seed'
+import { pianosPageSeedPlugin } from './plugins/pianos-page-seed'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -43,11 +44,18 @@ export default buildConfig({
     payloadCloudPlugin(),
     productlinesSeedPlugin(),
     pianoModelsSeedPlugin(),
+    pianosPageSeedPlugin(),
     // storage-adapter-placeholder
     s3Storage({
       collections: {
         'media': {
           prefix: 'media',
+          disablePayloadAccessControl: true, // Use direct R2 URLs instead of proxying through Payload
+          generateFileURL: ({ filename, prefix }) => {
+            // Use the public R2 URL instead of the storage endpoint
+            const path = prefix ? `${prefix}/${filename}` : filename
+            return `${process.env.NEXT_PUBLIC_S3_PUBLIC_URL}/${path}`
+          },
         },
       },
       bucket: process.env.S3_BUCKET || '',

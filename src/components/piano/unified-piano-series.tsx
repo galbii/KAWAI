@@ -12,7 +12,9 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import { MediaRenderer } from "@/components/ui/media";
 import { Productline } from "@/lib/types";
+import type { Media } from '@/payload-types';
 
 interface Piano {
   slug: string;
@@ -20,7 +22,7 @@ interface Piano {
   series: string;
   rating: number;
   reviews: number;
-  image: string;
+  image: string | Media;
   description: string;
   keyFeatures: string[];
 }
@@ -34,7 +36,7 @@ interface Series {
   pianos: Piano[];
   slides?: Array<{
     title: string;
-    image: string;
+    image: string | Media;
   }>;
 }
 
@@ -215,14 +217,15 @@ function SeriesCard({ series, index, categorySlug, isActive }: SeriesCardProps) 
                     transition={{ duration: 0.8, delay: 0.6 }}
                     layout
                   >
-                    <Image
-                      src={series.pianos[0]?.image || '/images/banners/default-piano.webp'}
-                      alt={`${series.name} - ${series.pianos[0]?.name || 'Piano'}`}
-                      fill
-                      className="object-contain object-center"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
-                      priority={index === 0}
-                    />
+                    <div className="relative w-full h-full">
+                      <MediaRenderer
+                        media={series.pianos[0]?.image}
+                        preset="hero"
+                        priority={index === 0}
+                        className="w-full h-full object-contain object-center"
+                        aria-label={`${series.name} - ${series.pianos[0]?.name || 'Piano'}`}
+                      />
+                    </div>
                   </motion.div>
                 </div>
               </motion.div>
@@ -432,7 +435,7 @@ export function UnifiedPianoSeries({
           {carouselItems.map((item, index) => {
             // Check if item is a slide or piano
             const isSlide = 'title' in item;
-            const imageUrl = isSlide ? item.image : item.image;
+            const media = isSlide ? item.image : item.image;
             const title = isSlide ? item.title : item.name;
             const key = isSlide ? `${item.title}-${index}` : `${item.slug}-${index}`;
             
@@ -441,14 +444,14 @@ export function UnifiedPianoSeries({
                 key={key} 
                 className="keen-slider__slide relative aspect-square min-w-[250px] md:min-w-[300px] lg:min-w-[350px] xl:min-w-[400px]"
               >
-                <Image
-                  src={imageUrl} 
-                  alt={title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 250px, (max-width: 1024px) 300px, (max-width: 1200px) 350px, 400px"
-                  loading="lazy"
-                />
+                <div className="relative w-full h-full">
+                  <MediaRenderer
+                    media={media}
+                    preset="gallery"
+                    className="w-full h-full object-cover"
+                    aria-label={title}
+                  />
+                </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/80 via-transparent to-transparent" />
                 <div className="absolute bottom-3 left-3 text-white">
                   <h3 className="text-sm md:text-base lg:text-lg font-bold">{title}</h3>

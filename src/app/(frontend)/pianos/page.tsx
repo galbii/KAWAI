@@ -1,12 +1,21 @@
-"use client";
+"use client"
 
 import Link from "next/link"
-import Image from "next/image"
 import { Piano, ArrowRight, Award, Crown, Music, Zap, ChevronLeft, ChevronRight } from "lucide-react"
 import { useScrollAnimation, fadeUpClass } from "@/lib/hooks/useScrollAnimation"
 import { useCallback, useEffect, useRef, useState } from "react"
+import { getPianosPageData, resolveMediaUrl } from "@/lib/payload"
+import { MediaRenderer } from '@/components/ui/media/MediaRenderer'
+import { ErrorBoundary, PianoSectionErrorFallback } from '@/components/ui/error-boundary'
+import { 
+  PianoLoadingSkeleton, 
+  FeaturedCarouselSkeleton, 
+  CategorySectionSkeleton,
+  LoadingState 
+} from '@/components/ui/loading-states'
 
-const pianoCategories = [
+// Fallback data - original hardcoded data
+const fallbackPianoCategories = [
   {
     slug: "grand",
     name: "Acoustic Grand Pianos",
@@ -57,7 +66,7 @@ const pianoCategories = [
   }
 ]
 
-const featuredModels = [
+const fallbackFeaturedModels = [
   {
     name: "GX-7 BLAK",
     category: "GX BLAK Performance Series",
@@ -183,26 +192,26 @@ function ImagePlaceholderGrid({ category }: { category: string }) {
 }
 
 // Featured Piano Carousel Component
-function FeaturedPianoCarousel() {
+function FeaturedPianoCarousel({ models }: { models: any[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const nextPiano = useCallback(() => {
-    if (isTransitioning) return;
+    if (isTransitioning || models.length === 0) return;
     setIsTransitioning(true);
-    setCurrentIndex((prev) => (prev + 1) % featuredModels.length);
+    setCurrentIndex((prev) => (prev + 1) % models.length);
     setTimeout(() => setIsTransitioning(false), 500);
-  }, [isTransitioning]);
+  }, [isTransitioning, models.length]);
 
   const prevPiano = useCallback(() => {
-    if (isTransitioning) return;
+    if (isTransitioning || models.length === 0) return;
     setIsTransitioning(true);
-    setCurrentIndex((prev) => (prev - 1 + featuredModels.length) % featuredModels.length);
+    setCurrentIndex((prev) => (prev - 1 + models.length) % models.length);
     setTimeout(() => setIsTransitioning(false), 500);
-  }, [isTransitioning]);
+  }, [isTransitioning, models.length]);
 
   const goToPiano = (index: number) => {
-    if (isTransitioning || index === currentIndex) return;
+    if (isTransitioning || index === currentIndex || models.length === 0) return;
     setIsTransitioning(true);
     setCurrentIndex(index);
     setTimeout(() => setIsTransitioning(false), 500);
@@ -219,7 +228,11 @@ function FeaturedPianoCarousel() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [nextPiano, prevPiano]);
 
-  const currentPiano = featuredModels[currentIndex];
+  if (models.length === 0) {
+    return <FeaturedCarouselSkeleton />
+  }
+
+  const currentPiano = models[currentIndex];
 
   return (
     <div className="relative min-h-[70vh] max-h-[85vh] rounded-2xl overflow-hidden group bg-kawai-black">
@@ -227,15 +240,13 @@ function FeaturedPianoCarousel() {
       <div className="grid lg:grid-cols-2 h-full">
         {/* Piano Image Section */}
         <div className="relative order-2 lg:order-1 min-h-[40vh] lg:min-h-full">
-          <Image
-            src={currentPiano.image}
-            alt={`${currentPiano.name} - ${currentPiano.category}`}
-            fill
-            sizes="(min-width: 1024px) 50vw, 100vw"
-            className={`object-cover transition-all duration-500 ease-out ${
+          <MediaRenderer
+            media={currentPiano.image}
+            preset="hero"
+            priority
+            className={`absolute inset-0 transition-all duration-500 ease-out ${
               isTransitioning ? 'scale-105 opacity-90' : 'scale-100 opacity-100'
             }`}
-            priority
           />
           {/* Subtle overlay for text readability on mobile */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent lg:hidden" />
@@ -272,40 +283,46 @@ function FeaturedPianoCarousel() {
       </div>
 
       {/* Navigation Arrows */}
-      <button
-        onClick={prevPiano}
-        disabled={isTransitioning}
-        className="absolute left-4 lg:left-6 top-1/2 -translate-y-1/2 w-12 h-12 lg:w-14 lg:h-14 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 disabled:opacity-50 z-10"
-        aria-label="Previous piano"
-      >
-        <ChevronLeft className="w-6 h-6 lg:w-7 lg:h-7 text-white" />
-      </button>
-      
-      <button
-        onClick={nextPiano}
-        disabled={isTransitioning}
-        className="absolute right-4 lg:right-6 top-1/2 -translate-y-1/2 w-12 h-12 lg:w-14 lg:h-14 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 disabled:opacity-50 z-10"
-        aria-label="Next piano"
-      >
-        <ChevronRight className="w-6 h-6 lg:w-7 lg:h-7 text-white" />
-      </button>
+      {models.length > 1 && (
+        <>
+          <button
+            onClick={prevPiano}
+            disabled={isTransitioning}
+            className="absolute left-4 lg:left-6 top-1/2 -translate-y-1/2 w-12 h-12 lg:w-14 lg:h-14 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 disabled:opacity-50 z-10"
+            aria-label="Previous piano"
+          >
+            <ChevronLeft className="w-6 h-6 lg:w-7 lg:h-7 text-white" />
+          </button>
+          
+          <button
+            onClick={nextPiano}
+            disabled={isTransitioning}
+            className="absolute right-4 lg:right-6 top-1/2 -translate-y-1/2 w-12 h-12 lg:w-14 lg:h-14 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 disabled:opacity-50 z-10"
+            aria-label="Next piano"
+          >
+            <ChevronRight className="w-6 h-6 lg:w-7 lg:h-7 text-white" />
+          </button>
+        </>
+      )}
 
       {/* Dot Indicators */}
-      <div className="absolute bottom-4 lg:bottom-6 left-1/2 -translate-x-1/2 lg:left-auto lg:right-8 lg:translate-x-0 flex space-x-2 z-10">
-        {featuredModels.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => goToPiano(index)}
-            disabled={isTransitioning}
-            className={`w-3 h-3 lg:w-4 lg:h-4 rounded-full transition-all duration-300 ${
-              index === currentIndex
-                ? 'bg-kawai-red scale-125'
-                : 'bg-white/50 hover:bg-white/70'
-            }`}
-            aria-label={`Go to piano ${index + 1}`}
-          />
-        ))}
-      </div>
+      {models.length > 1 && (
+        <div className="absolute bottom-4 lg:bottom-6 left-1/2 -translate-x-1/2 lg:left-auto lg:right-8 lg:translate-x-0 flex space-x-2 z-10">
+          {models.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToPiano(index)}
+              disabled={isTransitioning}
+              className={`w-3 h-3 lg:w-4 lg:h-4 rounded-full transition-all duration-300 ${
+                index === currentIndex
+                  ? 'bg-kawai-red scale-125'
+                  : 'bg-white/50 hover:bg-white/70'
+              }`}
+              aria-label={`Go to piano ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -444,7 +461,51 @@ function PianoCategorySection({ category, index }: { category: any, index: numbe
 }
 
 export default function PianosPage() {
-  const heroAnimation = useScrollAnimation({ threshold: 0.1 });
+  const [pageData, setPageData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const heroAnimation = useScrollAnimation({ threshold: 0.1 })
+
+  // Load CMS data on mount
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await getPianosPageData()
+        if (data) {
+          setPageData(data)
+        }
+      } catch (error) {
+        console.error('Error loading CMS data, using fallbacks:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadData()
+  }, [])
+
+  // Use fallback data if CMS data is not available
+  const heroData = pageData?.hero || {
+    heroTitle: "Experience the Complete Kawai Piano Collection",
+    heroDescription: "From the legendary Shigeru Kawai concert grands used in international competitions to innovative digital and hybrid instruments, discover the piano that will inspire your musical journey.",
+    heroBackgroundImage: "/images/piano-categories/NV10S_along%20the%20keyboard_whiteBG.jpg",
+    heroCta: { text: "Explore Categories", link: "#categories" }
+  }
+
+  const featuredData = pageData?.featuredModels || fallbackFeaturedModels
+  const categoriesData = pageData?.categories || fallbackPianoCategories
+  const ctaData = pageData?.cta || {
+    title: "Experience the Difference",
+    description: "Visit our showroom to hear and feel the exceptional quality of Kawai pianos. Our experts will help you find the perfect instrument for your musical journey.",
+    ctaText: "Schedule Showroom Visit",
+    ctaLink: "/contact/schedule-visit"
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen">
+        <PianoLoadingSkeleton />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen">
@@ -452,22 +513,25 @@ export default function PianosPage() {
       <section 
         ref={heroAnimation.ref as React.RefObject<HTMLElement>} 
         className="relative py-24 lg:py-32 bg-cover bg-no-repeat bg-[url('/images/piano-categories/NV10S_along%20the%20keyboard_whiteBG.jpg')] !bg-position-[-60%_center]"
+        style={pageData?.hero?.heroBackgroundImage ? {
+          backgroundImage: `url('${heroData.heroBackgroundImage}')`,
+          backgroundPosition: '-60% center'
+        } : {}}
       >
         <div className="max-w-7xl mx-auto px-6">
           <div className="max-w-2xl">
             <h1 className={`text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-kawai-black mb-6 ${fadeUpClass(heroAnimation.isVisible)}`}>
-              Experience the Complete Kawai Piano Collection
+              {heroData.heroTitle}
             </h1>
             <p className={`text-xl md:text-2xl leading-relaxed text-kawai-black/80 mb-8 ${fadeUpClass(heroAnimation.isVisible, 200)}`}>
-              From the legendary Shigeru Kawai concert grands used in international competitions to 
-              innovative digital and hybrid instruments, discover the piano that will inspire your musical journey.
+              {heroData.heroDescription}
             </p>
             <div className={`${fadeUpClass(heroAnimation.isVisible, 400)}`}>
               <Link
-                href="#categories"
+                href={heroData.heroCta?.link || "#categories"}
                 className="inline-flex items-center px-8 py-4 bg-kawai-black hover:bg-kawai-black/80 text-kawai-pearl font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"
               >
-                <span>Explore Categories</span>
+                <span>{heroData.heroCta?.text || "Explore Categories"}</span>
                 <ArrowRight className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </div>
@@ -480,22 +544,25 @@ export default function PianosPage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-10">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-kawai-black mb-4">
-              Flagship & Featured Models
+              {pageData?.featuredModelsSection?.title || "Flagship & Featured Models"}
             </h2>
             <p className="text-lg md:text-xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto">
-              Discover our most celebrated instruments, from competition-grade concert grands 
-              to innovative digital and hybrid pianos preferred by professionals worldwide.
+              {pageData?.featuredModelsSection?.description || "Discover our most celebrated instruments, from competition-grade concert grands to innovative digital and hybrid pianos preferred by professionals worldwide."}
             </p>
           </div>
           
-          <FeaturedPianoCarousel />
+          <ErrorBoundary fallback={PianoSectionErrorFallback}>
+            <FeaturedPianoCarousel models={featuredData} />
+          </ErrorBoundary>
         </div>
       </AnimatedSection>
 
       {/* Piano Categories */}
       <div id="categories" className="bg-kawai-pearl">
-        {pianoCategories.map((category, index) => (
-          <PianoCategorySection key={category.slug} category={category} index={index} />
+        {categoriesData.map((category: any, index: number) => (
+          <ErrorBoundary key={category.slug} fallback={PianoSectionErrorFallback}>
+            <PianoCategorySection category={category} index={index} />
+          </ErrorBoundary>
         ))}
       </div>
 
@@ -503,18 +570,17 @@ export default function PianosPage() {
       <AnimatedSection className="py-16 lg:py-24 text-center bg-kawai-pearl">
         <div className="max-w-4xl mx-auto px-6">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-kawai-black mb-6">
-            Experience the Difference
+            {ctaData.title}
           </h2>
           <p className="text-xl md:text-2xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto mb-12">
-            Visit our showroom to hear and feel the exceptional quality of Kawai pianos. 
-            Our experts will help you find the perfect instrument for your musical journey.
+            {ctaData.description}
           </p>
           
           <Link
-            href="/contact/schedule-visit"
+            href={ctaData.ctaLink}
             className="inline-flex items-center px-8 py-4 bg-kawai-black hover:bg-kawai-black/80 text-kawai-pearl font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"
           >
-            <span>Schedule Showroom Visit</span>
+            <span>{ctaData.ctaText}</span>
             <ArrowRight className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
         </div>
