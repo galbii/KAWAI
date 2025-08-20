@@ -13,6 +13,17 @@ import { Media } from './collections/Media'
 import { Productlines } from './collections/Productlines'
 import { PianoModels } from './collections/PianoModels'
 import { PianosPage } from './collections/PianosPage'
+import { Products } from './collections/Products'
+import {
+  ProductShowcase,
+  Hero,
+  TextContent,
+  ImageGallery,
+  FeaturesList,
+  Specifications,
+  CallToAction,
+  Testimonials
+} from './blocks'
 import { productlinesSeedPlugin } from './plugins/productlines-seed'
 import { pianoModelsSeedPlugin } from './plugins/piano-models-seed'
 import { pianosPageSeedPlugin } from './plugins/pianos-page-seed'
@@ -30,7 +41,18 @@ export default buildConfig({
       // Payload meta configuration for HTML metadata
     },
   },
-  collections: [Users, Media, Productlines, PianoModels, PianosPage],
+  collections: [Users, Media, Productlines, PianoModels, PianosPage, Products],
+  // Define blocks at root level for performance optimization using blockReferences
+  blocks: [
+    ProductShowcase,
+    Hero,
+    TextContent,
+    ImageGallery,
+    FeaturesList,
+    Specifications,
+    CallToAction,
+    Testimonials
+  ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -52,9 +74,24 @@ export default buildConfig({
           prefix: 'media',
           disablePayloadAccessControl: true, // Use direct R2 URLs instead of proxying through Payload
           generateFileURL: ({ filename, prefix }) => {
-            // Use the public R2 URL instead of the storage endpoint
+            // Validate environment variable
+            const publicUrl = process.env.NEXT_PUBLIC_S3_PUBLIC_URL
+            if (!publicUrl) {
+              console.error('NEXT_PUBLIC_S3_PUBLIC_URL environment variable is not set')
+              throw new Error('R2 public URL not configured')
+            }
+            
+            // Construct the full URL ensuring proper path structure
+            const cleanPublicUrl = publicUrl.replace(/\/$/, '') // Remove trailing slash
             const path = prefix ? `${prefix}/${filename}` : filename
-            return `${process.env.NEXT_PUBLIC_S3_PUBLIC_URL}/${path}`
+            const fullUrl = `${cleanPublicUrl}/${path}`
+            
+            // Log URL generation for debugging in development
+            if (process.env.NODE_ENV === 'development') {
+              console.debug(`Generated media URL: ${fullUrl}`)
+            }
+            
+            return fullUrl
           },
         },
       },

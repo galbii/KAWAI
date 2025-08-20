@@ -45,7 +45,7 @@ export const PianosPage: CollectionConfig = {
               name: 'heroBackgroundImage',
               type: 'upload',
               relationTo: 'media',
-              required: true,
+              required: false,
               admin: {
                 description: 'Background image for the hero section'
               }
@@ -127,23 +127,9 @@ export const PianosPage: CollectionConfig = {
                   name: 'image',
                   type: 'upload',
                   relationTo: 'media',
-                  required: true,
+                  required: false,
                   admin: {
                     description: 'Category representative image'
-                  }
-                },
-                {
-                  name: 'models',
-                  type: 'array',
-                  fields: [
-                    {
-                      name: 'model',
-                      type: 'text',
-                      required: true
-                    }
-                  ],
-                  admin: {
-                    description: 'List of piano models in this category'
                   }
                 },
                 {
@@ -266,7 +252,7 @@ export const PianosPage: CollectionConfig = {
                   name: 'image',
                   type: 'upload',
                   relationTo: 'media',
-                  required: true,
+                  required: false,
                   admin: {
                     description: 'Featured model image for carousel'
                   }
@@ -391,7 +377,7 @@ export const PianosPage: CollectionConfig = {
     {
       path: '/singleton',
       method: 'get',
-      handler: (async (req: any, res: any, next: any) => {
+      handler: async (req: any) => {
         try {
           const result = await req.payload.find({
             collection: 'pianos-page',
@@ -399,14 +385,14 @@ export const PianosPage: CollectionConfig = {
           })
           
           if (result.docs.length > 0) {
-            return res.json(result.docs[0])
+            return Response.json(result.docs[0])
           } else {
-            return res.status(404).json({ error: 'Pianos page not found' })
+            return Response.json({ error: 'Pianos page not found' }, { status: 404 })
           }
         } catch (error) {
-          return next(error)
+          return Response.json({ error: 'Internal server error' }, { status: 500 })
         }
-      }) as any
+      }
     }
   ]
 }

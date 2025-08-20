@@ -8,7 +8,8 @@ import {
   getOptimizedImageProps, 
   generateLQIP,
   extractFilename,
-  trackImageLoad
+  trackImageLoad,
+  debugMediaUrl
 } from '@/lib/media/r2-utils'
 import { cn } from '@/lib/utils'
 
@@ -150,13 +151,18 @@ export const ResponsiveImage = React.forwardRef<
       setShowLQIP(true)
       
       // Preload the LQIP
-      const lqipImage = new Image()
+      const lqipImage = new globalThis.Image()
       lqipImage.onload = () => {
         setShowLQIP(true)
       }
       lqipImage.src = lqipSrc
     }
   }, [media, placeholder, isIntersecting, safeExtractFilename])
+
+  // Debug media URL in development
+  React.useEffect(() => {
+    debugMediaUrl(media, 'ResponsiveImage')
+  }, [media])
 
   // Combine refs
   React.useImperativeHandle(ref, () => imageRef.current!)
@@ -167,6 +173,34 @@ export const ResponsiveImage = React.forwardRef<
   
   // Extract URL for Media objects
   const mediaUrl = isMediaObject ? media.url || '' : (isStringUrl ? media : '')
+  
+  // Early validation for Media objects without URLs
+  if (isMediaObject && !mediaUrl) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('ResponsiveImage: Media object missing URL property', media)
+    }
+    return (
+      <div className={cn('flex flex-col items-center justify-center bg-muted text-muted-foreground p-4', className)}>
+        <svg
+          className="w-8 h-8 mb-2 opacity-50"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <span className="text-sm">Media URL missing</span>
+        {process.env.NODE_ENV === 'development' && (
+          <span className="text-xs mt-1 opacity-75">Check Payload S3 configuration</span>
+        )}
+      </div>
+    )
+  }
   
   // Placeholder styles
   const placeholderStyle = aspectRatio ? { aspectRatio } : undefined
@@ -188,14 +222,18 @@ export const ResponsiveImage = React.forwardRef<
       33vw
     `
     
+    // Safely convert width and height to numbers
+    const safeWidth: number = media.width ? (typeof media.width === 'number' ? media.width : parseInt(String(media.width), 10) || 800) : 800
+    const safeHeight: number = media.height ? (typeof media.height === 'number' ? media.height : parseInt(String(media.height), 10) || 600) : 600
+    
     content = (
       <div className={cn('relative overflow-hidden', className)} style={placeholderStyle}>
         <Image
           ref={imageRef}
           src={mediaUrl}
           alt={media.alt || ''}
-          width={media.width || 800}
-          height={media.height || 600}
+          width={800}
+          height={600}
           sizes={imageSizes}
           priority={priority}
           loading={priority ? 'eager' : 'lazy'}
@@ -207,7 +245,6 @@ export const ResponsiveImage = React.forwardRef<
           onLoad={handleLoad}
           onError={handleError}
           onLoadStart={handleLoadStart}
-          {...props}
         />
       </div>
     )

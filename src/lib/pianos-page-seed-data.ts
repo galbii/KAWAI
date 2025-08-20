@@ -68,19 +68,6 @@ export const pianoPageSeedData = {
       slug: 'grand',
       name: 'Acoustic Grand Pianos',
       description: 'Professional grand pianos featuring advanced technology and superior craftsmanship',
-      models: [
-        { model: 'GX-7 BLAK' },
-        { model: 'GX-6 BLAK' },
-        { model: 'GX-5 BLAK' },
-        { model: 'GX-3 BLAK' },
-        { model: 'GX-2 BLAK' },
-        { model: 'GX-1 BLAK' },
-        { model: 'GL-50' },
-        { model: 'GL-40' },
-        { model: 'GL-30' },
-        { model: 'GL-20' },
-        { model: 'GL-10' }
-      ],
       priceRange: '$45,000 - $185,000',
       features: [
         { feature: 'Millennium III Action' },
@@ -96,16 +83,6 @@ export const pianoPageSeedData = {
       slug: 'upright',
       name: 'Acoustic Upright Pianos',
       description: 'Space-efficient acoustic pianos delivering exceptional touch and tone',
-      models: [
-        { model: 'K-800' },
-        { model: 'K-600' },
-        { model: 'K-500' },
-        { model: 'K-400' },
-        { model: 'K-300' },
-        { model: 'K-200' },
-        { model: 'Designer Series' },
-        { model: 'Continental Series' }
-      ],
       priceRange: '$8,999 - $35,000',
       features: [
         { feature: 'Extended Length Keys' },
@@ -121,16 +98,6 @@ export const pianoPageSeedData = {
       slug: 'digital',
       name: 'Digital Pianos',
       description: 'Cutting-edge digital instruments with authentic piano touch and sound',
-      models: [
-        { model: 'CA99' },
-        { model: 'CA901' },
-        { model: 'CA701' },
-        { model: 'CA501' },
-        { model: 'CN301' },
-        { model: 'CN201' },
-        { model: 'CL36' },
-        { model: 'CL26' }
-      ],
       priceRange: '$1,999 - $12,999',
       features: [
         { feature: 'Grand Feel III Action' },
@@ -146,12 +113,6 @@ export const pianoPageSeedData = {
       slug: 'hybrid',
       name: 'Hybrid Pianos',
       description: 'Revolutionary instruments combining acoustic action with digital versatility',
-      models: [
-        { model: 'NOVUS NV-10S' },
-        { model: 'NOVUS NV-5S' },
-        { model: 'AnyTime ATX4' },
-        { model: 'AnyTime ATX3' }
-      ],
       priceRange: '$12,999 - $24,999',
       features: [
         { feature: 'Real Grand Action' },

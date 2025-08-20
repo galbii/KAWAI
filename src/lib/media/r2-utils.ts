@@ -1,7 +1,17 @@
 // Cloudflare R2 CDN utilities for optimized media delivery
 import type { Media } from '@/payload-types'
 
-export const R2_PUBLIC_URL = 'https://pub-8cc11ba1a6ef43369715136333c4b35a.r2.dev'
+// Get R2 public URL from environment variables with validation
+function getR2PublicUrl(): string {
+  const url = process.env.NEXT_PUBLIC_S3_PUBLIC_URL
+  if (!url) {
+    console.error('NEXT_PUBLIC_S3_PUBLIC_URL environment variable is not set')
+    throw new Error('R2 public URL not configured. Please set NEXT_PUBLIC_S3_PUBLIC_URL environment variable.')
+  }
+  return url.replace(/\/$/, '') // Remove trailing slash
+}
+
+export const R2_PUBLIC_URL = getR2PublicUrl()
 
 export interface R2TransformOptions {
   width?: number
@@ -321,7 +331,7 @@ export function supportsWebP(): Promise<boolean> {
   if (typeof window === 'undefined') return Promise.resolve(false)
 
   return new Promise((resolve) => {
-    const webP = new Image()
+    const webP = new globalThis.Image()
     webP.onload = webP.onerror = () => {
       resolve(webP.height === 2)
     }
@@ -333,7 +343,43 @@ export function supportsWebP(): Promise<boolean> {
  * Validates if URL is from R2 domain
  */
 export function isR2Url(url: string): boolean {
-  return url.includes(R2_PUBLIC_URL) || url.includes('r2.dev')
+  try {
+    return url.includes(R2_PUBLIC_URL) || url.includes('r2.dev') || url.includes('.r2.cloudflarestorage.com')
+  } catch (error) {
+    return false
+  }
+}
+
+/**
+ * Validates if a URL is accessible (for debugging)
+ */
+export async function validateMediaUrl(url: string): Promise<boolean> {
+  if (typeof window === 'undefined') return true // Skip validation on server
+  
+  try {
+    const response = await fetch(url, { method: 'HEAD' })
+    return response.ok
+  } catch (error) {
+    console.warn(`Media URL validation failed for: ${url}`, error)
+    return false
+  }
+}
+
+/**
+ * Debug utility to log media URL construction
+ */
+export function debugMediaUrl(media: Media | string, context: string = ''): void {
+  if (process.env.NODE_ENV !== 'development') return
+  
+  const mediaInfo = typeof media === 'string' 
+    ? { url: media, type: 'string' }
+    : { url: media.url, alt: media.alt, filename: media.filename, type: 'Media object' }
+    
+  console.debug(`[${context}] Media URL Debug:`, {
+    ...mediaInfo,
+    R2_PUBLIC_URL,
+    isR2: mediaInfo.url ? isR2Url(mediaInfo.url) : false
+  })
 }
 
 /**
@@ -356,7 +402,7 @@ export function batchPreloadImages(
   return Promise.all(
     filenames.map(filename => 
       new Promise<void>((resolve) => {
-        const img = new Image()
+        const img = new globalThis.Image()
         img.onload = img.onerror = () => resolve()
         img.src = generateR2ImageUrl(filename, options)
       })

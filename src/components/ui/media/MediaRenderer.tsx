@@ -6,6 +6,7 @@ import { VideoPlayer } from './VideoPlayer'
 import type { Media } from '@/payload-types'
 import type { MediaRendererProps } from '@/lib/media/types'
 import { cn } from '@/lib/utils'
+import { debugMediaUrl } from '@/lib/media/r2-utils'
 
 /**
  * Flexible media renderer that automatically determines the appropriate component
@@ -25,8 +26,16 @@ export const MediaRenderer = React.forwardRef<
   'aria-label': ariaLabel,
   ...props
 }, ref) => {
+  // Debug media URL in development
+  React.useEffect(() => {
+    debugMediaUrl(media, 'MediaRenderer')
+  }, [media])
+
   // Handle undefined or null media
   if (!media) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('MediaRenderer: No media provided')
+    }
     return (
       <div
         ref={ref}
@@ -86,6 +95,41 @@ export const MediaRenderer = React.forwardRef<
 
   // Handle Media objects
   const mediaType = media.mediaType || 'image'
+  
+  // Validate that Media object has a URL
+  if (!media.url) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('MediaRenderer: Media object missing URL property', media)
+    }
+    return (
+      <div
+        ref={ref}
+        className={cn('media-renderer media-renderer--error', className)}
+        aria-label={ariaLabel || 'Media unavailable'}
+        {...props}
+      >
+        <div className="flex flex-col items-center justify-center bg-muted text-muted-foreground h-full min-h-[200px] p-4">
+          <svg
+            className="w-8 h-8 mb-2 opacity-50"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span className="text-sm">Media URL missing</span>
+          {process.env.NODE_ENV === 'development' && (
+            <span className="text-xs mt-1 opacity-75">Check Payload S3 configuration</span>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   if (mediaType === 'video') {
     return (

@@ -1,0 +1,9 @@
+// Export all blocks for use in Payload configuration
+export { ProductShowcase } from './ProductShowcase'
+export { Hero } from './Hero'
+export { TextContent } from './TextContent'
+export { ImageGallery } from './ImageGallery'
+export { FeaturesList } from './FeaturesList'
+export { Specifications } from './Specifications'
+export { CallToAction } from './CallToAction'
+export { Testimonials } from './Testimonials'

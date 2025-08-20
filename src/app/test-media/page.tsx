@@ -1,11 +1,12 @@
 import { MediaRenderer } from '@/components/ui/media/MediaRenderer'
+import type { Media } from '@/payload-types'
 
 // Test Media object based on the API response
-const testMediaObject = {
+const testMediaObject: Media = {
   "createdAt": "2025-08-19T23:36:04.037Z",
   "updatedAt": "2025-08-19T23:36:04.037Z", 
   "alt": "Test image from R2",
-  "mediaType": "image",
+  "mediaType": "image" as const,
   "usage": [],
   "videoMeta": {"autoplay": false, "muted": true},
   "variants": {},

@@ -252,7 +252,6 @@ export async function getPianoCategories(): Promise<any[]> {
       name: "Acoustic Grand Pianos",
       description: "Professional grand pianos featuring advanced technology and superior craftsmanship",
       image: "/images/piano-categories/grand.jpg",
-      models: [{"model": "GX-7 BLAK"}, {"model": "GX-6 BLAK"}, {"model": "GX-5 BLAK"}, {"model": "GX-3 BLAK"}, {"model": "GX-2 BLAK"}, {"model": "GX-1 BLAK"}, {"model": "GL-50"}, {"model": "GL-40"}, {"model": "GL-30"}, {"model": "GL-20"}, {"model": "GL-10"}],
       priceRange: "$45,000 - $185,000",
       features: [{"feature": "Millennium III Action"}, {"feature": "Carbon Fiber Components"}, {"feature": "Neotex Key Surface"}, {"feature": "Konami Tuning Pins"}],
       icon: "piano",
@@ -264,7 +263,6 @@ export async function getPianoCategories(): Promise<any[]> {
       name: "Acoustic Upright Pianos", 
       description: "Space-efficient acoustic pianos delivering exceptional touch and tone",
       image: "/images/piano-categories/upright.png",
-      models: [{"model": "K-800"}, {"model": "K-600"}, {"model": "K-500"}, {"model": "K-400"}, {"model": "K-300"}, {"model": "K-200"}, {"model": "Designer Series"}, {"model": "Continental Series"}],
       priceRange: "$8,999 - $35,000",
       features: [{"feature": "Extended Length Keys"}, {"feature": "Millennium III Prep"}, {"feature": "Soft-Close Fallboard"}, {"feature": "Premium Hammers"}],
       icon: "music",
@@ -276,7 +274,6 @@ export async function getPianoCategories(): Promise<any[]> {
       name: "Digital Pianos",
       description: "Cutting-edge digital instruments with authentic piano touch and sound",
       image: "/images/piano-categories/digital.png", 
-      models: [{"model": "CA99"}, {"model": "CA901"}, {"model": "CA701"}, {"model": "CA501"}, {"model": "CN301"}, {"model": "CN201"}, {"model": "CL36"}, {"model": "CL26"}],
       priceRange: "$1,999 - $12,999",
       features: [{"feature": "Grand Feel III Action"}, {"feature": "Harmonic Imaging XL"}, {"feature": "Onkyo Audio"}, {"feature": "Bluetooth Connectivity"}],
       icon: "zap",
@@ -288,7 +285,6 @@ export async function getPianoCategories(): Promise<any[]> {
       name: "Hybrid Pianos",
       description: "Revolutionary instruments combining acoustic action with digital versatility",
       image: "/images/piano-categories/hybrid.jpg",
-      models: [{"model": "NOVUS NV-10S"}, {"model": "NOVUS NV-5S"}, {"model": "AnyTime ATX4"}, {"model": "AnyTime ATX3"}],
       priceRange: "$12,999 - $24,999", 
       features: [{"feature": "Real Grand Action"}, {"feature": "Silent Practice Mode"}, {"feature": "Digital Recording"}, {"feature": "Millennium III Action"}],
       icon: "award",
@@ -373,7 +369,12 @@ export async function getMediaById(id: string): Promise<Media | null> {
 
 // Helper function to resolve media references
 export function resolveMediaUrl(media: string | Media | null | undefined): string {
-  if (!media) return ''
+  if (!media) {
+    if (process.env.NODE_ENV === 'development') {
+      console.debug('resolveMediaUrl: No media provided')
+    }
+    return ''
+  }
   
   if (typeof media === 'string') {
     // If it's a string and looks like a URL, return as is
@@ -381,12 +382,32 @@ export function resolveMediaUrl(media: string | Media | null | undefined): strin
       return media
     }
     // Otherwise, it might be an ID - would need to fetch separately
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('resolveMediaUrl: String provided but not a URL, might be an ID:', media)
+    }
     return ''
   }
   
   // It's a Media object - use the url property from Payload
-  // The Media object should have a url property when properly populated with depth
-  return media.url || ''
+  const url = media.url || ''
+  
+  // Debug logging for development
+  if (process.env.NODE_ENV === 'development') {
+    console.debug('resolveMediaUrl: Media object resolved', {
+      hasUrl: !!media.url,
+      url,
+      filename: media.filename,
+      alt: media.alt,
+      mediaType: media.mediaType
+    })
+    
+    // Warn if Media object doesn't have a URL
+    if (!url) {
+      console.warn('resolveMediaUrl: Media object missing URL property', media)
+    }
+  }
+  
+  return url
 }
 
 // Transform PianoCategory to the format expected by existing components
