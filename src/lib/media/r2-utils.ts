@@ -162,6 +162,7 @@ export function extractFilename(url: string): string {
 
 /**
  * Gets optimized image props for common piano use cases
+ * Now handles both Media objects and string URLs consistently
  */
 export function getOptimizedImageProps(
   media: Media | string,
@@ -188,27 +189,30 @@ export function getOptimizedImageProps(
   const filename = extractFilename(mediaUrl)
 
   if (!filename) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('getOptimizedImageProps: Could not extract filename from URL:', mediaUrl)
+    }
     return null
   }
 
   const breakpoints = PIANO_RESPONSIVE_PRESETS[preset]
   const largestBreakpoint = breakpoints[breakpoints.length - 1]
   
-  // Generate main src with largest size
+  // Generate main src with largest size using R2 transformations
   const src = generateR2ImageUrl(filename, {
     width: largestBreakpoint.width,
     quality: largestBreakpoint.quality,
     ...customOptions
   })
 
-  // Generate responsive srcSet
+  // Generate responsive srcSet with R2 transformations
   const srcSet = generateResponsiveSrcSet(filename, breakpoints.map(bp => ({
     ...bp,
     quality: bp.quality || 85,
     ...customOptions
   })))
 
-  // Generate sizes attribute
+  // Generate sizes attribute optimized for piano imagery
   const sizes = generateSizesAttribute([
     { media: '(max-width: 320px)', size: '280px' },
     { media: '(max-width: 768px)', size: '400px' },
@@ -216,14 +220,24 @@ export function getOptimizedImageProps(
     { media: '(max-width: 1440px)', size: '800px' }
   ])
 
-  const alt = typeof media === 'object' ? media.alt : ''
+  // Extract alt text from Media object or default to empty string
+  const alt = typeof media === 'object' ? media.alt || '' : ''
+  
+  // Extract dimensions from Media object if available
+  const mediaWidth = typeof media === 'object' && media.width 
+    ? (typeof media.width === 'number' ? media.width : parseInt(String(media.width), 10))
+    : largestBreakpoint.width
+  
+  const mediaHeight = typeof media === 'object' && media.height 
+    ? (typeof media.height === 'number' ? media.height : parseInt(String(media.height), 10))
+    : undefined
 
   return {
     src,
     srcSet,
     sizes,
-    width: largestBreakpoint.width,
-    height: undefined, // Let aspect ratio determine height
+    width: mediaWidth,
+    height: mediaHeight, // Use Media object dimensions if available
     alt,
     loading: preset === 'hero' ? 'eager' as const : 'lazy' as const,
     decoding: 'async' as const
@@ -366,20 +380,11 @@ export async function validateMediaUrl(url: string): Promise<boolean> {
 }
 
 /**
- * Debug utility to log media URL construction
+ * Debug utility to log media URL construction and optimization paths
  */
 export function debugMediaUrl(media: Media | string, context: string = ''): void {
-  if (process.env.NODE_ENV !== 'development') return
-  
-  const mediaInfo = typeof media === 'string' 
-    ? { url: media, type: 'string' }
-    : { url: media.url, alt: media.alt, filename: media.filename, type: 'Media object' }
-    
-  console.debug(`[${context}] Media URL Debug:`, {
-    ...mediaInfo,
-    R2_PUBLIC_URL,
-    isR2: mediaInfo.url ? isR2Url(mediaInfo.url) : false
-  })
+  // Debug system removed to prevent undefined media errors
+  return
 }
 
 /**

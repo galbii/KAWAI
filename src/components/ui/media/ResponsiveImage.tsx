@@ -8,8 +8,7 @@ import {
   getOptimizedImageProps, 
   generateLQIP,
   extractFilename,
-  trackImageLoad,
-  debugMediaUrl
+  trackImageLoad
 } from '@/lib/media/r2-utils'
 import { cn } from '@/lib/utils'
 
@@ -159,10 +158,7 @@ export const ResponsiveImage = React.forwardRef<
     }
   }, [media, placeholder, isIntersecting, safeExtractFilename])
 
-  // Debug media URL in development
-  React.useEffect(() => {
-    debugMediaUrl(media, 'ResponsiveImage')
-  }, [media])
+  // Debug system removed
 
   // Combine refs
   React.useImperativeHandle(ref, () => imageRef.current!)
@@ -213,43 +209,9 @@ export const ResponsiveImage = React.forwardRef<
   // Render content using conditional components instead of early returns
   let content
 
-  // Handle Media objects with Next.js Image
-  if (isMediaObject && mediaUrl) {
-    // For Media objects, use Next.js Image directly
-    const imageSizes = `
-      (max-width: 768px) 100vw,
-      (max-width: 1200px) 50vw,
-      33vw
-    `
-    
-    // Safely convert width and height to numbers
-    const safeWidth: number = media.width ? (typeof media.width === 'number' ? media.width : parseInt(String(media.width), 10) || 800) : 800
-    const safeHeight: number = media.height ? (typeof media.height === 'number' ? media.height : parseInt(String(media.height), 10) || 600) : 600
-    
-    content = (
-      <div className={cn('relative overflow-hidden', className)} style={placeholderStyle}>
-        <Image
-          ref={imageRef}
-          src={mediaUrl}
-          alt={media.alt || ''}
-          width={800}
-          height={600}
-          sizes={imageSizes}
-          priority={priority}
-          loading={priority ? 'eager' : 'lazy'}
-          className={cn('w-full h-full transition-opacity duration-300', {
-            'opacity-0': isLoading,
-            'opacity-100': !isLoading
-          })}
-          style={imageStyle}
-          onLoad={handleLoad}
-          onError={handleError}
-          onLoadStart={handleLoadStart}
-        />
-      </div>
-    )
-  } else if (isStringUrl && mediaUrl) {
-    // For string URLs, use existing R2 optimization logic
+  // Handle both Media objects and string URLs through unified R2 optimization
+  if ((isMediaObject && mediaUrl) || (isStringUrl && mediaUrl)) {
+    // Use R2 optimization for ALL media (both Media objects and string URLs)
     const imageProps = getOptimizedImageProps(media, preset)
     const filename = safeExtractFilename(media)
     

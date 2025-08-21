@@ -48,6 +48,7 @@ export async function getProductlinesServer(category?: string): Promise<Productl
     // Sort by sortOrder (ascending) then by name
     queryParams.append('sort', 'sortOrder,name')
     queryParams.append('limit', '100') // Get all productlines
+    queryParams.append('depth', '2') // Populate media relationships and their nested relationships
     
     const endpoint = `/productlines?${queryParams.toString()}`
     const response = await payloadServerFetch<ProductlinesResponse>(endpoint)
@@ -143,12 +144,18 @@ export async function getPianoModelsByProductlineServer(productlineId: string): 
   }
 }
 
-// Helper function to extract image URL from various formats
-function getImageUrl(image: any): string {
-  if (typeof image === 'string') {
-    return image.startsWith('http') ? image : `/images/banners/default-piano.webp`
+// Helper function to preserve Media objects or provide fallback for strings
+function preserveMediaOrFallback(media: any): any {
+  // If it's a Media object with url property, preserve it
+  if (media && typeof media === 'object' && media.url) {
+    return media
   }
-  return image?.url || `/images/banners/default-piano.webp`
+  // If it's a valid URL string, keep it as string
+  if (typeof media === 'string' && media.startsWith('http')) {
+    return media
+  }
+  // Otherwise return fallback image path
+  return `/images/banners/default-piano.webp`
 }
 
 // Transform Piano Model to component format for server
@@ -159,7 +166,7 @@ function transformPianoModelToComponentServer(pianoModel: PianoModel) {
     series: typeof pianoModel.productline === 'object' ? pianoModel.productline.name : 'Unknown Series',
     rating: pianoModel.rating || 0,
     reviews: pianoModel.reviewCount || 0,
-    image: getImageUrl(pianoModel.image),
+    image: preserveMediaOrFallback(pianoModel.image),
     description: pianoModel.description,
     keyFeatures: (pianoModel.keyFeatures || []).map(kf => kf.feature)
   }
@@ -182,10 +189,11 @@ export function transformProductlineToSeriesServer(productline: Productline, pia
     name: productline.name,
     description: productline.description,
     highlight: productline.highlight,
+    image: preserveMediaOrFallback(productline.image), // Main series image from Productlines collection
     href: `/pianos/${productline.category}/${productline.slug}`,
     slides: (productline.slides || []).map(slide => ({
       title: slide.title,
-      image: getImageUrl(slide.image)
+      image: preserveMediaOrFallback(slide.image)
     })),
     pianos: pianos
   }

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Menu, X } from 'lucide-react'
 import { motion, AnimatePresence, useScroll, useMotionValueEvent, useMotionValue } from 'framer-motion'
 import { Button } from '@/components/ui/button'
@@ -119,6 +119,8 @@ export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const mobileMenuRef = useRef<HTMLDivElement>(null)
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
   
   // Detect reduced motion preference
   useEffect(() => {
@@ -132,6 +134,47 @@ export function Header() {
     mediaQuery.addEventListener('change', handleChange)
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [])
+
+  // Scroll lock for mobile menu
+  useEffect(() => {
+    if (isMenuOpen) {
+      // Prevent body scroll when menu is open
+      const originalStyle = window.getComputedStyle(document.body).overflow
+      document.body.style.overflow = 'hidden'
+      
+      return () => {
+        document.body.style.overflow = originalStyle
+      }
+    }
+  }, [isMenuOpen])
+
+  // Focus management for mobile menu
+  useEffect(() => {
+    if (isMenuOpen && mobileMenuRef.current) {
+      // Focus the first focusable element in the menu
+      const firstFocusable = mobileMenuRef.current.querySelector(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      ) as HTMLElement
+      firstFocusable?.focus()
+    } else if (!isMenuOpen && menuButtonRef.current) {
+      // Return focus to menu button when menu closes
+      menuButtonRef.current.focus()
+    }
+  }, [isMenuOpen])
+
+  // Handle escape key to close mobile menu
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isMenuOpen) {
+        setIsMenuOpen(false)
+      }
+    }
+
+    if (isMenuOpen) {
+      document.addEventListener('keydown', handleEscape)
+      return () => document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isMenuOpen])
   
   // Scroll detection with throttling
   const { scrollY } = useScroll()
@@ -312,6 +355,7 @@ export function Header() {
 
           {/* Mobile Menu Button */}
           <motion.button
+            ref={menuButtonRef}
             className="lg:hidden p-2 rounded-md transition-colors hover:bg-gray-100/80 focus:outline-none focus:ring-2 focus:ring-kawai-red focus:ring-offset-2"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             whileTap={{ scale: 0.95 }}
@@ -361,7 +405,7 @@ export function Header() {
         {isMenuOpen && (
           <>
             <motion.div 
-              className="fixed inset-0 z-40 bg-black/20 lg:hidden"
+              className="fixed inset-0 z-[190] bg-black/20 lg:hidden"
               style={{
                 top: 'env(safe-area-inset-top)',
                 bottom: 'env(safe-area-inset-bottom)',
@@ -374,7 +418,8 @@ export function Header() {
               onClick={() => setIsMenuOpen(false)}
             />
             <motion.div 
-              className="fixed right-0 z-50 w-[min(85vw,24rem)] lg:hidden bg-white border-l border-gray-200/50 shadow-2xl overflow-hidden flex flex-col"
+              ref={mobileMenuRef}
+              className="fixed right-0 z-[200] w-[min(85vw,24rem)] lg:hidden bg-white border-l border-gray-200/50 shadow-2xl overflow-hidden flex flex-col max-h-screen"
               style={{
                 top: 'env(safe-area-inset-top)',
                 bottom: 'env(safe-area-inset-bottom)',
@@ -396,7 +441,7 @@ export function Header() {
                   </button>
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto overscroll-contain">
                 <motion.nav 
                   className="flex flex-col gap-6 p-6"
                   variants={staggerChildren}

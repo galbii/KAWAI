@@ -381,7 +381,8 @@ export const PianosPage: CollectionConfig = {
         try {
           const result = await req.payload.find({
             collection: 'pianos-page',
-            limit: 1
+            limit: 1,
+            depth: 2 // Populate media relationships and their nested relationships
           })
           
           if (result.docs.length > 0) {

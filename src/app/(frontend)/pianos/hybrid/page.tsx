@@ -2,6 +2,9 @@
 
 import { CategoryHero } from "@/components/piano/category-hero";
 import { UnifiedPianoSeries } from "@/components/piano/unified-piano-series";
+import { useEffect, useState } from "react";
+import { getProductlines, transformProductlinesToSeries } from "@/lib/payload";
+import { Productline } from "@/lib/types";
 
 // Featured hybrid pianos - highlighting the best from each series
 const featuredHybridPianos = [
@@ -143,6 +146,39 @@ const hybridPianoSeries = [
 ];
 
 export default function HybridPianosPage() {
+  const [productlines, setProductlines] = useState<Productline[]>([]);
+  const [series, setSeries] = useState(hybridPianoSeries);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchProductlines() {
+      try {
+        setLoading(true);
+        const data = await getProductlines('hybrid');
+        setProductlines(data);
+        
+        if (data.length > 0) {
+          // Transform CMS data and use it, otherwise fallback to hardcoded data
+          const transformedSeries = transformProductlinesToSeries(data);
+          // Add slides from CMS data
+          const seriesWithSlides = transformedSeries.map((series, index) => ({
+            ...series,
+            slides: data[index]?.slides || []
+          }));
+          setSeries(seriesWithSlides);
+        }
+      } catch (err) {
+        console.error('Failed to fetch productlines:', err);
+        setError('Failed to load product data');
+        // Keep using hardcoded data as fallback
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProductlines();
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -160,12 +196,38 @@ export default function HybridPianosPage() {
       />
 
       {/* Unified Series Browser with Carousel */}
-      <UnifiedPianoSeries
-        title="Explore Hybrid Piano Series"
-        description="Experience groundbreaking instruments that seamlessly blend authentic acoustic piano action with cutting-edge digital technology."
-        series={hybridPianoSeries}
-        categorySlug="hybrid"
-      />
+      {loading ? (
+        <section className="py-16 lg:py-24 bg-kawai-pearl text-center">
+          <div className="max-w-4xl mx-auto px-6">
+            <div className="animate-pulse">
+              <div className="h-8 bg-kawai-neutral/20 rounded-lg mb-4 max-w-md mx-auto" />
+              <div className="h-4 bg-kawai-neutral/20 rounded-lg mb-8 max-w-lg mx-auto" />
+              <div className="grid md:grid-cols-3 gap-6">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-64 bg-kawai-neutral/20 rounded-lg" />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : error ? (
+        <section className="py-16 lg:py-24 bg-kawai-pearl text-center">
+          <div className="max-w-4xl mx-auto px-6">
+            <div className="bg-kawai-red/10 border border-kawai-red/20 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-kawai-red mb-2">Unable to load product data</h3>
+              <p className="text-kawai-black/70">{error}</p>
+            </div>
+          </div>
+        </section>
+      ) : (
+        <UnifiedPianoSeries
+          title="Explore Hybrid Piano Series"
+          description="Experience groundbreaking instruments that seamlessly blend authentic acoustic piano action with cutting-edge digital technology."
+          series={series}
+          categorySlug="hybrid"
+          productlines={productlines}
+        />
+      )}
 
       {/* Innovation Showcase */}
       <section className="py-16 lg:py-24 bg-gradient-to-br from-kawai-black to-kawai-neutral text-kawai-pearl">

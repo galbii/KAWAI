@@ -23,8 +23,8 @@ interface MediaResponse {
   totalPages: number
 }
 
-// Payload CMS API base URL - this should be set from environment variables
-const PAYLOAD_API_URL = process.env.NEXT_PUBLIC_PAYLOAD_API_URL || 'http://localhost:3000/api'
+// Payload CMS API base URL - use relative URL for client-side requests
+const PAYLOAD_API_URL = process.env.NEXT_PUBLIC_PAYLOAD_API_URL || '/api'
 
 // Generic fetch wrapper with error handling
 async function payloadFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
@@ -345,12 +345,28 @@ export async function getFeaturedModels(): Promise<any[]> {
 // Piano Page API functions
 export async function getPianoPage(): Promise<any | null> {
   try {
-    // Use the singleton endpoint provided by PianosPage collection
-    const endpoint = `/pianos-page/singleton`
-    const data = await payloadFetch<any>(endpoint)
-    return data
+    console.log('[DEBUG] Fetching pianos page data from /api/pianos-page')
+    
+    // Use the Next.js API route that proxies to the singleton endpoint
+    const response = await fetch('/api/pianos-page')
+    
+    console.log('[DEBUG] Response status:', response.status)
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const result = await response.json()
+    console.log('[DEBUG] API response result:', { success: result.success, hasData: !!result.data })
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to fetch pianos page data')
+    }
+    
+    console.log('[DEBUG] Successfully fetched pianos page data')
+    return result.data
   } catch (error) {
-    console.error('Error fetching pianos page:', error)
+    console.error('[ERROR] Failed to fetch pianos page:', error)
     return null
   }
 }
@@ -408,6 +424,17 @@ export function resolveMediaUrl(media: string | Media | null | undefined): strin
   }
   
   return url
+}
+
+// Helper function to get fallback images for featured models
+function getFallbackImageForModel(modelName: string): string {
+  const fallbackMap: Record<string, string> = {
+    'GX-7 BLAK': '/images/banners/GX-7-BLAK-grand-styling.webp',
+    'CA99': '/images/banners/CA99-digital-styling.webp', 
+    'NOVUS NV-10S': '/images/banners/NV10S_along the keyboard_whiteBG.jpg',
+  }
+  
+  return fallbackMap[modelName] || '/images/banners/placeholder-piano.jpg'
 }
 
 // Transform PianoCategory to the format expected by existing components
@@ -560,11 +587,24 @@ export async function getPianosPageData(): Promise<{
       hero: {
         heroTitle: pianoPageData.heroTitle,
         heroDescription: pianoPageData.heroDescription,
-        heroBackgroundImage: resolveMediaUrl(pianoPageData.heroBackgroundImage),
+        // Preserve Media object for MediaRenderer, fallback to string for static images
+        heroBackgroundImage: pianoPageData.heroBackgroundImage || "/images/piano-categories/NV10S_along%20the%20keyboard_whiteBG.jpg",
         heroCta: pianoPageData.heroCta
       },
-      categories: pianoPageData.pianoCategories || await getPianoCategories(),
-      featuredModels: pianoPageData.featuredModels || await getFeaturedModels(),
+      categories: pianoPageData.pianoCategories?.length > 0 
+        ? pianoPageData.pianoCategories.map((cat: any) => ({
+            ...cat,
+            // Preserve Media object for MediaRenderer, fallback to string for static images
+            image: cat.image || `/images/piano-categories/${cat.slug}.jpg`
+          }))
+        : await getPianoCategories(),
+      featuredModels: pianoPageData.featuredModels?.length > 0 
+        ? pianoPageData.featuredModels.map((model: any) => ({
+            ...model,
+            // Preserve Media object for MediaRenderer, fallback to string for static images
+            image: model.image || getFallbackImageForModel(model.name)
+          }))
+        : await getFeaturedModels(),
       featuredModelsSection: pianoPageData.featuredModelsSection || {
         title: "Flagship & Featured Models",
         description: "Discover our most celebrated instruments, from competition-grade concert grands to innovative digital and hybrid pianos preferred by professionals worldwide."

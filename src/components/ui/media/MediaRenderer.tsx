@@ -6,7 +6,6 @@ import { VideoPlayer } from './VideoPlayer'
 import type { Media } from '@/payload-types'
 import type { MediaRendererProps } from '@/lib/media/types'
 import { cn } from '@/lib/utils'
-import { debugMediaUrl } from '@/lib/media/r2-utils'
 
 /**
  * Flexible media renderer that automatically determines the appropriate component
@@ -26,10 +25,7 @@ export const MediaRenderer = React.forwardRef<
   'aria-label': ariaLabel,
   ...props
 }, ref) => {
-  // Debug media URL in development
-  React.useEffect(() => {
-    debugMediaUrl(media, 'MediaRenderer')
-  }, [media])
+  // Debug system removed
 
   // Handle undefined or null media
   if (!media) {
@@ -87,7 +83,7 @@ export const MediaRenderer = React.forwardRef<
           priority={priority}
           placeholder={placeholder}
           onLoad={onLoad}
-          onError={onError ? () => onError(new Error('Video load error')) : undefined}
+          onError={onError ? () => onError(new Error('Image load error')) : undefined}
         />
       </div>
     )
