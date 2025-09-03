@@ -160,12 +160,20 @@ function preserveMediaOrFallback(media: any): any {
 
 // Transform Piano Model to component format for server
 function transformPianoModelToComponentServer(pianoModel: PianoModel) {
+  // Generate slug from name since slug is no longer in PianoModel
+  const slug = pianoModel.name
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
   return {
-    slug: pianoModel.slug,
+    slug,
     name: pianoModel.name,
     series: typeof pianoModel.productline === 'object' ? pianoModel.productline.name : 'Unknown Series',
-    rating: pianoModel.rating || 0,
-    reviews: pianoModel.reviewCount || 0,
+    rating: 0, // Rating is now handled by Products collection
+    reviews: 0, // Reviews are now handled by Products collection
     image: preserveMediaOrFallback(pianoModel.image),
     description: pianoModel.description,
     keyFeatures: (pianoModel.keyFeatures || []).map(kf => kf.feature)

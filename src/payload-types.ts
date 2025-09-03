@@ -140,44 +140,52 @@ export interface UserAuthOperations {
  */
 export interface ProductShowcaseBlock {
   /**
+   * Choose data source for product information
+   */
+  dataSource?: ('manual' | 'pianomodel' | 'hybrid') | null;
+  /**
+   * Select piano model to automatically populate product information
+   */
+  pianoModel?: (string | null) | PianoModel;
+  /**
    * Product showcase configuration
    */
   product: {
     /**
-     * Main product image
+     * Main product image (leave empty to use Piano Model image)
      */
-    image: string | Media;
+    image?: (string | null) | Media;
     /**
-     * Product title/name
+     * Product title/name (leave empty to use Piano Model name)
      */
-    title: string;
+    title?: string | null;
     /**
-     * Product description
+     * Product description (leave empty to use Piano Model description)
      */
-    description: string;
+    description?: string | null;
     /**
-     * Product pricing information
+     * Product pricing information (overrides Piano Model pricing when provided)
      */
     price?: {
       /**
-       * Price currency
+       * Price currency (leave empty to use Piano Model currency)
        */
       currency?: ('USD' | 'EUR' | 'GBP' | 'CAD') | null;
       /**
-       * Price amount (leave empty for "Contact for pricing")
+       * Price amount (leave empty to use Piano Model pricing)
        */
       amount?: number | null;
       /**
-       * Sale price (optional, shows original price crossed out)
+       * Sale price (leave empty to use Piano Model sale price)
        */
       saleAmount?: number | null;
       /**
-       * Custom price text (e.g., "Starting from", "Contact for pricing")
+       * Custom price text (leave empty to use Piano Model price text)
        */
       priceText?: string | null;
     };
     /**
-     * Available finish options for this product
+     * Available finish options (overrides Piano Model finishes when provided)
      */
     finishes?:
       | {
@@ -250,6 +258,247 @@ export interface ProductShowcaseBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'productShowcase';
+}
+/**
+ * Piano models that can automatically generate product pages with blocks and content
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "piano-models".
+ */
+export interface PianoModel {
+  id: string;
+  /**
+   * Piano model name (e.g., "CA901", "SK-EX")
+   */
+  name: string;
+  /**
+   * URL-friendly version of piano model name
+   */
+  slug: string;
+  /**
+   * Model number/identifier
+   */
+  model: string;
+  /**
+   * The product line/series this model belongs to
+   */
+  productline: string | Productline;
+  /**
+   * Brief model description
+   */
+  description: string;
+  /**
+   * Short description for listings
+   */
+  shortDescription?: string | null;
+  /**
+   * Main product image
+   */
+  image: string | Media;
+  /**
+   * Main selling points and key features
+   */
+  keyFeatures?:
+    | {
+        feature: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Technical specifications
+   */
+  specifications?: {
+    /**
+     * Number of keys
+     */
+    keys?: number | null;
+    /**
+     * Number of pedals
+     */
+    pedals?: number | null;
+    /**
+     * Number of voices/sounds
+     */
+    voices?: number | null;
+    /**
+     * Maximum polyphony
+     */
+    polyphony?: number | null;
+    dimensions?: {
+      /**
+       * Width (e.g., "145cm")
+       */
+      width?: string | null;
+      /**
+       * Depth (e.g., "46cm")
+       */
+      depth?: string | null;
+      /**
+       * Height (e.g., "88cm")
+       */
+      height?: string | null;
+    };
+    /**
+     * Weight (e.g., "68kg")
+     */
+    weight?: string | null;
+    /**
+     * Action technology (e.g., "Grand Feel III")
+     */
+    actionType?: string | null;
+    /**
+     * Sound engine technology
+     */
+    soundEngine?: string | null;
+  };
+  /**
+   * Available finish options for this piano model
+   */
+  availableFinishes?:
+    | {
+        /**
+         * Finish name (e.g., "Ebony Polish", "White Satin")
+         */
+        name: string;
+        /**
+         * Finish sample image
+         */
+        image?: (string | null) | Media;
+        /**
+         * Price difference for this finish (+ or -)
+         */
+        priceModifier?: number | null;
+        /**
+         * Is this finish currently available?
+         */
+        available?: boolean | null;
+        /**
+         * Optional finish description
+         */
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Pricing information
+   */
+  pricing?: {
+    /**
+     * Price currency
+     */
+    currency?: ('USD' | 'EUR' | 'GBP' | 'CAD') | null;
+    /**
+     * MSRP in selected currency
+     */
+    msrp?: number | null;
+    /**
+     * Sale price if different from MSRP
+     */
+    salePrice?: number | null;
+    /**
+     * Price range text (e.g., "$15,000 - $20,000")
+     */
+    priceRange?: string | null;
+    /**
+     * Custom price text (e.g., "Starting from", "Contact for pricing")
+     */
+    priceText?: string | null;
+    /**
+     * Check if pricing is by contact only
+     */
+    contactForPricing?: boolean | null;
+    /**
+     * Display price on product pages
+     */
+    showPrice?: boolean | null;
+  };
+  /**
+   * Auto-generated product page for this piano model
+   */
+  product?: (string | null) | Product;
+  /**
+   * Automatically create/update a Product page when this piano model is saved
+   */
+  autoGenerateProduct?: boolean | null;
+  /**
+   * Status affects auto-generated product visibility
+   */
+  status?: ('active' | 'discontinued' | 'coming-soon' | 'limited-edition') | null;
+  /**
+   * Feature this model prominently
+   */
+  featured?: boolean | null;
+  /**
+   * Display order within series (lower numbers first)
+   */
+  sortOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "productlines".
+ */
+export interface Productline {
+  id: string;
+  /**
+   * Series name (e.g., "CA Series", "Shigeru Kawai SK Series")
+   */
+  name: string;
+  /**
+   * URL-friendly version of name
+   */
+  slug: string;
+  /**
+   * Piano category for organizing series
+   */
+  category: 'digital' | 'grand' | 'hybrid' | 'upright';
+  /**
+   * Main series description for the browser
+   */
+  description: string;
+  /**
+   * Optional highlighted callout text
+   */
+  highlight?: string | null;
+  /**
+   * Main series image displayed in the browser (can be added after seeding)
+   */
+  image?: (string | null) | Media;
+  /**
+   * Additional slides for the clean series browser carousel
+   */
+  slides?:
+    | {
+        /**
+         * Title for this slide
+         */
+        title: string;
+        /**
+         * Slide image (can be added after seeding)
+         */
+        image?: (string | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Piano models in this series (automatically populated)
+   */
+  pianoModels?: {
+    docs?: (string | PianoModel)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Feature this series prominently
+   */
+  featured?: boolean | null;
+  /**
+   * Display order (lower numbers first)
+   */
+  sortOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -398,24 +647,272 @@ export interface Media {
   };
 }
 /**
+ * Manage products with dynamic page building capabilities using blocks
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: string;
+  /**
+   * Product type determines linking behavior and available features
+   */
+  type: 'piano' | 'other';
+  /**
+   * Link to piano model for automatic data population in blocks. When linked, some product data will auto-sync with the piano model.
+   */
+  pianoModel?: (string | null) | PianoModel;
+  /**
+   * How this product gets its content: Manual (independent), Piano Model (auto-synced), or Hybrid (manual with fallbacks)
+   */
+  dataSource?: ('manual' | 'pianomodel' | 'hybrid') | null;
+  /**
+   * Product name/title
+   */
+  name: string;
+  /**
+   * URL-friendly version of product name
+   */
+  slug: string;
+  /**
+   * Product category for organization
+   */
+  category: 'digital' | 'grand' | 'hybrid' | 'upright' | 'accessories' | 'software';
+  /**
+   * Product availability status
+   */
+  status?: ('active' | 'draft' | 'discontinued' | 'coming-soon' | 'limited-edition') | null;
+  /**
+   * Primary product image
+   */
+  mainImage: string | Media;
+  /**
+   * Product display title (can be different from name for SEO)
+   */
+  title: string;
+  /**
+   * Short product description for listings and meta
+   */
+  description: string;
+  /**
+   * Product pricing information
+   */
+  price?: {
+    currency?: ('USD' | 'EUR' | 'GBP' | 'CAD') | null;
+    /**
+     * Regular price (leave empty for "Contact for pricing")
+     */
+    amount?: number | null;
+    /**
+     * Sale price (optional)
+     */
+    saleAmount?: number | null;
+    /**
+     * Custom price text (e.g., "Starting from", "Contact for pricing")
+     */
+    priceText?: string | null;
+    /**
+     * Display price on product pages
+     */
+    showPrice?: boolean | null;
+  };
+  /**
+   * Available finish options
+   */
+  finishes?:
+    | {
+        /**
+         * Finish name (e.g., "Ebony Polish", "White Satin")
+         */
+        name: string;
+        /**
+         * Finish sample image
+         */
+        image?: (string | null) | Media;
+        /**
+         * Price difference for this finish (+ or -)
+         */
+        priceModifier?: number | null;
+        /**
+         * Is this finish currently available?
+         */
+        available?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Buy button configuration
+   */
+  buyButton: {
+    /**
+     * Buy button text
+     */
+    text: string;
+    /**
+     * Buy button link (leave empty to use default contact form)
+     */
+    link?: string | null;
+    style?: ('primary' | 'secondary' | 'outline') | null;
+    /**
+     * Show buy button on product pages
+     */
+    showButton?: boolean | null;
+  };
+  /**
+   * Build your product page content using flexible blocks
+   */
+  pageContent?:
+    | (
+        | ProductShowcaseBlock
+        | HeroBlock
+        | TextContentBlock
+        | ImageGalleryBlock
+        | FeaturesListBlock
+        | SpecificationsBlock
+        | CallToActionBlock
+        | TestimonialsBlock
+      )[]
+    | null;
+  /**
+   * Detailed product specifications and data
+   */
+  productData?: {
+    /**
+     * Product model number
+     */
+    model?: string | null;
+    /**
+     * Product brand
+     */
+    brand?: string | null;
+    /**
+     * Product series/collection
+     */
+    series?: string | null;
+    /**
+     * Stock Keeping Unit (SKU)
+     */
+    sku?: string | null;
+    /**
+     * Product weight (e.g., "68kg", "150 lbs")
+     */
+    weight?: string | null;
+    dimensions?: {
+      /**
+       * Width (e.g., "145cm", "57 inches")
+       */
+      width?: string | null;
+      /**
+       * Depth (e.g., "46cm", "18 inches")
+       */
+      depth?: string | null;
+      /**
+       * Height (e.g., "88cm", "35 inches")
+       */
+      height?: string | null;
+    };
+    /**
+     * Warranty information
+     */
+    warranty?: string | null;
+    /**
+     * Country of manufacture
+     */
+    origin?: string | null;
+  };
+  /**
+   * SEO and social media optimization
+   */
+  seo?: {
+    /**
+     * Custom meta title (defaults to product title)
+     */
+    metaTitle?: string | null;
+    /**
+     * Meta description for search engines (max 160 characters)
+     */
+    metaDescription?: string | null;
+    /**
+     * SEO keywords (comma-separated)
+     */
+    keywords?: string | null;
+    /**
+     * Open Graph image for social sharing (defaults to main image)
+     */
+    ogImage?: (string | null) | Media;
+  };
+  /**
+   * Product visibility and display settings
+   */
+  visibility?: {
+    /**
+     * Feature this product prominently
+     */
+    featured?: boolean | null;
+    /**
+     * Show in product catalog/listings
+     */
+    showInCatalog?: boolean | null;
+    /**
+     * Allow customer reviews for this product
+     */
+    allowReviews?: boolean | null;
+    /**
+     * Sort order (lower numbers appear first)
+     */
+    sortOrder?: number | null;
+  };
+  /**
+   * Inventory management settings
+   */
+  inventory?: {
+    /**
+     * Track inventory for this product
+     */
+    trackStock?: boolean | null;
+    /**
+     * Current stock quantity
+     */
+    stockQuantity?: number | null;
+    /**
+     * Alert when stock falls below this number
+     */
+    lowStockThreshold?: number | null;
+    /**
+     * Product is currently in stock
+     */
+    inStock?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "HeroBlock".
  */
 export interface HeroBlock {
   /**
+   * Choose data source for hero content
+   */
+  dataSource?: ('manual' | 'pianomodel' | 'hybrid') | null;
+  /**
+   * Select piano model to automatically populate hero content
+   */
+  pianoModel?: (string | null) | PianoModel;
+  /**
    * Hero content and call-to-action buttons
    */
-  content: {
+  content?: {
     /**
-     * Main hero title/headline
+     * Main hero title/headline (leave empty to use Piano Model name)
      */
-    title: string;
+    title?: string | null;
     /**
-     * Optional subtitle or tagline
+     * Optional subtitle or tagline (leave empty to use Piano Model short description)
      */
     subtitle?: string | null;
     /**
-     * Hero description text
+     * Hero description text (leave empty to use Piano Model description)
      */
     description?: string | null;
     /**
@@ -458,7 +955,7 @@ export interface HeroBlock {
      */
     type?: ('image' | 'video' | 'none') | null;
     /**
-     * Background image
+     * Background image (leave empty to use Piano Model main image)
      */
     backgroundImage?: (string | null) | Media;
     /**
@@ -567,6 +1064,14 @@ export interface TextContentBlock {
  */
 export interface ImageGalleryBlock {
   /**
+   * Choose data source for gallery images
+   */
+  dataSource?: ('manual' | 'pianomodel' | 'hybrid') | null;
+  /**
+   * Select piano model to automatically populate gallery from model images
+   */
+  pianoModel?: (string | null) | PianoModel;
+  /**
    * Optional gallery title
    */
   title?: string | null;
@@ -575,23 +1080,25 @@ export interface ImageGalleryBlock {
    */
   description?: string | null;
   /**
-   * Images to display in the gallery
+   * Images to display in the gallery (additional images when using Piano Model data source)
    */
-  images: {
-    /**
-     * Gallery image
-     */
-    image: string | Media;
-    /**
-     * Image caption (optional)
-     */
-    caption?: string | null;
-    /**
-     * Alt text for accessibility (optional, will use image alt if not provided)
-     */
-    alt?: string | null;
-    id?: string | null;
-  }[];
+  images?:
+    | {
+        /**
+         * Gallery image
+         */
+        image: string | Media;
+        /**
+         * Image caption (optional)
+         */
+        caption?: string | null;
+        /**
+         * Alt text for accessibility (optional, will use image alt if not provided)
+         */
+        alt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Gallery layout and display options
    */
@@ -659,6 +1166,14 @@ export interface ImageGalleryBlock {
  * via the `definition` "FeaturesListBlock".
  */
 export interface FeaturesListBlock {
+  /**
+   * Choose data source for features list
+   */
+  dataSource?: ('manual' | 'pianomodel' | 'hybrid') | null;
+  /**
+   * Select piano model to automatically populate key features
+   */
+  pianoModel?: (string | null) | PianoModel;
   /**
    * Optional header content for the features section
    */
@@ -754,6 +1269,14 @@ export interface FeaturesListBlock {
  */
 export interface SpecificationsBlock {
   /**
+   * Choose data source for specifications
+   */
+  dataSource?: ('manual' | 'pianomodel' | 'hybrid') | null;
+  /**
+   * Select piano model to automatically populate specifications
+   */
+  pianoModel?: (string | null) | PianoModel;
+  /**
    * Header content for the specifications section
    */
   header?: {
@@ -767,45 +1290,47 @@ export interface SpecificationsBlock {
     description?: string | null;
   };
   /**
-   * Organized specification categories
+   * Additional specification categories (leave empty to use Piano Model specifications only)
    */
-  categories: {
-    /**
-     * Category name (e.g., "Dimensions", "Sound", "Features")
-     */
-    categoryName: string;
-    /**
-     * Individual specifications within this category
-     */
-    specifications: {
-      /**
-       * Specification label (e.g., "Width", "Polyphony", "Weight")
-       */
-      label: string;
-      /**
-       * Specification value (e.g., "145cm", "256 notes", "68kg")
-       */
-      value: string;
-      /**
-       * Highlight this specification as important
-       */
-      highlight?: boolean | null;
-      /**
-       * Additional note or context (optional)
-       */
-      note?: string | null;
-      id?: string | null;
-    }[];
-    /**
-     * Make this category collapsible/expandable
-     */
-    collapsible?: boolean | null;
-    /**
-     * Start expanded (only applies if collapsible is enabled)
-     */
-    defaultExpanded?: boolean | null;
-    id?: string | null;
-  }[];
+  categories?:
+    | {
+        /**
+         * Category name (e.g., "Dimensions", "Sound", "Features")
+         */
+        categoryName: string;
+        /**
+         * Individual specifications within this category
+         */
+        specifications: {
+          /**
+           * Specification label (e.g., "Width", "Polyphony", "Weight")
+           */
+          label: string;
+          /**
+           * Specification value (e.g., "145cm", "256 notes", "68kg")
+           */
+          value: string;
+          /**
+           * Highlight this specification as important
+           */
+          highlight?: boolean | null;
+          /**
+           * Additional note or context (optional)
+           */
+          note?: string | null;
+          id?: string | null;
+        }[];
+        /**
+         * Make this category collapsible/expandable
+         */
+        collapsible?: boolean | null;
+        /**
+         * Start expanded (only applies if collapsible is enabled)
+         */
+        defaultExpanded?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Layout and styling options
    */
@@ -1194,215 +1719,6 @@ export interface User {
   password?: string | null;
 }
 /**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "productlines".
- */
-export interface Productline {
-  id: string;
-  /**
-   * Series name (e.g., "CA Series", "Shigeru Kawai SK Series")
-   */
-  name: string;
-  /**
-   * URL-friendly version of name
-   */
-  slug: string;
-  /**
-   * Piano category for organizing series
-   */
-  category: 'digital' | 'grand' | 'hybrid' | 'upright';
-  /**
-   * Main series description for the browser
-   */
-  description: string;
-  /**
-   * Optional highlighted callout text
-   */
-  highlight?: string | null;
-  /**
-   * Main series image displayed in the browser (can be added after seeding)
-   */
-  image?: (string | null) | Media;
-  /**
-   * Additional slides for the clean series browser carousel
-   */
-  slides?:
-    | {
-        /**
-         * Title for this slide
-         */
-        title: string;
-        /**
-         * Slide image (can be added after seeding)
-         */
-        image?: (string | null) | Media;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Piano models in this series (automatically populated)
-   */
-  pianoModels?: {
-    docs?: (string | PianoModel)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  /**
-   * Feature this series prominently
-   */
-  featured?: boolean | null;
-  /**
-   * Display order (lower numbers first)
-   */
-  sortOrder?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "piano-models".
- */
-export interface PianoModel {
-  id: string;
-  /**
-   * Piano model name (e.g., "CA901", "SK-EX")
-   */
-  name: string;
-  /**
-   * Model number/identifier
-   */
-  model: string;
-  /**
-   * URL-friendly version of name
-   */
-  slug: string;
-  /**
-   * The product line/series this model belongs to
-   */
-  productline: string | Productline;
-  /**
-   * Brief model description
-   */
-  description: string;
-  /**
-   * Short description for listings
-   */
-  shortDescription?: string | null;
-  /**
-   * Main product image
-   */
-  image: string | Media;
-  /**
-   * Additional product images
-   */
-  gallery?:
-    | {
-        image: string | Media;
-        /**
-         * Optional caption for the image
-         */
-        caption?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Main selling points and key features
-   */
-  keyFeatures?:
-    | {
-        feature: string;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Technical specifications
-   */
-  specifications?: {
-    /**
-     * Number of keys
-     */
-    keys?: number | null;
-    /**
-     * Number of pedals
-     */
-    pedals?: number | null;
-    /**
-     * Number of voices/sounds
-     */
-    voices?: number | null;
-    /**
-     * Maximum polyphony
-     */
-    polyphony?: number | null;
-    dimensions?: {
-      /**
-       * Width (e.g., "145cm")
-       */
-      width?: string | null;
-      /**
-       * Depth (e.g., "46cm")
-       */
-      depth?: string | null;
-      /**
-       * Height (e.g., "88cm")
-       */
-      height?: string | null;
-    };
-    /**
-     * Weight (e.g., "68kg")
-     */
-    weight?: string | null;
-    /**
-     * Action technology (e.g., "Grand Feel III")
-     */
-    actionType?: string | null;
-    /**
-     * Sound engine technology
-     */
-    soundEngine?: string | null;
-  };
-  /**
-   * Pricing information
-   */
-  pricing?: {
-    /**
-     * MSRP in USD
-     */
-    msrp?: number | null;
-    /**
-     * Sale price if different from MSRP
-     */
-    salePrice?: number | null;
-    /**
-     * Price range text (e.g., "$15,000 - $20,000")
-     */
-    priceRange?: string | null;
-    /**
-     * Check if pricing is by contact only
-     */
-    contactForPricing?: boolean | null;
-  };
-  /**
-   * Average rating (0-5 stars)
-   */
-  rating?: number | null;
-  /**
-   * Number of reviews
-   */
-  reviewCount?: number | null;
-  status?: ('active' | 'discontinued' | 'coming-soon' | 'limited-edition') | null;
-  /**
-   * Feature this model prominently
-   */
-  featured?: boolean | null;
-  /**
-   * Display order within series (lower numbers first)
-   */
-  sortOrder?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * Manage all content for the main Pianos page including hero, categories, featured models, and CTAs.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1558,234 +1874,6 @@ export interface PianosPage {
      * SEO keywords (comma-separated)
      */
     keywords?: string | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Manage products with dynamic page building capabilities using blocks
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "products".
- */
-export interface Product {
-  id: string;
-  /**
-   * Product name/title
-   */
-  name: string;
-  /**
-   * URL-friendly version of product name
-   */
-  slug: string;
-  /**
-   * Product category for organization
-   */
-  category: 'digital' | 'grand' | 'hybrid' | 'upright' | 'accessories' | 'software';
-  /**
-   * Product availability status
-   */
-  status?: ('active' | 'draft' | 'discontinued' | 'coming-soon' | 'limited-edition') | null;
-  /**
-   * Primary product image
-   */
-  mainImage: string | Media;
-  /**
-   * Product display title (can be different from name for SEO)
-   */
-  title: string;
-  /**
-   * Short product description for listings and meta
-   */
-  description: string;
-  /**
-   * Product pricing information
-   */
-  price?: {
-    currency?: ('USD' | 'EUR' | 'GBP' | 'CAD') | null;
-    /**
-     * Regular price (leave empty for "Contact for pricing")
-     */
-    amount?: number | null;
-    /**
-     * Sale price (optional)
-     */
-    saleAmount?: number | null;
-    /**
-     * Custom price text (e.g., "Starting from", "Contact for pricing")
-     */
-    priceText?: string | null;
-    /**
-     * Display price on product pages
-     */
-    showPrice?: boolean | null;
-  };
-  /**
-   * Available finish options
-   */
-  finishes?:
-    | {
-        /**
-         * Finish name (e.g., "Ebony Polish", "White Satin")
-         */
-        name: string;
-        /**
-         * Finish sample image
-         */
-        image?: (string | null) | Media;
-        /**
-         * Price difference for this finish (+ or -)
-         */
-        priceModifier?: number | null;
-        /**
-         * Is this finish currently available?
-         */
-        available?: boolean | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Buy button configuration
-   */
-  buyButton: {
-    /**
-     * Buy button text
-     */
-    text: string;
-    /**
-     * Buy button link (leave empty to use default contact form)
-     */
-    link?: string | null;
-    style?: ('primary' | 'secondary' | 'outline') | null;
-    /**
-     * Show buy button on product pages
-     */
-    showButton?: boolean | null;
-  };
-  /**
-   * Build your product page content using flexible blocks
-   */
-  pageContent?:
-    | (
-        | ProductShowcaseBlock
-        | HeroBlock
-        | TextContentBlock
-        | ImageGalleryBlock
-        | FeaturesListBlock
-        | SpecificationsBlock
-        | CallToActionBlock
-        | TestimonialsBlock
-      )[]
-    | null;
-  /**
-   * Detailed product specifications and data
-   */
-  productData?: {
-    /**
-     * Product model number
-     */
-    model?: string | null;
-    /**
-     * Product brand
-     */
-    brand?: string | null;
-    /**
-     * Product series/collection
-     */
-    series?: string | null;
-    /**
-     * Stock Keeping Unit (SKU)
-     */
-    sku?: string | null;
-    /**
-     * Product weight (e.g., "68kg", "150 lbs")
-     */
-    weight?: string | null;
-    dimensions?: {
-      /**
-       * Width (e.g., "145cm", "57 inches")
-       */
-      width?: string | null;
-      /**
-       * Depth (e.g., "46cm", "18 inches")
-       */
-      depth?: string | null;
-      /**
-       * Height (e.g., "88cm", "35 inches")
-       */
-      height?: string | null;
-    };
-    /**
-     * Warranty information
-     */
-    warranty?: string | null;
-    /**
-     * Country of manufacture
-     */
-    origin?: string | null;
-  };
-  /**
-   * SEO and social media optimization
-   */
-  seo?: {
-    /**
-     * Custom meta title (defaults to product title)
-     */
-    metaTitle?: string | null;
-    /**
-     * Meta description for search engines (max 160 characters)
-     */
-    metaDescription?: string | null;
-    /**
-     * SEO keywords (comma-separated)
-     */
-    keywords?: string | null;
-    /**
-     * Open Graph image for social sharing (defaults to main image)
-     */
-    ogImage?: (string | null) | Media;
-  };
-  /**
-   * Product visibility and display settings
-   */
-  visibility?: {
-    /**
-     * Feature this product prominently
-     */
-    featured?: boolean | null;
-    /**
-     * Show in product catalog/listings
-     */
-    showInCatalog?: boolean | null;
-    /**
-     * Allow customer reviews for this product
-     */
-    allowReviews?: boolean | null;
-    /**
-     * Sort order (lower numbers appear first)
-     */
-    sortOrder?: number | null;
-  };
-  /**
-   * Inventory management settings
-   */
-  inventory?: {
-    /**
-     * Track inventory for this product
-     */
-    trackStock?: boolean | null;
-    /**
-     * Current stock quantity
-     */
-    stockQuantity?: number | null;
-    /**
-     * Alert when stock falls below this number
-     */
-    lowStockThreshold?: number | null;
-    /**
-     * Product is currently in stock
-     */
-    inStock?: boolean | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -2008,19 +2096,12 @@ export interface ProductlinesSelect<T extends boolean = true> {
  */
 export interface PianoModelsSelect<T extends boolean = true> {
   name?: T;
-  model?: T;
   slug?: T;
+  model?: T;
   productline?: T;
   description?: T;
   shortDescription?: T;
   image?: T;
-  gallery?:
-    | T
-    | {
-        image?: T;
-        caption?: T;
-        id?: T;
-      };
   keyFeatures?:
     | T
     | {
@@ -2045,16 +2126,29 @@ export interface PianoModelsSelect<T extends boolean = true> {
         actionType?: T;
         soundEngine?: T;
       };
+  availableFinishes?:
+    | T
+    | {
+        name?: T;
+        image?: T;
+        priceModifier?: T;
+        available?: T;
+        description?: T;
+        id?: T;
+      };
   pricing?:
     | T
     | {
+        currency?: T;
         msrp?: T;
         salePrice?: T;
         priceRange?: T;
+        priceText?: T;
         contactForPricing?: T;
+        showPrice?: T;
       };
-  rating?: T;
-  reviewCount?: T;
+  product?: T;
+  autoGenerateProduct?: T;
   status?: T;
   featured?: T;
   sortOrder?: T;
@@ -2133,6 +2227,9 @@ export interface PianosPageSelect<T extends boolean = true> {
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
+  type?: T;
+  pianoModel?: T;
+  dataSource?: T;
   name?: T;
   slug?: T;
   category?: T;

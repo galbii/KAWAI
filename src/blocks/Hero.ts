@@ -6,6 +6,33 @@ export const Hero: Block = {
   imageAltText: 'Hero section block for page headers and banners',
   interfaceName: 'HeroBlock',
   fields: [
+    // Data Source Configuration
+    {
+      name: 'dataSource',
+      type: 'select',
+      defaultValue: 'manual',
+      options: [
+        { label: 'Manual Entry', value: 'manual' },
+        { label: 'Piano Model Data', value: 'pianomodel' },
+        { label: 'Hybrid (Piano Model + Overrides)', value: 'hybrid' }
+      ],
+      admin: {
+        description: 'Choose data source for hero content'
+      }
+    },
+    // PianoModel Relationship
+    {
+      name: 'pianoModel',
+      type: 'relationship',
+      relationTo: 'piano-models',
+      admin: {
+        description: 'Select piano model to automatically populate hero content',
+        condition: (data, siblingData) => {
+          const dataSource = siblingData?.dataSource;
+          return dataSource === 'pianomodel' || dataSource === 'hybrid';
+        }
+      }
+    },
     {
       name: 'content',
       type: 'group',
@@ -13,23 +40,34 @@ export const Hero: Block = {
         {
           name: 'title',
           type: 'text',
-          required: true,
           admin: {
-            description: 'Main hero title/headline'
+            description: 'Main hero title/headline (leave empty to use Piano Model name)',
+            condition: (data) => {
+              const dataSource = data?.dataSource;
+              return dataSource === 'manual' || dataSource === 'hybrid';
+            }
           }
         },
         {
           name: 'subtitle',
           type: 'text',
           admin: {
-            description: 'Optional subtitle or tagline'
+            description: 'Optional subtitle or tagline (leave empty to use Piano Model short description)',
+            condition: (data) => {
+              const dataSource = data?.dataSource;
+              return dataSource === 'manual' || dataSource === 'hybrid';
+            }
           }
         },
         {
           name: 'description',
           type: 'textarea',
           admin: {
-            description: 'Hero description text'
+            description: 'Hero description text (leave empty to use Piano Model description)',
+            condition: (data) => {
+              const dataSource = data?.dataSource;
+              return dataSource === 'manual' || dataSource === 'hybrid';
+            }
           }
         },
         {
@@ -135,8 +173,12 @@ export const Hero: Block = {
           type: 'upload',
           relationTo: 'media',
           admin: {
-            description: 'Background image',
-            condition: (data, siblingData) => siblingData?.type === 'image'
+            description: 'Background image (leave empty to use Piano Model main image)',
+            condition: (data, siblingData) => {
+              const mediaType = siblingData?.type;
+              const dataSource = data?.dataSource;
+              return mediaType === 'image' && (dataSource === 'manual' || dataSource === 'hybrid');
+            }
           }
         },
         {

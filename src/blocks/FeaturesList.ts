@@ -6,6 +6,33 @@ export const FeaturesList: Block = {
   imageAltText: 'Features list block for highlighting product benefits and capabilities',
   interfaceName: 'FeaturesListBlock',
   fields: [
+    // Data Source Configuration
+    {
+      name: 'dataSource',
+      type: 'select',
+      defaultValue: 'manual',
+      options: [
+        { label: 'Manual Entry', value: 'manual' },
+        { label: 'Piano Model Data', value: 'pianomodel' },
+        { label: 'Hybrid (Piano Model + Overrides)', value: 'hybrid' }
+      ],
+      admin: {
+        description: 'Choose data source for features list'
+      }
+    },
+    // PianoModel Relationship
+    {
+      name: 'pianoModel',
+      type: 'relationship',
+      relationTo: 'piano-models',
+      admin: {
+        description: 'Select piano model to automatically populate key features',
+        condition: (data, siblingData) => {
+          const dataSource = siblingData?.dataSource;
+          return dataSource === 'pianomodel' || dataSource === 'hybrid';
+        }
+      }
+    },
     {
       name: 'header',
       type: 'group',

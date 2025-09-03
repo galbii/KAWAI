@@ -1,4 +1,10 @@
 import type { CollectionConfig } from 'payload'
+import { pianoModelAfterChangeHook, pianoModelBeforeDeleteHook } from '../lib/hooks/product-generation'
+// import { 
+//   isPublic,
+//   canManageInventoryAtSites,
+//   isAdminLevel
+// } from '../lib/access-control'
 
 export const PianoModels: CollectionConfig = {
   slug: 'piano-models',
@@ -8,8 +14,9 @@ export const PianoModels: CollectionConfig = {
   },
   admin: {
     group: 'Products',
-    defaultColumns: ['name', 'model', 'productline', 'featured', 'updatedAt'],
+    defaultColumns: ['name', 'model', 'productline', 'status', 'updatedAt'],
     useAsTitle: 'name',
+    description: 'Piano models that can automatically generate product pages with blocks and content'
   },
   access: {
     read: () => true, // Public read access for frontend
@@ -25,20 +32,21 @@ export const PianoModels: CollectionConfig = {
       }
     },
     {
+      name: 'slug',
+      type: 'text',
+      required: true,
+      unique: true,
+      admin: {
+        description: 'URL-friendly version of piano model name',
+        position: 'sidebar'
+      }
+    },
+    {
       name: 'model',
       type: 'text',
       required: true,
       admin: { 
         description: 'Model number/identifier' 
-      }
-    },
-    {
-      name: 'slug',
-      type: 'text',
-      required: true,
-      unique: true,
-      admin: { 
-        description: 'URL-friendly version of name' 
       }
     },
     
@@ -79,34 +87,6 @@ export const PianoModels: CollectionConfig = {
       admin: {
         description: 'Main product image'
       }
-    },
-    {
-      name: 'gallery',
-      type: 'array',
-      required: false,
-      minRows: 0,
-      labels: {
-        singular: 'Image',
-        plural: 'Gallery Images',
-      },
-      admin: {
-        description: 'Additional product images'
-      },
-      fields: [
-        {
-          name: 'image',
-          type: 'upload',
-          relationTo: 'media',
-          required: true
-        },
-        {
-          name: 'caption',
-          type: 'text',
-          admin: {
-            description: 'Optional caption for the image'
-          }
-        }
-      ]
     },
     
     // Features and Specifications
@@ -196,6 +176,61 @@ export const PianoModels: CollectionConfig = {
       ]
     },
     
+    // Available Finishes
+    {
+      name: 'availableFinishes',
+      type: 'array',
+      required: false,
+      minRows: 0,
+      labels: {
+        singular: 'Available Finish',
+        plural: 'Available Finishes',
+      },
+      admin: {
+        description: 'Available finish options for this piano model'
+      },
+      fields: [
+        {
+          name: 'name',
+          type: 'text',
+          required: true,
+          admin: {
+            description: 'Finish name (e.g., "Ebony Polish", "White Satin")'
+          }
+        },
+        {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+          admin: {
+            description: 'Finish sample image'
+          }
+        },
+        {
+          name: 'priceModifier',
+          type: 'number',
+          admin: {
+            description: 'Price difference for this finish (+ or -)'
+          }
+        },
+        {
+          name: 'available',
+          type: 'checkbox',
+          defaultValue: true,
+          admin: {
+            description: 'Is this finish currently available?'
+          }
+        },
+        {
+          name: 'description',
+          type: 'textarea',
+          admin: {
+            description: 'Optional finish description'
+          }
+        }
+      ]
+    },
+    
     // Pricing
     {
       name: 'pricing',
@@ -205,9 +240,21 @@ export const PianoModels: CollectionConfig = {
       },
       fields: [
         {
+          name: 'currency',
+          type: 'select',
+          defaultValue: 'USD',
+          options: [
+            { label: 'USD ($)', value: 'USD' },
+            { label: 'EUR (€)', value: 'EUR' },
+            { label: 'GBP (£)', value: 'GBP' },
+            { label: 'CAD (C$)', value: 'CAD' }
+          ],
+          admin: { description: 'Price currency' }
+        },
+        {
           name: 'msrp',
           type: 'number',
-          admin: { description: 'MSRP in USD' }
+          admin: { description: 'MSRP in selected currency' }
         },
         {
           name: 'salePrice',
@@ -220,31 +267,64 @@ export const PianoModels: CollectionConfig = {
           admin: { description: 'Price range text (e.g., "$15,000 - $20,000")' }
         },
         {
+          name: 'priceText',
+          type: 'text',
+          admin: { description: 'Custom price text (e.g., "Starting from", "Contact for pricing")' }
+        },
+        {
           name: 'contactForPricing',
           type: 'checkbox',
           defaultValue: false,
           admin: { description: 'Check if pricing is by contact only' }
+        },
+        {
+          name: 'showPrice',
+          type: 'checkbox',
+          defaultValue: true,
+          admin: { description: 'Display price on product pages' }
         }
       ]
     },
+
     
-    // Reviews and Ratings
+    
+    // Site Availability - temporarily disabled until Sites collection is re-enabled
+    // {
+    //   name: 'siteAvailability',
+    //   type: 'array',
+    //   labels: {
+    //     singular: 'Site Availability',
+    //     plural: 'Site Availability'
+    //   },
+    //   admin: {
+    //     description: 'Piano availability at different store locations'
+    //   },
+    //   fields: [
+    //     // ... site availability fields
+    //   ]
+    // },
+
+    // Linked Product
     {
-      name: 'rating',
-      type: 'number',
-      min: 0,
-      max: 5,
+      name: 'product',
+      type: 'relationship',
+      relationTo: 'products',
+      hasMany: false,
       admin: {
-        description: 'Average rating (0-5 stars)',
-        step: 0.1
+        description: 'Auto-generated product page for this piano model',
+        position: 'sidebar',
+        readOnly: true
       }
     },
+    
+    // Auto-Product Generation Settings
     {
-      name: 'reviewCount',
-      type: 'number',
-      defaultValue: 0,
+      name: 'autoGenerateProduct',
+      type: 'checkbox',
+      defaultValue: true,
       admin: {
-        description: 'Number of reviews'
+        description: 'Automatically create/update a Product page when this piano model is saved',
+        position: 'sidebar'
       }
     },
     
@@ -260,6 +340,7 @@ export const PianoModels: CollectionConfig = {
         { label: 'Limited Edition', value: 'limited-edition' }
       ],
       admin: {
+        description: 'Status affects auto-generated product visibility',
         position: 'sidebar'
       }
     },
@@ -284,16 +365,27 @@ export const PianoModels: CollectionConfig = {
   
   hooks: {
     beforeChange: [
-      ({ data }) => {
-        // Auto-generate slug from name if not provided
-        if (data.name && !data.slug) {
-          data.slug = data.name
+      async ({ data, req, operation }) => {
+        console.log(`🎹 PianoModel beforeChange: name="${data.name}", operation=${operation}`)
+        
+        // Auto-generate slug from name if not provided or empty
+        if (data.name && (!data.slug || data.slug.trim() === '')) {
+          const generatedSlug = data.name
             .toLowerCase()
+            .trim()
             .replace(/\s+/g, '-')
-            .replace(/[^a-z0-9-]/g, '');
+            .replace(/[^a-z0-9-]/g, '')
+            .replace(/-+/g, '-')
+            .replace(/^-+|-+$/g, '')
+          
+          data.slug = generatedSlug || 'piano-model'
+          console.log(`🔗 Generated slug from name "${data.name}" -> "${data.slug}"`)
         }
-        return data;
+        
+        return data
       }
-    ]
+    ],
+    afterChange: [pianoModelAfterChangeHook],
+    beforeDelete: [pianoModelBeforeDeleteHook]
   }
 }

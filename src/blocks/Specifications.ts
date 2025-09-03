@@ -6,6 +6,33 @@ export const Specifications: Block = {
   imageAltText: 'Specifications block for displaying technical details and product specs',
   interfaceName: 'SpecificationsBlock',
   fields: [
+    // Data Source Configuration
+    {
+      name: 'dataSource',
+      type: 'select',
+      defaultValue: 'manual',
+      options: [
+        { label: 'Manual Entry', value: 'manual' },
+        { label: 'Piano Model Data', value: 'pianomodel' },
+        { label: 'Hybrid (Piano Model + Overrides)', value: 'hybrid' }
+      ],
+      admin: {
+        description: 'Choose data source for specifications'
+      }
+    },
+    // PianoModel Relationship
+    {
+      name: 'pianoModel',
+      type: 'relationship',
+      relationTo: 'piano-models',
+      admin: {
+        description: 'Select piano model to automatically populate specifications',
+        condition: (data, siblingData) => {
+          const dataSource = siblingData?.dataSource;
+          return dataSource === 'pianomodel' || dataSource === 'hybrid';
+        }
+      }
+    },
     {
       name: 'header',
       type: 'group',
@@ -33,8 +60,7 @@ export const Specifications: Block = {
     {
       name: 'categories',
       type: 'array',
-      required: true,
-      minRows: 1,
+      minRows: 0,
       labels: {
         singular: 'Category',
         plural: 'Specification Categories'
@@ -113,7 +139,11 @@ export const Specifications: Block = {
         }
       ],
       admin: {
-        description: 'Organized specification categories'
+        description: 'Additional specification categories (leave empty to use Piano Model specifications only)',
+        condition: (data) => {
+          const dataSource = data?.dataSource;
+          return dataSource === 'manual' || dataSource === 'hybrid';
+        }
       }
     },
     {

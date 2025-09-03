@@ -1,0 +1,932 @@
+import type { CollectionConfig } from 'payload'
+// Temporarily disabled complex access controls
+// import { 
+//   isDeveloper,
+//   isSuperAdmin,
+//   isGlobalAdmin,
+//   isAdminLevel,
+//   isPublic
+// } from '../lib/access-control'
+
+export const Sites: CollectionConfig = {
+  slug: 'sites',
+  labels: {
+    singular: 'Site',
+    plural: 'Sites',
+  },
+  admin: {
+    group: 'SITES',
+    defaultColumns: ['name', 'slug', 'status', 'domain'],
+    useAsTitle: 'name',
+    description: 'Manage multiple showroom locations and their settings',
+    pagination: {
+      defaultLimit: 25,
+      limits: [10, 25, 50],
+    },
+  },
+  access: {
+    read: () => true, // Sites can be read by anyone
+    // Basic access for now - can be enhanced later
+  },
+  fields: [
+    {
+      type: 'tabs',
+      tabs: [
+        // Basic Information Tab
+        {
+          label: 'Basic Information',
+          fields: [
+            {
+              name: 'name',
+              type: 'text',
+              required: true,
+              admin: {
+                description: 'Site display name (e.g., "Kawai Piano Gallery Houston")'
+              }
+            },
+            {
+              name: 'slug',
+              type: 'text',
+              required: true,
+              unique: true,
+              admin: {
+                description: 'URL-friendly identifier (e.g., "houston")'
+              }
+            },
+            {
+              name: 'description',
+              type: 'textarea',
+              admin: {
+                description: 'Brief description of this location'
+              }
+            },
+            {
+              name: 'status',
+              type: 'select',
+              required: true,
+              defaultValue: 'active',
+              options: [
+                { label: 'Active', value: 'active' },
+                { label: 'Coming Soon', value: 'coming-soon' },
+                { label: 'Maintenance', value: 'maintenance' },
+                { label: 'Inactive', value: 'inactive' }
+              ],
+              admin: {
+                description: 'Current site status',
+                position: 'sidebar'
+              }
+            },
+            {
+              name: 'isDefault',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                description: 'Default site for fallback scenarios',
+                position: 'sidebar'
+              }
+            }
+          ]
+        },
+
+        // Domain & Routing Tab
+        {
+          label: 'Domain & Routing',
+          fields: [
+            {
+              name: 'domain',
+              type: 'text',
+              admin: {
+                description: 'Primary domain (e.g., "kawaihouston.com")'
+              }
+            },
+            {
+              name: 'subdomain',
+              type: 'text',
+              admin: {
+                description: 'Subdomain prefix (e.g., "houston" for houston.kawai.com)'
+              }
+            },
+            {
+              name: 'subpath',
+              type: 'text',
+              admin: {
+                description: 'URL subpath (e.g., "houston" for kawai.com/houston)'
+              }
+            },
+            {
+              name: 'alternativeDomains',
+              type: 'array',
+              fields: [
+                {
+                  name: 'domain',
+                  type: 'text',
+                  required: true,
+                  admin: {
+                    description: 'Alternative domain name'
+                  }
+                }
+              ],
+              admin: {
+                description: 'Additional domains that should resolve to this site'
+              }
+            },
+            {
+              name: 'redirects',
+              type: 'array',
+              fields: [
+                {
+                  name: 'from',
+                  type: 'text',
+                  required: true,
+                  admin: {
+                    description: 'Source path or domain to redirect from'
+                  }
+                },
+                {
+                  name: 'to',
+                  type: 'text',
+                  required: true,
+                  admin: {
+                    description: 'Destination URL to redirect to'
+                  }
+                },
+                {
+                  name: 'type',
+                  type: 'select',
+                  defaultValue: '301',
+                  options: [
+                    { label: '301 Permanent', value: '301' },
+                    { label: '302 Temporary', value: '302' }
+                  ]
+                },
+                {
+                  name: 'active',
+                  type: 'checkbox',
+                  defaultValue: true,
+                  admin: {
+                    description: 'Enable this redirect'
+                  }
+                }
+              ],
+              admin: {
+                description: 'URL redirects for this site'
+              }
+            }
+          ]
+        },
+
+        // Location Details Tab
+        {
+          label: 'Location Details',
+          fields: [
+            {
+              name: 'address',
+              type: 'group',
+              fields: [
+                {
+                  name: 'street',
+                  type: 'text',
+                  required: true,
+                  admin: {
+                    description: 'Street address'
+                  }
+                },
+                {
+                  name: 'street2',
+                  type: 'text',
+                  admin: {
+                    description: 'Suite, unit, or building number'
+                  }
+                },
+                {
+                  name: 'city',
+                  type: 'text',
+                  required: true
+                },
+                {
+                  name: 'state',
+                  type: 'text',
+                  required: true
+                },
+                {
+                  name: 'zipCode',
+                  type: 'text',
+                  required: true
+                },
+                {
+                  name: 'country',
+                  type: 'text',
+                  defaultValue: 'United States',
+                  required: true
+                },
+                {
+                  name: 'coordinates',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'latitude',
+                      type: 'number',
+                      admin: {
+                        step: 0.000001,
+                        description: 'Latitude for maps integration'
+                      }
+                    },
+                    {
+                      name: 'longitude',
+                      type: 'number',
+                      admin: {
+                        step: 0.000001,
+                        description: 'Longitude for maps integration'
+                      }
+                    }
+                  ],
+                  admin: {
+                    description: 'GPS coordinates for mapping services'
+                  }
+                }
+              ],
+              admin: {
+                description: 'Physical location address information'
+              }
+            },
+            {
+              name: 'contact',
+              type: 'group',
+              fields: [
+                {
+                  name: 'phone',
+                  type: 'text',
+                  required: true,
+                  admin: {
+                    description: 'Primary phone number'
+                  }
+                },
+                {
+                  name: 'tollFree',
+                  type: 'text',
+                  admin: {
+                    description: 'Toll-free number (if applicable)'
+                  }
+                },
+                {
+                  name: 'email',
+                  type: 'email',
+                  required: true,
+                  admin: {
+                    description: 'Primary email address'
+                  }
+                },
+                {
+                  name: 'website',
+                  type: 'text',
+                  admin: {
+                    description: 'Website URL (if different from primary domain)'
+                  }
+                },
+                {
+                  name: 'hours',
+                  type: 'array',
+                  minRows: 7,
+                  maxRows: 7,
+                  fields: [
+                    {
+                      name: 'day',
+                      type: 'select',
+                      required: true,
+                      options: [
+                        { label: 'Monday', value: 'monday' },
+                        { label: 'Tuesday', value: 'tuesday' },
+                        { label: 'Wednesday', value: 'wednesday' },
+                        { label: 'Thursday', value: 'thursday' },
+                        { label: 'Friday', value: 'friday' },
+                        { label: 'Saturday', value: 'saturday' },
+                        { label: 'Sunday', value: 'sunday' }
+                      ]
+                    },
+                    {
+                      name: 'open',
+                      type: 'text',
+                      admin: {
+                        description: 'Opening time (e.g., "9:00 AM")'
+                      }
+                    },
+                    {
+                      name: 'close',
+                      type: 'text',
+                      admin: {
+                        description: 'Closing time (e.g., "6:00 PM")'
+                      }
+                    },
+                    {
+                      name: 'closed',
+                      type: 'checkbox',
+                      defaultValue: false,
+                      admin: {
+                        description: 'Closed on this day'
+                      }
+                    },
+                    {
+                      name: 'note',
+                      type: 'text',
+                      admin: {
+                        description: 'Special note for this day (e.g., "By Appointment Only")'
+                      }
+                    }
+                  ],
+                  admin: {
+                    description: 'Business hours for each day of the week'
+                  }
+                },
+                {
+                  name: 'socialMedia',
+                  type: 'array',
+                  fields: [
+                    {
+                      name: 'platform',
+                      type: 'select',
+                      required: true,
+                      options: [
+                        { label: 'Facebook', value: 'facebook' },
+                        { label: 'Instagram', value: 'instagram' },
+                        { label: 'Twitter/X', value: 'twitter' },
+                        { label: 'YouTube', value: 'youtube' },
+                        { label: 'LinkedIn', value: 'linkedin' },
+                        { label: 'TikTok', value: 'tiktok' }
+                      ]
+                    },
+                    {
+                      name: 'url',
+                      type: 'text',
+                      required: true,
+                      admin: {
+                        description: 'Full URL to social media profile'
+                      }
+                    },
+                    {
+                      name: 'handle',
+                      type: 'text',
+                      admin: {
+                        description: 'Social media handle (without @)'
+                      }
+                    }
+                  ],
+                  admin: {
+                    description: 'Social media profiles for this location'
+                  }
+                }
+              ],
+              admin: {
+                description: 'Contact information and business hours'
+              }
+            }
+          ]
+        },
+
+        // Branding & Theme Tab
+        {
+          label: 'Branding & Theme',
+          fields: [
+            {
+              name: 'branding',
+              type: 'group',
+              fields: [
+                {
+                  name: 'logo',
+                  type: 'upload',
+                  relationTo: 'media',
+                  admin: {
+                    description: 'Site-specific logo (optional, falls back to global logo)'
+                  }
+                },
+                {
+                  name: 'logoAlt',
+                  type: 'upload',
+                  relationTo: 'media',
+                  admin: {
+                    description: 'Alternative logo (e.g., for dark backgrounds)'
+                  }
+                },
+                {
+                  name: 'favicon',
+                  type: 'upload',
+                  relationTo: 'media',
+                  admin: {
+                    description: 'Site-specific favicon'
+                  }
+                },
+                {
+                  name: 'colors',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'primary',
+                      type: 'text',
+                      admin: {
+                        description: 'Primary brand color (hex code)'
+                      }
+                    },
+                    {
+                      name: 'secondary',
+                      type: 'text',
+                      admin: {
+                        description: 'Secondary brand color (hex code)'
+                      }
+                    },
+                    {
+                      name: 'accent',
+                      type: 'text',
+                      admin: {
+                        description: 'Accent color for highlights (hex code)'
+                      }
+                    },
+                    {
+                      name: 'background',
+                      type: 'text',
+                      admin: {
+                        description: 'Background color (hex code)'
+                      }
+                    }
+                  ],
+                  admin: {
+                    description: 'Site-specific color scheme'
+                  }
+                },
+                {
+                  name: 'fonts',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'headingFont',
+                      type: 'text',
+                      admin: {
+                        description: 'Google Font name for headings'
+                      }
+                    },
+                    {
+                      name: 'bodyFont',
+                      type: 'text',
+                      admin: {
+                        description: 'Google Font name for body text'
+                      }
+                    }
+                  ],
+                  admin: {
+                    description: 'Typography customization'
+                  }
+                },
+                {
+                  name: 'customCSS',
+                  type: 'code',
+                  admin: {
+                    language: 'css',
+                    description: 'Custom CSS for this site'
+                  }
+                }
+              ],
+              admin: {
+                description: 'Site-specific branding and visual customization'
+              }
+            },
+            {
+              name: 'media',
+              type: 'group',
+              fields: [
+                {
+                  name: 'heroImage',
+                  type: 'upload',
+                  relationTo: 'media',
+                  admin: {
+                    description: 'Default hero background image for this site'
+                  }
+                },
+                {
+                  name: 'aboutImage',
+                  type: 'upload',
+                  relationTo: 'media',
+                  admin: {
+                    description: 'About section image'
+                  }
+                },
+                {
+                  name: 'galleryImages',
+                  type: 'array',
+                  fields: [
+                    {
+                      name: 'image',
+                      type: 'upload',
+                      relationTo: 'media',
+                      required: true
+                    },
+                    {
+                      name: 'caption',
+                      type: 'text',
+                      admin: {
+                        description: 'Image caption or description'
+                      }
+                    }
+                  ],
+                  admin: {
+                    description: 'Image gallery for this location'
+                  }
+                }
+              ],
+              admin: {
+                description: 'Site-specific media assets'
+              }
+            }
+          ]
+        },
+
+        // Features & Settings Tab
+        {
+          label: 'Features & Settings',
+          fields: [
+            {
+              name: 'features',
+              type: 'group',
+              fields: [
+                {
+                  name: 'enableInventory',
+                  type: 'checkbox',
+                  defaultValue: true,
+                  admin: {
+                    description: 'Enable inventory tracking for this site'
+                  }
+                },
+                {
+                  name: 'enablePricing',
+                  type: 'checkbox',
+                  defaultValue: true,
+                  admin: {
+                    description: 'Show pricing information publicly'
+                  }
+                },
+                {
+                  name: 'enableBookings',
+                  type: 'checkbox',
+                  defaultValue: true,
+                  admin: {
+                    description: 'Allow appointment bookings'
+                  }
+                },
+                {
+                  name: 'enableReviews',
+                  type: 'checkbox',
+                  defaultValue: true,
+                  admin: {
+                    description: 'Allow customer reviews and testimonials'
+                  }
+                },
+                {
+                  name: 'enableChat',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Enable live chat support'
+                  }
+                },
+                {
+                  name: 'enableBlog',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Enable blog/news section'
+                  }
+                },
+                {
+                  name: 'enableEvents',
+                  type: 'checkbox',
+                  defaultValue: true,
+                  admin: {
+                    description: 'Show upcoming events and recitals'
+                  }
+                }
+              ],
+              admin: {
+                description: 'Feature toggles for this site'
+              }
+            },
+            {
+              name: 'services',
+              type: 'array',
+              fields: [
+                {
+                  name: 'name',
+                  type: 'text',
+                  required: true,
+                  admin: {
+                    description: 'Service name (e.g., "Piano Tuning", "Moving Services")'
+                  }
+                },
+                {
+                  name: 'description',
+                  type: 'textarea',
+                  admin: {
+                    description: 'Service description'
+                  }
+                },
+                {
+                  name: 'available',
+                  type: 'checkbox',
+                  defaultValue: true,
+                  admin: {
+                    description: 'Service is available at this location'
+                  }
+                },
+                {
+                  name: 'featured',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Feature this service prominently'
+                  }
+                }
+              ],
+              admin: {
+                description: 'Services offered at this location'
+              }
+            },
+            {
+              name: 'seo',
+              type: 'group',
+              fields: [
+                {
+                  name: 'metaTitle',
+                  type: 'text',
+                  admin: {
+                    description: 'Default meta title for this site'
+                  }
+                },
+                {
+                  name: 'metaDescription',
+                  type: 'textarea',
+                  maxLength: 160,
+                  admin: {
+                    description: 'Default meta description for this site'
+                  }
+                },
+                {
+                  name: 'keywords',
+                  type: 'text',
+                  admin: {
+                    description: 'SEO keywords for this location (comma-separated)'
+                  }
+                },
+                {
+                  name: 'googleAnalyticsId',
+                  type: 'text',
+                  admin: {
+                    description: 'Google Analytics tracking ID'
+                  }
+                },
+                {
+                  name: 'googleTagManagerId',
+                  type: 'text',
+                  admin: {
+                    description: 'Google Tag Manager ID'
+                  }
+                },
+                {
+                  name: 'facebookPixelId',
+                  type: 'text',
+                  admin: {
+                    description: 'Facebook Pixel ID'
+                  }
+                },
+                {
+                  name: 'googleMapsEmbedCode',
+                  type: 'textarea',
+                  admin: {
+                    description: 'Google Maps embed code for location'
+                  }
+                }
+              ],
+              admin: {
+                description: 'SEO and tracking settings for this site'
+              }
+            }
+          ]
+        },
+
+        // Content Settings Tab
+        {
+          label: 'Content Settings',
+          fields: [
+            {
+              name: 'contentDefaults',
+              type: 'group',
+              fields: [
+                {
+                  name: 'defaultLanguage',
+                  type: 'select',
+                  defaultValue: 'en',
+                  options: [
+                    { label: 'English', value: 'en' },
+                    { label: 'Spanish', value: 'es' },
+                    { label: 'French', value: 'fr' }
+                  ],
+                  admin: {
+                    description: 'Primary language for this site'
+                  }
+                },
+                {
+                  name: 'currency',
+                  type: 'select',
+                  defaultValue: 'USD',
+                  options: [
+                    { label: 'US Dollar (USD)', value: 'USD' },
+                    { label: 'Euro (EUR)', value: 'EUR' },
+                    { label: 'British Pound (GBP)', value: 'GBP' },
+                    { label: 'Canadian Dollar (CAD)', value: 'CAD' }
+                  ],
+                  admin: {
+                    description: 'Currency for pricing display'
+                  }
+                },
+                {
+                  name: 'timezone',
+                  type: 'select',
+                  defaultValue: 'America/New_York',
+                  options: [
+                    { label: 'Eastern Time (EST/EDT)', value: 'America/New_York' },
+                    { label: 'Central Time (CST/CDT)', value: 'America/Chicago' },
+                    { label: 'Mountain Time (MST/MDT)', value: 'America/Denver' },
+                    { label: 'Pacific Time (PST/PDT)', value: 'America/Los_Angeles' },
+                    { label: 'Alaska Time (AKST/AKDT)', value: 'America/Anchorage' },
+                    { label: 'Hawaii Time (HST)', value: 'Pacific/Honolulu' }
+                  ],
+                  admin: {
+                    description: 'Timezone for this location'
+                  }
+                }
+              ],
+              admin: {
+                description: 'Default content settings for this site'
+              }
+            },
+            {
+              name: 'customFields',
+              type: 'array',
+              fields: [
+                {
+                  name: 'key',
+                  type: 'text',
+                  required: true,
+                  admin: {
+                    description: 'Field identifier (e.g., "specialHours", "announcement")'
+                  }
+                },
+                {
+                  name: 'label',
+                  type: 'text',
+                  required: true,
+                  admin: {
+                    description: 'Human-readable label'
+                  }
+                },
+                {
+                  name: 'value',
+                  type: 'textarea',
+                  admin: {
+                    description: 'Field value/content'
+                  }
+                },
+                {
+                  name: 'type',
+                  type: 'select',
+                  defaultValue: 'text',
+                  options: [
+                    { label: 'Text', value: 'text' },
+                    { label: 'HTML', value: 'html' },
+                    { label: 'URL', value: 'url' },
+                    { label: 'Number', value: 'number' }
+                  ]
+                }
+              ],
+              admin: {
+                description: 'Custom fields for site-specific data'
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+
+  hooks: {
+    beforeChange: [
+      ({ data }) => {
+        // Auto-generate slug from name if not provided
+        if (data.name && !data.slug) {
+          data.slug = data.name
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9-]/g, '')
+            .substring(0, 50)
+        }
+
+        // Ensure only one default site
+        if (data.isDefault) {
+          // This will be handled by a collection hook to unset other defaults
+        }
+
+        return data
+      }
+    ],
+    afterChange: [
+      // Ensure only one default site exists
+      async ({ doc, req, operation }) => {
+        if (doc.isDefault && operation === 'create' || (operation === 'update' && doc.isDefault)) {
+          await req.payload.update({
+            collection: 'sites',
+            where: {
+              and: [
+                { id: { not_equals: doc.id } },
+                { isDefault: { equals: true } }
+              ]
+            },
+            data: {
+              isDefault: false
+            }
+          })
+        }
+      }
+    ]
+  },
+
+  // Custom endpoints for site resolution
+  endpoints: [
+    {
+      path: '/by-domain/:domain',
+      method: 'get',
+      handler: async (req: any) => {
+        const { domain } = req.params
+
+        try {
+          const siteResult = await req.payload.find({
+            collection: 'sites',
+            where: {
+              or: [
+                { domain: { equals: domain } },
+                { subdomain: { equals: domain.split('.')[0] } },
+                { 'alternativeDomains.domain': { equals: domain } }
+              ]
+            },
+            limit: 1
+          })
+
+          if (siteResult.docs.length === 0) {
+            return Response.json({ error: 'Site not found' }, { status: 404 })
+          }
+
+          return Response.json({
+            success: true,
+            site: siteResult.docs[0]
+          })
+        } catch (error) {
+          return Response.json({ error: 'Internal server error' }, { status: 500 })
+        }
+      }
+    },
+
+    {
+      path: '/default',
+      method: 'get',
+      handler: async (req: any) => {
+        try {
+          const defaultSite = await req.payload.find({
+            collection: 'sites',
+            where: { isDefault: { equals: true } },
+            limit: 1
+          })
+
+          if (defaultSite.docs.length === 0) {
+            // Fallback to first active site
+            const firstSite = await req.payload.find({
+              collection: 'sites',
+              where: { status: { equals: 'active' } },
+              limit: 1,
+              sort: 'createdAt'
+            })
+
+            if (firstSite.docs.length === 0) {
+              return Response.json({ error: 'No sites found' }, { status: 404 })
+            }
+
+            return Response.json({
+              success: true,
+              site: firstSite.docs[0]
+            })
+          }
+
+          return Response.json({
+            success: true,
+            site: defaultSite.docs[0]
+          })
+        } catch (error) {
+          return Response.json({ error: 'Internal server error' }, { status: 500 })
+        }
+      }
+    }
+  ]
+}

@@ -6,6 +6,33 @@ export const ProductShowcase: Block = {
   imageAltText: 'Product showcase block for displaying product information',
   interfaceName: 'ProductShowcaseBlock',
   fields: [
+    // Data Source Configuration
+    {
+      name: 'dataSource',
+      type: 'select',
+      defaultValue: 'manual',
+      options: [
+        { label: 'Manual Entry', value: 'manual' },
+        { label: 'Piano Model Data', value: 'pianomodel' },
+        { label: 'Hybrid (Piano Model + Overrides)', value: 'hybrid' }
+      ],
+      admin: {
+        description: 'Choose data source for product information'
+      }
+    },
+    // PianoModel Relationship
+    {
+      name: 'pianoModel',
+      type: 'relationship',
+      relationTo: 'piano-models',
+      admin: {
+        description: 'Select piano model to automatically populate product information',
+        condition: (data, siblingData) => {
+          const dataSource = siblingData?.dataSource;
+          return dataSource === 'pianomodel' || dataSource === 'hybrid';
+        }
+      }
+    },
     {
       name: 'product',
       type: 'group',
@@ -14,25 +41,34 @@ export const ProductShowcase: Block = {
           name: 'image',
           type: 'upload',
           relationTo: 'media',
-          required: true,
           admin: {
-            description: 'Main product image'
+            description: 'Main product image (leave empty to use Piano Model image)',
+            condition: (data) => {
+              const dataSource = data?.dataSource;
+              return dataSource === 'manual' || dataSource === 'hybrid';
+            }
           }
         },
         {
           name: 'title',
           type: 'text',
-          required: true,
           admin: {
-            description: 'Product title/name'
+            description: 'Product title/name (leave empty to use Piano Model name)',
+            condition: (data) => {
+              const dataSource = data?.dataSource;
+              return dataSource === 'manual' || dataSource === 'hybrid';
+            }
           }
         },
         {
           name: 'description',
           type: 'textarea',
-          required: true,
           admin: {
-            description: 'Product description'
+            description: 'Product description (leave empty to use Piano Model description)',
+            condition: (data) => {
+              const dataSource = data?.dataSource;
+              return dataSource === 'manual' || dataSource === 'hybrid';
+            }
           }
         },
         {
@@ -50,33 +86,37 @@ export const ProductShowcase: Block = {
                 { label: 'CAD (C$)', value: 'CAD' }
               ],
               admin: {
-                description: 'Price currency'
+                description: 'Price currency (leave empty to use Piano Model currency)'
               }
             },
             {
               name: 'amount',
               type: 'number',
               admin: {
-                description: 'Price amount (leave empty for "Contact for pricing")'
+                description: 'Price amount (leave empty to use Piano Model pricing)'
               }
             },
             {
               name: 'saleAmount',
               type: 'number',
               admin: {
-                description: 'Sale price (optional, shows original price crossed out)'
+                description: 'Sale price (leave empty to use Piano Model sale price)'
               }
             },
             {
               name: 'priceText',
               type: 'text',
               admin: {
-                description: 'Custom price text (e.g., "Starting from", "Contact for pricing")'
+                description: 'Custom price text (leave empty to use Piano Model price text)'
               }
             }
           ],
           admin: {
-            description: 'Product pricing information'
+            description: 'Product pricing information (overrides Piano Model pricing when provided)',
+            condition: (data) => {
+              const dataSource = data?.dataSource;
+              return dataSource === 'manual' || dataSource === 'hybrid';
+            }
           }
         },
         {
@@ -113,7 +153,11 @@ export const ProductShowcase: Block = {
             }
           ],
           admin: {
-            description: 'Available finish options for this product'
+            description: 'Available finish options (overrides Piano Model finishes when provided)',
+            condition: (data) => {
+              const dataSource = data?.dataSource;
+              return dataSource === 'manual' || dataSource === 'hybrid';
+            }
           }
         },
         {

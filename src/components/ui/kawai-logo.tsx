@@ -13,9 +13,9 @@ interface KawaiLogoProps {
 }
 
 const sizeMap = {
-  sm: { width: 160, height: 32, textSize: 'text-lg', subText: 'text-xs' },
-  md: { width: 240, height: 48, textSize: 'text-xl', subText: 'text-xs' },
-  lg: { width: 320, height: 64, textSize: 'text-3xl', subText: 'text-sm' }
+  sm: { width: 140, height: 28, textSize: 'text-sm', subText: 'text-xs' },
+  md: { width: 180, height: 36, textSize: 'text-base', subText: 'text-xs' },
+  lg: { width: 240, height: 48, textSize: 'text-xl', subText: 'text-xs' }
 }
 
 export function KawaiLogo({ className, size = 'md', animated = true, theme = 'light' }: KawaiLogoProps) {
@@ -60,30 +60,30 @@ export function KawaiLogo({ className, size = 'md', animated = true, theme = 'li
         alt="Kawai Piano"
         width={width}
         height={height}
-        className="object-contain"
+        className="object-contain flex-shrink-0"
         priority
         quality={90}
         sizes={`(max-width: 768px) ${sizeMap.sm.width}px, (max-width: 1024px) ${sizeMap.md.width}px, ${sizeMap.lg.width}px`}
         style={{
-          width: size === 'sm' ? '160px' : size === 'md' ? '240px' : '320px',
+          width: size === 'sm' ? '140px' : size === 'md' ? '180px' : '240px',
           height: 'auto'
         }}
       />
       {animated ? (
-        <motion.div variants={textVariants}>
-          <div className={cn("font-bold tracking-wide kawai-heading", textColors[theme].primary, textSize)}>
+        <motion.div variants={textVariants} className="flex-shrink-0">
+          <div className={cn("font-bold tracking-wide kawai-heading whitespace-nowrap", textColors[theme].primary, textSize)}>
             ST. LOUIS
           </div>
-          <div className={cn("-mt-1 tracking-widest font-medium", textColors[theme].secondary, subText)}>
+          <div className={cn("-mt-1 tracking-widest font-medium whitespace-nowrap", textColors[theme].secondary, subText)}>
             PIANO GALLERY
           </div>
         </motion.div>
       ) : (
-        <div>
-          <div className={cn("font-bold tracking-wide kawai-heading", textColors[theme].primary, textSize)}>
+        <div className="flex-shrink-0">
+          <div className={cn("font-bold tracking-wide kawai-heading whitespace-nowrap", textColors[theme].primary, textSize)}>
             ST. LOUIS
           </div>
-          <div className={cn("-mt-1 tracking-widest font-medium", textColors[theme].secondary, subText)}>
+          <div className={cn("-mt-1 tracking-widest font-medium whitespace-nowrap", textColors[theme].secondary, subText)}>
             PIANO GALLERY
           </div>
         </div>
@@ -99,7 +99,7 @@ export function KawaiLogo({ className, size = 'md', animated = true, theme = 'li
         aria-label="Kawai Piano - Home"
       >
         <motion.div 
-          className="flex items-center space-x-3"
+          className="flex items-center space-x-2 sm:space-x-3"
           variants={logoVariants}
           initial="initial"
           whileHover="hover"
@@ -116,7 +116,7 @@ export function KawaiLogo({ className, size = 'md', animated = true, theme = 'li
       className={cn("kawai-logo-container", className)}
       aria-label="Kawai Piano - Home"
     >
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center space-x-2 sm:space-x-3">
         <LogoContent />
       </div>
     </Link>

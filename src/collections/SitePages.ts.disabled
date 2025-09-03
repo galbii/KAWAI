@@ -1,0 +1,985 @@
+import type { CollectionConfig, Field } from 'payload'
+import { 
+  isDeveloper,
+  isSuperAdmin,
+  isGlobalAdmin,
+  canAccessSiteData,
+  canManageContentAtSites,
+  isAdminLevel
+} from '../lib/access-control'
+
+export const SitePages: CollectionConfig = {
+  slug: 'site-pages',
+  labels: {
+    singular: 'Site Page',
+    plural: 'Site Pages',
+  },
+  admin: {
+    group: 'SITES',
+    defaultColumns: ['site', 'pageType', 'title', 'status', 'updatedAt'],
+    useAsTitle: 'title',
+    description: 'Manage site-specific pages including pianos, home, about, and contact pages with template inheritance',
+    pagination: {
+      defaultLimit: 20,
+      limits: [10, 20, 50, 100],
+    },
+    listSearchableFields: ['title', 'pageType', 'site.name'],
+  },
+  access: {
+    read: canAccessSiteData, // Users can only see pages from sites they have access to
+    create: canManageContentAtSites, // Content managers can create pages
+    update: canManageContentAtSites, // Content managers can update pages
+    delete: ({ req: { user } }) => {
+      if (isGlobalAdmin({ req: { user } })) return true
+      
+      // Only site admins can delete pages
+      const adminSites = user?.siteRoles
+        ?.filter(role => role.role === 'admin')
+        ?.map(role => role.site) || []
+      
+      if (adminSites.length === 0) return false
+      
+      return {
+        site: { in: adminSites }
+      }
+    },
+    admin: isAdminLevel, // Admin-level users can access admin panel
+  },
+  fields: [
+    // Core Configuration Fields
+    {
+      name: 'site',
+      type: 'relationship',
+      relationTo: 'sites',
+      required: true,
+      admin: {
+        description: 'Site this page belongs to',
+        position: 'sidebar'
+      },
+      // Filter to only show sites the user has access to
+      filterOptions: ({ user }) => {
+        if (isGlobalAdmin({ req: { user } })) return {}
+        
+        return {
+          id: {
+            in: user?.sites?.map(site => site.id || site) || []
+          }
+        }
+      }
+    },
+    {
+      name: 'pageType',
+      type: 'select',
+      required: true,
+      options: [
+        { label: 'Pianos Page', value: 'pianos' },
+        { label: 'Home Page', value: 'home' },
+        { label: 'About Page', value: 'about' },
+        { label: 'Contact Page', value: 'contact' },
+        { label: 'Services Page', value: 'services' },
+        { label: 'Custom Page', value: 'custom' }
+      ],
+      admin: {
+        description: 'Type of page - determines available fields and templates',
+        position: 'sidebar'
+      }
+    },
+    {
+      name: 'title',
+      type: 'text',
+      required: true,
+      admin: {
+        description: 'Internal page title for admin reference'
+      }
+    },
+    {
+      name: 'status',
+      type: 'select',
+      defaultValue: 'draft',
+      options: [
+        { label: 'Draft', value: 'draft' },
+        { label: 'Published', value: 'published' },
+        { label: 'Archived', value: 'archived' }
+      ],
+      admin: {
+        position: 'sidebar',
+        description: 'Page publication status'
+      }
+    },
+
+    // Template Inheritance System
+    {
+      name: 'templateSettings',
+      type: 'group',
+      admin: {
+        description: 'Template inheritance and override settings'
+      },
+      fields: [
+        {
+          name: 'useTemplate',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description: 'Inherit content from a template page'
+          }
+        },
+        {
+          name: 'templateSource',
+          type: 'relationship',
+          relationTo: 'site-pages',
+          admin: {
+            description: 'Template page to inherit content from',
+            condition: (data) => data.templateSettings?.useTemplate === true
+          },
+          // Only show template pages of the same type
+          filterOptions: ({ data }) => {
+            return {
+              and: [
+                { pageType: { equals: data.pageType } },
+                { isTemplate: { equals: true } }
+              ]
+            }
+          }
+        },
+        {
+          name: 'isTemplate',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description: 'Mark this page as a template for other sites',
+            condition: (data) => data.templateSettings?.useTemplate !== true
+          }
+        },
+        {
+          name: 'overrideFields',
+          type: 'array',
+          admin: {
+            description: 'Specify which template fields to override locally',
+            condition: (data) => data.templateSettings?.useTemplate === true
+          },
+          fields: [
+            {
+              name: 'fieldPath',
+              type: 'select',
+              required: true,
+              options: [
+                { label: 'Hero Section', value: 'heroContent' },
+                { label: 'Featured Models Section', value: 'featuredModelsSection' },
+                { label: 'Piano Categories', value: 'pianoCategories' },
+                { label: 'Call to Action', value: 'ctaSection' },
+                { label: 'SEO Settings', value: 'seo' }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+
+    // Main Content Fields with Conditional Logic
+    {
+      type: 'tabs',
+      tabs: [
+        // Hero Section Tab - Pianos Page Specific
+        {
+          label: 'Hero Section',
+          description: 'Main hero content including title, description, background image, and call-to-action',
+          admin: {
+            condition: (data) => ['pianos', 'home', 'about', 'custom'].includes(data.pageType)
+          },
+          fields: [
+            {
+              name: 'heroContent',
+              type: 'group',
+              fields: [
+                // Template Override Toggle
+                {
+                  name: 'useCustomHero',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Override template hero section with custom content',
+                    condition: (data) => data.templateSettings?.useTemplate === true
+                  }
+                },
+                {
+                  name: 'heroTitle',
+                  type: 'text',
+                  required: true,
+                  defaultValue: 'Experience the Complete Kawai Piano Collection',
+                  admin: {
+                    description: 'Main page title displayed in the hero section',
+                    condition: (data, siblingData) => {
+                      return !data.templateSettings?.useTemplate || siblingData.useCustomHero
+                    }
+                  }
+                },
+                {
+                  name: 'heroDescription',
+                  type: 'textarea',
+                  required: true,
+                  defaultValue: 'From the legendary Shigeru Kawai concert grands used in international competitions to innovative digital and hybrid instruments, discover the piano that will inspire your musical journey.',
+                  admin: {
+                    description: 'Hero description text displayed below the title',
+                    condition: (data, siblingData) => {
+                      return !data.templateSettings?.useTemplate || siblingData.useCustomHero
+                    }
+                  }
+                },
+                {
+                  name: 'heroBackgroundImage',
+                  type: 'upload',
+                  relationTo: 'media',
+                  admin: {
+                    description: 'Background image for the hero section',
+                    condition: (data, siblingData) => {
+                      return !data.templateSettings?.useTemplate || siblingData.useCustomHero
+                    }
+                  }
+                },
+                {
+                  name: 'heroCta',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'text',
+                      type: 'text',
+                      required: true,
+                      defaultValue: 'Explore Categories',
+                      admin: {
+                        description: 'Call-to-action button text'
+                      }
+                    },
+                    {
+                      name: 'link',
+                      type: 'text',
+                      required: true,
+                      defaultValue: '#categories',
+                      admin: {
+                        description: 'Call-to-action button link/URL'
+                      }
+                    }
+                  ],
+                  admin: {
+                    description: 'Hero call-to-action button configuration',
+                    condition: (data, siblingData) => {
+                      return !data.templateSettings?.useTemplate || siblingData.useCustomHero
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+
+        // Piano Categories Tab - Pianos Page Specific
+        {
+          label: 'Piano Categories',
+          description: 'Configure the main piano category sections (Grand, Digital, Hybrid, Upright)',
+          admin: {
+            condition: (data) => data.pageType === 'pianos'
+          },
+          fields: [
+            {
+              name: 'useCustomCategories',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                description: 'Override template categories with site-specific categories',
+                condition: (data) => data.templateSettings?.useTemplate === true
+              }
+            },
+            {
+              name: 'pianoCategories',
+              type: 'array',
+              required: true,
+              minRows: 1,
+              maxRows: 6,
+              labels: {
+                singular: 'Piano Category',
+                plural: 'Piano Categories',
+              },
+              admin: {
+                description: 'Piano categories displayed on this site',
+                condition: (data, siblingData) => {
+                  return !data.templateSettings?.useTemplate || siblingData.useCustomCategories
+                }
+              },
+              fields: [
+                {
+                  name: 'slug',
+                  type: 'text',
+                  required: true,
+                  admin: {
+                    description: 'URL slug for this category (e.g., "grand", "digital")'
+                  }
+                },
+                {
+                  name: 'name',
+                  type: 'text',
+                  required: true,
+                  admin: {
+                    description: 'Category display name (e.g., "Acoustic Grand Pianos")'
+                  }
+                },
+                {
+                  name: 'description',
+                  type: 'textarea',
+                  required: true,
+                  admin: {
+                    description: 'Category description text'
+                  }
+                },
+                {
+                  name: 'image',
+                  type: 'upload',
+                  relationTo: 'media',
+                  admin: {
+                    description: 'Category representative image'
+                  }
+                },
+                {
+                  name: 'priceRange',
+                  type: 'text',
+                  admin: {
+                    description: 'Price range for this category (e.g., "$45,000 - $185,000")'
+                  }
+                },
+                {
+                  name: 'features',
+                  type: 'array',
+                  fields: [
+                    {
+                      name: 'feature',
+                      type: 'text',
+                      required: true
+                    }
+                  ],
+                  admin: {
+                    description: 'Key features of this piano category'
+                  }
+                },
+                {
+                  name: 'icon',
+                  type: 'select',
+                  options: [
+                    { label: 'Piano', value: 'piano' },
+                    { label: 'Music', value: 'music' },
+                    { label: 'Zap (Digital)', value: 'zap' },
+                    { label: 'Award', value: 'award' },
+                    { label: 'Crown', value: 'crown' }
+                  ],
+                  admin: {
+                    description: 'Icon to display for this category'
+                  }
+                },
+                {
+                  name: 'badge',
+                  type: 'text',
+                  admin: {
+                    description: 'Badge text (e.g., "Professional", "Classic")'
+                  }
+                },
+                {
+                  name: 'highlight',
+                  type: 'text',
+                  admin: {
+                    description: 'Highlighted feature or series (e.g., "GX BLAK Performance Series")'
+                  }
+                },
+                {
+                  name: 'availableAtSite',
+                  type: 'checkbox',
+                  defaultValue: true,
+                  admin: {
+                    description: 'Display this category at this site location'
+                  }
+                }
+              ]
+            },
+            // Site-specific category customizations
+            {
+              name: 'categoryCustomizations',
+              type: 'group',
+              fields: [
+                {
+                  name: 'showPricing',
+                  type: 'checkbox',
+                  defaultValue: true,
+                  admin: {
+                    description: 'Show pricing information for categories'
+                  }
+                },
+                {
+                  name: 'enableFiltering',
+                  type: 'checkbox',
+                  defaultValue: true,
+                  admin: {
+                    description: 'Enable category filtering on the page'
+                  }
+                },
+                {
+                  name: 'customSorting',
+                  type: 'select',
+                  options: [
+                    { label: 'Default Order', value: 'default' },
+                    { label: 'Price: Low to High', value: 'price-asc' },
+                    { label: 'Price: High to Low', value: 'price-desc' },
+                    { label: 'Alphabetical', value: 'alphabetical' }
+                  ],
+                  defaultValue: 'default',
+                  admin: {
+                    description: 'Custom sorting for this site'
+                  }
+                }
+              ],
+              admin: {
+                description: 'Site-specific category display options'
+              }
+            }
+          ]
+        },
+
+        // Featured Models Tab - Pianos Page Specific
+        {
+          label: 'Featured Models',
+          description: 'Featured models carousel section including section content and model details',
+          admin: {
+            condition: (data) => data.pageType === 'pianos'
+          },
+          fields: [
+            {
+              name: 'useCustomFeatured',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                description: 'Override template featured models with site-specific selection',
+                condition: (data) => data.templateSettings?.useTemplate === true
+              }
+            },
+            {
+              name: 'featuredModelsSection',
+              type: 'group',
+              fields: [
+                {
+                  name: 'title',
+                  type: 'text',
+                  required: true,
+                  defaultValue: 'Flagship & Featured Models',
+                  admin: {
+                    description: 'Section title for featured models'
+                  }
+                },
+                {
+                  name: 'description',
+                  type: 'textarea',
+                  required: true,
+                  defaultValue: 'Discover our most celebrated instruments, from competition-grade concert grands to innovative digital and hybrid pianos preferred by professionals worldwide.',
+                  admin: {
+                    description: 'Section description for featured models'
+                  }
+                }
+              ],
+              admin: {
+                description: 'Featured models section header content',
+                condition: (data, siblingData) => {
+                  return !data.templateSettings?.useTemplate || siblingData.useCustomFeatured
+                }
+              }
+            },
+            {
+              name: 'featuredModels',
+              type: 'array',
+              required: true,
+              minRows: 1,
+              maxRows: 6,
+              labels: {
+                singular: 'Featured Model',
+                plural: 'Featured Models',
+              },
+              admin: {
+                description: 'Featured piano models for the carousel',
+                condition: (data, siblingData) => {
+                  return !data.templateSettings?.useTemplate || siblingData.useCustomFeatured
+                }
+              },
+              fields: [
+                {
+                  name: 'pianoModel',
+                  type: 'relationship',
+                  relationTo: 'piano-models',
+                  admin: {
+                    description: 'Link to existing piano model (optional)'
+                  },
+                  // Filter to only show models available at this site
+                  filterOptions: ({ data }) => {
+                    if (!data.site) return {}
+                    
+                    return {
+                      'siteAvailability.site': {
+                        equals: data.site
+                      }
+                    }
+                  }
+                },
+                {
+                  name: 'customContent',
+                  type: 'group',
+                  admin: {
+                    description: 'Custom content for this featured model (overrides linked model data)'
+                  },
+                  fields: [
+                    {
+                      name: 'name',
+                      type: 'text',
+                      admin: {
+                        description: 'Piano model name (e.g., "GX-7 BLAK")'
+                      }
+                    },
+                    {
+                      name: 'category',
+                      type: 'text',
+                      admin: {
+                        description: 'Piano category/series (e.g., "GX BLAK Performance Series")'
+                      }
+                    },
+                    {
+                      name: 'image',
+                      type: 'upload',
+                      relationTo: 'media',
+                      admin: {
+                        description: 'Featured model image for carousel'
+                      }
+                    },
+                    {
+                      name: 'badge',
+                      type: 'text',
+                      admin: {
+                        description: 'Badge text (e.g., "Performance Series", "Flagship Digital")'
+                      }
+                    },
+                    {
+                      name: 'description',
+                      type: 'textarea',
+                      admin: {
+                        description: 'Model description for carousel slide'
+                      }
+                    }
+                  ]
+                },
+                {
+                  name: 'displayOrder',
+                  type: 'number',
+                  admin: {
+                    description: 'Display order (lower numbers appear first)'
+                  }
+                },
+                {
+                  name: 'ctaText',
+                  type: 'text',
+                  defaultValue: 'Learn More',
+                  admin: {
+                    description: 'Call-to-action button text'
+                  }
+                },
+                {
+                  name: 'ctaLink',
+                  type: 'text',
+                  admin: {
+                    description: 'Call-to-action button link (leave empty to auto-generate from model)'
+                  }
+                }
+              ]
+            }
+          ]
+        },
+
+        // Call to Action Tab
+        {
+          label: 'Call to Action',
+          description: 'Bottom call-to-action section encouraging showroom visits',
+          fields: [
+            {
+              name: 'useCustomCta',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                description: 'Override template CTA with site-specific content',
+                condition: (data) => data.templateSettings?.useTemplate === true
+              }
+            },
+            {
+              name: 'ctaSection',
+              type: 'group',
+              fields: [
+                {
+                  name: 'title',
+                  type: 'text',
+                  required: true,
+                  defaultValue: 'Experience the Difference',
+                  admin: {
+                    description: 'CTA section main title'
+                  }
+                },
+                {
+                  name: 'description',
+                  type: 'textarea',
+                  required: true,
+                  defaultValue: 'Visit our showroom to hear and feel the exceptional quality of Kawai pianos. Our experts will help you find the perfect instrument for your musical journey.',
+                  admin: {
+                    description: 'CTA section description text'
+                  }
+                },
+                {
+                  name: 'ctaText',
+                  type: 'text',
+                  required: true,
+                  defaultValue: 'Schedule Showroom Visit',
+                  admin: {
+                    description: 'Call-to-action button text'
+                  }
+                },
+                {
+                  name: 'ctaLink',
+                  type: 'text',
+                  required: true,
+                  defaultValue: '/contact/schedule-visit',
+                  admin: {
+                    description: 'Call-to-action button link/URL'
+                  }
+                },
+                {
+                  name: 'backgroundImage',
+                  type: 'upload',
+                  relationTo: 'media',
+                  admin: {
+                    description: 'Background image for CTA section'
+                  }
+                },
+                {
+                  name: 'useLocationInfo',
+                  type: 'checkbox',
+                  defaultValue: true,
+                  admin: {
+                    description: 'Include location-specific contact information'
+                  }
+                }
+              ],
+              admin: {
+                description: 'Final call-to-action section configuration',
+                condition: (data, siblingData) => {
+                  return !data.templateSettings?.useTemplate || siblingData.useCustomCta
+                }
+              }
+            }
+          ]
+        },
+
+        // Custom Content Tab - For flexible content
+        {
+          label: 'Custom Content',
+          description: 'Additional custom content blocks and sections',
+          admin: {
+            condition: (data) => ['custom', 'about', 'services'].includes(data.pageType)
+          },
+          fields: [
+            {
+              name: 'customSections',
+              type: 'array',
+              labels: {
+                singular: 'Content Section',
+                plural: 'Content Sections',
+              },
+              fields: [
+                {
+                  name: 'sectionTitle',
+                  type: 'text',
+                  admin: {
+                    description: 'Section title'
+                  }
+                },
+                {
+                  name: 'sectionType',
+                  type: 'select',
+                  required: true,
+                  options: [
+                    { label: 'Rich Text', value: 'richtext' },
+                    { label: 'Image Gallery', value: 'gallery' },
+                    { label: 'Feature List', value: 'features' },
+                    { label: 'Testimonials', value: 'testimonials' },
+                    { label: 'Location Info', value: 'location' }
+                  ]
+                },
+                {
+                  name: 'content',
+                  type: 'richText',
+                  admin: {
+                    condition: (data, siblingData) => siblingData.sectionType === 'richtext'
+                  }
+                },
+                {
+                  name: 'gallery',
+                  type: 'array',
+                  fields: [
+                    {
+                      name: 'image',
+                      type: 'upload',
+                      relationTo: 'media',
+                      required: true
+                    },
+                    {
+                      name: 'caption',
+                      type: 'text'
+                    }
+                  ],
+                  admin: {
+                    condition: (data, siblingData) => siblingData.sectionType === 'gallery'
+                  }
+                }
+              ]
+            }
+          ]
+        },
+
+        // SEO & Meta Tab
+        {
+          label: 'SEO & Meta',
+          description: 'Search engine optimization and metadata settings',
+          fields: [
+            {
+              name: 'useCustomSeo',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                description: 'Override template SEO settings with custom values',
+                condition: (data) => data.templateSettings?.useTemplate === true
+              }
+            },
+            {
+              name: 'seo',
+              type: 'group',
+              fields: [
+                {
+                  name: 'metaTitle',
+                  type: 'text',
+                  admin: {
+                    description: 'Page meta title for search engines'
+                  }
+                },
+                {
+                  name: 'metaDescription',
+                  type: 'textarea',
+                  maxLength: 160,
+                  admin: {
+                    description: 'Page meta description for search engines (max 160 characters)'
+                  }
+                },
+                {
+                  name: 'keywords',
+                  type: 'text',
+                  admin: {
+                    description: 'SEO keywords (comma-separated)'
+                  }
+                },
+                {
+                  name: 'ogImage',
+                  type: 'upload',
+                  relationTo: 'media',
+                  admin: {
+                    description: 'Open Graph image for social sharing'
+                  }
+                },
+                {
+                  name: 'customSchema',
+                  type: 'json',
+                  admin: {
+                    description: 'Custom structured data JSON-LD schema'
+                  }
+                }
+              ],
+              admin: {
+                description: 'SEO and metadata configuration',
+                condition: (data, siblingData) => {
+                  return !data.templateSettings?.useTemplate || siblingData.useCustomSeo
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+
+  // Collection Hooks for Template Inheritance and Validation
+  hooks: {
+    beforeChange: [
+      // Ensure only one page per type per site (except custom pages)
+      async ({ data, operation, req }) => {
+        if (data.pageType !== 'custom' && (operation === 'create' || (operation === 'update' && data.pageType))) {
+          const existing = await req.payload.find({
+            collection: 'site-pages',
+            where: {
+              and: [
+                { site: { equals: data.site } },
+                { pageType: { equals: data.pageType } },
+                ...(operation === 'update' ? [{ id: { not_equals: data.id } }] : [])
+              ]
+            },
+            limit: 1
+          })
+
+          if (existing.docs.length > 0) {
+            throw new Error(`A ${data.pageType} page already exists for this site. Only one page of each type is allowed per site.`)
+          }
+        }
+
+        return data
+      },
+      
+      // Auto-populate template data when needed
+      async ({ data, operation, req }) => {
+        if (data.templateSettings?.useTemplate && data.templateSettings?.templateSource) {
+          try {
+            const template = await req.payload.findByID({
+              collection: 'site-pages',
+              id: data.templateSettings.templateSource,
+              depth: 2
+            })
+
+            if (template) {
+              // Merge template data with current data
+              // Only apply fields that aren't being overridden
+              const overrideFields = data.templateSettings.overrideFields?.map(field => field.fieldPath) || []
+              
+              if (!overrideFields.includes('heroContent') && template.heroContent) {
+                data.heroContent = template.heroContent
+              }
+              
+              if (!overrideFields.includes('pianoCategories') && template.pianoCategories) {
+                data.pianoCategories = template.pianoCategories
+              }
+              
+              if (!overrideFields.includes('featuredModelsSection') && template.featuredModelsSection) {
+                data.featuredModelsSection = template.featuredModelsSection
+                data.featuredModels = template.featuredModels
+              }
+              
+              if (!overrideFields.includes('ctaSection') && template.ctaSection) {
+                data.ctaSection = template.ctaSection
+              }
+              
+              if (!overrideFields.includes('seo') && template.seo) {
+                data.seo = template.seo
+              }
+            }
+          } catch (error) {
+            console.warn('Could not load template data:', error.message)
+          }
+        }
+
+        return data
+      }
+    ]
+  },
+
+  // Custom API endpoints for frontend consumption
+  endpoints: [
+    {
+      path: '/by-site/:siteSlug/:pageType',
+      method: 'get',
+      handler: async (req: any) => {
+        const { siteSlug, pageType } = req.params
+
+        try {
+          // Find the site first
+          const siteResult = await req.payload.find({
+            collection: 'sites',
+            where: { slug: { equals: siteSlug } },
+            limit: 1
+          })
+
+          if (siteResult.docs.length === 0) {
+            return Response.json({ error: 'Site not found' }, { status: 404 })
+          }
+
+          const site = siteResult.docs[0]
+
+          // Find the specific page
+          const pageResult = await req.payload.find({
+            collection: 'site-pages',
+            where: {
+              and: [
+                { site: { equals: site.id } },
+                { pageType: { equals: pageType } },
+                { status: { equals: 'published' } }
+              ]
+            },
+            limit: 1,
+            depth: 3 // Deep populate for media and relationships
+          })
+
+          if (pageResult.docs.length === 0) {
+            return Response.json({ error: `${pageType} page not found for site` }, { status: 404 })
+          }
+
+          const page = pageResult.docs[0]
+
+          return Response.json({
+            success: true,
+            data: {
+              ...page,
+              site: site // Include site information
+            }
+          })
+        } catch (error) {
+          console.error('Error fetching site page:', error)
+          return Response.json({ error: 'Internal server error' }, { status: 500 })
+        }
+      }
+    },
+
+    // Get all pages for a site
+    {
+      path: '/by-site/:siteSlug',
+      method: 'get',
+      handler: async (req: any) => {
+        const { siteSlug } = req.params
+        const url = new URL(req.url)
+        const status = url.searchParams.get('status') || 'published'
+
+        try {
+          const siteResult = await req.payload.find({
+            collection: 'sites',
+            where: { slug: { equals: siteSlug } },
+            limit: 1
+          })
+
+          if (siteResult.docs.length === 0) {
+            return Response.json({ error: 'Site not found' }, { status: 404 })
+          }
+
+          const site = siteResult.docs[0]
+
+          const pagesResult = await req.payload.find({
+            collection: 'site-pages',
+            where: {
+              and: [
+                { site: { equals: site.id } },
+                { status: { equals: status } }
+              ]
+            },
+            depth: 2
+          })
+
+          return Response.json({
+            success: true,
+            site: site,
+            pages: pagesResult.docs
+          })
+        } catch (error) {
+          console.error('Error fetching site pages:', error)
+          return Response.json({ error: 'Internal server error' }, { status: 500 })
+        }
+      }
+    }
+  ]
+}

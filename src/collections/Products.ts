@@ -1,4 +1,9 @@
 import type { CollectionConfig } from 'payload'
+import { 
+  productAfterChangeHook, 
+  productBeforeChangeHook,
+  productBeforeDeleteHook 
+} from '../lib/hooks/product-generation'
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -8,7 +13,7 @@ export const Products: CollectionConfig = {
   },
   admin: {
     group: 'Products',
-    defaultColumns: ['name', 'category', 'status', 'featured', 'updatedAt'],
+    defaultColumns: ['name', 'type', 'category', 'status', 'updatedAt'],
     useAsTitle: 'name',
     description: 'Manage products with dynamic page building capabilities using blocks',
   },
@@ -25,6 +30,57 @@ export const Products: CollectionConfig = {
           label: 'Product Details',
           description: 'Core product information and settings',
           fields: [
+            // Product Type - Piano or Other
+            {
+              name: 'type',
+              type: 'select',
+              required: true,
+              defaultValue: 'other',
+              options: [
+                { label: 'Piano', value: 'piano' },
+                { label: 'Other Product', value: 'other' }
+              ],
+              admin: {
+                description: 'Product type determines linking behavior and available features',
+                position: 'sidebar'
+              }
+            },
+            // PianoModel Relationship - Auto-generates content when linked
+            {
+              name: 'pianoModel',
+              type: 'relationship',
+              relationTo: 'piano-models',
+              admin: {
+                description: 'Link to piano model for automatic data population in blocks. When linked, some product data will auto-sync with the piano model.',
+                position: 'sidebar',
+                condition: (data) => data.type === 'piano'
+              },
+              validate: (val: any, { data }: any) => {
+                if (data.type === 'piano' && !val) {
+                  return 'Piano products must be linked to a piano model'
+                }
+                if (data.type !== 'piano' && val) {
+                  return 'Non-piano products cannot be linked to piano models'
+                }
+                return true
+              }
+            },
+            // Data Source Mode - Controls how content is managed
+            {
+              name: 'dataSource',
+              type: 'select',
+              defaultValue: 'manual',
+              options: [
+                { label: 'Manual - Full manual control', value: 'manual' },
+                { label: 'Piano Model - Auto-sync from piano model', value: 'pianomodel' },
+                { label: 'Hybrid - Manual with piano model fallback', value: 'hybrid' }
+              ],
+              admin: {
+                description: 'How this product gets its content: Manual (independent), Piano Model (auto-synced), or Hybrid (manual with fallbacks)',
+                position: 'sidebar',
+                condition: (data) => data.type === 'piano' && !!data.pianoModel
+              }
+            },
             {
               name: 'name',
               type: 'text',
@@ -37,7 +93,6 @@ export const Products: CollectionConfig = {
               name: 'slug',
               type: 'text',
               required: true,
-              unique: true,
               admin: {
                 description: 'URL-friendly version of product name'
               }
@@ -501,16 +556,36 @@ export const Products: CollectionConfig = {
 
   hooks: {
     beforeChange: [
-      ({ data }) => {
-        // Auto-generate slug from name if not provided
-        if (data.name && !data.slug) {
-          data.slug = data.name
+      async ({ data, req, operation }) => {
+        console.log(`🛒 Products inline beforeChange START: operation=${operation}, name="${data.name}"`)
+        console.log(`🔍 Context:`, JSON.stringify(req.context))
+        console.log(`🔍 Incoming data keys:`, Object.keys(data))
+        console.log(`🔍 Current slug value: "${data.slug}"`)
+        
+        // Only generate slug from name if not provided or if slug is empty
+        if (data.name && (!data.slug || data.slug.trim() === '')) {
+          console.log(`🔗 Need to generate slug from name: "${data.name}"`)
+          const generatedSlug = data.name
             .toLowerCase()
+            .trim()
             .replace(/\s+/g, '-')
             .replace(/[^a-z0-9-]/g, '')
+            .replace(/-+/g, '-')
+            .replace(/^-+|-+$/g, '')
+          
+          // Ensure we have a valid slug
+          data.slug = generatedSlug || 'product'
+          console.log(`✅ Generated slug from name "${data.name}" -> "${data.slug}"`)
+        } else {
+          console.log(`⏭️ Slug already provided: "${data.slug}" - no generation needed`)
         }
+        
+        console.log(`🛒 Products inline beforeChange END: returning data with slug="${data.slug}"`)
         return data
-      }
-    ]
+      },
+      productBeforeChangeHook
+    ],
+    afterChange: [productAfterChangeHook],
+    beforeDelete: [productBeforeDeleteHook]
   }
 }

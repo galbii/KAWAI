@@ -10,6 +10,8 @@ import sharp from 'sharp'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
+// import { Sites } from './collections/Sites'
+// import { SitePages } from './collections/SitePages'
 import { Productlines } from './collections/Productlines'
 import { PianoModels } from './collections/PianoModels'
 import { PianosPage } from './collections/PianosPage'
@@ -41,7 +43,16 @@ export default buildConfig({
       // Payload meta configuration for HTML metadata
     },
   },
-  collections: [Users, Media, Productlines, PianoModels, PianosPage, Products],
+  collections: [
+    Users, 
+    Media, 
+    // Sites,        // Multi-site management (disabled)
+    // SitePages,    // Site-specific pages with template inheritance (disabled)
+    Productlines, 
+    PianoModels, 
+    PianosPage,   // Keep for backward compatibility during migration
+    Products
+  ],
   // Define blocks at root level for performance optimization using blockReferences
   blocks: [
     ProductShowcase,

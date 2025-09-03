@@ -6,6 +6,33 @@ export const ImageGallery: Block = {
   imageAltText: 'Image gallery block for showcasing multiple product images',
   interfaceName: 'ImageGalleryBlock',
   fields: [
+    // Data Source Configuration
+    {
+      name: 'dataSource',
+      type: 'select',
+      defaultValue: 'manual',
+      options: [
+        { label: 'Manual Entry', value: 'manual' },
+        { label: 'Piano Model Gallery', value: 'pianomodel' },
+        { label: 'Hybrid (Piano Model + Additional)', value: 'hybrid' }
+      ],
+      admin: {
+        description: 'Choose data source for gallery images'
+      }
+    },
+    // PianoModel Relationship
+    {
+      name: 'pianoModel',
+      type: 'relationship',
+      relationTo: 'piano-models',
+      admin: {
+        description: 'Select piano model to automatically populate gallery from model images',
+        condition: (data, siblingData) => {
+          const dataSource = siblingData?.dataSource;
+          return dataSource === 'pianomodel' || dataSource === 'hybrid';
+        }
+      }
+    },
     {
       name: 'title',
       type: 'text',
@@ -55,7 +82,11 @@ export const ImageGallery: Block = {
         }
       ],
       admin: {
-        description: 'Images to display in the gallery'
+        description: 'Images to display in the gallery (additional images when using Piano Model data source)',
+        condition: (data) => {
+          const dataSource = data?.dataSource;
+          return dataSource === 'manual' || dataSource === 'hybrid';
+        }
       }
     },
     {

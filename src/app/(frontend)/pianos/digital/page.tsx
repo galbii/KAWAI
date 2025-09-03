@@ -4,7 +4,7 @@ import { CategoryHero } from "@/components/piano/category-hero";
 import { UnifiedPianoSeries } from "@/components/piano/unified-piano-series";
 import { useScrollAnimation, fadeUpClass, slideInClass, scaleInClass } from "@/lib/hooks/useScrollAnimation";
 import { useEffect, useRef, useState } from "react";
-import { getProductlines, transformProductlinesToSeries } from "@/lib/payload";
+import { getProductlines, transformProductlinesToSeries, getProductlinesWithPianoModels } from "@/lib/payload";
 import { Productline } from "@/lib/types";
 
 // Featured digital pianos - highlighting the best from each series
@@ -323,18 +323,14 @@ export default function DigitalPianosPage() {
     async function fetchProductlines() {
       try {
         setLoading(true);
-        const data = await getProductlines('digital');
-        setProductlines(data);
+        // Use the function that fetches productlines WITH their piano models
+        const seriesWithPianos = await getProductlinesWithPianoModels('digital');
         
-        if (data.length > 0) {
-          // Transform CMS data and use it, otherwise fallback to hardcoded data
-          const transformedSeries = transformProductlinesToSeries(data);
-          // Add slides from CMS data
-          const seriesWithSlides = transformedSeries.map((series, index) => ({
-            ...series,
-            slides: data[index]?.slides || []
-          }));
-          setSeries(seriesWithSlides);
+        if (seriesWithPianos.length > 0) {
+          setSeries(seriesWithPianos);
+          // Also set productlines for compatibility
+          const productlines = await getProductlines('digital');
+          setProductlines(productlines);
         }
       } catch (err) {
         console.error('Failed to fetch productlines:', err);

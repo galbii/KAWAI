@@ -1,0 +1,264 @@
+import type { Access } from 'payload'
+
+/**
+ * Access Control Utilities for Multi-Site System
+ * 
+ * These utilities provide consistent access control across all collections
+ * based on user roles and site assignments.
+ */
+
+// Developer role has unrestricted access to everything
+export const isDeveloper: Access = ({ req: { user } }) => {
+  return user?.role === 'developer'
+}
+
+// Super admin has global access (but not quite as unrestricted as developer)
+export const isSuperAdmin: Access = ({ req: { user } }) => {
+  return user?.role === 'super-admin'
+}
+
+// Developer or super admin (highest level access)
+export const isGlobalAdmin: Access = ({ req: { user } }) => {
+  return ['developer', 'super-admin'].includes(user?.role)
+}
+
+// Admin-level roles (global admins + site admins)
+export const isAdminLevel: Access = ({ req: { user } }) => {
+  return ['developer', 'super-admin'].includes(user?.role) ||
+         user?.siteRoles?.some(role => role.role === 'admin')
+}
+
+// Manager-level access (admin-level + site managers)
+export const isManagerLevel: Access = ({ req: { user } }) => {
+  return ['developer', 'super-admin'].includes(user?.role) ||
+         user?.siteRoles?.some(role => ['admin', 'manager'].includes(role.role))
+}
+
+// Staff-level access (manager-level + site staff)
+export const isStaffLevel: Access = ({ req: { user } }) => {
+  return ['developer', 'super-admin'].includes(user?.role) ||
+         user?.siteRoles?.some(role => ['admin', 'manager', 'staff'].includes(role.role))
+}
+
+// Any authenticated user
+export const isAuthenticated: Access = ({ req: { user } }) => {
+  return Boolean(user)
+}
+
+// Site-aware access control for reading site-specific data
+export const canAccessSiteData: Access = ({ req: { user } }) => {
+  // Global admins can access all site data
+  if (['developer', 'super-admin'].includes(user?.role)) return true
+  
+  // Users with no site access can't access site data
+  if (!user?.sites) return false
+  
+  // Return query constraint for user's accessible sites
+  return {
+    site: {
+      in: user.sites.map(site => site.id || site)
+    }
+  }
+}
+
+// Site-aware access control for specific sites (when site ID is available)
+export const canAccessSpecificSite = (siteId: string): Access => ({ req: { user } }) => {
+  // Global admins can access any site
+  if (['developer', 'super-admin'].includes(user?.role)) return true
+  
+  // Check if user has access to this specific site
+  const userSites = user?.sites?.map(site => site.id || site) || []
+  return userSites.includes(siteId)
+}
+
+// Check if user can manage users at specific sites
+export const canManageUsersAtSites: Access = ({ req: { user } }) => {
+  if (['developer', 'super-admin'].includes(user?.role)) return true
+  
+  // Site admins can manage users
+  const adminSites = user?.siteRoles
+    ?.filter(role => role.role === 'admin')
+    ?.map(role => role.site) || []
+  
+  if (adminSites.length === 0) return false
+  
+  return {
+    'siteRoles.site': {
+      in: adminSites
+    }
+  }
+}
+
+// Check if user can manage content at sites
+export const canManageContentAtSites: Access = ({ req: { user } }) => {
+  if (['developer', 'super-admin'].includes(user?.role)) return true
+  
+  // Managers and admins can manage content
+  const contentManagerSites = user?.siteRoles
+    ?.filter(role => 
+      ['admin', 'manager'].includes(role.role) && 
+      role.permissions?.canManageContent !== false
+    )
+    ?.map(role => role.site) || []
+  
+  if (contentManagerSites.length === 0) return false
+  
+  return {
+    site: {
+      in: contentManagerSites
+    }
+  }
+}
+
+// Check if user can manage inventory at sites
+export const canManageInventoryAtSites: Access = ({ req: { user } }) => {
+  if (['developer', 'super-admin'].includes(user?.role)) return true
+  
+  // Users with inventory permissions can manage inventory
+  const inventoryManagerSites = user?.siteRoles
+    ?.filter(role => role.permissions?.canManageInventory === true)
+    ?.map(role => role.site) || []
+  
+  if (inventoryManagerSites.length === 0) return false
+  
+  return {
+    'siteAvailability.site': {
+      in: inventoryManagerSites
+    }
+  }
+}
+
+// Check if user can view analytics
+export const canViewAnalytics: Access = ({ req: { user } }) => {
+  if (['developer', 'super-admin'].includes(user?.role)) return true
+  
+  // Users with analytics permissions can view analytics
+  return user?.siteRoles?.some(role => role.permissions?.canViewAnalytics === true) || false
+}
+
+// Ownership-based access (user can access their own data)
+export const isOwnerOrAdmin: Access = ({ req: { user }, id }) => {
+  if (['developer', 'super-admin'].includes(user?.role)) return true
+  
+  // Users can access their own data
+  return user?.id === id
+}
+
+// Public read access (anyone can read)
+export const isPublic: Access = () => true
+
+// Role-specific access control factory
+export const hasRole = (allowedRoles: string[]): Access => ({ req: { user } }) => {
+  if (!user) return false
+  
+  // Check global role
+  if (allowedRoles.includes(user.role)) return true
+  
+  // Check site roles
+  return user.siteRoles?.some(siteRole => allowedRoles.includes(siteRole.role)) || false
+}
+
+// Site role-specific access control factory
+export const hasSiteRole = (allowedRoles: string[], requireSiteAccess = true): Access => ({ req: { user } }) => {
+  if (!user) return false
+  
+  // Global admins bypass site role checks
+  if (['developer', 'super-admin'].includes(user?.role)) return !requireSiteAccess || true
+  
+  // Check if user has required site roles
+  const hasRequiredRole = user.siteRoles?.some(siteRole => 
+    allowedRoles.includes(siteRole.role)
+  ) || false
+  
+  if (!hasRequiredRole) return false
+  
+  // If site access is required, return site constraint
+  if (requireSiteAccess) {
+    const userSites = user.sites?.map(site => site.id || site) || []
+    return {
+      site: {
+        in: userSites
+      }
+    }
+  }
+  
+  return true
+}
+
+// Permission-specific access control factory
+export const hasPermission = (permission: string): Access => ({ req: { user } }) => {
+  if (!user) return false
+  
+  // Global admins have all permissions
+  if (['developer', 'super-admin'].includes(user?.role)) return true
+  
+  // Check site-specific permissions
+  return user.siteRoles?.some(siteRole => 
+    siteRole.permissions?.[permission] === true
+  ) || false
+}
+
+/**
+ * Access Control Combinations
+ * Common combinations of access controls for different use cases
+ */
+
+// Content management access (create, update content)
+export const canManageContent: Access = ({ req: { user } }) => {
+  return canManageContentAtSites({ req: { user } })
+}
+
+// User management access (create, update users)
+export const canManageUsers: Access = ({ req: { user } }) => {
+  return canManageUsersAtSites({ req: { user } })
+}
+
+// Full admin access (all operations)
+export const isFullAdmin: Access = ({ req: { user } }) => {
+  return isGlobalAdmin({ req: { user } }) || 
+         user?.siteRoles?.some(role => role.role === 'admin') || false
+}
+
+// Read-only access with site filtering
+export const canReadSiteData: Access = ({ req: { user } }) => {
+  if (!user) return false
+  return canAccessSiteData({ req: { user } })
+}
+
+/**
+ * Utility functions for checking permissions in hooks and components
+ */
+
+export const checkUserPermission = (user: any, permission: string): boolean => {
+  if (!user) return false
+  
+  // Global admins have all permissions
+  if (['developer', 'super-admin'].includes(user.role)) return true
+  
+  // Check site-specific permissions
+  return user.siteRoles?.some(siteRole => 
+    siteRole.permissions?.[permission] === true
+  ) || false
+}
+
+export const getUserAccessibleSites = (user: any): string[] => {
+  if (!user) return []
+  
+  // Global admins can access all sites (return empty array to indicate no constraint)
+  if (['developer', 'super-admin'].includes(user.role)) return []
+  
+  // Return user's accessible sites
+  return user.sites?.map(site => site.id || site) || []
+}
+
+export const getUserManageableSites = (user: any): string[] => {
+  if (!user) return []
+  
+  // Global admins can manage all sites
+  if (['developer', 'super-admin'].includes(user.role)) return []
+  
+  // Return sites where user has management roles
+  return user.siteRoles
+    ?.filter(role => ['admin', 'manager'].includes(role.role))
+    ?.map(role => role.site) || []
+}

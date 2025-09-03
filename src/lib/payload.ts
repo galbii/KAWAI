@@ -1,6 +1,7 @@
 import type { 
   Productline, 
   PianoModel,
+  Product,
   Media
 } from '@/payload-types'
 
@@ -8,6 +9,20 @@ import type {
   ProductlinesResponse,
   PianoModelsResponse 
 } from '@/lib/types'
+
+// Product API response type
+interface ProductsResponse {
+  docs: Product[]
+  hasNextPage: boolean
+  hasPrevPage: boolean
+  limit: number
+  nextPage?: number
+  page?: number
+  pagingCounter: number
+  prevPage?: number
+  totalDocs: number
+  totalPages: number
+}
 
 // Define media response type for Payload API
 interface MediaResponse {
@@ -23,13 +38,22 @@ interface MediaResponse {
   totalPages: number
 }
 
-// Payload CMS API base URL - use relative URL for client-side requests
-const PAYLOAD_API_URL = process.env.NEXT_PUBLIC_PAYLOAD_API_URL || '/api'
+// Helper function to get the correct API URL for server-side vs client-side
+function getPayloadApiUrl(): string {
+  if (typeof window === 'undefined') {
+    // Server-side: need absolute URL
+    return process.env.NEXT_PUBLIC_PAYLOAD_API_URL || 
+           `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api`
+  }
+  // Client-side: relative URL works fine
+  return process.env.NEXT_PUBLIC_PAYLOAD_API_URL || '/api'
+}
 
 // Generic fetch wrapper with error handling
 async function payloadFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
   try {
-    const response = await fetch(`${PAYLOAD_API_URL}${endpoint}`, {
+    const apiUrl = getPayloadApiUrl()
+    const response = await fetch(`${apiUrl}${endpoint}`, {
       headers: {
         'Content-Type': 'application/json',
         ...options?.headers,
@@ -43,7 +67,21 @@ async function payloadFetch<T>(endpoint: string, options?: RequestInit): Promise
 
     return await response.json()
   } catch (error) {
-    console.error('Payload fetch error:', error)
+    // Handle cases where error is null or not an Error object
+    if (error === null || error === undefined) {
+      const enhancedError = new Error(`Payload fetch failed for endpoint: ${endpoint} - received null error`)
+      console.error('Payload fetch error (enhanced):', enhancedError.message)
+      throw enhancedError
+    }
+    
+    // If it's not an Error object, wrap it
+    if (!(error instanceof Error)) {
+      const enhancedError = new Error(`Payload fetch failed for endpoint: ${endpoint} - ${String(error)}`)
+      console.error('Payload fetch error (wrapped):', enhancedError.message)
+      throw enhancedError
+    }
+    
+    console.error('Payload fetch error:', error.message, 'for endpoint:', endpoint)
     throw error
   }
 }
@@ -164,6 +202,59 @@ export async function getPianoModelsByProductline(productlineId: string): Promis
   return response.docs
 }
 
+// Product API Functions
+
+// Fetch all products with optional filtering by category
+export async function getProducts(category?: string): Promise<Product[]> {
+  const queryParams = new URLSearchParams()
+  
+  if (category) {
+    queryParams.append('where[category][equals]', category)
+  }
+  
+  // Sort by name
+  queryParams.append('sort', 'name')
+  queryParams.append('limit', '100') // Get all products
+  queryParams.append('depth', '3') // Populate pianoModel, mainImage, and nested relationships
+  
+  const endpoint = `/products?${queryParams.toString()}`
+  const response = await payloadFetch<ProductsResponse>(endpoint)
+  
+  return response.docs
+}
+
+// Fetch a single product by slug with full pianoModel population
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+  const queryParams = new URLSearchParams()
+  queryParams.append('where[slug][equals]', slug)
+  queryParams.append('limit', '1')
+  queryParams.append('depth', '3') // Populate pianoModel and all nested relationships
+  
+  const endpoint = `/products?${queryParams.toString()}`
+  const response = await payloadFetch<ProductsResponse>(endpoint)
+  
+  return response.docs[0] || null
+}
+
+// Fetch active products (status = active)
+export async function getActiveProducts(category?: string): Promise<Product[]> {
+  const queryParams = new URLSearchParams()
+  queryParams.append('where[status][equals]', 'active')
+  
+  if (category) {
+    queryParams.append('where[category][equals]', category)
+  }
+  
+  queryParams.append('sort', 'name')
+  queryParams.append('limit', '100')
+  queryParams.append('depth', '3')
+  
+  const endpoint = `/products?${queryParams.toString()}`
+  const response = await payloadFetch<ProductsResponse>(endpoint)
+  
+  return response.docs
+}
+
 // Helper function to extract image URL from various formats
 function getImageUrl(image: any): string {
   return resolveMediaUrl(image)
@@ -171,15 +262,24 @@ function getImageUrl(image: any): string {
 
 // Transform Piano Model to frontend format
 export function transformPianoModelToComponent(pianoModel: PianoModel) {
+  // Generate slug from name since slug is no longer in PianoModel
+  const slug = pianoModel.name
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
   return {
-    slug: pianoModel.slug,
+    slug,
     name: pianoModel.name,
     series: typeof pianoModel.productline === 'object' ? pianoModel.productline.name : 'Unknown Series',
-    rating: pianoModel.rating || 0,
-    reviews: pianoModel.reviewCount || 0,
+    rating: 0, // Rating is now handled by Products collection
+    reviews: 0, // Reviews are now handled by Products collection
     image: pianoModel.image, // Keep as Media object or string
     description: pianoModel.description,
-    keyFeatures: (pianoModel.keyFeatures || []).map(kf => kf.feature)
+    keyFeatures: (pianoModel.keyFeatures || []).map(kf => kf.feature),
+    pianoModelId: pianoModel.id // Add the piano model ID for product slug fetching
   }
 }
 
@@ -345,10 +445,18 @@ export async function getFeaturedModels(): Promise<any[]> {
 // Piano Page API functions
 export async function getPianoPage(): Promise<any | null> {
   try {
-    console.log('[DEBUG] Fetching pianos page data from /api/pianos-page')
+    // Construct absolute URL for server-side requests
+    let apiUrl = '/api/pianos-page'
+    if (typeof window === 'undefined') {
+      // Server-side: need absolute URL
+      const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+      apiUrl = `${baseURL}/api/pianos-page`
+    }
+    
+    console.log('[DEBUG] Fetching pianos page data from', apiUrl)
     
     // Use the Next.js API route that proxies to the singleton endpoint
-    const response = await fetch('/api/pianos-page')
+    const response = await fetch(apiUrl)
     
     console.log('[DEBUG] Response status:', response.status)
     
@@ -366,7 +474,18 @@ export async function getPianoPage(): Promise<any | null> {
     console.log('[DEBUG] Successfully fetched pianos page data')
     return result.data
   } catch (error) {
-    console.error('[ERROR] Failed to fetch pianos page:', error)
+    // Handle null/undefined errors the same way as payloadFetch
+    if (error === null || error === undefined) {
+      console.error('[ERROR] Failed to fetch pianos page: received null error')
+      return null
+    }
+    
+    if (!(error instanceof Error)) {
+      console.error('[ERROR] Failed to fetch pianos page:', String(error))
+      return null
+    }
+    
+    console.error('[ERROR] Failed to fetch pianos page:', error.message)
     return null
   }
 }

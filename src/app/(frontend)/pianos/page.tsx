@@ -544,8 +544,7 @@ export default function PianosPageCMS() {
               media={pageData.hero.heroBackgroundImage}
               preset="hero"
               priority={true}
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ objectPosition: '-60% center' }}
+              className="absolute inset-0 w-full h-full object-cover [&_img]:object-left"
             />
             <div className="absolute inset-0 bg-white/20" />
           </div>
