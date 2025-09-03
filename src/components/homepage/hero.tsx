@@ -4,8 +4,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import { MediaRenderer } from "@/components/ui/media/MediaRenderer";
+import type { HeroProps } from "@/lib/types/homepage";
+import { DEFAULT_HERO_DATA } from "@/lib/types/homepage";
 
-export function Hero() {
+export function Hero({ data = DEFAULT_HERO_DATA }: HeroProps) {
   const heroRef = useRef(null);
   const isInView = useInView(heroRef, { once: true, amount: 0.2 });
 
@@ -50,17 +53,27 @@ export function Hero() {
       style={{ willChange: 'transform' }}
     >
       {/* Video Background */}
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="absolute top-0 left-0 w-full h-full object-cover z-0"
-        style={{ willChange: 'transform' }}
-        aria-hidden="true"
-      >
-        <source src="/assets/videos/Hero_compressed.mp4" type="video/mp4" />
-      </video>
+      {data.backgroundVideo ? (
+        <MediaRenderer
+          media={data.backgroundVideo}
+          preset="hero"
+          priority
+          className="absolute top-0 left-0 w-full h-full object-cover z-0"
+          aria-hidden="true"
+        />
+      ) : (
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute top-0 left-0 w-full h-full object-cover z-0"
+          style={{ willChange: 'transform' }}
+          aria-hidden="true"
+        >
+          <source src="/assets/videos/Hero_compressed.mp4" type="video/mp4" />
+        </video>
+      )}
       
       {/* Dark Overlay for Text Readability */}
       <div className="absolute top-0 left-0 w-full h-full bg-kawai-black/50 z-10" />
@@ -76,10 +89,10 @@ export function Hero() {
           animate={isInView ? "visible" : "hidden"}
         >
           <p className="text-brand-musical text-kawai-pearl tracking-wider text-sm font-semibold uppercase mb-2">
-            St. Louis's Premier Kawai Piano Dealer
+            {data.locationText}
           </p>
           <p className="text-brand-musical text-kawai-red tracking-wider text-sm font-semibold uppercase">
-            Est. 1927 • Lake St. Louis, Missouri
+            {data.establishedText}
           </p>
         </motion.div>
 
@@ -93,7 +106,7 @@ export function Hero() {
                 initial="hidden"
                 animate={isInView ? "visible" : "hidden"}
               >
-                The
+                {data.titlePrefix}
               </motion.span>
               <motion.span 
                 className="block text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black tracking-[-0.02em] leading-[0.8]"
@@ -102,7 +115,7 @@ export function Hero() {
                 initial="hidden"
                 animate={isInView ? "visible" : "hidden"}
               >
-                INSTRUMENTAL
+                {data.titleMain}
               </motion.span>
               <motion.div 
                 className="block text-3xl md:text-4xl lg:text-5xl font-light mt-4 tracking-[0.1em] opacity-90"
@@ -111,7 +124,7 @@ export function Hero() {
                 initial="hidden"
                 animate={isInView ? "visible" : "hidden"}
               >
-                to Life
+                {data.titleSuffix}
               </motion.div>
             </h1>
           </div>
@@ -123,9 +136,7 @@ export function Hero() {
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
           >
-            Every musician harbors a vision. Every performance seeks perfection. 
-            Since 1927, we've been crafting the instruments that transform inspiration into reality. 
-            Visit our Lake St. Louis showroom and discover why we're Missouri's trusted Kawai piano experts.
+            {data.description}
           </motion.p>
           
           <div className="flex flex-col sm:flex-row gap-brand-lg items-start">
@@ -136,8 +147,8 @@ export function Hero() {
               animate={isInView ? "visible" : "hidden"}
             >
               <Button size="lg" className="btn-brand-primary" asChild>
-                <Link href="/pianos">
-                  View Our Piano Collection
+                <Link href={data.primaryCta.link}>
+                  {data.primaryCta.text}
                 </Link>
               </Button>
             </motion.div>
@@ -148,8 +159,8 @@ export function Hero() {
               animate={isInView ? "visible" : "hidden"}
             >
               <Button size="lg" className="btn-brand-secondary" asChild>
-                <Link href="/contact">
-                  Visit Our St. Louis Showroom
+                <Link href={data.secondaryCta.link}>
+                  {data.secondaryCta.text}
                 </Link>
               </Button>
             </motion.div>

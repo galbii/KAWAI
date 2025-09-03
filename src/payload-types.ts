@@ -81,6 +81,7 @@ export interface Config {
     media: Media;
     productlines: Productline;
     'piano-models': PianoModel;
+    'home-page': HomePage;
     'pianos-page': PianosPage;
     products: Product;
     'payload-locked-documents': PayloadLockedDocument;
@@ -97,6 +98,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     productlines: ProductlinesSelect<false> | ProductlinesSelect<true>;
     'piano-models': PianoModelsSelect<false> | PianoModelsSelect<true>;
+    'home-page': HomePageSelect<false> | HomePageSelect<true>;
     'pianos-page': PianosPageSelect<false> | PianosPageSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -1772,6 +1774,366 @@ export interface User {
   password?: string | null;
 }
 /**
+ * Manage all content for the homepage including hero, showroom location, piano collection, gallery, news, contact form, and SEO.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-page".
+ */
+export interface HomePage {
+  id: string;
+  /**
+   * Location/dealer status text displayed at the top
+   */
+  locationText: string;
+  /**
+   * Established date and location information
+   */
+  establishedText: string;
+  /**
+   * Title prefix word (e.g., "The")
+   */
+  titlePrefix: string;
+  /**
+   * Main title word - typically displayed prominently
+   */
+  titleMain: string;
+  /**
+   * Title suffix words (e.g., "to Life")
+   */
+  titleSuffix: string;
+  /**
+   * Hero description text displayed below the main title
+   */
+  description: string;
+  /**
+   * Primary call-to-action button configuration
+   */
+  primaryCta: {
+    /**
+     * Primary call-to-action button text
+     */
+    text: string;
+    /**
+     * Primary call-to-action button link/URL
+     */
+    link: string;
+  };
+  /**
+   * Secondary call-to-action button configuration
+   */
+  secondaryCta: {
+    /**
+     * Secondary call-to-action button text
+     */
+    text: string;
+    /**
+     * Secondary call-to-action button link/URL
+     */
+    link: string;
+  };
+  /**
+   * Background video for the hero section
+   */
+  backgroundVideo?: (string | null) | Media;
+  /**
+   * Section header text
+   */
+  sectionHeader: string;
+  /**
+   * Main showroom section title
+   */
+  showroomTitle: string;
+  /**
+   * Showroom section description
+   */
+  showroomDescription: string;
+  /**
+   * Basic showroom contact and location information
+   */
+  showroomInfo: {
+    /**
+     * Business/showroom name
+     */
+    name: string;
+    /**
+     * Full business address
+     */
+    address: string;
+    /**
+     * Primary phone number
+     */
+    phone: string;
+    /**
+     * Service area description
+     */
+    serviceArea: string;
+  };
+  /**
+   * Showroom operating hours for each day of the week
+   */
+  hours: {
+    /**
+     * Day of the week (e.g., "Monday", "Tuesday")
+     */
+    day: string;
+    /**
+     * Hours for this day (e.g., "10:00 AM - 7:00 PM", "Closed")
+     */
+    time: string;
+    id?: string | null;
+  }[];
+  /**
+   * Key features and services offered at the showroom
+   */
+  features: {
+    /**
+     * Icon to display for this feature
+     */
+    icon: 'piano' | 'music' | 'award' | 'users' | 'clock' | 'shield' | 'headphones' | 'car';
+    /**
+     * Feature title (e.g., "Expert Consultation")
+     */
+    title: string;
+    /**
+     * Feature description
+     */
+    description: string;
+    id?: string | null;
+  }[];
+  /**
+   * Google Maps API key for embedded map (optional)
+   */
+  mapApiKey?: string | null;
+  /**
+   * Call-to-action buttons for the showroom section
+   */
+  showroomCtas: {
+    /**
+     * Directions button text
+     */
+    directionsText: string;
+    /**
+     * Google Maps directions link
+     */
+    directionsLink: string;
+    /**
+     * Schedule visit button text
+     */
+    scheduleText: string;
+    /**
+     * Schedule visit link/URL
+     */
+    scheduleLink: string;
+  };
+  /**
+   * Piano collection section header
+   */
+  collectionSectionHeader: string;
+  /**
+   * Featured collection title
+   */
+  collectionTitle: string;
+  /**
+   * Featured collection description
+   */
+  collectionDescription: string;
+  /**
+   * Call-to-action for the piano collection section
+   */
+  collectionCta: {
+    /**
+     * Collection CTA button text
+     */
+    text: string;
+    /**
+     * Collection CTA button link/URL
+     */
+    link: string;
+  };
+  /**
+   * Featured video configuration for the collection section
+   */
+  featuredVideo?: {
+    /**
+     * YouTube video ID for featured video
+     */
+    youtubeId?: string | null;
+    /**
+     * Video player width
+     */
+    width?: number | null;
+    /**
+     * Video player height
+     */
+    height?: number | null;
+  };
+  /**
+   * Piano gallery section title
+   */
+  galleryTitle: string;
+  /**
+   * Piano gallery section description
+   */
+  galleryDescription: string;
+  /**
+   * Piano categories displayed in the gallery section
+   */
+  pianoCategories: {
+    /**
+     * Piano model or series name (e.g., "GX-7", "CA99")
+     */
+    model: string;
+    /**
+     * Category title (e.g., "Concert Grand Pianos")
+     */
+    title: string;
+    /**
+     * Category description
+     */
+    description: string;
+    /**
+     * Category representative image
+     */
+    image?: (string | null) | Media;
+    /**
+     * Link to category or model page
+     */
+    href: string;
+    id?: string | null;
+  }[];
+  /**
+   * Auto-play duration in milliseconds (default: 7000ms = 7 seconds)
+   */
+  autoPlayDuration: number;
+  /**
+   * News carousel items
+   */
+  newsItems: {
+    /**
+     * News item title
+     */
+    title: string;
+    /**
+     * News item description
+     */
+    description: string;
+    /**
+     * News item image
+     */
+    image?: (string | null) | Media;
+    /**
+     * News item category
+     */
+    category: 'news' | 'events' | 'promotions' | 'new-arrivals' | 'education';
+    /**
+     * Link to full article or page (optional)
+     */
+    link?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * Contact form section title (first part)
+   */
+  contactTitle: string;
+  /**
+   * Contact form section title highlight word
+   */
+  contactTitleHighlight: string;
+  /**
+   * Contact form section description
+   */
+  contactDescription: string;
+  /**
+   * Step titles for the contact process
+   */
+  stepTitles: {
+    step: string;
+    id?: string | null;
+  }[];
+  /**
+   * Trust/credibility message
+   */
+  trustMessage: string;
+  /**
+   * Benefits/features of working with your piano store
+   */
+  benefits: {
+    /**
+     * Benefit icon
+     */
+    icon: 'shield-check' | 'clock' | 'users' | 'award' | 'music' | 'heart';
+    /**
+     * Benefit text
+     */
+    text: string;
+    id?: string | null;
+  }[];
+  /**
+   * Form field options and choices
+   */
+  formOptions: {
+    /**
+     * Musical experience level options
+     */
+    experienceLevels: {
+      level: string;
+      id?: string | null;
+    }[];
+    /**
+     * Piano type options for the form
+     */
+    pianoTypes: {
+      type: string;
+      id?: string | null;
+    }[];
+    /**
+     * Budget range options for the form
+     */
+    budgetRanges: {
+      range: string;
+      id?: string | null;
+    }[];
+    /**
+     * Primary use options for the piano
+     */
+    primaryUses: {
+      use: string;
+      id?: string | null;
+    }[];
+  };
+  /**
+   * SEO and metadata configuration
+   */
+  seo?: {
+    /**
+     * Page meta title for search engines
+     */
+    metaTitle?: string | null;
+    /**
+     * Page meta description for search engines (max 160 characters)
+     */
+    metaDescription?: string | null;
+    /**
+     * SEO keywords (comma-separated)
+     */
+    keywords?: string | null;
+    /**
+     * Open Graph title for social media sharing
+     */
+    openGraphTitle?: string | null;
+    /**
+     * Open Graph description for social media sharing
+     */
+    openGraphDescription?: string | null;
+    /**
+     * Open Graph image for social media sharing
+     */
+    openGraphImage?: (string | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Manage all content for the main Pianos page including hero, categories, featured models, and CTAs.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1953,6 +2315,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'piano-models';
         value: string | PianoModel;
+      } | null)
+    | ({
+        relationTo: 'home-page';
+        value: string | HomePage;
       } | null)
     | ({
         relationTo: 'pianos-page';
@@ -2205,6 +2571,162 @@ export interface PianoModelsSelect<T extends boolean = true> {
   status?: T;
   featured?: T;
   sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-page_select".
+ */
+export interface HomePageSelect<T extends boolean = true> {
+  locationText?: T;
+  establishedText?: T;
+  titlePrefix?: T;
+  titleMain?: T;
+  titleSuffix?: T;
+  description?: T;
+  primaryCta?:
+    | T
+    | {
+        text?: T;
+        link?: T;
+      };
+  secondaryCta?:
+    | T
+    | {
+        text?: T;
+        link?: T;
+      };
+  backgroundVideo?: T;
+  sectionHeader?: T;
+  showroomTitle?: T;
+  showroomDescription?: T;
+  showroomInfo?:
+    | T
+    | {
+        name?: T;
+        address?: T;
+        phone?: T;
+        serviceArea?: T;
+      };
+  hours?:
+    | T
+    | {
+        day?: T;
+        time?: T;
+        id?: T;
+      };
+  features?:
+    | T
+    | {
+        icon?: T;
+        title?: T;
+        description?: T;
+        id?: T;
+      };
+  mapApiKey?: T;
+  showroomCtas?:
+    | T
+    | {
+        directionsText?: T;
+        directionsLink?: T;
+        scheduleText?: T;
+        scheduleLink?: T;
+      };
+  collectionSectionHeader?: T;
+  collectionTitle?: T;
+  collectionDescription?: T;
+  collectionCta?:
+    | T
+    | {
+        text?: T;
+        link?: T;
+      };
+  featuredVideo?:
+    | T
+    | {
+        youtubeId?: T;
+        width?: T;
+        height?: T;
+      };
+  galleryTitle?: T;
+  galleryDescription?: T;
+  pianoCategories?:
+    | T
+    | {
+        model?: T;
+        title?: T;
+        description?: T;
+        image?: T;
+        href?: T;
+        id?: T;
+      };
+  autoPlayDuration?: T;
+  newsItems?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+        category?: T;
+        link?: T;
+        id?: T;
+      };
+  contactTitle?: T;
+  contactTitleHighlight?: T;
+  contactDescription?: T;
+  stepTitles?:
+    | T
+    | {
+        step?: T;
+        id?: T;
+      };
+  trustMessage?: T;
+  benefits?:
+    | T
+    | {
+        icon?: T;
+        text?: T;
+        id?: T;
+      };
+  formOptions?:
+    | T
+    | {
+        experienceLevels?:
+          | T
+          | {
+              level?: T;
+              id?: T;
+            };
+        pianoTypes?:
+          | T
+          | {
+              type?: T;
+              id?: T;
+            };
+        budgetRanges?:
+          | T
+          | {
+              range?: T;
+              id?: T;
+            };
+        primaryUses?:
+          | T
+          | {
+              use?: T;
+              id?: T;
+            };
+      };
+  seo?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+        keywords?: T;
+        openGraphTitle?: T;
+        openGraphDescription?: T;
+        openGraphImage?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

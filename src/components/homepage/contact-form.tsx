@@ -4,18 +4,17 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { ContactFormProps, DEFAULT_CONTACT_FORM_DATA } from '@/lib/types/homepage';
 
-// Form validation schema
-const formSchema = z.object({
+// Create dynamic form validation schema based on data
+const createFormSchema = (formOptions: any) => z.object({
   // Step 1: Experience & Intent
-  experienceLevel: z.enum(['beginner', 'intermediate', 'advanced']),
-  pianoType: z.enum(['acoustic-grand', 'upright', 'digital', 'not-sure']),
-  primaryPlayer: z.enum(['myself', 'child', 'family', 'professional']),
+  experienceLevel: z.string().min(1, 'Please select your experience level'),
+  pianoType: z.string().min(1, 'Please select a piano type'),
+  primaryPlayer: z.string().min(1, 'Please select the primary player'),
   
   // Step 2: Qualification
-  timeline: z.enum(['1-month', '1-3-months', '3-6-months', 'researching']),
-  budget: z.enum(['under-5k', '5k-15k', '15k-30k', '30k-plus', 'need-guidance']),
-  priority: z.enum(['sound-quality', 'touch', 'space', 'technology']),
+  budget: z.string().min(1, 'Please select a budget range'),
   
   // Step 3: Contact
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -24,59 +23,29 @@ const formSchema = z.object({
   wantsConsultation: z.boolean().optional(),
 });
 
-type FormData = z.infer<typeof formSchema>;
+type FormData = {
+  experienceLevel: string;
+  pianoType: string;
+  primaryPlayer: string;
+  budget: string;
+  name: string;
+  email: string;
+  phone?: string;
+  wantsConsultation?: boolean;
+};
 
-const stepTitles = [
-  'Tell us about your piano journey',
-  'Help us understand your needs',
-  'Get your free piano buying guide'
-];
 
-const experienceLevels = [
-  { value: 'beginner', label: 'Beginner', description: 'Just starting out or returning to piano' },
-  { value: 'intermediate', label: 'Intermediate', description: 'Some experience, looking to advance' },
-  { value: 'advanced', label: 'Advanced', description: 'Experienced player seeking quality' }
-];
 
-const pianoTypes = [
-  { value: 'acoustic-grand', label: 'Acoustic Grand', description: 'Traditional grand piano' },
-  { value: 'upright', label: 'Upright', description: 'Space-efficient acoustic piano' },
-  { value: 'digital', label: 'Digital', description: 'Modern digital piano' },
-  { value: 'not-sure', label: 'Not Sure', description: 'Need guidance choosing' }
-];
 
-const primaryPlayers = [
-  { value: 'myself', label: 'Myself', description: 'Adult learner or player' },
-  { value: 'child', label: 'My Child', description: 'Student or young learner' },
-  { value: 'family', label: 'Family', description: 'Multiple family members' },
-  { value: 'professional', label: 'Professional Use', description: 'Teaching or performance' }
-];
 
-const timelines = [
-  { value: '1-month', label: 'Within 1 Month', description: 'Ready to purchase soon' },
-  { value: '1-3-months', label: '1-3 Months', description: 'Planning to buy this quarter' },
-  { value: '3-6-months', label: '3-6 Months', description: 'Researching for future purchase' },
-  { value: 'researching', label: 'Just Researching', description: 'Exploring options' }
-];
 
-const budgets = [
-  { value: 'under-5k', label: 'Under $5,000', description: 'Entry level options' },
-  { value: '5k-15k', label: '$5,000 - $15,000', description: 'Mid-range quality' },
-  { value: '15k-30k', label: '$15,000 - $30,000', description: 'Premium instruments' },
-  { value: '30k-plus', label: '$30,000+', description: 'Professional grade' },
-  { value: 'need-guidance', label: 'Need Guidance', description: 'Help me understand pricing' }
-];
 
-const priorities = [
-  { value: 'sound-quality', label: 'Sound Quality', description: 'Rich, authentic piano sound' },
-  { value: 'touch', label: 'Touch & Feel', description: 'Authentic key action and response' },
-  { value: 'space', label: 'Space Considerations', description: 'Fits my available space' },
-  { value: 'technology', label: 'Technology Features', description: 'Modern digital capabilities' }
-];
 
-export function ContactForm() {
+export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const formSchema = createFormSchema(data.formOptions);
 
   const {
     register,
@@ -112,7 +81,7 @@ export function ContactForm() {
       case 1:
         return ['experienceLevel', 'pianoType', 'primaryPlayer'];
       case 2:
-        return ['timeline', 'budget', 'priority'];
+        return ['budget'];
       case 3:
         return ['name', 'email'];
       default:
@@ -184,11 +153,10 @@ export function ContactForm() {
         {/* Header */}
         <div className="text-center mb-12">
           <h2 className="text-5xl md:text-6xl font-light font-serif text-kawai-black mb-6">
-            Find Your Perfect <span className="text-kawai-red">Piano</span>
+            {data.contactTitle} <span className="text-kawai-red">{data.contactTitleHighlight}</span>
           </h2>
           <p className="text-xl text-kawai-black/70 max-w-2xl mx-auto">
-            Get your free Piano Buying Guide and personalized recommendations from our Lake St. Louis piano experts. 
-            Serving the St. Louis area for over 95 years.
+            {data.contactDescription}
           </p>
         </div>
 
@@ -225,7 +193,7 @@ export function ContactForm() {
         {/* Form */}
         <div className="bg-white rounded-lg shadow-xl p-8 md:p-12">
           <h3 className="text-2xl font-serif text-kawai-black mb-8 text-center">
-            {stepTitles[currentStep - 1]}
+            {data.stepTitles[currentStep - 1]?.step || `Step ${currentStep}`}
           </h3>
 
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -237,26 +205,25 @@ export function ContactForm() {
                     What's your piano experience level?
                   </label>
                   <div className="grid gap-3">
-                    {experienceLevels.map((level) => (
-                      <label key={level.value} className="flex items-center p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer">
+                    {data.formOptions.experienceLevels.map((level, index) => (
+                      <label key={level.level} className="flex items-center p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer">
                         <input
                           type="radio"
-                          value={level.value}
+                          value={level.level.toLowerCase()}
                           {...register('experienceLevel')}
                           className="sr-only"
                         />
                         <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
-                          watchedValues.experienceLevel === level.value 
+                          watchedValues.experienceLevel === level.level.toLowerCase() 
                             ? 'border-kawai-red bg-kawai-red' 
                             : 'border-kawai-black/30'
                         }`}>
-                          {watchedValues.experienceLevel === level.value && (
+                          {watchedValues.experienceLevel === level.level.toLowerCase() && (
                             <div className="w-full h-full rounded-full bg-white scale-50"></div>
                           )}
                         </div>
                         <div>
-                          <div className="font-medium text-kawai-black">{level.label}</div>
-                          <div className="text-sm text-kawai-black/60">{level.description}</div>
+                          <div className="font-medium text-kawai-black">{level.level}</div>
                         </div>
                       </label>
                     ))}
@@ -271,26 +238,25 @@ export function ContactForm() {
                     What type of piano interests you most?
                   </label>
                   <div className="grid gap-3">
-                    {pianoTypes.map((type) => (
-                      <label key={type.value} className="flex items-center p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer">
+                    {data.formOptions.pianoTypes.map((type) => (
+                      <label key={type.type} className="flex items-center p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer">
                         <input
                           type="radio"
-                          value={type.value}
+                          value={type.type.toLowerCase().replace(/\s+/g, '-')}
                           {...register('pianoType')}
                           className="sr-only"
                         />
                         <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
-                          watchedValues.pianoType === type.value 
+                          watchedValues.pianoType === type.type.toLowerCase().replace(/\s+/g, '-')
                             ? 'border-kawai-red bg-kawai-red' 
                             : 'border-kawai-black/30'
                         }`}>
-                          {watchedValues.pianoType === type.value && (
+                          {watchedValues.pianoType === type.type.toLowerCase().replace(/\s+/g, '-') && (
                             <div className="w-full h-full rounded-full bg-white scale-50"></div>
                           )}
                         </div>
                         <div>
-                          <div className="font-medium text-kawai-black">{type.label}</div>
-                          <div className="text-sm text-kawai-black/60">{type.description}</div>
+                          <div className="font-medium text-kawai-black">{type.type}</div>
                         </div>
                       </label>
                     ))}
@@ -302,29 +268,28 @@ export function ContactForm() {
 
                 <div>
                   <label className="text-lg font-medium text-kawai-black mb-4 block">
-                    Who will be the primary player?
+                    What will be the primary use for your piano?
                   </label>
                   <div className="grid gap-3">
-                    {primaryPlayers.map((player) => (
-                      <label key={player.value} className="flex items-center p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer">
+                    {data.formOptions.primaryUses.map((use) => (
+                      <label key={use.use} className="flex items-center p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer">
                         <input
                           type="radio"
-                          value={player.value}
+                          value={use.use.toLowerCase().replace(/\s+/g, '-')}
                           {...register('primaryPlayer')}
                           className="sr-only"
                         />
                         <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
-                          watchedValues.primaryPlayer === player.value 
+                          watchedValues.primaryPlayer === use.use.toLowerCase().replace(/\s+/g, '-')
                             ? 'border-kawai-red bg-kawai-red' 
                             : 'border-kawai-black/30'
                         }`}>
-                          {watchedValues.primaryPlayer === player.value && (
+                          {watchedValues.primaryPlayer === use.use.toLowerCase().replace(/\s+/g, '-') && (
                             <div className="w-full h-full rounded-full bg-white scale-50"></div>
                           )}
                         </div>
                         <div>
-                          <div className="font-medium text-kawai-black">{player.label}</div>
-                          <div className="text-sm text-kawai-black/60">{player.description}</div>
+                          <div className="font-medium text-kawai-black">{use.use}</div>
                         </div>
                       </label>
                     ))}
@@ -339,65 +304,31 @@ export function ContactForm() {
             {/* Step 2: Qualification */}
             {currentStep === 2 && (
               <div className="space-y-8">
-                <div>
-                  <label className="text-lg font-medium text-kawai-black mb-4 block">
-                    What's your timeline for purchasing?
-                  </label>
-                  <div className="grid gap-3">
-                    {timelines.map((timeline) => (
-                      <label key={timeline.value} className="flex items-center p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer">
-                        <input
-                          type="radio"
-                          value={timeline.value}
-                          {...register('timeline')}
-                          className="sr-only"
-                        />
-                        <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
-                          watchedValues.timeline === timeline.value 
-                            ? 'border-kawai-red bg-kawai-red' 
-                            : 'border-kawai-black/30'
-                        }`}>
-                          {watchedValues.timeline === timeline.value && (
-                            <div className="w-full h-full rounded-full bg-white scale-50"></div>
-                          )}
-                        </div>
-                        <div>
-                          <div className="font-medium text-kawai-black">{timeline.label}</div>
-                          <div className="text-sm text-kawai-black/60">{timeline.description}</div>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                  {errors.timeline && (
-                    <p className="text-kawai-red text-sm mt-2">{errors.timeline.message}</p>
-                  )}
-                </div>
 
                 <div>
                   <label className="text-lg font-medium text-kawai-black mb-4 block">
                     What's your budget range?
                   </label>
                   <div className="grid gap-3">
-                    {budgets.map((budget) => (
-                      <label key={budget.value} className="flex items-center p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer">
+                    {data.formOptions.budgetRanges.map((budget) => (
+                      <label key={budget.range} className="flex items-center p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer">
                         <input
                           type="radio"
-                          value={budget.value}
+                          value={budget.range.toLowerCase().replace(/[\s$,+]/g, '-')}
                           {...register('budget')}
                           className="sr-only"
                         />
                         <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
-                          watchedValues.budget === budget.value 
+                          watchedValues.budget === budget.range.toLowerCase().replace(/[\s$,+]/g, '-')
                             ? 'border-kawai-red bg-kawai-red' 
                             : 'border-kawai-black/30'
                         }`}>
-                          {watchedValues.budget === budget.value && (
+                          {watchedValues.budget === budget.range.toLowerCase().replace(/[\s$,+]/g, '-') && (
                             <div className="w-full h-full rounded-full bg-white scale-50"></div>
                           )}
                         </div>
                         <div>
-                          <div className="font-medium text-kawai-black">{budget.label}</div>
-                          <div className="text-sm text-kawai-black/60">{budget.description}</div>
+                          <div className="font-medium text-kawai-black">{budget.range}</div>
                         </div>
                       </label>
                     ))}
@@ -407,39 +338,6 @@ export function ContactForm() {
                   )}
                 </div>
 
-                <div>
-                  <label className="text-lg font-medium text-kawai-black mb-4 block">
-                    What's most important to you?
-                  </label>
-                  <div className="grid gap-3">
-                    {priorities.map((priority) => (
-                      <label key={priority.value} className="flex items-center p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer">
-                        <input
-                          type="radio"
-                          value={priority.value}
-                          {...register('priority')}
-                          className="sr-only"
-                        />
-                        <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
-                          watchedValues.priority === priority.value 
-                            ? 'border-kawai-red bg-kawai-red' 
-                            : 'border-kawai-black/30'
-                        }`}>
-                          {watchedValues.priority === priority.value && (
-                            <div className="w-full h-full rounded-full bg-white scale-50"></div>
-                          )}
-                        </div>
-                        <div>
-                          <div className="font-medium text-kawai-black">{priority.label}</div>
-                          <div className="text-sm text-kawai-black/60">{priority.description}</div>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                  {errors.priority && (
-                    <p className="text-kawai-red text-sm mt-2">{errors.priority.message}</p>
-                  )}
-                </div>
               </div>
             )}
 
@@ -511,24 +409,14 @@ export function ContactForm() {
                 <div className="bg-kawai-pearl/50 p-6 rounded-md">
                   <h4 className="font-medium text-kawai-black mb-2">What you'll receive:</h4>
                   <ul className="space-y-2 text-sm text-kawai-black/70">
-                    <li className="flex items-center">
-                      <svg className="w-4 h-4 text-kawai-red mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      Free comprehensive Piano Buying Guide (PDF)
-                    </li>
-                    <li className="flex items-center">
-                      <svg className="w-4 h-4 text-kawai-red mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      Personalized piano recommendations
-                    </li>
-                    <li className="flex items-center">
-                      <svg className="w-4 h-4 text-kawai-red mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      Exclusive offers and updates
-                    </li>
+                    {data.benefits.map((benefit, index) => (
+                      <li key={index} className="flex items-center">
+                        <svg className="w-4 h-4 text-kawai-red mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        {benefit.text}
+                      </li>
+                    ))}
                   </ul>
                 </div>
               </div>
@@ -582,7 +470,7 @@ export function ContactForm() {
         {/* Trust Elements */}
         <div className="mt-12 text-center">
           <p className="text-sm text-kawai-black/60 mb-4">
-            Trusted by St. Louis area piano families since 1927
+            {data.trustMessage}
           </p>
           <div className="flex justify-center items-center space-x-8 opacity-60">
             <div className="text-xs text-kawai-black/40">Lake St. Louis Showroom</div>

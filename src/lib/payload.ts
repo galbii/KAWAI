@@ -745,3 +745,309 @@ export async function getPianosPageData(): Promise<{
     return null
   }
 }
+
+// HomePage API Functions
+
+// Fetch HomePage data from API
+export async function getHomePage(): Promise<any | null> {
+  try {
+    // Construct absolute URL for server-side requests
+    let apiUrl = '/api/home-page'
+    if (typeof window === 'undefined') {
+      // Server-side: need absolute URL
+      const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+      apiUrl = `${baseURL}/api/home-page`
+    }
+    
+    console.log('[DEBUG] Fetching home page data from', apiUrl)
+    
+    // Use the Next.js API route
+    const response = await fetch(apiUrl, {
+      cache: 'force-cache',
+      next: { revalidate: 300 } // Revalidate every 5 minutes
+    })
+    
+    console.log('[DEBUG] Response status:', response.status)
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const result = await response.json()
+    console.log('[DEBUG] API response result:', { success: result.success, hasData: !!result.data })
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to fetch home page data')
+    }
+    
+    console.log('[DEBUG] Successfully fetched home page data')
+    return result.data
+  } catch (error) {
+    // Handle null/undefined errors the same way as payloadFetch
+    if (error === null || error === undefined) {
+      console.error('[ERROR] Failed to fetch home page: received null error')
+      return null
+    }
+    
+    if (!(error instanceof Error)) {
+      console.error('[ERROR] Failed to fetch home page:', String(error))
+      return null
+    }
+    
+    console.error('[ERROR] Failed to fetch home page:', error.message)
+    return null
+  }
+}
+
+// Cached version of HomePage API function
+export async function getCachedHomePage(): Promise<any | null> {
+  const cacheKey = 'home-page-singleton'
+  const cached = getCachedData<any | null>(cacheKey)
+  
+  if (cached !== null) return cached
+  
+  const data = await getHomePage()
+  setCachedData(cacheKey, data)
+  
+  return data
+}
+
+// Get complete HomePage data with fallback defaults
+export async function getHomePageData(): Promise<{
+  heroSection: any
+  showroomSection: any
+  pianoCollectionSection: any
+  pianoGallerySection: any
+  newsCarouselSection: any
+  contactFormSection: any
+  seo: any
+} | null> {
+  try {
+    const homePageData = await getCachedHomePage()
+    
+    if (!homePageData) {
+      // Return fallback data structure matching HomePage collection schema
+      return {
+        heroSection: {
+          locationText: "St. Louis's Premier Kawai Piano Dealer",
+          establishedText: "Est. 1927 • Lake St. Louis, Missouri",
+          titlePrefix: "The",
+          titleMain: "INSTRUMENTAL",
+          titleSuffix: "to Life",
+          description: "Every musician harbors a vision. Every performance seeks perfection. Since 1927, we've been crafting the instruments that transform inspiration into reality. Visit our Lake St. Louis showroom and discover why we're Missouri's trusted Kawai piano experts.",
+          primaryCta: {
+            text: "View Our Piano Collection",
+            link: "/pianos"
+          },
+          secondaryCta: {
+            text: "Visit Our St. Louis Showroom",
+            link: "/contact"
+          },
+          backgroundVideo: null // Will use default video path
+        },
+        showroomSection: {
+          sectionHeader: "Our Showroom",
+          showroomTitle: "Visit Our Lake St. Louis",
+          showroomDescription: "Experience the artistry of Kawai pianos in Missouri's premier showroom. From intimate consultations to comprehensive piano services, discover why discerning musicians choose our Lake St. Louis location.",
+          showroomInfo: {
+            name: "Kawai Piano Gallery St. Louis",
+            address: "21 Meadows Circle Drive, Suite 312, Lake St. Louis, MO 63367",
+            phone: "636-265-2866",
+            serviceArea: "Serving St. Louis, St. Charles County, O'Fallon, Wentzville & surrounding Missouri areas"
+          },
+          hours: [
+            { day: 'Monday', time: '10:00 am–7:00 pm' },
+            { day: 'Tuesday', time: '10:00 am–7:00 pm' },
+            { day: 'Wednesday', time: '10:00 am–7:00 pm' },
+            { day: 'Thursday', time: '10:00 am–7:00 pm' },
+            { day: 'Friday', time: '10:00 am–7:00 pm' },
+            { day: 'Saturday', time: '10:00 am–6:00 pm' },
+            { day: 'Sunday', time: '1:00 pm–5:00 pm' }
+          ],
+          features: [
+            { icon: 'award', title: 'Expert Consultation', description: 'Personalized guidance from certified Kawai specialists' },
+            { icon: 'piano', title: 'Full Service Center', description: 'Tuning, repair, and maintenance by certified technicians' },
+            { icon: 'shield', title: 'Financing Available', description: 'Flexible payment options to make your piano dreams accessible' }
+          ],
+          showroomCtas: {
+            directionsText: "Get Directions",
+            directionsLink: "https://maps.google.com/?q=Lake+St.+Louis+MO",
+            scheduleText: "Schedule Visit",
+            scheduleLink: "/contact/schedule-visit"
+          }
+        },
+        pianoCollectionSection: {
+          collectionSectionHeader: "Featured Models",
+          collectionTitle: "Kawai K-500 &\nGX2 Limited Edition",
+          collectionDescription: "Discover the exceptional craftsmanship and innovation that defines our most sought-after instruments",
+          collectionCta: {
+            text: "Explore Collection",
+            link: "/pianos"
+          },
+          featuredVideo: {
+            youtubeId: "1cmwb6evs2A",
+            width: 800,
+            height: 500
+          }
+        },
+        pianoGallerySection: {
+          galleryTitle: "Explore Our Piano Collection",
+          galleryDescription: "Discover the full range of Kawai pianos, from handcrafted grand pianos to innovative digital and hybrid instruments. Each piano represents our commitment to exceptional craftsmanship and musical excellence.",
+          pianoCategories: [
+            {
+              model: 'Grand',
+              title: 'Grand Pianos',
+              description: 'Professional acoustic grand pianos for concert halls, studios, and discerning homes. Experience the ultimate in touch, tone, and musical expression with instruments trusted by professional musicians worldwide.',
+              href: '/pianos/grand'
+            },
+            {
+              model: 'Digital',
+              title: 'Digital Pianos',
+              description: 'Advanced digital pianos featuring realistic wooden-key actions and premium sound systems. Combining authentic acoustic piano experience with modern technology and convenient features for today\'s musicians.',
+              href: '/pianos/digital'
+            },
+            {
+              model: 'Upright',
+              title: 'Upright Pianos',
+              description: 'Space-efficient acoustic pianos delivering exceptional touch and tone quality. Perfect for homes, studios, schools, and institutions where space is at a premium but musical excellence cannot be compromised.',
+              href: '/pianos/upright'
+            },
+            {
+              model: 'Hybrid',
+              title: 'Hybrid Pianos',
+              description: 'Revolutionary instruments combining real grand piano actions with advanced digital sound technology. Experience the authentic touch of acoustic keys with the versatility and innovation of digital sound.',
+              href: '/pianos/hybrid'
+            }
+          ]
+        },
+        newsCarouselSection: {
+          autoPlayDuration: 7000,
+          newsItems: [
+            {
+              title: 'Instrumental to Life',
+              description: 'Redefining harmony between tradition and innovation',
+              category: 'news',
+              link: '/about/instrumental-to-life'
+            },
+            {
+              title: 'Kawai Piano Gallery',
+              description: 'Explore our complete collection of acoustic and digital pianos',
+              category: 'news',
+              link: '/pianos'
+            },
+            {
+              title: 'Special Financing Offers',
+              description: 'Make your dream piano more accessible with flexible payment options',
+              category: 'promotions',
+              link: '/financing'
+            }
+          ]
+        },
+        contactFormSection: {
+          contactTitle: "Find Your Perfect",
+          contactTitleHighlight: "Piano",
+          contactDescription: "Get your free Piano Buying Guide and personalized recommendations from our Lake St. Louis piano experts. Serving the St. Louis area for over 95 years.",
+          stepTitles: [
+            { step: 'Tell us about your piano journey' },
+            { step: 'Help us understand your needs' },
+            { step: 'Get your free piano buying guide' }
+          ],
+          trustMessage: "Trusted by St. Louis area piano families since 1927",
+          benefits: [
+            { icon: 'shield-check', text: 'Free comprehensive Piano Buying Guide (PDF)' },
+            { icon: 'users', text: 'Personalized piano recommendations' },
+            { icon: 'award', text: 'Exclusive offers and updates' }
+          ],
+          formOptions: {
+            experienceLevels: [
+              { level: 'Beginner' },
+              { level: 'Intermediate' },
+              { level: 'Advanced' },
+              { level: 'Professional' }
+            ],
+            pianoTypes: [
+              { type: 'Acoustic Grand' },
+              { type: 'Acoustic Upright' },
+              { type: 'Digital Piano' },
+              { type: 'Hybrid Piano' },
+              { type: 'Not Sure' }
+            ],
+            budgetRanges: [
+              { range: 'Under $5,000' },
+              { range: '$5,000 - $15,000' },
+              { range: '$15,000 - $35,000' },
+              { range: '$35,000 - $75,000' },
+              { range: '$75,000+' }
+            ],
+            primaryUses: [
+              { use: 'Learning/Practice' },
+              { use: 'Family Entertainment' },
+              { use: 'Teaching' },
+              { use: 'Performance' },
+              { use: 'Recording/Studio' }
+            ]
+          }
+        },
+        seo: {
+          metaTitle: "Kawai Pianos St. Louis | Premier Piano Dealer Since 1927 | Lake St. Louis",
+          metaDescription: "St. Louis's premier Kawai piano dealer since 1927. Explore acoustic & digital pianos at our Lake St. Louis showroom. Expert consultation & service.",
+          keywords: "Kawai pianos, St. Louis piano dealer, Lake St. Louis piano store, acoustic pianos, digital pianos, piano showroom, Missouri piano dealer, piano sales, piano service"
+        }
+      }
+    }
+    
+    // Return CMS data with structure matching fallback
+    return {
+      heroSection: {
+        locationText: homePageData.locationText,
+        establishedText: homePageData.establishedText,
+        titlePrefix: homePageData.titlePrefix,
+        titleMain: homePageData.titleMain,
+        titleSuffix: homePageData.titleSuffix,
+        description: homePageData.description,
+        primaryCta: homePageData.primaryCta,
+        secondaryCta: homePageData.secondaryCta,
+        backgroundVideo: homePageData.backgroundVideo
+      },
+      showroomSection: {
+        sectionHeader: homePageData.sectionHeader,
+        showroomTitle: homePageData.showroomTitle,
+        showroomDescription: homePageData.showroomDescription,
+        showroomInfo: homePageData.showroomInfo,
+        hours: homePageData.hours,
+        features: homePageData.features,
+        mapApiKey: homePageData.mapApiKey,
+        showroomCtas: homePageData.showroomCtas
+      },
+      pianoCollectionSection: {
+        collectionSectionHeader: homePageData.collectionSectionHeader,
+        collectionTitle: homePageData.collectionTitle,
+        collectionDescription: homePageData.collectionDescription,
+        collectionCta: homePageData.collectionCta,
+        featuredVideo: homePageData.featuredVideo
+      },
+      pianoGallerySection: {
+        galleryTitle: homePageData.galleryTitle,
+        galleryDescription: homePageData.galleryDescription,
+        pianoCategories: homePageData.pianoCategories
+      },
+      newsCarouselSection: {
+        autoPlayDuration: homePageData.autoPlayDuration,
+        newsItems: homePageData.newsItems
+      },
+      contactFormSection: {
+        contactTitle: homePageData.contactTitle,
+        contactTitleHighlight: homePageData.contactTitleHighlight,
+        contactDescription: homePageData.contactDescription,
+        stepTitles: homePageData.stepTitles,
+        trustMessage: homePageData.trustMessage,
+        benefits: homePageData.benefits,
+        formOptions: homePageData.formOptions
+      },
+      seo: homePageData.seo
+    }
+  } catch (error) {
+    console.error('Error fetching complete home page data:', error)
+    return null
+  }
+}

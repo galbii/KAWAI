@@ -3,53 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { PianoGalleryProps, DEFAULT_PIANO_GALLERY_DATA, PianoCategory } from '@/lib/types/homepage';
+import { getOptimizedImageProps } from '@/lib/media/r2-utils';
 
-interface PianoModel {
-  id: string;
-  model: string;
-  title: string;
-  description: string;
-  image: string;
-  href: string;
-}
-
-const pianoModels: PianoModel[] = [
-  {
-    id: "grand",
-    model: "Grand",
-    title: "Grand Pianos",
-    description: "Professional acoustic grand pianos for concert halls, studios, and discerning homes. Experience the ultimate in touch, tone, and musical expression with instruments trusted by professional musicians worldwide.",
-    image: "/images/piano-categories/grand.jpg",
-    href: "/pianos/grand"
-  },
-  {
-    id: "digital",
-    model: "Digital",
-    title: "Digital Pianos",
-    description: "Advanced digital pianos featuring realistic wooden-key actions and premium sound systems. Combining authentic acoustic piano experience with modern technology and convenient features for today's musicians.",
-    image: "/images/piano-categories/digital.png", 
-    href: "/pianos/digital"
-  },
-  {
-    id: "upright",
-    model: "Upright",
-    title: "Upright Pianos",
-    description: "Space-efficient acoustic pianos delivering exceptional touch and tone quality. Perfect for homes, studios, schools, and institutions where space is at a premium but musical excellence cannot be compromised.",
-    image: "/images/piano-categories/upright.png",
-    href: "/pianos/upright"
-  },
-  {
-    id: "hybrid",
-    model: "Hybrid",
-    title: "Hybrid Pianos",
-    description: "Revolutionary instruments combining real grand piano actions with advanced digital sound technology. Experience the authentic touch of acoustic keys with the versatility and innovation of digital sound.",
-    image: "/images/piano-categories/hybrid.jpg",
-    href: "/pianos/hybrid"
-  }
-];
 
 interface PianoSectionProps {
-  piano: PianoModel;
+  piano: PianoCategory;
   index: number;
 }
 
@@ -138,14 +97,57 @@ function PianoSection({ piano, index }: PianoSectionProps) {
                 ? 'opacity-100 translate-x-0' 
                 : `opacity-0 ${isEven ? 'translate-x-12' : '-translate-x-12'}`
             }`}>
-              <Image
-                src={piano.image}
-                alt={piano.title}
-                width={800}
-                height={600}
-                className="w-full h-auto object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
-              />
+              {(() => {
+                // Find the corresponding default piano category for fallback image
+                const defaultPiano = DEFAULT_PIANO_GALLERY_DATA.pianoCategories.find(
+                  defaultCategory => defaultCategory.model === piano.model
+                );
+                const fallbackImage = defaultPiano?.image || '/images/piano-categories/grand.jpg';
+
+                // Use CMS image if available, otherwise use default
+                const imageToUse = piano.image || fallbackImage;
+
+                // If it's a string (default image), use it directly
+                if (typeof imageToUse === 'string') {
+                  return (
+                    <Image
+                      src={imageToUse}
+                      width={800}
+                      height={600}
+                      alt={piano.title}
+                      className="w-full h-auto object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
+                    />
+                  );
+                }
+
+                // If it's a media object, use the optimization system
+                const imageProps = getOptimizedImageProps(imageToUse, 'gallery');
+                if (!imageProps || !imageProps.src) {
+                  return (
+                    <Image
+                      src={fallbackImage}
+                      width={800}
+                      height={600}
+                      alt={piano.title}
+                      className="w-full h-auto object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
+                    />
+                  );
+                }
+                
+                return (
+                  <Image
+                    src={imageProps.src}
+                    width={imageProps.width || 800}
+                    height={imageProps.height || 600}
+                    alt={piano.title}
+                    className="w-full h-auto object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
+                    loading={imageProps.loading}
+                  />
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -154,7 +156,7 @@ function PianoSection({ piano, index }: PianoSectionProps) {
   );
 }
 
-export function PianoGallery() {
+export function PianoGallery({ data = DEFAULT_PIANO_GALLERY_DATA }: PianoGalleryProps) {
   const [isHeroVisible, setIsHeroVisible] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
 
@@ -185,21 +187,21 @@ export function PianoGallery() {
               ? 'opacity-100 translate-y-0' 
               : 'opacity-0 translate-y-8'
           }`}>
-            Explore Our Piano Collection
+            {data.galleryTitle}
           </h1>
           <p className={`text-xl md:text-2xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto transition-all duration-700 ease-out delay-200 ${
             isHeroVisible 
               ? 'opacity-100 translate-y-0' 
               : 'opacity-0 translate-y-8'
           }`}>
-            Discover the full range of Kawai pianos, from handcrafted grand pianos to innovative digital and hybrid instruments. Each piano represents our commitment to exceptional craftsmanship and musical excellence.
+            {data.galleryDescription}
           </p>
         </div>
       </section>
 
       {/* Piano Models */}
-      {pianoModels.map((piano, index) => (
-        <PianoSection key={piano.id} piano={piano} index={index} />
+      {data.pianoCategories.map((piano, index) => (
+        <PianoSection key={piano.model} piano={piano} index={index} />
       ))}
     </div>
   );

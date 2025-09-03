@@ -1,40 +1,24 @@
 'use client';
 
 import { GoogleMapsEmbed } from '@next/third-parties/google';
+import type { ShowroomLocationProps } from "@/lib/types/homepage";
+import { DEFAULT_SHOWROOM_DATA } from "@/lib/types/homepage";
 
-export function ShowroomLocation() {
-
-  const showroomInfo = {
-    name: 'Kawai Piano Gallery St. Louis',
-    address: '21 Meadows Circle Drive, Suite 312, Lake St. Louis, MO 63367',
-    website: 'https://kawaipianostlouis.com/',
-    phone: '636-265-2866',
-    serviceArea: 'Serving St. Louis, St. Charles County, O\'Fallon, Wentzville & surrounding Missouri areas',
-    hours: [
-      { day: 'Monday', time: '10:00 am–7:00 pm' },
-      { day: 'Tuesday', time: '10:00 am–7:00 pm' },
-      { day: 'Wednesday', time: '10:00 am–7:00 pm' },
-      { day: 'Thursday', time: '10:00 am–7:00 pm' },
-      { day: 'Friday', time: '10:00 am–7:00 pm' },
-      { day: 'Saturday', time: '10:00 am–6:00 pm' },
-      { day: 'Sunday', time: '1:00 pm–5:00 pm' }
-    ]
-  };
+export function ShowroomLocation({ data = DEFAULT_SHOWROOM_DATA }: ShowroomLocationProps) {
 
   return (
     <section className="relative bg-gradient-to-b from-white via-kawai-pearl/20 to-kawai-pearl/40">
       {/* Section Header */}
       <div className="container mx-auto px-6 pt-24 pb-16 text-center">
         <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-6">
-          Our Showroom
+          {data.sectionHeader}
         </div>
         <h2 className="text-5xl md:text-6xl font-light font-serif text-kawai-black mb-8 leading-tight">
-          Visit Our Lake St. Louis
+          {data.showroomTitle}
           <span className="text-kawai-red block">Piano Gallery</span>
         </h2>
         <p className="text-xl text-kawai-black/70 max-w-3xl mx-auto leading-relaxed">
-          Experience the artistry of Kawai pianos in Missouri's premier showroom. From intimate consultations 
-          to comprehensive piano services, discover why discerning musicians choose our Lake St. Louis location.
+          {data.showroomDescription}
         </p>
       </div>
 
@@ -50,7 +34,7 @@ export function ShowroomLocation() {
                 height={600}
                 width="100%"
                 mode="place"
-                q="21 Meadows Circle Drive, Suite 312, Lake St. Louis, MO 63367"
+                q={data.showroomInfo.address}
                 zoom="15"
               />
               {/* Subtle overlay gradient */}
@@ -62,7 +46,7 @@ export function ShowroomLocation() {
               {/* Showroom Title */}
               <div className="mb-8">
                 <h3 className="text-3xl font-serif text-kawai-black mb-3 leading-tight">
-                  {showroomInfo.name}
+                  {data.showroomInfo.name}
                 </h3>
                 <div className="w-16 h-px bg-kawai-red mb-6"></div>
               </div>
@@ -78,7 +62,7 @@ export function ShowroomLocation() {
                   <div>
                     <p className="text-kawai-black font-medium text-sm mb-1">Address</p>
                     <p className="text-kawai-black/70 text-sm leading-relaxed">
-                      {showroomInfo.address}
+                      {data.showroomInfo.address}
                     </p>
                   </div>
                 </div>
@@ -92,10 +76,10 @@ export function ShowroomLocation() {
                   <div>
                     <p className="text-kawai-black font-medium text-sm mb-1">Phone</p>
                     <a 
-                      href={`tel:${showroomInfo.phone}`} 
+                      href={`tel:${data.showroomInfo.phone}`} 
                       className="text-kawai-black/70 hover:text-kawai-red transition-colors text-sm"
                     >
-                      {showroomInfo.phone}
+                      {data.showroomInfo.phone}
                     </a>
                   </div>
                 </div>
@@ -109,7 +93,7 @@ export function ShowroomLocation() {
                   <div>
                     <p className="text-kawai-black font-medium text-sm mb-1">Service Area</p>
                     <p className="text-kawai-black/70 text-xs leading-relaxed">
-                      {showroomInfo.serviceArea}
+                      {data.showroomInfo.serviceArea}
                     </p>
                   </div>
                 </div>
@@ -137,7 +121,7 @@ export function ShowroomLocation() {
               {/* Actions */}
               <div className="space-y-3">
                 <a 
-                  href={`https://maps.google.com?q=${encodeURIComponent(showroomInfo.address)}`}
+                  href={`https://maps.google.com?q=${encodeURIComponent(data.showroomInfo.address)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block w-full bg-kawai-red hover:bg-kawai-black text-white py-4 text-center font-medium transition-colors text-sm tracking-wide uppercase rounded-lg"

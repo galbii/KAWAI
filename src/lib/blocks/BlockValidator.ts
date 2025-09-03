@@ -3,7 +3,8 @@ import type { Product } from '@/payload-types'
 // Available block types from your block definitions
 const VALID_BLOCK_TYPES = [
   'hero',
-  'productShowcase', 
+  'productShowcase',
+  'productHero',
   'imageGallery',
   'featuresList',
   'specifications',
@@ -79,6 +80,9 @@ export function validateBlock(block: any, index: number): BlockValidationResult 
     case 'productShowcase':
       validateProductShowcaseBlock(block, result)
       break
+    case 'productHero':
+      validateProductHeroBlock(block, result)
+      break
     case 'imageGallery':
       validateImageGalleryBlock(block, result)
       break
@@ -135,6 +139,26 @@ function validateProductShowcaseBlock(block: any, result: BlockValidationResult)
   if (!block.product && !block.pianoModel) {
     result.warnings.push('ProductShowcase block has no product data and no pianoModel fallback')
   }
+}
+
+/**
+ * Validates ProductHero block specific requirements
+ */
+function validateProductHeroBlock(block: any, result: BlockValidationResult): void {
+  // ProductHero blocks use product data directly from context, so fewer validations needed
+  
+  // Check layout options are valid if provided
+  if (block.layout) {
+    if (block.layout.imagePosition && !['left', 'right'].includes(block.layout.imagePosition)) {
+      result.warnings.push('ProductHero block has invalid imagePosition - should be left or right')
+    }
+    
+    if (block.layout.backgroundColor && !['pearl', 'white', 'black'].includes(block.layout.backgroundColor)) {
+      result.warnings.push('ProductHero block has invalid backgroundColor - should be pearl, white, or black')
+    }
+  }
+  
+  // Note: No need to check for product data since it comes from the current product document
 }
 
 /**

@@ -99,24 +99,54 @@ async function ensureUniqueSlug(baseSlug: string, excludeId: string | undefined,
 }
 
 /**
+ * Generate product slug from piano model name (using underscores for spaces)
+ */
+function generateProductSlug(name: string): string {
+  if (!name || typeof name !== 'string') {
+    return 'product'
+  }
+  
+  const slug = name
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '_') // Use underscores for spaces
+    .replace(/[^a-z0-9_]/g, '') // Allow underscores, remove other special chars
+    .replace(/_+/g, '_') // Replace multiple underscores with single
+    .replace(/^_+|_+$/g, '') // Remove leading/trailing underscores
+  
+  return slug || 'product'
+}
+
+/**
  * Transform PianoModel data into Product data structure
  */
 function transformPianoModelToProduct(pianoModel: PianoModel, category: string): Partial<Product> {
   console.log(`🔄 Transforming piano model "${pianoModel.name}" to product format`)
+  
+  // Generate product slug from piano model name (not piano model slug)
+  const productSlug = generateProductSlug(pianoModel.name)
+  
   console.log(`📋 Piano model input data:`, {
     name: pianoModel.name,
+    pianoModelSlug: pianoModel.slug,
+    generatedProductSlug: productSlug,
     model: pianoModel.model,
     description: pianoModel.description,
     status: pianoModel.status
   })
   
   const transformed = {
-    type: 'piano', // Always piano type for auto-generated products
+    type: 'piano' as const, // Always piano type for auto-generated products
     name: pianoModel.name,
-    title: pianoModel.name,
+    title: pianoModel.name, // Add missing title field
+    slug: productSlug, // Use generated product slug with underscores
     description: pianoModel.description,
     category: category as any,
-    status: pianoModel.status === 'active' ? 'active' : 'draft',
+    status: pianoModel.status === 'active' ? 'active' as const 
+           : pianoModel.status === 'discontinued' ? 'discontinued' as const
+           : pianoModel.status === 'coming-soon' ? 'coming-soon' as const  
+           : pianoModel.status === 'limited-edition' ? 'limited-edition' as const
+           : 'draft' as const,
     mainImage: pianoModel.image,
     
     // Transform pricing data
@@ -140,7 +170,7 @@ function transformPianoModelToProduct(pianoModel: PianoModel, category: string):
     buyButton: {
       text: 'Contact for Details',
       link: '/contact',
-      style: 'primary',
+      style: 'primary' as const,
       showButton: true
     },
     
@@ -183,9 +213,11 @@ function transformPianoModelToProduct(pianoModel: PianoModel, category: string):
   console.log(`📤 Key transformed fields:`, {
     name: transformed.name,
     title: transformed.title,
+    slug: transformed.slug,
     model: transformed.productData?.model,
     description: transformed.description
   })
+  console.log(`🔗 Slug generation: "${pianoModel.name}" → "${productSlug}"`)
   return transformed
 }
 
@@ -267,8 +299,13 @@ export const pianoModelAfterChangeHook: CollectionAfterChangeHook<PianoModel> = 
   operation,
   req
 }) => {
+  console.log(`🚨🎹 PIANO MODEL HOOK FIRING! 🎹🚨`)
   console.log(`🎹 PianoModel afterChange START: ${operation} operation for ${doc.name} (ID: ${doc.id})`)
   console.log(`🔍 Piano model doc keys:`, Object.keys(doc))
+  console.log(`🔍 Piano model product field:`, doc.product)
+  console.log(`🔍 Piano model autoGenerateProduct:`, doc.autoGenerateProduct)
+  console.log(`🔍 Piano model productline:`, doc.productline)
+  console.log(`🔍 Request context:`, JSON.stringify(req.context || {}))
   
   // Prevent infinite loops
   if (req.context?.preventPianoSync === true) {
@@ -279,6 +316,7 @@ export const pianoModelAfterChangeHook: CollectionAfterChangeHook<PianoModel> = 
   const { payload } = req
   
   // Skip if auto-generation is disabled for this piano model
+  console.log(`🔍 Checking autoGenerateProduct setting: ${doc.autoGenerateProduct}`)
   if (doc.autoGenerateProduct === false) {
     console.log(`❌ Auto-product generation disabled for piano model ${doc.id}, skipping`)
     return doc
@@ -288,6 +326,7 @@ export const pianoModelAfterChangeHook: CollectionAfterChangeHook<PianoModel> = 
   
   try {
     // Skip if no productline (required for category determination)
+    console.log(`🔍 Checking productline:`, doc.productline)
     if (!doc.productline) {
       console.warn(`⚠️  PianoModel ${doc.id} has no productline, skipping product generation`)
       return doc
@@ -354,49 +393,126 @@ export const pianoModelAfterChangeHook: CollectionAfterChangeHook<PianoModel> = 
         throw productCreateError // Re-throw so the outer catch can handle it
       }
       
-    } else if (operation === 'update' && doc.product) {
-      // Update existing product
-      console.log(`🔄 Updating existing product ${doc.product} for piano model ${doc.id}`)
-      console.log(`📋 Piano model data being synced:`, {
-        name: doc.name,
-        model: doc.model,
-        description: doc.description,
-        status: doc.status
-      })
+    } else if (operation === 'update') {
+      // First, let's check if there's already a product linked to this piano model
+      console.log(`🔍 Checking for existing product linked to piano model ${doc.id}...`)
       
-      const transformedData = transformPianoModelToProduct(doc, category)
-      console.log(`📤 Transformed piano model data being sent to product:`, Object.keys(transformedData))
-      
-      const updateData = {
-        ...transformedData,
-        pianoModel: doc.id
-        // No slug update - let Products collection handle slug generation if name changed
-      }
-      
-      console.log(`📋 Final update data for product ${doc.product}:`, Object.keys(updateData))
-      console.log(`🔍 Critical fields being updated:`, {
-        name: updateData.name,
-        title: updateData.title,
-        productData_model: updateData.productData?.model,
-        description: updateData.description
-      })
-      
-      await payload.update({
+      const existingProducts = await payload.find({
         collection: 'products',
-        id: String(doc.product),
-        data: updateData,
-        context: { preventProductSync: true }
+        where: {
+          pianoModel: { equals: doc.id }
+        },
+        limit: 1
       })
       
-      console.log(`✅ Successfully updated product ${doc.product} for piano model ${doc.id}`)
-    } else if (operation === 'update' && !doc.product) {
-      console.log(`⚠️ Piano model ${doc.id} updated but has no linked product to sync with`)
-      console.log(`📋 Piano model details:`, {
-        name: doc.name,
-        model: doc.model,
-        autoGenerateProduct: doc.autoGenerateProduct,
-        productline: doc.productline
-      })
+      console.log(`📋 Found ${existingProducts.docs.length} existing products linked to piano model ${doc.id}`)
+      
+      const existingProduct = existingProducts.docs[0]
+      
+      if (existingProduct || doc.product) {
+        // Update existing product
+        const productId = existingProduct?.id || doc.product
+        console.log(`📋 Piano model data being synced:`, {
+          name: doc.name,
+          slug: doc.slug,
+          model: doc.model,
+          description: doc.description,
+          status: doc.status
+        })
+        
+        const transformedData = transformPianoModelToProduct(doc, category)
+        console.log(`📤 Transformed piano model data being sent to product:`, Object.keys(transformedData))
+        
+        const updateData = {
+          ...transformedData,
+          pianoModel: doc.id
+          // Slug is now included in transformedData and will be synced
+        }
+        
+        console.log(`📋 Final update data for product ${productId}:`, Object.keys(updateData))
+        console.log(`🔍 Critical fields being updated:`, {
+          name: updateData.name,
+          slug: updateData.slug,
+          productData_model: updateData.productData?.model,
+          description: updateData.description
+        })
+        
+        await payload.update({
+          collection: 'products',
+          id: String(productId),
+          data: updateData,
+          context: { preventProductSync: true }
+        })
+        
+        console.log(`✅ Successfully updated product ${productId} for piano model ${doc.id}`)
+        
+        // If we found the product via search but piano model doesn't have the reference, update it
+        if (existingProduct && !doc.product) {
+          console.log(`🔗 Updating piano model ${doc.id} with missing product reference ${existingProduct.id}`)
+          await payload.update({
+            collection: 'piano-models',
+            id: doc.id,
+            data: {
+              product: existingProduct.id
+            },
+            context: { preventPianoSync: true, linkingProducts: true }
+          })
+        }
+      } else {
+        // Piano model has no linked product - create one if auto-generation is enabled
+        console.log(`🆕 Piano model ${doc.id} updated but has no linked product - creating new product`)
+        console.log(`📋 Piano model details:`, {
+          name: doc.name,
+          model: doc.model,
+          autoGenerateProduct: doc.autoGenerateProduct,
+          productline: doc.productline
+        })
+        
+        const transformedData = transformPianoModelToProduct(doc, category)
+        console.log(`🔄 Transformed piano model data:`, JSON.stringify(Object.keys(transformedData)))
+        
+        const productData: Partial<Product> = {
+          ...transformedData,
+          pianoModel: doc.id,
+          dataSource: 'pianomodel' // Auto-generated from piano model
+          // slug is already included in transformedData with proper underscore formatting
+        }
+        
+        console.log(`📦 About to create product for piano model update with data:`)
+        console.log(`🔍 Product data keys:`, Object.keys(productData))
+        console.log(`🔍 Product name: "${productData.name}"`)
+        console.log(`🔍 Product slug: "${productData.slug}"`)
+        
+        try {
+          const createdProduct = await payload.create({
+            collection: 'products',
+            data: productData as any,
+            context: { preventProductSync: true } // Prevent loops
+          })
+          
+          console.log(`✅ Product created successfully with ID: ${createdProduct.id}`)
+          
+          // Update piano model with product reference
+          await payload.update({
+            collection: 'piano-models',
+            id: doc.id,
+            data: {
+              product: createdProduct.id
+            },
+            context: { preventPianoSync: true, linkingProducts: true }
+          })
+          
+          console.log(`🔗 Updated piano model ${doc.id} with product reference ${createdProduct.id}`)
+          
+        } catch (productCreateError: any) {
+          console.error(`❌ Failed to create product for piano model ${doc.id}:`, productCreateError)
+          
+          // Log the specific validation errors if available
+          if (productCreateError?.data) {
+            console.error(`🔍 Validation errors:`, JSON.stringify(productCreateError.data, null, 2))
+          }
+        }
+      }
     } else {
       console.log(`ℹ️ Piano model operation: ${operation}, has product: ${!!doc.product}`)
     }
@@ -514,7 +630,7 @@ export const productAfterChangeHook: CollectionAfterChangeHook<Product> = async 
 }
 
 /**
- * Hook for Product beforeChange - validation for piano products
+ * Hook for Product beforeChange - validation for piano products and default content setup
  */
 export const productBeforeChangeHook: CollectionBeforeChangeHook<Product> = async ({
   data,
@@ -522,6 +638,29 @@ export const productBeforeChangeHook: CollectionBeforeChangeHook<Product> = asyn
   operation
 }) => {
   console.log(`🔍 productBeforeChangeHook: operation=${operation}, context=${JSON.stringify(req.context)}, productName=${data.name}`)
+  
+  // Add default ProductHero block for new products
+  if (operation === 'create' && (!data.pageContent || data.pageContent.length === 0)) {
+    console.log(`🎨 Adding default ProductHero block to new product "${data.name}"`)
+    
+    data.pageContent = [
+      {
+        blockType: 'productHero',
+        layout: {
+          imagePosition: 'left',
+          backgroundColor: 'pearl',
+          showFinishes: true,
+          showPrice: true,
+          showBuyButton: true
+        },
+        overrides: {
+          // No overrides by default - uses product document data
+        }
+      }
+    ]
+    
+    console.log(`✅ Default ProductHero block added to new product`)
+  }
   
   // Skip validation if called from within hooks to prevent loops and conflicts
   if (req.context?.preventProductSync || req.context?.preventPianoSync || req.context?.linkingProducts) {

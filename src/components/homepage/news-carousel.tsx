@@ -4,48 +4,24 @@ import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence, useInView } from "framer-motion";
+import { NewsCarouselProps, DEFAULT_NEWS_CAROUSEL_DATA } from '@/lib/types/homepage';
+import { getOptimizedImageProps } from '@/lib/media/r2-utils';
 
-const newsItems = [
-  {
-    id: 1,
-    title: "Instrumental to Life",
-    description: "Redefining harmony between tradition and innovation",
-    image: "/images/banners/I2LNew-banner.jpg",
-    category: "Philosophy",
-    link: "/about/instrumental-to-life"
-  },
-  {
-    id: 2,
-    title: "Kawai Piano Gallery",
-    description: "Explore our complete collection of acoustic and digital pianos",
-    image: "/images/piano-categories/grand-pianos.jpg",
-    category: "Showroom",
-    link: "/pianos"
-  },
-  {
-    id: 3,
-    title: "Special Financing Offers",
-    description: "Make your dream piano more accessible with flexible payment options",
-    image: "/images/banners/Rebate-banner-for-news.jpg",
-    category: "Financing",
-    link: "/financing"
-  }
-];
 
-export function NewsCarousel() {
+export function NewsCarousel({ data = DEFAULT_NEWS_CAROUSEL_DATA }: NewsCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.3 });
 
-  const SLIDE_DURATION = 7000; // 7 seconds per slide
+  const SLIDE_DURATION = data.autoPlayDuration; // Dynamic slide duration from CMS
 
   // Auto-play functionality
   useEffect(() => {
     if (!isPlaying || !isInView) return;
 
     const slideTimer = setTimeout(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % newsItems.length);
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % data.newsItems.length);
     }, SLIDE_DURATION);
 
     return () => clearTimeout(slideTimer);
@@ -58,19 +34,19 @@ export function NewsCarousel() {
   // Navigation functions
   const goToPrevious = () => {
     setCurrentIndex((prevIndex) => 
-      prevIndex === 0 ? newsItems.length - 1 : prevIndex - 1
+      prevIndex === 0 ? data.newsItems.length - 1 : prevIndex - 1
     );
   };
 
   const goToNext = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % newsItems.length);
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % data.newsItems.length);
   };
 
   // Reduced motion support
   const prefersReducedMotion = typeof window !== 'undefined' && 
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const currentItem = newsItems[currentIndex];
+  const currentItem = data.newsItems[currentIndex];
 
   const imageVariants = {
     enter: {
@@ -145,18 +121,59 @@ export function NewsCarousel() {
             animate="center"
             exit="exit"
           >
-            <Image
-              src={currentItem.image}
-              alt={currentItem.title}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw"
-              style={{ willChange: 'transform' }}
-              priority={currentIndex === 0}
-              quality={100}
-              placeholder="blur"
-              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyLm4QfMD2GkPdOHQa9EqRzaMJQAHu9e8pNeT3B/9k="
-            />
+            {(() => {
+              // Find the corresponding default news item for fallback image
+              const defaultItem = DEFAULT_NEWS_CAROUSEL_DATA.newsItems.find(
+                defaultNews => defaultNews.title === currentItem.title
+              );
+              const fallbackImage = defaultItem?.image || '/images/banners/I2LNew-banner.jpg';
+
+              // Use CMS image if available, otherwise use default
+              const imageToUse = currentItem.image || fallbackImage;
+
+              // If it's a string (default image), use it directly
+              if (typeof imageToUse === 'string') {
+                return (
+                  <Image
+                    src={imageToUse}
+                    fill
+                    alt={currentItem.title}
+                    className="object-cover"
+                    sizes="100vw"
+                    style={{ willChange: 'transform' }}
+                    priority={currentIndex === 0}
+                  />
+                );
+              }
+
+              // If it's a media object, use the optimization system
+              const imageProps = getOptimizedImageProps(imageToUse, 'hero');
+              if (!imageProps) {
+                return (
+                  <Image
+                    src={fallbackImage}
+                    fill
+                    alt={currentItem.title}
+                    className="object-cover"
+                    sizes="100vw"
+                    style={{ willChange: 'transform' }}
+                    priority={currentIndex === 0}
+                  />
+                );
+              }
+
+              return (
+                <Image
+                  src={imageProps.src}
+                  fill
+                  alt={currentItem.title}
+                  className="object-cover"
+                  sizes="100vw"
+                  style={{ willChange: 'transform' }}
+                  priority={currentIndex === 0}
+                />
+              );
+            })()}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -203,7 +220,7 @@ export function NewsCarousel() {
             {/* Read More Link */}
             <motion.div variants={textItemVariants}>
               <Link
-                href={currentItem.link}
+                href={currentItem.link || '#'}
                 className="inline-flex items-center text-kawai-red hover:text-kawai-red-400 font-medium text-sm tracking-wide uppercase transition-all duration-300 group"
               >
                 <span>Read More</span>
@@ -257,7 +274,7 @@ export function NewsCarousel() {
 
       {/* Dot Indicators */}
       <div className="absolute bottom-8 right-8 md:right-12 lg:right-16 flex space-x-2">
-        {newsItems.map((_, index) => (
+        {data.newsItems.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentIndex(index)}
