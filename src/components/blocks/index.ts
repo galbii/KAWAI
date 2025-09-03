@@ -3,6 +3,7 @@
 
 export { HeroBlock } from './HeroBlock'
 export { ProductShowcaseBlock } from './ProductShowcaseBlock'
+export { ProductHeroBlock } from './ProductHeroBlock'
 export { ImageGalleryBlock } from './ImageGalleryBlock'
 export { FeaturesListBlock } from './FeaturesListBlock'
 export { SpecificationsBlock } from './SpecificationsBlock'

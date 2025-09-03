@@ -1,5 +1,6 @@
 // Export all blocks for use in Payload configuration
 export { ProductShowcase } from './ProductShowcase'
+export { ProductHero } from './ProductHero'
 export { Hero } from './Hero'
 export { TextContent } from './TextContent'
 export { ImageGallery } from './ImageGallery'

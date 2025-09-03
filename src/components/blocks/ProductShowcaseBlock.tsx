@@ -11,7 +11,7 @@ interface ProductShowcaseBlockProps {
   pianoModel?: any
   product?: {
     image?: string | Media | null
-    title?: string | null
+    name?: string | null
     description?: string | null
     price?: {
       currency?: 'USD' | 'EUR' | 'GBP' | 'CAD' | null
@@ -131,9 +131,9 @@ export function ProductShowcaseBlock({
           {/* Product Details */}
           <div className="flex-1 space-y-6">
             {/* Title */}
-            {product.title && (
+            {product.name && (
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-kawai-black">
-                {product.title}
+                {product.name}
               </h2>
             )}
             

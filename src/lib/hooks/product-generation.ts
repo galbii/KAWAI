@@ -102,7 +102,15 @@ async function ensureUniqueSlug(baseSlug: string, excludeId: string | undefined,
  * Transform PianoModel data into Product data structure
  */
 function transformPianoModelToProduct(pianoModel: PianoModel, category: string): Partial<Product> {
-  return {
+  console.log(`🔄 Transforming piano model "${pianoModel.name}" to product format`)
+  console.log(`📋 Piano model input data:`, {
+    name: pianoModel.name,
+    model: pianoModel.model,
+    description: pianoModel.description,
+    status: pianoModel.status
+  })
+  
+  const transformed = {
     type: 'piano', // Always piano type for auto-generated products
     name: pianoModel.name,
     title: pianoModel.name,
@@ -128,7 +136,7 @@ function transformPianoModelToProduct(pianoModel: PianoModel, category: string):
       available: finish.available !== false
     })) || [],
     
-    // Default buy button configuration
+    // Default buy button configuration (preserve if already set)
     buyButton: {
       text: 'Contact for Details',
       link: '/contact',
@@ -170,12 +178,23 @@ function transformPianoModelToProduct(pianoModel: PianoModel, category: string):
       ogImage: pianoModel.image
     }
   }
+  
+  console.log(`✅ Piano model to product transformation complete - fields:`, Object.keys(transformed))
+  console.log(`📤 Key transformed fields:`, {
+    name: transformed.name,
+    title: transformed.title,
+    model: transformed.productData?.model,
+    description: transformed.description
+  })
+  return transformed
 }
 
 /**
  * Transform relevant Product data back to PianoModel data structure
  */
 function transformProductToPianoModel(product: Product): Partial<PianoModel> {
+  console.log(`🔄 Transforming product "${product.name}" back to piano model format`)
+  
   // Map product status to piano model status
   let pianoStatus: 'active' | 'discontinued' | 'coming-soon' | 'limited-edition' = 'active'
   if (product.status === 'discontinued') pianoStatus = 'discontinued'
@@ -183,7 +202,7 @@ function transformProductToPianoModel(product: Product): Partial<PianoModel> {
   else if (product.status === 'limited-edition') pianoStatus = 'limited-edition'
   // 'draft' and other statuses default to 'active'
   
-  return {
+  const transformed = {
     name: product.name,
     // Note: slug is no longer in PianoModel
     description: product.description,
@@ -196,7 +215,10 @@ function transformProductToPianoModel(product: Product): Partial<PianoModel> {
       msrp: product.price?.amount || undefined,
       salePrice: product.price?.saleAmount || undefined,
       priceText: product.price?.priceText || undefined,
-      showPrice: product.price?.showPrice !== false
+      showPrice: product.price?.showPrice !== false,
+      // Preserve other pricing fields that might exist
+      priceRange: product.price?.priceText || undefined,
+      contactForPricing: !product.price?.amount && !product.price?.saleAmount
     },
     
     // Transform finishes back
@@ -205,13 +227,35 @@ function transformProductToPianoModel(product: Product): Partial<PianoModel> {
       image: finish.image,
       priceModifier: finish.priceModifier || 0,
       available: finish.available !== false,
-      description: ''
+      description: '' // Default empty description
     })) || [],
+    
+    // Transform specifications back (if available from productData)
+    specifications: product.productData ? {
+      weight: product.productData.weight,
+      dimensions: product.productData.dimensions ? {
+        width: product.productData.dimensions.width,
+        depth: product.productData.dimensions.depth,
+        height: product.productData.dimensions.height
+      } : undefined
+      // Note: Other specs like keys, pedals, etc. are typically not updated from product side
+    } : undefined,
+    
+    // Transform model field
+    model: product.productData?.model || undefined,
     
     // Visibility settings
     featured: product.visibility?.featured || false,
     sortOrder: product.visibility?.sortOrder
   }
+  
+  // Filter out undefined values to avoid overwriting existing data unnecessarily
+  const cleanedTransformed = Object.fromEntries(
+    Object.entries(transformed).filter(([_, value]) => value !== undefined)
+  ) as Partial<PianoModel>
+  
+  console.log(`✅ Product to piano model transformation complete - fields:`, Object.keys(cleanedTransformed))
+  return cleanedTransformed
 }
 
 /**
@@ -294,7 +338,7 @@ export const pianoModelAfterChangeHook: CollectionAfterChangeHook<PianoModel> = 
           data: {
             product: createdProduct.id
           },
-          context: { preventPianoSync: true }
+          context: { preventPianoSync: true, linkingProducts: true }
         })
         
         console.log(`🔗 Updated piano model ${doc.id} with product reference ${createdProduct.id}`)
@@ -313,21 +357,48 @@ export const pianoModelAfterChangeHook: CollectionAfterChangeHook<PianoModel> = 
     } else if (operation === 'update' && doc.product) {
       // Update existing product
       console.log(`🔄 Updating existing product ${doc.product} for piano model ${doc.id}`)
+      console.log(`📋 Piano model data being synced:`, {
+        name: doc.name,
+        model: doc.model,
+        description: doc.description,
+        status: doc.status
+      })
       
       const transformedData = transformPianoModelToProduct(doc, category)
+      console.log(`📤 Transformed piano model data being sent to product:`, Object.keys(transformedData))
+      
+      const updateData = {
+        ...transformedData,
+        pianoModel: doc.id
+        // No slug update - let Products collection handle slug generation if name changed
+      }
+      
+      console.log(`📋 Final update data for product ${doc.product}:`, Object.keys(updateData))
+      console.log(`🔍 Critical fields being updated:`, {
+        name: updateData.name,
+        title: updateData.title,
+        productData_model: updateData.productData?.model,
+        description: updateData.description
+      })
       
       await payload.update({
         collection: 'products',
         id: String(doc.product),
-        data: {
-          ...transformedData,
-          pianoModel: doc.id
-          // No slug update - let Products collection handle slug generation if name changed
-        },
+        data: updateData,
         context: { preventProductSync: true }
       })
       
-      console.log(`✅ Updated product ${doc.product} for piano model ${doc.id}`)
+      console.log(`✅ Successfully updated product ${doc.product} for piano model ${doc.id}`)
+    } else if (operation === 'update' && !doc.product) {
+      console.log(`⚠️ Piano model ${doc.id} updated but has no linked product to sync with`)
+      console.log(`📋 Piano model details:`, {
+        name: doc.name,
+        model: doc.model,
+        autoGenerateProduct: doc.autoGenerateProduct,
+        productline: doc.productline
+      })
+    } else {
+      console.log(`ℹ️ Piano model operation: ${operation}, has product: ${!!doc.product}`)
     }
     
   } catch (error) {
@@ -347,7 +418,15 @@ export const pianoModelBeforeDeleteHook: CollectionBeforeDeleteHook = async ({
 }) => {
   const { payload } = req
   
+  // Prevent infinite loops
+  if (req.context?.preventPianoSync === true) {
+    console.log(`🔄 Skipping product cleanup for piano model ${id} - preventPianoSync context`)
+    return
+  }
+  
   try {
+    console.log(`🗑️ Piano Model ${id} being deleted - checking for linked product...`)
+    
     const pianoModel = await payload.findByID({
       collection: 'piano-models',
       id: String(id),
@@ -355,16 +434,21 @@ export const pianoModelBeforeDeleteHook: CollectionBeforeDeleteHook = async ({
     })
 
     if (pianoModel?.product) {
-      // Delete the associated product
+      console.log(`🔗 Found linked product ${pianoModel.product} - deleting...`)
+      
+      // Delete the associated product with context to prevent loops
       await payload.delete({
         collection: 'products',
-        id: String(pianoModel.product)
+        id: String(pianoModel.product),
+        context: { preventProductSync: true, cascadeDelete: true }
       })
       
-      console.log(`Deleted associated product ${pianoModel.product} for piano model ${id}`)
+      console.log(`✅ Deleted associated product ${pianoModel.product} for piano model ${id}`)
+    } else {
+      console.log(`ℹ️ Piano model ${id} has no linked product to delete`)
     }
   } catch (error) {
-    console.error(`Error in pianoModelBeforeDeleteHook for model ${id}:`, error)
+    console.error(`❌ Error in pianoModelBeforeDeleteHook for model ${id}:`, error)
     // Continue with deletion even if cleanup fails
   }
 }
@@ -378,8 +462,17 @@ export const productAfterChangeHook: CollectionAfterChangeHook<Product> = async 
   operation,
   req
 }) => {
+  console.log(`🛒 Product afterChange START: ${operation} operation for ${doc.name} (ID: ${doc.id})`)
+  console.log(`🔍 Product context:`, JSON.stringify(req.context || {}))
+  console.log(`📋 Product details:`, {
+    type: doc.type,
+    pianoModel: doc.pianoModel,
+    dataSource: doc.dataSource
+  })
+  
   // Prevent infinite loops
   if (req.context?.preventProductSync === true) {
+    console.log(`🔄 Skipping piano model sync for product ${doc.id} - preventProductSync context`)
     return
   }
 
@@ -387,12 +480,23 @@ export const productAfterChangeHook: CollectionAfterChangeHook<Product> = async 
 
   // Only sync if this is a piano product with a linked piano model
   if (doc.type !== 'piano' || !doc.pianoModel) {
+    console.log(`ℹ️ Product ${doc.id} is not a piano product or has no piano model link - no sync needed`)
     return
+  }
+  
+  // Sync based on data source - now more permissive
+  if (doc.dataSource === 'manual') {
+    console.log(`⚠️ Product ${doc.id} is manual-only - LIMITED sync to piano model (only basic fields)`)
+  } else {
+    console.log(`🔄 Product ${doc.id} allows full sync to piano model (dataSource: ${doc.dataSource})`)
   }
 
   try {
+    console.log(`🔄 Syncing product ${doc.id} changes back to piano model ${doc.pianoModel}`)
+    
     // Sync relevant changes back to piano model
     const transformedData = transformProductToPianoModel(doc)
+    console.log(`📤 Transformed data being sent to piano model:`, Object.keys(transformedData))
     
     await payload.update({
       collection: 'piano-models',
@@ -401,10 +505,10 @@ export const productAfterChangeHook: CollectionAfterChangeHook<Product> = async 
       context: { preventPianoSync: true }
     })
     
-    console.log(`Synced product ${doc.id} changes back to piano model ${doc.pianoModel}`)
+    console.log(`✅ Successfully synced product ${doc.id} changes back to piano model ${doc.pianoModel}`)
     
   } catch (error) {
-    console.error(`Error in productAfterChangeHook for product ${doc.id}:`, error)
+    console.error(`❌ Error in productAfterChangeHook for product ${doc.id}:`, error)
     // Don't throw - we don't want to break the product save operation
   }
 }
@@ -419,9 +523,15 @@ export const productBeforeChangeHook: CollectionBeforeChangeHook<Product> = asyn
 }) => {
   console.log(`🔍 productBeforeChangeHook: operation=${operation}, context=${JSON.stringify(req.context)}, productName=${data.name}`)
   
-  // Skip validation if called from within hooks to prevent loops
-  if (req.context?.preventProductSync || req.context?.preventPianoSync) {
-    console.log(`✅ Skipping validation due to context - preventProductSync: ${req.context?.preventProductSync}, preventPianoSync: ${req.context?.preventPianoSync}`)
+  // Skip validation if called from within hooks to prevent loops and conflicts
+  if (req.context?.preventProductSync || req.context?.preventPianoSync || req.context?.linkingProducts) {
+    console.log(`✅ Skipping full validation due to sync context - preventProductSync: ${req.context?.preventProductSync}, preventPianoSync: ${req.context?.preventPianoSync}, linkingProducts: ${req.context?.linkingProducts}`)
+    return data
+  }
+  
+  // Also skip complex validation if this is an auto-generated product being updated
+  if (data.dataSource === 'pianomodel' && operation === 'update') {
+    console.log(`✅ Skipping complex validation for auto-generated product update (dataSource: pianomodel)`)
     return data
   }
 
@@ -437,7 +547,7 @@ export const productBeforeChangeHook: CollectionBeforeChangeHook<Product> = asyn
       throw new Error('Non-piano products cannot be linked to piano models')
     }
 
-    // Validate unique pianoModel relationship
+    // Validate unique pianoModel relationship (one-to-one integrity)
     if (data.pianoModel) {
       const existing = await payload.find({
         collection: 'products',
@@ -453,9 +563,32 @@ export const productBeforeChangeHook: CollectionBeforeChangeHook<Product> = asyn
       if (existing.docs.length > 0) {
         throw new Error(`Another product (${existing.docs[0].name}) is already linked to this piano model. Each piano model can only be linked to one product.`)
       }
+      
+      // Basic validation: ensure the piano model exists
+      // Skip complex relationship validation during hook-triggered updates
+      try {
+        const pianoModel = await payload.findByID({
+          collection: 'piano-models',
+          id: String(data.pianoModel),
+          depth: 0
+        })
+        
+        if (!pianoModel) {
+          throw new Error(`Piano model with ID ${data.pianoModel} does not exist`)
+        }
+        
+        console.log(`✅ Piano model "${pianoModel.name}" exists and is valid for linking`)
+        
+      } catch (pianoError: any) {
+        if (pianoError.message.includes('does not exist')) {
+          throw pianoError
+        }
+        console.warn(`⚠️ Could not fully validate piano model relationship:`, pianoError.message)
+        // Don't throw other errors to avoid blocking legitimate updates
+      }
     }
 
-    // Validate unique slug
+    // Validate unique slug across both collections
     if (data.slug) {
       await validateUniqueSlug(
         data.slug, 
@@ -465,7 +598,7 @@ export const productBeforeChangeHook: CollectionBeforeChangeHook<Product> = asyn
     }
 
   } catch (error) {
-    console.error('Error in productBeforeChangeHook:', error)
+    console.error('❌ Error in productBeforeChangeHook:', error)
     throw error // Throw validation errors to prevent save
   }
   
@@ -479,31 +612,76 @@ export const productBeforeDeleteHook: CollectionBeforeDeleteHook = async ({
   id,
   req
 }) => {
+  console.log(`🚨 PRODUCT DELETE HOOK CALLED - ID: ${id}`)
+  console.log(`🔍 Request context:`, JSON.stringify(req.context || {}))
+  
   const { payload } = req
   
+  // Prevent infinite loops
+  if (req.context?.preventProductSync === true) {
+    console.log(`🔄 Skipping piano model cleanup for product ${id} - preventProductSync context`)
+    return
+  }
+  
   try {
+    console.log(`🗑️ Product ${id} being deleted - checking for linked piano model...`)
+    
     const product = await payload.findByID({
       collection: 'products',
-      id: String(id)
+      id: String(id),
+      depth: 0
     })
     
-    // If this is a piano product linked to a piano model, unlink it
+    console.log(`📋 Found product:`, {
+      id: product.id,
+      name: product.name,
+      type: product.type,
+      pianoModel: product.pianoModel,
+      dataSource: product.dataSource
+    })
+    
+    // Handle different scenarios based on cascade vs manual deletion and data source
     if (product.type === 'piano' && product.pianoModel) {
-      console.log(`🔗 Unlinking piano model ${product.pianoModel} from deleted product ${id}`)
+      const isCascadeDelete = req.context?.cascadeDelete === true
       
-      await payload.update({
-        collection: 'piano-models',
-        id: String(product.pianoModel),
-        data: {
-          product: null // Remove the product reference
-        },
-        context: { preventPianoSync: true }
-      })
-      
-      console.log(`✅ Unlinked piano model ${product.pianoModel} from product ${id}`)
+      if (isCascadeDelete) {
+        console.log(`🔄 Cascade delete - product ${id} deleted by piano model deletion, no cleanup needed`)
+      } else {
+        // Check the data source to determine cascade behavior
+        if (product.dataSource === 'pianomodel') {
+          console.log(`🗑️ Auto-generated product ${id} deleted - cascading delete to piano model ${product.pianoModel}`)
+          
+          // This is an auto-generated product, so delete the piano model too
+          await payload.delete({
+            collection: 'piano-models',
+            id: String(product.pianoModel),
+            context: { preventPianoSync: true, cascadeDelete: true }
+          })
+          
+          console.log(`✅ Cascade deleted piano model ${product.pianoModel} from auto-generated product ${id}`)
+        } else {
+          console.log(`🔗 Manual/hybrid product deletion - unlinking piano model ${product.pianoModel}`)
+          
+          // This is a manual/hybrid product, so just unlink the piano model
+          await payload.update({
+            collection: 'piano-models',
+            id: String(product.pianoModel),
+            data: {
+              product: null // Remove the product reference
+            },
+            context: { preventPianoSync: true }
+          })
+          
+          console.log(`✅ Unlinked piano model ${product.pianoModel} from manually deleted product ${id}`)
+        }
+      }
+    } else if (product.type === 'piano') {
+      console.log(`ℹ️ Piano product ${id} has no linked piano model to cleanup`)
+    } else {
+      console.log(`ℹ️ Non-piano product ${id} - no piano model cleanup needed`)
     }
   } catch (error) {
-    console.error(`Error in productBeforeDeleteHook for product ${id}:`, error)
+    console.error(`❌ Error in productBeforeDeleteHook for product ${id}:`, error)
     // Continue with deletion even if unlinking fails
   }
 }

@@ -28,17 +28,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const mainImageUrl = resolveMediaUrl(product.mainImage)
 
   return {
-    title: product.title || product.name,
+    title: product.name,
     description: product.description,
     openGraph: {
-      title: product.title || product.name,
+      title: product.name,
       description: product.description,
       images: mainImageUrl ? [{ url: mainImageUrl }] : [],
       type: 'website'
     },
     twitter: {
       card: 'summary_large_image',
-      title: product.title || product.name,
+      title: product.name,
       description: product.description,
       images: mainImageUrl ? [mainImageUrl] : [],
     }

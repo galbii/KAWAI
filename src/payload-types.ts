@@ -67,6 +67,7 @@ export interface Config {
   };
   blocks: {
     productShowcase: ProductShowcaseBlock;
+    productHero: ProductHeroBlock;
     hero: HeroBlock;
     textContent: TextContentBlock;
     imageGallery: ImageGalleryBlock;
@@ -687,10 +688,6 @@ export interface Product {
    */
   mainImage: string | Media;
   /**
-   * Product display title (can be different from name for SEO)
-   */
-  title: string;
-  /**
    * Short product description for listings and meta
    */
   description: string;
@@ -764,6 +761,7 @@ export interface Product {
   pageContent?:
     | (
         | ProductShowcaseBlock
+        | ProductHeroBlock
         | HeroBlock
         | TextContentBlock
         | ImageGalleryBlock
@@ -885,6 +883,61 @@ export interface Product {
   };
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductHeroBlock".
+ */
+export interface ProductHeroBlock {
+  /**
+   * Layout and display options for the product hero
+   */
+  layout?: {
+    /**
+     * Position of product image relative to content
+     */
+    imagePosition?: ('left' | 'right') | null;
+    /**
+     * Background color for the hero section
+     */
+    backgroundColor?: ('pearl' | 'white' | 'black') | null;
+    /**
+     * Show available finishes section
+     */
+    showFinishes?: boolean | null;
+    /**
+     * Show pricing information
+     */
+    showPrice?: boolean | null;
+    /**
+     * Show buy/contact button
+     */
+    showBuyButton?: boolean | null;
+  };
+  /**
+   * Optional overrides for product data (leave empty to use product document data)
+   */
+  overrides?: {
+    /**
+     * Override the product name with a custom title (optional)
+     */
+    customTitle?: string | null;
+    /**
+     * Override the product description with custom text (optional)
+     */
+    customDescription?: string | null;
+    /**
+     * Override the main product image (optional)
+     */
+    customImage?: (string | null) | Media;
+    /**
+     * Optional badge text (e.g., "Best Seller", "New", "Limited Edition")
+     */
+    badge?: string | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'productHero';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2235,7 +2288,6 @@ export interface ProductsSelect<T extends boolean = true> {
   category?: T;
   status?: T;
   mainImage?: T;
-  title?: T;
   description?: T;
   price?:
     | T

@@ -18,6 +18,7 @@ import { PianosPage } from './collections/PianosPage'
 import { Products } from './collections/Products'
 import {
   ProductShowcase,
+  ProductHero,
   Hero,
   TextContent,
   ImageGallery,
@@ -56,6 +57,7 @@ export default buildConfig({
   // Define blocks at root level for performance optimization using blockReferences
   blocks: [
     ProductShowcase,
+    ProductHero,
     Hero,
     TextContent,
     ImageGallery,

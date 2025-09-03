@@ -138,14 +138,6 @@ export const Products: CollectionConfig = {
               }
             },
             {
-              name: 'title',
-              type: 'text',
-              required: true,
-              admin: {
-                description: 'Product display title (can be different from name for SEO)'
-              }
-            },
-            {
               name: 'description',
               type: 'textarea',
               required: true,
@@ -302,6 +294,7 @@ export const Products: CollectionConfig = {
               type: 'blocks',
               blockReferences: [
                 'productShowcase',
+                'productHero',
                 'hero',
                 'textContent',
                 'imageGallery',

@@ -1,13 +1,11 @@
 import { Product } from '@/payload-types'
-import { populateBlockData } from '@/lib/blockDataPopulation'
+import { BlocksList } from '@/lib/blocks/BlockRenderer'
+import { BlockDebugger } from '@/components/debug/BlockDebugger'
 import { HeroBlock } from '@/components/blocks/HeroBlock'
 import { ProductShowcaseBlock } from '@/components/blocks/ProductShowcaseBlock'
-import { ImageGalleryBlock } from '@/components/blocks/ImageGalleryBlock'
 import { FeaturesListBlock } from '@/components/blocks/FeaturesListBlock'
 import { SpecificationsBlock } from '@/components/blocks/SpecificationsBlock'
-import { TextContentBlock } from '@/components/blocks/TextContentBlock'
 import { CallToActionBlock } from '@/components/blocks/CallToActionBlock'
-import { TestimonialsBlock } from '@/components/blocks/TestimonialsBlock'
 
 interface ProductPageRendererProps {
   product: Product
@@ -30,56 +28,13 @@ export function ProductPageRenderer({ product }: ProductPageRendererProps) {
 
   return (
     <div className="min-h-screen">
-      {product.pageContent.map((block: any, index: number) => {
-        // Populate block data with pianoModel integration
-        const populatedBlock = populateBlockData(block, block.blockType, product)
-        
-        return (
-          <div key={block.id || index}>
-            {renderBlock(populatedBlock, index)}
-          </div>
-        )
-      })}
+      <BlocksList blocks={product.pageContent} product={product} />
+      <BlockDebugger product={product} />
     </div>
   )
 }
 
-/**
- * Block Renderer - Routes to appropriate block component
- */
-function renderBlock(block: any, index: number) {
-  const blockType = block.blockType
-
-  switch (blockType) {
-    case 'hero':
-      return <HeroBlock {...block} key={`hero-${index}`} />
-    
-    case 'productShowcase':
-      return <ProductShowcaseBlock {...block} key={`showcase-${index}`} />
-    
-    case 'imageGallery':
-      return <ImageGalleryBlock {...block} key={`gallery-${index}`} />
-    
-    case 'featuresList':
-      return <FeaturesListBlock {...block} key={`features-${index}`} />
-    
-    case 'specifications':
-      return <SpecificationsBlock {...block} key={`specs-${index}`} />
-    
-    case 'textContent':
-      return <TextContentBlock {...block} key={`text-${index}`} />
-    
-    case 'callToAction':
-      return <CallToActionBlock {...block} key={`cta-${index}`} />
-    
-    case 'testimonials':
-      return <TestimonialsBlock {...block} key={`testimonials-${index}`} />
-    
-    default:
-      console.warn(`Unknown block type: ${blockType}`)
-      return null
-  }
-}
+// Block rendering is now handled by BlockRenderer utility
 
 /**
  * Basic Product Layout - Fallback when no pageContent is defined
