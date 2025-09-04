@@ -64,6 +64,25 @@ src/
 1. **Piano Models**: Edit `src/collections/PianoModels.ts`
 2. **Product Pages**: Use blocks in `src/blocks/`
 3. **Media**: Upload via admin at `/admin/collections/media`
+4. **🆕 Homepage Content**: Manage via `/admin/collections/home-page`
+
+### 🏠 HomePage Collection Management
+**Access**: `/admin/collections/home-page` (Singleton - only one homepage)
+
+**Sections Available**:
+- **Hero Section** - Location text, title components, CTAs, background video
+- **Showroom Location** - Address, hours, features, map integration  
+- **Piano Collection** - Featured models with YouTube video showcase
+- **Piano Gallery** - Piano categories with images and descriptions
+- **News Carousel** - Rotating news/content items with auto-play
+- **Contact Form** - Multi-step form configuration and benefits
+- **SEO & Meta** - Search optimization and social media tags
+
+**Key Features**:
+- ✅ **Fallback Support** - Components work with or without CMS data
+- ✅ **Media Integration** - Full R2/Cloudflare optimization support
+- ✅ **Live Updates** - Changes reflect immediately on homepage
+- ✅ **Type Safety** - Complete TypeScript integration
 
 ### Creating Components
 ```bash
@@ -252,23 +271,57 @@ generateLQIP(filename) =>
 
 ### Implementation Guidelines
 
-#### When Adding New Media Features
+#### **🆕 Preferred: Use getImagePropsWithFallback() Utility**
+**Location**: `src/lib/media/r2-utils.ts`
+
+For components that need CMS images with default fallbacks (recommended):
 ```tsx
-// ✅ Always use the unified pipeline
+import { getImagePropsWithFallback } from '@/lib/media/r2-utils';
+
+// ✅ BEST PRACTICE: Use utility function for CMS + default images
+const imageProps = getImagePropsWithFallback(
+  cmsImage,                    // Media | string | null (from CMS)
+  '/images/default/fallback.jpg', // Default image path
+  'gallery',                   // Preset: 'hero' | 'gallery' | 'thumbnail' | 'card'
+  {
+    fill: false,               // Optional: use fill vs width/height
+    className: 'object-cover',  // Optional: CSS classes
+    priority: false,           // Optional: priority loading
+    sizes: '(max-width: 768px) 100vw, 50vw' // Optional: responsive sizes
+  }
+);
+
+// Use with Next.js Image component
+<Image {...imageProps} alt="Description" />
+```
+
+**Benefits**:
+- ✅ **Automatic fallback** to default images when CMS image is missing
+- ✅ **Handles both** Media objects and string paths seamlessly  
+- ✅ **Eliminates duplication** - one function for all image scenarios
+- ✅ **Type safety** with full TypeScript support
+- ✅ **Consistent behavior** across all components
+
+#### Legacy: Direct getOptimizedImageProps Usage
+For simple cases without fallbacks:
+```tsx
+// ✅ Direct optimization (when you have guaranteed Media objects)
 const imageProps = getOptimizedImageProps(media, 'gallery')
 
-// ✅ Handle both Media objects and URLs
+// ✅ Handle both Media objects and URLs manually
 if (typeof media === 'object') {
   // Media object with .url, .alt, .width, .height
 } else {
   // String URL - will be optimized through same pipeline
 }
+```
 
-// ✅ Use appropriate presets
-'hero'      - Large hero images, landing pages
-'gallery'   - Product showcases, category images  
-'thumbnail' - Small previews, navigation
-'card'      - Product cards, listings
+#### Image Presets Available
+```tsx
+'hero'      - Large hero images, landing pages (1920px max)
+'gallery'   - Product showcases, category images (1200px max)  
+'thumbnail' - Small previews, navigation (250px max)
+'card'      - Product cards, listings (500px max)
 ```
 
 #### Environment Variables Required
@@ -305,7 +358,7 @@ Users → Media → Productlines → PianoModels → Products → Pages
 
 ### Data Hierarchy
 ```
-Users → Media → Productlines → PianoModels → Products → PianosPage
+Users → Media → Productlines → PianoModels → Products → PianosPage → HomePage
 ```
 
 ### Collection Guide
@@ -317,6 +370,7 @@ Users → Media → Productlines → PianoModels → Products → PianosPage
 | **PianoModels** | Individual pianos | `specs`, `pricing`, `gallery` |
 | **Products** | Dynamic pages | `blocks[]`, `pricing`, `seo` |
 | **PianosPage** | Main piano page | `hero`, `categories`, `cta` |
+| **🆕 HomePage** | Homepage content management | `heroSection`, `showroomSection`, `pianoCollectionSection`, `pianoGallerySection`, `newsCarouselSection`, `contactFormSection`, `seo` |
 
 ### Content Blocks Available
 | Block Type | Use Case | Key Props |
