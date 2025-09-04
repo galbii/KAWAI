@@ -25,8 +25,7 @@ interface Piano {
   image: string | Media;
   description: string;
   keyFeatures: string[];
-  productSlug?: string;
-  pianoModelId?: string;
+  // CONSOLIDATED: Remove pianoModelId and productSlug - now using direct product slug
 }
 
 interface Series {
@@ -60,45 +59,8 @@ interface SeriesCardProps {
 function SeriesCard({ series, index, categorySlug, isActive }: SeriesCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const isEven = index % 2 === 0;
-  const [pianoProductSlugs, setPianoProductSlugs] = useState<Record<string, string>>({});
 
-  // Fetch product slugs for pianos that have pianoModelId
-  useEffect(() => {
-    const fetchProductSlugs = async () => {
-      const slugsToFetch = series.pianos.filter(piano => 
-        piano.pianoModelId && !piano.productSlug && !pianoProductSlugs[piano.slug]
-      );
-
-      if (slugsToFetch.length === 0) return;
-
-      const newSlugs: Record<string, string> = {};
-      
-      for (const piano of slugsToFetch) {
-        try {
-          const response = await fetch(
-            `/api/products?where[pianoModel][equals]=${piano.pianoModelId}&limit=1&select[slug]=true`
-          );
-          
-          if (response.ok) {
-            const data = await response.json();
-            if (data.docs && data.docs.length > 0) {
-              newSlugs[piano.slug] = data.docs[0].slug;
-            }
-          }
-        } catch (error) {
-          console.error(`Failed to fetch product slug for ${piano.name}:`, error);
-        }
-      }
-
-      if (Object.keys(newSlugs).length > 0) {
-        setPianoProductSlugs(prev => ({ ...prev, ...newSlugs }));
-      }
-    };
-
-    if (isActive) {
-      fetchProductSlugs();
-    }
-  }, [isActive, series.pianos, pianoProductSlugs]);
+  // CONSOLIDATED: No longer need complex API fetching - product slug is directly available
 
   return (
     <AnimatePresence mode="wait">
@@ -183,11 +145,7 @@ function SeriesCard({ series, index, categorySlug, isActive }: SeriesCardProps) 
                   </h4>
                   <div className="grid gap-2">
                     {series.pianos.slice(0, 3).map((piano, pianoIndex) => {
-                      const productSlug = piano.productSlug || pianoProductSlugs[piano.slug];
-                      
-                      // Only render if we have a product slug
-                      if (!productSlug) return null;
-                      
+                      // CONSOLIDATED: Direct product slug access, no API lookup needed
                       return (
                         <motion.div
                           key={piano.slug}
@@ -196,7 +154,7 @@ function SeriesCard({ series, index, categorySlug, isActive }: SeriesCardProps) 
                           transition={{ duration: 0.4, delay: 0.8 + (pianoIndex * 0.1) }}
                         >
                           <Link
-                            href={`/products/${productSlug}`}
+                            href={`/products/${piano.slug}`}
                             className="flex items-center justify-between p-3 bg-white/50 border border-kawai-neutral/10 rounded-lg hover:bg-white hover:border-kawai-red/20 transition-all duration-300 group"
                           >
                             <div className="flex-1">

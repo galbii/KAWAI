@@ -4,7 +4,7 @@ import { CategoryHero } from "@/components/piano/category-hero";
 import { UnifiedPianoSeries } from "@/components/piano/unified-piano-series";
 import { useScrollAnimation, fadeUpClass, slideInClass, scaleInClass } from "@/lib/hooks/useScrollAnimation";
 import { useEffect, useRef, useState } from "react";
-import { getProductlines, transformProductlinesToSeries, getProductlinesWithPianoModels } from "@/lib/payload";
+import { getProductlines, transformProductlinesToSeries, getProductlinesWithProducts } from "@/lib/payload";
 import { Productline } from "@/lib/types";
 
 // Featured digital pianos - highlighting the best from each series
@@ -323,8 +323,8 @@ export default function DigitalPianosPage() {
     async function fetchProductlines() {
       try {
         setLoading(true);
-        // Use the function that fetches productlines WITH their piano models
-        const seriesWithPianos = await getProductlinesWithPianoModels('digital');
+        // Use the function that fetches productlines WITH their products via join field
+        const seriesWithPianos = await getProductlinesWithProducts('digital');
         
         if (seriesWithPianos.length > 0) {
           setSeries(seriesWithPianos);

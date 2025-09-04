@@ -54,8 +54,13 @@ export function BlockDebugger({ product }: BlockDebuggerProps) {
             <div className="mb-4 p-3 bg-gray-50 rounded">
               <h4 className="font-semibold">Product: {product.name}</h4>
               <p className="text-sm text-gray-600">
-                Type: {product.type} | Piano Model: {product.pianoModel ? '✓' : '✗'}
+                Type: {product.type} | Status: {product.status} | Category: {product.category}
               </p>
+              {product.productline && (
+                <p className="text-xs text-gray-500">
+                  Series: {typeof product.productline === 'object' ? product.productline.name : product.productline}
+                </p>
+              )}
             </div>
 
             {/* Validation Summary */}
@@ -106,10 +111,10 @@ export function BlockDebugger({ product }: BlockDebuggerProps) {
                           </div>
                         )}
 
-                        {/* Piano Model Link */}
-                        {block.pianoModel && (
+                        {/* Product Link */}
+                        {block.product && (
                           <div className="mb-2">
-                            <strong>Piano Model:</strong> {typeof block.pianoModel === 'string' ? block.pianoModel : '✓ Linked'}
+                            <strong>Product:</strong> {typeof block.product === 'string' ? block.product : '✓ Linked'}
                           </div>
                         )}
 

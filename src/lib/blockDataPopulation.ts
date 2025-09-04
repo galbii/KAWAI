@@ -4,30 +4,29 @@ import { resolveMediaUrl } from '@/lib/payload'
 /**
  * Block Data Population System
  * 
- * This system handles the 3 data source modes implemented by Agent 1:
+ * This system handles the 3 data source modes for consolidated Products:
  * 1. 'manual' - Use only manual block data
- * 2. 'pianomodel' - Use only PianoModel data  
- * 3. 'hybrid' - Use PianoModel data as base, override with manual data where provided
+ * 2. 'product' - Use product data (formerly 'pianomodel')  
+ * 3. 'hybrid' - Use product data as base, override with manual data where provided
  */
 
-// Type for block data with pianoModel relationship
-interface BlockWithPianoModel {
-  dataSource?: 'manual' | 'pianomodel' | 'hybrid' | null
-  pianoModel?: string | PianoModel | null
+// Type for block data with product relationship
+interface BlockWithProduct {
+  dataSource?: 'manual' | 'product' | 'pianomodel' | 'hybrid' | null
+  product?: string | Product | null
+  // Legacy support for pianoModel field (will map to product)
+  pianoModel?: string | Product | null
 }
 
-// Extract PianoModel from relationship field
-export function extractPianoModel(block: BlockWithPianoModel, product: Product): PianoModel | null {
+// Extract PianoModel from relationship field (legacy support)
+export function extractPianoModel(block: any, product: Product): PianoModel | null {
   // First check if block has a pianoModel relationship
   if (block.pianoModel && typeof block.pianoModel === 'object') {
     return block.pianoModel
   }
   
-  // Fall back to product's pianoModel relationship
-  if (product.pianoModel && typeof product.pianoModel === 'object') {
-    return product.pianoModel
-  }
-  
+  // Since we consolidated PianoModels into Products, return null
+  // The product itself now contains all the consolidated data
   return null
 }
 
@@ -72,46 +71,45 @@ interface HeroBlockData {
 
 export function populateHeroData(block: HeroBlockData, product: Product) {
   const dataSource = block.dataSource || 'manual'
-  const pianoModel = extractPianoModel(block, product)
 
   if (dataSource === 'manual') {
     // Return block data as-is
     return block
   }
 
-  if (dataSource === 'pianomodel' && pianoModel) {
-    // Use only PianoModel data
+  if (dataSource === 'pianomodel' && product.type === 'piano') {
+    // Use consolidated product data (formerly PianoModel data)
     return {
       ...block,
       content: {
-        title: pianoModel.name,
-        subtitle: pianoModel.shortDescription || '',
-        description: pianoModel.description,
-        // Keep manual CTA buttons as they're not in PianoModel
+        title: product.name,
+        subtitle: product.shortDescription || '',
+        description: product.description,
+        // Keep manual CTA buttons
         primaryCta: block.content?.primaryCta,
         secondaryCta: block.content?.secondaryCta
       },
       media: {
         ...block.media,
-        backgroundImage: pianoModel.image, // Use PianoModel main image
+        backgroundImage: product.mainImage, // Use product main image
       }
     }
   }
 
-  if (dataSource === 'hybrid' && pianoModel) {
-    // Use PianoModel as base, override with manual data where provided
+  if (dataSource === 'hybrid' && product.type === 'piano') {
+    // Use product data as base, override with manual data where provided
     return {
       ...block,
       content: {
-        title: block.content?.title || pianoModel.name,
-        subtitle: block.content?.subtitle || pianoModel.shortDescription || '',
-        description: block.content?.description || pianoModel.description,
+        title: block.content?.title || product.name,
+        subtitle: block.content?.subtitle || product.shortDescription || '',
+        description: block.content?.description || product.description,
         primaryCta: block.content?.primaryCta, // Always manual
         secondaryCta: block.content?.secondaryCta // Always manual
       },
       media: {
         ...block.media,
-        backgroundImage: block.media?.backgroundImage || pianoModel.image,
+        backgroundImage: block.media?.backgroundImage || product.mainImage,
       }
     }
   }
@@ -158,32 +156,31 @@ interface ProductShowcaseBlockData {
 
 export function populateProductShowcaseData(block: ProductShowcaseBlockData, product: Product) {
   const dataSource = block.dataSource || 'manual'
-  const pianoModel = extractPianoModel(block, product)
 
   if (dataSource === 'manual') {
     return block
   }
 
-  if (dataSource === 'pianomodel' && pianoModel) {
-    // Use only PianoModel data
+  if (dataSource === 'pianomodel' && product.type === 'piano') {
+    // Use consolidated product data
     return {
       ...block,
       product: {
-        image: pianoModel.image,
-        title: pianoModel.name,
-        description: pianoModel.description,
+        image: product.mainImage,
+        title: product.name,
+        description: product.description,
         price: {
-          currency: pianoModel.pricing?.currency,
-          amount: pianoModel.pricing?.msrp,
-          saleAmount: pianoModel.pricing?.salePrice,
-          priceText: pianoModel.pricing?.priceText
+          currency: product.price?.currency,
+          amount: product.price?.msrp,
+          saleAmount: product.price?.salePrice,
+          priceText: product.price?.priceText
         },
-        finishes: pianoModel.availableFinishes?.map(finish => ({
+        finishes: product.finishes?.map(finish => ({
           name: finish.name || '',
           image: finish.image,
           priceModifier: finish.priceModifier
         })),
-        // Keep manual buy button as it's not in PianoModel schema
+        // Keep manual buy button
         buyButton: block.product?.buyButton,
         badge: block.product?.badge,
         inStock: block.product?.inStock
@@ -191,21 +188,21 @@ export function populateProductShowcaseData(block: ProductShowcaseBlockData, pro
     }
   }
 
-  if (dataSource === 'hybrid' && pianoModel) {
-    // Use PianoModel as base, override with manual data where provided
+  if (dataSource === 'hybrid' && product.type === 'piano') {
+    // Use product data as base, override with manual data where provided
     return {
       ...block,
       product: {
-        image: block.product?.image || pianoModel.image,
-        title: block.product?.title || pianoModel.name,
-        description: block.product?.description || pianoModel.description,
+        image: block.product?.image || product.mainImage,
+        title: block.product?.title || product.name,
+        description: block.product?.description || product.description,
         price: {
-          currency: block.product?.price?.currency || pianoModel.pricing?.currency,
-          amount: block.product?.price?.amount || pianoModel.pricing?.msrp,
-          saleAmount: block.product?.price?.saleAmount || pianoModel.pricing?.salePrice,
-          priceText: block.product?.price?.priceText || pianoModel.pricing?.priceText
+          currency: block.product?.price?.currency || product.price?.currency,
+          amount: block.product?.price?.amount || product.price?.msrp,
+          saleAmount: block.product?.price?.saleAmount || product.price?.salePrice,
+          priceText: block.product?.price?.priceText || product.price?.priceText
         },
-        finishes: block.product?.finishes || pianoModel.availableFinishes?.map(finish => ({
+        finishes: block.product?.finishes || product.finishes?.map(finish => ({
           name: finish.name || '',
           image: finish.image,
           priceModifier: finish.priceModifier
@@ -239,18 +236,17 @@ interface ImageGalleryBlockData {
 
 export function populateImageGalleryData(block: ImageGalleryBlockData, product: Product) {
   const dataSource = block.dataSource || 'manual'
-  const pianoModel = extractPianoModel(block, product)
 
   if (dataSource === 'manual') {
     return block
   }
 
-  if (dataSource === 'pianomodel' && pianoModel) {
-    // PianoModel no longer has gallery field - just use main image
+  if (dataSource === 'pianomodel' && product.type === 'piano') {
+    // Use product main image for gallery
     const galleryImages = [{
-      image: pianoModel.image,
-      caption: `${pianoModel.name} main image`,
-      alt: `${pianoModel.name} main image`
+      image: product.mainImage,
+      caption: `${product.name} main image`,
+      alt: `${product.name} main image`
     }]
 
     return {
@@ -259,16 +255,16 @@ export function populateImageGalleryData(block: ImageGalleryBlockData, product: 
     }
   }
 
-  if (dataSource === 'hybrid' && pianoModel) {
-    // Use manual images if provided, otherwise use PianoModel main image
+  if (dataSource === 'hybrid' && product.type === 'piano') {
+    // Use manual images if provided, otherwise use product main image
     if (block.images && block.images.length > 0) {
       return block // Use manual images
     }
 
     const galleryImages = [{
-      image: pianoModel.image,
-      caption: `${pianoModel.name} main image`,
-      alt: `${pianoModel.name} main image`
+      image: product.mainImage,
+      caption: `${product.name} main image`,
+      alt: `${product.name} main image`
     }]
 
     return {
@@ -298,18 +294,17 @@ interface FeaturesListBlockData {
 
 export function populateFeaturesListData(block: FeaturesListBlockData, product: Product) {
   const dataSource = block.dataSource || 'manual'
-  const pianoModel = extractPianoModel(block, product)
 
   if (dataSource === 'manual') {
     return block
   }
 
-  if (dataSource === 'pianomodel' && pianoModel) {
-    // Use PianoModel key features
-    const features = pianoModel.keyFeatures?.map(kf => ({
+  if (dataSource === 'pianomodel' && product.type === 'piano') {
+    // Use product key features
+    const features = product.keyFeatures?.map(kf => ({
       icon: 'music', // Default icon
       title: kf.feature,
-      description: '' // PianoModel doesn't have feature descriptions
+      description: '' // Basic feature, no description
     })) || []
 
     return {
@@ -318,13 +313,13 @@ export function populateFeaturesListData(block: FeaturesListBlockData, product: 
     }
   }
 
-  if (dataSource === 'hybrid' && pianoModel) {
-    // Use manual features if provided, otherwise use PianoModel features
+  if (dataSource === 'hybrid' && product.type === 'piano') {
+    // Use manual features if provided, otherwise use product features
     if (block.features && block.features.length > 0) {
       return block // Use manual features
     }
 
-    const features = pianoModel.keyFeatures?.map(kf => ({
+    const features = product.keyFeatures?.map(kf => ({
       icon: 'music', // Default icon
       title: kf.feature,
       description: ''
@@ -359,15 +354,14 @@ interface SpecificationsBlockData {
 
 export function populateSpecificationsData(block: SpecificationsBlockData, product: Product) {
   const dataSource = block.dataSource || 'manual'
-  const pianoModel = extractPianoModel(block, product)
 
   if (dataSource === 'manual') {
     return block
   }
 
-  if (dataSource === 'pianomodel' && pianoModel && pianoModel.specifications) {
-    // Transform PianoModel specifications into block format
-    const specs = pianoModel.specifications
+  if (dataSource === 'pianomodel' && product.type === 'piano' && product.specifications) {
+    // Transform product specifications into block format
+    const specs = product.specifications
     const specifications = [
       {
         category: 'General Specifications',
@@ -402,8 +396,8 @@ export function populateSpecificationsData(block: SpecificationsBlockData, produ
     }
   }
 
-  if (dataSource === 'hybrid' && pianoModel) {
-    // Use manual specs if provided, otherwise use PianoModel specs
+  if (dataSource === 'hybrid' && product.type === 'piano') {
+    // Use manual specs if provided, otherwise use product specs
     if (block.specifications && block.specifications.length > 0) {
       return block // Use manual specifications
     }

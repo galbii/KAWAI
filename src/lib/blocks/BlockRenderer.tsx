@@ -92,7 +92,7 @@ export function BlockRenderer({ block, index, product }: BlockRendererProps) {
         blockId: block.id,
         dataSource: block.dataSource,
         hasProduct: !!product,
-        hasPianoModel: !!(product.pianoModel && typeof product.pianoModel === 'object')
+        hasProductline: !!(product.productline && typeof product.productline === 'object')
       })
     }
 

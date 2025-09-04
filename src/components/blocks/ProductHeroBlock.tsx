@@ -71,32 +71,20 @@ export function ProductHeroBlock({
   const displayTitle = overrides.customTitle || product.name
   const displayDescription = overrides.customDescription || product.description
   
-  // Get model from linked piano model document
-  const getModelDisplay = () => {
-    if (typeof product.pianoModel === 'object' && product.pianoModel) {
-      return product.pianoModel.model || product.pianoModel.name
-    }
-    return null
-  }
+  // CONSOLIDATED: Use the new root-level model field
+  const modelDisplay = product.model || product.name
   
-  const modelDisplay = getModelDisplay()
-  
-  // Get key features from linked piano model document
-  const getKeyFeatures = () => {
-    if (typeof product.pianoModel === 'object' && product.pianoModel && product.pianoModel.keyFeatures) {
-      return product.pianoModel.keyFeatures.slice(0, 3).map(feature => feature.feature)
-    }
-    // Fallback features if no piano model linked
-    return [
-      "Millennium III Hybrid Action Technology", 
-      "Hand-selected premium soundboard materials",
-      "Professional-grade KAWAI precision craftsmanship"
-    ]
-  }
-  
-  const keyFeatures = getKeyFeatures()
+  // CONSOLIDATED: Direct access to key features from Product
+  const keyFeatures = product.keyFeatures 
+    ? product.keyFeatures.slice(0, 3).map((feature: any) => feature.feature)
+    : [
+        "Millennium III Hybrid Action Technology", 
+        "Hand-selected premium soundboard materials",
+        "Professional-grade KAWAI precision craftsmanship"
+      ]
   const hasFinishes = product.finishes && product.finishes.length > 0
-  const hasPrice = product.price && (product.price.amount || product.price.priceText)
+  // CONSOLIDATED: Updated price field names (msrp instead of amount)
+  const hasPrice = product.price && (product.price.msrp || product.price.priceText)
   
   // Get display image - priority: custom override > selected finish image > main product image
   const getDisplayImage = () => {
@@ -154,7 +142,8 @@ export function ProductHeroBlock({
       return product.price.priceText
     }
     
-    if (!product.price.amount) {
+    // CONSOLIDATED: Updated to use msrp instead of amount
+    if (!product.price.msrp) {
       return 'Contact for pricing'
     }
     
@@ -163,13 +152,14 @@ export function ProductHeroBlock({
     const symbol = currencySymbols[currency] || '$'
     
     // Calculate price with finish modifier (only if a finish is selected)
-    const basePrice = product.price.amount
+    const basePrice = product.price.msrp
     const finishModifier = hasFinishes && selectedFinish >= 0 && product.finishes![selectedFinish]?.priceModifier || 0
     const adjustedPrice = basePrice + finishModifier
     const mainPrice = `${symbol}${adjustedPrice.toLocaleString()}`
     
-    if (product.price.saleAmount) {
-      const adjustedSalePrice = product.price.saleAmount + finishModifier
+    // CONSOLIDATED: Updated to use salePrice instead of saleAmount
+    if (product.price.salePrice) {
+      const adjustedSalePrice = product.price.salePrice + finishModifier
       const salePrice = `${symbol}${adjustedSalePrice.toLocaleString()}`
       const savings = adjustedPrice - adjustedSalePrice
       return (
@@ -247,11 +237,18 @@ export function ProductHeroBlock({
   
   const statusBadge = getStatusBadge()
   
-  // Debug log the incoming product data (after all variables are initialized)
-  console.log('ProductHeroBlock - Product data:', {
+  // CONSOLIDATED: Debug log with new consolidated structure
+  console.log('ProductHeroBlock - Product data (consolidated structure):', {
     product,
-    pianoModel: product?.pianoModel,
-    pianoModelKeyFeatures: typeof product?.pianoModel === 'object' ? product?.pianoModel?.keyFeatures : null,
+    keyFeatures: product?.keyFeatures,
+    // Consolidated fields (now at root level)
+    model: product?.model,
+    series: product?.series,
+    rating: product?.rating,
+    reviews: product?.reviews,
+    badge: product?.badge,
+    highlight: product?.highlight,
+    specifications: product?.specifications,
     buyButton: product?.buyButton,
     price: product?.price,
     finishes: product?.finishes,
@@ -368,7 +365,7 @@ export function ProductHeroBlock({
                   <div className={cn("text-2xl lg:text-3xl font-semibold", textColorClass)}>
                     {formatPrice()}
                   </div>
-                  {product.price?.saleAmount && (
+                  {product.price?.salePrice && (
                     <Badge className="bg-emerald-500 text-white px-3 py-1 text-xs font-medium">
                       Sale
                     </Badge>

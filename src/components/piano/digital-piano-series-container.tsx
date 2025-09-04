@@ -1,5 +1,5 @@
 import { UnifiedPianoSeries } from './unified-piano-series'
-import { getProductlinesWithPianoModelsServer } from '@/lib/payload-server'
+import { getProductlinesWithProductsServer } from '@/lib/payload-server'
 
 // Hardcoded fallback data in case CMS is unavailable
 const fallbackDigitalPianoSeries = [
@@ -54,8 +54,8 @@ const fallbackDigitalPianoSeries = [
 ]
 
 export async function DigitalPianoSeriesContainer() {
-  // Fetch productlines with their piano models from CMS
-  const series = await getProductlinesWithPianoModelsServer('digital')
+  // Fetch productlines with their products via join field from CMS
+  const series = await getProductlinesWithProductsServer('digital')
   
   // Use fallback only if no data from CMS
   const finalSeries = series.length > 0 ? series : fallbackDigitalPianoSeries

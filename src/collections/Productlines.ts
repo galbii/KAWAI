@@ -110,14 +110,14 @@ export const Productlines: CollectionConfig = {
       ]
     },
     
-    // Related Piano Models (Virtual Join Field)
+    // Related Products (Virtual Join Field)
     {
-      name: 'pianoModels',
+      name: 'products',
       type: 'join',
-      collection: 'piano-models',
+      collection: 'products',
       on: 'productline',
       admin: {
-        description: 'Piano models in this series (automatically populated)'
+        description: 'Products in this series (automatically populated)'
       }
     },
     

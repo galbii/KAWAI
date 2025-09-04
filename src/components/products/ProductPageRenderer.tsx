@@ -14,11 +14,10 @@ interface ProductPageRendererProps {
 /**
  * ProductPageRenderer
  * 
- * Renders Product pages with dynamic block content that integrates Agent 1's
- * pianoModel relationship system. Supports 3 data source modes:
- * - manual: Use only block data
- * - pianomodel: Use only PianoModel data
- * - hybrid: Use PianoModel as base, override with block data
+ * Renders Product pages with dynamic block content using the consolidated
+ * Product collection structure. Supports different product types:
+ * - piano: Full feature set with specifications and finishes
+ * - accessory/software/other: Adapted layouts with appropriate CTAs
  */
 export function ProductPageRenderer({ product }: ProductPageRendererProps) {
   // If no page content, render a basic product layout
@@ -38,18 +37,19 @@ export function ProductPageRenderer({ product }: ProductPageRendererProps) {
 
 /**
  * Basic Product Layout - Fallback when no pageContent is defined
- * Creates a sensible default layout using Product and PianoModel data
+ * Creates a sensible default layout that adapts to different product types
  */
 function BasicProductLayout({ product }: { product: Product }) {
-  const pianoModel = typeof product.pianoModel === 'object' ? product.pianoModel : null
+  const isPiano = product.type === 'piano'
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
+      {/* Hero Section - Adapted for product type */}
       <HeroBlock
-        dataSource="pianomodel"
-        pianoModel={pianoModel}
+        dataSource="manual"
         content={{
+          title: product.name,
+          description: product.description,
           primaryCta: {
             text: product.buyButton?.text || "Learn More",
             link: product.buyButton?.link || "#specifications",
@@ -58,6 +58,7 @@ function BasicProductLayout({ product }: { product: Product }) {
         }}
         media={{
           type: "image",
+          backgroundImage: product.mainImage,
           overlay: {
             enable: true,
             color: "dark",
@@ -72,26 +73,34 @@ function BasicProductLayout({ product }: { product: Product }) {
         }}
       />
 
-      {/* Product Showcase */}
+      {/* Product Showcase - Adapted for product type */}
       <ProductShowcaseBlock
-        dataSource="pianomodel"
-        pianoModel={pianoModel}
+        dataSource="manual"
         product={{
+          name: product.name,
+          description: product.description,
+          image: product.mainImage,
+          price: product.price ? {
+            currency: product.price.currency,
+            amount: product.price.msrp,
+            saleAmount: product.price.salePrice,
+            priceText: product.price.priceText
+          } : undefined,
+          finishes: isPiano ? product.finishes : undefined,
           buyButton: product.buyButton
         }}
         layout={{
           imagePosition: "left",
-          showFinishes: true,
+          showFinishes: isPiano,
           showPrice: true,
           compact: false
         }}
       />
 
-      {/* Features List */}
-      {pianoModel?.keyFeatures && pianoModel.keyFeatures.length > 0 && (
+      {/* Features List - Only show for pianos with features */}
+      {isPiano && product.keyFeatures && product.keyFeatures.length > 0 && (
         <FeaturesListBlock
-          dataSource="pianomodel"
-          pianoModel={pianoModel}
+          dataSource="manual"
           layout={{
             columns: 2,
             showIcons: true,
@@ -100,13 +109,10 @@ function BasicProductLayout({ product }: { product: Product }) {
         />
       )}
 
-      {/* Image Gallery - Now handled by Product pageContent blocks */}
-
-      {/* Specifications */}
-      {pianoModel?.specifications && (
+      {/* Specifications - Only show for pianos with specifications */}
+      {isPiano && product.specifications && (
         <SpecificationsBlock
-          dataSource="pianomodel"
-          pianoModel={pianoModel}
+          dataSource="manual"
           layout={{
             columns: 2,
             showCategories: true,
@@ -115,14 +121,16 @@ function BasicProductLayout({ product }: { product: Product }) {
         />
       )}
 
-      {/* Call to Action */}
+      {/* Call to Action - Adapted for product type */}
       <CallToActionBlock
         content={{
-          title: `Experience the ${product.name}`,
-          description: "Visit our showroom to hear and feel this exceptional instrument in person.",
+          title: isPiano ? `Experience the ${product.name}` : `Get Your ${product.name}`,
+          description: isPiano 
+            ? "Visit our showroom to hear and feel this exceptional instrument in person."
+            : "Contact us to learn more about this product and how it can enhance your musical journey.",
           primaryCta: {
-            text: "Schedule Visit",
-            link: "/showroom",
+            text: isPiano ? "Schedule Visit" : "Get More Info",
+            link: isPiano ? "/showroom" : "/contact",
             style: "primary"
           },
           secondaryCta: {

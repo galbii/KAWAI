@@ -1,5 +1,4 @@
 import type { CollectionConfig } from 'payload'
-import { pianoModelAfterChangeHook, pianoModelBeforeDeleteHook } from '../lib/hooks/product-generation'
 // import { 
 //   isPublic,
 //   canManageInventoryAtSites,
@@ -384,8 +383,7 @@ export const PianoModels: CollectionConfig = {
         
         return data
       }
-    ],
-    afterChange: [pianoModelAfterChangeHook],
-    beforeDelete: [pianoModelBeforeDeleteHook]
+    ]
+    // NOTE: Removed product-generation hooks during consolidation
   }
 }

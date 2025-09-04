@@ -1,9 +1,4 @@
 import type { CollectionConfig } from 'payload'
-import { 
-  productAfterChangeHook, 
-  productBeforeChangeHook,
-  productBeforeDeleteHook 
-} from '../lib/hooks/product-generation'
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -15,7 +10,7 @@ export const Products: CollectionConfig = {
     group: 'Products',
     defaultColumns: ['name', 'type', 'category', 'status', 'updatedAt'],
     useAsTitle: 'name',
-    description: 'Manage products with dynamic page building capabilities using blocks',
+    description: 'Unified product management - pianos, accessories, and other products with dynamic page building',
   },
   access: {
     read: () => true, // Public read access for frontend
@@ -35,50 +30,16 @@ export const Products: CollectionConfig = {
               name: 'type',
               type: 'select',
               required: true,
-              defaultValue: 'other',
+              defaultValue: 'piano',
               options: [
                 { label: 'Piano', value: 'piano' },
+                { label: 'Accessory', value: 'accessory' },
+                { label: 'Software', value: 'software' },
                 { label: 'Other Product', value: 'other' }
               ],
               admin: {
-                description: 'Product type determines linking behavior and available features',
+                description: 'Product type determines available features and data structure',
                 position: 'sidebar'
-              }
-            },
-            // PianoModel Relationship - Auto-generates content when linked
-            {
-              name: 'pianoModel',
-              type: 'relationship',
-              relationTo: 'piano-models',
-              admin: {
-                description: 'Link to piano model for automatic data population in blocks. When linked, some product data will auto-sync with the piano model.',
-                position: 'sidebar',
-                condition: (data) => data.type === 'piano'
-              },
-              validate: (val: any, { data }: any) => {
-                if (data.type === 'piano' && !val) {
-                  return 'Piano products must be linked to a piano model'
-                }
-                if (data.type !== 'piano' && val) {
-                  return 'Non-piano products cannot be linked to piano models'
-                }
-                return true
-              }
-            },
-            // Data Source Mode - Controls how content is managed
-            {
-              name: 'dataSource',
-              type: 'select',
-              defaultValue: 'manual',
-              options: [
-                { label: 'Manual - Full manual control', value: 'manual' },
-                { label: 'Piano Model - Auto-sync from piano model', value: 'pianomodel' },
-                { label: 'Hybrid - Manual with piano model fallback', value: 'hybrid' }
-              ],
-              admin: {
-                description: 'How this product gets its content: Manual (independent), Piano Model (auto-synced), or Hybrid (manual with fallbacks)',
-                position: 'sidebar',
-                condition: (data) => data.type === 'piano' && !!data.pianoModel
               }
             },
             {
@@ -132,9 +93,9 @@ export const Products: CollectionConfig = {
               name: 'mainImage',
               type: 'upload',
               relationTo: 'media',
-              required: true,
+              required: false,
               admin: {
-                description: 'Primary product image'
+                description: 'Primary product image (optional)'
               }
             },
             {
@@ -142,7 +103,15 @@ export const Products: CollectionConfig = {
               type: 'textarea',
               required: true,
               admin: {
-                description: 'Short product description for listings and meta'
+                description: 'Product description for listings and meta'
+              }
+            },
+            // CONSOLIDATED: Added shortDescription from PianoModel
+            {
+              name: 'shortDescription',
+              type: 'text',
+              admin: {
+                description: 'Short description for compact displays and listings'
               }
             },
             {
@@ -160,18 +129,27 @@ export const Products: CollectionConfig = {
                     { label: 'CAD (C$)', value: 'CAD' }
                   ]
                 },
+                // CONSOLIDATED: Renamed amount -> msrp, saleAmount -> salePrice to match PianoModel
                 {
-                  name: 'amount',
+                  name: 'msrp',
                   type: 'number',
                   admin: {
-                    description: 'Regular price (leave empty for "Contact for pricing")'
+                    description: 'MSRP (Manufacturer Suggested Retail Price)'
                   }
                 },
                 {
-                  name: 'saleAmount',
+                  name: 'salePrice',
                   type: 'number',
                   admin: {
-                    description: 'Sale price (optional)'
+                    description: 'Sale price if different from MSRP'
+                  }
+                },
+                // CONSOLIDATED: Added priceRange from PianoModel
+                {
+                  name: 'priceRange',
+                  type: 'text',
+                  admin: {
+                    description: 'Price range text (e.g., "$15,000 - $20,000")'
                   }
                 },
                 {
@@ -179,6 +157,15 @@ export const Products: CollectionConfig = {
                   type: 'text',
                   admin: {
                     description: 'Custom price text (e.g., "Starting from", "Contact for pricing")'
+                  }
+                },
+                // CONSOLIDATED: Added contactForPricing from PianoModel
+                {
+                  name: 'contactForPricing',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Check if pricing is by contact only'
                   }
                 },
                 {
@@ -232,11 +219,207 @@ export const Products: CollectionConfig = {
                   admin: {
                     description: 'Is this finish currently available?'
                   }
+                },
+                // CONSOLIDATED: Added description field from PianoModel
+                {
+                  name: 'description',
+                  type: 'textarea',
+                  admin: {
+                    description: 'Optional finish description'
+                  }
                 }
               ],
               admin: {
-                description: 'Available finish options'
+                description: 'Available finish options',
+                condition: (data) => data.type === 'piano'
               }
+            },
+            // CONSOLIDATED: Productline relationship from PianoModel
+            {
+              name: 'productline',
+              type: 'relationship',
+              relationTo: 'productlines',
+              admin: {
+                description: 'The product line/series this product belongs to',
+                condition: (data) => data.type === 'piano'
+              },
+              validate: (val: any, { data }: any) => {
+                if (data.type === 'piano' && !val) {
+                  return 'Piano products must be linked to a product line'
+                }
+                if (data.type !== 'piano' && val) {
+                  return 'Non-piano products cannot be linked to product lines'
+                }
+                return true
+              }
+            },
+            // CONSOLIDATED: Series name (from productData, moved to root)
+            {
+              name: 'series',
+              type: 'text',
+              admin: {
+                description: 'Product series/collection (auto-populated for pianos)',
+                readOnly: true
+              }
+            },
+            // CONSOLIDATED: Model identifier (from productData, moved to root)
+            {
+              name: 'model',
+              type: 'text',
+              admin: {
+                description: 'Product model number/identifier'
+              }
+            },
+            // CONSOLIDATED: Component data (moved to root level)
+            {
+              name: 'rating',
+              type: 'number',
+              min: 0,
+              max: 5,
+              admin: {
+                description: 'Customer rating (0-5 stars)',
+                condition: (data) => data.type === 'piano'
+              }
+            },
+            {
+              name: 'reviews',
+              type: 'number',
+              min: 0,
+              admin: {
+                description: 'Number of customer reviews',
+                condition: (data) => data.type === 'piano'
+              }
+            },
+            {
+              name: 'badge',
+              type: 'text',
+              admin: {
+                description: 'Optional badge text (e.g., "Best Seller", "Featured")',
+                condition: (data) => data.type === 'piano'
+              }
+            },
+            {
+              name: 'highlight',
+              type: 'text',
+              admin: {
+                description: 'Optional highlight text for special promotions',
+                condition: (data) => data.type === 'piano'
+              }
+            },
+            {
+              name: 'brand',
+              type: 'text',
+              defaultValue: 'Kawai',
+              admin: {
+                description: 'Product brand/manufacturer'
+              }
+            },
+            // CONSOLIDATED: Key features from PianoModel
+            {
+              name: 'keyFeatures',
+              type: 'array',
+              required: false,
+              minRows: 0,
+              labels: {
+                singular: 'Key Feature',
+                plural: 'Key Features',
+              },
+              admin: {
+                description: 'Main selling points and key features',
+                condition: (data) => data.type === 'piano'
+              },
+              fields: [
+                {
+                  name: 'feature',
+                  type: 'text',
+                  required: true
+                }
+              ]
+            },
+            // CONSOLIDATED: Unified specifications (merged pianoSpecs + productData)
+            {
+              name: 'specifications',
+              type: 'group',
+              admin: {
+                description: 'Complete product specifications and technical details',
+                condition: (data) => data.type === 'piano'
+              },
+              fields: [
+                // Piano Technical Specs
+                {
+                  name: 'keys',
+                  type: 'number',
+                  admin: { description: 'Number of keys' }
+                },
+                {
+                  name: 'pedals',
+                  type: 'number',
+                  admin: { description: 'Number of pedals' }
+                },
+                {
+                  name: 'voices',
+                  type: 'number',
+                  admin: { description: 'Number of voices/sounds' }
+                },
+                {
+                  name: 'polyphony',
+                  type: 'number',
+                  admin: { description: 'Maximum polyphony' }
+                },
+                {
+                  name: 'actionType',
+                  type: 'text',
+                  admin: { description: 'Action technology (e.g., "Grand Feel III")' }
+                },
+                {
+                  name: 'soundEngine',
+                  type: 'text',
+                  admin: { description: 'Sound engine technology' }
+                },
+                // Physical Specifications
+                {
+                  name: 'dimensions',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'width',
+                      type: 'text',
+                      admin: { description: 'Width (e.g., "145cm", "57 inches")' }
+                    },
+                    {
+                      name: 'depth',
+                      type: 'text',
+                      admin: { description: 'Depth (e.g., "46cm", "18 inches")' }
+                    },
+                    {
+                      name: 'height',
+                      type: 'text',
+                      admin: { description: 'Height (e.g., "88cm", "35 inches")' }
+                    }
+                  ]
+                },
+                {
+                  name: 'weight',
+                  type: 'text',
+                  admin: { description: 'Product weight (e.g., "68kg", "150 lbs")' }
+                },
+                // Product Metadata
+                {
+                  name: 'sku',
+                  type: 'text',
+                  admin: { description: 'Stock Keeping Unit (SKU)' }
+                },
+                {
+                  name: 'warranty',
+                  type: 'text',
+                  admin: { description: 'Warranty information' }
+                },
+                {
+                  name: 'origin',
+                  type: 'text',
+                  admin: { description: 'Country of manufacture' }
+                }
+              ]
             },
             {
               name: 'buyButton',
@@ -284,6 +467,7 @@ export const Products: CollectionConfig = {
           ]
         },
 
+
         // Page Content Tab - Blocks
         {
           label: 'Page Content',
@@ -311,99 +495,6 @@ export const Products: CollectionConfig = {
           ]
         },
 
-        // Product Data Tab
-        {
-          label: 'Product Data',
-          description: 'Additional product information and metadata',
-          fields: [
-            {
-              name: 'productData',
-              type: 'group',
-              fields: [
-                {
-                  name: 'model',
-                  type: 'text',
-                  admin: {
-                    description: 'Product model number'
-                  }
-                },
-                {
-                  name: 'brand',
-                  type: 'text',
-                  defaultValue: 'Kawai',
-                  admin: {
-                    description: 'Product brand'
-                  }
-                },
-                {
-                  name: 'series',
-                  type: 'text',
-                  admin: {
-                    description: 'Product series/collection'
-                  }
-                },
-                {
-                  name: 'sku',
-                  type: 'text',
-                  admin: {
-                    description: 'Stock Keeping Unit (SKU)'
-                  }
-                },
-                {
-                  name: 'weight',
-                  type: 'text',
-                  admin: {
-                    description: 'Product weight (e.g., "68kg", "150 lbs")'
-                  }
-                },
-                {
-                  name: 'dimensions',
-                  type: 'group',
-                  fields: [
-                    {
-                      name: 'width',
-                      type: 'text',
-                      admin: {
-                        description: 'Width (e.g., "145cm", "57 inches")'
-                      }
-                    },
-                    {
-                      name: 'depth',
-                      type: 'text',
-                      admin: {
-                        description: 'Depth (e.g., "46cm", "18 inches")'
-                      }
-                    },
-                    {
-                      name: 'height',
-                      type: 'text',
-                      admin: {
-                        description: 'Height (e.g., "88cm", "35 inches")'
-                      }
-                    }
-                  ]
-                },
-                {
-                  name: 'warranty',
-                  type: 'text',
-                  admin: {
-                    description: 'Warranty information'
-                  }
-                },
-                {
-                  name: 'origin',
-                  type: 'text',
-                  admin: {
-                    description: 'Country of manufacture'
-                  }
-                }
-              ],
-              admin: {
-                description: 'Detailed product specifications and data'
-              }
-            }
-          ]
-        },
 
         // SEO & Meta Tab
         {
@@ -550,14 +641,10 @@ export const Products: CollectionConfig = {
   hooks: {
     beforeChange: [
       async ({ data, req, operation }) => {
-        console.log(`🛒 Products inline beforeChange START: operation=${operation}, name="${data.name}"`)
-        console.log(`🔍 Context:`, JSON.stringify(req.context))
-        console.log(`🔍 Incoming data keys:`, Object.keys(data))
-        console.log(`🔍 Current slug value: "${data.slug}"`)
+        console.log(`🛒 Products beforeChange: operation=${operation}, name="${data.name}"`)
         
-        // Only generate slug from name if not provided or if slug is empty
+        // Auto-generate slug from name if not provided or empty
         if (data.name && (!data.slug || data.slug.trim() === '')) {
-          console.log(`🔗 Need to generate slug from name: "${data.name}"`)
           const generatedSlug = data.name
             .toLowerCase()
             .trim()
@@ -566,19 +653,22 @@ export const Products: CollectionConfig = {
             .replace(/-+/g, '-')
             .replace(/^-+|-+$/g, '')
           
-          // Ensure we have a valid slug
           data.slug = generatedSlug || 'product'
-          console.log(`✅ Generated slug from name "${data.name}" -> "${data.slug}"`)
-        } else {
-          console.log(`⏭️ Slug already provided: "${data.slug}" - no generation needed`)
+          console.log(`🔗 Generated slug from name "${data.name}" -> "${data.slug}"`)
         }
         
-        console.log(`🛒 Products inline beforeChange END: returning data with slug="${data.slug}"`)
+        // Auto-populate series name for pianos from productline
+        if (data.type === 'piano' && data.productline && typeof data.productline === 'object') {
+          if (data.productline.name) {
+            data.series = data.productline.name
+            console.log(`🎹 Auto-populated series from productline: "${data.productline.name}"`)
+          }
+        }
+        
+        console.log(`🛒 Products beforeChange END: returning data with slug="${data.slug}"`)
         return data
-      },
-      productBeforeChangeHook
-    ],
-    afterChange: [productAfterChangeHook],
-    beforeDelete: [productBeforeDeleteHook]
+      }
+    ]
+    // NOTE: Removed all product-generation hooks as they're no longer needed
   }
 }

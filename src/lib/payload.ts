@@ -255,12 +255,74 @@ export async function getActiveProducts(category?: string): Promise<Product[]> {
   return response.docs
 }
 
+// CONSOLIDATED: Get products by category (replaces getProductlinesWithPianoModels)
+export async function getProductsByCategory(category: string) {
+  try {
+    const queryParams = new URLSearchParams()
+    queryParams.append('where[type][equals]', 'piano')
+    queryParams.append('where[category][equals]', category)
+    queryParams.append('where[status][not_equals]', 'draft')
+    queryParams.append('sort', 'visibility.sortOrder,name')
+    queryParams.append('limit', '100')
+    queryParams.append('depth', '2') // Include productline and media
+    
+    const endpoint = `/products?${queryParams.toString()}`
+    const response = await payloadFetch<any>(endpoint)
+    
+    if (!response.docs) return []
+
+    // Group products by productline for component compatibility
+    const productsByProductline = response.docs.reduce((acc: any, product: any) => {
+      const productlineName = typeof product.productline === 'object' 
+        ? product.productline.name 
+        : 'Unknown Series'
+      
+      if (!acc[productlineName]) {
+        acc[productlineName] = {
+          name: productlineName,
+          description: typeof product.productline === 'object' ? product.productline.description : '',
+          category: product.category,
+          pianos: []
+        }
+      }
+      
+      acc[productlineName].pianos.push(transformProductToComponent(product))
+      return acc
+    }, {})
+    
+    return Object.values(productsByProductline)
+  } catch (error) {
+    console.error('Error fetching products by category:', error)
+    return []
+  }
+}
+
 // Helper function to extract image URL from various formats
 function getImageUrl(image: any): string {
   return resolveMediaUrl(image)
 }
 
-// Transform Piano Model to frontend format
+// CONSOLIDATED: Transform Product (piano type) to frontend component format
+// Supports both old nested structure and new consolidated structure
+export function transformProductToComponent(product: any) {
+  return {
+    slug: product.slug,
+    name: product.name,
+    // NEW: Direct root-level access, FALLBACK: nested productData, FALLBACK: productline
+    series: product.series || product.productData?.series || (typeof product.productline === 'object' && product.productline?.name ? product.productline.name : 'Unknown Series'),
+    // NEW: Direct root-level access, FALLBACK: nested componentData
+    rating: product.rating || product.componentData?.rating || 4.5,
+    reviews: product.reviews || product.componentData?.reviews || 0,
+    badge: product.badge || product.componentData?.badge,
+    highlight: product.highlight || product.componentData?.highlight,
+    image: product.mainImage, // Keep as Media object or string
+    description: product.description,
+    keyFeatures: (product.keyFeatures || []).map((kf: any) => kf.feature),
+    // CONSOLIDATED: No longer need pianoModelId - direct product access
+  }
+}
+
+// LEGACY: Keep for backward compatibility during transition
 export function transformPianoModelToComponent(pianoModel: PianoModel) {
   // Generate slug from name since slug is no longer in PianoModel
   const slug = pianoModel.name
@@ -285,15 +347,18 @@ export function transformPianoModelToComponent(pianoModel: PianoModel) {
 
 // Transform Productline to the format expected by existing components
 export function transformProductlineToSeries(productline: Productline, pianoModels?: PianoModel[]) {
-  // Use provided piano models or extract from join field
+  // Use provided piano models (legacy) or extract from products join field
   let pianos: any[] = []
   
   if (pianoModels) {
+    // Legacy support: transform piano models
     pianos = pianoModels.map(transformPianoModelToComponent)
-  } else if (productline.pianoModels?.docs) {
-    pianos = productline.pianoModels.docs
-      .filter((model): model is PianoModel => typeof model === 'object')
-      .map(transformPianoModelToComponent)
+  } else if (productline.products?.docs) {
+    // New approach: use products join field
+    pianos = productline.products.docs
+      .filter((product): product is Product => typeof product === 'object')
+      .filter((product: Product) => product.type === 'piano' && product.status === 'active')
+      .map(transformProductToComponent)
   }
 
   return {
@@ -318,20 +383,56 @@ export function transformProductlinesToSeries(productlines: Productline[], piano
   })
 }
 
-// New function to fetch productlines with their piano models
-export async function getProductlinesWithPianoModels(category?: string): Promise<any[]> {
-  // Get productlines
-  const productlines = await getProductlines(category)
-  
-  // Get piano models for each productline
-  const seriesWithPianos = await Promise.all(
-    productlines.map(async (productline) => {
-      const pianoModels = await getPianoModelsByProductline(productline.id)
-      return transformProductlineToSeries(productline, pianoModels)
+// New function to fetch productlines with their products via join field
+export async function getProductlinesWithProducts(category?: string): Promise<any[]> {
+  try {
+    const queryParams = new URLSearchParams()
+    
+    if (category) {
+      queryParams.append('where[category][equals]', category)
+    }
+    
+    // Sort by sortOrder (ascending) then by name
+    queryParams.append('sort', 'sortOrder,name')
+    queryParams.append('limit', '100') // Get all productlines
+    queryParams.append('depth', '3') // Populate join field and nested media relationships
+    
+    const endpoint = `/productlines?${queryParams.toString()}`
+    const response = await payloadFetch<ProductlinesResponse>(endpoint)
+    
+    // Transform productlines with their joined products to series format
+    const seriesWithProducts = response.docs.map(productline => {
+      const products = productline.products?.docs || []
+      const pianos = products
+        .filter((product): product is Product => typeof product === 'object')
+        .filter(product => product.type === 'piano' && product.status === 'active')
+        .map(transformProductToComponent)
+      
+      return {
+        name: productline.name,
+        description: productline.description,
+        highlight: productline.highlight,
+        href: `/pianos/${productline.category}/${productline.slug}`,
+        image: productline.image,
+        slides: (productline.slides || []).map(slide => ({
+          title: slide.title,
+          image: slide.image
+        })),
+        pianos: pianos
+      }
     })
-  )
-  
-  return seriesWithPianos
+    
+    return seriesWithProducts
+  } catch (error) {
+    console.error('Error fetching productlines with products:', error)
+    return []
+  }
+}
+
+// LEGACY: Keep for backward compatibility during transition
+export async function getProductlinesWithPianoModels(category?: string): Promise<any[]> {
+  console.warn('getProductlinesWithPianoModels is deprecated. Use getProductlinesWithProducts instead.')
+  return getProductlinesWithProducts(category)
 }
 
 // Piano Categories API functions  

@@ -90,7 +90,7 @@ export interface Config {
   };
   collectionsJoins: {
     productlines: {
-      pianoModels: 'piano-models';
+      products: 'products';
     };
   };
   collectionsSelect: {
@@ -485,10 +485,10 @@ export interface Productline {
       }[]
     | null;
   /**
-   * Piano models in this series (automatically populated)
+   * Products in this series (automatically populated)
    */
-  pianoModels?: {
-    docs?: (string | PianoModel)[];
+  products?: {
+    docs?: (string | Product)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
@@ -650,7 +650,7 @@ export interface Media {
   };
 }
 /**
- * Manage products with dynamic page building capabilities using blocks
+ * Unified product management - pianos, accessories, and other products with dynamic page building
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products".
@@ -658,17 +658,9 @@ export interface Media {
 export interface Product {
   id: string;
   /**
-   * Product type determines linking behavior and available features
+   * Product type determines available features and data structure
    */
-  type: 'piano' | 'other';
-  /**
-   * Link to piano model for automatic data population in blocks. When linked, some product data will auto-sync with the piano model.
-   */
-  pianoModel?: (string | null) | PianoModel;
-  /**
-   * How this product gets its content: Manual (independent), Piano Model (auto-synced), or Hybrid (manual with fallbacks)
-   */
-  dataSource?: ('manual' | 'pianomodel' | 'hybrid') | null;
+  type: 'piano' | 'accessory' | 'software' | 'other';
   /**
    * Product name/title
    */
@@ -686,30 +678,42 @@ export interface Product {
    */
   status?: ('active' | 'draft' | 'discontinued' | 'coming-soon' | 'limited-edition') | null;
   /**
-   * Primary product image
+   * Primary product image (optional)
    */
-  mainImage: string | Media;
+  mainImage?: (string | null) | Media;
   /**
-   * Short product description for listings and meta
+   * Product description for listings and meta
    */
   description: string;
+  /**
+   * Short description for compact displays and listings
+   */
+  shortDescription?: string | null;
   /**
    * Product pricing information
    */
   price?: {
     currency?: ('USD' | 'EUR' | 'GBP' | 'CAD') | null;
     /**
-     * Regular price (leave empty for "Contact for pricing")
+     * MSRP (Manufacturer Suggested Retail Price)
      */
-    amount?: number | null;
+    msrp?: number | null;
     /**
-     * Sale price (optional)
+     * Sale price if different from MSRP
      */
-    saleAmount?: number | null;
+    salePrice?: number | null;
+    /**
+     * Price range text (e.g., "$15,000 - $20,000")
+     */
+    priceRange?: string | null;
     /**
      * Custom price text (e.g., "Starting from", "Contact for pricing")
      */
     priceText?: string | null;
+    /**
+     * Check if pricing is by contact only
+     */
+    contactForPricing?: boolean | null;
     /**
      * Display price on product pages
      */
@@ -736,9 +740,113 @@ export interface Product {
          * Is this finish currently available?
          */
         available?: boolean | null;
+        /**
+         * Optional finish description
+         */
+        description?: string | null;
         id?: string | null;
       }[]
     | null;
+  /**
+   * The product line/series this product belongs to
+   */
+  productline?: (string | null) | Productline;
+  /**
+   * Product series/collection (auto-populated for pianos)
+   */
+  series?: string | null;
+  /**
+   * Product model number/identifier
+   */
+  model?: string | null;
+  /**
+   * Customer rating (0-5 stars)
+   */
+  rating?: number | null;
+  /**
+   * Number of customer reviews
+   */
+  reviews?: number | null;
+  /**
+   * Optional badge text (e.g., "Best Seller", "Featured")
+   */
+  badge?: string | null;
+  /**
+   * Optional highlight text for special promotions
+   */
+  highlight?: string | null;
+  /**
+   * Product brand/manufacturer
+   */
+  brand?: string | null;
+  /**
+   * Main selling points and key features
+   */
+  keyFeatures?:
+    | {
+        feature: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Complete product specifications and technical details
+   */
+  specifications?: {
+    /**
+     * Number of keys
+     */
+    keys?: number | null;
+    /**
+     * Number of pedals
+     */
+    pedals?: number | null;
+    /**
+     * Number of voices/sounds
+     */
+    voices?: number | null;
+    /**
+     * Maximum polyphony
+     */
+    polyphony?: number | null;
+    /**
+     * Action technology (e.g., "Grand Feel III")
+     */
+    actionType?: string | null;
+    /**
+     * Sound engine technology
+     */
+    soundEngine?: string | null;
+    dimensions?: {
+      /**
+       * Width (e.g., "145cm", "57 inches")
+       */
+      width?: string | null;
+      /**
+       * Depth (e.g., "46cm", "18 inches")
+       */
+      depth?: string | null;
+      /**
+       * Height (e.g., "88cm", "35 inches")
+       */
+      height?: string | null;
+    };
+    /**
+     * Product weight (e.g., "68kg", "150 lbs")
+     */
+    weight?: string | null;
+    /**
+     * Stock Keeping Unit (SKU)
+     */
+    sku?: string | null;
+    /**
+     * Warranty information
+     */
+    warranty?: string | null;
+    /**
+     * Country of manufacture
+     */
+    origin?: string | null;
+  };
   /**
    * Buy button configuration
    */
@@ -773,53 +881,6 @@ export interface Product {
         | TestimonialsBlock
       )[]
     | null;
-  /**
-   * Detailed product specifications and data
-   */
-  productData?: {
-    /**
-     * Product model number
-     */
-    model?: string | null;
-    /**
-     * Product brand
-     */
-    brand?: string | null;
-    /**
-     * Product series/collection
-     */
-    series?: string | null;
-    /**
-     * Stock Keeping Unit (SKU)
-     */
-    sku?: string | null;
-    /**
-     * Product weight (e.g., "68kg", "150 lbs")
-     */
-    weight?: string | null;
-    dimensions?: {
-      /**
-       * Width (e.g., "145cm", "57 inches")
-       */
-      width?: string | null;
-      /**
-       * Depth (e.g., "46cm", "18 inches")
-       */
-      depth?: string | null;
-      /**
-       * Height (e.g., "88cm", "35 inches")
-       */
-      height?: string | null;
-    };
-    /**
-     * Warranty information
-     */
-    warranty?: string | null;
-    /**
-     * Country of manufacture
-     */
-    origin?: string | null;
-  };
   /**
    * SEO and social media optimization
    */
@@ -2503,7 +2564,7 @@ export interface ProductlinesSelect<T extends boolean = true> {
         image?: T;
         id?: T;
       };
-  pianoModels?: T;
+  products?: T;
   featured?: T;
   sortOrder?: T;
   updatedAt?: T;
@@ -2803,21 +2864,22 @@ export interface PianosPageSelect<T extends boolean = true> {
  */
 export interface ProductsSelect<T extends boolean = true> {
   type?: T;
-  pianoModel?: T;
-  dataSource?: T;
   name?: T;
   slug?: T;
   category?: T;
   status?: T;
   mainImage?: T;
   description?: T;
+  shortDescription?: T;
   price?:
     | T
     | {
         currency?: T;
-        amount?: T;
-        saleAmount?: T;
+        msrp?: T;
+        salePrice?: T;
+        priceRange?: T;
         priceText?: T;
+        contactForPricing?: T;
         showPrice?: T;
       };
   finishes?:
@@ -2827,7 +2889,43 @@ export interface ProductsSelect<T extends boolean = true> {
         image?: T;
         priceModifier?: T;
         available?: T;
+        description?: T;
         id?: T;
+      };
+  productline?: T;
+  series?: T;
+  model?: T;
+  rating?: T;
+  reviews?: T;
+  badge?: T;
+  highlight?: T;
+  brand?: T;
+  keyFeatures?:
+    | T
+    | {
+        feature?: T;
+        id?: T;
+      };
+  specifications?:
+    | T
+    | {
+        keys?: T;
+        pedals?: T;
+        voices?: T;
+        polyphony?: T;
+        actionType?: T;
+        soundEngine?: T;
+        dimensions?:
+          | T
+          | {
+              width?: T;
+              depth?: T;
+              height?: T;
+            };
+        weight?: T;
+        sku?: T;
+        warranty?: T;
+        origin?: T;
       };
   buyButton?:
     | T
@@ -2838,24 +2936,6 @@ export interface ProductsSelect<T extends boolean = true> {
         showButton?: T;
       };
   pageContent?: T | {};
-  productData?:
-    | T
-    | {
-        model?: T;
-        brand?: T;
-        series?: T;
-        sku?: T;
-        weight?: T;
-        dimensions?:
-          | T
-          | {
-              width?: T;
-              depth?: T;
-              height?: T;
-            };
-        warranty?: T;
-        origin?: T;
-      };
   seo?:
     | T
     | {

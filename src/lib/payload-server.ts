@@ -1,6 +1,7 @@
 import type { 
   Productline, 
-  PianoModel
+  PianoModel,
+  Product
 } from '@/payload-types'
 
 import type { 
@@ -182,15 +183,18 @@ function transformPianoModelToComponentServer(pianoModel: PianoModel) {
 
 // Transform server-fetched data to component format
 export function transformProductlineToSeriesServer(productline: Productline, pianoModels?: PianoModel[]) {
-  // Use provided piano models or extract from join field
+  // Use provided piano models (legacy) or extract from products join field
   let pianos: any[] = []
   
   if (pianoModels) {
+    // Legacy support: transform piano models
     pianos = pianoModels.map(transformPianoModelToComponentServer)
-  } else if (productline.pianoModels?.docs) {
-    pianos = productline.pianoModels.docs
-      .filter((model): model is PianoModel => typeof model === 'object')
-      .map(transformPianoModelToComponentServer)
+  } else if (productline.products?.docs) {
+    // New approach: use products join field
+    pianos = productline.products.docs
+      .filter((product): product is Product => typeof product === 'object')
+      .filter(product => product.type === 'piano' && product.status === 'active')
+      .map(transformProductToComponentServer)
   }
 
   return {
@@ -215,23 +219,73 @@ export function transformProductlinesToSeriesServer(productlines: Productline[],
   })
 }
 
-// New server function to fetch productlines with their piano models
-export async function getProductlinesWithPianoModelsServer(category?: string): Promise<any[]> {
+// Transform Product to component format for server
+function transformProductToComponentServer(product: Product) {
+  return {
+    slug: product.slug,
+    name: product.name,
+    series: product.series || (typeof product.productline === 'object' && product.productline?.name ? product.productline.name : 'Unknown Series'),
+    rating: product.rating || 4.5,
+    reviews: product.reviews || 0,
+    badge: product.badge,
+    highlight: product.highlight,
+    image: preserveMediaOrFallback(product.mainImage),
+    description: product.description,
+    keyFeatures: (product.keyFeatures || []).map((kf: any) => kf.feature)
+  }
+}
+
+// New server function to fetch productlines with their products via join field
+export async function getProductlinesWithProductsServer(category?: string): Promise<any[]> {
   try {
-    // Get productlines
-    const productlines = await getProductlinesServer(category)
+    const queryParams = new URLSearchParams()
     
-    // Get piano models for each productline
-    const seriesWithPianos = await Promise.all(
-      productlines.map(async (productline) => {
-        const pianoModels = await getPianoModelsByProductlineServer(productline.id)
-        return transformProductlineToSeriesServer(productline, pianoModels)
-      })
-    )
+    if (category) {
+      queryParams.append('where[category][equals]', category)
+    }
     
-    return seriesWithPianos
+    // Sort by sortOrder (ascending) then by name
+    queryParams.append('sort', 'sortOrder,name')
+    queryParams.append('limit', '100') // Get all productlines
+    queryParams.append('depth', '3') // Populate join field and nested media relationships
+    
+    const endpoint = `/productlines?${queryParams.toString()}`
+    const response = await payloadServerFetch<ProductlinesResponse>(endpoint)
+    
+    // Transform productlines with their joined products to series format
+    const seriesWithProducts = response.docs.map(productline => {
+      // Use products join field
+      const joinedData = (productline as any).products?.docs || []
+      const products = joinedData.filter((item: any): item is Product => 
+        typeof item === 'object' && item.type === 'piano'
+      )
+      const pianos = products
+        .filter((product: Product) => product.status === 'active')
+        .map(transformProductToComponentServer)
+      
+      return {
+        name: productline.name,
+        description: productline.description,
+        highlight: productline.highlight,
+        href: `/pianos/${productline.category}/${productline.slug}`,
+        image: preserveMediaOrFallback(productline.image),
+        slides: (productline.slides || []).map(slide => ({
+          title: slide.title,
+          image: preserveMediaOrFallback(slide.image)
+        })),
+        pianos: pianos
+      }
+    })
+    
+    return seriesWithProducts
   } catch (error) {
-    console.error('Failed to fetch productlines with piano models on server:', error)
+    console.error('Error fetching productlines with products on server:', error)
     return []
   }
+}
+
+// LEGACY: Keep for backward compatibility during transition
+export async function getProductlinesWithPianoModelsServer(category?: string): Promise<any[]> {
+  console.warn('getProductlinesWithPianoModelsServer is deprecated. Use getProductlinesWithProductsServer instead.')
+  return getProductlinesWithProductsServer(category)
 }

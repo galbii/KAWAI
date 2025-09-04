@@ -152,8 +152,8 @@ function transformPianoModelToProduct(pianoModel: PianoModel, category: string):
     // Transform pricing data
     price: {
       currency: pianoModel.pricing?.currency || 'USD',
-      amount: pianoModel.pricing?.msrp || undefined,
-      saleAmount: pianoModel.pricing?.salePrice || undefined,
+      msrp: pianoModel.pricing?.msrp || undefined,
+      salePrice: pianoModel.pricing?.salePrice || undefined,
       priceText: pianoModel.pricing?.priceText || undefined,
       showPrice: pianoModel.pricing?.showPrice !== false
     },
@@ -244,13 +244,13 @@ function transformProductToPianoModel(product: Product): Partial<PianoModel> {
     // Transform pricing data back
     pricing: {
       currency: product.price?.currency || 'USD',
-      msrp: product.price?.amount || undefined,
-      salePrice: product.price?.saleAmount || undefined,
+      msrp: product.price?.msrp || undefined,
+      salePrice: product.price?.salePrice || undefined,
       priceText: product.price?.priceText || undefined,
       showPrice: product.price?.showPrice !== false,
       // Preserve other pricing fields that might exist
-      priceRange: product.price?.priceText || undefined,
-      contactForPricing: !product.price?.amount && !product.price?.saleAmount
+      priceRange: product.price?.priceRange || undefined,
+      contactForPricing: product.price?.contactForPricing || (!product.price?.msrp && !product.price?.salePrice)
     },
     
     // Transform finishes back
