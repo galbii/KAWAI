@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { PianoGalleryProps, DEFAULT_PIANO_GALLERY_DATA, PianoCategory } from '@/lib/types/homepage';
-import { getOptimizedImageProps } from '@/lib/media/r2-utils';
+import { getImagePropsWithFallback } from '@/lib/media/r2-utils';
 
 
 interface PianoSectionProps {
@@ -102,49 +102,23 @@ function PianoSection({ piano, index }: PianoSectionProps) {
                 const defaultPiano = DEFAULT_PIANO_GALLERY_DATA.pianoCategories.find(
                   defaultCategory => defaultCategory.model === piano.model
                 );
-                const fallbackImage = defaultPiano?.image || '/images/piano-categories/grand.jpg';
+                const fallbackImage = (typeof defaultPiano?.image === 'string' ? defaultPiano.image : null) || '/images/piano-categories/grand.jpg';
 
-                // Use CMS image if available, otherwise use default
-                const imageToUse = piano.image || fallbackImage;
+                // Use the utility function to get image props
+                const imageProps = getImagePropsWithFallback(
+                  piano.image, 
+                  fallbackImage, 
+                  'gallery', 
+                  {
+                    className: 'w-full h-auto object-cover',
+                    sizes: '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw'
+                  }
+                );
 
-                // If it's a string (default image), use it directly
-                if (typeof imageToUse === 'string') {
-                  return (
-                    <Image
-                      src={imageToUse}
-                      width={800}
-                      height={600}
-                      alt={piano.title}
-                      className="w-full h-auto object-cover"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
-                    />
-                  );
-                }
-
-                // If it's a media object, use the optimization system
-                const imageProps = getOptimizedImageProps(imageToUse, 'gallery');
-                if (!imageProps || !imageProps.src) {
-                  return (
-                    <Image
-                      src={fallbackImage}
-                      width={800}
-                      height={600}
-                      alt={piano.title}
-                      className="w-full h-auto object-cover"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
-                    />
-                  );
-                }
-                
                 return (
                   <Image
-                    src={imageProps.src}
-                    width={imageProps.width || 800}
-                    height={imageProps.height || 600}
+                    {...imageProps}
                     alt={piano.title}
-                    className="w-full h-auto object-cover"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
-                    loading={imageProps.loading}
                   />
                 );
               })()}

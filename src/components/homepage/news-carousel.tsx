@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { NewsCarouselProps, DEFAULT_NEWS_CAROUSEL_DATA } from '@/lib/types/homepage';
-import { getOptimizedImageProps } from '@/lib/media/r2-utils';
+import { getImagePropsWithFallback } from '@/lib/media/r2-utils';
 
 
 export function NewsCarousel({ data = DEFAULT_NEWS_CAROUSEL_DATA }: NewsCarouselProps) {
@@ -126,51 +126,26 @@ export function NewsCarousel({ data = DEFAULT_NEWS_CAROUSEL_DATA }: NewsCarousel
               const defaultItem = DEFAULT_NEWS_CAROUSEL_DATA.newsItems.find(
                 defaultNews => defaultNews.title === currentItem.title
               );
-              const fallbackImage = defaultItem?.image || '/images/banners/I2LNew-banner.jpg';
+              const fallbackImage = (typeof defaultItem?.image === 'string' ? defaultItem.image : null) || '/images/banners/I2LNew-banner.jpg';
 
-              // Use CMS image if available, otherwise use default
-              const imageToUse = currentItem.image || fallbackImage;
-
-              // If it's a string (default image), use it directly
-              if (typeof imageToUse === 'string') {
-                return (
-                  <Image
-                    src={imageToUse}
-                    fill
-                    alt={currentItem.title}
-                    className="object-cover"
-                    sizes="100vw"
-                    style={{ willChange: 'transform' }}
-                    priority={currentIndex === 0}
-                  />
-                );
-              }
-
-              // If it's a media object, use the optimization system
-              const imageProps = getOptimizedImageProps(imageToUse, 'hero');
-              if (!imageProps) {
-                return (
-                  <Image
-                    src={fallbackImage}
-                    fill
-                    alt={currentItem.title}
-                    className="object-cover"
-                    sizes="100vw"
-                    style={{ willChange: 'transform' }}
-                    priority={currentIndex === 0}
-                  />
-                );
-              }
+              // Use the utility function to get image props
+              const imageProps = getImagePropsWithFallback(
+                currentItem.image, 
+                fallbackImage, 
+                'hero', 
+                {
+                  fill: true,
+                  className: 'object-cover',
+                  sizes: '100vw',
+                  priority: currentIndex === 0
+                }
+              );
 
               return (
                 <Image
-                  src={imageProps.src}
-                  fill
+                  {...imageProps}
                   alt={currentItem.title}
-                  className="object-cover"
-                  sizes="100vw"
                   style={{ willChange: 'transform' }}
-                  priority={currentIndex === 0}
                 />
               );
             })()}

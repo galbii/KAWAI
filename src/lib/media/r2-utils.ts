@@ -414,3 +414,113 @@ export function batchPreloadImages(
     )
   )
 }
+
+/**
+ * Utility function to handle CMS images with fallback to default images
+ * Reduces code duplication across homepage components
+ */
+export interface ImagePropsWithFallbackOptions {
+  fill?: boolean
+  defaultWidth?: number
+  defaultHeight?: number
+  className?: string
+  sizes?: string
+  priority?: boolean
+  loading?: 'eager' | 'lazy'
+}
+
+export function getImagePropsWithFallback(
+  cmsImage: Media | string | null | undefined,
+  fallbackImage: string,
+  preset: keyof typeof PIANO_RESPONSIVE_PRESETS,
+  options: ImagePropsWithFallbackOptions = {}
+) {
+  const {
+    fill = false,
+    defaultWidth = 800,
+    defaultHeight = 600,
+    className = 'object-cover',
+    sizes,
+    priority = false,
+    loading = 'lazy'
+  } = options
+
+  // Use CMS image if available, otherwise use fallback
+  const imageToUse = cmsImage || fallbackImage
+
+  // If it's a string (default image), use it directly
+  if (typeof imageToUse === 'string') {
+    const baseProps = {
+      src: imageToUse,
+      alt: '', // Alt should be provided by the caller
+      className,
+      priority,
+      loading: priority ? 'eager' as const : loading,
+      sizes: sizes || (fill ? '100vw' : '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw')
+    }
+
+    if (fill) {
+      return {
+        ...baseProps,
+        fill: true
+      }
+    } else {
+      return {
+        ...baseProps,
+        width: defaultWidth,
+        height: defaultHeight
+      }
+    }
+  }
+
+  // If it's a Media object, use the optimization system
+  const imageProps = getOptimizedImageProps(imageToUse, preset)
+  
+  if (!imageProps || !imageProps.src) {
+    // Fallback to default image if optimization fails
+    const baseProps = {
+      src: fallbackImage,
+      alt: '',
+      className,
+      priority,
+      loading: priority ? 'eager' as const : loading,
+      sizes: sizes || (fill ? '100vw' : '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw')
+    }
+
+    if (fill) {
+      return {
+        ...baseProps,
+        fill: true
+      }
+    } else {
+      return {
+        ...baseProps,
+        width: defaultWidth,
+        height: defaultHeight
+      }
+    }
+  }
+
+  // Use optimized props
+  const baseOptimizedProps = {
+    src: imageProps.src,
+    alt: '',
+    className,
+    priority,
+    loading: priority ? 'eager' as const : (imageProps.loading || loading),
+    sizes: sizes || imageProps.sizes
+  }
+
+  if (fill) {
+    return {
+      ...baseOptimizedProps,
+      fill: true
+    }
+  } else {
+    return {
+      ...baseOptimizedProps,
+      width: imageProps.width || defaultWidth,
+      height: imageProps.height || defaultHeight
+    }
+  }
+}
