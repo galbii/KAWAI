@@ -99,6 +99,14 @@ export const Products: CollectionConfig = {
               }
             },
             {
+              name: 'imageUrl',
+              type: 'text',
+              required: false,
+              admin: {
+                description: 'Image URL (fallback when mainImage is not provided)'
+              }
+            },
+            {
               name: 'description',
               type: 'textarea',
               required: true,

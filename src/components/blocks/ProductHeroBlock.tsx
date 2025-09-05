@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardContent } from '@/components/ui/card'
+import { getOptimizedImageProps } from '@/lib/media/r2-utils'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { ShoppingCart, Heart, Share2, CheckCircle, Sparkles, Clock, Play, Volume2 } from 'lucide-react'
@@ -86,7 +88,7 @@ export function ProductHeroBlock({
   // CONSOLIDATED: Updated price field names (msrp instead of amount)
   const hasPrice = product.price && (product.price.msrp || product.price.priceText)
   
-  // Get display image - priority: custom override > selected finish image > main product image
+  // Get display image - priority: custom override > selected finish image > main product image > imageUrl fallback
   const getDisplayImage = () => {
     if (overrides.customImage) {
       return overrides.customImage
@@ -97,8 +99,23 @@ export function ProductHeroBlock({
       return product.finishes[selectedFinish].image
     }
     
-    // Default to main product image
-    return product.mainImage
+    // Check if main product image is properly populated (Media object with url)
+    const isMainImageValid = product.mainImage && 
+      typeof product.mainImage === 'object' && 
+      product.mainImage.url && 
+      product.mainImage.url.trim() !== ''
+    
+    if (isMainImageValid) {
+      return product.mainImage
+    }
+    
+    // Fallback to imageUrl if mainImage is not properly populated
+    if (product.imageUrl && product.imageUrl.trim() !== '') {
+      return product.imageUrl
+    }
+    
+    // No image available
+    return null
   }
   
   const displayImage = getDisplayImage()
@@ -237,7 +254,7 @@ export function ProductHeroBlock({
   
   const statusBadge = getStatusBadge()
   
-  // CONSOLIDATED: Debug log with new consolidated structure
+  // CONSOLIDATED: Debug log with new consolidated structure and image fallback logic
   console.log('ProductHeroBlock - Product data (consolidated structure):', {
     product,
     keyFeatures: product?.keyFeatures,
@@ -253,7 +270,30 @@ export function ProductHeroBlock({
     price: product?.price,
     finishes: product?.finishes,
     selectedFinish,
-    displayImage: typeof displayImage === 'object' ? displayImage?.url : displayImage
+    // Image fallback debugging
+    mainImage: product?.mainImage,
+    mainImageType: typeof product?.mainImage,
+    mainImageUrl: product?.mainImage?.url,
+    imageUrl: product?.imageUrl,
+    displayImage: typeof displayImage === 'object' ? displayImage?.url : displayImage,
+    displayImageType: typeof displayImage,
+    hasMainImage: !!product?.mainImage,
+    hasImageUrl: !!product?.imageUrl,
+    isMainImageValid: product?.mainImage && 
+      typeof product?.mainImage === 'object' && 
+      product?.mainImage.url && 
+      product?.mainImage.url.trim() !== '',
+    isImageUrlValid: product?.imageUrl && product?.imageUrl.trim() !== '',
+    imageSource: (() => {
+      const isMainImageValid = product?.mainImage && 
+        typeof product?.mainImage === 'object' && 
+        product?.mainImage.url && 
+        product?.mainImage.url.trim() !== ''
+      
+      if (isMainImageValid) return 'mainImage (Media)'
+      if (product?.imageUrl && product?.imageUrl.trim() !== '') return 'imageUrl (string)'
+      return 'none'
+    })()
   })
   
   return (
@@ -496,16 +536,44 @@ export function ProductHeroBlock({
                 
                 {/* Main piano showcase */}
                 <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
-                  <img
-                    src={typeof displayImage === 'string' 
-                      ? displayImage 
-                      : displayImage?.url || ''}
-                    alt={typeof displayImage === 'string' 
-                      ? '' 
-                      : displayImage?.alt || 'Product image'}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    loading="eager"
-                  />
+                  {(() => {
+                    if (!displayImage) {
+                      return (
+                        <div className="w-full h-full bg-gradient-to-br from-kawai-pearl to-gray-100 flex items-center justify-center">
+                          <span className={cn("text-lg font-medium", accentColorClass)}>
+                            Product Image
+                          </span>
+                        </div>
+                      )
+                    }
+
+                    // Get optimized image props using the R2 optimization system
+                    const imageProps = getOptimizedImageProps(displayImage, 'hero')
+
+                    if (!imageProps || !imageProps.src) {
+                      return (
+                        <div className="w-full h-full bg-gradient-to-br from-kawai-pearl to-gray-100 flex items-center justify-center">
+                          <span className={cn("text-lg font-medium", accentColorClass)}>
+                            Image Load Error
+                          </span>
+                        </div>
+                      )
+                    }
+
+                    // Use fill layout for responsive container, excluding width/height from spread
+                    const { width, height, ...optimizedProps } = imageProps
+                    
+                    return (
+                      <Image
+                        {...optimizedProps}
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        priority={true}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
+                        alt={optimizedProps.alt || displayTitle || 'Product image'}
+                      />
+                    )
+                  })()}
                   
                   {/* Gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />

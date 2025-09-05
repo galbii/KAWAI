@@ -42,3 +42,4 @@ next-env.d.ts
 
 # large video files
 public/assets/videos/Hero.mp4
+.env.local

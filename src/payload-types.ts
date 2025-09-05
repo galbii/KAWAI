@@ -682,6 +682,10 @@ export interface Product {
    */
   mainImage?: (string | null) | Media;
   /**
+   * Image URL (fallback when mainImage is not provided)
+   */
+  imageUrl?: string | null;
+  /**
    * Product description for listings and meta
    */
   description: string;
@@ -2869,6 +2873,7 @@ export interface ProductsSelect<T extends boolean = true> {
   category?: T;
   status?: T;
   mainImage?: T;
+  imageUrl?: T;
   description?: T;
   shortDescription?: T;
   price?:
