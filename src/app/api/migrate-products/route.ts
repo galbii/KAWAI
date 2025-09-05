@@ -73,7 +73,7 @@ async function parseCSVFile(): Promise<CSVRow[]> {
     }) as CSVRow[]
     
     console.log(`✅ Successfully parsed ${records.length} rows from CSV`)
-    return records
+    return records as CSVRow[]
   } catch (error) {
     console.error('❌ Error reading/parsing CSV file:', error)
     throw new Error(`Failed to parse CSV: ${error instanceof Error ? error.message : 'Unknown error'}`)
@@ -84,21 +84,100 @@ async function parseCSVFile(): Promise<CSVRow[]> {
  * Extract product line name from categories or product name
  */
 function extractProductLine(categories: string, name: string): string | null {
-  // Check categories first
+  // Check categories for explicit series mentions
   if (categories.includes('GL Series')) return 'GL Series'
   if (categories.includes('GX Series')) return 'GX Series'
-  if (categories.includes('SK Series')) return 'SK Series'
+  if (categories.includes('SK Series')) return 'Shigeru' // Map SK Series to Shigeru
   if (categories.includes('CA Series')) return 'CA Series'
   if (categories.includes('CN Series')) return 'CN Series'
   if (categories.includes('ES Series')) return 'ES Series'
   if (categories.includes('MP Series')) return 'MP Series'
   if (categories.includes('KDP Series')) return 'KDP Series'
+  if (categories.includes('K Series')) return 'K Series' // Add K Series support
   
-  // Extract from product name
+  // Extract series from product name patterns
+  
+  // Shigeru Kawai (SK-EX, etc.)
+  if (name.match(/\bSK-?[A-Z0-9]+/i)) return 'Shigeru'
+  
+  // Standard series patterns (GL, GX, CA, CN, ES, MP, KDP)
   const seriesMatch = name.match(/(GL|GX|SK|CA|CN|ES|MP|KDP)-?\d+/i)
   if (seriesMatch) {
-    return `${seriesMatch[1].toUpperCase()} Series`
+    const series = seriesMatch[1].toUpperCase()
+    return series === 'SK' ? 'Shigeru' : `${series} Series`
   }
+  
+  // K Series (K-200, K-300, K-400, K-500, K-800, etc.)
+  if (name.match(/\bK-?\d+/i)) return 'K Series'
+  
+  // NOVUS Series
+  if (name.match(/\bNOVUS|NV\d+/i)) return 'NOVUS Series'
+  
+  // CP Series (CP1, CP2, CP3, etc.)
+  if (name.match(/\bCP\d+/i)) return 'CP Series'
+  
+  // CS Series (CS4, CS7, CS8, CS10, CS11, etc.)
+  if (name.match(/\bCS\d+/i)) return 'CS Series'
+  
+  // VPC Series (VPC1)
+  if (name.match(/\bVPC\d+/i)) return 'VPC Series'
+  
+  // CE Series (CE220)
+  if (name.match(/\bCE\d+/i)) return 'CE Series'
+  
+  // CL Series (CL26)
+  if (name.match(/\bCL\d+/i)) return 'CL Series'
+  
+  // KCP Series (KCP90)
+  if (name.match(/\bKCP\d+/i)) return 'KCP Series'
+  
+  // KLCS Series 
+  if (name.match(/\bKLCS/i)) return 'KLCS Series'
+  
+  // Crystal Grand series (CR-40, CR-45) - should be its own product line
+  if (name.match(/\bCR-?\d+/i) || name.match(/\bCrystal.*Grand/i)) return 'Crystal Grand'
+  
+  // RX Series (RX-1, RX-2, etc.)
+  if (name.match(/\bRX-?\d+/i)) return 'RX Series'
+  
+  // GM Series (GM-10K, GM-11, GM-12, etc.)
+  if (name.match(/\bGM-?\d+/i)) return 'GM Series'
+  
+  // GE Series (GE-30)
+  if (name.match(/\bGE-?\d+/i)) return 'GE Series'
+  
+  // UST Series (UST-9)
+  if (name.match(/\bUST-?\d+/i)) return 'UST Series'
+  
+  // ST Series (ST-1)  
+  if (name.match(/\bST-?\d+/i)) return 'ST Series'
+  
+  // DG Series (DG30)
+  if (name.match(/\bDG\d+/i)) return 'DG Series'
+  
+  // X Series (X120)
+  if (name.match(/\bX\d+/i)) return 'X Series'
+  
+  // Z Series (Z1000)
+  if (name.match(/\bZ\d+/i)) return 'Z Series'
+  
+  // MAV Series (MAV8)
+  if (name.match(/\bMAV\d+/i)) return 'MAV Series'
+  
+  // EX Concert Piano
+  if (name.match(/\bEX\b.*Concert/i)) return 'Concert Series'
+  
+  // AURES Series (K-500 AURES, K-300 AURES)
+  if (name.match(/\bAURES\b/i)) return 'AURES Series'
+  
+  // ATX Series (K200-ATX2, K300-ATX2, etc.)
+  if (name.match(/\bATX\d*/i)) return 'ATX Series'
+  
+  // Numbered Console/Studio pianos (506N, 508, 607, 907)
+  if (name.match(/\b[5-9]\d\d[A-Z]?\b/i)) return 'Console Series'
+  
+  // Accessories and hardware
+  if (name.match(/\b(SC-2|F 10H|GFP-3|SH-9)\b/i)) return 'Accessories'
   
   return null
 }
@@ -106,12 +185,38 @@ function extractProductLine(categories: string, name: string): string | null {
 /**
  * Map categories to our schema values
  */
-function mapCategory(categories: string): 'hybrid' | 'digital' | 'grand' | 'upright' {
+function mapCategory(categories: string): 'digital' | 'grand' | 'hybrid' | 'upright' {
   if (categories.includes('Grand Pianos')) return 'grand'
   if (categories.includes('Digital Pianos')) return 'digital'
   if (categories.includes('Upright Pianos')) return 'upright'
   if (categories.includes('Hybrid Pianos')) return 'hybrid'
   return 'digital' // default
+}
+
+function mapProductLineCategory(productLineName: string): 'digital' | 'grand' | 'hybrid' | 'upright' {
+  // Grand pianos
+  if (productLineName.includes('GL') || productLineName.includes('GX')) return 'grand'
+  if (productLineName.includes('Shigeru')) return 'grand'
+  if (productLineName.includes('RX') || productLineName.includes('GM') || productLineName.includes('GE')) return 'grand'
+  if (productLineName.includes('Crystal Grand') || productLineName.includes('Concert Series')) return 'grand'
+  
+  // Upright pianos
+  if (productLineName.includes('K Series')) return 'upright'
+  if (productLineName.includes('UST') || productLineName.includes('Console') || productLineName.includes('ST')) return 'upright'
+  
+  // Hybrid pianos
+  if (productLineName.includes('NOVUS') || productLineName.includes('AURES') || productLineName.includes('ATX')) return 'hybrid'
+  
+  // Digital pianos - most series
+  if (productLineName.includes('CA') || productLineName.includes('CN') || productLineName.includes('ES') || 
+      productLineName.includes('MP') || productLineName.includes('KDP') || productLineName.includes('CP') ||
+      productLineName.includes('CS') || productLineName.includes('VPC') || productLineName.includes('CE') ||
+      productLineName.includes('CL') || productLineName.includes('KCP') || productLineName.includes('KLCS') ||
+      productLineName.includes('DG') || productLineName.includes('X') || productLineName.includes('Z') ||
+      productLineName.includes('MAV')) return 'digital'
+  
+  // Default to digital for unknown series
+  return 'digital'
 }
 
 /**
@@ -135,9 +240,125 @@ function cleanDescription(desc: string): string {
   
   return desc
     .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .replace(/&[a-zA-Z0-9#]+;/g, ' ') // Remove HTML entities
     .replace(/\[caption[^\]]*\].*?\[\/caption\]/g, '') // Remove caption shortcodes
-    .replace(/\n\s*\.\s*\n/g, '\n\n') // Clean up formatting
+    .replace(/\[.*?\]/g, '') // Remove any remaining shortcodes
+    .replace(/\\n\\s*\\.\\s*\\n/g, ' ') // Clean up literal \n.\n patterns
+    .replace(/\\n+/g, ' ') // Convert literal \n to spaces
+    .replace(/\n\s*\.\s*\n/g, ' ') // Clean up formatting
+    .replace(/\n+/g, ' ') // Convert actual line breaks to spaces
+    .replace(/\s+/g, ' ') // Normalize multiple spaces
     .trim()
+}
+
+/**
+ * Extract text content from product tab content (list items)
+ */
+function extractProductTabContent(tabContent: string): Array<{ feature: string }> {
+  if (!tabContent) return []
+  
+  const features: Array<{ feature: string }> = []
+  
+  // Clean the content first
+  const cleaned = cleanDescription(tabContent)
+  
+  // Split by common list separators and extract meaningful content
+  const items = cleaned
+    .split(/[\n\r•·‣⁃-]/) // Split by line breaks and bullet points
+    .map(item => item.trim())
+    .filter(item => item && item.length > 3) // Remove empty or very short items
+    .slice(0, 10) // Limit to 10 features to avoid spam
+  
+  items.forEach(item => {
+    if (item) {
+      features.push({ feature: item })
+    }
+  })
+  
+  return features
+}
+
+/**
+ * Check if a product should be skipped (accessories/non-piano items)
+ */
+const shouldSkipProduct = (name: string): boolean => {
+  const skipKeywords: string[] = [
+    'stand', 'bar', 'pedal', 'phone', 'headphone', 'midi'
+  ]
+  
+  const lowerName: string = name.toLowerCase()
+  return skipKeywords.some((keyword: string) => lowerName.includes(keyword))
+}
+
+/**
+ * Check if a product model is discontinued based on the provided list
+ */
+function isDiscontinuedProduct(name: string): boolean {
+  const discontinuedModels = [
+    'RX-1', 'RX-2', 'RX-3', 'RX-5', 'RX-6', 'RX-7',
+    'K-2', 'K-3', 'K-5', 'K-6', 'K-8',
+    'CP1', 'CP2', 'CP3', 
+    'CS4', 'CS7', 'CS8', 'CS10', 'CS11',
+    'Z1000',
+    'K300-ATX2', 'K200-ATX2',
+    'MP6', 'MP7', 'MP8', 'MP9000', 'MP10', 'MP11',
+    'GM10', 'GM-11', 'GM-12', 'GM-10K',
+    'UST-9',
+    '907',
+    'GE-30',
+    'CR-40',
+    'Kawai EX', 'EX',
+    'ES1', 'ES7', 'ES8', 'ES100',
+    'CN25', 'CN27', 'CN29', 'CN35', 'CN37', 'CN39', 'CN270',
+    'CA49', 'CA59', 'CA65', 'CA67', 'CA97',
+    'KDP90', 'KCP90',
+    'CE220', 'CL26'
+  ]
+  
+  // Check if any discontinued model appears in the product name
+  return discontinuedModels.some(model => {
+    // Create regex pattern to match model with word boundaries
+    const pattern = new RegExp(`\\b${model.replace(/[-]/g, '-?')}\\b`, 'i')
+    return pattern.test(name)
+  })
+}
+
+/**
+ * Process variations as finishes for a product
+ */
+function processVariationsAsFinishes(variations: CSVRow[]): Array<{ name: string; imageUrl?: string; priceModifier?: number; available: boolean; description?: string }> {
+  const finishes: Array<{ name: string; imageUrl?: string; priceModifier?: number; available: boolean; description?: string }> = []
+  
+  variations.forEach(variation => {
+    // Extract finish name from the variation name or finish options attribute
+    let finishName = ''
+    
+    // Check if there's a finish options attribute
+    if (variation['Attribute 1 name'] === 'Finish Options' && variation['Attribute 1 value(s)']) {
+      finishName = variation['Attribute 1 value(s)']
+    } else {
+      // Extract from product name (e.g., "Kawai GL-40 Grand Piano - Polished Ebony" -> "Polished Ebony")
+      const nameParts = variation.Name.split(' - ')
+      if (nameParts.length > 1) {
+        finishName = nameParts[nameParts.length - 1]
+      }
+    }
+    
+    if (finishName) {
+      const regularPrice = parseFloat(variation['Regular price']) || 0
+      const salePrice = parseFloat(variation['Sale price']) || 0
+      
+      finishes.push({
+        name: finishName.trim(),
+        imageUrl: variation.Images || undefined,
+        priceModifier: salePrice && salePrice !== regularPrice ? salePrice - regularPrice : undefined,
+        available: variation.Published === '1',
+        description: cleanDescription(variation['Short description'] || variation.Description)
+      })
+    }
+  })
+  
+  return finishes
 }
 
 /**
@@ -146,7 +367,7 @@ function cleanDescription(desc: string): string {
 function extractSpecifications(row: CSVRow): any {
   const specs: any = {}
   
-  // Physical dimensions
+  // Physical dimensions from dedicated CSV columns
   if (row['Length (cm)']) {
     specs.dimensions = { ...specs.dimensions, width: `${row['Length (cm)']}cm` }
   }
@@ -167,6 +388,7 @@ function extractSpecifications(row: CSVRow): any {
     
     if (attrName && attrValue) {
       switch (attrName.toLowerCase()) {
+        // Piano Technical Specs
         case 'keys':
           specs.keys = parseInt(attrValue) || null
           break
@@ -180,10 +402,50 @@ function extractSpecifications(row: CSVRow): any {
           specs.polyphony = parseInt(attrValue) || null
           break
         case 'action type':
+        case 'action':
           specs.actionType = attrValue
           break
         case 'sound engine':
+        case 'engine':
           specs.soundEngine = attrValue
+          break
+          
+        // Physical specifications (alternative attribute names)
+        case 'weight':
+          if (!specs.weight) specs.weight = attrValue
+          break
+        case 'height':
+          if (!specs.dimensions?.height) {
+            specs.dimensions = { ...specs.dimensions, height: attrValue }
+          }
+          break
+        case 'width':
+          if (!specs.dimensions?.width) {
+            specs.dimensions = { ...specs.dimensions, width: attrValue }
+          }
+          break
+        case 'depth':
+        case 'length':
+          if (!specs.dimensions?.depth) {
+            specs.dimensions = { ...specs.dimensions, depth: attrValue }
+          }
+          break
+          
+        // Product Metadata
+        case 'sku':
+        case 'model number':
+        case 'product code':
+          specs.sku = attrValue
+          break
+        case 'warranty':
+        case 'guarantee':
+          specs.warranty = attrValue
+          break
+        case 'origin':
+        case 'country':
+        case 'made in':
+        case 'manufactured in':
+          specs.origin = attrValue
           break
       }
     }
@@ -197,13 +459,33 @@ function extractSpecifications(row: CSVRow): any {
  */
 function extractKeyFeatures(row: CSVRow): Array<{ feature: string }> {
   const features: Array<{ feature: string }> = []
-  const specAttributes = ['keys', 'pedals', 'voices', 'polyphony', 'action type', 'sound engine']
+  
+  // Attributes that map to proper schema fields - exclude from features
+  const excludedAttributes = [
+    // Technical specifications
+    'keys', 'pedals', 'voices', 'polyphony', 'action type', 'sound engine',
+    
+    // Physical specifications
+    'weight', 'height', 'width', 'depth', 'length', 'dimensions',
+    
+    // Finish/appearance related (handled in finishes array)
+    'finish options', 'finishes', 'finish', 'color', 'colors',
+    
+    // Product metadata
+    'sku', 'warranty', 'origin', 'country', 'made in',
+    
+    // Pricing related (handled in price object)
+    'price', 'msrp', 'cost', 'retail price',
+    
+    // Stock/availability (handled elsewhere)
+    'stock', 'availability', 'in stock'
+  ]
   
   for (let i = 1; i <= 5; i++) {
     const attrName = row[`Attribute ${i} name`]
     const attrValue = row[`Attribute ${i} value(s)`]
     
-    if (attrName && attrValue && !specAttributes.includes(attrName.toLowerCase())) {
+    if (attrName && attrValue && !excludedAttributes.includes(attrName.toLowerCase())) {
       // Split multiple values and add as separate features
       const values = attrValue.split(',').map((v: string) => v.trim()).filter((v: string) => v)
       values.forEach((value: string) => {
@@ -234,19 +516,45 @@ async function runSimpleMigration(): Promise<MigrationResult> {
     // Parse CSV file
     const csvRows = await parseCSVFile()
     
-    // Filter to only parent products (not variations)
+    // Separate parent products and variations
     const parentProducts = csvRows.filter(row => 
       row.Type === 'variable' || row.Type === 'simple'
     )
     
-    console.log(`📊 Processing ${parentProducts.length} parent products (from ${csvRows.length} total rows)`)
+    const variations = csvRows.filter(row => 
+      row.Type === 'variation'
+    )
+    
+    // Group variations by parent ID
+    const variationsByParent = new Map<string, CSVRow[]>()
+    variations.forEach(variation => {
+      if (variation.Parent) {
+        const parentId = variation.Parent.replace('id:', '')
+        if (!variationsByParent.has(parentId)) {
+          variationsByParent.set(parentId, [])
+        }
+        variationsByParent.get(parentId)!.push(variation)
+      }
+    })
+    
+    console.log(`📊 Processing ${parentProducts.length} parent products and ${variations.length} variations (from ${csvRows.length} total rows)`)
     
     // Track unique product lines
     const productlineNames = new Set<string>()
     const productlineMap = new Map<string, string>() // name -> id
     
-    // Collect all product lines first
+    // Collect all product lines first (only for piano products, excluding discontinued)
     parentProducts.forEach(row => {
+      // Skip accessories and non-piano items
+      if (shouldSkipProduct(row.Name)) {
+        return
+      }
+      
+      // Skip discontinued products - don't create product lines for them
+      if (isDiscontinuedProduct(row.Name)) {
+        return
+      }
+      
       const productLineName = extractProductLine(row.Categories, row.Name)
       if (productLineName) {
         productlineNames.add(productLineName)
@@ -269,7 +577,7 @@ async function runSimpleMigration(): Promise<MigrationResult> {
           console.log(`📋 Found existing productline: ${productLineName}`)
         } else {
           // Create new product line
-          const category = mapCategory(productLineName)
+          const category = mapProductLineCategory(productLineName)
           const productlineData = {
             name: productLineName,
             slug: generateSlug(productLineName),
@@ -349,6 +657,18 @@ async function runSimpleMigration(): Promise<MigrationResult> {
           continue
         }
         
+        // Skip accessories and non-piano items
+        if (shouldSkipProduct(row.Name)) {
+          console.log(`🚫 Skipping accessory/non-piano product: ${row.Name}`)
+          continue
+        }
+        
+        // Skip discontinued products entirely
+        if (isDiscontinuedProduct(row.Name)) {
+          console.log(`🚫 Skipping discontinued product: ${row.Name}`)
+          continue
+        }
+        
         // Get product line ID
         const productLineName = extractProductLine(row.Categories, row.Name)
         const productlineId = productLineName ? productlineMap.get(productLineName) : undefined
@@ -361,7 +681,21 @@ async function runSimpleMigration(): Promise<MigrationResult> {
         const modelMatch = row.Name.match(/([A-Z]{2,3}-?\d+[A-Z]*)/i)
         const model = modelMatch ? modelMatch[1] : ''
         
-        // Build product data (without mainImage for now due to validation issues)
+        // Get variations for this product
+        const productVariations = variationsByParent.get(row.ID) || []
+        const finishes = processVariationsAsFinishes(productVariations)
+        
+        // Process product tab content
+        const productTabContent = row['Meta: _product_tab_content'] || ''
+        const tabFeatures = extractProductTabContent(productTabContent)
+        
+        // Combine key features from attributes and product tab content
+        const allKeyFeatures = [
+          ...extractKeyFeatures(row),
+          ...tabFeatures
+        ]
+        
+        // Build product data
         const productData = {
           type: 'piano' as const,
           name: row.Name,
@@ -370,6 +704,7 @@ async function runSimpleMigration(): Promise<MigrationResult> {
           status: row.Published === '1' ? 'active' as const : 'draft' as const,
           description: cleanDescription(row.Description),
           shortDescription: cleanDescription(row['Short description']),
+          imageUrl: row.Images || undefined, // Direct image URL from CSV
           productline: productlineId,
           series: productLineName,
           model,
@@ -383,11 +718,14 @@ async function runSimpleMigration(): Promise<MigrationResult> {
             contactForPricing: regularPrice === 0
           },
           
+          // Finishes from variations
+          finishes: finishes.length > 0 ? finishes : undefined,
+          
           // Specifications
           specifications: extractSpecifications(row),
           
-          // Key features
-          keyFeatures: extractKeyFeatures(row),
+          // Key features (combined from attributes and product tab content)
+          keyFeatures: allKeyFeatures.length > 0 ? allKeyFeatures : undefined,
           
           // Metadata
           brand: 'Kawai',
@@ -397,11 +735,11 @@ async function runSimpleMigration(): Promise<MigrationResult> {
             sortOrder: 0
           },
           
-          // SEO
+          // SEO - Map from CSV SEO fields
           seo: {
-            metaTitle: row.Name,
-            metaDescription: cleanDescription(row['Short description'] || row.Description).substring(0, 160),
-            keywords: row.Tags
+            metaTitle: row['Meta: rank_math_title'] || row['Meta: _yoast_wpseo_title'] || row.Name,
+            metaDescription: (row['Meta: rank_math_description'] || row['Meta: _yoast_wpseo_metadesc'] || cleanDescription(row['Short description'] || row.Description)).substring(0, 160),
+            keywords: row['Meta: rank_math_focus_keyword'] || row['Meta: _yoast_wpseo_focuskw'] || row.Tags
           },
           
           // Buy button
@@ -409,7 +747,10 @@ async function runSimpleMigration(): Promise<MigrationResult> {
             text: regularPrice > 0 ? 'Contact for Details' : 'Contact for Pricing',
             showButton: true,
             style: 'primary' as const
-          }
+          },
+          
+          // Discontinued status - default to false since we skip discontinued products
+          discontinued: false
         }
         
         // Create the product using Payload's local API with overrideAccess to bypass validation
