@@ -682,7 +682,7 @@ export interface Product {
    */
   mainImage?: (string | null) | Media;
   /**
-   * Image URL (fallback when mainImage is not provided)
+   * Direct image URL (used during CSV migration or when media upload is not available)
    */
   imageUrl?: string | null;
   /**
@@ -748,6 +748,10 @@ export interface Product {
          * Optional finish description
          */
         description?: string | null;
+        /**
+         * Direct image URL for this finish (used during CSV migration)
+         */
+        imageUrl?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -869,6 +873,10 @@ export interface Product {
      */
     showButton?: boolean | null;
   };
+  /**
+   * Mark this product as discontinued
+   */
+  discontinued?: boolean | null;
   /**
    * Build your product page content using flexible blocks
    */
@@ -2895,6 +2903,7 @@ export interface ProductsSelect<T extends boolean = true> {
         priceModifier?: T;
         available?: T;
         description?: T;
+        imageUrl?: T;
         id?: T;
       };
   productline?: T;
@@ -2940,6 +2949,7 @@ export interface ProductsSelect<T extends boolean = true> {
         style?: T;
         showButton?: T;
       };
+  discontinued?: T;
   pageContent?: T | {};
   seo?:
     | T

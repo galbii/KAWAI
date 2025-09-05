@@ -356,21 +356,125 @@ Users → Media → Productlines → PianoModels → Products → Pages
 
 ## 📊 CMS Collections Reference
 
-### Data Hierarchy
+### Data Hierarchy & Relationships
 ```
-Users → Media → Productlines → PianoModels → Products → PianosPage → HomePage
+Users → Media ← (referenced by) → Productlines ↔ Products ↔ PianoModels
+                                       ↓
+                                  PianosPage / HomePage
 ```
 
-### Collection Guide
-| Collection | Purpose | Key Fields |
-|------------|---------|------------|
-| **Media** | Images, videos, assets | `mediaType`, `variants`, `seo` |
-| **Users** | Admin authentication | `email`, `roles` |
-| **Productlines** | Piano series (CA, SK) | `name`, `category`, `pianoModels` |
-| **PianoModels** | Individual pianos | `specs`, `pricing`, `gallery` |
-| **Products** | Dynamic pages | `blocks[]`, `pricing`, `seo` |
-| **PianosPage** | Main piano page | `hero`, `categories`, `cta` |
-| **🆕 HomePage** | Homepage content management | `heroSection`, `showroomSection`, `pianoCollectionSection`, `pianoGallerySection`, `newsCarouselSection`, `contactFormSection`, `seo` |
+**Key Relationships**:
+- **Productlines** ↔ **Products**: One-to-many via `productline` field in Products + virtual `products` join in Productlines
+- **Products** ↔ **PianoModels**: One-to-one via `product` field in PianoModels (legacy auto-generation system)
+- **Media**: Referenced by all collections through upload fields
+
+### Collection Guide & Architecture
+
+#### **🎹 Productlines Collection** (`src/collections/Productlines.ts`)
+**Purpose**: Piano series/categories (CA Series, Shigeru Kawai SK Series, etc.)
+
+**Key Fields**:
+- `name` - Series name (e.g., "CA Series", "Shigeru Kawai SK Series")
+- `slug` - URL-friendly identifier (auto-generated from name)
+- `category` - Piano type: 'digital' | 'grand' | 'hybrid' | 'upright'
+- `description` - Main series description
+- `image` - Main series image (Media relationship)
+- `slides[]` - Additional carousel images with titles
+- `products` - Virtual join field (auto-populated from Products.productline)
+- `featured`, `sortOrder` - Display control
+
+**Admin Panel**: `/admin/collections/productlines`
+
+#### **🛒 Products Collection** (`src/collections/Products.ts`)
+**Purpose**: Unified product management - individual piano models, accessories, and dynamic page building
+
+**Architecture**: Tab-based interface with comprehensive product data management
+
+**Key Tabs & Fields**:
+
+**Product Details Tab**:
+- `type` - Product classification: 'piano' | 'accessory' | 'software' | 'other'
+- `name`, `slug` - Product identification
+- `category` - Same options as Productlines for consistency
+- `status` - 'active' | 'draft' | 'discontinued' | 'coming-soon' | 'limited-edition'
+- `mainImage` (Media) / `imageUrl` (fallback) - Primary product image
+- `description`, `shortDescription` - Content fields
+- `productline` - **Critical relationship** (required for piano type, links to Productlines)
+- `series`, `model` - Auto-populated and manual identifiers
+- **Consolidated pricing** (`price` group):
+  - `msrp`, `salePrice`, `priceRange`, `priceText`, `contactForPricing`, `showPrice`
+- `finishes[]` - Available finish options (piano-specific)
+- `keyFeatures[]` - Main selling points
+- `specifications` - Complete technical specs (consolidated from PianoModels)
+- `buyButton` - Purchase button configuration
+
+**Page Content Tab**:
+- `pageContent` - Flexible blocks system for dynamic page building
+- Available blocks: productShowcase, productHero, hero, textContent, imageGallery, featuresList, specifications, callToAction, testimonials
+
+**SEO & Meta Tab**:
+- Complete SEO optimization fields
+
+**Settings Tab**:
+- Visibility controls, inventory management
+
+**Admin Panel**: `/admin/collections/products`
+
+**⚠️ Important Business Logic**:
+- Piano products (`type: 'piano'`) **MUST** have a `productline` relationship
+- Non-piano products **CANNOT** have a `productline` relationship (enforced by validation)
+- Auto-populated `series` field from linked productline name
+
+#### **🎼 PianoModels Collection** (`src/collections/PianoModels.ts`) - *Legacy System*
+**Purpose**: Individual piano model definitions (CA901, SK-EX) with auto-product generation
+
+**Key Fields**:
+- `name`, `model`, `slug` - Piano identification
+- `productline` - **Required relationship** to Productlines
+- `image` - Main product image (required)
+- `keyFeatures[]`, `specifications`, `availableFinishes[]` - Product data
+- `pricing` - Pricing configuration
+- `product` - Auto-generated Product relationship
+- `autoGenerateProduct` - Toggle for automatic Product creation
+
+**⚠️ Migration Status**: 
+- Legacy collection maintained for existing data
+- New development should use **Products collection directly**
+- Auto-generation hooks disabled during consolidation
+- Data structure matches Products for consistency
+
+**Admin Panel**: `/admin/collections/piano-models`
+
+#### **Other Collections**
+
+| Collection | Purpose | Key Fields | Location |
+|------------|---------|------------|----------|
+| **Media** | Images, videos, assets | `mediaType`, `tags`, `seo`, `url` | `/admin/collections/media` |
+| **Users** | Admin authentication | `email`, `roles` | `/admin/collections/users` |
+| **PianosPage** | Piano categories page | `hero`, `categories`, `cta` | `/admin/collections/pianos-page` |
+| **HomePage** | Homepage content | `heroSection`, `pianoGallerySection`, etc. | `/admin/collections/home-page` |
+
+### **🔄 Collection Workflow & Usage Patterns**
+
+#### For Piano Products (Recommended Approach):
+1. **Create Productline** first (if new series)
+   - Define series name, category, description
+   - Add main series image and carousel slides
+2. **Create Product** with `type: 'piano'`
+   - Link to appropriate productline
+   - Series name auto-populates
+   - Build dynamic page with blocks
+   - Set pricing and specifications
+
+#### For Non-Piano Products:
+1. **Create Product** with appropriate type
+   - No productline relationship required
+   - Use blocks for dynamic content
+
+#### Content Management:
+- **Media**: Upload and tag assets for reuse across collections
+- **Dynamic Pages**: Use Products.pageContent blocks for flexible layouts
+- **SEO**: Each collection has comprehensive SEO fields
 
 ### Content Blocks Available
 | Block Type | Use Case | Key Props |

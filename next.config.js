@@ -13,6 +13,16 @@ const nextConfig = {
         hostname: 'pub-8cc11ba1a6ef43369715136333c4b35a.r2.dev',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'kawaius.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.kawaius.com',
+        pathname: '/**',
+      },
     ],
   },
   eslint: {

@@ -302,6 +302,27 @@ function getImageUrl(image: any): string {
   return resolveMediaUrl(image)
 }
 
+// Helper function to get the best available image from product
+function getProductImage(product: any): any {
+  // Check if main product image is properly populated (Media object with url)
+  const isMainImageValid = product.mainImage && 
+    typeof product.mainImage === 'object' && 
+    product.mainImage.url && 
+    product.mainImage.url.trim() !== '';
+  
+  if (isMainImageValid) {
+    return product.mainImage;
+  }
+  
+  // Fallback to imageUrl if mainImage is not properly populated
+  if (product.imageUrl && product.imageUrl.trim() !== '') {
+    return product.imageUrl;
+  }
+  
+  // No valid image available
+  return null;
+}
+
 // CONSOLIDATED: Transform Product (piano type) to frontend component format
 // Supports both old nested structure and new consolidated structure
 export function transformProductToComponent(product: any) {
@@ -315,7 +336,7 @@ export function transformProductToComponent(product: any) {
     reviews: product.reviews || product.componentData?.reviews || 0,
     badge: product.badge || product.componentData?.badge,
     highlight: product.highlight || product.componentData?.highlight,
-    image: product.mainImage, // Keep as Media object or string
+    image: getProductImage(product), // Use fallback logic: mainImage (Media object) > imageUrl (string) > null
     description: product.description,
     keyFeatures: (product.keyFeatures || []).map((kf: any) => kf.feature),
     // CONSOLIDATED: No longer need pianoModelId - direct product access

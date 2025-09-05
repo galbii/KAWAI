@@ -212,11 +212,11 @@ function SeriesCard({ series, index, categorySlug, isActive }: SeriesCardProps) 
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.7, delay: 0.4 }}
               >
-                <div className="aspect-[3/2] lg:aspect-[5/3] h-full min-h-[200px] lg:min-h-[250px] relative overflow-hidden group">
+                <div className="aspect-[4/3] lg:aspect-[16/9] h-full min-h-[300px] lg:min-h-[400px] relative overflow-hidden group rounded-xl bg-gradient-to-br from-kawai-pearl to-white shadow-lg">
                   {/* Piano Image */}
                   <motion.div 
                     key={series.pianos[0]?.slug}
-                    className="relative w-full h-full"
+                    className="relative w-full h-full p-4 lg:p-8"
                     initial={{ scale: 1.1, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.9, opacity: 0 }}
@@ -448,19 +448,19 @@ export function UnifiedPianoSeries({
             return (
               <div 
                 key={key} 
-                className="keen-slider__slide relative aspect-square min-w-[250px] md:min-w-[300px] lg:min-w-[350px] xl:min-w-[400px]"
+                className="keen-slider__slide relative aspect-square min-w-[250px] md:min-w-[300px] lg:min-w-[350px] xl:min-w-[400px] bg-gradient-to-br from-kawai-pearl to-white rounded-lg overflow-hidden shadow-md"
               >
-                <div className="relative w-full h-full">
+                <div className="relative w-full h-full p-3">
                   <MediaRenderer
                     media={media}
                     preset="gallery"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain object-center"
                     aria-label={title}
                   />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/80 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/60 via-transparent to-transparent rounded-lg" />
                 <div className="absolute bottom-3 left-3 text-white">
-                  <h3 className="text-sm md:text-base lg:text-lg font-bold">{title}</h3>
+                  <h3 className="text-sm md:text-base lg:text-lg font-bold drop-shadow-lg">{title}</h3>
                 </div>
               </div>
             );

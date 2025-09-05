@@ -219,6 +219,27 @@ export function transformProductlinesToSeriesServer(productlines: Productline[],
   })
 }
 
+// Helper function to get the best available image from product (server version)
+function getProductImageServer(product: Product): any {
+  // Check if main product image is properly populated (Media object with url)
+  const isMainImageValid = product.mainImage && 
+    typeof product.mainImage === 'object' && 
+    product.mainImage.url && 
+    product.mainImage.url.trim() !== '';
+  
+  if (isMainImageValid) {
+    return product.mainImage;
+  }
+  
+  // Fallback to imageUrl if mainImage is not properly populated
+  if (product.imageUrl && product.imageUrl.trim() !== '') {
+    return product.imageUrl;
+  }
+  
+  // No valid image available
+  return null;
+}
+
 // Transform Product to component format for server
 function transformProductToComponentServer(product: Product) {
   return {
@@ -229,7 +250,7 @@ function transformProductToComponentServer(product: Product) {
     reviews: product.reviews || 0,
     badge: product.badge,
     highlight: product.highlight,
-    image: preserveMediaOrFallback(product.mainImage),
+    image: getProductImageServer(product), // Use fallback logic: mainImage (Media object) > imageUrl (string) > null
     description: product.description,
     keyFeatures: (product.keyFeatures || []).map((kf: any) => kf.feature)
   }

@@ -186,6 +186,36 @@ export function getOptimizedImageProps(
     }
   }
 
+  // Handle external URLs (including R2 URLs that are already optimized)
+  if (mediaUrl.startsWith('http') && !mediaUrl.startsWith(R2_PUBLIC_URL)) {
+    const alt = typeof media === 'object' ? media.alt : ''
+    return {
+      src: mediaUrl,
+      srcSet: '', // No responsive srcSet for external images
+      sizes: '', // No sizes for external images
+      width: undefined,
+      height: undefined,
+      alt,
+      loading: preset === 'hero' ? 'eager' as const : 'lazy' as const,
+      decoding: 'async' as const
+    }
+  }
+
+  // Handle R2 URLs that already have optimization parameters
+  if (mediaUrl.includes('r2.dev') && mediaUrl.includes('?')) {
+    const alt = typeof media === 'object' ? media.alt : ''
+    return {
+      src: mediaUrl,
+      srcSet: '', // Already optimized
+      sizes: '', // Already optimized
+      width: undefined,
+      height: undefined,
+      alt,
+      loading: preset === 'hero' ? 'eager' as const : 'lazy' as const,
+      decoding: 'async' as const
+    }
+  }
+
   const filename = extractFilename(mediaUrl)
 
   if (!filename) {
