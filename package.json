@@ -36,6 +36,7 @@
     "clsx": "^2.1.1",
     "csv-parse": "^6.1.0",
     "csv-parser": "^3.2.0",
+    "embla-carousel-react": "^8.6.0",
     "framer-motion": "^11.15.0",
     "graphql": "^16.8.1",
     "keen-slider": "^6.8.6",
