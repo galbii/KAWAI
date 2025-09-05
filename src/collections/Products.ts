@@ -99,6 +99,13 @@ export const Products: CollectionConfig = {
               }
             },
             {
+              name: 'imageUrl',
+              type: 'text',
+              admin: {
+                description: 'Direct image URL (used during CSV migration or when media upload is not available)'
+              }
+            },
+            {
               name: 'description',
               type: 'textarea',
               required: true,
@@ -226,6 +233,13 @@ export const Products: CollectionConfig = {
                   type: 'textarea',
                   admin: {
                     description: 'Optional finish description'
+                  }
+                },
+                {
+                  name: 'imageUrl',
+                  type: 'text',
+                  admin: {
+                    description: 'Direct image URL for this finish (used during CSV migration)'
                   }
                 }
               ],
@@ -463,6 +477,15 @@ export const Products: CollectionConfig = {
               admin: {
                 description: 'Buy button configuration'
               }
+            },
+            {
+              name: 'discontinued',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                description: 'Mark this product as discontinued',
+                position: 'sidebar'
+              }
             }
           ]
         },
@@ -663,6 +686,24 @@ export const Products: CollectionConfig = {
             data.series = data.productline.name
             console.log(`🎹 Auto-populated series from productline: "${data.productline.name}"`)
           }
+        }
+        
+        // Add default productHero block for new products if pageContent is empty
+        if (operation === 'create' && (!data.pageContent || data.pageContent.length === 0)) {
+          data.pageContent = [
+            {
+              blockType: 'productHero',
+              layout: {
+                imagePosition: 'left',
+                backgroundColor: 'pearl',
+                showFinishes: true,
+                showPrice: true,
+                showBuyButton: true
+              },
+              overrides: {} // Empty overrides - will use product data
+            }
+          ]
+          console.log(`🧩 Added default productHero block to new product`)
         }
         
         console.log(`🛒 Products beforeChange END: returning data with slug="${data.slug}"`)
