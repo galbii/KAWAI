@@ -70,7 +70,7 @@ async function parseCSVFile(): Promise<CSVRow[]> {
       bom: true,
       relax_column_count: true,
       relax_quotes: true
-    })
+    }) as CSVRow[]
     
     console.log(`✅ Successfully parsed ${records.length} rows from CSV`)
     return records
@@ -106,7 +106,7 @@ function extractProductLine(categories: string, name: string): string | null {
 /**
  * Map categories to our schema values
  */
-function mapCategory(categories: string): string {
+function mapCategory(categories: string): 'hybrid' | 'digital' | 'grand' | 'upright' {
   if (categories.includes('Grand Pianos')) return 'grand'
   if (categories.includes('Digital Pianos')) return 'digital'
   if (categories.includes('Upright Pianos')) return 'upright'
@@ -205,8 +205,8 @@ function extractKeyFeatures(row: CSVRow): Array<{ feature: string }> {
     
     if (attrName && attrValue && !specAttributes.includes(attrName.toLowerCase())) {
       // Split multiple values and add as separate features
-      const values = attrValue.split(',').map(v => v.trim()).filter(v => v)
-      values.forEach(value => {
+      const values = attrValue.split(',').map((v: string) => v.trim()).filter((v: string) => v)
+      values.forEach((value: string) => {
         features.push({ feature: `${attrName}: ${value}` })
       })
     }
