@@ -326,10 +326,10 @@ export function ProductHeroBlock({
         ) : (
           <>
             {/* Square/rectangular gradient fading to white in center following component outline */}
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-100/20 via-white to-amber-100/20" />
-            <div className="absolute inset-0 bg-gradient-to-b from-amber-100/15 via-white to-orange-100/15" />
-            {/* Subtle warm corner accents */}
-            <div className="absolute inset-0 bg-[conic-gradient(from_0deg_at_0%_0%,rgba(249,115,22,0.15)_0deg,transparent_90deg),conic-gradient(from_90deg_at_100%_0%,rgba(245,158,11,0.15)_0deg,transparent_90deg),conic-gradient(from_180deg_at_100%_100%,rgba(249,115,22,0.15)_0deg,transparent_90deg),conic-gradient(from_270deg_at_0%_100%,rgba(245,158,11,0.15)_0deg,transparent_90deg)]" />
+            <div className="absolute inset-0 bg-gradient-to-r from-stone-100/6 via-white via-90% to-stone-100/6" />
+            <div className="absolute inset-0 bg-gradient-to-b from-amber-50/4 from-5% via-white via-95% to-amber-50/4" />
+            {/* Very subtle earthy corner accents */}
+            <div className="absolute inset-0 bg-[conic-gradient(from_0deg_at_0%_0%,rgba(120,113,108,0.03)_0deg,transparent_90deg),conic-gradient(from_90deg_at_100%_0%,rgba(161,161,170,0.03)_0deg,transparent_90deg),conic-gradient(from_180deg_at_100%_100%,rgba(120,113,108,0.03)_0deg,transparent_90deg),conic-gradient(from_270deg_at_0%_100%,rgba(161,161,170,0.03)_0deg,transparent_90deg)]" />
           </>
         )}
       </div>
@@ -337,7 +337,7 @@ export function ProductHeroBlock({
       {/* Main Content Container */}
       <div className="container mx-auto px-6 lg:px-12 xl:px-16 relative z-10 py-12 lg:py-20">
         <div className={cn(
-          "grid lg:grid-cols-12 gap-8 lg:gap-12 items-start w-full",
+          "grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 w-full",
           imagePosition === 'right' ? 'lg:grid-flow-col-reverse' : ''
         )}>
           
@@ -586,8 +586,8 @@ export function ProductHeroBlock({
             )}
           </div>
           
-          {/* Desktop Image Section - 7 columns on desktop, hidden on mobile */}
-          <div className="hidden lg:block lg:col-span-7 relative self-center">
+          {/* Image Section - Full width on mobile, 7 columns on desktop */}
+          <div className="lg:col-span-7 relative order-2 lg:order-none">
             {displayImage && (
               <div className="relative">
                 
@@ -602,7 +602,7 @@ export function ProductHeroBlock({
                 )} />
                 
                 {/* Main piano showcase */}
-                <div className="relative aspect-[4/3] lg:aspect-[3/2] overflow-hidden rounded-2xl min-h-[300px] lg:min-h-[400px]">
+                <div className="relative w-full h-[300px] sm:h-[400px] lg:h-[500px] xl:h-[600px] overflow-hidden rounded-2xl">
                   {(() => {
                     if (!displayImage) {
                       return (

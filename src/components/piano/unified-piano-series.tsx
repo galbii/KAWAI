@@ -212,14 +212,14 @@ function SeriesCard({ series, index, categorySlug, isActive }: SeriesCardProps) 
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.7, delay: 0.4 }}
               >
-                <div className="aspect-[4/3] lg:aspect-[16/9] h-full min-h-[300px] lg:min-h-[400px] relative overflow-hidden group rounded-xl bg-gradient-to-br from-kawai-pearl to-white shadow-lg">
-                  {/* Piano Image */}
+                <div className="aspect-[4/3] lg:aspect-[16/9] h-full min-h-[300px] lg:min-h-[400px] relative">
+                  {/* Piano Image - Embedded Style */}
                   <motion.div 
                     key={series.pianos[0]?.slug}
-                    className="relative w-full h-full p-4 lg:p-8"
-                    initial={{ scale: 1.1, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.9, opacity: 0 }}
+                    className="relative w-full h-full p-8 lg:p-12"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.8, delay: 0.6 }}
                     layout
                   >
@@ -249,15 +249,36 @@ export function UnifiedPianoSeries({
   series, 
   categorySlug
 }: UnifiedPianoSeriesProps) {
+  // Filter out series with no models/pianos
+  const filteredSeries = series.filter(s => s.pianos && s.pianos.length > 0);
+  
+  // Early return if no series have any models
+  if (filteredSeries.length === 0) {
+    return (
+      <section className="pt-16 lg:pt-24 pb-0 bg-kawai-pearl" id="series">
+        <div className="text-center mb-16">
+          <div className="w-full px-6 lg:px-8 xl:px-12">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-kawai-black mb-6">
+              {title}
+            </h2>
+            <p className="text-xl md:text-2xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto mb-8">
+              No models available in this category at the moment.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+  
   const [isTitleVisible, setIsTitleVisible] = useState(false);
-  const [selectedTab, setSelectedTab] = useState(series[0]?.name.toLowerCase().replace(/\s+/g, '-') || '');
+  const [selectedTab, setSelectedTab] = useState(filteredSeries[0]?.name.toLowerCase().replace(/\s+/g, '-') || '');
   const titleRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | null>(null);
 
   // Get current active series data
-  const activeSeriesData = series.find(s => 
+  const activeSeriesData = filteredSeries.find(s => 
     s.name.toLowerCase().replace(/\s+/g, '-') === selectedTab
-  ) || series[0];
+  ) || filteredSeries[0];
 
   // Carousel setup with continuous scrolling
   const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>(
@@ -392,9 +413,9 @@ export function UnifiedPianoSeries({
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
           {/* Premium Tab List */}
           <TabsList className="grid w-full bg-white border border-kawai-neutral/20 shadow-sm rounded-xl p-2 h-auto gap-2" style={{
-            gridTemplateColumns: `repeat(${series.length}, minmax(0, 1fr))`
+            gridTemplateColumns: `repeat(${filteredSeries.length}, minmax(0, 1fr))`
           }}>
-            {series.map((seriesData, index) => (
+            {filteredSeries.map((seriesData, index) => (
               <TabsTrigger
                 key={seriesData.name}
                 value={seriesData.name.toLowerCase().replace(/\s+/g, '-')}
@@ -418,7 +439,7 @@ export function UnifiedPianoSeries({
           </TabsList>
 
           {/* Tab Content - Individual Series */}
-          {series.map((seriesData, index) => (
+          {filteredSeries.map((seriesData, index) => (
             <TabsContent 
               key={seriesData.name} 
               value={seriesData.name.toLowerCase().replace(/\s+/g, '-')} 
@@ -448,19 +469,19 @@ export function UnifiedPianoSeries({
             return (
               <div 
                 key={key} 
-                className="keen-slider__slide relative aspect-square min-w-[250px] md:min-w-[300px] lg:min-w-[350px] xl:min-w-[400px] bg-gradient-to-br from-kawai-pearl to-white rounded-lg overflow-hidden shadow-md"
+                className="keen-slider__slide relative aspect-square min-w-[250px] md:min-w-[300px] lg:min-w-[350px] xl:min-w-[400px]"
               >
-                <div className="relative w-full h-full p-3">
+                <div className="relative w-full h-full">
                   <MediaRenderer
                     media={media}
                     preset="gallery"
-                    className="w-full h-full object-contain object-center"
+                    className="w-full h-full object-cover"
                     aria-label={title}
                   />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/60 via-transparent to-transparent rounded-lg" />
+                <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/80 via-transparent to-transparent" />
                 <div className="absolute bottom-3 left-3 text-white">
-                  <h3 className="text-sm md:text-base lg:text-lg font-bold drop-shadow-lg">{title}</h3>
+                  <h3 className="text-sm md:text-base lg:text-lg font-bold">{title}</h3>
                 </div>
               </div>
             );
