@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Header } from "@/components/layout/header";
+import { HeaderDynamic } from "@/components/layout/header-dynamic";
 import { Footer } from "@/components/layout/footer";
 
 export const metadata: Metadata = {
@@ -109,7 +109,7 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
         }}
       />
       <div className="flex min-h-screen flex-col">
-        <Header />
+        <HeaderDynamic />
         <main className="flex-1">{children}</main>
         <Footer />
       </div>

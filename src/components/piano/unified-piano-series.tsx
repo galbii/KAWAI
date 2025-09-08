@@ -212,11 +212,11 @@ function SeriesCard({ series, index, categorySlug, isActive }: SeriesCardProps) 
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.7, delay: 0.4 }}
               >
-                <div className="aspect-[4/3] lg:aspect-[16/9] h-full min-h-[300px] lg:min-h-[400px] relative">
+                <div className="aspect-[4/3] lg:aspect-[3/2] h-full min-h-[250px] lg:min-h-[320px] relative">
                   {/* Piano Image - Embedded Style */}
                   <motion.div 
                     key={series.pianos[0]?.slug}
-                    className="relative w-full h-full p-8 lg:p-12"
+                    className="relative w-full h-full p-6 lg:p-8"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
@@ -226,7 +226,7 @@ function SeriesCard({ series, index, categorySlug, isActive }: SeriesCardProps) 
                     <div className="relative w-full h-full">
                       <MediaRenderer
                         media={series.pianos[0]?.image}
-                        preset="hero"
+                        preset="gallery"
                         priority={index === 0}
                         className="w-full h-full object-contain object-center"
                         aria-label={`${series.name} - ${series.pianos[0]?.name || 'Piano'}`}
@@ -457,7 +457,7 @@ export function UnifiedPianoSeries({
       </motion.div>
 
       {/* Continuous Scrolling Carousel */}
-      <section className="bg-kawai-pearl overflow-hidden mt-16">
+      <section className="bg-kawai-pearl overflow-hidden mt-32 lg:mt-40">
         <div ref={sliderRef} className="keen-slider">
           {carouselItems.map((item, index) => {
             // Check if item is a slide or piano

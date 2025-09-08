@@ -16,6 +16,7 @@ import { Productlines } from './collections/Productlines'
 import { PianoModels } from './collections/PianoModels'
 import { PianosPage } from './collections/PianosPage'
 import { HomePage } from './collections/HomePage'
+import { DealerLocations } from './collections/DealerLocations'
 import { Products } from './collections/Products'
 import {
   ProductShowcase,
@@ -52,8 +53,9 @@ export default buildConfig({
     // SitePages,    // Site-specific pages with template inheritance (disabled)
     Productlines, 
     PianoModels, 
-    HomePage,     // Main homepage content
-    PianosPage,   // Keep for backward compatibility during migration
+    HomePage,       // Main homepage content
+    DealerLocations, // Multiple dealer location pages
+    PianosPage,     // Keep for backward compatibility during migration
     Products
   ],
   // Define blocks at root level for performance optimization using blockReferences

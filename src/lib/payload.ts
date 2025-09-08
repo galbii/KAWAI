@@ -1173,3 +1173,113 @@ export async function getHomePageData(): Promise<{
     return null
   }
 }
+
+// Dealer Location API Functions
+
+// Fetch DealerLocation data from API
+export async function getDealerLocation(slug: string): Promise<any | null> {
+  try {
+    // Construct absolute URL for server-side requests
+    let apiUrl = `/api/dealer-locations/by-slug/${slug}`
+    if (typeof window === 'undefined') {
+      // Server-side: need absolute URL
+      const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+      apiUrl = `${baseURL}/api/dealer-locations/by-slug/${slug}`
+    }
+    
+    console.log('[DEBUG] Fetching dealer location data from', apiUrl)
+    
+    // Use the Next.js API route
+    const response = await fetch(apiUrl, {
+      cache: 'force-cache',
+      next: { revalidate: 300 } // Revalidate every 5 minutes
+    })
+    
+    console.log('[DEBUG] Response status:', response.status)
+    
+    if (response.status === 404) {
+      // Location not found or inactive
+      console.log('[DEBUG] Dealer location not found or inactive')
+      return null
+    }
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const result = await response.json()
+    console.log('[DEBUG] API response result:', { success: result.success, hasData: !!result.data })
+    
+    if (!result.success) {
+      if (result.error === 'Dealer location not found or inactive') {
+        return null
+      }
+      throw new Error(result.error || 'Failed to fetch dealer location data')
+    }
+    
+    console.log('[DEBUG] Successfully fetched dealer location data')
+    return result.data
+  } catch (error) {
+    // Handle null/undefined errors the same way as payloadFetch
+    if (error === null || error === undefined) {
+      console.error('[ERROR] Failed to fetch dealer location: received null error')
+      throw new Error('Failed to fetch dealer location data')
+    }
+    
+    if (!(error instanceof Error)) {
+      console.error('[ERROR] Failed to fetch dealer location:', String(error))
+      throw new Error(`Failed to fetch dealer location data: ${String(error)}`)
+    }
+    
+    console.error('[ERROR] Failed to fetch dealer location:', error.message)
+    throw error
+  }
+}
+
+// Cached version of DealerLocation API function
+export async function getCachedDealerLocation(slug: string): Promise<any | null> {
+  const cacheKey = `dealer-location-${slug}`
+  const cached = getCachedData<any | null>(cacheKey)
+  
+  if (cached !== null) return cached
+  
+  const data = await getDealerLocation(slug)
+  setCachedData(cacheKey, data)
+  
+  return data
+}
+
+// Get complete DealerLocation data - matching HomePageData structure for component compatibility
+export async function getDealerLocationData(slug: string): Promise<{
+  heroSection: any
+  showroomSection: any
+  pianoCollectionSection: any
+  pianoGallerySection: any
+  newsCarouselSection: any
+  contactFormSection: any
+  seo: any
+} | null> {
+  try {
+    const dealerLocationData = await getCachedDealerLocation(slug)
+    
+    if (!dealerLocationData) {
+      // Return null to trigger 404 - no fallback for dealer locations
+      return null
+    }
+    
+    // Return the data structure that matches HomePageData interface
+    return {
+      heroSection: dealerLocationData.heroSection,
+      showroomSection: dealerLocationData.showroomSection,
+      pianoCollectionSection: dealerLocationData.pianoCollectionSection,
+      pianoGallerySection: dealerLocationData.pianoGallerySection,
+      newsCarouselSection: dealerLocationData.newsCarouselSection,
+      contactFormSection: dealerLocationData.contactFormSection,
+      seo: dealerLocationData.seo
+    }
+  } catch (error) {
+    console.error('Error fetching complete dealer location data:', error)
+    // Re-throw the error so the page can handle 404s properly
+    throw error
+  }
+}

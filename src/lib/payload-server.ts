@@ -49,7 +49,7 @@ export async function getProductlinesServer(category?: string): Promise<Productl
     // Sort by sortOrder (ascending) then by name
     queryParams.append('sort', 'sortOrder,name')
     queryParams.append('limit', '100') // Get all productlines
-    queryParams.append('depth', '2') // Populate media relationships and their nested relationships
+    queryParams.append('depth', '3') // Populate join relationships (products) and their nested relationships
     
     const endpoint = `/productlines?${queryParams.toString()}`
     const response = await payloadServerFetch<ProductlinesResponse>(endpoint)
@@ -302,6 +302,101 @@ export async function getProductlinesWithProductsServer(category?: string): Prom
   } catch (error) {
     console.error('Error fetching productlines with products on server:', error)
     return []
+  }
+}
+
+// Generate individual category navigation for header
+export async function generateCategoryNavigationServer(category: string): Promise<{label: string, href: string, description?: string, isProductline?: boolean, isProduct?: boolean}[]> {
+  try {
+    // Get productlines for this specific category with their products
+    const categoryProductlines = await getProductlinesServer(category)
+    
+    const navigation: {label: string, href: string, description?: string, isProductline?: boolean, isProduct?: boolean}[] = []
+    
+    // Sort productlines by number of products (most populated first)
+    const sortedProductlines = categoryProductlines
+      .map(productline => {
+        const products = productline.products?.docs?.filter((product): product is Product => 
+          typeof product === 'object' && 
+          product.type === 'piano' && 
+          product.status === 'active'
+        ) || []
+        return { productline, productCount: products.length, products }
+      })
+      .filter(item => item.productCount > 0) // Only include productlines with at least 1 product
+      .sort((a, b) => b.productCount - a.productCount) // Sort by product count descending
+    
+    // Add productlines and their products for this category
+    for (const { productline, products } of sortedProductlines) {
+      // Add productline as section header
+      navigation.push({
+        label: productline.name,
+        href: `/pianos/${category}/${productline.slug}`,
+        description: productline.description || `${productline.name} piano series`,
+        isProductline: true
+      })
+      
+      // Add all active products for this productline
+      for (const product of products) {
+        navigation.push({
+          label: product.name,
+          href: `/products/${product.slug}`,
+          description: product.shortDescription || `${product.name} piano model`,
+          isProduct: true
+        })
+      }
+    }
+    
+    return navigation
+  } catch (error) {
+    console.error(`Error generating ${category} navigation:`, error)
+    return []
+  }
+}
+
+// Generate all piano categories for main navigation
+export async function generatePianoCategoriesNavigationServer() {
+  try {
+    // Get all productlines to determine which categories have content
+    const allProductlines = await getProductlinesServer()
+    
+    // Categories in desired display order
+    const categoryOrder = ['digital', 'grand', 'upright', 'hybrid'] as const
+    const categoryLabels = {
+      'digital': 'Digital Pianos',
+      'grand': 'Grand Pianos', 
+      'upright': 'Upright Pianos',
+      'hybrid': 'Hybrid Pianos'
+    }
+    
+    const categoryNav = []
+    
+    for (const category of categoryOrder) {
+      // Check if this category has any productlines
+      const categoryProductlines = allProductlines.filter(pl => pl.category === category)
+      
+      if (categoryProductlines.length > 0) {
+        // Generate dropdown items for this category
+        const dropdownItems = await generateCategoryNavigationServer(category)
+        
+        categoryNav.push({
+          label: categoryLabels[category],
+          href: `/pianos/${category}`,
+          dropdown: dropdownItems
+        })
+      }
+    }
+    
+    return categoryNav
+  } catch (error) {
+    console.error('Error generating piano categories navigation:', error)
+    // Return fallback
+    return [
+      { label: 'Digital Pianos', href: '/pianos/digital', dropdown: [] },
+      { label: 'Grand Pianos', href: '/pianos/grand', dropdown: [] },
+      { label: 'Upright Pianos', href: '/pianos/upright', dropdown: [] },
+      { label: 'Hybrid Pianos', href: '/pianos/hybrid', dropdown: [] },
+    ]
   }
 }
 

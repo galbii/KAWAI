@@ -10,6 +10,7 @@ interface KawaiLogoProps {
   size?: 'sm' | 'md' | 'lg'
   animated?: boolean
   theme?: 'light' | 'dark'
+  dealerName?: string
 }
 
 const sizeMap = {
@@ -18,7 +19,7 @@ const sizeMap = {
   lg: { width: 240, height: 48, textSize: 'text-xl', subText: 'text-xs' }
 }
 
-export function KawaiLogo({ className, size = 'md', animated = true, theme = 'light' }: KawaiLogoProps) {
+export function KawaiLogo({ className, size = 'md', animated = true, theme = 'light', dealerName }: KawaiLogoProps) {
   const { width, height, textSize, subText } = sizeMap[size]
   
   const textColors = {
@@ -53,6 +54,23 @@ export function KawaiLogo({ className, size = 'md', animated = true, theme = 'li
     }
   }
 
+  // Parse dealer name into location and suffix
+  const parseLocationText = (dealerName?: string) => {
+    if (!dealerName) {
+      return { location: 'ST. LOUIS', suffix: 'PIANO GALLERY' }
+    }
+    
+    // Handle different dealer name formats
+    if (dealerName.toUpperCase().includes('PIANO GALLERY')) {
+      const location = dealerName.replace(/PIANO GALLERY/i, '').trim().toUpperCase()
+      return { location: location || 'KAWAI', suffix: 'PIANO GALLERY' }
+    } else {
+      return { location: dealerName.toUpperCase(), suffix: 'PIANO GALLERY' }
+    }
+  }
+
+  const { location, suffix } = parseLocationText(dealerName)
+
   const LogoContent = () => (
     <>
       <Image
@@ -72,19 +90,19 @@ export function KawaiLogo({ className, size = 'md', animated = true, theme = 'li
       {animated ? (
         <motion.div variants={textVariants} className="flex-shrink-0">
           <div className={cn("font-bold tracking-wide kawai-heading whitespace-nowrap", textColors[theme].primary, textSize)}>
-            ST. LOUIS
+            {location}
           </div>
           <div className={cn("-mt-1 tracking-widest font-medium whitespace-nowrap", textColors[theme].secondary, subText)}>
-            PIANO GALLERY
+            {suffix}
           </div>
         </motion.div>
       ) : (
         <div className="flex-shrink-0">
           <div className={cn("font-bold tracking-wide kawai-heading whitespace-nowrap", textColors[theme].primary, textSize)}>
-            ST. LOUIS
+            {location}
           </div>
           <div className={cn("-mt-1 tracking-widest font-medium whitespace-nowrap", textColors[theme].secondary, subText)}>
-            PIANO GALLERY
+            {suffix}
           </div>
         </div>
       )}

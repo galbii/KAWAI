@@ -15,6 +15,8 @@ interface NavigationItem {
     label: string
     href: string
     description?: string
+    isProductline?: boolean
+    isProduct?: boolean
   }[]
 }
 
@@ -27,6 +29,9 @@ interface MobileMenuItemProps {
 
 interface DesktopMenuItemProps {
   item: NavigationItem
+  isOpen: boolean
+  onOpen: (itemLabel: string) => void
+  onClose: () => void
 }
 
 // Mobile Menu Item Component
@@ -81,20 +86,52 @@ const MobileMenuItem = ({ item, onClose, isOpen, onToggle }: MobileMenuItemProps
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="pl-6 space-y-2">
-              {item.dropdown.map((subItem) => (
-                <Link
-                  key={subItem.href}
-                  href={subItem.href}
-                  className="block py-3 px-4 text-base text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
-                  onClick={onClose}
-                >
-                  <div className="font-medium leading-tight">{subItem.label}</div>
-                  {subItem.description && (
-                    <div className="text-sm text-gray-500 mt-1 leading-tight">{subItem.description}</div>
-                  )}
-                </Link>
-              ))}
+            <div className="pl-6 space-y-4">
+              {(() => {
+                // Group items by productline for mobile too
+                const productlineGroups: { [key: string]: typeof item.dropdown } = {}
+                const currentProductline: string[] = []
+                
+                item.dropdown.forEach((subItem) => {
+                  if (subItem.isProductline) {
+                    currentProductline[0] = subItem.label
+                    if (!productlineGroups[subItem.label]) {
+                      productlineGroups[subItem.label] = []
+                    }
+                    productlineGroups[subItem.label].push(subItem)
+                  } else if (subItem.isProduct && currentProductline[0]) {
+                    if (!productlineGroups[currentProductline[0]]) {
+                      productlineGroups[currentProductline[0]] = []
+                    }
+                    productlineGroups[currentProductline[0]].push(subItem)
+                  }
+                })
+                
+                return Object.entries(productlineGroups).map(([productlineName, items]) => (
+                  <div key={productlineName} className="space-y-2">
+                    {items.map((subItem) => (
+                      <Link
+                        key={subItem.href}
+                        href={subItem.href}
+                        className={cn(
+                          "block py-2 px-4 text-base hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors",
+                          subItem.isProductline ? "text-gray-900 font-semibold border-b border-gray-200 mb-2 pb-2" :
+                          subItem.isProduct ? "text-gray-600 text-sm ml-4" : "text-gray-600"
+                        )}
+                        onClick={onClose}
+                      >
+                        <div className={cn(
+                          "leading-tight",
+                          subItem.isProductline ? "font-semibold text-base" : 
+                          subItem.isProduct ? "font-normal" : "font-medium"
+                        )}>
+                          {subItem.isProduct ? `• ${subItem.label}` : subItem.label}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ))
+              })()}
             </div>
           </motion.div>
         )}
@@ -104,24 +141,186 @@ const MobileMenuItem = ({ item, onClose, isOpen, onToggle }: MobileMenuItemProps
 }
 
 // Desktop Menu Item Component
-const DesktopMenuItem = ({ item }: DesktopMenuItemProps) => {
-  const [isOpen, setIsOpen] = useState(false)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+const DesktopMenuItem = ({ item, isOpen, onOpen, onClose }: DesktopMenuItemProps) => {
+  const [dropdownPosition, setDropdownPosition] = useState({ 
+    left: 0 as number | 'auto', 
+    right: 'auto' as 'auto' | number, 
+    top: '100%' as '100%' | 'auto', 
+    bottom: 'auto' as 'auto' | '100%',
+    maxHeight: 'none' as 'none' | string
+  })
+  const [columnConfig, setColumnConfig] = useState({ columns: 4, maxItemsPerColumn: 20 })
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLDivElement>(null)
 
   const handleMouseEnter = useCallback(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    setIsOpen(true)
-  }, [])
+    onOpen(item.label)
+    
+    // Calculate dropdown position to keep it on screen
+    if (buttonRef.current) {
+      const buttonRect = buttonRef.current.getBoundingClientRect()
+      const viewportWidth = window.innerWidth
+      const viewportHeight = window.innerHeight
+      const dropdownWidth = 1400 // max width from CSS
+      const maxDropdownHeight = 600 // Maximum dropdown height before scrolling
+      
+      let positioning: {
+        left: number | 'auto',
+        right: 'auto' | number,
+        top: '100%' | 'auto',
+        bottom: 'auto' | '100%',
+        maxHeight: 'none' | string
+      } = { 
+        left: 0, 
+        right: 'auto' as const, 
+        top: '100%' as const, 
+        bottom: 'auto' as const,
+        maxHeight: 'none' as const
+      }
+      
+      // Horizontal positioning
+      const spaceOnRight = viewportWidth - buttonRect.left
+      const spaceOnLeft = buttonRect.right
+      
+      if (spaceOnRight < dropdownWidth && spaceOnLeft > dropdownWidth) {
+        positioning.left = 'auto'
+        positioning.right = 0
+      } else if (spaceOnRight < dropdownWidth) {
+        const leftOffset = Math.max(0, dropdownWidth - spaceOnRight)
+        positioning.left = -leftOffset
+        positioning.right = 'auto'
+      } else {
+        positioning.left = 0
+        positioning.right = 'auto'
+      }
+      
+      // Vertical positioning and height constraints
+      const availableSpaceBelow = viewportHeight - buttonRect.bottom
+      const availableSpaceAbove = buttonRect.top
+      
+      if (availableSpaceBelow < maxDropdownHeight && availableSpaceAbove > availableSpaceBelow) {
+        // Position above if there's more space above
+        positioning.top = 'auto'
+        positioning.bottom = '100%'
+        positioning.maxHeight = `${Math.min(availableSpaceAbove - 20, maxDropdownHeight)}px`
+      } else if (availableSpaceBelow < maxDropdownHeight) {
+        // Constrain height if not enough space below
+        positioning.top = '100%'
+        positioning.bottom = 'auto'
+        positioning.maxHeight = `${availableSpaceBelow - 20}px`
+      } else {
+        // Default positioning with full height
+        positioning.top = '100%'
+        positioning.bottom = 'auto'
+        positioning.maxHeight = 'none'
+      }
+      
+      // Adjust column configuration based on available vertical space
+      const effectiveMaxHeight = positioning.maxHeight === 'none' 
+        ? maxDropdownHeight 
+        : parseInt(positioning.maxHeight)
+      
+      const estimatedItemHeight = 40 // Approximate height per item including padding
+      const maxItemsPerColumn = Math.floor(effectiveMaxHeight / estimatedItemHeight)
+      
+      // Calculate optimal columns based on total items and max per column
+      const totalItems = item.dropdown?.length || 0
+      const optimalColumns = Math.min(4, Math.ceil(totalItems / Math.max(maxItemsPerColumn, 1)))
+      
+      setColumnConfig({ 
+        columns: Math.max(1, optimalColumns), 
+        maxItemsPerColumn: Math.max(5, maxItemsPerColumn) 
+      })
+      setDropdownPosition(positioning)
+    }
+  }, [item.dropdown, item.label, onOpen])
 
   const handleMouseLeave = useCallback(() => {
-    timeoutRef.current = setTimeout(() => setIsOpen(false), 150)
-  }, [])
+    onClose()
+  }, [onClose])
 
   useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    const handleResize = () => {
+      if (isOpen && buttonRef.current) {
+        // Recalculate position on window resize
+        const buttonRect = buttonRef.current.getBoundingClientRect()
+        const viewportWidth = window.innerWidth
+        const viewportHeight = window.innerHeight
+        const dropdownWidth = 1400
+        const maxDropdownHeight = 600
+        
+        let positioning: {
+          left: number | 'auto',
+          right: 'auto' | number,
+          top: '100%' | 'auto',
+          bottom: 'auto' | '100%',
+          maxHeight: 'none' | string
+        } = { 
+          left: 0, 
+          right: 'auto' as const, 
+          top: '100%' as const, 
+          bottom: 'auto' as const,
+          maxHeight: 'none' as const
+        }
+        
+        // Horizontal positioning
+        const spaceOnRight = viewportWidth - buttonRect.left
+        const spaceOnLeft = buttonRect.right
+        
+        if (spaceOnRight < dropdownWidth && spaceOnLeft > dropdownWidth) {
+          positioning.left = 'auto'
+          positioning.right = 0
+        } else if (spaceOnRight < dropdownWidth) {
+          const leftOffset = Math.max(0, dropdownWidth - spaceOnRight)
+          positioning.left = -leftOffset
+          positioning.right = 'auto'
+        } else {
+          positioning.left = 0
+          positioning.right = 'auto'
+        }
+        
+        // Vertical positioning and height constraints
+        const availableSpaceBelow = viewportHeight - buttonRect.bottom
+        const availableSpaceAbove = buttonRect.top
+        
+        if (availableSpaceBelow < maxDropdownHeight && availableSpaceAbove > availableSpaceBelow) {
+          positioning.top = 'auto'
+          positioning.bottom = '100%'
+          positioning.maxHeight = `${Math.min(availableSpaceAbove - 20, maxDropdownHeight)}px`
+        } else if (availableSpaceBelow < maxDropdownHeight) {
+          positioning.top = '100%'
+          positioning.bottom = 'auto'
+          positioning.maxHeight = `${availableSpaceBelow - 20}px`
+        } else {
+          positioning.top = '100%'
+          positioning.bottom = 'auto'
+          positioning.maxHeight = 'none'
+        }
+        
+        // Update column configuration
+        const effectiveMaxHeight = positioning.maxHeight === 'none' 
+          ? maxDropdownHeight 
+          : parseInt(positioning.maxHeight)
+        
+        const estimatedItemHeight = 40
+        const maxItemsPerColumn = Math.floor(effectiveMaxHeight / estimatedItemHeight)
+        const totalItems = item.dropdown?.length || 0
+        const optimalColumns = Math.min(4, Math.ceil(totalItems / Math.max(maxItemsPerColumn, 1)))
+        
+        setColumnConfig({ 
+          columns: Math.max(1, optimalColumns), 
+          maxItemsPerColumn: Math.max(5, maxItemsPerColumn) 
+        })
+        setDropdownPosition(positioning)
+      }
     }
-  }, [])
+
+    window.addEventListener('resize', handleResize)
+    
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [isOpen, item.dropdown])
 
   if (!item.dropdown) {
     return (
@@ -136,6 +335,7 @@ const DesktopMenuItem = ({ item }: DesktopMenuItemProps) => {
 
   return (
     <div 
+      ref={buttonRef}
       className="relative group"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -162,31 +362,80 @@ const DesktopMenuItem = ({ item }: DesktopMenuItemProps) => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            ref={dropdownRef}
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 z-50 mt-2 min-w-[280px] bg-white border border-gray-200/50 shadow-xl rounded-xl p-2 overflow-hidden"
+            className="absolute z-50 mt-2 min-w-[900px] max-w-[1400px] bg-white border border-gray-200/50 shadow-xl rounded-xl overflow-hidden"
             style={{
-              transformOrigin: 'top left'
+              transformOrigin: dropdownPosition.top === '100%' ? 'top left' : 'bottom left',
+              left: dropdownPosition.left,
+              right: dropdownPosition.right,
+              top: dropdownPosition.top,
+              bottom: dropdownPosition.bottom,
+              maxHeight: dropdownPosition.maxHeight
             }}
           >
-            {item.dropdown.map((subItem) => (
-              <Link
-                key={subItem.href}
-                href={subItem.href}
-                className="block p-3 rounded-lg hover:bg-gray-50 transition-colors group/item"
+            <div 
+              className="p-6 overflow-y-auto"
+              style={{
+                maxHeight: dropdownPosition.maxHeight === 'none' ? '600px' : dropdownPosition.maxHeight
+              }}
+            >
+              <div 
+                className="grid gap-8" 
+                style={{
+                  alignItems: 'start',
+                  gridTemplateColumns: `repeat(${columnConfig.columns}, 1fr)`
+                }}
               >
-                <div className="text-sm font-semibold text-gray-900 group-hover/item:text-gray-900 mb-1">
-                  {subItem.label}
-                </div>
-                {subItem.description && (
-                  <p className="text-sm text-gray-600 group-hover/item:text-gray-700 leading-snug">
-                    {subItem.description}
-                  </p>
-                )}
-              </Link>
-            ))}
+                {(() => {
+                  // Group items by productline
+                  const productlineGroups: { [key: string]: typeof item.dropdown } = {}
+                  const currentProductline: string[] = []
+                  
+                  item.dropdown.forEach((subItem) => {
+                    if (subItem.isProductline) {
+                      currentProductline[0] = subItem.label
+                      if (!productlineGroups[subItem.label]) {
+                        productlineGroups[subItem.label] = []
+                      }
+                      productlineGroups[subItem.label].push(subItem)
+                    } else if (subItem.isProduct && currentProductline[0]) {
+                      if (!productlineGroups[currentProductline[0]]) {
+                        productlineGroups[currentProductline[0]] = []
+                      }
+                      productlineGroups[currentProductline[0]].push(subItem)
+                    }
+                  })
+                  
+                  return Object.entries(productlineGroups).map(([productlineName, items]) => (
+                    <div key={productlineName} className="flex flex-col">
+                      {items.map((subItem) => (
+                        <Link
+                          key={subItem.href}
+                          href={subItem.href}
+                          className={cn(
+                            "block px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors group/item",
+                            subItem.isProductline ? "border-b border-gray-200 mb-2 pb-2" : "",
+                            subItem.isProduct ? "ml-2" : ""
+                          )}
+                        >
+                          <div className={cn(
+                            "text-sm group-hover/item:text-gray-900",
+                            subItem.isProductline ? "font-bold text-gray-900 text-base mb-1" :
+                            subItem.isProduct ? "font-normal text-gray-600 text-sm" : "font-semibold text-gray-900"
+                          )}>
+                            {subItem.isProduct ? `• ${subItem.label}` : subItem.label}
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  ))
+                })()}
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -194,7 +443,12 @@ const DesktopMenuItem = ({ item }: DesktopMenuItemProps) => {
   )
 }
 
-const navigation: NavigationItem[] = [
+interface HeaderProps {
+  navigation?: NavigationItem[]
+}
+
+// Default fallback navigation
+const defaultNavigation: NavigationItem[] = [
   {
     label: 'Pianos',
     href: '/pianos',
@@ -247,12 +501,14 @@ const navigation: NavigationItem[] = [
   },
 ]
 
-export function Header() {
+export function Header({ navigation = defaultNavigation }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [openMobileItems, setOpenMobileItems] = useState<Set<string>>(new Set())
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
+  const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -301,17 +557,26 @@ export function Header() {
   // Handle escape key and cleanup
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isMenuOpen) {
-        setIsMenuOpen(false)
-        setOpenMobileItems(new Set())
+      if (event.key === 'Escape') {
+        if (isMenuOpen) {
+          setIsMenuOpen(false)
+          setOpenMobileItems(new Set())
+        }
+        if (activeDropdown) {
+          setActiveDropdown(null)
+        }
       }
     }
 
-    if (isMenuOpen) {
-      document.addEventListener('keydown', handleEscape)
-      return () => document.removeEventListener('keydown', handleEscape)
+    document.addEventListener('keydown', handleEscape)
+    
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+      if (dropdownTimeoutRef.current) {
+        clearTimeout(dropdownTimeoutRef.current)
+      }
     }
-  }, [isMenuOpen])
+  }, [isMenuOpen, activeDropdown])
   
   // Scroll detection
   const { scrollY } = useScroll()
@@ -336,6 +601,21 @@ export function Header() {
   const closeMobileMenu = useCallback(() => {
     setIsMenuOpen(false)
     setOpenMobileItems(new Set())
+  }, [])
+
+  // Desktop dropdown handlers
+  const handleDropdownOpen = useCallback((itemLabel: string) => {
+    if (dropdownTimeoutRef.current) {
+      clearTimeout(dropdownTimeoutRef.current)
+      dropdownTimeoutRef.current = null
+    }
+    setActiveDropdown(itemLabel)
+  }, [])
+
+  const handleDropdownClose = useCallback(() => {
+    dropdownTimeoutRef.current = setTimeout(() => {
+      setActiveDropdown(null)
+    }, 150)
   }, [])
 
   // Animation variants
@@ -403,7 +683,13 @@ export function Header() {
           <nav className="hidden xl:flex flex-1 justify-center">
             <div className="flex items-center space-x-1">
               {navigation.map((item) => (
-                <DesktopMenuItem key={item.label} item={item} />
+                <DesktopMenuItem 
+                  key={item.label} 
+                  item={item}
+                  isOpen={activeDropdown === item.label}
+                  onOpen={handleDropdownOpen}
+                  onClose={handleDropdownClose}
+                />
               ))}
             </div>
           </nav>
@@ -423,7 +709,7 @@ export function Header() {
               className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 px-4 py-2 transition-all duration-200" 
               asChild
             >
-              <Link href="/contact/schedule-visit">Visit</Link>
+              <Link href="/showroom">Visit Showroom</Link>
             </Button>
             <Button 
               className="bg-kawai-red hover:bg-kawai-red/90 text-white px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300" 
@@ -496,7 +782,7 @@ export function Header() {
             <div className="sticky top-0 bg-white border-b border-gray-200/50 p-4 z-10 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <h2 className="text-lg font-semibold text-gray-900">Find your perfect piano</h2>
+                  <h2 className="text-lg font-semibold text-gray-900">Piano Categories</h2>
                 </div>
                 <button
                   onClick={closeMobileMenu}
@@ -523,24 +809,8 @@ export function Header() {
             </nav>
             
             <div className="mt-auto bg-white border-t border-gray-200/50 p-6 flex-shrink-0">
-              <div className="flex flex-col gap-4">
-                <Button 
-                  variant="outline" 
-                  className="w-full py-4 text-lg border-gray-300 text-gray-700 hover:bg-gray-50" 
-                  asChild
-                >
-                  <Link href="/contact/schedule-visit" onClick={closeMobileMenu}>
-                    Schedule Visit
-                  </Link>
-                </Button>
-                <Button 
-                  className="w-full py-4 text-lg bg-kawai-red hover:bg-kawai-red/90 text-white shadow-lg" 
-                  asChild
-                >
-                  <Link href="/contact" onClick={closeMobileMenu}>
-                    Contact Us
-                  </Link>
-                </Button>
+              <div className="text-center text-sm text-gray-500">
+                Browse our complete piano collection by category
               </div>
             </div>
           </motion.div>

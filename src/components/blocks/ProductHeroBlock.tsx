@@ -9,8 +9,15 @@ import { getOptimizedImageProps } from '@/lib/media/r2-utils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { ShoppingCart, Heart, Share2, CheckCircle, Sparkles, Clock, Play, Volume2 } from 'lucide-react'
+import { ShoppingCart, Heart, Share2, CheckCircle, Sparkles, Clock, Play, Volume2, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 interface ProductHeroBlockProps {
   layout?: {
@@ -37,6 +44,13 @@ export function ProductHeroBlock({
 }: ProductHeroBlockProps) {
   const [selectedFinish, setSelectedFinish] = useState(-1) // -1 means no finish selected
   const [isFavorited, setIsFavorited] = useState(false)
+  
+  // Helper function to truncate description
+  const truncateDescription = (text: string, wordLimit: number = 25) => {
+    const words = text.split(' ')
+    if (words.length <= wordLimit) return text
+    return words.slice(0, wordLimit).join(' ') + '...'
+  }
   
   
   // Layout options
@@ -71,7 +85,7 @@ export function ProductHeroBlock({
   
   // Extract data from product, with overrides taking precedence
   const displayTitle = overrides.customTitle || product.name
-  const displayDescription = overrides.customDescription || product.shortDescription || product.description
+  const displayDescription = overrides.customDescription || product.description || product.shortDescription
   
   // CONSOLIDATED: Use the new root-level model field
   const modelDisplay = product.model || product.name
@@ -210,15 +224,15 @@ export function ProductHeroBlock({
     return <span className="text-4xl font-bold">{mainPrice}</span>
   }
   
-  // Enhanced background styling with warmer tints
+  // Enhanced background styling with off-white tints
   const getBackgroundClasses = () => {
     switch (backgroundColor) {
       case 'black':
         return 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900'
       case 'white':
-        return 'bg-gradient-to-br from-amber-50/30 via-white to-orange-50/20'
+        return 'bg-gradient-to-br from-gray-50/30 via-white to-slate-50/20'
       default:
-        return 'bg-gradient-to-br from-amber-100/40 via-white to-orange-100/30'
+        return 'bg-gradient-to-br from-gray-100/40 via-white to-slate-100/30'
     }
   }
   
@@ -316,20 +330,20 @@ export function ProductHeroBlock({
   
   return (
     <section className={`relative min-h-[70vh] lg:min-h-[90vh] overflow-visible ${backgroundClass}`}>
-      {/* Warm background with fade to white in center */}
+      {/* Off-white background with fade to white in center */}
       <div className="absolute inset-0">
         {backgroundColor === 'black' ? (
           <>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(139,69,19,0.08),transparent_50%)]" />
-            <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_30%,rgba(160,82,45,0.04)_50%,transparent_70%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(71,85,105,0.08),transparent_50%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_30%,rgba(100,116,139,0.04)_50%,transparent_70%)]" />
           </>
         ) : (
           <>
             {/* Square/rectangular gradient fading to white in center following component outline */}
-            <div className="absolute inset-0 bg-gradient-to-r from-stone-100/6 via-white via-90% to-stone-100/6" />
-            <div className="absolute inset-0 bg-gradient-to-b from-amber-50/4 from-5% via-white via-95% to-amber-50/4" />
-            {/* Very subtle earthy corner accents */}
-            <div className="absolute inset-0 bg-[conic-gradient(from_0deg_at_0%_0%,rgba(120,113,108,0.03)_0deg,transparent_90deg),conic-gradient(from_90deg_at_100%_0%,rgba(161,161,170,0.03)_0deg,transparent_90deg),conic-gradient(from_180deg_at_100%_100%,rgba(120,113,108,0.03)_0deg,transparent_90deg),conic-gradient(from_270deg_at_0%_100%,rgba(161,161,170,0.03)_0deg,transparent_90deg)]" />
+            <div className="absolute inset-0 bg-gradient-to-r from-gray-100/6 via-white via-90% to-gray-100/6" />
+            <div className="absolute inset-0 bg-gradient-to-b from-slate-50/4 from-5% via-white via-95% to-slate-50/4" />
+            {/* Very subtle off-white corner accents */}
+            <div className="absolute inset-0 bg-[conic-gradient(from_0deg_at_0%_0%,rgba(148,163,184,0.03)_0deg,transparent_90deg),conic-gradient(from_90deg_at_100%_0%,rgba(156,163,175,0.03)_0deg,transparent_90deg),conic-gradient(from_180deg_at_100%_100%,rgba(148,163,184,0.03)_0deg,transparent_90deg),conic-gradient(from_270deg_at_0%_100%,rgba(156,163,175,0.03)_0deg,transparent_90deg)]" />
           </>
         )}
       </div>
@@ -363,7 +377,7 @@ export function ProductHeroBlock({
               {displayTitle && (
                 <h1 className={cn(
                   "text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight leading-[1.1]",
-                  "bg-gradient-to-r from-kawai-red via-red-500 to-red-600 bg-clip-text text-transparent"
+                  textColorClass
                 )}>
                   {displayTitle}
                 </h1>
@@ -394,22 +408,12 @@ export function ProductHeroBlock({
               {displayImage && (
                 <div className="relative">
                   
-                  {/* Glassmorphism frame - adapts to background */}
-                  <div className={cn(
-                    "absolute -inset-6 backdrop-blur-2xl border rounded-3xl opacity-50",
-                    backgroundColor === 'black' 
-                      ? 'bg-white/5 border-white/10' 
-                      : backgroundColor === 'white'
-                        ? 'bg-black/5 border-black/10'
-                        : 'bg-white/10 border-white/20'
-                  )} />
-                  
                   {/* Main piano showcase */}
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200">
                     {(() => {
                       if (!displayImage) {
                         return (
-                          <div className="w-full h-full bg-gradient-to-br from-kawai-pearl to-gray-100 flex items-center justify-center">
+                          <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                             <span className={cn("text-lg font-medium", accentColorClass)}>
                               Product Image
                             </span>
@@ -422,7 +426,7 @@ export function ProductHeroBlock({
 
                       if (!imageProps || !imageProps.src) {
                         return (
-                          <div className="w-full h-full bg-gradient-to-br from-kawai-pearl to-gray-100 flex items-center justify-center">
+                          <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                             <span className={cn("text-lg font-medium", accentColorClass)}>
                               Image Load Error
                             </span>
@@ -437,7 +441,7 @@ export function ProductHeroBlock({
                         <Image
                           {...optimizedProps}
                           fill
-                          className="object-cover"
+                          className="object-contain"
                           priority={true}
                           sizes="100vw"
                           alt={optimizedProps.alt || displayTitle || 'Product image'}
@@ -464,14 +468,101 @@ export function ProductHeroBlock({
               )}
             </div>
             
-            {/* Enhanced Description */}
+            {/* Enhanced Description with Read More */}
             {displayDescription && (
-              <p className={cn(
-                "text-lg lg:text-xl font-light leading-relaxed max-w-2xl mt-6 lg:mt-4",
-                accentColorClass
-              )}>
-                {displayDescription}
-              </p>
+              <div className="space-y-4">
+                <p className={cn(
+                  "text-lg lg:text-xl font-light leading-relaxed max-w-2xl mt-6 lg:mt-4",
+                  accentColorClass
+                )}>
+                  {truncateDescription(displayDescription)}
+                </p>
+                
+                {displayDescription.split(' ').length > 25 && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <button className={cn(
+                        "inline-flex items-center space-x-2 text-kawai-red hover:text-red-600 transition-colors duration-200 font-medium",
+                        "hover:underline underline-offset-4"
+                      )}>
+                        <span>Read More</span>
+                        <ChevronDown className="w-4 h-4" />
+                      </button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-white">
+                      <DialogHeader>
+                        <DialogTitle className="text-2xl font-bold text-kawai-red">
+                          {displayTitle}
+                        </DialogTitle>
+                      </DialogHeader>
+                      
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 py-4">
+                        {/* Full Description */}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold text-slate-900">Description</h3>
+                          <p className="text-base leading-relaxed text-slate-700">
+                            {displayDescription}
+                          </p>
+                          
+                          {/* Model Information */}
+                          {modelDisplay && (
+                            <div className="space-y-2 pt-4 border-t border-gray-200">
+                              <h4 className="font-medium text-slate-900">Model</h4>
+                              <p className="text-slate-600">{modelDisplay}</p>
+                            </div>
+                          )}
+                          
+                          {/* Key Features */}
+                          {keyFeatures && keyFeatures.length > 0 && (
+                            <div className="space-y-2 pt-4 border-t border-gray-200">
+                              <h4 className="font-medium text-slate-900">Key Features</h4>
+                              <ul className="space-y-1 text-slate-600">
+                                {keyFeatures.map((feature: string, index: number) => (
+                                  <li key={index} className="flex items-start space-x-2">
+                                    <CheckCircle className="w-4 h-4 text-kawai-red mt-0.5 flex-shrink-0" />
+                                    <span>{feature}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Product Image */}
+                        <div className="relative">
+                          {displayImage && (
+                            <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-gradient-to-br from-gray-100 to-gray-200">
+                              {(() => {
+                                const imageProps = getOptimizedImageProps(displayImage, 'hero')
+                                if (!imageProps || !imageProps.src) {
+                                  return (
+                                    <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                                      <span className="text-lg font-medium text-slate-600">
+                                        Product Image
+                                      </span>
+                                    </div>
+                                  )
+                                }
+                                
+                                const { width, height, ...optimizedProps } = imageProps
+                                
+                                return (
+                                  <Image
+                                    {...optimizedProps}
+                                    fill
+                                    className="object-contain"
+                                    alt={optimizedProps.alt || displayTitle || 'Product image'}
+                                  />
+                                )
+                              })()}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </div>
             )}
             
             
@@ -591,22 +682,12 @@ export function ProductHeroBlock({
             {displayImage && (
               <div className="relative">
                 
-                {/* Glassmorphism frame - adapts to background */}
-                <div className={cn(
-                  "absolute -inset-6 backdrop-blur-2xl border rounded-3xl opacity-50",
-                  backgroundColor === 'black' 
-                    ? 'bg-white/5 border-white/10' 
-                    : backgroundColor === 'white'
-                      ? 'bg-black/5 border-black/10'
-                      : 'bg-white/10 border-white/20'
-                )} />
-                
                 {/* Main piano showcase */}
-                <div className="relative w-full h-[300px] sm:h-[400px] lg:h-[500px] xl:h-[600px] overflow-hidden rounded-2xl">
+                <div className="relative w-full h-[300px] sm:h-[400px] lg:h-[500px] xl:h-[600px] overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200">
                   {(() => {
                     if (!displayImage) {
                       return (
-                        <div className="w-full h-full bg-gradient-to-br from-kawai-pearl to-gray-100 flex items-center justify-center">
+                        <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                           <span className={cn("text-lg font-medium", accentColorClass)}>
                             Product Image
                           </span>
@@ -619,7 +700,7 @@ export function ProductHeroBlock({
 
                     if (!imageProps || !imageProps.src) {
                       return (
-                        <div className="w-full h-full bg-gradient-to-br from-kawai-pearl to-gray-100 flex items-center justify-center">
+                        <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                           <span className={cn("text-lg font-medium", accentColorClass)}>
                             Image Load Error
                           </span>
@@ -634,7 +715,7 @@ export function ProductHeroBlock({
                       <Image
                         {...optimizedProps}
                         fill
-                        className="object-cover"
+                        className="object-contain"
                         priority={true}
                         sizes="(max-width: 1024px) 50vw, 40vw"
                         alt={optimizedProps.alt || displayTitle || 'Product image'}
