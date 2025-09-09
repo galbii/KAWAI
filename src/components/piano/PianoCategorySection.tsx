@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { MediaRenderer } from '@/components/ui/media/MediaRenderer'
 import { CategoryIcon } from '@/components/ui/icons/CategoryIcon'
-import { PlaceholderImageGrid } from '@/components/piano/PlaceholderImageGrid'
+import { CategoryImageGrid } from '@/components/piano/CategoryImageGrid'
 import { cn } from '@/lib/utils'
 
 export interface LegacyPianoCategory {
@@ -19,6 +19,11 @@ export interface LegacyPianoCategory {
   icon: string
   badge: string
   highlight: string
+  galleryImages?: {
+    image: any // Media object or string
+    alt?: string
+    caption?: string
+  }[]
 }
 
 interface PianoCategorySectionProps {
@@ -124,8 +129,12 @@ export function PianoCategorySection({ category, index }: PianoCategorySectionPr
           </div>
         </div>
         
-        {/* Image Placeholders */}
-        <PlaceholderImageGrid category={category.slug} />
+        {/* Category Gallery Images */}
+        <CategoryImageGrid 
+          galleryImages={category.galleryImages} 
+          category={category.slug}
+          fallbackToPlaceholder={true}
+        />
       </div>
     </section>
   )

@@ -836,7 +836,9 @@ export async function getPianosPageData(): Promise<{
         ? pianoPageData.pianoCategories.map((cat: any) => ({
             ...cat,
             // Preserve Media object for MediaRenderer, fallback to string for static images
-            image: cat.image || `/images/piano-categories/${cat.slug}.jpg`
+            image: cat.image || `/images/piano-categories/${cat.slug}.jpg`,
+            // Include gallery images from CMS
+            galleryImages: cat.galleryImages || []
           }))
         : await getPianoCategories(),
       featuredModels: pianoPageData.featuredModels?.length > 0 

@@ -2658,6 +2658,26 @@ export interface PianosPage {
      * Highlighted feature or series (e.g., "GX BLAK Performance Series")
      */
     highlight?: string | null;
+    /**
+     * Three showcase images displayed below each piano category section
+     */
+    galleryImages?:
+      | {
+          /**
+           * Showcase image for this category
+           */
+          image: string | Media;
+          /**
+           * Alternative text for accessibility (optional - will use media alt if not provided)
+           */
+          alt?: string | null;
+          /**
+           * Optional caption or title for the image
+           */
+          caption?: string | null;
+          id?: string | null;
+        }[]
+      | null;
     id?: string | null;
   }[];
   /**
@@ -3371,6 +3391,14 @@ export interface PianosPageSelect<T extends boolean = true> {
         icon?: T;
         badge?: T;
         highlight?: T;
+        galleryImages?:
+          | T
+          | {
+              image?: T;
+              alt?: T;
+              caption?: T;
+              id?: T;
+            };
         id?: T;
       };
   featuredModelsSection?:

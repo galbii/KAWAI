@@ -180,6 +180,47 @@ export const PianosPage: CollectionConfig = {
                   admin: {
                     description: 'Highlighted feature or series (e.g., "GX BLAK Performance Series")'
                   }
+                },
+                {
+                  name: 'galleryImages',
+                  type: 'array',
+                  minRows: 3,
+                  maxRows: 3,
+                  labels: {
+                    singular: 'Gallery Image',
+                    plural: 'Gallery Images',
+                  },
+                  admin: {
+                    description: 'Three showcase images displayed below each piano category section'
+                  },
+                  fields: [
+                    {
+                      name: 'image',
+                      type: 'upload',
+                      relationTo: 'media',
+                      required: true,
+                      filterOptions: {
+                        mimeType: { contains: 'image' },
+                      },
+                      admin: {
+                        description: 'Showcase image for this category'
+                      }
+                    },
+                    {
+                      name: 'alt',
+                      type: 'text',
+                      admin: {
+                        description: 'Alternative text for accessibility (optional - will use media alt if not provided)'
+                      }
+                    },
+                    {
+                      name: 'caption',
+                      type: 'text',
+                      admin: {
+                        description: 'Optional caption or title for the image'
+                      }
+                    }
+                  ]
                 }
               ]
             }
