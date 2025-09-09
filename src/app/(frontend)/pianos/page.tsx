@@ -7,13 +7,13 @@ import { ErrorBoundary, PianoSectionErrorFallback } from '@/components/ui/error-
 import { PianoLoadingSkeleton, LoadingState } from '@/components/ui/loading-states'
 import { getPianosPageData } from '@/lib/payload'
 import { PianoPageHero } from '@/components/piano/PianoPageHero'
-import { FeaturedPianoCarousel } from '@/components/piano/FeaturedPianoCarousel'
+import { FeaturedModelsGrid } from '@/components/piano/FeaturedModelsGrid'
 import { PianoCategorySection } from '@/components/piano/PianoCategorySection'
 import { ScrollAnimatedSection } from '@/components/ui/animations/ScrollAnimatedSection'
 
 // Import types from components
 import type { LegacyPianoCategory } from '@/components/piano/PianoCategorySection'
-import type { LegacyFeaturedModel } from '@/components/piano/FeaturedPianoCarousel'
+import type { LegacyFeaturedModel } from '@/components/piano/FeaturedModelsGrid'
 
 // API fetch functions with error handling
 async function fetchPianoCategories(): Promise<LegacyPianoCategory[]> {
@@ -127,7 +127,7 @@ export default function PianosPageCMS() {
           </div>
           
           <ErrorBoundary fallback={PianoSectionErrorFallback}>
-            <FeaturedPianoCarousel models={pageData.featuredModels} />
+            <FeaturedModelsGrid models={pageData.featuredModels} />
           </ErrorBoundary>
         </div>
       </ScrollAnimatedSection>
