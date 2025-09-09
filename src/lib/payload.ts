@@ -837,8 +837,10 @@ export async function getPianosPageData(): Promise<{
             ...cat,
             // Preserve Media object for MediaRenderer, fallback to string for static images
             image: cat.image || `/images/piano-categories/${cat.slug}.jpg`,
-            // Include gallery images from CMS
-            galleryImages: cat.galleryImages || []
+            // Include the 3 separate gallery image fields from CMS (Media objects will be preserved)
+            galleryImage1: cat.galleryImage1,
+            galleryImage2: cat.galleryImage2,
+            galleryImage3: cat.galleryImage3
           }))
         : await getPianoCategories(),
       featuredModels: pianoPageData.featuredModels?.length > 0 

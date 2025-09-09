@@ -5,7 +5,7 @@
   "nav.artists": "アーティスト",
   "nav.technology": "テクノロジー",
   "nav.heritage": "歴史",
-  "nav.dealers": "販売店",
+  "nav.storefronts": "店舗",
   "nav.support": "サポート",
 
   "common.price": "価格",
@@ -73,7 +73,7 @@
   "company.sustainability": "持続可能性",
 
   "contact.find_dealer": "販売店を探す",
-  "contact.authorized_dealers": "正規販売店",
+  "contact.authorized_storefronts": "正規店舗",
   "contact.customer_service": "カスタマーサービス",
   "contact.technical_support": "技術サポート"
 }

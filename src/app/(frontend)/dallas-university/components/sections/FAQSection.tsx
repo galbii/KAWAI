@@ -11,7 +11,7 @@ interface FAQItem {
 const faqData: FAQItem[] = [
   {
     question: "Where can I find piano sales in Dallas?",
-    answer: "Our KAWAI piano sales Dallas event at our dealership offers the best selection of digital and acoustic pianos in the Greater Dallas Area. We're Dallas's trusted piano dealer with over 5 years of partnership with UTD."
+    answer: "Our KAWAI piano sales Dallas event at our storefront offers the best selection of digital and acoustic pianos in the Greater Dallas Area. We're Dallas's trusted piano store with over 5 years of partnership with UTD."
   },
   {
     question: "Do you have used pianos for sale in Dallas?",
@@ -27,7 +27,7 @@ const faqData: FAQItem[] = [
   },
   {
     question: "Where is your Dallas piano store located?",
-    answer: "Our Dallas piano sale event takes place at our KAWAI Piano Gallery Dallas showroom at 601 W. Plano Parkway, Suite 153. As Dallas's premier piano dealer, our convenient location makes it easy for Greater Dallas Area families to shop for pianos."
+    answer: "Our Dallas piano sale event takes place at our KAWAI Piano Gallery Dallas showroom at 601 W. Plano Parkway, Suite 153. As Dallas's premier piano storefront, our convenient location makes it easy for Greater Dallas Area families to shop for pianos."
   },
   {
     question: "What types of pianos are available at your Dallas location?",
@@ -38,8 +38,8 @@ const faqData: FAQItem[] = [
     answer: "Yes! We offer financing options for our piano sales Dallas event. Monthly payments start as low as $79 for digital pianos. VIP consultation customers receive priority approval and exclusive financing terms. Limited-time special rates available only during this event."
   },
   {
-    question: "What makes your Dallas piano sale different from other dealers?",
-    answer: "Our partnership with University of Texas at Dallas's Music Department ensures every piano meets institutional quality standards. Unlike other piano dealers Dallas offers, our instruments are faculty-approved and your purchase directly supports UTD's music programs through our ongoing partnership."
+    question: "What makes your Dallas piano sale different from other storefronts?",
+    answer: "Our partnership with University of Texas at Dallas's Music Department ensures every piano meets institutional quality standards. Unlike other piano storefronts Dallas offers, our instruments are faculty-approved and your purchase directly supports UTD's music programs through our ongoing partnership."
   },
   {
     question: "How do I get priority booking for the Dallas event?",

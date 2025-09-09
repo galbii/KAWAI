@@ -46,7 +46,7 @@ export async function DealerLocations({ className = '' }: DealerLocationsProps) 
             <span className="text-kawai-red block">Piano Gallery</span>
           </h2>
           <p className="text-xl text-kawai-black/70 max-w-3xl mx-auto leading-relaxed">
-            Visit our authorized Kawai dealers and experience our complete collection of acoustic and digital pianos in person.
+            Visit our authorized Kawai storefronts and experience our complete collection of acoustic and digital pianos in person.
           </p>
         </div>
 
@@ -160,7 +160,7 @@ export async function DealerLocations({ className = '' }: DealerLocationsProps) 
             href="/contact"
             className="inline-flex items-center space-x-2 bg-kawai-red hover:bg-kawai-black text-white px-8 py-4 font-medium transition-colors text-sm tracking-wide uppercase rounded-lg"
           >
-            <span>Find Authorized Dealers</span>
+            <span>Find Authorized Storefronts</span>
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
             </svg>

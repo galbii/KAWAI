@@ -19,11 +19,9 @@ export interface LegacyPianoCategory {
   icon: string
   badge: string
   highlight: string
-  galleryImages?: {
-    image: any // Media object or string
-    alt?: string
-    caption?: string
-  }[]
+  galleryImage1?: any // Media object or string
+  galleryImage2?: any // Media object or string
+  galleryImage3?: any // Media object or string
 }
 
 interface PianoCategorySectionProps {
@@ -131,7 +129,9 @@ export function PianoCategorySection({ category, index }: PianoCategorySectionPr
         
         {/* Category Gallery Images */}
         <CategoryImageGrid 
-          galleryImages={category.galleryImages} 
+          galleryImage1={category.galleryImage1}
+          galleryImage2={category.galleryImage2}
+          galleryImage3={category.galleryImage3}
           category={category.slug}
           fallbackToPlaceholder={true}
         />

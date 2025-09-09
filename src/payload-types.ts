@@ -2659,25 +2659,17 @@ export interface PianosPage {
      */
     highlight?: string | null;
     /**
-     * Three showcase images displayed below each piano category section
+     * First showcase image for this piano category
      */
-    galleryImages?:
-      | {
-          /**
-           * Showcase image for this category
-           */
-          image: string | Media;
-          /**
-           * Alternative text for accessibility (optional - will use media alt if not provided)
-           */
-          alt?: string | null;
-          /**
-           * Optional caption or title for the image
-           */
-          caption?: string | null;
-          id?: string | null;
-        }[]
-      | null;
+    galleryImage1?: (string | null) | Media;
+    /**
+     * Second showcase image for this piano category
+     */
+    galleryImage2?: (string | null) | Media;
+    /**
+     * Third showcase image for this piano category
+     */
+    galleryImage3?: (string | null) | Media;
     id?: string | null;
   }[];
   /**
@@ -3391,14 +3383,9 @@ export interface PianosPageSelect<T extends boolean = true> {
         icon?: T;
         badge?: T;
         highlight?: T;
-        galleryImages?:
-          | T
-          | {
-              image?: T;
-              alt?: T;
-              caption?: T;
-              id?: T;
-            };
+        galleryImage1?: T;
+        galleryImage2?: T;
+        galleryImage3?: T;
         id?: T;
       };
   featuredModelsSection?:

@@ -19,7 +19,7 @@ export interface TranslationKeys {
   'nav.artists': string
   'nav.technology': string
   'nav.heritage': string
-  'nav.dealers': string
+  'nav.storefronts': string
   'nav.support': string
 
   // Common
@@ -96,7 +96,7 @@ export interface TranslationKeys {
 
   // Contact
   'contact.find_dealer': string
-  'contact.authorized_dealers': string
+  'contact.authorized_storefronts': string
   'contact.customer_service': string
   'contact.technical_support': string
 }

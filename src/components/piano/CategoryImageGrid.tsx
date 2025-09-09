@@ -1,26 +1,27 @@
 import { cn } from '@/lib/utils'
-import { MediaRenderer } from '@/components/ui/media/MediaRenderer'
-
-interface GalleryImage {
-  image: any // Media object or string
-  alt?: string
-  caption?: string
-}
+import { ResponsiveImage } from '@/components/ui/media/ResponsiveImage'
 
 interface CategoryImageGridProps {
-  galleryImages?: GalleryImage[]
+  galleryImage1?: any // Media object or string
+  galleryImage2?: any // Media object or string  
+  galleryImage3?: any // Media object or string
   category: string
   fallbackToPlaceholder?: boolean
 }
 
 export function CategoryImageGrid({ 
-  galleryImages, 
+  galleryImage1,
+  galleryImage2, 
+  galleryImage3,
   category, 
   fallbackToPlaceholder = true 
 }: CategoryImageGridProps) {
   
-  // If no gallery images provided or less than 3, show placeholders or nothing
-  if (!galleryImages || galleryImages.length === 0) {
+  // Convert the 3 separate fields into an array for easier processing
+  const galleryImages = [galleryImage1, galleryImage2, galleryImage3].filter(Boolean)
+  
+  // If no gallery images provided, show placeholders or nothing
+  if (galleryImages.length === 0) {
     if (!fallbackToPlaceholder) return null
     
     // Fallback to placeholder logic (simplified version)
@@ -77,7 +78,7 @@ export function CategoryImageGrid({
     <div className="w-full py-8 -mx-6">
       <div className="w-full">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-0 w-full">
-          {galleryImages.slice(0, 3).map((imageItem, index) => (
+          {galleryImages.slice(0, 3).map((media, index) => (
             <div
               key={index}
               className={cn(
@@ -88,22 +89,14 @@ export function CategoryImageGrid({
                 'group'
               )}
             >
-              <MediaRenderer
-                media={imageItem.image}
+              <ResponsiveImage
+                media={media}
                 preset="gallery"
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                aria-label={imageItem.alt || (typeof imageItem.image === 'object' && imageItem.image.alt) || `${category} piano showcase ${index + 1}`}
+                className="absolute inset-0 w-full h-full transition-transform duration-300 group-hover:scale-105"
+                objectFit="cover"
+                alt={typeof media === 'object' && media.alt || `${category} piano showcase ${index + 1}`}
                 priority={index === 0} // Prioritize first image
               />
-              
-              {/* Optional caption overlay */}
-              {imageItem.caption && (
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                  <p className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {imageItem.caption}
-                  </p>
-                </div>
-              )}
             </div>
           ))}
           

@@ -182,45 +182,40 @@ export const PianosPage: CollectionConfig = {
                   }
                 },
                 {
-                  name: 'galleryImages',
-                  type: 'array',
-                  minRows: 3,
-                  maxRows: 3,
-                  labels: {
-                    singular: 'Gallery Image',
-                    plural: 'Gallery Images',
+                  name: 'galleryImage1',
+                  type: 'upload',
+                  relationTo: 'media',
+                  required: false,
+                  filterOptions: {
+                    mimeType: { contains: 'image' },
                   },
                   admin: {
-                    description: 'Three showcase images displayed below each piano category section'
+                    description: 'First showcase image for this piano category'
+                  }
+                },
+                {
+                  name: 'galleryImage2',
+                  type: 'upload',
+                  relationTo: 'media',
+                  required: false,
+                  filterOptions: {
+                    mimeType: { contains: 'image' },
                   },
-                  fields: [
-                    {
-                      name: 'image',
-                      type: 'upload',
-                      relationTo: 'media',
-                      required: true,
-                      filterOptions: {
-                        mimeType: { contains: 'image' },
-                      },
-                      admin: {
-                        description: 'Showcase image for this category'
-                      }
-                    },
-                    {
-                      name: 'alt',
-                      type: 'text',
-                      admin: {
-                        description: 'Alternative text for accessibility (optional - will use media alt if not provided)'
-                      }
-                    },
-                    {
-                      name: 'caption',
-                      type: 'text',
-                      admin: {
-                        description: 'Optional caption or title for the image'
-                      }
-                    }
-                  ]
+                  admin: {
+                    description: 'Second showcase image for this piano category'
+                  }
+                },
+                {
+                  name: 'galleryImage3',
+                  type: 'upload',
+                  relationTo: 'media',
+                  required: false,
+                  filterOptions: {
+                    mimeType: { contains: 'image' },
+                  },
+                  admin: {
+                    description: 'Third showcase image for this piano category'
+                  }
                 }
               ]
             }
