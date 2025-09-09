@@ -285,49 +285,33 @@ export function ProductHeroBlock({
   
   const statusBadge = getStatusBadge()
   
-  // CONSOLIDATED: Debug log with new consolidated structure and image fallback logic
-  console.log('ProductHeroBlock - Product data (consolidated structure):', {
-    product,
-    keyFeatures: product?.keyFeatures,
-    // Consolidated fields (now at root level)
-    model: product?.model,
-    series: product?.series,
-    rating: product?.rating,
-    reviews: product?.reviews,
-    badge: product?.badge,
-    highlight: product?.highlight,
-    specifications: product?.specifications,
-    buyButton: product?.buyButton,
-    price: product?.price,
-    finishes: product?.finishes,
+  // CONSOLIDATED: Debug log with finish image sizing analysis
+  console.log('ProductHeroBlock - Image sizing debug:', {
     selectedFinish,
-    selectedFinishData: selectedFinish >= 0 && product?.finishes ? product.finishes[selectedFinish] : null,
-    selectedFinishImage: selectedFinish >= 0 && product?.finishes ? product.finishes[selectedFinish]?.image : null,
-    selectedFinishImageUrl: selectedFinish >= 0 && product?.finishes ? product.finishes[selectedFinish]?.imageUrl : null,
-    // Image fallback debugging
-    mainImage: product?.mainImage,
-    mainImageType: typeof product?.mainImage,
-    mainImageUrl: typeof product?.mainImage === 'object' ? product?.mainImage?.url : undefined,
-    imageUrl: product?.imageUrl,
-    displayImage: typeof displayImage === 'object' ? displayImage?.url : displayImage,
+    displayImage: displayImage,
     displayImageType: typeof displayImage,
-    hasMainImage: !!product?.mainImage,
-    hasImageUrl: !!product?.imageUrl,
-    isMainImageValid: product?.mainImage && 
-      typeof product?.mainImage === 'object' && 
-      product?.mainImage.url && 
-      product?.mainImage.url.trim() !== '',
-    isImageUrlValid: product?.imageUrl && product?.imageUrl.trim() !== '',
-    imageSource: (() => {
-      const isMainImageValid = product?.mainImage && 
-        typeof product?.mainImage === 'object' && 
-        product?.mainImage.url && 
-        product?.mainImage.url.trim() !== ''
-      
-      if (isMainImageValid) return 'mainImage (Media)'
-      if (product?.imageUrl && product?.imageUrl.trim() !== '') return 'imageUrl (string)'
-      return 'none'
-    })()
+    displayImageUrl: typeof displayImage === 'object' ? displayImage?.url : displayImage,
+    isFinishImageSelected: selectedFinish >= 0,
+    finishImageData: selectedFinish >= 0 && product?.finishes ? {
+      finishName: product.finishes[selectedFinish]?.name,
+      hasMediaImage: !!(product.finishes[selectedFinish]?.image),
+      hasImageUrl: !!(product.finishes[selectedFinish]?.imageUrl),
+      mediaImageUrl: typeof product.finishes[selectedFinish]?.image === 'object' ? 
+        product.finishes[selectedFinish]?.image?.url : null,
+      imageUrl: product.finishes[selectedFinish]?.imageUrl,
+      selectedImageSource: (() => {
+        const finish = product.finishes[selectedFinish]
+        if (finish?.image && typeof finish.image === 'object' && finish.image.url) return 'Media object'
+        if (finish?.imageUrl) return 'imageUrl string'
+        return 'fallback to main'
+      })()
+    } : null,
+    mainImageData: {
+      hasMainImage: !!(product?.mainImage),
+      mainImageUrl: typeof product?.mainImage === 'object' ? product?.mainImage?.url : null,
+      hasImageUrl: !!(product?.imageUrl),
+      imageUrl: product?.imageUrl
+    }
   })
   
   return (
@@ -350,13 +334,12 @@ export function ProductHeroBlock({
         )}
       </div>
       
-      {/* Main Content Container */}
-      <div className="container mx-auto px-6 lg:px-12 xl:px-16 relative z-10 py-12 lg:py-20">
-        {/* Back Button - Floating Red Underlined Text */}
+      {/* Back Button - Fixed/Sticky Floating Position (Below Header) */}
+      <div className="fixed top-[110px] left-12 z-40 pointer-events-auto">
         <button
           onClick={() => router.back()}
           className={cn(
-            "flex items-center gap-2 mb-8",
+            "flex items-center gap-2",
             "text-kawai-red hover:text-red-600",
             "underline underline-offset-4 decoration-2",
             "transition-colors duration-200",
@@ -364,9 +347,13 @@ export function ProductHeroBlock({
           )}
           aria-label="Go back to previous page"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm font-medium">Back</span>
+          <ArrowLeft className="w-5 h-5" />
+          <span className="text-lg font-medium">Back</span>
         </button>
+      </div>
+      
+      {/* Main Content Container */}
+      <div className="container mx-auto px-6 lg:px-12 xl:px-16 relative z-10 py-12 lg:py-20">
         
         <div className={cn(
           "grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 w-full",
@@ -421,167 +408,6 @@ export function ProductHeroBlock({
               )}
             </div>
             
-            {/* Mobile Image Section - Show after heading but before description */}
-            <div className="lg:hidden relative order-1">
-              {displayImage && (
-                <div className="relative">
-                  
-                  {/* Main piano showcase */}
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
-                    {(() => {
-                      if (!displayImage) {
-                        return (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <span className={cn("text-lg font-medium", accentColorClass)}>
-                              Product Image
-                            </span>
-                          </div>
-                        )
-                      }
-
-                      // Get optimized image props using the R2 optimization system
-                      const imageProps = getOptimizedImageProps(displayImage, 'hero')
-
-                      if (!imageProps || !imageProps.src) {
-                        return (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <span className={cn("text-lg font-medium", accentColorClass)}>
-                              Image Load Error
-                            </span>
-                          </div>
-                        )
-                      }
-
-                      // Use fill layout for responsive container, excluding width/height from spread
-                      const { width, height, ...optimizedProps } = imageProps
-                      
-                      return (
-                        <Image
-                          {...optimizedProps}
-                          fill
-                          className="object-contain"
-                          priority={true}
-                          sizes="100vw"
-                          alt={optimizedProps.alt || displayTitle || 'Product image'}
-                        />
-                      )
-                    })()}
-                    
-                    {/* Custom badge */}
-                    {overrides.badge && (
-                      <Badge className="absolute top-6 left-6 bg-kawai-red text-white font-bold text-sm px-4 py-2 rounded-full">
-                        {overrides.badge}
-                      </Badge>
-                    )}
-                    
-                    {/* Status badge */}
-                    {statusBadge && (
-                      <Badge className={cn("absolute bottom-6 right-6 font-bold text-sm px-4 py-2 rounded-full flex items-center gap-2", statusBadge.className)}>
-                        {statusBadge.icon && <statusBadge.icon className="h-3 w-3" />}
-                        {statusBadge.text}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            {/* Enhanced Description with Read More */}
-            {displayDescription && (
-              <div className="space-y-4">
-                <p className={cn(
-                  "text-lg lg:text-xl font-light leading-relaxed max-w-2xl mt-6 lg:mt-4",
-                  accentColorClass
-                )}>
-                  {truncateDescription(displayDescription)}
-                </p>
-                
-                {displayDescription.split(' ').length > 25 && (
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <button className={cn(
-                        "inline-flex items-center space-x-2 text-kawai-red hover:text-red-600 transition-colors duration-200 font-medium",
-                        "hover:underline underline-offset-4"
-                      )}>
-                        <span>Read More</span>
-                        <ChevronDown className="w-4 h-4" />
-                      </button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-white">
-                      <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold text-kawai-red">
-                          {displayTitle}
-                        </DialogTitle>
-                      </DialogHeader>
-                      
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 py-4">
-                        {/* Full Description */}
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-slate-900">Description</h3>
-                          <p className="text-base leading-relaxed text-slate-700">
-                            {displayDescription}
-                          </p>
-                          
-                          {/* Model Information */}
-                          {modelDisplay && (
-                            <div className="space-y-2 pt-4 border-t border-gray-200">
-                              <h4 className="font-medium text-slate-900">Model</h4>
-                              <p className="text-slate-600">{modelDisplay}</p>
-                            </div>
-                          )}
-                          
-                          {/* Key Features */}
-                          {keyFeatures && keyFeatures.length > 0 && (
-                            <div className="space-y-2 pt-4 border-t border-gray-200">
-                              <h4 className="font-medium text-slate-900">Key Features</h4>
-                              <ul className="space-y-1 text-slate-600">
-                                {keyFeatures.map((feature: string, index: number) => (
-                                  <li key={index} className="flex items-start space-x-2">
-                                    <CheckCircle className="w-4 h-4 text-kawai-red mt-0.5 flex-shrink-0" />
-                                    <span>{feature}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </div>
-                        
-                        {/* Product Image */}
-                        <div className="relative">
-                          {displayImage && (
-                            <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
-                              {(() => {
-                                const imageProps = getOptimizedImageProps(displayImage, 'hero')
-                                if (!imageProps || !imageProps.src) {
-                                  return (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                      <span className="text-lg font-medium text-slate-600">
-                                        Product Image
-                                      </span>
-                                    </div>
-                                  )
-                                }
-                                
-                                const { width, height, ...optimizedProps } = imageProps
-                                
-                                return (
-                                  <Image
-                                    {...optimizedProps}
-                                    fill
-                                    className="object-contain"
-                                    alt={optimizedProps.alt || displayTitle || 'Product image'}
-                                  />
-                                )
-                              })()}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                )}
-              </div>
-            )}
             
             
             {/* Clean Price Display */}
@@ -696,12 +522,12 @@ export function ProductHeroBlock({
           </div>
           
           {/* Image Section - Full width on mobile, 7 columns on desktop */}
-          <div className="lg:col-span-7 relative order-2 lg:order-none">
+          <div className="lg:col-span-7 relative order-2 lg:order-none space-y-8">
             {displayImage && (
               <div className="relative">
                 
                 {/* Main piano showcase */}
-                <div className="relative w-full h-[300px] sm:h-[400px] lg:h-[500px] xl:h-[600px] overflow-hidden rounded-2xl">
+                <div className="relative w-full h-[300px] sm:h-[400px] lg:h-[500px] xl:h-[600px] min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] xl:min-h-[600px] overflow-hidden rounded-2xl">
                   {(() => {
                     if (!displayImage) {
                       return (
@@ -758,8 +584,106 @@ export function ProductHeroBlock({
                 </div>
               </div>
             )}
+            
+            {/* Description directly under the image */}
+            {displayDescription && (
+              <div className="space-y-4">
+                <p className={cn(
+                  "text-lg lg:text-xl font-light leading-relaxed",
+                  accentColorClass
+                )}>
+                  {truncateDescription(displayDescription)}
+                </p>
+                
+                {displayDescription.split(' ').length > 25 && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <button className={cn(
+                        "inline-flex items-center space-x-2 text-kawai-red hover:text-red-600 transition-colors duration-200 font-medium",
+                        "hover:underline underline-offset-4"
+                      )}>
+                        <span>Read More</span>
+                        <ChevronDown className="w-4 h-4" />
+                      </button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-white">
+                      <DialogHeader>
+                        <DialogTitle className="text-2xl font-bold text-kawai-red">
+                          {displayTitle}
+                        </DialogTitle>
+                      </DialogHeader>
+                      
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 py-4">
+                        {/* Full Description */}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold text-slate-900">Description</h3>
+                          <p className="text-base leading-relaxed text-slate-700">
+                            {displayDescription}
+                          </p>
+                          
+                          {/* Model Information */}
+                          {modelDisplay && (
+                            <div className="space-y-2 pt-4 border-t border-gray-200">
+                              <h4 className="font-medium text-slate-900">Model</h4>
+                              <p className="text-slate-600">{modelDisplay}</p>
+                            </div>
+                          )}
+                          
+                          {/* Key Features */}
+                          {keyFeatures && keyFeatures.length > 0 && (
+                            <div className="space-y-2 pt-4 border-t border-gray-200">
+                              <h4 className="font-medium text-slate-900">Key Features</h4>
+                              <ul className="space-y-1 text-slate-600">
+                                {keyFeatures.map((feature: string, index: number) => (
+                                  <li key={index} className="flex items-start space-x-2">
+                                    <CheckCircle className="w-4 h-4 text-kawai-red mt-0.5 flex-shrink-0" />
+                                    <span>{feature}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Product Image */}
+                        <div className="relative">
+                          {displayImage && (
+                            <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
+                              {(() => {
+                                const imageProps = getOptimizedImageProps(displayImage, 'hero')
+                                if (!imageProps || !imageProps.src) {
+                                  return (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <span className="text-lg font-medium text-slate-600">
+                                        Product Image
+                                      </span>
+                                    </div>
+                                  )
+                                }
+                                
+                                const { width, height, ...optimizedProps } = imageProps
+                                
+                                return (
+                                  <Image
+                                    {...optimizedProps}
+                                    fill
+                                    className="object-contain"
+                                    alt={optimizedProps.alt || displayTitle || 'Product image'}
+                                  />
+                                )
+                              })()}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </div>
+            )}
           </div>
         </div>
+        
       </div>
     </section>
   )

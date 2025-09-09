@@ -7,6 +7,7 @@ import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-
 import { Button } from '@/components/ui/button'
 import { KawaiLogo } from '@/components/ui/kawai-logo'
 import { cn } from '@/lib/utils'
+import { useNavigationContext } from '@/contexts/NavigationContext'
 
 interface NavigationItem {
   label: string
@@ -512,9 +513,75 @@ export function Header({ navigation = defaultNavigation, locationData }: HeaderP
   const [isScrolled, setIsScrolled] = useState(false)
   const [openMobileItems, setOpenMobileItems] = useState<Set<string>>(new Set())
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+  const [currentLocationData, setCurrentLocationData] = useState<DealerLocationData | null>(locationData || null)
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
+  const [animationComplete, setAnimationComplete] = useState(false)
+  const animationStartedRef = useRef(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  
+  // Use navigation context to detect location changes
+  const { origin, isInitialized } = useNavigationContext()
+  
+  // Start fade-in animation once after mount
+  useEffect(() => {
+    if (!animationStartedRef.current) {
+      animationStartedRef.current = true
+      const timer = setTimeout(() => {
+        setIsVisible(true)
+      }, 100)
+      
+      return () => clearTimeout(timer)
+    }
+  }, [])
+  
+  // Fetch dealer location data when origin changes - but only after animation completes
+  useEffect(() => {
+    const fetchDealerData = async () => {
+      if (!isInitialized || !animationComplete) return
+      
+      // If not a dealer location, clear location data
+      if (!origin.isDealerLocation || !origin.dealerSlug) {
+        setCurrentLocationData(null)
+        return
+      }
+      
+      // If we already have data for this slug, don't refetch
+      if (currentLocationData && currentLocationData.slug === origin.dealerSlug) {
+        return
+      }
+      
+      setIsLoadingLocation(true)
+      
+      try {
+        const response = await fetch(`/api/dealer-locations/header/${origin.dealerSlug}`)
+        const result = await response.json()
+        
+        if (result.success && result.data) {
+          setCurrentLocationData(result.data)
+        } else {
+          console.warn(`Failed to fetch dealer data for ${origin.dealerSlug}:`, result.error)
+          setCurrentLocationData(null)
+        }
+      } catch (error) {
+        console.error(`Error fetching dealer data for ${origin.dealerSlug}:`, error)
+        setCurrentLocationData(null)
+      } finally {
+        setIsLoadingLocation(false)
+      }
+    }
+    
+    fetchDealerData()
+  }, [origin.isDealerLocation, origin.dealerSlug, isInitialized, animationComplete, currentLocationData?.slug])
+  
+  // Update current location data when initial locationData prop changes - but only after animation completes
+  useEffect(() => {
+    if (locationData && animationComplete) {
+      setCurrentLocationData(locationData)
+    }
+  }, [locationData, animationComplete])
   
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -624,12 +691,15 @@ export function Header({ navigation = defaultNavigation, locationData }: HeaderP
     }, 150)
   }, [])
 
-  // Animation variants
+  // Animation variants - use a stable key to prevent re-animation
   const headerVariants = {
-    initial: { y: -100 },
+    initial: { opacity: 0 },
     animate: { 
-      y: 0,
-      transition: { duration: 0.6 }
+      opacity: 1,
+      transition: { 
+        duration: 1.2,
+        ease: [0.25, 0.1, 0.25, 1.0] // Custom cubic-bezier for elegant easing
+      }
     }
   }
 
@@ -653,12 +723,21 @@ export function Header({ navigation = defaultNavigation, locationData }: HeaderP
   return (
     <motion.header 
       className={cn(
-        "sticky top-0 z-50 w-full border-b border-gray-200/50 transition-all duration-300",
+        "sticky top-0 z-50 w-full border-b border-gray-200/50 transition-shadow duration-300",
         isScrolled ? 'bg-white shadow-lg' : 'bg-white shadow-sm'
       )}
-      variants={headerVariants}
-      initial="initial"
-      animate="animate"
+      style={{ opacity: isVisible ? undefined : 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: isVisible ? 1 : 0 }}
+      transition={{
+        duration: 1.2,
+        ease: [0.25, 0.1, 0.25, 1.0]
+      }}
+      onAnimationComplete={() => {
+        if (isVisible) {
+          setAnimationComplete(true)
+        }
+      }}
     >
       {/* Main Header */}
       <div className="container mx-auto px-4 sm:px-6">
@@ -680,7 +759,7 @@ export function Header({ navigation = defaultNavigation, locationData }: HeaderP
             <KawaiLogo 
               size={isScrolled ? "sm" : "md"} 
               animated={true}
-              dealerName={locationData?.locationName}
+              dealerName={currentLocationData?.locationName}
             />
           </motion.div>
 
@@ -703,7 +782,7 @@ export function Header({ navigation = defaultNavigation, locationData }: HeaderP
           <div className="flex-1 lg:block xl:hidden" />
 
           {/* CTA Buttons - Only show Visit Showroom on dealer location pages */}
-          {locationData && (
+          {currentLocationData && !isLoadingLocation && (
             <motion.div 
               className="hidden lg:flex items-center gap-3 flex-shrink-0 ml-4"
               initial={{ opacity: 0, x: 20 }}
@@ -714,7 +793,7 @@ export function Header({ navigation = defaultNavigation, locationData }: HeaderP
                 className="bg-kawai-red hover:bg-kawai-red/90 text-white px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300" 
                 asChild
               >
-                <Link href={`/${locationData.slug}/contact`}>
+                <Link href={`/${currentLocationData.slug}/contact`}>
                   Visit Showroom
                 </Link>
               </Button>

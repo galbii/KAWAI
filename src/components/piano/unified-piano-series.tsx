@@ -212,18 +212,19 @@ function SeriesCard({ series, index, categorySlug, isActive }: SeriesCardProps) 
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.7, delay: 0.4 }}
               >
-                <div className="aspect-[5/3] lg:aspect-[2/1] h-full min-h-[180px] lg:min-h-[220px] relative">
-                  {/* Piano Image - Embedded Style */}
+                {/* Dynamic container with piano-optimized aspect ratio - Half size */}
+                <div className="relative w-full" style={{ minHeight: 'min(30vh, 200px)' }}>
+                  {/* Piano Image - Embedded directly */}
                   <motion.div 
                     key={series.pianos[0]?.slug}
-                    className="relative w-full h-full p-4 lg:p-5"
+                    className="relative w-full h-full"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.8, delay: 0.6 }}
                     layout
                   >
-                    <div className="relative w-full h-full">
+                    <div className="aspect-[4/3] sm:aspect-[3/2] lg:aspect-[16/9] xl:aspect-[2.2/1] h-full relative max-h-[250px] sm:max-h-[300px] lg:max-h-[350px] xl:max-h-[400px]">
                       <MediaRenderer
                         media={series.pianos[0]?.image}
                         preset="gallery"
@@ -287,7 +288,7 @@ export function UnifiedPianoSeries({
       drag: false,
       slides: {
         perView: "auto",
-        spacing: 0,
+        spacing: 16,
       },
       created(s) {
         startSmoothScroll(s);
@@ -457,8 +458,8 @@ export function UnifiedPianoSeries({
       </motion.div>
 
       {/* Continuous Scrolling Carousel */}
-      <section className="bg-kawai-pearl overflow-hidden mt-32 lg:mt-40">
-        <div ref={sliderRef} className="keen-slider">
+      <section className="bg-kawai-pearl mt-32 lg:mt-40 pb-16 md:pb-20 lg:pb-24">
+        <div ref={sliderRef} className="keen-slider py-8 md:py-12 lg:py-16 px-4 md:px-6 lg:px-8">
           {carouselItems.map((item, index) => {
             // Check if item is a slide or piano
             const isSlide = 'title' in item;
@@ -469,19 +470,17 @@ export function UnifiedPianoSeries({
             return (
               <div 
                 key={key} 
-                className="keen-slider__slide relative aspect-square min-w-[250px] md:min-w-[300px] lg:min-w-[350px] xl:min-w-[400px]"
+                className="keen-slider__slide relative min-w-[280px] md:min-w-[360px] lg:min-w-[420px] xl:min-w-[480px] px-3 md:px-4"
               >
-                <div className="relative w-full h-full">
-                  <MediaRenderer
-                    media={media}
-                    preset="gallery"
-                    className="w-full h-full object-cover"
-                    aria-label={title}
-                  />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/80 via-transparent to-transparent" />
-                <div className="absolute bottom-3 left-3 text-white">
-                  <h3 className="text-sm md:text-base lg:text-lg font-bold">{title}</h3>
+                <div className="relative w-full" style={{ height: 'auto' }}>
+                  <div className="p-2 md:p-3 lg:p-4">
+                    <MediaRenderer
+                      media={media}
+                      preset="gallery"
+                      className="w-full h-auto object-contain"
+                      aria-label={title}
+                    />
+                  </div>
                 </div>
               </div>
             );

@@ -1,11 +1,11 @@
 import { 
-  Hero,
   NewsCarousel, 
   PianoGallery,
   PianoCollection, 
   ContactForm,
   DealerLocations
 } from "@/components/homepage";
+import { HomeHero } from "@/components/homepage/HomeHero";
 import { getHomePageData } from "@/lib/payload";
 import type { HomePageData } from "@/lib/types/homepage";
 import { Suspense } from "react";
@@ -127,16 +127,16 @@ async function HomePageContent() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <Hero data={homePageData?.heroSection} />
+      <HomeHero />
+      
+      {/* Piano Collection Section */}
+      <PianoCollection data={homePageData?.pianoCollectionSection} />
       
       {/* News Carousel Section */}
       <NewsCarousel data={homePageData?.newsCarouselSection} />
       
       {/* Dealer Locations Section */}
       <DealerLocations />
-      
-      {/* Piano Collection Section */}
-      <PianoCollection data={homePageData?.pianoCollectionSection} />
       
       {/* Piano Gallery Section */}
       <PianoGallery data={homePageData?.pianoGallerySection} />
@@ -152,9 +152,9 @@ export default function Home() {
     <Suspense fallback={
       <div className="min-h-screen">
         <HeroSkeleton />
+        <PianoCollectionSkeleton />
         <NewsCarouselSkeleton />
         <DealerLocationsSkeleton />
-        <PianoCollectionSkeleton />
         <PianoGallerySkeleton />
         <ContactFormSkeleton />
       </div>
