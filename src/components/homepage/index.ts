@@ -8,3 +8,4 @@ export { HeritageTimeline } from './heritage-timeline';
 export { ContactForm } from './contact-form';
 export { ShowroomLocation } from './showroom-location';
 export { CallToAction } from './call-to-action';
+export { DealerLocations } from './dealer-locations';

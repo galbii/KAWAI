@@ -4,6 +4,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { useNavigationContext } from '@/contexts/NavigationContext'
+import { getContextAwareAriaLabel } from '@/lib/navigation-utils'
 
 interface KawaiLogoProps {
   className?: string
@@ -11,6 +13,10 @@ interface KawaiLogoProps {
   animated?: boolean
   theme?: 'light' | 'dark'
   dealerName?: string
+  /** Override the home URL (if not provided, uses navigation context) */
+  homeUrl?: string
+  /** Override aria-label for accessibility */
+  ariaLabel?: string
 }
 
 const sizeMap = {
@@ -19,8 +25,22 @@ const sizeMap = {
   lg: { width: 240, height: 48, textSize: 'text-xl', subText: 'text-xs' }
 }
 
-export function KawaiLogo({ className, size = 'md', animated = true, theme = 'light', dealerName }: KawaiLogoProps) {
+export function KawaiLogo({ 
+  className, 
+  size = 'md', 
+  animated = true, 
+  theme = 'light', 
+  dealerName,
+  homeUrl,
+  ariaLabel 
+}: KawaiLogoProps) {
   const { width, height, textSize, subText } = sizeMap[size]
+  
+  // Use navigation context for context-aware home URL
+  const { origin, isInitialized } = useNavigationContext()
+  const contextAwareHomeUrl = homeUrl || (isInitialized ? origin.basePath : '/')
+  const contextAwareAriaLabel = ariaLabel || getContextAwareAriaLabel('Kawai Piano - Home', origin)
+  
   
   const textColors = {
     light: {
@@ -54,8 +74,14 @@ export function KawaiLogo({ className, size = 'md', animated = true, theme = 'li
     }
   }
 
-  // Parse dealer name into location and suffix
+  // Parse dealer name into location and suffix based on navigation context
   const parseLocationText = (dealerName?: string) => {
+    // If we're on the main site (not a dealer location), show just PIANO GALLERY
+    if (!origin.isDealerLocation) {
+      return { location: '', suffix: 'PIANO GALLERY' }
+    }
+    
+    // For dealer locations, show the dealer name
     if (!dealerName) {
       return { location: 'ST. LOUIS', suffix: 'PIANO GALLERY' }
     }
@@ -89,21 +115,47 @@ export function KawaiLogo({ className, size = 'md', animated = true, theme = 'li
       />
       {animated ? (
         <motion.div variants={textVariants} className="flex-shrink-0">
-          <div className={cn("font-bold tracking-wide kawai-heading whitespace-nowrap", textColors[theme].primary, textSize)}>
-            {location}
-          </div>
-          <div className={cn("-mt-1 tracking-widest font-medium whitespace-nowrap", textColors[theme].secondary, subText)}>
-            {suffix}
-          </div>
+          {location ? (
+            <>
+              <div className={cn("font-bold tracking-wide kawai-heading whitespace-nowrap", textColors[theme].primary, textSize)}>
+                {location}
+              </div>
+              <div className={cn("-mt-1 tracking-widest font-medium whitespace-nowrap", textColors[theme].secondary, subText)}>
+                {suffix}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className={cn("font-bold tracking-wide kawai-heading whitespace-nowrap", textColors[theme].primary, textSize)}>
+                {suffix}
+              </div>
+              <div className={cn("-mt-1 tracking-widest font-medium whitespace-nowrap", textColors[theme].secondary, subText)}>
+                Instrumental to Life
+              </div>
+            </>
+          )}
         </motion.div>
       ) : (
         <div className="flex-shrink-0">
-          <div className={cn("font-bold tracking-wide kawai-heading whitespace-nowrap", textColors[theme].primary, textSize)}>
-            {location}
-          </div>
-          <div className={cn("-mt-1 tracking-widest font-medium whitespace-nowrap", textColors[theme].secondary, subText)}>
-            {suffix}
-          </div>
+          {location ? (
+            <>
+              <div className={cn("font-bold tracking-wide kawai-heading whitespace-nowrap", textColors[theme].primary, textSize)}>
+                {location}
+              </div>
+              <div className={cn("-mt-1 tracking-widest font-medium whitespace-nowrap", textColors[theme].secondary, subText)}>
+                {suffix}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className={cn("font-bold tracking-wide kawai-heading whitespace-nowrap", textColors[theme].primary, textSize)}>
+                {suffix}
+              </div>
+              <div className={cn("-mt-1 tracking-widest font-medium whitespace-nowrap", textColors[theme].secondary, subText)}>
+                Instrumental to Life
+              </div>
+            </>
+          )}
         </div>
       )}
     </>
@@ -112,9 +164,9 @@ export function KawaiLogo({ className, size = 'md', animated = true, theme = 'li
   if (animated) {
     return (
       <Link 
-        href="/" 
+        href={contextAwareHomeUrl} 
         className={cn("kawai-logo-container", className)}
-        aria-label="Kawai Piano - Home"
+        aria-label={contextAwareAriaLabel}
       >
         <motion.div 
           className="flex items-center space-x-2 sm:space-x-3"
@@ -130,9 +182,9 @@ export function KawaiLogo({ className, size = 'md', animated = true, theme = 'li
 
   return (
     <Link 
-      href="/" 
+      href={contextAwareHomeUrl} 
       className={cn("kawai-logo-container", className)}
-      aria-label="Kawai Piano - Home"
+      aria-label={contextAwareAriaLabel}
     >
       <div className="flex items-center space-x-2 sm:space-x-3">
         <LogoContent />

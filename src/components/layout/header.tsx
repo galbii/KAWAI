@@ -443,8 +443,14 @@ const DesktopMenuItem = ({ item, isOpen, onOpen, onClose }: DesktopMenuItemProps
   )
 }
 
+interface DealerLocationData {
+  locationName: string
+  slug: string
+}
+
 interface HeaderProps {
   navigation?: NavigationItem[]
+  locationData?: DealerLocationData | null
 }
 
 // Default fallback navigation
@@ -501,7 +507,7 @@ const defaultNavigation: NavigationItem[] = [
   },
 ]
 
-export function Header({ navigation = defaultNavigation }: HeaderProps) {
+export function Header({ navigation = defaultNavigation, locationData }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [openMobileItems, setOpenMobileItems] = useState<Set<string>>(new Set())
@@ -632,16 +638,14 @@ export function Header({ navigation = defaultNavigation }: HeaderProps) {
       opacity: 0, 
       x: '100%',
       transition: { 
-        duration: 0.3,
-        ease: "easeInOut"
+        duration: 0.3
       }
     },
     open: { 
       opacity: 1, 
       x: 0,
       transition: { 
-        duration: 0.4,
-        ease: "easeOut"
+        duration: 0.4
       }
     }
   }
@@ -675,7 +679,8 @@ export function Header({ navigation = defaultNavigation }: HeaderProps) {
           >
             <KawaiLogo 
               size={isScrolled ? "sm" : "md"} 
-              animated={true} 
+              animated={true}
+              dealerName={locationData?.locationName}
             />
           </motion.div>
 
@@ -697,27 +702,24 @@ export function Header({ navigation = defaultNavigation }: HeaderProps) {
           {/* Spacer for medium screens where nav is hidden but desktop layout is used */}
           <div className="flex-1 lg:block xl:hidden" />
 
-          {/* CTA Buttons */}
-          <motion.div 
-            className="hidden lg:flex items-center gap-3 flex-shrink-0 ml-4"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3, duration: 0.4 }}
-          >
-            <Button 
-              variant="outline" 
-              className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 px-4 py-2 transition-all duration-200" 
-              asChild
+          {/* CTA Buttons - Only show Visit Showroom on dealer location pages */}
+          {locationData && (
+            <motion.div 
+              className="hidden lg:flex items-center gap-3 flex-shrink-0 ml-4"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
             >
-              <Link href="/showroom">Visit Showroom</Link>
-            </Button>
-            <Button 
-              className="bg-kawai-red hover:bg-kawai-red/90 text-white px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300" 
-              asChild
-            >
-              <Link href="/contact">Contact</Link>
-            </Button>
-          </motion.div>
+              <Button 
+                className="bg-kawai-red hover:bg-kawai-red/90 text-white px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300" 
+                asChild
+              >
+                <Link href={`/${locationData.slug}/contact`}>
+                  Visit Showroom
+                </Link>
+              </Button>
+            </motion.div>
+          )}
 
           {/* Mobile Menu Button */}
           <motion.button

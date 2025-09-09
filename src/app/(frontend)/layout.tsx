@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { HeaderDynamic } from "@/components/layout/header-dynamic";
 import { Footer } from "@/components/layout/footer";
+import { NavigationContextProvider } from "@/contexts/NavigationContext";
+import { parseNavigationOrigin } from "@/lib/navigation-utils";
+import { headers } from 'next/headers';
 
 export const metadata: Metadata = {
   title: "Kawai Piano Dealer St. Louis | Piano Store Lake St. Louis, MO",
@@ -27,6 +30,11 @@ export const metadata: Metadata = {
 
 export default async function FrontendLayout(props: { children: React.ReactNode }) {
   const { children } = props
+  
+  // Get initial navigation origin from server request
+  const headersList = await headers()
+  const pathname = headersList.get('x-pathname') || '/'
+  const initialOrigin = parseNavigationOrigin(pathname)
 
   const localBusinessSchema = {
     "@context": "https://schema.org",
@@ -101,7 +109,7 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
   };
 
   return (
-    <>
+    <NavigationContextProvider initialOrigin={initialOrigin}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -113,6 +121,6 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
         <main className="flex-1">{children}</main>
         <Footer />
       </div>
-    </>
+    </NavigationContextProvider>
   )
 }

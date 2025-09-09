@@ -4,7 +4,7 @@ import {
   PianoGallery,
   PianoCollection, 
   ContactForm,
-  ShowroomLocation
+  DealerLocations
 } from "@/components/homepage";
 import { getHomePageData } from "@/lib/payload";
 import type { HomePageData } from "@/lib/types/homepage";
@@ -78,6 +78,22 @@ function NewsCarouselSkeleton() {
   );
 }
 
+function DealerLocationsSkeleton() {
+  return (
+    <section className="bg-kawai-pearl/20 py-24 animate-pulse">
+      <div className="container mx-auto px-6">
+        <div className="h-8 bg-kawai-black/20 rounded mx-auto mb-6 w-64"></div>
+        <div className="h-12 bg-kawai-black/20 rounded mx-auto mb-8 w-96"></div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-80 bg-kawai-black/20 rounded-2xl"></div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function ContactFormSkeleton() {
   return (
     <section className="bg-kawai-pearl py-24 animate-pulse">
@@ -113,17 +129,17 @@ async function HomePageContent() {
       {/* Hero Section */}
       <Hero data={homePageData?.heroSection} />
       
-      {/* Showroom Location Section */}
-      <ShowroomLocation data={homePageData?.showroomSection} />
+      {/* News Carousel Section */}
+      <NewsCarousel data={homePageData?.newsCarouselSection} />
+      
+      {/* Dealer Locations Section */}
+      <DealerLocations />
       
       {/* Piano Collection Section */}
       <PianoCollection data={homePageData?.pianoCollectionSection} />
       
       {/* Piano Gallery Section */}
       <PianoGallery data={homePageData?.pianoGallerySection} />
-      
-      {/* News Carousel Section */}
-      <NewsCarousel data={homePageData?.newsCarouselSection} />
       
       {/* Contact Form Section */}
       <ContactForm data={homePageData?.contactFormSection} />
@@ -136,10 +152,10 @@ export default function Home() {
     <Suspense fallback={
       <div className="min-h-screen">
         <HeroSkeleton />
-        <ShowroomSkeleton />
+        <NewsCarouselSkeleton />
+        <DealerLocationsSkeleton />
         <PianoCollectionSkeleton />
         <PianoGallerySkeleton />
-        <NewsCarouselSkeleton />
         <ContactFormSkeleton />
       </div>
     }>

@@ -9,7 +9,8 @@ import { getOptimizedImageProps } from '@/lib/media/r2-utils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { ShoppingCart, Heart, Share2, CheckCircle, Sparkles, Clock, Play, Volume2, ChevronDown } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { ShoppingCart, Heart, Share2, CheckCircle, Sparkles, Clock, Play, Volume2, ChevronDown, ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   Dialog,
@@ -44,6 +45,7 @@ export function ProductHeroBlock({
 }: ProductHeroBlockProps) {
   const [selectedFinish, setSelectedFinish] = useState(-1) // -1 means no finish selected
   const [isFavorited, setIsFavorited] = useState(false)
+  const router = useRouter()
   
   // Helper function to truncate description
   const truncateDescription = (text: string, wordLimit: number = 25) => {
@@ -350,6 +352,22 @@ export function ProductHeroBlock({
       
       {/* Main Content Container */}
       <div className="container mx-auto px-6 lg:px-12 xl:px-16 relative z-10 py-12 lg:py-20">
+        {/* Back Button - Floating Red Underlined Text */}
+        <button
+          onClick={() => router.back()}
+          className={cn(
+            "flex items-center gap-2 mb-8",
+            "text-kawai-red hover:text-red-600",
+            "underline underline-offset-4 decoration-2",
+            "transition-colors duration-200",
+            "bg-transparent border-0 p-0"
+          )}
+          aria-label="Go back to previous page"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="text-sm font-medium">Back</span>
+        </button>
+        
         <div className={cn(
           "grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 w-full",
           imagePosition === 'right' ? 'lg:grid-flow-col-reverse' : ''
@@ -409,11 +427,11 @@ export function ProductHeroBlock({
                 <div className="relative">
                   
                   {/* Main piano showcase */}
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200">
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
                     {(() => {
                       if (!displayImage) {
                         return (
-                          <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                          <div className="w-full h-full flex items-center justify-center">
                             <span className={cn("text-lg font-medium", accentColorClass)}>
                               Product Image
                             </span>
@@ -426,7 +444,7 @@ export function ProductHeroBlock({
 
                       if (!imageProps || !imageProps.src) {
                         return (
-                          <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                          <div className="w-full h-full flex items-center justify-center">
                             <span className={cn("text-lg font-medium", accentColorClass)}>
                               Image Load Error
                             </span>
@@ -531,12 +549,12 @@ export function ProductHeroBlock({
                         {/* Product Image */}
                         <div className="relative">
                           {displayImage && (
-                            <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-gradient-to-br from-gray-100 to-gray-200">
+                            <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
                               {(() => {
                                 const imageProps = getOptimizedImageProps(displayImage, 'hero')
                                 if (!imageProps || !imageProps.src) {
                                   return (
-                                    <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                                    <div className="w-full h-full flex items-center justify-center">
                                       <span className="text-lg font-medium text-slate-600">
                                         Product Image
                                       </span>
@@ -683,11 +701,11 @@ export function ProductHeroBlock({
               <div className="relative">
                 
                 {/* Main piano showcase */}
-                <div className="relative w-full h-[300px] sm:h-[400px] lg:h-[500px] xl:h-[600px] overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200">
+                <div className="relative w-full h-[300px] sm:h-[400px] lg:h-[500px] xl:h-[600px] overflow-hidden rounded-2xl">
                   {(() => {
                     if (!displayImage) {
                       return (
-                        <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                        <div className="w-full h-full flex items-center justify-center">
                           <span className={cn("text-lg font-medium", accentColorClass)}>
                             Product Image
                           </span>
@@ -700,7 +718,7 @@ export function ProductHeroBlock({
 
                     if (!imageProps || !imageProps.src) {
                       return (
-                        <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                        <div className="w-full h-full flex items-center justify-center">
                           <span className={cn("text-lg font-medium", accentColorClass)}>
                             Image Load Error
                           </span>

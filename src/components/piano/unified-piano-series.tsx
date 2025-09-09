@@ -212,11 +212,11 @@ function SeriesCard({ series, index, categorySlug, isActive }: SeriesCardProps) 
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.7, delay: 0.4 }}
               >
-                <div className="aspect-[4/3] lg:aspect-[3/2] h-full min-h-[250px] lg:min-h-[320px] relative">
+                <div className="aspect-[5/3] lg:aspect-[2/1] h-full min-h-[180px] lg:min-h-[220px] relative">
                   {/* Piano Image - Embedded Style */}
                   <motion.div 
                     key={series.pianos[0]?.slug}
-                    className="relative w-full h-full p-6 lg:p-8"
+                    className="relative w-full h-full p-4 lg:p-5"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
@@ -443,7 +443,7 @@ export function UnifiedPianoSeries({
             <TabsContent 
               key={seriesData.name} 
               value={seriesData.name.toLowerCase().replace(/\s+/g, '-')} 
-              className="mt-16 focus-visible:outline-none"
+              className="mt-8 focus-visible:outline-none"
             >
               <SeriesCard 
                 series={seriesData} 
