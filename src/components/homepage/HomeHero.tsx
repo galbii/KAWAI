@@ -105,11 +105,11 @@ export function HomeHero() {
           </motion.div>
         )}
 
-        <div className="max-w-5xl mt-16 sm:mt-20 md:mt-24 lg:mt-28">
+        <div className="w-full mt-16 sm:mt-20 md:mt-24 lg:mt-28">
           <div className="mb-12 lg:mb-16">
-            <h1 className="heading-brand-luxury text-kawai-pearl mb-8 lg:mb-12 leading-[0.75] tracking-tight text-center">
+            <h1 className="heading-brand-luxury text-kawai-pearl mb-8 lg:mb-12 leading-[0.75] text-center">
               <motion.span 
-                className="block font-normal mb-4 sm:mb-6 tracking-[0.15em] sm:tracking-[0.2em] opacity-90"
+                className="block font-normal mb-4 sm:mb-6 tracking-[0.15em] sm:tracking-[0.2em] opacity-90 text-center"
                 style={{ fontSize: 'clamp(0.875rem, 2.5vw, 2.5rem)' }}
                 variants={wordReveal}
                 custom={0.8}
@@ -119,8 +119,12 @@ export function HomeHero() {
                 {heroData.titlePrefix}
               </motion.span>
               <motion.span 
-                className="block font-black tracking-[-0.02em] leading-[0.8] sm:leading-[0.75]"
-                style={{ fontSize: 'clamp(3rem, 12vw, 10rem)' }}
+                className="block font-black leading-[0.8] sm:leading-[0.75] text-center w-full"
+                style={{ 
+                  fontSize: 'clamp(3rem, 12vw, 10rem)',
+                  letterSpacing: '0',
+                  textAlign: 'center'
+                }}
                 variants={wordReveal}
                 custom={1.6}
                 initial="hidden"
@@ -129,7 +133,7 @@ export function HomeHero() {
                 {heroData.titleMain}
               </motion.span>
               <motion.div 
-                className="block font-light mt-3 sm:mt-4 tracking-[0.05em] sm:tracking-[0.1em] opacity-90"
+                className="block font-light mt-3 sm:mt-4 tracking-[0.05em] sm:tracking-[0.1em] opacity-90 text-center"
                 style={{ fontSize: 'clamp(1.125rem, 4vw, 3rem)' }}
                 variants={wordReveal}
                 custom={2.0}
