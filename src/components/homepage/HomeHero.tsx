@@ -84,11 +84,11 @@ export function HomeHero() {
       <div className="absolute top-0 left-0 w-full h-full bg-kawai-black/50 z-10" />
       
       {/* Content - Center Aligned with better mobile padding */}
-      <div className="container-brand max-w-8xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 relative z-20 flex flex-col items-center text-center overflow-hidden">
+      <div className="container-brand max-w-8xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 relative z-20 flex flex-col items-center text-center">
         {/* Centered Est. 1927 */}
         {heroData.establishedText && (
           <motion.div 
-            className="absolute -top-24 left-1/2 transform -translate-x-1/2 z-10"
+            className="absolute top-4 sm:top-8 md:top-12 lg:top-16 left-1/2 transform -translate-x-1/2 z-10"
             variants={contentReveal}
             custom={0}
             initial="hidden"
@@ -105,11 +105,12 @@ export function HomeHero() {
           </motion.div>
         )}
 
-        <div className="max-w-5xl">
+        <div className="max-w-5xl mt-16 sm:mt-20 md:mt-24 lg:mt-28">
           <div className="mb-12 lg:mb-16">
             <h1 className="heading-brand-luxury text-kawai-pearl mb-8 lg:mb-12 leading-[0.75] tracking-tight text-center">
               <motion.span 
-                className="block text-base sm:text-lg md:text-2xl lg:text-3xl xl:text-4xl font-normal mb-4 sm:mb-6 tracking-[0.15em] sm:tracking-[0.2em] opacity-90"
+                className="block font-normal mb-4 sm:mb-6 tracking-[0.15em] sm:tracking-[0.2em] opacity-90"
+                style={{ fontSize: 'clamp(0.875rem, 2.5vw, 2.5rem)' }}
                 variants={wordReveal}
                 custom={0.8}
                 initial="hidden"
@@ -118,8 +119,8 @@ export function HomeHero() {
                 {heroData.titlePrefix}
               </motion.span>
               <motion.span 
-                className="block text-3xl xs:text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black tracking-[-0.02em] leading-[0.8] sm:leading-[0.75] max-w-full overflow-hidden"
-                style={{ fontSize: 'clamp(2rem, 12vw, 12rem)' }}
+                className="block font-black tracking-[-0.02em] leading-[0.8] sm:leading-[0.75]"
+                style={{ fontSize: 'clamp(3rem, 12vw, 10rem)' }}
                 variants={wordReveal}
                 custom={1.6}
                 initial="hidden"
@@ -128,7 +129,8 @@ export function HomeHero() {
                 {heroData.titleMain}
               </motion.span>
               <motion.div 
-                className="block text-lg sm:text-xl md:text-3xl lg:text-4xl xl:text-5xl font-light mt-3 sm:mt-4 tracking-[0.05em] sm:tracking-[0.1em] opacity-90"
+                className="block font-light mt-3 sm:mt-4 tracking-[0.05em] sm:tracking-[0.1em] opacity-90"
+                style={{ fontSize: 'clamp(1.125rem, 4vw, 3rem)' }}
                 variants={wordReveal}
                 custom={2.0}
                 initial="hidden"
