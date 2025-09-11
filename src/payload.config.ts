@@ -18,6 +18,7 @@ import { PianosPage } from './collections/PianosPage'
 import { HomePage } from './collections/HomePage'
 import { DealerLocations } from './collections/DealerLocations'
 import { Products } from './collections/Products'
+import { LandingPages } from './collections/LandingPages'
 import {
   ProductShowcase,
   ProductHero,
@@ -27,7 +28,11 @@ import {
   FeaturesList,
   Specifications,
   CallToAction,
-  Testimonials
+  Testimonials,
+  Hello,
+  LandingHero,
+  LandingFeatures,
+  LandingTestimonials
 } from './blocks'
 import { productlinesSeedPlugin } from './plugins/productlines-seed'
 import { pianoModelsSeedPlugin } from './plugins/piano-models-seed'
@@ -55,8 +60,9 @@ export default buildConfig({
     PianoModels, 
     HomePage,       // Main homepage content
     DealerLocations, // Multiple dealer location pages
+    LandingPages,   // Campaign landing pages
     PianosPage,     // Keep for backward compatibility during migration
-    Products
+    Products,
   ],
   // Define blocks at root level for performance optimization using blockReferences
   blocks: [
@@ -68,7 +74,11 @@ export default buildConfig({
     FeaturesList,
     Specifications,
     CallToAction,
-    Testimonials
+    Testimonials,
+    Hello,
+    LandingHero,
+    LandingFeatures,
+    LandingTestimonials
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

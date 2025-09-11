@@ -8,3 +8,9 @@ export { FeaturesList } from './FeaturesList'
 export { Specifications } from './Specifications'
 export { CallToAction } from './CallToAction'
 export { Testimonials } from './Testimonials'
+
+// Landing page specific blocks
+export { Hello } from './Hello'
+export { LandingHero } from './LandingHero'
+export { LandingFeatures } from './LandingFeatures'
+export { LandingTestimonials } from './LandingTestimonials'

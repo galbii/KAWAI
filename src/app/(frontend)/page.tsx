@@ -6,6 +6,7 @@ import {
   DealerLocations
 } from "@/components/homepage";
 import { HomeHero } from "@/components/homepage/HomeHero";
+import EmailCapturePopup from "@/components/ui/EmailCapturePopup";
 import { getHomePageData } from "@/lib/payload";
 import type { HomePageData } from "@/lib/types/homepage";
 import { Suspense } from "react";
@@ -149,17 +150,22 @@ async function HomePageContent() {
 
 export default function Home() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen">
-        <HeroSkeleton />
-        <PianoCollectionSkeleton />
-        <NewsCarouselSkeleton />
-        <DealerLocationsSkeleton />
-        <PianoGallerySkeleton />
-        <ContactFormSkeleton />
-      </div>
-    }>
-      <HomePageContent />
-    </Suspense>
+    <>
+      <Suspense fallback={
+        <div className="min-h-screen">
+          <HeroSkeleton />
+          <PianoCollectionSkeleton />
+          <NewsCarouselSkeleton />
+          <DealerLocationsSkeleton />
+          <PianoGallerySkeleton />
+          <ContactFormSkeleton />
+        </div>
+      }>
+        <HomePageContent />
+      </Suspense>
+      
+      {/* Email capture popup - appears after 3 seconds or 25% scroll */}
+      <EmailCapturePopup delay={3000} scrollTrigger={25} />
+    </>
   );
 }

@@ -51,8 +51,8 @@ function PianoSection({ piano, index }: PianoSectionProps) {
         <div className={`grid lg:grid-cols-2 gap-8 lg:gap-12 items-center ${
           isEven ? '' : 'lg:grid-flow-col-dense'
         }`}>
-          {/* Content */}
-          <div className={`space-y-6 ${isEven ? '' : 'lg:col-start-2'}`}>
+          {/* Content - Always order-2 on mobile (below image) */}
+          <div className={`space-y-6 order-2 ${isEven ? 'lg:order-1' : 'lg:col-start-2 lg:order-2'}`}>
             <div className={`space-y-4 transition-all duration-700 ease-out ${
               isTextVisible 
                 ? 'opacity-100 translate-y-0' 
@@ -90,8 +90,8 @@ function PianoSection({ piano, index }: PianoSectionProps) {
             </div>
           </div>
 
-          {/* Image */}
-          <div className={`relative ${isEven ? '' : 'lg:col-start-1'}`}>
+          {/* Image - Always order-1 on mobile (above text) */}
+          <div className={`relative order-1 ${isEven ? 'lg:order-2' : 'lg:col-start-1 lg:order-1'}`}>
             <div className={`relative transition-all duration-800 ease-out ${
               isImageVisible 
                 ? 'opacity-100 translate-x-0' 

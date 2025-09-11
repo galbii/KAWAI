@@ -75,6 +75,10 @@ export interface Config {
     specifications: SpecificationsBlock;
     callToAction: CallToActionBlock;
     testimonials: TestimonialsBlock;
+    hello: HelloBlock;
+    landingHero: LandingHeroBlock;
+    landingFeatures: LandingFeaturesBlock;
+    landingTestimonials: LandingTestimonialsBlock;
   };
   collections: {
     users: User;
@@ -83,6 +87,7 @@ export interface Config {
     'piano-models': PianoModel;
     'home-page': HomePage;
     'dealer-locations': DealerLocation;
+    'landing-pages': LandingPage;
     'pianos-page': PianosPage;
     products: Product;
     'payload-locked-documents': PayloadLockedDocument;
@@ -101,6 +106,7 @@ export interface Config {
     'piano-models': PianoModelsSelect<false> | PianoModelsSelect<true>;
     'home-page': HomePageSelect<false> | HomePageSelect<true>;
     'dealer-locations': DealerLocationsSelect<false> | DealerLocationsSelect<true>;
+    'landing-pages': LandingPagesSelect<false> | LandingPagesSelect<true>;
     'pianos-page': PianosPageSelect<false> | PianosPageSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -1826,6 +1832,723 @@ export interface TestimonialsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HelloBlock".
+ */
+export interface HelloBlock {
+  /**
+   * The message to display
+   */
+  message: string;
+  /**
+   * Display current timestamp with the message
+   */
+  showTimestamp?: boolean | null;
+  /**
+   * Format for the timestamp display
+   */
+  timestampFormat?: ('datetime' | 'date' | 'time' | 'relative') | null;
+  /**
+   * Styling options for the hello block
+   */
+  style?: {
+    /**
+     * Text size for the message
+     */
+    textSize?: ('small' | 'medium' | 'large' | 'xl') | null;
+    /**
+     * Text alignment
+     */
+    textAlign?: ('left' | 'center' | 'right') | null;
+    /**
+     * Background color for the hello block
+     */
+    backgroundColor?: ('none' | 'light-gray' | 'dark-gray' | 'brand' | 'accent') | null;
+    /**
+     * Padding around the content
+     */
+    padding?: ('none' | 'small' | 'medium' | 'large') | null;
+  };
+  /**
+   * Additional content options
+   */
+  additionalContent?: {
+    /**
+     * Show additional description text
+     */
+    showDescription?: boolean | null;
+    /**
+     * Additional description or context
+     */
+    description?: string | null;
+    /**
+     * Display an icon with the message
+     */
+    showIcon?: boolean | null;
+    /**
+     * Icon name (e.g., "wave", "smile", "star")
+     */
+    icon?: string | null;
+    /**
+     * Position of icon relative to message
+     */
+    iconPosition?: ('left' | 'right' | 'above' | 'below') | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'hello';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LandingHeroBlock".
+ */
+export interface LandingHeroBlock {
+  /**
+   * Main campaign messaging content
+   */
+  content: {
+    /**
+     * Small text above the main headline (e.g., "Limited Time Offer", "New Arrival")
+     */
+    preHeadline?: string | null;
+    /**
+     * Main campaign headline - powerful and attention-grabbing
+     */
+    headline: string;
+    /**
+     * Supporting headline that clarifies the main message
+     */
+    subheadline?: string | null;
+    /**
+     * Compelling description that explains the value proposition
+     */
+    description?: string | null;
+    /**
+     * Special highlighted text (e.g., discount amount, special feature)
+     */
+    highlightText?: string | null;
+  };
+  /**
+   * Call-to-action buttons and supporting text
+   */
+  cta: {
+    /**
+     * Primary call-to-action button
+     */
+    primaryButton: {
+      /**
+       * Primary action button text
+       */
+      text: string;
+      /**
+       * Primary button destination URL
+       */
+      link: string;
+      /**
+       * Button style for maximum conversion
+       */
+      style?: ('primary' | 'secondary' | 'accent' | 'gradient') | null;
+      /**
+       * Button size - larger for better conversion
+       */
+      size?: ('medium' | 'large' | 'xl') | null;
+      /**
+       * Optional icon (e.g., "arrow-right", "shopping-cart", "play")
+       */
+      icon?: string | null;
+      openInNewTab?: boolean | null;
+    };
+    /**
+     * Optional secondary action button
+     */
+    secondaryButton?: {
+      /**
+       * Secondary button text (leave empty to hide)
+       */
+      text?: string | null;
+      /**
+       * Secondary button link
+       */
+      link?: string | null;
+      /**
+       * Secondary button style
+       */
+      style?: ('outline' | 'ghost' | 'link') | null;
+      openInNewTab?: boolean | null;
+    };
+    /**
+     * Small note below buttons (e.g., "Free shipping", "No credit card required")
+     */
+    ctaNote?: string | null;
+  };
+  /**
+   * Background and visual elements
+   */
+  media?: {
+    /**
+     * Hero background image - should be high quality and engaging
+     */
+    backgroundImage?: (string | null) | Media;
+    /**
+     * Optional foreground/product image to display alongside content
+     */
+    foregroundImage?: (string | null) | Media;
+    /**
+     * Optional background video (will override background image)
+     */
+    backgroundVideo?: (string | null) | Media;
+    /**
+     * Video playback settings
+     */
+    videoSettings?: {
+      /**
+       * Auto-play background video
+       */
+      autoplay?: boolean | null;
+      /**
+       * Mute background video
+       */
+      muted?: boolean | null;
+      /**
+       * Loop background video
+       */
+      loop?: boolean | null;
+    };
+    /**
+     * Background overlay settings
+     */
+    overlay?: {
+      /**
+       * Add overlay for better text readability
+       */
+      enable?: boolean | null;
+      color?: ('dark' | 'light' | 'brand' | 'gradient') | null;
+      /**
+       * Overlay opacity for optimal text contrast
+       */
+      opacity?: number | null;
+    };
+  };
+  /**
+   * Layout and positioning options
+   */
+  layout?: {
+    /**
+     * Hero section height - larger for more impact
+     */
+    height?: ('medium' | 'large' | 'xl' | 'fullscreen') | null;
+    /**
+     * Position of content within the hero
+     */
+    contentPosition?: ('center' | 'center-left' | 'center-right' | 'left' | 'right') | null;
+    /**
+     * Maximum width of content area
+     */
+    contentWidth?: ('small' | 'medium' | 'large' | 'full') | null;
+    /**
+     * Text content alignment
+     */
+    textAlignment?: ('left' | 'center' | 'right') | null;
+  };
+  /**
+   * Campaign-specific elements for conversion optimization
+   */
+  campaign?: {
+    /**
+     * Add urgency elements to increase conversion
+     */
+    showUrgency?: boolean | null;
+    /**
+     * Urgency message (e.g., "Limited time offer", "Only 5 left")
+     */
+    urgencyText?: string | null;
+    /**
+     * Display countdown timer
+     */
+    showCountdown?: boolean | null;
+    /**
+     * Countdown end date and time
+     */
+    countdownEndDate?: string | null;
+    /**
+     * Display social proof elements
+     */
+    showSocialProof?: boolean | null;
+    /**
+     * Social proof message (e.g., "Join 10,000+ satisfied customers")
+     */
+    socialProofText?: string | null;
+    /**
+     * Short testimonial quote to display
+     */
+    testimonialQuote?: string | null;
+    /**
+     * Testimonial author name
+     */
+    testimonialAuthor?: string | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'landingHero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LandingFeaturesBlock".
+ */
+export interface LandingFeaturesBlock {
+  /**
+   * Header content for the features section
+   */
+  header?: {
+    /**
+     * Small text above the main title (e.g., "Why Choose Us", "Campaign Benefits")
+     */
+    preTitle?: string | null;
+    /**
+     * Section title
+     */
+    title?: string | null;
+    /**
+     * Section subtitle
+     */
+    subtitle?: string | null;
+    /**
+     * Section description explaining the campaign benefits
+     */
+    description?: string | null;
+  };
+  /**
+   * Campaign features and benefits
+   */
+  features: {
+    /**
+     * Visual element for this feature
+     */
+    icon?: {
+      /**
+       * Type of visual element
+       */
+      type?: ('icon' | 'image' | 'emoji' | 'number') | null;
+      /**
+       * Icon name (e.g., "check-circle", "star", "shield", "truck")
+       */
+      iconName?: string | null;
+      /**
+       * Custom icon image
+       */
+      image?: (string | null) | Media;
+      /**
+       * Emoji character (e.g., "✅", "⭐", "🚚", "💯")
+       */
+      emoji?: string | null;
+      /**
+       * Number or step (e.g., "01", "1", "Step 1")
+       */
+      number?: string | null;
+      /**
+       * Icon color theme
+       */
+      color?: ('brand' | 'accent' | 'success' | 'warning' | 'info' | 'dark') | null;
+    };
+    /**
+     * Feature title - should be compelling and benefit-focused
+     */
+    title: string;
+    /**
+     * Feature description explaining the specific benefit
+     */
+    description?: string | null;
+    /**
+     * Special highlight text (e.g., "Free", "NEW", "Limited Time")
+     */
+    highlight?: string | null;
+    /**
+     * Optional link for this feature
+     */
+    link?: {
+      /**
+       * Make this feature clickable
+       */
+      enable?: boolean | null;
+      /**
+       * Link destination
+       */
+      url?: string | null;
+      /**
+       * Link text (e.g., "Learn more", "View details")
+       */
+      text?: string | null;
+      openInNewTab?: boolean | null;
+    };
+    /**
+     * Mark as featured - will receive special visual treatment
+     */
+    featured?: boolean | null;
+    id?: string | null;
+  }[];
+  /**
+   * Layout and styling options
+   */
+  layout?: {
+    /**
+     * Visual layout style for features
+     */
+    style?: ('cards' | 'grid' | 'list' | 'timeline' | 'steps') | null;
+    /**
+     * Number of columns for grid/card layouts
+     */
+    columns?: ('one' | 'two' | 'three' | 'four') | null;
+    /**
+     * Position of icons relative to content
+     */
+    iconPosition?: ('top' | 'left' | 'right') | null;
+    /**
+     * Size of feature icons
+     */
+    iconSize?: ('small' | 'medium' | 'large' | 'xl') | null;
+    /**
+     * Spacing between features
+     */
+    spacing?: ('compact' | 'medium' | 'spacious') | null;
+    /**
+     * Background color for the features section
+     */
+    backgroundColor?: ('none' | 'light-gray' | 'dark-gray' | 'white' | 'brand-light' | 'gradient') | null;
+  };
+  /**
+   * Animation settings for enhanced user experience
+   */
+  animation?: {
+    /**
+     * Enable entrance animations for features
+     */
+    enableAnimations?: boolean | null;
+    /**
+     * Type of entrance animation
+     */
+    animationType?: ('fade-up' | 'fade-in' | 'slide-in' | 'scale-in' | 'bounce-in') | null;
+    /**
+     * Delay between each feature animation (milliseconds)
+     */
+    staggerDelay?: number | null;
+  };
+  /**
+   * Optional call-to-action below features
+   */
+  cta?: {
+    /**
+     * Show call-to-action button below features
+     */
+    showCta?: boolean | null;
+    /**
+     * CTA button text
+     */
+    ctaText?: string | null;
+    /**
+     * CTA button link
+     */
+    ctaLink?: string | null;
+    /**
+     * CTA button style
+     */
+    ctaStyle?: ('primary' | 'secondary' | 'outline') | null;
+    ctaOpenInNewTab?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'landingFeatures';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LandingTestimonialsBlock".
+ */
+export interface LandingTestimonialsBlock {
+  /**
+   * Header content for the testimonials section
+   */
+  header?: {
+    /**
+     * Small text above the main title (e.g., "Customer Stories", "Success Stories")
+     */
+    preTitle?: string | null;
+    /**
+     * Section title
+     */
+    title?: string | null;
+    /**
+     * Section subtitle
+     */
+    subtitle?: string | null;
+    /**
+     * Section description about customer satisfaction
+     */
+    description?: string | null;
+  };
+  /**
+   * Customer testimonials and reviews
+   */
+  testimonials: {
+    /**
+     * Customer testimonial quote - should be compelling and specific
+     */
+    quote: string;
+    /**
+     * Shortened version for cards (optional - will use first 100 chars if empty)
+     */
+    shortQuote?: string | null;
+    /**
+     * Star rating (1-5 stars)
+     */
+    rating?: number | null;
+    /**
+     * Customer information and photo
+     */
+    customer: {
+      /**
+       * Customer full name
+       */
+      name: string;
+      /**
+       * Customer title/profession (e.g., "Music Teacher", "Professional Pianist")
+       */
+      title?: string | null;
+      /**
+       * Customer company/organization
+       */
+      company?: string | null;
+      /**
+       * Customer location (e.g., "New York, NY", "London, UK")
+       */
+      location?: string | null;
+      /**
+       * Customer photo/avatar
+       */
+      avatar?: (string | null) | Media;
+      /**
+       * Customer initials (fallback if no avatar - auto-generated from name if empty)
+       */
+      initials?: string | null;
+    };
+    /**
+     * Product being reviewed
+     */
+    product?: {
+      /**
+       * Product name being reviewed (e.g., "Kawai CA99", "Digital Piano")
+       */
+      name?: string | null;
+      /**
+       * Product category
+       */
+      category?: ('digital' | 'grand' | 'upright' | 'hybrid' | 'service' | 'accessories' | 'general') | null;
+      /**
+       * When the customer purchased (optional)
+       */
+      purchaseDate?: string | null;
+    };
+    /**
+     * Review verification and source information
+     */
+    verification?: {
+      /**
+       * Mark as verified purchase
+       */
+      verified?: boolean | null;
+      /**
+       * Source of the review
+       */
+      source?:
+        | ('direct' | 'google' | 'facebook' | 'trustpilot' | 'yelp' | 'bbb' | 'amazon' | 'music-store' | 'other')
+        | null;
+      /**
+       * Date when review was written
+       */
+      reviewDate?: string | null;
+      /**
+       * URL to original review (if applicable)
+       */
+      sourceUrl?: string | null;
+    };
+    /**
+     * Display settings for this testimonial
+     */
+    display?: {
+      /**
+       * Feature this testimonial prominently
+       */
+      featured?: boolean | null;
+      /**
+       * Mark as campaign-specific testimonial
+       */
+      campaignSpecific?: boolean | null;
+      /**
+       * Always show full quote (override short quote)
+       */
+      showFullQuote?: boolean | null;
+      /**
+       * Display priority (higher numbers appear first)
+       */
+      priority?: number | null;
+    };
+    id?: string | null;
+  }[];
+  /**
+   * Layout and display options
+   */
+  layout?: {
+    /**
+     * Display style for testimonials
+     */
+    style?: ('cards' | 'carousel' | 'grid' | 'masonry' | 'featured-grid' | 'alternating') | null;
+    /**
+     * Number of columns for grid/card layouts
+     */
+    columns?: ('one' | 'two' | 'three' | 'four') | null;
+    /**
+     * Display customer avatars/photos
+     */
+    showAvatars?: boolean | null;
+    /**
+     * Display star ratings
+     */
+    showRatings?: boolean | null;
+    /**
+     * Show customer company/title
+     */
+    showCompany?: boolean | null;
+    /**
+     * Show customer location
+     */
+    showLocation?: boolean | null;
+    /**
+     * Show review source (Google, Facebook, etc.)
+     */
+    showSource?: boolean | null;
+    /**
+     * Show review dates
+     */
+    showDates?: boolean | null;
+    /**
+     * Show product being reviewed
+     */
+    showProduct?: boolean | null;
+    /**
+     * Background color for the testimonials section
+     */
+    backgroundColor?: ('none' | 'light-gray' | 'dark-gray' | 'white' | 'brand-light' | 'gradient') | null;
+  };
+  /**
+   * Carousel-specific settings
+   */
+  carouselSettings?: {
+    /**
+     * Auto-advance testimonials
+     */
+    autoplay?: boolean | null;
+    /**
+     * Autoplay speed in milliseconds (slower for reading)
+     */
+    autoplaySpeed?: number | null;
+    /**
+     * Pause autoplay when hovering
+     */
+    pauseOnHover?: boolean | null;
+    /**
+     * Show navigation dots
+     */
+    showDots?: boolean | null;
+    /**
+     * Show navigation arrows
+     */
+    showArrows?: boolean | null;
+    /**
+     * Number of testimonials to show at once
+     */
+    slidesToShow?: ('one' | 'two' | 'three') | null;
+    /**
+     * Enable infinite loop
+     */
+    infinite?: boolean | null;
+  };
+  /**
+   * Overall rating and social proof elements
+   */
+  socialProof?: {
+    /**
+     * Show overall rating summary
+     */
+    showOverallRating?: boolean | null;
+    /**
+     * Overall rating score
+     */
+    overallRating?: number | null;
+    /**
+     * Total number of reviews
+     */
+    totalReviews?: number | null;
+    /**
+     * Rating description (e.g., "Excellent", "Outstanding")
+     */
+    ratingText?: string | null;
+    /**
+     * Display trust badges and certifications
+     */
+    showTrustBadges?: boolean | null;
+    /**
+     * Trust badges and certifications
+     */
+    trustBadges?:
+      | {
+          /**
+           * Badge name (e.g., "Google Reviews", "BBB A+")
+           */
+          name: string;
+          /**
+           * Badge image
+           */
+          image?: (string | null) | Media;
+          /**
+           * Link to badge source
+           */
+          url?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  /**
+   * Call-to-action section after testimonials
+   */
+  cta?: {
+    /**
+     * Show call-to-action after testimonials
+     */
+    showCta?: boolean | null;
+    /**
+     * CTA section title
+     */
+    ctaTitle?: string | null;
+    /**
+     * CTA description
+     */
+    ctaDescription?: string | null;
+    /**
+     * CTA button text
+     */
+    ctaButtonText?: string | null;
+    /**
+     * CTA button link
+     */
+    ctaButtonLink?: string | null;
+    /**
+     * CTA button style
+     */
+    ctaStyle?: ('primary' | 'secondary' | 'outline') | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'landingTestimonials';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
@@ -2581,6 +3304,226 @@ export interface DealerLocation {
   createdAt: string;
 }
 /**
+ * Manage campaign landing pages with flexible content blocks and dealer location associations.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "landing-pages".
+ */
+export interface LandingPage {
+  id: string;
+  /**
+   * URL-friendly identifier for this campaign (e.g., "summer-sale", "student-special")
+   */
+  slug: string;
+  /**
+   * Landing page title for admin identification (e.g., "Summer Piano Sale 2024")
+   */
+  title: string;
+  /**
+   * Associated dealer location for this campaign landing page
+   */
+  dealerLocation: string | DealerLocation;
+  /**
+   * Campaign status - controls visibility and access
+   */
+  status: 'active' | 'draft' | 'scheduled' | 'expired' | 'paused';
+  /**
+   * Legacy field - use Status field instead
+   */
+  isActive?: boolean | null;
+  /**
+   * Campaign start date (optional, for scheduling)
+   */
+  campaignStartDate?: string | null;
+  /**
+   * Campaign end date (optional, for scheduling)
+   */
+  campaignEndDate?: string | null;
+  /**
+   * Build your landing page content using flexible blocks
+   */
+  pageContent?:
+    | (
+        | HeroBlock
+        | ProductShowcaseBlock
+        | ProductHeroBlock
+        | TextContentBlock
+        | ImageGalleryBlock
+        | FeaturesListBlock
+        | SpecificationsBlock
+        | CallToActionBlock
+        | TestimonialsBlock
+      )[]
+    | null;
+  /**
+   * Type of campaign for this landing page
+   */
+  campaignType:
+    | 'promotional-sale'
+    | 'seasonal-campaign'
+    | 'product-launch'
+    | 'event-landing'
+    | 'educational-campaign'
+    | 'customer-acquisition'
+    | 'dealer-specific';
+  /**
+   * Internal description of the campaign purpose and goals
+   */
+  campaignDescription?: string | null;
+  /**
+   * Target audience(s) for this campaign
+   */
+  targetAudience?:
+    | (
+        | 'beginners'
+        | 'students'
+        | 'parents'
+        | 'professionals'
+        | 'teachers'
+        | 'institutions'
+        | 'existing-customers'
+        | 'general-public'
+      )[]
+    | null;
+  /**
+   * UTM tracking parameters for campaign analytics
+   */
+  utmParameters?: {
+    /**
+     * UTM Source (e.g., google, facebook, email)
+     */
+    source?: string | null;
+    /**
+     * UTM Medium (e.g., cpc, social, email)
+     */
+    medium?: string | null;
+    /**
+     * UTM Campaign name (e.g., summer-sale-2024)
+     */
+    campaign?: string | null;
+    /**
+     * UTM Content (optional, for A/B testing)
+     */
+    content?: string | null;
+    /**
+     * UTM Term (optional, for paid search keywords)
+     */
+    term?: string | null;
+  };
+  /**
+   * Define conversion goals and tracking for this campaign
+   */
+  conversionGoals?:
+    | {
+        /**
+         * Type of conversion goal to track
+         */
+        goalType:
+          | 'form-submission'
+          | 'phone-call'
+          | 'showroom-visit'
+          | 'brochure-download'
+          | 'newsletter-signup'
+          | 'product-page-visit'
+          | 'video-engagement'
+          | 'custom-event';
+        /**
+         * Name for this conversion goal
+         */
+        goalName: string;
+        /**
+         * Monetary value of this conversion (optional)
+         */
+        goalValue?: number | null;
+        /**
+         * Custom tracking code or pixel (optional)
+         */
+        trackingCode?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Configure analytics integrations for this landing page
+   */
+  analyticsIntegrations?: {
+    /**
+     * Enable Google Analytics tracking
+     */
+    googleAnalyticsEnabled?: boolean | null;
+    /**
+     * Enable Facebook Pixel tracking
+     */
+    facebookPixelEnabled?: boolean | null;
+    /**
+     * Enable PostHog analytics tracking
+     */
+    postHogEnabled?: boolean | null;
+    /**
+     * Custom tracking code to inject in the page head
+     */
+    customTrackingCode?: string | null;
+  };
+  /**
+   * SEO and metadata configuration specific to this landing page
+   */
+  seo?: {
+    /**
+     * Page meta title for search engines (will inherit from dealer location if not set)
+     */
+    metaTitle?: string | null;
+    /**
+     * Page meta description for search engines (max 160 characters)
+     */
+    metaDescription?: string | null;
+    /**
+     * SEO keywords (comma-separated, will combine with dealer location keywords)
+     */
+    keywords?: string | null;
+    /**
+     * Open Graph title for social media sharing
+     */
+    openGraphTitle?: string | null;
+    /**
+     * Open Graph description for social media sharing
+     */
+    openGraphDescription?: string | null;
+    /**
+     * Open Graph image for social media sharing
+     */
+    openGraphImage?: (string | null) | Media;
+    /**
+     * Prevent search engines from indexing this page (useful for short-term campaigns)
+     */
+    noIndex?: boolean | null;
+  };
+  /**
+   * URL to redirect to if campaign has expired (optional)
+   */
+  redirectAfterExpiry?: string | null;
+  /**
+   * Require password to access this landing page
+   */
+  passwordProtected?: boolean | null;
+  /**
+   * Password required to access this landing page
+   */
+  password?: string | null;
+  /**
+   * Custom CSS styles specific to this landing page
+   */
+  customCSS?: string | null;
+  /**
+   * Custom JavaScript code to inject into this landing page
+   */
+  customJavaScript?: string | null;
+  /**
+   * Internal notes about this landing page campaign
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Manage all content for the main Pianos page including hero, categories, featured models, and CTAs.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2782,6 +3725,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'dealer-locations';
         value: string | DealerLocation;
+      } | null)
+    | ({
+        relationTo: 'landing-pages';
+        value: string | LandingPage;
       } | null)
     | ({
         relationTo: 'pianos-page';
@@ -3351,6 +4298,488 @@ export interface DealerLocationsSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "landing-pages_select".
+ */
+export interface LandingPagesSelect<T extends boolean = true> {
+  slug?: T;
+  title?: T;
+  dealerLocation?: T;
+  status?: T;
+  isActive?: T;
+  campaignStartDate?: T;
+  campaignEndDate?: T;
+  pageContent?:
+    | T
+    | {
+        hero?: T | HeroBlockSelect<T>;
+        productShowcase?: T | ProductShowcaseBlockSelect<T>;
+        productHero?: T | ProductHeroBlockSelect<T>;
+        textContent?: T | TextContentBlockSelect<T>;
+        imageGallery?: T | ImageGalleryBlockSelect<T>;
+        featuresList?: T | FeaturesListBlockSelect<T>;
+        specifications?: T | SpecificationsBlockSelect<T>;
+        callToAction?: T | CallToActionBlockSelect<T>;
+        testimonials?: T | TestimonialsBlockSelect<T>;
+      };
+  campaignType?: T;
+  campaignDescription?: T;
+  targetAudience?: T;
+  utmParameters?:
+    | T
+    | {
+        source?: T;
+        medium?: T;
+        campaign?: T;
+        content?: T;
+        term?: T;
+      };
+  conversionGoals?:
+    | T
+    | {
+        goalType?: T;
+        goalName?: T;
+        goalValue?: T;
+        trackingCode?: T;
+        id?: T;
+      };
+  analyticsIntegrations?:
+    | T
+    | {
+        googleAnalyticsEnabled?: T;
+        facebookPixelEnabled?: T;
+        postHogEnabled?: T;
+        customTrackingCode?: T;
+      };
+  seo?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+        keywords?: T;
+        openGraphTitle?: T;
+        openGraphDescription?: T;
+        openGraphImage?: T;
+        noIndex?: T;
+      };
+  redirectAfterExpiry?: T;
+  passwordProtected?: T;
+  password?: T;
+  customCSS?: T;
+  customJavaScript?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HeroBlock_select".
+ */
+export interface HeroBlockSelect<T extends boolean = true> {
+  dataSource?: T;
+  pianoModel?: T;
+  content?:
+    | T
+    | {
+        title?: T;
+        subtitle?: T;
+        description?: T;
+        primaryCta?:
+          | T
+          | {
+              text?: T;
+              link?: T;
+              style?: T;
+              openInNewTab?: T;
+            };
+        secondaryCta?:
+          | T
+          | {
+              text?: T;
+              link?: T;
+              style?: T;
+              openInNewTab?: T;
+            };
+      };
+  media?:
+    | T
+    | {
+        type?: T;
+        backgroundImage?: T;
+        backgroundVideo?: T;
+        overlay?:
+          | T
+          | {
+              enable?: T;
+              color?: T;
+              opacity?: T;
+            };
+      };
+  layout?:
+    | T
+    | {
+        height?: T;
+        contentAlignment?: T;
+        verticalAlignment?: T;
+        maxWidth?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductShowcaseBlock_select".
+ */
+export interface ProductShowcaseBlockSelect<T extends boolean = true> {
+  dataSource?: T;
+  pianoModel?: T;
+  product?:
+    | T
+    | {
+        image?: T;
+        title?: T;
+        description?: T;
+        price?:
+          | T
+          | {
+              currency?: T;
+              amount?: T;
+              saleAmount?: T;
+              priceText?: T;
+            };
+        finishes?:
+          | T
+          | {
+              name?: T;
+              image?: T;
+              priceModifier?: T;
+              id?: T;
+            };
+        buyButton?:
+          | T
+          | {
+              text?: T;
+              link?: T;
+              style?: T;
+              openInNewTab?: T;
+            };
+        badge?: T;
+        inStock?: T;
+      };
+  layout?:
+    | T
+    | {
+        imagePosition?: T;
+        showFinishes?: T;
+        showPrice?: T;
+        compact?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductHeroBlock_select".
+ */
+export interface ProductHeroBlockSelect<T extends boolean = true> {
+  layout?:
+    | T
+    | {
+        imagePosition?: T;
+        backgroundColor?: T;
+        showFinishes?: T;
+        showPrice?: T;
+        showBuyButton?: T;
+      };
+  overrides?:
+    | T
+    | {
+        customTitle?: T;
+        customDescription?: T;
+        customImage?: T;
+        badge?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TextContentBlock_select".
+ */
+export interface TextContentBlockSelect<T extends boolean = true> {
+  content?: T;
+  layout?:
+    | T
+    | {
+        maxWidth?: T;
+        textAlign?: T;
+        backgroundColor?: T;
+        padding?: T;
+        columns?: T;
+      };
+  enableDropCap?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ImageGalleryBlock_select".
+ */
+export interface ImageGalleryBlockSelect<T extends boolean = true> {
+  dataSource?: T;
+  pianoModel?: T;
+  title?: T;
+  description?: T;
+  images?:
+    | T
+    | {
+        image?: T;
+        caption?: T;
+        alt?: T;
+        id?: T;
+      };
+  layout?:
+    | T
+    | {
+        style?: T;
+        columns?: T;
+        spacing?: T;
+        aspectRatio?: T;
+      };
+  carouselSettings?:
+    | T
+    | {
+        autoplay?: T;
+        autoplaySpeed?: T;
+        showDots?: T;
+        showArrows?: T;
+        slidesToShow?: T;
+        infinite?: T;
+      };
+  enableZoom?: T;
+  showCaptions?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeaturesListBlock_select".
+ */
+export interface FeaturesListBlockSelect<T extends boolean = true> {
+  dataSource?: T;
+  pianoModel?: T;
+  header?:
+    | T
+    | {
+        title?: T;
+        subtitle?: T;
+        description?: T;
+      };
+  features?:
+    | T
+    | {
+        icon?:
+          | T
+          | {
+              type?: T;
+              image?: T;
+              iconName?: T;
+              emoji?: T;
+            };
+        title?: T;
+        description?: T;
+        highlight?: T;
+        id?: T;
+      };
+  layout?:
+    | T
+    | {
+        style?: T;
+        columns?: T;
+        iconPosition?: T;
+        spacing?: T;
+        backgroundColor?: T;
+      };
+  showNumbers?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SpecificationsBlock_select".
+ */
+export interface SpecificationsBlockSelect<T extends boolean = true> {
+  dataSource?: T;
+  pianoModel?: T;
+  header?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  categories?:
+    | T
+    | {
+        categoryName?: T;
+        specifications?:
+          | T
+          | {
+              label?: T;
+              value?: T;
+              highlight?: T;
+              note?: T;
+              id?: T;
+            };
+        collapsible?: T;
+        defaultExpanded?: T;
+        id?: T;
+      };
+  layout?:
+    | T
+    | {
+        style?: T;
+        columns?: T;
+        showCategoryIcons?: T;
+        alternateRows?: T;
+        compactMode?: T;
+      };
+  downloadOptions?:
+    | T
+    | {
+        enableDownload?: T;
+        downloadFile?: T;
+        downloadButtonText?: T;
+      };
+  comparisonMode?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CallToActionBlock_select".
+ */
+export interface CallToActionBlockSelect<T extends boolean = true> {
+  content?:
+    | T
+    | {
+        title?: T;
+        subtitle?: T;
+        description?: T;
+      };
+  buttons?:
+    | T
+    | {
+        text?: T;
+        link?: T;
+        style?: T;
+        size?: T;
+        icon?: T;
+        iconPosition?: T;
+        openInNewTab?: T;
+        id?: T;
+      };
+  media?:
+    | T
+    | {
+        type?: T;
+        backgroundImage?: T;
+        sideImage?: T;
+        iconName?: T;
+        imagePosition?: T;
+        overlay?:
+          | T
+          | {
+              enable?: T;
+              color?: T;
+              opacity?: T;
+            };
+      };
+  layout?:
+    | T
+    | {
+        style?: T;
+        alignment?: T;
+        size?: T;
+        backgroundColor?: T;
+        buttonLayout?: T;
+      };
+  urgency?:
+    | T
+    | {
+        enableUrgency?: T;
+        urgencyText?: T;
+        showCountdown?: T;
+        countdownEndDate?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsBlock_select".
+ */
+export interface TestimonialsBlockSelect<T extends boolean = true> {
+  header?:
+    | T
+    | {
+        title?: T;
+        subtitle?: T;
+        description?: T;
+      };
+  testimonials?:
+    | T
+    | {
+        quote?: T;
+        rating?: T;
+        customer?:
+          | T
+          | {
+              name?: T;
+              title?: T;
+              company?: T;
+              location?: T;
+              avatar?: T;
+            };
+        product?: T;
+        verified?: T;
+        featured?: T;
+        source?: T;
+        reviewDate?: T;
+        id?: T;
+      };
+  layout?:
+    | T
+    | {
+        style?: T;
+        columns?: T;
+        showAvatars?: T;
+        showRatings?: T;
+        showSource?: T;
+        showDates?: T;
+        backgroundColor?: T;
+      };
+  carouselSettings?:
+    | T
+    | {
+        autoplay?: T;
+        autoplaySpeed?: T;
+        showDots?: T;
+        showArrows?: T;
+        slidesToShow?: T;
+        infinite?: T;
+      };
+  aggregateRating?:
+    | T
+    | {
+        showOverallRating?: T;
+        overallRating?: T;
+        totalReviews?: T;
+        ratingText?: T;
+      };
+  id?: T;
+  blockName?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

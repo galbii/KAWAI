@@ -1,9 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useFormState, useFormStatus } from 'react-dom';
+import { submitContactForm } from '@/lib/actions/contact-form';
 import { 
   PhoneIcon, 
   EnvelopeIcon, 
@@ -109,22 +112,32 @@ export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: Locati
 
   const watchedValues = watch();
 
+  const [formState, formAction] = useFormState(submitContactForm, null);
+
   const onSubmit = async (data: ContactFormData) => {
+    // Create FormData object from the validated data
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        formData.append(key, value.toString());
+      }
+    });
+    
     setIsSubmitting(true);
     try {
-      // Here you would typically send the data to your backend
-      console.log('Contact form submitted:', data);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      setIsSubmitted(true);
-    } catch (error) {
-      console.error('Contact form submission error:', error);
+      await formAction(formData);
+      // Success will be handled by useFormState
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // Check if form was successfully submitted via server action
+  React.useEffect(() => {
+    if (formState?.success) {
+      setIsSubmitted(true);
+    }
+  }, [formState]);
 
   if (isSubmitted) {
     return (
@@ -171,6 +184,26 @@ export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: Locati
             {data.contactDescription}
           </p>
         </div>
+
+        {/* Server Error Display */}
+        {formState && !formState.success && (
+          <div className="mb-8 bg-red-50 border border-red-200 rounded-lg p-6">
+            <div className="flex items-center mb-2">
+              <svg className="w-5 h-5 text-red-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 19c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              <h4 className="font-medium text-red-800">Error submitting form</h4>
+            </div>
+            <p className="text-red-700 mb-2">{formState.message}</p>
+            {formState.errors && (
+              <ul className="list-disc list-inside text-sm text-red-600 space-y-1">
+                {Object.entries(formState.errors).map(([field, error]) => (
+                  <li key={field}>{field}: {error}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
 
         {/* Form */}
         <div className="bg-kawai-pearl/30 rounded-lg shadow-xl p-8 md:p-12">

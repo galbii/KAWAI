@@ -150,12 +150,12 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
   return (
     <section className="py-24 bg-kawai-pearl">
       <div className="container mx-auto px-6 max-w-4xl">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-5xl md:text-6xl font-light font-serif text-kawai-black mb-6">
+        {/* Header with better mobile typography */}
+        <div className="text-center mb-8 sm:mb-12">
+          <h2 className="text-3xl sm:text-5xl md:text-6xl font-light font-serif text-kawai-black mb-4 sm:mb-6 px-4 sm:px-0">
             {data.contactTitle} <span className="text-kawai-red">{data.contactTitleHighlight}</span>
           </h2>
-          <p className="text-xl text-kawai-black/70 max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl text-kawai-black/70 max-w-2xl mx-auto px-4 sm:px-0">
             {data.contactDescription}
           </p>
         </div>
@@ -166,7 +166,7 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
             {[1, 2, 3].map((step) => (
               <div key={step} className="flex items-center">
                 <div className={`
-                  w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium
+                  w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium
                   ${currentStep >= step 
                     ? 'bg-kawai-red text-white' 
                     : isStepComplete(step)
@@ -190,9 +190,9 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
           </div>
         </div>
 
-        {/* Form */}
-        <div className="bg-white rounded-lg shadow-xl p-8 md:p-12">
-          <h3 className="text-2xl font-serif text-kawai-black mb-8 text-center">
+        {/* Form with better mobile padding */}
+        <div className="bg-white rounded-lg shadow-xl p-6 sm:p-8 md:p-12 mx-4 sm:mx-0">
+          <h3 className="text-xl sm:text-2xl font-serif text-kawai-black mb-6 sm:mb-8 text-center">
             {data.stepTitles[currentStep - 1]?.step || `Step ${currentStep}`}
           </h3>
 
@@ -206,7 +206,7 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
                   </label>
                   <div className="grid gap-3">
                     {data.formOptions.experienceLevels.map((level, index) => (
-                      <label key={level.level} className="flex items-center p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer">
+                      <label key={level.level} className="flex items-center p-3 sm:p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer touch-manipulation min-h-[44px]">
                         <input
                           type="radio"
                           value={level.level.toLowerCase()}
@@ -239,7 +239,7 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
                   </label>
                   <div className="grid gap-3">
                     {data.formOptions.pianoTypes.map((type) => (
-                      <label key={type.type} className="flex items-center p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer">
+                      <label key={type.type} className="flex items-center p-3 sm:p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer touch-manipulation min-h-[44px]">
                         <input
                           type="radio"
                           value={type.type.toLowerCase().replace(/\s+/g, '-')}
@@ -272,7 +272,7 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
                   </label>
                   <div className="grid gap-3">
                     {data.formOptions.primaryUses.map((use) => (
-                      <label key={use.use} className="flex items-center p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer">
+                      <label key={use.use} className="flex items-center p-3 sm:p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer touch-manipulation min-h-[44px]">
                         <input
                           type="radio"
                           value={use.use.toLowerCase().replace(/\s+/g, '-')}
@@ -311,7 +311,7 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
                   </label>
                   <div className="grid gap-3">
                     {data.formOptions.budgetRanges.map((budget) => (
-                      <label key={budget.range} className="flex items-center p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer">
+                      <label key={budget.range} className="flex items-center p-3 sm:p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer touch-manipulation min-h-[44px]">
                         <input
                           type="radio"
                           value={budget.range.toLowerCase().replace(/[\s$,+]/g, '-')}
@@ -352,7 +352,7 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
                     <input
                       type="text"
                       {...register('name')}
-                      className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors"
+                      className="w-full p-3 sm:p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors min-h-[44px] text-base"
                       placeholder="Enter your full name"
                     />
                     {errors.name && (
@@ -367,7 +367,7 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
                     <input
                       type="email"
                       {...register('email')}
-                      className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors"
+                      className="w-full p-3 sm:p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors min-h-[44px] text-base"
                       placeholder="Enter your email"
                     />
                     {errors.email && (
@@ -383,7 +383,7 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
                   <input
                     type="tel"
                     {...register('phone')}
-                    className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors"
+                    className="w-full p-3 sm:p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors min-h-[44px] text-base"
                     placeholder="Enter your phone number"
                   />
                 </div>
@@ -422,8 +422,8 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
               </div>
             )}
 
-            {/* Navigation Buttons */}
-            <div className="flex justify-between items-center mt-12 pt-8 border-t border-kawai-black/10">
+            {/* Navigation Buttons - Mobile optimized */}
+            <div className="flex justify-between items-center mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-kawai-black/10">
               <button
                 type="button"
                 onClick={handlePrevStep}
@@ -442,7 +442,7 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
                   type="button"
                   onClick={handleNextStep}
                   disabled={!isStepComplete(currentStep)}
-                  className={`px-8 py-3 rounded-md font-medium transition-colors ${
+                  className={`px-6 sm:px-8 py-3 sm:py-4 min-h-[44px] rounded-md font-medium transition-colors text-sm sm:text-base ${
                     isStepComplete(currentStep)
                       ? 'bg-kawai-red hover:bg-kawai-black text-white'
                       : 'bg-kawai-black/20 text-kawai-black/40 cursor-not-allowed'
@@ -454,7 +454,7 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
                 <button
                   type="submit"
                   disabled={!isValid}
-                  className={`px-8 py-3 rounded-md font-medium transition-colors ${
+                  className={`px-6 sm:px-8 py-3 sm:py-4 min-h-[44px] rounded-md font-medium transition-colors text-sm sm:text-base ${
                     isValid
                       ? 'bg-kawai-red hover:bg-kawai-black text-white'
                       : 'bg-kawai-black/20 text-kawai-black/40 cursor-not-allowed'

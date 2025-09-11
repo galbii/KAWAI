@@ -83,8 +83,8 @@ export function HomeHero() {
       {/* Dark Overlay for Text Readability */}
       <div className="absolute top-0 left-0 w-full h-full bg-kawai-black/50 z-10" />
       
-      {/* Content - Center Aligned */}
-      <div className="container-brand max-w-8xl mx-auto px-8 lg:px-16 relative z-20 flex flex-col items-center text-center">
+      {/* Content - Center Aligned with better mobile padding */}
+      <div className="container-brand max-w-8xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 relative z-20 flex flex-col items-center text-center overflow-hidden">
         {/* Centered Est. 1927 */}
         {heroData.establishedText && (
           <motion.div 
@@ -109,7 +109,7 @@ export function HomeHero() {
           <div className="mb-12 lg:mb-16">
             <h1 className="heading-brand-luxury text-kawai-pearl mb-8 lg:mb-12 leading-[0.75] tracking-tight text-center">
               <motion.span 
-                className="block text-2xl md:text-3xl lg:text-4xl font-normal mb-6 tracking-[0.2em] opacity-90"
+                className="block text-base sm:text-lg md:text-2xl lg:text-3xl xl:text-4xl font-normal mb-4 sm:mb-6 tracking-[0.15em] sm:tracking-[0.2em] opacity-90"
                 variants={wordReveal}
                 custom={0.8}
                 initial="hidden"
@@ -118,7 +118,8 @@ export function HomeHero() {
                 {heroData.titlePrefix}
               </motion.span>
               <motion.span 
-                className="block text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black tracking-[-0.02em] leading-[0.8]"
+                className="block text-3xl xs:text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black tracking-[-0.02em] leading-[0.8] sm:leading-[0.75] max-w-full overflow-hidden"
+                style={{ fontSize: 'clamp(2rem, 12vw, 12rem)' }}
                 variants={wordReveal}
                 custom={1.6}
                 initial="hidden"
@@ -127,7 +128,7 @@ export function HomeHero() {
                 {heroData.titleMain}
               </motion.span>
               <motion.div 
-                className="block text-3xl md:text-4xl lg:text-5xl font-light mt-4 tracking-[0.1em] opacity-90"
+                className="block text-lg sm:text-xl md:text-3xl lg:text-4xl xl:text-5xl font-light mt-3 sm:mt-4 tracking-[0.05em] sm:tracking-[0.1em] opacity-90"
                 variants={wordReveal}
                 custom={2.0}
                 initial="hidden"
@@ -139,7 +140,7 @@ export function HomeHero() {
           </div>
           
           <motion.p 
-            className="text-brand-sophisticated text-kawai-pearl/80 mb-brand-4xl mx-auto max-w-lg text-lg md:text-xl leading-relaxed font-light text-center"
+            className="text-brand-sophisticated text-kawai-pearl/80 mb-brand-4xl mx-auto max-w-lg text-base sm:text-lg md:text-xl leading-relaxed font-light text-center px-4 sm:px-0"
             variants={contentReveal}
             custom={2.5}
             initial="hidden"
@@ -149,16 +150,17 @@ export function HomeHero() {
           </motion.p>
         </div>
         
-        {/* Centered button */}
+        {/* Centered button with mobile optimization */}
         <motion.div 
           variants={contentReveal}
           custom={3.0}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
+          className="px-4 sm:px-0"
         >
-          <Button size="lg" className="btn-brand-primary" asChild>
+          <Button size="lg" className="btn-brand-primary text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4 min-h-[44px] w-auto" asChild>
             <Link href={heroData.primaryCta.link}>
-              {heroData.primaryCta.text}
+              <span className="text-center leading-tight">{heroData.primaryCta.text}</span>
             </Link>
           </Button>
         </motion.div>
