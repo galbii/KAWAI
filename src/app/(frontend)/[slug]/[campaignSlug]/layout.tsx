@@ -24,7 +24,7 @@ export async function generateMetadata({
     
     // Combine campaign and dealer location info for comprehensive SEO
     const campaignTitle = landingPage?.title || 'Special Campaign';
-    const dealerName = dealerLocation?.locationName || 'Piano Dealer';
+    const dealerName = dealerLocation?.locationName || 'Piano Gallery';
     const campaignType = landingPage?.campaignType || 'promotional-sale';
     
     const finalTitle = seo?.metaTitle || `${campaignTitle} | ${dealerName}`;
@@ -39,7 +39,7 @@ export async function generateMetadata({
       'piano campaign',
       'piano sale',
       'kawai piano',
-      'piano dealer',
+      'Piano Gallery',
       'special offer',
       'limited time'
     ];

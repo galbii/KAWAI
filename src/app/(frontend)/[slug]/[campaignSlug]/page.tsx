@@ -150,7 +150,7 @@ export async function generateMetadata({
     
     // Combine campaign and dealer location info for SEO
     const campaignTitle = seo.metaTitle || landingPage?.title || 'Special Campaign';
-    const dealerName = dealerLocation?.locationName || 'Piano Dealer';
+    const dealerName = dealerLocation?.locationName || 'Piano Gallery';
     const finalTitle = seo.metaTitle || `${campaignTitle} | ${dealerName}`;
     
     const finalDescription = seo.metaDescription || 

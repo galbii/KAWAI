@@ -3,13 +3,13 @@ import type { CollectionConfig } from 'payload'
 export const DealerLocations: CollectionConfig = {
   slug: 'dealer-locations',
   labels: {
-    singular: 'Dealer Location',
-    plural: 'Dealer Locations',
+    singular: 'Piano Gallery Location',
+    plural: 'Piano Gallery Locations',
   },
   admin: {
     group: 'PAGES',
     useAsTitle: 'locationName',
-    description: 'Manage dealer locations with customizable content structure including hero, showroom information, piano collection, gallery, news, contact form, and SEO.',
+    description: 'Manage Piano Gallery locations with customizable content structure including hero, showroom information, piano collection, gallery, news, contact form, and SEO.',
   },
   access: {
     read: () => true, // Public read access for frontend
@@ -21,7 +21,7 @@ export const DealerLocations: CollectionConfig = {
       required: true,
       unique: true,
       admin: {
-        description: 'URL-friendly identifier for this dealer location (e.g., "st-louis", "chicago")'
+        description: 'URL-friendly identifier for this Piano Gallery location (e.g., "st-louis", "chicago")'
       },
       validate: (val: string | string[] | null | undefined) => {
         if (!val || typeof val !== 'string') return 'Slug is required'
@@ -44,7 +44,7 @@ export const DealerLocations: CollectionConfig = {
       type: 'checkbox',
       defaultValue: true,
       admin: {
-        description: 'Controls whether this dealer location is visible on the frontend'
+        description: 'Controls whether this Piano Gallery location is visible on the frontend'
       }
     },
     {
@@ -59,9 +59,9 @@ export const DealerLocations: CollectionConfig = {
               name: 'locationText',
               type: 'text',
               required: true,
-              defaultValue: 'St. Louis\'s Premier Kawai Piano Dealer',
+              defaultValue: 'St. Louis\'s Premier Piano Gallery',
               admin: {
-                description: 'Location/dealer status text displayed at the top'
+                description: 'Location/Piano Gallery status text displayed at the top'
               }
             },
             {
@@ -202,7 +202,7 @@ export const DealerLocations: CollectionConfig = {
               name: 'showroomDescription',
               type: 'textarea',
               required: true,
-              defaultValue: 'Experience the artistry of Kawai pianos in Missouri\'s premier showroom. From intimate consultations to comprehensive piano services, discover why discerning musicians choose our Lake St. Louis location.',
+              defaultValue: 'Experience the artistry of Kawai pianos in Missouri\'s premier Piano Gallery. From intimate consultations to comprehensive piano services, discover why discerning musicians choose our Lake St. Louis showroom.',
               admin: {
                 description: 'Showroom section description'
               }
@@ -336,9 +336,9 @@ export const DealerLocations: CollectionConfig = {
                 }
               ],
               defaultValue: [
-                { icon: 'award', title: 'Expert Consultation', description: 'Personalized guidance from certified Kawai specialists' },
-                { icon: 'piano', title: 'Full Service Center', description: 'Tuning, repair, and maintenance by certified technicians' },
-                { icon: 'shield', title: 'Financing Available', description: 'Flexible payment options to make your piano dreams accessible' }
+                { icon: 'award', title: 'Expert Piano Consultation', description: 'Personalized guidance from our Piano Gallery specialists' },
+                { icon: 'piano', title: 'Complete Piano Services', description: 'Professional tuning, repair, and maintenance by certified piano technicians' },
+                { icon: 'shield', title: 'Piano Financing Available', description: 'Flexible payment options to make your perfect piano accessible' }
               ],
               admin: {
                 description: 'Key features and services offered at the showroom'
@@ -495,131 +495,24 @@ export const DealerLocations: CollectionConfig = {
           ]
         },
 
-        // Piano Gallery Tab
-        {
-          label: 'Piano Gallery',
-          description: 'Configure the piano gallery section with different piano categories',
-          fields: [
-            {
-              name: 'galleryTitle',
-              type: 'text',
-              required: true,
-              defaultValue: 'Explore Our Piano Collection',
-              admin: {
-                description: 'Piano gallery section title'
-              }
-            },
-            {
-              name: 'galleryDescription',
-              type: 'textarea',
-              required: true,
-              defaultValue: 'Discover the full range of Kawai pianos, from handcrafted grand pianos to innovative digital and hybrid instruments. Each piano represents our commitment to exceptional craftsmanship and musical excellence.',
-              admin: {
-                description: 'Piano gallery section description'
-              }
-            },
-            {
-              name: 'pianoCategories',
-              type: 'array',
-              required: true,
-              labels: {
-                singular: 'Piano Category',
-                plural: 'Piano Categories',
-              },
-              fields: [
-                {
-                  name: 'model',
-                  type: 'text',
-                  required: true,
-                  admin: {
-                    description: 'Piano model or series name (e.g., "GX-7", "CA99")'
-                  }
-                },
-                {
-                  name: 'title',
-                  type: 'text',
-                  required: true,
-                  admin: {
-                    description: 'Category title (e.g., "Concert Grand Pianos")'
-                  }
-                },
-                {
-                  name: 'description',
-                  type: 'textarea',
-                  required: true,
-                  admin: {
-                    description: 'Category description'
-                  }
-                },
-                {
-                  name: 'image',
-                  type: 'upload',
-                  relationTo: 'media',
-                  required: false,
-                  admin: {
-                    description: 'Category representative image'
-                  }
-                },
-                {
-                  name: 'href',
-                  type: 'text',
-                  required: true,
-                  admin: {
-                    description: 'Link to category or model page'
-                  }
-                }
-              ],
-              defaultValue: [
-                {
-                  model: 'Grand',
-                  title: 'Grand Pianos',
-                  description: 'Professional acoustic grand pianos for concert halls, studios, and discerning homes. Experience the ultimate in touch, tone, and musical expression with instruments trusted by professional musicians worldwide.',
-                  href: '/pianos/grand'
-                },
-                {
-                  model: 'Digital',
-                  title: 'Digital Pianos',
-                  description: 'Advanced digital pianos featuring realistic wooden-key actions and premium sound systems. Combining authentic acoustic piano experience with modern technology and convenient features for today\'s musicians.',
-                  href: '/pianos/digital'
-                },
-                {
-                  model: 'Upright',
-                  title: 'Upright Pianos',
-                  description: 'Space-efficient acoustic pianos delivering exceptional touch and tone quality. Perfect for homes, studios, schools, and institutions where space is at a premium but musical excellence cannot be compromised.',
-                  href: '/pianos/upright'
-                },
-                {
-                  model: 'Hybrid',
-                  title: 'Hybrid Pianos',
-                  description: 'Revolutionary instruments combining real grand piano actions with advanced digital sound technology. Experience the authentic touch of acoustic keys with the versatility and innovation of digital sound.',
-                  href: '/pianos/hybrid'
-                }
-              ],
-              admin: {
-                description: 'Piano categories displayed in the gallery section'
-              }
-            }
-          ]
-        },
 
         // News Carousel Tab
         {
           label: 'News Carousel',
-          description: 'Configure the rotating news and updates carousel section',
+          description: 'Configure location-specific news carousel. Leave empty to use main site news automatically.',
           fields: [
             {
               name: 'autoPlayDuration',
               type: 'number',
-              required: true,
-              defaultValue: 7000,
+              required: false,
               admin: {
-                description: 'Auto-play duration in milliseconds (default: 7000ms = 7 seconds)'
+                description: 'Auto-play duration in milliseconds (leave empty to use main site default)'
               }
             },
             {
               name: 'newsItems',
               type: 'array',
-              required: true,
+              required: false,
               labels: {
                 singular: 'News Item',
                 plural: 'News Items',
@@ -673,28 +566,8 @@ export const DealerLocations: CollectionConfig = {
                   }
                 }
               ],
-              defaultValue: [
-                {
-                  title: 'Instrumental to Life',
-                  description: 'Redefining harmony between tradition and innovation',
-                  category: 'news',
-                  link: '/about/instrumental-to-life'
-                },
-                {
-                  title: 'Kawai Piano Gallery',
-                  description: 'Explore our complete collection of acoustic and digital pianos',
-                  category: 'news',
-                  link: '/pianos'
-                },
-                {
-                  title: 'Special Financing Offers',
-                  description: 'Make your dream piano more accessible with flexible payment options',
-                  category: 'promotions',
-                  link: '/financing'
-                }
-              ],
               admin: {
-                description: 'News carousel items'
+                description: 'News carousel items (leave empty to use main site news)'
               }
             }
           ]
@@ -727,7 +600,7 @@ export const DealerLocations: CollectionConfig = {
               name: 'contactDescription',
               type: 'textarea',
               required: true,
-              defaultValue: 'Get your free Piano Buying Guide and personalized recommendations from our Lake St. Louis piano experts. Serving the St. Louis area for over 95 years.',
+              defaultValue: 'Get your free Piano Buying Guide and personalized recommendations from our Lake St. Louis Piano Gallery specialists. Serving the St. Louis area for over 95 years.',
               admin: {
                 description: 'Contact form section description'
               }
@@ -756,7 +629,7 @@ export const DealerLocations: CollectionConfig = {
               name: 'trustMessage',
               type: 'text',
               required: true,
-              defaultValue: 'Trusted by St. Louis area piano families since 1927',
+              defaultValue: 'Trusted by St. Louis area piano families since 1927 - Your Premier Piano Gallery',
               admin: {
                 description: 'Trust/credibility message'
               }
@@ -801,7 +674,7 @@ export const DealerLocations: CollectionConfig = {
                 { icon: 'award', text: 'Exclusive offers and updates' }
               ],
               admin: {
-                description: 'Benefits/features of working with your piano store'
+                description: 'Benefits/features of working with your Piano Gallery'
               }
             },
             {
@@ -915,7 +788,7 @@ export const DealerLocations: CollectionConfig = {
                 {
                   name: 'metaTitle',
                   type: 'text',
-                  defaultValue: 'Kawai Pianos St. Louis | Premier Piano Dealer Since 1927 | Lake St. Louis',
+                  defaultValue: 'Kawai Piano Gallery St. Louis | Premier Piano Gallery Since 1927 | Lake St. Louis',
                   admin: {
                     description: 'Page meta title for search engines'
                   }
@@ -924,7 +797,7 @@ export const DealerLocations: CollectionConfig = {
                   name: 'metaDescription',
                   type: 'textarea',
                   maxLength: 160,
-                  defaultValue: 'St. Louis\'s premier Kawai piano dealer since 1927. Explore acoustic & digital pianos at our Lake St. Louis showroom. Expert consultation & service.',
+                  defaultValue: 'St. Louis\'s premier Kawai Piano Gallery since 1927. Explore acoustic & digital pianos at our Lake St. Louis Piano Gallery. Expert consultation & service.',
                   admin: {
                     description: 'Page meta description for search engines (max 160 characters)'
                   }
@@ -932,7 +805,7 @@ export const DealerLocations: CollectionConfig = {
                 {
                   name: 'keywords',
                   type: 'text',
-                  defaultValue: 'Kawai pianos, St. Louis piano dealer, Lake St. Louis piano store, acoustic pianos, digital pianos, piano showroom, Missouri piano dealer, piano sales, piano service',
+                  defaultValue: 'Kawai pianos, St. Louis Piano Gallery, Lake St. Louis piano gallery, acoustic pianos, digital pianos, piano showroom, Missouri Piano Gallery, piano sales, piano consultation',
                   admin: {
                     description: 'SEO keywords (comma-separated)'
                   }

@@ -69,8 +69,8 @@ export default function AuthorityTrustSection() {
                   <span className="text-white text-xs">✓</span>
                 </div>
                 <div>
-                  <h4 className="font-medium text-sm">Authorized Dealer</h4>
-                  <p className="text-xs text-muted-foreground">Official Kawai dealer with factory support</p>
+                  <h4 className="font-medium text-sm">Authorized Piano Gallery</h4>
+                  <p className="text-xs text-muted-foreground">Official Kawai Piano Gallery with factory support</p>
                 </div>
               </div>
               <div className="flex gap-3">

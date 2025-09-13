@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { KawaiLogo } from '@/components/ui/kawai-logo'
 import { cn } from '@/lib/utils'
 import { useNavigationContext } from '@/contexts/NavigationContext'
+import { getContextAwareUrl } from '@/lib/navigation-utils'
 
 interface NavigationItem {
   label: string
@@ -35,17 +36,57 @@ interface DesktopMenuItemProps {
   onClose: () => void
 }
 
+// Context-aware Link component for client-side navigation
+const ContextAwareLink = ({ href, children, className, onClick }: { 
+  href: string
+  children: React.ReactNode
+  className?: string
+  onClick?: () => void
+}) => {
+  const { origin, isInitialized } = useNavigationContext()
+  
+  // Check if href already has origin parameter to avoid double-encoding
+  const hasOriginParam = href.includes('?origin=') || href.includes('&origin=')
+  
+  // If href is already context-aware (from server-side rendering), use as-is
+  // Otherwise, make it context-aware on client-side
+  const finalHref = (isInitialized && !hasOriginParam) 
+    ? getContextAwareUrl(href, origin) 
+    : href
+  
+  // Debug logging for development
+  if (process.env.NODE_ENV === 'development' && origin.isDealerLocation) {
+    console.log('[ContextAwareLink]', {
+      originalHref: href,
+      finalHref,
+      hasOriginParam,
+      isInitialized,
+      origin
+    })
+  }
+  
+  return (
+    <Link 
+      href={finalHref}
+      className={className}
+      onClick={onClick}
+    >
+      {children}
+    </Link>
+  )
+}
+
 // Mobile Menu Item Component
 const MobileMenuItem = ({ item, onClose, isOpen, onToggle }: MobileMenuItemProps) => {
   if (!item.dropdown) {
     return (
-      <Link
+      <ContextAwareLink
         href={item.href || '#'}
         className="block py-4 px-6 text-gray-800 hover:text-gray-900 hover:bg-gray-50 font-medium text-xl transition-colors rounded-lg"
         onClick={onClose}
       >
         {item.label}
-      </Link>
+      </ContextAwareLink>
     )
   }
 
@@ -53,13 +94,13 @@ const MobileMenuItem = ({ item, onClose, isOpen, onToggle }: MobileMenuItemProps
     <div className="space-y-3">
       {item.href ? (
         <div className="flex items-center">
-          <Link
+          <ContextAwareLink
             href={item.href}
             className="flex-1 py-4 px-6 text-gray-800 hover:text-gray-900 hover:bg-gray-50 font-medium text-xl transition-colors rounded-lg"
             onClick={onClose}
           >
             {item.label}
-          </Link>
+          </ContextAwareLink>
           <button
             onClick={onToggle}
             className="p-4 text-gray-800 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-lg"
@@ -111,7 +152,7 @@ const MobileMenuItem = ({ item, onClose, isOpen, onToggle }: MobileMenuItemProps
                 return Object.entries(productlineGroups).map(([productlineName, items]) => (
                   <div key={productlineName} className="space-y-2">
                     {items.map((subItem) => (
-                      <Link
+                      <ContextAwareLink
                         key={subItem.href}
                         href={subItem.href}
                         className={cn(
@@ -128,7 +169,7 @@ const MobileMenuItem = ({ item, onClose, isOpen, onToggle }: MobileMenuItemProps
                         )}>
                           {subItem.isProduct ? `• ${subItem.label}` : subItem.label}
                         </div>
-                      </Link>
+                      </ContextAwareLink>
                     ))}
                   </div>
                 ))
@@ -325,12 +366,12 @@ const DesktopMenuItem = ({ item, isOpen, onOpen, onClose }: DesktopMenuItemProps
 
   if (!item.dropdown) {
     return (
-      <Link
+      <ContextAwareLink
         href={item.href || '#'}
         className="px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md"
       >
         {item.label}
-      </Link>
+      </ContextAwareLink>
     )
   }
 
@@ -343,12 +384,12 @@ const DesktopMenuItem = ({ item, isOpen, onOpen, onClose }: DesktopMenuItemProps
     >
       {item.href ? (
         <div className="flex items-center">
-          <Link
+          <ContextAwareLink
             href={item.href}
             className="px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md"
           >
             {item.label}
-          </Link>
+          </ContextAwareLink>
           <button className="px-1 py-2 text-gray-700 hover:text-gray-900 transition-colors">
             <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-180")} />
           </button>
@@ -414,7 +455,7 @@ const DesktopMenuItem = ({ item, isOpen, onOpen, onClose }: DesktopMenuItemProps
                   return Object.entries(productlineGroups).map(([productlineName, items]) => (
                     <div key={productlineName} className="flex flex-col">
                       {items.map((subItem) => (
-                        <Link
+                        <ContextAwareLink
                           key={subItem.href}
                           href={subItem.href}
                           className={cn(
@@ -430,7 +471,7 @@ const DesktopMenuItem = ({ item, isOpen, onOpen, onClose }: DesktopMenuItemProps
                           )}>
                             {subItem.isProduct ? `• ${subItem.label}` : subItem.label}
                           </div>
-                        </Link>
+                        </ContextAwareLink>
                       ))}
                     </div>
                   ))
@@ -454,7 +495,7 @@ interface HeaderProps {
   locationData?: DealerLocationData | null
 }
 
-// Default fallback navigation
+// Default fallback navigation - URLs will be made context-aware at runtime
 const defaultNavigation: NavigationItem[] = [
   {
     label: 'Pianos',
@@ -793,9 +834,9 @@ export function Header({ navigation = defaultNavigation, locationData }: HeaderP
                 className="bg-kawai-red hover:bg-kawai-red/90 text-white px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300" 
                 asChild
               >
-                <Link href={`/${currentLocationData.slug}/contact`}>
+                <ContextAwareLink href={`/${currentLocationData.slug}/contact`}>
                   Visit Showroom
-                </Link>
+                </ContextAwareLink>
               </Button>
             </motion.div>
           )}

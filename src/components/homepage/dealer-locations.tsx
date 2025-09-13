@@ -46,7 +46,7 @@ export async function DealerLocations({ className = '' }: DealerLocationsProps) 
             <span className="text-kawai-red block">Piano Gallery</span>
           </h2>
           <p className="text-lg sm:text-xl text-kawai-black/70 max-w-3xl mx-auto leading-relaxed px-4 sm:px-0">
-            Visit our authorized Kawai storefronts and experience our complete collection of acoustic and digital pianos in person.
+            Visit our Piano Galleries and experience our complete collection of acoustic and digital pianos with expert consultation.
           </p>
         </div>
 
@@ -62,7 +62,7 @@ export async function DealerLocations({ className = '' }: DealerLocationsProps) 
                 {/* Location Header */}
                 <div className="mb-4 sm:mb-6">
                   <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-2 sm:mb-3">
-                    {location.locationText || 'Authorized Dealer'}
+                    {location.locationText || 'Piano Gallery'}
                   </div>
                   <h3 className="text-xl sm:text-2xl font-serif text-kawai-black mb-2 group-hover:text-kawai-red transition-colors leading-tight">
                     {location.locationName}
@@ -133,7 +133,7 @@ export async function DealerLocations({ className = '' }: DealerLocationsProps) 
                 <div className="pt-3 sm:pt-4 border-t border-kawai-pearl mt-auto">
                   <div className="flex items-center justify-between min-h-[44px]">
                     <span className="text-sm font-medium text-kawai-black group-hover:text-kawai-red transition-colors">
-                      Visit Showroom
+                      Visit Gallery
                     </span>
                     <div className="w-8 h-8 sm:w-6 sm:h-6 bg-kawai-red/10 group-hover:bg-kawai-red rounded-full flex items-center justify-center transition-colors">
                       <svg 
@@ -160,7 +160,7 @@ export async function DealerLocations({ className = '' }: DealerLocationsProps) 
             href="/contact"
             className="inline-flex items-center space-x-2 bg-kawai-red hover:bg-kawai-black text-white px-6 sm:px-8 py-3 sm:py-4 font-medium transition-colors text-sm tracking-wide uppercase rounded-lg min-h-[44px] touch-manipulation"
           >
-            <span>Find Authorized Storefronts</span>
+            <span>Find Your Perfect Piano</span>
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
             </svg>

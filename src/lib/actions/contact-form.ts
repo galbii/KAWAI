@@ -158,7 +158,7 @@ export async function submitContactForm(
     
     if (!validationResult.success) {
       const errors: Record<string, string> = {}
-      validationResult.error.errors.forEach(error => {
+      validationResult.error.issues.forEach(error => {
         const path = error.path.join('.')
         errors[path] = error.message
       })

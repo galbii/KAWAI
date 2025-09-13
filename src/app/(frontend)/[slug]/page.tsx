@@ -6,10 +6,64 @@ import {
   ContactForm,
   ShowroomLocation
 } from "@/components/homepage";
-import { getDealerLocationData } from "@/lib/payload";
+import { getDealerLocationData, getHomePageData } from "@/lib/payload";
 import type { HomePageData } from "@/lib/types/homepage";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
+
+// Helper function to check if news carousel data is meaningful/populated
+function isNewsCarouselDataEmpty(newsCarouselSection: any): boolean {
+  if (!newsCarouselSection) return true;
+  
+  // Check if newsItems array exists and has meaningful content
+  if (!newsCarouselSection.newsItems || !Array.isArray(newsCarouselSection.newsItems)) {
+    return true;
+  }
+  
+  // Check if array is empty
+  if (newsCarouselSection.newsItems.length === 0) {
+    return true;
+  }
+  
+  // Check if all items in the array are empty/meaningless
+  const hasValidItems = newsCarouselSection.newsItems.some((item: any) => {
+    return item && 
+           item.title && 
+           item.title.trim().length > 0 && 
+           item.description && 
+           item.description.trim().length > 0 &&
+           item.category && 
+           item.category.trim().length > 0;
+  });
+  
+  return !hasValidItems;
+}
+
+// Helper function to merge news carousel data with fallback values
+function mergeNewsCarouselWithFallback(dealerData: any, homePageData: any): any {
+  if (!dealerData || !homePageData?.newsCarouselSection) return dealerData;
+  
+  const merged = { ...dealerData };
+  
+  // If dealer's autoPlayDuration is missing/empty, use HomePage value
+  if (!merged.newsCarouselSection?.autoPlayDuration && homePageData.newsCarouselSection?.autoPlayDuration) {
+    merged.newsCarouselSection = merged.newsCarouselSection || {};
+    merged.newsCarouselSection.autoPlayDuration = homePageData.newsCarouselSection.autoPlayDuration;
+  }
+  
+  // If dealer's newsItems are empty, use HomePage newsItems
+  if (isNewsCarouselDataEmpty(merged.newsCarouselSection)) {
+    merged.newsCarouselSection = merged.newsCarouselSection || {};
+    merged.newsCarouselSection.newsItems = homePageData.newsCarouselSection.newsItems;
+    
+    // Also ensure autoPlayDuration is set if it wasn't already
+    if (!merged.newsCarouselSection.autoPlayDuration) {
+      merged.newsCarouselSection.autoPlayDuration = homePageData.newsCarouselSection.autoPlayDuration;
+    }
+  }
+  
+  return merged;
+}
 
 // Loading components for each section
 function HeroSkeleton() {
@@ -92,18 +146,41 @@ function ContactFormSkeleton() {
   );
 }
 
-// Server Component that fetches dealer location data and renders sections
+// Server Component that fetches dealer location data and homepage data for piano gallery
 async function DealerLocationContent({ slug }: { slug: string }) {
   let dealerLocationData: HomePageData | null = null;
+  let pianoGalleryData: any = null;
   let error: string | null = null;
 
   try {
+    // Fetch dealer location data (contains all sections except piano gallery)
     dealerLocationData = await getDealerLocationData(slug);
     
     // If dealer location doesn't exist or is inactive, show 404
     if (!dealerLocationData) {
       notFound();
     }
+    
+    // Fetch HomePage data for fallbacks
+    const homePageData = await getHomePageData();
+    pianoGalleryData = homePageData?.pianoGallerySection;
+    
+    // Merge dealer location data with HomePage fallbacks for news carousel
+    if (dealerLocationData && homePageData) {
+      const originalCarouselEmpty = isNewsCarouselDataEmpty(dealerLocationData.newsCarouselSection);
+      const originalDurationMissing = !dealerLocationData.newsCarouselSection?.autoPlayDuration;
+      
+      dealerLocationData = mergeNewsCarouselWithFallback(dealerLocationData, homePageData);
+      
+      // Log what fallbacks were applied for debugging
+      if (originalCarouselEmpty || originalDurationMissing) {
+        const fallbacks = [];
+        if (originalCarouselEmpty) fallbacks.push('news items');
+        if (originalDurationMissing) fallbacks.push('auto-play duration');
+        console.log(`Dealer location ${slug} using HomePage fallback for: ${fallbacks.join(', ')}`);
+      }
+    }
+    
   } catch (err) {
     error = err instanceof Error ? err.message : 'Failed to load dealer location data';
     console.error('Dealer location data fetch error:', error);
@@ -128,8 +205,8 @@ async function DealerLocationContent({ slug }: { slug: string }) {
       {/* Piano Collection Section */}
       <PianoCollection data={dealerLocationData?.pianoCollectionSection} />
       
-      {/* Piano Gallery Section */}
-      <PianoGallery data={dealerLocationData?.pianoGallerySection} />
+      {/* Piano Gallery Section - Uses HomePage collection data */}
+      <PianoGallery data={pianoGalleryData} />
       
       {/* News Carousel Section */}
       <NewsCarousel data={dealerLocationData?.newsCarouselSection} />
@@ -148,14 +225,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     
     if (!dealerLocationData?.seo) {
       return {
-        title: 'Dealer Location Not Found',
-        description: 'The requested dealer location could not be found.'
+        title: 'Piano Gallery Location Not Found',
+        description: 'The requested Piano Gallery location could not be found.'
       };
     }
 
     return {
-      title: dealerLocationData.seo.metaTitle || 'Kawai Piano Dealer',
-      description: dealerLocationData.seo.metaDescription || 'Find your local Kawai piano dealer.',
+      title: dealerLocationData.seo.metaTitle || 'Kawai Piano Gallery',
+      description: dealerLocationData.seo.metaDescription || 'Find your local Kawai Piano Gallery.',
       keywords: dealerLocationData.seo.keywords,
       openGraph: {
         title: dealerLocationData.seo.openGraphTitle || dealerLocationData.seo.metaTitle,
@@ -172,8 +249,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   } catch (error) {
     console.error('Error generating metadata for dealer location:', error);
     return {
-      title: 'Dealer Location Not Found',
-      description: 'The requested dealer location could not be found.'
+      title: 'Piano Gallery Location Not Found',
+      description: 'The requested Piano Gallery location could not be found.'
     };
   }
 }

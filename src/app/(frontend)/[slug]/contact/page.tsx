@@ -117,21 +117,21 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     if (!dealerLocationData?.seo) {
       return {
         title: 'Contact - Location Not Found',
-        description: 'The requested dealer location could not be found.'
+        description: 'The requested Piano Gallery location could not be found.'
       };
     }
 
-    const locationName = dealerLocationData.heroSection?.locationText || 'Kawai Piano Dealer';
-    const baseTitle = dealerLocationData.seo.metaTitle || 'Contact - Kawai Piano Dealer';
+    const locationName = dealerLocationData.heroSection?.locationText || 'Kawai Piano Gallery';
+    const baseTitle = dealerLocationData.seo.metaTitle || 'Contact - Kawai Piano Gallery';
     const contactTitle = `Contact ${locationName} | ${baseTitle}`;
 
     return {
       title: contactTitle,
-      description: `Contact ${locationName}. ${dealerLocationData.seo.metaDescription || 'Get in touch with your local Kawai piano dealer.'}`,
+      description: `Contact ${locationName}. ${dealerLocationData.seo.metaDescription || 'Get in touch with your local Kawai Piano Gallery.'}`,
       keywords: `contact, ${dealerLocationData.seo.keywords}`,
       openGraph: {
         title: contactTitle,
-        description: `Contact ${locationName}. ${dealerLocationData.seo.openGraphDescription || dealerLocationData.seo.metaDescription || 'Get in touch with your local Kawai piano dealer.'}`,
+        description: `Contact ${locationName}. ${dealerLocationData.seo.openGraphDescription || dealerLocationData.seo.metaDescription || 'Get in touch with your local Kawai Piano Gallery.'}`,
         images: dealerLocationData.seo.openGraphImage ? [
           {
             url: typeof dealerLocationData.seo.openGraphImage === 'string' 
@@ -145,7 +145,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     console.error('Error generating metadata for dealer location contact:', error);
     return {
       title: 'Contact - Location Not Found',
-      description: 'The requested dealer location could not be found.'
+      description: 'The requested Piano Gallery location could not be found.'
     };
   }
 }

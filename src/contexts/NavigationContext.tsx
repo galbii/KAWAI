@@ -62,22 +62,52 @@ export function NavigationContextProvider({
   useEffect(() => {
     const newOrigin = parseNavigationOrigin(pathname, searchParams)
     
-    // On client-side, check session storage for persisted origin
+    // PRIORITY 1: URL parameters (especially ?origin=/dealer-slug)
+    const originParam = searchParams?.get('origin')
+    if (originParam) {
+      // URL has explicit origin parameter - always use this
+      console.log('[NavigationContext] Using URL origin parameter:', { 
+        originParam, 
+        newOrigin, 
+        pathname, 
+        searchParams: searchParams?.toString() 
+      })
+      setOrigin(newOrigin)
+      setIsInitialized(true)
+      return
+    }
+    
+    // PRIORITY 2: Session storage for persisted origin (only if no URL param)
     if (typeof window !== 'undefined' && !isInitialized) {
       try {
         const savedOrigin = sessionStorage.getItem('kawai-navigation-origin')
         if (savedOrigin) {
           const parsedOrigin = JSON.parse(savedOrigin) as NavigationOrigin
-          // Use saved origin if it's still valid, otherwise use parsed origin
-          setOrigin(parsedOrigin)
-          setIsInitialized(true)
-          return
+          
+          // Only use saved origin if we're on a neutral page (like product pages)
+          // and the URL doesn't explicitly indicate a different context
+          if (newOrigin.basePath === '/' && parsedOrigin.isDealerLocation) {
+            console.log('[NavigationContext] Using saved origin from session storage:', { 
+              parsedOrigin, 
+              newOrigin, 
+              pathname 
+            })
+            setOrigin(parsedOrigin)
+            setIsInitialized(true)
+            return
+          }
         }
       } catch (error) {
         console.warn('Failed to parse saved navigation origin:', error)
       }
     }
     
+    // PRIORITY 3: Parse from current URL structure
+    console.log('[NavigationContext] Using parsed origin from URL structure:', { 
+      newOrigin, 
+      pathname, 
+      searchParams: searchParams?.toString() 
+    })
     setOrigin(newOrigin)
     setIsInitialized(true)
   }, [pathname, searchParams, isInitialized])

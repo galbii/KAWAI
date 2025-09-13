@@ -70,7 +70,7 @@ export default function AboutEventSection() {
             <div className="flex flex-col items-center text-center mb-6">
               <Image 
                 src="/images/Kawai (Red)(2).png"
-                alt="KAWAI Piano Sales Dallas - Premium Piano Dealer"
+                alt="KAWAI Piano Sales Dallas - Premium Piano Gallery"
                 width={240}
                 height={60}
                 className={`h-16 w-auto mb-4 transition-all duration-600 delay-200 ${contentVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
@@ -96,7 +96,7 @@ export default function AboutEventSection() {
             
             <div className="space-y-4 text-muted-foreground leading-relaxed">
               <p className={`text-base transition-all duration-600 delay-600 ${contentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                For over five years, our exclusive partnership with University of Texas at Dallas has made us Dallas&apos;s trusted piano dealer, bringing Greater Dallas Area families access to premium KAWAI piano sales at specially negotiated pricing.
+                For over five years, our exclusive partnership with University of Texas at Dallas has made us Dallas&apos;s trusted Piano Gallery, bringing Greater Dallas Area families access to premium KAWAI piano sales at specially negotiated pricing.
               </p>
               
               <p className={`text-base transition-all duration-600 delay-750 ${contentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>

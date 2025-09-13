@@ -7,50 +7,46 @@ import { motion, AnimatePresence, useInView } from "framer-motion";
 import { NewsCarouselProps, DEFAULT_NEWS_CAROUSEL_DATA } from '@/lib/types/homepage';
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils';
 
-
 export function NewsCarousel({ data = DEFAULT_NEWS_CAROUSEL_DATA }: NewsCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const sectionRef = useRef(null);
-  const isInView = useInView(sectionRef, { once: true, amount: 0.3 });
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
   
-  // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
-  const SLIDE_DURATION = data.autoPlayDuration; // Dynamic slide duration from CMS
+  const SLIDE_DURATION = data.autoPlayDuration;
+  const newsItems = data.newsItems;
 
   // Auto-play functionality
   useEffect(() => {
-    if (!isPlaying || !isInView) return;
+    if (!isPlaying || !isInView || newsItems.length <= 1) return;
 
     const slideTimer = setTimeout(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % data.newsItems.length);
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % newsItems.length);
     }, SLIDE_DURATION);
 
     return () => clearTimeout(slideTimer);
-  }, [isPlaying, currentIndex, isInView]);
-
-  // Pause/resume on hover
-  const handleMouseEnter = () => setIsPlaying(false);
-  const handleMouseLeave = () => setIsPlaying(true);
+  }, [isPlaying, currentIndex, isInView, newsItems.length, SLIDE_DURATION]);
 
   // Navigation functions
   const goToPrevious = () => {
     setCurrentIndex((prevIndex) => 
-      prevIndex === 0 ? data.newsItems.length - 1 : prevIndex - 1
+      prevIndex === 0 ? newsItems.length - 1 : prevIndex - 1
     );
   };
 
   const goToNext = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % data.newsItems.length);
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % newsItems.length);
   };
 
-  // Touch event handlers for mobile swipe
+  // Touch event handlers
   const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null); // Reset touch end
+    setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
-    setIsPlaying(false); // Pause auto-play during touch
+    setIsPlaying(false);
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
@@ -70,241 +66,178 @@ export function NewsCarousel({ data = DEFAULT_NEWS_CAROUSEL_DATA }: NewsCarousel
       goToPrevious();
     }
     
-    // Resume auto-play after swipe
     setTimeout(() => setIsPlaying(true), 2000);
   };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        goToPrevious();
+      } else if (e.key === 'ArrowRight') {
+        goToNext();
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        setIsPlaying(!isPlaying);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isPlaying]);
 
   // Reduced motion support
   const prefersReducedMotion = typeof window !== 'undefined' && 
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const currentItem = data.newsItems[currentIndex];
 
-  const imageVariants = {
-    enter: {
-      opacity: prefersReducedMotion ? 1 : 0,
-      scale: prefersReducedMotion ? 1 : 1.05,
-      filter: prefersReducedMotion ? 'blur(0px)' : 'blur(2px)'
-    },
-    center: {
-      opacity: 1,
-      scale: 1.02, // Subtle Ken Burns effect
-      filter: 'blur(0px)',
-      transition: {
-        opacity: { duration: prefersReducedMotion ? 0 : 1.2 },
-        scale: { duration: prefersReducedMotion ? 0 : 8 },
-        filter: { duration: prefersReducedMotion ? 0 : 1 }
-      }
-    },
-    exit: {
-      opacity: prefersReducedMotion ? 1 : 0,
-      scale: prefersReducedMotion ? 1 : 1,
-      filter: prefersReducedMotion ? 'blur(0px)' : 'blur(1px)',
-      transition: {
-        duration: prefersReducedMotion ? 0 : 0.8,
-      }
-    }
-  };
 
-  const textContainerVariants = {
-    hidden: { opacity: prefersReducedMotion ? 1 : 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        duration: prefersReducedMotion ? 0 : 0.8,
-        delay: prefersReducedMotion ? 0 : 0.6,
-        staggerChildren: prefersReducedMotion ? 0 : 0.15
-      }
-    }
-  };
-
-  const textItemVariants = {
-    hidden: {
-      opacity: prefersReducedMotion ? 1 : 0,
-      y: prefersReducedMotion ? 0 : 12,
-      filter: prefersReducedMotion ? 'blur(0px)' : 'blur(1px)'
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      filter: 'blur(0px)',
-      transition: {
-        duration: prefersReducedMotion ? 0 : 0.7,
-      }
-    }
-  };
 
   return (
-    <section
+    <section 
       ref={sectionRef}
-      className="relative w-full h-[60vh] sm:h-[70vh] overflow-hidden"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
-      style={{ willChange: 'transform' }}
+      className="relative bg-gradient-to-b from-white via-kawai-pearl/10 to-white py-16 sm:py-24"
     >
-      {/* Image Container */}
-      <div className="absolute inset-0">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentIndex}
-            className="absolute inset-0"
-            variants={imageVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-          >
-            {(() => {
-              // Find the corresponding default news item for fallback image
-              const defaultItem = DEFAULT_NEWS_CAROUSEL_DATA.newsItems.find(
-                defaultNews => defaultNews.title === currentItem.title
-              );
-              const fallbackImage = (typeof defaultItem?.image === 'string' ? defaultItem.image : null) || '/images/banners/I2LNew-banner.jpg';
+      <div className="w-full px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <div className="text-center mb-8 sm:mb-12">
+          <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-2">
+            Latest News
+          </div>
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-light font-serif text-kawai-black">
+            Stay Updated
+          </h2>
+        </div>
 
-              // Use the utility function to get image props
-              const imageProps = getImagePropsWithFallback(
-                currentItem.image, 
-                fallbackImage, 
-                'hero', 
-                {
-                  fill: true,
-                  className: 'object-cover',
-                  sizes: '100vw',
-                  priority: currentIndex === 0
-                }
-              );
-
-              return (
-                <Image
-                  {...imageProps}
-                  alt={currentItem.title}
-                  style={{ willChange: 'transform' }}
-                />
-              );
-            })()}
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      {/* Minimal Gradient Overlay - Only for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/60 via-transparent to-transparent" />
-
-      {/* Content with better mobile positioning */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8 md:p-12 lg:p-16">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentIndex}
-            variants={textContainerVariants}
-            initial="hidden"
-            animate="visible"
-            className="max-w-2xl"
-          >
-            {/* Category Badge */}
-            <motion.div
-              variants={textItemVariants}
-              className="mb-4"
-            >
-              <span className="inline-block px-3 py-1 text-xs font-semibold tracking-wide uppercase bg-kawai-red text-kawai-pearl rounded-full">
-                {currentItem.category}
-              </span>
-            </motion.div>
-
-            {/* Title with better mobile typography */}
-            <motion.h2
-              variants={textItemVariants}
-              className="font-brand-luxury text-kawai-pearl font-bold text-xl sm:text-3xl md:text-4xl lg:text-5xl leading-tight mb-3 sm:mb-4 tracking-tight"
-            >
-              {currentItem.title}
-            </motion.h2>
-
-            {/* Description with improved mobile readability */}
-            <motion.p
-              variants={textItemVariants}
-              className="text-kawai-pearl/90 text-base sm:text-lg md:text-xl leading-relaxed font-light mb-4 sm:mb-6 max-w-xl"
-            >
-              {currentItem.description}
-            </motion.p>
-
-            {/* Read More Link */}
-            <motion.div variants={textItemVariants}>
-              <Link
-                href={currentItem.link || '#'}
-                className="inline-flex items-center text-kawai-red hover:text-kawai-red-400 font-medium text-sm tracking-wide uppercase transition-all duration-300 group"
+        {/* Carousel Container */}
+        <div 
+          ref={carouselRef}
+          className="relative overflow-hidden w-full"
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+        >
+          {/* Carousel Track */}
+          <div className="relative w-full h-[60vh] sm:h-[70vh] min-h-[500px] max-h-[800px]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentIndex}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+                className="absolute inset-0"
               >
-                <span>Read More</span>
-                <svg
-                  className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </Link>
-            </motion.div>
-          </motion.div>
-        </AnimatePresence>
-      </div>
+                {/* News Card - Full Image with Overlay */}
+                <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl">
+                  <div className="relative w-full h-full">
+                    {(() => {
+                      const currentItem = newsItems[currentIndex];
+                      const defaultItem = DEFAULT_NEWS_CAROUSEL_DATA.newsItems.find(
+                        defaultNews => defaultNews.title === currentItem.title
+                      );
+                      const fallbackImage = (typeof defaultItem?.image === 'string' ? defaultItem.image : null) || '/images/banners/I2LNew-banner.jpg';
 
-      {/* Navigation Arrows - Better mobile sizing and positioning */}
-      <button
-        onClick={goToPrevious}
-        className="absolute left-4 sm:left-8 md:left-12 lg:left-16 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 bg-kawai-black/40 hover:bg-kawai-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-kawai-pearl hover:text-kawai-red transition-all duration-300 group touch-manipulation"
-        aria-label="Previous slide"
-      >
-        <svg
-          className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-0.5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
+                      const imageProps = getImagePropsWithFallback(
+                        currentItem.image, 
+                        fallbackImage, 
+                        'hero', 
+                        {
+                          fill: true,
+                          className: 'object-cover',
+                          sizes: '100vw',
+                          priority: currentIndex === 0
+                        }
+                      );
 
-      <button
-        onClick={goToNext}
-        className="absolute right-4 sm:right-8 md:right-12 lg:right-16 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 bg-kawai-black/40 hover:bg-kawai-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-kawai-pearl hover:text-kawai-red transition-all duration-300 group touch-manipulation"
-        aria-label="Next slide"
-      >
-        <svg
-          className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-0.5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
+                      return <Image {...imageProps} alt={currentItem.title} />;
+                    })()}
 
-      {/* Dot Indicators - Better mobile positioning */}
-      <div className="absolute bottom-4 sm:bottom-8 right-4 sm:right-8 md:right-12 lg:right-16 flex space-x-2">
-        {data.newsItems.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentIndex(index)}
-            className={`w-3 h-3 sm:w-2 sm:h-2 rounded-full transition-all duration-300 touch-manipulation ${
-              index === currentIndex
-                ? 'bg-kawai-red scale-125'
-                : 'bg-kawai-pearl/40 hover:bg-kawai-pearl/60'
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div>
-      
-      {/* Mobile swipe indicator */}
-      <div className="absolute bottom-4 left-4 sm:hidden">
-        <div className="text-kawai-pearl/60 text-xs flex items-center gap-1">
-          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-          </svg>
-          Swipe
+                    {/* Gradient overlay for text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/70 via-kawai-black/20 to-transparent" />
+
+                    {/* Navigation Arrows - On Image */}
+                    <button
+                      onClick={goToPrevious}
+                      className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-10 w-12 h-12 sm:w-14 sm:h-14 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all duration-300 border border-white/30 hover:border-white/50"
+                      aria-label="Previous slide"
+                    >
+                      <svg
+                        className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300 hover:-translate-x-0.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+
+                    <button
+                      onClick={goToNext}
+                      className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-10 w-12 h-12 sm:w-14 sm:h-14 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all duration-300 border border-white/30 hover:border-white/50"
+                      aria-label="Next slide"
+                    >
+                      <svg
+                        className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300 hover:translate-x-0.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+
+                    {/* Content Overlay */}
+                    <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-8 md:p-12 lg:p-16">
+                      <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.3 }}
+                        className="max-w-3xl"
+                      >
+                        {/* Category Badge */}
+                        <div className="mb-4">
+                          <span className="inline-block px-4 py-2 text-xs font-bold tracking-[0.2em] uppercase bg-kawai-red text-white rounded-full shadow-lg">
+                            {newsItems[currentIndex].category}
+                          </span>
+                        </div>
+
+                        {/* Title - Bold and Prominent */}
+                        <h3 className="font-brand-luxury text-white font-black text-2xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight mb-4 sm:mb-6 tracking-tight drop-shadow-lg">
+                          {newsItems[currentIndex].title}
+                        </h3>
+                        
+                        {/* Description */}
+                        <p className="text-white/90 text-lg sm:text-xl md:text-2xl leading-relaxed font-light mb-6 sm:mb-8 max-w-2xl drop-shadow-md">
+                          {newsItems[currentIndex].description}
+                        </p>
+
+                        {/* Read More Link */}
+                        <Link
+                          href={newsItems[currentIndex].link || '#'}
+                          className="inline-flex items-center space-x-3 text-kawai-red hover:text-white bg-white/20 hover:bg-kawai-red/90 backdrop-blur-sm px-6 py-3 rounded-full font-medium text-sm tracking-wide uppercase transition-all duration-300 border border-white/30 hover:border-kawai-red/90 group"
+                        >
+                          <span>Read Full Story</span>
+                          <svg
+                            className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        </Link>
+                      </motion.div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
         </div>
       </div>
     </section>

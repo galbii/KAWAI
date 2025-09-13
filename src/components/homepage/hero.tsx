@@ -75,52 +75,52 @@ export function Hero({ data = DEFAULT_HERO_DATA }: HeroProps) {
         </video>
       )}
       
-      {/* Dark Overlay for Text Readability */}
-      <div className="absolute top-0 left-0 w-full h-full bg-kawai-black/50 z-10" />
+      {/* Lighter Overlay - Let Background Video Shine */}
+      <div className="absolute top-0 left-0 w-full h-full bg-kawai-black/35 z-10" />
       
-      {/* Content - Left Aligned */}
-      <div className="container-brand max-w-8xl mx-auto px-8 lg:px-16 relative z-20">
-        {/* Local positioning and Est. 1927 */}
-        <motion.div 
-          className="absolute -top-24 left-1 z-10"
-          variants={contentReveal}
-          custom={0}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
-        >
-          <p className="text-brand-musical text-kawai-pearl tracking-wider text-sm font-semibold uppercase mb-2">
-            {data.locationText}
-          </p>
-          <p className="text-brand-musical text-kawai-red tracking-wider text-sm font-semibold uppercase">
-            {data.establishedText}
-          </p>
-        </motion.div>
+      {/* Content - Centered on Mobile, Left on Desktop */}
+      <div className="container-brand max-w-8xl mx-auto px-8 sm:px-12 lg:px-16 relative z-20">
+        <div className="max-w-5xl mx-auto lg:mx-0">
+          {/* Location and Established - Natural Flow */}
+          <motion.div 
+            className="text-center lg:text-left mb-8 sm:mb-12"
+            variants={contentReveal}
+            custom={0}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+          >
+            <p className="text-brand-musical text-kawai-pearl tracking-wider text-sm font-semibold uppercase mb-2">
+              {data.locationText}
+            </p>
+            <p className="text-brand-musical text-kawai-red tracking-wider text-sm font-semibold uppercase">
+              {data.establishedText}
+            </p>
+          </motion.div>
 
-        <div className="max-w-5xl">
           <div className="mb-12 lg:mb-16">
-            <h1 className="heading-brand-luxury text-kawai-pearl mb-8 lg:mb-12 leading-[0.75] tracking-tight">
+            <h1 className="heading-brand-luxury text-kawai-pearl mb-8 lg:mb-12 leading-tight tracking-tight text-center lg:text-left">
               <motion.span 
-                className="block text-2xl md:text-3xl lg:text-4xl font-normal mb-6 tracking-[0.2em] opacity-90"
+                className="block text-xl sm:text-2xl md:text-3xl font-normal mb-4 sm:mb-6 tracking-[0.15em] opacity-90"
                 variants={wordReveal}
-                custom={0.8}
+                custom={0.4}
                 initial="hidden"
                 animate={isInView ? "visible" : "hidden"}
               >
                 {data.titlePrefix}
               </motion.span>
               <motion.span 
-                className="block text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black tracking-[-0.02em] leading-[0.8]"
+                className="block text-lg min-[400px]:text-xl sm:text-2xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-black tracking-[-0.05em] sm:tracking-tight md:tracking-normal lg:tracking-[-0.01em] leading-[0.9] px-8 sm:px-4 md:px-2 lg:px-0 max-w-full overflow-hidden"
                 variants={wordReveal}
-                custom={1.6}
+                custom={0.8}
                 initial="hidden"
                 animate={isInView ? "visible" : "hidden"}
               >
                 {data.titleMain}
               </motion.span>
               <motion.div 
-                className="block text-3xl md:text-4xl lg:text-5xl font-light mt-4 tracking-[0.1em] opacity-90"
+                className="block text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light mt-3 sm:mt-4 tracking-[0.08em] opacity-90"
                 variants={wordReveal}
-                custom={2.0}
+                custom={1.2}
                 initial="hidden"
                 animate={isInView ? "visible" : "hidden"}
               >
@@ -130,19 +130,19 @@ export function Hero({ data = DEFAULT_HERO_DATA }: HeroProps) {
           </div>
           
           <motion.p 
-            className="text-brand-sophisticated text-kawai-pearl/80 mb-brand-4xl max-w-lg text-lg md:text-xl leading-relaxed font-light"
+            className="text-brand-sophisticated text-kawai-pearl/80 mb-brand-4xl max-w-lg text-lg md:text-xl leading-relaxed font-light text-center lg:text-left mx-auto lg:mx-0"
             variants={contentReveal}
-            custom={2.5}
+            custom={1.6}
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
           >
             {data.description}
           </motion.p>
           
-          <div className="flex flex-col sm:flex-row gap-brand-lg items-start">
+          <div className="flex flex-col sm:flex-row gap-brand-lg items-center lg:items-start justify-center lg:justify-start">
             <motion.div 
               variants={contentReveal}
-              custom={3.0}
+              custom={2.0}
               initial="hidden"
               animate={isInView ? "visible" : "hidden"}
             >
@@ -154,7 +154,7 @@ export function Hero({ data = DEFAULT_HERO_DATA }: HeroProps) {
             </motion.div>
             <motion.div 
               variants={contentReveal}
-              custom={3.3}
+              custom={2.2}
               initial="hidden"
               animate={isInView ? "visible" : "hidden"}
             >

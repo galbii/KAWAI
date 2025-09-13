@@ -72,11 +72,6 @@ export async function GET(
           collectionCta: dealerLocation.collectionCta,
           featuredVideo: dealerLocation.featuredVideo
         },
-        pianoGallerySection: {
-          galleryTitle: dealerLocation.galleryTitle,
-          galleryDescription: dealerLocation.galleryDescription,
-          pianoCategories: dealerLocation.pianoCategories
-        },
         newsCarouselSection: {
           autoPlayDuration: dealerLocation.autoPlayDuration,
           newsItems: dealerLocation.newsItems

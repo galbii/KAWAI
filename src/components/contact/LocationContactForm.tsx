@@ -29,12 +29,12 @@ const contactFormSchema = z.object({
   
   // Contact Preferences
   preferredContact: z.enum(['phone', 'email', 'text'], {
-    required_error: 'Please select your preferred contact method',
+    message: 'Please select your preferred contact method',
   }),
   
   // Inquiry Details
   inquiryType: z.enum(['general', 'piano-consultation', 'service', 'financing', 'scheduling'], {
-    required_error: 'Please select the type of inquiry',
+    message: 'Please select the type of inquiry',
   }),
   
   // Optional fields

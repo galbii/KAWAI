@@ -2580,7 +2580,7 @@ export interface User {
 export interface HomePage {
   id: string;
   /**
-   * Location/dealer status text displayed at the top
+   * Location/Piano Gallery status text displayed at the top
    */
   locationText: string;
   /**
@@ -2853,7 +2853,7 @@ export interface HomePage {
    */
   trustMessage: string;
   /**
-   * Benefits/features of working with your piano store
+   * Benefits/features of working with your Piano Gallery
    */
   benefits: {
     /**
@@ -2932,7 +2932,7 @@ export interface HomePage {
   createdAt: string;
 }
 /**
- * Manage dealer locations with customizable content structure including hero, showroom information, piano collection, gallery, news, contact form, and SEO.
+ * Manage Piano Gallery locations with customizable content structure including hero, showroom information, piano collection, gallery, news, contact form, and SEO.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "dealer-locations".
@@ -2940,7 +2940,7 @@ export interface HomePage {
 export interface DealerLocation {
   id: string;
   /**
-   * URL-friendly identifier for this dealer location (e.g., "st-louis", "chicago")
+   * URL-friendly identifier for this Piano Gallery location (e.g., "st-louis", "chicago")
    */
   slug: string;
   /**
@@ -2948,11 +2948,11 @@ export interface DealerLocation {
    */
   locationName: string;
   /**
-   * Controls whether this dealer location is visible on the frontend
+   * Controls whether this Piano Gallery location is visible on the frontend
    */
   isActive?: boolean | null;
   /**
-   * Location/dealer status text displayed at the top
+   * Location/Piano Gallery status text displayed at the top
    */
   locationText: string;
   /**
@@ -3138,69 +3138,37 @@ export interface DealerLocation {
     height?: number | null;
   };
   /**
-   * Piano gallery section title
+   * Auto-play duration in milliseconds (leave empty to use main site default)
    */
-  galleryTitle: string;
+  autoPlayDuration?: number | null;
   /**
-   * Piano gallery section description
+   * News carousel items (leave empty to use main site news)
    */
-  galleryDescription: string;
-  /**
-   * Piano categories displayed in the gallery section
-   */
-  pianoCategories: {
-    /**
-     * Piano model or series name (e.g., "GX-7", "CA99")
-     */
-    model: string;
-    /**
-     * Category title (e.g., "Concert Grand Pianos")
-     */
-    title: string;
-    /**
-     * Category description
-     */
-    description: string;
-    /**
-     * Category representative image
-     */
-    image?: (string | null) | Media;
-    /**
-     * Link to category or model page
-     */
-    href: string;
-    id?: string | null;
-  }[];
-  /**
-   * Auto-play duration in milliseconds (default: 7000ms = 7 seconds)
-   */
-  autoPlayDuration: number;
-  /**
-   * News carousel items
-   */
-  newsItems: {
-    /**
-     * News item title
-     */
-    title: string;
-    /**
-     * News item description
-     */
-    description: string;
-    /**
-     * News item image
-     */
-    image?: (string | null) | Media;
-    /**
-     * News item category
-     */
-    category: 'news' | 'events' | 'promotions' | 'new-arrivals' | 'education';
-    /**
-     * Link to full article or page (optional)
-     */
-    link?: string | null;
-    id?: string | null;
-  }[];
+  newsItems?:
+    | {
+        /**
+         * News item title
+         */
+        title: string;
+        /**
+         * News item description
+         */
+        description: string;
+        /**
+         * News item image
+         */
+        image?: (string | null) | Media;
+        /**
+         * News item category
+         */
+        category: 'news' | 'events' | 'promotions' | 'new-arrivals' | 'education';
+        /**
+         * Link to full article or page (optional)
+         */
+        link?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Contact form section title (first part)
    */
@@ -3225,7 +3193,7 @@ export interface DealerLocation {
    */
   trustMessage: string;
   /**
-   * Benefits/features of working with your piano store
+   * Benefits/features of working with your Piano Gallery
    */
   benefits: {
     /**
@@ -4217,18 +4185,6 @@ export interface DealerLocationsSelect<T extends boolean = true> {
         youtubeId?: T;
         width?: T;
         height?: T;
-      };
-  galleryTitle?: T;
-  galleryDescription?: T;
-  pianoCategories?:
-    | T
-    | {
-        model?: T;
-        title?: T;
-        description?: T;
-        image?: T;
-        href?: T;
-        id?: T;
       };
   autoPlayDuration?: T;
   newsItems?:

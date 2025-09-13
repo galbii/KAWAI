@@ -6,21 +6,21 @@ import { parseNavigationOrigin } from "@/lib/navigation-utils";
 import { headers } from 'next/headers';
 
 export const metadata: Metadata = {
-  title: "Kawai Piano Dealer St. Louis | Piano Store Lake St. Louis, MO",
-  description: "St. Louis's premier Kawai piano dealer in Lake St. Louis, MO. Shop Shigeru Kawai grand pianos, digital pianos, and hybrids. Expert piano services, tuning, and lessons. Serving Missouri piano families since 1927. Piano dealer near me.",
-  keywords: "piano dealer St. Louis, Kawai piano dealer St. Louis, piano store Lake St. Louis MO, piano dealer near me, piano store Missouri, Kawai pianos St. Louis, piano dealer Lake St. Louis, Shigeru Kawai St. Louis, piano gallery Missouri, piano showroom Lake St. Louis, digital pianos St. Louis, acoustic pianos Missouri, piano services St. Louis, piano tuning Missouri",
+  title: "Kawai Piano Gallery St. Louis | Premier Piano Gallery Lake St. Louis, MO",
+  description: "St. Louis's premier Kawai Piano Gallery in Lake St. Louis, MO. Shop Shigeru Kawai grand pianos, digital pianos, and hybrids. Expert piano consultation, services, and guidance. Serving Missouri piano families since 1927. Piano Gallery near me.",
+  keywords: "Piano Gallery St. Louis, Kawai Piano Gallery St. Louis, piano gallery Lake St. Louis MO, Piano Gallery near me, piano gallery Missouri, Kawai pianos St. Louis, Piano Gallery Lake St. Louis, Shigeru Kawai St. Louis, piano showroom Missouri, piano gallery Lake St. Louis, digital pianos St. Louis, acoustic pianos Missouri, piano consultation St. Louis, piano services Missouri",
   authors: [{ name: "Kawai Piano Gallery St. Louis" }],
   openGraph: {
-    title: "Kawai Piano Dealer St. Louis | Premier Piano Store Lake St. Louis, MO",
-    description: "St. Louis's premier Kawai piano dealer. Visit our Lake St. Louis showroom for expert piano services, Shigeru Kawai grands, and digital pianos. Serving Missouri since 1927.",
+    title: "Kawai Piano Gallery St. Louis | Premier Piano Gallery Lake St. Louis, MO",
+    description: "St. Louis's premier Kawai Piano Gallery. Visit our Lake St. Louis showroom for expert piano consultation, Shigeru Kawai grands, and digital pianos. Serving Missouri since 1927.",
     type: "website",
     locale: "en_US",
     siteName: "Kawai Piano Gallery St. Louis",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Kawai Piano Dealer St. Louis | Piano Store Lake St. Louis, MO",
-    description: "St. Louis's premier Kawai piano dealer in Lake St. Louis, MO. Expert piano services and premium instruments.",
+    title: "Kawai Piano Gallery St. Louis | Piano Gallery Lake St. Louis, MO",
+    description: "St. Louis's premier Kawai Piano Gallery in Lake St. Louis, MO. Expert piano consultation and premium instruments.",
   },
   robots: {
     index: true,
@@ -40,7 +40,7 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
     "@context": "https://schema.org",
     "@type": "MusicStore",
     "name": "Kawai Piano Gallery St. Louis",
-    "description": "Premier Kawai piano dealer in St. Louis serving Lake St. Louis, Missouri with expert piano services, Shigeru Kawai grand pianos, digital pianos, and hybrid pianos since 1927.",
+    "description": "Premier Kawai Piano Gallery in St. Louis serving Lake St. Louis, Missouri with expert piano consultation, Shigeru Kawai grand pianos, digital pianos, and hybrid pianos since 1927.",
     "url": "https://kawaipianostlouis.com",
     "telephone": "636-265-2866",
     "address": {

@@ -1194,6 +1194,43 @@ export async function getHomePageData(): Promise<{
   }
 }
 
+// Get only piano gallery data from HomePage collection - optimized for performance
+export async function getPianoGalleryData(): Promise<{
+  galleryTitle: string
+  galleryDescription: string
+  pianoCategories: any[]
+} | null> {
+  try {
+    // Use Payload's select API to only fetch piano gallery fields
+    const queryParams = new URLSearchParams()
+    queryParams.append('select[galleryTitle]', 'true')
+    queryParams.append('select[galleryDescription]', 'true')  
+    queryParams.append('select[pianoCategories]', 'true')
+    
+    const endpoint = `/home-page/singleton?${queryParams.toString()}`
+    const response = await payloadFetch<{
+      galleryTitle: string
+      galleryDescription: string
+      pianoCategories: any[]
+    }>(endpoint)
+    
+    if (!response) {
+      console.warn('No piano gallery data found in HomePage collection')
+      return null
+    }
+    
+    return {
+      galleryTitle: response.galleryTitle,
+      galleryDescription: response.galleryDescription,
+      pianoCategories: response.pianoCategories
+    }
+  } catch (error) {
+    console.error('Error fetching piano gallery data:', error)
+    // Return null instead of throwing to allow fallback behavior
+    return null
+  }
+}
+
 // Dealer Location API Functions
 
 // Fetch DealerLocation data from API

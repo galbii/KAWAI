@@ -1,41 +1,15 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { Media } from "@/payload-types";
+import { getHomePageData } from "@/lib/payload";
 
 interface DealerLocationData {
   locationName: string;
-  heroSection: {
-    locationText: string;
-    establishedText: string;
-    titlePrefix: string;
-    titleMain: string;
-    titleSuffix: string;
-    description: string;
-  };
-  showroomSection: {
-    showroomInfo: {
-      name: string;
-      address: string;
-      phone: string;
-      serviceArea: string;
-    };
-    hours: Array<{
-      day: string;
-      time: string;
-      id?: string | null;
-    }>;
-  };
-  seo: {
-    metaTitle?: string | null;
-    metaDescription?: string | null;
-    keywords?: string | null;
-    openGraphTitle?: string | null;
-    openGraphDescription?: string | null;
-    openGraphImage?: string | Media | null;
-  };
+  slug: string;
+  isActive: boolean;
 }
 
-// Function to fetch just the dealer location metadata we need for the layout
+// Function to fetch just the basic dealer location info needed for the layout
 async function getDealerLocationMetadata(slug: string): Promise<DealerLocationData | null> {
   try {
     const payload = await import('payload').then(m => m.getPayload);
@@ -59,7 +33,11 @@ async function getDealerLocationMetadata(slug: string): Promise<DealerLocationDa
         ]
       },
       limit: 1,
-      depth: 1
+      select: {
+        locationName: true,
+        slug: true,
+        isActive: true
+      }
     });
     
     if (result.docs.length === 0) {
@@ -70,19 +48,8 @@ async function getDealerLocationMetadata(slug: string): Promise<DealerLocationDa
     
     return {
       locationName: dealerLocation.locationName,
-      heroSection: {
-        locationText: dealerLocation.locationText,
-        establishedText: dealerLocation.establishedText,
-        titlePrefix: dealerLocation.titlePrefix,
-        titleMain: dealerLocation.titleMain,
-        titleSuffix: dealerLocation.titleSuffix,
-        description: dealerLocation.description,
-      },
-      showroomSection: {
-        showroomInfo: dealerLocation.showroomInfo || {},
-        hours: dealerLocation.hours || [],
-      },
-      seo: dealerLocation.seo || {}
+      slug: dealerLocation.slug,
+      isActive: dealerLocation.isActive || false
     };
   } catch (error) {
     console.error('Error fetching dealer location metadata:', error);
@@ -90,7 +57,7 @@ async function getDealerLocationMetadata(slug: string): Promise<DealerLocationDa
   }
 }
 
-// Generate dynamic metadata based on dealer location data
+// Generate dynamic metadata using HomePage collection SEO data
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   try {
     const { slug } = await params;
@@ -98,48 +65,50 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     
     if (!dealerData) {
       return {
-        title: 'Dealer Location Not Found',
-        description: 'The requested dealer location could not be found.',
+        title: 'Piano Gallery Location Not Found',
+        description: 'The requested Piano Gallery location could not be found.',
         robots: { index: false, follow: false }
       };
     }
 
-    const { seo, locationName, heroSection, showroomSection } = dealerData;
+    // Get SEO data from HomePage collection
+    const homePageData = await getHomePageData();
+    const seo = homePageData?.seo;
     
-    // Create location-specific titles and descriptions
-    const locationTitle = seo.metaTitle || `${locationName} | Kawai Piano Dealer`;
-    const locationDescription = seo.metaDescription || 
-      `Visit ${locationName} for premium Kawai pianos, expert services, and personalized piano consultation. ${heroSection.description || 'Your trusted Kawai piano dealer.'}`;
-    
-    // Extract location info from established text or service area for local SEO
-    const locationInfo = heroSection.establishedText || 
-      showroomSection.showroomInfo.serviceArea;
+    // Create location-specific titles and descriptions using HomePage SEO data
+    const locationTitle = seo?.metaTitle?.replace(/St\. Louis/g, dealerData.locationName) || 
+                         `${dealerData.locationName} | Kawai Piano Gallery`;
+    const locationDescription = seo?.metaDescription?.replace(/St\. Louis/g, dealerData.locationName) || 
+      `Visit ${dealerData.locationName} for premium Kawai pianos, expert consultation, and personalized piano guidance.`;
     
     // Generate location-specific keywords
-    const locationKeywords = (typeof seo.keywords === 'string' ? seo.keywords.split(', ') : null) || [
-      `${locationName}`,
-      'Kawai piano dealer',
+    const baseKeywords = (typeof seo?.keywords === 'string' ? seo.keywords.split(', ') : null) || [
+      'Kawai Piano Gallery',
       'piano store',
       'piano showroom',
       'digital pianos',
       'grand pianos',
       'piano services',
-      'piano lessons',
-      locationInfo
+      'piano consultation'
+    ];
+    
+    const locationKeywords = [
+      dealerData.locationName,
+      ...baseKeywords
     ];
 
     return {
       title: locationTitle,
       description: locationDescription,
       keywords: locationKeywords.join(', '),
-      authors: [{ name: locationName }],
+      authors: [{ name: dealerData.locationName }],
       openGraph: {
-        title: seo.openGraphTitle || locationTitle,
-        description: seo.openGraphDescription || locationDescription,
+        title: seo?.openGraphTitle?.replace(/St\. Louis/g, dealerData.locationName) || locationTitle,
+        description: seo?.openGraphDescription?.replace(/St\. Louis/g, dealerData.locationName) || locationDescription,
         type: "website",
         locale: "en_US",
-        siteName: locationName,
-        images: seo.openGraphImage ? [
+        siteName: dealerData.locationName,
+        images: seo?.openGraphImage ? [
           {
             url: typeof seo.openGraphImage === 'string' 
               ? seo.openGraphImage 
@@ -149,8 +118,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       },
       twitter: {
         card: "summary_large_image",
-        title: seo.openGraphTitle || locationTitle,
-        description: seo.openGraphDescription || locationDescription,
+        title: seo?.openGraphTitle?.replace(/St\. Louis/g, dealerData.locationName) || locationTitle,
+        description: seo?.openGraphDescription?.replace(/St\. Louis/g, dealerData.locationName) || locationDescription,
       },
       robots: {
         index: true,
@@ -160,8 +129,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   } catch (error) {
     console.error('Error generating metadata for dealer location layout:', error);
     return {
-      title: 'Dealer Location Not Found',
-      description: 'The requested dealer location could not be found.',
+      title: 'Piano Gallery Location Not Found',
+      description: 'The requested Piano Gallery location could not be found.',
       robots: { index: false, follow: false }
     };
   }
@@ -194,22 +163,19 @@ export default async function DealerLocationLayout({
     notFound();
   }
 
+  // Get homepage data for structured data description
+  const homePageData = await getHomePageData();
+  
   // Generate local business schema for this specific dealer location
+  const businessDescription = homePageData?.heroSection?.description?.replace(/St\. Louis/g, dealerData.locationName) || 
+    `${dealerData.locationName} - Premier Kawai Piano Gallery offering expert piano consultation, services, and personalized guidance.`;
+  
   const localBusinessSchema = {
     "@context": "https://schema.org",
     "@type": "MusicStore",
     "name": dealerData.locationName,
-    "description": `${dealerData.locationName} - ${dealerData.heroSection.description || 'Premier Kawai piano dealer offering expert piano services, sales, and consultation.'}`,
+    "description": businessDescription,
     "url": `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianostlouis.com'}/${slug}`,
-    "telephone": dealerData.showroomSection.showroomInfo.phone || "",
-    "address": dealerData.showroomSection.showroomInfo.address ? {
-      "@type": "PostalAddress",
-      "streetAddress": dealerData.showroomSection.showroomInfo.address,
-      "addressCountry": "US"
-    } : undefined,
-    "openingHours": dealerData.showroomSection.hours.map(hour => 
-      `${hour.day} ${hour.time}`
-    ),
     "brand": "Kawai",
     "hasOfferCatalog": {
       "@type": "OfferCatalog",

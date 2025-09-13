@@ -178,7 +178,7 @@ export interface ContactFormProps {
 
 // Fallback data constants
 export const DEFAULT_HERO_DATA: HeroSectionData = {
-  locationText: "St. Louis's Premier Kawai Piano Dealer",
+  locationText: "St. Louis's Premier Piano Gallery",
   establishedText: "Est. 1927 • Lake St. Louis, Missouri",
   titlePrefix: "The",
   titleMain: "INSTRUMENTAL",
@@ -351,7 +351,7 @@ export const DEFAULT_CONTACT_FORM_DATA: ContactFormSectionData = {
 }
 
 export const DEFAULT_SEO_DATA: SEOData = {
-  metaTitle: "Kawai Pianos St. Louis | Premier Piano Dealer Since 1927 | Lake St. Louis",
+  metaTitle: "Kawai Piano Gallery St. Louis | Premier Piano Gallery Since 1927 | Lake St. Louis",
   metaDescription: "St. Louis's premier Kawai piano dealer since 1927. Explore acoustic & digital pianos at our Lake St. Louis showroom. Expert consultation & service.",
   keywords: "Kawai pianos, St. Louis piano dealer, Lake St. Louis piano store, acoustic pianos, digital pianos, piano showroom, Missouri piano dealer, piano sales, piano service"
 }

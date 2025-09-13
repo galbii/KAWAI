@@ -7,7 +7,7 @@ interface ContactHeroProps {
 }
 
 const DEFAULT_CONTACT_HERO_DATA: HeroSectionData = {
-  locationText: "St. Louis's Premier Kawai Piano Dealer",
+  locationText: "St. Louis's Premier Piano Gallery",
   establishedText: "Est. 1927 • Lake St. Louis, Missouri",
   titlePrefix: "Contact",
   titleMain: "OUR TEAM",

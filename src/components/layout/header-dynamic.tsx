@@ -3,6 +3,7 @@ import { Header } from './header'
 import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
+import { parseNavigationOrigin, getContextAwareUrl, type NavigationOrigin } from '@/lib/navigation-utils'
 
 interface NavigationItem {
   label: string
@@ -64,36 +65,32 @@ async function getDealerLocationBySlug(slug: string): Promise<DealerLocationData
 
 export async function HeaderDynamic() {
   try {
+    // Get current path and determine navigation origin
+    const headersList = await headers()
+    const pathname = headersList.get('x-pathname') || ''
+    const origin = parseNavigationOrigin(pathname)
+    
     // Generate piano categories navigation (each category becomes a top-level nav item)
     const pianoCategories = await generatePianoCategoriesNavigationServer()
     
-    // Create the navigation structure with only piano categories as main nav items
+    // Create context-aware navigation structure
     const dynamicNavigation: NavigationItem[] = pianoCategories.map(category => ({
       label: category.label,
-      href: category.href,
+      href: getContextAwareUrl(category.href, origin),
       dropdown: category.dropdown?.map(item => ({
         label: item.label,
-        href: item.href,
+        href: getContextAwareUrl(item.href, origin),
         description: item.description,
         isProductline: item.isProductline,
         isProduct: item.isProduct
       })) || []
     }))
 
-    // Get current path to determine if we're on a dealer location page
-    const headersList = await headers()
-    const pathname = headersList.get('x-pathname') || ''
-    
-    // Check if we're on a dealer location page (format: /[slug] or /[slug]/contact)
-    const pathSegments = pathname.split('/').filter(Boolean)
+    // Check if we're on a dealer location page and fetch location data
     let locationData: DealerLocationData | null = null
     
-    if (pathSegments.length >= 1) {
-      const potentialSlug = pathSegments[0]
-      // Avoid checking common routes that are not dealer locations
-      if (!['pianos', 'admin', 'api', 'sitemap.xml', 'robots.txt'].includes(potentialSlug)) {
-        locationData = await getDealerLocationBySlug(potentialSlug)
-      }
+    if (origin.isDealerLocation && origin.dealerSlug) {
+      locationData = await getDealerLocationBySlug(origin.dealerSlug)
     }
 
     return (
@@ -105,12 +102,16 @@ export async function HeaderDynamic() {
   } catch (error) {
     console.error('Error in HeaderDynamic:', error)
     
-    // Fallback to basic piano category navigation
+    // Fallback to basic piano category navigation with context awareness
+    const headersList = await headers()
+    const pathname = headersList.get('x-pathname') || ''
+    const fallbackOrigin = parseNavigationOrigin(pathname)
+    
     const fallbackNavigation: NavigationItem[] = [
-      { label: 'Digital Pianos', href: '/pianos/digital', dropdown: [] },
-      { label: 'Grand Pianos', href: '/pianos/grand', dropdown: [] },
-      { label: 'Upright Pianos', href: '/pianos/upright', dropdown: [] },
-      { label: 'Hybrid Pianos', href: '/pianos/hybrid', dropdown: [] },
+      { label: 'Digital Pianos', href: getContextAwareUrl('/pianos/digital', fallbackOrigin), dropdown: [] },
+      { label: 'Grand Pianos', href: getContextAwareUrl('/pianos/grand', fallbackOrigin), dropdown: [] },
+      { label: 'Upright Pianos', href: getContextAwareUrl('/pianos/upright', fallbackOrigin), dropdown: [] },
+      { label: 'Hybrid Pianos', href: getContextAwareUrl('/pianos/hybrid', fallbackOrigin), dropdown: [] },
     ]
     
     return <Header navigation={fallbackNavigation} />
