@@ -113,11 +113,49 @@ interface HeroSectionProps {
 export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [mounted, setMounted] = useState(false)
-  
-  // Parallax effects
+  const [viewportHeight, setViewportHeight] = useState(800)
+
+  // Update viewport height on mount and resize
+  useEffect(() => {
+    const updateViewportHeight = () => {
+      setViewportHeight(window.innerHeight)
+    }
+
+    updateViewportHeight()
+    window.addEventListener('resize', updateViewportHeight)
+    return () => window.removeEventListener('resize', updateViewportHeight)
+  }, [])
+
+  // Improved parallax effects with dynamic ranges and easing
   const { scrollY } = useScroll()
-  const backgroundY = useTransform(scrollY, [0, 800], [0, -400])
-  const contentY = useTransform(scrollY, [0, 800], [0, -200])
+
+  // Use viewport height for more natural scroll ranges
+  const scrollRange = viewportHeight * 1.5 // Increased range for smoother transition
+
+  // Calculate safe parallax distances to prevent image from scrolling off screen
+  const imageScale = 1.2 // 20% larger than viewport
+  const extraImageHeight = (imageScale - 1) * viewportHeight // Extra image area available
+  const maxSafeParallaxDistance = extraImageHeight * 0.8 // Use 80% of extra space for safety
+
+  // Constrained parallax that never scrolls the image completely off screen
+  const backgroundY = useTransform(
+    scrollY,
+    [0, scrollRange],
+    [0, -Math.min(maxSafeParallaxDistance, viewportHeight * 0.15)] // Clamped to safe distance
+  )
+
+  const contentY = useTransform(
+    scrollY,
+    [0, scrollRange],
+    [0, -viewportHeight * 0.08] // Reduced content movement for subtlety
+  )
+
+  // Add opacity fade effect for better visual transition
+  const contentOpacity = useTransform(
+    scrollY,
+    [0, scrollRange * 0.5, scrollRange],
+    [1, 0.8, 0.2]
+  )
   
   // Initialize Lenis smooth scrolling
   useEffect(() => {
@@ -128,9 +166,11 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
         try {
           const Lenis = (await import('lenis')).default
           lenisInstance = new Lenis({
-            duration: 1.2,
-            easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-            smoothWheel: true
+            duration: 1.0, // Slightly faster for more responsive feel
+            easing: (t: number) => 1 - Math.pow(1 - t, 3), // Cubic easing out for smooth deceleration
+            smoothWheel: true,
+            wheelMultiplier: 1.2, // Slightly increase scroll sensitivity
+            touchMultiplier: 2 // Better touch responsiveness
           })
           
           function raf(time: number) {
@@ -155,25 +195,25 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
     }
   }, [enableSmoothScrolling])
 
-  // Fallback data with luxury messaging
+  // Fallback data with exclusive application messaging
   const fallbackData: SignatureHeroSection = {
-    exclusiveText: "By Invitation Only",
-    titlePrefix: "Kawai",
-    titleMain: "Signature Collection",
-    titleSuffix: "2025",
-    subtitle: "Curated for the Discerning Musician",
-    description: "Experience the pinnacle of piano craftsmanship with our exclusive signature collection. Each instrument represents decades of heritage, innovation, and uncompromising artistic excellence.",
+    exclusiveText: "LIMITED: 3 WEEKS ONLY • 10/09-10/30",
+    titlePrefix: "",
+    titleMain: "Baby Grand Select",
+    titleSuffix: "",
+    subtitle: "Own a piece of musical history and refined craftsmanship",
+    description: "A special opportunity for virtuosos and aspiring musicians to transform their space into their personal concert hall. Apply for a spot to secure your spot in KAWAI's special piano event to give back to the community that helped build our legacy.",
     primaryCta: {
-      text: "Begin Your Journey",
+      text: "Apply for Exclusive Access",
       action: "scroll"
     },
     secondaryCta: {
-      text: "Private Consultation",
+      text: "Learn Qualification Criteria",
       action: "modal"
     },
     overlayOpacity: 0.6,
     textAlignment: "center",
-    showScrollIndicator: true
+    showScrollIndicator: false
   }
   
   const heroData = { ...fallbackData, ...data }
@@ -181,7 +221,7 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
   // Get optimized background image
   const backgroundImageProps = getImagePropsWithFallback(
     heroData.heroBackgroundImage,
-    '/images/signature/hero-bg.webp', // Fallback image
+    '/images/signature/GX_cover.jpg', // Updated fallback image
     'hero',
     {
       fill: true,
@@ -296,27 +336,33 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
       }}
     >
       {/* Background Image/Video with Parallax */}
-      <motion.div 
-        className="absolute inset-0 w-full h-full"
-        style={{ y: backgroundY }}
+      <motion.div
+        className="absolute inset-0 w-full h-full min-h-screen"
+        style={{
+          y: backgroundY,
+          // Add transform3d for GPU acceleration
+          transform: 'translate3d(0, 0, 0)',
+          // Ensure background always covers the area
+          backgroundColor: '#0a0a0a'
+        }}
       >
         <Image
           {...backgroundImageProps}
           alt="Signature Collection Background"
-          className="object-cover object-center scale-110" // Scale for parallax room
-        />
-        
-        {/* Dynamic overlay based on data */}
-        <div 
-          className="absolute inset-0 bg-gradient-to-b from-kawai-black/40 via-kawai-black/60 to-kawai-black/80"
-          style={{
-            background: `linear-gradient(to bottom, 
-              rgba(10, 10, 10, ${heroData.overlayOpacity || 0.6}), 
-              rgba(10, 10, 10, ${(heroData.overlayOpacity || 0.6) + 0.2})
-            )`
-          }}
+          className="object-cover object-center scale-[1.2]" // Increased scaling to ensure full coverage during parallax
         />
       </motion.div>
+
+      {/* Fixed overlay that doesn't move with parallax */}
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-kawai-black/40 via-kawai-black/60 to-kawai-black/80 pointer-events-none"
+        style={{
+          background: `linear-gradient(to bottom,
+            rgba(10, 10, 10, ${heroData.overlayOpacity || 0.6}),
+            rgba(10, 10, 10, ${(heroData.overlayOpacity || 0.6) + 0.2})
+          )`
+        }}
+      />
       
       {/* Main Content */}
       <motion.div
@@ -324,39 +370,56 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
           "relative z-10 max-w-6xl mx-auto px-6 lg:px-8 flex flex-col",
           textAlignmentClasses[heroData.textAlignment || 'center']
         )}
-        style={{ y: contentY }}
+        style={{
+          y: contentY,
+          opacity: contentOpacity,
+          // Add transform3d for GPU acceleration
+          transform: 'translate3d(0, 0, 0)'
+        }}
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
-        {/* Exclusive Text */}
+        {/* Event Dates */}
         {heroData.exclusiveText && (
           <motion.div
             variants={textVariants}
-            className="mb-6"
+            className="mb-8"
           >
-            <span className="inline-block text-kawai-pearl/80 text-sm font-light tracking-[0.3em] uppercase border border-kawai-pearl/20 px-4 py-2 rounded-full backdrop-blur-sm bg-kawai-black/20">
+            <span className="inline-block text-kawai-pearl/90 text-xl md:text-2xl font-light tracking-wider border border-kawai-pearl/30 px-6 py-3 rounded-lg backdrop-blur-sm bg-kawai-black/20">
               {heroData.exclusiveText}
             </span>
           </motion.div>
         )}
-        
+
+        {/* Kawai Logo */}
+        <motion.div
+          variants={textVariants}
+          className="mb-8"
+        >
+          <div className="flex justify-center">
+            <Image
+              src="/images/Kawai (Red)(2).png"
+              alt="Kawai Piano"
+              width={300}
+              height={80}
+              className="object-contain"
+              priority
+            />
+          </div>
+        </motion.div>
+
         {/* Main Title */}
-        <motion.div 
+        <motion.div
           variants={titleVariants}
           className="mb-8"
         >
           <h1 className="text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-light leading-none tracking-tight text-kawai-pearl">
-            {heroData.titlePrefix && (
-              <span className="block text-kawai-pearl/60 text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extralight mb-2">
-                {heroData.titlePrefix}
-              </span>
-            )}
             <span className="block font-normal">
               {heroData.titleMain}
             </span>
             {heroData.titleSuffix && (
-              <span className="block text-kawai-pearl/80 text-xl md:text-2xl lg:text-3xl xl:text-4xl font-extralight mt-2">
+              <span className="block text-2xl md:text-3xl lg:text-4xl xl:text-5xl mt-4 font-light text-kawai-pearl/80 tracking-widest">
                 {heroData.titleSuffix}
               </span>
             )}

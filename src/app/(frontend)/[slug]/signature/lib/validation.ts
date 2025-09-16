@@ -59,9 +59,17 @@ export const collectionAccessLevelSchema = z.enum([
   'both'
 ] as const)
 
+export const investmentRangeSchema = z.enum([
+  'premium-25k',
+  'luxury-50k',
+  'signature-75k',
+  'bespoke-100k',
+  'consultation-required'
+] as const)
+
 /**
  * Complete Assessment Response Schema
- * Validates all 6 questions together with optional metadata
+ * Validates all 7 questions together with optional metadata
  */
 export const assessmentResponseSchema = z.object({
   musicalIdentity: musicalIdentitySchema,
@@ -70,6 +78,7 @@ export const assessmentResponseSchema = z.object({
   investmentTimeline: investmentTimelineSchema,
   aestheticPreference: aestheticPreferenceSchema,
   collectionAccessLevel: collectionAccessLevelSchema,
+  investmentRange: investmentRangeSchema,
   timestamp: z.date().optional(),
   sessionId: z.string().optional()
 })
@@ -85,7 +94,8 @@ export const questionStepSchema = z.object({
     'acousticEnvironment',
     'investmentTimeline',
     'aestheticPreference',
-    'collectionAccessLevel'
+    'collectionAccessLevel',
+    'investmentRange'
   ]),
   value: z.string().min(1, 'Please select an option'),
   isValid: z.boolean().optional()
@@ -125,7 +135,7 @@ export const contactInfoSchema = z.object({
  * For managing overall assessment form state
  */
 export const formStateSchema = z.object({
-  currentQuestionIndex: z.number().min(0).max(5),
+  currentQuestionIndex: z.number().min(0).max(6),
   responses: assessmentResponseSchema.partial(),
   isValid: z.boolean(),
   canProceed: z.boolean(),
@@ -173,6 +183,9 @@ export const validateQuestionResponse = (questionId: string, value: string): boo
         return true
       case 'collectionAccessLevel':
         collectionAccessLevelSchema.parse(value)
+        return true
+      case 'investmentRange':
+        investmentRangeSchema.parse(value)
         return true
       default:
         return false
@@ -575,7 +588,8 @@ export const questionSchemaMap = {
   acousticEnvironment: acousticEnvironmentSchema,
   investmentTimeline: investmentTimelineSchema,
   aestheticPreference: aestheticPreferenceSchema,
-  collectionAccessLevel: collectionAccessLevelSchema
+  collectionAccessLevel: collectionAccessLevelSchema,
+  investmentRange: investmentRangeSchema
 } as const
 
 /**

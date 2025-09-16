@@ -9,6 +9,7 @@ export { default as AcousticEnvironmentQuestion } from './AcousticEnvironmentQue
 export { default as InvestmentTimelineQuestion } from './InvestmentTimelineQuestion'
 export { default as AestheticPreferenceQuestion } from './AestheticPreferenceQuestion'
 export { default as CollectionAccessQuestion } from './CollectionAccessQuestion'
+export { default as InvestmentRangeQuestion } from './InvestmentRangeQuestion'
 
 // Re-export types for convenience
 export type { FormStepProps } from '@/app/(frontend)/[slug]/signature/types'

@@ -7,10 +7,9 @@
 
 import React, { useState, useCallback } from 'react'
 import { InteractiveAssessment } from './InteractiveAssessment'
-import type { 
-  AssessmentResponse, 
-  RecommendationSet,
-  ConversionPath 
+import type {
+  AssessmentResponse,
+  ConversionPath
 } from '@/app/(frontend)/[slug]/signature/types'
 import { ASSESSMENT_QUESTIONS } from '@/app/(frontend)/[slug]/signature/lib/constants'
 
@@ -20,7 +19,6 @@ import { ASSESSMENT_QUESTIONS } from '@/app/(frontend)/[slug]/signature/lib/cons
  */
 export const SignatureAssessmentExample: React.FC = () => {
   const [isComplete, setIsComplete] = useState(false)
-  const [recommendations, setRecommendations] = useState<RecommendationSet | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -30,19 +28,8 @@ export const SignatureAssessmentExample: React.FC = () => {
     setError(null)
 
     try {
-      // Example: Send to recommendation API
-      const apiResponse = await fetch('/api/signature/recommendations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(response)
-      })
-
-      if (!apiResponse.ok) {
-        throw new Error('Failed to generate recommendations')
-      }
-
-      const recommendationData = await apiResponse.json()
-      setRecommendations(recommendationData)
+      // Simulate processing assessment results
+      await new Promise(resolve => setTimeout(resolve, 2000))
       setIsComplete(true)
 
       // Example: Track analytics event
@@ -103,7 +90,6 @@ export const SignatureAssessmentExample: React.FC = () => {
             onClick={() => {
               setError(null)
               setIsComplete(false)
-              setRecommendations(null)
             }}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
@@ -114,39 +100,18 @@ export const SignatureAssessmentExample: React.FC = () => {
     )
   }
 
-  if (isComplete && recommendations) {
+  if (isComplete) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="mb-8">
             <div className="text-6xl mb-4">🎹</div>
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Your Perfect Piano Awaits!
+              Assessment Complete!
             </h1>
             <p className="text-xl text-gray-600">
-              We've found {recommendations.alternatives.length + 1} pianos that match your preferences perfectly.
+              Thank you for completing the assessment. You can now choose how to continue your piano journey.
             </p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-              Top Recommendation
-            </h2>
-            <div className="flex items-center justify-center space-x-6">
-              <div className="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center">
-                🎹
-              </div>
-              <div className="text-left">
-                <h3 className="text-xl font-semibold">{recommendations.primary.name}</h3>
-                <p className="text-gray-600 mb-2">{recommendations.primary.shortDescription}</p>
-                <div className="flex items-center space-x-4">
-                  <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                    {recommendations.primary.matchScore}% Match
-                  </span>
-                  <span className="text-gray-500">{recommendations.primary.category}</span>
-                </div>
-              </div>
-            </div>
           </div>
 
           <div className="space-x-4">
@@ -154,7 +119,7 @@ export const SignatureAssessmentExample: React.FC = () => {
               Schedule Private Viewing
             </button>
             <button className="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-              View All Recommendations
+              Get Digital Recommendations
             </button>
           </div>
         </div>

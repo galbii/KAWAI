@@ -61,14 +61,25 @@ export type AestheticPreference =
  * Collection Access Level Assessment Values
  * Maps to conversion path selection
  */
-export type CollectionAccessLevel = 
+export type CollectionAccessLevel =
   | 'curated-recommendations' // Digital recommendations only
   | 'private-viewing'        // In-person showroom experience
   | 'both'                   // Combination of both approaches
 
 /**
+ * Investment Range Assessment Values
+ * Maps to investment capacity and qualification levels
+ */
+export type InvestmentRange =
+  | 'premium-25k'            // Premium Heritage ($15K - $25K)
+  | 'luxury-50k'             // Luxury Collection ($25K - $50K)
+  | 'signature-75k'          // Signature Masterpieces ($50K - $75K)
+  | 'bespoke-100k'          // Bespoke Commission ($75K+)
+  | 'consultation-required'  // Private Consultation Required
+
+/**
  * Complete Assessment Response Interface
- * Captures all 6 strategic assessment questions
+ * Captures all 7 strategic assessment questions
  */
 export interface AssessmentResponse {
   musicalIdentity: MusicalIdentity
@@ -77,6 +88,7 @@ export interface AssessmentResponse {
   investmentTimeline: InvestmentTimeline
   aestheticPreference: AestheticPreference
   collectionAccessLevel: CollectionAccessLevel
+  investmentRange: InvestmentRange
   timestamp?: Date
   sessionId?: string
 }
@@ -90,7 +102,7 @@ export interface AssessmentQuestion {
   title: string
   description: string
   options: AssessmentOption[]
-  category: 'identity' | 'aspirations' | 'environment' | 'timeline' | 'aesthetic' | 'access'
+  category: 'identity' | 'aspirations' | 'environment' | 'timeline' | 'aesthetic' | 'access' | 'investment'
   order: number
   required: boolean
 }
@@ -109,95 +121,6 @@ export interface AssessmentOption {
   tags?: string[] // For advanced filtering
 }
 
-// ============================
-// PIANO RECOMMENDATION INTERFACES
-// ============================
-
-/**
- * Piano Categories for Recommendations
- */
-export type PianoCategory = 'grand' | 'upright' | 'digital' | 'hybrid'
-
-/**
- * Piano Price Ranges for Filtering
- */
-export type PriceRange = 
-  | 'entry'     // Under $10,000
-  | 'mid'       // $10,000 - $35,000  
-  | 'premium'   // $35,000 - $75,000
-  | 'luxury'    // $75,000+
-
-/**
- * Piano Feature Tags for Matching
- */
-export type PianoFeature = 
-  | 'silent-system'
-  | 'bluetooth-audio'
-  | 'recording-capability'
-  | 'app-integration'
-  | 'premium-action'
-  | 'concert-sound'
-  | 'space-saving'
-  | 'traditional-craftsmanship'
-
-/**
- * Piano Recommendation Interface
- * Individual piano model recommendation with metadata
- */
-export interface PianoRecommendation {
-  id: string
-  name: string
-  model: string
-  category: PianoCategory
-  priceRange: PriceRange
-  msrp?: number
-  image: Media | string | null
-  shortDescription: string
-  keyFeatures: string[]
-  features: PianoFeature[]
-  matchScore: number // 0-100 compatibility score
-  matchReasons: string[] // Why this piano was recommended
-  slug: string
-  productUrl: string
-  brochureUrl?: string
-  videoUrl?: string
-  availableFinishes?: string[]
-  dimensions?: {
-    length: number
-    width: number  
-    height: number
-  }
-  weight?: number
-}
-
-/**
- * Recommendation Set Interface
- * Complete set of recommendations for a user
- */
-export interface RecommendationSet {
-  primary: PianoRecommendation // Top recommendation
-  alternatives: PianoRecommendation[] // 2-3 alternative options
-  honorableMentions: PianoRecommendation[] // Additional considerations
-  totalScore: number
-  explanationSummary: string
-  assessmentId: string
-  generatedAt: Date
-  expiresAt?: Date
-}
-
-/**
- * Matching Logic Configuration
- * Algorithm configuration for piano recommendations
- */
-export interface MatchingCriteria {
-  identityWeights: Record<MusicalIdentity, number>
-  aspirationWeights: Record<PerformanceAspirations, number>
-  environmentWeights: Record<AcousticEnvironment, number>
-  timelineWeights: Record<InvestmentTimeline, number>
-  aestheticWeights: Record<AestheticPreference, number>
-  featureBoosts: Record<PianoFeature, number>
-  categoryPreferences: Record<PianoCategory, number>
-}
 
 // ============================
 // CONVERSION PATH INTERFACES
@@ -407,7 +330,6 @@ export interface InteractiveAssessmentProps {
  * Conversion path selection component
  */
 export interface DualConversionProps {
-  recommendations: RecommendationSet
   digitalPath: DigitalConversionPath
   showroomPath: ShowroomConversionPath
   hybridPath?: HybridConversionPath
@@ -474,36 +396,6 @@ export interface ProgressIndicatorProps {
   className?: string
 }
 
-/**
- * Piano Showcase Props
- * Piano recommendation display component
- */
-export interface PianoShowcaseProps {
-  piano: PianoRecommendation
-  variant: 'card' | 'featured' | 'comparison'
-  showMatchScore?: boolean
-  showFeatures?: boolean
-  showPricing?: boolean
-  onViewDetails?: (pianoId: string) => void
-  onRequestQuote?: (pianoId: string) => void
-  onScheduleDemo?: (pianoId: string) => void
-  className?: string
-}
-
-/**
- * Recommendation Results Props
- * Complete recommendations display
- */
-export interface RecommendationResultsProps {
-  recommendationSet: RecommendationSet
-  onPianoSelect: (piano: PianoRecommendation) => void
-  onRetakeAssessment?: () => void
-  showAlternatives?: boolean
-  showExplanation?: boolean
-  allowFiltering?: boolean
-  sortOptions?: ('match-score' | 'price-low' | 'price-high' | 'name')[]
-  className?: string
-}
 
 // ============================
 // SUPPORTING INTERFACES
@@ -593,7 +485,6 @@ export interface SessionData {
   startTime: Date
   lastActivity: Date
   assessmentResponse?: AssessmentResponse
-  recommendationSet?: RecommendationSet
   selectedPath?: ConversionPath
   completedActions: ConversionAction[]
   leadQualification?: LeadQualification
@@ -613,12 +504,6 @@ export interface SignatureConfig {
     showEstimatedTime: boolean
     allowSkipQuestions: boolean
     requireAllQuestions: boolean
-  }
-  recommendationConfig: {
-    maxRecommendations: number
-    minMatchScore: number
-    enableAlternatives: boolean
-    showMatchReasons: boolean
   }
   conversionConfig: {
     enableHybridPath: boolean

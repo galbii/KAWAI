@@ -7,10 +7,6 @@ import type {
   AestheticPreference,
   CollectionAccessLevel,
   ConversionAction,
-  PianoCategory,
-  PriceRange,
-  PianoFeature,
-  MatchingCriteria,
   DigitalResource,
   AppointmentType,
   TrustIndicator,
@@ -22,50 +18,50 @@ import type {
 // ============================
 
 /**
- * Assessment Question Configuration
- * Complete set of 6 strategic questions with options
+ * Musical Journey Personalization Questions
+ * Complete set of 7 personalization questions for curated recommendations
  */
 export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   {
     id: 'musicalIdentity',
-    title: 'Where are you in your piano journey?',
-    description: 'Understanding your musical background helps us recommend the perfect instrument for your needs.',
+    title: 'Share your musical background with us',
+    description: 'Help us understand your musical journey so we can recommend the perfect instruments for you.',
     category: 'identity',
     order: 1,
     required: true,
     options: [
       {
         value: 'beginning',
-        label: 'Just Beginning',
-        description: 'Taking my first steps into the world of piano',
+        label: 'Starting My Musical Journey',
+        description: "I'm beginning my piano journey and want to start with quality instruments",
         icon: 'seedling',
         weight: 10
       },
       {
         value: 'returning',
-        label: 'Returning Player',
-        description: 'Coming back to piano after some time away',
+        label: 'Returning to Piano',
+        description: "I'm returning to piano after time away and want to rekindle my passion",
         icon: 'refresh',
         weight: 20
       },
       {
         value: 'active',
         label: 'Active Player',
-        description: 'Currently playing and practicing regularly',
+        description: "I play regularly and am looking for an instrument that matches my dedication",
         icon: 'play-circle',
         weight: 30
       },
       {
         value: 'professional',
         label: 'Professional Musician',
-        description: 'Piano is part of my professional life or advanced studies',
+        description: "I'm a professional musician who needs concert-quality instruments",
         icon: 'award',
         weight: 40
       },
       {
         value: 'family-legacy',
-        label: 'Family Tradition',
-        description: 'Continuing or starting a family musical tradition',
+        label: 'Family Music Tradition',
+        description: "I'm continuing or starting a family tradition of piano music",
         icon: 'home',
         weight: 25
       }
@@ -73,219 +69,269 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   },
   {
     id: 'performanceAspirations',
-    title: 'How do you envision using your piano?',
-    description: 'Your intended use helps us match you with instruments that excel in those areas.',
+    title: 'What inspires your music-making?',
+    description: 'Understanding your musical passions helps us recommend instruments that will enhance your artistic expression.',
     category: 'aspirations',
     order: 2,
     required: true,
     options: [
       {
         value: 'family-gatherings',
-        label: 'Family & Friends',
-        description: 'Playing for family gatherings and intimate settings',
+        label: 'Intimate Performances',
+        description: 'Creating memorable moments for family and close friends',
         icon: 'users',
         weight: 15,
-        tags: ['social', 'casual']
+        tags: ['social', 'intimate']
       },
       {
         value: 'serious-practice',
-        label: 'Serious Practice',
-        description: 'Dedicated practice sessions and skill development',
+        label: 'Artistic Development',
+        description: 'Rigorous practice requiring concert-level instrument response',
         icon: 'target',
         weight: 35,
-        tags: ['practice', 'development']
+        tags: ['practice', 'mastery']
       },
       {
         value: 'entertaining',
-        label: 'Social Entertaining',
-        description: 'Hosting events and entertaining guests',
+        label: 'Distinguished Hosting',
+        description: 'Elevated entertaining where only the finest instruments suffice',
         icon: 'music',
         weight: 20,
-        tags: ['social', 'performance']
+        tags: ['social', 'prestige']
       },
       {
         value: 'recording',
-        label: 'Recording & Creating',
-        description: 'Recording music or creating digital content',
+        label: 'Professional Creation',
+        description: 'Recording and composition demanding exceptional tonal quality',
         icon: 'microphone',
         weight: 30,
-        tags: ['technology', 'creative']
+        tags: ['professional', 'artistic']
       },
       {
         value: 'teaching',
-        label: 'Teaching Others',
-        description: 'Teaching piano to students or family members',
+        label: 'Master Instruction',
+        description: 'Teaching students on instruments that inspire excellence',
         icon: 'graduation-cap',
         weight: 25,
-        tags: ['education', 'sharing']
+        tags: ['education', 'excellence']
       }
     ]
   },
   {
     id: 'acousticEnvironment',
-    title: 'Tell us about your piano space',
-    description: 'The acoustic environment influences which piano will sound and fit best in your home.',
+    title: 'Tell us about your performance space',
+    description: 'Your room acoustics help us suggest instruments that will sound their absolute best in your environment.',
     category: 'environment',
     order: 3,
     required: true,
     options: [
       {
         value: 'cozy-living',
-        label: 'Cozy Living Space',
-        description: 'Intimate rooms with warm acoustics',
+        label: 'Intimate Chamber',
+        description: 'Private spaces designed for personal musical contemplation',
         icon: 'home',
         weight: 10,
-        tags: ['small', 'intimate']
+        tags: ['intimate', 'refined']
       },
       {
         value: 'open-great-room',
-        label: 'Open Great Room',
-        description: 'Large, open floor plans with high ceilings',
+        label: 'Grand Performance Hall',
+        description: 'Spacious areas with soaring ceilings worthy of concert instruments',
         icon: 'maximize',
         weight: 30,
-        tags: ['large', 'open']
+        tags: ['grand', 'impressive']
       },
       {
         value: 'dedicated-music',
-        label: 'Music Room',
-        description: 'Dedicated music or practice room',
+        label: 'Professional Studio',
+        description: 'Purpose-built music sanctuary for serious artistic pursuit',
         icon: 'music',
         weight: 35,
-        tags: ['dedicated', 'focused']
+        tags: ['dedicated', 'professional']
       },
       {
         value: 'formal-entertaining',
-        label: 'Formal Areas',
-        description: 'Formal living or dining areas for entertaining',
+        label: 'Distinguished Salon',
+        description: 'Elegant entertaining spaces where fine art is appreciated',
         icon: 'crown',
         weight: 25,
-        tags: ['formal', 'elegant']
+        tags: ['formal', 'distinguished']
       },
       {
         value: 'multiple-spaces',
-        label: 'Multiple Spaces',
-        description: 'Need flexibility to use in different areas',
+        label: 'Versatile Venues',
+        description: 'Multiple refined spaces requiring adaptable excellence',
         icon: 'shuffle',
         weight: 15,
-        tags: ['flexible', 'portable']
+        tags: ['versatile', 'adaptable']
       }
     ]
   },
   {
     id: 'investmentTimeline',
-    title: 'What\'s your timeline for acquiring a piano?',
-    description: 'Your timeline helps us prioritize recommendations and availability.',
+    title: "What's your timeline for finding your perfect instrument?",
+    description: 'Understanding your timeline helps us prioritize the most relevant recommendations and opportunities.',
     category: 'timeline',
     order: 4,
     required: true,
     options: [
       {
         value: 'ready-30-days',
-        label: 'Ready Within 30 Days',
-        description: 'I\'m ready to make a decision and purchase soon',
+        label: 'Immediate Commitment',
+        description: 'Ready to secure my heritage instrument within 30 days',
         icon: 'clock',
         weight: 40,
-        tags: ['urgent', 'ready']
+        tags: ['immediate', 'committed']
       },
       {
         value: 'exploring-2-6-months',
-        label: 'Exploring (2-6 Months)',
-        description: 'Actively shopping and comparing options',
+        label: 'Active Evaluation',
+        description: 'Seriously evaluating premium options for near-term acquisition',
         icon: 'search',
         weight: 30,
-        tags: ['active', 'comparing']
+        tags: ['active', 'evaluating']
       },
       {
         value: 'planning-this-year',
-        label: 'Planning This Year',
-        description: 'Planning to purchase sometime this year',
+        label: 'Strategic Planning',
+        description: 'Developing acquisition strategy for this exclusive opportunity',
         icon: 'calendar',
         weight: 20,
-        tags: ['planning', 'this-year']
+        tags: ['strategic', 'planned']
       },
       {
         value: 'beginning-research',
-        label: 'Just Beginning Research',
-        description: 'Starting to learn about options and possibilities',
+        label: 'Initial Exploration',
+        description: 'Beginning to understand the world of premium instruments',
         icon: 'book',
         weight: 10,
-        tags: ['research', 'learning']
+        tags: ['exploration', 'learning']
       }
     ]
   },
   {
     id: 'aestheticPreference',
-    title: 'Which aesthetic appeals to you most?',
-    description: 'Understanding your style preferences helps us show you pianos that will complement your space.',
+    title: 'Which aesthetic style speaks to you?',
+    description: 'Your style preferences help us showcase instruments that will complement your personal taste and space.',
     category: 'aesthetic',
     order: 5,
     required: true,
     options: [
       {
         value: 'classic-ebony',
-        label: 'Classic Ebony',
-        description: 'Timeless black finishes with traditional elegance',
+        label: 'Heritage Ebony Mastery',
+        description: 'Timeless ebony finishes representing centuries of piano tradition',
         icon: 'gem',
         weight: 25,
-        tags: ['traditional', 'elegant', 'black']
+        tags: ['heritage', 'masterful', 'classic']
       },
       {
         value: 'rich-mahogany',
-        label: 'Rich Wood Tones',
-        description: 'Warm mahogany, walnut, and natural wood finishes',
+        label: 'Artisan Wood Craft',
+        description: 'Hand-selected premium woods showcasing master craftsmanship',
         icon: 'tree',
         weight: 20,
-        tags: ['warm', 'natural', 'wood']
+        tags: ['artisan', 'premium', 'crafted']
       },
       {
         value: 'contemporary-white',
-        label: 'Contemporary White',
-        description: 'Modern white and light finishes for contemporary spaces',
+        label: 'Modern Elegance',
+        description: 'Contemporary finishes for discerning modern aesthetics',
         icon: 'sun',
         weight: 15,
-        tags: ['modern', 'light', 'contemporary']
+        tags: ['contemporary', 'sophisticated', 'refined']
       },
       {
         value: 'experience-differences',
-        label: 'Want to Experience All',
-        description: 'I\'d like to see and compare different finish options',
+        label: 'Connoisseur Evaluation',
+        description: 'I require seeing the full range of master craftsman options',
         icon: 'eye',
         weight: 30,
-        tags: ['comparison', 'undecided']
+        tags: ['connoisseur', 'comprehensive']
       }
     ]
   },
   {
     id: 'collectionAccessLevel',
     title: 'How would you prefer to explore our collection?',
-    description: 'Choose the experience that best fits your preference for discovering your perfect piano.',
+    description: 'Choose the experience type that feels most comfortable and exciting for your musical journey.',
     category: 'access',
     order: 6,
     required: true,
     options: [
       {
         value: 'curated-recommendations',
-        label: 'Curated Recommendations',
-        description: 'Receive personalized digital recommendations and resources',
+        label: 'Exclusive Heritage Preview',
+        description: 'Receive curated access to our most distinguished collection details',
         icon: 'star',
         weight: 20,
-        tags: ['digital', 'convenient']
+        tags: ['exclusive', 'curated']
       },
       {
         value: 'private-viewing',
-        label: 'Private Showroom Experience',
-        description: 'Schedule a personal consultation in our Lake St. Louis showroom',
+        label: 'Master Craftsman Consultation',
+        description: 'Private audience with our certified heritage specialists',
         icon: 'calendar',
         weight: 40,
-        tags: ['in-person', 'consultation']
+        tags: ['private', 'master-level']
       },
       {
         value: 'both',
-        label: 'Both Experiences',
-        description: 'Combine digital resources with an in-person showroom visit',
+        label: 'Complete Connoisseur Experience',
+        description: 'Full access combining exclusive preview with master consultation',
         icon: 'layers',
         weight: 35,
-        tags: ['comprehensive', 'both']
+        tags: ['comprehensive', 'premium']
+      }
+    ]
+  },
+  {
+    id: 'investmentRange',
+    title: 'What investment range feels right for your dream instrument?',
+    description: 'This helps us focus on the instruments and special offers that best match your musical goals.',
+    category: 'investment',
+    order: 7,
+    required: true,
+    options: [
+      {
+        value: 'premium-25k',
+        label: 'Premium Heritage ($15K - $25K)',
+        description: 'Serious investment in exceptional digital and hybrid instruments',
+        icon: 'star',
+        weight: 20,
+        tags: ['premium', 'committed']
+      },
+      {
+        value: 'luxury-50k',
+        label: 'Luxury Collection ($25K - $50K)',
+        description: 'Distinguished collection of finest acoustic and premium digital',
+        icon: 'gem',
+        weight: 30,
+        tags: ['luxury', 'distinguished']
+      },
+      {
+        value: 'signature-75k',
+        label: 'Signature Masterpieces ($50K - $75K)',
+        description: 'Elite instruments representing the pinnacle of craftsmanship',
+        icon: 'crown',
+        weight: 35,
+        tags: ['signature', 'elite']
+      },
+      {
+        value: 'bespoke-100k',
+        label: 'Bespoke Commission ($75K+)',
+        description: 'Custom heritage instruments for true connoisseurs',
+        icon: 'diamond',
+        weight: 40,
+        tags: ['bespoke', 'connoisseur']
+      },
+      {
+        value: 'consultation-required',
+        label: 'Private Consultation Required',
+        description: 'Discuss investment parameters with our master craftsmen',
+        icon: 'lock',
+        weight: 25,
+        tags: ['private', 'consultation']
       }
     ]
   }
@@ -304,7 +350,7 @@ export const ASSESSMENT_QUESTIONS_BY_ID = ASSESSMENT_QUESTIONS.reduce((acc, ques
  */
 export const ASSESSMENT_CONFIG = {
   totalSteps: ASSESSMENT_QUESTIONS.length,
-  estimatedTimeMinutes: 3,
+  estimatedTimeMinutes: 4,
   allowSkipQuestions: false,
   saveProgressEnabled: true,
   showProgressIndicator: true,
@@ -313,184 +359,6 @@ export const ASSESSMENT_CONFIG = {
   sessionTimeoutMinutes: 30
 } as const
 
-// ============================
-// PIANO RECOMMENDATION CONSTANTS
-// ============================
-
-/**
- * Piano Categories Configuration
- */
-export const PIANO_CATEGORIES: Record<PianoCategory, { name: string; description: string; icon: string }> = {
-  grand: {
-    name: 'Grand Pianos',
-    description: 'Premium acoustic grand pianos for exceptional touch and tone',
-    icon: 'music'
-  },
-  upright: {
-    name: 'Upright Pianos',
-    description: 'Space-efficient acoustic pianos with rich, full sound',
-    icon: 'home'
-  },
-  digital: {
-    name: 'Digital Pianos',
-    description: 'Advanced digital pianos with realistic touch and modern features',
-    icon: 'zap'
-  },
-  hybrid: {
-    name: 'Hybrid Pianos',
-    description: 'Innovative combination of acoustic action with digital versatility',
-    icon: 'layers'
-  }
-}
-
-/**
- * Price Range Configuration
- */
-export const PRICE_RANGES: Record<PriceRange, { name: string; min: number; max: number; description: string }> = {
-  entry: {
-    name: 'Entry Level',
-    min: 0,
-    max: 10000,
-    description: 'Quality instruments for beginners and casual players'
-  },
-  mid: {
-    name: 'Mid-Range',
-    min: 10000,
-    max: 35000,
-    description: 'Professional features for serious musicians'
-  },
-  premium: {
-    name: 'Premium',
-    min: 35000,
-    max: 75000,
-    description: 'High-end instruments for discerning players'
-  },
-  luxury: {
-    name: 'Luxury',
-    min: 75000,
-    max: 500000,
-    description: 'Concert-quality instruments and exclusive models'
-  }
-}
-
-/**
- * Piano Features Configuration
- */
-export const PIANO_FEATURES: Record<PianoFeature, { name: string; description: string; category: string }> = {
-  'silent-system': {
-    name: 'Silent System',
-    description: 'Practice with headphones without disturbing others',
-    category: 'technology'
-  },
-  'bluetooth-audio': {
-    name: 'Bluetooth Audio',
-    description: 'Stream music and connect to apps wirelessly',
-    category: 'connectivity'
-  },
-  'recording-capability': {
-    name: 'Recording Capability',
-    description: 'Built-in recording and playback functionality',
-    category: 'technology'
-  },
-  'app-integration': {
-    name: 'App Integration',
-    description: 'Compatible with learning and performance apps',
-    category: 'connectivity'
-  },
-  'premium-action': {
-    name: 'Premium Action',
-    description: 'Advanced key action for expressive performance',
-    category: 'touch'
-  },
-  'concert-sound': {
-    name: 'Concert Sound',
-    description: 'Professional-grade sound quality and projection',
-    category: 'sound'
-  },
-  'space-saving': {
-    name: 'Space-Saving Design',
-    description: 'Compact design optimized for smaller spaces',
-    category: 'design'
-  },
-  'traditional-craftsmanship': {
-    name: 'Traditional Craftsmanship',
-    description: 'Hand-crafted with traditional piano-making techniques',
-    category: 'craftsmanship'
-  }
-}
-
-/**
- * Piano Matching Algorithm Weights
- * Configuration for recommendation scoring
- */
-export const MATCHING_CRITERIA: MatchingCriteria = {
-  identityWeights: {
-    'beginning': 5,
-    'returning': 10,
-    'active': 15,
-    'professional': 25,
-    'family-legacy': 12
-  },
-  aspirationWeights: {
-    'family-gatherings': 8,
-    'serious-practice': 20,
-    'entertaining': 12,
-    'recording': 18,
-    'teaching': 15
-  },
-  environmentWeights: {
-    'cozy-living': 5,
-    'open-great-room': 15,
-    'dedicated-music': 20,
-    'formal-entertaining': 12,
-    'multiple-spaces': 8
-  },
-  timelineWeights: {
-    'ready-30-days': 25,
-    'exploring-2-6-months': 20,
-    'planning-this-year': 15,
-    'beginning-research': 5
-  },
-  aestheticWeights: {
-    'classic-ebony': 10,
-    'rich-mahogany': 8,
-    'contemporary-white': 6,
-    'experience-differences': 15
-  },
-  featureBoosts: {
-    'silent-system': 8,
-    'bluetooth-audio': 5,
-    'recording-capability': 12,
-    'app-integration': 6,
-    'premium-action': 15,
-    'concert-sound': 18,
-    'space-saving': 10,
-    'traditional-craftsmanship': 12
-  },
-  categoryPreferences: {
-    'grand': 25,
-    'upright': 15,
-    'digital': 20,
-    'hybrid': 18
-  }
-}
-
-/**
- * Recommendation Configuration
- */
-export const RECOMMENDATION_CONFIG = {
-  maxRecommendations: 1, // Primary recommendation
-  maxAlternatives: 3,
-  maxHonorableMentions: 4,
-  minMatchScore: 60,
-  scoreThresholds: {
-    excellent: 90,
-    very_good: 80,
-    good: 70,
-    fair: 60
-  },
-  expirationDays: 30
-} as const
 
 // ============================
 // CONVERSION PATH CONSTANTS
@@ -876,11 +744,6 @@ export const SIGNATURE_CONSTANTS = {
   ASSESSMENT_QUESTIONS,
   ASSESSMENT_QUESTIONS_BY_ID,
   ASSESSMENT_CONFIG,
-  PIANO_CATEGORIES,
-  PRICE_RANGES,
-  PIANO_FEATURES,
-  MATCHING_CRITERIA,
-  RECOMMENDATION_CONFIG,
   CONVERSION_ACTIONS,
   DIGITAL_RESOURCES,
   APPOINTMENT_TYPES,

@@ -4,7 +4,6 @@
  */
 
 // Core Components
-export { default as PianoRecommendation } from './PianoRecommendation'
 export { default as DualConversion } from './DualConversion'
 export { EmailCapture } from './EmailCapture'
 export { default as BookingForm } from './BookingForm'

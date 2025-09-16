@@ -1,0 +1,410 @@
+'use client'
+
+import { useRef } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
+import Image from 'next/image'
+import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
+import { cn } from '@/lib/utils'
+
+// Interfaces
+interface ConversionCTAProps {
+  className?: string
+  onAssessmentClick?: () => void
+  onConsultationClick?: () => void
+  customData?: {
+    title?: string
+    subtitle?: string
+    urgencyText?: string
+    benefits?: string[]
+  }
+}
+
+interface PremiumButtonProps {
+  children: React.ReactNode
+  variant?: 'primary' | 'secondary'
+  size?: 'md' | 'lg'
+  className?: string
+  onClick?: () => void
+  icon?: React.ReactNode
+}
+
+// Premium button component optimized for conversion
+function PremiumButton({
+  children,
+  variant = 'primary',
+  size = 'lg',
+  className = '',
+  onClick,
+  icon
+}: PremiumButtonProps) {
+  const baseStyles = "relative font-medium tracking-wide transition-all duration-500 overflow-hidden group focus:outline-none focus:ring-2 focus:ring-kawai-gold/30 border disabled:opacity-50 disabled:cursor-not-allowed"
+
+  const variants = {
+    primary: "bg-gradient-to-r from-kawai-gold to-kawai-gold/90 text-kawai-black border-kawai-gold hover:from-kawai-gold/90 hover:to-kawai-gold shadow-lg hover:shadow-xl hover:scale-105",
+    secondary: "bg-transparent text-kawai-gold border-kawai-gold/50 hover:bg-kawai-gold/10 hover:border-kawai-gold backdrop-blur-sm hover:scale-105"
+  }
+
+  const sizes = {
+    md: "px-6 py-3 text-sm",
+    lg: "px-8 py-4 text-base"
+  }
+
+  return (
+    <motion.button
+      onClick={onClick}
+      className={cn(baseStyles, variants[variant], sizes[size], className)}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.2 }}
+    >
+      {/* Premium shimmer effect */}
+      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000"></div>
+      <span className="relative z-10 flex items-center justify-center gap-2">
+        {icon && <span className="text-lg">{icon}</span>}
+        {children}
+      </span>
+    </motion.button>
+  )
+}
+
+// Urgency badge component
+function UrgencyBadge({ text, className = '' }: { text: string, className?: string }) {
+  return (
+    <motion.div
+      className={cn(
+        "inline-flex items-center gap-2 px-4 py-2 rounded-full border border-kawai-gold/30 bg-kawai-gold/5 backdrop-blur-sm",
+        className
+      )}
+      initial={{ opacity: 0, scale: 0.9 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5 }}
+      viewport={{ once: true }}
+    >
+      {/* Pulsing indicator */}
+      <motion.div
+        className="w-2 h-2 bg-kawai-gold rounded-full"
+        animate={{ opacity: [1, 0.5, 1] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      />
+      <span className="text-kawai-gold text-xs font-light tracking-wider uppercase">
+        {text}
+      </span>
+    </motion.div>
+  )
+}
+
+// Benefits reveal component
+function BenefitsReveal({ benefits }: { benefits: string[] }) {
+  return (
+    <motion.div
+      className="space-y-4"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, delay: 0.2 }}
+      viewport={{ once: true }}
+    >
+      <h4 className="text-kawai-pearl text-lg font-medium mb-4">
+        What Your Assessment Reveals:
+      </h4>
+      <div className="space-y-3">
+        {benefits.map((benefit, index) => (
+          <motion.div
+            key={index}
+            className="flex items-start gap-3"
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+            viewport={{ once: true }}
+          >
+            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-kawai-gold/20 flex items-center justify-center mt-0.5">
+              <svg className="w-3 h-3 text-kawai-gold" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <span className="text-kawai-pearl/80 text-sm leading-relaxed">
+              {benefit}
+            </span>
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+  )
+}
+
+// Continue indicator component
+function ContinueIndicator({ onClick }: { onClick: () => void }) {
+  return (
+    <motion.div
+      className="absolute bottom-8 left-1/2 -translate-x-1/2 cursor-pointer group"
+      onClick={onClick}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 1, duration: 0.8 }}
+    >
+      <div className="flex flex-col items-center space-y-2 text-kawai-gold/70 hover:text-kawai-gold transition-colors duration-300">
+        <span className="text-xs font-light tracking-widest">CONTINUE</span>
+        <motion.div
+          animate={{ y: [0, 6, 0] }}
+          transition={{
+            repeat: Infinity,
+            duration: 2,
+            ease: "easeInOut"
+          }}
+          className="w-6 h-6 border border-kawai-gold/50 rounded-full flex items-center justify-center group-hover:border-kawai-gold transition-colors duration-300"
+        >
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        </motion.div>
+      </div>
+    </motion.div>
+  )
+}
+
+// Main ConversionCTA component
+export function ConversionCTA({
+  className = '',
+  onAssessmentClick,
+  onConsultationClick,
+  customData
+}: ConversionCTAProps) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  })
+
+  const y = useTransform(scrollYProgress, [0, 1], [50, -50])
+  const backgroundY = useTransform(scrollYProgress, [0, 1], [0, -100])
+
+  // Default data
+  const defaultData = {
+    title: "Transform Your Space Into a Concert Hall",
+    subtitle: "Your Exclusive Gateway to the Signature Selection",
+    urgencyText: "Only 12 Assessment Spots Remaining This Quarter",
+    benefits: [
+      "Personally curated piano recommendations based on your musical journey",
+      "Private viewing of limited-edition instruments in our exclusive showroom",
+      "Direct access to master artisan-crafted pieces before public availability",
+      "Lifetime relationship with Kawai's heritage specialists",
+      "Professional acoustic space planning for optimal performance"
+    ]
+  }
+
+  const data = { ...defaultData, ...customData }
+
+  // Handle assessment click
+  const handleAssessmentClick = () => {
+    if (onAssessmentClick) {
+      onAssessmentClick()
+    } else {
+      // Find and scroll to assessment section
+      const assessmentSection = document.getElementById('signature-experience') ||
+                               document.querySelector('[data-section="assessment"]') ||
+                               document.querySelector('.assessment-section')
+
+      if (assessmentSection) {
+        assessmentSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }
+  }
+
+  // Handle consultation click
+  const handleConsultationClick = () => {
+    if (onConsultationClick) {
+      onConsultationClick()
+    } else {
+      // In production, this would open a consultation modal
+      console.log('Opening private consultation modal...')
+    }
+  }
+
+  const backgroundImageProps = getImagePropsWithFallback(
+    null,
+    '/images/signature/conversion-bg.webp',
+    'hero',
+    {
+      fill: true,
+      className: 'object-cover object-center'
+    }
+  )
+
+  return (
+    <section
+      ref={containerRef}
+      className={cn(
+        "relative py-20 md:py-32 overflow-hidden",
+        className
+      )}
+    >
+      {/* Background with parallax */}
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-b from-kawai-black via-gray-900 to-kawai-black"
+        style={{ y: backgroundY }}
+      >
+        <div className="absolute inset-0 opacity-30">
+          <Image
+            {...backgroundImageProps}
+            alt="Signature Selection piano background"
+          />
+        </div>
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-kawai-black/70 via-kawai-black/80 to-kawai-black/90" />
+      </motion.div>
+
+      {/* Geometric light overlays */}
+      <div className="absolute inset-0">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-kawai-gold/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-kawai-gold/5 rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_var(--tw-gradient-stops))] from-kawai-gold/3 via-transparent to-transparent" />
+      </div>
+
+      <div className="container mx-auto px-6 lg:px-8 relative z-10">
+        <div className="max-w-7xl mx-auto">
+
+          {/* Urgency Badge */}
+          <motion.div
+            className="text-center mb-8"
+            style={{ y }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <UrgencyBadge text="Limited Signature Selection" />
+          </motion.div>
+
+          {/* Main Content Grid */}
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+
+            {/* Left Column - Main Message */}
+            <motion.div
+              className="space-y-8"
+              style={{ y }}
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <div className="space-y-6">
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-kawai-pearl leading-tight">
+                  {data.title.split(' ').map((word, index) => (
+                    <span key={index} className={word === 'Concert' || word === 'Hall' ? 'text-kawai-gold font-normal' : ''}>
+                      {word}{' '}
+                    </span>
+                  ))}
+                </h2>
+
+                <h3 className="text-xl md:text-2xl text-kawai-pearl/80 font-light leading-relaxed">
+                  {data.subtitle}
+                </h3>
+
+                <p className="text-lg text-kawai-pearl/70 font-light leading-relaxed">
+                  Your invitation to experience instruments from our curated catalog of baby grands for this event.
+                  Each piano in the Signature Selection carries a century of musical history and cultivation,
+                  waiting to transform your space into a concert hall.
+                </p>
+              </div>
+
+              {/* Social Proof */}
+              <motion.div
+                className="p-6 rounded-lg border border-kawai-gold/20 bg-kawai-black/30 backdrop-blur-sm"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                viewport={{ once: true }}
+              >
+                <div className="text-kawai-gold text-sm font-light tracking-wider uppercase mb-3">
+                  Artist Testimonial
+                </div>
+                <blockquote className="text-kawai-pearl/80 font-light italic leading-relaxed">
+                  "Every piano in the Signature Selection is a masterpiece that elevates not just my performance,
+                  but my entire relationship with music. The artisan's soul lives in each key."
+                </blockquote>
+                <footer className="text-kawai-pearl/60 text-sm mt-3">
+                  — Lang Lang, International Concert Pianist
+                </footer>
+              </motion.div>
+
+              {/* CTAs */}
+              <motion.div
+                className="space-y-4"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                viewport={{ once: true }}
+              >
+                <PremiumButton
+                  variant="primary"
+                  size="lg"
+                  onClick={handleAssessmentClick}
+                  icon="🎹"
+                  className="w-full sm:w-auto min-w-[280px]"
+                >
+                  Begin Your Piano Assessment
+                </PremiumButton>
+
+                <div className="flex items-center gap-4">
+                  <PremiumButton
+                    variant="secondary"
+                    size="lg"
+                    onClick={handleConsultationClick}
+                    icon="👤"
+                    className="w-full sm:w-auto min-w-[250px]"
+                  >
+                    Request Private Consultation
+                  </PremiumButton>
+                </div>
+
+                <div className="text-kawai-pearl/50 text-sm text-center sm:text-left">
+                  {data.urgencyText}
+                </div>
+              </motion.div>
+            </motion.div>
+
+            {/* Right Column - Benefits */}
+            <motion.div
+              className="space-y-8"
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              <div className="p-8 rounded-lg border border-kawai-gold/20 bg-gradient-to-br from-kawai-black/50 to-transparent backdrop-blur-sm">
+                <BenefitsReveal benefits={data.benefits} />
+              </div>
+
+              {/* Heritage Statistics */}
+              <motion.div
+                className="grid grid-cols-3 gap-4 text-center"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                viewport={{ once: true }}
+              >
+                <div className="p-4 rounded-lg border border-kawai-gold/20 bg-kawai-black/30">
+                  <div className="text-2xl md:text-3xl font-light text-kawai-gold mb-1">100+</div>
+                  <div className="text-kawai-pearl/70 text-xs uppercase tracking-wider">Years Heritage</div>
+                </div>
+                <div className="p-4 rounded-lg border border-kawai-gold/20 bg-kawai-black/30">
+                  <div className="text-2xl md:text-3xl font-light text-kawai-gold mb-1">400</div>
+                  <div className="text-kawai-pearl/70 text-xs uppercase tracking-wider">Annual Production</div>
+                </div>
+                <div className="p-4 rounded-lg border border-kawai-gold/20 bg-kawai-black/30">
+                  <div className="text-2xl md:text-3xl font-light text-kawai-gold mb-1">12</div>
+                  <div className="text-kawai-pearl/70 text-xs uppercase tracking-wider">Master Artisans</div>
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+
+      {/* Continue indicator */}
+      <ContinueIndicator onClick={handleAssessmentClick} />
+
+      {/* Decorative bottom border */}
+      <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-kawai-gold/20 to-transparent" />
+    </section>
+  )
+}

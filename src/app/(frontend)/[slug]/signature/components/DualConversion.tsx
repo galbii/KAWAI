@@ -9,32 +9,7 @@ import { z } from 'zod'
 
 import type { AssessmentResponse } from '../types'
 
-// Custom interface to match what SignatureExperience passes
-interface PianoRec {
-  id: string
-  name: string
-  model: string
-  series: string
-  category: 'grand' | 'upright' | 'digital' | 'hybrid'
-  image: string
-  priceRange: string
-  matchScore: number
-  keyFeatures: string[]
-  whyRecommended: string
-  specifications: {
-    length: string
-    width: string
-    weight: string
-    finish: string
-    warranty: string
-  }
-  availableFinishes: string[]
-  inStock: boolean
-  consultationRecommended: boolean
-}
-
 interface DualConversionProps {
-  recommendations: PianoRec[]
   assessmentResults: AssessmentResponse
   onComplete: (type: 'email' | 'booking', data: any) => void
   location: string
@@ -69,7 +44,6 @@ type BookingFormData = z.infer<typeof bookingSchema>
  * Offers digital (email capture) or in-person (booking) conversion paths
  */
 export const DualConversion: React.FC<DualConversionProps> = ({
-  recommendations,
   assessmentResults,
   onComplete,
   location,
@@ -96,7 +70,6 @@ export const DualConversion: React.FC<DualConversionProps> = ({
       await onComplete('email', {
         ...data,
         conversionType: 'digital',
-        recommendedPianos: recommendations.map(p => p.id),
         assessmentResults,
         location
       })
@@ -111,7 +84,6 @@ export const DualConversion: React.FC<DualConversionProps> = ({
       await onComplete('booking', {
         ...data,
         conversionType: 'showroom',
-        recommendedPianos: recommendations.map(p => p.id),
         assessmentResults,
         location
       })
@@ -123,9 +95,32 @@ export const DualConversion: React.FC<DualConversionProps> = ({
   if (!selectedPath) {
     return (
       <div className={cn("max-w-4xl mx-auto", className)}>
+        {/* Qualification Success Message */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-12"
+        >
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-kawai-red/10 rounded-full mb-6">
+            <svg className="w-8 h-8 text-kawai-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-3xl md:text-4xl font-light font-serif text-kawai-black mb-4">
+            Congratulations! You Qualify
+          </h2>
+          <p className="text-xl text-kawai-black/70 max-w-2xl mx-auto mb-2">
+            Your application has been approved for exclusive access to our Master Craftsman consultation program.
+          </p>
+          <p className="text-lg text-kawai-red font-medium">
+            Choose how you'd like to proceed with your heritage collection experience:
+          </p>
+        </motion.div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
           className="grid md:grid-cols-2 gap-8"
         >
           {/* Digital Path */}
@@ -143,25 +138,25 @@ export const DualConversion: React.FC<DualConversionProps> = ({
               
               <div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                  Get Digital Recommendations
+                  Receive Heritage Collection Preview
                 </h3>
                 <p className="text-gray-600 leading-relaxed">
-                  Receive personalized piano recommendations, exclusive offers, and expert guidance delivered to your inbox.
+                  Access exclusive preview of our master craftsman collection with detailed heritage specifications and your formal consultation invitation.
                 </p>
               </div>
               
               <div className="space-y-2 text-sm text-gray-600">
                 <div className="flex items-center justify-center space-x-2">
                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span>Detailed piano specifications & pricing</span>
+                  <span>Exclusive heritage collection catalog</span>
                 </div>
                 <div className="flex items-center justify-center space-x-2">
                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span>Exclusive member-only offers</span>
+                  <span>Formal invitation within 24 hours</span>
                 </div>
                 <div className="flex items-center justify-center space-x-2">
                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span>Piano care and maintenance guides</span>
+                  <span>Master craftsman consultation priority</span>
                 </div>
               </div>
               
@@ -170,7 +165,7 @@ export const DualConversion: React.FC<DualConversionProps> = ({
                 whileTap={{ scale: 0.95 }}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
               >
-                Continue Digitally
+                Access Preview Collection
               </motion.button>
             </div>
           </motion.div>
@@ -190,25 +185,25 @@ export const DualConversion: React.FC<DualConversionProps> = ({
               
               <div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                  Schedule Private Viewing
+                  Request Premium Consultation
                 </h3>
                 <p className="text-gray-600 leading-relaxed">
-                  Experience your recommended pianos in person with personalized guidance from our piano specialists.
+                  Secure private access to our heritage instruments with dedicated guidance from certified master craftsmen.
                 </p>
               </div>
               
               <div className="space-y-2 text-sm text-gray-600">
                 <div className="flex items-center justify-center space-x-2">
                   <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                  <span>One-on-one expert consultation</span>
+                  <span>Private master craftsman appointment</span>
                 </div>
                 <div className="flex items-center justify-center space-x-2">
                   <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                  <span>Play and compare your selections</span>
+                  <span>Exclusive heritage instrument access</span>
                 </div>
                 <div className="flex items-center justify-center space-x-2">
                   <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                  <span>Exclusive in-showroom pricing</span>
+                  <span>Limited-time consultation rates</span>
                 </div>
               </div>
               
@@ -217,35 +212,10 @@ export const DualConversion: React.FC<DualConversionProps> = ({
                 whileTap={{ scale: 0.95 }}
                 className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
               >
-                Schedule Visit
+                Request Consultation
               </motion.button>
             </div>
           </motion.div>
-        </motion.div>
-
-        {/* Recommended Pianos Preview */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mt-12 bg-white rounded-2xl shadow-lg p-6"
-        >
-          <h4 className="text-lg font-semibold text-gray-900 mb-4 text-center">
-            Your Recommended Pianos
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {recommendations.slice(0, 2).map((piano, index) => (
-              <div key={piano.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-                <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <span className="text-blue-600 font-semibold">{piano.matchScore}%</span>
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-900 text-sm">{piano.name}</div>
-                  <div className="text-gray-600 text-xs">{piano.priceRange}</div>
-                </div>
-              </div>
-            ))}
-          </div>
         </motion.div>
       </div>
     )
@@ -264,10 +234,10 @@ export const DualConversion: React.FC<DualConversionProps> = ({
           >
             <div className="text-center mb-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                Get Your Personalized Recommendations
+                Access Your Exclusive Heritage Preview
               </h3>
               <p className="text-gray-600">
-                We'll send detailed information about your matched pianos directly to your inbox.
+                Receive your formal consultation invitation and exclusive access to our master craftsman collection catalog.
               </p>
             </div>
             
@@ -342,7 +312,7 @@ export const DualConversion: React.FC<DualConversionProps> = ({
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <span className="text-sm text-gray-700">
-                    I'd like to receive updates about new piano arrivals and exclusive offers
+                    I'd like to receive exclusive heritage collection updates and limited access opportunities
                   </span>
                 </label>
               </div>
@@ -362,7 +332,7 @@ export const DualConversion: React.FC<DualConversionProps> = ({
                   whileTap={{ scale: 0.98 }}
                   className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSubmitting ? 'Sending...' : 'Get My Recommendations'}
+                  {isSubmitting ? 'Securing Access...' : 'Secure My Invitation'}
                 </motion.button>
               </div>
             </form>
@@ -379,10 +349,10 @@ export const DualConversion: React.FC<DualConversionProps> = ({
           >
             <div className="text-center mb-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                Schedule Your Private Piano Viewing
+                Request Your Master Craftsman Consultation
               </h3>
               <p className="text-gray-600">
-                Book a personalized consultation with our piano specialists.
+                Secure your private appointment with our certified heritage specialists for exclusive instrument access.
               </p>
             </div>
             
@@ -506,7 +476,7 @@ export const DualConversion: React.FC<DualConversionProps> = ({
                   {...bookingForm.register('message')}
                   rows={3}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                  placeholder="Any specific pianos you'd like to see or questions you have..."
+                  placeholder="Any specific heritage instruments you'd like to experience or questions about our collection..."
                 />
               </div>
               
@@ -525,7 +495,7 @@ export const DualConversion: React.FC<DualConversionProps> = ({
                   whileTap={{ scale: 0.98 }}
                   className="flex-1 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSubmitting ? 'Booking...' : 'Schedule My Visit'}
+                  {isSubmitting ? 'Requesting...' : 'Request My Consultation'}
                 </motion.button>
               </div>
             </form>

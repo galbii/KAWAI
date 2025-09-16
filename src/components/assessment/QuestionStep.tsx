@@ -55,59 +55,51 @@ const OptionButton: React.FC<OptionButtonProps> = ({
         type="button"
         onClick={onClick}
         className={cn(
-          "w-full p-6 text-left border-2 rounded-xl transition-all duration-300 group",
-          "hover:shadow-lg hover:shadow-blue-500/10 focus:outline-none focus:ring-2 focus:ring-blue-500/50",
+          "w-full p-4 sm:p-6 text-left border-2 rounded-md transition-all duration-300 group touch-manipulation min-h-[44px]",
+          "hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-kawai-red/50",
           isSelected
-            ? "border-blue-500 bg-blue-50 shadow-md shadow-blue-500/20"
-            : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50",
+            ? "border-kawai-red bg-kawai-red/5 shadow-md"
+            : "border-kawai-black/20 bg-white hover:border-kawai-red hover:bg-stone-50",
           className
         )}
         role="radio"
         aria-checked={isSelected}
         tabIndex={0}
       >
-        <div className="flex items-start space-x-4">
-          {/* Icon */}
-          {IconComponent && (
-            <div className={cn(
-              "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300",
-              isSelected
-                ? "bg-blue-500 text-white"
-                : "bg-gray-100 text-gray-600 group-hover:bg-gray-200"
-            )}>
-              <IconComponent className="w-5 h-5" />
-            </div>
-          )}
-          
+        <div className="flex items-center">
+          {/* Radio button indicator (like homepage) */}
+          <div className={cn(
+            "w-4 h-4 rounded-full border-2 mr-3 flex items-center justify-center transition-all duration-300",
+            isSelected
+              ? "border-kawai-red bg-kawai-red"
+              : "border-kawai-black/30"
+          )}>
+            {isSelected && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.2 }}
+                className="w-full h-full rounded-full bg-white scale-50"
+              />
+            )}
+          </div>
+
           {/* Content */}
           <div className="flex-1 min-w-0">
-            <h3 className={cn(
-              "font-semibold text-lg mb-2 transition-colors duration-300",
-              isSelected ? "text-blue-900" : "text-gray-900"
+            <div className={cn(
+              "font-medium transition-colors duration-300",
+              isSelected ? "text-kawai-black" : "text-kawai-black"
             )}>
               {option.label}
-            </h3>
-            <p className={cn(
-              "text-sm leading-relaxed transition-colors duration-300",
-              isSelected ? "text-blue-700" : "text-gray-600"
-            )}>
-              {option.description}
-            </p>
-          </div>
-          
-          {/* Selection indicator */}
-          <div className={cn(
-            "flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300",
-            isSelected
-              ? "border-blue-500 bg-blue-500"
-              : "border-gray-300 group-hover:border-gray-400"
-          )}>
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: isSelected ? 1 : 0 }}
-              transition={{ duration: 0.2 }}
-              className="w-2 h-2 rounded-full bg-white"
-            />
+            </div>
+            {option.description && (
+              <div className={cn(
+                "text-sm mt-1 transition-colors duration-300",
+                isSelected ? "text-kawai-black/80" : "text-kawai-black/60"
+              )}>
+                {option.description}
+              </div>
+            )}
           </div>
         </div>
       </button>
@@ -147,7 +139,7 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
           transition={{ delay: 0.2, duration: 0.3 }}
           className="mb-4"
         >
-          <span className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+          <span className="text-sm font-medium text-kawai-red bg-kawai-red/10 px-3 py-1 rounded-full">
             Question {stepNumber} of {totalSteps}
           </span>
         </motion.div>
@@ -156,7 +148,7 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.3 }}
-          className="text-3xl font-bold text-gray-900 mb-4 leading-tight"
+          className="text-3xl font-light font-serif text-kawai-black mb-4 leading-tight"
         >
           {question.title}
         </motion.h2>
@@ -165,7 +157,7 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.3 }}
-          className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed"
+          className="text-lg text-kawai-black/70 max-w-2xl mx-auto leading-relaxed"
         >
           {question.description}
         </motion.p>
@@ -205,19 +197,19 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
           className="flex items-center justify-between"
         >
           {/* Back Button */}
-          <Button
+          <button
             type="button"
-            variant="outline"
             onClick={onBack}
             disabled={stepNumber === 1}
             className={cn(
-              "flex items-center space-x-2 px-6 py-3",
-              stepNumber === 1 ? "invisible" : ""
+              "px-6 py-3 rounded-md font-medium transition-colors",
+              stepNumber === 1
+                ? "text-kawai-black/40 cursor-not-allowed invisible"
+                : "text-kawai-black hover:text-kawai-red"
             )}
           >
-            <Icons.ChevronLeft className="w-4 h-4" />
-            <span>Previous</span>
-          </Button>
+            ← Previous
+          </button>
 
           {/* Progress indicator */}
           <div className="flex items-center space-x-2">
@@ -227,10 +219,10 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
                 className={cn(
                   "w-2 h-2 rounded-full transition-all duration-300",
                   index + 1 === stepNumber
-                    ? "bg-blue-500 w-6"
+                    ? "bg-kawai-red w-6"
                     : index + 1 < stepNumber
-                    ? "bg-blue-300"
-                    : "bg-gray-300"
+                    ? "bg-kawai-red/60"
+                    : "bg-kawai-black/30"
                 )}
               />
             ))}
@@ -239,35 +231,28 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
           {/* Next Button */}
           <div className="flex items-center space-x-3">
             {allowSkip && !isValid && (
-              <Button
+              <button
                 type="button"
-                variant="ghost"
                 onClick={onNext}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-kawai-black/50 hover:text-kawai-red px-6 py-3 rounded-md font-medium transition-colors"
               >
                 Skip
-              </Button>
+              </button>
             )}
-            
-            <Button
+
+            <button
               type="button"
               onClick={onNext}
               disabled={!isValid && !allowSkip}
               className={cn(
-                "flex items-center space-x-2 px-6 py-3 min-w-[100px]",
-                "disabled:opacity-50 disabled:cursor-not-allowed",
+                "px-6 sm:px-8 py-3 sm:py-4 min-h-[44px] rounded-md font-medium transition-colors text-sm sm:text-base",
                 isValid
-                  ? "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30"
-                  : ""
+                  ? "bg-kawai-red hover:bg-kawai-black text-white"
+                  : "bg-kawai-black/20 text-kawai-black/40 cursor-not-allowed"
               )}
             >
-              <span>
-                {stepNumber === totalSteps ? 'Complete' : 'Next'}
-              </span>
-              {stepNumber < totalSteps && (
-                <Icons.ChevronRight className="w-4 h-4" />
-              )}
-            </Button>
+              {stepNumber === totalSteps ? 'Complete Assessment →' : 'Next Step →'}
+            </button>
           </div>
         </motion.div>
       )}
@@ -281,8 +266,8 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
             exit={{ opacity: 0, height: 0 }}
             className="mt-4 text-center"
           >
-            <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg inline-block">
-              Please select a valid option to continue
+            <p className="text-sm text-kawai-red bg-kawai-red/10 px-4 py-2 rounded-lg inline-block">
+              Please select an option to continue
             </p>
           </motion.div>
         )}

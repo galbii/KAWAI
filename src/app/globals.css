@@ -18,6 +18,7 @@
   --color-kawai-black: #1E1B16;      /* Deep Black */
   --color-kawai-pearl: #FFFFFF;      /* Pure White */
   --color-kawai-neutral: #DBDBDB;    /* Light Grey */
+  --color-kawai-gold: #d5c78c;       /* Shigeru Kawai Gold */
 
   /* Extended Kawai Red Scale */
   --color-kawai-red-50: #fef2f2;
@@ -146,16 +147,19 @@
   bg-kawai-black,
   bg-kawai-pearl,
   bg-kawai-neutral,
+  bg-kawai-gold,
   bg-card,
   text-kawai-red,
   text-kawai-black,
   text-kawai-pearl,
   text-kawai-neutral,
+  text-kawai-gold,
   text-card-foreground,
   text-muted-foreground,
   border-kawai-red,
   border-kawai-black,
   border-kawai-neutral,
+  border-kawai-gold,
   card-brand-news,
   overlay-brand-news
 }");

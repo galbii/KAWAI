@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a comprehensive, luxury-focused piano recommendation and conversion system designed for the Kawai Signature landing page. The system provides personalized piano recommendations through an interactive assessment and converts users through two optimized paths: digital-first and showroom-focused experiences.
+This is a streamlined, luxury-focused conversion system designed for the Kawai Signature landing page. The system collects user preferences through an interactive assessment and converts users through two optimized paths: digital-first and showroom-focused experiences.
 
 ## 🎯 Key Features
 
@@ -12,11 +12,6 @@ This is a comprehensive, luxury-focused piano recommendation and conversion syst
 - **Progress Tracking**: Visual progress indicators with save/resume functionality
 - **Mobile Optimized**: Responsive design with touch-friendly interactions
 
-### ✅ Intelligent Piano Matching Algorithm
-- **Sophisticated Scoring**: Multi-factor algorithm considering musical identity, aspirations, environment, timeline, and preferences
-- **Personalized Explanations**: AI-generated match reasons explaining why each piano was recommended
-- **Dynamic Filtering**: Budget, category, and feature-based filtering capabilities
-- **Mock Piano Database**: Pre-configured with representative Kawai piano models
 
 ### ✅ Dual-Path Conversion System
 - **Digital Path**: Email-first experience with curated recommendations and nurture sequences
@@ -46,14 +41,12 @@ This is a comprehensive, luxury-focused piano recommendation and conversion syst
 ```
 src/app/(frontend)/[slug]/signature/
 ├── components/
-│   ├── PianoRecommendation.tsx      # Main recommendation display
-│   ├── DualConversion.tsx           # Path selection & forms  
+│   ├── DualConversion.tsx           # Path selection & forms
 │   ├── EmailCapture.tsx             # Sophisticated email capture
 │   ├── BookingForm.tsx              # Multi-step appointment booking
 │   ├── ExitIntentModal.tsx          # Exit intent capture
 │   └── index.ts                     # Barrel exports
 ├── lib/
-│   ├── piano-matching.ts            # Recommendation algorithm
 │   ├── lead-qualification.ts        # Scoring and qualification
 │   ├── validation.ts                # Form validation schemas
 │   └── constants.ts                 # Configuration constants
@@ -69,31 +62,24 @@ src/app/(frontend)/[slug]/signature/
 ```tsx
 import {
   InteractiveAssessment,
-  PianoRecommendation,
   DualConversion,
   ExitIntentModal,
   useExitIntent,
-  generateRecommendations,
   calculateLeadScore
 } from './signature/components'
 
 function SignaturePage() {
   const [assessmentData, setAssessmentData] = useState(null)
-  const [recommendations, setRecommendations] = useState(null)
   const [leadQualification, setLeadQualification] = useState(null)
-  
+
   // Exit intent detection
   const { showModal, setShowModal } = useExitIntent(true)
 
   const handleAssessmentComplete = async (response) => {
-    // Generate recommendations
-    const recs = generateRecommendations(response)
-    setRecommendations(recs)
-    
     // Calculate lead qualification
     const qualification = calculateLeadScore(response, engagementData, contactData)
     setLeadQualification(qualification)
-    
+
     setAssessmentData(response)
   }
 
@@ -107,25 +93,15 @@ function SignaturePage() {
       {!assessmentData && (
         <InteractiveAssessment onComplete={handleAssessmentComplete} />
       )}
-      
-      {recommendations && (
-        <>
-          <PianoRecommendation
-            recommendations={recommendations}
-            onPianoSelect={(piano) => console.log('Selected:', piano)}
-          />
-          
-          <DualConversion
-            recommendations={recommendations}
-            digitalPath={createDefaultDigitalPath()}
-            showroomPath={createDefaultShowroomPath()}
-            onPathSelect={(path) => console.log('Path:', path)}
-            onActionSelect={handleConversion}
-            leadQualification={leadQualification}
-          />
-        </>
+
+      {assessmentData && (
+        <DualConversion
+          assessmentResults={assessmentData}
+          onComplete={handleConversion}
+          location="signature-page"
+        />
       )}
-      
+
       <ExitIntentModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}

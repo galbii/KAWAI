@@ -2,6 +2,9 @@ import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { HeroSection } from './components/HeroSection'
+import { PremiumHeritage } from './components/PremiumHeritage'
+import { PremiumBentoGallery } from './components/PremiumBentoGallery'
+import { ConversionCTA } from './components/ConversionCTA'
 import { SignatureExperience } from './components/SignatureExperience'
 import type { SignaturePageData, SignaturePageProps } from '@/lib/types/signature'
 import type { Media } from '@/payload-types'
@@ -36,24 +39,24 @@ async function getSignaturePageData(slug: string): Promise<SignaturePageData | n
       title: `${slug.charAt(0).toUpperCase() + slug.slice(1)} Signature Collection`,
       isActive: true,
       heroSection: {
-        exclusiveText: "By Invitation Only",
-        titlePrefix: "Kawai",
-        titleMain: "Signature Collection",
-        titleSuffix: "2025",
-        subtitle: "Curated for the Discerning Musician",
-        description: "Experience the pinnacle of piano craftsmanship with our exclusive signature collection. Each instrument represents decades of heritage, innovation, and uncompromising artistic excellence.",
+        exclusiveText: "10/09-10/12",
+        titlePrefix: "",
+        titleMain: "Baby Grand Select",
+        titleSuffix: "",
+        subtitle: "Own a piece of musical history and refined craftsmanship",
+        description: "A special opportunity for virtuosos and aspiring musicians to transform their space into their personal concert hall. Apply for a spot to secure your spot in KAWAI's special piano event to give back to the community that helped build our legacy.",
         heroBackgroundImage: null, // Will use fallback
         primaryCta: {
-          text: "Begin Your Journey",
+          text: "Find your perfect Piano",
           action: "scroll"
         },
         secondaryCta: {
-          text: "Private Consultation",
+          text: "Apply Now",
           action: "modal"
         },
         overlayOpacity: 0.6,
         textAlignment: "center",
-        showScrollIndicator: true
+        showScrollIndicator: false
       },
       seo: {
         metaTitle: `${slug.charAt(0).toUpperCase() + slug.slice(1)} Signature Collection | Kawai Pianos`,
@@ -103,13 +106,22 @@ async function SignaturePageContent({ slug }: { slug: string }) {
   return (
     <div className="min-h-screen bg-kawai-black">
       {/* Hero Section */}
-      <HeroSection 
-        data={signatureData.heroSection} 
+      <HeroSection
+        data={signatureData.heroSection}
         enableSmoothScrolling={signatureData.settings?.enableSmoothScrolling}
       />
-      
-      {/* Main Signature Experience Flow */}
+
+      {/* Premium Heritage & Authority Section */}
+      <PremiumHeritage />
+
+      {/* Main Signature Experience Flow (Assessment) */}
       <SignatureExperience slug={slug} />
+
+      {/* Premium Bento Gallery */}
+      <PremiumBentoGallery />
+
+      {/* Conversion CTA Section */}
+      <ConversionCTA />
     </div>
   )
 }

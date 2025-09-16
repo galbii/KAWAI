@@ -14,7 +14,8 @@ import {
   AcousticEnvironmentQuestion,
   InvestmentTimelineQuestion,
   AestheticPreferenceQuestion,
-  CollectionAccessQuestion
+  CollectionAccessQuestion,
+  InvestmentRangeQuestion
 } from './questions'
 
 // Import types and validation
@@ -40,7 +41,8 @@ const QUESTION_COMPONENTS = {
   acousticEnvironment: AcousticEnvironmentQuestion,
   investmentTimeline: InvestmentTimelineQuestion,
   aestheticPreference: AestheticPreferenceQuestion,
-  collectionAccessLevel: CollectionAccessQuestion
+  collectionAccessLevel: CollectionAccessQuestion,
+  investmentRange: InvestmentRangeQuestion
 } as const
 
 /**
@@ -247,8 +249,8 @@ export const InteractiveAssessment: React.FC<InteractiveAssessmentProps> = ({
   } as React.CSSProperties : {}
 
   return (
-    <div 
-      className={cn("relative min-h-screen bg-gradient-to-br from-gray-50 to-blue-50", className)}
+    <div
+      className={cn("relative min-h-screen bg-stone-50", className)}
       style={themeVars}
     >
       {/* Progress Indicator */}
@@ -256,7 +258,7 @@ export const InteractiveAssessment: React.FC<InteractiveAssessmentProps> = ({
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm border-b border-gray-200 py-4"
+          className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm border-b border-kawai-black/20 py-4"
         >
           <div className="max-w-4xl mx-auto px-4">
             <AssessmentProgress
@@ -275,7 +277,9 @@ export const InteractiveAssessment: React.FC<InteractiveAssessmentProps> = ({
       {/* Main Assessment Content */}
       <div className="relative">
         <div className="min-h-screen flex items-center justify-center px-4 py-12">
-          <form onSubmit={handleSubmit(handleAssessmentSubmit)} className="w-full">
+          <div className="w-full max-w-4xl mx-auto">
+            <div className="bg-white rounded-lg shadow-xl p-6 sm:p-8 md:p-12 mx-4 sm:mx-0">
+              <form onSubmit={handleSubmit(handleAssessmentSubmit)} className="w-full">
             <AnimatePresence mode="wait" initial={false}>
               {CurrentQuestionComponent && (
                 <motion.div
@@ -309,6 +313,9 @@ export const InteractiveAssessment: React.FC<InteractiveAssessmentProps> = ({
                 </motion.div>
               )}
             </AnimatePresence>
+              </form>
+            </div>
+          </div>
 
             {/* Error Display */}
             <AnimatePresence>
@@ -332,7 +339,6 @@ export const InteractiveAssessment: React.FC<InteractiveAssessmentProps> = ({
                 </motion.div>
               )}
             </AnimatePresence>
-          </form>
         </div>
 
         {/* Loading Overlay */}
@@ -348,14 +354,14 @@ export const InteractiveAssessment: React.FC<InteractiveAssessmentProps> = ({
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full mx-auto"
+                  className="w-12 h-12 border-4 border-kawai-red/20 border-t-kawai-red rounded-full mx-auto"
                 />
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Creating Your Recommendations
+                  <h3 className="text-lg font-semibold text-kawai-black mb-2">
+                    Evaluating Your Application
                   </h3>
-                  <p className="text-gray-600">
-                    Analyzing your preferences to find the perfect piano...
+                  <p className="text-kawai-black/70">
+                    Our master craftsmen are reviewing your qualifications for exclusive access...
                   </p>
                 </div>
               </div>
