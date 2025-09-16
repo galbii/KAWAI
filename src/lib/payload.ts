@@ -1,5 +1,5 @@
-import type { 
-  Productline, 
+import type {
+  Productline,
   PianoModel,
   Product,
   Media,
@@ -7,10 +7,27 @@ import type {
   DealerLocation
 } from '@/payload-types'
 
-import type { 
+import type {
   ProductlinesResponse,
-  PianoModelsResponse 
+  PianoModelsResponse
 } from '@/lib/types'
+
+// Import fallback utilities
+import {
+  withFallback,
+  withArrayFallback,
+  mergeWithFallback,
+  getHomePageDataWithFallbacks,
+  getPianoPageDataWithFallbacks,
+  getPianoCategoriesWithFallbacks,
+  getFeaturedModelsWithFallbacks,
+  getDealerLocationsWithFallbacks,
+  FALLBACK_HOMEPAGE_DATA,
+  FALLBACK_PIANO_PAGE_DATA,
+  FALLBACK_PIANO_CATEGORIES,
+  FALLBACK_FEATURED_MODELS,
+  FALLBACK_DEALER_LOCATIONS
+} from '@/lib/fallbacks'
 
 // Product API response type
 interface ProductsResponse {
@@ -472,64 +489,19 @@ export async function getProductlinesWithPianoModels(category?: string): Promise
   return getProductlinesWithProducts(category)
 }
 
-// Piano Categories API functions  
+// Piano Categories API functions with enhanced fallback support
 export async function getPianoCategories(): Promise<any[]> {
+  let cmsCategories = null
+
   try {
     const pianoPageData = await getPianoPage()
-    if (pianoPageData?.pianoCategories?.length > 0) {
-      return pianoPageData.pianoCategories
-    }
+    cmsCategories = pianoPageData?.pianoCategories
   } catch (error) {
-    console.error('Error fetching piano categories from PianosPage:', error)
+    console.warn('Error fetching piano categories from CMS, using fallbacks:', error)
   }
-  
-  // Fallback to hardcoded categories
-  return [
-    {
-      slug: "grand",
-      name: "Acoustic Grand Pianos",
-      description: "Professional grand pianos featuring advanced technology and superior craftsmanship",
-      image: "/images/piano-categories/grand.jpg",
-      priceRange: "$45,000 - $185,000",
-      features: [{"feature": "Millennium III Action"}, {"feature": "Carbon Fiber Components"}, {"feature": "Neotex Key Surface"}, {"feature": "Konami Tuning Pins"}],
-      icon: "piano",
-      badge: "Professional",
-      highlight: "GX BLAK Performance Series"
-    },
-    {
-      slug: "upright",
-      name: "Acoustic Upright Pianos", 
-      description: "Space-efficient acoustic pianos delivering exceptional touch and tone",
-      image: "/images/piano-categories/upright.png",
-      priceRange: "$8,999 - $35,000",
-      features: [{"feature": "Extended Length Keys"}, {"feature": "Millennium III Prep"}, {"feature": "Soft-Close Fallboard"}, {"feature": "Premium Hammers"}],
-      icon: "music",
-      badge: "Classic", 
-      highlight: "K Professional Series"
-    },
-    {
-      slug: "digital",
-      name: "Digital Pianos",
-      description: "Cutting-edge digital instruments with authentic piano touch and sound",
-      image: "/images/piano-categories/digital.png", 
-      priceRange: "$1,999 - $12,999",
-      features: [{"feature": "Grand Feel III Action"}, {"feature": "Harmonic Imaging XL"}, {"feature": "Onkyo Audio"}, {"feature": "Bluetooth Connectivity"}],
-      icon: "zap",
-      badge: "Innovation",
-      highlight: "Concert Artist Series"
-    },
-    {
-      slug: "hybrid",
-      name: "Hybrid Pianos",
-      description: "Revolutionary instruments combining acoustic action with digital versatility",
-      image: "/images/piano-categories/hybrid.jpg",
-      priceRange: "$12,999 - $24,999", 
-      features: [{"feature": "Real Grand Action"}, {"feature": "Silent Practice Mode"}, {"feature": "Digital Recording"}, {"feature": "Millennium III Action"}],
-      icon: "award",
-      badge: "Hybrid Technology",
-      highlight: "NOVUS & AnyTime Series"
-    }
-  ]
+
+  // Use comprehensive fallback system
+  return getPianoCategoriesWithFallbacks(cmsCategories)
 }
 
 export async function getPianoCategoryBySlug(slug: string): Promise<any | null> {
@@ -543,41 +515,19 @@ export async function getPianoCategoryBySlug(slug: string): Promise<any | null> 
   return response.docs[0] || null
 }
 
-// Featured Models API functions
+// Featured Models API functions with enhanced fallback support
 export async function getFeaturedModels(): Promise<any[]> {
+  let cmsFeaturedModels = null
+
   try {
     const pianoPageData = await getPianoPage()
-    if (pianoPageData?.featuredModels?.length > 0) {
-      return pianoPageData.featuredModels
-    }
+    cmsFeaturedModels = pianoPageData?.featuredModels
   } catch (error) {
-    console.error('Error fetching featured models from PianosPage:', error)
+    console.warn('Error fetching featured models from CMS, using fallbacks:', error)
   }
-  
-  // Fallback to hardcoded featured models
-  return [
-    {
-      name: "GX-7 BLAK",
-      category: "GX BLAK Performance Series",
-      image: "/images/banners/GX-7-BLAK-grand-styling.webp",
-      badge: "Performance Series",
-      description: "Professional concert grand featuring revolutionary carbon fiber action technology, delivering unprecedented responsiveness and durability for the modern virtuoso."
-    },
-    {
-      name: "CA99",
-      category: "Concert Artist Digital",
-      image: "/images/banners/CA99-digital-styling.webp",
-      badge: "Flagship Digital", 
-      description: "The ultimate digital piano experience with Grand Feel III wooden-key action and authentic concert grand samples captured in stunning detail."
-    },
-    {
-      name: "NOVUS NV-10S",
-      category: "Hybrid Innovation",
-      image: "/images/banners/NV10S_along the keyboard_whiteBG.jpg",
-      badge: "Revolutionary",
-      description: "Revolutionary hybrid piano combining a real grand piano action with advanced digital technology, offering the authentic touch of an acoustic grand with silent practice capabilities."
-    }
-  ]
+
+  // Use comprehensive fallback system
+  return getFeaturedModelsWithFallbacks(cmsFeaturedModels)
 }
 
 // Piano Page API functions
@@ -796,7 +746,7 @@ export async function getCachedPianoPage(): Promise<any | null> {
   return data
 }
 
-// Get complete PianosPage data with all sections
+// Get complete PianosPage data with comprehensive fallback support
 export async function getPianosPageData(): Promise<{
   hero: any
   categories: any[]
@@ -805,87 +755,16 @@ export async function getPianosPageData(): Promise<{
   cta: any
   seo: any
 } | null> {
+  let cmsData = null
+
   try {
-    const pianoPageData = await getCachedPianoPage()
-    
-    if (!pianoPageData) {
-      // Return fallback data structure
-      return {
-        hero: {
-          heroTitle: "Experience the Complete Kawai Piano Collection",
-          heroDescription: "From the legendary Shigeru Kawai concert grands used in international competitions to innovative digital and hybrid instruments, discover the piano that will inspire your musical journey.",
-          heroBackgroundImage: "/images/piano-categories/NV10S_along%20the%20keyboard_whiteBG.jpg",
-          heroCta: {
-            text: "Explore Categories",
-            link: "#categories"
-          }
-        },
-        categories: await getPianoCategories(),
-        featuredModels: await getFeaturedModels(),
-        featuredModelsSection: {
-          title: "Flagship & Featured Models",
-          description: "Discover our most celebrated instruments, from competition-grade concert grands to innovative digital and hybrid pianos preferred by professionals worldwide."
-        },
-        cta: {
-          title: "Experience the Difference",
-          description: "Visit our showroom to hear and feel the exceptional quality of Kawai pianos. Our experts will help you find the perfect instrument for your musical journey.",
-          ctaText: "Schedule Showroom Visit",
-          ctaLink: "/contact/schedule-visit"
-        },
-        seo: {
-          metaTitle: "Kawai Pianos - Professional Digital, Grand, Hybrid & Upright Pianos",
-          metaDescription: "Discover Kawai's complete piano collection including professional grand pianos, innovative digital pianos, and revolutionary hybrid instruments.",
-          keywords: "kawai pianos, digital piano, grand piano, hybrid piano, upright piano"
-        }
-      }
-    }
-    
-    return {
-      hero: {
-        heroTitle: pianoPageData.heroTitle,
-        heroDescription: pianoPageData.heroDescription,
-        // Preserve Media object for MediaRenderer, fallback to string for static images
-        heroBackgroundImage: pianoPageData.heroBackgroundImage || "/images/piano-categories/NV10S_along%20the%20keyboard_whiteBG.jpg",
-        heroCta: pianoPageData.heroCta
-      },
-      categories: pianoPageData.pianoCategories?.length > 0 
-        ? pianoPageData.pianoCategories.map((cat: any) => ({
-            ...cat,
-            // Preserve Media object for MediaRenderer, fallback to string for static images
-            image: cat.image || `/images/piano-categories/${cat.slug}.jpg`,
-            // Include the 3 separate gallery image fields from CMS (Media objects will be preserved)
-            galleryImage1: cat.galleryImage1,
-            galleryImage2: cat.galleryImage2,
-            galleryImage3: cat.galleryImage3
-          }))
-        : await getPianoCategories(),
-      featuredModels: pianoPageData.featuredModels?.length > 0 
-        ? pianoPageData.featuredModels.map((model: any) => ({
-            ...model,
-            // Preserve Media object for MediaRenderer, fallback to string for static images
-            image: model.image || getFallbackImageForModel(model.name)
-          }))
-        : await getFeaturedModels(),
-      featuredModelsSection: pianoPageData.featuredModelsSection || {
-        title: "Flagship & Featured Models",
-        description: "Discover our most celebrated instruments, from competition-grade concert grands to innovative digital and hybrid pianos preferred by professionals worldwide."
-      },
-      cta: pianoPageData.ctaSection || {
-        title: "Experience the Difference",
-        description: "Visit our showroom to hear and feel the exceptional quality of Kawai pianos. Our experts will help you find the perfect instrument for your musical journey.",
-        ctaText: "Schedule Showroom Visit",
-        ctaLink: "/contact/schedule-visit"
-      },
-      seo: pianoPageData.seo || {
-        metaTitle: "Kawai Pianos - Professional Digital, Grand, Hybrid & Upright Pianos",
-        metaDescription: "Discover Kawai's complete piano collection including professional grand pianos, innovative digital pianos, and revolutionary hybrid instruments.",
-        keywords: "kawai pianos, digital piano, grand piano, hybrid piano, upright piano"
-      }
-    }
+    cmsData = await getCachedPianoPage()
   } catch (error) {
-    console.error('Error fetching complete pianos page data:', error)
-    return null
+    console.warn('Error fetching piano page data from CMS, using fallbacks:', error)
   }
+
+  // Use comprehensive fallback system
+  return getPianoPageDataWithFallbacks(cmsData)
 }
 
 // HomePage API Functions
@@ -954,7 +833,7 @@ export async function getCachedHomePage(): Promise<any | null> {
   return data
 }
 
-// Get complete HomePage data with fallback defaults
+// Get complete HomePage data with comprehensive fallback support
 export async function getHomePageData(): Promise<{
   heroSection: any
   showroomSection: any
@@ -964,234 +843,16 @@ export async function getHomePageData(): Promise<{
   contactFormSection: any
   seo: any
 } | null> {
+  let cmsData = null
+
   try {
-    const homePageData = await getCachedHomePage()
-    
-    if (!homePageData) {
-      // Return fallback data structure matching HomePage collection schema
-      return {
-        heroSection: {
-          locationText: "St. Louis's Premier Kawai Piano Dealer",
-          establishedText: "Est. 1927 • Lake St. Louis, Missouri",
-          titlePrefix: "The",
-          titleMain: "INSTRUMENTAL",
-          titleSuffix: "to Life",
-          description: "Every musician harbors a vision. Every performance seeks perfection. Since 1927, we've been crafting the instruments that transform inspiration into reality. Visit our Lake St. Louis showroom and discover why we're Missouri's trusted Kawai piano experts.",
-          primaryCta: {
-            text: "View Our Piano Collection",
-            link: "/pianos"
-          },
-          secondaryCta: {
-            text: "Visit Our St. Louis Showroom",
-            link: "/contact"
-          },
-          backgroundVideo: null // Will use default video path
-        },
-        showroomSection: {
-          sectionHeader: "Our Showroom",
-          showroomTitle: "Visit Our Lake St. Louis",
-          showroomDescription: "Experience the artistry of Kawai pianos in Missouri's premier showroom. From intimate consultations to comprehensive piano services, discover why discerning musicians choose our Lake St. Louis location.",
-          showroomInfo: {
-            name: "Kawai Piano Gallery St. Louis",
-            address: "21 Meadows Circle Drive, Suite 312, Lake St. Louis, MO 63367",
-            phone: "636-265-2866",
-            serviceArea: "Serving St. Louis, St. Charles County, O'Fallon, Wentzville & surrounding Missouri areas"
-          },
-          hours: [
-            { day: 'Monday', time: '10:00 am–7:00 pm' },
-            { day: 'Tuesday', time: '10:00 am–7:00 pm' },
-            { day: 'Wednesday', time: '10:00 am–7:00 pm' },
-            { day: 'Thursday', time: '10:00 am–7:00 pm' },
-            { day: 'Friday', time: '10:00 am–7:00 pm' },
-            { day: 'Saturday', time: '10:00 am–6:00 pm' },
-            { day: 'Sunday', time: '1:00 pm–5:00 pm' }
-          ],
-          features: [
-            { icon: 'award', title: 'Expert Consultation', description: 'Personalized guidance from certified Kawai specialists' },
-            { icon: 'piano', title: 'Full Service Center', description: 'Tuning, repair, and maintenance by certified technicians' },
-            { icon: 'shield', title: 'Financing Available', description: 'Flexible payment options to make your piano dreams accessible' }
-          ],
-          showroomCtas: {
-            directionsText: "Get Directions",
-            directionsLink: "https://maps.google.com/?q=Lake+St.+Louis+MO",
-            scheduleText: "Schedule Visit",
-            scheduleLink: "/contact/schedule-visit"
-          }
-        },
-        pianoCollectionSection: {
-          collectionSectionHeader: "Featured Models",
-          collectionTitle: "Kawai K-500 &\nGX2 Limited Edition",
-          collectionDescription: "Discover the exceptional craftsmanship and innovation that defines our most sought-after instruments",
-          collectionCta: {
-            text: "Explore Collection",
-            link: "/pianos"
-          },
-          featuredVideo: {
-            youtubeId: "1cmwb6evs2A",
-            width: 800,
-            height: 500
-          }
-        },
-        pianoGallerySection: {
-          galleryTitle: "Explore Our Piano Collection",
-          galleryDescription: "Discover the full range of Kawai pianos, from handcrafted grand pianos to innovative digital and hybrid instruments. Each piano represents our commitment to exceptional craftsmanship and musical excellence.",
-          pianoCategories: [
-            {
-              model: 'Grand',
-              title: 'Grand Pianos',
-              description: 'Professional acoustic grand pianos for concert halls, studios, and discerning homes. Experience the ultimate in touch, tone, and musical expression with instruments trusted by professional musicians worldwide.',
-              href: '/pianos/grand'
-            },
-            {
-              model: 'Digital',
-              title: 'Digital Pianos',
-              description: 'Advanced digital pianos featuring realistic wooden-key actions and premium sound systems. Combining authentic acoustic piano experience with modern technology and convenient features for today\'s musicians.',
-              href: '/pianos/digital'
-            },
-            {
-              model: 'Upright',
-              title: 'Upright Pianos',
-              description: 'Space-efficient acoustic pianos delivering exceptional touch and tone quality. Perfect for homes, studios, schools, and institutions where space is at a premium but musical excellence cannot be compromised.',
-              href: '/pianos/upright'
-            },
-            {
-              model: 'Hybrid',
-              title: 'Hybrid Pianos',
-              description: 'Revolutionary instruments combining real grand piano actions with advanced digital sound technology. Experience the authentic touch of acoustic keys with the versatility and innovation of digital sound.',
-              href: '/pianos/hybrid'
-            }
-          ]
-        },
-        newsCarouselSection: {
-          autoPlayDuration: 7000,
-          newsItems: [
-            {
-              title: 'Instrumental to Life',
-              description: 'Redefining harmony between tradition and innovation',
-              category: 'news',
-              link: '/about/instrumental-to-life'
-            },
-            {
-              title: 'Kawai Piano Gallery',
-              description: 'Explore our complete collection of acoustic and digital pianos',
-              category: 'news',
-              link: '/pianos'
-            },
-            {
-              title: 'Special Financing Offers',
-              description: 'Make your dream piano more accessible with flexible payment options',
-              category: 'promotions',
-              link: '/financing'
-            }
-          ]
-        },
-        contactFormSection: {
-          contactTitle: "Find Your Perfect",
-          contactTitleHighlight: "Piano",
-          contactDescription: "Get your free Piano Buying Guide and personalized recommendations from our Lake St. Louis piano experts. Serving the St. Louis area for over 95 years.",
-          stepTitles: [
-            { step: 'Tell us about your piano journey' },
-            { step: 'Help us understand your needs' },
-            { step: 'Get your free piano buying guide' }
-          ],
-          trustMessage: "Trusted by St. Louis area piano families since 1927",
-          benefits: [
-            { icon: 'shield-check', text: 'Free comprehensive Piano Buying Guide (PDF)' },
-            { icon: 'users', text: 'Personalized piano recommendations' },
-            { icon: 'award', text: 'Exclusive offers and updates' }
-          ],
-          formOptions: {
-            experienceLevels: [
-              { level: 'Beginner' },
-              { level: 'Intermediate' },
-              { level: 'Advanced' },
-              { level: 'Professional' }
-            ],
-            pianoTypes: [
-              { type: 'Acoustic Grand' },
-              { type: 'Acoustic Upright' },
-              { type: 'Digital Piano' },
-              { type: 'Hybrid Piano' },
-              { type: 'Not Sure' }
-            ],
-            budgetRanges: [
-              { range: 'Under $5,000' },
-              { range: '$5,000 - $15,000' },
-              { range: '$15,000 - $35,000' },
-              { range: '$35,000 - $75,000' },
-              { range: '$75,000+' }
-            ],
-            primaryUses: [
-              { use: 'Learning/Practice' },
-              { use: 'Family Entertainment' },
-              { use: 'Teaching' },
-              { use: 'Performance' },
-              { use: 'Recording/Studio' }
-            ]
-          }
-        },
-        seo: {
-          metaTitle: "Kawai Pianos St. Louis | Premier Piano Dealer Since 1927 | Lake St. Louis",
-          metaDescription: "St. Louis's premier Kawai piano dealer since 1927. Explore acoustic & digital pianos at our Lake St. Louis showroom. Expert consultation & service.",
-          keywords: "Kawai pianos, St. Louis piano dealer, Lake St. Louis piano store, acoustic pianos, digital pianos, piano showroom, Missouri piano dealer, piano sales, piano service"
-        }
-      }
-    }
-    
-    // Return CMS data with structure matching fallback
-    return {
-      heroSection: {
-        locationText: homePageData.locationText,
-        establishedText: homePageData.establishedText,
-        titlePrefix: homePageData.titlePrefix,
-        titleMain: homePageData.titleMain,
-        titleSuffix: homePageData.titleSuffix,
-        description: homePageData.description,
-        primaryCta: homePageData.primaryCta,
-        secondaryCta: homePageData.secondaryCta,
-        backgroundVideo: homePageData.backgroundVideo
-      },
-      showroomSection: {
-        sectionHeader: homePageData.sectionHeader,
-        showroomTitle: homePageData.showroomTitle,
-        showroomDescription: homePageData.showroomDescription,
-        showroomInfo: homePageData.showroomInfo,
-        hours: homePageData.hours,
-        features: homePageData.features,
-        mapApiKey: homePageData.mapApiKey,
-        showroomCtas: homePageData.showroomCtas
-      },
-      pianoCollectionSection: {
-        collectionSectionHeader: homePageData.collectionSectionHeader,
-        collectionTitle: homePageData.collectionTitle,
-        collectionDescription: homePageData.collectionDescription,
-        collectionCta: homePageData.collectionCta,
-        featuredVideo: homePageData.featuredVideo
-      },
-      pianoGallerySection: {
-        galleryTitle: homePageData.galleryTitle,
-        galleryDescription: homePageData.galleryDescription,
-        pianoCategories: homePageData.pianoCategories
-      },
-      newsCarouselSection: {
-        autoPlayDuration: homePageData.autoPlayDuration,
-        newsItems: homePageData.newsItems
-      },
-      contactFormSection: {
-        contactTitle: homePageData.contactTitle,
-        contactTitleHighlight: homePageData.contactTitleHighlight,
-        contactDescription: homePageData.contactDescription,
-        stepTitles: homePageData.stepTitles,
-        trustMessage: homePageData.trustMessage,
-        benefits: homePageData.benefits,
-        formOptions: homePageData.formOptions
-      },
-      seo: homePageData.seo
-    }
+    cmsData = await getCachedHomePage()
   } catch (error) {
-    console.error('Error fetching complete home page data:', error)
-    return null
+    console.warn('Error fetching homepage data from CMS, using fallbacks:', error)
   }
+
+  // Use comprehensive fallback system
+  return getHomePageDataWithFallbacks(cmsData)
 }
 
 // Get only piano gallery data from HomePage collection - optimized for performance

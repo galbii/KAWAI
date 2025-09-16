@@ -68,24 +68,6 @@ export default async function ProductPage({ params }: PageProps) {
   }
 }
 
-// Generate static params for known products (for performance)
-export async function generateStaticParams() {
-  try {
-    // Import here to avoid circular dependencies
-    const { getProducts } = await import('@/lib/payload')
-    
-    // Fetch all active products to generate static paths
-    const products = await getProducts()
-    
-    // Return slug parameters for all products
-    return products
-      .filter(product => product.slug && product.status === 'active')
-      .map(product => ({
-        slug: product.slug,
-      }))
-  } catch (error) {
-    console.error('Error generating static params for products:', error)
-    // Return empty array on error to enable dynamic generation
-    return []
-  }
-}
+// Removed generateStaticParams to fix ECONNREFUSED errors during build
+// All product pages will be dynamically generated at runtime
+// This is appropriate for a CMS-driven site where content changes frequently

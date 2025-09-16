@@ -4,10 +4,23 @@ import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence, useInView } from "framer-motion";
-import { NewsCarouselProps, DEFAULT_NEWS_CAROUSEL_DATA } from '@/lib/types/homepage';
+import { NewsCarouselProps } from '@/lib/types/homepage';
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils';
+import {
+  withFallback,
+  withArrayFallback,
+  FALLBACK_NEWS_CAROUSEL_DATA
+} from '@/lib/fallbacks';
+import {
+  getImagePropsWithFallback as getFallbackImageProps,
+  createImageErrorHandler
+} from '@/lib/fallbacks/media';
 
-export function NewsCarousel({ data = DEFAULT_NEWS_CAROUSEL_DATA }: NewsCarouselProps) {
+export function NewsCarousel({ data }: NewsCarouselProps) {
+  // Use comprehensive fallback system
+  const carouselData = withFallback(data, FALLBACK_NEWS_CAROUSEL_DATA);
+  const newsItems = withArrayFallback(carouselData.newsItems, FALLBACK_NEWS_CAROUSEL_DATA.newsItems, 1);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -15,10 +28,9 @@ export function NewsCarousel({ data = DEFAULT_NEWS_CAROUSEL_DATA }: NewsCarousel
   const sectionRef = useRef(null);
   const carouselRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
-  
+
   const minSwipeDistance = 50;
-  const SLIDE_DURATION = data.autoPlayDuration;
-  const newsItems = data.newsItems;
+  const SLIDE_DURATION = carouselData.autoPlayDuration;
 
   // Auto-play functionality
   useEffect(() => {
@@ -133,24 +145,39 @@ export function NewsCarousel({ data = DEFAULT_NEWS_CAROUSEL_DATA }: NewsCarousel
                   <div className="relative w-full h-full">
                     {(() => {
                       const currentItem = newsItems[currentIndex];
-                      const defaultItem = DEFAULT_NEWS_CAROUSEL_DATA.newsItems.find(
+                      const defaultItem = FALLBACK_NEWS_CAROUSEL_DATA.newsItems.find(
                         defaultNews => defaultNews.title === currentItem.title
                       );
                       const fallbackImage = (typeof defaultItem?.image === 'string' ? defaultItem.image : null) || '/images/banners/I2LNew-banner.jpg';
 
-                      const imageProps = getImagePropsWithFallback(
-                        currentItem.image, 
-                        fallbackImage, 
-                        'hero', 
+                      // Use enhanced fallback utility with context
+                      const imageProps = getFallbackImageProps(
+                        currentItem.image,
+                        fallbackImage,
+                        'hero',
                         {
                           fill: true,
                           className: 'object-cover',
                           sizes: '100vw',
-                          priority: currentIndex === 0
+                          priority: currentIndex === 0,
+                          context: {
+                            type: 'news'
+                          }
                         }
                       );
 
-                      return <Image {...imageProps} alt={currentItem.title} />;
+                      // Create error handler for automatic fallback
+                      const handleImageError = createImageErrorHandler({
+                        type: 'news'
+                      });
+
+                      return (
+                        <Image
+                          {...imageProps}
+                          alt={currentItem.title}
+                          onError={handleImageError}
+                        />
+                      );
                     })()}
 
                     {/* Gradient overlay for text readability */}

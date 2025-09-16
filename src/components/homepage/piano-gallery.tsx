@@ -3,8 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { PianoGalleryProps, DEFAULT_PIANO_GALLERY_DATA, PianoCategory } from '@/lib/types/homepage';
+import { PianoGalleryProps, PianoCategory } from '@/lib/types/homepage';
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils';
+import {
+  withFallback,
+  FALLBACK_PIANO_GALLERY_DATA
+} from '@/lib/fallbacks';
+import {
+  getImagePropsWithFallback as getFallbackImageProps,
+  createImageErrorHandler
+} from '@/lib/fallbacks/media';
 
 
 interface PianoSectionProps {
@@ -99,26 +107,37 @@ function PianoSection({ piano, index }: PianoSectionProps) {
             }`}>
               {(() => {
                 // Find the corresponding default piano category for fallback image
-                const defaultPiano = DEFAULT_PIANO_GALLERY_DATA.pianoCategories.find(
+                const defaultPiano = FALLBACK_PIANO_GALLERY_DATA.pianoCategories.find(
                   defaultCategory => defaultCategory.model === piano.model
                 );
                 const fallbackImage = (typeof defaultPiano?.image === 'string' ? defaultPiano.image : null) || '/images/piano-categories/grand.jpg';
 
-                // Use the utility function to get image props
-                const imageProps = getImagePropsWithFallback(
-                  piano.image, 
-                  fallbackImage, 
-                  'gallery', 
+                // Use the enhanced fallback utility with context
+                const imageProps = getFallbackImageProps(
+                  piano.image,
+                  fallbackImage,
+                  'gallery',
                   {
                     className: 'w-full h-auto object-cover',
-                    sizes: '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw'
+                    sizes: '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw',
+                    context: {
+                      category: piano.model.toLowerCase() as 'grand' | 'upright' | 'digital' | 'hybrid',
+                      type: 'product'
+                    }
                   }
                 );
+
+                // Create error handler for automatic fallback
+                const handleImageError = createImageErrorHandler({
+                  category: piano.model.toLowerCase() as 'grand' | 'upright' | 'digital' | 'hybrid',
+                  type: 'product'
+                });
 
                 return (
                   <Image
                     {...imageProps}
                     alt={piano.title}
+                    onError={handleImageError}
                   />
                 );
               })()}
@@ -130,7 +149,9 @@ function PianoSection({ piano, index }: PianoSectionProps) {
   );
 }
 
-export function PianoGallery({ data = DEFAULT_PIANO_GALLERY_DATA }: PianoGalleryProps) {
+export function PianoGallery({ data }: PianoGalleryProps) {
+  // Use comprehensive fallback system
+  const galleryData = withFallback(data, FALLBACK_PIANO_GALLERY_DATA);
   const [isHeroVisible, setIsHeroVisible] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
 
@@ -161,20 +182,20 @@ export function PianoGallery({ data = DEFAULT_PIANO_GALLERY_DATA }: PianoGallery
               ? 'opacity-100 translate-y-0' 
               : 'opacity-0 translate-y-8'
           }`}>
-            {data.galleryTitle}
+            {galleryData.galleryTitle}
           </h1>
           <p className={`text-xl md:text-2xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto transition-all duration-700 ease-out delay-200 ${
-            isHeroVisible 
-              ? 'opacity-100 translate-y-0' 
+            isHeroVisible
+              ? 'opacity-100 translate-y-0'
               : 'opacity-0 translate-y-8'
           }`}>
-            {data.galleryDescription}
+            {galleryData.galleryDescription}
           </p>
         </div>
       </section>
 
       {/* Piano Models */}
-      {data.pianoCategories.map((piano, index) => (
+      {galleryData.pianoCategories.map((piano, index) => (
         <PianoSection key={piano.model} piano={piano} index={index} />
       ))}
     </div>

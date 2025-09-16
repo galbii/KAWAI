@@ -7,7 +7,7 @@ import {
 } from "@/components/homepage";
 import { HomeHero } from "@/components/homepage/HomeHero";
 import EmailCapturePopup from "@/components/ui/EmailCapturePopup";
-import { getHomePageData } from "@/lib/payload";
+import { getHomePageDataDirect } from "@/lib/payload-direct";
 import type { HomePageData } from "@/lib/types/homepage";
 import { Suspense } from "react";
 
@@ -114,7 +114,7 @@ async function HomePageContent() {
   let error: string | null = null;
 
   try {
-    homePageData = await getHomePageData();
+    homePageData = await getHomePageDataDirect();
   } catch (err) {
     error = err instanceof Error ? err.message : 'Failed to load homepage data';
     console.error('Homepage data fetch error:', error);

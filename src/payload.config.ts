@@ -37,6 +37,7 @@ import {
 import { productlinesSeedPlugin } from './plugins/productlines-seed'
 import { pianoModelsSeedPlugin } from './plugins/piano-models-seed'
 import { pianosPageSeedPlugin } from './plugins/pianos-page-seed'
+// import DealerLocationsSeedPlugin from './plugins/dealer-locations-seed' // Temporarily disabled
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -94,6 +95,7 @@ export default buildConfig({
     productlinesSeedPlugin(),
     pianoModelsSeedPlugin(),
     pianosPageSeedPlugin(),
+    // DealerLocationsSeedPlugin, // Temporarily disabled due to TypeScript errors
     // storage-adapter-placeholder
     s3Storage({
       collections: {

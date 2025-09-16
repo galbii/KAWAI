@@ -179,17 +179,9 @@ export async function generateMetadata({ params }: SignaturePageProps): Promise<
   }
 }
 
-// Generate static params for known signature pages (optional)
-export async function generateStaticParams() {
-  // This would typically fetch from your CMS to get all active signature pages
-  // For now, return some common signature page slugs
-  return [
-    { slug: 'dallas-signature' },
-    { slug: 'exclusive-collection' },
-    { slug: 'heritage-series' },
-    { slug: 'artist-collection' },
-  ].map(({ slug }) => ({ slug }))
-}
+// Removed generateStaticParams to fix potential build issues
+// All signature pages will be dynamically generated at runtime
+// This allows for full flexibility in CMS-driven signature page management
 
 export default async function SignaturePage({ params }: SignaturePageProps) {
   const { slug } = await params

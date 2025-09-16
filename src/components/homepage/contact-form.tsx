@@ -4,7 +4,11 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ContactFormProps, DEFAULT_CONTACT_FORM_DATA } from '@/lib/types/homepage';
+import { ContactFormProps } from '@/lib/types/homepage';
+import {
+  withFallback,
+  FALLBACK_CONTACT_FORM_DATA
+} from '@/lib/fallbacks';
 
 // Create dynamic form validation schema based on data
 const createFormSchema = (formOptions: any) => z.object({
@@ -41,11 +45,14 @@ type FormData = {
 
 
 
-export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormProps) {
+export function ContactForm({ data }: ContactFormProps) {
+  // Use comprehensive fallback system
+  const formData = withFallback(data, FALLBACK_CONTACT_FORM_DATA);
+
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const formSchema = createFormSchema(data.formOptions);
+  const formSchema = createFormSchema(formData.formOptions);
 
   const {
     register,
@@ -153,10 +160,10 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
         {/* Header with better mobile typography */}
         <div className="text-center mb-8 sm:mb-12">
           <h2 className="text-3xl sm:text-5xl md:text-6xl font-light font-serif text-kawai-black mb-4 sm:mb-6 px-4 sm:px-0">
-            {data.contactTitle} <span className="text-kawai-red">{data.contactTitleHighlight}</span>
+            {formData.contactTitle} <span className="text-kawai-red">{formData.contactTitleHighlight}</span>
           </h2>
           <p className="text-lg sm:text-xl text-kawai-black/70 max-w-2xl mx-auto px-4 sm:px-0">
-            {data.contactDescription}
+            {formData.contactDescription}
           </p>
         </div>
 
@@ -193,7 +200,7 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
         {/* Form with better mobile padding */}
         <div className="bg-white rounded-lg shadow-xl p-6 sm:p-8 md:p-12 mx-4 sm:mx-0">
           <h3 className="text-xl sm:text-2xl font-serif text-kawai-black mb-6 sm:mb-8 text-center">
-            {data.stepTitles[currentStep - 1]?.step || `Step ${currentStep}`}
+            {formData.stepTitles[currentStep - 1]?.step || `Step ${currentStep}`}
           </h3>
 
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -205,7 +212,7 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
                     What's your piano experience level?
                   </label>
                   <div className="grid gap-3">
-                    {data.formOptions.experienceLevels.map((level, index) => (
+                    {formData.formOptions.experienceLevels.map((level, index) => (
                       <label key={level.level} className="flex items-center p-3 sm:p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer touch-manipulation min-h-[44px]">
                         <input
                           type="radio"
@@ -238,7 +245,7 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
                     What type of piano interests you most?
                   </label>
                   <div className="grid gap-3">
-                    {data.formOptions.pianoTypes.map((type) => (
+                    {formData.formOptions.pianoTypes.map((type) => (
                       <label key={type.type} className="flex items-center p-3 sm:p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer touch-manipulation min-h-[44px]">
                         <input
                           type="radio"
@@ -271,7 +278,7 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
                     What will be the primary use for your piano?
                   </label>
                   <div className="grid gap-3">
-                    {data.formOptions.primaryUses.map((use) => (
+                    {formData.formOptions.primaryUses.map((use) => (
                       <label key={use.use} className="flex items-center p-3 sm:p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer touch-manipulation min-h-[44px]">
                         <input
                           type="radio"
@@ -310,7 +317,7 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
                     What's your budget range?
                   </label>
                   <div className="grid gap-3">
-                    {data.formOptions.budgetRanges.map((budget) => (
+                    {formData.formOptions.budgetRanges.map((budget) => (
                       <label key={budget.range} className="flex items-center p-3 sm:p-4 border border-kawai-black/20 rounded-md hover:border-kawai-red transition-colors cursor-pointer touch-manipulation min-h-[44px]">
                         <input
                           type="radio"
@@ -409,7 +416,7 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
                 <div className="bg-kawai-pearl/50 p-6 rounded-md">
                   <h4 className="font-medium text-kawai-black mb-2">What you'll receive:</h4>
                   <ul className="space-y-2 text-sm text-kawai-black/70">
-                    {data.benefits.map((benefit, index) => (
+                    {formData.benefits.map((benefit, index) => (
                       <li key={index} className="flex items-center">
                         <svg className="w-4 h-4 text-kawai-red mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -470,7 +477,7 @@ export function ContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: ContactFormPro
         {/* Trust Elements */}
         <div className="mt-12 text-center">
           <p className="text-sm text-kawai-black/60 mb-4">
-            {data.trustMessage}
+            {formData.trustMessage}
           </p>
           <div className="flex justify-center items-center space-x-8 opacity-60">
             <div className="text-xs text-kawai-black/40">Lake St. Louis Showroom</div>

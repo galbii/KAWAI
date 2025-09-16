@@ -21,6 +21,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianostlouis.com'),
   title: "Piano Sales Dallas | KAWAI Piano Deals & Used Pianos | UTD Event Sept 2025",
   description: "Dallas piano sales event featuring KAWAI digital & acoustic pianos. Save up to $6,000 on new & used pianos. Piano deals Dallas - UTD partnership Sept 18-21, 2025. Free delivery!",
   icons: {

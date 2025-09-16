@@ -6,6 +6,7 @@ import { parseNavigationOrigin } from "@/lib/navigation-utils";
 import { headers } from 'next/headers';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianostlouis.com'),
   title: "Kawai Piano Gallery St. Louis | Premier Piano Gallery Lake St. Louis, MO",
   description: "St. Louis's premier Kawai Piano Gallery in Lake St. Louis, MO. Shop Shigeru Kawai grand pianos, digital pianos, and hybrids. Expert piano consultation, services, and guidance. Serving Missouri piano families since 1927. Piano Gallery near me.",
   keywords: "Piano Gallery St. Louis, Kawai Piano Gallery St. Louis, piano gallery Lake St. Louis MO, Piano Gallery near me, piano gallery Missouri, Kawai pianos St. Louis, Piano Gallery Lake St. Louis, Shigeru Kawai St. Louis, piano showroom Missouri, piano gallery Lake St. Louis, digital pianos St. Louis, acoustic pianos Missouri, piano consultation St. Louis, piano services Missouri",

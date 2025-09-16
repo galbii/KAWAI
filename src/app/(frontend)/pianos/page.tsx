@@ -1,113 +1,44 @@
-'use client'
+// Converted to server component for direct Payload queries
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { ErrorBoundary, PianoSectionErrorFallback } from '@/components/ui/error-boundary'
-import { PianoLoadingSkeleton, LoadingState } from '@/components/ui/loading-states'
-import { getPianosPageData } from '@/lib/payload'
+import { getPianosPageDataDirect } from '@/lib/payload-direct'
 import { PianoPageHero } from '@/components/piano/PianoPageHero'
 import { FeaturedModelsGrid } from '@/components/piano/FeaturedModelsGrid'
 import { PianoCategorySection } from '@/components/piano/PianoCategorySection'
 import { ScrollAnimatedSection } from '@/components/ui/animations/ScrollAnimatedSection'
+import {
+  withFallback,
+  getPianoPageDataWithFallbacks,
+  FALLBACK_PIANO_PAGE_DATA
+} from '@/lib/fallbacks'
 
 // Import types from components
 import type { LegacyPianoCategory } from '@/components/piano/PianoCategorySection'
 import type { LegacyFeaturedModel } from '@/components/piano/FeaturedModelsGrid'
 
-// API fetch functions with error handling
-async function fetchPianoCategories(): Promise<LegacyPianoCategory[]> {
-  const response = await fetch('/api/piano-categories', {
-    cache: 'force-cache',
-    next: { revalidate: 300 }
-  })
-  
-  if (!response.ok) {
-    throw new Error(`Failed to fetch piano categories: ${response.status}`)
-  }
-  
-  const result = await response.json()
-  
-  if (!result.success) {
-    throw new Error(result.message || 'Failed to fetch piano categories')
-  }
-  
-  return result.data
-}
-
-async function fetchFeaturedModels(): Promise<LegacyFeaturedModel[]> {
-  const response = await fetch('/api/featured-models', {
-    cache: 'force-cache',
-    next: { revalidate: 300 }
-  })
-  
-  if (!response.ok) {
-    throw new Error(`Failed to fetch featured models: ${response.status}`)
-  }
-  
-  const result = await response.json()
-  
-  if (!result.success) {
-    throw new Error(result.message || 'Failed to fetch featured models')
-  }
-  
-  return result.data
-}
+// Removed API fetch functions - now using direct Payload queries
 
 
 
 
 
 
-// Main Piano Page Component
-export default function PianosPageCMS() {
-  const [pageData, setPageData] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+// Main Piano Page Component - Server Component using direct Payload queries
+export default async function PianosPageCMS() {
+  // Use direct Payload query with comprehensive fallback handling
+  let cmsData = null
 
-  // Load data on component mount
-  useEffect(() => {
-    async function loadData() {
-      try {
-        console.log('[COMPONENT] Starting to load piano page data')
-        setLoading(true)
-        setError(null)
-
-        // Use the new getPianosPageData function instead of separate API calls
-        const data = await getPianosPageData()
-        console.log('[COMPONENT] Received data:', { hasData: !!data, dataKeys: data ? Object.keys(data) : [] })
-        setPageData(data)
-      } catch (err) {
-        console.error('[COMPONENT] Error loading piano page data:', err)
-        setError(err instanceof Error ? err.message : 'Failed to load piano data')
-      } finally {
-        console.log('[COMPONENT] Setting loading to false')
-        setLoading(false)
-      }
-    }
-
-    loadData()
-  }, [])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen">
-        <PianoLoadingSkeleton />
-      </div>
-    )
+  try {
+    cmsData = await getPianosPageDataDirect()
+  } catch (error) {
+    console.warn('Failed to fetch CMS piano page data, using fallbacks:', error)
   }
 
-  if (error || !pageData) {
-    return (
-      <div className="min-h-screen">
-        <LoadingState 
-          message={`Error: ${error || 'Failed to load data'}`}
-          showSpinner={false}
-          className="min-h-[50vh]"
-        />
-      </div>
-    )
-  }
+  // Always use fallback system - ensures page works with or without CMS data
+  const pageData = getPianoPageDataWithFallbacks(cmsData)
 
   return (
     <div className="min-h-screen">

@@ -150,27 +150,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 }
 
-// Generate static paths for all active dealer locations
-export async function generateStaticParams() {
-  try {
-    // Fetch all active dealer locations for static generation
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/dealer-locations/active-slugs`);
-    
-    if (!response.ok) {
-      console.warn('Failed to fetch dealer location slugs for static generation');
-      return [];
-    }
-    
-    const { slugs } = await response.json();
-    
-    return slugs.map((slug: string) => ({
-      slug: slug,
-    }));
-  } catch (error) {
-    console.error('Error generating static params for dealer location contacts:', error);
-    return [];
-  }
-}
+// Removed generateStaticParams to fix ECONNREFUSED errors during build
+// All dealer location contact pages will be dynamically generated at runtime
+// This is appropriate for a CMS-driven site where dealer locations may change frequently
 
 export const dynamicParams = true; // Allow dynamic rendering for unknown slugs
 
