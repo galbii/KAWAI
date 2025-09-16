@@ -1,9 +1,9 @@
 'use client'
 
 import { useReportWebVitals } from 'next/web-vitals'
-import { trackWebVitals } from './lib/analytics'
 
 export function WebVitals() {
+
   useReportWebVitals((metric) => {
     // Determine rating based on thresholds
     const getMetricRating = (name: string, value: number): 'good' | 'needs-improvement' | 'poor' => {
@@ -27,16 +27,13 @@ export function WebVitals() {
     // Handle Core Web Vitals
     if (['LCP', 'FID', 'CLS', 'INP', 'TTFB', 'FCP'].includes(metric.name)) {
       const rating = getMetricRating(metric.name, metric.value)
-      trackWebVitals.coreVital(metric.name, metric.value, rating, metric.id)
+
+      // Web vitals tracking removed
     }
 
     // Handle Next.js specific metrics
     if (metric.name.startsWith('Next.js-')) {
-      trackWebVitals.nextjsMetric(
-        metric.name, 
-        metric.value, 
-        (metric as { navigationType?: string }).navigationType || 'unknown'
-      )
+      // Next.js metrics tracking removed
     }
 
     // Log in development for debugging

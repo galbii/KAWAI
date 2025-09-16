@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Calendar, X } from 'lucide-react';
 import PianoConsultationDialog from './PianoConsultationDialog';
-import { trackKawaiEvent } from './lib/analytics';
 
 interface TimeLeft {
   days: number;
@@ -93,9 +92,6 @@ export function CountdownTimer() {
   }, [mounted]);
 
   const handleBookNowClick = () => {
-    // Track the analytics event
-    trackKawaiEvent.secureSpot('countdown-timer');
-    
     // Open the piano consultation dialog
     setIsModalOpen(true);
   };
@@ -103,14 +99,10 @@ export function CountdownTimer() {
   const handleMinimize = () => {
     setIsMinimized(true);
     setHasBeenDismissed(true);
-    // Track minimize action
-    trackKawaiEvent.secureSpot('countdown-timer-minimize');
   };
 
   const handleExpand = () => {
     setIsMinimized(false);
-    // Track expand action
-    trackKawaiEvent.secureSpot('countdown-timer-expand');
   };
 
   if (!mounted) {

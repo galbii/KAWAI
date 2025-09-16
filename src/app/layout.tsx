@@ -1,6 +1,9 @@
 import type { Viewport } from "next";
 import { Inter, Crimson_Text } from "next/font/google";
 import { GoogleAnalytics } from '@next/third-parties/google';
+import { Suspense } from 'react';
+import { PHProvider } from './providers'
+import PageViewTracker from '../components/PageViewTracker'
 import "./globals.css";
 
 // Primary font for body text and UI elements
@@ -34,7 +37,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${inter.variable} ${crimsonText.variable} antialiased bg-white text-gray-900`}>
-        {children}
+        <PHProvider>
+          <Suspense fallback={null}>
+            <PageViewTracker />
+          </Suspense>
+          {children}
+        </PHProvider>
         {process.env.NEXT_PUBLIC_GA_ID && (
           <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
         )}

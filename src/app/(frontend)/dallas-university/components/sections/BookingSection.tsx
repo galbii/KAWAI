@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 // import { LoadingSkeleton } from '../ui/loading-skeleton';
-import { initializeCalendlyTracking, cleanupCalendlyTracking } from '../lib/calendly-tracking';
-import '../lib/calendly-debug'; // Load debug utilities
+// Calendly tracking imports removed
+// Calendly debug utilities removed
 import '../types/calendly';
 
 export default function BookingSection() {
@@ -23,7 +23,7 @@ export default function BookingSection() {
     console.log('Container ref available:', !!containerElement);
 
     // Initialize tracking first
-    initializeCalendlyTracking('booking_section');
+    // Calendly tracking initialization removed
     
     // Add error handlers for common issues
     const originalError = console.error;
@@ -193,7 +193,7 @@ export default function BookingSection() {
 
     return () => {
       // Clean up tracking
-      cleanupCalendlyTracking();
+      // Calendly cleanup removed
       
       // Safe DOM cleanup on unmount - use captured ref value
       if (containerElement) {

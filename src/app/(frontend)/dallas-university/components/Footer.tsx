@@ -5,7 +5,6 @@ import Image from 'next/image'
 import { Phone, Mail, MapPin, Facebook, Instagram, Youtube, Twitter } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Button } from './ui/button'
-import { trackKawaiEvent } from './lib/analytics'
 
 
 const socialLinks = [
@@ -60,7 +59,7 @@ export function Footer() {
             <form 
               onSubmit={(e) => {
                 e.preventDefault();
-                trackKawaiEvent.subscribeNewsletter('footer');
+                // Newsletter subscription tracking removed
                 // Handle actual form submission here
               }}
               className="flex space-x-2"
@@ -87,7 +86,7 @@ export function Footer() {
                 <Phone className="h-5 w-5 text-kawai-red" />
                 <a 
                   href="tel:9726452514"
-                  onClick={() => trackKawaiEvent.callPhone('footer')}
+                  onClick={() => {}}
                   className="hover:text-kawai-red transition-colors cursor-pointer"
                 >
                   (972) 645-2514
@@ -97,7 +96,7 @@ export function Footer() {
                 <Mail className="h-5 w-5 text-kawai-red" />
                 <a 
                   href="mailto:info@kawaipianosdallas.com"
-                  onClick={() => trackKawaiEvent.emailContact('footer')}
+                  onClick={() => {}}
                   className="hover:text-kawai-red transition-colors cursor-pointer"
                 >
                   info@kawaipianosdallas.com

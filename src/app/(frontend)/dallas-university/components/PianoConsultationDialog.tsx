@@ -6,9 +6,7 @@ import {
   DialogContent,
   DialogTitle,
 } from './ui/dialog';
-import { initializeCalendlyTracking, cleanupCalendlyTracking } from './lib/calendly-tracking';
-import { usePostHog } from './hooks/usePostHog';
-import './lib/calendly-debug'; // Load debug utilities
+// PostHog import removed
 import './types/calendly';
 
 interface PianoConsultationDialogProps {
@@ -17,14 +15,14 @@ interface PianoConsultationDialogProps {
 }
 
 export default function PianoConsultationDialog({ isOpen, onClose }: PianoConsultationDialogProps) {
-  const { trackBookingAttempt } = usePostHog();
+  // PostHog tracking removed
   const calendlyContainerRef = useRef<HTMLDivElement>(null);
   
   const initializeFallbackWidget = useCallback(() => {
     console.log('🔄 Initializing fallback Calendly widget...');
     
     // Initialize tracking
-    initializeCalendlyTracking('modal');
+    // Calendly tracking removed
     
     let attempts = 0;
     const maxAttempts = 100; // 10 seconds timeout (100 * 100ms)
@@ -125,16 +123,12 @@ export default function PianoConsultationDialog({ isOpen, onClose }: PianoConsul
     }
     
     // Clean up tracking
-    cleanupCalendlyTracking();
+    // Calendly cleanup removed
   }, []);
 
   useEffect(() => {
     if (isOpen) {
-      // PostHog: Track consultation modal opened
-      trackBookingAttempt({
-        bookingSource: 'modal',
-        calendlyStatus: 'opened'
-      });
+      // Modal opened tracking removed for basic setup
 
       // Use the preloaded widget instead of initializing a new one
       console.log('🚀 Using preloaded Calendly widget for instant display');
@@ -143,18 +137,13 @@ export default function PianoConsultationDialog({ isOpen, onClose }: PianoConsul
 
     return () => {
       if (isOpen) {
-        // PostHog: Track consultation modal closed/abandoned
-        trackBookingAttempt({
-          bookingSource: 'modal',
-          calendlyStatus: 'abandoned',
-          abandonmentStage: 'modal_close'
-        });
+        // Modal abandoned tracking removed for basic setup
 
         // Return the widget to the preloader when modal closes
         returnWidgetToPreloader();
       }
     };
-  }, [isOpen, trackBookingAttempt, movePreloadedWidget, returnWidgetToPreloader]);
+  }, [isOpen, movePreloadedWidget, returnWidgetToPreloader]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

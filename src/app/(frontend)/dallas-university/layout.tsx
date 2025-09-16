@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { WebVitals } from "./components/WebVitals";
-import { PostHogProvider } from "./components/PostHogProvider";
-import PostHogDebugDashboard from "./components/PostHogDebugDashboard";
+// PostHog provider import removed
+// PostHog debug dashboard import removed
 // Removed CalendlyPreloader - using inline widget in BookingSection instead
 import Script from "next/script";
 import "./globals.css";
@@ -102,10 +102,7 @@ fbq('track', 'PageView');`}
       </noscript>
 
       <div className={`${playfairDisplay.variable} ${inter.variable} antialiased overflow-x-hidden`}>
-        <PostHogProvider>
-          {children}
-        </PostHogProvider>
-        <PostHogDebugDashboard />
+        {children}
         <WebVitals />
         
         {/* Calendly JavaScript Preloading */}

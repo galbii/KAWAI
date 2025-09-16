@@ -3,7 +3,6 @@ import { useState } from 'react';
 import type { MouseEvent } from 'react';
 import PianoConsultationDialog from '../PianoConsultationDialog';
 import HoustonEventInfoDialog from '../HoustonEventInfoDialog';
-import { trackKawaiEvent } from '../lib/analytics';
 
 export default function HeroSection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -12,7 +11,7 @@ export default function HeroSection() {
   const handleExploreCollectionClick = () => {
     console.log('Explore Collection clicked');
     // Track the analytics event
-    trackKawaiEvent.findPiano('hero');
+    // Analytics tracking removed
     
     // Try multiple selectors to find the piano deals section
     let featuredDealsSection = document.getElementById('featured-deals');
@@ -36,7 +35,7 @@ export default function HeroSection() {
     e.stopPropagation();
     console.log('Reserve Appointment clicked');
     // Track the analytics event
-    trackKawaiEvent.secureSpot('hero');
+    // Analytics tracking removed
     
     // Open the piano consultation dialog
     setIsModalOpen(true);

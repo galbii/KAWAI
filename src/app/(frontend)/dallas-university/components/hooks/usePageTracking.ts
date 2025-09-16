@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useCallback } from 'react'
-import { trackPageEvent } from '../lib/analytics'
+// Analytics import removed
 
 interface UsePageTrackingOptions {
   pageName?: string
@@ -92,9 +92,7 @@ export function usePageTracking(options: UsePageTrackingOptions = {}) {
         scrollMilestonesRef.current.add(threshold)
         
         // Check if scrollDepth function is enabled
-        if (trackPageEvent.scrollDepth) {
-          trackPageEvent.scrollDepth(threshold, pageName)
-        }
+        // Scroll depth tracking removed
       }
     })
 
@@ -111,11 +109,7 @@ export function usePageTracking(options: UsePageTrackingOptions = {}) {
       updateEngagementTime()
       const totalTime = activeTimeRef.current / 1000
       
-      trackPageEvent.exitIntent(
-        totalTime,
-        maxScrollDepthRef.current,
-        interactionCountRef.current
-      )
+      // Exit intent tracking removed
     }
   }, [enableExitIntent, updateEngagementTime])
 
@@ -128,25 +122,9 @@ export function usePageTracking(options: UsePageTrackingOptions = {}) {
     
     if (totalTime > 0) {
       // Check if engagementTime function is enabled
-      if (trackPageEvent.engagementTime) {
-        trackPageEvent.engagementTime(totalTime, pageName)
-      }
+      // Engagement time tracking removed
       
-      // Check if sessionQuality function is enabled
-      if (trackPageEvent.sessionQuality) {
-        // Calculate session quality score (0-100)
-        const timeScore = Math.min(totalTime / 60, 1) * 40 // Up to 40 points for time
-        const scrollScore = Math.min(maxScrollDepthRef.current, 100) * 0.3 // Up to 30 points for scroll
-        const interactionScore = Math.min(interactionCountRef.current * 5, 30) // Up to 30 points for interactions
-        
-        const qualityScore = Math.round(timeScore + scrollScore + interactionScore)
-        
-        trackPageEvent.sessionQuality(
-          qualityScore,
-          interactionCountRef.current,
-          totalTime
-        )
-      }
+      // Session quality tracking removed
     }
   }, [enableTimeTracking, updateEngagementTime, pageName])
 
@@ -229,7 +207,7 @@ export function usePageTracking(options: UsePageTrackingOptions = {}) {
     trackContentInteraction: (contentType: string, elementId?: string) => {
       trackInteraction()
       const timeToInteraction = (Date.now() - startTimeRef.current) / 1000
-      trackPageEvent.contentInteraction(contentType, elementId, timeToInteraction)
+      // Content interaction tracking removed
     },
     getCurrentEngagementTime: () => {
       updateEngagementTime()

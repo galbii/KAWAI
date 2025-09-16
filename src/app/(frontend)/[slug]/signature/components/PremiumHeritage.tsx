@@ -130,9 +130,9 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
   const achievements: HeritageAchievement[] = [
     {
       number: 100,
-      suffix: '+',
+      suffix: '',
       label: 'Years of Heritage',
-      description: 'Century of advancement, knowledge and craftsmanship'
+      description: '100 years of advancement, knowledge and craftsmanship'
     },
     {
       number: 400,
@@ -177,31 +177,31 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
 
   const masterArtisans: MasterArtisan[] = [
     {
-      name: 'Hiroshi Tanaka',
-      nameJapanese: '田中博志',
+      name: 'Naoto "Nick" Ichikawa',
+      nameJapanese: '市川直人',
       title: 'Master Artisan',
-      experience: 35,
-      signature: '田中',
-      specialty: 'Soundboard Crafting',
-      image: '/images/signature/artisan-tanaka.webp'
+      experience: 30,
+      signature: '市川',
+      specialty: 'Described as being "at the very height of his profession" with depth of experience, refined talents, and passion for his craft',
+      image: '/images/signature/artisan-ichikawa.webp'
     },
     {
-      name: 'Akiko Yamamoto',
-      nameJapanese: '山本明子',
-      title: 'Master Artisan',
-      experience: 28,
-      signature: '山本',
-      specialty: 'Action Regulation',
-      image: '/images/signature/artisan-yamamoto.webp'
+      name: 'Tatsuya Murakami',
+      nameJapanese: '村上達也',
+      title: 'Master Artisan & Opera Tenor',
+      experience: 25,
+      signature: '村上',
+      specialty: 'An eminently talented piano craftsman who has traveled extensively supporting Shigeru Kawai piano owners and international piano competitions. Professional opera tenor performing 20+ times yearly',
+      image: '/images/signature/artisan-murakami.webp'
     },
     {
-      name: 'Kenji Sato',
-      nameJapanese: '佐藤健志',
-      title: 'Master Artisan',
-      experience: 42,
-      signature: '佐藤',
-      specialty: 'Tonal Voicing',
-      image: '/images/signature/artisan-sato.webp'
+      name: 'Kazuo Goka',
+      nameJapanese: '五嘉和夫',
+      title: 'Senior Master Piano Artisan',
+      experience: 40,
+      signature: '五嘉',
+      specialty: 'Professional cellist and piano craftsman. Author of Kawai\'s grand piano regulation manual as supervisor of the Piano Laboratory',
+      image: '/images/signature/artisan-goka.webp'
     }
   ]
 
@@ -268,7 +268,7 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
               size="lg"
               onClick={handleAssessmentClick}
             >
-              Begin Piano Assessment
+              Reserve Your Spot
             </PremiumButton>
             <PremiumButton
               variant="secondary"
@@ -311,47 +311,6 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
           ))}
         </motion.div>
 
-        {/* Heritage Timeline */}
-        <motion.div
-          className="max-w-6xl mx-auto mb-20"
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          viewport={{ once: true }}
-        >
-          <div className="text-center mb-12">
-            <h3 className="text-3xl md:text-4xl font-light text-kawai-pearl mb-4">
-              Century of <span className="text-kawai-gold">Heritage</span>
-            </h3>
-            <p className="text-kawai-pearl/70 font-light max-w-2xl mx-auto">
-              From humble workshop beginnings to world-renowned concert halls,
-              our legacy of excellence spans generations of devoted craftsmanship.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {milestones.map((milestone, index) => (
-              <motion.div
-                key={milestone.year}
-                className="relative p-6 rounded-lg border border-kawai-gold/20 bg-gradient-to-br from-kawai-black/30 to-transparent backdrop-blur-sm group hover:border-kawai-gold/40 transition-all duration-500"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                whileHover={{ y: -4 }}
-              >
-                <div className="text-3xl mb-4">{milestone.icon}</div>
-                <div className="text-kawai-gold text-sm font-light tracking-wider mb-2">{milestone.year}</div>
-                <h4 className="text-kawai-pearl text-lg font-medium mb-3 group-hover:text-kawai-gold transition-colors duration-300">
-                  {milestone.title}
-                </h4>
-                <p className="text-kawai-pearl/70 text-sm font-light leading-relaxed">
-                  {milestone.description}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
 
         {/* Master Artisans Section */}
         <motion.div
@@ -441,7 +400,7 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
                 onClick={handleAssessmentClick}
                 className="min-w-[240px]"
               >
-                Begin Piano Assessment
+                Reserve Your Spot
               </PremiumButton>
               <PremiumButton
                 variant="secondary"

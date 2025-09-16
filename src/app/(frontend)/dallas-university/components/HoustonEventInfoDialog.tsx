@@ -8,7 +8,6 @@ import {
   DialogTitle,
 } from './ui/dialog';
 import { Button } from './ui/button';
-import { trackKawaiEvent } from './lib/analytics';
 
 interface HoustonEventInfoDialogProps {
   isOpen: boolean;
@@ -32,12 +31,7 @@ export default function HoustonEventInfoDialog({ isOpen, onClose }: HoustonEvent
     setIsSubmitting(true);
 
     try {
-      // Track event info request
-      trackKawaiEvent.requestEventInfo({
-        source: 'hero_secondary_cta',
-        houstonArea: formData.dallasArea,
-        pianoInterest: formData.pianoInterest
-      });
+      // Track event info request - removed
 
       // Simulate form submission (replace with your actual form handler)
       await new Promise(resolve => setTimeout(resolve, 1000));

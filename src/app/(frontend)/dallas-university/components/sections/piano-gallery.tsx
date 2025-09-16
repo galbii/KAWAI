@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import PianoConsultationDialog from '../PianoConsultationDialog';
 import { useIntersectionAnimation } from '../hooks/useIntersectionAnimation';
-import { usePostHog } from '../hooks/usePostHog';
+// PostHog import removed
 
 interface FeaturedPiano {
   id: string;
@@ -86,7 +86,7 @@ function PianoSection({ piano, index, hasTrackedAnyPiano }: PianoSectionProps) {
     threshold: 0.2,
     rootMargin: '0px 0px -100px 0px'
   });
-  const { trackPianoView } = usePostHog();
+  // PostHog tracking removed
   const activeTimer = useRef<NodeJS.Timeout | null>(null);
 
   const isEven = index % 2 === 0;
@@ -106,16 +106,7 @@ function PianoSection({ piano, index, hasTrackedAnyPiano }: PianoSectionProps) {
           // Mark as tracked FIRST to prevent duplicate calls
           hasTrackedAnyPiano.current = true;
           
-          trackPianoView({
-            model: piano.model,
-            price: `$${piano.salePrice}`,
-            category: piano.category.includes('Digital') ? 'Digital' : 
-                     piano.category.includes('Grand') ? 'Acoustic' : 
-                     piano.category.includes('Upright') ? 'Acoustic' : 'Digital',
-            timeSpent: 6,
-            sourceSection: 'featured_deals_gallery',
-            interactionType: 'view'
-          });
+          // Piano view tracking removed
         }
         activeTimer.current = null;
       }, 6000); // 6 seconds
@@ -127,7 +118,7 @@ function PianoSection({ piano, index, hasTrackedAnyPiano }: PianoSectionProps) {
         activeTimer.current = null;
       }
     };
-  }, [isVisible, piano.model, piano.salePrice, piano.category, trackPianoView, hasTrackedAnyPiano]);
+  }, [isVisible, piano.model, piano.salePrice, piano.category, hasTrackedAnyPiano]);
 
   return (
     <section 

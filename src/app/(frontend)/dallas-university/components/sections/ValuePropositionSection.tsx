@@ -1,5 +1,4 @@
 import { GraduationCap, Piano, Shield, Phone } from 'lucide-react';
-import { trackKawaiEvent } from '../lib/analytics';
 
 export default function ValuePropositionSection() {
   return (
@@ -86,7 +85,7 @@ export default function ValuePropositionSection() {
           </div>
           <a 
             href="tel:9726452514"
-            onClick={() => trackKawaiEvent.callPhone('value_proposition_section')}
+            onClick={() => {}}
             className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-6 sm:px-8 py-3 sm:py-4 border border-white/20 hover:bg-white/15 hover:scale-105 transition-all duration-300 transform"
           >
             <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-white" />

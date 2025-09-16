@@ -1,6 +1,6 @@
 'use client'
 
-import { getTrackingStatus } from './calendly-tracking'
+// Calendly tracking import removed
 
 // Debug utilities for Calendly tracking
 export const CalendlyDebug = {
@@ -11,15 +11,15 @@ export const CalendlyDebug = {
       return
     }
 
-    const status = getTrackingStatus()
+    const status = null // Tracking status removed
     console.group('🔍 Calendly Tracking Status')
-    console.log('Listener Active:', status?.isListenerActive)
-    console.log('Current Source:', status?.calendlySource)
-    console.log('Processed Appointments:', status?.processedAppointmentsCount)
-    console.log('PostHog Ready:', status?.posthogReady)
-    console.log('Attribution Data:', status?.attributionData)
+    console.log('Listener Active:', false)
+    console.log('Current Source:', null)
+    console.log('Processed Appointments:', 0)
+    console.log('PostHog Ready:', false)
+    console.log('Attribution Data:', null)
     console.groupEnd()
-    
+
     return status
   },
 

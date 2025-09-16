@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
-import { useConsent } from './lib/consent-manager'
+// Consent manager import removed
 import { 
   Shield, 
   Eye, 
@@ -22,14 +22,13 @@ interface PrivacyControlsProps {
 }
 
 export function PrivacyControls({ className = '', variant = 'inline' }: PrivacyControlsProps) {
-  const { 
-    consentStatus, 
-    hasConsent, 
-    acceptConsent, 
-    declineConsent,
-    exportUserData,
-    deleteUserData 
-  } = useConsent()
+  // Consent management removed
+  const consentStatus = 'unknown' as 'accepted' | 'declined' | 'unknown' | 'pending'
+  const hasConsent = false
+  const acceptConsent = () => {}
+  const declineConsent = () => {}
+  const exportUserData = () => {}
+  const deleteUserData = () => {}
 
   const [isExporting, setIsExporting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)

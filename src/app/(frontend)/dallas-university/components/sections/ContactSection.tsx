@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react';
-import { trackKawaiEvent } from '../lib/analytics';
 import PianoConsultationDialog from '../PianoConsultationDialog';
 
 export default function ContactSection() {
@@ -62,16 +61,14 @@ export default function ContactSection() {
                 <div>
                   <h4 className="font-semibold text-gray-dark mb-1">Phone & Email</h4>
                   <p className="text-gray-medium">
-                    <a 
-                      href="tel:9726452514" 
-                      onClick={() => trackKawaiEvent.callPhone('contact_section')}
+                    <a
+                      href="tel:9726452514"
                       className="hover:text-primary transition-colors"
                     >
                       (972) 645-2514
                     </a><br />
-                    <a 
-                      href="mailto:info@kawaipianosdallas.com" 
-                      onClick={() => trackKawaiEvent.emailContact('contact_section')}
+                    <a
+                      href="mailto:info@kawaipianosdallas.com"
                       className="hover:text-primary transition-colors"
                     >
                       info@kawaipianosdallas.com
@@ -98,17 +95,14 @@ export default function ContactSection() {
             </div>
             
             <div className="mt-8 space-y-3">
-              <button 
-                onClick={() => trackKawaiEvent.getDirections('contact_section')}
+              <button
+                onClick={() => window.open('https://maps.google.com/maps?q=601+W.+Plano+Parkway,+Suite+153,+Plano,+TX+75075', '_blank')}
                 className="w-full btn-primary text-white font-semibold py-3 px-6 rounded-xl shadow-lg"
               >
                 Get Directions
               </button>
-              <button 
-                onClick={() => {
-                  trackKawaiEvent.scheduleTour('contact_section');
-                  setIsModalOpen(true);
-                }}
+              <button
+                onClick={() => setIsModalOpen(true)}
                 className="w-full border-2 border-primary text-primary font-semibold py-3 px-6 rounded-xl hover:bg-primary hover:text-white transition-all duration-300"
               >
                 Schedule Private Tour
@@ -136,8 +130,8 @@ export default function ContactSection() {
                   </svg>
                   <h4 className="text-xl font-bold text-gray-dark mb-2">Interactive Map</h4>
                   <p className="text-gray-medium mb-6">Click to view detailed directions<br />and parking information</p>
-                  <button 
-                    onClick={() => trackKawaiEvent.getDirections('contact_map')}
+                  <button
+                    onClick={() => window.open('https://maps.google.com/maps?q=601+W.+Plano+Parkway,+Suite+153,+Plano,+TX+75075', '_blank')}
                     className="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-primary-dark transition-colors"
                   >
                     Open Map
