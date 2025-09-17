@@ -67,18 +67,26 @@ export const investmentRangeSchema = z.enum([
   'consultation-required'
 ] as const)
 
+export const exclusiveAccessSchema = z.enum([
+  'highly-interested',
+  'interested',
+  'somewhat-interested',
+  'prefer-standard'
+] as const)
+
 /**
  * Complete Assessment Response Schema
  * Validates all 7 questions together with optional metadata
  */
 export const assessmentResponseSchema = z.object({
   musicalIdentity: musicalIdentitySchema,
-  performanceAspirations: performanceAspirationsSchema,
-  acousticEnvironment: acousticEnvironmentSchema,
+  performanceAspirations: performanceAspirationsSchema.optional(),
+  acousticEnvironment: acousticEnvironmentSchema.optional(),
   investmentTimeline: investmentTimelineSchema,
-  aestheticPreference: aestheticPreferenceSchema,
-  collectionAccessLevel: collectionAccessLevelSchema,
-  investmentRange: investmentRangeSchema,
+  aestheticPreference: aestheticPreferenceSchema.optional(),
+  collectionAccessLevel: collectionAccessLevelSchema.optional(),
+  investmentRange: investmentRangeSchema.optional(),
+  exclusiveAccess: exclusiveAccessSchema.optional(),
   timestamp: z.date().optional(),
   sessionId: z.string().optional()
 })
@@ -95,7 +103,8 @@ export const questionStepSchema = z.object({
     'investmentTimeline',
     'aestheticPreference',
     'collectionAccessLevel',
-    'investmentRange'
+    'investmentRange',
+    'exclusiveAccess'
   ]),
   value: z.string().min(1, 'Please select an option'),
   isValid: z.boolean().optional()
@@ -186,6 +195,9 @@ export const validateQuestionResponse = (questionId: string, value: string): boo
         return true
       case 'investmentRange':
         investmentRangeSchema.parse(value)
+        return true
+      case 'exclusiveAccess':
+        exclusiveAccessSchema.parse(value)
         return true
       default:
         return false
@@ -589,7 +601,8 @@ export const questionSchemaMap = {
   investmentTimeline: investmentTimelineSchema,
   aestheticPreference: aestheticPreferenceSchema,
   collectionAccessLevel: collectionAccessLevelSchema,
-  investmentRange: investmentRangeSchema
+  investmentRange: investmentRangeSchema,
+  exclusiveAccess: exclusiveAccessSchema
 } as const
 
 /**

@@ -18,14 +18,14 @@ import type {
 // ============================
 
 /**
- * Musical Journey Personalization Questions
- * Complete set of 7 personalization questions for curated recommendations
+ * Invitation Request Questions
+ * Streamlined 3-question assessment that builds toward requesting an exclusive invitation
  */
 export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   {
     id: 'musicalIdentity',
-    title: 'Share your musical background with us',
-    description: 'Help us understand your musical journey so we can recommend the perfect instruments for you.',
+    title: 'Tell us about your musical background',
+    description: 'Understanding your musical journey helps us determine if our exclusive event is the right fit for you.',
     category: 'identity',
     order: 1,
     required: true,
@@ -33,7 +33,7 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
       {
         value: 'beginning',
         label: 'Starting My Musical Journey',
-        description: "I'm beginning my piano journey and want to start with quality instruments",
+        description: "I'm beginning my piano journey and want to start with exceptional instruments",
         icon: 'seedling',
         weight: 10
       },
@@ -54,155 +54,55 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
       {
         value: 'professional',
         label: 'Professional Musician',
-        description: "I'm a professional musician who needs concert-quality instruments",
+        description: "I'm a professional musician who appreciates concert-quality instruments",
         icon: 'award',
         weight: 40
       },
       {
         value: 'family-legacy',
         label: 'Family Music Tradition',
-        description: "I'm continuing or starting a family tradition of piano music",
+        description: "I'm continuing or starting a family tradition of piano excellence",
         icon: 'home',
         weight: 25
       }
     ]
   },
   {
-    id: 'performanceAspirations',
-    title: 'What inspires your music-making?',
-    description: 'Understanding your musical passions helps us recommend instruments that will enhance your artistic expression.',
-    category: 'aspirations',
+    id: 'investmentTimeline',
+    title: "When are you planning to welcome a piano into your life?",
+    description: 'Your timeline helps us prioritize invitations for our most relevant exclusive events.',
+    category: 'timeline',
     order: 2,
     required: true,
     options: [
       {
-        value: 'family-gatherings',
-        label: 'Intimate Performances',
-        description: 'Creating memorable moments for family and close friends',
-        icon: 'users',
-        weight: 15,
-        tags: ['social', 'intimate']
-      },
-      {
-        value: 'serious-practice',
-        label: 'Artistic Development',
-        description: 'Rigorous practice requiring concert-level instrument response',
-        icon: 'target',
-        weight: 35,
-        tags: ['practice', 'mastery']
-      },
-      {
-        value: 'entertaining',
-        label: 'Distinguished Hosting',
-        description: 'Elevated entertaining where only the finest instruments suffice',
-        icon: 'music',
-        weight: 20,
-        tags: ['social', 'prestige']
-      },
-      {
-        value: 'recording',
-        label: 'Professional Creation',
-        description: 'Recording and composition demanding exceptional tonal quality',
-        icon: 'microphone',
-        weight: 30,
-        tags: ['professional', 'artistic']
-      },
-      {
-        value: 'teaching',
-        label: 'Master Instruction',
-        description: 'Teaching students on instruments that inspire excellence',
-        icon: 'graduation-cap',
-        weight: 25,
-        tags: ['education', 'excellence']
-      }
-    ]
-  },
-  {
-    id: 'acousticEnvironment',
-    title: 'Tell us about your performance space',
-    description: 'Your room acoustics help us suggest instruments that will sound their absolute best in your environment.',
-    category: 'environment',
-    order: 3,
-    required: true,
-    options: [
-      {
-        value: 'cozy-living',
-        label: 'Intimate Chamber',
-        description: 'Private spaces designed for personal musical contemplation',
-        icon: 'home',
-        weight: 10,
-        tags: ['intimate', 'refined']
-      },
-      {
-        value: 'open-great-room',
-        label: 'Grand Performance Hall',
-        description: 'Spacious areas with soaring ceilings worthy of concert instruments',
-        icon: 'maximize',
-        weight: 30,
-        tags: ['grand', 'impressive']
-      },
-      {
-        value: 'dedicated-music',
-        label: 'Professional Studio',
-        description: 'Purpose-built music sanctuary for serious artistic pursuit',
-        icon: 'music',
-        weight: 35,
-        tags: ['dedicated', 'professional']
-      },
-      {
-        value: 'formal-entertaining',
-        label: 'Distinguished Salon',
-        description: 'Elegant entertaining spaces where fine art is appreciated',
-        icon: 'crown',
-        weight: 25,
-        tags: ['formal', 'distinguished']
-      },
-      {
-        value: 'multiple-spaces',
-        label: 'Versatile Venues',
-        description: 'Multiple refined spaces requiring adaptable excellence',
-        icon: 'shuffle',
-        weight: 15,
-        tags: ['versatile', 'adaptable']
-      }
-    ]
-  },
-  {
-    id: 'investmentTimeline',
-    title: "What's your timeline for finding your perfect instrument?",
-    description: 'Understanding your timeline helps us prioritize the most relevant recommendations and opportunities.',
-    category: 'timeline',
-    order: 4,
-    required: true,
-    options: [
-      {
         value: 'ready-30-days',
-        label: 'Immediate Commitment',
-        description: 'Ready to secure my heritage instrument within 30 days',
+        label: 'Ready Now',
+        description: 'I\'m ready to make this important decision and would welcome immediate access',
         icon: 'clock',
         weight: 40,
         tags: ['immediate', 'committed']
       },
       {
         value: 'exploring-2-6-months',
-        label: 'Active Evaluation',
-        description: 'Seriously evaluating premium options for near-term acquisition',
+        label: 'Actively Exploring (Next 3-6 Months)',
+        description: 'Seriously evaluating options and would benefit from exclusive access',
         icon: 'search',
         weight: 30,
         tags: ['active', 'evaluating']
       },
       {
         value: 'planning-this-year',
-        label: 'Strategic Planning',
-        description: 'Developing acquisition strategy for this exclusive opportunity',
+        label: 'Planning This Year',
+        description: 'Building toward a piano acquisition within the next 12 months',
         icon: 'calendar',
         weight: 20,
         tags: ['strategic', 'planned']
       },
       {
         value: 'beginning-research',
-        label: 'Initial Exploration',
-        description: 'Beginning to understand the world of premium instruments',
+        label: 'Future Consideration',
+        description: 'Exploring possibilities for future piano ownership',
         icon: 'book',
         weight: 10,
         tags: ['exploration', 'learning']
@@ -210,128 +110,44 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
     ]
   },
   {
-    id: 'aestheticPreference',
-    title: 'Which aesthetic style speaks to you?',
-    description: 'Your style preferences help us showcase instruments that will complement your personal taste and space.',
-    category: 'aesthetic',
-    order: 5,
-    required: true,
-    options: [
-      {
-        value: 'classic-ebony',
-        label: 'Heritage Ebony Mastery',
-        description: 'Timeless ebony finishes representing centuries of piano tradition',
-        icon: 'gem',
-        weight: 25,
-        tags: ['heritage', 'masterful', 'classic']
-      },
-      {
-        value: 'rich-mahogany',
-        label: 'Artisan Wood Craft',
-        description: 'Hand-selected premium woods showcasing master craftsmanship',
-        icon: 'tree',
-        weight: 20,
-        tags: ['artisan', 'premium', 'crafted']
-      },
-      {
-        value: 'contemporary-white',
-        label: 'Modern Elegance',
-        description: 'Contemporary finishes for discerning modern aesthetics',
-        icon: 'sun',
-        weight: 15,
-        tags: ['contemporary', 'sophisticated', 'refined']
-      },
-      {
-        value: 'experience-differences',
-        label: 'Connoisseur Evaluation',
-        description: 'I require seeing the full range of master craftsman options',
-        icon: 'eye',
-        weight: 30,
-        tags: ['connoisseur', 'comprehensive']
-      }
-    ]
-  },
-  {
-    id: 'collectionAccessLevel',
-    title: 'How would you prefer to explore our collection?',
-    description: 'Choose the experience type that feels most comfortable and exciting for your musical journey.',
+    id: 'exclusiveAccess',
+    title: 'How interested are you in exclusive piano experiences?',
+    description: 'This helps us determine if you would value an invitation to our private signature events.',
     category: 'access',
-    order: 6,
+    order: 3,
     required: true,
     options: [
       {
-        value: 'curated-recommendations',
-        label: 'Exclusive Heritage Preview',
-        description: 'Receive curated access to our most distinguished collection details',
+        value: 'highly-interested',
+        label: 'Very Interested',
+        description: 'I would greatly value access to exclusive piano events and private consultations',
         icon: 'star',
-        weight: 20,
-        tags: ['exclusive', 'curated']
-      },
-      {
-        value: 'private-viewing',
-        label: 'Master Craftsman Consultation',
-        description: 'Private audience with our certified heritage specialists',
-        icon: 'calendar',
         weight: 40,
-        tags: ['private', 'master-level']
+        tags: ['exclusive', 'priority']
       },
       {
-        value: 'both',
-        label: 'Complete Connoisseur Experience',
-        description: 'Full access combining exclusive preview with master consultation',
-        icon: 'layers',
-        weight: 35,
-        tags: ['comprehensive', 'premium']
-      }
-    ]
-  },
-  {
-    id: 'investmentRange',
-    title: 'What investment range feels right for your dream instrument?',
-    description: 'This helps us focus on the instruments and special offers that best match your musical goals.',
-    category: 'investment',
-    order: 7,
-    required: true,
-    options: [
-      {
-        value: 'premium-25k',
-        label: 'Premium Heritage ($15K - $25K)',
-        description: 'Serious investment in exceptional digital and hybrid instruments',
-        icon: 'star',
-        weight: 20,
-        tags: ['premium', 'committed']
-      },
-      {
-        value: 'luxury-50k',
-        label: 'Luxury Collection ($25K - $50K)',
-        description: 'Distinguished collection of finest acoustic and premium digital',
-        icon: 'gem',
+        value: 'interested',
+        label: 'Interested',
+        description: 'Exclusive access sounds appealing if it matches my needs',
+        icon: 'heart',
         weight: 30,
-        tags: ['luxury', 'distinguished']
+        tags: ['interested', 'selective']
       },
       {
-        value: 'signature-75k',
-        label: 'Signature Masterpieces ($50K - $75K)',
-        description: 'Elite instruments representing the pinnacle of craftsmanship',
-        icon: 'crown',
-        weight: 35,
-        tags: ['signature', 'elite']
+        value: 'somewhat-interested',
+        label: 'Somewhat Interested',
+        description: 'I\'m curious about what exclusive events might offer',
+        icon: 'eye',
+        weight: 20,
+        tags: ['curious', 'exploring']
       },
       {
-        value: 'bespoke-100k',
-        label: 'Bespoke Commission ($75K+)',
-        description: 'Custom heritage instruments for true connoisseurs',
-        icon: 'diamond',
-        weight: 40,
-        tags: ['bespoke', 'connoisseur']
-      },
-      {
-        value: 'consultation-required',
-        label: 'Private Consultation Required',
-        description: 'Discuss investment parameters with our master craftsmen',
-        icon: 'lock',
-        weight: 25,
-        tags: ['private', 'consultation']
+        value: 'prefer-standard',
+        label: 'Prefer Standard Experience',
+        description: 'I prefer traditional showroom visits and standard appointments',
+        icon: 'home',
+        weight: 10,
+        tags: ['traditional', 'standard']
       }
     ]
   }

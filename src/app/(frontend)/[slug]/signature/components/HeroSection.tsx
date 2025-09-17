@@ -199,7 +199,7 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
   const fallbackData: SignatureHeroSection = {
     exclusiveText: "LIMITED: 3 WEEKS ONLY • 10/09-10/30",
     titlePrefix: "",
-    titleMain: "Baby Grand Select",
+    titleMain: "Signature Collection",
     titleSuffix: "",
     subtitle: "Own a piece of musical history and refined craftsmanship",
     description: "A special opportunity for virtuosos and aspiring musicians to transform their space into their personal concert hall. Apply for a spot to secure your spot in KAWAI's special piano event to give back to the community that helped build our legacy.",
@@ -208,7 +208,7 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
       action: "scroll"
     },
     secondaryCta: {
-      text: "Learn Qualification Criteria",
+      text: "Reserve Your Spot",
       action: "modal"
     },
     overlayOpacity: 0.6,
@@ -248,8 +248,15 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
   
   const handleSecondaryCTA = () => {
     if (heroData.secondaryCta?.action === 'modal') {
-      // In production, this would open a consultation modal
-      console.log('Opening consultation modal...')
+      // Navigate to signature experience section
+      const signatureExperienceSection = document.getElementById('signature-experience')
+      if (signatureExperienceSection) {
+        if (lenisInstance) {
+          lenisInstance.scrollTo(signatureExperienceSection, { duration: 1.5 })
+        } else {
+          signatureExperienceSection.scrollIntoView({ behavior: 'smooth' })
+        }
+      }
     } else if (heroData.secondaryCta?.link) {
       window.open(heroData.secondaryCta.link, '_self')
     }
@@ -414,14 +421,36 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
           variants={titleVariants}
           className="mb-8"
         >
-          <h1 className="text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-light leading-none tracking-tight text-kawai-pearl">
-            <span className="block font-normal">
+          <h1 className="heading-brand-luxury text-kawai-pearl leading-[0.75] text-center">
+            {heroData.titlePrefix && (
+              <span
+                className="block font-normal mb-4 sm:mb-6 tracking-[0.15em] sm:tracking-[0.2em] opacity-90 text-center"
+                style={{ fontSize: 'clamp(0.875rem, 2.5vw, 2.5rem)' }}
+              >
+                {heroData.titlePrefix}
+              </span>
+            )}
+            <span
+              className="block font-black leading-[0.8] sm:leading-[0.75] text-center w-full uppercase"
+              style={{
+                fontSize: 'clamp(3rem, 12vw, 10rem)',
+                letterSpacing: '0.05em',
+                textAlign: 'center',
+                fontWeight: '900',
+                fontFamily: '"Anton", "Oswald", "Bebas Neue", "Arial Black", Impact, sans-serif',
+                textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                fontStretch: 'condensed'
+              }}
+            >
               {heroData.titleMain}
             </span>
             {heroData.titleSuffix && (
-              <span className="block text-2xl md:text-3xl lg:text-4xl xl:text-5xl mt-4 font-light text-kawai-pearl/80 tracking-widest">
+              <div
+                className="block font-light mt-3 sm:mt-4 tracking-[0.05em] sm:tracking-[0.1em] opacity-90 text-center"
+                style={{ fontSize: 'clamp(1.125rem, 4vw, 3rem)' }}
+              >
                 {heroData.titleSuffix}
-              </span>
+              </div>
             )}
           </h1>
         </motion.div>

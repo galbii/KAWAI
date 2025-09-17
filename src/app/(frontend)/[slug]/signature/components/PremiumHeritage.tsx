@@ -29,15 +29,6 @@ interface HeritageMilestone {
   icon: string
 }
 
-interface MasterArtisan {
-  name: string
-  nameJapanese: string
-  title: string
-  experience: number
-  signature: string
-  specialty: string
-  image: string
-}
 
 interface PremiumHeritageProps {
   className?: string
@@ -170,7 +161,7 @@ function YouTubeVideo({ videoId }: { videoId: string }) {
   }, [player, isInView])
 
   return (
-    <div ref={videoRef} className="max-w-4xl mx-auto mb-8">
+    <div ref={videoRef} className="w-full px-6 lg:px-8 mb-8">
       <div className="relative aspect-video rounded-lg overflow-hidden border border-kawai-gold/20 shadow-2xl">
         <iframe
           src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1&mute=1&rel=0&modestbranding=1&showinfo=0&controls=1`}
@@ -244,35 +235,6 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
     }
   ]
 
-  const masterArtisans: MasterArtisan[] = [
-    {
-      name: 'Naoto Ichikawa',
-      nameJapanese: '市川直人',
-      title: 'Master Piano Artisan',
-      experience: 30,
-      signature: '',
-      specialty: 'Naoto \'Nick\' Ichikawa is at the very height of his profession. Depth of experience, refined talents, and passion to his craft qualifies Naoto as one of Kawai\'s select Master Piano Artisans.',
-      image: '/images/signature/artisan-ichikawa.webp'
-    },
-    {
-      name: 'David Reed',
-      nameJapanese: 'デビッド・リード',
-      title: 'Master Piano Artisan',
-      experience: 25,
-      signature: '', // Remove signature for David Reed
-      specialty: 'David Reed is a newly certified Master Piano Artisan who has always been intrigued by the mechanics of acoustic pianos, in addition to being a lifelong pianist.',
-      image: '/images/signature/artisan-reed.webp'
-    },
-    {
-      name: 'Tatsuya Murakami',
-      nameJapanese: '村上達也',
-      title: 'Master Piano Artisan',
-      experience: 25,
-      signature: '',
-      specialty: 'Tatsuya Murakami is an eminently talented piano craftsman who has travelled extensively in support of Shigeru Kawai piano owners and international piano competitions.',
-      image: '/images/signature/artisan-murakami.webp'
-    }
-  ]
 
   const handleAssessmentClick = () => {
     const assessmentSection = document.getElementById('signature-experience')
@@ -317,22 +279,15 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
 
         {/* Header Section */}
         <motion.div
-          className="text-center max-w-6xl mx-auto mb-20"
+          className="text-center max-w-6xl mx-auto mb-12"
           style={{ y, opacity }}
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <div className="inline-block text-kawai-gold text-sm font-light tracking-[0.3em] uppercase mb-6 border border-kawai-gold/30 px-6 py-3 rounded-full backdrop-blur-sm">
-            Crafted by Master Piano Artisans
-          </div>
-
-          {/* YouTube Video with Scroll-Triggered Playback */}
-          <YouTubeVideo videoId="1cmwb6evs2A" />
-
           <motion.h2
-            className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-light text-kawai-pearl leading-tight mb-6"
+            className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-light text-kawai-pearl leading-tight mb-8"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
@@ -344,7 +299,7 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
               transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
               viewport={{ once: true }}
             >
-              Transform Your Space Into A{' '}
+              Transform your space into a{' '}
             </motion.span>
             <motion.span
               className="text-kawai-gold font-normal inline-block"
@@ -353,32 +308,91 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
               transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
               viewport={{ once: true }}
             >
-              Concert Hall
+              Grand Concert Hall
             </motion.span>
           </motion.h2>
+        </motion.div>
 
-          <div className="max-w-5xl mx-auto mb-8">
-            <motion.div
-              className="relative pl-6 border-l-2 border-kawai-gold/30 bg-gradient-to-r from-kawai-gold/5 to-transparent rounded-r-lg p-6"
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 1.0, ease: "easeOut" }}
-              viewport={{ once: true }}
-            >
-              <motion.p
-                className="text-xl md:text-2xl text-kawai-pearl font-light leading-relaxed"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.6, delay: 1.3 }}
+        {/* Full-width YouTube Video with Scroll-Triggered Playback */}
+        <YouTubeVideo videoId="1cmwb6evs2A" />
+
+          <div className="max-w-7xl mx-auto mb-8">
+            {/* Two-column layout for invitation text and assessment benefits */}
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+
+              {/* Left Column - Kawai Signature Collection Text */}
+              <motion.div
+                className="relative pl-6 border-l-2 border-kawai-gold/30 bg-gradient-to-r from-kawai-gold/5 to-transparent rounded-r-lg p-6"
+                initial={{ opacity: 0, x: -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 1.0, ease: "easeOut" }}
                 viewport={{ once: true }}
               >
-                <span className="font-medium">Your invitation</span> to the{' '}
-                <span className="text-kawai-gold font-medium">Kawai Signature Collection</span> — where each instrument carries a{' '}
-                <span className="text-kawai-gold">century of musical history</span>,
-                artistic cultivation, and the devoted craftsmanship of{' '}
-                <span className="text-kawai-gold">master artisans</span> at the highest level of piano excellence.
-              </motion.p>
-            </motion.div>
+                <motion.p
+                  className="text-xl md:text-2xl text-kawai-pearl font-light leading-relaxed"
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 1.3 }}
+                  viewport={{ once: true }}
+                >
+                  We're offering a warm welcome to{' '}
+                  <span className="text-kawai-gold font-medium">musicians, educators, and other passionate individuals</span> to check out the{' '}
+                  <span className="text-kawai-gold">Signature Collection</span>,
+                  Kawai's personally selected line of baby grand pianos such as the{' '}
+                  <span className="text-kawai-gold">GL-10 and GL-20</span> at a special rate for our community.
+                </motion.p>
+              </motion.div>
+
+              {/* Right Column - What Your Assessment Reveals */}
+              <motion.div
+                className="space-y-8"
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 1.2, ease: "easeOut" }}
+                viewport={{ once: true }}
+              >
+                <div className="p-8 rounded-lg border border-kawai-gold/20 bg-gradient-to-br from-kawai-black/50 to-transparent backdrop-blur-sm">
+                  <motion.div
+                    className="space-y-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 1.4 }}
+                    viewport={{ once: true }}
+                  >
+                    <h4 className="text-kawai-pearl text-lg font-medium mb-4">
+                      A special event for our Qualified Musicians:
+                    </h4>
+                    <div className="space-y-3">
+                      {[
+                        "Apply for the signature circle and join thousands of passionate musicians",
+                        "Exclusive consultation and personal showroom tour with master technicians",
+                        "Priority access to limited-edition Shigeru Kawai releases before public availability",
+                        "Complimentary white-glove delivery and professional setup in your space",
+                        "Invitation to exclusive artist performances and intimate masterclasses"
+                      ].map((benefit, index) => (
+                        <motion.div
+                          key={index}
+                          className="flex items-start gap-3"
+                          initial={{ opacity: 0, x: -20 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.5, delay: 1.5 + index * 0.1 }}
+                          viewport={{ once: true }}
+                        >
+                          <div className="flex-shrink-0 w-5 h-5 rounded-full bg-kawai-gold/20 flex items-center justify-center mt-0.5">
+                            <svg className="w-3 h-3 text-kawai-gold" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <span className="text-kawai-pearl/80 text-sm leading-relaxed">
+                            {benefit}
+                          </span>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                </div>
+              </motion.div>
+            </div>
 
             {/* CTA Buttons */}
             <motion.div
@@ -400,94 +414,10 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
                 size="lg"
                 onClick={handleShowroomClick}
               >
-                View Showroom
+                View Gallery
               </PremiumButton>
             </motion.div>
           </div>
-        </motion.div>
-
-
-
-        {/* Master Artisans Section */}
-        <motion.div
-          className="max-w-6xl mx-auto mb-20"
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          viewport={{ once: true }}
-        >
-          <div className="text-center mb-12">
-            <h3 className="text-3xl md:text-4xl font-light text-kawai-pearl mb-4">
-              Master <span className="text-kawai-gold">Artisans</span>
-            </h3>
-            <p className="text-kawai-pearl/70 font-light max-w-2xl mx-auto">
-              Each piano in the Signature Selection is individually signed by our master craftsmen,
-              whose remarkable skills have been proven in the world's finest concert halls.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {masterArtisans.map((artisan, index) => {
-              const imageProps = getImagePropsWithFallback(
-                artisan.image,
-                '/images/signature/fallback-artisan.webp',
-                'gallery',
-                {
-                  fill: true,
-                  className: 'object-cover object-center group-hover:scale-105 transition-transform duration-500'
-                }
-              )
-
-              return (
-                <motion.div
-                  key={artisan.name}
-                  className="rounded-lg border border-kawai-gold/20 bg-gradient-to-br from-kawai-black/30 to-transparent backdrop-blur-sm group hover:border-kawai-gold/40 transition-all duration-500 overflow-hidden"
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  whileHover={{ y: -4 }}
-                >
-                  {/* Large Image with Overlay */}
-                  <div className="relative h-96 overflow-hidden">
-                    <Image
-                      {...imageProps}
-                      alt={`Master Artisan ${artisan.name}`}
-                    />
-
-                    {/* Default gradient overlay for text readability */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/80 via-kawai-black/30 to-transparent" />
-
-                    {/* Always visible text overlay */}
-                    <div className="absolute bottom-0 left-0 right-0 p-6 text-center">
-                      <h4 className="text-kawai-pearl text-xl font-medium mb-1 group-hover:text-kawai-gold transition-colors duration-300">
-                        {artisan.name}
-                      </h4>
-                      <div className="text-kawai-gold text-sm font-light mb-1">{artisan.nameJapanese}</div>
-                      <div className="text-kawai-pearl/80 text-sm">{artisan.title}</div>
-                    </div>
-
-                    {/* Hover overlay with description - HIDDEN by default */}
-                    <div className="absolute inset-0 bg-kawai-black/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center p-6 pointer-events-none group-hover:pointer-events-auto">
-                      <div className="text-center max-w-xs">
-                        <h4 className="text-kawai-gold text-xl font-medium mb-3">
-                          {artisan.name}
-                        </h4>
-                        <div className="text-kawai-gold text-sm font-light mb-3">{artisan.nameJapanese}</div>
-                        <div className="text-kawai-pearl/90 text-sm leading-relaxed mb-4">
-                          {artisan.specialty}
-                        </div>
-                        <div className="text-kawai-pearl/70 text-xs">
-                          {artisan.experience} years experience
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              )
-            })}
-          </div>
-        </motion.div>
 
         {/* Heritage Achievements - Moved to Bottom */}
         <motion.div

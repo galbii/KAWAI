@@ -15,7 +15,8 @@ import {
   InvestmentTimelineQuestion,
   AestheticPreferenceQuestion,
   CollectionAccessQuestion,
-  InvestmentRangeQuestion
+  InvestmentRangeQuestion,
+  ExclusiveAccessQuestion
 } from './questions'
 
 // Import types and validation
@@ -42,7 +43,8 @@ const QUESTION_COMPONENTS = {
   investmentTimeline: InvestmentTimelineQuestion,
   aestheticPreference: AestheticPreferenceQuestion,
   collectionAccessLevel: CollectionAccessQuestion,
-  investmentRange: InvestmentRangeQuestion
+  investmentRange: InvestmentRangeQuestion,
+  exclusiveAccess: ExclusiveAccessQuestion
 } as const
 
 /**

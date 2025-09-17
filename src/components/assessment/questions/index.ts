@@ -10,6 +10,7 @@ export { default as InvestmentTimelineQuestion } from './InvestmentTimelineQuest
 export { default as AestheticPreferenceQuestion } from './AestheticPreferenceQuestion'
 export { default as CollectionAccessQuestion } from './CollectionAccessQuestion'
 export { default as InvestmentRangeQuestion } from './InvestmentRangeQuestion'
+export { default as ExclusiveAccessQuestion } from './ExclusiveAccessQuestion'
 
 // Re-export types for convenience
 export type { FormStepProps } from '@/app/(frontend)/[slug]/signature/types'

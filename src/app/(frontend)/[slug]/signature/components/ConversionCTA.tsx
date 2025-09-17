@@ -1,16 +1,18 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import Image from 'next/image'
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
 import { cn } from '@/lib/utils'
+import { CalendlyBookingWidget } from './CalendlyBookingWidget'
 
 // Interfaces
 interface ConversionCTAProps {
   className?: string
   onAssessmentClick?: () => void
   onConsultationClick?: () => void
+  signaturePageSlug?: string
   customData?: {
     title?: string
     subtitle?: string
@@ -104,7 +106,7 @@ function BenefitsReveal({ benefits }: { benefits: string[] }) {
       viewport={{ once: true }}
     >
       <h4 className="text-kawai-pearl text-lg font-medium mb-4">
-        What Your Assessment Reveals:
+        A special event for our Qualified Musicians:
       </h4>
       <div className="space-y-3">
         {benefits.map((benefit, index) => (
@@ -166,9 +168,12 @@ export function ConversionCTA({
   className = '',
   onAssessmentClick,
   onConsultationClick,
+  signaturePageSlug,
   customData
 }: ConversionCTAProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"]
@@ -179,15 +184,15 @@ export function ConversionCTA({
 
   // Default data
   const defaultData = {
-    title: "Transform Your Space Into a Concert Hall",
-    subtitle: "Your Exclusive Gateway to the Signature Selection",
+    title: "Transform your space into a grand concert hall",
+    subtitle: "Where each instrument carries a century of musical history, artistic cultivation, and devoted craftsmanship",
     urgencyText: "Only 12 Assessment Spots Remaining This Quarter",
     benefits: [
-      "Personally curated piano recommendations based on your musical journey",
-      "Private viewing of limited-edition instruments in our exclusive showroom",
-      "Direct access to master artisan-crafted pieces before public availability",
-      "Lifetime relationship with Kawai's heritage specialists",
-      "Professional acoustic space planning for optimal performance"
+      "Apply for the signature circle and join thousands of passionate musicians",
+      "Exclusive consultation and personal showroom tour with master technicians",
+      "Priority access to limited-edition Shigeru Kawai releases before public availability",
+      "Complimentary white-glove delivery and professional setup in your space",
+      "Invitation to exclusive artist performances and intimate masterclasses"
     ]
   }
 
@@ -214,9 +219,31 @@ export function ConversionCTA({
     if (onConsultationClick) {
       onConsultationClick()
     } else {
-      // In production, this would open a consultation modal
-      console.log('Opening private consultation modal...')
+      // Open the booking modal
+      setIsBookingModalOpen(true)
     }
+  }
+
+  // Handle successful Calendly booking
+  const handleCalendlyEventScheduled = (eventData: any) => {
+    console.log('🎉 Calendly consultation booked successfully:', eventData)
+    // You can add additional success handling here:
+    // - Analytics tracking
+    // - Success notifications
+    // - Internal CRM updates
+    // - Follow-up automation
+  }
+
+  // Handle Calendly date/time selection for tracking
+  const handleCalendlyDateTimeSelected = (eventData: any) => {
+    console.log('📅 User selected consultation date/time:', eventData)
+    // Track user engagement with date selection
+  }
+
+  // Handle Calendly profile page view for tracking
+  const handleCalendlyProfilePageViewed = (eventData: any) => {
+    console.log('👁️ User viewed consultation booking page:', eventData)
+    // Track initial booking page engagement
   }
 
   const backgroundImageProps = getImagePropsWithFallback(
@@ -300,9 +327,8 @@ export function ConversionCTA({
                 </h3>
 
                 <p className="text-lg text-kawai-pearl/70 font-light leading-relaxed">
-                  Your invitation to experience instruments from our curated catalog of baby grands for this event.
-                  Each piano in the Signature Selection carries a century of musical history and cultivation,
-                  waiting to transform your space into a concert hall.
+                  We're offering a warm welcome to musicians, educators, and other passionate individuals to check out the Signature Collection,
+                  Kawai's personally selected line of baby grand pianos such as the GL-10 and GL-20 at a special rate for our community.
                 </p>
               </div>
 
@@ -318,11 +344,10 @@ export function ConversionCTA({
                   Artist Testimonial
                 </div>
                 <blockquote className="text-kawai-pearl/80 font-light italic leading-relaxed">
-                  "Every piano in the Signature Selection is a masterpiece that elevates not just my performance,
-                  but my entire relationship with music. The artisan's soul lives in each key."
+                  "If you are looking for a truly elite, innovative and without question world-class concert quality instrument the Shigeru Kawai is in my opinion the only option. In playing a Shigeru Kawai, I have a euphoric oneness with the instrument. It is so responsive that it feels like a continuation of my very self."
                 </blockquote>
                 <footer className="text-kawai-pearl/60 text-sm mt-3">
-                  — Lang Lang, International Concert Pianist
+                  — Dave Bradshaw Jr., Professional Pianist
                 </footer>
               </motion.div>
 
@@ -341,7 +366,7 @@ export function ConversionCTA({
                   icon="🎹"
                   className="w-full sm:w-auto min-w-[280px]"
                 >
-                  Begin Your Piano Assessment
+                  Reserve Your Spot
                 </PremiumButton>
 
                 <div className="flex items-center gap-4">
@@ -349,10 +374,10 @@ export function ConversionCTA({
                     variant="secondary"
                     size="lg"
                     onClick={handleConsultationClick}
-                    icon="👤"
+                    icon="📅"
                     className="w-full sm:w-auto min-w-[250px]"
                   >
-                    Request Private Consultation
+                    Request Premium Consultation
                   </PremiumButton>
                 </div>
 
@@ -400,11 +425,21 @@ export function ConversionCTA({
         </div>
       </div>
 
-      {/* Continue indicator */}
-      <ContinueIndicator onClick={handleAssessmentClick} />
 
       {/* Decorative bottom border */}
       <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-kawai-gold/20 to-transparent" />
+
+      {/* Calendly Booking Widget */}
+      <CalendlyBookingWidget
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+        signaturePageSlug={signaturePageSlug}
+        calendlyUrl="https://calendly.com/kawaipianogallery/houston-baby-grand-sale"
+        displayMode="modal"
+        onEventScheduled={handleCalendlyEventScheduled}
+        onDateTimeSelected={handleCalendlyDateTimeSelected}
+        onProfilePageViewed={handleCalendlyProfilePageViewed}
+      />
     </section>
   )
 }

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { HeroSection } from './components/HeroSection'
 import { PremiumHeritage } from './components/PremiumHeritage'
+import { MasterArtisans } from './components/MasterArtisans'
 import { PremiumBentoGallery } from './components/PremiumBentoGallery'
 import { ConversionCTA } from './components/ConversionCTA'
 import { SignatureExperience } from './components/SignatureExperience'
@@ -41,7 +42,7 @@ async function getSignaturePageData(slug: string): Promise<SignaturePageData | n
       heroSection: {
         exclusiveText: "10/09-10/12",
         titlePrefix: "",
-        titleMain: "Baby Grand Select",
+        titleMain: "Signature Collection",
         titleSuffix: "",
         subtitle: "Own a piece of musical history and refined craftsmanship",
         description: "A special opportunity for virtuosos and aspiring musicians to transform their space into their personal concert hall. Apply for a spot to secure your spot in KAWAI's special piano event to give back to the community that helped build our legacy.",
@@ -51,7 +52,7 @@ async function getSignaturePageData(slug: string): Promise<SignaturePageData | n
           action: "scroll"
         },
         secondaryCta: {
-          text: "Apply Now",
+          text: "Reserve Your Spot",
           action: "modal"
         },
         overlayOpacity: 0.6,
@@ -114,6 +115,9 @@ async function SignaturePageContent({ slug }: { slug: string }) {
       {/* Premium Heritage & Authority Section */}
       <PremiumHeritage />
 
+      {/* Master Artisans Section */}
+      <MasterArtisans />
+
       {/* Main Signature Experience Flow (Assessment) */}
       <SignatureExperience slug={slug} />
 
@@ -121,7 +125,7 @@ async function SignaturePageContent({ slug }: { slug: string }) {
       <PremiumBentoGallery />
 
       {/* Conversion CTA Section */}
-      <ConversionCTA />
+      <ConversionCTA signaturePageSlug={slug} />
     </div>
   )
 }

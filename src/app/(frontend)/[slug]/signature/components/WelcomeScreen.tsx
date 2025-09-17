@@ -67,13 +67,13 @@ export function WelcomeScreen({ onContinue, className }: WelcomeScreenProps) {
             className="mb-8"
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight tracking-tight text-kawai-black mb-6">
-              <span className="block font-serif text-kawai-red">Event Reservation</span>
+              <span className="block font-serif text-kawai-red">Exclusive Invitation</span>
             </h1>
             <p className="text-xl md:text-2xl font-light text-kawai-black/80 max-w-2xl mx-auto leading-relaxed mb-6">
-              Reserve your spot for our exclusive event with craftsmanship experts for priority selection to some of KAWAI's most prestigious instruments.
+              Request your invitation to our exclusive signature piano event featuring KAWAI's most prestigious instruments and master craftsman consultations.
             </p>
             <p className="text-lg text-kawai-black/60 max-w-xl mx-auto">
-              This qualification application determines your eligibility for our exclusive event reservation and access to special pricing.
+              Complete our brief qualification to determine your eligibility for this private, invitation-only experience.
             </p>
           </motion.div>
 
@@ -83,7 +83,7 @@ export function WelcomeScreen({ onContinue, className }: WelcomeScreenProps) {
             className="mb-8"
           >
             <p className="text-xl text-kawai-black/80 mb-8">
-              Are you ready to secure your spot?
+              Ready to request your exclusive invitation?
             </p>
             <motion.button
               onClick={onContinue}
@@ -97,7 +97,7 @@ export function WelcomeScreen({ onContinue, className }: WelcomeScreenProps) {
                 transition: { duration: 0.1 }
               }}
             >
-              Apply Now
+              Request Invitation
             </motion.button>
           </motion.div>
 
@@ -107,7 +107,7 @@ export function WelcomeScreen({ onContinue, className }: WelcomeScreenProps) {
             className="text-center"
           >
             <p className="text-sm text-kawai-black/50">
-              Takes 3-4 minutes • Confidential application
+              Takes 2-3 minutes • Confidential qualification
             </p>
           </motion.div>
         </motion.div>

@@ -79,13 +79,13 @@ export const DualConversion: React.FC<DualConversionProps> = ({
             </svg>
           </div>
           <h2 className="text-3xl md:text-4xl font-light font-serif text-kawai-black mb-4">
-            Congratulations! You Qualify
+            You're invited
           </h2>
           <p className="text-xl text-kawai-black/70 max-w-2xl mx-auto mb-2">
-            Your application has been approved for exclusive access to our Master Craftsman consultation program.
+            Kawai believes you'd be a perfect fit for this event and would like to offer a warm welcome to the Signature Collection!
           </p>
           <p className="text-lg text-kawai-red font-medium">
-            Choose how you'd like to proceed with your heritage collection experience:
+            Get personalized recommendations or claim your invite now!
           </p>
         </motion.div>
 

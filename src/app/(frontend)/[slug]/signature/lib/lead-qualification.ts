@@ -217,11 +217,11 @@ export function calculateLeadScore(
   
   // Assessment-based scoring (60% weight)
   const identityScore = scoreMusicalIdentity(assessment.musicalIdentity)
-  const aspirationScore = scorePerformanceAspirations(assessment.performanceAspirations)
-  const environmentScore = scoreAcousticEnvironment(assessment.acousticEnvironment)
+  const aspirationScore = assessment.performanceAspirations ? scorePerformanceAspirations(assessment.performanceAspirations) : 0
+  const environmentScore = assessment.acousticEnvironment ? scoreAcousticEnvironment(assessment.acousticEnvironment) : 0
   const timelineScore = scoreInvestmentTimeline(assessment.investmentTimeline)
-  const aestheticScore = scoreAestheticPreference(assessment.aestheticPreference)
-  const accessScore = scoreCollectionAccessLevel(assessment.collectionAccessLevel)
+  const aestheticScore = assessment.aestheticPreference ? scoreAestheticPreference(assessment.aestheticPreference) : 0
+  const accessScore = assessment.collectionAccessLevel ? scoreCollectionAccessLevel(assessment.collectionAccessLevel) : 0
   
   const assessmentScore = (
     (identityScore * QUALIFICATION_WEIGHTS.identity) +
@@ -267,10 +267,10 @@ export function calculateLeadScore(
   const quality = determineLeadQuality(totalScore, readinessScore, budgetQualified, timelineQualified)
   
   // Follow-up priority (1-5 scale)
-  const followUpPriority = calculateFollowUpPriority(quality, assessment.investmentTimeline, assessment.collectionAccessLevel)
-  
+  const followUpPriority = calculateFollowUpPriority(quality, assessment.investmentTimeline, assessment.collectionAccessLevel || 'curated-recommendations')
+
   // Preferred contact method
-  const preferredContact = contactData?.preferredContact || 
+  const preferredContact = contactData?.preferredContact ||
     (assessment.collectionAccessLevel === 'private-viewing' ? 'phone' : 'email')
   
   return {

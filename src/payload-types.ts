@@ -91,6 +91,7 @@ export interface Config {
     'pianos-page': PianosPage;
     products: Product;
     'constant-contact-settings': ConstantContactSetting;
+    'consultation-bookings': ConsultationBooking;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -111,6 +112,7 @@ export interface Config {
     'pianos-page': PianosPageSelect<false> | PianosPageSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     'constant-contact-settings': ConstantContactSettingsSelect<false> | ConstantContactSettingsSelect<true>;
+    'consultation-bookings': ConsultationBookingsSelect<false> | ConsultationBookingsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -3737,6 +3739,69 @@ export interface ConstantContactSetting {
   updatedAt: string;
 }
 /**
+ * Premium piano consultation booking requests from signature experience
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "consultation-bookings".
+ */
+export interface ConsultationBooking {
+  id: string;
+  /**
+   * Customer first name
+   */
+  firstName: string;
+  /**
+   * Customer last name
+   */
+  lastName: string;
+  /**
+   * Customer email address for confirmation
+   */
+  email: string;
+  /**
+   * Customer phone number (optional)
+   */
+  phoneNumber?: string | null;
+  /**
+   * Selected consultation date during the signature event
+   */
+  selectedDate: '2024-10-09' | '2024-10-10' | '2024-10-11' | '2024-10-12';
+  /**
+   * Selected consultation time slot
+   */
+  selectedTime: '09:00' | '10:00' | '11:00' | '13:00' | '14:00' | '15:00' | '16:00' | '17:00' | '18:00';
+  /**
+   * Type of consultation or event
+   */
+  eventType: 'premium-consultation' | 'signature-selection' | 'private-viewing';
+  /**
+   * Current booking status
+   */
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  /**
+   * Additional notes or special requests from customer
+   */
+  notes?: string | null;
+  /**
+   * Customer piano type interest
+   */
+  pianoInterest?: ('grand' | 'upright' | 'digital' | 'hybrid' | 'multiple') | null;
+  /**
+   * Which signature page generated this booking (slug)
+   */
+  sourceSignaturePage?: string | null;
+  /**
+   * Browser user agent for analytics
+   */
+  userAgent?: string | null;
+  /**
+   * IP address for security
+   */
+  ipAddress?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
@@ -3782,6 +3847,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'constant-contact-settings';
         value: string | ConstantContactSetting;
+      } | null)
+    | ({
+        relationTo: 'consultation-bookings';
+        value: string | ConsultationBooking;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -5014,6 +5083,27 @@ export interface ConstantContactSettingsSelect<T extends boolean = true> {
   notes?: T;
   createdAt?: T;
   updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "consultation-bookings_select".
+ */
+export interface ConsultationBookingsSelect<T extends boolean = true> {
+  firstName?: T;
+  lastName?: T;
+  email?: T;
+  phoneNumber?: T;
+  selectedDate?: T;
+  selectedTime?: T;
+  eventType?: T;
+  status?: T;
+  notes?: T;
+  pianoInterest?: T;
+  sourceSignaturePage?: T;
+  userAgent?: T;
+  ipAddress?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

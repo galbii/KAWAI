@@ -67,6 +67,16 @@ export type CollectionAccessLevel =
   | 'both'                   // Combination of both approaches
 
 /**
+ * Exclusive Access Interest Assessment Values
+ * Maps to interest level in exclusive signature events
+ */
+export type ExclusiveAccess =
+  | 'highly-interested'    // Very interested in exclusive events
+  | 'interested'          // Interested in exclusive access
+  | 'somewhat-interested' // Curious about exclusive offerings
+  | 'prefer-standard'     // Prefers traditional experience
+
+/**
  * Investment Range Assessment Values
  * Maps to investment capacity and qualification levels
  */
@@ -79,16 +89,17 @@ export type InvestmentRange =
 
 /**
  * Complete Assessment Response Interface
- * Captures all 7 strategic assessment questions
+ * Captures assessment questions (reduced to 3 for invitation flow)
  */
 export interface AssessmentResponse {
   musicalIdentity: MusicalIdentity
-  performanceAspirations: PerformanceAspirations
-  acousticEnvironment: AcousticEnvironment
+  performanceAspirations?: PerformanceAspirations
+  acousticEnvironment?: AcousticEnvironment
   investmentTimeline: InvestmentTimeline
-  aestheticPreference: AestheticPreference
-  collectionAccessLevel: CollectionAccessLevel
-  investmentRange: InvestmentRange
+  aestheticPreference?: AestheticPreference
+  collectionAccessLevel?: CollectionAccessLevel
+  investmentRange?: InvestmentRange
+  exclusiveAccess?: ExclusiveAccess
   timestamp?: Date
   sessionId?: string
 }
