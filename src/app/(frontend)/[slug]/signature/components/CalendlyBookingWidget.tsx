@@ -13,6 +13,7 @@ interface CalendlyBookingWidgetProps {
   calendlyUrl?: string
   displayMode?: 'modal' | 'inline'
   className?: string
+  prefillEmail?: string
   onEventScheduled?: (eventData: any) => void
   onDateTimeSelected?: (eventData: any) => void
   onProfilePageViewed?: (eventData: any) => void
@@ -30,6 +31,7 @@ const DEFAULT_CALENDLY_URL = 'https://calendly.com/kawaipianogallery/houston-bab
 function CalendlyWidgetContent({
   calendlyUrl,
   signaturePageSlug,
+  prefillEmail,
   onEventScheduled,
   onDateTimeSelected,
   onProfilePageViewed,
@@ -37,6 +39,7 @@ function CalendlyWidgetContent({
 }: {
   calendlyUrl: string
   signaturePageSlug?: string
+  prefillEmail?: string
   onEventScheduled?: (eventData: any) => void
   onDateTimeSelected?: (eventData: any) => void
   onProfilePageViewed?: (eventData: any) => void
@@ -110,6 +113,7 @@ function CalendlyWidgetContent({
     }
 
     console.log('🔗 Built Calendly URL with tracking:', url.toString())
+    console.log('📧 Prefill email being used:', prefillEmail)
     return url.toString()
   }
 
@@ -185,6 +189,7 @@ function CalendlyWidgetContent({
               textColor: '000000'
             }}
             utm={buildUtmParams()}
+            prefill={prefillEmail ? { email: prefillEmail } : undefined}
           />
         </div>
       )}

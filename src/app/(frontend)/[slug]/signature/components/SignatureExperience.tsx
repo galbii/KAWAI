@@ -228,6 +228,7 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
                 assessmentResults={assessmentResults!}
                 onComplete={handleConversionComplete}
                 location={slug}
+                emailData={emailData}
               />
             </motion.div>
           )}

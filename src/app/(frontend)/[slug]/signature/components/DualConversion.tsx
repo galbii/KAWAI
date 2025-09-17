@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { RefactoredEmailForm } from '@/components/forms/RefactoredEmailForm'
+import { CalendlyBookingWidget } from './CalendlyBookingWidget'
 
 import type { AssessmentResponse } from '../types'
 
@@ -15,6 +16,7 @@ interface DualConversionProps {
   onComplete: (type: 'email' | 'booking', data: Record<string, unknown>) => void
   location: string
   className?: string
+  emailData?: { email: string } | null
 }
 
 // Booking form schema
@@ -38,9 +40,11 @@ export const DualConversion: React.FC<DualConversionProps> = ({
   assessmentResults,
   onComplete,
   location,
-  className
+  className,
+  emailData
 }) => {
   const [selectedPath, setSelectedPath] = useState<'digital' | 'showroom' | null>(null)
+  const [showInlineBooking, setShowInlineBooking] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Booking form
@@ -64,7 +68,41 @@ export const DualConversion: React.FC<DualConversionProps> = ({
     }
   }
 
-  if (!selectedPath) {
+  // Handle showroom consultation request - show inline Calendly
+  const handleConsultationClick = () => {
+    console.log('🔍 Debug emailData in DualConversion:', emailData)
+    console.log('📧 Email to prefill:', emailData?.email)
+    setShowInlineBooking(true)
+  }
+
+  // Handle return from Calendly to main selection
+  const handleBackToSelection = () => {
+    setShowInlineBooking(false)
+    setSelectedPath(null)
+  }
+
+  // Handle successful Calendly booking
+  const handleCalendlyEventScheduled = (eventData: any) => {
+    console.log('🎉 Calendly consultation booked successfully:', eventData)
+    onComplete('booking', {
+      conversionType: 'calendly',
+      assessmentResults,
+      location,
+      calendlyEventData: eventData
+    })
+  }
+
+  // Handle Calendly date/time selection for tracking
+  const handleCalendlyDateTimeSelected = (eventData: any) => {
+    console.log('📅 User selected consultation date/time:', eventData)
+  }
+
+  // Handle Calendly profile page view for tracking
+  const handleCalendlyProfilePageViewed = (eventData: any) => {
+    console.log('👁️ User viewed consultation booking page:', eventData)
+  }
+
+  if (!selectedPath && !showInlineBooking) {
     return (
       <div className={cn("max-w-4xl mx-auto", className)}>
         {/* Qualification Success Message */}
@@ -99,45 +137,45 @@ export const DualConversion: React.FC<DualConversionProps> = ({
           <motion.div
             whileHover={{ scale: 1.02 }}
             onClick={() => setSelectedPath('digital')}
-            className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 border border-blue-100 cursor-pointer group hover:shadow-xl transition-all duration-300"
+            className="bg-white rounded-2xl p-8 border border-gray-200 cursor-pointer group hover:shadow-xl transition-all duration-300"
           >
             <div className="text-center space-y-6">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-300">
+              <div className="w-16 h-16 bg-gradient-to-r from-kawai-red to-red-700 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-300">
                 <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 7.89a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              
+
               <div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                  Receive Heritage Collection Preview
+                  Your Personal Piano List
                 </h3>
                 <p className="text-gray-600 leading-relaxed">
-                  Access exclusive preview of our master craftsman collection with detailed heritage specifications and your formal consultation invitation.
+                  A curated selection of baby grand pianos based on your answers.
                 </p>
               </div>
-              
+
               <div className="space-y-2 text-sm text-gray-600">
                 <div className="flex items-center justify-center space-x-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-kawai-red rounded-full"></div>
                   <span>Exclusive heritage collection catalog</span>
                 </div>
                 <div className="flex items-center justify-center space-x-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-kawai-red rounded-full"></div>
                   <span>Formal invitation within 24 hours</span>
                 </div>
                 <div className="flex items-center justify-center space-x-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-kawai-red rounded-full"></div>
                   <span>Master craftsman consultation priority</span>
                 </div>
               </div>
-              
+
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
+                className="bg-gradient-to-r from-kawai-red to-red-700 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
               >
-                Access Preview Collection
+                View Now
               </motion.button>
             </div>
           </motion.div>
@@ -145,50 +183,126 @@ export const DualConversion: React.FC<DualConversionProps> = ({
           {/* Showroom Path */}
           <motion.div
             whileHover={{ scale: 1.02 }}
-            onClick={() => setSelectedPath('showroom')}
-            className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-8 border border-amber-100 cursor-pointer group hover:shadow-xl transition-all duration-300"
+            onClick={handleConsultationClick}
+            className="bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-8 border border-red-200 cursor-pointer group hover:shadow-xl transition-all duration-300"
           >
             <div className="text-center space-y-6">
-              <div className="w-16 h-16 bg-gradient-to-r from-amber-500 to-orange-600 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-300">
+              <div className="w-16 h-16 bg-gradient-to-r from-kawai-red to-red-700 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-300">
                 <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </div>
-              
+
               <div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                  Request Premium Consultation
+                <h3 className="text-2xl font-bold text-kawai-red mb-3">
+                  Your Personal Invite
                 </h3>
                 <p className="text-gray-600 leading-relaxed">
                   Secure private access to our heritage instruments with dedicated guidance from certified master craftsmen.
                 </p>
               </div>
-              
+
               <div className="space-y-2 text-sm text-gray-600">
                 <div className="flex items-center justify-center space-x-2">
-                  <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-kawai-red rounded-full"></div>
                   <span>Private master craftsman appointment</span>
                 </div>
                 <div className="flex items-center justify-center space-x-2">
-                  <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-kawai-red rounded-full"></div>
                   <span>Exclusive heritage instrument access</span>
                 </div>
                 <div className="flex items-center justify-center space-x-2">
-                  <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-kawai-red rounded-full"></div>
                   <span>Limited-time consultation rates</span>
                 </div>
               </div>
-              
+
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
+                className="bg-gradient-to-r from-kawai-red to-red-700 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
               >
-                Request Consultation
+                Claim Now
               </motion.button>
             </div>
           </motion.div>
         </motion.div>
+      </div>
+    )
+  }
+
+  // Show inline Calendly booking when requested
+  if (showInlineBooking) {
+    return (
+      <div className={cn("max-w-4xl mx-auto", className)}>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key="booking-content"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.5 }}
+            className="space-y-8"
+          >
+            {/* Booking Header with Back Button */}
+            <div className="text-center space-y-6">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="space-y-4"
+              >
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-kawai-black leading-tight">
+                  Book Your <span className="text-amber-600 font-normal">Premium Consultation</span>
+                </h2>
+                <p className="text-lg text-kawai-black/70 font-light leading-relaxed max-w-3xl mx-auto">
+                  Schedule your exclusive piano viewing and consultation with our master technicians.
+                  Experience the signature collection in our private showroom.
+                </p>
+              </motion.div>
+
+              {/* Back Button */}
+              <motion.button
+                onClick={handleBackToSelection}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+                className="inline-flex items-center gap-2 text-amber-600/70 hover:text-amber-600 transition-colors duration-300 group"
+              >
+                <svg
+                  className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                <span className="text-sm font-light tracking-wider">Return to Path Selection</span>
+              </motion.button>
+            </div>
+
+            {/* Inline Calendly Widget */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="bg-gradient-to-br from-white to-stone-50 backdrop-blur-sm rounded-2xl border border-amber-100 overflow-hidden shadow-xl"
+            >
+              <CalendlyBookingWidget
+                isOpen={true}
+                onClose={handleBackToSelection}
+                signaturePageSlug={location}
+                calendlyUrl="https://calendly.com/kawaipianogallery/houston-baby-grand-sale"
+                displayMode="inline"
+                className="p-6"
+                prefillEmail={emailData?.email}
+                onEventScheduled={handleCalendlyEventScheduled}
+                onDateTimeSelected={handleCalendlyDateTimeSelected}
+                onProfilePageViewed={handleCalendlyProfilePageViewed}
+              />
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
       </div>
     )
   }

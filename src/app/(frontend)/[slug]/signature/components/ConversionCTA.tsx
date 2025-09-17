@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
 import { cn } from '@/lib/utils'
@@ -172,7 +172,7 @@ export function ConversionCTA({
   customData
 }: ConversionCTAProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)
+  const [showInlineBooking, setShowInlineBooking] = useState(false)
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -219,9 +219,14 @@ export function ConversionCTA({
     if (onConsultationClick) {
       onConsultationClick()
     } else {
-      // Open the booking modal
-      setIsBookingModalOpen(true)
+      // Show inline booking widget
+      setShowInlineBooking(true)
     }
+  }
+
+  // Handle return to CTA
+  const handleBackToCTA = () => {
+    setShowInlineBooking(false)
   }
 
   // Handle successful Calendly booking
@@ -289,20 +294,30 @@ export function ConversionCTA({
       <div className="container mx-auto px-6 lg:px-8 relative z-10">
         <div className="max-w-7xl mx-auto">
 
-          {/* Urgency Badge */}
-          <motion.div
-            className="text-center mb-8"
-            style={{ y }}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <UrgencyBadge text="Limited Signature Selection" />
-          </motion.div>
+          {/* Conditional Content Based on State */}
+          <AnimatePresence mode="wait">
+            {!showInlineBooking ? (
+              /* Original CTA Content */
+              <motion.div
+                key="cta-content"
+                initial={{ opacity: 1 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4 }}
+              >
+                {/* Urgency Badge */}
+                <motion.div
+                  className="text-center mb-8"
+                  style={{ y }}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  viewport={{ once: true }}
+                >
+                  <UrgencyBadge text="Limited Signature Selection" />
+                </motion.div>
 
-          {/* Main Content Grid */}
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                {/* Main Content Grid */}
+                <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
             {/* Left Column - Main Message */}
             <motion.div
@@ -421,25 +436,82 @@ export function ConversionCTA({
                 </div>
               </motion.div>
             </motion.div>
-          </div>
+                </div>
+              </motion.div>
+            ) : (
+              /* Inline Booking Content */
+              <motion.div
+                key="booking-content"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.5 }}
+                className="space-y-8"
+              >
+                {/* Booking Header with Back Button */}
+                <div className="text-center space-y-6">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                    className="space-y-4"
+                  >
+                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-kawai-pearl leading-tight">
+                      Book Your <span className="text-kawai-gold font-normal">Premium Consultation</span>
+                    </h2>
+                    <p className="text-lg text-kawai-pearl/80 font-light leading-relaxed max-w-3xl mx-auto">
+                      Schedule your exclusive piano viewing and consultation with our master technicians.
+                      Experience the signature collection in our private showroom.
+                    </p>
+                  </motion.div>
+
+                  {/* Back Button */}
+                  <motion.button
+                    onClick={handleBackToCTA}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: 0.2 }}
+                    className="inline-flex items-center gap-2 text-kawai-gold/70 hover:text-kawai-gold transition-colors duration-300 group"
+                  >
+                    <svg
+                      className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    <span className="text-sm font-light tracking-wider">Return to Signature Selection</span>
+                  </motion.button>
+                </div>
+
+                {/* Inline Calendly Widget */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                  className="bg-gradient-to-br from-kawai-black/50 to-transparent backdrop-blur-sm rounded-2xl border border-kawai-gold/20 overflow-hidden"
+                >
+                  <CalendlyBookingWidget
+                    isOpen={true}
+                    onClose={handleBackToCTA}
+                    signaturePageSlug={signaturePageSlug}
+                    calendlyUrl="https://calendly.com/kawaipianogallery/houston-baby-grand-sale"
+                    displayMode="inline"
+                    className="p-6"
+                    onEventScheduled={handleCalendlyEventScheduled}
+                    onDateTimeSelected={handleCalendlyDateTimeSelected}
+                    onProfilePageViewed={handleCalendlyProfilePageViewed}
+                  />
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
-
       {/* Decorative bottom border */}
       <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-kawai-gold/20 to-transparent" />
-
-      {/* Calendly Booking Widget */}
-      <CalendlyBookingWidget
-        isOpen={isBookingModalOpen}
-        onClose={() => setIsBookingModalOpen(false)}
-        signaturePageSlug={signaturePageSlug}
-        calendlyUrl="https://calendly.com/kawaipianogallery/houston-baby-grand-sale"
-        displayMode="modal"
-        onEventScheduled={handleCalendlyEventScheduled}
-        onDateTimeSelected={handleCalendlyDateTimeSelected}
-        onProfilePageViewed={handleCalendlyProfilePageViewed}
-      />
     </section>
   )
 }
