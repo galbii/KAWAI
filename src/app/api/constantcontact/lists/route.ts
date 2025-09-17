@@ -1,0 +1,135 @@
+/**
+ * Constant Contact Lists API Route
+ *
+ * Handles operations for retrieving and managing contact lists
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { createConstantContactClient } from '@/lib/constantcontact/client';
+import { ConstantContactListManager } from '@/lib/constantcontact/lists';
+import { MemoryTokenStorage } from '@/lib/constantcontact/auth';
+
+// In production, use database or encrypted session storage
+const tokenStorage = new MemoryTokenStorage();
+
+export async function GET(request: NextRequest) {
+  try {
+    // Check authentication
+    const isAuthenticated = request.cookies.get('cc_authenticated')?.value === 'true';
+    if (!isAuthenticated) {
+      return NextResponse.json(
+        { error: 'Not authenticated. Please complete OAuth flow first.' },
+        { status: 401 }
+      );
+    }
+
+    // Create client and list manager
+    const client = createConstantContactClient(tokenStorage);
+    const listManager = new ConstantContactListManager(client);
+
+    // Get query parameters
+    const searchParams = request.nextUrl.searchParams;
+    const format = searchParams.get('format') || 'raw';
+
+    // Fetch lists
+    const response = await listManager.getAllLists();
+
+    if (!response.success) {
+      return NextResponse.json(
+        {
+          error: 'Failed to fetch lists',
+          details: response.error
+        },
+        { status: response.status }
+      );
+    }
+
+    // Format response based on request
+    if (format === 'ui') {
+      // Format for dropdown/selection UI
+      const formattedLists = listManager.formatListsForUI(response.data?.lists || []);
+      return NextResponse.json({
+        success: true,
+        data: formattedLists,
+        count: formattedLists.length
+      });
+    }
+
+    // Return raw response
+    return NextResponse.json({
+      success: true,
+      data: response.data,
+      count: response.data?.lists_count || 0
+    });
+
+  } catch (error) {
+    console.error('Lists API error:', error);
+
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    // Check authentication
+    const isAuthenticated = request.cookies.get('cc_authenticated')?.value === 'true';
+    if (!isAuthenticated) {
+      return NextResponse.json(
+        { error: 'Not authenticated. Please complete OAuth flow first.' },
+        { status: 401 }
+      );
+    }
+
+    // Parse request body
+    const body = await request.json();
+    const { name, description } = body;
+
+    // Validate required fields
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      return NextResponse.json(
+        { error: 'List name is required and must be a non-empty string' },
+        { status: 400 }
+      );
+    }
+
+    // Create client and list manager
+    const client = createConstantContactClient(tokenStorage);
+    const listManager = new ConstantContactListManager(client);
+
+    // Create list
+    const response = await listManager.createList(name.trim(), description);
+
+    if (!response.success) {
+      return NextResponse.json(
+        {
+          error: 'Failed to create list',
+          details: response.error
+        },
+        { status: response.status }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: response.data,
+      message: 'List created successfully'
+    });
+
+  } catch (error) {
+    console.error('Create list error:', error);
+
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
+    );
+  }
+}
