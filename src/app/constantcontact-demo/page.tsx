@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ConstantContactForm } from '@/components/forms/ConstantContactForm';
@@ -21,8 +21,13 @@ import {
   Cog6ToothIcon
 } from '@heroicons/react/24/outline';
 
-export default function ConstantContactDemo() {
-  const searchParams = useSearchParams();
+interface OAuthParams {
+  success: string | null;
+  error: string | null;
+  description: string | null;
+}
+
+function ConstantContactDemoContent({ oauthParams }: { oauthParams: OAuthParams }) {
   const {
     isAuthenticated,
     isAuthenticating,
@@ -45,19 +50,15 @@ export default function ConstantContactDemo() {
 
   // Handle OAuth callback parameters
   useEffect(() => {
-    const success = searchParams.get('success');
-    const error = searchParams.get('error');
-    const description = searchParams.get('description');
-
-    if (success === 'true') {
+    if (oauthParams.success === 'true') {
       // OAuth success - the hook will automatically detect authentication
       console.log('OAuth flow completed successfully');
-    } else if (error) {
-      console.error('OAuth error:', error, description);
+    } else if (oauthParams.error) {
+      console.error('OAuth error:', oauthParams.error, oauthParams.description);
     }
 
     setPageStatus('ready');
-  }, [searchParams]);
+  }, [oauthParams]);
 
   const handleFormSuccess = (data: any) => {
     console.log('Form submission successful:', data);
@@ -93,7 +94,7 @@ export default function ConstantContactDemo() {
 
         {/* OAuth Status Messages */}
         <div className="mb-8">
-          {searchParams.get('success') === 'true' && (
+          {oauthParams.success === 'true' && (
             <div className="flex items-center space-x-3 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg mb-4">
               <CheckCircleIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
               <div>
@@ -107,7 +108,7 @@ export default function ConstantContactDemo() {
             </div>
           )}
 
-          {searchParams.get('error') && (
+          {oauthParams.error && (
             <div className="flex items-center space-x-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mb-4">
               <ExclamationTriangleIcon className="w-6 h-6 text-red-600 dark:text-red-400" />
               <div>
@@ -115,7 +116,7 @@ export default function ConstantContactDemo() {
                   OAuth Error
                 </h3>
                 <p className="text-sm text-red-700 dark:text-red-300">
-                  {searchParams.get('description') || searchParams.get('error')}
+                  {oauthParams.description || oauthParams.error}
                 </p>
               </div>
             </div>
@@ -336,5 +337,36 @@ export default function ConstantContactDemo() {
         </div>
       </div>
     </div>
+  );
+}
+
+function ConstantContactDemoWrapper() {
+  const searchParams = useSearchParams();
+
+  const oauthParams: OAuthParams = {
+    success: searchParams.get('success'),
+    error: searchParams.get('error'),
+    description: searchParams.get('description')
+  };
+
+  return <ConstantContactDemoContent oauthParams={oauthParams} />;
+}
+
+function ConstantContactDemoFallback() {
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600 dark:text-gray-400">Loading Constant Contact demo...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function ConstantContactDemo() {
+  return (
+    <Suspense fallback={<ConstantContactDemoFallback />}>
+      <ConstantContactDemoWrapper />
+    </Suspense>
   );
 }
