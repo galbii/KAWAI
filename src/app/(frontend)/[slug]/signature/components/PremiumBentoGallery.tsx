@@ -229,6 +229,7 @@ export function PremiumBentoGallery() {
 
   return (
     <section
+      id="premium-bento-gallery"
       ref={containerRef}
       className="relative py-20 md:py-32 bg-gradient-to-b from-kawai-black via-gray-900 to-kawai-black overflow-hidden"
     >

@@ -1,21 +1,22 @@
 /**
  * Constant Contact OAuth Authorization Route
+ * Enhanced with Payload CMS database integration
  *
  * Initiates OAuth flow by redirecting to Constant Contact authorization server
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createConstantContactAuth } from '@/lib/constantcontact/auth';
+import { createConstantContactAuthWithDatabase } from '@/lib/constantcontact/auth';
+import { getPayload } from 'payload';
+import config from '@/payload.config';
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = createConstantContactAuth();
+    const payload = await getPayload({ config });
+    const auth = createConstantContactAuthWithDatabase(payload);
 
-    // Generate random state for CSRF protection
-    const state = generateState();
-
-    // Create authorization URL
-    const authUrl = auth.getAuthorizationUrl(state);
+    // Generate authorization URL with secure state parameter
+    const { url: authUrl, state } = await auth.getAuthorizationUrlWithDatabase(payload);
 
     // Store state in session/cookie for validation in callback
     const response = NextResponse.redirect(authUrl);
@@ -41,11 +42,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-/**
- * Generate random state parameter for OAuth security
- */
-function generateState(): string {
-  return Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('base64url');
 }

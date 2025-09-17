@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { HeaderDynamic } from "@/components/layout/header-dynamic";
-import { Footer } from "@/components/layout/footer";
+import { FooterDynamic } from "@/components/layout/footer-dynamic";
 import { NavigationContextProvider } from "@/contexts/NavigationContext";
 import { parseNavigationOrigin } from "@/lib/navigation-utils";
 import { headers } from 'next/headers';
@@ -120,7 +120,7 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
       <div className="flex min-h-screen flex-col">
         <HeaderDynamic />
         <main className="flex-1">{children}</main>
-        <Footer />
+        <FooterDynamic />
       </div>
     </NavigationContextProvider>
   )

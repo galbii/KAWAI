@@ -90,6 +90,7 @@ export interface Config {
     'landing-pages': LandingPage;
     'pianos-page': PianosPage;
     products: Product;
+    'constant-contact-settings': ConstantContactSetting;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -109,6 +110,7 @@ export interface Config {
     'landing-pages': LandingPagesSelect<false> | LandingPagesSelect<true>;
     'pianos-page': PianosPageSelect<false> | PianosPageSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
+    'constant-contact-settings': ConstantContactSettingsSelect<false> | ConstantContactSettingsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -2553,6 +2555,10 @@ export interface LandingTestimonialsBlock {
  */
 export interface User {
   id: string;
+  /**
+   * User role for access control
+   */
+  role: 'admin' | 'user';
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -3664,6 +3670,73 @@ export interface PianosPage {
   createdAt: string;
 }
 /**
+ * Manage Constant Contact API credentials and OAuth2 tokens. Restricted to admin users only.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "constant-contact-settings".
+ */
+export interface ConstantContactSetting {
+  id: string;
+  /**
+   * Your Constant Contact Client ID from the developer portal
+   */
+  clientId: string;
+  /**
+   * Your Constant Contact Client Secret from the developer portal
+   */
+  clientSecret: string;
+  /**
+   * The redirect URI configured in your Constant Contact app
+   */
+  redirectUri: string;
+  /**
+   * Constant Contact API base URL (usually https://api.cc.email/v3)
+   */
+  baseUrl?: string | null;
+  /**
+   * Current access token for API requests
+   */
+  accessToken?: string | null;
+  /**
+   * Refresh token for obtaining new access tokens
+   */
+  refreshToken?: string | null;
+  /**
+   * Token type (typically "Bearer")
+   */
+  tokenType?: string | null;
+  /**
+   * OAuth2 scopes granted to the application
+   */
+  scope?: string | null;
+  /**
+   * When the current access token expires
+   */
+  expiresAt?: string | null;
+  /**
+   * Current status of the API connection
+   */
+  status: 'pending_authorization' | 'active' | 'expired' | 'refresh_failed' | 'error';
+  /**
+   * Timestamp of the last successful API request
+   */
+  lastSuccessfulRequest?: string | null;
+  /**
+   * Timestamp of the last token refresh
+   */
+  lastTokenRefresh?: string | null;
+  /**
+   * Last error message (if any)
+   */
+  errorMessage?: string | null;
+  /**
+   * Additional notes or configuration details
+   */
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
@@ -3705,6 +3778,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'products';
         value: string | Product;
+      } | null)
+    | ({
+        relationTo: 'constant-contact-settings';
+        value: string | ConstantContactSetting;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -3753,6 +3830,7 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  role?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -4914,6 +4992,28 @@ export interface ProductsSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "constant-contact-settings_select".
+ */
+export interface ConstantContactSettingsSelect<T extends boolean = true> {
+  clientId?: T;
+  clientSecret?: T;
+  redirectUri?: T;
+  baseUrl?: T;
+  accessToken?: T;
+  refreshToken?: T;
+  tokenType?: T;
+  scope?: T;
+  expiresAt?: T;
+  status?: T;
+  lastSuccessfulRequest?: T;
+  lastTokenRefresh?: T;
+  errorMessage?: T;
+  notes?: T;
+  createdAt?: T;
+  updatedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

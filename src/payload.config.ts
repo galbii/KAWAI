@@ -19,6 +19,7 @@ import { HomePage } from './collections/HomePage'
 import { DealerLocations } from './collections/DealerLocations'
 import { Products } from './collections/Products'
 import { LandingPages } from './collections/LandingPages'
+import { ConstantContactSettings } from './collections/ConstantContactSettings'
 import {
   ProductShowcase,
   ProductHero,
@@ -53,17 +54,18 @@ export default buildConfig({
     },
   },
   collections: [
-    Users, 
-    Media, 
+    Users,
+    Media,
     // Sites,        // Multi-site management (disabled)
     // SitePages,    // Site-specific pages with template inheritance (disabled)
-    Productlines, 
-    PianoModels, 
+    Productlines,
+    PianoModels,
     HomePage,       // Main homepage content
     DealerLocations, // Multiple dealer location pages
     LandingPages,   // Campaign landing pages
     PianosPage,     // Keep for backward compatibility during migration
     Products,
+    ConstantContactSettings, // Constant Contact API credentials and tokens
   ],
   // Define blocks at root level for performance optimization using blockReferences
   blocks: [

@@ -48,7 +48,8 @@ export interface Contact {
     postal_code: string;
     country: string;
   }>;
-  list_memberships: ListMembership[];
+  list_memberships: ListMembership[] | string[]; // Can be objects (from API) or strings (for creation)
+  create_source?: string; // Required for creation
   created_at?: string;
   updated_at?: string;
 }
@@ -115,28 +116,38 @@ export class ConstantContactListManager {
    * Create a new contact with list memberships
    */
   async createContact(contactData: CreateContactRequest): Promise<ApiResponse<Contact>> {
-    const contact: Contact = {
+    // Build the contact object according to Constant Contact v3 API requirements
+    const contact: any = {
       email_address: {
         address: contactData.email_address,
         permission_to_send: 'implicit'
       },
-      first_name: contactData.first_name,
-      last_name: contactData.last_name,
-      job_title: contactData.job_title,
-      company_name: contactData.company_name,
-      list_memberships: contactData.list_ids.map(list_id => ({
-        list_id,
-        membership_status: 'active' as const
-      }))
+      create_source: 'Contact', // Required field
+      list_memberships: contactData.list_ids // Array of list ID strings (not objects)
     };
 
+    // Add first_name and last_name - both are required by the API
+    // If not provided, use placeholder values to avoid 500 error
+    contact.first_name = contactData.first_name?.trim() || 'Contact';
+    contact.last_name = contactData.last_name?.trim() || 'Subscriber';
+
+    // Only add optional fields that have values
+    if (contactData.job_title?.trim()) {
+      contact.job_title = contactData.job_title.trim();
+    }
+    if (contactData.company_name?.trim()) {
+      contact.company_name = contactData.company_name.trim();
+    }
+
     // Add phone number if provided
-    if (contactData.phone_number) {
+    if (contactData.phone_number?.trim()) {
       contact.phone_numbers = [{
-        phone_number: contactData.phone_number,
+        phone_number: contactData.phone_number.trim(),
         kind: 'mobile'
       }];
     }
+
+    console.log('Constant Contact: Sending contact data to API:', JSON.stringify(contact, null, 2));
 
     return this.client.post<Contact>('/contacts', contact);
   }
@@ -153,14 +164,13 @@ export class ConstantContactListManager {
    * Update contact's list memberships
    */
   async updateContactLists(contactId: string, listIds: string[]): Promise<ApiResponse<Contact>> {
-    const listMemberships = listIds.map(list_id => ({
-      list_id,
-      membership_status: 'active' as const
-    }));
-
+    // For updates, try the simple array format first (consistent with creation)
+    // If this fails, the API might require the object format for updates
     const data = {
-      list_memberships: listMemberships
+      list_memberships: listIds
     };
+
+    console.log('Constant Contact: Updating contact list memberships:', JSON.stringify(data, null, 2));
 
     return this.client.put<Contact>(`/contacts/${contactId}`, data);
   }
@@ -223,7 +233,9 @@ export class ConstantContactListManager {
       if (response.success && response.data?.contacts && response.data.contacts.length > 0) {
         const contact = response.data.contacts[0];
         const listIds = contact.list_memberships
-          .filter(membership => membership.membership_status === 'active')
+          .filter((membership): membership is ListMembership =>
+            typeof membership === 'object' && membership.membership_status === 'active'
+          )
           .map(membership => membership.list_id);
 
         return {

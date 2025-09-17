@@ -6,26 +6,18 @@ import { cn } from '@/lib/utils'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { RefactoredEmailForm } from '@/components/forms/RefactoredEmailForm'
 
 import type { AssessmentResponse } from '../types'
 
 interface DualConversionProps {
   assessmentResults: AssessmentResponse
-  onComplete: (type: 'email' | 'booking', data: any) => void
+  onComplete: (type: 'email' | 'booking', data: Record<string, unknown>) => void
   location: string
   className?: string
 }
 
-// Form schemas
-const emailCaptureSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  email: z.string().email('Please enter a valid email address'),
-  phone: z.string().optional(),
-  interests: z.array(z.string()).optional(),
-  optInMarketing: z.boolean().optional()
-})
-
+// Booking form schema
 const bookingSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
@@ -36,7 +28,6 @@ const bookingSchema = z.object({
   message: z.string().optional()
 })
 
-type EmailFormData = z.infer<typeof emailCaptureSchema>
 type BookingFormData = z.infer<typeof bookingSchema>
 
 /**
@@ -52,31 +43,12 @@ export const DualConversion: React.FC<DualConversionProps> = ({
   const [selectedPath, setSelectedPath] = useState<'digital' | 'showroom' | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Email capture form
-  const emailForm = useForm<EmailFormData>({
-    resolver: zodResolver(emailCaptureSchema),
-    mode: 'onChange'
-  })
-
   // Booking form
   const bookingForm = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     mode: 'onChange'
   })
 
-  const handleEmailSubmit = async (data: EmailFormData) => {
-    setIsSubmitting(true)
-    try {
-      await onComplete('email', {
-        ...data,
-        conversionType: 'digital',
-        assessmentResults,
-        location
-      })
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
 
   const handleBookingSubmit = async (data: BookingFormData) => {
     setIsSubmitting(true)
@@ -225,118 +197,12 @@ export const DualConversion: React.FC<DualConversionProps> = ({
     <div className={cn("max-w-2xl mx-auto", className)}>
       <AnimatePresence mode="wait">
         {selectedPath === 'digital' && (
-          <motion.div
-            key="digital-form"
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            className="bg-white rounded-2xl shadow-xl p-8"
-          >
-            <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                Access Your Exclusive Heritage Preview
-              </h3>
-              <p className="text-gray-600">
-                Receive your formal consultation invitation and exclusive access to our master craftsman collection catalog.
-              </p>
-            </div>
-            
-            <form onSubmit={emailForm.handleSubmit(handleEmailSubmit)} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    First Name *
-                  </label>
-                  <input
-                    {...emailForm.register('firstName')}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="John"
-                  />
-                  {emailForm.formState.errors.firstName && (
-                    <p className="text-red-600 text-sm mt-1">
-                      {emailForm.formState.errors.firstName.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Last Name *
-                  </label>
-                  <input
-                    {...emailForm.register('lastName')}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Doe"
-                  />
-                  {emailForm.formState.errors.lastName && (
-                    <p className="text-red-600 text-sm mt-1">
-                      {emailForm.formState.errors.lastName.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address *
-                </label>
-                <input
-                  {...emailForm.register('email')}
-                  type="email"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="john.doe@example.com"
-                />
-                {emailForm.formState.errors.email && (
-                  <p className="text-red-600 text-sm mt-1">
-                    {emailForm.formState.errors.email.message}
-                  </p>
-                )}
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number (optional)
-                </label>
-                <input
-                  {...emailForm.register('phone')}
-                  type="tel"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="(555) 123-4567"
-                />
-              </div>
-              
-              <div>
-                <label className="flex items-center space-x-2">
-                  <input
-                    {...emailForm.register('optInMarketing')}
-                    type="checkbox"
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700">
-                    I'd like to receive exclusive heritage collection updates and limited access opportunities
-                  </span>
-                </label>
-              </div>
-              
-              <div className="flex space-x-4 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setSelectedPath(null)}
-                  className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-                >
-                  Back
-                </button>
-                <motion.button
-                  type="submit"
-                  disabled={isSubmitting}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? 'Securing Access...' : 'Secure My Invitation'}
-                </motion.button>
-              </div>
-            </form>
-          </motion.div>
+          <RefactoredEmailForm
+            onComplete={onComplete}
+            assessmentResults={assessmentResults}
+            location={location}
+            onBack={() => setSelectedPath(null)}
+          />
         )}
 
         {selectedPath === 'showroom' && (

@@ -7,24 +7,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createConstantContactClient } from '@/lib/constantcontact/client';
 import { ConstantContactListManager } from '@/lib/constantcontact/lists';
-import { MemoryTokenStorage } from '@/lib/constantcontact/auth';
-
-// In production, use database or encrypted session storage
-const tokenStorage = new MemoryTokenStorage();
+import { getValidAccessToken } from '@/lib/constantcontact/credentials';
+import { getPayload } from 'payload';
+import config from '@/payload.config';
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
-    const isAuthenticated = request.cookies.get('cc_authenticated')?.value === 'true';
-    if (!isAuthenticated) {
+    const payload = await getPayload({ config });
+
+    // Check authentication by getting valid access token
+    const accessToken = await getValidAccessToken(payload);
+    if (!accessToken) {
       return NextResponse.json(
-        { error: 'Not authenticated. Please complete OAuth flow first.' },
+        { error: 'Not authenticated. Please complete OAuth flow first or token has expired.' },
         { status: 401 }
       );
     }
 
-    // Create client and list manager
-    const client = createConstantContactClient(tokenStorage);
+    // Create client and list manager with database-managed token
+    const client = createConstantContactClient(payload);
     const listManager = new ConstantContactListManager(client);
 
     // Get query parameters
@@ -77,11 +78,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const isAuthenticated = request.cookies.get('cc_authenticated')?.value === 'true';
-    if (!isAuthenticated) {
+    const payload = await getPayload({ config });
+
+    // Check authentication by getting valid access token
+    const accessToken = await getValidAccessToken(payload);
+    if (!accessToken) {
       return NextResponse.json(
-        { error: 'Not authenticated. Please complete OAuth flow first.' },
+        { error: 'Not authenticated. Please complete OAuth flow first or token has expired.' },
         { status: 401 }
       );
     }
@@ -98,8 +101,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create client and list manager
-    const client = createConstantContactClient(tokenStorage);
+    // Create client and list manager with database-managed token
+    const client = createConstantContactClient(payload);
     const listManager = new ConstantContactListManager(client);
 
     // Create list

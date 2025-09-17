@@ -78,10 +78,34 @@ const socialLinks = [
   { icon: Twitter, href: '#', label: 'Twitter' },
 ]
 
-export function Footer() {
+interface DealerLocationContactData {
+  name: string
+  address: string
+  phone: string
+  email?: string
+  locationName?: string
+  slug?: string
+}
+
+interface FooterProps {
+  locationContactData?: DealerLocationContactData | null
+}
+
+export function Footer({ locationContactData }: FooterProps) {
+  // Generate location-aware business name and description
+  const businessName = locationContactData?.name || 'Kawai Piano Gallery St. Louis'
+  const locationDescription = locationContactData?.locationName
+    ? `${locationContactData.locationName}'s premier piano destination. Experience the harmony of traditional Japanese craftsmanship and innovative technology.`
+    : 'Crafting exceptional pianos for over 95 years. Experience the harmony of traditional Japanese craftsmanship and innovative technology.'
+
+  // Debug log to see what data we're getting
+  if (typeof window === 'undefined') { // Only log on server
+    console.log('Footer locationContactData:', locationContactData)
+  }
+
   const linkVariants = {
     initial: { x: 0 },
-    hover: { 
+    hover: {
       x: 2,
       transition: { duration: 0.2 }
     }
@@ -89,7 +113,7 @@ export function Footer() {
 
   const socialVariants = {
     initial: { scale: 1 },
-    hover: { 
+    hover: {
       scale: 1.1,
       transition: { duration: 0.2 }
     }
@@ -103,11 +127,15 @@ export function Footer() {
           {/* Company Info */}
           <div className="lg:col-span-2">
             <div className="mb-6">
-              <KawaiLogo size="sm" animated={true} theme="dark" />
+              <KawaiLogo
+                size="sm"
+                animated={true}
+                theme="dark"
+                dealerName={locationContactData?.locationName}
+              />
             </div>
             <p className="text-kawai-neutral mb-6 leading-relaxed">
-              Crafting exceptional pianos for over 95 years. Experience the harmony of 
-              traditional Japanese craftsmanship and innovative technology.
+              {locationDescription}
             </p>
             <div className="text-sm text-kawai-neutral/80 mb-6">
               <div className="mb-2">Est. 1927 • Hamamatsu, Japan</div>
@@ -118,15 +146,15 @@ export function Footer() {
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <Phone className="h-5 w-5 text-kawai-red" />
-                <span>(555) 123-4567</span>
+                <span>{locationContactData?.phone || '(636) 265-2866'}</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="h-5 w-5 text-kawai-red" />
-                <span>info@kawaipianocenter.com</span>
+                <span>{locationContactData?.email || 'info@kawaipianostlouis.com'}</span>
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin className="h-5 w-5 text-kawai-red" />
-                <span>123 Music Lane, Piano City, PC 12345</span>
+                <span>{locationContactData?.address || '21 Meadows Circle Drive, Suite 312, Lake St. Louis, MO 63367'}</span>
               </div>
             </div>
           </div>

@@ -1,19 +1,18 @@
 /**
  * Constant Contact OAuth Callback Route
+ * Enhanced with Payload CMS database integration
  *
- * Handles OAuth callback, exchanges code for tokens, and stores them securely
+ * Handles OAuth callback, exchanges code for tokens, and stores them securely in database
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createConstantContactAuth } from '@/lib/constantcontact/auth';
-import { createConstantContactClient } from '@/lib/constantcontact/client';
-import { MemoryTokenStorage } from '@/lib/constantcontact/auth';
-
-// In production, use database or encrypted session storage
-const tokenStorage = new MemoryTokenStorage();
+import { createConstantContactAuthWithDatabase } from '@/lib/constantcontact/auth';
+import { getPayload } from 'payload';
+import config from '@/payload.config';
 
 export async function GET(request: NextRequest) {
   try {
+    const payload = await getPayload({ config });
     const searchParams = request.nextUrl.searchParams;
     const code = searchParams.get('code');
     const state = searchParams.get('state');
@@ -42,14 +41,22 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Exchange code for tokens
-    const client = createConstantContactClient(tokenStorage);
-    const tokenResponse = await client.completeOAuthFlow(code);
+    // Create auth instance with database integration
+    const auth = createConstantContactAuthWithDatabase(payload);
 
-    if (!tokenResponse.success) {
-      const errorMessage = tokenResponse.error?.[0]?.error_message || 'OAuth flow failed';
+    // Validate state with constant-time comparison for security
+    if (!auth.validateState(state, storedState)) {
       return NextResponse.redirect(
-        new URL(`/constantcontact-demo?error=token_exchange_failed&description=${encodeURIComponent(errorMessage)}`, request.url)
+        new URL('/constantcontact-demo?error=invalid_state', request.url)
+      );
+    }
+
+    // Complete OAuth2 flow and store tokens in database
+    const result = await auth.completeOAuth2Flow(code, payload);
+
+    if (!result.success) {
+      return NextResponse.redirect(
+        new URL(`/constantcontact-demo?error=token_exchange_failed&description=${encodeURIComponent(result.message)}`, request.url)
       );
     }
 
@@ -65,12 +72,12 @@ export async function GET(request: NextRequest) {
       maxAge: 0 // Delete cookie
     });
 
-    // Optionally set a session cookie to indicate successful authentication
+    // Set a session cookie to indicate successful authentication
     response.cookies.set('cc_authenticated', 'true', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 3600 // 1 hour
+      maxAge: 24 * 60 * 60 // 24 hours
     });
 
     return response;

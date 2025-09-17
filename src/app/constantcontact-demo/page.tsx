@@ -287,10 +287,18 @@ function ConstantContactDemoContent({ oauthParams }: { oauthParams: OAuthParams 
           ) : (
             <div>
               <ConstantContactForm
+                formConfig={{
+                  title: '', // No title since showTitle was false
+                  fields: [
+                    { name: 'firstName', label: 'First Name', type: 'text', placeholder: 'John' },
+                    { name: 'lastName', label: 'Last Name', type: 'text', placeholder: 'Doe' },
+                    { name: 'email', label: 'Email Address', type: 'email', placeholder: 'john.doe@example.com', required: true },
+                    { name: 'phone', label: 'Phone Number (optional)', type: 'tel', placeholder: '(555) 123-4567' },
+                  ],
+                  className: "max-w-none"
+                }}
                 onSuccess={handleFormSuccess}
                 onError={handleFormError}
-                showTitle={false}
-                className="max-w-none"
               />
 
               {/* Submit Results */}

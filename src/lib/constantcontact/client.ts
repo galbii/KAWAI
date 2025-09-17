@@ -2,9 +2,12 @@
  * Constant Contact API v3 Client
  *
  * Handles API requests with automatic token refresh, rate limiting, and error handling
+ * Uses database-first architecture with Payload CMS for secure token storage
  */
 
-import { ConstantContactAuth, ConstantContactTokens, TokenStorage, createConstantContactAuth } from './auth';
+import type { Payload } from 'payload';
+import { ConstantContactAuth, createConstantContactAuth } from './auth';
+import { getValidAccessToken } from './credentials';
 
 export interface ConstantContactError {
   error_key: string;
@@ -67,13 +70,13 @@ class RateLimiter {
 
 export class ConstantContactClient {
   private auth: ConstantContactAuth;
-  private tokenStorage: TokenStorage;
+  private payload: Payload;
   private rateLimiter: RateLimiter;
   private baseUrl = 'https://api.cc.email/v3';
 
-  constructor(tokenStorage: TokenStorage) {
+  constructor(payload: Payload) {
     this.auth = createConstantContactAuth();
-    this.tokenStorage = tokenStorage;
+    this.payload = payload;
     this.rateLimiter = new RateLimiter();
   }
 
@@ -89,8 +92,8 @@ export class ConstantContactClient {
       await this.rateLimiter.waitForAvailableSlot();
 
       // Get valid access token
-      const tokens = await this.getValidTokens();
-      if (!tokens) {
+      const accessToken = await this.getValidTokens();
+      if (!accessToken) {
         return {
           success: false,
           status: 401,
@@ -103,7 +106,7 @@ export class ConstantContactClient {
       const response = await fetch(url, {
         ...options,
         headers: {
-          'Authorization': `Bearer ${tokens.access_token}`,
+          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           ...options.headers
@@ -196,23 +199,11 @@ export class ConstantContactClient {
   }
 
   /**
-   * Get valid tokens, refreshing if necessary
+   * Get valid access token from database, refreshing if necessary
    */
-  private async getValidTokens(): Promise<ConstantContactTokens | null> {
+  private async getValidTokens(): Promise<string | null> {
     try {
-      const tokens = await this.tokenStorage.retrieve();
-      if (!tokens) {
-        return null;
-      }
-
-      // Check if token needs refresh
-      if (this.auth.isTokenExpired(tokens)) {
-        const newTokens = await this.auth.refreshAccessToken(tokens.refresh_token);
-        await this.tokenStorage.store(newTokens);
-        return newTokens;
-      }
-
-      return tokens;
+      return await getValidAccessToken(this.payload);
     } catch (error) {
       console.error('Error getting valid tokens:', error);
       return null;
@@ -223,15 +214,17 @@ export class ConstantContactClient {
    * Check if client is authenticated
    */
   async isAuthenticated(): Promise<boolean> {
-    const tokens = await this.tokenStorage.retrieve();
-    return tokens !== null;
+    const accessToken = await this.getValidTokens();
+    return accessToken !== null;
   }
 
   /**
    * Clear stored tokens (logout)
    */
   async clearAuthentication(): Promise<void> {
-    await this.tokenStorage.clear();
+    // This would require updating the database credentials to clear tokens
+    // For now, we'll just log that this method needs implementation
+    console.warn('clearAuthentication() method needs to be implemented for database storage');
   }
 
   /**
@@ -244,22 +237,24 @@ export class ConstantContactClient {
   /**
    * Get authorization URL for OAuth flow
    */
-  getAuthorizationUrl(state?: string): string {
-    return this.auth.getAuthorizationUrl(state);
+  async getAuthorizationUrl(state?: string): Promise<string> {
+    return await this.auth.getAuthorizationUrl(state);
   }
 
   /**
    * Complete OAuth flow with authorization code
+   * Note: This method is now handled by the database-first auth system
    */
-  async completeOAuthFlow(code: string): Promise<ApiResponse<ConstantContactTokens>> {
+  async completeOAuthFlow(code: string): Promise<ApiResponse<any>> {
     try {
-      const tokens = await this.auth.exchangeCodeForTokens(code);
-      await this.tokenStorage.store(tokens);
+      // This is now handled by the database-first auth system in auth.ts
+      // The completeOAuth2Flow method in ConstantContactAuth handles database storage
+      const result = await this.auth.completeOAuth2Flow(code, this.payload);
 
       return {
-        success: true,
-        status: 200,
-        data: tokens
+        success: result.success,
+        status: result.success ? 200 : 400,
+        data: result.tokens
       };
     } catch (error) {
       return {
@@ -275,8 +270,8 @@ export class ConstantContactClient {
 }
 
 /**
- * Create client instance with token storage
+ * Create client instance with Payload database integration
  */
-export function createConstantContactClient(tokenStorage: TokenStorage): ConstantContactClient {
-  return new ConstantContactClient(tokenStorage);
+export function createConstantContactClient(payload: Payload): ConstantContactClient {
+  return new ConstantContactClient(payload);
 }

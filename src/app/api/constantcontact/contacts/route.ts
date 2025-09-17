@@ -7,24 +7,36 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createConstantContactClient } from '@/lib/constantcontact/client';
 import { ConstantContactListManager, CreateContactRequest } from '@/lib/constantcontact/lists';
-import { MemoryTokenStorage } from '@/lib/constantcontact/auth';
+import { getValidAccessToken } from '@/lib/constantcontact/credentials';
+import { getPayload } from 'payload';
+import config from '@/payload.config';
 
-// In production, use database or encrypted session storage
-const tokenStorage = new MemoryTokenStorage();
+// Using database token storage managed by Payload CMS
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const isAuthenticated = request.cookies.get('cc_authenticated')?.value === 'true';
-    if (!isAuthenticated) {
+    const payload = await getPayload({ config });
+
+    // Check authentication by getting valid access token
+    const accessToken = await getValidAccessToken(payload);
+    if (!accessToken) {
+      console.error('Constant Contact API: No valid access token available');
       return NextResponse.json(
-        { error: 'Not authenticated. Please complete OAuth flow first.' },
+        { error: 'Not authenticated. Please complete OAuth flow first or token has expired.' },
         { status: 401 }
       );
     }
 
     // Parse request body
     const body = await request.json();
+    console.log('Constant Contact API: Received contact submission:', {
+      email: body.email_address,
+      list_ids: body.list_ids,
+      has_first_name: !!body.first_name,
+      has_last_name: !!body.last_name,
+      has_phone: !!body.phone_number
+    });
+
     const {
       email_address,
       first_name,
@@ -50,8 +62,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create client and list manager
-    const client = createConstantContactClient(tokenStorage);
+    // Create client and list manager with database-managed token
+    const client = createConstantContactClient(payload);
     const listManager = new ConstantContactListManager(client);
 
     // Validate email format
@@ -74,9 +86,11 @@ export async function POST(request: NextRequest) {
     };
 
     // Create or update contact
+    console.log('Constant Contact API: Attempting to create/update contact with data:', contactData);
     const response = await listManager.createOrUpdateContact(contactData);
 
     if (!response.success) {
+      console.error('Constant Contact API: Failed to create/update contact:', response.error);
       return NextResponse.json(
         {
           error: 'Failed to create/update contact',
@@ -86,6 +100,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('Constant Contact API: Successfully created/updated contact');
     return NextResponse.json({
       success: true,
       data: response.data,
@@ -93,7 +108,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Create contact error:', error);
+    console.error('Constant Contact API: Unexpected error:', error);
 
     return NextResponse.json(
       {
@@ -107,11 +122,13 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
-    const isAuthenticated = request.cookies.get('cc_authenticated')?.value === 'true';
-    if (!isAuthenticated) {
+    const payload = await getPayload({ config });
+
+    // Check authentication by getting valid access token
+    const accessToken = await getValidAccessToken(payload);
+    if (!accessToken) {
       return NextResponse.json(
-        { error: 'Not authenticated. Please complete OAuth flow first.' },
+        { error: 'Not authenticated. Please complete OAuth flow first or token has expired.' },
         { status: 401 }
       );
     }
@@ -121,8 +138,8 @@ export async function GET(request: NextRequest) {
     const email = searchParams.get('email');
     const listId = searchParams.get('list_id');
 
-    // Create client and list manager
-    const client = createConstantContactClient(tokenStorage);
+    // Create client and list manager with database-managed token
+    const client = createConstantContactClient(payload);
     const listManager = new ConstantContactListManager(client);
 
     if (email) {

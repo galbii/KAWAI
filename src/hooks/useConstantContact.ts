@@ -88,16 +88,18 @@ export function useConstantContact(): UseConstantContactState & UseConstantConta
     try {
       setIsAuthenticating(true);
 
-      // Check if we have authentication cookie
-      const response = await fetch('/api/constantcontact/lists?format=ui');
+      // Check authentication status using dedicated endpoint
+      const response = await fetch('/api/constantcontact/auth/status');
+      const data = await response.json();
 
-      if (response.status === 401) {
-        setIsAuthenticated(false);
-      } else if (response.ok) {
-        setIsAuthenticated(true);
+      if (response.ok && data.success) {
+        setIsAuthenticated(data.authenticated);
+        if (!data.authenticated) {
+          setAuthError(null); // Clear any previous errors for normal unauthenticated state
+        }
       } else {
         setIsAuthenticated(false);
-        setAuthError('Failed to verify authentication status');
+        setAuthError(data.error || 'Failed to verify authentication status');
       }
     } catch (error) {
       setIsAuthenticated(false);
