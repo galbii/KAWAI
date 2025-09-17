@@ -52,6 +52,7 @@
     "papaparse": "^5.5.3",
     "payload": "^3.52.0",
     "pdfjs-dist": "^5.4.149",
+    "posthog-js": "^1.266.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.62.0",
