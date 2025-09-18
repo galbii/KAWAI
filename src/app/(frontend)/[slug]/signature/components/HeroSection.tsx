@@ -47,12 +47,13 @@ function SignatureButton({
       disabled={disabled}
       className={cn(baseStyles, variants[variant], sizes[size], className)}
       whileHover={{
-        scale: disabled ? 1 : 1.02
+        scale: disabled ? 1 : 1.02,
+        y: disabled ? 0 : -2
       }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
       whileTap={{
         scale: disabled ? 1 : 0.98,
-        transition: { duration: 0.2 }
+        y: disabled ? 0 : 0
       }}
     >
       {/* Shimmer effect overlay */}
@@ -83,9 +84,9 @@ function ScrollIndicator() {
       style={{ opacity }}
       className="absolute bottom-8 left-1/2 -translate-x-1/2 cursor-pointer group"
       onClick={scrollToNext}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 2, duration: 0.8 }}
+      transition={{ delay: 9.5, duration: 1.0, ease: "easeOut" }}
     >
       <div className="flex flex-col items-center space-y-2 text-kawai-pearl/70 hover:text-kawai-pearl transition-colors duration-300">
         <span className="text-xs font-light tracking-widest">SCROLL</span>
@@ -263,54 +264,7 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
     }
   }
   
-  // Enhanced animation variants for luxury feel
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.4,
-        delayChildren: 0.3
-      }
-    }
-  }
-
-  const textVariants = {
-    hidden: {
-      opacity: 0,
-      y: 40
-    },
-    visible: {
-      opacity: 1,
-      y: 0
-    }
-  }
-
-  const titleVariants = {
-    hidden: {
-      opacity: 0,
-      y: 60,
-      scale: 0.95
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1
-    }
-  }
-
-  const buttonVariants = {
-    hidden: {
-      opacity: 0,
-      y: 30,
-      scale: 0.9
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1
-    }
-  }
+  // Elegant fade-in animations inspired by premium heritage component
 
   const textAlignmentClasses = {
     left: "text-left items-start",
@@ -375,15 +329,18 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
           // Add transform3d for GPU acceleration
           transform: 'translate3d(0, 0, 0)'
         }}
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.2, ease: "easeOut" }}
       >
         {/* Event Dates */}
         {heroData.exclusiveText && (
           <motion.div
-            variants={textVariants}
             className="mb-8"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.0, delay: 0.8, ease: "easeOut" }}
+            viewport={{ once: true, margin: "-50px" }}
           >
             <span className="inline-block text-kawai-pearl/90 text-xl md:text-2xl font-light tracking-wider border border-kawai-pearl/30 px-6 py-3 rounded-lg backdrop-blur-sm bg-kawai-black/20">
               {heroData.exclusiveText}
@@ -394,8 +351,11 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
 
         {/* Main Title */}
         <motion.div
-          variants={titleVariants}
           className="mb-16"
+          initial={{ opacity: 0, y: 40, scale: 0.95 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 1.2, delay: 2.2, ease: "easeOut" }}
+          viewport={{ once: true, margin: "-50px" }}
         >
           <h1 className="text-center">
             {heroData.titlePrefix && (
@@ -460,8 +420,11 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
         {/* Subtitle */}
         {heroData.subtitle && (
           <motion.h2
-            variants={textVariants}
             className="text-xl md:text-2xl lg:text-3xl font-light mb-12 max-w-2xl"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.0, delay: 4.2, ease: "easeOut" }}
+            viewport={{ once: true, margin: "-50px" }}
             style={{
               color: '#E5E1DB',
               fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
@@ -475,8 +438,11 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
         {/* Description */}
         {heroData.description && (
           <motion.p
-            variants={textVariants}
             className="text-base md:text-lg font-light leading-relaxed mb-20 max-w-xl"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.0, delay: 6.0, ease: "easeOut" }}
+            viewport={{ once: true, margin: "-50px" }}
             style={{
               color: '#B8B4AE',
               fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif'
@@ -488,8 +454,11 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
 
         {/* CTA Buttons */}
         <motion.div
-          variants={buttonVariants}
           className="flex flex-col sm:flex-row gap-6 justify-center items-center"
+          initial={{ opacity: 0, y: 40, scale: 0.9 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 1.2, delay: 7.8, ease: "easeOut" }}
+          viewport={{ once: true, margin: "-50px" }}
         >
           {heroData.primaryCta && (
             <SignatureButton

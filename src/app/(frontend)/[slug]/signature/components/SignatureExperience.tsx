@@ -10,6 +10,7 @@ import { WelcomeScreen } from './WelcomeScreen'
 import { AssessmentControlHub, type AssessmentState } from './AssessmentControlHub'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { trackSubmitApplication, trackCompleteRegistration } from '@/components/MetaPixel'
+import { usePostHog } from 'posthog-js/react'
 import type { AssessmentResponse } from '../types'
 import { ASSESSMENT_QUESTIONS } from '../lib/constants'
 
@@ -34,6 +35,7 @@ interface EmailData {
 }
 
 export function SignatureExperience({ slug }: SignatureExperienceProps) {
+  const posthog = usePostHog()
   const [currentStage, setCurrentStage] = useState<ExperienceStage>('welcome')
   const [assessmentResults, setAssessmentResults] = useState<AssessmentResponse | null>(null)
   const [emailData, setEmailData] = useState<EmailData | null>(null)
@@ -45,10 +47,9 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
   const [showSavedFeedback, setShowSavedFeedback] = useState(false)
   const [currentAssessmentStep, setCurrentAssessmentStep] = useState(0)
   const [dialogPhase, setDialogPhase] = useState<DialogPhase>('welcome-intro')
-  
+
   // Auto-scroll functionality
   const conversionRef = useRef<HTMLDivElement>(null)
-  const [highlightConversion, setHighlightConversion] = useState(false)
 
   // Auto-progression through dialog phases
   useEffect(() => {
@@ -143,6 +144,19 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
         value: 1000,
         currency: 'USD'
       })
+
+      // Track PostHog event for signature houston booking
+      posthog?.capture('signature_houston_booking', {
+        signature_page: slug,
+        conversion_type: data.conversionType || 'booking',
+        booking_method: data.conversionType === 'calendly' ? 'calendly' : 'manual_form',
+        email: emailData?.email,
+        assessment_completed: !!assessmentResults,
+        calendly_event_uri: data.calendlyEventData?.data?.payload?.event?.uri,
+        calendly_invitee_uri: data.calendlyEventData?.data?.payload?.invitee?.uri,
+        value: 1000,
+        currency: 'USD'
+      })
     } else if (type === 'email') {
       // Track lead generation for email capture
       trackSubmitApplication({
@@ -151,6 +165,16 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
         value: 500,
         currency: 'USD',
         status: 'email_captured'
+      })
+
+      // Track PostHog event for email lead
+      posthog?.capture('signature_email_lead', {
+        signature_page: slug,
+        email: emailData?.email || data.email,
+        assessment_completed: !!assessmentResults,
+        conversion_type: 'email_only',
+        value: 500,
+        currency: 'USD'
       })
     }
   }
@@ -272,17 +296,18 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
   // Auto-scroll to conversion section when assessment completes
   useEffect(() => {
     if (currentStage === 'conversion') {
-      // Small delay to let dialog close animation complete
+      // Longer delay to ensure dialog closes and conversion section renders completely
       const timer = setTimeout(() => {
-        conversionRef.current?.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center' 
-        })
-        // Trigger highlight effect
-        setHighlightConversion(true)
-        const highlightTimer = setTimeout(() => setHighlightConversion(false), 3000)
-        return () => clearTimeout(highlightTimer)
-      }, 500)
+        if (conversionRef.current) {
+          // Use requestAnimationFrame for smoother timing
+          requestAnimationFrame(() => {
+            conversionRef.current?.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'start' 
+            })
+          })
+        }
+      }, 1200)
       return () => clearTimeout(timer)
     }
   }, [currentStage])
@@ -437,11 +462,6 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
               exit="exit"
               transition={stageTransition}
               className="max-w-4xl mx-auto"
-              style={{
-                boxShadow: highlightConversion ? '0 0 30px rgba(239, 68, 68, 0.4)' : 'none',
-                borderRadius: highlightConversion ? '1rem' : '0',
-                transition: 'box-shadow 0.5s ease-in-out, border-radius 0.5s ease-in-out'
-              }}
             >
               {(() => {
                 console.log('🎯 Rendering DualConversion with emailData:', emailData)
@@ -476,28 +496,40 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
                   </svg>
                 </div>
 
-                <h2 className="text-4xl font-light text-gray-900 mb-4">
-                  Signature Experience Complete
+                <h2 className="text-5xl font-light text-kawai-red mb-6">
+                  See you there!
                 </h2>
-                <p className="text-xl text-gray-600 mb-8">
-                  Thank you for completing our signature piano experience. Your request has been submitted and you'll receive follow-up information soon.
+                <p className="text-xl text-kawai-black/80 mb-8 max-w-2xl mx-auto leading-relaxed">
+                  You'll receive event confirmation details in your email and an official warm welcome from our team here at Kawai! We can't wait to see you there!
                 </p>
 
-                <div className="grid md:grid-cols-3 gap-6 text-center">
-                  <div className="p-6">
-                    <div className="text-3xl mb-3">📧</div>
-                    <h3 className="font-semibold mb-2">Follow-up Details</h3>
-                    <p className="text-gray-600">Personalized information based on your selections</p>
+                <div className="grid md:grid-cols-3 gap-8 text-center">
+                  <div className="p-6 bg-gradient-to-br from-red-50 to-red-100 rounded-xl border border-red-200">
+                    <div className="w-16 h-16 bg-kawai-red rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 7.89a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-semibold text-kawai-black mb-2">Email Confirmation</h3>
+                    <p className="text-kawai-black/70 text-sm">Event details and location information arriving soon</p>
                   </div>
-                  <div className="p-6">
-                    <div className="text-3xl mb-3">🎹</div>
-                    <h3 className="font-semibold mb-2">Signature Collection</h3>
-                    <p className="text-gray-600">Access to our heritage piano collection</p>
+                  <div className="p-6 bg-gradient-to-br from-amber-50 to-yellow-100 rounded-xl border border-amber-200">
+                    <div className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-semibold text-kawai-black mb-2">Signature Collection</h3>
+                    <p className="text-kawai-black/70 text-sm">Exclusive access to our heritage piano collection</p>
                   </div>
-                  <div className="p-6">
-                    <div className="text-3xl mb-3">👨‍🎨</div>
-                    <h3 className="font-semibold mb-2">Expert Guidance</h3>
-                    <p className="text-gray-600">Consultation from certified piano specialists</p>
+                  <div className="p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl border border-emerald-200">
+                    <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-semibold text-kawai-black mb-2">Expert Team</h3>
+                    <p className="text-kawai-black/70 text-sm">Personal guidance from certified master craftsmen</p>
                   </div>
                 </div>
               </div>

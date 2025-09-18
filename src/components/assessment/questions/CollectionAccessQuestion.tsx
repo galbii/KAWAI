@@ -50,19 +50,6 @@ export const CollectionAccessQuestion: React.FC<FormStepProps> = ({
       transition={{ duration: 0.4 }}
       className={className}
     >
-      {/* Final question celebration */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.2, duration: 0.5 }}
-        className="text-center mb-6"
-      >
-        <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-green-50 to-blue-50 px-4 py-2 rounded-full">
-          <span className="text-lg">🎉</span>
-          <span className="text-sm font-medium text-gray-700">Final question!</span>
-          <span className="text-lg">🎹</span>
-        </div>
-      </motion.div>
 
       <QuestionStep
         question={question}
