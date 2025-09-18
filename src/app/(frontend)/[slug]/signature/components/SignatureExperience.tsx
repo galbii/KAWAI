@@ -686,12 +686,12 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
                       >
                         {/* Header */}
                         <div className="p-6 pb-4 border-b border-gray-200 flex-shrink-0 relative">
-                          {/* Save Button - Top Right */}
+                          {/* Save Button - Top Right - Desktop Only */}
                           <motion.button
                             onClick={handlePauseAssessment}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            className="absolute right-6 top-6 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 flex items-center gap-2 shadow-sm"
+                            className="absolute right-6 top-6 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 items-center gap-2 shadow-sm hidden sm:flex"
                           >
                             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 4h4v16H6V4zM14 4h4v16h-4V4z" />
@@ -706,11 +706,30 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
                             <p className="text-kawai-black/70 mt-2">
                               Lets get to know who you are and claim an invite to the Baby Grand Select!
                             </p>
-                            <div className="flex items-center justify-center gap-2 mt-3 text-xs text-kawai-black/50">
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                              <span>Your progress is automatically saved</span>
+                            {/* Desktop: Show auto-save text, Mobile: Show Pause & Save button */}
+                            <div className="mt-3">
+                              {/* Desktop auto-save indicator */}
+                              <div className="hidden sm:flex items-center justify-center gap-2 text-xs text-kawai-black/50">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span>Your progress is automatically saved</span>
+                              </div>
+
+                              {/* Mobile Pause & Save button */}
+                              <div className="sm:hidden flex justify-center">
+                                <motion.button
+                                  onClick={handlePauseAssessment}
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  className="bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 flex items-center gap-2 shadow-sm"
+                                >
+                                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 4h4v16H6V4zM14 4h4v16h-4V4z" />
+                                  </svg>
+                                  <span>Pause & Save</span>
+                                </motion.button>
+                              </div>
                             </div>
                           </div>
                         </div>
