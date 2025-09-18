@@ -16,7 +16,7 @@ interface DualConversionProps {
   onComplete: (type: 'email' | 'booking', data: Record<string, unknown>) => void
   location: string
   className?: string
-  emailData?: { email: string } | null
+  emailData?: { email: string; [key: string]: any } | null
 }
 
 // Booking form schema
@@ -253,7 +253,7 @@ export const DualConversion: React.FC<DualConversionProps> = ({
                 className="space-y-4"
               >
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-kawai-black leading-tight">
-                  Book Your <span className="text-amber-600 font-normal">Premium Consultation</span>
+                  Claim Your <span className="text-kawai-red font-normal">Invite</span>
                 </h2>
                 <p className="text-lg text-kawai-black/70 font-light leading-relaxed max-w-3xl mx-auto">
                   Schedule your exclusive piano viewing and consultation with our master technicians.

@@ -40,9 +40,9 @@ async function getSignaturePageData(slug: string): Promise<SignaturePageData | n
       title: `${slug.charAt(0).toUpperCase() + slug.slice(1)} Signature Collection`,
       isActive: true,
       heroSection: {
-        exclusiveText: "10/09-10/12",
+        exclusiveText: "",
         titlePrefix: "",
-        titleMain: "Signature Collection",
+        titleMain: "Baby Grand Signature",
         titleSuffix: "",
         subtitle: "Own a piece of musical history and refined craftsmanship",
         description: "A special opportunity for virtuosos and aspiring musicians to transform their space into their personal concert hall. Apply for a spot to secure your spot in KAWAI's special piano event to give back to the community that helped build our legacy.",

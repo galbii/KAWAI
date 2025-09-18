@@ -359,6 +359,9 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
                     transition={{ duration: 0.8, delay: 1.4 }}
                     viewport={{ once: true }}
                   >
+                    <h3 className="text-kawai-gold text-2xl md:text-3xl font-light mb-6 tracking-wide">
+                      October 9th through the 11th
+                    </h3>
                     <h4 className="text-kawai-pearl text-lg font-medium mb-4">
                       A special event for our Qualified Musicians:
                     </h4>

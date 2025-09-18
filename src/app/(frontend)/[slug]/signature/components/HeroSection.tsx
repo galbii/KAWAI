@@ -197,9 +197,9 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
 
   // Fallback data with exclusive application messaging
   const fallbackData: SignatureHeroSection = {
-    exclusiveText: "LIMITED: 3 WEEKS ONLY • 10/09-10/30",
+    exclusiveText: "",
     titlePrefix: "",
-    titleMain: "Signature Collection",
+    titleMain: "Baby Grand Signature",
     titleSuffix: "",
     subtitle: "Own a piece of musical history and refined craftsmanship",
     description: "A special opportunity for virtuosos and aspiring musicians to transform their space into their personal concert hall. Apply for a spot to secure your spot in KAWAI's special piano event to give back to the community that helped build our legacy.",

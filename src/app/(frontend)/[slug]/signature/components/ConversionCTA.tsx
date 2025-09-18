@@ -105,6 +105,9 @@ function BenefitsReveal({ benefits }: { benefits: string[] }) {
       transition={{ duration: 0.8, delay: 0.2 }}
       viewport={{ once: true }}
     >
+      <h3 className="text-kawai-gold text-2xl md:text-3xl font-light mb-6 tracking-wide">
+        October 9th through the 11th
+      </h3>
       <h4 className="text-kawai-pearl text-lg font-medium mb-4">
         A special event for our Qualified Musicians:
       </h4>
@@ -378,23 +381,10 @@ export function ConversionCTA({
                   variant="primary"
                   size="lg"
                   onClick={handleAssessmentClick}
-                  icon="🎹"
                   className="w-full sm:w-auto min-w-[280px]"
                 >
                   Reserve Your Spot
                 </PremiumButton>
-
-                <div className="flex items-center gap-4">
-                  <PremiumButton
-                    variant="secondary"
-                    size="lg"
-                    onClick={handleConsultationClick}
-                    icon="📅"
-                    className="w-full sm:w-auto min-w-[250px]"
-                  >
-                    Request Premium Consultation
-                  </PremiumButton>
-                </div>
 
                 <div className="text-kawai-pearl/50 text-sm text-center sm:text-left">
                   {data.urgencyText}
@@ -457,7 +447,7 @@ export function ConversionCTA({
                     className="space-y-4"
                   >
                     <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-kawai-pearl leading-tight">
-                      Book Your <span className="text-kawai-gold font-normal">Premium Consultation</span>
+                      Claim Your <span className="text-kawai-red font-normal">Invite</span>
                     </h2>
                     <p className="text-lg text-kawai-pearl/80 font-light leading-relaxed max-w-3xl mx-auto">
                       Schedule your exclusive piano viewing and consultation with our master technicians.

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { InlineWidget, useCalendlyEventListener } from 'react-calendly'
 import { cn } from '@/lib/utils'
+import useConstantContactIntegration, { type ConstantContactSubmissionData } from '@/hooks/useConstantContactIntegration'
 
 // Interfaces
 interface CalendlyBookingWidgetProps {
@@ -48,6 +49,18 @@ function CalendlyWidgetContent({
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
 
+  // Constant Contact integration for booking events
+  const {
+    submitToConstantContact,
+    isSubmitting: isSubmittingToCC,
+    submitSuccess,
+    submitError
+  } = useConstantContactIntegration({
+    targetList: 'SHOWROOM KAWAI',
+    createListIfMissing: true,
+    showAuthPrompts: false
+  })
+
   // Build UTM parameters for tracking
   const buildUtmParams = () => {
     const baseParams = {
@@ -73,6 +86,49 @@ function CalendlyWidgetContent({
     setLoadError('Failed to load booking calendar. Please try refreshing the page.')
   }
 
+  // Submit contact to Constant Contact when booking is successful
+  const handleConstantContactSubmission = async (eventData: any) => {
+    try {
+      // Validate we have an email to submit
+      if (!prefillEmail) {
+        console.warn('⚠️ No email available for Constant Contact submission from Calendly booking')
+        return
+      }
+
+      // Create contact data with available information
+      const contactData: ConstantContactSubmissionData = {
+        email: prefillEmail,
+        optInMarketing: true // Default to opted in for consultation bookings
+      }
+
+      // Add signature page context and event details
+      const additionalData = {
+        source: 'calendly-booking',
+        signaturePageSlug,
+        calendlyEventUri: eventData?.data?.payload?.event?.uri,
+        calendlyInviteeUri: eventData?.data?.payload?.invitee?.uri,
+        bookingDateTime: new Date().toISOString(),
+        conversionType: 'showroom-consultation'
+      }
+
+      console.log('📧 Submitting Calendly booking contact to Constant Contact:', contactData)
+      console.log('📋 Additional booking context:', additionalData)
+
+      // Submit to Constant Contact
+      const success = await submitToConstantContact(contactData)
+
+      if (success) {
+        console.log('✅ Contact successfully added to Constant Contact from Calendly booking')
+        console.log('📝 Contact added to list: SHOWROOM KAWAI')
+      } else {
+        console.warn('⚠️ Failed to add contact to Constant Contact, but Calendly booking succeeded')
+      }
+    } catch (error) {
+      console.error('❌ Error submitting Calendly contact to Constant Contact:', error)
+      // Don't throw - booking succeeded even if CC submission failed
+    }
+  }
+
   // Set up Calendly event listeners for tracking
   useCalendlyEventListener({
     onProfilePageViewed: (event) => {
@@ -86,9 +142,14 @@ function CalendlyWidgetContent({
     onEventTypeViewed: (event) => {
       console.log('👀 Calendly Event Type Viewed:', event)
     },
-    onEventScheduled: (event) => {
+    onEventScheduled: async (event) => {
       console.log('🎉 Calendly Event Scheduled:', event)
       console.log('📋 Event payload:', event.data?.payload)
+
+      // Submit to Constant Contact
+      await handleConstantContactSubmission(event)
+
+      // Call the original callback
       onEventScheduled?.(event)
     },
     onPageHeightResize: (event) => {
@@ -205,6 +266,7 @@ export function CalendlyBookingWidget({
   calendlyUrl = DEFAULT_CALENDLY_URL,
   displayMode = 'modal',
   className = '',
+  prefillEmail,
   onEventScheduled,
   onDateTimeSelected,
   onProfilePageViewed
@@ -267,7 +329,7 @@ export function CalendlyBookingWidget({
               <div className="flex items-center justify-between p-6 border-b border-kawai-gold/20">
                 <div>
                   <h2 className="text-2xl font-light text-kawai-pearl">
-                    Book Your <span className="text-kawai-gold">Premium Consultation</span>
+                    Claim Your <span className="text-kawai-red">Invite</span>
                   </h2>
                   <p className="text-kawai-pearl/70 text-sm mt-1">
                     Schedule your exclusive piano viewing • Houston Baby Grand Sale
@@ -288,6 +350,7 @@ export function CalendlyBookingWidget({
                 <CalendlyWidgetContent
                   calendlyUrl={calendlyUrl}
                   signaturePageSlug={signaturePageSlug}
+                  prefillEmail={prefillEmail}
                   onEventScheduled={handleEventScheduled}
                   onDateTimeSelected={handleDateTimeSelected}
                   onProfilePageViewed={handleProfilePageViewed}
@@ -306,6 +369,7 @@ export function CalendlyBookingWidget({
       <CalendlyWidgetContent
         calendlyUrl={calendlyUrl}
         signaturePageSlug={signaturePageSlug}
+        prefillEmail={prefillEmail}
         onEventScheduled={handleEventScheduled}
         onDateTimeSelected={handleDateTimeSelected}
         onProfilePageViewed={handleProfilePageViewed}

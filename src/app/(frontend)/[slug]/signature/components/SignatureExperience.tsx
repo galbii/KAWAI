@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { InteractiveAssessment } from '@/components/assessment/InteractiveAssessment'
 import { EmailContinuationForm } from './EmailContinuationForm'
@@ -16,10 +16,22 @@ interface SignatureExperienceProps {
 
 type ExperienceStage = 'welcome' | 'email' | 'assessment' | 'conversion' | 'complete'
 
+interface EmailData {
+  email: string
+  firstName?: string
+  lastName?: string
+  phone?: string
+  optInMarketing?: boolean
+  constantContactAdded?: boolean
+  conversionType?: string
+  location?: string
+  formType?: string
+}
+
 export function SignatureExperience({ slug }: SignatureExperienceProps) {
   const [currentStage, setCurrentStage] = useState<ExperienceStage>('welcome')
   const [assessmentResults, setAssessmentResults] = useState<AssessmentResponse | null>(null)
-  const [emailData, setEmailData] = useState<any>(null)
+  const [emailData, setEmailData] = useState<EmailData | null>(null)
   const [showExitIntent, setShowExitIntent] = useState(false)
 
   // Handle welcome screen continuation
@@ -29,7 +41,9 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
 
   // Handle email form completion
   const handleEmailComplete = (type: 'email', data: any) => {
-    console.log('Email form completed:', data)
+    console.log('✅ Email form completed:', data)
+    console.log('📧 Email extracted:', data?.email)
+    console.log('📋 Full data structure:', JSON.stringify(data, null, 2))
     setEmailData(data)
     setCurrentStage('assessment')
   }
@@ -71,6 +85,13 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
     damping: 20,
     duration: 0.6
   }
+
+  // Debug emailData changes
+  useEffect(() => {
+    console.log('🔄 EmailData state changed:', emailData)
+    console.log('📧 Current email:', emailData?.email)
+    console.log('🎯 Current stage:', currentStage)
+  }, [emailData, currentStage])
 
   return (
     <section id="signature-experience" className="min-h-screen bg-stone-50">
@@ -224,12 +245,18 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
               transition={stageTransition}
               className="max-w-4xl mx-auto"
             >
-              <DualConversion
-                assessmentResults={assessmentResults!}
-                onComplete={handleConversionComplete}
-                location={slug}
-                emailData={emailData}
-              />
+              {(() => {
+                console.log('🎯 Rendering DualConversion with emailData:', emailData)
+                console.log('📧 Email being passed:', emailData?.email)
+                return (
+                  <DualConversion
+                    assessmentResults={assessmentResults!}
+                    onComplete={handleConversionComplete}
+                    location={slug}
+                    emailData={emailData}
+                  />
+                )
+              })()}
             </motion.div>
           )}
 
