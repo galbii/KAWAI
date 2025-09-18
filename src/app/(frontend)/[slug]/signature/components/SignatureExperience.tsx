@@ -301,9 +301,9 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
         if (conversionRef.current) {
           // Use requestAnimationFrame for smoother timing
           requestAnimationFrame(() => {
-            conversionRef.current?.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'start' 
+            conversionRef.current?.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center'
             })
           })
         }
@@ -442,7 +442,7 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
                         whileTap={{ scale: 0.95 }}
                         className="bg-kawai-red hover:bg-red-700 text-white px-8 py-3 rounded-lg text-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-kawai-red focus:ring-offset-2 shadow-lg"
                       >
-                        Continue anytime
+                        Continue
                       </motion.button>
                     </div>
                   </div>
@@ -689,10 +689,10 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
                           
                           <div className="text-center">
                             <h2 className="text-2xl md:text-3xl font-light font-serif text-kawai-black">
-                              Musical Journey Assessment
+                              Claim Your Invite
                             </h2>
                             <p className="text-kawai-black/70 mt-2">
-                              Help us understand your musical journey for personalized recommendations
+                              Lets get to know who you are and claim an invite to the Baby Grand Select!
                             </p>
                             <div className="flex items-center justify-center gap-2 mt-3 text-xs text-kawai-black/50">
                               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -704,7 +704,18 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
                         </div>
                         
                         {/* Scrollable Content */}
-                        <div className="flex-1 min-h-0 overflow-y-auto">
+                        <div
+                          className="flex-1 min-h-0 overflow-y-auto scroll-smooth focus:outline-none"
+                          style={{
+                            scrollBehavior: 'smooth',
+                            WebkitOverflowScrolling: 'touch'
+                          }}
+                          tabIndex={0}
+                          onWheel={(e) => {
+                            // Ensure wheel events propagate correctly for smooth scrolling
+                            e.stopPropagation()
+                          }}
+                        >
                           <InteractiveAssessment
                             questions={ASSESSMENT_QUESTIONS}
                             onComplete={handleAssessmentComplete}

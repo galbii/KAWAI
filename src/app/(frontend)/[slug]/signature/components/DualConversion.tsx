@@ -139,14 +139,10 @@ export const DualConversion: React.FC<DualConversionProps> = ({
             onClick={handleConsultationClick}
             className="bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-8 border border-red-200 cursor-pointer group hover:shadow-xl transition-all duration-300 relative"
           >
-            {/* Scarcity Banner */}
-            <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg transform rotate-12 z-10">
-              3 Spots Left
-            </div>
             <div className="text-center space-y-6">
               <div className="w-16 h-16 bg-gradient-to-r from-kawai-red to-red-700 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-300">
                 <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 7.89a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
 
@@ -154,6 +150,10 @@ export const DualConversion: React.FC<DualConversionProps> = ({
                 <h3 className="text-2xl font-bold text-kawai-red mb-3">
                   Your Personal Invite
                 </h3>
+                {/* Scarcity Banner - Moved under title */}
+                <div className="inline-block bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg mb-3">
+                  3 Spots Left
+                </div>
                 <p className="text-gray-600 leading-relaxed">
                   Secure private access to our heritage instruments with dedicated guidance from certified master craftsmen.
                 </p>
@@ -162,15 +162,15 @@ export const DualConversion: React.FC<DualConversionProps> = ({
               <div className="space-y-2 text-sm text-gray-600">
                 <div className="flex items-center justify-center space-x-2">
                   <div className="w-2 h-2 bg-kawai-red rounded-full"></div>
-                  <span>Private master craftsman appointment</span>
+                  <span>Personal showroom invitation and tour</span>
                 </div>
                 <div className="flex items-center justify-center space-x-2">
                   <div className="w-2 h-2 bg-kawai-red rounded-full"></div>
-                  <span>Exclusive heritage instrument access</span>
+                  <span>Free delivery and tuning</span>
                 </div>
                 <div className="flex items-center justify-center space-x-2">
                   <div className="w-2 h-2 bg-kawai-red rounded-full"></div>
-                  <span>Limited-time consultation rates</span>
+                  <span>Special rates when you show your invitation!</span>
                 </div>
               </div>
 
@@ -193,13 +193,13 @@ export const DualConversion: React.FC<DualConversionProps> = ({
             <div className="text-center space-y-6">
               <div className="w-16 h-16 bg-gradient-to-r from-kawai-red to-red-700 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-300">
                 <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 7.89a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
 
               <div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                  Your Personal Piano List
+                  Curated Recommendations
                 </h3>
                 <p className="text-gray-600 leading-relaxed">
                   A curated selection of baby grand pianos based on your answers.
@@ -209,15 +209,7 @@ export const DualConversion: React.FC<DualConversionProps> = ({
               <div className="space-y-2 text-sm text-gray-600">
                 <div className="flex items-center justify-center space-x-2">
                   <div className="w-2 h-2 bg-kawai-red rounded-full"></div>
-                  <span>Exclusive heritage collection catalog</span>
-                </div>
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="w-2 h-2 bg-kawai-red rounded-full"></div>
-                  <span>Formal invitation within 24 hours</span>
-                </div>
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="w-2 h-2 bg-kawai-red rounded-full"></div>
-                  <span>Master craftsman consultation priority</span>
+                  <span>Exclusive Signature Collection Catalog</span>
                 </div>
               </div>
 

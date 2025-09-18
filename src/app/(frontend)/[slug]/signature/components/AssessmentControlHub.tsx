@@ -32,6 +32,7 @@ export const AssessmentControlHub: React.FC<AssessmentControlHubProps> = ({
   className
 }) => {
   const [internalShowSaved, setInternalShowSaved] = React.useState(false)
+  const [showTooltip, setShowTooltip] = React.useState(true)
 
   // Handle saved feedback display
   React.useEffect(() => {
@@ -43,6 +44,14 @@ export const AssessmentControlHub: React.FC<AssessmentControlHubProps> = ({
       return () => clearTimeout(timer)
     }
   }, [showSavedFeedback])
+
+  // Auto-hide tooltip after 4 seconds
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowTooltip(false)
+    }, 4000) // Hide after 4 seconds
+    return () => clearTimeout(timer)
+  }, [])
   const progressPercent = totalSteps > 0 ? Math.round((currentStep / totalSteps) * 100) : 0
   const radius = 28
   const circumference = 2 * Math.PI * radius
@@ -52,7 +61,7 @@ export const AssessmentControlHub: React.FC<AssessmentControlHubProps> = ({
   const stateConfig = {
     'not-started': {
       icon: 'kawai-logo',
-      title: 'Continue anytime', 
+      title: 'Continue', 
       subtitle: 'Continue your assessment from here',
       action: onStart,
       bgColor: 'from-white to-gray-50',
@@ -167,9 +176,9 @@ export const AssessmentControlHub: React.FC<AssessmentControlHubProps> = ({
             {/* Icon/Emoji/Logo */}
             <div className="group-hover:scale-110 transition-transform duration-200">
               {config.icon === 'kawai-logo' ? (
-                <img 
-                  src="/KAWAI PIANO LOGO.png" 
-                  alt="Kawai Piano" 
+                <img
+                  src="/ChatGPT Image Sep 9, 2025, 03_13_02 PM copy 2.png"
+                  alt="Kawai Piano"
                   className="w-16 h-16 mx-auto object-contain p-1"
                   onError={(e) => {
                     // Fallback to piano emoji if logo fails to load
@@ -203,12 +212,14 @@ export const AssessmentControlHub: React.FC<AssessmentControlHubProps> = ({
           </motion.button>
 
           {/* Tooltip/Label */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 }}
-            className="absolute right-full top-1/2 transform -translate-y-1/2 mr-4 hidden sm:block"
-          >
+          {showTooltip && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ delay: 0.5 }}
+              className="absolute right-full top-1/2 transform -translate-y-1/2 mr-4 hidden sm:block"
+            >
             <div className="bg-kawai-black text-white text-sm px-4 py-3 rounded-lg shadow-lg whitespace-nowrap relative">
               <div className="font-semibold">{config.title}</div>
               <div className="text-xs text-white/70 mt-1">{config.subtitle}</div>
@@ -216,22 +227,26 @@ export const AssessmentControlHub: React.FC<AssessmentControlHubProps> = ({
               {/* Arrow pointing to button */}
               <div className="absolute top-1/2 left-full transform -translate-y-1/2 w-0 h-0 border-l-4 border-l-kawai-black border-t-4 border-t-transparent border-b-4 border-b-transparent" />
             </div>
-          </motion.div>
+            </motion.div>
+          )}
 
           {/* Mobile-only compact label */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-            className="sm:hidden absolute -bottom-12 left-1/2 transform -translate-x-1/2"
-          >
+          {showTooltip && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ delay: 0.7 }}
+              className="sm:hidden absolute -bottom-12 left-1/2 transform -translate-x-1/2"
+            >
             <div className="bg-kawai-black text-white text-xs px-3 py-2 rounded-full shadow-lg text-center">
               <div className="font-medium">{config.title}</div>
               {config.showProgress && (
                 <div className="text-white/70">{config.subtitle}</div>
               )}
             </div>
-          </motion.div>
+            </motion.div>
+          )}
 
           {/* Auto-save indicator for paused state */}
           {state === 'paused' && (

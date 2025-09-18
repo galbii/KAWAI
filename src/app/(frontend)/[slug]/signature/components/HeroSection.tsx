@@ -86,7 +86,7 @@ function ScrollIndicator() {
       onClick={scrollToNext}
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 9.5, duration: 1.0, ease: "easeOut" }}
+      transition={{ delay: 4.0, duration: 0.8, ease: "easeOut" }}
     >
       <div className="flex flex-col items-center space-y-2 text-kawai-pearl/70 hover:text-kawai-pearl transition-colors duration-300">
         <span className="text-xs font-light tracking-widest">SCROLL</span>
@@ -203,13 +203,13 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
     titleMain: "Baby Grand Signature",
     titleSuffix: "",
     subtitle: "Transform your space into a Grand Concert Hall",
-    description: "See if you are qualified for a personal invite to this special event for the community that helped us build our legacy.",
+    description: "A special opportunity for virtuosos and aspiring musicians to transform their space into their personal concert hall. Apply for a spot to secure your spot in KAWAI's special piano event to give back to the community that helped build our legacy.",
     primaryCta: {
       text: "Explore Collection",
       action: "scroll"
     },
     secondaryCta: {
-      text: "Register Now",
+      text: "Your Invitation",
       action: "modal"
     },
     overlayOpacity: 0.4,
@@ -339,7 +339,7 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
             className="mb-8"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.0, delay: 0.8, ease: "easeOut" }}
+            transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
             viewport={{ once: true, margin: "-50px" }}
           >
             <span className="inline-block text-kawai-pearl/90 text-xl md:text-2xl font-light tracking-wider border border-kawai-pearl/30 px-6 py-3 rounded-lg backdrop-blur-sm bg-kawai-black/20">
@@ -354,7 +354,7 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
           className="mb-16"
           initial={{ opacity: 0, y: 40, scale: 0.95 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 1.2, delay: 2.2, ease: "easeOut" }}
+          transition={{ duration: 1.0, delay: 0.8, ease: "easeOut" }}
           viewport={{ once: true, margin: "-50px" }}
         >
           <h1 className="text-center">
@@ -423,7 +423,7 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
             className="text-xl md:text-2xl lg:text-3xl font-light mb-12 max-w-2xl"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.0, delay: 4.2, ease: "easeOut" }}
+            transition={{ duration: 0.8, delay: 1.4, ease: "easeOut" }}
             viewport={{ once: true, margin: "-50px" }}
             style={{
               color: '#E5E1DB',
@@ -441,7 +441,7 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
             className="text-base md:text-lg font-light leading-relaxed mb-20 max-w-xl"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.0, delay: 6.0, ease: "easeOut" }}
+            transition={{ duration: 0.8, delay: 2.0, ease: "easeOut" }}
             viewport={{ once: true, margin: "-50px" }}
             style={{
               color: '#B8B4AE',
@@ -457,7 +457,7 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
           className="flex flex-col sm:flex-row gap-6 justify-center items-center"
           initial={{ opacity: 0, y: 40, scale: 0.9 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 1.2, delay: 7.8, ease: "easeOut" }}
+          transition={{ duration: 0.8, delay: 1.6, ease: "easeOut" }}
           viewport={{ once: true, margin: "-50px" }}
         >
           {heroData.primaryCta && (
