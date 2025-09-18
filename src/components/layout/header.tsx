@@ -493,6 +493,7 @@ interface DealerLocationData {
 interface HeaderProps {
   navigation?: NavigationItem[]
   locationData?: DealerLocationData | null
+  isSignaturePage?: boolean
 }
 
 // Default fallback navigation - URLs will be made context-aware at runtime
@@ -549,7 +550,7 @@ const defaultNavigation: NavigationItem[] = [
   },
 ]
 
-export function Header({ navigation = defaultNavigation, locationData }: HeaderProps) {
+export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [openMobileItems, setOpenMobileItems] = useState<Set<string>>(new Set())
@@ -797,41 +798,44 @@ export function Header({ navigation = defaultNavigation, locationData }: HeaderP
             }}
             className="flex-shrink-0 z-10"
           >
-            <KawaiLogo 
-              size={isScrolled ? "sm" : "md"} 
+            <KawaiLogo
+              size={isScrolled ? "sm" : "md"}
               animated={true}
               dealerName={currentLocationData?.locationName}
+              nonClickable={isSignaturePage}
             />
           </motion.div>
 
-          {/* Desktop Navigation - Auto-hide on smaller screens to prevent overlap */}
-          <nav className="hidden xl:flex flex-1 justify-center">
-            <div className="flex items-center space-x-1">
-              {navigation.map((item) => (
-                <DesktopMenuItem 
-                  key={item.label} 
-                  item={item}
-                  isOpen={activeDropdown === item.label}
-                  onOpen={handleDropdownOpen}
-                  onClose={handleDropdownClose}
-                />
-              ))}
-            </div>
-          </nav>
+          {/* Desktop Navigation - Auto-hide on smaller screens to prevent overlap, hidden on signature page */}
+          {!isSignaturePage && (
+            <nav className="hidden xl:flex flex-1 justify-center">
+              <div className="flex items-center space-x-1">
+                {navigation.map((item) => (
+                  <DesktopMenuItem
+                    key={item.label}
+                    item={item}
+                    isOpen={activeDropdown === item.label}
+                    onOpen={handleDropdownOpen}
+                    onClose={handleDropdownClose}
+                  />
+                ))}
+              </div>
+            </nav>
+          )}
 
           {/* Spacer for medium screens where nav is hidden but desktop layout is used */}
           <div className="flex-1 lg:block xl:hidden" />
 
-          {/* CTA Buttons - Only show Visit Showroom on dealer location pages */}
-          {currentLocationData && !isLoadingLocation && (
-            <motion.div 
+          {/* CTA Buttons - Only show Visit Showroom on dealer location pages, hidden on signature page */}
+          {currentLocationData && !isLoadingLocation && !isSignaturePage && (
+            <motion.div
               className="hidden lg:flex items-center gap-3 flex-shrink-0 ml-4"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3, duration: 0.4 }}
             >
-              <Button 
-                className="bg-kawai-red hover:bg-kawai-red/90 text-white px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300" 
+              <Button
+                className="bg-kawai-red hover:bg-kawai-red/90 text-white px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
                 asChild
               >
                 <ContextAwareLink href={`/${currentLocationData.slug}/contact`}>
@@ -841,46 +845,48 @@ export function Header({ navigation = defaultNavigation, locationData }: HeaderP
             </motion.div>
           )}
 
-          {/* Mobile Menu Button */}
-          <motion.button
-            ref={menuButtonRef}
-            className="xl:hidden p-2 rounded-md transition-colors hover:bg-gray-100/80 focus:outline-none focus:ring-2 focus:ring-kawai-red focus:ring-offset-2 flex-shrink-0 ml-4"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            whileTap={{ scale: 0.95 }}
-            transition={{ duration: 0.1 }}
-            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={isMenuOpen}
-          >
-            <AnimatePresence mode="wait">
-              {isMenuOpen ? (
-                <motion.div
-                  key="close"
-                  initial={{ rotate: -90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: 90, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <X className="h-6 w-6" />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="menu"
-                  initial={{ rotate: 90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: -90, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Menu className="h-6 w-6" />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.button>
+          {/* Mobile Menu Button - Hidden on signature page */}
+          {!isSignaturePage && (
+            <motion.button
+              ref={menuButtonRef}
+              className="xl:hidden p-2 rounded-md transition-colors hover:bg-gray-100/80 focus:outline-none focus:ring-2 focus:ring-kawai-red focus:ring-offset-2 flex-shrink-0 ml-4"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.1 }}
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMenuOpen}
+            >
+              <AnimatePresence mode="wait">
+                {isMenuOpen ? (
+                  <motion.div
+                    key="close"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <X className="h-6 w-6" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="menu"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Menu className="h-6 w-6" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          )}
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu - Hidden on signature page */}
       <AnimatePresence>
-        {isMenuOpen && (
+        {isMenuOpen && !isSignaturePage && (
           <>
             <motion.div 
               className="fixed inset-0 z-[190] bg-black/20 xl:hidden"

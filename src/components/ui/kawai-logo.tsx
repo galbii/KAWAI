@@ -17,6 +17,8 @@ interface KawaiLogoProps {
   homeUrl?: string
   /** Override aria-label for accessibility */
   ariaLabel?: string
+  /** Make logo non-clickable (render as div instead of Link) */
+  nonClickable?: boolean
 }
 
 const sizeMap = {
@@ -25,14 +27,15 @@ const sizeMap = {
   lg: { width: 240, height: 48, textSize: 'text-xl', subText: 'text-xs' }
 }
 
-export function KawaiLogo({ 
-  className, 
-  size = 'md', 
-  animated = true, 
-  theme = 'light', 
+export function KawaiLogo({
+  className,
+  size = 'md',
+  animated = true,
+  theme = 'light',
   dealerName,
   homeUrl,
-  ariaLabel 
+  ariaLabel,
+  nonClickable = false
 }: KawaiLogoProps) {
   const { width, height, textSize, subText } = sizeMap[size]
   
@@ -162,13 +165,28 @@ export function KawaiLogo({
   )
 
   if (animated) {
+    if (nonClickable) {
+      return (
+        <div className={cn("kawai-logo-container", className)}>
+          <motion.div
+            className="flex items-center space-x-2 sm:space-x-3"
+            variants={logoVariants}
+            initial="initial"
+            whileHover="hover"
+          >
+            <LogoContent />
+          </motion.div>
+        </div>
+      )
+    }
+
     return (
-      <Link 
-        href={contextAwareHomeUrl} 
+      <Link
+        href={contextAwareHomeUrl}
         className={cn("kawai-logo-container", className)}
         aria-label={contextAwareAriaLabel}
       >
-        <motion.div 
+        <motion.div
           className="flex items-center space-x-2 sm:space-x-3"
           variants={logoVariants}
           initial="initial"
@@ -180,9 +198,19 @@ export function KawaiLogo({
     )
   }
 
+  if (nonClickable) {
+    return (
+      <div className={cn("kawai-logo-container", className)}>
+        <div className="flex items-center space-x-2 sm:space-x-3">
+          <LogoContent />
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <Link 
-      href={contextAwareHomeUrl} 
+    <Link
+      href={contextAwareHomeUrl}
       className={cn("kawai-logo-container", className)}
       aria-label={contextAwareAriaLabel}
     >

@@ -69,10 +69,13 @@ export async function HeaderDynamic() {
     const headersList = await headers()
     const pathname = headersList.get('x-pathname') || ''
     const origin = parseNavigationOrigin(pathname)
-    
+
+    // Check if we're on a signature page
+    const isSignaturePage = pathname.endsWith('/signature')
+
     // Generate piano categories navigation (each category becomes a top-level nav item)
     const pianoCategories = await generatePianoCategoriesNavigationServer()
-    
+
     // Create context-aware navigation structure
     const dynamicNavigation: NavigationItem[] = pianoCategories.map(category => ({
       label: category.label,
@@ -88,32 +91,34 @@ export async function HeaderDynamic() {
 
     // Check if we're on a dealer location page and fetch location data
     let locationData: DealerLocationData | null = null
-    
+
     if (origin.isDealerLocation && origin.dealerSlug) {
       locationData = await getDealerLocationBySlug(origin.dealerSlug)
     }
 
     return (
-      <Header 
-        navigation={dynamicNavigation} 
+      <Header
+        navigation={dynamicNavigation}
         locationData={locationData}
+        isSignaturePage={isSignaturePage}
       />
     )
   } catch (error) {
     console.error('Error in HeaderDynamic:', error)
-    
+
     // Fallback to basic piano category navigation with context awareness
     const headersList = await headers()
     const pathname = headersList.get('x-pathname') || ''
     const fallbackOrigin = parseNavigationOrigin(pathname)
-    
+    const isSignaturePage = pathname.endsWith('/signature')
+
     const fallbackNavigation: NavigationItem[] = [
       { label: 'Digital Pianos', href: getContextAwareUrl('/pianos/digital', fallbackOrigin), dropdown: [] },
       { label: 'Grand Pianos', href: getContextAwareUrl('/pianos/grand', fallbackOrigin), dropdown: [] },
       { label: 'Upright Pianos', href: getContextAwareUrl('/pianos/upright', fallbackOrigin), dropdown: [] },
       { label: 'Hybrid Pianos', href: getContextAwareUrl('/pianos/hybrid', fallbackOrigin), dropdown: [] },
     ]
-    
-    return <Header navigation={fallbackNavigation} />
+
+    return <Header navigation={fallbackNavigation} isSignaturePage={isSignaturePage} />
   }
 }

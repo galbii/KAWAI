@@ -70,11 +70,15 @@ export async function FooterDynamic() {
     const pathname = headersList.get('x-pathname') || ''
     const origin = parseNavigationOrigin(pathname)
 
+    // Check if we're on a signature page
+    const isSignaturePage = pathname.endsWith('/signature')
+
     // Check if we're on a dealer location page and fetch location contact data
     let locationContactData: DealerLocationContactData | null = null
 
     console.log('FooterDynamic - pathname:', pathname)
     console.log('FooterDynamic - origin:', origin)
+    console.log('FooterDynamic - isSignaturePage:', isSignaturePage)
 
     if (origin.isDealerLocation && origin.dealerSlug) {
       console.log('FooterDynamic - fetching data for slug:', origin.dealerSlug)
@@ -85,12 +89,17 @@ export async function FooterDynamic() {
     return (
       <Footer
         locationContactData={locationContactData}
+        isSignaturePage={isSignaturePage}
       />
     )
   } catch (error) {
     console.error('Error in FooterDynamic:', error)
 
-    // Fallback to basic footer
-    return <Footer />
+    // Fallback to basic footer with signature page detection
+    const headersList = await headers()
+    const pathname = headersList.get('x-pathname') || ''
+    const isSignaturePage = pathname.endsWith('/signature')
+
+    return <Footer isSignaturePage={isSignaturePage} />
   }
 }

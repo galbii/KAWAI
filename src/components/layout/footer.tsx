@@ -89,9 +89,10 @@ interface DealerLocationContactData {
 
 interface FooterProps {
   locationContactData?: DealerLocationContactData | null
+  isSignaturePage?: boolean
 }
 
-export function Footer({ locationContactData }: FooterProps) {
+export function Footer({ locationContactData, isSignaturePage = false }: FooterProps) {
   // Generate location-aware business name and description
   const businessName = locationContactData?.name || 'Kawai Piano Gallery St. Louis'
   const locationDescription = locationContactData?.locationName
@@ -123,15 +124,16 @@ export function Footer({ locationContactData }: FooterProps) {
     <footer className="backdrop-blur-md bg-kawai-black/95 text-kawai-pearl border-t border-kawai-neutral/20">
       {/* Main Footer Content */}
       <div className="container mx-auto px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-8 gap-6">
+        <div className={`grid gap-6 ${isSignaturePage ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-8'}`}>
           {/* Company Info */}
-          <div className="lg:col-span-2">
+          <div className={isSignaturePage ? '' : 'lg:col-span-2'}>
             <div className="mb-6">
               <KawaiLogo
                 size="sm"
                 animated={true}
                 theme="dark"
                 dealerName={locationContactData?.locationName}
+                nonClickable={isSignaturePage}
               />
             </div>
             <p className="text-kawai-neutral mb-6 leading-relaxed">
@@ -142,25 +144,27 @@ export function Footer({ locationContactData }: FooterProps) {
               <div>"Making beautiful music accessible to all"</div>
             </div>
             
-            {/* Contact Info */}
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <Phone className="h-5 w-5 text-kawai-red" />
-                <span>{locationContactData?.phone || '(636) 265-2866'}</span>
+            {/* Contact Info - Hidden on signature page */}
+            {!isSignaturePage && (
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <Phone className="h-5 w-5 text-kawai-red" />
+                  <span>{locationContactData?.phone || '(636) 265-2866'}</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Mail className="h-5 w-5 text-kawai-red" />
+                  <span>{locationContactData?.email || 'info@kawaipianostlouis.com'}</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <MapPin className="h-5 w-5 text-kawai-red" />
+                  <span>{locationContactData?.address || '21 Meadows Circle Drive, Suite 312, Lake St. Louis, MO 63367'}</span>
+                </div>
               </div>
-              <div className="flex items-center space-x-3">
-                <Mail className="h-5 w-5 text-kawai-red" />
-                <span>{locationContactData?.email || 'info@kawaipianostlouis.com'}</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <MapPin className="h-5 w-5 text-kawai-red" />
-                <span>{locationContactData?.address || '21 Meadows Circle Drive, Suite 312, Lake St. Louis, MO 63367'}</span>
-              </div>
-            </div>
+            )}
           </div>
 
-          {/* Footer Links */}
-          {Object.entries(footerLinks).map(([key, section]) => (
+          {/* Footer Links - Hidden on signature page */}
+          {!isSignaturePage && Object.entries(footerLinks).map(([key, section]) => (
             <div key={key}>
               <h3 className="font-semibold text-lg mb-4 text-kawai-pearl">{section.title}</h3>
               <ul className="space-y-2">
@@ -181,39 +185,41 @@ export function Footer({ locationContactData }: FooterProps) {
           ))}
         </div>
 
-        {/* Newsletter & Values */}
-        <div className="border-t border-kawai-neutral/20 mt-12 pt-8">
-          <div className="grid md:grid-cols-2 gap-8">
-            <div>
-              <h3 className="font-semibold text-lg mb-4 text-kawai-pearl">Stay Connected</h3>
-              <p className="text-kawai-neutral mb-4">
-                Join our community for piano insights, artist stories, and exclusive events.
-              </p>
-              <form className="flex space-x-2">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="flex-1 px-4 py-2 bg-kawai-black/60 border border-kawai-neutral/30 rounded-md text-kawai-pearl placeholder-kawai-neutral/60 focus:outline-none focus:ring-2 focus:ring-kawai-red backdrop-blur-sm"
-                />
-                <Button
-                  type="submit"
-                  className="px-6 py-2 bg-kawai-red hover:bg-kawai-red/90 text-white shadow-md hover:shadow-lg transition-all"
-                >
-                  Subscribe
-                </Button>
-              </form>
-            </div>
-            <div>
-              <h3 className="font-semibold text-lg mb-4 text-kawai-pearl">Our Values</h3>
-              <div className="space-y-2 text-sm text-kawai-neutral">
-                <div>• Uncompromising quality and craftsmanship</div>
-                <div>• Innovation rooted in tradition</div>
-                <div>• Making music accessible to everyone</div>
-                <div>• Sustainable manufacturing practices</div>
+        {/* Newsletter & Values - Hidden on signature page */}
+        {!isSignaturePage && (
+          <div className="border-t border-kawai-neutral/20 mt-12 pt-8">
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="font-semibold text-lg mb-4 text-kawai-pearl">Stay Connected</h3>
+                <p className="text-kawai-neutral mb-4">
+                  Join our community for piano insights, artist stories, and exclusive events.
+                </p>
+                <form className="flex space-x-2">
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    className="flex-1 px-4 py-2 bg-kawai-black/60 border border-kawai-neutral/30 rounded-md text-kawai-pearl placeholder-kawai-neutral/60 focus:outline-none focus:ring-2 focus:ring-kawai-red backdrop-blur-sm"
+                  />
+                  <Button
+                    type="submit"
+                    className="px-6 py-2 bg-kawai-red hover:bg-kawai-red/90 text-white shadow-md hover:shadow-lg transition-all"
+                  >
+                    Subscribe
+                  </Button>
+                </form>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-4 text-kawai-pearl">Our Values</h3>
+                <div className="space-y-2 text-sm text-kawai-neutral">
+                  <div>• Uncompromising quality and craftsmanship</div>
+                  <div>• Innovation rooted in tradition</div>
+                  <div>• Making music accessible to everyone</div>
+                  <div>• Sustainable manufacturing practices</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Bottom Footer */}
@@ -226,23 +232,25 @@ export function Footer({ locationContactData }: FooterProps) {
               <div className="mt-1">Crafted with precision in Hamamatsu, Japan since 1927.</div>
             </div>
 
-            {/* Social Links */}
-            <div className="flex space-x-4">
-              {socialLinks.map((social) => {
-                const Icon = social.icon
-                return (
-                  <motion.div key={social.label} variants={socialVariants} initial="initial" whileHover="hover">
-                    <Link
-                      href={social.href}
-                      className="text-kawai-neutral/80 hover:text-kawai-red transition-colors"
-                      aria-label={social.label}
-                    >
-                      <Icon className="h-5 w-5" />
-                    </Link>
-                  </motion.div>
-                )
-              })}
-            </div>
+            {/* Social Links - Hidden on signature page */}
+            {!isSignaturePage && (
+              <div className="flex space-x-4">
+                {socialLinks.map((social) => {
+                  const Icon = social.icon
+                  return (
+                    <motion.div key={social.label} variants={socialVariants} initial="initial" whileHover="hover">
+                      <Link
+                        href={social.href}
+                        className="text-kawai-neutral/80 hover:text-kawai-red transition-colors"
+                        aria-label={social.label}
+                      >
+                        <Icon className="h-5 w-5" />
+                      </Link>
+                    </motion.div>
+                  )
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>
