@@ -168,7 +168,7 @@ export const AssessmentControlHub: React.FC<AssessmentControlHubProps> = ({
             <div className="group-hover:scale-110 transition-transform duration-200">
               {config.icon === 'kawai-logo' ? (
                 <img 
-                  src="/ChatGPT Image Sep 9, 2025, 03_13_02 PM copy 2.png" 
+                  src="/KAWAI PIANO LOGO.png" 
                   alt="Kawai Piano" 
                   className="w-16 h-16 mx-auto object-contain p-1"
                   onError={(e) => {
