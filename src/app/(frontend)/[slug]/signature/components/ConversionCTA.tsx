@@ -404,25 +404,29 @@ export function ConversionCTA({
                 <BenefitsReveal benefits={data.benefits} />
               </div>
 
-              {/* Heritage Statistics */}
+              {/* Location Map */}
               <motion.div
-                className="grid grid-cols-3 gap-4 text-center"
+                className="space-y-4"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
                 viewport={{ once: true }}
               >
-                <div className="p-4 rounded-lg border border-kawai-gold/20 bg-kawai-black/30">
-                  <div className="text-2xl md:text-3xl font-light text-kawai-gold mb-1">100+</div>
-                  <div className="text-kawai-pearl/70 text-xs uppercase tracking-wider">Years Heritage</div>
+                <div className="text-center mb-4">
+                  <h4 className="text-kawai-gold text-lg font-light mb-2">Visit Our Houston Showroom</h4>
+                  <p className="text-kawai-pearl/70 text-sm">5800 Richmond Ave, Houston, TX 77057</p>
                 </div>
-                <div className="p-4 rounded-lg border border-kawai-gold/20 bg-kawai-black/30">
-                  <div className="text-2xl md:text-3xl font-light text-kawai-gold mb-1">400</div>
-                  <div className="text-kawai-pearl/70 text-xs uppercase tracking-wider">Annual Production</div>
-                </div>
-                <div className="p-4 rounded-lg border border-kawai-gold/20 bg-kawai-black/30">
-                  <div className="text-2xl md:text-3xl font-light text-kawai-gold mb-1">12</div>
-                  <div className="text-kawai-pearl/70 text-xs uppercase tracking-wider">Master Artisans</div>
+                <div className="rounded-lg border border-kawai-gold/20 bg-kawai-black/30 overflow-hidden">
+                  <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3464.7846!2d-95.4896!3d29.7281!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8640c0a5e6f5b5bb%3A0x1234567890abcdef!2s5800%20Richmond%20Ave%2C%20Houston%2C%20TX%2077057!5e0!3m2!1sen!2sus!4v1695000000000!5m2!1sen!2sus"
+                    width="100%"
+                    height="200"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    className="w-full"
+                  />
                 </div>
               </motion.div>
             </motion.div>

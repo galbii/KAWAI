@@ -42,10 +42,10 @@ async function getSignaturePageData(slug: string): Promise<SignaturePageData | n
       heroSection: {
         exclusiveText: "",
         titlePrefix: "",
-        titleMain: "Baby Grand Signature",
+        titleMain: "Baby Grand Signature Event",
         titleSuffix: "",
         subtitle: "Own a piece of musical history and refined craftsmanship",
-        description: "A special opportunity for virtuosos and aspiring musicians to transform their space into their personal concert hall. Apply for a spot to secure your spot in KAWAI's special piano event to give back to the community that helped build our legacy.",
+        description: "Elevate your space with the timeless sound of a Kawai Baby Grand. This special event offers musicians and families the chance to own a world-class piano at exclusive event pricing. Reserve your appointment today, spots are limited.",
         heroBackgroundImage: null, // Will use fallback
         primaryCta: {
           text: "Explore Collection",

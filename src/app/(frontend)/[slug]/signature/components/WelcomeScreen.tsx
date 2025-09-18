@@ -73,7 +73,7 @@ export function WelcomeScreen({ onContinue, className }: WelcomeScreenProps) {
               Request your invitation to our exclusive signature piano event featuring KAWAI's most prestigious instruments and master craftsman consultations.
             </p>
             <p className="text-lg text-kawai-black/60 max-w-xl mx-auto">
-              Complete our brief qualification to determine your eligibility for this private, invitation-only experience.
+              Answer a few quick questions to confirm your eligibility for this exclusive, invitation-only event.
             </p>
           </motion.div>
 
@@ -82,9 +82,6 @@ export function WelcomeScreen({ onContinue, className }: WelcomeScreenProps) {
             variants={itemVariants}
             className="mb-8"
           >
-            <p className="text-xl text-kawai-black/80 mb-8">
-              Ready to request your exclusive invitation?
-            </p>
             <motion.button
               onClick={onContinue}
               className="bg-kawai-red text-white px-8 py-4 text-lg font-medium rounded-lg hover:bg-kawai-red/90 transition-all duration-300 shadow-lg hover:shadow-xl"
@@ -106,9 +103,6 @@ export function WelcomeScreen({ onContinue, className }: WelcomeScreenProps) {
             variants={itemVariants}
             className="text-center"
           >
-            <p className="text-sm text-kawai-black/50">
-              Takes 2-3 minutes • Confidential qualification
-            </p>
           </motion.div>
         </motion.div>
       </div>

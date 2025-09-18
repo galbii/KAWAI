@@ -24,7 +24,7 @@ import type {
 export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   {
     id: 'musicalIdentity',
-    title: 'Tell us about your musical background',
+    title: 'Which best describes your piano journey?',
     description: 'Understanding your musical journey helps us determine if our exclusive event is the right fit for you.',
     category: 'identity',
     order: 1,
@@ -69,7 +69,7 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   },
   {
     id: 'investmentTimeline',
-    title: "When are you planning to welcome a piano into your life?",
+    title: "What is your timeline for bringing a piano into your home?",
     description: 'Your timeline helps us prioritize invitations for our most relevant exclusive events.',
     category: 'timeline',
     order: 2,

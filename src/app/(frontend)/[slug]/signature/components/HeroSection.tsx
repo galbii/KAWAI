@@ -200,10 +200,10 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
   const fallbackData: SignatureHeroSection = {
     exclusiveText: "",
     titlePrefix: "",
-    titleMain: "Baby Grand Signature",
+    titleMain: "Baby Grand Signature Event",
     titleSuffix: "",
     subtitle: "Transform your space into a Grand Concert Hall",
-    description: "A special opportunity for virtuosos and aspiring musicians to transform their space into their personal concert hall. Apply for a spot to secure your spot in KAWAI's special piano event to give back to the community that helped build our legacy.",
+    description: "Elevate your space with the timeless sound of a Kawai Baby Grand. This special event offers musicians and families the chance to own a world-class piano at exclusive event pricing. Reserve your appointment today, spots are limited.",
     primaryCta: {
       text: "Explore Collection",
       action: "scroll"
@@ -456,9 +456,8 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
         <motion.div
           className="flex flex-col sm:flex-row gap-6 justify-center items-center"
           initial={{ opacity: 0, y: 40, scale: 0.9 }}
-          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.8, delay: 1.6, ease: "easeOut" }}
-          viewport={{ once: true, margin: "-50px" }}
         >
           {heroData.primaryCta && (
             <SignatureButton

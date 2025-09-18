@@ -506,97 +506,11 @@ export function HorizontalScrollPianoGallery() {
   // Enhanced piano model data with multiple images
   const pianoModels: PianoModel[] = [
     {
-      id: 'gx-3',
-      name: 'GX-3 Baby Grand',
-      series: 'GX',
-      model: 'GX-3',
-      size: 'featured',
-      price: 'Starting at $55,000',
-      keyFeatures: ['Concert Hall Touch', 'Premium Soundboard', 'Hand-Crafted Action'],
-      description: 'Our flagship baby grand piano featuring the renowned Millennium III action and premium tonal woods. Hand-selected by master craftsmen for unparalleled musical expression.',
-      image: '/images/signature/pianos/gx-3/gx-3-hero.webp',
-      imageAlt: 'Kawai GX-3 baby grand piano in elegant finish',
-      images: [
-        '/images/signature/pianos/gx-3/gx-3-hero.webp',
-        '/images/signature/pianos/gx-3/gx-3-secondary.webp'
-      ],
-      layout: 'side-by-side'
-    },
-    {
-      id: 'gl-50',
-      name: 'GL-50 Baby Grand',
-      series: 'GL',
-      model: 'GL-50',
-      size: 'standard',
-      price: 'Starting at $42,000',
-      keyFeatures: ['Extended Length', 'Rich Resonance', 'Professional Touch'],
-      description: 'The largest in our GL series, offering exceptional depth and projection. Perfect for serious pianists seeking professional-grade performance in a home setting.',
-      image: '/images/signature/pianos/gl-50/gl-50-hero.webp',
-      imageAlt: 'Kawai GL-50 baby grand piano showcasing elegant curves',
-      images: [
-        '/images/signature/pianos/gl-50/gl-50-hero.webp',
-        '/images/signature/pianos/gl-50/gl-50-secondary.webp'
-      ],
-      layout: 'large-small'
-    },
-    {
-      id: 'gx-1',
-      name: 'GX-1 Baby Grand',
-      series: 'GX',
-      model: 'GX-1',
-      size: 'standard',
-      price: 'Starting at $38,000',
-      keyFeatures: ['Compact Elegance', 'Premium Components', 'Concert Lineage'],
-      description: 'Entry into our prestigious GX series. Inherits the DNA of our concert grands while fitting elegantly in intimate spaces.',
-      image: '/images/signature/pianos/gx-1/gx-1-hero.webp',
-      imageAlt: 'Kawai GX-1 baby grand piano in studio setting',
-      images: [
-        '/images/signature/pianos/gx-1/gx-1-hero.webp',
-        '/images/signature/pianos/gx-1/gx-1-secondary.webp'
-      ],
-      layout: 'stacked'
-    },
-    {
-      id: 'gl-30',
-      name: 'GL-30 Baby Grand',
-      series: 'GL',
-      model: 'GL-30',
-      size: 'standard',
-      price: 'Starting at $32,000',
-      keyFeatures: ['Balanced Design', 'Clear Tone', 'Responsive Touch'],
-      description: 'Mid-size elegance with exceptional clarity. Offers the perfect balance of power and control for advancing pianists.',
-      image: '/images/signature/pianos/gl-30/gl-30-hero.webp',
-      imageAlt: 'Kawai GL-30 baby grand piano highlighting craftsmanship',
-      images: [
-        '/images/signature/pianos/gl-30/gl-30-hero.webp',
-        '/images/signature/pianos/gl-30/gl-30-secondary.webp'
-      ],
-      layout: 'l-shape'
-    },
-    {
-      id: 'gx-2',
-      name: 'GX-2 Baby Grand',
-      series: 'GX',
-      model: 'GX-2',
-      size: 'standard',
-      price: 'Starting at $45,000',
-      keyFeatures: ['Extended Soundboard', 'Enhanced Projection', 'Premium Action'],
-      description: 'Mid-tier GX excellence with extended soundboard for enhanced resonance. Bridges the gap between intimate and concert-level performance.',
-      image: '/images/signature/pianos/gx-2/gx-2-hero.webp',
-      imageAlt: 'Kawai GX-2 baby grand piano demonstrating elegant proportions',
-      images: [
-        '/images/signature/pianos/gx-2/gx-2-hero.webp',
-        '/images/signature/pianos/gx-2/gx-2-secondary.webp',
-        '/images/signature/pianos/gx-2/gx-2-detail.webp'
-      ],
-      layout: 'grid'
-    },
-    {
       id: 'gl-10',
       name: 'GL-10 Baby Grand',
       series: 'GL',
       model: 'GL-10',
-      size: 'standard',
+      size: 'featured',
       price: 'Starting at $28,000',
       keyFeatures: ['Compact Form', 'Pure Tone', 'Accessible Luxury'],
       description: 'Compact baby grand without compromise. Delivers the authentic grand piano experience in spaces where every inch matters.',
@@ -694,14 +608,13 @@ export function HorizontalScrollPianoGallery() {
           </div>
 
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-kawai-pearl leading-tight mb-6">
-            Our Curated{' '}
-            <span className="text-kawai-gold font-normal">Signature Collection</span>
-            {' '}of Baby Grands
+            Featured in Our{' '}
+            <span className="text-kawai-gold font-normal">Signature Selection</span>
           </h2>
 
           <p className="text-lg md:text-xl text-kawai-pearl/80 font-light leading-relaxed max-w-3xl mx-auto mb-8">
-            Six exceptional baby grand pianos, each representing the pinnacle of Japanese craftsmanship and tonal excellence.
-            From the intimate GL-10 to our flagship GX-3, discover the instrument that will elevate your musical journey.
+            The GL-10 Baby Grand Piano - representing the pinnacle of Japanese craftsmanship and tonal excellence.
+            Discover the compact instrument that delivers the authentic grand piano experience without compromise.
           </p>
 
         </motion.div>
@@ -803,11 +716,11 @@ export function HorizontalScrollPianoGallery() {
               Personalized Piano Selection
             </div>
             <h3 className="text-2xl md:text-3xl font-light text-kawai-pearl mb-4">
-              Find Your Perfect Signature Selection Match
+              Experience the GL-10 Baby Grand
             </h3>
             <p className="text-kawai-pearl/70 font-light mb-6 leading-relaxed">
-              Each piano in our Signature Collection offers a unique musical personality. From the intimate GL-10 to our concert-level GX-3,
-              let our experts guide you to the instrument that perfectly matches your space, style, and musical aspirations.
+              The GL-10 offers an exceptional musical personality with its compact elegance and pure tone.
+              Let our experts guide you through this remarkable instrument that perfectly balances space efficiency with authentic grand piano performance.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <PremiumButton
