@@ -1,6 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
 
@@ -17,7 +16,6 @@ interface MasterArtisan {
 interface MasterArtisansProps {
   className?: string
 }
-
 
 export function MasterArtisans({ className = '' }: MasterArtisansProps) {
   const masterArtisans: MasterArtisan[] = [
@@ -61,26 +59,14 @@ export function MasterArtisans({ className = '' }: MasterArtisansProps) {
       <div className="container mx-auto px-6 lg:px-8 relative z-10">
 
         {/* Header Section */}
-        <motion.div
-          className="text-center max-w-6xl mx-auto mb-20"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-        >
-          <div className="inline-block text-kawai-gold text-sm font-light tracking-[0.3em] uppercase mb-12 border border-kawai-gold/30 px-6 py-3 rounded-full backdrop-blur-sm">
+        <div className="text-center max-w-6xl mx-auto mb-20">
+          <div className="inline-block text-kawai-gold text-sm font-light tracking-[0.3em] uppercase mb-12 border border-kawai-gold/30 px-6 py-3 rounded-full">
             Crafted by Master Piano Artisans
           </div>
-        </motion.div>
+        </div>
 
         {/* Master Artisans Section */}
-        <motion.div
-          className="max-w-6xl mx-auto"
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          viewport={{ once: true }}
-        >
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-light text-kawai-pearl mb-4">
               Master <span className="text-kawai-gold">Artisans</span>
@@ -104,14 +90,9 @@ export function MasterArtisans({ className = '' }: MasterArtisansProps) {
               )
 
               return (
-                <motion.div
+                <div
                   key={artisan.name}
-                  className="rounded-lg border border-kawai-gold/20 bg-gradient-to-br from-kawai-black/30 to-transparent backdrop-blur-sm group hover:border-kawai-gold/40 transition-all duration-500 overflow-hidden"
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  whileHover={{ y: -4 }}
+                  className="rounded-lg border border-kawai-gold/20 bg-gradient-to-br from-kawai-black/30 to-transparent group hover:border-kawai-gold/40 transition-all duration-500 overflow-hidden hover:-translate-y-2"
                 >
                   {/* Large Image with Overlay */}
                   <div className="relative h-96 overflow-hidden">
@@ -132,8 +113,8 @@ export function MasterArtisans({ className = '' }: MasterArtisansProps) {
                       <div className="text-kawai-pearl/80 text-sm">{artisan.title}</div>
                     </div>
 
-                    {/* Hover overlay with description - HIDDEN by default */}
-                    <div className="absolute inset-0 bg-kawai-black/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center p-6 pointer-events-none group-hover:pointer-events-auto">
+                    {/* Hover overlay with description */}
+                    <div className="absolute inset-0 bg-kawai-black/90 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center p-6">
                       <div className="text-center max-w-xs">
                         <h4 className="text-kawai-gold text-xl font-medium mb-3">
                           {artisan.name}
@@ -148,11 +129,11 @@ export function MasterArtisans({ className = '' }: MasterArtisansProps) {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               )
             })}
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* Decorative elements */}

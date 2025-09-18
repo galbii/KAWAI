@@ -133,7 +133,58 @@ export const DualConversion: React.FC<DualConversionProps> = ({
           transition={{ delay: 0.3 }}
           className="grid md:grid-cols-2 gap-8"
         >
-          {/* Digital Path */}
+          {/* Showroom Path - Now First */}
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            onClick={handleConsultationClick}
+            className="bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-8 border border-red-200 cursor-pointer group hover:shadow-xl transition-all duration-300 relative"
+          >
+            {/* Scarcity Banner */}
+            <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg transform rotate-12 z-10">
+              3 Spots Left
+            </div>
+            <div className="text-center space-y-6">
+              <div className="w-16 h-16 bg-gradient-to-r from-kawai-red to-red-700 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+
+              <div>
+                <h3 className="text-2xl font-bold text-kawai-red mb-3">
+                  Your Personal Invite
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Secure private access to our heritage instruments with dedicated guidance from certified master craftsmen.
+                </p>
+              </div>
+
+              <div className="space-y-2 text-sm text-gray-600">
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="w-2 h-2 bg-kawai-red rounded-full"></div>
+                  <span>Private master craftsman appointment</span>
+                </div>
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="w-2 h-2 bg-kawai-red rounded-full"></div>
+                  <span>Exclusive heritage instrument access</span>
+                </div>
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="w-2 h-2 bg-kawai-red rounded-full"></div>
+                  <span>Limited-time consultation rates</span>
+                </div>
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-r from-kawai-red to-red-700 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
+              >
+                Claim Now
+              </motion.button>
+            </div>
+          </motion.div>
+
+          {/* Digital Path - Now Second */}
           <motion.div
             whileHover={{ scale: 1.02 }}
             onClick={() => setSelectedPath('digital')}
@@ -176,53 +227,6 @@ export const DualConversion: React.FC<DualConversionProps> = ({
                 className="bg-gradient-to-r from-kawai-red to-red-700 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
               >
                 View Now
-              </motion.button>
-            </div>
-          </motion.div>
-
-          {/* Showroom Path */}
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            onClick={handleConsultationClick}
-            className="bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-8 border border-red-200 cursor-pointer group hover:shadow-xl transition-all duration-300"
-          >
-            <div className="text-center space-y-6">
-              <div className="w-16 h-16 bg-gradient-to-r from-kawai-red to-red-700 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-300">
-                <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-              </div>
-
-              <div>
-                <h3 className="text-2xl font-bold text-kawai-red mb-3">
-                  Your Personal Invite
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Secure private access to our heritage instruments with dedicated guidance from certified master craftsmen.
-                </p>
-              </div>
-
-              <div className="space-y-2 text-sm text-gray-600">
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="w-2 h-2 bg-kawai-red rounded-full"></div>
-                  <span>Private master craftsman appointment</span>
-                </div>
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="w-2 h-2 bg-kawai-red rounded-full"></div>
-                  <span>Exclusive heritage instrument access</span>
-                </div>
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="w-2 h-2 bg-kawai-red rounded-full"></div>
-                  <span>Limited-time consultation rates</span>
-                </div>
-              </div>
-
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-gradient-to-r from-kawai-red to-red-700 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
-              >
-                Claim Now
               </motion.button>
             </div>
           </motion.div>

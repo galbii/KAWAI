@@ -128,7 +128,7 @@ export const ExclusiveAccessQuestion: React.FC<FormStepProps> = ({
       >
         <div className="max-w-lg mx-auto bg-gradient-to-r from-red-50 via-amber-50 to-orange-50 p-4 rounded-lg border border-red-100">
           <p className="text-sm text-gray-700">
-            <span className="font-medium text-red-600">🚀 Ready for your invitation!</span> Complete this to request your exclusive event access.
+            <span className="font-medium text-red-600">Submit the assessment so we can see if you're a good fit for this exclusive event!</span>
           </p>
         </div>
       </motion.div>

@@ -57,14 +57,16 @@ export const InteractiveAssessment: React.FC<InteractiveAssessmentProps> = ({
   onProgress,
   allowBack = true,
   saveProgress = true,
-  sessionId = `assessment_${Date.now()}`,
+  sessionId,
+  initialStep = 0,
   customStyling,
   progressIndicator = true,
   estimatedTime = ASSESSMENT_CONFIG.estimatedTimeMinutes,
-  className
+  className,
+  dialogMode = false
 }) => {
   // Form state management
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(initialStep)
   const [completedSteps, setCompletedSteps] = useState<number[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [startTime] = useState(new Date())
@@ -108,49 +110,8 @@ export const InteractiveAssessment: React.FC<InteractiveAssessmentProps> = ({
     onProgress?.(currentQuestionIndex + 1, questions.length)
   }, [currentQuestionIndex, questions.length, onProgress])
 
-  // Auto-save progress
-  useEffect(() => {
-    if (saveProgress && Object.keys(watchedValues).length > 0) {
-      const saveData = {
-        sessionId,
-        currentStep: currentQuestionIndex,
-        responses: watchedValues,
-        timestamp: new Date(),
-        completionPercentage
-      }
-      
-      // Save to localStorage
-      try {
-        localStorage.setItem(`assessment_${sessionId}`, JSON.stringify(saveData))
-      } catch (error) {
-        console.warn('Failed to save assessment progress:', error)
-      }
-    }
-  }, [watchedValues, currentQuestionIndex, saveProgress, sessionId, completionPercentage])
+  // Progress persists naturally via React state - no localStorage needed
 
-  // Load saved progress on mount
-  useEffect(() => {
-    if (saveProgress) {
-      try {
-        const savedData = localStorage.getItem(`assessment_${sessionId}`)
-        if (savedData) {
-          const parsed = JSON.parse(savedData)
-          if (parsed.responses) {
-            Object.entries(parsed.responses).forEach(([key, value]) => {
-              setValue(key as keyof AssessmentResponse, value as any)
-            })
-          }
-          if (typeof parsed.currentStep === 'number') {
-            setCurrentQuestionIndex(parsed.currentStep)
-          }
-          const completed = Array.from({ length: parsed.currentStep }, (_, i) => i + 1)
-          setCompletedSteps(completed)
-        }
-      } catch (error) {
-        console.warn('Failed to load saved assessment progress:', error)
-      }
-    }
-  }, [sessionId, saveProgress, setValue])
 
   // Handle question change
   const handleQuestionChange = useCallback((value: string) => {
@@ -227,14 +188,6 @@ export const InteractiveAssessment: React.FC<InteractiveAssessmentProps> = ({
       // Call completion callback
       await onComplete(validatedResponse)
 
-      // Clear saved progress
-      if (saveProgress) {
-        try {
-          localStorage.removeItem(`assessment_${sessionId}`)
-        } catch (error) {
-          console.warn('Failed to clear saved progress:', error)
-        }
-      }
 
     } catch (error) {
       console.error('Assessment submission failed:', error)
@@ -252,7 +205,11 @@ export const InteractiveAssessment: React.FC<InteractiveAssessmentProps> = ({
 
   return (
     <div
-      className={cn("relative min-h-screen bg-stone-50", className)}
+      className={cn(
+        "relative bg-stone-50",
+        dialogMode ? "min-h-0" : "min-h-screen",
+        className
+      )}
       style={themeVars}
     >
       {/* Progress Indicator */}
@@ -278,9 +235,15 @@ export const InteractiveAssessment: React.FC<InteractiveAssessmentProps> = ({
 
       {/* Main Assessment Content */}
       <div className="relative">
-        <div className="min-h-screen flex items-center justify-center px-4 py-12">
+        <div className={cn(
+          "px-4",
+          dialogMode ? "py-6" : "flex items-center justify-center min-h-screen py-12"
+        )}>
           <div className="w-full max-w-4xl mx-auto">
-            <div className="bg-white rounded-lg shadow-xl p-6 sm:p-8 md:p-12 mx-4 sm:mx-0">
+            <div className={cn(
+              "bg-white rounded-lg p-6 sm:p-8 md:p-12",
+              dialogMode ? "mx-0 shadow-none bg-transparent" : "mx-4 sm:mx-0 shadow-xl"
+            )}>
               <form onSubmit={handleSubmit(handleAssessmentSubmit)} className="w-full">
             <AnimatePresence mode="wait" initial={false}>
               {CurrentQuestionComponent && (

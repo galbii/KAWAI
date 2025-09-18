@@ -4,6 +4,7 @@ import { GoogleAnalytics } from '@next/third-parties/google';
 import { Suspense } from 'react';
 import { PHProvider } from './providers'
 import PageViewTracker from '../components/PageViewTracker'
+import MetaPixel from '../components/MetaPixel'
 import "./globals.css";
 
 // Primary font for body text and UI elements
@@ -45,6 +46,9 @@ export default function RootLayout({
         </PHProvider>
         {process.env.NEXT_PUBLIC_GA_ID && (
           <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+        )}
+        {process.env.NEXT_PUBLIC_META_PIXEL_ID && (
+          <MetaPixel pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID} />
         )}
       </body>
     </html>

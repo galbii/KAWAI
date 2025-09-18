@@ -98,7 +98,7 @@ const THEME_STYLES = {
     title: 'text-2xl font-bold text-gray-900 mb-2',
     description: 'text-gray-600 mb-6',
     input: 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-    button: 'w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50',
+    button: 'w-full bg-gradient-to-r from-kawai-red to-red-700 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50',
     error: 'text-red-600 text-sm mt-1',
     success: 'bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg',
     authPrompt: 'bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-lg'

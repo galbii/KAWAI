@@ -20,25 +20,25 @@ interface SignatureButtonProps {
   disabled?: boolean
 }
 
-function SignatureButton({ 
-  children, 
-  variant = 'primary', 
+function SignatureButton({
+  children,
+  variant = 'primary',
   size = 'lg',
   className = '',
   onClick,
   disabled = false
 }: SignatureButtonProps) {
-  const baseStyles = "relative font-medium tracking-wide transition-all duration-300 overflow-hidden group focus:outline-none focus:ring-2 focus:ring-kawai-pearl/20"
-  
+  const baseStyles = "relative font-light tracking-[0.1em] transition-all duration-500 overflow-hidden group focus:outline-none focus:ring-2 focus:ring-white/20"
+
   const variants = {
-    primary: "bg-kawai-pearl text-kawai-black hover:bg-kawai-pearl/90 hover:scale-105 shadow-lg hover:shadow-xl",
-    secondary: "bg-transparent text-kawai-pearl border border-kawai-pearl hover:bg-kawai-pearl hover:text-kawai-black hover:scale-105",
-    outline: "bg-transparent text-kawai-pearl border border-kawai-pearl/30 hover:border-kawai-pearl hover:bg-kawai-pearl/10"
+    primary: "bg-white/95 text-black hover:bg-white hover:scale-[1.02] shadow-2xl hover:shadow-white/20",
+    secondary: "bg-transparent text-white border border-white/30 hover:border-white/60 hover:bg-white/5 hover:scale-[1.02]",
+    outline: "bg-transparent text-white/80 border border-white/20 hover:border-white/40 hover:bg-white/5"
   }
-  
+
   const sizes = {
-    md: "px-6 py-3 text-sm",
-    lg: "px-8 py-4 text-base"
+    md: "px-8 py-4 text-sm",
+    lg: "px-12 py-5 text-base"
   }
   
   return (
@@ -46,13 +46,13 @@ function SignatureButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(baseStyles, variants[variant], sizes[size], className)}
-      whileHover={{ 
-        scale: disabled ? 1 : 1.05,
-        transition: { duration: 0.2 }
+      whileHover={{
+        scale: disabled ? 1 : 1.02
       }}
-      whileTap={{ 
+      transition={{ duration: 0.4 }}
+      whileTap={{
         scale: disabled ? 1 : 0.98,
-        transition: { duration: 0.1 }
+        transition: { duration: 0.2 }
       }}
     >
       {/* Shimmer effect overlay */}
@@ -195,23 +195,23 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
     }
   }, [enableSmoothScrolling])
 
-  // Fallback data with exclusive application messaging
+  // Fallback data with refined luxury messaging
   const fallbackData: SignatureHeroSection = {
     exclusiveText: "",
     titlePrefix: "",
     titleMain: "Baby Grand Signature",
     titleSuffix: "",
-    subtitle: "Own a piece of musical history and refined craftsmanship",
-    description: "A special opportunity for virtuosos and aspiring musicians to transform their space into their personal concert hall. Apply for a spot to secure your spot in KAWAI's special piano event to give back to the community that helped build our legacy.",
+    subtitle: "Transform your space into a Grand Concert Hall",
+    description: "See if you are qualified for a personal invite to this special event for the community that helped us build our legacy.",
     primaryCta: {
-      text: "Apply for Exclusive Access",
+      text: "Explore Collection",
       action: "scroll"
     },
     secondaryCta: {
-      text: "Reserve Your Spot",
+      text: "Register Now",
       action: "modal"
     },
-    overlayOpacity: 0.6,
+    overlayOpacity: 0.4,
     textAlignment: "center",
     showScrollIndicator: false
   }
@@ -233,13 +233,14 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
   // Handle CTA actions
   const handlePrimaryCTA = () => {
     if (heroData.primaryCta?.action === 'scroll') {
-      if (lenisInstance) {
-        lenisInstance.scrollTo(window.innerHeight, { duration: 1.5 })
-      } else {
-        window.scrollTo({
-          top: window.innerHeight,
-          behavior: 'smooth'
-        })
+      // Navigate to Premium Bento Gallery section
+      const bentoGallerySection = document.getElementById('premium-bento-gallery')
+      if (bentoGallerySection) {
+        if (lenisInstance) {
+          lenisInstance.scrollTo(bentoGallerySection, { duration: 1.5 })
+        } else {
+          bentoGallerySection.scrollIntoView({ behavior: 'smooth' })
+        }
       }
     } else if (heroData.primaryCta?.link) {
       window.open(heroData.primaryCta.link, '_self')
@@ -262,61 +263,52 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
     }
   }
   
-  // Animation variants
+  // Enhanced animation variants for luxury feel
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.3,
-        delayChildren: 0.2
+        staggerChildren: 0.4,
+        delayChildren: 0.3
       }
     }
   }
-  
+
   const textVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 30
+    hidden: {
+      opacity: 0,
+      y: 40
     },
     visible: {
       opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.8
-      }
+      y: 0
     }
   }
-  
+
   const titleVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 50,
+    hidden: {
+      opacity: 0,
+      y: 60,
       scale: 0.95
     },
     visible: {
       opacity: 1,
       y: 0,
-      scale: 1,
-      transition: {
-        duration: 1.2
-      }
+      scale: 1
     }
   }
-  
+
   const buttonVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 20,
+    hidden: {
+      opacity: 0,
+      y: 30,
       scale: 0.9
     },
     visible: {
       opacity: 1,
       y: 0,
-      scale: 1,
-      transition: {
-        duration: 0.6
-      }
+      scale: 1
     }
   }
 
@@ -374,7 +366,7 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
       {/* Main Content */}
       <motion.div
         className={cn(
-          "relative z-10 max-w-6xl mx-auto px-6 lg:px-8 flex flex-col",
+          "relative z-10 max-w-4xl mx-auto px-8 lg:px-12 flex flex-col",
           textAlignmentClasses[heroData.textAlignment || 'center']
         )}
         style={{
@@ -399,55 +391,65 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
           </motion.div>
         )}
 
-        {/* Kawai Logo */}
-        <motion.div
-          variants={textVariants}
-          className="mb-8"
-        >
-          <div className="flex justify-center">
-            <Image
-              src="/images/Kawai (Red)(2).png"
-              alt="Kawai Piano"
-              width={300}
-              height={80}
-              className="object-contain"
-              priority
-            />
-          </div>
-        </motion.div>
 
         {/* Main Title */}
         <motion.div
           variants={titleVariants}
-          className="mb-8"
+          className="mb-16"
         >
-          <h1 className="heading-brand-luxury text-kawai-pearl leading-[0.75] text-center">
+          <h1 className="text-center">
             {heroData.titlePrefix && (
               <span
-                className="block font-normal mb-4 sm:mb-6 tracking-[0.15em] sm:tracking-[0.2em] opacity-90 text-center"
-                style={{ fontSize: 'clamp(0.875rem, 2.5vw, 2.5rem)' }}
+                className="block font-light mb-8 tracking-[0.25em] opacity-90 text-center"
+                style={{
+                  fontSize: 'clamp(0.875rem, 2.5vw, 1.5rem)',
+                  color: '#E5E1DB',
+                  fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif'
+                }}
               >
                 {heroData.titlePrefix}
               </span>
             )}
             <span
-              className="block font-black leading-[0.8] sm:leading-[0.75] text-center w-full uppercase"
+              className="block leading-[0.9] text-center w-full"
               style={{
-                fontSize: 'clamp(3rem, 12vw, 10rem)',
-                letterSpacing: '0.05em',
+                fontSize: 'clamp(2.5rem, 10vw, 7rem)',
+                letterSpacing: '0.1em',
                 textAlign: 'center',
-                fontWeight: '900',
-                fontFamily: '"Anton", "Oswald", "Bebas Neue", "Arial Black", Impact, sans-serif',
-                textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-                fontStretch: 'condensed'
+                fontWeight: '300',
+                fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
+                textShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                color: '#F8F6F0'
               }}
             >
-              {heroData.titleMain}
+              {heroData.titleMain.includes('Signature') ? (
+                <>
+                  {heroData.titleMain.split('Signature')[0]}
+                  <span style={{ color: '#d5c78c' }}>Signature</span>
+                  {heroData.titleMain.split('Signature')[1]}
+                </>
+              ) : (
+                heroData.titleMain
+              )}
             </span>
+            <div
+              className="block font-light mt-6 tracking-[0.2em] text-center underline"
+              style={{
+                fontSize: 'clamp(0.875rem, 2.5vw, 1.25rem)',
+                color: '#F8F6F0',
+                fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif'
+              }}
+            >
+              October 9 - 11th
+            </div>
             {heroData.titleSuffix && (
               <div
-                className="block font-light mt-3 sm:mt-4 tracking-[0.05em] sm:tracking-[0.1em] opacity-90 text-center"
-                style={{ fontSize: 'clamp(1.125rem, 4vw, 3rem)' }}
+                className="block font-light mt-6 tracking-[0.15em] opacity-90 text-center"
+                style={{
+                  fontSize: 'clamp(1rem, 3vw, 2rem)',
+                  color: '#E5E1DB',
+                  fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif'
+                }}
               >
                 {heroData.titleSuffix}
               </div>
@@ -457,28 +459,37 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
         
         {/* Subtitle */}
         {heroData.subtitle && (
-          <motion.h2 
+          <motion.h2
             variants={textVariants}
-            className="text-xl md:text-2xl lg:text-3xl font-light text-kawai-pearl/80 mb-6 max-w-3xl"
+            className="text-xl md:text-2xl lg:text-3xl font-light mb-12 max-w-2xl"
+            style={{
+              color: '#E5E1DB',
+              fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
+              lineHeight: '1.4'
+            }}
           >
             {heroData.subtitle}
           </motion.h2>
         )}
-        
+
         {/* Description */}
         {heroData.description && (
-          <motion.p 
+          <motion.p
             variants={textVariants}
-            className="text-base md:text-lg text-kawai-pearl/70 font-light leading-relaxed mb-12 max-w-2xl"
+            className="text-base md:text-lg font-light leading-relaxed mb-20 max-w-xl"
+            style={{
+              color: '#B8B4AE',
+              fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif'
+            }}
           >
             {heroData.description}
           </motion.p>
         )}
-        
+
         {/* CTA Buttons */}
-        <motion.div 
+        <motion.div
           variants={buttonVariants}
-          className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+          className="flex flex-col sm:flex-row gap-6 justify-center items-center"
         >
           {heroData.primaryCta && (
             <SignatureButton

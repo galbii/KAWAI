@@ -178,13 +178,13 @@ function YouTubeVideo({ videoId }: { videoId: string }) {
 // Main PremiumHeritage component
 export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"]
-  })
-
-  const y = useTransform(scrollYProgress, [0, 1], [50, -50])
-  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
+  // Removed scroll transforms to fix animation conflicts
+  // const { scrollYProgress } = useScroll({
+  //   target: containerRef,
+  //   offset: ["start end", "end start"]
+  // })
+  // const y = useTransform(scrollYProgress, [0, 1], [50, -50])
+  // const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
 
   // Heritage data
   const achievements: HeritageAchievement[] = [
@@ -280,33 +280,42 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
         {/* Header Section */}
         <motion.div
           className="text-center max-w-6xl mx-auto mb-12"
-          style={{ y, opacity }}
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-100px" }}
         >
+          <motion.div
+            className="inline-block text-kawai-gold text-sm font-light tracking-[0.3em] uppercase mb-12 border border-kawai-gold/30 px-6 py-3 rounded-full backdrop-blur-sm"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1 }}
+            viewport={{ once: true, margin: "-100px" }}
+          >
+            Your Personal Showroom
+          </motion.div>
+
           <motion.h2
             className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-light text-kawai-pearl leading-tight mb-8"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: "-100px" }}
           >
             <motion.span
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-              viewport={{ once: true }}
+              viewport={{ once: true, margin: "-100px" }}
             >
               Transform your space into a{' '}
             </motion.span>
             <motion.span
-              className="text-kawai-gold font-normal inline-block"
+              className="text-kawai-gold font-bold inline-block"
               initial={{ opacity: 0, y: 20, scale: 0.9 }}
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
-              viewport={{ once: true }}
+              viewport={{ once: true, margin: "-100px" }}
             >
               Grand Concert Hall
             </motion.span>
@@ -326,14 +335,14 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 1.0, ease: "easeOut" }}
-                viewport={{ once: true }}
+                viewport={{ once: true, margin: "-100px" }}
               >
                 <motion.p
                   className="text-xl md:text-2xl text-kawai-pearl font-light leading-relaxed"
                   initial={{ opacity: 0 }}
                   whileInView={{ opacity: 1 }}
                   transition={{ duration: 0.6, delay: 1.3 }}
-                  viewport={{ once: true }}
+                  viewport={{ once: true, margin: "-100px" }}
                 >
                   We're offering a warm welcome to{' '}
                   <span className="text-kawai-gold font-medium">musicians, educators, and other passionate individuals</span> to check out the{' '}
@@ -349,7 +358,7 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
                 initial={{ opacity: 0, x: 30 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 1.2, ease: "easeOut" }}
-                viewport={{ once: true }}
+                viewport={{ once: true, margin: "-100px" }}
               >
                 <div className="p-8 rounded-lg border border-kawai-gold/20 bg-gradient-to-br from-kawai-black/50 to-transparent backdrop-blur-sm">
                   <motion.div
@@ -357,7 +366,7 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 1.4 }}
-                    viewport={{ once: true }}
+                    viewport={{ once: true, margin: "-100px" }}
                   >
                     <h3 className="text-kawai-gold text-2xl md:text-3xl font-light mb-6 tracking-wide">
                       October 9th through the 11th
@@ -379,7 +388,7 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
                           initial={{ opacity: 0, x: -20 }}
                           whileInView={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.5, delay: 1.5 + index * 0.1 }}
-                          viewport={{ once: true }}
+                          viewport={{ once: true, margin: "-100px" }}
                         >
                           <div className="flex-shrink-0 w-5 h-5 rounded-full bg-kawai-gold/20 flex items-center justify-center mt-0.5">
                             <svg className="w-3 h-3 text-kawai-gold" fill="currentColor" viewBox="0 0 20 20">
@@ -403,7 +412,7 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 1.6, ease: "easeOut" }}
-              viewport={{ once: true }}
+              viewport={{ once: true, margin: "-100px" }}
             >
               <PremiumButton
                 variant="primary"
@@ -423,25 +432,18 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
           </div>
 
         {/* Heritage Achievements - Moved to Bottom */}
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto"
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          viewport={{ once: true }}
-        >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {achievements.map((achievement, index) => (
             <motion.div
               key={achievement.label}
-              className="text-center p-8 rounded-lg border border-kawai-gold/20 bg-gradient-to-br from-kawai-black/50 to-transparent backdrop-blur-sm group hover:border-kawai-gold/40 transition-all duration-500"
+              className="text-center p-8 rounded-lg border border-kawai-gold/20 bg-gradient-to-br from-kawai-black/50 to-transparent group hover:border-kawai-gold/40 transition-all duration-500"
               initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              viewport={{ once: true }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.1 + 0.5 }}
               whileHover={{ y: -4 }}
             >
               <div className="text-4xl md:text-5xl lg:text-6xl font-light text-kawai-gold mb-2 group-hover:scale-105 transition-transform duration-300">
-                <AnimatedCounter to={achievement.number} suffix={achievement.suffix} />
+{achievement.number}{achievement.suffix}
               </div>
               <h3 className="text-xl md:text-2xl font-light text-kawai-pearl mb-3 group-hover:text-kawai-gold transition-colors duration-300">
                 {achievement.label}
@@ -451,7 +453,7 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
               </p>
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       </div>
 
       {/* Decorative elements */}

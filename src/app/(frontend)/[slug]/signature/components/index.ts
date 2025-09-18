@@ -8,6 +8,7 @@ export { default as DualConversion } from './DualConversion'
 export { EmailCapture } from './EmailCapture'
 export { default as BookingForm } from './BookingForm'
 export { default as ExitIntentModal } from './ExitIntentModal'
+export { default as ResumeAssessmentButton } from './ResumeAssessmentButton'
 
 // Re-export validation utilities
 export {

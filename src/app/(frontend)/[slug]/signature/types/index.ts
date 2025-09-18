@@ -326,6 +326,7 @@ export interface InteractiveAssessmentProps {
   allowBack?: boolean
   saveProgress?: boolean
   sessionId?: string
+  initialStep?: number // Step to start from (0-based index)
   customStyling?: {
     theme: 'light' | 'dark'
     primaryColor: string
@@ -334,6 +335,7 @@ export interface InteractiveAssessmentProps {
   progressIndicator?: boolean
   estimatedTime?: number // minutes
   className?: string
+  dialogMode?: boolean // Enable dialog-optimized layout
 }
 
 /**

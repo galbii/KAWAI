@@ -116,9 +116,6 @@ export function EmailContinuationForm({
                 <span>3-minute piano assessment</span>
               </div>
             </div>
-            <p className="text-xs text-kawai-black/50">
-              We'll help you discover your perfect piano match
-            </p>
           </div>
         </div>
       </div>
