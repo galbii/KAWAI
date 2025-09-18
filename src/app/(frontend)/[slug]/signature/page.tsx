@@ -52,7 +52,7 @@ async function getSignaturePageData(slug: string): Promise<SignaturePageData | n
           action: "scroll"
         },
         secondaryCta: {
-          text: "Your Invitation",
+          text: "Join Event",
           action: "modal"
         },
         overlayOpacity: 0.4,

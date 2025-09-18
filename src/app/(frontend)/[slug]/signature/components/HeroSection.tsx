@@ -209,7 +209,7 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
       action: "scroll"
     },
     secondaryCta: {
-      text: "Your Invitation",
+      text: "Join Event",
       action: "modal"
     },
     overlayOpacity: 0.4,

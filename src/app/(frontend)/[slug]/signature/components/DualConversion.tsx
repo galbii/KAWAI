@@ -209,6 +209,10 @@ export const DualConversion: React.FC<DualConversionProps> = ({
               <div className="space-y-2 text-sm text-gray-600">
                 <div className="flex items-center justify-center space-x-2">
                   <div className="w-2 h-2 bg-kawai-red rounded-full"></div>
+                  <span>Customized recommendations based on your assessment</span>
+                </div>
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="w-2 h-2 bg-kawai-red rounded-full"></div>
                   <span>Exclusive Signature Collection Catalog</span>
                 </div>
               </div>

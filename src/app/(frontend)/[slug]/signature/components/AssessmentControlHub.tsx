@@ -45,13 +45,16 @@ export const AssessmentControlHub: React.FC<AssessmentControlHubProps> = ({
     }
   }, [showSavedFeedback])
 
-  // Auto-hide tooltip after 4 seconds
+  // Auto-hide tooltip after 4 seconds - show on mount and when state changes to paused
   React.useEffect(() => {
+    // Show tooltip when component mounts or when switching to paused state
+    setShowTooltip(true)
+
     const timer = setTimeout(() => {
       setShowTooltip(false)
     }, 4000) // Hide after 4 seconds
     return () => clearTimeout(timer)
-  }, [])
+  }, [state]) // Re-run when state changes
   const progressPercent = totalSteps > 0 ? Math.round((currentStep / totalSteps) * 100) : 0
   const radius = 28
   const circumference = 2 * Math.PI * radius
@@ -61,9 +64,9 @@ export const AssessmentControlHub: React.FC<AssessmentControlHubProps> = ({
   const stateConfig = {
     'not-started': {
       icon: 'kawai-logo',
-      title: 'Continue', 
+      title: 'Continue',
       subtitle: 'Continue your assessment from here',
-      action: onStart,
+      action: onResume, // Always use onResume to skip welcome sequence
       bgColor: 'from-white to-gray-50',
       showProgress: false
     },

@@ -704,22 +704,6 @@ export function HorizontalScrollPianoGallery() {
             From the intimate GL-10 to our flagship GX-3, discover the instrument that will elevate your musical journey.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <PremiumButton
-              variant="primary"
-              size="lg"
-              onClick={handleCtaClick}
-            >
-              Find Your Perfect Signature Selection
-            </PremiumButton>
-            <PremiumButton
-              variant="secondary"
-              size="lg"
-              onClick={handleCtaClick}
-            >
-              Reserve Private Assessment
-            </PremiumButton>
-          </div>
         </motion.div>
 
         {/* Horizontal Scroll Gallery */}
@@ -806,6 +790,40 @@ export function HorizontalScrollPianoGallery() {
           </div>
         </motion.div>
 
+        {/* Bottom CTA Section */}
+        <motion.div
+          className="text-center mt-16 md:mt-20"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          viewport={{ once: true }}
+        >
+          <div className="max-w-3xl mx-auto p-8 rounded-lg border border-kawai-gold/20 bg-gradient-to-br from-kawai-black/50 to-transparent backdrop-blur-sm">
+            <div className="text-kawai-gold text-xs font-light tracking-[0.2em] uppercase mb-3">
+              Personalized Piano Selection
+            </div>
+            <h3 className="text-2xl md:text-3xl font-light text-kawai-pearl mb-4">
+              Find Your Perfect Signature Selection Match
+            </h3>
+            <p className="text-kawai-pearl/70 font-light mb-6 leading-relaxed">
+              Each piano in our Signature Collection offers a unique musical personality. From the intimate GL-10 to our concert-level GX-3,
+              let our experts guide you to the instrument that perfectly matches your space, style, and musical aspirations.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <PremiumButton
+                variant="primary"
+                size="lg"
+                onClick={handleCtaClick}
+                className="mx-auto"
+              >
+                Join the Event
+              </PremiumButton>
+              <div className="text-kawai-pearl/50 text-sm">
+                Expert Guidance • Private Consultation • By Appointment
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
 
       {/* Decorative elements */}

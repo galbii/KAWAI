@@ -54,7 +54,12 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
   // Auto-progression through dialog phases
   useEffect(() => {
     if (!showAssessmentDialog) return
-    
+
+    // Skip auto-progression if user has assessment progress and we start directly at assessment phase
+    if (dialogPhase === 'assessment' && assessmentProgressData) {
+      return // Stay on assessment phase
+    }
+
     if (dialogPhase === 'welcome-intro') {
       // Welcome intro: fade in (0.8s) + hold (1s) + fade out (0.7s) = 2.5s total
       const timer = setTimeout(() => {
@@ -82,7 +87,7 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
       }, 3000)
       return () => clearTimeout(timer)
     }
-  }, [dialogPhase, showAssessmentDialog])
+  }, [dialogPhase, showAssessmentDialog, assessmentProgressData])
 
   // Handle welcome screen continuation
   const handleWelcomeContinue = () => {
@@ -182,12 +187,18 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
   // Assessment Control Hub Handlers
   const handleStartAssessment = () => {
     console.log('Starting assessment from control hub')
-    
+
     // Move to email stage if not already past it
     if (currentStage === 'welcome') {
       setCurrentStage('email')
     } else if (emailData) {
-      // If email is already captured, go straight to assessment
+      // If user has assessment progress, call handleResumeAssessment (which works correctly)
+      if (assessmentProgressData) {
+        handleResumeAssessment()
+        return
+      }
+
+      // Otherwise, start fresh assessment
       setCurrentStage('assessment')
       setShowAssessmentDialog(true)
       setAssessmentState('active')
@@ -268,7 +279,8 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
               setAssessmentState('completed')
             } else if (showAssessmentDialog) {
               setAssessmentState('active')
-            } else if (currentStage === 'assessment' || (emailData && !assessmentResults)) {
+            } else {
+              // If user has saved progress, they should always be in 'paused' state
               setAssessmentState('paused')
             }
           } else {
