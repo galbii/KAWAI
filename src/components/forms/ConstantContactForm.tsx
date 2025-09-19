@@ -45,7 +45,7 @@ export interface FormConfig {
   /** Custom CSS classes */
   className?: string;
   /** Styling theme */
-  theme?: 'default' | 'signature' | 'minimal';
+  theme?: 'default' | 'signature' | 'minimal' | 'signature-minimal';
 }
 
 export interface ConstantContactFormProps {
@@ -112,6 +112,16 @@ const THEME_STYLES = {
     error: 'text-red-600 text-xs mt-1',
     success: 'bg-green-100 text-green-800 px-3 py-2 rounded text-sm',
     authPrompt: 'bg-gray-100 text-gray-700 px-3 py-2 rounded text-sm'
+  },
+  'signature-minimal': {
+    container: 'space-y-4',
+    title: 'text-lg font-medium text-gray-900 mb-3',
+    description: 'text-gray-600 text-sm mb-4',
+    input: 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-kawai-red focus:border-kawai-red',
+    button: 'w-full bg-kawai-red text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50',
+    error: 'text-red-600 text-xs mt-1',
+    success: 'bg-green-100 text-green-800 px-3 py-2 rounded text-sm',
+    authPrompt: 'bg-gray-100 text-gray-700 px-3 py-2 rounded text-sm'
   }
 };
 
@@ -161,34 +171,57 @@ export const ConstantContactForm: React.FC<ConstantContactFormProps> = ({
     authenticate
   } = useConstantContactIntegration(constantContactConfig);
 
-  // Build validation schema that matches ConstantContactSubmissionData
+  // Build validation schema that matches ConstantContactSubmissionData interface
+  const emailField = finalFormConfig.fields.find(f => f.name === 'email');
+  const firstNameField = finalFormConfig.fields.find(f => f.name === 'firstName');
+  const lastNameField = finalFormConfig.fields.find(f => f.name === 'lastName');
+  const phoneField = finalFormConfig.fields.find(f => f.name === 'phone');
+
+  // Create schema based on field requirements
   const schema = z.object({
-    firstName: z.string().optional(),
-    lastName: z.string().optional(),
-    email: z.string().email('Please enter a valid email address'),
-    phone: z.string().optional(),
+    firstName: firstNameField?.required
+      ? z.string().min(1, 'First name is required')
+      : z.string().optional(),
+    lastName: lastNameField?.required
+      ? z.string().min(1, 'Last name is required')
+      : z.string().optional(),
+    // Email is always required in ConstantContactSubmissionData interface
+    email: emailField?.required
+      ? z.string().min(1, 'Email is required').email('Please enter a valid email address')
+      : z.string().email('Please enter a valid email address'),
+    phone: phoneField?.required
+      ? z.string().min(1, 'Phone number is required')
+      : z.string().optional(),
     optInMarketing: z.boolean().optional(),
   });
 
-  // Form management
+  // Form management - let TypeScript infer types from schema
   const form = useForm({
     resolver: zodResolver(schema),
     mode: 'onChange' as const
   });
 
   // Handle form submission
-  const handleSubmit = async (data: ConstantContactSubmissionData) => {
+  const handleSubmit = async (data: z.infer<typeof schema>) => {
+    // Convert form data to ConstantContactSubmissionData
+    const submissionData: ConstantContactSubmissionData = {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      phone: data.phone,
+      optInMarketing: data.optInMarketing,
+    };
     try {
       clearError();
       clearSuccess();
 
       // Submit to Constant Contact
-      const constantContactAdded = await submitToConstantContact(data);
+      const constantContactAdded = await submitToConstantContact(submissionData);
 
       // Call success callback
       if (onSuccess) {
         onSuccess({
-          ...data,
+          ...submissionData,
           constantContactAdded,
           ...additionalData
         });
@@ -260,8 +293,8 @@ export const ConstantContactForm: React.FC<ConstantContactFormProps> = ({
         {finalFormConfig.fields.map((field) => (
           <div key={field.name}>
             <label className="block text-sm font-medium text-gray-700 mb-1">
+              {field.required && <span className="text-red-500 mr-1">*</span>}
               {field.label}
-              {field.required && <span className="text-red-500 ml-1">*</span>}
             </label>
 
             {field.type === 'checkbox' ? (

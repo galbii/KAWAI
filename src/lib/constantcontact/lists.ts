@@ -75,6 +75,44 @@ export class ConstantContactListManager {
   }
 
   /**
+   * Find a specific list by exact name using API search
+   */
+  async findListByName(listName: string): Promise<ApiResponse<ContactList | null>> {
+    try {
+      const encodedName = encodeURIComponent(listName);
+      const response = await this.client.get<ListsResponse>(`/contact_lists?name=${encodedName}`);
+
+      if (response.success && response.data?.lists && response.data.lists.length > 0) {
+        // Return the first exact match
+        const exactMatch = response.data.lists.find(list =>
+          list.name.toLowerCase().trim() === listName.toLowerCase().trim()
+        );
+
+        return {
+          success: true,
+          status: response.status,
+          data: exactMatch || response.data.lists[0] // Fallback to first result
+        };
+      }
+
+      return {
+        success: true,
+        status: response.status,
+        data: null // No list found
+      };
+    } catch (error) {
+      return {
+        success: false,
+        status: 500,
+        error: [{
+          error_key: 'search_failed',
+          error_message: error instanceof Error ? error.message : 'Failed to search for list'
+        }]
+      };
+    }
+  }
+
+  /**
    * Get a specific list by ID
    */
   async getList(listId: string): Promise<ApiResponse<ContactList>> {

@@ -70,7 +70,12 @@ export const DualConversion: React.FC<DualConversionProps> = ({
   // Handle showroom consultation request - show inline Calendly
   const handleConsultationClick = () => {
     console.log('🔍 Debug emailData in DualConversion:', emailData)
-    console.log('📧 Email to prefill:', emailData?.email)
+    console.log('📧 Complete contact data for prefill:', {
+      email: emailData?.email,
+      firstName: emailData?.firstName,
+      lastName: emailData?.lastName,
+      phone: emailData?.phone
+    })
     setShowInlineBooking(true)
   }
 
@@ -252,6 +257,12 @@ export const DualConversion: React.FC<DualConversionProps> = ({
                 displayMode="inline"
                 className="p-6"
                 prefillEmail={emailData?.email}
+                prefillData={{
+                  email: emailData?.email,
+                  firstName: emailData?.firstName,
+                  lastName: emailData?.lastName,
+                  phone: emailData?.phone
+                }}
                 onEventScheduled={handleCalendlyEventScheduled}
                 onDateTimeSelected={handleCalendlyDateTimeSelected}
                 onProfilePageViewed={handleCalendlyProfilePageViewed}

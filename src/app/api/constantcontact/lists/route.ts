@@ -31,9 +31,38 @@ export async function GET(request: NextRequest) {
     // Get query parameters
     const searchParams = request.nextUrl.searchParams;
     const format = searchParams.get('format') || 'raw';
+    const searchName = searchParams.get('name');
 
-    // Fetch lists
-    const response = await listManager.getAllLists();
+    console.log(`📊 Lists API: Fetching lists (format: ${format}, search: ${searchName || 'none'})`);
+
+    // Fetch lists (with optional name search)
+    let response;
+    if (searchName) {
+      // Use the new search by name method
+      const searchResponse = await listManager.findListByName(searchName);
+      if (searchResponse.success && searchResponse.data) {
+        // Convert single result to lists response format
+        response = {
+          success: true,
+          status: searchResponse.status,
+          data: {
+            lists: [searchResponse.data],
+            lists_count: 1
+          }
+        };
+      } else {
+        response = {
+          success: true,
+          status: searchResponse.status,
+          data: {
+            lists: [],
+            lists_count: 0
+          }
+        };
+      }
+    } else {
+      response = await listManager.getAllLists();
+    }
 
     if (!response.success) {
       return NextResponse.json(

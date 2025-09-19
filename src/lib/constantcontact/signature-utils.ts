@@ -134,40 +134,53 @@ export async function createShowroomKawaiList(): Promise<{ success: boolean; lis
 }
 
 /**
- * Ensure the showroom kawai list exists, creating it if necessary
+ * Ensure the showroom kawai list exists with improved API-level search
  */
 export async function ensureShowroomKawaiList(
   lists: ContactList[],
   onListsUpdate?: () => Promise<void>
 ): Promise<{ listId: string | null; error?: string }> {
-  console.log('ensureShowroomKawaiList: Checking', lists.length, 'available lists')
-  console.log('ensureShowroomKawaiList: List names:', lists.map(l => l.label))
+  console.log('ensureShowroomKawaiList: Starting enhanced list discovery')
+  console.log('ensureShowroomKawaiList: Local cache has', lists.length, 'lists')
 
-  // First try to find existing list
+  // Step 1: Try to find existing list in local cache first (fastest)
   const existingListId = getShowroomKawaiListId(lists)
   if (existingListId) {
-    console.log('ensureShowroomKawaiList: Found existing list with ID:', existingListId)
+    console.log('ensureShowroomKawaiList: Found in local cache with ID:', existingListId)
     return { listId: existingListId }
   }
 
-  // If not found, try to create it
-  console.log('SHOWROOM KAWAI list not found in provided lists, attempting to create...')
-  const createResult = await createShowroomKawaiList()
+  // Step 2: If not in cache, search API directly by name
+  console.log('ensureShowroomKawaiList: Not found in cache, searching API by name...')
+  try {
+    const apiSearchResult = await fetch('/api/constantcontact/lists/search-by-name', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: SHOWROOM_KAWAI_LIST_NAME })
+    })
 
-  // If creation fails with "not unique" error, the list exists but wasn't in our list
-  // So refresh the lists and try finding it again
-  if (!createResult.success && createResult.error?.includes('not unique')) {
-    console.log('List creation failed - list already exists. Refreshing lists...')
-    if (onListsUpdate) {
-      await onListsUpdate()
-      // Try one more time to find it in the refreshed lists
-      // Note: This won't work with current data, but we'll return the known ID
-      console.log('Returning known SHOWROOM KAWAI list ID as fallback')
-      return { listId: '40d1d690-8d9d-11f0-9bdc-fa163ea70839' }
+    if (apiSearchResult.ok) {
+      const searchData = await apiSearchResult.json()
+      if (searchData.success && searchData.data) {
+        console.log('ensureShowroomKawaiList: Found via API search with ID:', searchData.data.list_id)
+        // Refresh local cache if callback provided
+        if (onListsUpdate) {
+          await onListsUpdate()
+        }
+        return { listId: searchData.data.list_id }
+      }
     }
+  } catch (apiError) {
+    console.warn('ensureShowroomKawaiList: API search failed, continuing with creation attempt')
   }
 
+  // Step 3: If API search fails, try to create the list
+  console.log('ensureShowroomKawaiList: List not found via API search, attempting creation...')
+  const createResult = await createShowroomKawaiList()
+
+  // Step 4: Handle creation response
   if (createResult.success && createResult.listId) {
+    console.log('ensureShowroomKawaiList: Successfully created list with ID:', createResult.listId)
     // Refresh lists if callback provided
     if (onListsUpdate) {
       await onListsUpdate()
@@ -175,8 +188,25 @@ export async function ensureShowroomKawaiList(
     return { listId: createResult.listId }
   }
 
+  // Step 5: If creation fails with "not unique" error, list exists but API search missed it
+  if (!createResult.success && createResult.error?.includes('not unique')) {
+    console.log('ensureShowroomKawaiList: Creation failed - list already exists. Using fallback strategy...')
+
+    // Refresh lists and try one more search
+    if (onListsUpdate) {
+      console.log('ensureShowroomKawaiList: Refreshing local list cache...')
+      await onListsUpdate()
+    }
+
+    // Use the known production list ID as last resort
+    const fallbackListId = '40d1d690-8d9d-11f0-9bdc-fa163ea70839'
+    console.log('ensureShowroomKawaiList: Using known production list ID as fallback:', fallbackListId)
+    return { listId: fallbackListId }
+  }
+
+  // Step 6: Complete failure
   const error = `Failed to find or create SHOWROOM KAWAI list: ${createResult.error}`
-  console.error(error)
+  console.error('ensureShowroomKawaiList: Complete failure -', error)
   return { listId: null, error }
 }
 

@@ -7,6 +7,14 @@ import { cn } from '@/lib/utils'
 import useConstantContactIntegration, { type ConstantContactSubmissionData } from '@/hooks/useConstantContactIntegration'
 
 // Interfaces
+interface CalendlyPrefillData {
+  email?: string
+  firstName?: string
+  lastName?: string
+  name?: string
+  phone?: string
+}
+
 interface CalendlyBookingWidgetProps {
   isOpen: boolean
   onClose: () => void
@@ -15,6 +23,7 @@ interface CalendlyBookingWidgetProps {
   displayMode?: 'modal' | 'inline'
   className?: string
   prefillEmail?: string
+  prefillData?: CalendlyPrefillData
   onEventScheduled?: (eventData: any) => void
   onDateTimeSelected?: (eventData: any) => void
   onProfilePageViewed?: (eventData: any) => void
@@ -33,6 +42,7 @@ function CalendlyWidgetContent({
   calendlyUrl,
   signaturePageSlug,
   prefillEmail,
+  prefillData,
   onEventScheduled,
   onDateTimeSelected,
   onProfilePageViewed,
@@ -41,6 +51,7 @@ function CalendlyWidgetContent({
   calendlyUrl: string
   signaturePageSlug?: string
   prefillEmail?: string
+  prefillData?: CalendlyPrefillData
   onEventScheduled?: (eventData: any) => void
   onDateTimeSelected?: (eventData: any) => void
   onProfilePageViewed?: (eventData: any) => void
@@ -89,15 +100,19 @@ function CalendlyWidgetContent({
   // Submit contact to Constant Contact when booking is successful
   const handleConstantContactSubmission = async (eventData: any) => {
     try {
-      // Validate we have an email to submit
-      if (!prefillEmail) {
+      // Get email from prefillData or fallback to prefillEmail
+      const email = prefillData?.email || prefillEmail
+      if (!email) {
         console.warn('⚠️ No email available for Constant Contact submission from Calendly booking')
         return
       }
 
       // Create contact data with available information
       const contactData: ConstantContactSubmissionData = {
-        email: prefillEmail,
+        email,
+        firstName: prefillData?.firstName,
+        lastName: prefillData?.lastName,
+        phone: prefillData?.phone,
         optInMarketing: true // Default to opted in for consultation bookings
       }
 
@@ -174,8 +189,35 @@ function CalendlyWidgetContent({
     }
 
     console.log('🔗 Built Calendly URL with tracking:', url.toString())
-    console.log('📧 Prefill email being used:', prefillEmail)
+    console.log('📧 Prefill data being used:', prefillData || { email: prefillEmail })
     return url.toString()
+  }
+
+  // Build prefill object for Calendly
+  const buildPrefillObject = (): CalendlyPrefillData | undefined => {
+    if (prefillData) {
+      // Use the complete prefill data object
+      const prefill: CalendlyPrefillData = {}
+
+      if (prefillData.email) prefill.email = prefillData.email
+      if (prefillData.firstName) prefill.firstName = prefillData.firstName
+      if (prefillData.lastName) prefill.lastName = prefillData.lastName
+      if (prefillData.phone) prefill.phone = prefillData.phone
+
+      // Build full name if we have firstName and lastName
+      if (prefillData.firstName && prefillData.lastName) {
+        prefill.name = `${prefillData.firstName} ${prefillData.lastName}`
+      } else if (prefillData.firstName) {
+        prefill.name = prefillData.firstName
+      }
+
+      return Object.keys(prefill).length > 0 ? prefill : undefined
+    } else if (prefillEmail) {
+      // Fallback to email-only prefill for backward compatibility
+      return { email: prefillEmail }
+    }
+
+    return undefined
   }
 
   useEffect(() => {
@@ -250,7 +292,7 @@ function CalendlyWidgetContent({
               textColor: '000000'
             }}
             utm={buildUtmParams()}
-            prefill={prefillEmail ? { email: prefillEmail } : undefined}
+            prefill={buildPrefillObject()}
           />
         </div>
       )}
@@ -267,6 +309,7 @@ export function CalendlyBookingWidget({
   displayMode = 'modal',
   className = '',
   prefillEmail,
+  prefillData,
   onEventScheduled,
   onDateTimeSelected,
   onProfilePageViewed
@@ -351,6 +394,7 @@ export function CalendlyBookingWidget({
                   calendlyUrl={calendlyUrl}
                   signaturePageSlug={signaturePageSlug}
                   prefillEmail={prefillEmail}
+                  prefillData={prefillData}
                   onEventScheduled={handleEventScheduled}
                   onDateTimeSelected={handleDateTimeSelected}
                   onProfilePageViewed={handleProfilePageViewed}
@@ -370,6 +414,7 @@ export function CalendlyBookingWidget({
         calendlyUrl={calendlyUrl}
         signaturePageSlug={signaturePageSlug}
         prefillEmail={prefillEmail}
+        prefillData={prefillData}
         onEventScheduled={handleEventScheduled}
         onDateTimeSelected={handleDateTimeSelected}
         onProfilePageViewed={handleProfilePageViewed}

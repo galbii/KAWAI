@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { InteractiveAssessment } from '@/components/assessment/InteractiveAssessment'
 import { EmailContinuationForm } from './EmailContinuationForm'
+import { ContactDetailsForm } from './ContactDetailsForm'
 import { DualConversion } from './DualConversion'
 import { ExitIntentModal } from './ExitIntentModal'
 import { WelcomeScreen } from './WelcomeScreen'
@@ -20,7 +21,7 @@ interface SignatureExperienceProps {
 
 type ExperienceStage = 'welcome' | 'email' | 'assessment' | 'conversion' | 'complete'
 
-type DialogPhase = 'welcome-intro' | 'loading-assessment' | 'assessment' | 'thank-you' | 'analyzing'
+type DialogPhase = 'welcome-intro' | 'email-form' | 'loading-assessment' | 'assessment' | 'thank-you' | 'contact-details' | 'analyzing'
 
 interface EmailData {
   email: string
@@ -47,6 +48,8 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
   const [showSavedFeedback, setShowSavedFeedback] = useState(false)
   const [currentAssessmentStep, setCurrentAssessmentStep] = useState(0)
   const [dialogPhase, setDialogPhase] = useState<DialogPhase>('welcome-intro')
+  const [hideControlHubWhenDialogOpen, setHideControlHubWhenDialogOpen] = useState(false)
+  const [showControlHubPopUp, setShowControlHubPopUp] = useState(false)
 
   // Auto-scroll functionality
   const conversionRef = useRef<HTMLDivElement>(null)
@@ -63,9 +66,12 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
     if (dialogPhase === 'welcome-intro') {
       // Welcome intro: fade in (0.8s) + hold (1s) + fade out (0.7s) = 2.5s total
       const timer = setTimeout(() => {
-        setDialogPhase('loading-assessment')
+        setDialogPhase('email-form')
       }, 2500)
       return () => clearTimeout(timer)
+    } else if (dialogPhase === 'email-form') {
+      // Email form: no auto-progression - wait for user to complete email
+      return
     } else if (dialogPhase === 'loading-assessment') {
       // Loading: fade in (0.5s) + hold (2s) + fade out (0.5s) = 3s total
       const timer = setTimeout(() => {
@@ -75,9 +81,12 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
     } else if (dialogPhase === 'thank-you') {
       // Thank you: fade in (0.5s) + hold (1s) = 1.5s total
       const timer = setTimeout(() => {
-        setDialogPhase('analyzing')
+        setDialogPhase('contact-details')
       }, 1500)
       return () => clearTimeout(timer)
+    } else if (dialogPhase === 'contact-details') {
+      // Contact details: no auto-progression - wait for user to complete form
+      return
     } else if (dialogPhase === 'analyzing') {
       // Analyzing: fade in (0.5s) + loading (2s) + checkmark (0.5s) = 3s total
       const timer = setTimeout(() => {
@@ -91,7 +100,8 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
 
   // Handle welcome screen continuation
   const handleWelcomeContinue = () => {
-    setCurrentStage('email')
+    setShowAssessmentDialog(true)
+    setDialogPhase('welcome-intro')
   }
 
   // Handle email form completion
@@ -101,10 +111,19 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
     console.log('📋 Full data structure:', JSON.stringify(data, null, 2))
     setEmailData(data)
     setCurrentStage('assessment')
-    // Open the assessment dialog and update state
-    setShowAssessmentDialog(true)
+    // Progress to loading assessment phase since dialog is already open
     setAssessmentState('active')
-    setDialogPhase('welcome-intro')
+    setDialogPhase('loading-assessment')
+  }
+
+  // Handle contact details form completion
+  const handleContactDetailsComplete = (type: 'contact-details', data: any) => {
+    console.log('✅ Contact details form completed:', data)
+    console.log('📋 Updated contact data:', JSON.stringify(data, null, 2))
+    // Update emailData with the complete contact information
+    setEmailData(data)
+    // Progress to analyzing phase
+    setDialogPhase('analyzing')
   }
 
   // Handle assessment completion
@@ -188,9 +207,10 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
   const handleStartAssessment = () => {
     console.log('Starting assessment from control hub')
 
-    // Move to email stage if not already past it
+    // Open dialog if starting from welcome stage
     if (currentStage === 'welcome') {
-      setCurrentStage('email')
+      setShowAssessmentDialog(true)
+      setDialogPhase('welcome-intro')
     } else if (emailData) {
       // If user has assessment progress, call handleResumeAssessment (which works correctly)
       if (assessmentProgressData) {
@@ -324,6 +344,36 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
     }
   }, [currentStage])
 
+  // Hide control hub after 3 seconds when dialog opens, with pop-up animation
+  useEffect(() => {
+    if (showAssessmentDialog) {
+      // Briefly hide the control hub to trigger pop-up animation
+      setShowControlHubPopUp(false)
+      setHideControlHubWhenDialogOpen(true)
+
+      // Show it again with pop-up animation after brief delay
+      const popUpTimer = setTimeout(() => {
+        setHideControlHubWhenDialogOpen(false)
+        setShowControlHubPopUp(true)
+      }, 100)
+
+      // Hide it again after 3 seconds total
+      const hideTimer = setTimeout(() => {
+        setHideControlHubWhenDialogOpen(true)
+        setShowControlHubPopUp(false)
+      }, 3000)
+
+      return () => {
+        clearTimeout(popUpTimer)
+        clearTimeout(hideTimer)
+      }
+    } else {
+      // Reset when dialog closes
+      setHideControlHubWhenDialogOpen(false)
+      setShowControlHubPopUp(false)
+    }
+  }, [showAssessmentDialog])
+
   return (
     <section id="signature-experience" className="min-h-screen bg-stone-50">
       {/* Conditional container - full width for welcome, contained for other stages */}
@@ -410,25 +460,6 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
 
           {/* Main Experience Stages */}
           <AnimatePresence mode="wait">
-
-          {/* Email Form Stage */}
-          {currentStage === 'email' && (
-            <motion.div
-              key="email"
-              variants={stageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={stageTransition}
-              className="max-w-4xl mx-auto"
-            >
-              <EmailContinuationForm
-                onComplete={handleEmailComplete}
-                location={slug}
-                onBack={() => setCurrentStage('welcome')}
-              />
-            </motion.div>
-          )}
 
           {/* Assessment Stage - Loading State */}
           {currentStage === 'assessment' && (
@@ -619,6 +650,32 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
                       </motion.div>
                     )}
 
+                    {/* Email Form Phase */}
+                    {dialogPhase === 'email-form' && (
+                      <motion.div
+                        key="dialog-email-form"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="flex-1 flex flex-col min-h-0 bg-stone-50"
+                      >
+                        <div className="flex-1 flex items-center justify-center p-8">
+                          <div className="w-full max-w-lg">
+                            <EmailContinuationForm
+                              onComplete={handleEmailComplete}
+                              location={slug}
+                              onBack={() => {
+                                setShowAssessmentDialog(false)
+                                // Don't set current stage back to welcome since user might want to restart
+                              }}
+                              className="!mt-0"
+                            />
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
                     {/* Loading Assessment Phase */}
                     {dialogPhase === 'loading-assessment' && (
                       <motion.div
@@ -800,6 +857,33 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
                       </motion.div>
                     )}
 
+                    {/* Contact Details Phase */}
+                    {dialogPhase === 'contact-details' && (
+                      <motion.div
+                        key="dialog-contact-details"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="flex-1 flex flex-col min-h-0 bg-stone-50"
+                      >
+                        <div className="flex-1 flex items-center justify-center p-8">
+                          <div className="w-full max-w-lg">
+                            <ContactDetailsForm
+                              onComplete={handleContactDetailsComplete}
+                              location={slug}
+                              emailData={emailData}
+                              onBack={() => {
+                                // Option to go back to thank-you phase if needed
+                                setDialogPhase('thank-you')
+                              }}
+                              className="!mt-0"
+                            />
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
                     {/* Analyzing Phase */}
                     {dialogPhase === 'analyzing' && (
                       <motion.div
@@ -867,7 +951,7 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
         onStart={handleStartAssessment}
         onResume={handleResumeAssessment}
         onMinimize={handlePauseAssessment}
-        isVisible={currentStage !== 'welcome' && currentStage !== 'conversion' && currentStage !== 'complete'}
+        isVisible={currentStage !== 'welcome' && currentStage !== 'conversion' && currentStage !== 'complete' && !(showAssessmentDialog && hideControlHubWhenDialogOpen)}
         showSavedFeedback={showSavedFeedback}
       />
     </section>

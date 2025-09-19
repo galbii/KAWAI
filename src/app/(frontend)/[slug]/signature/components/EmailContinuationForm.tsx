@@ -19,24 +19,25 @@ export function EmailContinuationForm({
   onBack,
   className
 }: EmailContinuationFormProps) {
-  // Simple form configuration for email continuation
+  // Minimal form configuration for signature experience
   const formConfig: FormConfig = {
-    title: 'Please enter your email to continue',
-    description: 'We\'ll use this to send you your personalized piano recommendations and assessment results.',
+    title: '',
+    description: '',
     fields: [
       {
         name: 'email',
-        label: 'Email Address',
+        label: '',
         type: 'email',
-        placeholder: 'your@email.com',
+        placeholder: 'Enter your email address',
         required: true
       }
     ],
-    submitText: 'Continue to Assessment',
-    loadingText: 'Processing...',
-    successMessage: 'Email saved! Continuing to your assessment...',
-    theme: 'signature',
-    className: 'max-w-md mx-auto'
+    submitText: 'Apply Now',
+    loadingText: 'Reserving your invitation...',
+    successMessage: 'Invitation reserved! Preparing your signature experience...',
+    theme: 'signature-minimal',
+    className: 'w-full max-w-sm mx-auto',
+    showAuthPrompts: false
   }
 
   // Constant Contact configuration for signature experience
@@ -48,76 +49,64 @@ export function EmailContinuationForm({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className={className}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="flex-1 flex items-center justify-center bg-white p-12"
     >
-      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-lg mx-auto">
-        {/* Simple continuation message */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-kawai-red/10 rounded-full mb-6">
-            <svg className="w-8 h-8 text-kawai-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <h2 className="text-3xl md:text-4xl font-light font-serif text-kawai-black mb-4">
-            Almost There!
-          </h2>
-          <p className="text-lg text-kawai-black/70 max-w-md mx-auto">
-            Just one quick step before we begin your personalized piano assessment.
-          </p>
-        </div>
+      <div className="text-center max-w-md mx-auto">
+        {/* Main Heading */}
+        <motion.h1
+          className="text-4xl md:text-5xl font-light font-serif text-kawai-black mb-6"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+        >
+          Please enter your email to continue
+        </motion.h1>
 
-        {/* ConstantContact Form */}
-        <ConstantContactForm
-          constantContactConfig={constantContactConfig}
-          formConfig={formConfig}
-          onSuccess={(data) => {
-            // Call the parent completion handler
-            onComplete('email', {
-              ...data,
-              conversionType: 'email-continuation',
+        {/* Subheading */}
+        <motion.p
+          className="text-lg text-kawai-black/70 mb-8"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.6 }}
+        >
+          Reserve your free tuning and Delivery!
+        </motion.p>
+
+        {/* Email Form */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.6 }}
+        >
+          <ConstantContactForm
+            constantContactConfig={constantContactConfig}
+            formConfig={formConfig}
+            onSuccess={(data) => {
+              // Call the parent completion handler
+              onComplete('email', {
+                ...data,
+                conversionType: 'email-continuation',
+                location,
+                formType: 'signature-email-continuation'
+              })
+            }}
+            onError={(error) => {
+              console.error('Email continuation error:', error)
+              // Form continues to work even if Constant Contact fails
+            }}
+            additionalData={{
               location,
-              formType: 'signature-email-continuation'
-            })
-          }}
-          onError={(error) => {
-            console.error('Email continuation error:', error)
-            // Form continues to work even if Constant Contact fails
-          }}
-          additionalData={{
-            location,
-            formType: 'signature-email-continuation',
-            eventType: 'signature-piano-experience',
-            stage: 'email-continuation'
-          }}
-        />
+              formType: 'signature-email-continuation',
+              eventType: 'signature-piano-experience',
+              stage: 'email-continuation'
+            }}
+          />
+        </motion.div>
 
-        {/* Back Button */}
-        {onBack && (
-          <div className="mt-6 text-center">
-            <button
-              onClick={onBack}
-              className="text-kawai-black/60 hover:text-kawai-black transition-colors duration-200 text-sm"
-            >
-              ← Back to Welcome
-            </button>
-          </div>
-        )}
-
-        {/* What's Next - Simple version */}
-        <div className="mt-8 pt-6 border-t border-gray-200">
-          <div className="text-center text-sm text-kawai-black/60">
-            <div className="flex items-center justify-center space-x-2 mb-2">
-              <span>Next:</span>
-              <div className="flex items-center space-x-1">
-                <span className="w-2 h-2 bg-kawai-red rounded-full"></span>
-                <span>3-minute piano assessment</span>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </motion.div>
   )
