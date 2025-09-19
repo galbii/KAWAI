@@ -166,6 +166,15 @@ function SellingPointCard({
           </div>
         )}
 
+        {/* Hover reveal button */}
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 pt-2">
+          <button className="text-kawai-gold text-sm font-light hover:text-kawai-gold/80 transition-colors duration-200 flex items-center gap-2">
+            Learn More
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Subtle golden glow effect */}
@@ -177,7 +186,7 @@ function SellingPointCard({
 }
 
 // Main GL-10 Bento Gallery Component
-export function PremiumBentoGallery() {
+export function GL10BentoGallery() {
   const containerRef = useRef<HTMLDivElement>(null)
 
   const { scrollYProgress } = useScroll({
@@ -195,20 +204,40 @@ export function PremiumBentoGallery() {
       title: 'Industry Award Winner',
       subtitle: 'Recognition',
       description: 'MMR Magazine\'s "2016 Product of the Year" - the highest award any instrument in the global music products industry can receive.',
-      image: '/images/signature/pianos/gl-10/gl-10-hero.webp',
-      imageAlt: 'Kawai GL-10 baby grand piano - award-winning design and craftsmanship',
+      image: '/images/gl10/award-recognition.webp',
+      imageAlt: 'GL-10 award recognition and accolades',
       badge: 'Award Winner',
       icon: '🏆',
       features: ['MMR 2016 Product of Year', 'Industry Recognition', 'Global Excellence'],
       priority: true
     },
     {
+      id: 'millennium-action',
+      title: 'Millennium III Action',
+      subtitle: 'Technology',
+      description: 'ABS-Carbon composite technology creates lighter, stronger action parts for faster response, better control, and greater stability than conventional all-wood actions.',
+      image: '/images/gl10/action-technology.webp',
+      imageAlt: 'GL-10 Millennium III Action with ABS-Carbon technology',
+      icon: '⚙️',
+      features: ['ABS-Carbon Composite', 'Faster Response', 'Superior Control']
+    },
+    {
+      id: 'premium-soundboard',
+      title: 'Premium Soundboard',
+      subtitle: 'Craftsmanship',
+      description: 'Quarter-sawn solid spruce soundboard, strategically tapered and resonance-tested to meet demanding standards for optimal tonal projection.',
+      image: '/images/gl10/soundboard-craftsmanship.webp',
+      imageAlt: 'GL-10 premium quarter-sawn solid spruce soundboard',
+      icon: '🎵',
+      features: ['Quarter-Sawn Spruce', 'Resonance Tested', 'Strategic Tapering']
+    },
+    {
       id: 'space-efficiency',
       title: 'Perfect for Any Home',
       subtitle: 'Space Efficiency',
       description: 'At 5\'0" in length, the GL-10 delivers authentic grand piano experience in spaces where every inch matters, without sacrificing musical quality.',
-      image: '/images/signature/pianos/gl-10/gl-10-detail.webp',
-      imageAlt: 'GL-10 baby grand piano fitting perfectly in elegant home setting with premium craftsmanship',
+      image: '/images/gl10/compact-elegance.webp',
+      imageAlt: 'GL-10 baby grand piano fitting perfectly in home setting',
       icon: '🏠',
       features: ['5\'0" Length', 'Compact Design', 'Home-Friendly']
     },
@@ -217,22 +246,41 @@ export function PremiumBentoGallery() {
       title: 'Luxury Safety Features',
       subtitle: 'Premium Details',
       description: 'Soft-closing lid and fallboard prevent trapped fingers while adding a luxurious touch previously found only on high-end instruments.',
-      image: '/images/signature/pianos/gl-10/f4QT8LYQ.jpeg',
-      imageAlt: 'GL-10 luxury features including soft-closing lid and premium details',
+      image: '/images/gl10/luxury-features.webp',
+      imageAlt: 'GL-10 soft-closing lid demonstrating luxury and safety',
       icon: '✨',
       features: ['Soft-Closing Lid', 'Safety First', 'Luxury Touch']
     },
     {
-      id: 'free-delivery-tuning',
-      title: 'Free Delivery & Tuning',
-      subtitle: 'Exclusive Offer',
-      description: 'With your signature event invitation, receive complimentary white-glove delivery and professional tuning service included at no extra cost.',
-      image: '/images/signature/pianos/gx-1/gx-1-hero.webp',
-      imageAlt: 'Professional piano delivery and tuning service included with signature invitation',
-      badge: 'Free Service',
-      icon: '🚚',
-      features: ['White-Glove Delivery', 'Professional Tuning', 'Complimentary'],
-      priority: true
+      id: 'exceptional-value',
+      title: 'Unmatched Value',
+      subtitle: 'Investment',
+      description: 'Features the same Millennium III action as higher-priced models. Best possible instrument around its budget range with professional-grade components.',
+      image: '/images/gl10/value-proposition.webp',
+      imageAlt: 'GL-10 representing exceptional value in baby grand pianos',
+      badge: 'Best Value',
+      icon: '💎',
+      features: ['Professional Grade', 'Premium Components', 'Smart Investment']
+    },
+    {
+      id: 'warranty-coverage',
+      title: '10-Year Warranty',
+      subtitle: 'Assurance',
+      description: 'Every Kawai grand piano is covered by our Ten Year Fully Transferable Warranty - the seal of Kawai craftsmanship and assurance of satisfaction.',
+      image: '/images/gl10/warranty-coverage.webp',
+      imageAlt: 'GL-10 warranty documentation and coverage details',
+      icon: '🛡️',
+      features: ['10-Year Coverage', 'Fully Transferable', 'Kawai Craftsmanship']
+    },
+    {
+      id: 'finish-options',
+      title: 'Five Elegant Finishes',
+      subtitle: 'Customization',
+      description: 'Choose from Polished Ebony, Polished Mahogany, French Polished Mahogany, Snow White, and Satin Ebony to match your home décor perfectly.',
+      image: '/images/gl10/finish-options.webp',
+      imageAlt: 'GL-10 available in multiple elegant finish options',
+      icon: '🎨',
+      features: ['5 Finish Options', 'Home Integration', 'Personal Style']
     }
   ]
 
@@ -265,7 +313,7 @@ export function PremiumBentoGallery() {
           viewport={{ once: true }}
         >
           <div className="inline-block text-kawai-gold text-sm font-light tracking-[0.3em] uppercase mb-4 border border-kawai-gold/30 px-4 py-2 rounded-full backdrop-blur-sm">
-            Signature Excellence
+            GL-10 Excellence
           </div>
 
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-kawai-pearl leading-tight mb-6">
@@ -275,82 +323,9 @@ export function PremiumBentoGallery() {
           </h2>
 
           <p className="text-lg md:text-xl text-kawai-pearl/80 font-light leading-relaxed max-w-3xl mx-auto mb-8">
-            Discover the compelling reasons why the GL-10 has earned its reputation as the finest baby grand piano
+            Discover the eight compelling reasons why the GL-10 has earned its reputation as the finest baby grand piano
             in its class, combining award-winning design with uncompromising musical excellence.
           </p>
-        </motion.div>
-
-        {/* Millennium III Action Feature Section */}
-        <motion.div
-          className="relative max-w-6xl mx-auto mb-20"
-          initial={{ opacity: 0, y: 60 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2, delay: 0.3 }}
-          viewport={{ once: true }}
-        >
-          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
-            {/* Action Image Side - First on mobile, Left on desktop */}
-            <motion.div
-              className="flex-1 relative order-1 lg:order-1"
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, delay: 0.7 }}
-              viewport={{ once: true }}
-            >
-              <div className="relative max-w-lg mx-auto">
-                <Image
-                  {...getImagePropsWithFallback(
-                    '/images/gallery/Grand Feel Compact - action sample (layers) copy.webp',
-                    '/images/signature/fallback-piano.webp',
-                    'hero',
-                    {
-                      fill: false,
-                      className: 'w-full h-auto object-contain',
-                      priority: false
-                    }
-                  )}
-                  alt="Kawai Millennium III Action with ABS-Carbon composite technology"
-                  width={500}
-                  height={400}
-                />
-
-                {/* Subtle glow effect behind the transparent image */}
-                <div className="absolute inset-0 bg-gradient-to-br from-kawai-gold/10 via-kawai-gold/5 to-transparent rounded-2xl blur-2xl -z-10 scale-110" />
-              </div>
-            </motion.div>
-
-            {/* Content Side - Second on mobile, Right on desktop */}
-            <motion.div
-              className="flex-1 text-center lg:text-left order-2 lg:order-2"
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-              viewport={{ once: true }}
-            >
-              <div className="text-kawai-gold text-sm font-light tracking-[0.2em] uppercase mb-4">
-                Advanced Technology
-              </div>
-              <h3 className="text-3xl md:text-4xl lg:text-5xl font-light text-kawai-pearl leading-tight mb-6">
-                Millennium III{' '}
-                <span className="text-kawai-gold font-normal">Action</span>
-              </h3>
-              <p className="text-lg text-kawai-pearl/80 font-light leading-relaxed mb-8 max-w-2xl lg:max-w-none">
-                ABS-Carbon composite technology creates lighter, stronger action parts for faster response,
-                better control, and greater stability than conventional all-wood actions.
-              </p>
-              <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
-                <span className="text-sm text-kawai-gold/80 bg-kawai-gold/10 px-4 py-2 rounded-full border border-kawai-gold/20">
-                  ABS-Carbon Composite
-                </span>
-                <span className="text-sm text-kawai-gold/80 bg-kawai-gold/10 px-4 py-2 rounded-full border border-kawai-gold/20">
-                  Faster Response
-                </span>
-                <span className="text-sm text-kawai-gold/80 bg-kawai-gold/10 px-4 py-2 rounded-full border border-kawai-gold/20">
-                  Superior Control
-                </span>
-              </div>
-            </motion.div>
-          </div>
         </motion.div>
 
         {/* Bento Grid Layout */}
@@ -361,7 +336,7 @@ export function PremiumBentoGallery() {
           transition={{ duration: 0.8, delay: 0.2 }}
           viewport={{ once: true }}
         >
-          {/* Row 1: Featured Award Winner + Perfect Home + Luxury Features */}
+          {/* Featured card - spans 2 columns */}
           <div className="lg:col-span-2">
             <SellingPointCard
               sellingPoint={gl10SellingPoints[0]}
@@ -370,24 +345,30 @@ export function PremiumBentoGallery() {
             />
           </div>
 
-          <SellingPointCard
-            key={gl10SellingPoints[1].id}
-            sellingPoint={gl10SellingPoints[1]}
-            index={1}
-          />
-
-          <SellingPointCard
-            key={gl10SellingPoints[2].id}
-            sellingPoint={gl10SellingPoints[2]}
-            index={2}
-          />
-
-          {/* Row 2: Featured Free Delivery (centered) */}
-          <div className="lg:col-start-2 lg:col-span-2">
+          {/* Standard cards */}
+          {gl10SellingPoints.slice(1, 3).map((point, index) => (
             <SellingPointCard
-              sellingPoint={gl10SellingPoints[3]}
-              className="h-[600px]"
-              index={3}
+              key={point.id}
+              sellingPoint={point}
+              index={index + 1}
+            />
+          ))}
+
+          {/* Row 2 */}
+          {gl10SellingPoints.slice(3, 7).map((point, index) => (
+            <SellingPointCard
+              key={point.id}
+              sellingPoint={point}
+              index={index + 3}
+            />
+          ))}
+
+          {/* Featured bottom card - spans 2 columns */}
+          <div className="lg:col-span-2">
+            <SellingPointCard
+              sellingPoint={gl10SellingPoints[7]}
+              className="h-[500px]"
+              index={7}
             />
           </div>
         </motion.div>
@@ -405,7 +386,7 @@ export function PremiumBentoGallery() {
               Experience Excellence
             </div>
             <h3 className="text-3xl md:text-4xl font-light text-kawai-pearl mb-4">
-              Ready to Experience Our Signature?
+              Ready to Experience the GL-10?
             </h3>
             <p className="text-kawai-pearl/70 font-light mb-8 leading-relaxed text-lg max-w-3xl mx-auto">
               The GL-10 Baby Grand represents the perfect harmony of compact elegance, premium craftsmanship,
@@ -419,7 +400,7 @@ export function PremiumBentoGallery() {
                 onClick={handleCtaClick}
                 className="mx-auto"
               >
-                Claim Your Invite
+                Schedule Your Experience
               </PremiumButton>
               <div className="text-kawai-pearl/50 text-sm text-center">
                 Private Consultation • Expert Guidance • By Appointment Only
@@ -436,5 +417,5 @@ export function PremiumBentoGallery() {
   )
 }
 
-// Keep original export name for compatibility
-export { PremiumBentoGallery as HorizontalScrollPianoGallery }
+// Export with alias for backward compatibility
+export { GL10BentoGallery as PremiumBentoGallery }
