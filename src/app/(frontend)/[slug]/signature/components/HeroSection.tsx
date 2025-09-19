@@ -385,8 +385,7 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
               {heroData.titleMain.includes('Signature') ? (
                 <>
                   {heroData.titleMain.split('Signature')[0]}
-                  <span style={{ color: '#d5c78c' }}>Signature</span>
-                  {heroData.titleMain.split('Signature')[1]}
+                  <span style={{ color: '#d5c78c' }}>Signature Event</span>
                 </>
               ) : (
                 heroData.titleMain
@@ -435,23 +434,6 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
           </motion.h2>
         )}
 
-        {/* Description */}
-        {heroData.description && (
-          <motion.p
-            className="text-base md:text-lg font-light leading-relaxed mb-20 max-w-xl"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 2.0, ease: "easeOut" }}
-            viewport={{ once: true, margin: "-50px" }}
-            style={{
-              color: '#B8B4AE',
-              fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif'
-            }}
-          >
-            {heroData.description}
-          </motion.p>
-        )}
-
         {/* CTA Buttons */}
         <motion.div
           className="flex flex-col sm:flex-row gap-6 justify-center items-center"
@@ -479,6 +461,22 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
             </SignatureButton>
           )}
         </motion.div>
+
+        {/* Description */}
+        {heroData.description && (
+          <motion.p
+            className="text-base md:text-lg font-light leading-relaxed mt-12 max-w-2xl mx-auto text-center"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 2.2, ease: "easeOut" }}
+            style={{
+              color: '#B8B4AE',
+              fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif'
+            }}
+          >
+            {heroData.description}
+          </motion.p>
+        )}
       </motion.div>
       
       {/* Scroll Indicator */}
