@@ -171,29 +171,38 @@ export const ConstantContactForm: React.FC<ConstantContactFormProps> = ({
     authenticate
   } = useConstantContactIntegration(constantContactConfig);
 
-  // Build validation schema that matches ConstantContactSubmissionData interface
-  const emailField = finalFormConfig.fields.find(f => f.name === 'email');
-  const firstNameField = finalFormConfig.fields.find(f => f.name === 'firstName');
-  const lastNameField = finalFormConfig.fields.find(f => f.name === 'lastName');
-  const phoneField = finalFormConfig.fields.find(f => f.name === 'phone');
+  // Build completely dynamic schema - only include fields that exist in the form
+  const schemaFields: Record<string, z.ZodTypeAny> = {};
 
-  // Create schema based on field requirements
-  const schema = z.object({
-    firstName: firstNameField?.required
-      ? z.string().min(1, 'First name is required')
-      : z.string().optional(),
-    lastName: lastNameField?.required
-      ? z.string().min(1, 'Last name is required')
-      : z.string().optional(),
-    // Email is always required in ConstantContactSubmissionData interface
-    email: emailField?.required
-      ? z.string().min(1, 'Email is required').email('Please enter a valid email address')
-      : z.string().email('Please enter a valid email address'),
-    phone: phoneField?.required
-      ? z.string().min(1, 'Phone number is required')
-      : z.string().optional(),
-    optInMarketing: z.boolean().optional(),
+  finalFormConfig.fields.forEach(field => {
+    switch (field.name) {
+      case 'firstName':
+        schemaFields.firstName = field.required
+          ? z.string().min(1, 'First name is required')
+          : z.string().optional();
+        break;
+      case 'lastName':
+        schemaFields.lastName = field.required
+          ? z.string().min(1, 'Last name is required')
+          : z.string().optional();
+        break;
+      case 'email':
+        schemaFields.email = field.required
+          ? z.string().min(1, 'Email is required').email('Please enter a valid email address')
+          : z.string().email('Please enter a valid email address');
+        break;
+      case 'phone':
+        schemaFields.phone = field.required
+          ? z.string().min(1, 'Phone number is required')
+          : z.string().optional();
+        break;
+      case 'optInMarketing':
+        schemaFields.optInMarketing = z.boolean().optional();
+        break;
+    }
   });
+
+  const schema = z.object(schemaFields);
 
   // Form management - let TypeScript infer types from schema
   const form = useForm({
@@ -203,28 +212,20 @@ export const ConstantContactForm: React.FC<ConstantContactFormProps> = ({
 
   // Handle form submission
   const handleSubmit = async (data: z.infer<typeof schema>) => {
-    // Convert form data to ConstantContactSubmissionData
-    const submissionData: ConstantContactSubmissionData = {
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email,
-      phone: data.phone,
-      optInMarketing: data.optInMarketing,
-    };
     try {
       clearError();
       clearSuccess();
 
-      // Submit to Constant Contact
-      const constantContactAdded = await submitToConstantContact(submissionData);
+      // Submit to Constant Contact (use type assertion for compatibility)
+      const constantContactAdded = await submitToConstantContact(data as unknown as ConstantContactSubmissionData);
 
       // Call success callback
       if (onSuccess) {
         onSuccess({
-          ...submissionData,
+          ...data,
           constantContactAdded,
           ...additionalData
-        });
+        } as unknown as ConstantContactSubmissionData & { constantContactAdded: boolean });
       }
 
     } catch (error) {
