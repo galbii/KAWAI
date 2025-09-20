@@ -48,7 +48,7 @@ async function getSignaturePageData(slug: string): Promise<SignaturePageData | n
         description: "Elevate your space with the timeless sound of a Kawai Baby Grand. This special event offers musicians and families the chance to own a world-class piano at exclusive event pricing. Reserve your appointment today, spots are limited.",
         heroBackgroundImage: null, // Will use fallback
         primaryCta: {
-          text: "Explore Collection",
+          text: "Our Signature",
           action: "scroll"
         },
         secondaryCta: {

@@ -245,7 +245,7 @@ export function PremiumBentoGallery() {
 
   return (
     <section
-      id="gl10-bento-gallery"
+      id="premium-bento-gallery"
       ref={containerRef}
       className="relative py-20 md:py-32 bg-gradient-to-b from-kawai-black via-gray-900 to-kawai-black overflow-hidden"
     >
@@ -355,41 +355,41 @@ export function PremiumBentoGallery() {
 
         {/* Bento Grid Layout */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16"
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16 max-w-4xl mx-auto"
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
           viewport={{ once: true }}
         >
-          {/* Row 1: Featured Award Winner + Perfect Home + Luxury Features */}
-          <div className="lg:col-span-2">
-            <SellingPointCard
-              sellingPoint={gl10SellingPoints[0]}
-              className="h-[600px]"
-              index={0}
-            />
-          </div>
+          {/* Row 1: Award Winner + Perfect Home */}
+          <SellingPointCard
+            key={gl10SellingPoints[0].id}
+            sellingPoint={gl10SellingPoints[0]}
+            className="h-[500px]"
+            index={0}
+          />
 
           <SellingPointCard
             key={gl10SellingPoints[1].id}
             sellingPoint={gl10SellingPoints[1]}
+            className="h-[500px]"
             index={1}
           />
 
+          {/* Row 2: Luxury Features + Free Delivery */}
           <SellingPointCard
             key={gl10SellingPoints[2].id}
             sellingPoint={gl10SellingPoints[2]}
+            className="h-[500px]"
             index={2}
           />
 
-          {/* Row 2: Featured Free Delivery (centered) */}
-          <div className="lg:col-start-2 lg:col-span-2">
-            <SellingPointCard
-              sellingPoint={gl10SellingPoints[3]}
-              className="h-[600px]"
-              index={3}
-            />
-          </div>
+          <SellingPointCard
+            key={gl10SellingPoints[3].id}
+            sellingPoint={gl10SellingPoints[3]}
+            className="h-[500px]"
+            index={3}
+          />
         </motion.div>
 
         {/* Bottom CTA Section */}
