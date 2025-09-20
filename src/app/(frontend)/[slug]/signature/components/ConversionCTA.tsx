@@ -112,25 +112,28 @@ function BenefitsReveal({ benefits }: { benefits: string[] }) {
         A special event for our Qualified Musicians:
       </h4>
       <div className="space-y-3">
-        {benefits.map((benefit, index) => (
-          <motion.div
-            key={index}
-            className="flex items-start gap-3"
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            viewport={{ once: true }}
-          >
-            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-kawai-gold/20 flex items-center justify-center mt-0.5">
-              <svg className="w-3 h-3 text-kawai-gold" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <span className="text-kawai-pearl/80 text-sm leading-relaxed">
-              {benefit}
-            </span>
-          </motion.div>
-        ))}
+        {benefits.map((benefit, index) => {
+          const isDeliveryBenefit = benefit.includes("Present your invitation for white glove")
+          return (
+            <motion.div
+              key={index}
+              className={`flex items-start gap-3 ${isDeliveryBenefit ? 'mt-4 p-4 rounded-xl bg-gradient-to-r from-kawai-gold/10 via-kawai-gold/5 to-transparent border border-kawai-gold/20' : ''}`}
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              viewport={{ once: true }}
+            >
+              <div className={`flex-shrink-0 rounded-full flex items-center justify-center mt-0.5 ${isDeliveryBenefit ? 'w-6 h-6 bg-kawai-gold/30' : 'w-5 h-5 bg-kawai-gold/20'}`}>
+                <svg className={`text-kawai-gold fill-current ${isDeliveryBenefit ? 'w-4 h-4' : 'w-3 h-3'}`} viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <span className={`leading-relaxed ${isDeliveryBenefit ? 'text-kawai-gold font-medium text-base' : 'text-kawai-pearl/80 text-sm'}`}>
+                {benefit}
+              </span>
+            </motion.div>
+          )
+        })}
       </div>
     </motion.div>
   )
@@ -193,9 +196,8 @@ export function ConversionCTA({
     benefits: [
       "Apply for the signature circle and join thousands of passionate musicians",
       "Exclusive consultation and personal showroom tour with master technicians",
-      "Priority access to limited-edition Shigeru Kawai releases before public availability",
-      "Complimentary white-glove delivery and professional setup in your space",
-      "Invitation to exclusive artist performances and intimate masterclasses"
+      "Very Limited and special offers on your own piece of Kawai's hundred year legacy",
+      "Present your invitation for white glove delivery and professional tuning, on us"
     ]
   }
 

@@ -53,11 +53,7 @@ function PremiumButton({
   const Component = href ? 'a' : 'button'
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.2 }}
-    >
+    <div className="transform transition-all duration-200 hover:scale-105">
       <Component
         {...(href ? { href } : { onClick })}
         className={cn(baseStyles, variants[variant], sizes[size], className)}
@@ -65,7 +61,7 @@ function PremiumButton({
         <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-kawai-gold/20 to-transparent transition-transform duration-1000"></div>
         <span className="relative z-10">{children}</span>
       </Component>
-    </motion.div>
+    </div>
   )
 }
 
@@ -82,18 +78,23 @@ function SellingPointCard({
   index
 }: SellingPointCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(true)
+    }, index * 100)
+    return () => clearTimeout(timer)
+  }, [index])
 
   return (
-    <motion.div
+    <div
       className={cn(
-        "group relative overflow-hidden rounded-2xl bg-gradient-to-br from-kawai-black via-gray-900 to-kawai-black border border-kawai-gold/20 hover:border-kawai-gold/40 transition-all duration-700 h-[500px]",
+        "group relative overflow-hidden rounded-2xl bg-gradient-to-br from-kawai-black via-gray-900 to-kawai-black border border-kawai-gold/20 hover:border-kawai-gold/40 transition-all duration-300 h-[500px]",
+        "transform transition-opacity duration-500",
+        isVisible ? "opacity-100" : "opacity-0",
         className
       )}
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, delay: index * 0.1 }}
-      viewport={{ once: true, margin: "-50px" }}
-      whileHover={{ y: -8, scale: 1.02 }}
     >
       {/* Main Image */}
       <div className="relative h-[60%] overflow-hidden">
@@ -122,14 +123,6 @@ function SellingPointCard({
           </div>
         )}
 
-        {/* Icon */}
-        {sellingPoint.icon && (
-          <div className="absolute top-4 right-4 w-12 h-12 bg-kawai-gold/10 backdrop-blur-sm border border-kawai-gold/30 rounded-full flex items-center justify-center">
-            <div className="text-kawai-gold text-xl">
-              {sellingPoint.icon}
-            </div>
-          </div>
-        )}
 
         {/* Loading placeholder */}
         {!imageLoaded && (
@@ -172,7 +165,7 @@ function SellingPointCard({
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-kawai-gold/5 via-transparent to-kawai-gold/5" />
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -198,7 +191,6 @@ export function PremiumBentoGallery() {
       image: '/images/signature/pianos/gl-10/gl-10-hero.webp',
       imageAlt: 'Kawai GL-10 baby grand piano - award-winning design and craftsmanship',
       badge: 'Award Winner',
-      icon: '🏆',
       features: ['MMR 2016 Product of Year', 'Industry Recognition', 'Global Excellence'],
       priority: true
     },
@@ -209,7 +201,6 @@ export function PremiumBentoGallery() {
       description: 'At 5\'0" in length, the GL-10 delivers authentic grand piano experience in spaces where every inch matters, without sacrificing musical quality.',
       image: '/images/signature/pianos/gl-10/gl-10-detail.webp',
       imageAlt: 'GL-10 baby grand piano fitting perfectly in elegant home setting with premium craftsmanship',
-      icon: '🏠',
       features: ['5\'0" Length', 'Compact Design', 'Home-Friendly']
     },
     {
@@ -219,7 +210,6 @@ export function PremiumBentoGallery() {
       description: 'Soft-closing lid and fallboard prevent trapped fingers while adding a luxurious touch previously found only on high-end instruments.',
       image: '/images/signature/pianos/gl-10/f4QT8LYQ.jpeg',
       imageAlt: 'GL-10 luxury features including soft-closing lid and premium details',
-      icon: '✨',
       features: ['Soft-Closing Lid', 'Safety First', 'Luxury Touch']
     },
     {
@@ -230,7 +220,6 @@ export function PremiumBentoGallery() {
       image: '/images/signature/pianos/gx-1/gx-1-hero.webp',
       imageAlt: 'Professional piano delivery and tuning service included with signature invitation',
       badge: 'Free Service',
-      icon: '🚚',
       features: ['White-Glove Delivery', 'Professional Tuning', 'Complimentary'],
       priority: true
     }
@@ -282,7 +271,7 @@ export function PremiumBentoGallery() {
 
         {/* Millennium III Action Feature Section */}
         <motion.div
-          className="relative max-w-6xl mx-auto mb-20"
+          className="relative max-w-6xl mx-auto mb-20 p-8 rounded-3xl bg-gradient-to-br from-white/5 via-kawai-pearl/5 to-white/10 border border-kawai-gold/10 backdrop-blur-sm"
           initial={{ opacity: 0, y: 60 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2, delay: 0.3 }}
@@ -314,8 +303,9 @@ export function PremiumBentoGallery() {
                   height={400}
                 />
 
-                {/* Subtle glow effect behind the transparent image */}
-                <div className="absolute inset-0 bg-gradient-to-br from-kawai-gold/10 via-kawai-gold/5 to-transparent rounded-2xl blur-2xl -z-10 scale-110" />
+                {/* Enhanced glow effect behind the transparent image */}
+                <div className="absolute inset-0 bg-gradient-to-br from-kawai-gold/20 via-kawai-pearl/15 to-kawai-gold/10 rounded-2xl blur-2xl -z-10 scale-110" />
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-kawai-pearl/10 to-white/5 rounded-3xl blur-3xl -z-20 scale-125" />
               </div>
             </motion.div>
 
@@ -354,13 +344,7 @@ export function PremiumBentoGallery() {
         </motion.div>
 
         {/* Bento Grid Layout */}
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16 max-w-4xl mx-auto"
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          viewport={{ once: true }}
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16 max-w-4xl mx-auto">
           {/* Row 1: Award Winner + Perfect Home */}
           <SellingPointCard
             key={gl10SellingPoints[0].id}
@@ -390,7 +374,7 @@ export function PremiumBentoGallery() {
             className="h-[500px]"
             index={3}
           />
-        </motion.div>
+        </div>
 
         {/* Bottom CTA Section */}
         <motion.div
