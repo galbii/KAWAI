@@ -72,8 +72,8 @@ export function MasterArtisans({ className = '' }: MasterArtisansProps) {
               Master <span className="text-kawai-gold">Artisans</span>
             </h3>
             <p className="text-kawai-pearl/70 font-light max-w-2xl mx-auto">
-              Each piano in the Signature Selection is individually signed by our master craftsmen,
-              whose remarkable skills have been proven in the world's finest concert halls.
+              Kawai entrusts only its finest and skilled artisans to create and tune their finest products,
+              ensuring a performance fit for the world's finest concert halls.
             </p>
           </div>
 

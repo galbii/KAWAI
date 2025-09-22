@@ -195,16 +195,16 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
       description: '100 years of advancement, knowledge and craftsmanship'
     },
     {
-      number: 400,
-      suffix: '',
-      label: 'Annual Production',
-      description: 'Meticulously handcrafted in carefully limited numbers'
+      number: 622,
+      suffix: '+',
+      label: 'Precision Components',
+      description: 'Over 622 meticulously crafted parts working in perfect harmony'
     },
     {
-      number: 12,
+      number: 10,
       suffix: '',
-      label: 'Master Artisans',
-      description: 'Highest level of piano craftsmanship in Japan'
+      label: 'Year Coverage',
+      description: 'Fully transferable warranty protecting your musical investment'
     }
   ]
 
