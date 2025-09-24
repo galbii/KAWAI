@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
+import { useSignatureExperience } from './SignatureExperienceContext'
 import { cn } from '@/lib/utils'
 import { CalendlyBookingWidget } from './CalendlyBookingWidget'
 
@@ -180,6 +181,9 @@ export function ConversionCTA({
   const containerRef = useRef<HTMLDivElement>(null)
   const [showInlineBooking, setShowInlineBooking] = useState(false)
 
+  // Get modal opening function from context
+  const { openAssessmentModal } = useSignatureExperience()
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"]
@@ -208,14 +212,8 @@ export function ConversionCTA({
     if (onAssessmentClick) {
       onAssessmentClick()
     } else {
-      // Find and scroll to assessment section
-      const assessmentSection = document.getElementById('signature-experience') ||
-                               document.querySelector('[data-section="assessment"]') ||
-                               document.querySelector('.assessment-section')
-
-      if (assessmentSection) {
-        assessmentSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
+      // Directly open the assessment modal using context
+      openAssessmentModal()
     }
   }
 

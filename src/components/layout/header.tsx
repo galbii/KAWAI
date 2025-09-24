@@ -733,6 +733,36 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     }, 150)
   }, [])
 
+  // Utility function to check if target is interactive
+  const isInteractiveElement = useCallback((target: EventTarget | null): boolean => {
+    if (!target || !(target instanceof Element)) return false
+
+    // Check if the clicked element or any parent is interactive
+    const interactiveSelectors = [
+      'a', 'button', 'input', 'select', 'textarea', 'svg', 'path',
+      '[role="button"]', '[role="link"]', '[tabindex]:not([tabindex="-1"])'
+    ]
+
+    return interactiveSelectors.some(selector =>
+      target.closest(selector) !== null
+    )
+  }, [])
+
+  // Scroll to top function
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+  }, [])
+
+  // Header click handler
+  const handleHeaderClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    if (!isInteractiveElement(event.target)) {
+      scrollToTop()
+    }
+  }, [isInteractiveElement, scrollToTop])
+
   // Animation variants - use a stable key to prevent re-animation
   const headerVariants = {
     initial: { opacity: 0 },
@@ -782,7 +812,10 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       }}
     >
       {/* Main Header */}
-      <div className="container mx-auto px-4 sm:px-6">
+      <div
+        className="container mx-auto px-4 sm:px-6"
+        onClick={handleHeaderClick}
+      >
         <div className={cn(
           "flex items-center transition-all duration-300",
           isScrolled ? 'h-16' : 'h-20'

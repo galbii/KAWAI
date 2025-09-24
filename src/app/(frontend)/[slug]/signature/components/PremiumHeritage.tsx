@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import Image from 'next/image'
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
+import { useSignatureExperience } from './SignatureExperienceContext'
 import { cn } from '@/lib/utils'
 
 // Global YouTube API type declaration
@@ -186,6 +187,9 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
   // const y = useTransform(scrollYProgress, [0, 1], [50, -50])
   // const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
 
+  // Get modal opening function from context
+  const { openAssessmentModal } = useSignatureExperience()
+
   // Heritage data
   const achievements: HeritageAchievement[] = [
     {
@@ -237,10 +241,8 @@ export function PremiumHeritage({ className = '' }: PremiumHeritageProps) {
 
 
   const handleAssessmentClick = () => {
-    const assessmentSection = document.getElementById('signature-experience')
-    if (assessmentSection) {
-      assessmentSection.scrollIntoView({ behavior: 'smooth' })
-    }
+    // Directly open the assessment modal using context
+    openAssessmentModal()
   }
 
   const handleCollectionClick = () => {

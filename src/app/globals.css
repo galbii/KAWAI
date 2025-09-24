@@ -44,6 +44,47 @@
   --color-kawai-black-800: #262626;
   --color-kawai-black-900: #1E1B16;
 
+  /* ES60 Earthy Color Palette - Campaign-specific */
+  --color-es60-primary-bg: #FAF8F5;      /* Warm off-white */
+  --color-es60-secondary-bg: #F5F2ED;    /* Soft cream */
+  --color-es60-accent-earth: #8B7355;    /* Warm taupe/brown */
+  --color-es60-deep-earth: #5D4E37;      /* Rich earth brown */
+  --color-es60-sage-green: #9CAF88;      /* Natural green accent */
+  --color-es60-text-primary: #3C3530;    /* Dark earth */
+  --color-es60-text-secondary: #6B5B47;  /* Medium earth */
+  --color-es60-border: #D4C8B8;          /* Light earth border */
+  --color-es60-shadow: #8B7355;          /* Earth shadow */
+
+  /* Kawai Red Integration for ES60 Campaign */
+  --color-es60-kawai-red: #E11922;       /* Primary Kawai red for CTAs and branding */
+  --color-es60-kawai-red-hover: #C7161F; /* Darker red for hover states */
+  --color-es60-kawai-red-light: #F5E6E7; /* Light red for backgrounds */
+  --color-es60-kawai-red-accent: #E11922; /* Accent red for highlights */
+
+  /* ES60 Earthy Scale Extensions */
+  --color-es60-earth-50: #FEFCF9;
+  --color-es60-earth-100: #FAF8F5;
+  --color-es60-earth-200: #F5F2ED;
+  --color-es60-earth-300: #E8E0D6;
+  --color-es60-earth-400: #D4C8B8;
+  --color-es60-earth-500: #8B7355;
+  --color-es60-earth-600: #7A6448;
+  --color-es60-earth-700: #6B5B47;
+  --color-es60-earth-800: #5D4E37;
+  --color-es60-earth-900: #3C3530;
+
+  /* ES60 Sage Scale */
+  --color-es60-sage-50: #F6F8F4;
+  --color-es60-sage-100: #EEF2E8;
+  --color-es60-sage-200: #DCE4D1;
+  --color-es60-sage-300: #C4D2B5;
+  --color-es60-sage-400: #9CAF88;
+  --color-es60-sage-500: #7A9065;
+  --color-es60-sage-600: #5F7251;
+  --color-es60-sage-700: #4A5940;
+  --color-es60-sage-800: #3D4835;
+  --color-es60-sage-900: #2E3529;
+
   /* Shadcn UI Variables */
   --color-card: #FFFFFF;
   --color-card-foreground: #1E1B16;

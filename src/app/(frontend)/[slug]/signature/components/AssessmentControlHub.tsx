@@ -14,6 +14,8 @@ interface AssessmentControlHubProps {
   onPause?: () => void
   onResume?: () => void
   onMinimize?: () => void
+  onResumeFromEmail?: () => void
+  hasEmailProgress?: boolean
   isVisible?: boolean
   showSavedFeedback?: boolean
   className?: string
@@ -27,6 +29,8 @@ export const AssessmentControlHub: React.FC<AssessmentControlHubProps> = ({
   onPause,
   onResume,
   onMinimize,
+  onResumeFromEmail,
+  hasEmailProgress = false,
   isVisible = true,
   showSavedFeedback = false,
   className
@@ -64,9 +68,9 @@ export const AssessmentControlHub: React.FC<AssessmentControlHubProps> = ({
   const stateConfig = {
     'not-started': {
       icon: 'kawai-logo',
-      title: 'Continue',
-      subtitle: 'Continue your assessment from here',
-      action: onResume, // Always use onResume to skip welcome sequence
+      title: hasEmailProgress ? 'Continue Experience' : 'Continue',
+      subtitle: hasEmailProgress ? 'Resume from email step' : 'Continue your assessment from here',
+      action: hasEmailProgress ? onResumeFromEmail : onResume, // Prioritize email resume
       bgColor: 'from-white to-gray-50',
       showProgress: false
     },
@@ -233,20 +237,23 @@ export const AssessmentControlHub: React.FC<AssessmentControlHubProps> = ({
             </motion.div>
           )}
 
-          {/* Mobile-only compact label */}
+          {/* Mobile-only compact label - positioned to the left like desktop */}
           {showTooltip && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
               transition={{ delay: 0.7 }}
-              className="sm:hidden absolute -bottom-12 left-1/2 transform -translate-x-1/2"
+              className="sm:hidden absolute right-full top-1/2 transform -translate-y-1/2 mr-3"
             >
-            <div className="bg-kawai-black text-white text-xs px-3 py-2 rounded-full shadow-lg text-center">
+            <div className="bg-kawai-black text-white text-xs px-3 py-2 rounded-lg shadow-lg text-center relative">
               <div className="font-medium">{config.title}</div>
               {config.showProgress && (
-                <div className="text-white/70">{config.subtitle}</div>
+                <div className="text-white/70 mt-1">{config.subtitle}</div>
               )}
+
+              {/* Arrow pointing to button - same as desktop */}
+              <div className="absolute top-1/2 left-full transform -translate-y-1/2 w-0 h-0 border-l-4 border-l-kawai-black border-t-4 border-t-transparent border-b-4 border-b-transparent" />
             </div>
             </motion.div>
           )}

@@ -1,9 +1,10 @@
 'use client'
 
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { useRef, useState, useEffect } from 'react'
 import Image from 'next/image'
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
+import { useSignatureExperience } from './SignatureExperienceContext'
 import { cn } from '@/lib/utils'
 
 // GL-10 Selling Point Card Interface
@@ -18,6 +19,125 @@ interface GL10SellingPoint {
   icon?: string
   features?: string[]
   priority?: boolean
+}
+
+// YouTube Video Modal Component
+interface YouTubeVideoModalProps {
+  isOpen: boolean
+  onClose: () => void
+  videoId: string
+  title?: string
+}
+
+function YouTubeVideoModal({ isOpen, onClose, videoId, title = 'Video' }: YouTubeVideoModalProps) {
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false)
+
+  // Reset video loaded state when modal opens/closes
+  useEffect(() => {
+    if (!isOpen) {
+      setIsVideoLoaded(false)
+    }
+  }, [isOpen])
+
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose()
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape)
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen, onClose])
+
+  if (!isOpen) return null
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
+        onClick={onClose}
+      >
+        <div className="flex min-h-full items-center justify-center p-4">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="relative w-full max-w-4xl bg-kawai-black rounded-2xl shadow-2xl overflow-hidden border border-kawai-gold/20"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-kawai-gold/20">
+              <h3 className="text-xl font-light text-kawai-pearl">{title}</h3>
+              <button
+                onClick={onClose}
+                className="text-kawai-pearl/60 hover:text-kawai-pearl transition-colors duration-200 p-2 hover:bg-kawai-gold/10 rounded-full"
+                aria-label="Close video"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Video Container */}
+            <div className="relative aspect-video bg-kawai-black">
+              {!isVideoLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="flex space-x-2">
+                    <motion.div
+                      className="w-3 h-3 bg-kawai-gold rounded-full"
+                      animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
+                    />
+                    <motion.div
+                      className="w-3 h-3 bg-kawai-gold rounded-full"
+                      animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}
+                    />
+                    <motion.div
+                      className="w-3 h-3 bg-kawai-gold rounded-full"
+                      animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 1.5, repeat: Infinity, delay: 0.6 }}
+                    />
+                  </div>
+                </div>
+              )}
+              <iframe
+                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`}
+                title={title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full"
+                onLoad={() => setIsVideoLoaded(true)}
+              />
+            </div>
+
+            {/* Footer with additional info */}
+            <div className="p-4 bg-gradient-to-r from-kawai-black via-gray-900 to-kawai-black border-t border-kawai-gold/10">
+              <p className="text-kawai-pearl/60 text-sm text-center">
+                Discover the exceptional craftsmanship of our signature piano collection
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
+    </AnimatePresence>
+  )
 }
 
 // Premium button component with Kawai signature styling
@@ -173,6 +293,9 @@ function SellingPointCard({
 export function PremiumBentoGallery() {
   const containerRef = useRef<HTMLDivElement>(null)
 
+  // Video modal state
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"]
@@ -180,6 +303,9 @@ export function PremiumBentoGallery() {
 
   const y = useTransform(scrollYProgress, [0, 1], [50, -50])
   const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
+
+  // Get modal opening function from context
+  const { openAssessmentModal } = useSignatureExperience()
 
   // GL-10 Selling Points Data
   const gl10SellingPoints: GL10SellingPoint[] = [
@@ -226,10 +352,8 @@ export function PremiumBentoGallery() {
   ]
 
   const handleCtaClick = () => {
-    const assessmentSection = document.getElementById('signature-experience')
-    if (assessmentSection) {
-      assessmentSection.scrollIntoView({ behavior: 'smooth' })
-    }
+    // Directly open the assessment modal using context
+    openAssessmentModal()
   }
 
   return (
@@ -392,9 +516,10 @@ export function PremiumBentoGallery() {
               Ready to Experience Our Signature?
             </h3>
             <p className="text-kawai-pearl/70 font-light mb-8 leading-relaxed text-lg max-w-3xl mx-auto">
-              The GL-10 Baby Grand represents the perfect harmony of compact elegance, premium craftsmanship,
-              and authentic grand piano performance. Join us to discover why this award-winning instrument
-              has become the choice of discerning musicians worldwide.
+              What makes our baby grand selection truly exceptional? From award-winning craftsmanship
+              to innovative technology, our signature collection represents the pinnacle of piano artistry.
+              Each instrument is carefully selected for its superior touch, remarkable tone, and enduring beauty
+              that transforms any space into a concert hall.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
               <PremiumButton
@@ -405,9 +530,13 @@ export function PremiumBentoGallery() {
               >
                 Claim Your Invite
               </PremiumButton>
-              <div className="text-kawai-pearl/50 text-sm text-center">
-                Private Consultation • Expert Guidance • By Appointment Only
-              </div>
+              <PremiumButton
+                variant="secondary"
+                size="lg"
+                onClick={() => setIsVideoModalOpen(true)}
+              >
+                Learn More
+              </PremiumButton>
             </div>
           </div>
         </motion.div>
@@ -416,6 +545,14 @@ export function PremiumBentoGallery() {
       {/* Decorative elements */}
       <div className="absolute top-1/4 left-0 w-96 h-96 bg-kawai-gold/5 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-kawai-gold/5 rounded-full blur-3xl" />
+
+      {/* YouTube Video Modal */}
+      <YouTubeVideoModal
+        isOpen={isVideoModalOpen}
+        onClose={() => setIsVideoModalOpen(false)}
+        videoId="bFes2TDepd8"
+        title="Discover Our Signature Piano Collection"
+      />
     </section>
   )
 }

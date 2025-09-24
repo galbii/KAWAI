@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { InteractiveAssessment } from '@/components/assessment/InteractiveAssessment'
 import { EmailContinuationForm } from './EmailContinuationForm'
@@ -8,147 +8,73 @@ import { ContactDetailsForm } from './ContactDetailsForm'
 import { DualConversion } from './DualConversion'
 import { ExitIntentModal } from './ExitIntentModal'
 import { WelcomeScreen } from './WelcomeScreen'
-import { AssessmentControlHub, type AssessmentState } from './AssessmentControlHub'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { AssessmentControlHub } from './AssessmentControlHub'
+import { useSignatureExperience } from './SignatureExperienceContext'
 import { trackSubmitApplication, trackCompleteRegistration } from '@/components/MetaPixel'
 import { usePostHog } from 'posthog-js/react'
-import type { AssessmentResponse } from '../types'
 import { ASSESSMENT_QUESTIONS } from '../lib/constants'
 
 interface SignatureExperienceProps {
   slug: string
 }
 
-type ExperienceStage = 'welcome' | 'email' | 'assessment' | 'conversion' | 'complete'
-
-type DialogPhase = 'welcome-intro' | 'email-form' | 'loading-assessment' | 'assessment' | 'thank-you' | 'contact-details' | 'analyzing'
-
-interface EmailData {
-  email: string
-  firstName?: string
-  lastName?: string
-  phone?: string
-  optInMarketing?: boolean
-  constantContactAdded?: boolean
-  conversionType?: string
-  location?: string
-  formType?: string
-}
-
 export function SignatureExperience({ slug }: SignatureExperienceProps) {
   const posthog = usePostHog()
-  const [currentStage, setCurrentStage] = useState<ExperienceStage>('welcome')
-  const [assessmentResults, setAssessmentResults] = useState<AssessmentResponse | null>(null)
-  const [emailData, setEmailData] = useState<EmailData | null>(null)
+
+  // Get state and actions from context
+  const {
+    currentStage,
+    assessmentResults,
+    emailData,
+    showAssessmentDialog,
+    dialogPhase,
+    assessmentState,
+    currentAssessmentStep,
+    hasAssessmentProgress,
+    assessmentProgressData,
+    showSavedFeedback,
+    hasEmailProgress,
+    handleEmailComplete,
+    handleContactDetailsComplete,
+    handleAssessmentComplete,
+    handleEmailExit,
+    resumeFromEmailStep,
+    pauseAssessment,
+    resumeAssessment,
+    startAssessment,
+    openAssessmentModal,
+    handleConversionComplete: contextHandleConversionComplete,
+    setDialogPhase,
+    setCurrentAssessmentStep
+  } = useSignatureExperience()
+
+  // Local state for this component only
   const [showExitIntent, setShowExitIntent] = useState(false)
-  const [showAssessmentDialog, setShowAssessmentDialog] = useState(false)
-  const [hasAssessmentProgress, setHasAssessmentProgress] = useState(false)
-  const [assessmentProgressData, setAssessmentProgressData] = useState<any>(null)
-  const [assessmentState, setAssessmentState] = useState<AssessmentState>('not-started')
-  const [showSavedFeedback, setShowSavedFeedback] = useState(false)
-  const [currentAssessmentStep, setCurrentAssessmentStep] = useState(0)
-  const [dialogPhase, setDialogPhase] = useState<DialogPhase>('welcome-intro')
   const [hideControlHubWhenDialogOpen, setHideControlHubWhenDialogOpen] = useState(false)
   const [showControlHubPopUp, setShowControlHubPopUp] = useState(false)
 
   // Auto-scroll functionality
   const conversionRef = useRef<HTMLDivElement>(null)
 
-  // Auto-progression through dialog phases
-  useEffect(() => {
-    if (!showAssessmentDialog) return
+  // Auto-progression logic is now handled in context
 
-    // Skip auto-progression if user has assessment progress and we start directly at assessment phase
-    if (dialogPhase === 'assessment' && assessmentProgressData) {
-      return // Stay on assessment phase
-    }
-
-    if (dialogPhase === 'welcome-intro') {
-      // Welcome intro: fade in (0.8s) + hold (1s) + fade out (0.7s) = 2.5s total
-      const timer = setTimeout(() => {
-        setDialogPhase('email-form')
-      }, 2500)
-      return () => clearTimeout(timer)
-    } else if (dialogPhase === 'email-form') {
-      // Email form: no auto-progression - wait for user to complete email
-      return
-    } else if (dialogPhase === 'loading-assessment') {
-      // Loading: fade in (0.5s) + hold (2s) + fade out (0.5s) = 3s total
-      const timer = setTimeout(() => {
-        setDialogPhase('assessment')
-      }, 3000)
-      return () => clearTimeout(timer)
-    } else if (dialogPhase === 'thank-you') {
-      // Thank you: fade in (0.5s) + hold (1s) = 1.5s total
-      const timer = setTimeout(() => {
-        setDialogPhase('contact-details')
-      }, 1500)
-      return () => clearTimeout(timer)
-    } else if (dialogPhase === 'contact-details') {
-      // Contact details: no auto-progression - wait for user to complete form
-      return
-    } else if (dialogPhase === 'analyzing') {
-      // Analyzing: fade in (0.5s) + loading (2s) + checkmark (0.5s) = 3s total
-      const timer = setTimeout(() => {
-        // Close dialog and go to conversion
-        setShowAssessmentDialog(false)
-        setCurrentStage('conversion')
-      }, 3000)
-      return () => clearTimeout(timer)
-    }
-  }, [dialogPhase, showAssessmentDialog, assessmentProgressData])
-
-  // Handle welcome screen continuation
+  // Handle welcome screen continuation - use context function
   const handleWelcomeContinue = () => {
-    setShowAssessmentDialog(true)
-    setDialogPhase('welcome-intro')
+    openAssessmentModal()
   }
 
-  // Handle email form completion
-  const handleEmailComplete = (type: 'email', data: any) => {
-    console.log('✅ Email form completed:', data)
-    console.log('📧 Email extracted:', data?.email)
-    console.log('📋 Full data structure:', JSON.stringify(data, null, 2))
-    setEmailData(data)
-    setCurrentStage('assessment')
-    // Progress to loading assessment phase since dialog is already open
-    setAssessmentState('active')
-    setDialogPhase('loading-assessment')
-  }
+  // Email completion is now handled in context
 
-  // Handle contact details form completion
-  const handleContactDetailsComplete = (type: 'contact-details', data: any) => {
-    console.log('✅ Contact details form completed:', data)
-    console.log('📋 Updated contact data:', JSON.stringify(data, null, 2))
-    // Update emailData with the complete contact information
-    setEmailData(data)
-    // Progress to analyzing phase
-    setDialogPhase('analyzing')
-  }
+  // Contact details completion is now handled in context
 
-  // Handle assessment completion
-  const handleAssessmentComplete = async (results: AssessmentResponse) => {
-    console.log('Assessment completed:', results)
-    setAssessmentResults(results)
-    setAssessmentState('completed')
-    setDialogPhase('thank-you')
-    console.log('Dialog phase set to thank-you')
-  }
+  // Assessment completion is now handled in context
 
-  // Handle dual conversion completion
+  // Context function is already destructured above
+
+  // Handle dual conversion completion with additional tracking
   const handleConversionComplete = (type: 'email' | 'booking', data: any) => {
     console.log(`Conversion completed: ${type}`, data)
     console.log('Render check - currentStage:', currentStage, 'assessmentResults:', assessmentResults)
-    setCurrentStage('complete')
-
-    // Track Google Analytics
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'conversion_completed', {
-        event_category: 'signature_experience',
-        event_label: type,
-        value: type === 'booking' ? 1000 : 500
-      })
-    }
 
     // Track Meta Pixel events
     if (type === 'booking') {
@@ -201,73 +127,12 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
         currency: 'USD'
       })
     }
+
+    // Call the context handler to manage state changes
+    contextHandleConversionComplete(type, data)
   }
 
-  // Assessment Control Hub Handlers
-  const handleStartAssessment = () => {
-    console.log('Starting assessment from control hub')
-
-    // Open dialog if starting from welcome stage
-    if (currentStage === 'welcome') {
-      setShowAssessmentDialog(true)
-      setDialogPhase('welcome-intro')
-    } else if (emailData) {
-      // If user has assessment progress, call handleResumeAssessment (which works correctly)
-      if (assessmentProgressData) {
-        handleResumeAssessment()
-        return
-      }
-
-      // Otherwise, start fresh assessment
-      setCurrentStage('assessment')
-      setShowAssessmentDialog(true)
-      setAssessmentState('active')
-      setDialogPhase('welcome-intro')
-    }
-  }
-
-  const handleResumeAssessment = () => {
-    console.log('Resuming assessment with progress:', assessmentProgressData)
-    
-    // If we're not in assessment stage, move to it
-    if (currentStage !== 'assessment') {
-      setCurrentStage('assessment')
-    }
-    
-    // Open the assessment dialog
-    setShowAssessmentDialog(true)
-    setAssessmentState('active')
-    setDialogPhase('assessment') // Resume goes directly to assessment, skipping intro
-    
-    // Track analytics
-    const currentStep = assessmentProgressData?.currentStep || 0
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'assessment_resumed', {
-        event_category: 'signature_experience',
-        event_label: 'control_hub',
-        value: currentStep
-      })
-    }
-  }
-
-  const handlePauseAssessment = () => {
-    console.log('Pausing assessment from control hub')
-    setShowAssessmentDialog(false)
-    setAssessmentState('paused')
-    
-    // Show save confirmation in control hub
-    setShowSavedFeedback(true)
-    
-    // Track analytics
-    const currentStep = assessmentProgressData?.currentStep || 0
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'assessment_paused', {
-        event_category: 'signature_experience',
-        event_label: 'control_hub',
-        value: currentStep
-      })
-    }
-  }
+  // Assessment Control Hub Handlers are now in context
 
   // Stage transition animations
   const stageVariants = {
@@ -283,66 +148,16 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
     duration: 0.6
   }
 
-  // Check for saved assessment progress and update assessment state
-  useEffect(() => {
-    const checkSavedProgress = () => {
-      try {
-        const savedData = localStorage.getItem('assessment_assessment_signature')
-        if (savedData) {
-          const parsed = JSON.parse(savedData)
-          if (parsed.currentStep > 0 && parsed.responses && Object.keys(parsed.responses).length > 0) {
-            setHasAssessmentProgress(true)
-            setAssessmentProgressData(parsed)
-            
-            // Update assessment state based on current stage and dialog status
-            if (assessmentResults) {
-              setAssessmentState('completed')
-            } else if (showAssessmentDialog) {
-              setAssessmentState('active')
-            } else {
-              // If user has saved progress, they should always be in 'paused' state
-              setAssessmentState('paused')
-            }
-          } else {
-            setAssessmentState('not-started')
-          }
-        } else {
-          setAssessmentState('not-started')
-        }
-      } catch (error) {
-        console.warn('Failed to check saved assessment progress:', error)
-        setAssessmentState('not-started')
-      }
-    }
+  // Saved progress checking is now handled in context
 
-    checkSavedProgress()
-  }, [currentStage, showAssessmentDialog, emailData, assessmentResults])
-
-  // Debug emailData changes
+  // Debug logging for emailData changes
   useEffect(() => {
     console.log('🔄 EmailData state changed:', emailData)
     console.log('📧 Current email:', emailData?.email)
     console.log('🎯 Current stage:', currentStage)
   }, [emailData, currentStage])
 
-  // Auto-scroll to conversion section when assessment completes
-  useEffect(() => {
-    if (currentStage === 'conversion') {
-      // Longer delay to ensure dialog closes and conversion section renders completely
-      const timer = setTimeout(() => {
-        if (conversionRef.current) {
-          // Use requestAnimationFrame for smoother timing
-          requestAnimationFrame(() => {
-            conversionRef.current?.scrollIntoView({
-              behavior: 'smooth',
-              block: 'center'
-            })
-          })
-        }
-      }, 1200)
-      return () => clearTimeout(timer)
-    }
-  }, [currentStage])
+  // Auto-scroll is now handled in context
 
   // Hide control hub after 3 seconds when dialog opens, with pop-up animation
   useEffect(() => {
@@ -480,7 +295,7 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
                         Assessment Started
                       </h2>
                       <motion.button
-                        onClick={handleResumeAssessment}
+                        onClick={resumeAssessment}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         className="bg-kawai-red hover:bg-red-700 text-white px-8 py-3 rounded-lg text-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-kawai-red focus:ring-offset-2 shadow-lg"
@@ -602,7 +417,7 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
             className="fixed inset-0 z-50 bg-black/80"
             onClick={(e) => {
               if (e.target === e.currentTarget) {
-                handlePauseAssessment()
+                pauseAssessment()
               }
             }}
           >
@@ -660,13 +475,35 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
                         transition={{ duration: 0.3 }}
                         className="flex-1 flex flex-col min-h-0 bg-stone-50"
                       >
+                        {/* Header with X button */}
+                        <div className="p-6 pb-4 border-b border-gray-200 flex-shrink-0 relative">
+                          {/* X Button - Top Right */}
+                          <motion.button
+                            onClick={handleEmailExit}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="absolute right-6 top-6 text-kawai-black/60 hover:text-kawai-black transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-kawai-red/30 rounded-full p-2 hover:bg-gray-100"
+                            aria-label="Close and save progress"
+                          >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </motion.button>
+
+                          <div className="text-center">
+                            <h2 className="text-2xl md:text-3xl font-light font-serif text-kawai-black">
+                              Reserve Your Invitation
+                            </h2>
+                          </div>
+                        </div>
+
                         <div className="flex-1 flex items-center justify-center p-8">
                           <div className="w-full max-w-lg">
                             <EmailContinuationForm
                               onComplete={handleEmailComplete}
                               location={slug}
                               onBack={() => {
-                                setShowAssessmentDialog(false)
+                                pauseAssessment()
                                 // Don't set current stage back to welcome since user might want to restart
                               }}
                               className="!mt-0"
@@ -745,7 +582,7 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
                         <div className="p-6 pb-4 border-b border-gray-200 flex-shrink-0 relative">
                           {/* Save Button - Top Right - Desktop Only */}
                           <motion.button
-                            onClick={handlePauseAssessment}
+                            onClick={pauseAssessment}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             className="absolute right-6 top-6 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 items-center gap-2 shadow-sm hidden sm:flex"
@@ -776,7 +613,7 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
                               {/* Mobile Pause & Save button */}
                               <div className="sm:hidden flex justify-center">
                                 <motion.button
-                                  onClick={handlePauseAssessment}
+                                  onClick={pauseAssessment}
                                   whileHover={{ scale: 1.05 }}
                                   whileTap={{ scale: 0.95 }}
                                   className="bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 flex items-center gap-2 shadow-sm"
@@ -948,10 +785,12 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
         state={assessmentState}
         currentStep={assessmentProgressData?.currentStep || 0}
         totalSteps={ASSESSMENT_QUESTIONS.length}
-        onStart={handleStartAssessment}
-        onResume={handleResumeAssessment}
-        onMinimize={handlePauseAssessment}
-        isVisible={currentStage !== 'welcome' && currentStage !== 'conversion' && currentStage !== 'complete' && !(showAssessmentDialog && hideControlHubWhenDialogOpen)}
+        onStart={startAssessment}
+        onResume={resumeAssessment}
+        onMinimize={pauseAssessment}
+        onResumeFromEmail={resumeFromEmailStep}
+        hasEmailProgress={hasEmailProgress}
+        isVisible={(currentStage !== 'welcome' || hasEmailProgress) && currentStage !== 'conversion' && currentStage !== 'complete' && !(showAssessmentDialog && hideControlHubWhenDialogOpen)}
         showSavedFeedback={showSavedFeedback}
       />
     </section>

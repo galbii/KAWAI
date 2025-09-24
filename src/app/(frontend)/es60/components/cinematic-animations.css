@@ -1,0 +1,372 @@
+/* ES60 Cinematic Presentation Animations */
+
+/* Global Animation Performance Optimizations */
+.cinematic-container {
+  will-change: transform;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Kawai Brand Red Lighting Effects */
+@keyframes kawai-glow {
+  0%, 100% {
+    text-shadow: 0 0 20px rgba(225, 25, 34, 0.5),
+                 0 0 40px rgba(225, 25, 34, 0.3),
+                 0 0 60px rgba(225, 25, 34, 0.2);
+    filter: drop-shadow(0 0 20px rgba(225, 25, 34, 0.4));
+  }
+  50% {
+    text-shadow: 0 0 30px rgba(225, 25, 34, 0.8),
+                 0 0 60px rgba(225, 25, 34, 0.6),
+                 0 0 80px rgba(225, 25, 34, 0.4);
+    filter: drop-shadow(0 0 30px rgba(225, 25, 34, 0.6));
+  }
+}
+
+@keyframes red-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(225, 25, 34, 0.4),
+                0 0 40px rgba(225, 25, 34, 0.2),
+                inset 0 0 20px rgba(225, 25, 34, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(225, 25, 34, 0.8),
+                0 0 80px rgba(225, 25, 34, 0.4),
+                inset 0 0 30px rgba(225, 25, 34, 0.2);
+  }
+}
+
+/* Particle Animation System */
+@keyframes particle-float {
+  0% {
+    transform: translateY(0) translateX(0) scale(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-20px) translateX(10px) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(-80px) translateX(-10px) scale(1);
+  }
+  100% {
+    transform: translateY(-100px) translateX(20px) scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes particle-shimmer {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+}
+
+/* Sound Wave Animations */
+@keyframes sound-wave {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes audio-visualization {
+  0%, 100% {
+    transform: scaleY(0.3);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* Piano Key Press Animation */
+@keyframes key-press {
+  0% {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  50% {
+    transform: translateY(2px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  }
+  100% {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+}
+
+/* Heritage Scene Ambient Lighting */
+@keyframes concert-hall-lighting {
+  0%, 100% {
+    background: radial-gradient(
+      circle at 30% 40%, 
+      rgba(255, 223, 186, 0.1) 0%, 
+      transparent 50%
+    );
+  }
+  33% {
+    background: radial-gradient(
+      circle at 70% 60%, 
+      rgba(255, 223, 186, 0.15) 0%, 
+      transparent 50%
+    );
+  }
+  66% {
+    background: radial-gradient(
+      circle at 50% 20%, 
+      rgba(255, 223, 186, 0.12) 0%, 
+      transparent 50%
+    );
+  }
+}
+
+/* Morphing Transformation Effects */
+@keyframes morph-blur {
+  0% {
+    filter: blur(0px);
+    transform: scale(1);
+  }
+  50% {
+    filter: blur(20px);
+    transform: scale(1.2);
+  }
+  100% {
+    filter: blur(30px);
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes emerge-sharp {
+  0% {
+    filter: blur(30px);
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  50% {
+    filter: blur(10px);
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  100% {
+    filter: blur(0px);
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Floating Specification Callouts */
+@keyframes spec-float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+}
+
+@keyframes spec-glow {
+  0%, 100% {
+    border-color: rgba(225, 25, 34, 0.3);
+    box-shadow: 0 4px 20px rgba(225, 25, 34, 0.1);
+  }
+  50% {
+    border-color: rgba(225, 25, 34, 0.6);
+    box-shadow: 0 8px 40px rgba(225, 25, 34, 0.3);
+  }
+}
+
+/* Logo Animation Keyframes */
+@keyframes logo-entrance {
+  0% {
+    transform: scale(0.3) rotate(-180deg);
+    opacity: 0;
+    filter: blur(20px);
+  }
+  60% {
+    transform: scale(1.1) rotate(10deg);
+    opacity: 0.8;
+    filter: blur(2px);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+
+@keyframes typewriter {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* Concert Grand Materialization */
+@keyframes piano-materialize {
+  0% {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    fill-opacity: 0;
+  }
+  70% {
+    stroke-dashoffset: 0;
+    fill-opacity: 0;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    fill-opacity: 1;
+  }
+}
+
+/* Premium Loading States */
+@keyframes premium-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.premium-loading {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: premium-shimmer 2s infinite;
+}
+
+/* Responsive Design for Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .cinematic-container {
+    will-change: auto;
+    transform-style: flat;
+  }
+}
+
+/* High Performance Mode for 60fps */
+@media (min-resolution: 144dpi) {
+  .cinematic-container {
+    transform: translateZ(0);
+  }
+  
+  .gpu-accelerated {
+    transform: translate3d(0, 0, 0);
+    will-change: transform, opacity;
+  }
+}
+
+/* Utility Classes for Cinematic Effects */
+.kawai-red-glow {
+  animation: kawai-glow 3s ease-in-out infinite;
+}
+
+.red-pulse {
+  animation: red-pulse 2s ease-in-out infinite;
+}
+
+.particle-effect {
+  animation: particle-float 4s ease-out infinite;
+}
+
+.sound-wave-effect {
+  animation: sound-wave 2s ease-out infinite;
+}
+
+.piano-key-active {
+  animation: key-press 0.3s ease-out;
+}
+
+.spec-floating {
+  animation: spec-float 4s ease-in-out infinite;
+}
+
+.concert-ambiance {
+  animation: concert-hall-lighting 8s ease-in-out infinite;
+}
+
+.morph-out {
+  animation: morph-blur 2s ease-in-out forwards;
+}
+
+.emerge-in {
+  animation: emerge-sharp 2s ease-out forwards;
+}
+
+.logo-dramatic-entrance {
+  animation: logo-entrance 3s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+/* Scene Transition Effects */
+.scene-fade-in {
+  animation: fadeIn 2s ease-out forwards;
+}
+
+.scene-fade-out {
+  animation: fadeOut 1s ease-in forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+}
+
+/* Custom Scrollbar for Cinematic Feel */
+.cinematic-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.cinematic-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.cinematic-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #E11922, #C7161F);
+  border-radius: 4px;
+}
+
+.cinematic-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #FF4444, #E11922);
+}

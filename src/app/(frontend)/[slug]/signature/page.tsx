@@ -7,6 +7,7 @@ import { MasterArtisans } from './components/MasterArtisans'
 import { PremiumBentoGallery } from './components/PremiumBentoGallery'
 import { ConversionCTA } from './components/ConversionCTA'
 import { SignatureExperience } from './components/SignatureExperience'
+import { SignatureExperienceProvider } from './components/SignatureExperienceContext'
 import type { SignaturePageData, SignaturePageProps } from '@/lib/types/signature'
 import type { Media } from '@/payload-types'
 
@@ -105,28 +106,30 @@ async function SignaturePageContent({ slug }: { slug: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-kawai-black">
-      {/* Hero Section */}
-      <HeroSection
-        data={signatureData.heroSection}
-        enableSmoothScrolling={signatureData.settings?.enableSmoothScrolling}
-      />
+    <SignatureExperienceProvider slug={slug}>
+      <div className="min-h-screen bg-kawai-black">
+        {/* Hero Section */}
+        <HeroSection
+          data={signatureData.heroSection}
+          enableSmoothScrolling={signatureData.settings?.enableSmoothScrolling}
+        />
 
-      {/* Premium Heritage & Authority Section */}
-      <PremiumHeritage />
+        {/* Premium Heritage & Authority Section */}
+        <PremiumHeritage />
 
-      {/* Master Artisans Section */}
-      <MasterArtisans />
+        {/* Master Artisans Section */}
+        <MasterArtisans />
 
-      {/* Main Signature Experience Flow (Assessment) */}
-      <SignatureExperience slug={slug} />
+        {/* Main Signature Experience Flow (Assessment) */}
+        <SignatureExperience slug={slug} />
 
-      {/* Premium Bento Gallery */}
-      <PremiumBentoGallery />
+        {/* Premium Bento Gallery */}
+        <PremiumBentoGallery />
 
-      {/* Conversion CTA Section */}
-      <ConversionCTA signaturePageSlug={slug} />
-    </div>
+        {/* Conversion CTA Section */}
+        <ConversionCTA signaturePageSlug={slug} />
+      </div>
+    </SignatureExperienceProvider>
   )
 }
 

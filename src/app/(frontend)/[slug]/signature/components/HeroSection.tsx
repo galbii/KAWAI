@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import Image from 'next/image'
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
+import { useSignatureExperience } from './SignatureExperienceContext'
 import type { SignatureHeroSection } from '@/lib/types/signature'
 import { cn } from '@/lib/utils'
 
@@ -115,6 +116,9 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
   const containerRef = useRef<HTMLDivElement>(null)
   const [mounted, setMounted] = useState(false)
   const [viewportHeight, setViewportHeight] = useState(800)
+
+  // Get modal opening function from context
+  const { openAssessmentModal } = useSignatureExperience()
 
   // Update viewport height on mount and resize
   useEffect(() => {
@@ -250,15 +254,8 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
   
   const handleSecondaryCTA = () => {
     if (heroData.secondaryCta?.action === 'modal') {
-      // Navigate to signature experience section
-      const signatureExperienceSection = document.getElementById('signature-experience')
-      if (signatureExperienceSection) {
-        if (lenisInstance) {
-          lenisInstance.scrollTo(signatureExperienceSection, { duration: 1.5 })
-        } else {
-          signatureExperienceSection.scrollIntoView({ behavior: 'smooth' })
-        }
-      }
+      // Directly open the assessment modal using context
+      openAssessmentModal()
     } else if (heroData.secondaryCta?.link) {
       window.open(heroData.secondaryCta.link, '_self')
     }
