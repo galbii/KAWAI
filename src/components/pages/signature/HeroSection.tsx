@@ -134,13 +134,15 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
     return () => window.removeEventListener('resize', updateViewportHeight)
   }, [])
 
-  // Staged animation sequence: Welcome → Baby Grand Signature → Date → CTAs
+  // Staged animation sequence: Welcome → Baby Grand → Signature → October 9th-11th → Description → CTAs
   useEffect(() => {
     const timers = [
       setTimeout(() => setAnimationStage(1), 800),   // Show Welcome
-      setTimeout(() => setAnimationStage(2), 3800),  // Show Baby Grand Signature (longer delay)
-      setTimeout(() => setAnimationStage(3), 5300),  // Show date
-      setTimeout(() => setAnimationStage(4), 6300),  // Show CTAs
+      setTimeout(() => setAnimationStage(2), 3300),  // Welcome fades up/out, Baby Grand fades in
+      setTimeout(() => setAnimationStage(3), 4300),  // Signature appears
+      setTimeout(() => setAnimationStage(4), 5300),  // October 9th-11th appears
+      setTimeout(() => setAnimationStage(5), 6300),  // Description appears
+      setTimeout(() => setAnimationStage(6), 7800),  // Show CTAs
     ]
     
     return () => timers.forEach(timer => clearTimeout(timer))
@@ -223,7 +225,7 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
     titleMain: "Baby Grand Signature Event",
     titleSuffix: "",
     subtitle: "October 9 – 11th",
-    description: "", // Removed for minimal approach
+    description: "Own a piece of musical history and refined craftsmanship. Reserve your appointment today, spots are limited.",
     primaryCta: {
       text: "Join Event",
       action: "modal"
@@ -386,96 +388,132 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
           {/* Main Text Area - All transitions happen here */}
           <div className="relative text-center min-h-[200px] md:min-h-[300px] lg:min-h-[400px] flex items-center justify-center">
             
-            {/* Stage 1: Welcome */}
+            {/* Stage 1: Welcome - Fades up and out */}
             <motion.div
               className="absolute inset-0 flex items-center justify-center"
-              initial={{ opacity: 0 }}
+              initial={{ opacity: 0, y: 0 }}
               animate={{ 
-                opacity: animationStage >= 1 && animationStage < 2 ? 1 : 0
+                opacity: animationStage >= 1 && animationStage < 2 ? 1 : 0,
+                y: animationStage >= 2 ? -50 : 0
               }}
-              transition={{ duration: 1.0, ease: "easeOut" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
             >
               <span
-                className="font-light tracking-[0.4em]"
+                className="font-bold tracking-[0.3em]"
                 style={{
-                  fontSize: 'clamp(2.5rem, 10vw, 6rem)',
+                  fontSize: 'clamp(3.5rem, 12vw, 8rem)',
                   color: 'white',
                   fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
-                  textShadow: '0 2px 40px rgba(0,0,0,0.4)'
+                  textShadow: '0 4px 60px rgba(0,0,0,0.6), 0 2px 30px rgba(0,0,0,0.8)',
+                  fontWeight: '800'
                 }}
               >
                 Welcome
               </span>
             </motion.div>
 
-            {/* Stage 2: Baby Grand Signature */}
+            {/* Stage 2: Baby Grand - Fades in from below */}
             <motion.div
               className="absolute inset-0 flex items-center justify-center"
-              initial={{ opacity: 0 }}
+              initial={{ opacity: 0, y: 80 }}
               animate={{ 
-                opacity: animationStage >= 2 ? 1 : 0
+                opacity: animationStage >= 2 ? 1 : 0,
+                y: animationStage >= 2 ? 0 : 80
               }}
-              transition={{ duration: 1.0, ease: "easeOut" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
             >
-              <h1 className="space-y-4">
-                <span
-                  className="block leading-[0.85] font-light tracking-wide"
+              <div className="relative text-center">
+                {/* Baby Grand - Smaller, lighter styling */}
+                <motion.span
+                  className="block font-light tracking-wide text-center mb-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: animationStage >= 2 ? 1 : 0 }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
                   style={{
-                    fontSize: 'clamp(3rem, 12vw, 8rem)',
+                    fontSize: 'clamp(2rem, 8vw, 4rem)',
                     color: 'white',
                     fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
-                    textShadow: '0 2px 40px rgba(0,0,0,0.4)'
+                    textShadow: '0 2px 40px rgba(0,0,0,0.4)',
+                    fontWeight: '300'
                   }}
                 >
                   Baby Grand
-                </span>
-                <span
-                  className="block leading-[0.85] font-light tracking-wide"
+                </motion.span>
+                
+                {/* Signature - The emphasized word */}
+                <motion.span
+                  className="block leading-[0.8] font-black tracking-tight text-center"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ 
+                    opacity: animationStage >= 3 ? 1 : 0,
+                    y: animationStage >= 3 ? 0 : 30
+                  }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
                   style={{
-                    fontSize: 'clamp(3rem, 12vw, 8rem)',
+                    fontSize: 'clamp(4.5rem, 16vw, 11rem)',
                     color: '#d5c78c',
                     fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
-                    textShadow: '0 2px 40px rgba(0,0,0,0.4)'
+                    textShadow: '0 6px 80px rgba(0,0,0,0.7), 0 4px 40px rgba(213,199,140,0.3)',
+                    fontWeight: '900'
                   }}
                 >
                   Signature
-                </span>
-              </h1>
+                </motion.span>
+                
+                {/* October 9th-11th - Final part of sequence */}
+                <motion.span
+                  className="block font-light tracking-[0.2em] text-center mt-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ 
+                    opacity: animationStage >= 4 ? 1 : 0,
+                    y: animationStage >= 4 ? 0 : 20
+                  }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  style={{
+                    fontSize: 'clamp(1.5rem, 5vw, 2.5rem)',
+                    color: 'white',
+                    fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
+                    textShadow: '0 2px 30px rgba(0,0,0,0.6)',
+                    fontWeight: '300'
+                  }}
+                >
+                  October 9th – 11th
+                </motion.span>
+                
+                {/* Description - Very small text under date */}
+                <motion.p
+                  className="font-light leading-relaxed text-center mt-6 max-w-2xl mx-auto px-4"
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ 
+                    opacity: animationStage >= 5 ? 1 : 0,
+                    y: animationStage >= 5 ? 0 : 15
+                  }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                  style={{
+                    fontSize: 'clamp(1rem, 3vw, 1.25rem)',
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
+                    textShadow: '0 2px 30px rgba(0,0,0,0.5)',
+                    fontWeight: '300',
+                    lineHeight: '1.6'
+                  }}
+                >
+                  {heroData.description}
+                </motion.p>
+              </div>
             </motion.div>
           </div>
 
-          {/* Stage 3: Date - Below Main Text */}
-          <motion.div
-            className="text-center mt-12"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ 
-              opacity: animationStage >= 3 ? 1 : 0,
-              scale: animationStage >= 3 ? 1 : 0.9
-            }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          >
-            {heroData.subtitle && (
-              <span
-                className="inline-block font-light tracking-[0.3em] px-8 py-4 border border-white/20 bg-white/5 backdrop-blur-sm"
-                style={{
-                  fontSize: 'clamp(1.25rem, 4vw, 2rem)',
-                  color: 'white',
-                  fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif'
-                }}
-              >
-                {heroData.subtitle}
-              </span>
-            )}
-          </motion.div>
+
         </div>
 
-        {/* Stage 4: CTA Buttons */}
+        {/* Stage 6: CTA Buttons */}
         <motion.div
           className="flex flex-col sm:flex-row items-center gap-6 mt-16"
           initial={{ opacity: 0, y: 30 }}
           animate={{ 
-            opacity: animationStage >= 4 ? 1 : 0,
-            y: animationStage >= 4 ? 0 : 30
+            opacity: animationStage >= 6 ? 1 : 0,
+            y: animationStage >= 6 ? 0 : 30
           }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
