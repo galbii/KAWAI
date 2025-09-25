@@ -3,8 +3,8 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { QuestionStep } from '../QuestionStep'
-import { ASSESSMENT_QUESTIONS_BY_ID } from '@/app/(frontend)/[slug]/signature/lib/constants'
-import type { FormStepProps } from '@/app/(frontend)/[slug]/signature/types'
+import { ASSESSMENT_QUESTIONS_BY_ID } from '@/components/pages/signature/lib/constants'
+import type { FormStepProps } from '@/components/pages/signature/types'
 
 /**
  * Collection Access Level Question Component
@@ -22,6 +22,10 @@ export const CollectionAccessQuestion: React.FC<FormStepProps> = ({
   className
 }) => {
   const question = ASSESSMENT_QUESTIONS_BY_ID.collectionAccessLevel
+
+  if (!question) {
+    return null
+  }
 
   // Experience type icons and descriptions
   const experienceTypes = {
@@ -53,10 +57,10 @@ export const CollectionAccessQuestion: React.FC<FormStepProps> = ({
 
       <QuestionStep
         question={question}
-        value={value}
+        value={value || ''}
         onChange={onChange}
-        onNext={onNext}
-        onBack={onBack}
+        onNext={onNext || (() => {})}
+        onBack={onBack || (() => {})}
         isValid={isValid}
         showNavigation={showNavigation}
         stepNumber={stepNumber}

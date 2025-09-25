@@ -130,7 +130,7 @@ export default buildConfig({
       },
       bucket: process.env.S3_BUCKET || '',
       config: {
-        endpoint: process.env.S3_ENDPOINT,
+        ...(process.env.S3_ENDPOINT && { endpoint: process.env.S3_ENDPOINT }),
         region: process.env.S3_REGION || 'auto',
         credentials: {
           accessKeyId: process.env.S3_ACCESS_KEY_ID || '',

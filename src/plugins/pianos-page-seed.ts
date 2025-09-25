@@ -29,7 +29,8 @@ async function seedPianosPage(payload: import('payload').Payload): Promise<void>
 
     payload.logger.info(`📊 Found ${existing.docs.length} existing documents`)
 
-    if (existing.docs.length > 0 && existing.docs[0].heroTitle) {
+    const existingDoc = existing.docs[0]
+    if (existing.docs.length > 0 && existingDoc?.heroTitle) {
       payload.logger.info('📝 PianosPage already has data, skipping seed')
       return
     }

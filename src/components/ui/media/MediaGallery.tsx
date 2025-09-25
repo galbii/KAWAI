@@ -39,17 +39,21 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
 
   // Filter out invalid media items
   const validMedia = useMemo(() => {
-    return media.filter(item => {
+    return media.filter((item): item is Media | string => {
+      if (!item) return false
       const url = typeof item === 'string' ? item : item.url
-      return url && url.length > 0
+      return Boolean(url && url.length > 0)
     })
   }, [media])
 
   // Handle media selection
   const handleMediaClick = useCallback((index: number) => {
     setSelectedIndex(index)
-    onMediaSelect?.(validMedia[index], index)
-    
+    const selectedMedia = validMedia[index]
+    if (selectedMedia) {
+      onMediaSelect?.(selectedMedia, index)
+    }
+
     if (enableLightbox) {
       setIsLightboxOpen(true)
     }

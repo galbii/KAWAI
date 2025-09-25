@@ -61,6 +61,10 @@ export function FeaturedPianoCarousel({ models }: FeaturedPianoCarouselProps) {
 
   const currentPiano = models[currentIndex]
 
+  if (!currentPiano) {
+    return <FeaturedCarouselSkeleton />
+  }
+
   return (
     <div className="relative min-h-[70vh] max-h-[85vh] rounded-2xl overflow-hidden group bg-kawai-black">
       <div className="grid lg:grid-cols-2 h-full">

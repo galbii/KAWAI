@@ -200,7 +200,7 @@ export function transformProductlineToSeriesServer(productline: Productline, pia
   return {
     name: productline.name,
     description: productline.description,
-    highlight: productline.highlight,
+    highlight: productline.highlight ?? null,
     image: preserveMediaOrFallback(productline.image), // Main series image from Productlines collection
     href: `/pianos/${productline.category}/${productline.slug}`,
     slides: (productline.slides || []).map(slide => ({

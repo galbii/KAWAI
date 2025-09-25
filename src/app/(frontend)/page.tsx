@@ -131,19 +131,19 @@ async function HomePageContent() {
       <HomeHero />
       
       {/* Piano Collection Section */}
-      <PianoCollection data={homePageData?.pianoCollectionSection} />
-      
+      <PianoCollection {...(homePageData?.pianoCollectionSection && { data: homePageData.pianoCollectionSection })} />
+
       {/* News Carousel Section */}
-      <NewsCarousel data={homePageData?.newsCarouselSection} />
-      
+      <NewsCarousel {...(homePageData?.newsCarouselSection && { data: homePageData.newsCarouselSection })} />
+
       {/* Dealer Locations Section */}
       <DealerLocations />
-      
+
       {/* Piano Gallery Section */}
-      <PianoGallery data={homePageData?.pianoGallerySection} />
+      <PianoGallery {...(homePageData?.pianoGallerySection && { data: homePageData.pianoGallerySection })} />
       
       {/* Contact Form Section */}
-      <ContactForm data={homePageData?.contactFormSection} />
+      <ContactForm {...(homePageData?.contactFormSection && { data: homePageData.contactFormSection })} />
     </div>
   );
 }

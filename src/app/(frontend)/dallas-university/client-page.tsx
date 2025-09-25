@@ -1,19 +1,19 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useScrollAnimations } from './components/hooks/useScrollAnimations';
-import { usePageTracking } from './components/hooks/usePageTracking';
-import Header from './components/Header';
-import HeroSection from './components/sections/HeroSection';
-import ValuePropositionSection from './components/sections/ValuePropositionSection';
-import AboutEventSection from './components/sections/AboutEventSection';
-import { FeaturedDeals } from './components/sections/piano-gallery';
-import BookingSection from './components/sections/BookingSection';
-import { ShowroomLocation } from './components/sections/showroom-location';
-import { Footer } from './components/Footer';
-import { StructuredData } from './components/SEO/StructuredData';
-import { CountdownTimer } from './components/CountdownTimer';
-import { NewsletterPopup } from './components/NewsletterPopup';
+import { useScrollAnimations } from '@/components/pages/dallas-university/hooks/useScrollAnimations';
+import { usePageTracking } from '@/components/pages/dallas-university/hooks/usePageTracking';
+import Header from '@/components/pages/dallas-university/Header';
+import HeroSection from '@/components/pages/dallas-university/sections/HeroSection';
+import ValuePropositionSection from '@/components/pages/dallas-university/sections/ValuePropositionSection';
+import AboutEventSection from '@/components/pages/dallas-university/sections/AboutEventSection';
+import { FeaturedDeals } from '@/components/pages/dallas-university/sections/piano-gallery';
+import BookingSection from '@/components/pages/dallas-university/sections/BookingSection';
+import { ShowroomLocation } from '@/components/pages/dallas-university/sections/showroom-location';
+import { Footer } from '@/components/pages/dallas-university/Footer';
+import { StructuredData } from '@/components/pages/dallas-university/SEO/StructuredData';
+import { CountdownTimer } from '@/components/pages/dallas-university/CountdownTimer';
+import { NewsletterPopup } from '@/components/pages/dallas-university/NewsletterPopup';
 
 export default function ClientHomePage() {
   useScrollAnimations();

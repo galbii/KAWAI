@@ -39,8 +39,9 @@ export async function GET(
       depth: 2 // Populate media relationships and their nested relationships
     })
     
-    if (result.docs.length > 0) {
-      const dealerLocation = result.docs[0]
+    const dealerLocation = result.docs[0]
+
+    if (dealerLocation) {
       
       // Transform the dealer location data to match HomePageData structure
       const transformedData = {

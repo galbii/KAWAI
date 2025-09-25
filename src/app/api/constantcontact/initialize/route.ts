@@ -61,8 +61,9 @@ export async function GET(request: NextRequest) {
       limit: 1,
     });
 
-    if (result.docs.length > 0) {
-      const credentials = result.docs[0];
+    const credentials = result.docs[0];
+
+    if (credentials) {
       return NextResponse.json({
         success: true,
         message: 'Credentials already exist',

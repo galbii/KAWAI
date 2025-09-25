@@ -37,7 +37,7 @@ export function PianoCategorySection({ category, index }: PianoCategorySectionPr
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setIsImageVisible(true)
           setTimeout(() => {
             setIsTextVisible(true)

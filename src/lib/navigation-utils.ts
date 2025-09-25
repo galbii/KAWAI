@@ -31,10 +31,12 @@ export function parseNavigationOrigin(
   const originParam = searchParams?.get('origin')
   if (originParam) {
     const isDealerLocation = originParam !== '/' && originParam.startsWith('/')
+    const dealerSlug = isDealerLocation ? originParam.slice(1) : undefined
+
     return {
       basePath: originParam,
       isDealerLocation,
-      dealerSlug: isDealerLocation ? originParam.slice(1) : undefined
+      ...(dealerSlug !== undefined && { dealerSlug })
     }
   }
 
@@ -50,11 +52,19 @@ export function parseNavigationOrigin(
   }
 
   const firstSegment = pathSegments[0]
-  
+
+  if (!firstSegment) {
+    // No first segment, default to main site
+    return {
+      basePath: '/',
+      isDealerLocation: false
+    }
+  }
+
   // Check if first segment looks like a dealer location
   // Exclude known non-dealer routes
   const knownRoutes = ['pianos', 'admin', 'api', 'sitemap.xml', 'robots.txt', 'products', 'innovation', 'heritage', 'resources', 'experience', 'contact']
-  
+
   if (!knownRoutes.includes(firstSegment)) {
     // Likely a dealer location
     return {

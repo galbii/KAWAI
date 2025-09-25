@@ -40,12 +40,12 @@ async function getDealerLocationMetadata(slug: string): Promise<DealerLocationDa
       }
     });
     
-    if (result.docs.length === 0) {
+    const dealerLocation = result.docs[0];
+
+    if (!dealerLocation) {
       return null;
     }
-    
-    const dealerLocation = result.docs[0];
-    
+
     return {
       locationName: dealerLocation.locationName,
       slug: dealerLocation.slug,

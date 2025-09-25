@@ -3,8 +3,8 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { QuestionStep } from '../QuestionStep'
-import { ASSESSMENT_QUESTIONS_BY_ID } from '@/app/(frontend)/[slug]/signature/lib/constants'
-import type { FormStepProps } from '@/app/(frontend)/[slug]/signature/types'
+import { ASSESSMENT_QUESTIONS_BY_ID } from '@/components/pages/signature/lib/constants'
+import type { FormStepProps } from '@/components/pages/signature/types'
 
 /**
  * Investment Timeline Question Component
@@ -23,6 +23,10 @@ export const InvestmentTimelineQuestion: React.FC<FormStepProps> = ({
 }) => {
   const question = ASSESSMENT_QUESTIONS_BY_ID.investmentTimeline
 
+  if (!question) {
+    return null
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, rotate: 1 }}
@@ -33,10 +37,10 @@ export const InvestmentTimelineQuestion: React.FC<FormStepProps> = ({
     >
       <QuestionStep
         question={question}
-        value={value}
+        value={value || ''}
         onChange={onChange}
-        onNext={onNext}
-        onBack={onBack}
+        onNext={onNext || (() => {})}
+        onBack={onBack || (() => {})}
         isValid={isValid}
         showNavigation={showNavigation}
         stepNumber={stepNumber}

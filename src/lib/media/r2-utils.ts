@@ -80,7 +80,10 @@ export function generateResponsiveSrcSet(
 ): string {
   return breakpoints
     .map(({ width, quality }) => {
-      const url = generateR2ImageUrl(filename, { width, quality })
+      const url = generateR2ImageUrl(filename, {
+        width,
+        ...(quality !== undefined && { quality })
+      })
       return `${url} ${width}w`
     })
     .join(', ')
@@ -142,7 +145,8 @@ export function extractFilename(url: string): string {
   // Handle Payload URLs
   if (url.includes('/media/')) {
     const parts = url.split('/media/')
-    return parts[parts.length - 1]
+    const lastPart = parts[parts.length - 1]
+    return lastPart || ''
   }
   
   // Handle relative paths (like fallback images)
@@ -178,8 +182,6 @@ export function getOptimizedImageProps(
       src: mediaUrl,
       srcSet: '', // No responsive srcSet for static images
       sizes: '', // No sizes for static images
-      width: undefined,
-      height: undefined,
       alt,
       loading: preset === 'hero' ? 'eager' as const : 'lazy' as const,
       decoding: 'async' as const
@@ -193,8 +195,6 @@ export function getOptimizedImageProps(
       src: mediaUrl,
       srcSet: '', // No responsive srcSet for external images
       sizes: '', // No sizes for external images
-      width: undefined,
-      height: undefined,
       alt,
       loading: preset === 'hero' ? 'eager' as const : 'lazy' as const,
       decoding: 'async' as const
@@ -208,8 +208,6 @@ export function getOptimizedImageProps(
       src: mediaUrl,
       srcSet: '', // Already optimized
       sizes: '', // Already optimized
-      width: undefined,
-      height: undefined,
       alt,
       loading: preset === 'hero' ? 'eager' as const : 'lazy' as const,
       decoding: 'async' as const
@@ -227,11 +225,15 @@ export function getOptimizedImageProps(
 
   const breakpoints = PIANO_RESPONSIVE_PRESETS[preset]
   const largestBreakpoint = breakpoints[breakpoints.length - 1]
-  
+
+  if (!largestBreakpoint) {
+    throw new Error(`No breakpoints defined for preset: ${preset}`)
+  }
+
   // Generate main src with largest size using R2 transformations
   const src = generateR2ImageUrl(filename, {
     width: largestBreakpoint.width,
-    quality: largestBreakpoint.quality,
+    ...(largestBreakpoint.quality !== undefined && { quality: largestBreakpoint.quality }),
     ...customOptions
   })
 

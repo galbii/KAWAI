@@ -45,11 +45,14 @@ export async function uploadImageToMedia(
     })
 
     if (existing.docs.length > 0) {
-      payload.logger.info(`📁 Image already exists: ${filename}`)
-      return {
-        id: existing.docs[0].id,
-        url: existing.docs[0].url || '',
-        filename: existing.docs[0].filename || filename
+      const existingDoc = existing.docs[0]
+      if (existingDoc) {
+        payload.logger.info(`📁 Image already exists: ${filename}`)
+        return {
+          id: existingDoc.id,
+          url: existingDoc.url || '',
+          filename: existingDoc.filename || filename
+        }
       }
     }
 
@@ -149,7 +152,10 @@ export async function getOrCreateFallbackImage(payload: Payload): Promise<string
     })
 
     if (existing.docs.length > 0) {
-      return existing.docs[0].id
+      const existingDoc = existing.docs[0]
+      if (existingDoc) {
+        return existingDoc.id
+      }
     }
 
     payload.logger.warn('⚠️ No fallback image found, proceeding without fallback')

@@ -163,9 +163,9 @@ export default async function CategoryPage({ params }: CategoryPageParams) {
       label: `${categoryConfig.name.replace(' Pianos', '')} Models`, 
       value: stats.totalModels?.toString() || (series.reduce((acc, s) => acc + (s.pianos?.length || 0), 0) || 12).toString()
     },
-    { 
-      label: "Price Range", 
-      value: categoryConfig.priceRange.split(' - ')[0].replace('$', '') 
+    {
+      label: "Price Range",
+      value: categoryConfig.priceRange?.split(' - ')[0]?.replace('$', '') || 'Contact for pricing'
     }
   ]
 

@@ -57,12 +57,16 @@ export function NewsCarousel({ data }: NewsCarouselProps) {
   // Touch event handlers
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
+    if (e.targetTouches[0]) {
+      setTouchStart(e.targetTouches[0].clientX);
+    }
     setIsPlaying(false);
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
+    if (e.targetTouches[0]) {
+      setTouchEnd(e.targetTouches[0].clientX);
+    }
   };
 
   const onTouchEnd = () => {
@@ -145,6 +149,8 @@ export function NewsCarousel({ data }: NewsCarouselProps) {
                   <div className="relative w-full h-full">
                     {(() => {
                       const currentItem = newsItems[currentIndex];
+                      if (!currentItem) return null;
+
                       const defaultItem = FALLBACK_NEWS_CAROUSEL_DATA.newsItems.find(
                         defaultNews => defaultNews.title === currentItem.title
                       );
@@ -218,32 +224,37 @@ export function NewsCarousel({ data }: NewsCarouselProps) {
 
                     {/* Content Overlay */}
                     <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-8 md:p-12 lg:p-16">
-                      <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.3 }}
-                        className="max-w-3xl"
-                      >
-                        {/* Category Badge */}
-                        <div className="mb-4">
-                          <span className="inline-block px-4 py-2 text-xs font-bold tracking-[0.2em] uppercase bg-kawai-red text-white rounded-full shadow-lg">
-                            {newsItems[currentIndex].category}
-                          </span>
-                        </div>
+                      {(() => {
+                        const currentItem = newsItems[currentIndex];
+                        if (!currentItem) return null;
 
-                        {/* Title - Bold and Prominent */}
-                        <h3 className="font-brand-luxury text-white font-black text-2xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight mb-4 sm:mb-6 tracking-tight drop-shadow-lg">
-                          {newsItems[currentIndex].title}
-                        </h3>
-                        
-                        {/* Description */}
-                        <p className="text-white/90 text-lg sm:text-xl md:text-2xl leading-relaxed font-light mb-6 sm:mb-8 max-w-2xl drop-shadow-md">
-                          {newsItems[currentIndex].description}
-                        </p>
+                        return (
+                          <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.3 }}
+                            className="max-w-3xl"
+                          >
+                            {/* Category Badge */}
+                            <div className="mb-4">
+                              <span className="inline-block px-4 py-2 text-xs font-bold tracking-[0.2em] uppercase bg-kawai-red text-white rounded-full shadow-lg">
+                                {currentItem.category}
+                              </span>
+                            </div>
 
-                        {/* Read More Link */}
-                        <Link
-                          href={newsItems[currentIndex].link || '#'}
+                            {/* Title - Bold and Prominent */}
+                            <h3 className="font-brand-luxury text-white font-black text-2xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight mb-4 sm:mb-6 tracking-tight drop-shadow-lg">
+                              {currentItem.title}
+                            </h3>
+
+                            {/* Description */}
+                            <p className="text-white/90 text-lg sm:text-xl md:text-2xl leading-relaxed font-light mb-6 sm:mb-8 max-w-2xl drop-shadow-md">
+                              {currentItem.description}
+                            </p>
+
+                            {/* Read More Link */}
+                            <Link
+                              href={currentItem.link || '#'}
                           className="inline-flex items-center space-x-3 text-kawai-red hover:text-white bg-white/20 hover:bg-kawai-red/90 backdrop-blur-sm px-6 py-3 rounded-full font-medium text-sm tracking-wide uppercase transition-all duration-300 border border-white/30 hover:border-kawai-red/90 group"
                         >
                           <span>Read Full Story</span>
@@ -256,8 +267,10 @@ export function NewsCarousel({ data }: NewsCarouselProps) {
                           >
                             <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                           </svg>
-                        </Link>
-                      </motion.div>
+                            </Link>
+                          </motion.div>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>

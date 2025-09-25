@@ -193,28 +193,33 @@ export function generateComparisonData(pianos: Piano[]): Array<{
   awards: import('./types').Award[]
   innovations: import('./types').Innovation[]
 }> {
-  return pianos.map(piano => ({
-    id: piano.id,
-    name: piano.name,
-    model: piano.model,
-    image: piano.media?.featuredImage,
-    price: piano.pricing?.salePrice || piano.pricing?.msrp,
-    type: piano.pianoType,
-    series: piano.series?.name,
-    specs: {
-      keys: piano.specifications?.keys,
-      pedals: piano.specifications?.pedals,
-      voices: piano.specifications?.voices,
-      polyphony: piano.specifications?.polyphony,
-      dimensions: piano.specifications?.dimensions,
-      weight: piano.specifications?.weight,
-      actionType: piano.specifications?.actionType,
-      soundEngine: piano.specifications?.soundEngine
-    },
-    features: piano.compareFeatures?.comparisonHighlights || [],
-    awards: piano.awards || [],
-    innovations: piano.innovations || []
-  }))
+  return pianos.map(piano => {
+    const price = piano.pricing?.salePrice || piano.pricing?.msrp
+    const series = piano.series?.name
+
+    return {
+      id: piano.id,
+      name: piano.name,
+      model: piano.model,
+      image: piano.media?.featuredImage,
+      ...(price !== undefined && { price }),
+      type: piano.pianoType,
+      ...(series !== undefined && { series }),
+      specs: {
+        ...(piano.specifications?.keys !== undefined && { keys: piano.specifications.keys }),
+        ...(piano.specifications?.pedals !== undefined && { pedals: piano.specifications.pedals }),
+        ...(piano.specifications?.voices !== undefined && { voices: piano.specifications.voices }),
+        ...(piano.specifications?.polyphony !== undefined && { polyphony: piano.specifications.polyphony }),
+        ...(piano.specifications?.dimensions !== undefined && { dimensions: piano.specifications.dimensions }),
+        ...(piano.specifications?.weight !== undefined && { weight: piano.specifications.weight }),
+        ...(piano.specifications?.actionType !== undefined && { actionType: piano.specifications.actionType }),
+        ...(piano.specifications?.soundEngine !== undefined && { soundEngine: piano.specifications.soundEngine })
+      },
+      features: piano.compareFeatures?.comparisonHighlights || [],
+      awards: piano.awards || [],
+      innovations: piano.innovations || []
+    }
+  })
 }
 
 export function generatePianoSearchIndex(pianos: Piano[]): Array<{

@@ -89,8 +89,8 @@ export function getShowroomKawaiListId(lists: ContactList[]): string | null {
 
   // Fallback to first available list
   if (lists.length > 0) {
-    console.warn('Showroom kawai list not found, using fallback list:', lists[0].label)
-    return lists[0].value
+    console.warn('Showroom kawai list not found, using fallback list:', lists[0]?.label)
+    return lists[0]?.value || null
   }
 
   return null
@@ -222,11 +222,15 @@ export interface SignatureContactData {
 }
 
 export function formatSignatureContact(data: SignatureContactData, listId: string) {
+  const trimmedFirstName = data.firstName?.trim()
+  const trimmedLastName = data.lastName?.trim()
+  const trimmedPhone = data.phone?.trim()
+
   return {
     email_address: data.email.trim().toLowerCase(),
-    first_name: data.firstName?.trim() || undefined,
-    last_name: data.lastName?.trim() || undefined,
-    phone_number: data.phone?.trim() || undefined,
+    ...(trimmedFirstName && { first_name: trimmedFirstName }),
+    ...(trimmedLastName && { last_name: trimmedLastName }),
+    ...(trimmedPhone && { phone_number: trimmedPhone }),
     list_ids: [listId]
   }
 }

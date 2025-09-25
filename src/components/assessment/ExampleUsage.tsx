@@ -10,8 +10,8 @@ import { InteractiveAssessment } from './InteractiveAssessment'
 import type {
   AssessmentResponse,
   ConversionPath
-} from '@/app/(frontend)/[slug]/signature/types'
-import { ASSESSMENT_QUESTIONS } from '@/app/(frontend)/[slug]/signature/lib/constants'
+} from '@/components/pages/signature/types'
+import { ASSESSMENT_QUESTIONS } from '@/components/pages/signature/lib/constants'
 
 /**
  * Complete Signature Assessment Example

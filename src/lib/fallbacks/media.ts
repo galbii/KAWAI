@@ -192,8 +192,8 @@ export function getImagePropsWithFallback(
   const imageProps = {
     src: resolvedUrl,
     alt,
-    className: options.className || '',
-    priority: options.priority || false,
+    ...(options.className !== undefined && { className: options.className }),
+    ...(options.priority !== undefined && { priority: options.priority }),
     sizes: options.sizes || getSizesForPreset(preset),
     loading: (options.priority ? 'eager' : 'lazy') as 'eager' | 'lazy',
     decoding: 'async' as const
@@ -379,7 +379,10 @@ export function handleImageError(
 
   // Try next fallback in chain
   if (currentIndex < fallbackChain.length - 1) {
-    img.src = fallbackChain[currentIndex + 1]
+    const nextFallback = fallbackChain[currentIndex + 1]
+    if (nextFallback) {
+      img.src = nextFallback
+    }
   } else {
     // No more fallbacks available
     console.warn('All image fallbacks exhausted for:', fallbackChain)

@@ -313,7 +313,7 @@ export class MediaLoadError extends Error {
   constructor(
     message: string,
     public readonly filename: string,
-    public readonly cause?: Error
+    public override readonly cause?: Error
   ) {
     super(message)
     this.name = 'MediaLoadError'
@@ -324,7 +324,7 @@ export class VideoPlaybackError extends Error {
   constructor(
     message: string,
     public readonly code: number,
-    public readonly cause?: Error
+    public override readonly cause?: Error
   ) {
     super(message)
     this.name = 'VideoPlaybackError'

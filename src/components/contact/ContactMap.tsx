@@ -20,7 +20,9 @@ const DEFAULT_MAP_DATA: ShowroomSectionData = {
   },
   hours: [],
   features: [],
-  mapApiKey: undefined,
+  ...(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && {
+    mapApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+  }),
   showroomCtas: {
     directionsText: "Get Directions",
     directionsLink: "https://maps.google.com/?q=21+Meadows+Circle+Drive,+Suite+312,+Lake+St.+Louis,+MO+63367",

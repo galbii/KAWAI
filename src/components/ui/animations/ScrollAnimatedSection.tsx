@@ -23,7 +23,7 @@ export function ScrollAnimatedSection({
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setIsHeadingVisible(true)
           setTimeout(() => {
             setIsContentVisible(true)

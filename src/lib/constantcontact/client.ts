@@ -177,7 +177,7 @@ export class ConstantContactClient {
   async post<T = any>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
     return this.makeRequest<T>(endpoint, {
       method: 'POST',
-      body: data ? JSON.stringify(data) : undefined
+      ...(data && { body: JSON.stringify(data) })
     });
   }
 
@@ -187,7 +187,7 @@ export class ConstantContactClient {
   async put<T = any>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
     return this.makeRequest<T>(endpoint, {
       method: 'PUT',
-      body: data ? JSON.stringify(data) : undefined
+      ...(data && { body: JSON.stringify(data) })
     });
   }
 

@@ -121,13 +121,24 @@ export function buildImageUrl(
   // Check if this is an R2 URL, use R2 utilities if so
   if (baseUrl.includes(R2_PUBLIC_URL) || baseUrl.includes('r2.dev')) {
     const filename = baseUrl.replace(R2_PUBLIC_URL, '').replace(/^\//, '')
-    return generateR2ImageUrl(filename, {
-      width: config.width,
-      height: config.height,
+    // Build R2 options with proper type handling
+    const r2Options: R2TransformOptions = {
       quality: config.quality,
-      format: config.format as R2TransformOptions['format'],
-      fit: 'cover'
-    })
+      fit: 'cover',
+      ...(config.width !== undefined && { width: config.width }),
+      ...(config.height !== undefined && { height: config.height })
+    }
+
+    // Handle format with explicit mapping and type narrowing
+    if (config.format !== undefined) {
+      if (config.format === 'jpg') {
+        r2Options.format = 'jpeg'
+      } else if (config.format === 'webp' || config.format === 'avif' || config.format === 'png') {
+        r2Options.format = config.format
+      }
+    }
+
+    return generateR2ImageUrl(filename, r2Options)
   }
   
   // Fallback to original implementation
@@ -272,7 +283,7 @@ export function lazyLoadImages(container: HTMLElement): void {
   
   const observer = createIntersectionObserver((entries) => {
     entries.forEach(entry => {
-      if (entry.isIntersecting) {
+      if (entry?.isIntersecting) {
         const img = entry.target as HTMLImageElement
         const src = img.dataset.src
         

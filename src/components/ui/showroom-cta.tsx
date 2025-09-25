@@ -201,7 +201,17 @@ function ShowroomCTAContent({
   primaryAction: 'schedule' | 'contact' | 'directions'
   selectedLocation: string
 }) {
-  const location = showroomLocations.find(loc => loc.id === selectedLocation) || showroomLocations[0]
+  const location = showroomLocations.find(loc => loc.id === selectedLocation) || showroomLocations[0] || null
+
+  if (!location) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center text-gray-500">
+          <p>No showroom locations available</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

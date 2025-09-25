@@ -91,7 +91,7 @@ export class ConstantContactListManager {
         return {
           success: true,
           status: response.status,
-          data: exactMatch || response.data.lists[0] // Fallback to first result
+          data: exactMatch || response.data.lists[0] || null // Fallback to first result or null
         };
       }
 
@@ -245,7 +245,7 @@ export class ConstantContactListManager {
       .map(list => ({
         value: list.list_id,
         label: list.name,
-        description: list.description
+        ...(list.description !== undefined && { description: list.description })
       }));
   }
 
@@ -270,6 +270,9 @@ export class ConstantContactListManager {
 
       if (response.success && response.data?.contacts && response.data.contacts.length > 0) {
         const contact = response.data.contacts[0];
+        if (!contact) {
+          return { exists: false, listIds: [] };
+        }
         const listIds = contact.list_memberships
           .filter((membership): membership is ListMembership =>
             typeof membership === 'object' && membership.membership_status === 'active'

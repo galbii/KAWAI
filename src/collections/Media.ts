@@ -237,13 +237,11 @@ export const Media: CollectionConfig = {
       {
         name: 'tablet',
         width: 1024,
-        height: undefined,
         position: 'centre',
       },
       {
         name: 'desktop',
         width: 1920,
-        height: undefined,
         position: 'centre',
       },
     ],

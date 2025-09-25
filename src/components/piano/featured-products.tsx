@@ -39,7 +39,7 @@ function ProductCard({ piano, index, categorySlug }: ProductCardProps) {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setIsVisible(true);
         }
       },
@@ -173,7 +173,7 @@ export function FeaturedProducts({
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setIsTitleVisible(true);
         }
       },

@@ -1,13 +1,13 @@
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { HeroSection } from './components/HeroSection'
-import { PremiumHeritage } from './components/PremiumHeritage'
-import { MasterArtisans } from './components/MasterArtisans'
-import { PremiumBentoGallery } from './components/PremiumBentoGallery'
-import { ConversionCTA } from './components/ConversionCTA'
-import { SignatureExperience } from './components/SignatureExperience'
-import { SignatureExperienceProvider } from './components/SignatureExperienceContext'
+import { HeroSection } from '@/components/pages/signature/HeroSection'
+import { PremiumHeritage } from '@/components/pages/signature/PremiumHeritage'
+import { MasterArtisans } from '@/components/pages/signature/MasterArtisans'
+import { PremiumBentoGallery } from '@/components/pages/signature/PremiumBentoGallery'
+import { ConversionCTA } from '@/components/pages/signature/ConversionCTA'
+import { SignatureExperience } from '@/components/pages/signature/SignatureExperience'
+import { SignatureExperienceProvider } from '@/components/pages/signature/SignatureExperienceContext'
 import type { SignaturePageData, SignaturePageProps } from '@/lib/types/signature'
 import type { Media } from '@/payload-types'
 
@@ -111,7 +111,7 @@ async function SignaturePageContent({ slug }: { slug: string }) {
         {/* Hero Section */}
         <HeroSection
           data={signatureData.heroSection}
-          enableSmoothScrolling={signatureData.settings?.enableSmoothScrolling}
+          enableSmoothScrolling={signatureData.settings?.enableSmoothScrolling ?? false}
         />
 
         {/* Premium Heritage & Authority Section */}

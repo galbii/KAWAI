@@ -332,7 +332,7 @@ function AnimatedSection({ children, className }: { children: React.ReactNode, c
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           // Start heading animation
           setIsHeadingVisible(true);
           
@@ -372,7 +372,7 @@ function PianoCategorySection({ category, index }: { category: any, index: numbe
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           // Start image animation immediately
           setIsImageVisible(true);
           

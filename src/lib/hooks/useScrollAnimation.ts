@@ -24,7 +24,7 @@ export function useScrollAnimation(options: UseScrollAnimationOptions = {}): Ani
     
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           if (prefersReducedMotion) {
             // Immediately show content for users who prefer reduced motion
             setIsVisible(true);
@@ -58,7 +58,7 @@ export function useStaggeredAnimation(count: number, staggerDelay: number = 200)
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           // Trigger staggered animations
           for (let i = 0; i < count; i++) {
             setTimeout(() => {

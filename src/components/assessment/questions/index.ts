@@ -13,4 +13,4 @@ export { default as InvestmentRangeQuestion } from './InvestmentRangeQuestion'
 export { default as ExclusiveAccessQuestion } from './ExclusiveAccessQuestion'
 
 // Re-export types for convenience
-export type { FormStepProps } from '@/app/(frontend)/[slug]/signature/types'
+export type { FormStepProps } from '@/components/pages/signature/types'

@@ -107,11 +107,11 @@ export const ResponsiveImage = React.forwardRef<
 
   // Intersection Observer for lazy loading
   useEffect(() => {
-    if (priority || typeof window === 'undefined') return
+    if (priority || typeof window === 'undefined') return undefined
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setIsIntersecting(true)
           observer.disconnect()
         }
@@ -137,18 +137,18 @@ export const ResponsiveImage = React.forwardRef<
   // Progressive loading with LQIP
   useEffect(() => {
     const mediaUrl = typeof media === 'string' ? media : media.url || ''
-    
+
     // Don't generate LQIP for fallback images
     if (mediaUrl.startsWith('/images/') || mediaUrl.startsWith('/static/')) {
-      return
+      return undefined
     }
-    
+
     const filename = safeExtractFilename(media)
     const lqipSrc = placeholder && filename ? generateLQIP(filename) : undefined
-    
+
     if (lqipSrc && isIntersecting && placeholder) {
       setShowLQIP(true)
-      
+
       // Preload the LQIP
       const lqipImage = new globalThis.Image()
       lqipImage.onload = () => {
@@ -156,6 +156,8 @@ export const ResponsiveImage = React.forwardRef<
       }
       lqipImage.src = lqipSrc
     }
+
+    return undefined
   }, [media, placeholder, isIntersecting, safeExtractFilename])
 
   // Debug system removed

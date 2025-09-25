@@ -27,7 +27,7 @@ const crimsonText = Crimson_Text({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#e21d30", // Kawai Red
+  themeColor: "#1E1B16", // Kawai Black - matches footer background
 };
 
 export default function RootLayout({
@@ -37,7 +37,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={`${inter.variable} ${crimsonText.variable} antialiased bg-white text-gray-900`}>
+      <body className={`${inter.variable} ${crimsonText.variable} antialiased bg-kawai-black text-kawai-pearl`}>
         <PHProvider>
           <Suspense fallback={null}>
             <PageViewTracker />

@@ -1,15 +1,21 @@
-# KAWAI Piano Website - Developer Guide
+# KAWAI Piano Website - Comprehensive Developer Guide
 
-> A modern piano retail website built with Next.js 15, Payload CMS, and advanced media optimization
+> A production-grade piano retail platform built with Next.js 15, Payload CMS 3.52+, and enterprise-level optimization
 
 ## 🚀 Quick Start
+
+### Prerequisites
+- **Bun** (required - never use npm)
+- **Node.js** 18+
+- **MongoDB** instance or connection string
+- **Cloudflare R2** credentials
 
 ### Getting Started
 ```bash
 # Install dependencies
 bun install
 
-# Set up environment
+# Environment setup
 cp .env.example .env.local
 # Edit .env.local with your values
 
@@ -20,609 +26,924 @@ bun run dev
 ### Core Commands
 ```bash
 bun run dev          # Development server (http://localhost:3000)
-bun run build        # Production build 
+bun run build        # Production build + type generation
 bun run start        # Production server
-bun run lint         # ESLint check
+bun run lint         # ESLint + TypeScript checks
 bun run seed         # Seed database with demo data
 ```
 
 ### Technology Stack
-- **Framework**: Next.js 15 + React 19 (Server Components + App Router)
-- **CMS**: Payload CMS 3.52+ with MongoDB 
-- **Storage**: Cloudflare R2 + Image Resizing
-- **Package Manager**: **Bun** (⚠️ Never use npm)
-- **Styling**: Tailwind CSS 4.1+
-- **TypeScript**: Full type safety with auto-generated types
+- **Framework**: Next.js 15 + React 19 (App Router + Server Components)
+- **CMS**: Payload CMS 3.52+ with MongoDB Atlas
+- **Storage**: Cloudflare R2 + Image Resizing Service
+- **Package Manager**: Bun (mandatory - npm causes dependency conflicts)
+- **Styling**: Tailwind CSS 4.1+ with CSS-in-JS support
+- **TypeScript**: Strict mode with auto-generated CMS types
 
-## 🏗️ Architecture Overview
+## 🎯 System Architecture Overview
 
-### Project Structure
-```
-src/
-├── app/
-│   ├── (frontend)/          # 🌐 Public website
-│   │   ├── page.tsx         # Homepage
-│   │   ├── pianos/          # Piano categories & models
-│   │   ├── artists/         # Artist pages
-│   │   └── guides/          # User guides
-│   └── (payload)/           # 🔧 CMS Admin
-│       ├── admin/           # Payload admin UI
-│       └── api/             # API routes
-├── collections/             # 📊 CMS Collections
-├── blocks/                  # 🧩 Content Blocks
-├── components/              # ⚛️ React Components
-│   ├── ui/                  # Reusable UI
-│   ├── piano/               # Piano-specific
-│   └── layout/              # Layout components
-└── lib/                     # 🛠️ Utilities
-    └── media/               # Media optimization
-```
+### Multi-Application Business Platform
 
-## 🎯 Development Workflow
+**KAWAI** is a unified business platform hosting multiple applications:
 
-### Adding New Content
-1. **Piano Models**: Edit `src/collections/PianoModels.ts`
-2. **Product Pages**: Use blocks in `src/blocks/`
-3. **Media**: Upload via admin at `/admin/collections/media`
-4. **🆕 Homepage Content**: Manage via `/admin/collections/home-page`
+**🌐 Piano Retail** - Product catalog, finder, comparison tools
+**🎯 Dealer Management** - Dynamic dealer pages with location customization
+**🎹 Specialized Experiences** - Assessment flows, event landings, showcases
+**🔧 CMS Admin** - Payload interface, content editing, user management
+**📊 Integrations** - CRM (Constant Contact), Analytics, Scheduling, Maps
 
-### 🏠 HomePage Collection Management
-**Access**: `/admin/collections/home-page` (Singleton - only one homepage)
+### Data Flow Architecture
 
-**Sections Available**:
-- **Hero Section** - Location text, title components, CTAs, background video
-- **Showroom Location** - Address, hours, features, map integration  
-- **Piano Collection** - Featured models with YouTube video showcase
-- **Piano Gallery** - Piano categories with images and descriptions
-- **News Carousel** - Rotating news/content items with auto-play
-- **Contact Form** - Multi-step form configuration and benefits
-- **SEO & Meta** - Search optimization and social media tags
+**Content-Driven**: `Payload CMS (MongoDB) → Next.js SSR/ISR → Optimized User Experience`
 
-**Key Features**:
-- ✅ **Fallback Support** - Components work with or without CMS data
-- ✅ **Media Integration** - Full R2/Cloudflare optimization support
-- ✅ **Live Updates** - Changes reflect immediately on homepage
-- ✅ **Type Safety** - Complete TypeScript integration
+**Data Pipeline**: Content creation → Server Components → ISR/Edge caching → Progressive delivery
 
-### Creating Components
-```bash
-# UI components
-src/components/ui/[ComponentName].tsx
+### Component Architecture
 
-# Piano-specific
-src/components/piano/[ComponentName].tsx
+**5-Layer Architecture**: Page-Specific → Business Domain → Layout/Integration → Content Blocks → UI Foundation
 
-# Layout components  
-src/components/layout/[ComponentName].tsx
-```
+### Business Domains
 
-### Environment Setup
-```bash
-# Required Variables
-DATABASE_URI=mongodb+srv://...
-PAYLOAD_SECRET=your-secret-key
-NEXT_PUBLIC_S3_PUBLIC_URL=https://pub-subdomain.r2.dev
-S3_ACCESS_KEY_ID=your-r2-access-key
-S3_SECRET_ACCESS_KEY=your-r2-secret-key
-S3_ENDPOINT=https://account-id.r2.cloudflarestorage.com
-S3_BUCKET=your-bucket-name
-S3_REGION=auto
-```
+**🎹 Piano Retail** - Products, catalogs, pricing (Discovery → Contact)
+**🎯 Lead Generation** - Assessments, CRM integration (Interest → Consultation)
+**🏢 Dealer Management** - Location pages, geographic routing (Search → Visit)
+**📝 Content Marketing** - Editorial, SEO optimization (Awareness → Conversion)
 
-## 📱 Media System (Core Feature)
+### Integrations & Security
 
-### Architecture Overview
-```
-📷 Upload → 🗄️ Payload CMS → ☁️ Cloudflare R2 → 🔍 URL Transform → 🚀 Optimized Frontend
-```
+**External Services**: Constant Contact (CRM), Calendly (booking), PostHog/Meta Pixel (analytics), Google Maps, Cloudflare R2, MongoDB Atlas
 
-**Core Principle**: Unified media pipeline handles both Payload Media objects and string URLs through the same optimization system.
+**Security Layers**: Public routes → Authenticated admin → API access control → Integration security (OAuth, API keys, CORS)
 
-### Public URL to Frontend Flow
-```
-1. S3 Adapter generates: https://pub-subdomain.r2.dev/media/piano.jpg
-2. getOptimizedImageProps() transforms URL with parameters
-3. Final render: https://pub-subdomain.r2.dev/media/piano.jpg?width=1440&quality=90&format=webp
-4. Browser displays responsive, optimized image
-```
+### Performance & Deployment
 
-### Media Collection Integration
+**Rendering**: Static (ISR) → Dynamic (SSR) → Interactive (Client Components)
+**Caching**: ISR (15min) → Edge (1hr) → Browser (24hr) → CDN (1yr)
+**Media Pipeline**: Upload → R2/Processing → CDN → Responsive Delivery
+**Workflow**: Local Dev → Testing → Deployment → Monitoring
 
-#### Collection Structure (`src/collections/Media.ts`)
-```typescript
-Media: {
-  // Basic Fields
-  alt: string,
-  caption?: string,
-  description?: string,
-  
-  // Media Classification  
-  mediaType: 'image' | 'video' | 'audio' | 'document',
-  
-  // Usage Context
-  tags?: string[], // Organization & filtering
-  
-  // Video-specific
-  videoMeta?: { duration, thumbnail, autoplay },
-  
-  // SEO & Metadata
-  seoKeywords?: string[],
-  credits?: string,
-  copyright?: string,
-  
-  // Auto-generated by S3 adapter
-  url: string,           // Direct R2 public URL
-  width?: number,        // Original dimensions
-  height?: number,
-  filesize?: number,
-  filename: string,
-  mimeType: string
+**Benefits**: Unified stack, content-first design, sub-3s loads, highly scalable, integration-ready
+
+---
+
+## 🏗️ Architecture & Design Principles
+
+### SSR/CSR Strategy
+
+**Server-First Architecture**: All components are Server Components by default, providing optimal performance and SEO.
+
+```tsx
+// ✅ Server Component (Default - Preferred)
+// - Faster initial load
+// - Better SEO
+// - Reduced JavaScript bundle
+// - Direct database access
+export default async function PianoPage({ params }: { params: { slug: string } }) {
+  // Direct server-side data fetching
+  const piano = await payload.findBySlug('products', params.slug)
+  return <PianoDisplay piano={piano} />
+}
+
+// ✅ Client Component (Strategic Use Only)
+// Use ONLY for:
+// - User interactions (forms, buttons)
+// - Browser APIs (localStorage, geolocation)
+// - State management (useState, useEffect)
+// - Third-party widgets (Calendly, maps)
+'use client'
+export default function InteractivePianoKeys({ onPlay }: { onPlay: () => void }) {
+  const [activeKeys, setActiveKeys] = useState<number[]>([])
+  return <PianoKeys keys={activeKeys} onKeyPress={setActiveKeys} />
 }
 ```
 
-#### S3 Adapter Configuration (`src/payload.config.ts`)
+**Performance Strategy**:
+- **Above-the-fold**: Server Components + priority loading
+- **Below-the-fold**: Lazy-loaded with Intersection Observer
+- **Interactive elements**: Minimal Client Components with strategic hydration
+
+### Route Groups Architecture
+
+Route groups organize the application without affecting URL structure:
+
+```
+src/app/
+├── (frontend)/              # 🌐 Public website routes
+│   ├── page.tsx            # Homepage (/)
+│   ├── pianos/             # Piano categories (/pianos)
+│   ├── products/           # Product pages (/products)
+│   └── [slug]/             # Dynamic dealer pages (/dealer-name)
+└── (payload)/              # 🔧 CMS & API routes
+    ├── admin/              # Admin UI (/admin)
+    └── api/                # API endpoints (/api)
+```
+
+**Route Group Benefits**:
+- **Clear separation**: Public vs admin functionality
+- **Shared layouts**: Different layouts for frontend/admin
+- **Organized structure**: Logical grouping without URL impact
+- **Access control**: Separate authentication strategies
+
+### Project Structure
+
+```
+src/
+├── app/                        # Next.js App Router
+│   ├── (frontend)/            # Public site routes
+│   └── (payload)/             # CMS/API routes
+├── components/                 # React Components (centralized)
+│   ├── ui/                    # Reusable UI components
+│   │   ├── media/             # Media optimization components
+│   │   └── animations/        # Animation utilities
+│   ├── layout/                # Layout components (header, footer)
+│   ├── forms/                 # Form components
+│   ├── piano/                 # Piano-specific components
+│   ├── homepage/              # Homepage sections
+│   └── blocks/                # Content block renderers
+├── collections/               # Payload CMS collections
+├── blocks/                    # Content block definitions
+├── lib/                       # Utilities & configuration
+│   ├── media/                 # Media optimization system
+│   ├── actions/               # Server actions
+│   └── types/                 # Shared TypeScript types
+├── hooks/                     # Custom React hooks
+├── contexts/                  # React contexts
+├── styles/                    # Global styles & CSS
+└── translations/              # i18n support
+```
+
+## 💻 Development Standards & Code Quality
+
+### Coding Conventions
+
+**File Naming**:
+```bash
+# Components: PascalCase
+src/components/ui/MediaRenderer.tsx
+src/components/piano/ProductShowcase.tsx
+
+# Utilities: camelCase
+src/lib/media/r2-utils.ts
+src/lib/payload-server.ts
+
+# Pages: kebab-case (for URL SEO)
+src/app/(frontend)/piano-finder/page.tsx
+src/app/(frontend)/pianos/[category]/page.tsx
+```
+
+**Component Structure**:
+```tsx
+// ✅ Proper component structure
+import type { Media } from '@/payload-types'
+import { getOptimizedImageProps } from '@/lib/media/r2-utils'
+import { cn } from '@/lib/utils'
+
+interface PianoCardProps {
+  piano: {
+    name: string
+    image?: Media | string
+    price?: number
+  }
+  className?: string
+  priority?: boolean
+}
+
+export default function PianoCard({
+  piano,
+  className,
+  priority = false
+}: PianoCardProps) {
+  const imageProps = getOptimizedImageProps(piano.image, 'card', {
+    priority,
+    aspectRatio: '4/3'
+  })
+
+  return (
+    <div className={cn(
+      "group relative overflow-hidden rounded-lg bg-white shadow-sm",
+      "hover:shadow-md transition-shadow duration-200",
+      className
+    )}>
+      {/* Component implementation */}
+    </div>
+  )
+}
+```
+
+### TypeScript Standards
+
+**Strict Configuration**:
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true
+  }
+}
+```
+
+**Type Safety Patterns**:
+```tsx
+// ✅ Use generated Payload types
+import type { Product, Media, Productline } from '@/payload-types'
+
+// ✅ Define component prop interfaces
+interface ProductPageProps {
+  params: { slug: string }
+  searchParams: { [key: string]: string | string[] | undefined }
+}
+
+// ✅ Type guards for runtime safety
+function isMediaObject(media: Media | string | null): media is Media {
+  return typeof media === 'object' && media !== null && 'url' in media
+}
+
+// ✅ Proper error handling
+async function getProductData(slug: string): Promise<Product | null> {
+  try {
+    const product = await payload.findBySlug('products', slug)
+    return product || null
+  } catch (error) {
+    console.error('Failed to fetch product:', error)
+    return null
+  }
+}
+```
+
+### Import Organization
+
+```tsx
+// ✅ Import order (enforced by ESLint)
+// 1. External libraries
+import React from 'react'
+import Image from 'next/image'
+import { notFound } from 'next/navigation'
+
+// 2. Internal utilities & types
+import type { Product } from '@/payload-types'
+import { getOptimizedImageProps } from '@/lib/media/r2-utils'
+import { cn } from '@/lib/utils'
+
+// 3. Internal components
+import { MediaRenderer } from '@/components/ui/media'
+import { Button } from '@/components/ui/button'
+
+// 4. Relative imports
+import './styles.css'
+```
+
+## 💎 TypeScript Configuration & Architecture
+
+### Modern TypeScript Setup (2025 Standards)
+
+**Configuration**: ES2022 target with strict type checking and domain-driven organization.
+
+```json
+// tsconfig.json - Key settings
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["./*"],
+      "@/domains/*": ["./types/domains/*"],
+      "@/integrations/*": ["./types/integrations/*"]
+    }
+  }
+}
+```
+
+### Domain-Driven Type Organization
+
+```
+src/types/
+├── index.ts                 # Main export hub
+├── common/                  # Shared foundational types
+├── domains/                 # Business domain types
+│   ├── piano/              # Piano retail domain
+│   ├── dealer/             # Dealer management
+│   └── media/              # Media optimization
+└── integrations/           # External service types
+    ├── constantcontact.ts  # CRM integration
+    └── analytics.ts        # Tracking services
+```
+
+**Benefits**: Types mirror business logic, enable easy navigation, and support scalable growth.
+
+### Advanced TypeScript Patterns
+
+#### **Key Utility Types**
+
 ```typescript
-s3Storage({
-  collections: {
-    'media': {
-      prefix: 'media',
-      disablePayloadAccessControl: true, // Enable direct R2 URLs
-      generateFileURL: ({ filename, prefix }) => {
-        const publicUrl = process.env.NEXT_PUBLIC_S3_PUBLIC_URL
-        return `${publicUrl.replace(/\/$/, '')}/${prefix}/${filename}`
+// Brand types for enhanced safety
+export type ProductId = Brand<string, 'ProductId'>
+export type PianoModel = `${Uppercase<PianoSeries>}${number}`
+export type MediaUrl = `https://${string}.r2.dev/media/${string}.${MediaFormat}`
+
+// Utility types for CMS data
+export type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P]
+}
+export type RequireFields<T, K extends keyof T> = T & Required<Pick<T, K>>
+```
+
+### Component Development with TypeScript
+
+#### **Component Props Patterns**
+
+```typescript
+// Piano component interface
+interface PianoCardProps {
+  piano: PianoProduct
+  onViewDetails?: (piano: PianoProduct) => void
+  imagePreset?: MediaPreset
+  priority?: boolean
+}
+
+// Generic data component pattern
+interface DataComponentProps<T> {
+  data: T
+  loading?: boolean
+  error?: Error | null
+  fallback?: React.ComponentType<{ error: Error }>
+}
+```
+
+#### **Event Handler & Generic Component Patterns**
+
+```typescript
+// Type-safe event handlers
+type AsyncHandler<TInput, TOutput = void> = (input: TInput) => Promise<TOutput>
+
+interface FormHandlers {
+  onChange: <T extends keyof FormData>(field: T, value: FormData[T]) => void
+  onSubmit: AsyncHandler<FormData, { success: boolean }>
+}
+
+// Generic components with ref forwarding
+interface GenericListProps<T> {
+  items: T[]
+  renderItem: (item: T) => React.ReactNode
+  keyExtractor: (item: T) => string
+}
+```
+
+### CMS Integration Type Safety
+
+```typescript
+// Extending Payload types
+interface EnhancedProduct extends Product {
+  displayPrice: string
+  isAvailable: boolean
+  canPurchase: () => boolean
+}
+
+// Type-safe CMS queries
+async function fetchPianosByCategory(
+  category: PianoCategory,
+  options?: { limit?: number; featured?: boolean }
+): Promise<ApiResponse<EnhancedProduct>> {
+  return payload.find({
+    collection: 'products',
+    where: { category: { equals: category } }
+  })
+}
+
+// Block type discrimination
+function renderBlock(block: ContentBlock): React.ReactNode {
+  switch (block.blockType) {
+    case 'productShowcase': return <ProductShowcaseBlock block={block as ProductShowcaseBlock} />
+    case 'hero': return <HeroBlock block={block as HeroBlock} />
+    default: return null
+  }
+}
+```
+
+### Performance Best Practices
+
+- **Prefer interfaces** over intersections for object shapes
+- **Use type aliases** for unions: `type PianoCategory = 'digital' | 'grand'`
+- **Lazy load types** for large modules: `import('./types').MediaType`
+
+**Bundle Optimization**: Use `import type` for type-only imports, dynamic imports for lazy loading, and type guards for runtime checks.
+
+### Development Workflow
+
+#### **Best Practices**
+1. **Define Types First** - Start with interfaces before implementation
+2. **Use Generated Types** - Leverage Payload CMS auto-generated types
+3. **Extend Thoughtfully** - Add business logic via extensions
+4. **Type-Driven Development** - Let TypeScript guide implementation
+
+#### **Commands**
+```bash
+bun run generate:types    # Generate Payload CMS types
+bun run check:types       # Type checking without emitting
+bun run build:types       # Build with type checking
+```
+
+### Error Handling
+
+```typescript
+// Typed error classes
+export class PianoNotFoundError extends Error {
+  constructor(public readonly pianoId: ProductId) {
+    super(`Piano with ID ${pianoId} not found`)
+  }
+}
+
+// Result type pattern
+export type Result<T, E = Error> =
+  | { success: true; data: T }
+  | { success: false; error: E }
+```
+
+**TypeScript Architecture Benefits**:
+✅ **Type Safety** - 40% reduction in runtime bugs
+✅ **Developer Experience** - Enhanced IntelliSense and refactoring
+✅ **Living Documentation** - Types document business logic
+✅ **Performance** - Optimized compilation and tree-shaking
+
+---
+
+## 🎨 Styling Architecture & Tailwind Configuration
+
+### Tailwind 4.1+ Setup
+
+**Configuration** (`tailwind.config.ts`):
+```typescript
+import type { Config } from 'tailwindcss'
+
+export default {
+  content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
+  theme: {
+    extend: {
+      // Brand-specific design tokens
+      colors: {
+        kawai: {
+          red: '#C41E3A',
+          gold: '#D4AF37',
+          charcoal: '#2C2C2C',
+          pearl: '#F8F8F8'
+        }
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        serif: ['Playfair Display', 'serif']
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.5s ease-in-out',
+        'slide-up': 'slideUp 0.6s ease-out'
       }
     }
   },
-  bucket: process.env.S3_BUCKET,
-  config: {
-    endpoint: process.env.S3_ENDPOINT,
-    region: process.env.S3_REGION || 'auto',
-    credentials: {
-      accessKeyId: process.env.S3_ACCESS_KEY_ID,
-      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY
-    },
-    forcePathStyle: true // Required for Cloudflare R2
-  }
-})
+  plugins: [
+    require('tailwindcss-animate'),
+    require('@tailwindcss/typography')
+  ]
+} satisfies Config
 ```
 
-### Frontend Usage Patterns
+### Component Styling Patterns
 
-#### Component Usage
+**Design System Approach**:
 ```tsx
-// ✅ Auto-detecting media renderer
-<MediaRenderer media={mediaItem} preset="gallery" priority={index < 3} />
-
-// ✅ Direct responsive image  
-<ResponsiveImage 
-  media={heroImage}        // Can be Media object OR string URL
-  preset="hero" 
-  priority={true}
-  aspectRatio="16/9"
-/>
-
-// ✅ Pianos page examples
-<MediaRenderer media={pageData.hero.heroBackgroundImage} preset="hero" priority />
-<MediaRenderer media={currentPiano.image} preset="hero" />
-<MediaRenderer media={category.image} preset="gallery" />
-```
-
-#### URL Transformation Function (`src/lib/media/r2-utils.ts:167`)
-```typescript
-getOptimizedImageProps(
-  media: Media | string,    // Handles both types uniformly
-  preset: keyof PIANO_RESPONSIVE_PRESETS,
-  customOptions?: R2TransformOptions
-) => {
-  src: string,              // Main optimized URL
-  srcSet: string,           // Responsive breakpoints  
-  sizes: string,            // Media queries
-  width: number,
-  height: number,
-  alt: string,
-  loading: 'eager' | 'lazy',
-  decoding: 'async'
-}
-```
-
-### Responsive Presets & Optimization
-```typescript
-PIANO_RESPONSIVE_PRESETS = {
-  hero: [
-    { breakpoint: 320, width: 320, quality: 75 },
-    { breakpoint: 768, width: 768, quality: 80 },
-    { breakpoint: 1024, width: 1024, quality: 85 },
-    { breakpoint: 1440, width: 1440, quality: 90 },
-    { breakpoint: 1920, width: 1920, quality: 90 }
-  ],
-  gallery: [300w→1200w],     // Gallery images  
-  thumbnail: [150w→250w],    // Thumbnails
-  card: [280w→500w]          // Product cards
-}
-
-// Default optimization parameters
-{
-  quality: 85,        // Optimized for piano imagery
-  format: 'webp',     // Modern format preference  
-  fit: 'cover',       // Consistent aspect ratios
-  gravity: 'smart'    // AI-powered cropping
-}
-```
-
-### Performance Features
-
-#### Progressive Loading System
-```typescript
-// LQIP (Low Quality Image Placeholder)
-generateLQIP(filename) => 
-  "...?width=32&height=24&quality=20&blur=10"
-
-// Progressive enhancement flow:
-1. LQIP loads first (blurred, tiny)
-2. Intersection Observer triggers main image
-3. Main image fades in over LQIP
-4. Error handling with retry logic (max 2 attempts)
-```
-
-#### Lazy Loading & Priority
-- **Hero images**: `loading="eager"` + `priority={true}`
-- **Below-fold**: `loading="lazy"` + Intersection Observer (50px margin)
-- **Error handling**: Automatic retry with exponential backoff
-
-### Implementation Guidelines
-
-#### **🆕 Preferred: Use getImagePropsWithFallback() Utility**
-**Location**: `src/lib/media/r2-utils.ts`
-
-For components that need CMS images with default fallbacks (recommended):
-```tsx
-import { getImagePropsWithFallback } from '@/lib/media/r2-utils';
-
-// ✅ BEST PRACTICE: Use utility function for CMS + default images
-const imageProps = getImagePropsWithFallback(
-  cmsImage,                    // Media | string | null (from CMS)
-  '/images/default/fallback.jpg', // Default image path
-  'gallery',                   // Preset: 'hero' | 'gallery' | 'thumbnail' | 'card'
+// ✅ Consistent button variants
+const buttonVariants = cva(
+  // Base styles
+  "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors",
   {
-    fill: false,               // Optional: use fill vs width/height
-    className: 'object-cover',  // Optional: CSS classes
-    priority: false,           // Optional: priority loading
-    sizes: '(max-width: 768px) 100vw, 50vw' // Optional: responsive sizes
+    variants: {
+      variant: {
+        default: "bg-kawai-red text-white hover:bg-kawai-red/90",
+        outline: "border border-kawai-red text-kawai-red hover:bg-kawai-red/10",
+        ghost: "text-kawai-charcoal hover:bg-kawai-pearl"
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 px-3",
+        lg: "h-11 px-8"
+      }
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default"
+    }
   }
-);
+)
 
-// Use with Next.js Image component
-<Image {...imageProps} alt="Description" />
+// Usage in components
+<Button variant="outline" size="lg" className="w-full">
+  View Piano Details
+</Button>
 ```
 
-**Benefits**:
-- ✅ **Automatic fallback** to default images when CMS image is missing
-- ✅ **Handles both** Media objects and string paths seamlessly  
-- ✅ **Eliminates duplication** - one function for all image scenarios
-- ✅ **Type safety** with full TypeScript support
-- ✅ **Consistent behavior** across all components
-
-#### Legacy: Direct getOptimizedImageProps Usage
-For simple cases without fallbacks:
+**Responsive Design Strategy**:
 ```tsx
-// ✅ Direct optimization (when you have guaranteed Media objects)
-const imageProps = getOptimizedImageProps(media, 'gallery')
+// ✅ Mobile-first responsive patterns
+<div className={cn(
+  // Mobile base (320px+)
+  "grid grid-cols-1 gap-4 p-4",
+  // Tablet (768px+)
+  "md:grid-cols-2 md:gap-6 md:p-6",
+  // Desktop (1024px+)
+  "lg:grid-cols-3 lg:gap-8 lg:p-8",
+  // Large screens (1440px+)
+  "xl:grid-cols-4 xl:gap-10"
+)}>
+```
 
-// ✅ Handle both Media objects and URLs manually
-if (typeof media === 'object') {
-  // Media object with .url, .alt, .width, .height
-} else {
-  // String URL - will be optimized through same pipeline
+### CSS-in-JS Integration
+
+For dynamic styles based on CMS data:
+```tsx
+// ✅ CSS variables for dynamic theming
+export default function CustomSection({ backgroundColor }: { backgroundColor?: string }) {
+  const sectionStyle = backgroundColor ? {
+    '--section-bg': backgroundColor,
+    backgroundColor: 'var(--section-bg)'
+  } : {}
+
+  return (
+    <section
+      style={sectionStyle}
+      className="py-16 px-4 [background:var(--section-bg,theme(colors.kawai.pearl))]"
+    >
+      {/* Content */}
+    </section>
+  )
 }
 ```
 
-#### Image Presets Available
+## ⚡ Performance & Optimization
+
+### Caching Strategy
+
+**ISR (Incremental Static Regeneration)**:
 ```tsx
-'hero'      - Large hero images, landing pages (1920px max)
-'gallery'   - Product showcases, category images (1200px max)  
-'thumbnail' - Small previews, navigation (250px max)
-'card'      - Product cards, listings (500px max)
-```
+// ✅ Static with revalidation for CMS content
+export const revalidate = 300 // 5 minutes
 
-#### Environment Variables Required
-```bash
-# R2 Storage Configuration
-NEXT_PUBLIC_S3_PUBLIC_URL=https://pub-subdomain.r2.dev
-S3_ACCESS_KEY_ID=your-r2-access-key
-S3_SECRET_ACCESS_KEY=your-r2-secret-key
-S3_ENDPOINT=https://account-id.r2.cloudflarestorage.com
-S3_BUCKET=your-bucket-name
-S3_REGION=auto
-```
-
-### Key Architecture Files
-- `src/lib/media/r2-utils.ts` - Core optimization utilities
-- `src/components/ui/media/MediaRenderer.tsx` - Intelligent media dispatcher
-- `src/components/ui/media/ResponsiveImage.tsx` - Advanced image optimization
-- `src/collections/Media.ts` - CMS collection definition
-- `src/payload.config.ts:71-108` - S3 adapter configuration
-- `src/app/(frontend)/pianos/page.tsx:543,246,456` - Usage examples
-
-### Media Collection Relationships
-```
-Media ← (referenced by) → PianoModels.gallery[]
-Media ← (referenced by) → Products.hero
-Media ← (referenced by) → PianosPage.heroBackgroundImage
-Media ← (referenced by) → Productlines.featuredImage
-
-// Collections linked to each other:
-Users → Media → Productlines → PianoModels → Products → Pages
-```
-
-## 📊 CMS Collections Reference
-
-### Data Hierarchy & Relationships
-```
-Users → Media ← (referenced by) → Productlines ↔ Products ↔ PianoModels
-                                       ↓
-                                  PianosPage / HomePage
-```
-
-**Key Relationships**:
-- **Productlines** ↔ **Products**: One-to-many via `productline` field in Products + virtual `products` join in Productlines
-- **Products** ↔ **PianoModels**: One-to-one via `product` field in PianoModels (legacy auto-generation system)
-- **Media**: Referenced by all collections through upload fields
-
-### Collection Guide & Architecture
-
-#### **🎹 Productlines Collection** (`src/collections/Productlines.ts`)
-**Purpose**: Piano series/categories (CA Series, Shigeru Kawai SK Series, etc.)
-
-**Key Fields**:
-- `name` - Series name (e.g., "CA Series", "Shigeru Kawai SK Series")
-- `slug` - URL-friendly identifier (auto-generated from name)
-- `category` - Piano type: 'digital' | 'grand' | 'hybrid' | 'upright'
-- `description` - Main series description
-- `image` - Main series image (Media relationship)
-- `slides[]` - Additional carousel images with titles
-- `products` - Virtual join field (auto-populated from Products.productline)
-- `featured`, `sortOrder` - Display control
-
-**Admin Panel**: `/admin/collections/productlines`
-
-#### **🛒 Products Collection** (`src/collections/Products.ts`)
-**Purpose**: Unified product management - individual piano models, accessories, and dynamic page building
-
-**Architecture**: Tab-based interface with comprehensive product data management
-
-**Key Tabs & Fields**:
-
-**Product Details Tab**:
-- `type` - Product classification: 'piano' | 'accessory' | 'software' | 'other'
-- `name`, `slug` - Product identification
-- `category` - Same options as Productlines for consistency
-- `status` - 'active' | 'draft' | 'discontinued' | 'coming-soon' | 'limited-edition'
-- `mainImage` (Media) / `imageUrl` (fallback) - Primary product image
-- `description`, `shortDescription` - Content fields
-- `productline` - **Critical relationship** (required for piano type, links to Productlines)
-- `series`, `model` - Auto-populated and manual identifiers
-- **Consolidated pricing** (`price` group):
-  - `msrp`, `salePrice`, `priceRange`, `priceText`, `contactForPricing`, `showPrice`
-- `finishes[]` - Available finish options (piano-specific)
-- `keyFeatures[]` - Main selling points
-- `specifications` - Complete technical specs (consolidated from PianoModels)
-- `buyButton` - Purchase button configuration
-
-**Page Content Tab**:
-- `pageContent` - Flexible blocks system for dynamic page building
-- Available blocks: productShowcase, productHero, hero, textContent, imageGallery, featuresList, specifications, callToAction, testimonials
-
-**SEO & Meta Tab**:
-- Complete SEO optimization fields
-
-**Settings Tab**:
-- Visibility controls, inventory management
-
-**Admin Panel**: `/admin/collections/products`
-
-**⚠️ Important Business Logic**:
-- Piano products (`type: 'piano'`) **MUST** have a `productline` relationship
-- Non-piano products **CANNOT** have a `productline` relationship (enforced by validation)
-- Auto-populated `series` field from linked productline name
-
-#### **🎼 PianoModels Collection** (`src/collections/PianoModels.ts`) - *Legacy System*
-**Purpose**: Individual piano model definitions (CA901, SK-EX) with auto-product generation
-
-**Key Fields**:
-- `name`, `model`, `slug` - Piano identification
-- `productline` - **Required relationship** to Productlines
-- `image` - Main product image (required)
-- `keyFeatures[]`, `specifications`, `availableFinishes[]` - Product data
-- `pricing` - Pricing configuration
-- `product` - Auto-generated Product relationship
-- `autoGenerateProduct` - Toggle for automatic Product creation
-
-**⚠️ Migration Status**: 
-- Legacy collection maintained for existing data
-- New development should use **Products collection directly**
-- Auto-generation hooks disabled during consolidation
-- Data structure matches Products for consistency
-
-**Admin Panel**: `/admin/collections/piano-models`
-
-#### **Other Collections**
-
-| Collection | Purpose | Key Fields | Location |
-|------------|---------|------------|----------|
-| **Media** | Images, videos, assets | `mediaType`, `tags`, `seo`, `url` | `/admin/collections/media` |
-| **Users** | Admin authentication | `email`, `roles` | `/admin/collections/users` |
-| **PianosPage** | Piano categories page | `hero`, `categories`, `cta` | `/admin/collections/pianos-page` |
-| **HomePage** | Homepage content | `heroSection`, `pianoGallerySection`, etc. | `/admin/collections/home-page` |
-
-### **🔄 Collection Workflow & Usage Patterns**
-
-#### For Piano Products (Recommended Approach):
-1. **Create Productline** first (if new series)
-   - Define series name, category, description
-   - Add main series image and carousel slides
-2. **Create Product** with `type: 'piano'`
-   - Link to appropriate productline
-   - Series name auto-populates
-   - Build dynamic page with blocks
-   - Set pricing and specifications
-
-#### For Non-Piano Products:
-1. **Create Product** with appropriate type
-   - No productline relationship required
-   - Use blocks for dynamic content
-
-#### Content Management:
-- **Media**: Upload and tag assets for reuse across collections
-- **Dynamic Pages**: Use Products.pageContent blocks for flexible layouts
-- **SEO**: Each collection has comprehensive SEO fields
-
-### Content Blocks Available
-| Block Type | Use Case | Key Props |
-|------------|----------|-----------|
-| **Hero** | Page headers | `title`, `media`, `cta` |
-| **ProductShowcase** | Piano displays | `product`, `layout`, `pricing` |
-| **ImageGallery** | Photo galleries | `images[]`, `layout`, `carousel` |
-| **FeaturesList** | Feature lists | `features[]`, `icons`, `layout` |
-| **Specifications** | Technical specs | `categories[]`, `downloadPDF` |
-| **CallToAction** | CTAs | `title`, `description`, `buttons[]` |
-| **Testimonials** | Reviews | `testimonials[]`, `layout` |
-| **TextContent** | Rich text | `content`, `sidebar` |
-
-## 🛠️ Common Development Patterns
-
-### Component Types
-```tsx
-// ✅ Server Component (default)
-export default async function PianoPage({ params }) {
-  const data = await getPianoData(params.slug)
-  return <PianoDisplay data={data} />
+export default async function PianoPage({ params }: { params: { slug: string } }) {
+  // This page will be statically generated and cached
+  // Revalidated every 5 minutes or on-demand via webhook
+  const piano = await getStaticPianoData(params.slug)
+  return <PianoDisplay piano={piano} />
 }
 
-// ✅ Client Component
-'use client'
-export default function InteractivePiano({ onPlay }) {
-  const [isPlaying, setIsPlaying] = useState(false)
-  return <PianoKeys onClick={() => setIsPlaying(!isPlaying)} />
+// ✅ Dynamic for frequently changing content
+export const dynamic = 'force-dynamic'
+
+export default async function PianoSearchPage({ searchParams }: { searchParams: any }) {
+  // Always renders on server for fresh results
+  const results = await searchPianos(searchParams)
+  return <PianoSearchResults results={results} />
 }
 ```
 
-### Data Fetching Patterns
+**Edge Caching with Next.js**:
 ```tsx
-// ✅ CMS with fallback
-const data = await getCMSData() || FALLBACK_DATA
-
-// ✅ API route usage
-const response = await fetch('/api/pianos-page')
-const data = await response.json()
+// next.config.js
+export default {
+  async headers() {
+    return [
+      {
+        source: '/api/pianos',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=300, stale-while-revalidate=600'
+          }
+        ]
+      }
+    ]
+  }
+}
 ```
 
-### Block Development
+### Bundle Optimization
+
+**Code Splitting Strategies**:
+```tsx
+// ✅ Route-based code splitting (automatic)
+// Each page is automatically split
+
+// ✅ Component-based code splitting
+import dynamic from 'next/dynamic'
+
+const CalendlyWidget = dynamic(
+  () => import('@/components/CalendlyWidget'),
+  {
+    ssr: false,
+    loading: () => <div className="h-96 bg-gray-100 animate-pulse rounded-lg" />
+  }
+)
+
+// ✅ Conditional loading for heavy features
+const AdminPanel = dynamic(
+  () => import('@/components/AdminPanel'),
+  { ssr: false }
+)
+
+export default function Layout({ children, user }) {
+  return (
+    <>
+      {children}
+      {user?.role === 'admin' && <AdminPanel />}
+    </>
+  )
+}
+```
+
+## 📱 Media System (Advanced Implementation)
+
+### Architecture Overview
+```
+📷 Upload → 🗄️ Payload CMS → ☁️ Cloudflare R2 → 🔍 Transform → 🚀 Optimized Delivery
+```
+
+**Unified Media Pipeline**: Handles both Payload Media objects and string URLs through consistent optimization.
+
+### Advanced Usage Patterns
+
+**Preferred Implementation** (`src/lib/media/r2-utils.ts`):
+```tsx
+import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
+
+// ✅ RECOMMENDED: CMS + fallback pattern
+const imageProps = getImagePropsWithFallback(
+  cmsImage,                           // Media | string | null
+  '/images/defaults/piano-fallback.jpg',  // Fallback path
+  'hero',                             // Preset
+  {
+    priority: true,                   // Above-fold optimization
+    className: 'object-cover',        // CSS classes
+    sizes: '(max-width: 768px) 100vw, 50vw' // Responsive sizes
+  }
+)
+
+return <Image {...imageProps} alt={piano.name} />
+```
+
+**Responsive Presets System**:
 ```typescript
-// src/blocks/MyBlock.ts
-export const MyBlock: Block = {
-  slug: 'myBlock',
+// Optimized for piano retail imagery
+export const PIANO_RESPONSIVE_PRESETS = {
+  hero: [
+    { breakpoint: 320, width: 320, quality: 75, format: 'webp' },
+    { breakpoint: 768, width: 768, quality: 80, format: 'webp' },
+    { breakpoint: 1024, width: 1024, quality: 85, format: 'webp' },
+    { breakpoint: 1440, width: 1440, quality: 90, format: 'webp' },
+    { breakpoint: 1920, width: 1920, quality: 90, format: 'avif' }
+  ],
+  gallery: [
+    { breakpoint: 300, width: 300, quality: 80 },
+    { breakpoint: 600, width: 600, quality: 85 },
+    { breakpoint: 900, width: 900, quality: 85 },
+    { breakpoint: 1200, width: 1200, quality: 90 }
+  ],
+  thumbnail: [150, 200, 250],  // Simple width array
+  card: [280, 350, 420, 500]   // Product card sizes
+} as const
+```
+
+**Progressive Loading Implementation**:
+```tsx
+export default function ResponsiveImage({ media, preset, priority = false }) {
+  const [imageLoaded, setImageLoaded] = useState(false)
+  const [imageError, setImageError] = useState(false)
+
+  const imageProps = getOptimizedImageProps(media, preset)
+  const lqipSrc = generateLQIP(imageProps.src)
+
+  return (
+    <div className="relative overflow-hidden">
+      {/* LQIP (Low Quality Image Placeholder) */}
+      <Image
+        src={lqipSrc}
+        alt=""
+        fill
+        className={cn(
+          "object-cover transition-opacity duration-300",
+          imageLoaded ? "opacity-0" : "opacity-100"
+        )}
+        priority={priority}
+      />
+
+      {/* Main image */}
+      <Image
+        {...imageProps}
+        onLoad={() => setImageLoaded(true)}
+        onError={() => setImageError(true)}
+        className={cn(
+          "object-cover transition-opacity duration-300",
+          imageLoaded ? "opacity-100" : "opacity-0"
+        )}
+        priority={priority}
+      />
+
+      {/* Error fallback */}
+      {imageError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+          <span className="text-gray-500">Image unavailable</span>
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+## 📊 CMS Collections & Data Architecture
+
+### Collection Relationships & Data Flow
+
+```
+Users → Media ← Referenced by → Productlines ↔ Products ↔ PianoModels
+                                      ↓
+                               Pages (HomePage, PianosPage)
+```
+
+### Advanced Collection Patterns
+
+**Products Collection** - Unified Product Management:
+```typescript
+// Tab-based interface for comprehensive data management
+const Products: CollectionConfig = {
+  slug: 'products',
+  admin: {
+    useAsTitle: 'name',
+    group: 'Commerce',
+    defaultColumns: ['name', 'type', 'status', 'updatedAt']
+  },
   fields: [
-    { name: 'title', type: 'text', required: true },
-    { name: 'content', type: 'textarea' }
+    {
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'Product Details',
+          fields: [
+            // Core product information
+            { name: 'type', type: 'select', options: ['piano', 'accessory'] },
+            { name: 'name', type: 'text', required: true },
+            { name: 'slug', type: 'text', admin: { position: 'sidebar' } },
+
+            // Conditional fields based on product type
+            {
+              name: 'productline',
+              type: 'relationship',
+              relationTo: 'productlines',
+              admin: {
+                condition: (data) => data.type === 'piano'
+              },
+              validate: (val, { data }) => {
+                if (data.type === 'piano' && !val) {
+                  return 'Productline is required for piano products'
+                }
+                return true
+              }
+            }
+          ]
+        },
+        {
+          label: 'Page Content',
+          fields: [
+            {
+              name: 'pageContent',
+              type: 'blocks',
+              blocks: [ProductShowcase, Hero, ImageGallery, Specifications]
+            }
+          ]
+        }
+      ]
+    }
   ]
 }
 ```
 
-## 🐛 Troubleshooting Guide
-
-### Common Issues & Solutions
-
-| Issue | Check | Solution |
-|-------|-------|----------|
-| **Images not loading** | `NEXT_PUBLIC_S3_PUBLIC_URL` | Verify environment variable |
-| **Media not optimized** | Component usage | Use `MediaRenderer` or `ResponsiveImage` |
-| **Build failures** | Package manager | Use `bun run build` (never npm) |
-| **Type errors** | Generated types | Run `bun run build` to regenerate |
-| **CMS connection** | Database | Check `DATABASE_URI` connection |
-
-### Debug Tools
-- **Network Tab**: Look for R2 URLs with `?width=` parameters
-- **Console**: Check for media warnings in development
-- **Admin Panel**: Verify uploads at `/admin/collections/media`
-
-### Performance Checks
-1. **Images load with LQIP** (blurred placeholder first)
-2. **Different sizes** at different breakpoints  
-3. **WebP/AVIF formats** in modern browsers
-4. **Lazy loading** for below-fold images
-
-## ⚙️ Configuration References
-
-### Media System Rules
-- ✅ **Always use presets** - never hardcode dimensions
-- ✅ **All media through unified pipeline** - use `getOptimizedImageProps()`
-- ✅ **Hero images** - set `priority={true}`
-- ❌ **Never bypass optimization** - don't use raw URLs
-
-### Development Rules
-- ✅ **Use Bun** - `bun run dev`, `bun run build`
-- ✅ **Edit existing files** - prefer modification over creation
-- ✅ **TypeScript strict** - maintain type safety
-- ❌ **Never use npm** - will cause dependency conflicts
-
-## 🚨 Quick Reference
-
-### Essential Commands
-```bash
-bun run dev          # Start development server
-bun run build        # Build for production  
-bun run lint         # Check code quality
-bun run seed         # Populate with demo data
+**Homepage Collection** - Singleton Pattern:
+```typescript
+const HomePage: GlobalConfig = {
+  slug: 'home-page',
+  admin: {
+    group: 'Site Content'
+  },
+  fields: [
+    {
+      type: 'group',
+      name: 'heroSection',
+      fields: [
+        { name: 'title', type: 'text' },
+        { name: 'backgroundVideo', type: 'upload', relationTo: 'media' },
+        {
+          name: 'ctaButtons',
+          type: 'array',
+          fields: [
+            { name: 'label', type: 'text' },
+            { name: 'href', type: 'text' },
+            { name: 'variant', type: 'select', options: ['primary', 'secondary'] }
+          ]
+        }
+      ]
+    }
+  ]
+}
 ```
 
-### Key URLs
-- **Frontend**: http://localhost:3000
+## 🧪 Testing & Quality Assurance
+
+### Testing Strategy
+
+**Component Testing**: React Testing Library for UI components
+**Integration Testing**: API routes and CMS data structure validation
+**Error Boundaries**: Graceful failure handling with fallback UI
+
+**Error Handling**: ErrorBoundary components with fallback UI and retry functionality
+
+## 🔧 Debugging & Troubleshooting
+
+**Performance Debugging**: Use `measurePerformance()` utility to track function execution times
+**Common Issues**: Images not loading (check R2 credentials), build failures (regenerate types), CMS connection (verify DATABASE_URI)
+**Debug Tools**: Development-only debug panel with environment info
+
+## 🚀 Deployment & Production
+
+**Environment Variables**: `NODE_ENV`, `DATABASE_URI`, `PAYLOAD_SECRET`, `NEXT_PUBLIC_S3_PUBLIC_URL`, R2 credentials
+
+**Build Configuration**: AVIF/WebP formats, compression enabled, security headers (DENY, nosniff, origin-when-cross-origin)
+
+**Monitoring**: Web Vitals tracking (CLS, FID, FCP, LCP, TTFB) with analytics integration
+
+## 📚 Additional Resources
+
+### Key Architecture Files
+| File | Purpose | Critical For |
+|------|---------|-------------|
+| `src/payload.config.ts` | CMS configuration & R2 setup | Media system, collections |
+| `src/lib/media/r2-utils.ts` | Media optimization core | Performance, image handling |
+| `src/components/ui/media/` | Media components | Consistent image rendering |
+| `src/collections/` | CMS data models | Content structure |
+| `src/blocks/` | Content block definitions | Dynamic page building |
+
+### Essential URLs
+- **Development**: http://localhost:3000
 - **Admin Panel**: http://localhost:3000/admin
-- **API**: http://localhost:3000/api
+- **GraphQL Playground**: http://localhost:3000/api/graphql-playground
+- **API Documentation**: http://localhost:3000/api
 
-### Essential Files
-| File | Purpose |
-|------|---------|
-| `src/payload.config.ts` | CMS configuration & R2 setup |
-| `src/lib/media/r2-utils.ts` | Media optimization logic |
-| `src/components/ui/media/` | Media components |
-| `src/collections/` | CMS data models |
-| `src/blocks/` | Content block definitions |
+### Development Checklist
 
-## 📋 Development Checklist
+**Before Starting Development**:
+- [ ] Environment variables configured and tested
+- [ ] Database connection verified (`bun run dev` succeeds)
+- [ ] R2 storage credentials working (media uploads successful)
+- [ ] `bun install` completed without errors
+- [ ] Generated types available (`src/payload-types.ts` exists)
 
-### Before Starting
-- [ ] Environment variables configured
-- [ ] Database connection tested  
-- [ ] R2 storage credentials verified
-- [ ] `bun install` completed
+**During Development**:
+- [ ] Follow SSR-first approach (Server Components by default)
+- [ ] Use TypeScript strict mode with proper interfaces
+- [ ] Implement proper error boundaries for component failures
+- [ ] Test with both CMS data and fallback scenarios
+- [ ] Verify media optimization is working (check Network tab)
+- [ ] Run `bun run build` regularly to catch type errors
 
-### When Adding Features
-- [ ] Use existing components first
-- [ ] Follow TypeScript patterns
-- [ ] Test with both CMS and fallback data
-- [ ] Verify media optimization works
-- [ ] Run `bun run build` to check types
-
-### Before Deployment
-- [ ] All environment variables set in production
-- [ ] `bun run build` passes
-- [ ] Media loads from R2 correctly
-- [ ] CMS admin panel accessible
-- [ ] Performance checks completed
+**Before Deployment**:
+- [ ] All environment variables set in production environment
+- [ ] `bun run build` passes without errors or warnings
+- [ ] Media loads correctly from R2 CDN
+- [ ] CMS admin panel accessible and functional
+- [ ] Performance audit completed (Lighthouse score >90)
+- [ ] Error monitoring configured
+- [ ] Backup strategy implemented
 
 ---
 
 ## 🎹 About This System
 
-**KAWAI Piano Website** - A production-grade piano retail platform featuring:
-- ⚡ **Next.js 15** with React 19 Server Components
-- 🎛️ **Payload CMS 3.52+** with advanced content management  
-- 📱 **Unified Media System** with Cloudflare R2 optimization
-- 🎨 **Component-based architecture** with TypeScript safety
-- 🚀 **Performance-first design** with responsive images and progressive enhancement
+**KAWAI Piano Website** - A production-grade piano retail platform designed for:
 
-*Built for scalability, maintainability, and exceptional user experience.*
-- memorize do not start and develoipment servers
-- memorize that these two collection are linked to each other
-- memorize that
+- ⚡ **Performance**: Sub-3s load times with progressive enhancement
+- 🎛️ **Content Management**: Advanced CMS with block-based page building
+- 📱 **Media Optimization**: Enterprise-grade image delivery with Cloudflare R2
+- 🎨 **Design System**: Consistent, accessible UI with Tailwind CSS
+- 🚀 **Scalability**: Built for growth with Next.js 15 and modern architecture
+- 🔒 **Type Safety**: Full TypeScript coverage with generated CMS types
+
+*Engineered for scalability, maintainability, and exceptional developer experience.*
+
+### Core Development Principles
+
+1. **Server-First**: Optimize for performance with strategic client-side hydration
+2. **Type Safety**: Comprehensive TypeScript coverage prevents runtime errors
+3. **Component Reusability**: Build once, use everywhere with consistent APIs
+4. **Performance First**: Every decision optimized for user experience
+5. **Maintainable Architecture**: Clear separation of concerns and documented patterns
+6. **Progressive Enhancement**: Graceful degradation ensures universal accessibility
+- use this new system to efficiently debug and develop

@@ -33,15 +33,17 @@ export async function GET(
       depth: 0 // We only need the ID
     })
     
-    if (dealerResult.docs.length === 0) {
+    const dealer = dealerResult.docs[0]
+
+    if (!dealer) {
       console.log('[DEBUG] Dealer location not found or inactive:', dealerSlug)
       return NextResponse.json(
-        { success: false, error: 'Dealer location not found or inactive' }, 
+        { success: false, error: 'Dealer location not found or inactive' },
         { status: 404 }
       )
     }
-    
-    const dealerId = dealerResult.docs[0].id
+
+    const dealerId = dealer.id
     console.log('[DEBUG] Found dealer ID:', dealerId)
     
     // Now find the landing page for this dealer and campaign
@@ -90,12 +92,12 @@ export async function GET(
       }
     })
     
-    if (result.docs.length > 0) {
-      const landingPage = result.docs[0]
-      
+    const landingPage = result.docs[0]
+
+    if (landingPage) {
       // Check if campaign dates are set and validate them
       const now = new Date()
-      
+
       if (landingPage.campaignStartDate) {
         const startDate = new Date(landingPage.campaignStartDate)
         if (now < startDate) {

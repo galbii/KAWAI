@@ -53,10 +53,10 @@ export const VideoPlayer = React.forwardRef<
   // Get video properties from R2 utils
   const videoProps = getVideoProps(media, {
     poster: poster !== false,
-    autoplay: props.autoPlay,
-    muted: props.muted,
+    ...(props.autoPlay !== undefined && { autoplay: props.autoPlay }),
+    ...(props.muted !== undefined && { muted: props.muted }),
     controls: !customControls && showControls,
-    loop: props.loop,
+    ...(props.loop !== undefined && { loop: props.loop }),
     preload: (props.preload as "auto" | "metadata" | "none") || "metadata"
   })
 
@@ -229,6 +229,7 @@ export const VideoPlayer = React.forwardRef<
       video.addEventListener('keydown', handleKeyDown)
       return () => video.removeEventListener('keydown', handleKeyDown)
     }
+    return undefined
   }, [togglePlay, seek, state.currentTime, state.duration, toggleMute, toggleFullscreen])
 
   // Fullscreen change listener
@@ -404,7 +405,7 @@ export const VideoPlayer = React.forwardRef<
               variant="outline"
               size="sm"
               onClick={() => {
-                setState(prev => ({ ...prev, hasError: false, error: undefined }))
+                setState(prev => ({ ...prev, hasError: false }))
                 if (videoRef.current) {
                   videoRef.current.load()
                 }

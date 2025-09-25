@@ -105,7 +105,7 @@ function SellingPointCard({
             {
               fill: true,
               className: 'object-cover object-center transition-transform duration-700 group-hover:scale-110',
-              priority: sellingPoint.priority
+              ...(sellingPoint.priority !== undefined && { priority: sellingPoint.priority })
             }
           )}
           alt={sellingPoint.imageAlt}
@@ -337,13 +337,15 @@ export function GL10BentoGallery() {
           viewport={{ once: true }}
         >
           {/* Featured card - spans 2 columns */}
-          <div className="lg:col-span-2">
-            <SellingPointCard
-              sellingPoint={gl10SellingPoints[0]}
-              className="h-[600px]"
-              index={0}
-            />
-          </div>
+          {gl10SellingPoints[0] && (
+            <div className="lg:col-span-2">
+              <SellingPointCard
+                sellingPoint={gl10SellingPoints[0]}
+                className="h-[600px]"
+                index={0}
+              />
+            </div>
+          )}
 
           {/* Standard cards */}
           {gl10SellingPoints.slice(1, 3).map((point, index) => (
@@ -364,13 +366,15 @@ export function GL10BentoGallery() {
           ))}
 
           {/* Featured bottom card - spans 2 columns */}
-          <div className="lg:col-span-2">
-            <SellingPointCard
-              sellingPoint={gl10SellingPoints[7]}
-              className="h-[500px]"
-              index={7}
-            />
-          </div>
+          {gl10SellingPoints[7] && (
+            <div className="lg:col-span-2">
+              <SellingPointCard
+                sellingPoint={gl10SellingPoints[7]}
+                className="h-[500px]"
+                index={7}
+              />
+            </div>
+          )}
         </motion.div>
 
         {/* Bottom CTA Section */}

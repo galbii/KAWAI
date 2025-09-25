@@ -62,8 +62,8 @@ export const MediaRenderer = React.forwardRef<
           <VideoPlayer
             media={media}
             showControls
-            onPlay={onLoad}
-            onError={onError ? () => onError(new Error('Video load error')) : undefined}
+            {...(onLoad !== undefined && { onPlay: onLoad })}
+            {...(onError !== undefined && { onError: () => onError(new Error('Video load error')) })}
             poster={placeholder}
           />
         </div>
@@ -82,8 +82,8 @@ export const MediaRenderer = React.forwardRef<
           preset={preset}
           priority={priority}
           placeholder={placeholder}
-          onLoad={onLoad}
-          onError={onError ? () => onError(new Error('Image load error')) : undefined}
+          {...(onLoad !== undefined && { onLoad })}
+          {...(onError !== undefined && { onError: () => onError(new Error('Image load error')) })}
         />
       </div>
     )
@@ -144,8 +144,8 @@ export const MediaRenderer = React.forwardRef<
           autoPlay={media.videoMeta?.autoplay || false}
           muted={media.videoMeta?.muted !== false}
           poster={placeholder}
-          onPlay={onLoad}
-          onError={onError ? () => onError(new Error('Video load error')) : undefined}
+          {...(onLoad !== undefined && { onPlay: onLoad })}
+          {...(onError !== undefined && { onError: () => onError(new Error('Video load error')) })}
         />
       </div>
     )
@@ -197,8 +197,8 @@ export const MediaRenderer = React.forwardRef<
         preset={preset}
         priority={priority}
         placeholder={placeholder}
-        onLoad={onLoad}
-        onError={onError}
+        {...(onLoad !== undefined && { onLoad })}
+        {...(onError !== undefined && { onError })}
       />
       {media.caption && (
         <p className="mt-2 text-sm text-muted-foreground text-center">

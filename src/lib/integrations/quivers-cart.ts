@@ -157,8 +157,8 @@ export function createKawaiPianoCartItem(
     name: `Kawai ${model} Digital Piano`,
     price,
     quantity: 1,
-    // Use a generic placeholder or no image to avoid broken requests
-    image: undefined, // Remove image reference to prevent broken requests
+    // Use a generic placeholder or omit image to avoid broken requests
+    image: '/images/kawai-logo.png', // Use a placeholder image
     description: `Premium ${model} digital piano from Kawai`,
     sku: `KAWAI-${model.toUpperCase()}`,
     ...options

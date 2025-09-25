@@ -197,22 +197,22 @@ async function DealerLocationContent({ slug }: { slug: string }) {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <Hero data={dealerLocationData?.heroSection} />
-      
+      <Hero {...(dealerLocationData?.heroSection && { data: dealerLocationData.heroSection })} />
+
       {/* Showroom Location Section */}
-      <ShowroomLocation data={dealerLocationData?.showroomSection} />
-      
+      <ShowroomLocation {...(dealerLocationData?.showroomSection && { data: dealerLocationData.showroomSection })} />
+
       {/* Piano Collection Section */}
-      <PianoCollection data={dealerLocationData?.pianoCollectionSection} />
+      <PianoCollection {...(dealerLocationData?.pianoCollectionSection && { data: dealerLocationData.pianoCollectionSection })} />
       
       {/* Piano Gallery Section - Uses HomePage collection data */}
       <PianoGallery data={pianoGalleryData} />
       
       {/* News Carousel Section */}
-      <NewsCarousel data={dealerLocationData?.newsCarouselSection} />
-      
+      <NewsCarousel {...(dealerLocationData?.newsCarouselSection && { data: dealerLocationData.newsCarouselSection })} />
+
       {/* Contact Form Section */}
-      <ContactForm data={dealerLocationData?.contactFormSection} />
+      <ContactForm {...(dealerLocationData?.contactFormSection && { data: dealerLocationData.contactFormSection })} />
     </div>
   );
 }

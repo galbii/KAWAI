@@ -61,7 +61,7 @@ export function ContactForm({ data }: ContactFormProps) {
     formState: { errors, isValid },
     trigger
   } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     mode: 'onChange',
     defaultValues: {
       wantsConsultation: false

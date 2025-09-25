@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import { WebVitals } from "./components/WebVitals";
+import { WebVitals } from "@/components/pages/dallas-university/WebVitals";
 // PostHog provider import removed
 // PostHog debug dashboard import removed
 // Removed CalendlyPreloader - using inline widget in BookingSection instead

@@ -85,7 +85,7 @@ function getClientIP(request: NextRequest): string {
   const clientIP = request.headers.get('x-client-ip')
 
   if (forwardedFor) {
-    return forwardedFor.split(',')[0].trim()
+    return forwardedFor.split(',')[0]?.trim() || 'unknown'
   }
 
   return realIP || clientIP || 'unknown'

@@ -193,8 +193,10 @@ class PerformanceManager {
       // LCP Observer
       const lcpObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        const lastEntry = entries[entries.length - 1] as any;
-        this.metrics.largestContentfulPaint = lastEntry.startTime;
+        if (entries.length > 0) {
+          const lastEntry = entries[entries.length - 1] as any;
+          this.metrics.largestContentfulPaint = lastEntry.startTime;
+        }
       });
       lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
       this.observers.push(lcpObserver);

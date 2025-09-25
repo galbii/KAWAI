@@ -236,7 +236,7 @@ export function useConstantContactForm() {
       email_address: formData.email,
       first_name: formData.firstName,
       last_name: formData.lastName,
-      phone_number: formData.phone,
+      ...(formData.phone !== undefined && { phone_number: formData.phone }),
       list_ids: formData.listIds
     };
 

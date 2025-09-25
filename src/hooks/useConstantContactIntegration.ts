@@ -153,11 +153,11 @@ export function useConstantContactIntegration(config: ConstantContactConfig = {}
 
       // Format contact data
       const signatureContactData: SignatureContactData = {
-        firstName: data.firstName,
-        lastName: data.lastName,
+        ...(data.firstName !== undefined && { firstName: data.firstName }),
+        ...(data.lastName !== undefined && { lastName: data.lastName }),
         email: data.email,
-        phone: data.phone,
-        optInMarketing: data.optInMarketing
+        ...(data.phone !== undefined && { phone: data.phone }),
+        ...(data.optInMarketing !== undefined && { optInMarketing: data.optInMarketing })
       };
 
       const contactData = formatSignatureContact(signatureContactData, targetListId);

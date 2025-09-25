@@ -61,7 +61,7 @@ function SeriesCard({ series, index, categorySlug, searchQuery }: SeriesCardProp
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setIsVisible(true);
         }
       },
@@ -262,7 +262,7 @@ export function EnhancedSeriesBrowser({
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setIsTitleVisible(true);
         }
       },

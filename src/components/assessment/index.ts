@@ -5,7 +5,7 @@
 
 // Main Assessment Component
 export { default as InteractiveAssessment } from './InteractiveAssessment'
-export type { InteractiveAssessmentProps } from '@/app/(frontend)/[slug]/signature/types'
+export type { InteractiveAssessmentProps } from '@/components/pages/signature/types'
 
 // Supporting Components
 export { default as QuestionStep } from './QuestionStep'
@@ -33,11 +33,11 @@ export {
   type QuestionStepType,
   type AssessmentProgressType,
   type FormStateType
-} from '@/app/(frontend)/[slug]/signature/lib/validation'
+} from '@/components/pages/signature/lib/validation'
 
 // Re-export assessment constants
 export {
   ASSESSMENT_QUESTIONS,
   ASSESSMENT_CONFIG,
   ASSESSMENT_UI_CONFIG
-} from '@/app/(frontend)/[slug]/signature/lib/constants'
+} from '@/components/pages/signature/lib/constants'

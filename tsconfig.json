@@ -1,28 +1,92 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    // Modern target for better performance (2025 best practice)
+    "target": "ES2022",
     "lib": ["dom", "dom.iterable", "esnext"],
+
+    // JavaScript compatibility
     "allowJs": true,
     "skipLibCheck": true,
+
+    // Enhanced type checking (stricter for better code quality)
     "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": false,
+
+    // Build configuration
     "noEmit": true,
-    "esModuleInterop": true,
+    "incremental": true,
+    "tsBuildInfoFile": ".next/cache/tsconfig.tsbuildinfo",
+
+    // Module system (ESNext for better tree-shaking)
     "module": "esnext",
     "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+
+    // React/JSX configuration
     "jsx": "preserve",
-    "incremental": true,
+    "jsxImportSource": "react",
+
+    // Path mapping for better organization
+    "baseUrl": "./src",
+    "paths": {
+      // Core paths
+      "@/*": ["./*"],
+      "@payload-config": ["./payload.config.ts"],
+
+      // Organized paths for better module structure
+      "@/types/*": ["./types/*"],
+      "@/lib/*": ["./lib/*"],
+      "@/components/*": ["./components/*"],
+      "@/hooks/*": ["./hooks/*"],
+      "@/utils/*": ["./lib/utils/*"],
+      "@/contexts/*": ["./contexts/*"],
+      "@/styles/*": ["./styles/*"],
+
+      // Domain-specific paths
+      "@/domains/*": ["./types/domains/*"],
+      "@/integrations/*": ["./types/integrations/*"],
+
+      // Collection and block paths
+      "@/collections/*": ["./collections/*"],
+      "@/blocks/*": ["./blocks/*"]
+    },
+
+    // Next.js plugin
     "plugins": [
       {
         "name": "next"
       }
-    ],
-    "paths": {
-      "@/*": ["./src/*"],
-      "@payload-config": ["./src/payload.config.ts"]
-    }
+    ]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+
+  // Include patterns with better coverage
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.mts",
+    "**/*.cts",
+    ".next/types/**/*.ts"
+  ],
+
+  // Exclude patterns
+  "exclude": [
+    "node_modules",
+    ".next",
+    "out",
+    "dist",
+    "**/*.js.map",
+    "**/*.d.ts.map"
+  ],
+
+  // TypeScript project references for better performance
+  "compileOnSave": false
 }

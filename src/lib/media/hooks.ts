@@ -63,8 +63,10 @@ export function useResponsiveImage(
   useEffect(() => {
     if (!imageProps) {
       setState(prev => ({ ...prev, isError: true, isLoading: false }))
-      return
+      return undefined
     }
+
+    const aspectRatio = imageProps.width && imageProps.height ? imageProps.width / imageProps.height : undefined
 
     setState({
       src: imageProps.src,
@@ -72,8 +74,10 @@ export function useResponsiveImage(
       sizes: imageProps.sizes,
       isLoading: true,
       isError: false,
-      aspectRatio: imageProps.width && imageProps.height ? imageProps.width / imageProps.height : undefined
+      ...(aspectRatio !== undefined && { aspectRatio })
     })
+
+    return undefined
   }, [imageProps])
 
   return {
@@ -123,9 +127,9 @@ export function useVideoPlayer(
 
   const videoProps = useMemo(() => {
     return getVideoProps(media, {
-      autoplay: options.autoPlay,
-      muted: options.muted,
-      loop: options.loop
+      ...(options.autoPlay !== undefined && { autoplay: options.autoPlay }),
+      ...(options.muted !== undefined && { muted: options.muted }),
+      ...(options.loop !== undefined && { loop: options.loop })
     })
   }, [media, options.autoPlay, options.muted, options.loop])
 
@@ -218,9 +222,12 @@ export function useMediaGallery(
 
   const selectMedia = useCallback((index: number) => {
     if (index >= 0 && index < media.length) {
-      setCurrentIndex(index)
-      setSelectedMedia(media[index])
-      options.onMediaSelect?.(media[index], index)
+      const selectedItem = media[index]
+      if (selectedItem) {
+        setCurrentIndex(index)
+        setSelectedMedia(selectedItem)
+        options.onMediaSelect?.(selectedItem, index)
+      }
     }
   }, [media, options])
 
@@ -248,7 +255,10 @@ export function useMediaGallery(
   // Initialize with first media item
   useEffect(() => {
     if (media.length > 0 && !selectedMedia) {
-      setSelectedMedia(media[0])
+      const firstItem = media[0]
+      if (firstItem) {
+        setSelectedMedia(firstItem)
+      }
     }
   }, [media, selectedMedia])
 
@@ -278,7 +288,7 @@ export function useIntersectionObserver(
 
   useEffect(() => {
     const element = ref.current
-    if (!element) return
+    if (!element) return undefined
 
     const defaultOptions: IntersectionObserverInit = {
       rootMargin: '50px',
@@ -287,8 +297,8 @@ export function useIntersectionObserver(
     }
 
     const observer = new IntersectionObserver(([entry]) => {
-      setIsIntersecting(entry.isIntersecting)
-      if (entry.isIntersecting && !hasIntersected) {
+      setIsIntersecting(entry?.isIntersecting ?? false)
+      if (entry?.isIntersecting && !hasIntersected) {
         setHasIntersected(true)
       }
     }, defaultOptions)
@@ -334,7 +344,7 @@ export function useProgressiveLoading(
 
   // Load LQIP first
   useEffect(() => {
-    if (!lqipSrc) return
+    if (!lqipSrc) return undefined
 
     const img = new Image()
     img.onload = () => {
@@ -345,6 +355,8 @@ export function useProgressiveLoading(
       setShowPlaceholder(true)
     }
     img.src = lqipSrc
+
+    return undefined
   }, [lqipSrc])
 
   // Handle full image load

@@ -66,10 +66,10 @@ const ContextAwareLink = ({ href, children, className, onClick }: {
   }
   
   return (
-    <Link 
+    <Link
       href={finalHref}
       className={className}
-      onClick={onClick}
+      {...(onClick && { onClick })}
     >
       {children}
     </Link>
@@ -140,12 +140,12 @@ const MobileMenuItem = ({ item, onClose, isOpen, onToggle }: MobileMenuItemProps
                     if (!productlineGroups[subItem.label]) {
                       productlineGroups[subItem.label] = []
                     }
-                    productlineGroups[subItem.label].push(subItem)
+                    productlineGroups[subItem.label]?.push(subItem)
                   } else if (subItem.isProduct && currentProductline[0]) {
                     if (!productlineGroups[currentProductline[0]]) {
                       productlineGroups[currentProductline[0]] = []
                     }
-                    productlineGroups[currentProductline[0]].push(subItem)
+                    productlineGroups[currentProductline[0]]?.push(subItem)
                   }
                 })
                 
@@ -443,12 +443,12 @@ const DesktopMenuItem = ({ item, isOpen, onOpen, onClose }: DesktopMenuItemProps
                       if (!productlineGroups[subItem.label]) {
                         productlineGroups[subItem.label] = []
                       }
-                      productlineGroups[subItem.label].push(subItem)
+                      productlineGroups[subItem.label]?.push(subItem)
                     } else if (subItem.isProduct && currentProductline[0]) {
                       if (!productlineGroups[currentProductline[0]]) {
                         productlineGroups[currentProductline[0]] = []
                       }
-                      productlineGroups[currentProductline[0]].push(subItem)
+                      productlineGroups[currentProductline[0]]?.push(subItem)
                     }
                   })
                   
@@ -574,9 +574,10 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       const timer = setTimeout(() => {
         setIsVisible(true)
       }, 100)
-      
+
       return () => clearTimeout(timer)
     }
+    return undefined
   }, [])
   
   // Fetch dealer location data when origin changes - but only after animation completes
@@ -643,6 +644,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       document.addEventListener('mousedown', handleClickOutside)
       return () => document.removeEventListener('mousedown', handleClickOutside)
     }
+    return undefined
   }, [isMenuOpen])
 
   // Scroll lock for mobile menu
@@ -650,11 +652,12 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     if (isMenuOpen) {
       const originalStyle = window.getComputedStyle(document.body).overflow
       document.body.style.overflow = 'hidden'
-      
+
       return () => {
         document.body.style.overflow = originalStyle
       }
     }
+    return undefined
   }, [isMenuOpen])
 
   // Focus management for mobile menu
@@ -834,7 +837,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
             <KawaiLogo
               size={isScrolled ? "sm" : "md"}
               animated={true}
-              dealerName={currentLocationData?.locationName}
+              {...(currentLocationData?.locationName && { dealerName: currentLocationData.locationName })}
               nonClickable={isSignaturePage}
             />
           </motion.div>

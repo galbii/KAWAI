@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
-import { SimplifiedCinematicPresentation } from '../(frontend)/es60/components/SimplifiedCinematicPresentation';
-import '../(frontend)/es60/components/scroll-cinematic.css';
+import { SimplifiedCinematicPresentation } from '@/components/pages/es60/SimplifiedCinematicPresentation';
+import '@/components/pages/es60/scroll-cinematic.css';
 
 // Metadata is handled by layout.tsx
 

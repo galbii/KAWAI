@@ -226,7 +226,7 @@ function SeriesCard({ series, index, categorySlug, isActive }: SeriesCardProps) 
                   >
                     <div className="aspect-[4/3] sm:aspect-[3/2] lg:aspect-[16/9] xl:aspect-[2.2/1] h-full relative max-h-[250px] sm:max-h-[300px] lg:max-h-[350px] xl:max-h-[400px]">
                       <MediaRenderer
-                        media={series.pianos[0]?.image}
+                        media={series.pianos[0]?.image ?? '/images/fallback/piano-placeholder.jpg'}
                         preset="gallery"
                         priority={index === 0}
                         className="w-full h-full object-contain object-center"
@@ -277,9 +277,9 @@ export function UnifiedPianoSeries({
   const animationRef = useRef<number | null>(null);
 
   // Get current active series data
-  const activeSeriesData = filteredSeries.find(s => 
+  const activeSeriesData = filteredSeries.find(s =>
     s.name.toLowerCase().replace(/\s+/g, '-') === selectedTab
-  ) || filteredSeries[0];
+  ) || filteredSeries[0] || null;
 
   // Carousel setup with continuous scrolling
   const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>(
@@ -334,7 +334,7 @@ export function UnifiedPianoSeries({
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setIsTitleVisible(true);
         }
       },

@@ -41,8 +41,9 @@ async function getDealerLocationContactInfo(slug: string): Promise<DealerLocatio
       }
     })
 
-    if (result.docs.length > 0) {
-      const location = result.docs[0]
+    const location = result.docs[0]
+
+    if (location) {
       const showroomInfo = location.showroomInfo
 
       return {

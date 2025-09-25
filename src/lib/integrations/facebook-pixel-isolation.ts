@@ -241,6 +241,7 @@ export function monitorFacebookPixelConflicts() {
         return false;
       }
     }
+    return undefined;
   });
 
   // Override console.error to filter Facebook Pixel noise

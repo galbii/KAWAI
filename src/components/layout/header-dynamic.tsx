@@ -49,10 +49,12 @@ async function getDealerLocationBySlug(slug: string): Promise<DealerLocationData
       }
     })
     
-    if (result.docs.length > 0) {
+    const location = result.docs[0]
+
+    if (location) {
       return {
-        locationName: result.docs[0].locationName,
-        slug: result.docs[0].slug
+        locationName: location.locationName,
+        slug: location.slug
       }
     }
     
@@ -83,9 +85,9 @@ export async function HeaderDynamic() {
       dropdown: category.dropdown?.map(item => ({
         label: item.label,
         href: getContextAwareUrl(item.href, origin),
-        description: item.description,
-        isProductline: item.isProductline,
-        isProduct: item.isProduct
+        ...(item.description && { description: item.description }),
+        ...(item.isProductline !== undefined && { isProductline: item.isProductline }),
+        ...(item.isProduct !== undefined && { isProduct: item.isProduct })
       })) || []
     }))
 

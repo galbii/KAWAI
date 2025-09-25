@@ -168,7 +168,7 @@ export function LandingFeaturesBlock({
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry, index) => {
-          if (entry.isIntersecting) {
+          if (entry?.isIntersecting) {
             const delay = (animation.staggerDelay || 100) * index
             setTimeout(() => {
               entry.target.classList.add('animate-in')

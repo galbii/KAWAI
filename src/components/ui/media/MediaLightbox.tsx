@@ -36,8 +36,8 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
   const mediaRef = useRef<HTMLDivElement>(null)
   const thumbnailsRef = useRef<HTMLDivElement>(null)
 
-  const currentMedia = media[currentIndex]
-  const isVideo = typeof currentMedia === 'object' && currentMedia.mediaType === 'video'
+  const currentMedia = currentIndex >= 0 && currentIndex < media.length ? media[currentIndex] : null
+  const isVideo = typeof currentMedia === 'object' && currentMedia !== null && currentMedia.mediaType === 'video'
 
   // Reset gesture state when media changes
   useEffect(() => {
@@ -132,8 +132,10 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
       // Pinch zoom
       const touch1 = event.touches[0]
       const touch2 = event.touches[1]
+      if (!touch1 || !touch2) return
+
       const distance = Math.sqrt(
-        Math.pow(touch2.clientX - touch1.clientX, 2) + 
+        Math.pow(touch2.clientX - touch1.clientX, 2) +
         Math.pow(touch2.clientY - touch1.clientY, 2)
       )
       const centerX = (touch1.clientX + touch2.clientX) / 2
@@ -148,6 +150,8 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
     } else if (event.touches.length === 1 && gestureState.scale > 1) {
       // Single touch pan
       const touch = event.touches[0]
+      if (!touch) return
+
       setGestureState(prev => ({
         ...prev,
         isDragging: true,
@@ -165,8 +169,10 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
       // Pinch zoom
       const touch1 = event.touches[0]
       const touch2 = event.touches[1]
+      if (!touch1 || !touch2) return
+
       const distance = Math.sqrt(
-        Math.pow(touch2.clientX - touch1.clientX, 2) + 
+        Math.pow(touch2.clientX - touch1.clientX, 2) +
         Math.pow(touch2.clientY - touch1.clientY, 2)
       )
       
@@ -183,6 +189,8 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
     } else if (event.touches.length === 1 && gestureState.isDragging && gestureState.lastTouchCenter) {
       // Single touch pan
       const touch = event.touches[0]
+      if (!touch) return
+
       const deltaX = touch.clientX - gestureState.lastTouchCenter.x
       const deltaY = touch.clientY - gestureState.lastTouchCenter.y
 
@@ -199,9 +207,7 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
     setGestureState(prev => ({
       ...prev,
       isDragging: false,
-      isZooming: false,
-      lastTouchDistance: undefined,
-      lastTouchCenter: undefined
+      isZooming: false
     }))
   }, [])
 
@@ -231,7 +237,7 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
 
   // Scroll thumbnails to current item
   useEffect(() => {
-    if (showThumbnails && thumbnailsRef.current) {
+    if (showThumbnails && thumbnailsRef.current && currentIndex >= 0 && currentIndex < thumbnailsRef.current.children.length) {
       const thumbnail = thumbnailsRef.current.children[currentIndex] as HTMLElement
       if (thumbnail) {
         thumbnail.scrollIntoView({ behavior: 'smooth', inline: 'center' })

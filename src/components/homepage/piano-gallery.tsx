@@ -28,7 +28,7 @@ function PianoSection({ piano, index }: PianoSectionProps) {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           // Start image animation immediately
           setIsImageVisible(true);
           
@@ -158,7 +158,7 @@ export function PianoGallery({ data }: PianoGalleryProps) {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setIsHeroVisible(true);
         }
       },

@@ -47,8 +47,9 @@ export async function GET(
       }
     })
     
-    if (result.docs.length > 0) {
-      const dealerLocation = result.docs[0]
+    const dealerLocation = result.docs[0]
+
+    if (dealerLocation) {
       
       const headerData: DealerLocationHeaderData = {
         locationName: dealerLocation.locationName,

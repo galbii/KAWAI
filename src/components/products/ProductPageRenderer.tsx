@@ -58,7 +58,7 @@ function BasicProductLayout({ product }: { product: Product }) {
         }}
         media={{
           type: "image",
-          backgroundImage: product.mainImage,
+          backgroundImage: product.mainImage ?? null,
           overlay: {
             enable: true,
             color: "dark",
@@ -79,14 +79,16 @@ function BasicProductLayout({ product }: { product: Product }) {
         product={{
           name: product.name,
           description: product.description,
-          image: product.mainImage,
-          price: product.price ? {
-            currency: product.price.currency,
-            amount: product.price.msrp,
-            saleAmount: product.price.salePrice,
-            priceText: product.price.priceText
-          } : undefined,
-          finishes: isPiano ? product.finishes : undefined,
+          image: product.mainImage ?? null,
+          ...(product.price && {
+            price: {
+              ...(product.price.currency !== undefined && { currency: product.price.currency }),
+              ...(product.price.msrp !== undefined && { amount: product.price.msrp }),
+              ...(product.price.salePrice !== undefined && { saleAmount: product.price.salePrice }),
+              ...(product.price.priceText !== undefined && { priceText: product.price.priceText })
+            }
+          }),
+          ...(isPiano && product.finishes !== undefined && { finishes: product.finishes }),
           buyButton: product.buyButton
         }}
         layout={{

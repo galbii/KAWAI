@@ -132,7 +132,7 @@ export function Footer({ locationContactData, isSignaturePage = false }: FooterP
                 size="sm"
                 animated={true}
                 theme="dark"
-                dealerName={locationContactData?.locationName}
+                {...(locationContactData?.locationName && { dealerName: locationContactData.locationName })}
                 nonClickable={isSignaturePage}
               />
             </div>

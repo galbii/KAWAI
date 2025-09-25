@@ -24,14 +24,14 @@ import type {
   AssessmentResponse,
   InteractiveAssessmentProps,
   AssessmentQuestion
-} from '@/app/(frontend)/[slug]/signature/types'
+} from '@/components/pages/signature/types'
 import {
   assessmentResponseSchema,
   validateQuestionResponse,
   type FormStateType,
   defaultFormState
-} from '@/app/(frontend)/[slug]/signature/lib/validation'
-import { ASSESSMENT_QUESTIONS, ASSESSMENT_CONFIG } from '@/app/(frontend)/[slug]/signature/lib/constants'
+} from '@/components/pages/signature/lib/validation'
+import { ASSESSMENT_QUESTIONS, ASSESSMENT_CONFIG } from '@/components/pages/signature/lib/constants'
 
 /**
  * Question component mapping for dynamic rendering
@@ -74,7 +74,7 @@ export const InteractiveAssessment: React.FC<InteractiveAssessmentProps> = ({
 
   // React Hook Form setup with Zod validation
   const form = useForm<Partial<AssessmentResponse>>({
-    resolver: zodResolver(assessmentResponseSchema.partial()),
+    resolver: zodResolver(assessmentResponseSchema.partial()) as any,
     mode: 'onChange',
     defaultValues: {}
   })
@@ -186,7 +186,7 @@ export const InteractiveAssessment: React.FC<InteractiveAssessmentProps> = ({
       })
 
       // Call completion callback
-      await onComplete(validatedResponse)
+      await onComplete(validatedResponse as AssessmentResponse)
 
 
     } catch (error) {
@@ -258,12 +258,13 @@ export const InteractiveAssessment: React.FC<InteractiveAssessmentProps> = ({
                     damping: 30
                   }}
                 >
-                  <Controller
-                    name={currentQuestion.id as keyof AssessmentResponse}
-                    control={control}
-                    render={({ field, fieldState }) => (
-                      <CurrentQuestionComponent
-                        question={currentQuestion}
+                  {currentQuestion && (
+                    <Controller
+                      name={currentQuestion.id as keyof AssessmentResponse}
+                      control={control}
+                      render={({ field, fieldState }) => (
+                        <CurrentQuestionComponent
+                          question={currentQuestion}
                         value={field.value as string}
                         onChange={handleQuestionChange}
                         onNext={handleNext}
@@ -272,9 +273,10 @@ export const InteractiveAssessment: React.FC<InteractiveAssessmentProps> = ({
                         showNavigation={true}
                         stepNumber={currentQuestionIndex + 1}
                         totalSteps={questions.length}
-                      />
-                    )}
-                  />
+                        />
+                      )}
+                    />
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

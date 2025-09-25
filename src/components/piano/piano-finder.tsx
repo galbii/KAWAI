@@ -273,6 +273,7 @@ export function PianoFinder() {
   }
 
   const isStepComplete = () => {
+    if (!currentQuestion) return false
     const currentValue = preferences[currentQuestion.id as keyof UserPreferences]
     if (currentQuestion.type === 'multiple') {
       return Array.isArray(currentValue) && currentValue.length > 0
@@ -328,6 +329,10 @@ export function PianoFinder() {
     )
   }
 
+  if (!currentQuestion) {
+    return <div className="max-w-4xl mx-auto text-center">Loading...</div>
+  }
+
   return (
     <div className="max-w-4xl mx-auto">
       {/* Progress Bar */}
@@ -337,7 +342,7 @@ export function PianoFinder() {
           <span className="text-sm text-gray-600">{Math.round(((currentStep + 1) / questions.length) * 100)}%</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
+          <div
             className="bg-blue-500 h-2 rounded-full transition-all duration-500"
             style={{ width: `${((currentStep + 1) / questions.length) * 100}%` }}
           />

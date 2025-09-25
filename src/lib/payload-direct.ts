@@ -35,7 +35,7 @@ export async function getPianoCategoriesDirect(): Promise<any[]> {
     })
 
     const pianosPageData = pianosPageResult?.docs?.[0]
-    if (pianosPageData?.pianoCategories?.length > 0) {
+    if (pianosPageData?.pianoCategories && pianosPageData.pianoCategories.length > 0) {
       return pianosPageData.pianoCategories.map((category: any) => ({
         ...category,
         // Ensure image is preserved as Media object or fallback string
@@ -113,7 +113,7 @@ export async function getFeaturedModelsDirect(): Promise<any[]> {
     })
 
     const pianosPageData = pianosPageResult?.docs?.[0]
-    if (pianosPageData?.featuredModels?.length > 0) {
+    if (pianosPageData?.featuredModels && pianosPageData.featuredModels.length > 0) {
       return pianosPageData.featuredModels.map((model: any) => ({
         ...model,
         // Preserve Media object or fallback to string

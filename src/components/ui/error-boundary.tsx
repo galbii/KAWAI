@@ -26,19 +26,19 @@ class ErrorBoundaryClass extends React.Component<ErrorBoundaryProps, ErrorBounda
     return { hasError: true, error }
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Error Boundary caught an error:', error, errorInfo)
     this.props.onError?.(error, errorInfo)
   }
 
   retry = () => {
-    this.setState({ hasError: false, error: undefined })
+    this.setState({ hasError: false })
   }
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       const FallbackComponent = this.props.fallback || DefaultErrorFallback
-      return <FallbackComponent error={this.state.error} retry={this.retry} />
+      return <FallbackComponent {...(this.state.error !== undefined && { error: this.state.error })} retry={this.retry} />
     }
 
     return this.props.children
@@ -89,7 +89,10 @@ function DefaultErrorFallback({ error, retry }: { error?: Error; retry?: () => v
 
 export function ErrorBoundary({ children, fallback, onError }: ErrorBoundaryProps) {
   return (
-    <ErrorBoundaryClass fallback={fallback} onError={onError}>
+    <ErrorBoundaryClass
+      {...(fallback !== undefined && { fallback })}
+      {...(onError !== undefined && { onError })}
+    >
       {children}
     </ErrorBoundaryClass>
   )

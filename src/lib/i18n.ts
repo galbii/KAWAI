@@ -358,12 +358,14 @@ export class I18nManager {
 
       // Try language without region
       const languageCode = lang.split('-')[0]
-      const matchedLocale = SUPPORTED_LOCALES.find(locale => 
-        locale.code.startsWith(languageCode)
-      )
-      
-      if (matchedLocale) {
-        return matchedLocale.code
+      if (languageCode) {
+        const matchedLocale = SUPPORTED_LOCALES.find(locale =>
+          locale.code.startsWith(languageCode)
+        )
+
+        if (matchedLocale) {
+          return matchedLocale.code
+        }
       }
     }
 

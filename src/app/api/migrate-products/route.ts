@@ -102,7 +102,7 @@ function extractProductLine(categories: string, name: string): string | null {
   
   // Standard series patterns (GL, GX, CA, CN, ES, MP, KDP)
   const seriesMatch = name.match(/(GL|GX|SK|CA|CN|ES|MP|KDP)-?\d+/i)
-  if (seriesMatch) {
+  if (seriesMatch && seriesMatch[1]) {
     const series = seriesMatch[1].toUpperCase()
     return series === 'SK' ? 'Shigeru' : `${series} Series`
   }
@@ -340,7 +340,7 @@ function processVariationsAsFinishes(variations: CSVRow[]): Array<{ name: string
       // Extract from product name (e.g., "Kawai GL-40 Grand Piano - Polished Ebony" -> "Polished Ebony")
       const nameParts = variation.Name.split(' - ')
       if (nameParts.length > 1) {
-        finishName = nameParts[nameParts.length - 1]
+        finishName = nameParts[nameParts.length - 1] || 'Standard'
       }
     }
     
@@ -348,10 +348,12 @@ function processVariationsAsFinishes(variations: CSVRow[]): Array<{ name: string
       const regularPrice = parseFloat(variation['Regular price']) || 0
       const salePrice = parseFloat(variation['Sale price']) || 0
       
+      const priceModifier = salePrice && salePrice !== regularPrice ? salePrice - regularPrice : undefined
+
       finishes.push({
         name: finishName.trim(),
-        imageUrl: variation.Images || undefined,
-        priceModifier: salePrice && salePrice !== regularPrice ? salePrice - regularPrice : undefined,
+        ...(variation.Images && { imageUrl: variation.Images }),
+        ...(priceModifier !== undefined && { priceModifier }),
         available: variation.Published === '1',
         description: cleanDescription(variation['Short description'] || variation.Description)
       })
@@ -572,8 +574,10 @@ async function runSimpleMigration(): Promise<MigrationResult> {
           limit: 1
         })
         
-        if (existing.docs.length > 0) {
-          productlineMap.set(productLineName, existing.docs[0].id)
+        const existingProductline = existing.docs[0]
+
+        if (existingProductline) {
+          productlineMap.set(productLineName, existingProductline.id)
           console.log(`📋 Found existing productline: ${productLineName}`)
         } else {
           // Create new product line
@@ -620,8 +624,10 @@ async function runSimpleMigration(): Promise<MigrationResult> {
         limit: 1
       })
       
-      if (existingPlaceholder.docs.length > 0) {
-        placeholderImageId = existingPlaceholder.docs[0].id
+      const existingPlaceholderMedia = existingPlaceholder.docs[0]
+
+      if (existingPlaceholderMedia) {
+        placeholderImageId = existingPlaceholderMedia.id
         console.log(`📋 Using existing placeholder image: ${placeholderImageId}`)
       } else {
         // Create a simple placeholder media record
@@ -679,7 +685,7 @@ async function runSimpleMigration(): Promise<MigrationResult> {
         
         // Extract model from name
         const modelMatch = row.Name.match(/([A-Z]{2,3}-?\d+[A-Z]*)/i)
-        const model = modelMatch ? modelMatch[1] : ''
+        const model = modelMatch?.[1] || null
         
         // Get variations for this product
         const productVariations = variationsByParent.get(row.ID) || []
@@ -704,8 +710,8 @@ async function runSimpleMigration(): Promise<MigrationResult> {
           status: row.Published === '1' ? 'active' as const : 'draft' as const,
           description: cleanDescription(row.Description),
           shortDescription: cleanDescription(row['Short description']),
-          imageUrl: row.Images || undefined, // Direct image URL from CSV
-          productline: productlineId,
+          imageUrl: row.Images || null, // Direct image URL from CSV
+          productline: productlineId || null,
           series: productLineName,
           model,
           
@@ -719,13 +725,13 @@ async function runSimpleMigration(): Promise<MigrationResult> {
           },
           
           // Finishes from variations
-          finishes: finishes.length > 0 ? finishes : undefined,
+          finishes: finishes.length > 0 ? finishes : null,
           
           // Specifications
           specifications: extractSpecifications(row),
           
           // Key features (combined from attributes and product tab content)
-          keyFeatures: allKeyFeatures.length > 0 ? allKeyFeatures : undefined,
+          keyFeatures: allKeyFeatures.length > 0 ? allKeyFeatures : null,
           
           // Metadata
           brand: 'Kawai',
