@@ -37,7 +37,12 @@ export { ES60LandingContent } from './ES60LandingContent';
 
 // ===== CINEMATIC PRESENTATION SYSTEM =====
 export { ES60CinematicPresentation } from './ES60CinematicPresentation';
+export { SimplifiedCinematicPresentation } from './SimplifiedCinematicPresentation';
+export { FadeScrollCinematicPresentation } from './FadeScrollCinematicPresentation';
 export { CinematicTrigger } from './CinematicTrigger';
+
+// ===== MODULAR SLIDE COMPONENTS =====
+export * from './slides';
 
 // ===== ENHANCED INTERACTIVE PRESENTATION SYSTEM =====
 export { EnhancedCinematicPresentation } from './EnhancedCinematicPresentation';

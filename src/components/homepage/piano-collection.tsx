@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { YouTubeEmbed } from '@next/third-parties/google';
 import { PianoCollectionProps, DEFAULT_PIANO_COLLECTION_DATA } from '@/lib/types/homepage';
 
 export function PianoCollection({ data = DEFAULT_PIANO_COLLECTION_DATA }: PianoCollectionProps) {
@@ -35,18 +34,15 @@ export function PianoCollection({ data = DEFAULT_PIANO_COLLECTION_DATA }: PianoC
             </Link>
           </div>
           
-          {/* YouTube Video Embed - Fully responsive container */}
+          {/* YouTube Video Embed - Simple responsive container */}
           <div className="lg:col-span-2 relative order-1 lg:order-2">
-            <div className="relative aspect-video w-full overflow-hidden rounded-lg shadow-lg bg-black">
-              <div className="absolute inset-0 w-full h-full">
-                <YouTubeEmbed 
-                  videoid={data.featuredVideo.youtubeId || "1cmwb6evs2A"} 
-                  height={500}
-                  width={800}
-                  params="modestbranding=1&rel=0"
-                  style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 0.5rem;"
-                />
-              </div>
+            <div className="relative w-full overflow-hidden rounded-lg shadow-lg" style={{ paddingBottom: '56.25%' /* 16:9 aspect ratio */ }}>
+              <iframe
+                src={`https://www.youtube.com/embed/${data.featuredVideo.youtubeId || "1cmwb6evs2A"}?modestbranding=1&rel=0`}
+                className="absolute top-0 left-0 w-full h-full rounded-lg"
+                allowFullScreen
+                frameBorder="0"
+              />
             </div>
           </div>
         </div>

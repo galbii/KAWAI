@@ -1,34 +1,8 @@
-import { Metadata } from 'next';
 import { Suspense } from 'react';
-import { EnhancedCinematicPresentation } from '../components';
-import '../components/cinematic-animations.css';
-import '../components/enhanced-interactions.css';
+import { SimplifiedCinematicPresentation } from '../(frontend)/es60/components/SimplifiedCinematicPresentation';
+import '../(frontend)/es60/components/scroll-cinematic.css';
 
-export const metadata: Metadata = {
-  title: 'Kawai ES60 Cinematic Experience | Concert Grand Heritage Revealed',
-  description: 'Experience the revolutionary ES60 digital piano through an immersive cinematic presentation. Discover how concert grand heritage meets modern innovation at just $499.',
-  keywords: 'Kawai ES60 cinematic, digital piano experience, interactive presentation, Shigeru Kawai SK-EX, concert grand transformation, premium piano demo',
-  openGraph: {
-    title: 'ES60 Cinematic Experience | Concert Grand Sound. $499.',
-    description: 'Enter the revolutionary world of the ES60 through an immersive visual storytelling experience that reveals the magic behind concert grand sound.',
-    type: 'website',
-    images: [
-      {
-        url: '/images/es60-cinematic-preview.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'Kawai ES60 Cinematic Experience'
-      }
-    ]
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-  alternates: {
-    canonical: '/es60/cinematic'
-  }
-};
+// Metadata is handled by layout.tsx
 
 // Cinematic Loading Component
 function CinematicLoader() {
@@ -62,15 +36,14 @@ function CinematicLoader() {
   );
 }
 
-// Performance Warning for Low-End Devices
-function PerformanceNotice() {
+// Navigation Helper
+function NavigationHelper() {
   return (
-    <div className="fixed top-4 right-4 z-40 max-w-sm">
-      <div className="bg-black/80 backdrop-blur-sm border border-yellow-500/50 rounded-lg p-4 text-yellow-300">
-        <p className="text-sm">
-          <strong>Performance Mode:</strong> This cinematic experience is optimized for modern devices. 
-          <a href="/es60" className="underline hover:text-yellow-200 ml-1">
-            View standard version
+    <div className="fixed top-4 left-4 z-40 max-w-sm">
+      <div className="bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg p-3">
+        <p className="text-white text-sm">
+          <a href="/" className="underline hover:text-red-400 transition-colors">
+            ← Return to Homepage
           </a>
         </p>
       </div>
@@ -82,17 +55,12 @@ export default function ES60CinematicPage() {
   return (
     <>
       {/* Full-screen cinematic experience */}
-      <main className="min-h-screen overflow-hidden">
-        <Suspense fallback={<CinematicLoader />}>
-          <EnhancedCinematicPresentation />
-        </Suspense>
-      </main>
+      <Suspense fallback={<CinematicLoader />}>
+        <SimplifiedCinematicPresentation />
+      </Suspense>
 
-      {/* Performance notice for compatibility */}
-      <PerformanceNotice />
 
-      {/* Preload critical assets */}
-      <link rel="preload" href="/audio/es60-ambient.mp3" as="audio" type="audio/mpeg" />
+      {/* Preload critical assets for better performance */}
       <link rel="preload" href="/images/es60-hero.jpg" as="image" />
       
       {/* Schema.org structured data for rich snippets */}

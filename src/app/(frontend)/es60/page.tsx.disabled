@@ -122,58 +122,18 @@ function CinematicExperienceBanner() {
 
 export default function ES60LandingPage() {
   return (
-    <>
-      {/* Main page content with progressive loading */}
-      <div className="min-h-screen" style={{ backgroundColor: '#FAF8F5' }}>
-
-        {/* Cinematic Experience Banner */}
-        <CinematicExperienceBanner />
-
-        {/* Hero Section */}
-        <Suspense fallback={<HeroSkeleton />}>
-          <ES60Hero />
-        </Suspense>
-
-        {/* Sound Demo Section */}
-        <Suspense fallback={<SectionSkeleton />}>
-          <ES60SoundDemo />
-        </Suspense>
-
-        {/* Features Section */}
-        <Suspense fallback={<SectionSkeleton />}>
-          <ES60Features />
-        </Suspense>
-
-        {/* Value Proposition Section */}
-        <Suspense fallback={<SectionSkeleton />}>
-          <ES60ValueProposition />
-        </Suspense>
-
-        {/* Social Proof Section */}
-        <Suspense fallback={<SectionSkeleton />}>
-          <ES60SocialProof />
-        </Suspense>
-
-        {/* Specifications Section */}
-        <Suspense fallback={<SectionSkeleton />}>
-          <ES60Specifications />
-        </Suspense>
-
-        {/* Final CTA Section */}
-        <Suspense fallback={<CTASkeleton />}>
-          <ES60CTA />
-        </Suspense>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="text-center p-8">
+        <h1 className="text-4xl font-bold text-gray-800 mb-4">
+          Page Under Construction
+        </h1>
+        <p className="text-gray-600 mb-6">
+          This page has been temporarily disabled.
+        </p>
+        <p className="text-sm text-gray-500">
+          Please check back later or contact support if you need assistance.
+        </p>
       </div>
-
-      {/* Floating mobile CTA */}
-      <FloatingCTA />
-      
-      {/* Cinematic Experience Trigger */}
-      <CinematicTrigger 
-        variant="floating"
-        delay={5000}
-        showOnScroll={true}
-      />
-    </>
+    </div>
   );
 }
