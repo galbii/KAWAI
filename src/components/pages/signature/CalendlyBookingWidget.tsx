@@ -220,7 +220,29 @@ function CalendlyWidgetContent({
     return undefined
   }
 
+  // Calculate optimal height for mobile/desktop
+  const [widgetHeight, setWidgetHeight] = useState('600px')
+
   useEffect(() => {
+    const calculateHeight = () => {
+      const windowHeight = window.innerHeight
+      const isMobile = window.innerWidth < 768
+
+      if (isMobile) {
+        // On mobile, use most of the viewport height minus header
+        const headerHeight = 80 // Approximate header height
+        setWidgetHeight(`${windowHeight - headerHeight}px`)
+      } else {
+        // On desktop, use a reasonable height that fits in viewport
+        const headerHeight = 100
+        const availableHeight = windowHeight - headerHeight
+        setWidgetHeight(`${Math.min(availableHeight, 700)}px`)
+      }
+    }
+
+    calculateHeight()
+    window.addEventListener('resize', calculateHeight)
+
     // Set up a timer to handle loading state
     const loadingTimer = setTimeout(() => {
       if (isLoading) {
@@ -228,7 +250,10 @@ function CalendlyWidgetContent({
       }
     }, 3000)
 
-    return () => clearTimeout(loadingTimer)
+    return () => {
+      clearTimeout(loadingTimer)
+      window.removeEventListener('resize', calculateHeight)
+    }
   }, [isLoading])
 
   return (
@@ -283,8 +308,9 @@ function CalendlyWidgetContent({
             <InlineWidget
               url={buildCalendlyUrl()}
               styles={{
-                height: '700px',
-                minWidth: '320px'
+                height: widgetHeight,
+                minWidth: '320px',
+                width: '100%'
               }}
               pageSettings={{
                 backgroundColor: 'ffffff',
@@ -412,7 +438,7 @@ export function CalendlyBookingWidget({
 
   // Inline version
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn('w-full h-full', className)}>
       <CalendlyWidgetContent
         calendlyUrl={calendlyUrl}
         {...(signaturePageSlug && { signaturePageSlug })}
@@ -421,6 +447,7 @@ export function CalendlyBookingWidget({
         onEventScheduled={handleEventScheduled}
         onDateTimeSelected={handleDateTimeSelected}
         onProfilePageViewed={handleProfilePageViewed}
+        className="h-full"
       />
     </div>
   )
