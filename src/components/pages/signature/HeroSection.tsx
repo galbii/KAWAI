@@ -7,6 +7,7 @@ import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
 import { useSignatureExperience } from './SignatureExperienceContext'
 import type { SignatureHeroSection } from '@/lib/types/signature'
 import { cn } from '@/lib/utils'
+import { usePostHog } from 'posthog-js/react'
 
 // Lenis smooth scrolling setup
 let lenisInstance: any = null
@@ -122,6 +123,22 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
 
   // Get modal opening function from context
   const { openAssessmentModal } = useSignatureExperience()
+
+  // PostHog analytics hook
+  const posthog = usePostHog()
+
+  // Get signature page slug from URL
+  const getSignaturePageSlug = () => {
+    if (typeof window !== 'undefined') {
+      const pathSegments = window.location.pathname.split('/')
+      // Look for the segment before '/signature'
+      const signatureIndex = pathSegments.indexOf('signature')
+      if (signatureIndex > 0) {
+        return pathSegments[signatureIndex - 1]
+      }
+    }
+    return 'unknown'
+  }
 
   // Update viewport height on mount and resize
   useEffect(() => {
@@ -272,6 +289,18 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
   
   const handleSecondaryCTA = () => {
     if (heroData.secondaryCta?.action === 'modal') {
+      // Fire PostHog signature_started event
+      const signaturePageSlug = getSignaturePageSlug()
+      posthog?.capture('signature_started', {
+        cta_location: 'hero_section',
+        cta_text: heroData.secondaryCta.text || 'View Collection',
+        signature_page: signaturePageSlug,
+        entry_point: 'hero_secondary_cta',
+        timestamp: new Date().toISOString()
+      })
+
+      console.log('HeroSection: PostHog signature_started event fired from hero secondary CTA')
+
       // Directly open the assessment modal using context
       openAssessmentModal()
     } else if (heroData.secondaryCta?.link) {

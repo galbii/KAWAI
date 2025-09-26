@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { CalendlyBookingWidget } from './CalendlyBookingWidget'
 import { addUserToSignatureUncommittedList } from '@/lib/constantcontact/signature-utils'
+import { usePostHog } from 'posthog-js/react'
 
 import type { AssessmentResponse } from './types'
 
@@ -51,6 +52,9 @@ export const DualConversion: React.FC<DualConversionProps> = ({
   const [ccProcessed, setCcProcessed] = useState(false)
   const [ccError, setCcError] = useState<string | null>(null)
 
+  // PostHog analytics hook
+  const posthog = usePostHog()
+
   // Booking form
   const bookingForm = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
@@ -79,6 +83,32 @@ export const DualConversion: React.FC<DualConversionProps> = ({
         if (result.success) {
           console.log('DualConversion: Successfully added user to signature uncommitted list')
           setCcProcessed(true)
+
+          // Fire PostHog custom event for uncommitted lead
+          posthog?.capture('uncommitted_lead', {
+            email: emailData.email,
+            firstName: emailData.firstName,
+            lastName: emailData.lastName,
+            phone: emailData.phone,
+            signature_page: location,
+            assessment_completed: !!assessmentResults,
+            lead_source: 'signature_experience',
+            status: 'uncommitted',
+            timestamp: new Date().toISOString(),
+            // Include assessment data if available
+            ...(assessmentResults && {
+              musical_identity: assessmentResults.musicalIdentity,
+              investment_timeline: assessmentResults.investmentTimeline,
+              investment_range: assessmentResults.investmentRange,
+              collection_access_level: assessmentResults.collectionAccessLevel,
+              performance_aspirations: assessmentResults.performanceAspirations,
+              acoustic_environment: assessmentResults.acousticEnvironment,
+              aesthetic_preference: assessmentResults.aestheticPreference,
+              exclusive_access: assessmentResults.exclusiveAccess
+            })
+          })
+
+          console.log('DualConversion: PostHog uncommitted_lead event fired for:', emailData.email)
         } else {
           console.error('DualConversion: Failed to add user to signature uncommitted list:', result.error)
           setCcError(result.error || 'Failed to add to list')

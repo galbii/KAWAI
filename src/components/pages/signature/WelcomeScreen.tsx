@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
+import { usePostHog } from 'posthog-js/react'
 
 interface WelcomeScreenProps {
   onContinue: () => void
@@ -10,6 +11,40 @@ interface WelcomeScreenProps {
 }
 
 export function WelcomeScreen({ onContinue, className }: WelcomeScreenProps) {
+  // PostHog analytics hook
+  const posthog = usePostHog()
+
+  // Get signature page slug from URL
+  const getSignaturePageSlug = () => {
+    if (typeof window !== 'undefined') {
+      const pathSegments = window.location.pathname.split('/')
+      // Look for the segment before '/signature'
+      const signatureIndex = pathSegments.indexOf('signature')
+      if (signatureIndex > 0) {
+        return pathSegments[signatureIndex - 1]
+      }
+    }
+    return 'unknown'
+  }
+
+  // Handle continue button click with analytics
+  const handleContinueClick = () => {
+    // Fire PostHog signature_started event
+    const signaturePageSlug = getSignaturePageSlug()
+    posthog?.capture('signature_started', {
+      cta_location: 'welcome_screen',
+      cta_text: 'Request Invitation',
+      signature_page: signaturePageSlug,
+      entry_point: 'welcome_screen_cta',
+      timestamp: new Date().toISOString()
+    })
+
+    console.log('WelcomeScreen: PostHog signature_started event fired from welcome screen CTA')
+
+    // Continue with the original flow
+    onContinue()
+  }
+
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -83,7 +118,7 @@ export function WelcomeScreen({ onContinue, className }: WelcomeScreenProps) {
             className="mb-8"
           >
             <motion.button
-              onClick={onContinue}
+              onClick={handleContinueClick}
               className="bg-kawai-red text-white px-8 py-4 text-lg font-medium rounded-lg hover:bg-kawai-red/90 transition-all duration-300 shadow-lg hover:shadow-xl"
               whileHover={{
                 scale: 1.05,

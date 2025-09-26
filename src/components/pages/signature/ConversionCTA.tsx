@@ -7,6 +7,7 @@ import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
 import { useSignatureExperience } from './SignatureExperienceContext'
 import { cn } from '@/lib/utils'
 import { CalendlyBookingWidget } from './CalendlyBookingWidget'
+import { usePostHog } from 'posthog-js/react'
 
 // Interfaces
 interface ConversionCTAProps {
@@ -184,6 +185,22 @@ export function ConversionCTA({
   // Get modal opening function from context
   const { openAssessmentModal } = useSignatureExperience()
 
+  // PostHog analytics hook
+  const posthog = usePostHog()
+
+  // Get signature page slug from URL
+  const getSignaturePageSlug = () => {
+    if (typeof window !== 'undefined') {
+      const pathSegments = window.location.pathname.split('/')
+      // Look for the segment before '/signature'
+      const signatureIndex = pathSegments.indexOf('signature')
+      if (signatureIndex > 0) {
+        return pathSegments[signatureIndex - 1]
+      }
+    }
+    return signaturePageSlug || 'unknown'
+  }
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"]
@@ -207,8 +224,20 @@ export function ConversionCTA({
 
   const data = { ...defaultData, ...customData }
 
-  // Handle assessment click
+  // Handle assessment click with PostHog tracking
   const handleAssessmentClick = () => {
+    // Fire PostHog signature_started event
+    const signaturePageSlugValue = getSignaturePageSlug()
+    posthog?.capture('signature_started', {
+      cta_location: 'conversion_cta',
+      cta_text: 'Reserve Your Spot',
+      signature_page: signaturePageSlugValue,
+      entry_point: 'conversion_cta_button',
+      timestamp: new Date().toISOString()
+    })
+
+    console.log('ConversionCTA: PostHog signature_started event fired from Reserve Your Spot button')
+
     if (onAssessmentClick) {
       onAssessmentClick()
     } else {

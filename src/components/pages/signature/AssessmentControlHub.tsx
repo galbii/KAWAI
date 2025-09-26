@@ -3,6 +3,7 @@
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { usePostHog } from 'posthog-js/react'
 
 export type AssessmentState = 'not-started' | 'active' | 'paused' | 'completed'
 
@@ -38,6 +39,22 @@ export const AssessmentControlHub: React.FC<AssessmentControlHubProps> = ({
   const [internalShowSaved, setInternalShowSaved] = React.useState(false)
   const [showTooltip, setShowTooltip] = React.useState(true)
 
+  // PostHog analytics hook
+  const posthog = usePostHog()
+
+  // Get signature page slug from URL
+  const getSignaturePageSlug = () => {
+    if (typeof window !== 'undefined') {
+      const pathSegments = window.location.pathname.split('/')
+      // Look for the segment before '/signature'
+      const signatureIndex = pathSegments.indexOf('signature')
+      if (signatureIndex > 0) {
+        return pathSegments[signatureIndex - 1]
+      }
+    }
+    return 'unknown'
+  }
+
   // Handle saved feedback display
   React.useEffect(() => {
     if (showSavedFeedback) {
@@ -60,6 +77,65 @@ export const AssessmentControlHub: React.FC<AssessmentControlHubProps> = ({
     }, 4000) // Hide after 4 seconds
     return () => clearTimeout(timer)
   }, [state]) // Re-run when state changes
+
+  // PostHog tracking wrapper functions
+  const handleStartWithTracking = () => {
+    // Fire PostHog signature_started event for assessment start
+    const signaturePageSlug = getSignaturePageSlug()
+    posthog?.capture('signature_started', {
+      cta_location: 'assessment_control_hub',
+      cta_text: 'Continue',
+      signature_page: signaturePageSlug,
+      entry_point: 'assessment_hub_start',
+      timestamp: new Date().toISOString()
+    })
+
+    console.log('AssessmentControlHub: PostHog signature_started event fired for assessment start')
+
+    if (onStart) {
+      onStart()
+    }
+  }
+
+  const handleResumeWithTracking = () => {
+    // Fire PostHog signature_started event for assessment resume (if it's actually a start)
+    if (state === 'not-started') {
+      const signaturePageSlug = getSignaturePageSlug()
+      posthog?.capture('signature_started', {
+        cta_location: 'assessment_control_hub',
+        cta_text: 'Continue Experience',
+        signature_page: signaturePageSlug,
+        entry_point: 'assessment_hub_resume',
+        timestamp: new Date().toISOString()
+      })
+
+      console.log('AssessmentControlHub: PostHog signature_started event fired for assessment resume/start')
+    }
+
+    if (onResume) {
+      onResume()
+    }
+  }
+
+  const handleResumeFromEmailWithTracking = () => {
+    // Fire PostHog signature_started event for email resume (if it's actually a start)
+    if (state === 'not-started') {
+      const signaturePageSlug = getSignaturePageSlug()
+      posthog?.capture('signature_started', {
+        cta_location: 'assessment_control_hub',
+        cta_text: 'Continue Experience',
+        signature_page: signaturePageSlug,
+        entry_point: 'assessment_hub_email_resume',
+        timestamp: new Date().toISOString()
+      })
+
+      console.log('AssessmentControlHub: PostHog signature_started event fired for email resume/start')
+    }
+
+    if (onResumeFromEmail) {
+      onResumeFromEmail()
+    }
+  }
   const progressPercent = totalSteps > 0 ? Math.round((currentStep / totalSteps) * 100) : 0
   const radius = 28
   const circumference = 2 * Math.PI * radius
@@ -71,7 +147,7 @@ export const AssessmentControlHub: React.FC<AssessmentControlHubProps> = ({
       icon: 'kawai-logo',
       title: hasEmailProgress ? 'Continue Experience' : 'Continue',
       subtitle: hasEmailProgress ? 'Resume from email step' : 'Continue your assessment from here',
-      action: hasEmailProgress ? onResumeFromEmail : onResume, // Prioritize email resume
+      action: hasEmailProgress ? handleResumeFromEmailWithTracking : handleResumeWithTracking, // Use tracking wrappers
       bgColor: 'from-white to-gray-50',
       showProgress: false
     },
@@ -79,7 +155,7 @@ export const AssessmentControlHub: React.FC<AssessmentControlHubProps> = ({
       icon: '⏸️',
       title: 'Pause & Save',
       subtitle: `Step ${currentStep} of ${totalSteps}`,
-      action: onMinimize || onPause,
+      action: onMinimize || onPause, // No tracking needed for pause actions
       bgColor: 'from-amber-500 to-orange-600',
       showProgress: true
     },
@@ -87,7 +163,7 @@ export const AssessmentControlHub: React.FC<AssessmentControlHubProps> = ({
       icon: '▶️',
       title: 'Continue Assessment',
       subtitle: `${progressPercent}% complete`,
-      action: onResume,
+      action: onResume, // No tracking needed for resume (not a start)
       bgColor: 'from-kawai-red to-red-700',
       showProgress: true
     },
