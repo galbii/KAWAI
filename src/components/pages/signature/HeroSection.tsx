@@ -118,7 +118,6 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
   const videoRef = useRef<HTMLVideoElement>(null)
   const [mounted, setMounted] = useState(false)
   const [viewportHeight, setViewportHeight] = useState(800)
-  const [videoEnded, setVideoEnded] = useState(false)
   const [animationStage, setAnimationStage] = useState(0)
 
   // Get modal opening function from context
@@ -151,17 +150,16 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
     return () => window.removeEventListener('resize', updateViewportHeight)
   }, [])
 
-  // Staged animation sequence: Welcome → Baby Grand → Signature → October 9th-11th → Description → CTAs
+  // Staged animation sequence: Baby Grand → Signature → October 9th-11th → Description → CTAs
   useEffect(() => {
     const timers = [
-      setTimeout(() => setAnimationStage(1), 800),   // Show Welcome
-      setTimeout(() => setAnimationStage(2), 3300),  // Welcome fades up/out, Baby Grand fades in
-      setTimeout(() => setAnimationStage(3), 4300),  // Signature appears
-      setTimeout(() => setAnimationStage(4), 5300),  // October 9th-11th appears
-      setTimeout(() => setAnimationStage(5), 6300),  // Description appears
-      setTimeout(() => setAnimationStage(6), 7800),  // Show CTAs
+      setTimeout(() => setAnimationStage(1), 800),   // Baby Grand appears
+      setTimeout(() => setAnimationStage(2), 1800),  // Signature appears
+      setTimeout(() => setAnimationStage(3), 2800),  // October 9th-11th appears
+      setTimeout(() => setAnimationStage(4), 3800),  // Description appears
+      setTimeout(() => setAnimationStage(5), 5300),  // Show CTAs
     ]
-    
+
     return () => timers.forEach(timer => clearTimeout(timer))
   }, [mounted])
 
@@ -261,7 +259,7 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
   // Get optimized background image (fallback for video)
   const backgroundImageProps = getImagePropsWithFallback(
     heroData.heroBackgroundImage,
-    '/videos/signature_video.webp', // Updated fallback to video poster
+    '/videos/background_signature.webp', // Updated fallback to video poster
     'hero',
     {
       fill: true,
@@ -349,37 +347,15 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
           autoPlay
           muted
           playsInline
-          poster="/videos/signature_video.webp"
-          className="absolute inset-0 w-full h-full object-cover object-center scale-[1.2]"
-          style={{ 
-            zIndex: 1,
-          }}
-          onTimeUpdate={(e) => {
-            const video = e.currentTarget
-            // Start image overlay 0.5 seconds before video ends
-            if (video.currentTime >= video.duration - 0.5 && !videoEnded) {
-              setVideoEnded(true)
-            }
-          }}
-          onEnded={() => setVideoEnded(true)}
-        >
-          <source src="/videos/signature_video.webm" type="video/webm" />
-          <source src="/videos/signature_video.mp4" type="video/mp4" />
-        </video>
-        
-        {/* Background image that fades in as overlay */}
-        <div
+          poster="/videos/background_signature.webp"
           className="absolute inset-0 w-full h-full object-cover object-center scale-[1.2]"
           style={{
-            opacity: videoEnded ? 1 : 0,
-            backgroundImage: 'url(/images/signature_background.webp)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            transition: 'opacity 800ms cubic-bezier(0.4, 0.0, 0.2, 1)',
-            zIndex: 2, // Layer above video
+            zIndex: 1,
           }}
-        />
+        >
+          <source src="/videos/background_signature.webm" type="video/webm" />
+          <source src="/videos/background_signature.mp4" type="video/mp4" />
+        </video>
         
         {/* Fallback image for browsers that don't support video */}
         <noscript>
@@ -417,37 +393,13 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
           {/* Main Text Area - All transitions happen here */}
           <div className="relative text-center min-h-[200px] md:min-h-[300px] lg:min-h-[400px] flex items-center justify-center">
             
-            {/* Stage 1: Welcome - Fades up and out */}
-            <motion.div
-              className="absolute inset-0 flex items-center justify-center"
-              initial={{ opacity: 0, y: 0 }}
-              animate={{ 
-                opacity: animationStage >= 1 && animationStage < 2 ? 1 : 0,
-                y: animationStage >= 2 ? -50 : 0
-              }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-            >
-              <span
-                className="font-bold tracking-[0.3em]"
-                style={{
-                  fontSize: 'clamp(3.5rem, 12vw, 8rem)',
-                  color: 'white',
-                  fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
-                  textShadow: '0 4px 60px rgba(0,0,0,0.6), 0 2px 30px rgba(0,0,0,0.8)',
-                  fontWeight: '800'
-                }}
-              >
-                Welcome
-              </span>
-            </motion.div>
-
-            {/* Stage 2: Baby Grand - Fades in from below */}
+            {/* Stage 1: Baby Grand - Fades in from below */}
             <motion.div
               className="absolute inset-0 flex items-center justify-center"
               initial={{ opacity: 0, y: 80 }}
-              animate={{ 
-                opacity: animationStage >= 2 ? 1 : 0,
-                y: animationStage >= 2 ? 0 : 80
+              animate={{
+                opacity: animationStage >= 1 ? 1 : 0,
+                y: animationStage >= 1 ? 0 : 80
               }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
@@ -456,7 +408,7 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
                 <motion.span
                   className="block font-light tracking-wide text-center mb-2"
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: animationStage >= 2 ? 1 : 0 }}
+                  animate={{ opacity: animationStage >= 1 ? 1 : 0 }}
                   transition={{ duration: 0.6, ease: "easeOut" }}
                   style={{
                     fontSize: 'clamp(2rem, 8vw, 4rem)',
@@ -473,9 +425,9 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
                 <motion.span
                   className="block leading-[0.8] font-black tracking-tight text-center"
                   initial={{ opacity: 0, y: 30 }}
-                  animate={{ 
-                    opacity: animationStage >= 3 ? 1 : 0,
-                    y: animationStage >= 3 ? 0 : 30
+                  animate={{
+                    opacity: animationStage >= 2 ? 1 : 0,
+                    y: animationStage >= 2 ? 0 : 30
                   }}
                   transition={{ duration: 0.8, ease: "easeOut" }}
                   style={{
@@ -493,9 +445,9 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
                 <motion.span
                   className="block font-light tracking-[0.2em] text-center mt-4"
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ 
-                    opacity: animationStage >= 4 ? 1 : 0,
-                    y: animationStage >= 4 ? 0 : 20
+                  animate={{
+                    opacity: animationStage >= 3 ? 1 : 0,
+                    y: animationStage >= 3 ? 0 : 20
                   }}
                   transition={{ duration: 0.8, ease: "easeOut" }}
                   style={{
@@ -513,9 +465,9 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
                 <motion.p
                   className="font-light leading-relaxed text-center mt-6 max-w-2xl mx-auto px-4"
                   initial={{ opacity: 0, y: 15 }}
-                  animate={{ 
-                    opacity: animationStage >= 5 ? 1 : 0,
-                    y: animationStage >= 5 ? 0 : 15
+                  animate={{
+                    opacity: animationStage >= 4 ? 1 : 0,
+                    y: animationStage >= 4 ? 0 : 15
                   }}
                   transition={{ duration: 0.6, ease: "easeOut" }}
                   style={{
@@ -536,13 +488,13 @@ export function HeroSection({ data, enableSmoothScrolling = true }: HeroSectionP
 
         </div>
 
-        {/* Stage 6: CTA Buttons */}
+        {/* Stage 5: CTA Buttons */}
         <motion.div
           className="flex flex-col sm:flex-row items-center gap-6 mt-16"
           initial={{ opacity: 0, y: 30 }}
-          animate={{ 
-            opacity: animationStage >= 6 ? 1 : 0,
-            y: animationStage >= 6 ? 0 : 30
+          animate={{
+            opacity: animationStage >= 5 ? 1 : 0,
+            y: animationStage >= 5 ? 0 : 30
           }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
