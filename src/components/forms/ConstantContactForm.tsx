@@ -117,7 +117,7 @@ const THEME_STYLES = {
     container: 'space-y-4',
     title: 'text-lg font-medium text-gray-900 mb-3',
     description: 'text-gray-600 text-sm mb-4',
-    input: 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-kawai-red focus:border-kawai-red',
+    input: 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-kawai-red focus:border-kawai-red text-gray-900 placeholder-gray-500',
     button: 'w-full bg-kawai-red text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50',
     error: 'text-red-600 text-xs mt-1',
     success: 'bg-green-100 text-green-800 px-3 py-2 rounded text-sm',

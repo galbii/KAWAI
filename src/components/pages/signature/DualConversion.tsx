@@ -1,12 +1,13 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { CalendlyBookingWidget } from './CalendlyBookingWidget'
+import { addUserToSignatureUncommittedList } from '@/lib/constantcontact/signature-utils'
 
 import type { AssessmentResponse } from './types'
 
@@ -46,12 +47,51 @@ export const DualConversion: React.FC<DualConversionProps> = ({
   const [showInlineBooking, setShowInlineBooking] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Constant Contact integration state
+  const [ccProcessed, setCcProcessed] = useState(false)
+  const [ccError, setCcError] = useState<string | null>(null)
+
   // Booking form
   const bookingForm = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     mode: 'onChange'
   })
 
+  // Add user to Signature Uncommitted list when they see results (component mounts)
+  useEffect(() => {
+    const addToSignatureUncommittedList = async () => {
+      // Only proceed if we have email data and haven't processed yet
+      if (!emailData?.email || ccProcessed) {
+        return
+      }
+
+      console.log('DualConversion: Adding user to signature uncommitted list:', emailData.email)
+
+      try {
+        const result = await addUserToSignatureUncommittedList({
+          email: emailData.email,
+          firstName: emailData.firstName,
+          lastName: emailData.lastName,
+          phone: emailData.phone,
+          optInMarketing: emailData.optInMarketing
+        })
+
+        if (result.success) {
+          console.log('DualConversion: Successfully added user to signature uncommitted list')
+          setCcProcessed(true)
+        } else {
+          console.error('DualConversion: Failed to add user to signature uncommitted list:', result.error)
+          setCcError(result.error || 'Failed to add to list')
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+        console.error('DualConversion: Error adding user to signature uncommitted list:', errorMessage)
+        setCcError(errorMessage)
+      }
+    }
+
+    addToSignatureUncommittedList()
+  }, [emailData, ccProcessed]) // Dependencies: emailData and ccProcessed
 
   const handleBookingSubmit = async (data: BookingFormData) => {
     setIsSubmitting(true)
