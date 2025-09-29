@@ -393,77 +393,38 @@ export function PremiumBentoGallery() {
           </p>
         </motion.div>
 
-        {/* Millennium III Action Feature Section */}
+        {/* YouTube Video Embed Section */}
         <motion.div
-          className="relative max-w-6xl mx-auto mb-20 p-8 rounded-3xl bg-gradient-to-br from-white/5 via-kawai-pearl/5 to-white/10 border border-kawai-gold/10 backdrop-blur-sm"
+          className="relative max-w-4xl mx-auto mb-20"
           initial={{ opacity: 0, y: 60 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2, delay: 0.3 }}
           viewport={{ once: true }}
         >
-          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
-            {/* Action Image Side - First on mobile, Left on desktop */}
-            <motion.div
-              className="flex-1 relative order-1 lg:order-1"
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, delay: 0.7 }}
-              viewport={{ once: true }}
-            >
-              <div className="relative max-w-lg mx-auto">
-                <Image
-                  {...getImagePropsWithFallback(
-                    '/images/gallery/Grand Feel Compact - action sample (layers) copy.webp',
-                    '/images/signature/fallback-piano.webp',
-                    'hero',
-                    {
-                      fill: false,
-                      className: 'w-full h-auto object-contain',
-                      priority: false
-                    }
-                  )}
-                  alt="Kawai Millennium III Action with ABS-Carbon composite technology"
-                  width={500}
-                  height={400}
-                />
+          <div className="relative bg-gradient-to-br from-white/5 via-kawai-pearl/5 to-white/10 border border-kawai-gold/20 rounded-3xl overflow-hidden backdrop-blur-sm">
+            {/* Video container with aspect ratio */}
+            <div className="relative aspect-video">
+              <iframe
+                src="https://www.youtube.com/embed/yQyYVcIiuMg?rel=0&modestbranding=1&showinfo=0"
+                title="Advanced Technology - Millennium III Action"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full"
+              />
+            </div>
 
-                {/* Enhanced glow effect behind the transparent image */}
-                <div className="absolute inset-0 bg-gradient-to-br from-kawai-gold/20 via-kawai-pearl/15 to-kawai-gold/10 rounded-2xl blur-2xl -z-10 scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-kawai-pearl/10 to-white/5 rounded-3xl blur-3xl -z-20 scale-125" />
-              </div>
-            </motion.div>
-
-            {/* Content Side - Second on mobile, Right on desktop */}
-            <motion.div
-              className="flex-1 text-center lg:text-left order-2 lg:order-2"
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-              viewport={{ once: true }}
-            >
-              <div className="text-kawai-gold text-sm font-light tracking-[0.2em] uppercase mb-4">
+            {/* Optional overlay with title */}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-kawai-black/90 via-kawai-black/60 to-transparent p-6">
+              <div className="text-kawai-gold text-sm font-light tracking-[0.2em] uppercase mb-2">
                 Advanced Technology
               </div>
-              <h3 className="text-3xl md:text-4xl lg:text-5xl font-light text-kawai-pearl leading-tight mb-6">
-                Millennium III{' '}
-                <span className="text-kawai-gold font-normal">Action</span>
+              <h3 className="text-2xl md:text-3xl font-light text-kawai-pearl leading-tight">
+                Millennium III Action
               </h3>
-              <p className="text-lg text-kawai-pearl/80 font-light leading-relaxed mb-8 max-w-2xl lg:max-w-none">
-                ABS-Carbon composite technology creates lighter, stronger action parts for faster response,
-                better control, and greater stability than conventional all-wood actions.
-              </p>
-              <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
-                <span className="text-sm text-kawai-gold/80 bg-kawai-gold/10 px-4 py-2 rounded-full border border-kawai-gold/20">
-                  ABS-Carbon Composite
-                </span>
-                <span className="text-sm text-kawai-gold/80 bg-kawai-gold/10 px-4 py-2 rounded-full border border-kawai-gold/20">
-                  Faster Response
-                </span>
-                <span className="text-sm text-kawai-gold/80 bg-kawai-gold/10 px-4 py-2 rounded-full border border-kawai-gold/20">
-                  Superior Control
-                </span>
-              </div>
-            </motion.div>
+            </div>
+
+            {/* Enhanced glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-kawai-gold/10 via-transparent to-kawai-gold/5 rounded-3xl blur-2xl -z-10 scale-110" />
           </div>
         </motion.div>
 

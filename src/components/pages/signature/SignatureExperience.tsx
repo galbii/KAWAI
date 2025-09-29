@@ -73,7 +73,7 @@ function BookingInviteSequence() {
               exit={{ y: -30, opacity: 0 }}
               transition={{ duration: 0.8, ease: "easeInOut" }}
             >
-              Reserve your Signature Experience
+              Reserve Your Signature
             </motion.h2>
           )}
         </AnimatePresence>
