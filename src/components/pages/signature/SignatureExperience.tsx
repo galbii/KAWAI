@@ -13,6 +13,7 @@ import { CalendlyBookingWidget } from './CalendlyBookingWidget'
 import { useSignatureExperience } from './SignatureExperienceContext'
 import { trackSubmitApplication, trackCompleteRegistration } from '@/components/MetaPixel'
 import { usePostHog } from 'posthog-js/react'
+import useConstantContactIntegration from '@/hooks/useConstantContactIntegration'
 import { ASSESSMENT_QUESTIONS } from './lib/constants'
 
 interface SignatureExperienceProps {
@@ -21,6 +22,77 @@ interface SignatureExperienceProps {
 
 export function SignatureExperience({ slug }: SignatureExperienceProps) {
   const posthog = usePostHog()
+
+  // Constant Contact integration for uncommitted leads
+  const {
+    submitToConstantContact,
+    isSubmitting: isSubmittingToCC,
+    submitSuccess,
+    submitError
+  } = useConstantContactIntegration({
+    targetList: 'Signature Uncommitted',
+    createListIfMissing: true,
+    showAuthPrompts: false
+  })
+
+  // Handle user exiting booking without completing - add to uncommitted list
+  const handleBookingExit = async () => {
+    const exitTimestamp = new Date().toISOString()
+    console.log(`🚪 User booking exit - PostHog uncommitted_lead fired: ${exitTimestamp}`)
+
+    if (!emailData?.email) {
+      console.warn('No email data available for uncommitted list submission')
+      return
+    }
+
+    try {
+      console.log('🚪 User exiting booking without completing - adding to uncommitted list')
+
+      // Fire PostHog event for uncommitted lead FIRST (priority tracking)
+      posthog?.capture('uncommitted_lead', {
+        email: emailData.email,
+        firstName: emailData.firstName,
+        lastName: emailData.lastName,
+        phone: emailData.phone,
+        signature_page: slug,
+        assessment_completed: !!assessmentResults,
+        lead_source: 'signature_experience',
+        status: 'uncommitted',
+        booking_exit: true,
+        timestamp: exitTimestamp,
+        // Include assessment data if available
+        ...(assessmentResults && {
+          musical_identity: assessmentResults.musicalIdentity,
+          investment_timeline: assessmentResults.investmentTimeline,
+          investment_range: assessmentResults.investmentRange,
+          collection_access_level: assessmentResults.collectionAccessLevel,
+          performance_aspirations: assessmentResults.performanceAspirations,
+          acoustic_environment: assessmentResults.acousticEnvironment,
+          aesthetic_preference: assessmentResults.aestheticPreference,
+          exclusive_access: assessmentResults.exclusiveAccess
+        })
+      })
+
+      console.log('📊 PostHog uncommitted_lead event fired for booking exit')
+
+      // Submit to Constant Contact (non-blocking)
+      const result = await submitToConstantContact({
+        email: emailData.email,
+        ...(emailData.firstName && { firstName: emailData.firstName }),
+        ...(emailData.lastName && { lastName: emailData.lastName }),
+        ...(emailData.phone && { phone: emailData.phone }),
+        optInMarketing: emailData.optInMarketing ?? true
+      })
+
+      if (result) {
+        console.log('✅ Successfully added user to signature uncommitted list')
+      } else {
+        console.error('❌ Failed to add user to signature uncommitted list')
+      }
+    } catch (error) {
+      console.error('❌ Error adding user to signature uncommitted list:', error)
+    }
+  }
 
   // Get state and actions from context
   const {
@@ -98,7 +170,8 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
         currency: 'USD'
       })
 
-      // Track PostHog event for signature houston booking
+      // Track PostHog event for signature houston booking (this should match the CalendlyBookingWidget event)
+      const bookingTimestamp = new Date().toISOString()
       posthog?.capture('signature_houston_booking', {
         signature_page: slug,
         conversion_type: data.conversionType || 'booking',
@@ -108,8 +181,11 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
         calendly_event_uri: data.calendlyEventData?.data?.payload?.event?.uri,
         calendly_invitee_uri: data.calendlyEventData?.data?.payload?.invitee?.uri,
         value: 1000,
-        currency: 'USD'
+        currency: 'USD',
+        timestamp: bookingTimestamp
       })
+
+      console.log(`📈 PostHog signature_houston_booking fired from SignatureExperience: ${bookingTimestamp}`)
     } else if (type === 'email') {
       // Track lead generation for email capture
       trackSubmitApplication({
@@ -853,7 +929,8 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
                             <CalendlyBookingWidget
                               isOpen={true}
                               onClose={() => {
-                                // Close dialog and return to welcome, allowing user to restart if needed
+                                // User is exiting booking without completing - add to uncommitted list
+                                handleBookingExit()
                                 closeAssessmentModal()
                               }}
                               signaturePageSlug={slug}
@@ -867,7 +944,8 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
                                 ...(emailData?.phone && { phone: emailData.phone })
                               }}
                               onEventScheduled={(eventData) => {
-                                console.log('🎉 Calendly booking completed from booking-invite-form dialog:', eventData)
+                                const calendlyCompleteTimestamp = new Date().toISOString()
+                                console.log(`🎉 Calendly booking completed from booking-invite-form dialog: ${calendlyCompleteTimestamp}`, eventData)
                                 handleBookingComplete({
                                   conversionType: 'calendly',
                                   assessmentResults,

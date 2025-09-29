@@ -115,9 +115,8 @@ export function SignatureExperienceProvider({ children, slug }: SignatureExperie
     } else if (dialogPhase === 'analyzing') {
       // Analyzing: fade in (0.5s) + loading (2s) + checkmark (0.5s) = 3s total
       const timer = setTimeout(() => {
-        // Close dialog and go to conversion
-        setShowAssessmentDialog(false)
-        setCurrentStage('conversion')
+        // After analyzing, go to booking invite intro instead of conversion
+        setDialogPhase('booking-invite-intro')
       }, 3000)
       return () => clearTimeout(timer)
     } else if (dialogPhase === 'booking-invite-intro') {
@@ -372,8 +371,8 @@ export function SignatureExperienceProvider({ children, slug }: SignatureExperie
     console.log('Assessment completed in context:', results)
     setAssessmentResults(results)
     setAssessmentState('completed')
-    // Skip thank-you/contact-details/analyzing phases and go directly to booking intro
-    setDialogPhase('booking-invite-intro')
+    // Normal flow: go to thank-you phase first
+    setDialogPhase('thank-you')
   }
 
   const handleConversionComplete = (type: 'email' | 'booking', data: any) => {

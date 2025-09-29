@@ -97,8 +97,11 @@ function CalendlyWidgetContent({
     setLoadError('Failed to load booking calendar. Please try refreshing the page.')
   }
 
-  // Submit contact to Constant Contact when booking is successful (NON-BLOCKING)
-  const handleConstantContactSubmission = async (eventData: any) => {
+  // Submit contact to SHOWROOM KAWAI list when booking COMPLETES successfully (NON-BLOCKING)
+  const handleSuccessfulBookingSubmission = async (eventData: any) => {
+    console.log('🎯 Calendly onEventScheduled fired: ' + (+new Date()))
+    console.log('📋 Calendly event data:', eventData?.data?.payload)
+
     // Implement timeout protection to prevent hanging
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('Constant Contact submission timeout')), 10000)
@@ -108,11 +111,11 @@ function CalendlyWidgetContent({
       // Get email from prefillData or fallback to prefillEmail
       const email = prefillData?.email || prefillEmail
       if (!email) {
-        console.warn('⚠️ No email available for Constant Contact submission from Calendly booking (non-blocking)')
+        console.warn('⚠️ No email available for successful booking submission (non-blocking)')
         return
       }
 
-      // Create contact data with available information
+      // Create contact data with available information for SHOWROOM KAWAI list
       const contactData: ConstantContactSubmissionData = {
         email,
         ...(prefillData?.firstName && { firstName: prefillData.firstName }),
@@ -121,34 +124,61 @@ function CalendlyWidgetContent({
         optInMarketing: true // Default to opted in for consultation bookings
       }
 
-      // Add signature page context and event details
-      const additionalData = {
-        source: 'calendly-booking',
-        signaturePageSlug,
-        calendlyEventUri: eventData?.data?.payload?.event?.uri,
-        calendlyInviteeUri: eventData?.data?.payload?.invitee?.uri,
-        bookingDateTime: new Date().toISOString(),
-        conversionType: 'showroom-consultation'
-      }
+      console.log('🎉 Booking COMPLETED successfully! Adding to SHOWROOM KAWAI list:', contactData)
 
-      console.log('📧 Attempting Constant Contact submission (non-blocking):', contactData)
-      console.log('📋 Additional booking context:', additionalData)
-
-      // Race between submission and timeout - this is non-blocking
+      // Submit to SHOWROOM KAWAI list (non-blocking)
       const success = await Promise.race([
-        submitToConstantContact(contactData),
+        submitToConstantContact(contactData), // This should target SHOWROOM KAWAI list
         timeoutPromise
       ])
 
       if (success) {
-        console.log('✅ Contact successfully added to Constant Contact from Calendly booking')
-        console.log('📝 Contact added to list: SHOWROOM KAWAI')
+        console.log('📧 Constant Contact SHOWROOM KAWAI submission: ' + (+new Date()))
+        console.log('✅ Contact successfully added to SHOWROOM KAWAI list')
       } else {
-        console.warn('⚠️ Failed to add contact to Constant Contact, but Calendly booking succeeded')
+        console.warn('⚠️ Failed to add contact to SHOWROOM KAWAI list, but booking still succeeded')
       }
     } catch (error) {
-      console.error('❌ Error submitting Calendly contact to Constant Contact (non-blocking):', error)
-      // This is now truly non-blocking - booking will still complete successfully
+      console.error('❌ Error adding successful booking to SHOWROOM KAWAI list (non-blocking):', error)
+      // This is non-blocking - booking completion is not affected
+    }
+  }
+
+  // Fire Meta Pixel AFTER Calendly booking completion
+  const fireMetaPixelTracking = (eventData: any, contactData: any) => {
+    try {
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('track', 'SubmitApplication', {
+          content_name: 'Signature Experience Booking',
+          content_category: 'Piano Consultation',
+          value: 1000, // High-value lead
+          currency: 'USD'
+        })
+        console.log('📊 Meta Pixel SubmitApplication fired: ' + (+new Date()))
+      }
+    } catch (error) {
+      console.error('❌ Error firing Meta Pixel event (non-blocking):', error)
+    }
+  }
+
+  // Fire PostHog AFTER Meta Pixel
+  const firePostHogTracking = (eventData: any, contactData: any) => {
+    try {
+      if (typeof window !== 'undefined' && (window as any).posthog) {
+        (window as any).posthog.capture('signature_houston_booking', {
+          source: 'calendly-booking-completed',
+          email: contactData.email,
+          firstName: contactData.firstName,
+          lastName: contactData.lastName,
+          signaturePageSlug,
+          calendlyEventUri: eventData?.data?.payload?.event?.uri,
+          conversionType: 'showroom-consultation',
+          timestamp: +new Date()
+        })
+        console.log('📈 PostHog signature_houston_booking fired: ' + (+new Date()))
+      }
+    } catch (error) {
+      console.error('❌ Error firing PostHog event (non-blocking):', error)
     }
   }
 
@@ -170,14 +200,35 @@ function CalendlyWidgetContent({
       console.log('📋 Event payload:', event.data?.payload)
 
       // CRITICAL FIX: Call the original callback IMMEDIATELY (non-blocking)
-      // This ensures booking appears complete to user regardless of Constant Contact status
+      // This ensures booking appears complete to user regardless of tracking status
       onEventScheduled?.(event)
 
-      // Submit to Constant Contact asynchronously (fire and forget)
-      // This won't block the booking completion flow
-      handleConstantContactSubmission(event).catch(error => {
-        console.error('⚠️ Constant Contact submission failed (non-blocking):', error)
-      })
+      // Create contact data for tracking
+      const contactData = {
+        email: prefillData?.email || prefillEmail,
+        firstName: prefillData?.firstName,
+        lastName: prefillData?.lastName,
+        phone: prefillData?.phone
+      }
+
+      // Execute tracking sequence: Calendly → Meta Pixel → PostHog → Constant Contact
+      // All tracking is non-blocking and won't affect booking completion
+      setTimeout(() => {
+        // Step 1: Fire Meta Pixel AFTER Calendly confirmation
+        fireMetaPixelTracking(event, contactData)
+
+        // Step 2: Fire PostHog AFTER Meta Pixel (small delay for proper sequence)
+        setTimeout(() => {
+          firePostHogTracking(event, contactData)
+        }, 100)
+
+        // Step 3: Submit to SHOWROOM KAWAI list (fire and forget, largest delay)
+        setTimeout(() => {
+          handleSuccessfulBookingSubmission(event).catch(error => {
+            console.error('⚠️ SHOWROOM KAWAI list submission failed (non-blocking):', error)
+          })
+        }, 200)
+      }, 50) // Small initial delay to ensure Calendly has fully processed
     },
     onPageHeightResize: (event) => {
       console.log('📏 Calendly Page Height Resized:', event.data?.payload?.height)
@@ -367,7 +418,7 @@ export function CalendlyBookingWidget({
 
   // Handle successful booking
   const handleEventScheduled = (eventData: any) => {
-    console.log('🎯 Booking completed successfully in CalendlyBookingWidget:', eventData)
+    console.log('🎯 Booking completed successfully in CalendlyBookingWidget: ' + (+new Date()))
     console.log('📊 Event data structure:', {
       event: eventData.event,
       payload: eventData.data?.payload,
