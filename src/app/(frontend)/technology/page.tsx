@@ -1,5 +1,6 @@
 import { ArrowRight, Award, Beaker, Cog, Headphones, Music, Piano, Shield, Target, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import YouTubeEmbed from "@/components/ui/youtube-embed";
 import Link from "next/link";
 
 const technologies = [
@@ -241,9 +242,20 @@ export default function Technology() {
                 </div>
                 
                 <div className="lg:w-1/2">
-                  <div className="aspect-[4/3] bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg flex items-center justify-center">
-                    <tech.icon className="h-24 w-24 text-gray-500" />
-                  </div>
+                  {tech.name === "Millennium III Action" ? (
+                    <YouTubeEmbed
+                      videoId="yQyYVcIiuMg"
+                      title="Millennium III Action Demonstration"
+                      className="w-full"
+                      aspectRatio="video"
+                      showTitle={false}
+                      privacy={true}
+                    />
+                  ) : (
+                    <div className="aspect-[4/3] bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg flex items-center justify-center">
+                      <tech.icon className="h-24 w-24 text-gray-500" />
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

@@ -120,10 +120,10 @@ export function SignatureExperienceProvider({ children, slug }: SignatureExperie
       }, 3000)
       return () => clearTimeout(timer)
     } else if (dialogPhase === 'booking-invite-intro') {
-      // Booking invite intro: fade in (0.8s) + hold (1s) + fade out (0.7s) = 2.5s total
+      // Booking invite intro: "You're invited." (3s) + "Reserve your Signature Experience" (3s) = 6s total
       const timer = setTimeout(() => {
         setDialogPhase('booking-invite-form')
-      }, 2500)
+      }, 6000)
       return () => clearTimeout(timer)
     } else if (dialogPhase === 'booking-invite-form') {
       // Booking invite form: no auto-progression - wait for user to complete booking or close

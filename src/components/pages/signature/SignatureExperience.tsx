@@ -20,6 +20,68 @@ interface SignatureExperienceProps {
   slug: string
 }
 
+// Component for sequential booking invite text display
+function BookingInviteSequence() {
+  const [currentText, setCurrentText] = useState<'first' | 'second' | null>('first')
+
+  useEffect(() => {
+    // First text: "You're invited." - show for 3 seconds then fade out
+    const firstTimer = setTimeout(() => {
+      setCurrentText(null) // Fade out first text
+    }, 3000)
+
+    // Second text: "Reserve your Signature Experience" - fade in after first fades out, show for 3 seconds
+    const secondTimer = setTimeout(() => {
+      setCurrentText('second')
+    }, 3000) // Start second text exactly when first ends
+
+    return () => {
+      clearTimeout(firstTimer)
+      clearTimeout(secondTimer)
+    }
+  }, [])
+
+  return (
+    <motion.div
+      key="dialog-booking-invite-intro"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.8, ease: "easeInOut" }}
+      className="flex-1 flex items-center justify-center bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900 p-12"
+    >
+      <div className="text-center relative h-32 flex items-center justify-center">
+        <AnimatePresence mode="wait">
+          {currentText === 'first' && (
+            <motion.h1
+              key="invited-text"
+              className="text-3xl md:text-5xl font-light font-serif text-white absolute"
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -30, opacity: 0 }}
+              transition={{ duration: 0.8, ease: "easeInOut" }}
+            >
+              You're invited.
+            </motion.h1>
+          )}
+          {currentText === 'second' && (
+            <motion.h2
+              key="reserve-text"
+              className="text-4xl md:text-6xl font-light font-serif text-amber-400 absolute"
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -30, opacity: 0 }}
+              transition={{ duration: 0.8, ease: "easeInOut" }}
+            >
+              Reserve your Signature Experience
+            </motion.h2>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  )
+}
+
 export function SignatureExperience({ slug }: SignatureExperienceProps) {
   const posthog = usePostHog()
 
@@ -852,35 +914,9 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
                       </motion.div>
                     )}
 
-                    {/* Booking Invite Intro Phase */}
+                    {/* Booking Invite Intro Phase - Sequential Text Display */}
                     {dialogPhase === 'booking-invite-intro' && (
-                      <motion.div
-                        key="dialog-booking-invite-intro"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.8, ease: "easeInOut" }}
-                        className="flex-1 flex items-center justify-center bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900 p-12"
-                      >
-                        <div className="text-center">
-                          <motion.h1
-                            className="text-3xl md:text-5xl font-light font-serif text-white mb-4"
-                            initial={{ y: 30, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ delay: 0.3, duration: 0.8 }}
-                          >
-                            You're invited
-                          </motion.h1>
-                          <motion.h2
-                            className="text-4xl md:text-6xl font-light font-serif text-amber-400"
-                            initial={{ y: 30, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ delay: 0.6, duration: 0.8 }}
-                          >
-                            Book your Signature Experience
-                          </motion.h2>
-                        </div>
-                      </motion.div>
+                      <BookingInviteSequence />
                     )}
 
                     {/* Booking Invite Form Phase */}

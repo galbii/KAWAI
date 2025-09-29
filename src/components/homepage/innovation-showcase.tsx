@@ -1,14 +1,18 @@
+import YouTubeEmbed from '@/components/ui/youtube-embed'
+
 const featuredInnovation = {
   name: "Grand Feel III",
   description: "Wooden keys with authentic grand piano touch",
   breakthrough: "2018"
 };
 
+const millenniumVideo = {
+  videoId: "yQyYVcIiuMg",
+  title: "Millennium III Action Demonstration",
+  description: "Experience the revolutionary precision and responsiveness of Kawai's Millennium III Action technology"
+};
+
 const innovations = [
-  {
-    name: "Millennium III Action",
-    breakthrough: "2000"
-  },
   {
     name: "Shigeru Kawai Sound",
     breakthrough: "2020"
@@ -33,10 +37,36 @@ export function InnovationShowcase() {
           </p>
         </div>
 
+        {/* Millennium III Action Video */}
+        <div className="border-t border-white/10 pt-20 mb-20">
+          <div className="text-center mb-12">
+            <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-4">
+              Since 2000
+            </div>
+            <h3 className="text-4xl md:text-5xl font-light text-white font-serif leading-tight mb-6">
+              Millennium III Action
+            </h3>
+            <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed">
+              {millenniumVideo.description}
+            </p>
+          </div>
+
+          <div className="max-w-5xl mx-auto">
+            <YouTubeEmbed
+              videoId={millenniumVideo.videoId}
+              title={millenniumVideo.title}
+              className="shadow-2xl"
+              aspectRatio="video"
+              showTitle={false}
+              privacy={true}
+            />
+          </div>
+        </div>
+
         {/* Other Innovations */}
-        <div className="grid md:grid-cols-2 gap-16 border-t border-white/10 pt-20">
+        <div className="grid md:grid-cols-1 gap-16">
           {innovations.map((innovation, index) => (
-            <div key={index} className="group">
+            <div key={index} className="group text-center">
               <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-4">
                 Since {innovation.breakthrough}
               </div>
