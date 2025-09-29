@@ -350,14 +350,17 @@ function CalendlyWidgetContent({
       const isMobile = window.innerWidth < 768
 
       if (isMobile) {
-        // On mobile, use most of the viewport height minus header
-        const headerHeight = 80 // Approximate header height
-        setWidgetHeight(`${windowHeight - headerHeight}px`)
+        // On mobile, use a height that works well in the modal
+        // Account for modal header (~120px) + padding (~48px)
+        const reservedSpace = 168
+        setWidgetHeight(`${Math.max(windowHeight - reservedSpace, 500)}px`)
       } else {
-        // On desktop, use a reasonable height that fits in viewport
-        const headerHeight = 100
-        const availableHeight = windowHeight - headerHeight
-        setWidgetHeight(`${Math.min(availableHeight, 700)}px`)
+        // On desktop, use a height that fills the modal content area well
+        // Modal is 95vh, header is ~100px, padding is ~48px
+        const modalHeight = windowHeight * 0.95
+        const reservedSpace = 148
+        const calculatedHeight = modalHeight - reservedSpace
+        setWidgetHeight(`${Math.max(calculatedHeight, 600)}px`)
       }
     }
 
@@ -498,7 +501,7 @@ export function CalendlyBookingWidget({
     return (
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6">
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -516,14 +519,14 @@ export function CalendlyBookingWidget({
               transition={{ duration: 0.3 }}
               className={cn(
                 'relative bg-gradient-to-br from-gray-900 to-kawai-black rounded-2xl shadow-2xl',
-                'w-full max-w-4xl max-h-[90vh] overflow-hidden border border-kawai-gold/20',
+                'w-full max-w-5xl h-[95vh] flex flex-col border border-kawai-gold/20',
                 className
               )}
             >
-              {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-kawai-gold/20">
+              {/* Header - Fixed */}
+              <div className="flex items-center justify-between p-4 md:p-6 border-b border-kawai-gold/20 flex-shrink-0">
                 <div>
-                  <h2 className="text-2xl font-light text-kawai-pearl">
+                  <h2 className="text-xl md:text-2xl font-light text-kawai-pearl">
                     Claim Your <span className="text-kawai-red">Invite</span>
                   </h2>
                   <p className="text-kawai-pearl/70 text-sm mt-1">
@@ -532,7 +535,7 @@ export function CalendlyBookingWidget({
                 </div>
                 <button
                   onClick={onClose}
-                  className="text-kawai-pearl/60 hover:text-kawai-pearl transition-colors duration-300 p-2"
+                  className="text-kawai-pearl/60 hover:text-kawai-pearl transition-colors duration-300 p-2 flex-shrink-0"
                 >
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -540,17 +543,21 @@ export function CalendlyBookingWidget({
                 </button>
               </div>
 
-              {/* Calendly Widget */}
-              <div className="p-6">
-                <CalendlyWidgetContent
-                  calendlyUrl={calendlyUrl}
-                  {...(signaturePageSlug && { signaturePageSlug })}
-                  {...(prefillEmail && { prefillEmail })}
-                  {...(prefillData && { prefillData })}
-                  onEventScheduled={handleEventScheduled}
-                  onDateTimeSelected={handleDateTimeSelected}
-                  onProfilePageViewed={handleProfilePageViewed}
-                />
+              {/* Calendly Widget - Scrollable */}
+              <div className="flex-1 overflow-hidden relative">
+                <div className="h-full overflow-y-auto custom-scrollbar">
+                  <div className="p-4 md:p-6">
+                    <CalendlyWidgetContent
+                      calendlyUrl={calendlyUrl}
+                      {...(signaturePageSlug && { signaturePageSlug })}
+                      {...(prefillEmail && { prefillEmail })}
+                      {...(prefillData && { prefillData })}
+                      onEventScheduled={handleEventScheduled}
+                      onDateTimeSelected={handleDateTimeSelected}
+                      onProfilePageViewed={handleProfilePageViewed}
+                    />
+                  </div>
+                </div>
               </div>
             </motion.div>
           </div>

@@ -213,3 +213,33 @@ body {
   line-height: 1.6;
   letter-spacing: -0.01em;
 }
+
+/* Custom Scrollbar Styling for Calendly Modal */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-kawai-gold) rgba(30, 27, 22, 0.1);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(30, 27, 22, 0.1);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-kawai-gold);
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #c49f5a; /* Slightly darker gold on hover */
+}
+
+/* Smooth scrolling behavior */
+.custom-scrollbar {
+  scroll-behavior: smooth;
+}
