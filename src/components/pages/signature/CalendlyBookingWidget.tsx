@@ -97,13 +97,18 @@ function CalendlyWidgetContent({
     setLoadError('Failed to load booking calendar. Please try refreshing the page.')
   }
 
-  // Submit contact to Constant Contact when booking is successful
+  // Submit contact to Constant Contact when booking is successful (NON-BLOCKING)
   const handleConstantContactSubmission = async (eventData: any) => {
+    // Implement timeout protection to prevent hanging
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Constant Contact submission timeout')), 10000)
+    )
+
     try {
       // Get email from prefillData or fallback to prefillEmail
       const email = prefillData?.email || prefillEmail
       if (!email) {
-        console.warn('⚠️ No email available for Constant Contact submission from Calendly booking')
+        console.warn('⚠️ No email available for Constant Contact submission from Calendly booking (non-blocking)')
         return
       }
 
@@ -126,11 +131,14 @@ function CalendlyWidgetContent({
         conversionType: 'showroom-consultation'
       }
 
-      console.log('📧 Submitting Calendly booking contact to Constant Contact:', contactData)
+      console.log('📧 Attempting Constant Contact submission (non-blocking):', contactData)
       console.log('📋 Additional booking context:', additionalData)
 
-      // Submit to Constant Contact
-      const success = await submitToConstantContact(contactData)
+      // Race between submission and timeout - this is non-blocking
+      const success = await Promise.race([
+        submitToConstantContact(contactData),
+        timeoutPromise
+      ])
 
       if (success) {
         console.log('✅ Contact successfully added to Constant Contact from Calendly booking')
@@ -139,8 +147,8 @@ function CalendlyWidgetContent({
         console.warn('⚠️ Failed to add contact to Constant Contact, but Calendly booking succeeded')
       }
     } catch (error) {
-      console.error('❌ Error submitting Calendly contact to Constant Contact:', error)
-      // Don't throw - booking succeeded even if CC submission failed
+      console.error('❌ Error submitting Calendly contact to Constant Contact (non-blocking):', error)
+      // This is now truly non-blocking - booking will still complete successfully
     }
   }
 
@@ -157,15 +165,19 @@ function CalendlyWidgetContent({
     onEventTypeViewed: (event) => {
       console.log('👀 Calendly Event Type Viewed:', event)
     },
-    onEventScheduled: async (event) => {
+    onEventScheduled: (event) => {
       console.log('🎉 Calendly Event Scheduled:', event)
       console.log('📋 Event payload:', event.data?.payload)
 
-      // Submit to Constant Contact
-      await handleConstantContactSubmission(event)
-
-      // Call the original callback
+      // CRITICAL FIX: Call the original callback IMMEDIATELY (non-blocking)
+      // This ensures booking appears complete to user regardless of Constant Contact status
       onEventScheduled?.(event)
+
+      // Submit to Constant Contact asynchronously (fire and forget)
+      // This won't block the booking completion flow
+      handleConstantContactSubmission(event).catch(error => {
+        console.error('⚠️ Constant Contact submission failed (non-blocking):', error)
+      })
     },
     onPageHeightResize: (event) => {
       console.log('📏 Calendly Page Height Resized:', event.data?.payload?.height)
@@ -222,6 +234,15 @@ function CalendlyWidgetContent({
 
   // Calculate optimal height for mobile/desktop
   const [widgetHeight, setWidgetHeight] = useState('600px')
+
+  // Add debugging for event listener registration
+  useEffect(() => {
+    console.log('🔧 Calendly widget initialized with configuration:')
+    console.log('- URL:', buildCalendlyUrl())
+    console.log('- Prefill data:', buildPrefillObject())
+    console.log('- Signature page:', signaturePageSlug)
+    console.log('- Event listeners: onEventScheduled registered')
+  }, [])
 
   useEffect(() => {
     const calculateHeight = () => {
@@ -319,7 +340,7 @@ function CalendlyWidgetContent({
                 primaryColor: 'D4AF37', // Kawai gold color
                 textColor: '000000'
               }}
-              utm={buildUtmParams()}
+              // Remove utm prop to avoid conflicts with URL parameters
               {...(prefillData && { prefill: prefillData })}
             />
           </div>
@@ -346,16 +367,18 @@ export function CalendlyBookingWidget({
 
   // Handle successful booking
   const handleEventScheduled = (eventData: any) => {
-    console.log('🎯 Booking completed successfully:', eventData)
+    console.log('🎯 Booking completed successfully in CalendlyBookingWidget:', eventData)
+    console.log('📊 Event data structure:', {
+      event: eventData.event,
+      payload: eventData.data?.payload,
+      inviteeUri: eventData.data?.payload?.invitee?.uri,
+      eventUri: eventData.data?.payload?.event?.uri
+    })
 
     // Call external callback if provided
     onEventScheduled?.(eventData)
 
-    // You can add additional tracking logic here later:
-    // - Send to analytics
-    // - Update internal state
-    // - Show success notification
-    // - etc.
+    console.log('✅ External onEventScheduled callback has been called')
   }
 
   // Handle date/time selection for tracking

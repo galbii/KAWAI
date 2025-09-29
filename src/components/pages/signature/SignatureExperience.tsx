@@ -818,13 +818,28 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
                         className="flex-1 flex flex-col min-h-0 bg-stone-50"
                       >
                         {/* Header Section */}
-                        <div className="flex-shrink-0 p-6 pb-4 border-b border-gray-200 text-center">
-                          <h2 className="text-2xl md:text-3xl font-light font-serif text-kawai-black">
-                            Claim Your Invite
-                          </h2>
-                          <p className="text-kawai-black/70 mt-2">
-                            Schedule your exclusive piano viewing and consultation
-                          </p>
+                        <div className="flex-shrink-0 p-6 pb-4 border-b border-gray-200 relative">
+                          {/* X Button - Top Right */}
+                          <motion.button
+                            onClick={closeAssessmentModal}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="absolute right-6 top-6 text-kawai-black/60 hover:text-kawai-black transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-kawai-red/30 rounded-full p-2 hover:bg-gray-100"
+                            aria-label="Close booking form"
+                          >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </motion.button>
+
+                          <div className="text-center">
+                            <h2 className="text-2xl md:text-3xl font-light font-serif text-kawai-black">
+                              Claim Your Invite
+                            </h2>
+                            <p className="text-kawai-black/70 mt-2">
+                              Schedule your exclusive piano viewing and consultation
+                            </p>
+                          </div>
                         </div>
 
                         {/* Calendly Widget Section */}
