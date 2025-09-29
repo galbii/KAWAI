@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { InlineWidget, useCalendlyEventListener } from 'react-calendly'
+import { usePostHog } from 'posthog-js/react'
+import { trackSubmitApplication } from '@/components/MetaPixel'
 import { cn } from '@/lib/utils'
 import useConstantContactIntegration, { type ConstantContactSubmissionData } from '@/hooks/useConstantContactIntegration'
 
@@ -59,6 +61,9 @@ function CalendlyWidgetContent({
 }) {
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
+
+  // PostHog hook for proper event tracking
+  const posthog = usePostHog()
 
   // Constant Contact integration for booking events
   const {
@@ -144,18 +149,27 @@ function CalendlyWidgetContent({
     }
   }
 
-  // Fire Meta Pixel AFTER Calendly booking completion
+  // Fire Meta Pixel AFTER Calendly booking completion using the proper utility function
   const fireMetaPixelTracking = (eventData: any, contactData: any) => {
     try {
-      if (typeof window !== 'undefined' && (window as any).fbq) {
-        (window as any).fbq('track', 'SubmitApplication', {
-          content_name: 'Signature Experience Booking',
-          content_category: 'Piano Consultation',
-          value: 1000, // High-value lead
-          currency: 'USD'
-        })
-        console.log('📊 Meta Pixel SubmitApplication fired: ' + (+new Date()))
+      const metaPixelData = {
+        content_name: 'Signature Experience Booking',
+        content_category: 'Piano Consultation',
+        value: 1000, // High-value lead
+        currency: 'USD',
+        status: 'completed'
       }
+
+      console.log('🎯 Meta Pixel: Firing SubmitApplication event with data:', {
+        ...metaPixelData,
+        email: contactData?.email ? '[PRESENT]' : '[MISSING]'
+      })
+
+      // Use the proper Meta Pixel utility function instead of direct window.fbq access
+      trackSubmitApplication(metaPixelData)
+
+      console.log('✅ Meta Pixel SubmitApplication fired via utility function: ' + (+new Date()))
+
     } catch (error) {
       console.error('❌ Error firing Meta Pixel event (non-blocking):', error)
     }
@@ -164,18 +178,33 @@ function CalendlyWidgetContent({
   // Fire PostHog AFTER Meta Pixel
   const firePostHogTracking = (eventData: any, contactData: any) => {
     try {
-      if (typeof window !== 'undefined' && (window as any).posthog) {
-        (window as any).posthog.capture('signature_houston_booking', {
+      // Verify PostHog is available via the hook
+      if (posthog) {
+        const trackingData = {
           source: 'calendly-booking-completed',
-          email: contactData.email,
-          firstName: contactData.firstName,
-          lastName: contactData.lastName,
+          email: contactData?.email,
+          firstName: contactData?.firstName,
+          lastName: contactData?.lastName,
           signaturePageSlug,
           calendlyEventUri: eventData?.data?.payload?.event?.uri,
           conversionType: 'showroom-consultation',
           timestamp: +new Date()
+        }
+
+        console.log('🎯 PostHog: Firing signature_houston_booking event with data:', {
+          ...trackingData,
+          email: contactData?.email ? '[PRESENT]' : '[MISSING]'
         })
-        console.log('📈 PostHog signature_houston_booking fired: ' + (+new Date()))
+
+        posthog.capture('signature_houston_booking', trackingData)
+
+        console.log('✅ PostHog signature_houston_booking fired successfully: ' + (+new Date()))
+      } else {
+        console.warn('⚠️ PostHog not available - event not fired', {
+          posthogHook: !!posthog,
+          contactDataAvailable: !!contactData,
+          emailPresent: !!contactData?.email
+        })
       }
     } catch (error) {
       console.error('❌ Error firing PostHog event (non-blocking):', error)
@@ -211,9 +240,29 @@ function CalendlyWidgetContent({
         phone: prefillData?.phone
       }
 
+      console.log('📊 Contact data prepared for tracking:', {
+        email: contactData.email ? '[PRESENT]' : '[MISSING]',
+        firstName: contactData.firstName ? '[PRESENT]' : '[MISSING]',
+        lastName: contactData.lastName ? '[PRESENT]' : '[MISSING]',
+        phone: contactData.phone ? '[PRESENT]' : '[MISSING]',
+        signaturePageSlug,
+        posthogAvailable: !!posthog
+      })
+
+      // Verify we have essential data for tracking
+      if (!contactData.email) {
+        console.error('❌ CRITICAL: No email available for tracking - events may fail', {
+          prefillData,
+          prefillEmail,
+          contactData
+        })
+      }
+
       // Execute tracking sequence: Calendly → Meta Pixel → PostHog → Constant Contact
       // All tracking is non-blocking and won't affect booking completion
       setTimeout(() => {
+        console.log('🚀 Starting tracking sequence...')
+
         // Step 1: Fire Meta Pixel AFTER Calendly confirmation
         fireMetaPixelTracking(event, contactData)
 

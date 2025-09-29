@@ -208,6 +208,28 @@ export function SignatureExperienceProvider({ children, slug }: SignatureExperie
     return undefined
   }, [currentStage])
 
+  // Auto-scroll to completion section when booking completes
+  useEffect(() => {
+    if (currentStage === 'complete') {
+      // Delay to ensure completion section renders completely after dialog closes
+      const timer = setTimeout(() => {
+        // Find the signature experience section and scroll to it
+        const signatureSection = document.getElementById('signature-experience')
+        if (signatureSection) {
+          // Use requestAnimationFrame for smoother timing
+          requestAnimationFrame(() => {
+            signatureSection.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center'
+            })
+          })
+        }
+      }, 800) // Shorter delay since dialog should already be closed
+      return () => clearTimeout(timer)
+    }
+    return undefined
+  }, [currentStage])
+
   // Action handlers
   const openAssessmentModal = () => {
     console.log('Opening assessment modal from context')

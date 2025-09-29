@@ -299,22 +299,115 @@ export class ConstantContactListManager {
   }
 
   /**
+   * Add existing contact to list by contact ID
+   */
+  async addContactToList(contactId: string, listIds: string[]): Promise<ApiResponse<Contact>> {
+    try {
+      // First, get the contact's current list memberships
+      const response = await this.client.get<Contact>(`/contacts/${contactId}`);
+
+      if (!response.success) {
+        return response;
+      }
+
+      const contact = response.data;
+      if (!contact) {
+        return {
+          success: false,
+          status: 404,
+          error: [{ error_key: 'contact_not_found', error_message: 'Contact not found' }]
+        };
+      }
+
+      // Get current list IDs
+      const currentListIds = contact.list_memberships
+        .filter((membership): membership is ListMembership =>
+          typeof membership === 'object' && membership.membership_status === 'active'
+        )
+        .map(membership => membership.list_id);
+
+      // Merge with new list IDs
+      const allListIds = [...new Set([...currentListIds, ...listIds])];
+
+      // Update contact with all list memberships
+      return this.updateContactLists(contactId, allListIds);
+    } catch (error) {
+      return {
+        success: false,
+        status: 500,
+        error: [{
+          error_key: 'add_to_list_failed',
+          error_message: error instanceof Error ? error.message : 'Failed to add contact to list'
+        }]
+      };
+    }
+  }
+
+  /**
+   * Extract contact ID from Constant Contact conflict error message
+   */
+  private extractContactIdFromConflictError(errorMessage: string): string | null {
+    // Look for UUID patterns in the error message
+    // Constant Contact contact IDs are typically UUIDs like: a29fa5aa-9b2b-11f0-a049-fa163ea70839
+    const uuidRegex = /[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i;
+    const match = errorMessage.match(uuidRegex);
+    return match ? match[0] : null;
+  }
+
+  /**
    * Helper: Create or update contact with list memberships
    */
   async createOrUpdateContact(contactData: CreateContactRequest): Promise<ApiResponse<Contact>> {
     try {
-      // Check if contact exists
+      // Check if contact exists first
       const existingContact = await this.getContactListMemberships(contactData.email_address);
 
       if (existingContact.exists && existingContact.contact) {
+        console.log('Constant Contact: Contact exists, updating list memberships');
         // Update existing contact
         const allListIds = [...new Set([...existingContact.listIds, ...contactData.list_ids])];
         return this.updateContactLists(existingContact.contact.contact_id!, allListIds);
       } else {
-        // Create new contact
-        return this.createContact(contactData);
+        console.log('Constant Contact: Contact does not exist, creating new contact');
+        // Try to create new contact
+        const createResponse = await this.createContact(contactData);
+
+        // Handle conflict error specifically
+        if (!createResponse.success && createResponse.status === 409) {
+          console.log('Constant Contact: Got conflict error, attempting to handle existing contact');
+
+          // Check if this is a contacts.api.conflict error
+          const conflictError = createResponse.error?.find(err =>
+            err.error_key?.includes('conflict') || err.error_message?.includes('conflict')
+          );
+
+          if (conflictError) {
+            console.log('Constant Contact: Found conflict error:', conflictError.error_message);
+
+            // Try to extract contact ID from error message
+            const contactId = this.extractContactIdFromConflictError(conflictError.error_message || '');
+
+            if (contactId) {
+              console.log('Constant Contact: Extracted contact ID from error:', contactId);
+              // Add the existing contact to the target lists
+              return this.addContactToList(contactId, contactData.list_ids);
+            } else {
+              // Fallback: Try to fetch the contact by email again (they might exist now)
+              console.log('Constant Contact: Could not extract contact ID, trying email lookup again');
+              const retryContact = await this.getContactListMemberships(contactData.email_address);
+
+              if (retryContact.exists && retryContact.contact) {
+                const allListIds = [...new Set([...retryContact.listIds, ...contactData.list_ids])];
+                return this.updateContactLists(retryContact.contact.contact_id!, allListIds);
+              }
+            }
+          }
+        }
+
+        return createResponse;
       }
     } catch (error) {
+      console.error('Constant Contact: createOrUpdateContact error:', error);
       return {
         success: false,
         status: 500,

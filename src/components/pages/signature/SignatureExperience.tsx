@@ -438,7 +438,7 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
                   See you there!
                 </h2>
                 <p className="text-xl text-kawai-black/80 mb-8 max-w-2xl mx-auto leading-relaxed">
-                  You'll receive event confirmation details in your email and an official warm welcome from our team here at Kawai! We can't wait to see you there!
+                  You'll receive an invitation in your email with your appointment details as well as your personal invitation which you can show for your special financing offer and tuning and delivery services!
                 </p>
 
                 <div className="grid md:grid-cols-3 gap-8 text-center">
