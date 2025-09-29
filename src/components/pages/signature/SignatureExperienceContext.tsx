@@ -7,7 +7,7 @@ import type { AssessmentState } from './AssessmentControlHub'
 // Types for the context
 export type ExperienceStage = 'welcome' | 'email' | 'assessment' | 'conversion' | 'complete'
 
-export type DialogPhase = 'welcome-intro' | 'email-form' | 'loading-assessment' | 'assessment' | 'thank-you' | 'contact-details' | 'analyzing'
+export type DialogPhase = 'welcome-intro' | 'email-form' | 'loading-assessment' | 'assessment' | 'thank-you' | 'contact-details' | 'analyzing' | 'booking-invite-intro' | 'booking-invite-form'
 
 export interface EmailData {
   email: string
@@ -47,6 +47,7 @@ interface SignatureExperienceContextType {
   handleContactDetailsComplete: (type: 'contact-details', data: any) => void
   handleAssessmentComplete: (results: AssessmentResponse) => void
   handleConversionComplete: (type: 'email' | 'booking', data: any) => void
+  handleBookingComplete: (data: any) => void
 
   // Setters for internal component communication
   setCurrentStage: (stage: ExperienceStage) => void
@@ -119,6 +120,15 @@ export function SignatureExperienceProvider({ children, slug }: SignatureExperie
         setCurrentStage('conversion')
       }, 3000)
       return () => clearTimeout(timer)
+    } else if (dialogPhase === 'booking-invite-intro') {
+      // Booking invite intro: fade in (0.8s) + hold (1s) + fade out (0.7s) = 2.5s total
+      const timer = setTimeout(() => {
+        setDialogPhase('booking-invite-form')
+      }, 2500)
+      return () => clearTimeout(timer)
+    } else if (dialogPhase === 'booking-invite-form') {
+      // Booking invite form: no auto-progression - wait for user to complete booking or close
+      return
     }
     return undefined
   }, [dialogPhase, showAssessmentDialog, assessmentProgressData])
@@ -362,7 +372,8 @@ export function SignatureExperienceProvider({ children, slug }: SignatureExperie
     console.log('Assessment completed in context:', results)
     setAssessmentResults(results)
     setAssessmentState('completed')
-    setDialogPhase('thank-you')
+    // Skip thank-you/contact-details/analyzing phases and go directly to booking intro
+    setDialogPhase('booking-invite-intro')
   }
 
   const handleConversionComplete = (type: 'email' | 'booking', data: any) => {
@@ -379,6 +390,14 @@ export function SignatureExperienceProvider({ children, slug }: SignatureExperie
     }
 
     // Additional tracking logic would go here
+  }
+
+  const handleBookingComplete = (data: any) => {
+    console.log('Booking completed directly from booking-invite dialog:', data)
+
+    // Close dialog and go to complete stage
+    setShowAssessmentDialog(false)
+    handleConversionComplete('booking', data)
   }
 
   const contextValue: SignatureExperienceContextType = {
@@ -407,6 +426,7 @@ export function SignatureExperienceProvider({ children, slug }: SignatureExperie
     handleContactDetailsComplete,
     handleAssessmentComplete,
     handleConversionComplete,
+    handleBookingComplete,
 
     // Setters for internal component communication
     setCurrentStage,

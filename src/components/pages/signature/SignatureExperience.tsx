@@ -9,6 +9,7 @@ import { DualConversion } from './DualConversion'
 import { ExitIntentModal } from './ExitIntentModal'
 import { WelcomeScreen } from './WelcomeScreen'
 import { AssessmentControlHub } from './AssessmentControlHub'
+import { CalendlyBookingWidget } from './CalendlyBookingWidget'
 import { useSignatureExperience } from './SignatureExperienceContext'
 import { trackSubmitApplication, trackCompleteRegistration } from '@/components/MetaPixel'
 import { usePostHog } from 'posthog-js/react'
@@ -44,6 +45,8 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
     startAssessment,
     openAssessmentModal,
     handleConversionComplete: contextHandleConversionComplete,
+    handleBookingComplete,
+    closeAssessmentModal,
     setDialogPhase,
     setCurrentAssessmentStep
   } = useSignatureExperience()
@@ -768,6 +771,102 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                               </svg>
                             </motion.div>
+                          </motion.div>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Booking Invite Intro Phase */}
+                    {dialogPhase === 'booking-invite-intro' && (
+                      <motion.div
+                        key="dialog-booking-invite-intro"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.8, ease: "easeInOut" }}
+                        className="flex-1 flex items-center justify-center bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900 p-12"
+                      >
+                        <div className="text-center">
+                          <motion.h1
+                            className="text-3xl md:text-5xl font-light font-serif text-white mb-4"
+                            initial={{ y: 30, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.3, duration: 0.8 }}
+                          >
+                            You're invited
+                          </motion.h1>
+                          <motion.h2
+                            className="text-4xl md:text-6xl font-light font-serif text-amber-400"
+                            initial={{ y: 30, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.6, duration: 0.8 }}
+                          >
+                            Book your Signature Experience
+                          </motion.h2>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Booking Invite Form Phase */}
+                    {dialogPhase === 'booking-invite-form' && (
+                      <motion.div
+                        key="dialog-booking-invite-form"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="flex-1 flex flex-col min-h-0 bg-stone-50"
+                      >
+                        {/* Header Section */}
+                        <div className="flex-shrink-0 p-6 pb-4 border-b border-gray-200 text-center">
+                          <h2 className="text-2xl md:text-3xl font-light font-serif text-kawai-black">
+                            Claim Your Invite
+                          </h2>
+                          <p className="text-kawai-black/70 mt-2">
+                            Schedule your exclusive piano viewing and consultation
+                          </p>
+                        </div>
+
+                        {/* Calendly Widget Section */}
+                        <div className="flex-1 min-h-0 p-6">
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2, duration: 0.6 }}
+                            className="h-full bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm"
+                          >
+                            <CalendlyBookingWidget
+                              isOpen={true}
+                              onClose={() => {
+                                // Close dialog and return to welcome, allowing user to restart if needed
+                                closeAssessmentModal()
+                              }}
+                              signaturePageSlug={slug}
+                              calendlyUrl="https://calendly.com/kawaipianogallery/houston-baby-grand-sale"
+                              displayMode="inline"
+                              className="h-full"
+                              prefillData={{
+                                ...(emailData?.email && { email: emailData.email }),
+                                ...(emailData?.firstName && { firstName: emailData.firstName }),
+                                ...(emailData?.lastName && { lastName: emailData.lastName }),
+                                ...(emailData?.phone && { phone: emailData.phone })
+                              }}
+                              onEventScheduled={(eventData) => {
+                                console.log('🎉 Calendly booking completed from booking-invite-form dialog:', eventData)
+                                handleBookingComplete({
+                                  conversionType: 'calendly',
+                                  assessmentResults,
+                                  location: slug,
+                                  calendlyEventData: eventData
+                                })
+                              }}
+                              onDateTimeSelected={(eventData) => {
+                                console.log('📅 User selected consultation date/time:', eventData)
+                              }}
+                              onProfilePageViewed={(eventData) => {
+                                console.log('👁️ User viewed consultation booking page:', eventData)
+                              }}
+                            />
                           </motion.div>
                         </div>
                       </motion.div>
