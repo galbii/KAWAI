@@ -72,8 +72,9 @@ export async function HeaderDynamic() {
     const pathname = headersList.get('x-pathname') || ''
     const origin = parseNavigationOrigin(pathname)
 
-    // Check if we're on a signature page
-    const isSignaturePage = pathname.endsWith('/signature') || pathname.endsWith('/signature/')
+    // Check if we're on a signature page (signature or signature2)
+    const isSignaturePage = pathname.endsWith('/signature') || pathname.endsWith('/signature/') ||
+                            pathname.endsWith('/signature2') || pathname.endsWith('/signature2/')
 
     // Generate piano categories navigation (each category becomes a top-level nav item)
     const pianoCategories = await generatePianoCategoriesNavigationServer()
@@ -112,7 +113,8 @@ export async function HeaderDynamic() {
     const headersList = await headers()
     const pathname = headersList.get('x-pathname') || ''
     const fallbackOrigin = parseNavigationOrigin(pathname)
-    const isSignaturePage = pathname.endsWith('/signature') || pathname.endsWith('/signature/')
+    const isSignaturePage = pathname.endsWith('/signature') || pathname.endsWith('/signature/') ||
+                            pathname.endsWith('/signature2') || pathname.endsWith('/signature2/')
 
     const fallbackNavigation: NavigationItem[] = [
       { label: 'Digital Pianos', href: getContextAwareUrl('/pianos/digital', fallbackOrigin), dropdown: [] },

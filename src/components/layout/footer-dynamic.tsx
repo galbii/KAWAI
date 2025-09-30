@@ -71,8 +71,9 @@ export async function FooterDynamic() {
     const pathname = headersList.get('x-pathname') || ''
     const origin = parseNavigationOrigin(pathname)
 
-    // Check if we're on a signature page
-    const isSignaturePage = pathname.endsWith('/signature') || pathname.endsWith('/signature/')
+    // Check if we're on a signature page (signature or signature2)
+    const isSignaturePage = pathname.endsWith('/signature') || pathname.endsWith('/signature/') ||
+                            pathname.endsWith('/signature2') || pathname.endsWith('/signature2/')
 
     // Check if we're on a dealer location page and fetch location contact data
     let locationContactData: DealerLocationContactData | null = null
@@ -99,7 +100,8 @@ export async function FooterDynamic() {
     // Fallback to basic footer with signature page detection
     const headersList = await headers()
     const pathname = headersList.get('x-pathname') || ''
-    const isSignaturePage = pathname.endsWith('/signature') || pathname.endsWith('/signature/')
+    const isSignaturePage = pathname.endsWith('/signature') || pathname.endsWith('/signature/') ||
+                            pathname.endsWith('/signature2') || pathname.endsWith('/signature2/')
 
     return <Footer isSignaturePage={isSignaturePage} />
   }
