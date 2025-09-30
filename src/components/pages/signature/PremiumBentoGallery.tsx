@@ -497,7 +497,7 @@ export function PremiumBentoGallery() {
                 onClick={handleCtaClick}
                 className="mx-auto"
               >
-                Claim Your Invite
+                Join Event
               </PremiumButton>
               <PremiumButton
                 variant="secondary"

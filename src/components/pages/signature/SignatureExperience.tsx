@@ -737,10 +737,10 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
                           
                           <div className="text-center">
                             <h2 className="text-2xl md:text-3xl font-light font-serif text-kawai-black">
-                              Claim Your Invite
+                              Join Event
                             </h2>
                             <p className="text-kawai-black/70 mt-2">
-                              Lets get to know who you are and claim an invite to the Baby Grand Select!
+                              Lets get to know who you are and join the Baby Grand Select event!
                             </p>
                             {/* Desktop: Show auto-save text, Mobile: Show Pause & Save button */}
                             <div className="mt-3">
@@ -946,7 +946,7 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
 
                           <div className="text-center">
                             <h2 className="text-2xl md:text-3xl font-light font-serif text-kawai-black">
-                              Claim Your Invite
+                              Join Event
                             </h2>
                             <p className="text-kawai-black/70 mt-2">
                               Schedule your exclusive piano viewing and consultation

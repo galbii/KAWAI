@@ -211,7 +211,7 @@ export function ConversionCTA({
 
   // Default data
   const defaultData = {
-    title: "Transform your space into a grand concert hall",
+    title: "Your Personal Concert Hall, With 100 years of Heritage",
     subtitle: "Where each instrument carries a century of musical history, artistic cultivation, and devoted craftsmanship",
     urgencyText: "Only 12 Assessment Spots Remaining This Quarter",
     benefits: [

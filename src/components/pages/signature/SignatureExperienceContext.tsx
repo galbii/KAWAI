@@ -55,7 +55,7 @@ interface SignatureExperienceContextType {
   setCurrentAssessmentStep: (step: number) => void
 }
 
-const SignatureExperienceContext = createContext<SignatureExperienceContextType | undefined>(undefined)
+export const SignatureExperienceContext = createContext<SignatureExperienceContextType | undefined>(undefined)
 
 interface SignatureExperienceProviderProps {
   children: React.ReactNode

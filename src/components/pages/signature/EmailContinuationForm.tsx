@@ -32,7 +32,7 @@ export function EmailContinuationForm({
         required: true
       }
     ],
-    submitText: 'Apply Now',
+    submitText: 'Join Event',
     loadingText: 'Reserving your invitation...',
     successMessage: 'Invitation reserved! Preparing your signature experience...',
     theme: 'signature-minimal',
