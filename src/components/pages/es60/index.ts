@@ -10,6 +10,8 @@ export { ES60Features } from './ES60Features';
 export { ES60ValueProposition } from './ES60ValueProposition';
 export { ES60SocialProof } from './ES60SocialProof';
 export { ES60Specifications } from './ES60Specifications';
+export { ES60FAQ } from './ES60FAQ';
+export { ES60Reviews } from './ES60Reviews';
 
 // ===== CONVERSION & NAVIGATION COMPONENTS (Agent 3) =====
 export { ES60Layout, useSectionAnalytics } from './ES60Layout';

@@ -9,23 +9,23 @@ export function ExperienceSlide() {
   const [activeDemo, setActiveDemo] = useState(0);
   
   const demos = [
-    { 
-      title: "Real Piano Feel", 
-      icon: "🎹", 
-      description: "88-key Responsive Hammer Compact II Action",
-      detail: "Graded weighting provides authentic touch response across all keys"
+    {
+      title: "Real Piano Feel",
+      icon: "🎹",
+      description: "88-Key Responsive Hammer Lite Action",
+      detail: "Authentic weighted keys teach proper technique from day one - essential for serious learning and building good habits"
     },
-    { 
-      title: "Concert Sound", 
-      icon: "🎼", 
+    {
+      title: "Concert Grand Sound",
+      icon: "🎼",
       description: "Shigeru Kawai SK-EX Samples",
-      detail: "Studio-recorded from the world's most celebrated concert grand"
+      detail: "The best piano sound quality under $500 - verified by professional reviewers and music educators"
     },
-    { 
-      title: "Silent Practice", 
-      icon: "🎧", 
+    {
+      title: "Silent Practice Anytime",
+      icon: "🎧",
       description: "Dual Headphone Outputs",
-      detail: "Practice anytime without disturbing others - perfect for families"
+      detail: "Perfect for apartments, dorms, and late-night practice - ideal for students and adult learners with busy schedules"
     }
   ];
 
@@ -83,20 +83,23 @@ export function ExperienceSlide() {
           {/* Experience Title */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
-            animate={{ 
-              opacity: isInView ? 1 : 0, 
-              y: isInView ? 0 : 30 
+            animate={{
+              opacity: isInView ? 1 : 0,
+              y: isInView ? 0 : 30
             }}
             transition={{ duration: 1.5 }}
             className="mb-16"
           >
             <p className="text-blue-400 text-sm md:text-lg font-medium mb-4 tracking-wide uppercase">
-              Experience
+              Perfect For Every Beginner
             </p>
             <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
-              Feel the
-              <span className="block text-blue-400">Difference</span>
+              Why Students Choose
+              <span className="block text-blue-400">The ES60</span>
             </h2>
+            <p className="text-lg md:text-xl text-white/80 max-w-3xl mx-auto">
+              Whether you're a student, adult learner, or living in an apartment - the ES60 adapts to your lifestyle
+            </p>
           </motion.div>
 
           {/* Demo Features Grid */}
@@ -202,7 +205,7 @@ export function ExperienceSlide() {
             transition={{ delay: isInView ? 2.5 : 0, duration: 1 }}
             className="text-lg md:text-xl text-white/80 mt-8"
           >
-            Ready to experience concert grand excellence for yourself?
+            The perfect affordable digital piano for beginners who want professional results without the premium price
           </motion.p>
         </div>
       </div>

@@ -43,10 +43,10 @@ async function getSignaturePageData(slug: string): Promise<SignaturePageData | n
       heroSection: {
         exclusiveText: "",
         titlePrefix: "",
-        titleMain: "Baby Grand Signature Event",
+        titleMain: "Your Personal Concert Hall",
         titleSuffix: "",
-        subtitle: "Own a piece of musical history and refined craftsmanship",
-        description: "Own a piece of musical history and refined craftsmanship. Reserve your appointment today, spots are limited.",
+        subtitle: "Experience the artistry of Kawai Baby Grands",
+        description: "Transform your home into an intimate performance space. Each baby grand is a masterpiece of Japanese craftsmanship, delivering concert-quality sound in perfect proportions. Reserve your private appointment today—limited availability.",
         heroBackgroundImage: null, // Will use fallback
         primaryCta: {
           text: "View Signature",
@@ -61,9 +61,9 @@ async function getSignaturePageData(slug: string): Promise<SignaturePageData | n
         showScrollIndicator: false
       },
       seo: {
-        metaTitle: `${slug.charAt(0).toUpperCase() + slug.slice(1)} Signature2 Collection | Kawai Pianos`,
-        metaDescription: `Discover the exclusive ${slug} Signature2 Collection featuring premium Kawai pianos curated for discerning musicians. Private consultation available.`,
-        keywords: `kawai signature, ${slug} pianos, exclusive collection, premium pianos, private consultation`,
+        metaTitle: `Your Personal Concert Hall | Kawai Pianos`,
+        metaDescription: `Transform your home into an intimate performance space with Kawai Baby Grands. Experience concert-quality artistry and Japanese craftsmanship. Exclusive event—reserve your private appointment today.`,
+        keywords: `kawai baby grand, concert hall at home, baby grand sale, exclusive piano event, japanese craftsmanship, premium baby grands`,
         noIndex: false
       },
       settings: {
@@ -150,8 +150,8 @@ export async function generateMetadata({ params }: SignaturePageProps): Promise<
     const { seo } = signatureData
 
     return {
-      title: seo.metaTitle || `${slug.charAt(0).toUpperCase() + slug.slice(1)} Signature2 Collection | Kawai Pianos`,
-      description: seo.metaDescription || `Discover the exclusive ${slug} Signature2 Collection featuring premium Kawai pianos.`,
+      title: seo.metaTitle || `Your Personal Concert Hall | Kawai Pianos`,
+      description: seo.metaDescription || `Transform your home into an intimate performance space with Kawai Baby Grands. Experience concert-quality artistry and Japanese craftsmanship.`,
       keywords: seo.keywords,
       robots: {
         index: !seo.noIndex,

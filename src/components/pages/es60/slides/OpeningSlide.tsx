@@ -87,9 +87,9 @@ export function OpeningSlide() {
         {/* Tagline with Sequential Animation */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
-          animate={{ 
-            opacity: isInView ? 1 : 0, 
-            y: isInView ? 0 : 30 
+          animate={{
+            opacity: isInView ? 1 : 0,
+            y: isInView ? 0 : 30
           }}
           transition={{ delay: isInView ? 1.5 : 0, duration: 1.5 }}
           className="space-y-4"
@@ -103,7 +103,20 @@ export function OpeningSlide() {
               repeat: isInView ? Infinity : 0
             }}
           >
-            Concert Grand Sound.
+            Concert Grand Sound Made Affordable.
+          </motion.p>
+
+          <motion.p
+            className="text-2xl md:text-3xl font-medium text-blue-400"
+            style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isInView ? 1 : 0 }}
+            transition={{
+              delay: isInView ? 2 : 0,
+              duration: 1
+            }}
+          >
+            The Best Beginner Digital Piano Under $500
           </motion.p>
 
           <motion.p
@@ -117,7 +130,7 @@ export function OpeningSlide() {
               type: "spring"
             }}
           >
-            $499.
+            Only $499.
           </motion.p>
         </motion.div>
 
@@ -129,10 +142,10 @@ export function OpeningSlide() {
             delay: isInView ? 3.5 : 0,
             duration: 1.5
           }}
-          className="text-lg md:text-xl text-white/90 mt-8 max-w-md mx-auto leading-relaxed"
+          className="text-lg md:text-xl text-white/90 mt-8 max-w-2xl mx-auto leading-relaxed"
           style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}
         >
-          Revolutionary digital piano technology made accessible
+          Professional sound quality for students, adult learners, and everyone starting their musical journey
         </motion.p>
 
         {/* Scroll Indicator */}

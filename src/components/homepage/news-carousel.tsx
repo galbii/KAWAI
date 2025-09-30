@@ -110,9 +110,9 @@ export function NewsCarousel({ data }: NewsCarouselProps) {
 
 
   return (
-    <section 
+    <section
       ref={sectionRef}
-      className="relative bg-gradient-to-b from-white via-kawai-pearl/10 to-white py-16 sm:py-24"
+      className="relative bg-white py-16 sm:py-24"
     >
       <div className="w-full px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
@@ -185,9 +185,6 @@ export function NewsCarousel({ data }: NewsCarouselProps) {
                         />
                       );
                     })()}
-
-                    {/* Gradient overlay for text readability */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/70 via-kawai-black/20 to-transparent" />
 
                     {/* Navigation Arrows - On Image */}
                     <button

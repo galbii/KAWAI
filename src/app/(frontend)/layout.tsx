@@ -4,24 +4,25 @@ import { FooterDynamic } from "@/components/layout/footer-dynamic";
 import { NavigationContextProvider } from "@/contexts/NavigationContext";
 import { parseNavigationOrigin } from "@/lib/navigation-utils";
 import { headers } from 'next/headers';
+import { organizationSchema, featuredProductsSchema } from "@/lib/seo/schemas";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianostlouis.com'),
-  title: "Kawai Piano Gallery St. Louis | Premier Piano Gallery Lake St. Louis, MO",
-  description: "St. Louis's premier Kawai Piano Gallery in Lake St. Louis, MO. Shop Shigeru Kawai grand pianos, digital pianos, and hybrids. Expert piano consultation, services, and guidance. Serving Missouri piano families since 1927. Piano Gallery near me.",
-  keywords: "Piano Gallery St. Louis, Kawai Piano Gallery St. Louis, piano gallery Lake St. Louis MO, Piano Gallery near me, piano gallery Missouri, Kawai pianos St. Louis, Piano Gallery Lake St. Louis, Shigeru Kawai St. Louis, piano showroom Missouri, piano gallery Lake St. Louis, digital pianos St. Louis, acoustic pianos Missouri, piano consultation St. Louis, piano services Missouri",
+  title: "Kawai Piano Gallery St. Louis | Best Piano Brands & Japanese Craftsmanship",
+  description: "Experience 95+ years of Japanese piano craftsmanship at St. Louis's premier Kawai Piano Gallery. Discover the Millennium III carbon fiber action, warm piano sound quality, and exceptional Shigeru Kawai grands. Authorized dealer in Lake St. Louis, MO serving Missouri since 1927.",
+  keywords: "Kawai piano, best piano brands, piano sound quality, Japanese piano craftsmanship, carbon fiber action, Millennium III action, piano dealer St. Louis, Kawai Piano Gallery, Shigeru Kawai, digital pianos, piano showroom Missouri, quality piano brands, authorized Kawai dealer, Lake St. Louis MO, piano consultation",
   authors: [{ name: "Kawai Piano Gallery St. Louis" }],
   openGraph: {
-    title: "Kawai Piano Gallery St. Louis | Premier Piano Gallery Lake St. Louis, MO",
-    description: "St. Louis's premier Kawai Piano Gallery. Visit our Lake St. Louis showroom for expert piano consultation, Shigeru Kawai grands, and digital pianos. Serving Missouri since 1927.",
+    title: "Kawai Piano Gallery St. Louis | Best Piano Brands & Japanese Craftsmanship",
+    description: "Experience 95+ years of Japanese piano craftsmanship. Discover Millennium III carbon fiber action, exceptional sound quality, and Shigeru Kawai grands at our Lake St. Louis showroom.",
     type: "website",
     locale: "en_US",
     siteName: "Kawai Piano Gallery St. Louis",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Kawai Piano Gallery St. Louis | Piano Gallery Lake St. Louis, MO",
-    description: "St. Louis's premier Kawai Piano Gallery in Lake St. Louis, MO. Expert piano consultation and premium instruments.",
+    title: "Kawai Piano Gallery St. Louis | Best Piano Brands",
+    description: "Experience 95+ years of Japanese piano craftsmanship. Millennium III carbon fiber action & exceptional sound quality.",
   },
   robots: {
     index: true,
@@ -111,10 +112,25 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
 
   return (
     <NavigationContextProvider initialOrigin={initialOrigin}>
+      {/* LocalBusiness Schema for local SEO */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(localBusinessSchema),
+        }}
+      />
+      {/* Organization Schema for brand identity and E-E-A-T */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(organizationSchema),
+        }}
+      />
+      {/* Featured Products Schema for piano categories */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(featuredProductsSchema),
         }}
       />
       <div className="flex min-h-screen flex-col">

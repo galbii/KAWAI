@@ -18,12 +18,12 @@ export function HomeHero() {
     titleSuffix: "to Life",
     description: "Every musician harbors a vision. Every performance seeks perfection. Since 1927, we've been crafting the instruments that transform inspiration into reality.",
     primaryCta: {
-      text: "View Our Piano Collection",
-      link: "/pianos"
+      text: "Find Your Store",
+      link: "#dealer-locations"
     },
     secondaryCta: {
-      text: "Visit Our St. Louis Showroom",
-      link: "/contact"
+      text: "View Our Collection",
+      link: "#piano-gallery"
     }
   };
 
@@ -156,17 +156,33 @@ export function HomeHero() {
           </motion.p>
         </div>
         
-        {/* Centered button with mobile optimization */}
-        <motion.div 
+        {/* CTA Buttons - Side by side */}
+        <motion.div
           variants={contentReveal}
           custom={3.0}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
-          className="px-4 sm:px-0"
+          className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4 sm:px-0"
         >
-          <Button size="lg" className="btn-brand-primary text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4 min-h-[44px] w-auto" asChild>
+          {/* Find Your Store - White button on left */}
+          <Button
+            size="lg"
+            className="bg-white hover:bg-kawai-pearl text-kawai-black border-2 border-white hover:border-kawai-pearl text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4 min-h-[44px] w-full sm:w-auto font-medium transition-all duration-300"
+            asChild
+          >
             <Link href={heroData.primaryCta.link}>
               <span className="text-center leading-tight">{heroData.primaryCta.text}</span>
+            </Link>
+          </Button>
+
+          {/* View Our Collection - Red primary button on right */}
+          <Button
+            size="lg"
+            className="btn-brand-primary text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4 min-h-[44px] w-full sm:w-auto"
+            asChild
+          >
+            <Link href={heroData.secondaryCta.link}>
+              <span className="text-center leading-tight">{heroData.secondaryCta.text}</span>
             </Link>
           </Button>
         </motion.div>

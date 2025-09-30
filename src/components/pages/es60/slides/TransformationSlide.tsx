@@ -63,20 +63,23 @@ export function TransformationSlide() {
           {/* Transformation Title */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ 
-              opacity: isInView ? 1 : 0, 
-              scale: isInView ? 1 : 0.8 
+            animate={{
+              opacity: isInView ? 1 : 0,
+              scale: isInView ? 1 : 0.8
             }}
             transition={{ duration: 1.5 }}
             className="mb-16"
           >
             <p className="text-red-400 text-sm md:text-lg font-medium mb-4 tracking-wide uppercase">
-              Innovation
+              Perfect for Beginners & Students
             </p>
             <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
-              Transformed for
-              <span className="block text-red-500">Every Musician</span>
+              Everything You Need
+              <span className="block text-red-500">To Start Playing</span>
             </h2>
+            <p className="text-lg md:text-xl text-white/80">
+              Apartment-friendly • Student-portable • Budget-conscious
+            </p>
           </motion.div>
 
           {/* Morphing Animation Container */}
@@ -158,7 +161,7 @@ export function TransformationSlide() {
             >
               <div className="space-y-6">
                 <p className="text-red-400 text-xl md:text-2xl font-bold" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}>
-                  Portable Excellence
+                  Beginner-Friendly Features
                 </p>
 
                 {/* Feature Highlights - Vertical Layout */}
@@ -172,9 +175,9 @@ export function TransformationSlide() {
                     }}
                     transition={{ delay: 2, duration: 1, ease: "easeOut" }}
                   >
-                    <div className="text-center min-w-[80px]">
+                    <div className="text-left">
                       <p className="text-red-500 text-2xl md:text-3xl font-bold">24 lbs</p>
-                      <p className="text-white/80 text-sm" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}>Ultra Portable</p>
+                      <p className="text-white/80 text-sm md:text-base" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}>Perfect for Apartments & Dorms</p>
                     </div>
                   </motion.div>
 
@@ -187,9 +190,12 @@ export function TransformationSlide() {
                     }}
                     transition={{ delay: 2.3, duration: 1, ease: "easeOut" }}
                   >
-                    <div className="flex items-center gap-3">
-                      <Headphones className="w-6 h-6 text-red-400" />
-                      <p className="text-white/80 text-sm md:text-base" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}>Dual Headphones</p>
+                    <div className="flex items-start gap-3">
+                      <Headphones className="w-6 h-6 text-red-400 flex-shrink-0 mt-1" />
+                      <div>
+                        <p className="text-white font-medium text-base md:text-lg" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}>Silent Practice</p>
+                        <p className="text-white/70 text-xs md:text-sm">Practice anytime, anywhere</p>
+                      </div>
                     </div>
                   </motion.div>
 
@@ -202,9 +208,9 @@ export function TransformationSlide() {
                     }}
                     transition={{ delay: 2.6, duration: 1, ease: "easeOut" }}
                   >
-                    <div className="text-center min-w-[80px]">
+                    <div className="text-left">
                       <p className="text-red-500 text-2xl md:text-3xl font-bold">192</p>
-                      <p className="text-white/80 text-sm" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}>Note Polyphony</p>
+                      <p className="text-white/80 text-sm md:text-base" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}>Polyphony - Never Drop Notes</p>
                     </div>
                   </motion.div>
                 </div>
@@ -220,10 +226,13 @@ export function TransformationSlide() {
                   transition={{ delay: 3, duration: 1.2, ease: "easeOut" }}
                 >
                   <p className="text-white text-lg md:text-xl" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}>
-                    Same legendary sound
+                    Professional features that won't break the bank
                   </p>
                   <p className="text-red-500 text-3xl md:text-4xl font-bold" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}>
-                    Just $499
+                    Only $499
+                  </p>
+                  <p className="text-white/70 text-sm" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}>
+                    Best affordable digital piano for beginners
                   </p>
                 </motion.div>
               </div>

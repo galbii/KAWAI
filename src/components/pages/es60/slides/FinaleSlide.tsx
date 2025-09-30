@@ -129,9 +129,12 @@ export function FinaleSlide() {
                   Get Your ES60 Today
                 </Link>
               </Button>
-              
+
               <p className="text-white/80 text-base md:text-lg">
-                Concert grand sound. Portable design. Unbeatable value.
+                Best beginner digital piano. Professional sound. Unbeatable value at only $499.
+              </p>
+              <p className="text-white/60 text-sm md:text-base">
+                Perfect for students, adult learners, and apartment living
               </p>
             </div>
           </motion.div>
@@ -181,16 +184,16 @@ export function FinaleSlide() {
           >
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
               <div className="space-y-2">
-                <p className="text-2xl md:text-3xl font-bold text-white">$499</p>
-                <p className="text-white/70 text-sm">Concert Grand Sound</p>
+                <p className="text-2xl md:text-3xl font-bold text-white">Only $499</p>
+                <p className="text-white/70 text-sm">Best Sound Under $500</p>
               </div>
               <div className="space-y-2">
                 <p className="text-2xl md:text-3xl font-bold text-white">24 lbs</p>
-                <p className="text-white/70 text-sm">Ultra Portable</p>
+                <p className="text-white/70 text-sm">Student-Portable</p>
               </div>
               <div className="space-y-2">
-                <p className="text-2xl md:text-3xl font-bold text-white">∞</p>
-                <p className="text-white/70 text-sm">Musical Possibilities</p>
+                <p className="text-2xl md:text-3xl font-bold text-white">Perfect</p>
+                <p className="text-white/70 text-sm">For Beginners</p>
               </div>
             </div>
           </motion.div>

@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { Phone, MapPin, Clock, Star, Music, Headphones, Volume2, Settings } from 'lucide-react';
 import { ES60ValueProposition } from './ES60ValueProposition';
 import { ES60SocialProof } from './ES60SocialProof';
+import { ES60FAQ } from './ES60FAQ';
 import { ES60Specifications } from './ES60Specifications';
+import { ES60Reviews } from './ES60Reviews';
 
 export function ES60LandingContent() {
   const [isVisible, setIsVisible] = useState(false);
@@ -157,11 +159,17 @@ export function ES60LandingContent() {
       {/* Value Proposition Component */}
       <ES60ValueProposition />
 
-      {/* Social Proof Component */}
-      <ES60SocialProof />
-
       {/* Specifications Component */}
       <ES60Specifications />
+
+      {/* Professional Reviews Component */}
+      <ES60Reviews />
+
+      {/* Social Proof Component (Customer Testimonials) */}
+      <ES60SocialProof />
+
+      {/* FAQ Component */}
+      <ES60FAQ />
 
       {/* CTA Section */}
       <section className="py-20" style={{ background: 'linear-gradient(to right, #9CAF88, #8B7355)' }}>

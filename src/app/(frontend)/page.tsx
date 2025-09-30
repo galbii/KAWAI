@@ -1,11 +1,15 @@
-import { 
-  NewsCarousel, 
+import {
+  NewsCarousel,
   PianoGallery,
-  PianoCollection, 
+  PianoCollection,
   ContactForm,
   DealerLocations
 } from "@/components/homepage";
 import { HomeHero } from "@/components/homepage/HomeHero";
+import { HeritageSection } from "@/components/homepage/heritage-section";
+import { InnovationSection } from "@/components/homepage/innovation-section";
+import { SoundQualitySection } from "@/components/homepage/sound-quality-section";
+import { FAQSection } from "@/components/homepage/faq-section";
 import EmailCapturePopup from "@/components/ui/EmailCapturePopup";
 import { getHomePageDataDirect } from "@/lib/payload-direct";
 import type { HomePageData } from "@/lib/types/homepage";
@@ -129,19 +133,31 @@ async function HomePageContent() {
     <div className="min-h-screen">
       {/* Hero Section */}
       <HomeHero />
-      
-      {/* Piano Collection Section */}
+
+      {/* Heritage & Craftsmanship Section - NEW for SEO */}
+      <HeritageSection />
+
+      {/* Piano Collection Section - Featured Models */}
       <PianoCollection {...(homePageData?.pianoCollectionSection && { data: homePageData.pianoCollectionSection })} />
 
       {/* News Carousel Section */}
       <NewsCarousel {...(homePageData?.newsCarouselSection && { data: homePageData.newsCarouselSection })} />
+
+      {/* Innovation & Technology Section - NEW for SEO */}
+      <InnovationSection />
+
+      {/* Sound Quality & Tone Section - NEW for SEO */}
+      <SoundQualitySection />
 
       {/* Dealer Locations Section */}
       <DealerLocations />
 
       {/* Piano Gallery Section */}
       <PianoGallery {...(homePageData?.pianoGallerySection && { data: homePageData.pianoGallerySection })} />
-      
+
+      {/* FAQ Section - NEW for SEO */}
+      <FAQSection />
+
       {/* Contact Form Section */}
       <ContactForm {...(homePageData?.contactFormSection && { data: homePageData.contactFormSection })} />
     </div>

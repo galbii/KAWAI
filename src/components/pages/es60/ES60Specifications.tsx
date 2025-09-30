@@ -58,8 +58,8 @@ export function ES60Specifications() {
         },
         {
           label: 'Total Sounds',
-          value: '38 High-Quality Voices',
-          benefit: 'Variety for creativity and learning'
+          value: '17 Carefully Curated Voices',
+          benefit: 'Quality over quantity - essential sounds for learning'
         },
         {
           label: 'Polyphony',
@@ -68,9 +68,9 @@ export function ES60Specifications() {
           highlight: true
         },
         {
-          label: 'Reverb Types',
-          value: '6 Digital Reverbs',
-          benefit: 'Natural acoustical spaces'
+          label: 'Harmonic Imaging',
+          value: 'Advanced Harmonic Imaging Technology',
+          benefit: 'Smooth dynamic transitions for expressive playing'
         }
       ]
     },
@@ -79,50 +79,72 @@ export function ES60Specifications() {
       items: [
         {
           label: 'Key Type',
-          value: '88 Fully-Weighted Keys',
+          value: '88 Full-Size Weighted Keys',
           benefit: 'Authentic piano feel and technique development',
           highlight: true
         },
         {
           label: 'Action System',
           value: 'Responsive Hammer Lite (RHL)',
-          benefit: 'Graded weight - heavier bass, lighter treble'
+          benefit: 'Graded weighting - 57g down-weight on middle C'
         },
         {
           label: 'Touch Sensitivity',
-          value: '5 Levels + Fixed',
-          benefit: 'Customize response to your playing style'
+          value: 'Graded Weight Distribution',
+          benefit: 'Heavier in bass, lighter in treble - just like acoustic pianos'
         },
         {
           label: 'Key Surface',
-          value: 'Smooth White & Black Keys',
-          benefit: 'Comfortable for extended practice'
+          value: 'Textured White Keys',
+          benefit: 'Improved grip and control during extended practice'
         }
       ]
     },
     {
-      category: 'Connectivity & Features',
+      category: 'Audio System',
       items: [
         {
+          label: 'Built-in Speakers',
+          value: 'Dual 10W Upward-Facing',
+          benefit: 'Rich, room-filling sound projection'
+        },
+        {
           label: 'Headphone Outputs',
-          value: 'Dual 1/4" Stereo Outputs',
-          benefit: 'Perfect for lessons and practice',
+          value: '2 x 1/4" Stereo Jacks',
+          benefit: 'Perfect for lessons and private practice',
           highlight: true
         },
         {
-          label: 'USB Connectivity',
-          value: 'USB to Host (MIDI)',
-          benefit: 'Connect to computers and apps'
-        },
-        {
-          label: 'Built-in Speakers',
-          value: '2 x 12W Upward-Facing',
-          benefit: 'Rich, room-filling sound'
+          label: 'Line Outputs',
+          value: '2 x 1/4" Stereo (Professional)',
+          benefit: 'Connect to external speakers or recording equipment',
+          highlight: true
         },
         {
           label: 'Sustain Pedal',
           value: 'Included (Half-Damper Support)',
           benefit: 'Professional pedal techniques'
+        }
+      ]
+    },
+    {
+      category: 'Connectivity',
+      items: [
+        {
+          label: 'USB Connection',
+          value: 'USB to Host',
+          benefit: 'MIDI connectivity for computers and apps'
+        },
+        {
+          label: 'PianoRemote App',
+          value: 'iOS & Android Compatible',
+          benefit: 'Control all piano settings from your smartphone',
+          highlight: true
+        },
+        {
+          label: 'MIDI',
+          value: 'Full MIDI Implementation via USB',
+          benefit: 'Compatible with DAWs and music software'
         }
       ]
     },
@@ -137,8 +159,13 @@ export function ES60Specifications() {
         },
         {
           label: 'Dimensions',
-          value: '52.5" x 11.6" x 5.7"',
+          value: '51.6" W x 11.6" D x 5.9" H',
           benefit: 'Compact footprint, fits anywhere'
+        },
+        {
+          label: 'Stand',
+          value: 'Optional (Not Included)',
+          benefit: 'Compatible with Kawai furniture-style stands'
         },
         {
           label: 'Power Supply',
@@ -252,10 +279,10 @@ export function ES60Specifications() {
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         }`}>
           <h2 className="text-4xl lg:text-5xl font-bold mb-6" style={{ color: '#3C3530' }}>
-            Technical Excellence
+            ES60 Digital Piano Specifications
           </h2>
           <p className="text-xl max-w-3xl mx-auto leading-relaxed mb-8" style={{ color: '#6B645C' }}>
-            Professional specifications that deliver exceptional value
+            Professional specifications with 88 weighted keys, concert grand sound, and exceptional portability
           </p>
 
           {/* Tab Navigation */}
@@ -349,49 +376,49 @@ export function ES60Specifications() {
             {/* Why It Matters Section */}
             <div className="mt-16">
               <h3 className="text-3xl font-bold text-center mb-12" style={{ color: '#3C3530' }}>
-                Why These Specs Matter
+                Why These Specifications Matter
               </h3>
               <div className="grid md:grid-cols-3 gap-8">
                 <div className="text-center p-6">
-                  <div 
+                  <div
                     className="inline-flex items-center justify-center w-16 h-16 rounded-xl mb-4"
                     style={{ backgroundColor: '#9CAF88', color: '#3C3530' }}
                   >
                     <Music className="w-8 h-8" />
                   </div>
                   <h4 className="text-xl font-bold mb-3" style={{ color: '#3C3530' }}>
-                    Authentic Sound
+                    Concert Grand Sound
                   </h4>
                   <p style={{ color: '#6B645C' }}>
-                    Shigeru Kawai SK-EX samples provide the same concert grand sound used by professional pianists worldwide.
+                    Shigeru Kawai SK-EX concert grand samples with Harmonic Imaging provide authentic tonal transitions used by professional pianists worldwide.
                   </p>
                 </div>
                 <div className="text-center p-6">
-                  <div 
+                  <div
                     className="inline-flex items-center justify-center w-16 h-16 rounded-xl mb-4"
                     style={{ backgroundColor: '#9CAF88', color: '#3C3530' }}
                   >
                     <Weight className="w-8 h-8" />
                   </div>
                   <h4 className="text-xl font-bold mb-3" style={{ color: '#3C3530' }}>
-                    Perfect Portability
+                    Ultra-Portable Design
                   </h4>
                   <p style={{ color: '#6B645C' }}>
-                    At 24 lbs, easily move between rooms, take to lessons, or relocate without hassle.
+                    At just 24.25 lbs, the ES60 is perfect for lessons, performances, or apartment living. Move it easily between rooms without compromise.
                   </p>
                 </div>
                 <div className="text-center p-6">
-                  <div 
+                  <div
                     className="inline-flex items-center justify-center w-16 h-16 rounded-xl mb-4"
                     style={{ backgroundColor: '#9CAF88', color: '#3C3530' }}
                   >
-                    <Headphones className="w-8 h-8" />
+                    <Zap className="w-8 h-8" />
                   </div>
                   <h4 className="text-xl font-bold mb-3" style={{ color: '#3C3530' }}>
-                    Lesson Optimized
+                    Full Connectivity
                   </h4>
                   <p style={{ color: '#6B645C' }}>
-                    Dual headphone outputs allow teacher and student to hear together during lessons.
+                    PianoRemote app control, dual headphone outputs for lessons, and professional line outputs for recording make the ES60 incredibly versatile.
                   </p>
                 </div>
               </div>

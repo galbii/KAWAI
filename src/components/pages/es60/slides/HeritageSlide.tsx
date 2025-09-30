@@ -39,21 +39,23 @@ export function HeritageSlide() {
           {/* Heritage Title */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
-            animate={{ 
-              opacity: isInView ? 1 : 0, 
-              y: isInView ? 0 : 50 
+            animate={{
+              opacity: isInView ? 1 : 0,
+              y: isInView ? 0 : 50
             }}
             transition={{ duration: 1.5 }}
             className="mb-12"
           >
             <p className="text-amber-300 text-sm md:text-lg font-medium mb-4 tracking-wide uppercase">
-              Heritage
+              Heritage Meets Affordability
             </p>
             <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}>
-              Born from
-              <span className="block text-amber-400">Concert Grand</span>
-              <span className="block">Excellence</span>
+              <span className="block text-amber-400">Premium Sound,</span>
+              <span className="block">Beginner Price</span>
             </h2>
+            <p className="text-lg md:text-xl text-amber-200/90 font-medium">
+              Concert grand excellence, now accessible to everyone
+            </p>
           </motion.div>
 
           {/* Shigeru Kawai SK-EX Showcase */}
@@ -189,21 +191,25 @@ export function HeritageSlide() {
           {/* Heritage Description */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
-            animate={{ 
-              opacity: isInView ? 1 : 0, 
-              y: isInView ? 0 : 30 
+            animate={{
+              opacity: isInView ? 1 : 0,
+              y: isInView ? 0 : 30
             }}
-            transition={{ 
-              delay: isInView ? 5.5 : 0, 
-              duration: 1.5 
+            transition={{
+              delay: isInView ? 5.5 : 0,
+              duration: 1.5
             }}
             className="space-y-4"
           >
             <p className="text-lg md:text-xl text-white/80 leading-relaxed">
               Every note in the ES60 contains the soul of our legendary Shigeru Kawai SK-EX concert grand—
+              <span className="text-amber-400 font-medium"> the same piano trusted by concert halls worldwide</span>
             </p>
-            <p className="text-lg md:text-xl text-amber-400 font-medium">
-              the same piano trusted by concert halls worldwide
+            <p className="text-xl md:text-2xl text-amber-400 font-bold">
+              Now accessible to beginners and students at only $499
+            </p>
+            <p className="text-base md:text-lg text-white/70 leading-relaxed">
+              The best piano sound quality under $500, verified by professional reviewers
             </p>
           </motion.div>
         </div>

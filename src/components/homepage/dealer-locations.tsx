@@ -34,7 +34,7 @@ export async function DealerLocations({ className = '' }: DealerLocationsProps) 
   }
 
   return (
-    <section className={`relative bg-gradient-to-b from-kawai-pearl/20 to-white py-16 sm:py-24 ${className}`}>
+    <section id="dealer-locations" className={`relative bg-white py-16 sm:py-24 ${className}`}>
       <div className="container mx-auto px-4 sm:px-6">
         {/* Section Header with mobile optimization */}
         <div className="text-center mb-12 sm:mb-16">

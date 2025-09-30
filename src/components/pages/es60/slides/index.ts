@@ -4,10 +4,11 @@ import { OpeningSlide } from './OpeningSlide';
 import { HeritageSlide } from './HeritageSlide';
 import { TransformationSlide } from './TransformationSlide';
 import { ExperienceSlide } from './ExperienceSlide';
+import { FAQSlide } from './FAQSlide';
 import { FinaleSlide } from './FinaleSlide';
 
 // Re-export individual components
-export { OpeningSlide, HeritageSlide, TransformationSlide, ExperienceSlide, FinaleSlide };
+export { OpeningSlide, HeritageSlide, TransformationSlide, ExperienceSlide, FAQSlide, FinaleSlide };
 
 // Slide configuration for the cinematic presentation
 export const SLIDE_COMPONENTS = [
@@ -15,6 +16,7 @@ export const SLIDE_COMPONENTS = [
   HeritageSlide,
   TransformationSlide,
   ExperienceSlide,
+  FAQSlide,
   FinaleSlide
 ] as const;
 
@@ -23,5 +25,6 @@ export const SLIDE_NAMES = [
   'Heritage',
   'Transformation',
   'Experience',
+  'FAQ',
   'Finale'
 ] as const;
