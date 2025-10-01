@@ -132,13 +132,9 @@ export function FinaleSlide() {
             }}
             className="mb-12"
           >
-            <h2
-              className="text-5xl md:text-7xl font-bold text-white mb-8 leading-tight"
-              style={{ textShadow: '3px 3px 15px rgba(0,0,0,0.95), 0 0 30px rgba(0,0,0,0.8), 0 0 60px rgba(0,0,0,0.5)' }}
-            >
-              Your Musical
-              <span className="block">Journey Starts</span>
-              <span className="block">Here</span>
+            <h2 className="text-4xl sm:text-5xl md:text-7xl font-bold text-white mb-6 sm:mb-8 leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] sm:drop-shadow-[0_6px_20px_rgba(0,0,0,0.95)]">
+              Your Musical Journey
+              <span className="block">Starts Here</span>
             </h2>
           </motion.div>
 
@@ -153,41 +149,32 @@ export function FinaleSlide() {
               delay: isInView ? 1.5 : 0,
               duration: 1.5
             }}
-            className="flex flex-wrap justify-center items-center gap-6 md:gap-8 mb-12"
+            className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 md:gap-8 mb-8 sm:mb-10 md:mb-12"
           >
             <motion.div
-              className="flex items-center gap-2 text-white"
+              className="flex items-center gap-2 text-white min-w-[140px] sm:min-w-0 justify-center"
               whileHover={{ scale: 1.05 }}
             >
-              <Award className="w-5 md:w-6 h-5 md:h-6 drop-shadow-lg" />
-              <span
-                className="font-semibold text-sm md:text-base"
-                style={{ textShadow: '2px 2px 10px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)' }}
-              >
+              <Award className="w-6 md:w-6 h-6 md:h-6 drop-shadow-lg flex-shrink-0" />
+              <span className="font-semibold text-sm md:text-base drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                 Award Winning
               </span>
             </motion.div>
             <motion.div
-              className="flex items-center gap-2 text-white"
+              className="flex items-center gap-2 text-white min-w-[140px] sm:min-w-0 justify-center"
               whileHover={{ scale: 1.05 }}
             >
-              <Star className="w-5 md:w-6 h-5 md:h-6 drop-shadow-lg" />
-              <span
-                className="font-semibold text-sm md:text-base"
-                style={{ textShadow: '2px 2px 10px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)' }}
-              >
+              <Star className="w-6 md:w-6 h-6 md:h-6 drop-shadow-lg flex-shrink-0" />
+              <span className="font-semibold text-sm md:text-base drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                 95+ Years Legacy
               </span>
             </motion.div>
             <motion.div
-              className="flex items-center gap-2 text-white"
+              className="flex items-center gap-2 text-white min-w-[140px] sm:min-w-0 justify-center"
               whileHover={{ scale: 1.05 }}
             >
-              <Music className="w-5 md:w-6 h-5 md:h-6 drop-shadow-lg" />
-              <span
-                className="font-semibold text-sm md:text-base"
-                style={{ textShadow: '2px 2px 10px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)' }}
-              >
+              <Music className="w-6 md:w-6 h-6 md:h-6 drop-shadow-lg flex-shrink-0" />
+              <span className="font-semibold text-sm md:text-base drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                 Concert Quality
               </span>
             </motion.div>
@@ -207,10 +194,10 @@ export function FinaleSlide() {
             }}
             className="space-y-6"
           >
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4 px-4">
               <Button
                 size="lg"
-                className="px-8 md:px-12 py-4 md:py-6 text-lg md:text-xl font-bold bg-white text-red-600 hover:bg-gray-100 rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300"
+                className="px-6 sm:px-8 md:px-12 py-4 md:py-6 text-base sm:text-lg md:text-xl font-bold bg-white text-red-600 hover:bg-gray-100 rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300 w-full sm:w-auto"
                 asChild
               >
                 <a
@@ -223,17 +210,11 @@ export function FinaleSlide() {
                 </a>
               </Button>
 
-              <p
-                className="text-white text-base md:text-lg font-medium"
-                style={{ textShadow: '2px 2px 10px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)' }}
-              >
-                Best beginner digital piano. Professional sound. Unbeatable value at only $499.
+              <p className="text-white text-sm sm:text-base md:text-lg font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] leading-relaxed">
+                Professional sound. Unbeatable value at only $499.
               </p>
-              <p
-                className="text-white/90 text-sm md:text-base"
-                style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8), 0 0 16px rgba(0,0,0,0.6)' }}
-              >
-                Perfect for students, adult learners, and apartment living
+              <p className="text-white/90 text-xs sm:text-sm md:text-base drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)]">
+                Perfect for students and apartment living
               </p>
             </div>
           </motion.div>
@@ -248,46 +229,28 @@ export function FinaleSlide() {
             }}
             className="mt-12 bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20"
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-center">
               <div className="space-y-2">
-                <p
-                  className="text-2xl md:text-3xl font-bold text-white"
-                  style={{ textShadow: '2px 2px 10px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)' }}
-                >
+                <p className="text-3xl md:text-3xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                   Only $499
                 </p>
-                <p
-                  className="text-white text-sm font-medium"
-                  style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8), 0 0 16px rgba(0,0,0,0.6)' }}
-                >
+                <p className="text-white text-sm font-medium drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)]">
                   Best Sound Under $500
                 </p>
               </div>
               <div className="space-y-2">
-                <p
-                  className="text-2xl md:text-3xl font-bold text-white"
-                  style={{ textShadow: '2px 2px 10px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)' }}
-                >
+                <p className="text-3xl md:text-3xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                   24 lbs
                 </p>
-                <p
-                  className="text-white text-sm font-medium"
-                  style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8), 0 0 16px rgba(0,0,0,0.6)' }}
-                >
+                <p className="text-white text-sm font-medium drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)]">
                   Student-Portable
                 </p>
               </div>
               <div className="space-y-2">
-                <p
-                  className="text-2xl md:text-3xl font-bold text-white"
-                  style={{ textShadow: '2px 2px 10px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)' }}
-                >
+                <p className="text-3xl md:text-3xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                   Perfect
                 </p>
-                <p
-                  className="text-white text-sm font-medium"
-                  style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8), 0 0 16px rgba(0,0,0,0.6)' }}
-                >
+                <p className="text-white text-sm font-medium drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)]">
                   For Beginners
                 </p>
               </div>

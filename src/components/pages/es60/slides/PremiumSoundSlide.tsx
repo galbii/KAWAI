@@ -70,35 +70,55 @@ function useSoundCloudWidget(activeTrackUrl: string | null) {
   const widgetReadyRef = useRef(false);
   const iframeLoadedRef = useRef(false);
 
-  // Track iframe load state
+  // Track iframe readiness - polling approach to handle race conditions
   useEffect(() => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
+    const checkIframeReady = () => {
+      const iframe = iframeRef.current;
+      if (!iframe) {
+        console.log('[SoundCloud] Iframe ref not available yet');
+        return false;
+      }
 
+      // Check if iframe is in the DOM and has a src
+      if (iframe.src && iframe.parentElement) {
+        console.log('[SoundCloud] Iframe is in DOM with src');
+        iframeLoadedRef.current = true;
+        return true;
+      }
+
+      return false;
+    };
+
+    // Poll for iframe readiness
+    const pollInterval = setInterval(() => {
+      if (checkIframeReady()) {
+        clearInterval(pollInterval);
+      }
+    }, 100);
+
+    // Also listen for load event as backup
     const handleIframeLoad = () => {
       console.log('[SoundCloud] Iframe onload event fired');
       iframeLoadedRef.current = true;
+      clearInterval(pollInterval);
     };
 
-    // Check if already loaded
-    if (iframe.contentWindow) {
-      try {
-        // Try to access contentWindow - if successful, iframe is loaded
-        const doc = iframe.contentWindow.document;
-        if (doc && doc.readyState === 'complete') {
-          console.log('[SoundCloud] Iframe already loaded');
-          iframeLoadedRef.current = true;
-        }
-      } catch (e) {
-        // Cross-origin, but that's okay - still means iframe is loading
-        console.log('[SoundCloud] Iframe detected (cross-origin)');
-      }
+    // Check immediately
+    if (checkIframeReady()) {
+      clearInterval(pollInterval);
     }
 
-    iframe.addEventListener('load', handleIframeLoad);
+    // Add load listener if iframe exists
+    const iframe = iframeRef.current;
+    if (iframe) {
+      iframe.addEventListener('load', handleIframeLoad);
+    }
 
     return () => {
-      iframe.removeEventListener('load', handleIframeLoad);
+      clearInterval(pollInterval);
+      if (iframe) {
+        iframe.removeEventListener('load', handleIframeLoad);
+      }
     };
   }, []);
 
@@ -110,7 +130,8 @@ function useSoundCloudWidget(activeTrackUrl: string | null) {
       console.log('[SoundCloud] Attempting to initialize widget', {
         hasIframe: !!iframeRef.current,
         hasSC: !!(window as any).SC,
-        iframeLoaded: iframeLoadedRef.current
+        iframeLoaded: iframeLoadedRef.current,
+        iframeInDOM: iframeRef.current?.parentElement ? true : false
       });
 
       if (!iframeRef.current) {
@@ -118,8 +139,9 @@ function useSoundCloudWidget(activeTrackUrl: string | null) {
         return false;
       }
 
-      if (!iframeLoadedRef.current) {
-        console.log('[SoundCloud] Iframe not loaded yet');
+      // Check if iframe is actually in the DOM
+      if (!iframeRef.current.parentElement) {
+        console.log('[SoundCloud] Iframe not in DOM yet');
         return false;
       }
 
@@ -135,13 +157,19 @@ function useSoundCloudWidget(activeTrackUrl: string | null) {
           return true;
         }
 
+        // Initialize widget - SC.Widget handles iframe loading internally
         widgetRef.current = SC.Widget(iframeRef.current);
         console.log('[SoundCloud] Widget initialized successfully');
 
         widgetRef.current.bind(SC.Widget.Events.READY, () => {
-          console.log('[SoundCloud] Widget READY event fired');
+          console.log('[SoundCloud] ✅ Widget READY event fired - player is ready');
           widgetReadyRef.current = true;
           setError(null);
+
+          // Log current state for debugging
+          widgetRef.current.isPaused((paused) => {
+            console.log('[SoundCloud] Initial state - paused:', paused);
+          });
         });
 
         widgetRef.current.bind(SC.Widget.Events.PLAY, () => {
@@ -291,15 +319,21 @@ function useSoundCloudWidget(activeTrackUrl: string | null) {
         }
       }, 100);
 
-      // Timeout after 5 seconds
+      // Timeout after 10 seconds (some tracks need more time to load)
       setTimeout(() => {
         clearInterval(checkReady);
         if (!widgetReadyRef.current) {
-          console.error('[SoundCloud] Widget ready timeout');
+          console.error('[SoundCloud] Widget ready timeout - widget may not have initialized properly');
+          console.log('[SoundCloud] Debug info:', {
+            hasWidget: !!widgetRef.current,
+            hasIframe: !!iframeRef.current,
+            iframeInDOM: iframeRef.current?.parentElement ? true : false,
+            iframeSrc: iframeRef.current?.src
+          });
           setError('Player not ready');
           setIsLoading(false);
         }
-      }, 5000);
+      }, 10000);
     }
   }, [activeTrackUrl]);
 
@@ -492,7 +526,7 @@ export function PremiumSoundSlide() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5, duration: 0.8 }}
-                    className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight"
+                    className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight"
                     style={{ textShadow: '2px 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.6)' }}
                   >
                     <span className="block">Professional Sounds</span>
@@ -530,14 +564,14 @@ export function PremiumSoundSlide() {
                   transition={{ delay: 0.2, duration: 0.8 }}
                   className="text-center mb-8 md:mb-10"
                 >
-                  <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-white/90 max-w-4xl mx-auto leading-tight px-4" style={{ textShadow: '2px 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.6)' }}>
+                  <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white/90 max-w-4xl mx-auto leading-tight px-4" style={{ textShadow: '2px 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.6)' }}>
                     17 meticulously sampled instruments including authentic Shigeru Kawai SK-EX concert grand and premium electric pianos, organs, and more.
                   </h3>
                 </motion.div>
 
           {/* Sound Cards Grid - Full Width */}
           <div className="max-w-5xl mx-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
               {SOUND_VOICES.map((voice, index) => {
                 const Icon = voice.icon;
                 const isActive = activeVoiceId === voice.id;
@@ -558,8 +592,8 @@ export function PremiumSoundSlide() {
                       duration: 0.5
                     }}
                     className={cn(
-                      "relative p-4 md:p-6 rounded-xl border-2 transition-all duration-300",
-                      "bg-black/40 backdrop-blur-sm min-h-[100px] md:min-h-[120px]",
+                      "relative p-3 sm:p-4 md:p-6 rounded-xl border-2 transition-all duration-300",
+                      "bg-black/40 backdrop-blur-sm min-h-[90px] sm:min-h-[100px] md:min-h-[120px]",
                       "hover:shadow-lg hover:shadow-blue-500/20 active:scale-95",
                       "touch-manipulation",
                       isActive
@@ -599,18 +633,18 @@ export function PremiumSoundSlide() {
                     <div className="flex flex-col items-center gap-2 text-center">
                       <Icon
                         className={cn(
-                          "w-8 h-8 md:w-10 md:h-10 transition-colors",
+                          "w-9 h-9 md:w-10 md:h-10 transition-colors",
                           isActive ? voice.accentColor : "text-white/60"
                         )}
                       />
                       <div>
                         <p className={cn(
-                          "text-sm md:text-base font-bold transition-colors",
+                          "text-sm sm:text-base md:text-base font-bold transition-colors",
                           isActive ? voice.accentColor : "text-white"
                         )}>
                           {voice.name}
                         </p>
-                        <p className="text-xs text-white/60 mt-1 hidden md:block">
+                        <p className="text-xs text-white/60 mt-1 line-clamp-1 sm:line-clamp-none">
                           {voice.description}
                         </p>
                       </div>
@@ -626,14 +660,14 @@ export function PremiumSoundSlide() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1, duration: 1 }}
-            className="mt-8 md:mt-12"
+            className="mt-6 md:mt-12"
           >
             <div className="bg-black/60 backdrop-blur-md rounded-xl p-4 md:p-6 border border-blue-500/30 max-w-3xl mx-auto">
               <WaveformVisualizer isPlaying={isPlaying} />
 
               {activeVoice ? (
                 <div className="text-center mt-4 space-y-2">
-                  <p className={cn("text-lg font-bold", activeVoice.accentColor)}>
+                  <p className={cn("text-base sm:text-lg font-bold", activeVoice.accentColor)}>
                     {activeVoice.name}
                   </p>
                   <p className="text-sm text-white/70">
@@ -661,13 +695,13 @@ export function PremiumSoundSlide() {
             transition={{ delay: 1.4, duration: 0.8 }}
             className="text-center mt-8 md:mt-12"
           >
-            <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+            <div className="flex flex-row items-center justify-center gap-3 md:gap-4">
               {/* Crossed out original price - LEFT of button */}
               <motion.span
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 1.6, duration: 0.5 }}
-                className="relative text-3xl md:text-5xl font-bold text-white"
+                className="relative text-2xl sm:text-3xl md:text-5xl font-bold text-white"
                 style={{ textShadow: '2px 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.6)' }}
               >
                 $599
@@ -694,7 +728,7 @@ export function PremiumSoundSlide() {
                 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-white text-red-600 px-8 md:px-12 py-4 md:py-6 text-lg md:text-xl font-bold rounded-2xl shadow-2xl hover:bg-gray-100 transition-all duration-300"
+                className="bg-white text-red-600 px-6 sm:px-8 md:px-12 py-3 sm:py-4 md:py-6 text-base sm:text-lg md:text-xl font-bold rounded-2xl shadow-2xl hover:bg-gray-100 transition-all duration-300 min-h-[48px]"
               >
                 Only $499
               </motion.button>
@@ -704,12 +738,13 @@ export function PremiumSoundSlide() {
       )}
     </AnimatePresence>
 
-          {/* Hidden SoundCloud iframe - Always rendered for proper initialization */}
-          <div className="hidden">
+          {/* SoundCloud iframe - MUST stay in viewport for browser to load it */}
+          {/* Hidden visually but browser considers it "on screen" */}
+          <div className="fixed bottom-0 right-0 w-[300px] h-[166px] pointer-events-none opacity-0 scale-[0.01] -z-50">
             <iframe
               ref={iframeRef}
               id="sc-widget"
-              width="100%"
+              width="300"
               height="166"
               scrolling="no"
               frameBorder="no"

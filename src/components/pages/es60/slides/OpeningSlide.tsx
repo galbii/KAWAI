@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import { Button } from '@/components/ui/button';
 
 export function OpeningSlide() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -11,6 +12,7 @@ export function OpeningSlide() {
   const [showMainContent, setShowMainContent] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [outboundUrl, setOutboundUrl] = useState('https://kawaius.com/product/kawai-es60/');
 
   // Detect mobile screen size
   useEffect(() => {
@@ -44,15 +46,15 @@ export function OpeningSlide() {
       setShowES60Logo(true);
       setShowMainContent(false);
 
-      // Hide ES60 logo after 1.5 seconds
+      // Hide ES60 logo after 2 seconds
       const hideLogoTimer = setTimeout(() => {
         setShowES60Logo(false);
-      }, 1500);
+      }, 2000);
 
-      // Show main content immediately after ES60 fades (at 1.5 seconds)
+      // Show main content immediately after ES60 fades (at 2 seconds)
       const showContentTimer = setTimeout(() => {
         setShowMainContent(true);
-      }, 1500);
+      }, 2000);
 
       return () => {
         clearTimeout(hideLogoTimer);
@@ -66,6 +68,75 @@ export function OpeningSlide() {
     }
   }, [isInView]);
 
+  // Build outbound URL with preserved UTM parameters and fbclid
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const currentParams = new URLSearchParams(window.location.search);
+      const baseUrl = 'https://kawaius.com/product/kawai-es60/';
+      const outboundParams = new URLSearchParams();
+
+      // Preserve all UTM parameters from the incoming URL
+      const utmParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'utm_id'];
+      utmParams.forEach(param => {
+        const value = currentParams.get(param);
+        if (value) {
+          outboundParams.set(param, value);
+        }
+      });
+
+      // Preserve fbclid (Facebook Click ID) - critical for attribution
+      const fbclid = currentParams.get('fbclid');
+      if (fbclid) {
+        outboundParams.set('fbclid', fbclid);
+      }
+
+      // If no UTM parameters were found, use default ones
+      if (!outboundParams.has('utm_source')) {
+        outboundParams.set('utm_source', 'direct');
+        outboundParams.set('utm_medium', 'referral');
+        outboundParams.set('utm_campaign', 'es60_awareness_campaign');
+        outboundParams.set('utm_content', 'opening_cta');
+      }
+
+      // Build final URL
+      const finalUrl = `${baseUrl}?${outboundParams.toString()}`;
+      setOutboundUrl(finalUrl);
+    }
+  }, []);
+
+  // Handle external link click tracking
+  const handleExternalLinkClick = () => {
+    // Get UTM parameters from URL for tracking
+    const urlParams = new URLSearchParams(window.location.search);
+    const utmCampaign = urlParams.get('utm_campaign') || 'direct';
+    const utmSource = urlParams.get('utm_source') || 'direct';
+    const utmMedium = urlParams.get('utm_medium') || 'none';
+    const utmContent = urlParams.get('utm_content') || 'none';
+
+    // Track the outbound click as a conversion event with UTM data
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      (window as any).fbq('track', 'InitiateCheckout', {
+        content_name: 'ES60 Digital Piano',
+        content_category: 'Digital Piano',
+        value: 499,
+        currency: 'USD',
+        utm_campaign: utmCampaign,
+        utm_source: utmSource,
+        utm_medium: utmMedium,
+        utm_content: utmContent,
+        source: 'es60_landing_page_opening'
+      });
+
+      // Also track as a custom event for additional granularity
+      (window as any).fbq('trackCustom', 'ES60_ProductClick', {
+        campaign: utmCampaign,
+        value: 499,
+        currency: 'USD',
+        source: 'opening_slide'
+      });
+    }
+  };
+
   return (
     <motion.div
       ref={containerRef}
@@ -73,22 +144,33 @@ export function OpeningSlide() {
       style={{
         background: 'transparent'
       }}
-      initial={{ opacity: 0 }}
+      initial={{ opacity: 1 }}
       animate={{ opacity: isInView ? 1 : 0.3 }}
       transition={{ duration: 1.5, ease: "easeInOut" }}
     >
+      {/* Blur overlay - appears immediately, fades out with ES60 */}
+      {showES60Logo && (
+        <motion.div
+          className="absolute inset-0 z-40 bg-black/40 backdrop-blur-sm pointer-events-none"
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.5, ease: "easeInOut" }}
+        />
+      )}
+
       {/* ES60 Text - Opening Animation (First Thing Shown) */}
       <AnimatePresence>
         {showES60Logo && (
           <motion.div
-            className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
+            className="absolute inset-0 z-50 flex flex-col items-center justify-center"
+            initial={{ opacity: 1 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.5, ease: "easeInOut" }}
+            transition={{ exit: { duration: 1.5, ease: "easeInOut" } }}
           >
             <motion.h1
-              className="text-[8rem] md:text-[16rem] lg:text-[20rem] font-bold text-white tracking-tight"
+              className="text-[5rem] sm:text-[8rem] md:text-[16rem] lg:text-[20rem] font-bold text-white tracking-tight"
               style={{
                 textShadow: '0 0 40px rgba(255, 255, 255, 0.8), 0 0 80px rgba(255, 255, 255, 0.4)'
               }}
@@ -125,28 +207,52 @@ export function OpeningSlide() {
             </motion.h1>
 
             {/* Tagline under ES60 */}
-            <motion.p
-              className="text-xl md:text-3xl font-light text-white mt-4 md:mt-8"
-              style={{
-                textShadow: '2px 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.6)'
-              }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{
-                opacity: 1,
-                y: 0
-              }}
-              exit={{
-                opacity: 0,
-                y: -20
-              }}
-              transition={{
-                duration: 1,
-                ease: "easeOut",
-                delay: 0.8
-              }}
-            >
-              Performance you can feel, value you can trust.
-            </motion.p>
+            <div className="mt-4 md:mt-8 max-w-sm sm:max-w-none mx-auto px-4 text-center">
+              <motion.p
+                className="text-lg sm:text-xl md:text-3xl font-light text-white"
+                style={{
+                  textShadow: '2px 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.6)'
+                }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{
+                  opacity: 1,
+                  y: 0
+                }}
+                exit={{
+                  opacity: 0,
+                  y: -20
+                }}
+                transition={{
+                  duration: 0.8,
+                  ease: "easeOut",
+                  delay: 0.8
+                }}
+              >
+                Performance you can feel.
+              </motion.p>
+              <motion.p
+                className="text-lg sm:text-xl md:text-3xl font-light text-white mt-1"
+                style={{
+                  textShadow: '2px 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.6)'
+                }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{
+                  opacity: 1,
+                  y: 0
+                }}
+                exit={{
+                  opacity: 0,
+                  y: -20
+                }}
+                transition={{
+                  duration: 0.8,
+                  ease: "easeOut",
+                  delay: 1.4
+                }}
+              >
+                Value you can trust.
+              </motion.p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -182,7 +288,7 @@ export function OpeningSlide() {
       <AnimatePresence>
         {showMainContent && (
           <motion.div
-            className="text-center z-10 max-w-4xl mx-auto px-6"
+            className="text-center z-10 max-w-4xl mx-auto px-4 sm:px-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -200,7 +306,7 @@ export function OpeningSlide() {
               className="mb-8"
             >
               <motion.div
-                className="relative w-64 md:w-96 h-20 md:h-32 mx-auto mb-4"
+                className="relative w-48 sm:w-64 md:w-96 h-16 sm:h-20 md:h-32 mx-auto mb-4"
                 animate={{
                   filter: [
                     'drop-shadow(0 0 20px rgba(225, 25, 34, 0.5))',
@@ -235,7 +341,7 @@ export function OpeningSlide() {
               className="space-y-4"
             >
               <motion.p
-                className="text-3xl md:text-5xl font-light text-white mb-2"
+                className="text-2xl sm:text-3xl md:text-5xl font-light text-white mb-2"
                 style={{ textShadow: '2px 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.6)' }}
                 animate={{ opacity: [1, 0.7, 1] }}
                 transition={{
@@ -258,7 +364,7 @@ export function OpeningSlide() {
               >
                 {/* Crossed out original price */}
                 <motion.span
-                  className="text-4xl md:text-6xl font-bold text-white relative"
+                  className="text-3xl sm:text-4xl md:text-6xl font-bold text-white relative"
                   style={{ textShadow: '2px 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.6)' }}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -279,7 +385,7 @@ export function OpeningSlide() {
 
                 {/* Current price */}
                 <motion.span
-                  className="text-4xl md:text-6xl font-bold text-red-500"
+                  className="text-3xl sm:text-4xl md:text-6xl font-bold text-red-500"
                   style={{ textShadow: '2px 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.6)' }}
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -298,11 +404,42 @@ export function OpeningSlide() {
                 delay: 3.3,
                 duration: 0.8
               }}
-              className="text-lg md:text-xl text-white/90 mt-8 max-w-2xl mx-auto leading-relaxed"
+              className="text-base sm:text-lg md:text-xl text-white/90 mt-8 max-w-md md:max-w-2xl mx-auto leading-relaxed px-4"
               style={{ textShadow: '2px 2px 10px rgba(0,0,0,0.9), 0 0 16px rgba(0,0,0,0.5)' }}
             >
               Professional sound quality for students, adult learners, and everyone starting their musical journey
             </motion.p>
+
+            {/* Buy Now Button */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{
+                opacity: 1,
+                scale: 1
+              }}
+              transition={{
+                duration: 0.8,
+                ease: "easeOut",
+                delay: 4.0,
+                type: "spring"
+              }}
+              className="mt-8 text-center"
+            >
+              <Button
+                size="lg"
+                className="px-8 md:px-12 py-4 md:py-6 text-lg md:text-xl font-bold bg-red-600 text-white hover:bg-red-700 rounded-xl md:rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300 w-full max-w-sm min-h-[48px]"
+                asChild
+              >
+                <a
+                  href={outboundUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={handleExternalLinkClick}
+                >
+                  Buy Now
+                </a>
+              </Button>
+            </motion.div>
 
             {/* Scroll Indicator */}
             <motion.div
@@ -315,7 +452,7 @@ export function OpeningSlide() {
                 delay: 3.9,
                 duration: 0.6
               }}
-              className="absolute bottom-20 md:bottom-8 left-1/2 transform -translate-x-1/2"
+              className="absolute bottom-12 md:bottom-8 left-1/2 transform -translate-x-1/2"
             >
               <motion.div
                 animate={{ y: [0, 10, 0] }}

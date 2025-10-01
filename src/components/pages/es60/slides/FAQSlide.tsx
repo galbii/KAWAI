@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 /**
  * FAQ Slide - Cinematic Integration
@@ -77,10 +78,10 @@ function FAQItemComponent({ item, index, isOpen, onToggle, isInView }: FAQItemCo
     >
       <button
         onClick={onToggle}
-        className="w-full py-4 md:py-5 px-2 flex items-start justify-between text-left group"
+        className="w-full py-4 md:py-5 px-4 sm:px-6 flex items-start justify-between text-left group"
         aria-expanded={isOpen}
       >
-        <h3 className="text-base md:text-lg font-semibold text-white pr-6 group-hover:text-red-400 transition-colors duration-200">
+        <h3 className="text-base sm:text-lg font-semibold text-white pr-4 sm:pr-6 group-hover:text-red-400 transition-colors duration-200">
           {item.question}
         </h3>
         <motion.div
@@ -101,8 +102,8 @@ function FAQItemComponent({ item, index, isOpen, onToggle, isInView }: FAQItemCo
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className="px-2 pb-5">
-              <p className="text-sm md:text-base text-white/80 leading-relaxed">
+            <div className="px-4 sm:px-6 pb-5">
+              <p className="text-sm sm:text-base text-white/80 leading-relaxed">
                 {item.answer}
               </p>
             </div>
@@ -117,6 +118,76 @@ export function FAQSlide() {
   const containerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(containerRef, { once: false, amount: 0.3 });
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [outboundUrl, setOutboundUrl] = useState('https://kawaius.com/product/kawai-es60/');
+
+  // Build outbound URL with preserved UTM parameters and fbclid
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const currentParams = new URLSearchParams(window.location.search);
+      const baseUrl = 'https://kawaius.com/product/kawai-es60/';
+      const outboundParams = new URLSearchParams();
+
+      // Preserve all UTM parameters from the incoming URL
+      const utmParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'utm_id'];
+      utmParams.forEach(param => {
+        const value = currentParams.get(param);
+        if (value) {
+          outboundParams.set(param, value);
+        }
+      });
+
+      // Preserve fbclid (Facebook Click ID) - critical for attribution
+      const fbclid = currentParams.get('fbclid');
+      if (fbclid) {
+        outboundParams.set('fbclid', fbclid);
+      }
+
+      // If no UTM parameters were found, use default ones
+      if (!outboundParams.has('utm_source')) {
+        outboundParams.set('utm_source', 'direct');
+        outboundParams.set('utm_medium', 'referral');
+        outboundParams.set('utm_campaign', 'es60_awareness_campaign');
+        outboundParams.set('utm_content', 'faq_cta');
+      }
+
+      // Build final URL
+      const finalUrl = `${baseUrl}?${outboundParams.toString()}`;
+      setOutboundUrl(finalUrl);
+    }
+  }, []);
+
+  // Handle external link click tracking
+  const handleExternalLinkClick = () => {
+    // Get UTM parameters from URL for tracking
+    const urlParams = new URLSearchParams(window.location.search);
+    const utmCampaign = urlParams.get('utm_campaign') || 'direct';
+    const utmSource = urlParams.get('utm_source') || 'direct';
+    const utmMedium = urlParams.get('utm_medium') || 'none';
+    const utmContent = urlParams.get('utm_content') || 'none';
+
+    // Track the outbound click as a conversion event with UTM data
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      (window as any).fbq('track', 'InitiateCheckout', {
+        content_name: 'ES60 Digital Piano',
+        content_category: 'Digital Piano',
+        value: 499,
+        currency: 'USD',
+        utm_campaign: utmCampaign,
+        utm_source: utmSource,
+        utm_medium: utmMedium,
+        utm_content: utmContent,
+        source: 'es60_landing_page_faq'
+      });
+
+      // Also track as a custom event for additional granularity
+      (window as any).fbq('trackCustom', 'ES60_ProductClick', {
+        campaign: utmCampaign,
+        value: 499,
+        currency: 'USD',
+        source: 'faq_slide'
+      });
+    }
+  };
 
   const toggleQuestion = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -158,8 +229,8 @@ export function FAQSlide() {
         ))}
       </div>
 
-      <div className="relative z-10 h-full flex items-center justify-center overflow-y-auto scrollbar-hide py-12">
-        <div className="w-full max-w-3xl mx-auto px-6 md:px-8">
+      <div className="relative z-10 h-full flex items-start justify-center py-8 sm:py-12 px-4">
+        <div className="w-full max-w-3xl mx-auto">
           {/* Section Header */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -173,16 +244,16 @@ export function FAQSlide() {
             <p className="text-blue-400 text-sm md:text-base font-medium mb-4 tracking-wide uppercase">
               Questions & Answers
             </p>
-            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white mb-4 leading-tight">
               Everything You
               <span className="block text-blue-400">Need to Know</span>
             </h2>
-            <p className="text-base md:text-lg text-white/70 max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base md:text-lg text-white/70 max-w-2xl mx-auto px-4">
               Common questions from beginners, students, and adult learners
             </p>
           </motion.div>
 
-          {/* FAQ List */}
+          {/* FAQ List - Non-scrollable, fixed height */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{
@@ -190,43 +261,48 @@ export function FAQSlide() {
               y: isInView ? 0 : 20
             }}
             transition={{ delay: isInView ? 0.5 : 0, duration: 1 }}
-            className="bg-black/40 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden"
+            className="bg-black/40 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden mb-6"
           >
-            <div className="max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
-              {cinematicFAQData.map((item, index) => (
-                <FAQItemComponent
-                  key={index}
-                  item={item}
-                  index={index}
-                  isOpen={openIndex === index}
-                  onToggle={() => toggleQuestion(index)}
-                  isInView={isInView}
-                />
-              ))}
-            </div>
+            {cinematicFAQData.map((item, index) => (
+              <FAQItemComponent
+                key={index}
+                item={item}
+                index={index}
+                isOpen={openIndex === index}
+                onToggle={() => toggleQuestion(index)}
+                isInView={isInView}
+              />
+            ))}
           </motion.div>
 
-          {/* CTA Footer */}
+          {/* CTA Button */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, scale: 0.8 }}
             animate={{
               opacity: isInView ? 1 : 0,
-              y: isInView ? 0 : 20
+              scale: isInView ? 1 : 0.8
             }}
-            transition={{ delay: isInView ? 1.5 : 0, duration: 1 }}
-            className="mt-8 text-center"
+            transition={{
+              delay: isInView ? 1.5 : 0,
+              duration: 1,
+              type: "spring"
+            }}
+            className="text-center"
           >
-            <p className="text-white/60 text-sm md:text-base mb-4">
-              Still have questions about the ES60?
-            </p>
-            <motion.a
-              href="/contact?product=es60&source=cinematic-faq"
-              className="inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-4 text-base md:text-lg font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors duration-200 shadow-lg hover:shadow-xl"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <Button
+              size="lg"
+              className="px-6 md:px-12 py-4 md:py-6 text-base md:text-xl font-bold bg-white text-red-600 hover:bg-gray-100 rounded-xl md:rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300 w-full max-w-md min-h-[48px]"
+              asChild
             >
-              Contact Our Experts
-            </motion.a>
+              <a
+                href={outboundUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={handleExternalLinkClick}
+              >
+                Get Your ES60 Today
+              </a>
+            </Button>
           </motion.div>
         </div>
       </div>

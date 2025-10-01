@@ -13,6 +13,30 @@ export function ExperienceSlide() {
   const [isMuted, setIsMuted] = useState(true);
   const [hasPlayed, setHasPlayed] = useState(false);
   const [outboundUrl, setOutboundUrl] = useState('https://kawaius.com/product/kawai-es60/');
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Animation timing configuration - faster on mobile
+  const timing = {
+    container: { delay: 0, duration: isMobile ? 0.6 : 0.8 },
+    heading: { delay: isMobile ? 0.2 : 0.3, duration: isMobile ? 0.8 : 1 },
+    underline: { delay: isMobile ? 1.2 : 1.5, duration: isMobile ? 0.5 : 0.7 },
+    video: { delay: isMobile ? 1.8 : 2.3, duration: isMobile ? 0.8 : 1 },
+    videoPlay: isMobile ? 2200 : 2800,
+    soundToggle: { delay: isMobile ? 2.8 : 3.5, duration: isMobile ? 0.4 : 0.5 },
+    cta: { delay: isMobile ? 4.0 : 5.0, duration: isMobile ? 0.8 : 1 }
+  };
 
   // Build outbound URL with preserved UTM parameters and fbclid
   useEffect(() => {
@@ -50,10 +74,10 @@ export function ExperienceSlide() {
     }
   }, []);
 
-  // Autoplay video ONLY when slide comes into view
+  // Autoplay video with improved timing - plays during video reveal animation
   useEffect(() => {
     if (isInView && iframeRef.current?.contentWindow && !hasPlayed) {
-      // Small delay to ensure iframe is ready
+      // Delay based on mobile/desktop timing for dramatic reveal
       const timer = setTimeout(() => {
         if (iframeRef.current?.contentWindow) {
           iframeRef.current.contentWindow.postMessage(
@@ -62,7 +86,7 @@ export function ExperienceSlide() {
           );
           setHasPlayed(true);
         }
-      }, 300);
+      }, timing.videoPlay);
       return () => clearTimeout(timer);
     } else if (!isInView) {
       // Pause video when slide is out of view
@@ -75,7 +99,7 @@ export function ExperienceSlide() {
       setHasPlayed(false);
     }
     return undefined;
-  }, [isInView, hasPlayed]);
+  }, [isInView, hasPlayed, timing.videoPlay]);
 
   // Handle external link click tracking
   const handleExternalLinkClick = () => {
@@ -144,34 +168,40 @@ export function ExperienceSlide() {
       }}
       initial={{ opacity: 0 }}
       animate={{ opacity: isInView ? 1 : 0.3 }}
-      transition={{ duration: 1.5 }}
+      transition={{ duration: timing.container.duration }}
     >
       <div className="w-full max-w-5xl px-4 md:px-8">
         {/* Heading - "Instrumental to Life" - Right above video */}
         <motion.div
           initial={{ opacity: 0, y: -40 }}
           animate={{ opacity: isInView ? 1 : 0, y: isInView ? 0 : -40 }}
-          transition={{ duration: 2, ease: 'easeOut', delay: 1 }}
+          transition={{ duration: timing.heading.duration, ease: 'easeOut', delay: timing.heading.delay }}
           className="mb-4 md:mb-6 z-20"
         >
           <div className="text-center">
             <h2
-              className="text-3xl md:text-5xl lg:text-6xl font-bold text-white drop-shadow-2xl"
+              className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-bold text-white drop-shadow-2xl"
               style={{ fontFamily: '"Buenapark JF", "Crimson Text", serif' }}
             >
               Instrumental to Life
             </h2>
             <motion.div
-              className="mt-3 md:mt-4 h-1 w-24 md:w-32 bg-gradient-to-r from-transparent via-white to-transparent mx-auto"
+              className="mt-3 md:mt-4 h-1 w-20 sm:w-24 md:w-32 bg-gradient-to-r from-transparent via-white to-transparent mx-auto"
               initial={{ scaleX: 0, opacity: 0 }}
               animate={{ scaleX: isInView ? 1 : 0, opacity: isInView ? 1 : 0 }}
-              transition={{ duration: 1.5, ease: 'easeOut', delay: 2 }}
+              transition={{ duration: timing.underline.duration, ease: 'easeOut', delay: timing.underline.delay }}
             />
           </div>
         </motion.div>
 
         {/* Video Container */}
-        <div className="relative w-full mb-6 md:mb-8" style={{ aspectRatio: '16/9' }}>
+        <motion.div
+          className="relative w-full mb-6 md:mb-8"
+          style={{ aspectRatio: '16/9' }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: isInView ? 1 : 0, scale: isInView ? 1 : 0.95 }}
+          transition={{ duration: timing.video.duration, ease: 'easeOut', delay: timing.video.delay }}
+        >
           {/* YouTube Video Embed with cropped controls */}
           <div className="absolute inset-0 overflow-hidden rounded-lg md:rounded-xl shadow-2xl">
             <iframe
@@ -193,12 +223,20 @@ export function ExperienceSlide() {
           {/* Sound Toggle Button - Bottom Right of Video */}
           <motion.button
             onClick={handleSoundToggle}
-            className="absolute -bottom-4 -right-4 md:bottom-4 md:right-4 z-30 p-3 md:p-4 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-full border border-white/20 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50"
+            className="absolute bottom-2 right-2 md:bottom-4 md:right-4 z-30 p-3 md:p-4 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-full border border-white/20 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50 min-w-[44px] min-h-[44px] flex items-center justify-center"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: isInView ? 1 : 0, scale: isInView ? 1 : 0.8 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
+            animate={{
+              opacity: isInView ? 1 : 0,
+              scale: isInView ? (isMuted ? [1, 1.1, 1] : 1) : 0.8
+            }}
+            transition={{
+              opacity: { delay: timing.soundToggle.delay, duration: timing.soundToggle.duration },
+              scale: isMuted
+                ? { delay: timing.soundToggle.delay, duration: 0.6, repeat: Infinity, repeatDelay: 1 }
+                : { delay: timing.soundToggle.delay, duration: timing.soundToggle.duration }
+            }}
             aria-label={isMuted ? "Unmute video" : "Mute video"}
           >
             {isMuted ? (
@@ -207,7 +245,7 @@ export function ExperienceSlide() {
               <Volume2 className="w-5 h-5 md:w-6 md:h-6 text-white" />
             )}
           </motion.button>
-        </div>
+        </motion.div>
 
         {/* CTA Button - Closer to video */}
         <motion.div
@@ -217,8 +255,8 @@ export function ExperienceSlide() {
             scale: isInView ? 1 : 0.8
           }}
           transition={{
-            delay: isInView ? 2.5 : 0,
-            duration: 1,
+            delay: isInView ? timing.cta.delay : 0,
+            duration: timing.cta.duration,
             type: "spring"
           }}
           className="z-20"
@@ -226,7 +264,7 @@ export function ExperienceSlide() {
           <div className="text-center">
             <Button
               size="lg"
-              className="px-6 md:px-12 py-3 md:py-6 text-base md:text-xl font-bold bg-white text-red-600 hover:bg-gray-100 rounded-xl md:rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300 w-full max-w-md"
+              className="px-6 md:px-12 py-4 md:py-6 text-base md:text-xl font-bold bg-white text-red-600 hover:bg-gray-100 rounded-xl md:rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300 w-full max-w-md min-h-[48px]"
               asChild
             >
               <a

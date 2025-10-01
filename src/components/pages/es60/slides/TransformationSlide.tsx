@@ -189,7 +189,7 @@ export function TransformationSlide() {
             transition={{ delay: 2.5, duration: 0.8 }}
             className="mb-6 md:mb-8"
           >
-            <div className="flex flex-wrap justify-center gap-2 md:gap-4">
+            <div className="flex flex-wrap justify-center gap-3 md:gap-4 px-4">
               {[
                 { key: 'student' as ScenarioType, label: 'Student Life', icon: <Package className="w-4 h-4" /> },
                 { key: 'lateNight' as ScenarioType, label: 'Late Night Learner', icon: <Moon className="w-4 h-4" /> },
@@ -203,8 +203,9 @@ export function TransformationSlide() {
                     key={scenario.key}
                     onClick={() => setActiveScenario(scenario.key)}
                     className={`
-                      px-4 md:px-6 py-2 md:py-3 rounded-lg border-2 transition-all
-                      flex items-center gap-2 text-sm md:text-base font-medium
+                      px-3 sm:px-4 md:px-6 py-2.5 md:py-3 rounded-lg border-2 transition-all
+                      flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm md:text-base font-medium
+                      min-h-[44px] min-w-[100px] sm:min-w-auto justify-center
                       ${isActive ? `${colors.border} ${colors.bg} ${colors.text}` : 'border-white/20 text-white/70 hover:border-white/40'}
                     `}
                     whileHover={{ scale: 1.05 }}
@@ -254,16 +255,16 @@ export function TransformationSlide() {
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.1 + 0.2 }}
-                          className="flex items-start gap-3 bg-black/40 backdrop-blur-sm rounded-lg p-3 md:p-4 border border-white/10"
+                          className="flex items-start gap-2 sm:gap-3 bg-black/40 backdrop-blur-sm rounded-lg p-3 sm:p-4 md:p-4 border border-white/10"
                         >
-                          <div className={`flex-shrink-0 ${currentColors.text}`}>
+                          <div className={`flex-shrink-0 ${currentColors.text} w-6 h-6 flex items-center justify-center`}>
                             {typeof feature.icon === 'string' ? (
                               <span className="text-2xl">{feature.icon}</span>
                             ) : (
                               feature.icon
                             )}
                           </div>
-                          <p className="text-white/90 text-sm md:text-base">{feature.text}</p>
+                          <p className="text-white/90 text-sm md:text-base leading-relaxed">{feature.text}</p>
                         </motion.div>
                       ))}
                     </div>
@@ -301,7 +302,7 @@ export function TransformationSlide() {
 
               {/* Right: ES60 Image with Hotspots */}
               <motion.div
-                className="order-1 lg:order-2 relative h-64 md:h-80 lg:h-96"
+                className="order-1 lg:order-2 relative h-48 sm:h-64 md:h-80 lg:h-96"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{
                   opacity: showES60 ? 1 : 0,
@@ -372,9 +373,11 @@ export function TransformationSlide() {
                       <motion.div
                         className={`
                           absolute left-6 top-1/2 -translate-y-1/2
-                          bg-black/90 backdrop-blur-sm rounded-lg px-3 py-2
-                          border ${currentColors.border} whitespace-nowrap
+                          bg-black/90 backdrop-blur-sm rounded-lg px-2 py-1.5 md:px-3 md:py-2
+                          border ${currentColors.border}
                           text-xs md:text-sm ${currentColors.text} font-medium
+                          max-w-[120px] sm:max-w-none sm:whitespace-nowrap
+                          break-words sm:break-normal
                         `}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
