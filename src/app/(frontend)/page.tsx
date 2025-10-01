@@ -115,6 +115,7 @@ function ContactFormSkeleton() {
 // Server Component that fetches data and renders sections
 async function HomePageContent() {
   let homePageData: HomePageData | null = null;
+  let dealerLocations: any[] = [];
   let error: string | null = null;
 
   try {
@@ -122,6 +123,26 @@ async function HomePageContent() {
   } catch (err) {
     error = err instanceof Error ? err.message : 'Failed to load homepage data';
     console.error('Homepage data fetch error:', error);
+  }
+
+  // Fetch dealer locations
+  try {
+    const { getPayload } = await import('payload');
+    const config = (await import('@payload-config')).default;
+    const payload = await getPayload({ config });
+    const result = await payload.find({
+      collection: 'dealer-locations',
+      where: {
+        isActive: {
+          equals: true
+        }
+      },
+      limit: 10,
+      sort: '-updatedAt'
+    });
+    dealerLocations = result.docs;
+  } catch (err) {
+    console.error('Failed to fetch dealer locations:', err);
   }
 
   // If there's an error or no data, components will use their fallback defaults
@@ -150,7 +171,7 @@ async function HomePageContent() {
       <SoundQualitySection />
 
       {/* Dealer Locations Section */}
-      <DealerLocations />
+      <DealerLocations locations={dealerLocations} />
 
       {/* Piano Gallery Section */}
       <PianoGallery {...(homePageData?.pianoGallerySection && { data: homePageData.pianoGallerySection })} />

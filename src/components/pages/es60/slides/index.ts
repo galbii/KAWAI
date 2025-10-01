@@ -1,19 +1,19 @@
 // ES60 Cinematic Slides - Modular scroll-triggered components
 
 import { OpeningSlide } from './OpeningSlide';
-import { HeritageSlide } from './HeritageSlide';
+import { PremiumSoundSlide } from './PremiumSoundSlide';
 import { TransformationSlide } from './TransformationSlide';
 import { ExperienceSlide } from './ExperienceSlide';
 import { FAQSlide } from './FAQSlide';
 import { FinaleSlide } from './FinaleSlide';
 
 // Re-export individual components
-export { OpeningSlide, HeritageSlide, TransformationSlide, ExperienceSlide, FAQSlide, FinaleSlide };
+export { OpeningSlide, PremiumSoundSlide, TransformationSlide, ExperienceSlide, FAQSlide, FinaleSlide };
 
 // Slide configuration for the cinematic presentation
 export const SLIDE_COMPONENTS = [
   OpeningSlide,
-  HeritageSlide,
+  PremiumSoundSlide,
   TransformationSlide,
   ExperienceSlide,
   FAQSlide,
@@ -22,7 +22,7 @@ export const SLIDE_COMPONENTS = [
 
 export const SLIDE_NAMES = [
   'Opening',
-  'Heritage',
+  'Premium Sound',
   'Transformation',
   'Experience',
   'FAQ',

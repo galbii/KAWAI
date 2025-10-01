@@ -1,14 +1,43 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { PianoCollectionProps, DEFAULT_PIANO_COLLECTION_DATA } from '@/lib/types/homepage';
 
 export function PianoCollection({ data = DEFAULT_PIANO_COLLECTION_DATA }: PianoCollectionProps) {
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <section className="py-16 sm:py-24 lg:py-32 bg-white">
+    <section ref={sectionRef} className="py-16 sm:py-24 lg:py-32 bg-white">
       <div className="container mx-auto px-4 sm:px-6 max-w-7xl">
-        
+
         {/* Featured Pianos with Video - Mobile optimized */}
         <div className="grid lg:grid-cols-3 gap-8 lg:gap-16 items-center">
-          <div className="lg:col-span-1 order-2 lg:order-1">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={isVisible ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7 }}
+            className="lg:col-span-1 order-2 lg:order-1"
+          >
             <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-4 sm:mb-6">
               {data.collectionSectionHeader}
             </div>
@@ -23,7 +52,7 @@ export function PianoCollection({ data = DEFAULT_PIANO_COLLECTION_DATA }: PianoC
             <p className="text-lg sm:text-xl md:text-2xl text-kawai-black/70 mb-8 sm:mb-12 leading-relaxed">
               {data.collectionDescription}
             </p>
-            <Link 
+            <Link
               href={data.collectionCta.link}
               className="inline-flex items-center text-kawai-red font-medium text-base sm:text-lg group min-h-[44px] touch-manipulation"
             >
@@ -32,10 +61,15 @@ export function PianoCollection({ data = DEFAULT_PIANO_COLLECTION_DATA }: PianoC
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
             </Link>
-          </div>
-          
+          </motion.div>
+
           {/* YouTube Video Embed - Simple responsive container */}
-          <div className="lg:col-span-2 relative order-1 lg:order-2">
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={isVisible ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="lg:col-span-2 relative order-1 lg:order-2"
+          >
             <div className="relative w-full overflow-hidden rounded-lg shadow-lg" style={{ paddingBottom: '56.25%' /* 16:9 aspect ratio */ }}>
               <iframe
                 src={`https://www.youtube.com/embed/${data.featuredVideo.youtubeId || "1cmwb6evs2A"}?modestbranding=1&rel=0`}
@@ -44,9 +78,9 @@ export function PianoCollection({ data = DEFAULT_PIANO_COLLECTION_DATA }: PianoC
                 frameBorder="0"
               />
             </div>
-          </div>
+          </motion.div>
         </div>
-        
+
       </div>
     </section>
   );

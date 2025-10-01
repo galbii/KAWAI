@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
@@ -12,6 +12,25 @@ interface FAQItem {
 
 export function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const faqs: FAQItem[] = [
     {
@@ -81,10 +100,15 @@ export function FAQSection() {
         }}
       />
 
-      <section className="relative bg-kawai-pearl py-16 sm:py-20 lg:py-28">
+      <section ref={sectionRef} className="relative bg-kawai-pearl py-16 sm:py-20 lg:py-28">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
           {/* Section Header */}
-          <div className="text-center mb-12 lg:mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={isVisible ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7 }}
+            className="text-center mb-12 lg:mb-16"
+          >
             <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-4">
               Your Questions Answered
             </div>
@@ -95,16 +119,19 @@ export function FAQSection() {
             <p className="text-lg sm:text-xl text-kawai-black/70 max-w-2xl mx-auto leading-relaxed">
               Everything you need to know about Kawai piano quality, technology, and value.
             </p>
-          </div>
+          </motion.div>
 
           {/* FAQ Accordion */}
           <div className="space-y-4">
             {faqs.map((faq, index) => (
-              <div
+              <motion.div
                 key={index}
-                className="bg-white rounded-xl shadow-sm border border-kawai-pearl/50 overflow-hidden hover:shadow-md transition-shadow duration-300"
+                initial={{ opacity: 0, y: 20 }}
+                animate={isVisible ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6, delay: 0.2 + (index * 0.05) }}
               >
-                <button
+                <div className="bg-white rounded-xl shadow-sm border border-kawai-pearl/50 overflow-hidden hover:shadow-md transition-shadow duration-300">
+                  <button
                   onClick={() => toggleFAQ(index)}
                   className="w-full px-6 py-5 sm:px-8 sm:py-6 flex items-center justify-between text-left hover:bg-kawai-pearl/20 transition-colors duration-200 min-h-[44px]"
                   aria-expanded={openIndex === index}
@@ -172,12 +199,18 @@ export function FAQSection() {
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
+                </div>
+              </motion.div>
             ))}
           </div>
 
           {/* Bottom CTA */}
-          <div className="text-center mt-12 lg:mt-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isVisible ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="text-center mt-12 lg:mt-16"
+          >
             <p className="text-kawai-black/70 mb-6 text-lg">
               Still have questions? We're here to help.
             </p>
@@ -190,7 +223,7 @@ export function FAQSection() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
             </Link>
-          </div>
+          </motion.div>
         </div>
       </section>
     </>

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -51,6 +52,25 @@ export function ContactForm({ data }: ContactFormProps) {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const formSchema = createFormSchema(formData.formOptions);
 
@@ -155,20 +175,30 @@ export function ContactForm({ data }: ContactFormProps) {
   }
 
   return (
-    <section className="py-24 bg-kawai-pearl">
+    <section ref={sectionRef} className="py-24 bg-kawai-pearl">
       <div className="container mx-auto px-6 max-w-4xl">
         {/* Header with better mobile typography */}
-        <div className="text-center mb-8 sm:mb-12">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isVisible ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7 }}
+          className="text-center mb-8 sm:mb-12"
+        >
           <h2 className="text-3xl sm:text-5xl md:text-6xl font-light font-serif text-kawai-black mb-4 sm:mb-6 px-4 sm:px-0">
             {formData.contactTitle} <span className="text-kawai-red">{formData.contactTitleHighlight}</span>
           </h2>
           <p className="text-lg sm:text-xl text-kawai-black/70 max-w-2xl mx-auto px-4 sm:px-0">
             {formData.contactDescription}
           </p>
-        </div>
+        </motion.div>
 
         {/* Progress Indicator */}
-        <div className="flex justify-center mb-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isVisible ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="flex justify-center mb-12"
+        >
           <div className="flex items-center space-x-4">
             {[1, 2, 3].map((step) => (
               <div key={step} className="flex items-center">
@@ -195,10 +225,15 @@ export function ContactForm({ data }: ContactFormProps) {
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Form with better mobile padding */}
-        <div className="bg-white rounded-lg shadow-xl p-6 sm:p-8 md:p-12 mx-4 sm:mx-0">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isVisible ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7, delay: 0.3 }}
+          className="bg-white rounded-lg shadow-xl p-6 sm:p-8 md:p-12 mx-4 sm:mx-0"
+        >
           <h3 className="text-xl sm:text-2xl font-serif text-kawai-black mb-6 sm:mb-8 text-center">
             {formData.stepTitles[currentStep - 1]?.step || `Step ${currentStep}`}
           </h3>
@@ -472,10 +507,15 @@ export function ContactForm({ data }: ContactFormProps) {
               )}
             </div>
           </form>
-        </div>
+        </motion.div>
 
         {/* Trust Elements */}
-        <div className="mt-12 text-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={isVisible ? { opacity: 1 } : {}}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="mt-12 text-center"
+        >
           <p className="text-sm text-kawai-black/60 mb-4">
             {formData.trustMessage}
           </p>
@@ -486,7 +526,7 @@ export function ContactForm({ data }: ContactFormProps) {
             <div className="w-px h-4 bg-kawai-black/20"></div>
             <div className="text-xs text-kawai-black/40">Missouri's Kawai Experts</div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

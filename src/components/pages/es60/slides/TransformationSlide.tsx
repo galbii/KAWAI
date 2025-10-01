@@ -1,14 +1,36 @@
 "use client";
 
 import { useRef, useState, useEffect } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { Headphones } from 'lucide-react';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { Headphones, Home, Moon, Package } from 'lucide-react';
 import Image from 'next/image';
+
+type ScenarioType = 'student' | 'lateNight' | 'smallSpace';
+
+interface Hotspot {
+  x: number;
+  y: number;
+  label: string;
+}
+
+interface ScenarioFeature {
+  icon: React.ReactNode;
+  text: string;
+}
+
+interface ScenarioContent {
+  headline: string;
+  features: ScenarioFeature[];
+  hotspots: Hotspot[];
+  cta: string;
+  color: string;
+}
 
 export function TransformationSlide() {
   const containerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(containerRef, { once: false, amount: 0.3 });
   const [showES60, setShowES60] = useState(false);
+  const [activeScenario, setActiveScenario] = useState<ScenarioType>('student');
 
   // Trigger ES60 transformation when slide comes into view
   useEffect(() => {
@@ -20,6 +42,81 @@ export function TransformationSlide() {
     }
     return undefined;
   }, [isInView]);
+
+  // Scenario content definitions
+  const scenarioContent: Record<ScenarioType, ScenarioContent> = {
+    student: {
+      headline: "Built for Student Life",
+      features: [
+        { icon: <Headphones className="w-5 h-5" />, text: "Dual headphones for roommate-friendly practice" },
+        { icon: <Package className="w-5 h-5" />, text: "24 lbs - easy to move between home and dorm" },
+        { icon: "🎹", text: "Full 88 keys with authentic weighted action" }
+      ],
+      hotspots: [
+        { x: 15, y: 45, label: "Dual Headphone Jacks" },
+        { x: 75, y: 60, label: "Ultra Portable - 24 lbs" }
+      ],
+      cta: "Perfect for college students and music majors",
+      color: "blue"
+    },
+    lateNight: {
+      headline: "Practice Without Limits",
+      features: [
+        { icon: <Moon className="w-5 h-5" />, text: "Silent practice anytime - no neighbor complaints" },
+        { icon: <Headphones className="w-5 h-5" />, text: "Exceptional through-headphone sound quality" },
+        { icon: "⚡", text: "Concert grand sound at any hour" }
+      ],
+      hotspots: [
+        { x: 15, y: 45, label: "Silent Mode" },
+        { x: 50, y: 35, label: "Premium Headphone Audio" }
+      ],
+      cta: "Ideal for late-night practice and apartment living",
+      color: "purple"
+    },
+    smallSpace: {
+      headline: "Big Sound, Small Footprint",
+      features: [
+        { icon: <Home className="w-5 h-5" />, text: "Compact design fits any room" },
+        { icon: "🏋️", text: "Just 24 lbs - one person can move it" },
+        { icon: "🎼", text: "Full concert grand sound, minimal space" }
+      ],
+      hotspots: [
+        { x: 70, y: 60, label: "Only 24 lbs" },
+        { x: 40, y: 30, label: "Compact Design" }
+      ],
+      cta: "Perfect for apartments and small studios",
+      color: "green"
+    }
+  };
+
+  const currentScenario = scenarioContent[activeScenario];
+
+  // Helper to get color classes
+  const getColorClasses = (color: string) => {
+    const colors = {
+      blue: {
+        border: 'border-blue-500',
+        bg: 'bg-blue-500/10',
+        text: 'text-blue-400',
+        glow: 'rgba(59, 130, 246, 0.3)'
+      },
+      purple: {
+        border: 'border-purple-500',
+        bg: 'bg-purple-500/10',
+        text: 'text-purple-400',
+        glow: 'rgba(168, 85, 247, 0.3)'
+      },
+      green: {
+        border: 'border-green-500',
+        bg: 'bg-green-500/10',
+        text: 'text-green-400',
+        glow: 'rgba(34, 197, 94, 0.3)'
+      }
+    };
+    return colors[color as keyof typeof colors] || colors.blue;
+  };
+
+  const currentColors = getColorClasses(currentScenario.color);
 
   return (
     <motion.div
@@ -59,7 +156,7 @@ export function TransformationSlide() {
       </div>
 
       <div className="relative z-10 h-full flex items-center justify-center">
-        <div className="text-center max-w-6xl mx-auto px-6">
+        <div className="text-center max-w-7xl mx-auto px-4 md:px-6">
           {/* Transformation Title */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
@@ -68,175 +165,229 @@ export function TransformationSlide() {
               scale: isInView ? 1 : 0.8
             }}
             transition={{ duration: 1.5 }}
-            className="mb-16"
+            className="mb-8 md:mb-12"
           >
-            <p className="text-red-400 text-sm md:text-lg font-medium mb-4 tracking-wide uppercase">
+            <p className="text-red-400 text-sm md:text-lg font-medium mb-3 tracking-wide uppercase">
               Perfect for Beginners & Students
             </p>
-            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
+            <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-white mb-3">
               Everything You Need
               <span className="block text-red-500">To Start Playing</span>
             </h2>
-            <p className="text-lg md:text-xl text-white/80">
-              Apartment-friendly • Student-portable • Budget-conscious
+            <p className="text-base md:text-lg lg:text-xl text-white/80">
+              Discover how the ES60 fits your lifestyle
             </p>
           </motion.div>
 
-          {/* Morphing Animation Container */}
-          <div className="relative w-full max-w-4xl mx-auto h-80 mb-8">
-            {/* Concert Grand (morphs out) */}
-            <motion.div
-              className="absolute inset-0 flex items-center justify-center"
-              initial={{ opacity: 1, scale: 1 }}
-              animate={{ 
-                opacity: showES60 ? 0 : 1,
-                scale: showES60 ? 1.2 : 1,
-                filter: showES60 ? 'blur(20px)' : 'blur(0px)'
-              }}
-              transition={{ duration: 2, ease: "easeInOut" }}
-            >
-              <div className="text-center">
-                <div className="w-80 md:w-96 h-40 md:h-48 mx-auto mb-6 relative">
-                  <svg viewBox="0 0 400 200" className="w-full h-full">
-                    <path
-                      d="M50 120 Q50 80 100 80 L300 80 Q350 80 350 120 L350 160 Q350 180 330 180 L70 180 Q50 180 50 160 Z"
-                      fill="#1a1a1a"
-                      stroke="#666"
-                      strokeWidth="2"
-                    />
-                    <rect x="80" y="160" width="240" height="20" fill="#f8f8f8" stroke="#333" />
-                  </svg>
-                </div>
-                <p className="text-white/60 text-lg">Concert Grand Heritage</p>
-              </div>
-            </motion.div>
+          {/* Scenario Switcher - Mobile Friendly */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{
+              opacity: showES60 ? 1 : 0,
+              y: showES60 ? 0 : -20
+            }}
+            transition={{ delay: 2.5, duration: 0.8 }}
+            className="mb-6 md:mb-8"
+          >
+            <div className="flex flex-wrap justify-center gap-2 md:gap-4">
+              {[
+                { key: 'student' as ScenarioType, label: 'Student Life', icon: <Package className="w-4 h-4" /> },
+                { key: 'lateNight' as ScenarioType, label: 'Late Night Learner', icon: <Moon className="w-4 h-4" /> },
+                { key: 'smallSpace' as ScenarioType, label: 'Small Space Hero', icon: <Home className="w-4 h-4" /> }
+              ].map((scenario) => {
+                const isActive = activeScenario === scenario.key;
+                const colors = getColorClasses(scenarioContent[scenario.key].color);
 
-            {/* ES60 Large Image (slides in from right, bleeds off screen) */}
-            <motion.div
-              className="absolute top-0 h-full"
-              style={{
-                width: '70vw',
-                right: '-30vw' // Extends beyond right edge
-              }}
-              initial={{ opacity: 0, x: '30vw' }}
-              animate={{
-                opacity: showES60 ? 1 : 0,
-                x: showES60 ? 0 : '30vw'
-              }}
-              transition={{ delay: 1, duration: 2, ease: "easeOut" }}
-            >
+                return (
+                  <motion.button
+                    key={scenario.key}
+                    onClick={() => setActiveScenario(scenario.key)}
+                    className={`
+                      px-4 md:px-6 py-2 md:py-3 rounded-lg border-2 transition-all
+                      flex items-center gap-2 text-sm md:text-base font-medium
+                      ${isActive ? `${colors.border} ${colors.bg} ${colors.text}` : 'border-white/20 text-white/70 hover:border-white/40'}
+                    `}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {scenario.icon}
+                    <span className="hidden sm:inline">{scenario.label}</span>
+                    <span className="sm:hidden">{scenario.label.split(' ')[0]}</span>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </motion.div>
+
+          {/* Interactive Scenario Content */}
+          <div className="relative w-full max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 items-center">
+
+              {/* Left: Dynamic Content */}
               <motion.div
-                className="relative w-full h-full"
+                initial={{ opacity: 0, x: -100 }}
                 animate={{
-                  filter: showES60 ? [
-                    'drop-shadow(0 0 30px rgba(225, 25, 34, 0.2))',
-                    'drop-shadow(0 0 50px rgba(225, 25, 34, 0.4))',
-                    'drop-shadow(0 0 30px rgba(225, 25, 34, 0.2))'
-                  ] : 'drop-shadow(0 0 30px rgba(225, 25, 34, 0.2))'
+                  opacity: showES60 ? 1 : 0,
+                  x: showES60 ? 0 : -100
                 }}
-                transition={{
-                  duration: 3,
-                  repeat: showES60 ? Infinity : 0,
-                  ease: "easeInOut"
-                }}
+                transition={{ delay: 1.5, duration: 1.5, ease: "easeOut" }}
+                className="order-2 lg:order-1 space-y-6"
               >
-                <Image
-                  src="/images/es60-above-closeup.png"
-                  alt="ES60 Digital Piano"
-                  fill
-                  className="object-contain object-left"
-                />
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeScenario}
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 30 }}
+                    transition={{ duration: 0.5 }}
+                    className="space-y-6"
+                  >
+                    <h3 className={`text-2xl md:text-3xl lg:text-4xl font-bold ${currentColors.text}`}>
+                      {currentScenario.headline}
+                    </h3>
+
+                    {/* Features List */}
+                    <div className="space-y-4">
+                      {currentScenario.features.map((feature, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1 + 0.2 }}
+                          className="flex items-start gap-3 bg-black/40 backdrop-blur-sm rounded-lg p-3 md:p-4 border border-white/10"
+                        >
+                          <div className={`flex-shrink-0 ${currentColors.text}`}>
+                            {typeof feature.icon === 'string' ? (
+                              <span className="text-2xl">{feature.icon}</span>
+                            ) : (
+                              feature.icon
+                            )}
+                          </div>
+                          <p className="text-white/90 text-sm md:text-base">{feature.text}</p>
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    {/* CTA */}
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.6 }}
+                      className={`text-base md:text-lg font-medium ${currentColors.text}`}
+                    >
+                      {currentScenario.cta}
+                    </motion.p>
+
+                    {/* Price Section */}
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.8 }}
+                      className="bg-black/60 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-red-500/30"
+                    >
+                      <p className="text-white/80 text-sm md:text-base mb-2">
+                        Professional features at an affordable price
+                      </p>
+                      <p className="text-red-500 text-3xl md:text-4xl font-bold mb-1">
+                        Only $499
+                      </p>
+                      <p className="text-white/70 text-xs md:text-sm">
+                        Best affordable digital piano for beginners
+                      </p>
+                    </motion.div>
+                  </motion.div>
+                </AnimatePresence>
               </motion.div>
-            </motion.div>
 
-            {/* Left Side Content */}
-            <motion.div
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 w-2/5 pl-8 md:pl-16"
-              initial={{ opacity: 0, x: -100 }}
-              animate={{
-                opacity: showES60 ? 1 : 0,
-                x: showES60 ? 0 : -100
-              }}
-              transition={{ delay: 1.5, duration: 1.5, ease: "easeOut" }}
-            >
-              <div className="space-y-6">
-                <p className="text-red-400 text-xl md:text-2xl font-bold" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}>
-                  Beginner-Friendly Features
-                </p>
-
-                {/* Feature Highlights - Vertical Layout */}
-                <div className="space-y-4">
-                  <motion.div
-                    className="flex items-center gap-4"
-                    initial={{ opacity: 0, x: -50 }}
-                    animate={{
-                      opacity: showES60 ? 1 : 0,
-                      x: showES60 ? 0 : -50
-                    }}
-                    transition={{ delay: 2, duration: 1, ease: "easeOut" }}
-                  >
-                    <div className="text-left">
-                      <p className="text-red-500 text-2xl md:text-3xl font-bold">24 lbs</p>
-                      <p className="text-white/80 text-sm md:text-base" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}>Perfect for Apartments & Dorms</p>
-                    </div>
-                  </motion.div>
-
-                  <motion.div
-                    className="flex items-center gap-4"
-                    initial={{ opacity: 0, x: -50 }}
-                    animate={{
-                      opacity: showES60 ? 1 : 0,
-                      x: showES60 ? 0 : -50
-                    }}
-                    transition={{ delay: 2.3, duration: 1, ease: "easeOut" }}
-                  >
-                    <div className="flex items-start gap-3">
-                      <Headphones className="w-6 h-6 text-red-400 flex-shrink-0 mt-1" />
-                      <div>
-                        <p className="text-white font-medium text-base md:text-lg" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}>Silent Practice</p>
-                        <p className="text-white/70 text-xs md:text-sm">Practice anytime, anywhere</p>
-                      </div>
-                    </div>
-                  </motion.div>
-
-                  <motion.div
-                    className="flex items-center gap-4"
-                    initial={{ opacity: 0, x: -50 }}
-                    animate={{
-                      opacity: showES60 ? 1 : 0,
-                      x: showES60 ? 0 : -50
-                    }}
-                    transition={{ delay: 2.6, duration: 1, ease: "easeOut" }}
-                  >
-                    <div className="text-left">
-                      <p className="text-red-500 text-2xl md:text-3xl font-bold">192</p>
-                      <p className="text-white/80 text-sm md:text-base" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}>Polyphony - Never Drop Notes</p>
-                    </div>
-                  </motion.div>
-                </div>
-
-                {/* Price Section */}
+              {/* Right: ES60 Image with Hotspots */}
+              <motion.div
+                className="order-1 lg:order-2 relative h-64 md:h-80 lg:h-96"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{
+                  opacity: showES60 ? 1 : 0,
+                  scale: showES60 ? 1 : 0.8
+                }}
+                transition={{ delay: 1, duration: 2, ease: "easeOut" }}
+              >
+                {/* ES60 Image */}
                 <motion.div
-                  className="space-y-2 pt-4"
-                  initial={{ opacity: 0, scale: 0.8 }}
+                  className="relative w-full h-full"
                   animate={{
-                    opacity: showES60 ? 1 : 0,
-                    scale: showES60 ? 1 : 0.8
+                    filter: showES60 ? [
+                      `drop-shadow(0 0 30px ${currentColors.glow})`,
+                      `drop-shadow(0 0 50px ${currentColors.glow})`,
+                      `drop-shadow(0 0 30px ${currentColors.glow})`
+                    ] : 'drop-shadow(0 0 30px rgba(225, 25, 34, 0.2))'
                   }}
-                  transition={{ delay: 3, duration: 1.2, ease: "easeOut" }}
+                  transition={{
+                    duration: 3,
+                    repeat: showES60 ? Infinity : 0,
+                    ease: "easeInOut"
+                  }}
                 >
-                  <p className="text-white text-lg md:text-xl" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}>
-                    Professional features that won't break the bank
-                  </p>
-                  <p className="text-red-500 text-3xl md:text-4xl font-bold" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}>
-                    Only $499
-                  </p>
-                  <p className="text-white/70 text-sm" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}>
-                    Best affordable digital piano for beginners
-                  </p>
+                  <Image
+                    src="/images/es60-above-closeup.png"
+                    alt="ES60 Digital Piano"
+                    fill
+                    className="object-contain"
+                    priority
+                  />
                 </motion.div>
-              </div>
-            </motion.div>
+
+                {/* Interactive Hotspots */}
+                <AnimatePresence mode="wait">
+                  {showES60 && currentScenario.hotspots.map((hotspot, index) => (
+                    <motion.div
+                      key={`${activeScenario}-${index}`}
+                      className="absolute"
+                      style={{
+                        left: `${hotspot.x}%`,
+                        top: `${hotspot.y}%`,
+                        transform: 'translate(-50%, -50%)'
+                      }}
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      transition={{
+                        delay: index * 0.2 + 0.5,
+                        type: "spring",
+                        stiffness: 200
+                      }}
+                    >
+                      {/* Pulsing Dot */}
+                      <motion.div
+                        className={`w-4 h-4 rounded-full ${currentColors.bg} border-2 ${currentColors.border}`}
+                        animate={{
+                          scale: [1, 1.3, 1],
+                          opacity: [0.8, 1, 0.8]
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                      />
+
+                      {/* Label */}
+                      <motion.div
+                        className={`
+                          absolute left-6 top-1/2 -translate-y-1/2
+                          bg-black/90 backdrop-blur-sm rounded-lg px-3 py-2
+                          border ${currentColors.border} whitespace-nowrap
+                          text-xs md:text-sm ${currentColors.text} font-medium
+                        `}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.2 + 0.7 }}
+                      >
+                        {hotspot.label}
+                      </motion.div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </motion.div>
+
+            </div>
           </div>
 
         </div>

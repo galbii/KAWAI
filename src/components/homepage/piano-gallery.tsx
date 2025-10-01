@@ -173,7 +173,7 @@ export function PianoGallery({ data }: PianoGalleryProps) {
   }, []);
 
   return (
-    <div id="piano-gallery" className="bg-kawai-pearl">
+    <div id="piano-gallery" className="bg-white">
       {/* Section Header */}
       <section ref={heroRef} className="py-12 text-center">
         <div className="max-w-4xl mx-auto px-6">

@@ -12,9 +12,9 @@ export const slideContent = {
   opening: {
     tagline: {
       main: "Concert Grand Sound Made Affordable",
-      sub: "The Best Beginner Digital Piano Under $500"
+      sub: ""
     },
-    price: "$499",
+    price: "Only $499",
     subtitle: "Professional sound quality for students, adult learners, and everyone starting their musical journey",
     scrollHint: "Scroll to explore"
   },

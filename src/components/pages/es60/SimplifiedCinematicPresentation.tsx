@@ -4,53 +4,164 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { SLIDE_COMPONENTS, SLIDE_NAMES } from './slides';
 
-// Background Video Component with seamless forward-reverse loop
-function BackgroundVideo() {
-  const videoRef = useRef<HTMLVideoElement>(null);
+// Background Video Component with dynamic video switching
+interface BackgroundVideoProps {
+  currentSlide: number;
+}
 
-  useEffect(() => {
-    const video = videoRef.current;
+function BackgroundVideo({ currentSlide }: BackgroundVideoProps) {
+  const video1Ref = useRef<HTMLVideoElement>(null);
+  const video2Ref = useRef<HTMLVideoElement>(null);
+  const video3Ref = useRef<HTMLVideoElement>(null);
+  const [activeVideo, setActiveVideo] = useState<1 | 2 | 3>(1);
+  const video2PreloadedRef = useRef(false);
+  const video3PreloadedRef = useRef(false);
+
+  // Determine which video should be playing based on current slide
+  // Slides 0-1: Video 1 (powerhouse loop)
+  // Slides 2-3: Video 2 (es60 video)
+  // Slides 4-5: Video 3 (es60studio)
+  const getActiveVideoNumber = (): 1 | 2 | 3 => {
+    if (currentSlide >= 4) return 3; // FAQ (4) and Finale (5)
+    if (currentSlide >= 2) return 2; // Transformation (2) and Experience (3)
+    return 1; // Opening (0) and Premium Sound (1)
+  };
+
+  // Handle video playback for both videos
+  const playVideo = useCallback((video: HTMLVideoElement | null) => {
     if (!video) return;
 
-    const handleCanPlay = () => {
-      // Start playing when video is ready
-      video.play().catch((error) => {
-        console.warn('Video autoplay failed:', error);
-        // Try again after user interaction
-        const tryPlay = () => {
-          video.play().catch(console.error);
-          document.removeEventListener('click', tryPlay);
-          document.removeEventListener('touchstart', tryPlay);
-        };
-        document.addEventListener('click', tryPlay);
-        document.addEventListener('touchstart', tryPlay);
-      });
-    };
+    video.play().catch((error) => {
+      console.warn('Video autoplay failed:', error);
+      // Try again after user interaction
+      const tryPlay = () => {
+        video.play().catch(console.error);
+        document.removeEventListener('click', tryPlay);
+        document.removeEventListener('touchstart', tryPlay);
+      };
+      document.addEventListener('click', tryPlay);
+      document.addEventListener('touchstart', tryPlay);
+    });
+  }, []);
 
-    const handleLoadedData = () => {
-      // Ensure video starts when loaded
-      video.play().catch(console.error);
-    };
+  // Initialize and play video 1 on mount
+  useEffect(() => {
+    const video1 = video1Ref.current;
+    if (!video1) return;
 
-    video.addEventListener('canplay', handleCanPlay);
-    video.addEventListener('loadeddata', handleLoadedData);
+    const handleCanPlay = () => playVideo(video1);
+    const handleLoadedData = () => playVideo(video1);
+
+    video1.addEventListener('canplay', handleCanPlay);
+    video1.addEventListener('loadeddata', handleLoadedData);
 
     // Try to play immediately when component mounts
-    if (video.readyState >= 2) {
-      video.play().catch(console.error);
+    if (video1.readyState >= 2) {
+      playVideo(video1);
     }
 
     return () => {
-      video.removeEventListener('canplay', handleCanPlay);
-      video.removeEventListener('loadeddata', handleLoadedData);
+      video1.removeEventListener('canplay', handleCanPlay);
+      video1.removeEventListener('loadeddata', handleLoadedData);
     };
-  }, []);
+  }, [playVideo]);
+
+  // Preload videos when approaching their slides
+  useEffect(() => {
+    // Preload video 2 when on slide 1 (Premium Sound) - one slide before switch
+    if (currentSlide >= 1 && video2Ref.current && !video2PreloadedRef.current) {
+      video2Ref.current.load();
+      video2PreloadedRef.current = true;
+    }
+
+    // Preload video 3 when on slide 3 (Experience) - one slide before switch
+    if (currentSlide >= 3 && video3Ref.current && !video3PreloadedRef.current) {
+      video3Ref.current.load();
+      video3PreloadedRef.current = true;
+    }
+  }, [currentSlide]);
+
+  // Switch videos with crossfade when slide changes
+  useEffect(() => {
+    const video1 = video1Ref.current;
+    const video2 = video2Ref.current;
+    const video3 = video3Ref.current;
+    const targetVideo = getActiveVideoNumber();
+
+    // Pause all videos first
+    if (video1 && targetVideo !== 1) video1.pause();
+    if (video2 && targetVideo !== 2) video2.pause();
+    if (video3 && targetVideo !== 3) video3.pause();
+
+    // Set active video and play the target video
+    setActiveVideo(targetVideo);
+
+    if (targetVideo === 1 && video1) {
+      playVideo(video1);
+    } else if (targetVideo === 2 && video2) {
+      playVideo(video2);
+    } else if (targetVideo === 3 && video3) {
+      playVideo(video3);
+    }
+  }, [currentSlide, playVideo]);
+
+  // Ensure looping works properly - add 'ended' event listener as fallback
+  useEffect(() => {
+    const video1 = video1Ref.current;
+    const video2 = video2Ref.current;
+    const video3 = video3Ref.current;
+
+    const handleVideo1Ended = () => {
+      if (video1 && activeVideo === 1) {
+        video1.currentTime = 0;
+        playVideo(video1);
+      }
+    };
+
+    const handleVideo2Ended = () => {
+      if (video2 && activeVideo === 2) {
+        video2.currentTime = 0;
+        playVideo(video2);
+      }
+    };
+
+    const handleVideo3Ended = () => {
+      if (video3 && activeVideo === 3) {
+        video3.currentTime = 0;
+        playVideo(video3);
+      }
+    };
+
+    if (video1) {
+      video1.addEventListener('ended', handleVideo1Ended);
+    }
+    if (video2) {
+      video2.addEventListener('ended', handleVideo2Ended);
+    }
+    if (video3) {
+      video3.addEventListener('ended', handleVideo3Ended);
+    }
+
+    return () => {
+      if (video1) {
+        video1.removeEventListener('ended', handleVideo1Ended);
+      }
+      if (video2) {
+        video2.removeEventListener('ended', handleVideo2Ended);
+      }
+      if (video3) {
+        video3.removeEventListener('ended', handleVideo3Ended);
+      }
+    };
+  }, [activeVideo, playVideo]);
 
   return (
     <div className="fixed inset-0 z-0">
+      {/* Video 1: Powerhouse Loop (Slides 0-1) */}
       <video
-        ref={videoRef}
-        className="w-full h-full object-cover"
+        ref={video1Ref}
+        className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
+        style={{ opacity: activeVideo === 1 ? 1 : 0 }}
         muted
         loop
         playsInline
@@ -60,6 +171,33 @@ function BackgroundVideo() {
         <source src="/videos/es60powerhouse-loop.webm" type="video/webm" />
         <source src="/videos/es60powerhouse-loop.mp4" type="video/mp4" />
       </video>
+
+      {/* Video 2: ES60 Video (Slides 2-3) */}
+      <video
+        ref={video2Ref}
+        className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
+        style={{ opacity: activeVideo === 2 ? 1 : 0 }}
+        muted
+        loop
+        playsInline
+        preload="metadata"
+      >
+        <source src="/videos/es60%20video.mp4" type="video/mp4" />
+      </video>
+
+      {/* Video 3: ES60 Studio (Slides 4-5) */}
+      <video
+        ref={video3Ref}
+        className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
+        style={{ opacity: activeVideo === 3 ? 1 : 0 }}
+        muted
+        loop
+        playsInline
+        preload="metadata"
+      >
+        <source src="/videos/es60studio.mp4" type="video/mp4" />
+      </video>
+
       {/* Subtle overlay for text contrast */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20" />
     </div>
@@ -163,7 +301,7 @@ export function SimplifiedCinematicPresentation() {
   return (
     <div className="relative">
       {/* Background Video - Fixed behind everything */}
-      <BackgroundVideo />
+      <BackgroundVideo currentSlide={currentSlide} />
 
       {/* Main Scroll Container */}
       <div

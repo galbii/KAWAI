@@ -1,43 +1,50 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { getPayload } from 'payload';
-import config from '@payload-config';
 import type { DealerLocation } from '@/payload-types';
 
 interface DealerLocationsProps {
   className?: string;
+  locations?: DealerLocation[];
 }
 
-export async function DealerLocations({ className = '' }: DealerLocationsProps) {
-  let dealerLocations: DealerLocation[] = [];
+export function DealerLocations({ className = '', locations = [] }: DealerLocationsProps) {
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
 
-  try {
-    const payload = await getPayload({ config });
-    const result = await payload.find({
-      collection: 'dealer-locations',
-      where: {
-        isActive: {
-          equals: true
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setIsVisible(true);
         }
       },
-      limit: 10,
-      sort: '-updatedAt'
-    });
-    
-    dealerLocations = result.docs as DealerLocation[];
-  } catch (error) {
-    console.error('Failed to fetch dealer locations:', error);
-  }
+      { threshold: 0.2 }
+    );
 
-  if (dealerLocations.length === 0) {
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  if (locations.length === 0) {
     return null;
   }
 
   return (
-    <section id="dealer-locations" className={`relative bg-white py-16 sm:py-24 ${className}`}>
+    <section ref={sectionRef} id="dealer-locations" className={`relative bg-[#F5F5F5] py-16 sm:py-24 ${className}`}>
       <div className="container mx-auto px-4 sm:px-6">
         {/* Section Header with mobile optimization */}
-        <div className="text-center mb-12 sm:mb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isVisible ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7 }}
+          className="text-center mb-12 sm:mb-16"
+        >
           <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-4 sm:mb-6">
             Our Locations
           </div>
@@ -48,16 +55,21 @@ export async function DealerLocations({ className = '' }: DealerLocationsProps) 
           <p className="text-lg sm:text-xl text-kawai-black/70 max-w-3xl mx-auto leading-relaxed px-4 sm:px-0">
             Visit our Piano Galleries and experience our complete collection of acoustic and digital pianos with expert consultation.
           </p>
-        </div>
+        </motion.div>
 
         {/* Dealer Locations Grid - Mobile first approach */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto">
-          {dealerLocations.map((location) => (
-            <Link
+          {locations.map((location, index) => (
+            <motion.div
               key={location.id}
-              href={`/${location.slug}`}
-              className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden hover:scale-105 touch-manipulation min-h-[280px] flex flex-col"
+              initial={{ opacity: 0, y: 30 }}
+              animate={isVisible ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.2 + (index * 0.1) }}
             >
+              <Link
+                href={`/${location.slug}`}
+                className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden hover:scale-105 touch-manipulation min-h-[280px] flex flex-col block"
+              >
               <div className="p-6 sm:p-8 flex-1 flex flex-col">
                 {/* Location Header */}
                 <div className="mb-4 sm:mb-6">
@@ -147,12 +159,18 @@ export async function DealerLocations({ className = '' }: DealerLocationsProps) 
                   </div>
                 </div>
               </div>
-            </Link>
+              </Link>
+            </motion.div>
           ))}
         </div>
 
         {/* Call to Action - Mobile optimized */}
-        <div className="text-center mt-12 sm:mt-16 px-4 sm:px-0">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isVisible ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="text-center mt-12 sm:mt-16 px-4 sm:px-0"
+        >
           <p className="text-kawai-black/70 mb-6 text-base sm:text-lg">
             Can't find a location near you?
           </p>
@@ -165,7 +183,7 @@ export async function DealerLocations({ className = '' }: DealerLocationsProps) 
               <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
             </svg>
           </Link>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
