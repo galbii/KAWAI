@@ -148,11 +148,24 @@ export function OpeningSlide() {
       animate={{ opacity: isInView ? 1 : 0.3 }}
       transition={{ duration: 1.5, ease: "easeInOut" }}
     >
+      {/* Blur overlay - appears immediately, fades out with ES60 */}
+      <AnimatePresence>
+        {showES60Logo && (
+          <motion.div
+            className="absolute inset-0 z-40 bg-black/40 backdrop-blur-sm pointer-events-none"
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+          />
+        )}
+      </AnimatePresence>
+
       {/* ES60 Text - Opening Animation (First Thing Shown) */}
       <AnimatePresence>
         {showES60Logo && (
           <motion.div
-            className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0 z-50 flex flex-col items-center justify-center"
             initial={{ opacity: 1 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
