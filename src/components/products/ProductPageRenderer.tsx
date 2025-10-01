@@ -60,9 +60,9 @@ function BasicProductLayout({ product }: { product: Product }) {
           type: "image",
           backgroundImage: product.mainImage ?? null,
           overlay: {
-            enable: true,
+            enable: false,
             color: "dark",
-            opacity: 0.4
+            opacity: 0
           }
         }}
         layout={{

@@ -226,15 +226,15 @@ export function ProductHeroBlock({
     return <span className="text-4xl font-bold">{mainPrice}</span>
   }
   
-  // Enhanced background styling with off-white tints
+  // Off-white background fading to white in center for image blending
   const getBackgroundClasses = () => {
     switch (backgroundColor) {
       case 'black':
-        return 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900'
+        return 'bg-slate-900'
       case 'white':
-        return 'bg-gradient-to-br from-gray-50/30 via-white to-slate-50/20'
-      default:
-        return 'bg-gradient-to-br from-gray-100/40 via-white to-slate-100/30'
+        return 'bg-white'
+      default: // 'pearl' - off-white fading to white
+        return 'bg-gradient-to-r from-stone-50 via-white to-stone-50'
     }
   }
   
@@ -316,23 +316,10 @@ export function ProductHeroBlock({
   
   return (
     <section className={`relative min-h-[70vh] lg:min-h-[90vh] overflow-visible ${backgroundClass}`}>
-      {/* Off-white background with fade to white in center */}
-      <div className="absolute inset-0">
-        {backgroundColor === 'black' ? (
-          <>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(71,85,105,0.08),transparent_50%)]" />
-            <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_30%,rgba(100,116,139,0.04)_50%,transparent_70%)]" />
-          </>
-        ) : (
-          <>
-            {/* Square/rectangular gradient fading to white in center following component outline */}
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-100/6 via-white via-90% to-gray-100/6" />
-            <div className="absolute inset-0 bg-gradient-to-b from-slate-50/4 from-5% via-white via-95% to-slate-50/4" />
-            {/* Very subtle off-white corner accents */}
-            <div className="absolute inset-0 bg-[conic-gradient(from_0deg_at_0%_0%,rgba(148,163,184,0.03)_0deg,transparent_90deg),conic-gradient(from_90deg_at_100%_0%,rgba(156,163,175,0.03)_0deg,transparent_90deg),conic-gradient(from_180deg_at_100%_100%,rgba(148,163,184,0.03)_0deg,transparent_90deg),conic-gradient(from_270deg_at_0%_100%,rgba(156,163,175,0.03)_0deg,transparent_90deg)]" />
-          </>
-        )}
-      </div>
+      {/* Subtle gradient overlay for better image blending */}
+      {backgroundColor !== 'black' && (
+        <div className="absolute inset-0 bg-gradient-to-b from-stone-50/30 via-white to-stone-50/30" />
+      )}
       
       {/* Back Button - Fixed/Sticky Floating Position (Below Header) */}
       <div className="fixed top-[110px] left-12 z-40 pointer-events-auto">
