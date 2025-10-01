@@ -198,8 +198,8 @@ function BackgroundVideo({ currentSlide }: BackgroundVideoProps) {
         <source src="/videos/es60studio.mp4" type="video/mp4" />
       </video>
 
-      {/* Subtle overlay for text contrast */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20" />
+      {/* Overlay for better text contrast on mobile */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 md:from-black/10 md:to-black/20" />
     </div>
   );
 }
@@ -207,6 +207,16 @@ function BackgroundVideo({ currentSlide }: BackgroundVideoProps) {
 export function SimplifiedCinematicPresentation() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  // Detect touch device
+  useEffect(() => {
+    const checkTouchDevice = () => {
+      setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    };
+
+    checkTouchDevice();
+  }, []);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -278,15 +288,15 @@ export function SimplifiedCinematicPresentation() {
     }
   }, [currentSlide]);
 
-  // Add wheel event listener
+  // Add wheel event listener (only on non-touch devices)
   useEffect(() => {
     const container = containerRef.current;
-    if (container) {
+    if (container && !isTouchDevice) {
       container.addEventListener('wheel', handleWheel, { passive: false });
       return () => container.removeEventListener('wheel', handleWheel);
     }
     return undefined;
-  }, [handleWheel]);
+  }, [handleWheel, isTouchDevice]);
 
   const scrollToSlide = (slideIndex: number) => {
     if (!containerRef.current) return;
@@ -309,9 +319,10 @@ export function SimplifiedCinematicPresentation() {
         className="h-screen overflow-y-scroll scrollbar-hide relative z-10"
         style={{
           scrollSnapType: 'y mandatory',
+          WebkitScrollSnapType: 'y mandatory',
           scrollBehavior: 'smooth',
           WebkitOverflowScrolling: 'touch'
-        }}
+        } as React.CSSProperties}
       >
         {SLIDE_COMPONENTS.map((SlideComponent, index) => (
           <div
@@ -321,8 +332,10 @@ export function SimplifiedCinematicPresentation() {
             style={{
               height: '100vh',
               scrollSnapAlign: 'start',
-              scrollSnapStop: 'always'
-            }}
+              WebkitScrollSnapAlign: 'start',
+              scrollSnapStop: 'always',
+              WebkitScrollSnapStop: 'always'
+            } as React.CSSProperties}
           >
             <SlideComponent />
           </div>

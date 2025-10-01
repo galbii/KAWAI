@@ -9,6 +9,33 @@ export function OpeningSlide() {
   const isInView = useInView(containerRef, { once: false, amount: 0.3 });
   const [showES60Logo, setShowES60Logo] = useState(true);
   const [showMainContent, setShowMainContent] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Detect prefers-reduced-motion setting
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   // Control the ES60 logo display timing
   useEffect(() => {
@@ -54,14 +81,14 @@ export function OpeningSlide() {
       <AnimatePresence>
         {showES60Logo && (
           <motion.div
-            className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.5, ease: "easeInOut" }}
           >
             <motion.h1
-              className="text-[12rem] md:text-[16rem] lg:text-[20rem] font-bold text-white tracking-tight"
+              className="text-[8rem] md:text-[16rem] lg:text-[20rem] font-bold text-white tracking-tight"
               style={{
                 textShadow: '0 0 40px rgba(255, 255, 255, 0.8), 0 0 80px rgba(255, 255, 255, 0.4)'
               }}
@@ -96,34 +123,60 @@ export function OpeningSlide() {
                 ES60
               </motion.span>
             </motion.h1>
+
+            {/* Tagline under ES60 */}
+            <motion.p
+              className="text-xl md:text-3xl font-light text-white mt-4 md:mt-8"
+              style={{
+                textShadow: '2px 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.6)'
+              }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{
+                opacity: 1,
+                y: 0
+              }}
+              exit={{
+                opacity: 0,
+                y: -20
+              }}
+              transition={{
+                duration: 1,
+                ease: "easeOut",
+                delay: 0.8
+              }}
+            >
+              Performance you can feel, value you can trust.
+            </motion.p>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Subtle Audio Visualization Background */}
-      <div className="absolute inset-0">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute bg-red-500/5 rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              width: `${Math.random() * 3 + 1}px`,
-              height: `${Math.random() * 3 + 1}px`,
-            }}
-            animate={{
-              scale: [1, 1.3, 1],
-              opacity: [0.1, 0.3, 0.1],
-            }}
-            transition={{
-              duration: 3 + Math.random() * 2,
-              repeat: Infinity,
-              delay: Math.random() * 3,
-            }}
-          />
-        ))}
-      </div>
+      {!prefersReducedMotion && (
+        <div className="absolute inset-0">
+          {[...Array(isMobile ? 8 : 20)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute bg-red-500/5 rounded-full"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                width: `${Math.random() * 3 + 1}px`,
+                height: `${Math.random() * 3 + 1}px`,
+              }}
+              animate={{
+                scale: [1, 1.3, 1],
+                opacity: [0.1, 0.3, 0.1],
+              }}
+              transition={{
+                duration: 3 + Math.random() * 2,
+                repeat: Infinity,
+                delay: Math.random() * 3,
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Main Content - Only show after ES60 logo */}
       <AnimatePresence>
@@ -147,7 +200,7 @@ export function OpeningSlide() {
               className="mb-8"
             >
               <motion.div
-                className="relative w-80 md:w-96 h-24 md:h-32 mx-auto mb-4"
+                className="relative w-64 md:w-96 h-20 md:h-32 mx-auto mb-4"
                 animate={{
                   filter: [
                     'drop-shadow(0 0 20px rgba(225, 25, 34, 0.5))',
@@ -178,12 +231,12 @@ export function OpeningSlide() {
                 opacity: 1,
                 y: 0
               }}
-              transition={{ delay: 0.5, duration: 0.8 }}
+              transition={{ delay: 0.9, duration: 0.8 }}
               className="space-y-4"
             >
               <motion.p
                 className="text-3xl md:text-5xl font-light text-white mb-2"
-                style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}
+                style={{ textShadow: '2px 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.6)' }}
                 animate={{ opacity: [1, 0.7, 1] }}
                 transition={{
                   duration: 2,
@@ -194,11 +247,11 @@ export function OpeningSlide() {
               </motion.p>
 
               <motion.div
-                className="flex items-center justify-center gap-4"
+                className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4"
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{
-                  delay: 1,
+                  delay: 1.4,
                   duration: 0.6,
                   type: "spring"
                 }}
@@ -206,17 +259,17 @@ export function OpeningSlide() {
                 {/* Crossed out original price */}
                 <motion.span
                   className="text-4xl md:text-6xl font-bold text-white relative"
-                  style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}
+                  style={{ textShadow: '2px 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.6)' }}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 1.2, duration: 0.5 }}
+                  transition={{ delay: 1.6, duration: 0.5 }}
                 >
                   $599
                   <motion.div
                     className="absolute top-1/2 left-0 right-0 h-1 bg-red-500 transform -translate-y-1/2"
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: 1 }}
-                    transition={{ delay: 1.5, duration: 0.4 }}
+                    transition={{ delay: 1.9, duration: 0.4 }}
                     style={{
                       transformOrigin: 'left',
                       boxShadow: '0 0 8px rgba(225, 25, 34, 0.8)'
@@ -227,10 +280,10 @@ export function OpeningSlide() {
                 {/* Current price */}
                 <motion.span
                   className="text-4xl md:text-6xl font-bold text-red-500"
-                  style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}
+                  style={{ textShadow: '2px 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.6)' }}
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 1.3, duration: 0.5 }}
+                  transition={{ delay: 2.8, duration: 0.5 }}
                 >
                   Only $499.
                 </motion.span>
@@ -242,11 +295,11 @@ export function OpeningSlide() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{
-                delay: 1.5,
+                delay: 3.3,
                 duration: 0.8
               }}
               className="text-lg md:text-xl text-white/90 mt-8 max-w-2xl mx-auto leading-relaxed"
-              style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}
+              style={{ textShadow: '2px 2px 10px rgba(0,0,0,0.9), 0 0 16px rgba(0,0,0,0.5)' }}
             >
               Professional sound quality for students, adult learners, and everyone starting their musical journey
             </motion.p>
@@ -259,10 +312,10 @@ export function OpeningSlide() {
                 y: 0
               }}
               transition={{
-                delay: 2,
+                delay: 3.9,
                 duration: 0.6
               }}
-              className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+              className="absolute bottom-20 md:bottom-8 left-1/2 transform -translate-x-1/2"
             >
               <motion.div
                 animate={{ y: [0, 10, 0] }}
