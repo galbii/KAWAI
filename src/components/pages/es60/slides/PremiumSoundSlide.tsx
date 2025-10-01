@@ -59,283 +59,115 @@ const SOUND_VOICES = [
   }
 ];
 
-// SoundCloud Widget Hook
+// Simplified SoundCloud Widget Hook - Best Practice Approach
 function useSoundCloudWidget(activeTrackUrl: string | null) {
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const widgetRef = useRef<any>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const scriptLoadedRef = useRef(false);
-  const widgetReadyRef = useRef(false);
-  const iframeLoadedRef = useRef(false);
+  const [isReady, setIsReady] = useState(false);
 
-  // Track iframe readiness - polling approach to handle race conditions
-  useEffect(() => {
-    const checkIframeReady = () => {
-      const iframe = iframeRef.current;
-      if (!iframe) {
-        console.log('[SoundCloud] Iframe ref not available yet');
-        return false;
-      }
-
-      // Check if iframe is in the DOM and has a src
-      if (iframe.src && iframe.parentElement) {
-        console.log('[SoundCloud] Iframe is in DOM with src');
-        iframeLoadedRef.current = true;
-        return true;
-      }
-
-      return false;
-    };
-
-    // Poll for iframe readiness
-    const pollInterval = setInterval(() => {
-      if (checkIframeReady()) {
-        clearInterval(pollInterval);
-      }
-    }, 100);
-
-    // Also listen for load event as backup
-    const handleIframeLoad = () => {
-      console.log('[SoundCloud] Iframe onload event fired');
-      iframeLoadedRef.current = true;
-      clearInterval(pollInterval);
-    };
-
-    // Check immediately
-    if (checkIframeReady()) {
-      clearInterval(pollInterval);
-    }
-
-    // Add load listener if iframe exists
-    const iframe = iframeRef.current;
-    if (iframe) {
-      iframe.addEventListener('load', handleIframeLoad);
-    }
-
-    return () => {
-      clearInterval(pollInterval);
-      if (iframe) {
-        iframe.removeEventListener('load', handleIframeLoad);
-      }
-    };
-  }, []);
-
-  // Initialize SoundCloud Widget API - wait for both script AND iframe
+  // Load SoundCloud API script once
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const initializeWidget = () => {
-      console.log('[SoundCloud] Attempting to initialize widget', {
-        hasIframe: !!iframeRef.current,
-        hasSC: !!(window as any).SC,
-        iframeLoaded: iframeLoadedRef.current,
-        iframeInDOM: iframeRef.current?.parentElement ? true : false
-      });
-
-      if (!iframeRef.current) {
-        console.log('[SoundCloud] Iframe not available');
-        return false;
-      }
-
-      // Check if iframe is actually in the DOM
-      if (!iframeRef.current.parentElement) {
-        console.log('[SoundCloud] Iframe not in DOM yet');
-        return false;
-      }
-
-      try {
-        const SC = (window as any).SC;
-        if (!SC || !SC.Widget) {
-          console.log('[SoundCloud] SC.Widget not available');
-          return false;
-        }
-
-        if (widgetRef.current) {
-          console.log('[SoundCloud] Widget already initialized');
-          return true;
-        }
-
-        // Initialize widget - SC.Widget handles iframe loading internally
-        widgetRef.current = SC.Widget(iframeRef.current);
-        console.log('[SoundCloud] Widget initialized successfully');
-
-        widgetRef.current.bind(SC.Widget.Events.READY, () => {
-          console.log('[SoundCloud] ✅ Widget READY event fired - player is ready');
-          widgetReadyRef.current = true;
-          setError(null);
-
-          // Log current state for debugging
-          widgetRef.current.isPaused((paused) => {
-            console.log('[SoundCloud] Initial state - paused:', paused);
-          });
-        });
-
-        widgetRef.current.bind(SC.Widget.Events.PLAY, () => {
-          console.log('[SoundCloud] PLAY event');
-          setIsPlaying(true);
-          setIsLoading(false);
-        });
-
-        widgetRef.current.bind(SC.Widget.Events.PAUSE, () => {
-          console.log('[SoundCloud] PAUSE event');
-          setIsPlaying(false);
-        });
-
-        widgetRef.current.bind(SC.Widget.Events.FINISH, () => {
-          console.log('[SoundCloud] FINISH event');
-          setIsPlaying(false);
-        });
-
-        widgetRef.current.bind(SC.Widget.Events.ERROR, (error: any) => {
-          console.error('[SoundCloud] ERROR event:', error);
-          setError('Failed to load audio');
-          setIsLoading(false);
-          setIsPlaying(false);
-        });
-
-        return true;
-      } catch (err) {
-        console.error('[SoundCloud] Widget initialization error:', err);
-        setError('Widget initialization failed');
-        return false;
-      }
-    };
-
-    const loadScriptAndInit = () => {
-      // Check if script already exists
-      const existingScript = document.querySelector('script[src="https://w.soundcloud.com/player/api.js"]');
-
-      if (existingScript && (window as any).SC) {
-        scriptLoadedRef.current = true;
-        console.log('[SoundCloud] Script already loaded, initializing...');
-
-        // Keep trying to initialize until successful (iframe might still be loading)
-        const tryInit = setInterval(() => {
-          if (initializeWidget()) {
-            clearInterval(tryInit);
-          }
-        }, 200);
-
-        // Give up after 10 seconds
-        setTimeout(() => {
-          clearInterval(tryInit);
-          if (!widgetRef.current) {
-            console.error('[SoundCloud] Failed to initialize after 10s');
-            setError('Player initialization timeout');
-          }
-        }, 10000);
-        return;
-      }
-
-      if (scriptLoadedRef.current) return;
-
-      console.log('[SoundCloud] Loading widget API script...');
-      const script = document.createElement('script');
-      script.src = 'https://w.soundcloud.com/player/api.js';
-      script.async = true;
-      document.body.appendChild(script);
-
-      script.onload = () => {
-        scriptLoadedRef.current = true;
-        console.log('[SoundCloud] Widget API loaded successfully');
-
-        // Keep trying to initialize until successful
-        const tryInit = setInterval(() => {
-          if (initializeWidget()) {
-            clearInterval(tryInit);
-          }
-        }, 200);
-
-        // Give up after 10 seconds
-        setTimeout(() => {
-          clearInterval(tryInit);
-          if (!widgetRef.current) {
-            console.error('[SoundCloud] Failed to initialize after 10s');
-            setError('Player initialization timeout');
-          }
-        }, 10000);
-      };
-
-      script.onerror = () => {
-        console.error('[SoundCloud] Failed to load Widget API script');
-        setError('Failed to load SoundCloud player');
-      };
-    };
-
-    // Wait a bit for component to mount, then load script
-    const mountTimeout = setTimeout(loadScriptAndInit, 100);
-
-    return () => {
-      clearTimeout(mountTimeout);
-    };
-  }, []);
-
-  // Handle track changes
-  useEffect(() => {
-    if (!widgetRef.current || !activeTrackUrl) {
-      console.log('[SoundCloud] Widget or track URL not ready', {
-        hasWidget: !!widgetRef.current,
-        trackUrl: activeTrackUrl
-      });
+    // Check if script already loaded
+    if ((window as any).SC) {
+      console.log('[SoundCloud] API already loaded');
       return;
     }
 
-    console.log('[SoundCloud] Loading track:', activeTrackUrl);
+    const script = document.createElement('script');
+    script.src = 'https://w.soundcloud.com/player/api.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    script.onload = () => console.log('[SoundCloud] API loaded');
+    script.onerror = () => {
+      console.error('[SoundCloud] Failed to load API');
+      setError('Failed to load player');
+    };
+
+    return () => {
+      // Don't remove script - it can be reused
+    };
+  }, []);
+
+  // Initialize widget after iframe mounts
+  useEffect(() => {
+    if (!iframeRef.current || widgetRef.current) return;
+
+    // Wait for SC to be available
+    const initWidget = setInterval(() => {
+      if ((window as any).SC && iframeRef.current) {
+        console.log('[SoundCloud] Initializing widget...');
+        const SC = (window as any).SC;
+
+        try {
+          widgetRef.current = SC.Widget(iframeRef.current);
+
+          // Bind READY event
+          widgetRef.current.bind(SC.Widget.Events.READY, () => {
+            console.log('[SoundCloud] ✅ READY');
+            setIsReady(true);
+            setError(null);
+          });
+
+          // Bind PLAY event
+          widgetRef.current.bind(SC.Widget.Events.PLAY, () => {
+            console.log('[SoundCloud] Playing');
+            setIsPlaying(true);
+            setIsLoading(false);
+          });
+
+          // Bind PAUSE event
+          widgetRef.current.bind(SC.Widget.Events.PAUSE, () => {
+            console.log('[SoundCloud] Paused');
+            setIsPlaying(false);
+          });
+
+          // Bind FINISH event
+          widgetRef.current.bind(SC.Widget.Events.FINISH, () => {
+            console.log('[SoundCloud] Finished');
+            setIsPlaying(false);
+          });
+
+          // Bind ERROR event
+          widgetRef.current.bind(SC.Widget.Events.ERROR, () => {
+            console.error('[SoundCloud] Error playing track');
+            setError('Failed to play');
+            setIsLoading(false);
+          });
+
+          clearInterval(initWidget);
+        } catch (err) {
+          console.error('[SoundCloud] Init error:', err);
+        }
+      }
+    }, 100);
+
+    // Cleanup
+    return () => clearInterval(initWidget);
+  }, []);
+
+  // Load track when URL changes
+  useEffect(() => {
+    if (!activeTrackUrl || !widgetRef.current || !isReady) return;
+
+    console.log('[SoundCloud] Loading:', activeTrackUrl);
     setIsLoading(true);
     setError(null);
 
-    // Wait for widget to be ready before loading
-    const loadTrack = () => {
-      try {
-        widgetRef.current.load(activeTrackUrl, {
-          auto_play: true,
-          hide_related: true,
-          show_comments: false,
-          show_user: false,
-          show_reposts: false,
-          visual: false,
-          buying: false,
-          sharing: false,
-          download: false
-        });
-        console.log('[SoundCloud] Track load command sent');
-      } catch (err) {
-        console.error('[SoundCloud] Error loading track:', err);
-        setError('Failed to load track');
-        setIsLoading(false);
-      }
-    };
-
-    if (widgetReadyRef.current) {
-      loadTrack();
-    } else {
-      // Wait for widget to be ready
-      const checkReady = setInterval(() => {
-        if (widgetReadyRef.current) {
-          clearInterval(checkReady);
-          loadTrack();
-        }
-      }, 100);
-
-      // Timeout after 10 seconds (some tracks need more time to load)
-      setTimeout(() => {
-        clearInterval(checkReady);
-        if (!widgetReadyRef.current) {
-          console.error('[SoundCloud] Widget ready timeout - widget may not have initialized properly');
-          console.log('[SoundCloud] Debug info:', {
-            hasWidget: !!widgetRef.current,
-            hasIframe: !!iframeRef.current,
-            iframeInDOM: iframeRef.current?.parentElement ? true : false,
-            iframeSrc: iframeRef.current?.src
-          });
-          setError('Player not ready');
-          setIsLoading(false);
-        }
-      }, 10000);
-    }
-  }, [activeTrackUrl]);
+    widgetRef.current.load(activeTrackUrl, {
+      auto_play: true,
+      hide_related: true,
+      show_comments: false,
+      show_user: false,
+      show_reposts: false,
+      visual: false
+    });
+  }, [activeTrackUrl, isReady]);
 
   return { isLoading, isPlaying, error, iframeRef };
 }
@@ -738,9 +570,17 @@ export function PremiumSoundSlide() {
       )}
     </AnimatePresence>
 
-          {/* SoundCloud iframe - MUST stay in viewport for browser to load it */}
-          {/* Hidden visually but browser considers it "on screen" */}
-          <div className="fixed bottom-0 right-0 w-[300px] h-[166px] pointer-events-none opacity-0 scale-[0.01] -z-50">
+          {/* SoundCloud player - hidden but functional */}
+          <div style={{
+            position: 'fixed',
+            bottom: 0,
+            right: 0,
+            width: '300px',
+            height: '166px',
+            opacity: 0,
+            pointerEvents: 'none',
+            zIndex: -1
+          }}>
             <iframe
               ref={iframeRef}
               id="sc-widget"
