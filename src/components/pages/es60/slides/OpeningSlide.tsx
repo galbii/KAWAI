@@ -61,9 +61,9 @@ export function OpeningSlide() {
             transition={{ duration: 1.5, ease: "easeInOut" }}
           >
             <motion.h1
-              className="text-[12rem] md:text-[16rem] lg:text-[20rem] font-bold text-red-500 tracking-tight"
+              className="text-[12rem] md:text-[16rem] lg:text-[20rem] font-bold text-white tracking-tight"
               style={{
-                textShadow: '0 0 40px rgba(225, 25, 34, 0.8), 0 0 80px rgba(225, 25, 34, 0.4)'
+                textShadow: '0 0 40px rgba(255, 255, 255, 0.8), 0 0 80px rgba(255, 255, 255, 0.4)'
               }}
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{
@@ -82,9 +82,9 @@ export function OpeningSlide() {
               <motion.span
                 animate={{
                   textShadow: [
-                    '0 0 40px rgba(225, 25, 34, 0.8), 0 0 80px rgba(225, 25, 34, 0.4)',
-                    '0 0 60px rgba(225, 25, 34, 1), 0 0 120px rgba(225, 25, 34, 0.6)',
-                    '0 0 40px rgba(225, 25, 34, 0.8), 0 0 80px rgba(225, 25, 34, 0.4)'
+                    '0 0 40px rgba(255, 255, 255, 0.8), 0 0 80px rgba(255, 255, 255, 0.4)',
+                    '0 0 60px rgba(255, 255, 255, 1), 0 0 120px rgba(255, 255, 255, 0.6)',
+                    '0 0 40px rgba(255, 255, 255, 0.8), 0 0 80px rgba(255, 255, 255, 0.4)'
                   ]
                 }}
                 transition={{
@@ -193,19 +193,48 @@ export function OpeningSlide() {
                 Concert Grand Sound Made Affordable.
               </motion.p>
 
-              <motion.p
-                className="text-4xl md:text-6xl font-bold text-red-500"
-                style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
+              <motion.div
+                className="flex items-center justify-center gap-4"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
                 transition={{
                   delay: 1,
                   duration: 0.6,
                   type: "spring"
                 }}
               >
-                Only $499.
-              </motion.p>
+                {/* Crossed out original price */}
+                <motion.span
+                  className="text-4xl md:text-6xl font-bold text-white relative"
+                  style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 1.2, duration: 0.5 }}
+                >
+                  $599
+                  <motion.div
+                    className="absolute top-1/2 left-0 right-0 h-1 bg-red-500 transform -translate-y-1/2"
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ delay: 1.5, duration: 0.4 }}
+                    style={{
+                      transformOrigin: 'left',
+                      boxShadow: '0 0 8px rgba(225, 25, 34, 0.8)'
+                    }}
+                  />
+                </motion.span>
+
+                {/* Current price */}
+                <motion.span
+                  className="text-4xl md:text-6xl font-bold text-red-500"
+                  style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 1.3, duration: 0.5 }}
+                >
+                  Only $499.
+                </motion.span>
+              </motion.div>
             </motion.div>
 
             {/* Subtitle */}
