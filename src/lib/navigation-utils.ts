@@ -63,7 +63,7 @@ export function parseNavigationOrigin(
 
   // Check if first segment looks like a dealer location
   // Exclude known non-dealer routes
-  const knownRoutes = ['pianos', 'admin', 'api', 'sitemap.xml', 'robots.txt', 'products', 'innovation', 'heritage', 'resources', 'experience', 'contact']
+  const knownRoutes = ['pianos', 'admin', 'api', 'sitemap.xml', 'robots.txt', 'products', 'innovation', 'heritage', 'resources', 'experience', 'contact', 'find-my-piano']
 
   if (!knownRoutes.includes(firstSegment)) {
     // Likely a dealer location

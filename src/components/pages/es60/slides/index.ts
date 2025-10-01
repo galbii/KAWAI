@@ -13,18 +13,18 @@ export { OpeningSlide, PremiumSoundSlide, TransformationSlide, ExperienceSlide, 
 // Slide configuration for the cinematic presentation
 export const SLIDE_COMPONENTS = [
   OpeningSlide,
+  ExperienceSlide,
   PremiumSoundSlide,
   TransformationSlide,
-  ExperienceSlide,
   FAQSlide,
   FinaleSlide
 ] as const;
 
 export const SLIDE_NAMES = [
   'Opening',
+  'Experience',
   'Premium Sound',
   'Transformation',
-  'Experience',
   'FAQ',
   'Finale'
 ] as const;
