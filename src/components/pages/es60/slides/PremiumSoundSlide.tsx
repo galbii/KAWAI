@@ -570,26 +570,34 @@ export function PremiumSoundSlide() {
       )}
     </AnimatePresence>
 
-          {/* SoundCloud player - hidden but functional */}
+          {/* SoundCloud player - completely hidden, audio only */}
           <div style={{
             position: 'fixed',
-            bottom: 0,
-            right: 0,
-            width: '300px',
-            height: '166px',
+            bottom: '-200px',
+            right: '-400px',
+            width: '1px',
+            height: '1px',
             opacity: 0,
             pointerEvents: 'none',
-            zIndex: -1
+            zIndex: -9999,
+            visibility: 'hidden',
+            overflow: 'hidden'
           }}>
             <iframe
               ref={iframeRef}
               id="sc-widget"
-              width="300"
-              height="166"
+              width="1"
+              height="1"
               scrolling="no"
               frameBorder="no"
               allow="autoplay"
-              src={`https://w.soundcloud.com/player/?url=${encodeURIComponent(SOUND_VOICES[0]?.soundCloudUrl || 'https://soundcloud.com/kawai-global/es60-04-tine-electric-piano')}&color=%2359b3f6&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false`}
+              style={{
+                opacity: 0,
+                position: 'absolute',
+                pointerEvents: 'none',
+                visibility: 'hidden'
+              }}
+              src={`https://w.soundcloud.com/player/?url=${encodeURIComponent(SOUND_VOICES[0]?.soundCloudUrl || 'https://soundcloud.com/kawai-global/es60-04-tine-electric-piano')}&color=%2359b3f6&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false&show_artwork=false&show_playcount=false`}
             />
           </div>
         </div>

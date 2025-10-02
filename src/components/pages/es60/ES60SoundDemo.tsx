@@ -69,12 +69,126 @@ export function ES60SoundDemo() {
   });
 
   const [activeComparison, setActiveComparison] = useState<'standard' | 'es60' | null>(null);
+  const [isLoadingStandard, setIsLoadingStandard] = useState(false);
+  const [isLoadingES60, setIsLoadingES60] = useState(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
 
-  // Mock audio data - in real implementation, replace with actual audio files
+  // Audio file paths
   const audioSamples = {
-    standard: "/audio/standard-piano-sample.mp3", // Mock path
-    es60: "/audio/es60-skex-sample.mp3" // Mock path
+    standard: "/audio/standard-piano-sample.mp3",
+    es60: "/audio/es60-skex-sample.mp3"
   };
+
+  // Audio event handlers to track playback
+  useEffect(() => {
+    const standardAudio = standardAudioRef.current;
+    if (!standardAudio) return;
+
+    const updateTime = () => {
+      setStandardAudio(prev => ({
+        ...prev,
+        currentTime: standardAudio.currentTime,
+        duration: standardAudio.duration || prev.duration
+      }));
+    };
+
+    const handleEnded = () => {
+      setStandardAudio(prev => ({ ...prev, isPlaying: false, currentTime: 0 }));
+      standardAudio.currentTime = 0;
+      setIsLoadingStandard(false);
+    };
+
+    const handleLoadedMetadata = () => {
+      setStandardAudio(prev => ({ ...prev, duration: standardAudio.duration }));
+      setIsLoadingStandard(false);
+    };
+
+    const handleLoadStart = () => {
+      setIsLoadingStandard(true);
+      setAudioError(null);
+    };
+
+    const handleCanPlay = () => {
+      setIsLoadingStandard(false);
+    };
+
+    const handleError = () => {
+      setIsLoadingStandard(false);
+      setAudioError('Failed to load audio. Please check your connection.');
+      setStandardAudio(prev => ({ ...prev, isPlaying: false }));
+    };
+
+    standardAudio.addEventListener('timeupdate', updateTime);
+    standardAudio.addEventListener('ended', handleEnded);
+    standardAudio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    standardAudio.addEventListener('loadstart', handleLoadStart);
+    standardAudio.addEventListener('canplay', handleCanPlay);
+    standardAudio.addEventListener('error', handleError);
+
+    return () => {
+      standardAudio.removeEventListener('timeupdate', updateTime);
+      standardAudio.removeEventListener('ended', handleEnded);
+      standardAudio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      standardAudio.removeEventListener('loadstart', handleLoadStart);
+      standardAudio.removeEventListener('canplay', handleCanPlay);
+      standardAudio.removeEventListener('error', handleError);
+    };
+  }, []);
+
+  useEffect(() => {
+    const es60Audio = es60AudioRef.current;
+    if (!es60Audio) return;
+
+    const updateTime = () => {
+      setES60Audio(prev => ({
+        ...prev,
+        currentTime: es60Audio.currentTime,
+        duration: es60Audio.duration || prev.duration
+      }));
+    };
+
+    const handleEnded = () => {
+      setES60Audio(prev => ({ ...prev, isPlaying: false, currentTime: 0 }));
+      es60Audio.currentTime = 0;
+      setIsLoadingES60(false);
+    };
+
+    const handleLoadedMetadata = () => {
+      setES60Audio(prev => ({ ...prev, duration: es60Audio.duration }));
+      setIsLoadingES60(false);
+    };
+
+    const handleLoadStart = () => {
+      setIsLoadingES60(true);
+      setAudioError(null);
+    };
+
+    const handleCanPlay = () => {
+      setIsLoadingES60(false);
+    };
+
+    const handleError = () => {
+      setIsLoadingES60(false);
+      setAudioError('Failed to load audio. Please check your connection.');
+      setES60Audio(prev => ({ ...prev, isPlaying: false }));
+    };
+
+    es60Audio.addEventListener('timeupdate', updateTime);
+    es60Audio.addEventListener('ended', handleEnded);
+    es60Audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    es60Audio.addEventListener('loadstart', handleLoadStart);
+    es60Audio.addEventListener('canplay', handleCanPlay);
+    es60Audio.addEventListener('error', handleError);
+
+    return () => {
+      es60Audio.removeEventListener('timeupdate', updateTime);
+      es60Audio.removeEventListener('ended', handleEnded);
+      es60Audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      es60Audio.removeEventListener('loadstart', handleLoadStart);
+      es60Audio.removeEventListener('canplay', handleCanPlay);
+      es60Audio.removeEventListener('error', handleError);
+    };
+  }, []);
 
   // Animation variants
   const prefersReducedMotion = typeof window !== 'undefined' && 
@@ -104,28 +218,82 @@ export function ES60SoundDemo() {
     }
   };
 
-  // Mock audio control functions
-  const playStandardAudio = () => {
-    if (es60Audio.isPlaying) {
-      setES60Audio(prev => ({ ...prev, isPlaying: false }));
+  // Audio control functions with actual playback
+  const playStandardAudio = async () => {
+    // Stop ES60 audio if playing
+    if (es60Audio.isPlaying && es60AudioRef.current) {
+      es60AudioRef.current.pause();
+      es60AudioRef.current.currentTime = 0;
+      setES60Audio(prev => ({ ...prev, isPlaying: false, currentTime: 0 }));
     }
-    setStandardAudio(prev => ({ ...prev, isPlaying: !prev.isPlaying }));
-    setActiveComparison('standard');
-    
-    // In real implementation: standardAudioRef.current?.play() or pause()
+
+    if (standardAudioRef.current) {
+      if (standardAudio.isPlaying) {
+        // Pause if already playing
+        standardAudioRef.current.pause();
+        setStandardAudio(prev => ({ ...prev, isPlaying: false }));
+      } else {
+        // Play audio
+        setIsLoadingStandard(true);
+        setAudioError(null);
+        try {
+          standardAudioRef.current.currentTime = 0;
+          await standardAudioRef.current.play();
+          setStandardAudio(prev => ({ ...prev, isPlaying: true }));
+          setActiveComparison('standard');
+          setIsLoadingStandard(false);
+        } catch (error) {
+          console.error('Failed to play standard audio:', error);
+          setStandardAudio(prev => ({ ...prev, isPlaying: false }));
+          setIsLoadingStandard(false);
+          setAudioError('Unable to play audio. Please try again or check your browser settings.');
+        }
+      }
+    }
   };
 
-  const playES60Audio = () => {
-    if (standardAudio.isPlaying) {
-      setStandardAudio(prev => ({ ...prev, isPlaying: false }));
+  const playES60Audio = async () => {
+    // Stop standard audio if playing
+    if (standardAudio.isPlaying && standardAudioRef.current) {
+      standardAudioRef.current.pause();
+      standardAudioRef.current.currentTime = 0;
+      setStandardAudio(prev => ({ ...prev, isPlaying: false, currentTime: 0 }));
     }
-    setES60Audio(prev => ({ ...prev, isPlaying: !prev.isPlaying }));
-    setActiveComparison('es60');
-    
-    // In real implementation: es60AudioRef.current?.play() or pause()
+
+    if (es60AudioRef.current) {
+      if (es60Audio.isPlaying) {
+        // Pause if already playing
+        es60AudioRef.current.pause();
+        setES60Audio(prev => ({ ...prev, isPlaying: false }));
+      } else {
+        // Play audio
+        setIsLoadingES60(true);
+        setAudioError(null);
+        try {
+          es60AudioRef.current.currentTime = 0;
+          await es60AudioRef.current.play();
+          setES60Audio(prev => ({ ...prev, isPlaying: true }));
+          setActiveComparison('es60');
+          setIsLoadingES60(false);
+        } catch (error) {
+          console.error('Failed to play ES60 audio:', error);
+          setES60Audio(prev => ({ ...prev, isPlaying: false }));
+          setIsLoadingES60(false);
+          setAudioError('Unable to play audio. Please try again or check your browser settings.');
+        }
+      }
+    }
   };
 
   const resetComparison = () => {
+    if (standardAudioRef.current) {
+      standardAudioRef.current.pause();
+      standardAudioRef.current.currentTime = 0;
+    }
+    if (es60AudioRef.current) {
+      es60AudioRef.current.pause();
+      es60AudioRef.current.currentTime = 0;
+    }
     setStandardAudio(prev => ({ ...prev, isPlaying: false, currentTime: 0 }));
     setES60Audio(prev => ({ ...prev, isPlaying: false, currentTime: 0 }));
     setActiveComparison(null);
@@ -162,9 +330,21 @@ export function ES60SoundDemo() {
             Hear the Difference
           </h2>
           <p className="text-xl max-w-3xl mx-auto" style={{ color: '#6B645C' }}>
-            Experience why the ES60's Shigeru Kawai SK-EX samples deliver superior sound quality 
+            Experience why the ES60's Shigeru Kawai SK-EX samples deliver superior sound quality
             compared to typical digital pianos in this price range.
           </p>
+
+          {/* Error Message */}
+          {audioError && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 p-4 rounded-lg max-w-2xl mx-auto"
+              style={{ backgroundColor: '#FEE2E2', color: '#991B1B', border: '1px solid #FCA5A5' }}
+            >
+              <p className="text-sm font-medium">{audioError}</p>
+            </motion.div>
+          )}
         </motion.div>
 
         {/* Audio Comparison Grid */}
@@ -210,15 +390,18 @@ export function ES60SoundDemo() {
             <div className="flex flex-col items-center gap-4">
               <button
                 onClick={playStandardAudio}
-                className="flex items-center justify-center w-16 h-16 rounded-full transition-all duration-300 hover:scale-105"
-                style={{ 
+                disabled={isLoadingStandard}
+                className="flex items-center justify-center w-16 h-16 rounded-full transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
                   backgroundColor: '#A8A5A0',
                   color: '#FAF8F5',
                   boxShadow: '0 4px 15px rgba(168, 165, 160, 0.3)'
                 }}
                 aria-label={standardAudio.isPlaying ? "Pause standard piano" : "Play standard piano"}
               >
-                {standardAudio.isPlaying ? (
+                {isLoadingStandard ? (
+                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : standardAudio.isPlaying ? (
                   <Pause className="w-6 h-6" />
                 ) : (
                   <Play className="w-6 h-6 ml-1" />
@@ -317,21 +500,24 @@ export function ES60SoundDemo() {
             <div className="flex flex-col items-center gap-4">
               <button
                 onClick={playES60Audio}
-                className="flex items-center justify-center w-16 h-16 rounded-full transition-all duration-300 hover:scale-105"
+                disabled={isLoadingES60}
+                className="flex items-center justify-center w-16 h-16 rounded-full transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
                   backgroundColor: '#E11922',
                   color: '#FAF8F5',
                   boxShadow: '0 4px 15px rgba(225, 25, 34, 0.3)'
                 }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = '#C7161F';
+                  if (!isLoadingES60) e.currentTarget.style.backgroundColor = '#C7161F';
                 }}
                 onMouseOut={(e) => {
                   e.currentTarget.style.backgroundColor = '#E11922';
                 }}
                 aria-label={es60Audio.isPlaying ? "Pause ES60 piano" : "Play ES60 piano"}
               >
-                {es60Audio.isPlaying ? (
+                {isLoadingES60 ? (
+                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : es60Audio.isPlaying ? (
                   <Pause className="w-6 h-6" />
                 ) : (
                   <Play className="w-6 h-6 ml-1" />
@@ -437,12 +623,24 @@ export function ES60SoundDemo() {
           </div>
         </motion.div>
 
-        {/* Hidden audio elements for future implementation */}
-        <audio ref={standardAudioRef} preload="metadata">
+        {/* Audio elements with proper configuration for mobile */}
+        <audio
+          ref={standardAudioRef}
+          preload="auto"
+          playsInline
+          crossOrigin="anonymous"
+        >
           <source src={audioSamples.standard} type="audio/mpeg" />
+          Your browser does not support the audio element.
         </audio>
-        <audio ref={es60AudioRef} preload="metadata">
+        <audio
+          ref={es60AudioRef}
+          preload="auto"
+          playsInline
+          crossOrigin="anonymous"
+        >
           <source src={audioSamples.es60} type="audio/mpeg" />
+          Your browser does not support the audio element.
         </audio>
       </div>
     </section>
