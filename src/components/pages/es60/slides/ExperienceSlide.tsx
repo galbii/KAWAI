@@ -202,28 +202,42 @@ export function ExperienceSlide() {
           animate={{ opacity: isInView ? 1 : 0, scale: isInView ? 1 : 0.95 }}
           transition={{ duration: timing.video.duration, ease: 'easeOut', delay: timing.video.delay }}
         >
-          {/* YouTube Video Embed with cropped controls */}
+          {/* YouTube Video Embed with cropped controls and hidden overlays */}
           <div className="absolute inset-0 overflow-hidden rounded-lg md:rounded-xl shadow-2xl">
             <iframe
               ref={iframeRef}
-              className="absolute border-0 pointer-events-none"
+              className="absolute border-0"
               style={{
-                width: '120%',
-                height: '120%',
-                left: '-10%',
-                top: '-10%'
+                width: '140%',
+                height: '140%',
+                left: '-20%',
+                top: '-20%',
+                pointerEvents: 'none'
               }}
-              src="https://www.youtube.com/embed/OZXS57zZds8?mute=1&loop=1&playlist=OZXS57zZds8&controls=0&showinfo=0&rel=0&modestbranding=1&disablekb=1&fs=0&iv_load_policy=3&playsinline=1&enablejsapi=1&autohide=1&cc_load_policy=0"
+              src="https://www.youtube.com/embed/OZXS57zZds8?autoplay=0&mute=1&loop=1&playlist=OZXS57zZds8&controls=0&showinfo=0&rel=0&modestbranding=1&disablekb=1&fs=0&iv_load_policy=3&playsinline=1&enablejsapi=1&autohide=1&cc_load_policy=0&widget_referrer=1"
               title="ES60 Experience"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
+              allowFullScreen={false}
+            />
+
+            {/* Overlay to block YouTube branding/overlays */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: `
+                  linear-gradient(to right, rgba(0,0,0,0.01) 0%, transparent 5%, transparent 95%, rgba(0,0,0,0.01) 100%),
+                  linear-gradient(to bottom, rgba(0,0,0,0.01) 0%, transparent 5%, transparent 95%, rgba(0,0,0,0.01) 100%)
+                `,
+                mixBlendMode: 'normal'
+              }}
             />
           </div>
 
           {/* Sound Toggle Button - Bottom Right of Video */}
           <motion.button
             onClick={handleSoundToggle}
-            className="absolute bottom-2 right-2 md:bottom-4 md:right-4 z-30 p-3 md:p-4 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-full border border-white/20 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="absolute bottom-2 right-2 md:bottom-4 md:right-4 z-40 p-3 md:p-4 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-full border border-white/20 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            style={{ pointerEvents: 'auto' }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             initial={{ opacity: 0, scale: 0.8 }}
