@@ -4,14 +4,15 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { Music, Music2, Radio, Waves, Disc3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAudioPlayer } from '@/hooks/useAudioPlayer';
 
-// Sound card data with correct SoundCloud URLs
+// Sound card data with local audio files
 const SOUND_VOICES = [
   {
     id: 'tine-ep',
     name: 'Tine EP',
     description: 'Classic Rhodes-style electric piano',
-    soundCloudUrl: 'https://soundcloud.com/kawai-global/es60-04-tine-electric-piano',
+    audioUrl: '/sounds/es60/tine-ep.mp3',
     icon: Music,
     color: 'from-purple-500/20 to-pink-500/20',
     accentColor: 'text-purple-400',
@@ -21,7 +22,7 @@ const SOUND_VOICES = [
     id: 'modern-ep',
     name: 'Modern EP',
     description: 'DX-style FM electric piano',
-    soundCloudUrl: 'https://soundcloud.com/kawai-global/es60-05-modern-electric-piano',
+    audioUrl: '/sounds/es60/modern-ep.mp3',
     icon: Music2,
     color: 'from-cyan-500/20 to-blue-500/20',
     accentColor: 'text-cyan-400',
@@ -31,7 +32,7 @@ const SOUND_VOICES = [
     id: 'jazz-organ',
     name: 'Jazz Organ',
     description: 'Hammond-style drawbar organ',
-    soundCloudUrl: 'https://soundcloud.com/kawai-global/es60-06-jazz-organ-original',
+    audioUrl: '/sounds/es60/jazz-organ.mp3',
     icon: Radio,
     color: 'from-orange-500/20 to-amber-500/20',
     accentColor: 'text-orange-400',
@@ -41,7 +42,7 @@ const SOUND_VOICES = [
     id: 'clavi',
     name: 'Clavi',
     description: 'Funky Clavinet sound',
-    soundCloudUrl: 'https://soundcloud.com/kawai-global/es60-10-clavi-original-kawai',
+    audioUrl: '/sounds/es60/clavi.mp3',
     icon: Waves,
     color: 'from-green-500/20 to-emerald-500/20',
     accentColor: 'text-green-400',
@@ -51,150 +52,13 @@ const SOUND_VOICES = [
     id: 'e-bass',
     name: 'E.Bass',
     description: 'Electric bass with authentic character',
-    soundCloudUrl: 'https://soundcloud.com/kawai-global/es60-13-electric-bass-original',
+    audioUrl: '/sounds/es60/e-bass.mp3',
     icon: Disc3,
     color: 'from-red-500/20 to-rose-500/20',
     accentColor: 'text-red-400',
     borderColor: 'border-red-500'
   }
-];
-
-// Simplified SoundCloud Widget Hook - Mobile-Optimized Approach
-function useSoundCloudWidget() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const widgetRef = useRef<any>(null);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [isReady, setIsReady] = useState(false);
-
-  // Load SoundCloud API script once
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    // Check if script already loaded
-    if ((window as any).SC) {
-      console.log('[SoundCloud] API already loaded');
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = 'https://w.soundcloud.com/player/api.js';
-    script.async = true;
-    document.body.appendChild(script);
-
-    script.onload = () => console.log('[SoundCloud] API loaded');
-    script.onerror = () => {
-      console.error('[SoundCloud] Failed to load API');
-      setError('Failed to load player');
-    };
-
-    return () => {
-      // Don't remove script - it can be reused
-    };
-  }, []);
-
-  // Initialize widget after iframe mounts
-  useEffect(() => {
-    if (!iframeRef.current || widgetRef.current) return;
-
-    // Wait for SC to be available
-    const initWidget = setInterval(() => {
-      if ((window as any).SC && iframeRef.current) {
-        console.log('[SoundCloud] Initializing widget...');
-        const SC = (window as any).SC;
-
-        try {
-          widgetRef.current = SC.Widget(iframeRef.current);
-
-          // Bind READY event
-          widgetRef.current.bind(SC.Widget.Events.READY, () => {
-            console.log('[SoundCloud] ✅ READY');
-            setIsReady(true);
-            setError(null);
-          });
-
-          // Bind PLAY event
-          widgetRef.current.bind(SC.Widget.Events.PLAY, () => {
-            console.log('[SoundCloud] Playing');
-            setIsPlaying(true);
-            setIsLoading(false);
-          });
-
-          // Bind PAUSE event
-          widgetRef.current.bind(SC.Widget.Events.PAUSE, () => {
-            console.log('[SoundCloud] Paused');
-            setIsPlaying(false);
-          });
-
-          // Bind FINISH event
-          widgetRef.current.bind(SC.Widget.Events.FINISH, () => {
-            console.log('[SoundCloud] Finished');
-            setIsPlaying(false);
-          });
-
-          // Bind ERROR event
-          widgetRef.current.bind(SC.Widget.Events.ERROR, () => {
-            console.error('[SoundCloud] Error playing track');
-            setError('Failed to play');
-            setIsLoading(false);
-          });
-
-          clearInterval(initWidget);
-        } catch (err) {
-          console.error('[SoundCloud] Init error:', err);
-        }
-      }
-    }, 100);
-
-    // Cleanup
-    return () => clearInterval(initWidget);
-  }, []);
-
-  // Expose a loadAndPlay function for the parent component to call
-  // This must be called synchronously within user gesture for mobile
-  const loadAndPlay = useCallback((soundCloudUrl: string) => {
-    if (!widgetRef.current || !isReady) {
-      console.warn('[SoundCloud] Widget not ready');
-      setError('Player not ready, please try again');
-      return false;
-    }
-
-    console.log('[SoundCloud] Loading:', soundCloudUrl);
-
-    // Set loading state
-    setIsLoading(true);
-    setError(null);
-
-    // Stop current track before loading new one
-    widgetRef.current.pause();
-
-    // Load new track synchronously within user gesture context
-    // CRITICAL: This must happen in the click handler, not in a useEffect
-    widgetRef.current.load(soundCloudUrl, {
-      auto_play: false, // Don't use autoplay - it's blocked on mobile
-      hide_related: true,
-      show_comments: false,
-      show_user: false,
-      show_reposts: false,
-      visual: false,
-      callback: () => {
-        // Play explicitly after load completes (still within gesture context)
-        console.log('[SoundCloud] Load complete, playing...');
-        widgetRef.current?.play();
-
-        // Fallback: try playing again after short delay for stubborn browsers
-        setTimeout(() => {
-          widgetRef.current?.play();
-        }, 100);
-      }
-    });
-
-    return true;
-  }, [isReady]);
-
-  return { isLoading, isPlaying, error, iframeRef, loadAndPlay };
-}
+] as const;
 
 // Waveform Visualization Component
 function WaveformVisualizer({ isPlaying }: { isPlaying: boolean }) {
@@ -236,19 +100,25 @@ export function PremiumSoundSlide() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [showHeaderText, setShowHeaderText] = useState(true);
   const [showSoundUI, setShowSoundUI] = useState(false);
+  const [audioUnlocked, setAudioUnlocked] = useState(false);
 
   const activeVoice = SOUND_VOICES.find(v => v.id === activeVoiceId);
-  const { isLoading, isPlaying, error, iframeRef, loadAndPlay } = useSoundCloudWidget();
+  const { isLoading, isPlaying, error, play, stop } = useAudioPlayer();
 
-  // Handle voice card click - coordinates parent state + widget playback
-  // MUST be synchronous for mobile gesture context
-  const handleVoiceClick = useCallback((voice: typeof SOUND_VOICES[0]) => {
+  // Handle voice card click - coordinates parent state + audio playback
+  const handleVoiceClick = useCallback((voice: { id: string; audioUrl: string }) => {
+    // Mark audio as unlocked on first interaction (iOS requirement)
+    if (!audioUnlocked) {
+      setAudioUnlocked(true);
+      console.log('[Audio] Audio unlocked by user interaction');
+    }
+
     // Set parent component state
     setActiveVoiceId(voice.id);
 
-    // Load and play in widget (synchronously within gesture)
-    loadAndPlay(voice.soundCloudUrl);
-  }, [loadAndPlay]);
+    // Play audio (works reliably on iOS)
+    play(voice.audioUrl);
+  }, [play, audioUnlocked]);
 
   // Detect mobile screen size
   useEffect(() => {
@@ -304,12 +174,13 @@ export function PremiumSoundSlide() {
     }
   }, [isInView]);
 
-  // Reset active voice when leaving view
+  // Stop audio and reset state when leaving view
   useEffect(() => {
     if (!isInView) {
+      stop();
       setActiveVoiceId(null);
     }
-  }, [isInView]);
+  }, [isInView, stop]);
 
   return (
     <motion.div
@@ -421,12 +292,12 @@ export function PremiumSoundSlide() {
                 transition={{ duration: 1 }}
                 className="w-full"
               >
-                {/* Heading Text */}
+                {/* Heading Text - Hidden on mobile to prevent cutoff */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2, duration: 0.8 }}
-                  className="text-center mb-8 md:mb-10"
+                  className="text-center mb-8 md:mb-10 hidden md:block"
                 >
                   <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white/90 max-w-4xl mx-auto leading-tight px-4" style={{ textShadow: '2px 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.6)' }}>
                     17 meticulously sampled instruments including authentic Shigeru Kawai SK-EX concert grand and premium electric pianos, organs, and more.
@@ -434,7 +305,7 @@ export function PremiumSoundSlide() {
                 </motion.div>
 
           {/* Sound Cards Grid - Full Width */}
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-5xl mx-auto mt-0 md:mt-0">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
               {SOUND_VOICES.map((voice, index) => {
                 const Icon = voice.icon;
@@ -545,9 +416,16 @@ export function PremiumSoundSlide() {
                   )}
                 </div>
               ) : (
-                <p className="text-center text-white/60 text-sm mt-4">
-                  Tap a sound card to hear it
-                </p>
+                <div className="text-center mt-4 space-y-2">
+                  <p className="text-white/60 text-sm">
+                    Tap a sound card to hear it
+                  </p>
+                  {isMobile && !audioUnlocked && (
+                    <p className="text-xs text-blue-400/80">
+                      🎵 First tap unlocks audio on mobile
+                    </p>
+                  )}
+                </div>
               )}
             </div>
           </motion.div>
@@ -602,36 +480,6 @@ export function PremiumSoundSlide() {
       )}
     </AnimatePresence>
 
-          {/* SoundCloud player - invisible but technically visible for iOS Safari */}
-          <div style={{
-            position: 'absolute',
-            bottom: '0',
-            left: '0',
-            width: '1px',
-            height: '1px',
-            opacity: 0.01, // Slightly visible instead of 0 - iOS Safari requirement
-            pointerEvents: 'none',
-            zIndex: -1, // Just behind content, not -9999
-            overflow: 'hidden'
-            // Note: No visibility: hidden - iOS Safari blocks audio from hidden elements
-          }}>
-            <iframe
-              ref={iframeRef}
-              id="sc-widget"
-              width="1"
-              height="1"
-              scrolling="no"
-              frameBorder="no"
-              allow="autoplay"
-              title="SoundCloud Player"
-              style={{
-                opacity: 0.01,
-                pointerEvents: 'none'
-                // Note: No visibility: hidden - critical for mobile audio
-              }}
-              src={`https://w.soundcloud.com/player/?url=${encodeURIComponent(SOUND_VOICES[0]?.soundCloudUrl || 'https://soundcloud.com/kawai-global/es60-04-tine-electric-piano')}&color=%2359b3f6&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false&show_artwork=false&show_playcount=false`}
-            />
-          </div>
         </div>
       </div>
     </motion.div>

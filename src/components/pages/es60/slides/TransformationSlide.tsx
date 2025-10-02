@@ -165,66 +165,23 @@ export function TransformationSlide() {
               scale: isInView ? 1 : 0.8
             }}
             transition={{ duration: 1.5 }}
-            className="mb-8 md:mb-12"
+            className="mb-4 md:mb-8"
           >
-            <p className="text-red-400 text-sm md:text-lg font-medium mb-3 tracking-wide uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.8)' }}>
+            <p className="text-red-400 text-xs md:text-base font-medium mb-2 tracking-wide uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.8)' }}>
               Perfect for Beginners & Students
             </p>
-            <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-white mb-3 drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]" style={{ textShadow: '0 4px 16px rgba(0,0,0,0.95), 0 0 24px rgba(0,0,0,0.9)' }}>
+            <h2 className="text-xl md:text-3xl lg:text-4xl font-bold text-white mb-2 drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]" style={{ textShadow: '0 4px 16px rgba(0,0,0,0.95), 0 0 24px rgba(0,0,0,0.9)' }}>
               Everything You Need
               <span className="block text-red-500 drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]" style={{ textShadow: '0 4px 16px rgba(0,0,0,0.95), 0 0 24px rgba(0,0,0,0.9)' }}>To Start Playing</span>
             </h2>
-            <p className="text-base md:text-lg lg:text-xl text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]" style={{ textShadow: '0 2px 14px rgba(0,0,0,0.9), 0 0 22px rgba(0,0,0,0.85)' }}>
+            <p className="text-sm md:text-base lg:text-lg text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]" style={{ textShadow: '0 2px 14px rgba(0,0,0,0.9), 0 0 22px rgba(0,0,0,0.85)' }}>
               Discover how the ES60 fits your lifestyle
             </p>
           </motion.div>
 
-          {/* Scenario Switcher - Mobile Friendly */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{
-              opacity: showES60 ? 1 : 0,
-              y: showES60 ? 0 : -20
-            }}
-            transition={{ delay: 2.5, duration: 0.8 }}
-            className="mb-6 md:mb-8"
-          >
-            <div className="flex flex-wrap justify-center gap-3 md:gap-4 px-4">
-              {[
-                { key: 'student' as ScenarioType, label: 'Student Life', icon: <Package className="w-4 h-4" /> },
-                { key: 'lateNight' as ScenarioType, label: 'Late Night Learner', icon: <Moon className="w-4 h-4" /> },
-                { key: 'smallSpace' as ScenarioType, label: 'Small Space Hero', icon: <Home className="w-4 h-4" /> }
-              ].map((scenario) => {
-                const isActive = activeScenario === scenario.key;
-                const colors = getColorClasses(scenarioContent[scenario.key].color);
-
-                return (
-                  <motion.button
-                    key={scenario.key}
-                    onClick={() => setActiveScenario(scenario.key)}
-                    className={`
-                      px-3 sm:px-4 md:px-6 py-2.5 md:py-3 rounded-lg border-2 transition-all
-                      flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm md:text-base font-medium
-                      min-h-[44px] min-w-[100px] sm:min-w-auto justify-center
-                      backdrop-blur-md drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]
-                      ${isActive ? `${colors.border} ${colors.bg} ${colors.text}` : 'border-white/30 bg-black/40 text-white hover:border-white/50 hover:bg-black/50'}
-                    `}
-                    style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {scenario.icon}
-                    <span className="hidden sm:inline">{scenario.label}</span>
-                    <span className="sm:hidden">{scenario.label.split(' ')[0]}</span>
-                  </motion.button>
-                );
-              })}
-            </div>
-          </motion.div>
-
           {/* Interactive Scenario Content */}
           <div className="relative w-full max-w-6xl mx-auto">
-            <div className="space-y-8">
+            <div className="space-y-4 md:space-y-6">
 
               {/* Dynamic Content */}
               <motion.div
@@ -234,7 +191,7 @@ export function TransformationSlide() {
                   x: showES60 ? 0 : -100
                 }}
                 transition={{ delay: 1.5, duration: 1.5, ease: "easeOut" }}
-                className="space-y-6 max-w-4xl mx-auto"
+                className="space-y-3 md:space-y-4 max-w-4xl mx-auto"
               >
                 <AnimatePresence mode="wait">
                   <motion.div
@@ -243,30 +200,30 @@ export function TransformationSlide() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 30 }}
                     transition={{ duration: 0.5 }}
-                    className="space-y-6"
+                    className="space-y-3 md:space-y-4"
                   >
-                    <h3 className={`text-2xl md:text-3xl lg:text-4xl font-bold ${currentColors.text} text-center drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]`} style={{ textShadow: '0 4px 16px rgba(0,0,0,0.95), 0 0 24px rgba(0,0,0,0.9)' }}>
+                    <h3 className={`text-lg md:text-2xl lg:text-3xl font-bold ${currentColors.text} text-center drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]`} style={{ textShadow: '0 4px 16px rgba(0,0,0,0.95), 0 0 24px rgba(0,0,0,0.9)' }}>
                       {currentScenario.headline}
                     </h3>
 
                     {/* Features List */}
-                    <div className="space-y-4">
+                    <div className="space-y-2 md:space-y-3">
                       {currentScenario.features.map((feature, index) => (
                         <motion.div
                           key={index}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.1 + 0.2 }}
-                          className="flex items-start gap-2 sm:gap-3 bg-black/60 backdrop-blur-md rounded-lg p-3 sm:p-4 md:p-4 border border-white/20"
+                          className="flex items-start gap-2 sm:gap-3 bg-black/60 backdrop-blur-md rounded-lg p-2 sm:p-3 md:p-3 border border-white/20"
                         >
-                          <div className={`flex-shrink-0 ${currentColors.text} w-6 h-6 flex items-center justify-center drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]`}>
+                          <div className={`flex-shrink-0 ${currentColors.text} w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]`}>
                             {typeof feature.icon === 'string' ? (
-                              <span className="text-2xl">{feature.icon}</span>
+                              <span className="text-xl sm:text-2xl">{feature.icon}</span>
                             ) : (
                               feature.icon
                             )}
                           </div>
-                          <p className="text-white text-sm md:text-base leading-relaxed drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>{feature.text}</p>
+                          <p className="text-white text-xs sm:text-sm md:text-base leading-snug sm:leading-relaxed drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>{feature.text}</p>
                         </motion.div>
                       ))}
                     </div>
@@ -276,7 +233,7 @@ export function TransformationSlide() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.6 }}
-                      className={`text-base md:text-lg font-medium ${currentColors.text} text-center drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]`}
+                      className={`text-sm md:text-base font-medium ${currentColors.text} text-center drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]`}
                       style={{ textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.85)' }}
                     >
                       {currentScenario.cta}
@@ -285,9 +242,52 @@ export function TransformationSlide() {
                 </AnimatePresence>
               </motion.div>
 
+              {/* Scenario Switcher - Mobile Friendly */}
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{
+                  opacity: showES60 ? 1 : 0,
+                  y: showES60 ? 0 : -20
+                }}
+                transition={{ delay: 2.5, duration: 0.8 }}
+                className="pt-2 md:pt-3"
+              >
+                <div className="flex flex-wrap justify-center gap-3 md:gap-4 px-4">
+                  {[
+                    { key: 'student' as ScenarioType, label: 'Student Life', icon: <Package className="w-4 h-4" /> },
+                    { key: 'lateNight' as ScenarioType, label: 'Late Night Learner', icon: <Moon className="w-4 h-4" /> },
+                    { key: 'smallSpace' as ScenarioType, label: 'Small Space Hero', icon: <Home className="w-4 h-4" /> }
+                  ].map((scenario) => {
+                    const isActive = activeScenario === scenario.key;
+                    const colors = getColorClasses(scenarioContent[scenario.key].color);
+
+                    return (
+                      <motion.button
+                        key={scenario.key}
+                        onClick={() => setActiveScenario(scenario.key)}
+                        className={`
+                          px-2 sm:px-3 md:px-5 py-2 md:py-2.5 rounded-lg border-2 transition-all
+                          flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm md:text-base font-medium
+                          min-h-[40px] min-w-[90px] sm:min-w-auto justify-center
+                          backdrop-blur-md drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]
+                          ${isActive ? `${colors.border} ${colors.bg} ${colors.text}` : 'border-white/30 bg-black/40 text-white hover:border-white/50 hover:bg-black/50'}
+                        `}
+                        style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        {scenario.icon}
+                        <span className="hidden sm:inline">{scenario.label}</span>
+                        <span className="sm:hidden">{scenario.label.split(' ')[0]}</span>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+
               {/* ES60 Image with Hotspots - Now Below Features */}
               <motion.div
-                className="relative h-64 sm:h-80 md:h-96 lg:h-[32rem] w-full flex justify-end"
+                className="relative h-40 sm:h-56 md:h-80 lg:h-96 xl:h-[32rem] w-full flex justify-end"
                 initial={{ opacity: 0, x: 100 }}
                 animate={{
                   opacity: showES60 ? 1 : 0,
@@ -394,7 +394,7 @@ export function TransformationSlide() {
                     href="https://kawaius.com/product/kawai-es60/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-block px-6 md:px-12 py-4 md:py-6 text-base md:text-xl font-bold bg-white text-red-600 hover:bg-gray-100 rounded-xl md:rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300 w-full max-w-md min-h-[48px]"
+                    className="inline-block px-6 md:px-12 py-3 md:py-5 text-sm md:text-lg lg:text-xl font-bold bg-white text-red-600 hover:bg-gray-100 rounded-xl md:rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300 w-full max-w-md min-h-[44px]"
                   >
                     Get Your ES60 - Only $499
                   </a>

@@ -63,8 +63,23 @@ interface FAQItemComponentProps {
 }
 
 function FAQItemComponent({ item, index, isOpen, onToggle, isInView }: FAQItemComponentProps) {
+  const itemRef = useRef<HTMLDivElement>(null);
+
+  // Scroll into view when opened
+  useEffect(() => {
+    if (isOpen && itemRef.current) {
+      setTimeout(() => {
+        itemRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest'
+        });
+      }, 100); // Small delay to allow animation to start
+    }
+  }, [isOpen]);
+
   return (
     <motion.div
+      ref={itemRef}
       initial={{ opacity: 0, y: 20 }}
       animate={{
         opacity: isInView ? 1 : 0,
@@ -81,7 +96,7 @@ function FAQItemComponent({ item, index, isOpen, onToggle, isInView }: FAQItemCo
         className="w-full py-4 md:py-5 px-4 sm:px-6 flex items-start justify-between text-left group"
         aria-expanded={isOpen}
       >
-        <h3 className="text-base sm:text-lg font-semibold text-white pr-4 sm:pr-6 group-hover:text-red-400 transition-colors duration-200">
+        <h3 className="text-base sm:text-lg font-semibold text-white pr-4 sm:pr-6 group-hover:text-red-400 transition-colors duration-200 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.9), 0 0 16px rgba(0,0,0,0.85)' }}>
           {item.question}
         </h3>
         <motion.div
@@ -89,7 +104,7 @@ function FAQItemComponent({ item, index, isOpen, onToggle, isInView }: FAQItemCo
           transition={{ duration: 0.3 }}
           className="flex-shrink-0 mt-1"
         >
-          <ChevronDown className="w-5 h-5 text-white/60 group-hover:text-red-400 transition-colors duration-200" />
+          <ChevronDown className="w-5 h-5 text-white/60 group-hover:text-red-400 transition-colors duration-200 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]" />
         </motion.div>
       </button>
 
@@ -103,7 +118,7 @@ function FAQItemComponent({ item, index, isOpen, onToggle, isInView }: FAQItemCo
             className="overflow-hidden"
           >
             <div className="px-4 sm:px-6 pb-5">
-              <p className="text-sm sm:text-base text-white/80 leading-relaxed">
+              <p className="text-sm sm:text-base text-white leading-relaxed drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
                 {item.answer}
               </p>
             </div>
@@ -116,9 +131,37 @@ function FAQItemComponent({ item, index, isOpen, onToggle, isInView }: FAQItemCo
 
 export function FAQSlide() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const faqContainerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(containerRef, { once: false, amount: 0.3 });
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [outboundUrl, setOutboundUrl] = useState('https://kawaius.com/product/kawai-es60/');
+
+  // Add webkit scrollbar styles
+  useEffect(() => {
+    if (!faqContainerRef.current) return;
+
+    const style = document.createElement('style');
+    style.textContent = `
+      .faq-scrollable::-webkit-scrollbar {
+        width: 8px;
+      }
+      .faq-scrollable::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .faq-scrollable::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+      }
+      .faq-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   // Build outbound URL with preserved UTM parameters and fbclid
   useEffect(() => {
@@ -229,7 +272,7 @@ export function FAQSlide() {
         ))}
       </div>
 
-      <div className="relative z-10 h-full flex items-start justify-center py-8 sm:py-12 px-4">
+      <div className="relative z-10 h-full flex items-start justify-center py-6 sm:py-10 px-4">
         <div className="w-full max-w-3xl mx-auto">
           {/* Section Header */}
           <motion.div
@@ -239,29 +282,36 @@ export function FAQSlide() {
               y: isInView ? 0 : 30
             }}
             transition={{ duration: 1.5 }}
-            className="text-center mb-8 md:mb-12"
+            className="text-center mb-4 md:mb-8"
           >
-            <p className="text-blue-400 text-sm md:text-base font-medium mb-4 tracking-wide uppercase">
+            <p className="text-blue-400 text-sm md:text-base font-medium mb-2 md:mb-3 tracking-wide uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.8)' }}>
               Questions & Answers
             </p>
-            <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white mb-4 leading-tight">
+            <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white mb-2 md:mb-3 leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]" style={{ textShadow: '0 4px 16px rgba(0,0,0,0.95), 0 0 24px rgba(0,0,0,0.9)' }}>
               Everything You
-              <span className="block text-blue-400">Need to Know</span>
+              <span className="block text-blue-400 drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]" style={{ textShadow: '0 4px 16px rgba(0,0,0,0.95), 0 0 24px rgba(0,0,0,0.9)' }}>Need to Know</span>
             </h2>
-            <p className="text-sm sm:text-base md:text-lg text-white/70 max-w-2xl mx-auto px-4">
+            <p className="text-sm sm:text-base md:text-lg text-white max-w-2xl mx-auto px-4 drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]" style={{ textShadow: '0 2px 14px rgba(0,0,0,0.9), 0 0 22px rgba(0,0,0,0.85)' }}>
               Common questions from beginners, students, and adult learners
             </p>
           </motion.div>
 
-          {/* FAQ List - Non-scrollable, fixed height */}
+          {/* FAQ List - Scrollable container */}
           <motion.div
+            ref={faqContainerRef}
             initial={{ opacity: 0, y: 20 }}
             animate={{
               opacity: isInView ? 1 : 0,
               y: isInView ? 0 : 20
             }}
             transition={{ delay: isInView ? 0.5 : 0, duration: 1 }}
-            className="bg-black/40 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden mb-6"
+            className="faq-scrollable bg-black/60 backdrop-blur-md rounded-2xl border border-white/20 overflow-y-auto mb-6"
+            style={{
+              maxHeight: 'min(55vh, 450px)',
+              WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'thin',
+              scrollbarColor: 'rgba(255, 255, 255, 0.2) transparent'
+            }}
           >
             {cinematicFAQData.map((item, index) => (
               <FAQItemComponent
@@ -291,7 +341,7 @@ export function FAQSlide() {
           >
             <Button
               size="lg"
-              className="px-6 md:px-12 py-4 md:py-6 text-base md:text-xl font-bold bg-white text-red-600 hover:bg-gray-100 rounded-xl md:rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300 w-full max-w-md min-h-[48px]"
+              className="px-6 md:px-12 py-3 md:py-5 text-sm md:text-lg lg:text-xl font-bold bg-white text-red-600 hover:bg-gray-100 rounded-xl md:rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300 w-full max-w-md min-h-[44px]"
               asChild
             >
               <a

@@ -34,10 +34,10 @@ export function ExperienceSlide() {
     container: { delay: 0, duration: isMobile ? 0.6 : 0.8 },
     heading: { delay: isMobile ? 0.2 : 0.3, duration: isMobile ? 0.8 : 1 },
     underline: { delay: isMobile ? 1.2 : 1.5, duration: isMobile ? 0.5 : 0.7 },
-    video: { delay: isMobile ? 1.8 : 2.3, duration: isMobile ? 0.8 : 1 },
+    video: { delay: 0, duration: 0.4 }, // Immediate, quick fade-in
     videoPlay: isMobile ? 2200 : 2800,
-    soundToggle: { delay: isMobile ? 2.8 : 3.5, duration: isMobile ? 0.4 : 0.5 },
-    cta: { delay: isMobile ? 4.0 : 5.0, duration: isMobile ? 0.8 : 1 }
+    soundToggle: { delay: isMobile ? 0.5 : 0.6, duration: isMobile ? 0.4 : 0.5 }, // Adjusted to follow video
+    cta: { delay: isMobile ? 1.5 : 1.8, duration: isMobile ? 0.8 : 1 } // Adjusted to follow video
   };
 
   // Build outbound URL with preserved UTM parameters and fbclid
@@ -155,18 +155,26 @@ export function ExperienceSlide() {
       animate={{ opacity: isInView ? 1 : 0.3 }}
       transition={{ duration: timing.container.duration }}
     >
-      <div className="w-full max-w-5xl px-4 md:px-8">
-        {/* Heading - "Instrumental to Life" - Right above video */}
+      {/* Heading - "Instrumental to Life" - Centered with max-width */}
+      <div className="w-full max-w-5xl px-4 md:px-8 mx-auto mb-4 md:mb-6">
         <motion.div
           initial={{ opacity: 0, y: -40 }}
           animate={{ opacity: isInView ? 1 : 0, y: isInView ? 0 : -40 }}
           transition={{ duration: timing.heading.duration, ease: 'easeOut', delay: timing.heading.delay }}
-          className="mb-4 md:mb-6 z-20"
+          className="z-20"
         >
           <div className="text-center">
             <h2
-              className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-bold text-white drop-shadow-2xl"
-              style={{ fontFamily: '"Buenapark JF", "Crimson Text", serif' }}
+              className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-bold text-white tracking-wide px-4 py-2"
+              style={{
+                fontFamily: '"Buenapark JF", "Crimson Text", serif',
+                textShadow: '0 4px 12px rgba(0, 0, 0, 0.9), 0 2px 4px rgba(0, 0, 0, 0.8), 0 8px 24px rgba(0, 0, 0, 0.6)',
+                background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.2))',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                borderRadius: '0.5rem',
+                display: 'inline-block'
+              }}
             >
               Instrumental to Life
             </h2>
@@ -178,17 +186,18 @@ export function ExperienceSlide() {
             />
           </div>
         </motion.div>
+      </div>
 
-        {/* Video Container */}
-        <motion.div
-          className="relative w-full mb-6 md:mb-8"
-          style={{ aspectRatio: '16/9' }}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: isInView ? 1 : 0, scale: isInView ? 1 : 0.95 }}
-          transition={{ duration: timing.video.duration, ease: 'easeOut', delay: timing.video.delay }}
-        >
+      {/* Video Container - Full horizontal viewport width */}
+      <motion.div
+        className="relative w-screen mb-6 md:mb-8"
+        style={{ aspectRatio: '16/9' }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isInView ? 1 : 0 }}
+        transition={{ duration: timing.video.duration, ease: 'easeOut', delay: timing.video.delay }}
+      >
           {/* HTML5 Video - Reliable mobile audio control */}
-          <div className="absolute inset-0 overflow-hidden rounded-lg md:rounded-xl shadow-2xl">
+          <div className="absolute inset-0 overflow-hidden shadow-2xl">
             <video
               ref={videoRef}
               className="absolute inset-0 w-full h-full object-cover"
@@ -245,7 +254,8 @@ export function ExperienceSlide() {
           </motion.button>
         </motion.div>
 
-        {/* CTA Button - Closer to video */}
+      {/* CTA Button - Centered with max-width */}
+      <div className="w-full max-w-5xl px-4 md:px-8 mx-auto">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{

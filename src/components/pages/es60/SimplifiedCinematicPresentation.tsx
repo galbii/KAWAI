@@ -162,10 +162,10 @@ function BackgroundVideo({ currentSlide }: BackgroundVideoProps) {
         ref={video1Ref}
         className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
         style={{ opacity: activeVideo === 1 ? 1 : 0 }}
+        autoPlay
         muted
         loop
         playsInline
-        autoPlay
         preload="auto"
       >
         <source src="/videos/es60powerhouse-loop.webm" type="video/webm" />
@@ -177,6 +177,7 @@ function BackgroundVideo({ currentSlide }: BackgroundVideoProps) {
         ref={video2Ref}
         className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
         style={{ opacity: activeVideo === 2 ? 1 : 0 }}
+        autoPlay
         muted
         loop
         playsInline
@@ -190,6 +191,7 @@ function BackgroundVideo({ currentSlide }: BackgroundVideoProps) {
         ref={video3Ref}
         className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
         style={{ opacity: activeVideo === 3 ? 1 : 0 }}
+        autoPlay
         muted
         loop
         playsInline
