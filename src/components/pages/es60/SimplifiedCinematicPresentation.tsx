@@ -198,8 +198,8 @@ function BackgroundVideo({ currentSlide }: BackgroundVideoProps) {
         <source src="/videos/es60studio.mp4" type="video/mp4" />
       </video>
 
-      {/* Overlay for better text contrast on mobile */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 md:from-black/10 md:to-black/20" />
+      {/* Overlay for better text contrast on mobile - positioned behind to allow backdrop-blur to work */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 md:from-black/10 md:to-black/20 -z-10" />
     </div>
   );
 }
@@ -208,6 +208,36 @@ export function SimplifiedCinematicPresentation() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  // Preload YouTube resources immediately on mount
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    const preconnectDomains = [
+      'https://www.youtube.com',
+      'https://i.ytimg.com',
+      'https://www.google.com'
+    ];
+
+    const links: HTMLLinkElement[] = [];
+
+    preconnectDomains.forEach(domain => {
+      const preconnect = document.createElement('link');
+      preconnect.rel = 'preconnect';
+      preconnect.href = domain;
+      preconnect.crossOrigin = 'anonymous';
+      document.head.appendChild(preconnect);
+      links.push(preconnect);
+    });
+
+    return () => {
+      links.forEach(link => {
+        if (link.parentNode) {
+          link.parentNode.removeChild(link);
+        }
+      });
+    };
+  }, []);
 
   // Detect touch device
   useEffect(() => {

@@ -8,12 +8,14 @@ import Link from 'next/link';
 
 export function ExperienceSlide() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const isInView = useInView(containerRef, { once: false, amount: 0.3 });
   const [isMuted, setIsMuted] = useState(true);
-  const [hasPlayed, setHasPlayed] = useState(false);
+  const [audioUnlocked, setAudioUnlocked] = useState(false);
   const [outboundUrl, setOutboundUrl] = useState('https://kawaius.com/product/kawai-es60/');
   const [isMobile, setIsMobile] = useState(false);
+
+  // No longer needed - using HTML5 video instead of YouTube iframe
 
   // Detect mobile screen size
   useEffect(() => {
@@ -74,32 +76,20 @@ export function ExperienceSlide() {
     }
   }, []);
 
-  // Autoplay video with improved timing - plays during video reveal animation
+  // Control video playback based on slide visibility
   useEffect(() => {
-    if (isInView && iframeRef.current?.contentWindow && !hasPlayed) {
-      // Delay based on mobile/desktop timing for dramatic reveal
-      const timer = setTimeout(() => {
-        if (iframeRef.current?.contentWindow) {
-          iframeRef.current.contentWindow.postMessage(
-            JSON.stringify({ event: 'command', func: 'playVideo' }),
-            '*'
-          );
-          setHasPlayed(true);
-        }
-      }, timing.videoPlay);
-      return () => clearTimeout(timer);
-    } else if (!isInView) {
+    if (!videoRef.current) return;
+
+    if (isInView) {
+      // Play video when in view
+      videoRef.current.play().catch((error) => {
+        console.warn('Video autoplay failed:', error);
+      });
+    } else {
       // Pause video when slide is out of view
-      if (iframeRef.current?.contentWindow) {
-        iframeRef.current.contentWindow.postMessage(
-          JSON.stringify({ event: 'command', func: 'pauseVideo' }),
-          '*'
-        );
-      }
-      setHasPlayed(false);
+      videoRef.current.pause();
     }
-    return undefined;
-  }, [isInView, hasPlayed, timing.videoPlay]);
+  }, [isInView]);
 
   // Handle external link click tracking
   const handleExternalLinkClick = () => {
@@ -134,28 +124,23 @@ export function ExperienceSlide() {
     }
   };
 
-  // Handle sound toggle - only toggles mute, doesn't pause
+  // Handle sound toggle - uses native video.muted property for reliable mobile support
   const handleSoundToggle = () => {
-    if (!iframeRef.current) return;
+    if (!videoRef.current) return;
 
     // Toggle mute state
     const newMutedState = !isMuted;
     setIsMuted(newMutedState);
+    setAudioUnlocked(true);
 
-    // Send postMessage to YouTube iframe to control mute only
-    if (iframeRef.current.contentWindow) {
-      // Toggle mute (video keeps playing)
-      if (newMutedState) {
-        iframeRef.current.contentWindow.postMessage(
-          JSON.stringify({ event: 'command', func: 'mute' }),
-          '*'
-        );
-      } else {
-        iframeRef.current.contentWindow.postMessage(
-          JSON.stringify({ event: 'command', func: 'unMute' }),
-          '*'
-        );
-      }
+    // Use native video.muted property (most reliable on mobile)
+    videoRef.current.muted = newMutedState;
+
+    // Ensure playback continues after unmuting (iOS requirement)
+    if (!newMutedState) {
+      videoRef.current.play().catch((error) => {
+        console.warn('Video play after unmute failed:', error);
+      });
     }
   };
 
@@ -202,36 +187,35 @@ export function ExperienceSlide() {
           animate={{ opacity: isInView ? 1 : 0, scale: isInView ? 1 : 0.95 }}
           transition={{ duration: timing.video.duration, ease: 'easeOut', delay: timing.video.delay }}
         >
-          {/* YouTube Video Embed with cropped controls and hidden overlays */}
+          {/* HTML5 Video - Reliable mobile audio control */}
           <div className="absolute inset-0 overflow-hidden rounded-lg md:rounded-xl shadow-2xl">
-            <iframe
-              ref={iframeRef}
-              className="absolute border-0"
-              style={{
-                width: '140%',
-                height: '140%',
-                left: '-20%',
-                top: '-20%',
-                pointerEvents: 'none'
-              }}
-              src="https://www.youtube.com/embed/OZXS57zZds8?autoplay=0&mute=1&loop=1&playlist=OZXS57zZds8&controls=0&showinfo=0&rel=0&modestbranding=1&disablekb=1&fs=0&iv_load_policy=3&playsinline=1&enablejsapi=1&autohide=1&cc_load_policy=0&widget_referrer=1"
-              title="ES60 Experience"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen={false}
-            />
-
-            {/* Overlay to block YouTube branding/overlays */}
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background: `
-                  linear-gradient(to right, rgba(0,0,0,0.01) 0%, transparent 5%, transparent 95%, rgba(0,0,0,0.01) 100%),
-                  linear-gradient(to bottom, rgba(0,0,0,0.01) 0%, transparent 5%, transparent 95%, rgba(0,0,0,0.01) 100%)
-                `,
-                mixBlendMode: 'normal'
-              }}
-            />
+            <video
+              ref={videoRef}
+              className="absolute inset-0 w-full h-full object-cover"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              onError={(e) => console.error('Video load error:', e)}
+            >
+              <source src="/videos/es60-experience-optimized.webm" type="video/webm" />
+              <source src="/videos/es60-experience-optimized.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
           </div>
+
+          {/* Mobile instruction hint - shows before first interaction */}
+          {!audioUnlocked && isMobile && (
+            <motion.div
+              className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 bg-black/80 backdrop-blur-sm text-white px-4 py-2 rounded-full text-xs md:text-sm pointer-events-none"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: isInView ? 1 : 0, y: isInView ? 0 : -10 }}
+              transition={{ delay: timing.video.delay + 1, duration: 0.5 }}
+            >
+              Tap 🔊 below to enable sound
+            </motion.div>
+          )}
 
           {/* Sound Toggle Button - Bottom Right of Video */}
           <motion.button

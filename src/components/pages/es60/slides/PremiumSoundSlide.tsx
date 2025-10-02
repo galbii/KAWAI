@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { Music, Music2, Radio, Waves, Disc3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -59,8 +59,8 @@ const SOUND_VOICES = [
   }
 ];
 
-// Simplified SoundCloud Widget Hook - Best Practice Approach
-function useSoundCloudWidget(activeTrackUrl: string | null) {
+// Simplified SoundCloud Widget Hook - Mobile-Optimized Approach
+function useSoundCloudWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -151,25 +151,49 @@ function useSoundCloudWidget(activeTrackUrl: string | null) {
     return () => clearInterval(initWidget);
   }, []);
 
-  // Load track when URL changes
-  useEffect(() => {
-    if (!activeTrackUrl || !widgetRef.current || !isReady) return;
+  // Expose a loadAndPlay function for the parent component to call
+  // This must be called synchronously within user gesture for mobile
+  const loadAndPlay = useCallback((soundCloudUrl: string) => {
+    if (!widgetRef.current || !isReady) {
+      console.warn('[SoundCloud] Widget not ready');
+      setError('Player not ready, please try again');
+      return false;
+    }
 
-    console.log('[SoundCloud] Loading:', activeTrackUrl);
+    console.log('[SoundCloud] Loading:', soundCloudUrl);
+
+    // Set loading state
     setIsLoading(true);
     setError(null);
 
-    widgetRef.current.load(activeTrackUrl, {
-      auto_play: true,
+    // Stop current track before loading new one
+    widgetRef.current.pause();
+
+    // Load new track synchronously within user gesture context
+    // CRITICAL: This must happen in the click handler, not in a useEffect
+    widgetRef.current.load(soundCloudUrl, {
+      auto_play: false, // Don't use autoplay - it's blocked on mobile
       hide_related: true,
       show_comments: false,
       show_user: false,
       show_reposts: false,
-      visual: false
-    });
-  }, [activeTrackUrl, isReady]);
+      visual: false,
+      callback: () => {
+        // Play explicitly after load completes (still within gesture context)
+        console.log('[SoundCloud] Load complete, playing...');
+        widgetRef.current?.play();
 
-  return { isLoading, isPlaying, error, iframeRef };
+        // Fallback: try playing again after short delay for stubborn browsers
+        setTimeout(() => {
+          widgetRef.current?.play();
+        }, 100);
+      }
+    });
+
+    return true;
+  }, [isReady]);
+
+  return { isLoading, isPlaying, error, iframeRef, loadAndPlay };
 }
 
 // Waveform Visualization Component
@@ -214,9 +238,17 @@ export function PremiumSoundSlide() {
   const [showSoundUI, setShowSoundUI] = useState(false);
 
   const activeVoice = SOUND_VOICES.find(v => v.id === activeVoiceId);
-  const { isLoading, isPlaying, error, iframeRef } = useSoundCloudWidget(
-    activeVoice?.soundCloudUrl || null
-  );
+  const { isLoading, isPlaying, error, iframeRef, loadAndPlay } = useSoundCloudWidget();
+
+  // Handle voice card click - coordinates parent state + widget playback
+  // MUST be synchronous for mobile gesture context
+  const handleVoiceClick = useCallback((voice: typeof SOUND_VOICES[0]) => {
+    // Set parent component state
+    setActiveVoiceId(voice.id);
+
+    // Load and play in widget (synchronously within gesture)
+    loadAndPlay(voice.soundCloudUrl);
+  }, [loadAndPlay]);
 
   // Detect mobile screen size
   useEffect(() => {
@@ -411,7 +443,7 @@ export function PremiumSoundSlide() {
                 return (
                   <motion.button
                     key={voice.id}
-                    onClick={() => setActiveVoiceId(voice.id)}
+                    onClick={() => handleVoiceClick(voice)}
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{
                       opacity: isInView ? 1 : 0,
@@ -570,18 +602,18 @@ export function PremiumSoundSlide() {
       )}
     </AnimatePresence>
 
-          {/* SoundCloud player - completely hidden, audio only */}
+          {/* SoundCloud player - invisible but technically visible for iOS Safari */}
           <div style={{
-            position: 'fixed',
-            bottom: '-200px',
-            right: '-400px',
+            position: 'absolute',
+            bottom: '0',
+            left: '0',
             width: '1px',
             height: '1px',
-            opacity: 0,
+            opacity: 0.01, // Slightly visible instead of 0 - iOS Safari requirement
             pointerEvents: 'none',
-            zIndex: -9999,
-            visibility: 'hidden',
+            zIndex: -1, // Just behind content, not -9999
             overflow: 'hidden'
+            // Note: No visibility: hidden - iOS Safari blocks audio from hidden elements
           }}>
             <iframe
               ref={iframeRef}
@@ -591,11 +623,11 @@ export function PremiumSoundSlide() {
               scrolling="no"
               frameBorder="no"
               allow="autoplay"
+              title="SoundCloud Player"
               style={{
-                opacity: 0,
-                position: 'absolute',
-                pointerEvents: 'none',
-                visibility: 'hidden'
+                opacity: 0.01,
+                pointerEvents: 'none'
+                // Note: No visibility: hidden - critical for mobile audio
               }}
               src={`https://w.soundcloud.com/player/?url=${encodeURIComponent(SOUND_VOICES[0]?.soundCloudUrl || 'https://soundcloud.com/kawai-global/es60-04-tine-electric-piano')}&color=%2359b3f6&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false&show_artwork=false&show_playcount=false`}
             />
