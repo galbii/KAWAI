@@ -165,15 +165,18 @@ export function ExperienceSlide() {
         >
           <div className="text-center">
             <h2
-              className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-bold text-white tracking-wide px-4 py-2"
+              className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-bold text-white tracking-wide"
               style={{
                 fontFamily: '"Buenapark JF", "Crimson Text", serif',
-                textShadow: '0 4px 12px rgba(0, 0, 0, 0.9), 0 2px 4px rgba(0, 0, 0, 0.8), 0 8px 24px rgba(0, 0, 0, 0.6)',
-                background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.2))',
-                backdropFilter: 'blur(8px)',
-                WebkitBackdropFilter: 'blur(8px)',
-                borderRadius: '0.5rem',
-                display: 'inline-block'
+                textShadow: `
+                  0 0 30px rgba(0, 0, 0, 1),
+                  0 0 60px rgba(0, 0, 0, 1),
+                  0 1px 3px rgba(0, 0, 0, 1),
+                  0 2px 6px rgba(0, 0, 0, 1),
+                  0 4px 12px rgba(0, 0, 0, 0.95),
+                  0 8px 24px rgba(0, 0, 0, 0.9),
+                  0 16px 48px rgba(0, 0, 0, 0.8)
+                `
               }}
             >
               Instrumental to Life

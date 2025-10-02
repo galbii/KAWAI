@@ -105,8 +105,16 @@ export function PremiumSoundSlide() {
   const activeVoice = SOUND_VOICES.find(v => v.id === activeVoiceId);
   const { isLoading, isPlaying, error, play, stop } = useAudioPlayer();
 
-  // Handle voice card click - coordinates parent state + audio playback
+  // Handle voice card click - coordinates parent state + audio playback with toggle behavior
   const handleVoiceClick = useCallback((voice: { id: string; audioUrl: string }) => {
+    // Check if clicking the same card that's already active - toggle it off
+    if (activeVoiceId === voice.id) {
+      stop();
+      setActiveVoiceId(null);
+      console.log('[Audio] Stopped and deselected:', voice.id);
+      return;
+    }
+
     // Mark audio as unlocked on first interaction (iOS requirement)
     if (!audioUnlocked) {
       setAudioUnlocked(true);
@@ -118,7 +126,8 @@ export function PremiumSoundSlide() {
 
     // Play audio (works reliably on iOS)
     play(voice.audioUrl);
-  }, [play, audioUnlocked]);
+    console.log('[Audio] Playing:', voice.id);
+  }, [play, stop, audioUnlocked, activeVoiceId]);
 
   // Detect mobile screen size
   useEffect(() => {
@@ -234,8 +243,8 @@ export function PremiumSoundSlide() {
         />
       </div>
 
-      <div className="relative z-10 h-full flex items-center justify-center">
-        <div className="w-full max-w-7xl mx-auto px-6 md:px-8">
+      <div className="relative z-10 h-full flex items-center justify-center py-8 md:py-12">
+        <div className="w-full max-w-7xl mx-auto px-4 md:px-8">
           {/* Header Text - Shows first, then fades out */}
           <AnimatePresence>
             {showHeaderText && (
@@ -305,8 +314,8 @@ export function PremiumSoundSlide() {
                 </motion.div>
 
           {/* Sound Cards Grid - Full Width */}
-          <div className="max-w-5xl mx-auto mt-0 md:mt-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
+          <div className="max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 md:gap-6">
               {SOUND_VOICES.map((voice, index) => {
                 const Icon = voice.icon;
                 const isActive = activeVoiceId === voice.id;
@@ -327,8 +336,8 @@ export function PremiumSoundSlide() {
                       duration: 0.5
                     }}
                     className={cn(
-                      "relative p-3 sm:p-4 md:p-6 rounded-xl border-2 transition-all duration-300",
-                      "bg-black/40 backdrop-blur-sm min-h-[90px] sm:min-h-[100px] md:min-h-[120px]",
+                      "relative p-2 sm:p-4 md:p-6 rounded-lg sm:rounded-xl border-2 transition-all duration-300",
+                      "bg-black/40 backdrop-blur-sm min-h-[70px] sm:min-h-[100px] md:min-h-[120px]",
                       "hover:shadow-lg hover:shadow-blue-500/20 active:scale-95",
                       "touch-manipulation",
                       isActive
@@ -365,21 +374,21 @@ export function PremiumSoundSlide() {
                       />
                     )}
 
-                    <div className="flex flex-col items-center gap-2 text-center">
+                    <div className="flex flex-col items-center gap-1 sm:gap-2 text-center">
                       <Icon
                         className={cn(
-                          "w-9 h-9 md:w-10 md:h-10 transition-colors",
+                          "w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 transition-colors",
                           isActive ? voice.accentColor : "text-white/60"
                         )}
                       />
                       <div>
                         <p className={cn(
-                          "text-sm sm:text-base md:text-base font-bold transition-colors",
+                          "text-xs sm:text-sm md:text-base font-bold transition-colors",
                           isActive ? voice.accentColor : "text-white"
                         )}>
                           {voice.name}
                         </p>
-                        <p className="text-xs text-white/60 mt-1 line-clamp-1 sm:line-clamp-none">
+                        <p className="text-[10px] sm:text-xs text-white/60 mt-0.5 sm:mt-1 line-clamp-1 sm:line-clamp-none">
                           {voice.description}
                         </p>
                       </div>
@@ -395,17 +404,17 @@ export function PremiumSoundSlide() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1, duration: 1 }}
-            className="mt-6 md:mt-12"
+            className="mt-3 sm:mt-6 md:mt-12"
           >
-            <div className="bg-black/60 backdrop-blur-md rounded-xl p-4 md:p-6 border border-blue-500/30 max-w-3xl mx-auto">
+            <div className="bg-black/60 backdrop-blur-md rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 border border-blue-500/30 max-w-3xl mx-auto">
               <WaveformVisualizer isPlaying={isPlaying} />
 
               {activeVoice ? (
-                <div className="text-center mt-4 space-y-2">
-                  <p className={cn("text-base sm:text-lg font-bold", activeVoice.accentColor)}>
+                <div className="text-center mt-2 sm:mt-4 space-y-1 sm:space-y-2">
+                  <p className={cn("text-sm sm:text-base md:text-lg font-bold", activeVoice.accentColor)}>
                     {activeVoice.name}
                   </p>
-                  <p className="text-sm text-white/70">
+                  <p className="text-xs sm:text-sm text-white/70">
                     {activeVoice.description}
                   </p>
                   {isLoading && (
@@ -416,12 +425,12 @@ export function PremiumSoundSlide() {
                   )}
                 </div>
               ) : (
-                <div className="text-center mt-4 space-y-2">
-                  <p className="text-white/60 text-sm">
+                <div className="text-center mt-2 sm:mt-4 space-y-1 sm:space-y-2">
+                  <p className="text-white/60 text-xs sm:text-sm">
                     Tap a sound card to hear it
                   </p>
                   {isMobile && !audioUnlocked && (
-                    <p className="text-xs text-blue-400/80">
+                    <p className="text-[10px] sm:text-xs text-blue-400/80">
                       🎵 First tap unlocks audio on mobile
                     </p>
                   )}
@@ -435,15 +444,15 @@ export function PremiumSoundSlide() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.4, duration: 0.8 }}
-            className="text-center mt-8 md:mt-12"
+            className="text-center mt-4 sm:mt-8 md:mt-12"
           >
-            <div className="flex flex-row items-center justify-center gap-3 md:gap-4">
+            <div className="flex flex-row items-center justify-center gap-2 sm:gap-3 md:gap-4">
               {/* Crossed out original price - LEFT of button */}
               <motion.span
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 1.6, duration: 0.5 }}
-                className="relative text-2xl sm:text-3xl md:text-5xl font-bold text-white"
+                className="relative text-xl sm:text-2xl md:text-5xl font-bold text-white"
                 style={{ textShadow: '2px 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.6)' }}
               >
                 $599
@@ -470,7 +479,7 @@ export function PremiumSoundSlide() {
                 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-white text-red-600 px-6 sm:px-8 md:px-12 py-3 sm:py-4 md:py-6 text-base sm:text-lg md:text-xl font-bold rounded-2xl shadow-2xl hover:bg-gray-100 transition-all duration-300 min-h-[48px]"
+                className="bg-white text-red-600 px-4 sm:px-6 md:px-12 py-2 sm:py-3 md:py-6 text-sm sm:text-base md:text-xl font-bold rounded-xl sm:rounded-2xl shadow-2xl hover:bg-gray-100 transition-all duration-300 min-h-[44px] sm:min-h-[48px]"
               >
                 Only $499
               </motion.button>
