@@ -31,17 +31,87 @@ export function TransformationSlide() {
   const isInView = useInView(containerRef, { once: false, amount: 0.3 });
   const [showES60, setShowES60] = useState(false);
   const [activeScenario, setActiveScenario] = useState<ScenarioType>('student');
+  const [outboundUrl, setOutboundUrl] = useState('https://kawaius.com/product/kawai-es60/');
 
-  // Trigger ES60 transformation when slide comes into view
+  // Trigger ES60 transformation when slide comes into view - FASTER
   useEffect(() => {
     if (isInView) {
-      const timer = setTimeout(() => setShowES60(true), 2000);
+      const timer = setTimeout(() => setShowES60(true), 1000); // Reduced from 2000ms to 1000ms
       return () => clearTimeout(timer);
     } else {
       setShowES60(false);
     }
     return undefined;
   }, [isInView]);
+
+  // Build outbound URL with preserved UTM parameters and fbclid
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const currentParams = new URLSearchParams(window.location.search);
+      const baseUrl = 'https://kawaius.com/product/kawai-es60/';
+      const outboundParams = new URLSearchParams();
+
+      // Preserve all UTM parameters from the incoming URL
+      const utmParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'utm_id'];
+      utmParams.forEach(param => {
+        const value = currentParams.get(param);
+        if (value) {
+          outboundParams.set(param, value);
+        }
+      });
+
+      // Preserve fbclid (Facebook Click ID) - critical for attribution
+      const fbclid = currentParams.get('fbclid');
+      if (fbclid) {
+        outboundParams.set('fbclid', fbclid);
+      }
+
+      // If no UTM parameters were found, use default ones
+      if (!outboundParams.has('utm_source')) {
+        outboundParams.set('utm_source', 'direct');
+        outboundParams.set('utm_medium', 'referral');
+        outboundParams.set('utm_campaign', 'es60_awareness_campaign');
+        outboundParams.set('utm_content', 'transformation_cta');
+      }
+
+      // Build final URL
+      const finalUrl = `${baseUrl}?${outboundParams.toString()}`;
+      setOutboundUrl(finalUrl);
+    }
+  }, []);
+
+  // Handle external link click tracking
+  const handleExternalLinkClick = () => {
+    // Get UTM parameters from URL for tracking
+    const urlParams = new URLSearchParams(window.location.search);
+    const utmCampaign = urlParams.get('utm_campaign') || 'direct';
+    const utmSource = urlParams.get('utm_source') || 'direct';
+    const utmMedium = urlParams.get('utm_medium') || 'none';
+    const utmContent = urlParams.get('utm_content') || 'none';
+
+    // Track the outbound click as a conversion event with UTM data
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      (window as any).fbq('track', 'InitiateCheckout', {
+        content_name: 'ES60 Digital Piano',
+        content_category: 'Digital Piano',
+        value: 499,
+        currency: 'USD',
+        utm_campaign: utmCampaign,
+        utm_source: utmSource,
+        utm_medium: utmMedium,
+        utm_content: utmContent,
+        source: 'es60_landing_page_transformation'
+      });
+
+      // Also track as a custom event for additional granularity
+      (window as any).fbq('trackCustom', 'ES60_ProductClick', {
+        campaign: utmCampaign,
+        value: 499,
+        currency: 'USD',
+        source: 'transformation_slide'
+      });
+    }
+  };
 
   // Scenario content definitions
   const scenarioContent: Record<ScenarioType, ScenarioContent> = {
@@ -164,7 +234,7 @@ export function TransformationSlide() {
               opacity: isInView ? 1 : 0,
               scale: isInView ? 1 : 0.8
             }}
-            transition={{ duration: 1.5 }}
+            transition={{ duration: 1 }} // Reduced from 1.5s to 1s
             className="mb-4 md:mb-8"
           >
             <p className="text-red-400 text-xs md:text-base font-medium mb-2 tracking-wide uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.8)' }}>
@@ -190,7 +260,7 @@ export function TransformationSlide() {
                   opacity: showES60 ? 1 : 0,
                   x: showES60 ? 0 : -100
                 }}
-                transition={{ delay: 1.5, duration: 1.5, ease: "easeOut" }}
+                transition={{ delay: 0.8, duration: 1, ease: "easeOut" }} // Reduced delay from 1.5s to 0.8s, duration from 1.5s to 1s
                 className="space-y-3 md:space-y-4 max-w-4xl mx-auto"
               >
                 <AnimatePresence mode="wait">
@@ -213,7 +283,7 @@ export function TransformationSlide() {
                           key={index}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 + 0.2 }}
+                          transition={{ delay: index * 0.08 + 0.15 }} // Reduced stagger timing
                           className="flex items-start gap-2 sm:gap-3 bg-black/60 backdrop-blur-md rounded-lg p-2 sm:p-3 md:p-3 border border-white/20"
                         >
                           <div className={`flex-shrink-0 ${currentColors.text} w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]`}>
@@ -232,7 +302,7 @@ export function TransformationSlide() {
                     <motion.p
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ delay: 0.6 }}
+                      transition={{ delay: 0.4 }} // Reduced from 0.6s to 0.4s
                       className={`text-sm md:text-base font-medium ${currentColors.text} text-center drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]`}
                       style={{ textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.85)' }}
                     >
@@ -249,7 +319,7 @@ export function TransformationSlide() {
                   opacity: showES60 ? 1 : 0,
                   y: showES60 ? 0 : -20
                 }}
-                transition={{ delay: 2.5, duration: 0.8 }}
+                transition={{ delay: 1.5, duration: 0.6 }} // Reduced delay from 2.5s to 1.5s, duration from 0.8s to 0.6s
                 className="pt-2 md:pt-3"
               >
                 <div className="flex flex-wrap justify-center gap-3 md:gap-4 px-4">
@@ -293,7 +363,7 @@ export function TransformationSlide() {
                   opacity: showES60 ? 1 : 0,
                   x: showES60 ? 0 : 100
                 }}
-                transition={{ delay: 1, duration: 2, ease: "easeOut" }}
+                transition={{ delay: 0.6, duration: 1.2, ease: "easeOut" }} // Reduced delay from 1s to 0.6s, duration from 2s to 1.2s
               >
                 {/* ES60 Image */}
                 <motion.div
@@ -335,7 +405,7 @@ export function TransformationSlide() {
                       animate={{ scale: 1, opacity: 1 }}
                       exit={{ scale: 0, opacity: 0 }}
                       transition={{
-                        delay: index * 0.2 + 0.5,
+                        delay: index * 0.15 + 0.35, // Reduced stagger from 0.2 to 0.15, base delay from 0.5 to 0.35
                         type: "spring",
                         stiffness: 200
                       }}
@@ -366,7 +436,7 @@ export function TransformationSlide() {
                         `}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.2 + 0.7 }}
+                        transition={{ delay: index * 0.15 + 0.5 }} // Reduced stagger timing
                       >
                         {hotspot.label}
                       </motion.div>
@@ -383,17 +453,18 @@ export function TransformationSlide() {
                   scale: showES60 ? 1 : 0.8
                 }}
                 transition={{
-                  delay: 2.0,
-                  duration: 0.8,
+                  delay: 1.2, // Reduced from 2.0s to 1.2s
+                  duration: 0.6, // Reduced from 0.8s to 0.6s
                   type: "spring"
                 }}
                 className="z-20"
               >
                 <div className="text-center">
                   <a
-                    href="https://kawaius.com/product/kawai-es60/"
+                    href={outboundUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={handleExternalLinkClick}
                     className="inline-block px-6 md:px-12 py-3 md:py-5 text-sm md:text-lg lg:text-xl font-bold bg-white text-red-600 hover:bg-gray-100 rounded-xl md:rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300 w-full max-w-md min-h-[44px]"
                   >
                     Get Your ES60 - Only $499

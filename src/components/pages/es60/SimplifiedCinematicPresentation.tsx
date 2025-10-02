@@ -172,7 +172,7 @@ function BackgroundVideo({ currentSlide }: BackgroundVideoProps) {
         <source src="/videos/es60powerhouse-loop.mp4" type="video/mp4" />
       </video>
 
-      {/* Video 2: ES60 Video (Slides 2-3) */}
+      {/* Video 2: ES60 2nd Video (Slides 2-3) */}
       <video
         ref={video2Ref}
         className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
@@ -183,7 +183,8 @@ function BackgroundVideo({ currentSlide }: BackgroundVideoProps) {
         playsInline
         preload="metadata"
       >
-        <source src="/videos/es60%20video.mp4" type="video/mp4" />
+        <source src="/videos/es60-2nd-video.webm" type="video/webm" />
+        <source src="/videos/es60-2nd-video.mp4" type="video/mp4" />
       </video>
 
       {/* Video 3: ES60 Studio (Slides 4-5) */}
