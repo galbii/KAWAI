@@ -12,19 +12,15 @@ interface BackgroundVideoProps {
 function BackgroundVideo({ currentSlide }: BackgroundVideoProps) {
   const video1Ref = useRef<HTMLVideoElement>(null);
   const video2Ref = useRef<HTMLVideoElement>(null);
-  const video3Ref = useRef<HTMLVideoElement>(null);
-  const [activeVideo, setActiveVideo] = useState<1 | 2 | 3>(1);
+  const [activeVideo, setActiveVideo] = useState<1 | 2>(1);
   const video2PreloadedRef = useRef(false);
-  const video3PreloadedRef = useRef(false);
 
   // Determine which video should be playing based on current slide
-  // Slides 0-1: Video 1 (powerhouse loop)
-  // Slides 2-3: Video 2 (es60 video)
-  // Slides 4-5: Video 3 (es60studio)
-  const getActiveVideoNumber = (): 1 | 2 | 3 => {
-    if (currentSlide >= 4) return 3; // FAQ (4) and Finale (5)
-    if (currentSlide >= 2) return 2; // Transformation (2) and Experience (3)
-    return 1; // Opening (0) and Premium Sound (1)
+  // Slides 0-2: Video 1 (powerhouse loop) - Opening, Experience, Premium Sound
+  // Slides 3-5: Video 2 (es60studio) - Transformation, FAQ, Finale
+  const getActiveVideoNumber = (): 1 | 2 => {
+    if (currentSlide >= 3) return 2; // Transformation (3), FAQ (4), Finale (5)
+    return 1; // Opening (0), Experience (1), Premium Sound (2)
   };
 
   // Handle video playback for both videos
@@ -66,18 +62,12 @@ function BackgroundVideo({ currentSlide }: BackgroundVideoProps) {
     };
   }, [playVideo]);
 
-  // Preload videos when approaching their slides
+  // Preload video 2 when approaching slide 3
   useEffect(() => {
-    // Preload video 2 when on slide 1 (Premium Sound) - one slide before switch
-    if (currentSlide >= 1 && video2Ref.current && !video2PreloadedRef.current) {
+    // Preload video 2 when on slide 2 (Premium Sound) - one slide before switch to Transformation
+    if (currentSlide >= 2 && video2Ref.current && !video2PreloadedRef.current) {
       video2Ref.current.load();
       video2PreloadedRef.current = true;
-    }
-
-    // Preload video 3 when on slide 3 (Experience) - one slide before switch
-    if (currentSlide >= 3 && video3Ref.current && !video3PreloadedRef.current) {
-      video3Ref.current.load();
-      video3PreloadedRef.current = true;
     }
   }, [currentSlide]);
 
@@ -85,13 +75,11 @@ function BackgroundVideo({ currentSlide }: BackgroundVideoProps) {
   useEffect(() => {
     const video1 = video1Ref.current;
     const video2 = video2Ref.current;
-    const video3 = video3Ref.current;
     const targetVideo = getActiveVideoNumber();
 
     // Pause all videos first
     if (video1 && targetVideo !== 1) video1.pause();
     if (video2 && targetVideo !== 2) video2.pause();
-    if (video3 && targetVideo !== 3) video3.pause();
 
     // Set active video and play the target video
     setActiveVideo(targetVideo);
@@ -100,8 +88,6 @@ function BackgroundVideo({ currentSlide }: BackgroundVideoProps) {
       playVideo(video1);
     } else if (targetVideo === 2 && video2) {
       playVideo(video2);
-    } else if (targetVideo === 3 && video3) {
-      playVideo(video3);
     }
   }, [currentSlide, playVideo]);
 
@@ -109,7 +95,6 @@ function BackgroundVideo({ currentSlide }: BackgroundVideoProps) {
   useEffect(() => {
     const video1 = video1Ref.current;
     const video2 = video2Ref.current;
-    const video3 = video3Ref.current;
 
     const handleVideo1Ended = () => {
       if (video1 && activeVideo === 1) {
@@ -125,21 +110,11 @@ function BackgroundVideo({ currentSlide }: BackgroundVideoProps) {
       }
     };
 
-    const handleVideo3Ended = () => {
-      if (video3 && activeVideo === 3) {
-        video3.currentTime = 0;
-        playVideo(video3);
-      }
-    };
-
     if (video1) {
       video1.addEventListener('ended', handleVideo1Ended);
     }
     if (video2) {
       video2.addEventListener('ended', handleVideo2Ended);
-    }
-    if (video3) {
-      video3.addEventListener('ended', handleVideo3Ended);
     }
 
     return () => {
@@ -149,15 +124,12 @@ function BackgroundVideo({ currentSlide }: BackgroundVideoProps) {
       if (video2) {
         video2.removeEventListener('ended', handleVideo2Ended);
       }
-      if (video3) {
-        video3.removeEventListener('ended', handleVideo3Ended);
-      }
     };
   }, [activeVideo, playVideo]);
 
   return (
     <div className="fixed inset-0 z-0">
-      {/* Video 1: Powerhouse Loop (Slides 0-1) */}
+      {/* Video 1: Powerhouse Loop (Slides 0-2: Opening, Experience, Premium Sound) */}
       <video
         ref={video1Ref}
         className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
@@ -172,26 +144,11 @@ function BackgroundVideo({ currentSlide }: BackgroundVideoProps) {
         <source src="/videos/es60powerhouse-loop.mp4" type="video/mp4" />
       </video>
 
-      {/* Video 2: ES60 2nd Video (Slides 2-3) */}
+      {/* Video 2: ES60 Studio (Slides 3-5: Transformation, FAQ, Finale) */}
       <video
         ref={video2Ref}
         className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
         style={{ opacity: activeVideo === 2 ? 1 : 0 }}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-      >
-        <source src="/videos/es60-2nd-video.webm" type="video/webm" />
-        <source src="/videos/es60-2nd-video.mp4" type="video/mp4" />
-      </video>
-
-      {/* Video 3: ES60 Studio (Slides 4-5) */}
-      <video
-        ref={video3Ref}
-        className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
-        style={{ opacity: activeVideo === 3 ? 1 : 0 }}
         autoPlay
         muted
         loop
