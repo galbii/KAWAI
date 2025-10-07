@@ -3,7 +3,12 @@
 import { useRef, useState, useEffect } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '../ui/button';
+import { trackDealerLinkClick, trackBundlePopupOpen } from '../lib/tracking';
+
+interface FAQSlideProps {
+  onOpenBundle?: () => void;
+}
 
 /**
  * FAQ Slide - Cinematic Integration
@@ -129,12 +134,12 @@ function FAQItemComponent({ item, index, isOpen, onToggle, isInView }: FAQItemCo
   );
 }
 
-export function FAQSlide() {
+export function FAQSlide({ onOpenBundle }: FAQSlideProps = {}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const faqContainerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(containerRef, { once: false, amount: 0.3 });
   const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const [outboundUrl, setOutboundUrl] = useState('https://kawaius.com/product/kawai-es60/');
+  const [outboundUrl, setOutboundUrl] = useState('https://kawaius.com/find-a-dealer/acoustic-digital/');
 
   // Add webkit scrollbar styles
   useEffect(() => {
@@ -167,7 +172,7 @@ export function FAQSlide() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const currentParams = new URLSearchParams(window.location.search);
-      const baseUrl = 'https://kawaius.com/product/kawai-es60/';
+      const baseUrl = 'https://kawaius.com/find-a-dealer/acoustic-digital/';
       const outboundParams = new URLSearchParams();
 
       // Preserve all UTM parameters from the incoming URL
@@ -199,53 +204,16 @@ export function FAQSlide() {
     }
   }, []);
 
-  // Handle external link click tracking
-  const handleExternalLinkClick = () => {
-    // Get UTM parameters from URL for tracking
-    const urlParams = new URLSearchParams(window.location.search);
-    const utmCampaign = urlParams.get('utm_campaign') || 'direct';
-    const utmSource = urlParams.get('utm_source') || 'direct';
-    const utmMedium = urlParams.get('utm_medium') || 'none';
-    const utmContent = urlParams.get('utm_content') || 'none';
+  // Handle dealer link click tracking
+  const handleDealerLinkClick = () => {
+    trackDealerLinkClick('es60_landing_page_faq');
+  };
 
-    // Track the outbound click as a conversion event with UTM data
-    if (typeof window !== 'undefined') {
-      // PostHog conversion tracking
-      if ((window as any).posthog) {
-        (window as any).posthog.capture('es60_campaign_conversion', {
-          slide: 'faq',
-          utm_campaign: utmCampaign,
-          utm_source: utmSource,
-          utm_medium: utmMedium,
-          utm_content: utmContent,
-          value: 499,
-          currency: 'USD'
-        });
-      }
-
-      // Meta Pixel tracking - ALL DISABLED per request
-      if ((window as any).fbq) {
-        // DISABLED: InitiateCheckout event (was causing inflated conversion metrics)
-        // (window as any).fbq('track', 'InitiateCheckout', {
-        //   content_name: 'ES60 Digital Piano',
-        //   content_category: 'Digital Piano',
-        //   value: 499,
-        //   currency: 'USD',
-        //   utm_campaign: utmCampaign,
-        //   utm_source: utmSource,
-        //   utm_medium: utmMedium,
-        //   utm_content: utmContent,
-        //   source: 'es60_landing_page_faq'
-        // });
-
-        // DISABLED: ES60_ProductClick custom event
-        // (window as any).fbq('trackCustom', 'ES60_ProductClick', {
-        //   campaign: utmCampaign,
-        //   value: 499,
-        //   currency: 'USD',
-        //   source: 'faq_slide'
-        // });
-      }
+  // Handle bundle button click tracking
+  const handleBundleClick = () => {
+    if (onOpenBundle) {
+      trackBundlePopupOpen('es60_landing_page_faq');
+      onOpenBundle();
     }
   };
 
@@ -342,7 +310,7 @@ export function FAQSlide() {
             ))}
           </motion.div>
 
-          {/* CTA Button */}
+          {/* CTA Buttons */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{
@@ -354,22 +322,33 @@ export function FAQSlide() {
               duration: 1,
               type: "spring"
             }}
-            className="text-center"
           >
-            <Button
-              size="lg"
-              className="px-6 md:px-12 py-3 md:py-5 text-sm md:text-lg lg:text-xl font-bold bg-white text-red-600 hover:bg-gray-100 rounded-xl md:rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300 w-full max-w-md min-h-[44px]"
-              asChild
-            >
-              <a
-                href={outboundUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={handleExternalLinkClick}
+            <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
+              <Button
+                size="lg"
+                className="px-6 md:px-12 py-3 md:py-5 text-sm md:text-lg lg:text-xl font-bold bg-white text-red-600 hover:bg-gray-100 rounded-xl md:rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300 w-full md:w-auto min-h-[44px]"
+                asChild
               >
-                Get Your ES60 Today
-              </a>
-            </Button>
+                <a
+                  href={outboundUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={handleDealerLinkClick}
+                >
+                  Find a Dealer
+                </a>
+              </Button>
+
+              {onOpenBundle && (
+                <Button
+                  size="lg"
+                  onClick={handleBundleClick}
+                  className="px-6 md:px-12 py-3 md:py-5 text-sm md:text-lg lg:text-xl font-bold bg-transparent text-white border-2 border-white hover:bg-white hover:text-black rounded-xl md:rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300 w-full md:w-auto min-h-[44px]"
+                >
+                  ES60 Bundle
+                </Button>
+              )}
+            </div>
           </motion.div>
         </div>
       </div>

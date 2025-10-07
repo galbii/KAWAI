@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Kawai ES60 - Best Beginner Digital Piano Under $500 | Concert Grand Sound for Students',
-  description: 'Discover the best affordable digital piano for beginners. The Kawai ES60 features authentic Shigeru Kawai SK-EX concert grand sampling - the same professional sound quality found in pianos costing thousands more. Perfect for students, adult learners, and apartment living with 88 weighted keys, silent practice (dual headphones), 192-note polyphony, and ultra-portable 24 lb design. Exceptional value at only $499.',
+  title: 'Kawai ES60 Digital Piano | Best for Beginners Under $500 | 88 Weighted Keys',
+  description: 'The Kawai ES60 is the best digital piano for beginners under $500. Features authentic Shigeru Kawai SK-EX concert grand sampling, 88 weighted keys, 192-note polyphony, silent practice with dual headphones, and ultra-portable 24 lb design. Perfect for students, adult learners, and apartment living. Exceptional value at only $499.',
   keywords: [
+    'kawai es60',
+    'kawai digital piano',
+    'best digital piano',
+    'best digital piano for beginners',
+    'best digital piano under 500',
+    'digital piano with weighted keys',
     'best beginner digital piano',
     'affordable digital piano',
     'digital piano under $500',
@@ -11,17 +17,21 @@ export const metadata: Metadata = {
     'portable digital piano for students',
     'silent practice piano',
     'apartment-friendly piano',
-    'Kawai ES60',
+    'Kawai ES60 review',
+    'kawai es60 vs es120',
     'concert grand sound affordable',
-    'best digital piano for adult learners'
+    'best digital piano for adult learners',
+    'kawai digital piano models',
+    'kawai digital piano price',
+    'es60 digital piano'
   ],
   robots: {
     index: true,
     follow: true,
   },
   openGraph: {
-    title: 'Kawai ES60 - Best Affordable Beginner Digital Piano | Professional Sound Under $500',
-    description: 'The ultimate beginner digital piano with authentic Shigeru Kawai SK-EX concert grand sampling. Perfect for students and adult learners seeking professional sound quality at an affordable price. 88 weighted keys, silent practice capability, ultra-portable design. Only $499.',
+    title: 'Kawai ES60 Digital Piano | Best for Beginners Under $500 | 88 Weighted Keys',
+    description: 'The Kawai ES60 is the best digital piano for beginners under $500. Authentic Shigeru Kawai SK-EX concert grand sampling, 88 weighted keys, silent practice capability, and ultra-portable design. Perfect for students and adult learners. Only $499.',
     url: 'https://kawaipianogallery.com/es60',
     siteName: 'Kawai Piano Gallery',
     type: 'website',
@@ -30,14 +40,14 @@ export const metadata: Metadata = {
         url: 'https://kawaipianogallery.com/images/es60-hero.jpg',
         width: 1200,
         height: 630,
-        alt: 'Kawai ES60 Digital Piano - Best affordable beginner piano with concert grand sound and 88 weighted keys',
+        alt: 'Kawai ES60 Digital Piano - 88 weighted keys with authentic concert grand sound, perfect for beginners under $500',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Kawai ES60 - Best Beginner Digital Piano Under $500 | Concert Grand Sound',
-    description: 'Professional Shigeru Kawai SK-EX concert grand sampling in an affordable beginner piano. Perfect for students, adult learners & apartments. 88 weighted keys, silent practice, ultra-portable. Only $499.',
+    title: 'Kawai ES60 Digital Piano | Best for Beginners Under $500',
+    description: 'Best digital piano for beginners. Shigeru Kawai SK-EX concert grand sampling, 88 weighted keys, silent practice, ultra-portable. Only $499.',
     images: ['https://kawaipianogallery.com/images/es60-hero.jpg'],
     creator: '@KawaiPianos',
   },

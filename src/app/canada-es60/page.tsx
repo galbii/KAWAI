@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
-import { SimplifiedCinematicPresentation } from '@/components/pages/es60/SimplifiedCinematicPresentation';
-import { ES60SEOContent } from '@/components/pages/es60/ES60SEOContent';
-import '@/components/pages/es60/scroll-cinematic.css';
+import { SimplifiedCinematicPresentation } from './components/SimplifiedCinematicPresentation';
+import { ES60SEOContent } from './components/ES60SEOContent';
+import './components/scroll-cinematic.css';
 
 // Metadata is handled by layout.tsx
 
@@ -15,7 +15,7 @@ function CinematicLoader() {
           <div className="w-16 h-16 border-4 border-red-500/30 border-t-red-500 rounded-full animate-spin mx-auto"></div>
           <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-red-500/50 rounded-full animate-spin mx-auto" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
         </div>
-        
+
         {/* Kawai Branding */}
         <div className="space-y-4">
           <h1 className="text-4xl font-bold text-red-500 tracking-wider animate-pulse">
@@ -64,9 +64,8 @@ export default function ES60CinematicPage() {
       </Suspense>
 
       {/* Preload critical assets for better performance */}
-      <link rel="preload" href="/images/es60-hero.jpg" as="image" fetchPriority="high" />
-      <link rel="preload" href="/images/es60-above-closeup.png" as="image" />
-      
+      <link rel="preload" href="/images/es60-hero.jpg" as="image" />
+
       {/* Schema.org Product structured data for rich snippets */}
       <script
         type="application/ld+json"
@@ -82,17 +81,14 @@ export default function ES60CinematicPage() {
               "name": "Kawai"
             },
             "description": "The Kawai ES60 is the best affordable beginner digital piano featuring authentic Shigeru Kawai SK-EX concert grand sampling - the same professional sound found in pianos costing thousands more. With 88 weighted keys, 192-note polyphony, ultra-portable 24 lb design, and silent practice capability, it offers exceptional value for students, adult learners, and apartment dwellers. Professional reviewers rate it as having the best piano sound quality under $500.",
-            "image": [
-              "https://kawaipianogallery.com/images/es60-hero.jpg",
-              "https://kawaipianogallery.com/images/es60-above-closeup.png"
-            ],
+            "image": "https://kawaipianogallery.com/images/es60-hero.jpg",
             "offers": {
               "@type": "Offer",
               "price": "499",
               "priceCurrency": "USD",
               "availability": "https://schema.org/InStock",
               "priceValidUntil": "2025-12-31",
-              "url": "https://kawaipianogallery.com/es60",
+              "url": "https://kawaipianogallery.com/canada-es60",
               "seller": {
                 "@type": "Organization",
                 "name": "Kawai Piano Gallery"
@@ -220,7 +216,7 @@ export default function ES60CinematicPage() {
                 "@type": "ListItem",
                 "position": 3,
                 "name": "ES60",
-                "item": "https://kawaipianogallery.com/es60"
+                "item": "https://kawaipianogallery.com/canada-es60"
               }
             ]
           })
@@ -300,59 +296,6 @@ export default function ES60CinematicPage() {
                 }
               }
             ]
-          })
-        }}
-      />
-
-      {/* Schema.org ImageObject for product images - SEO for Google Images */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "ImageObject",
-            "contentUrl": "https://kawaipianogallery.com/images/es60-hero.jpg",
-            "url": "https://kawaipianogallery.com/images/es60-hero.jpg",
-            "name": "Kawai ES60 Digital Piano - Front View",
-            "description": "Kawai ES60 digital piano with 88 weighted keys, featuring Shigeru Kawai SK-EX concert grand sampling. Best digital piano for beginners under $500.",
-            "caption": "Kawai ES60 - Best affordable digital piano for beginners with authentic concert grand sound and 88 weighted keys",
-            "creator": {
-              "@type": "Organization",
-              "name": "Kawai Piano Gallery"
-            },
-            "creditText": "Kawai Piano Gallery",
-            "copyrightNotice": "© Kawai Piano Gallery",
-            "acquireLicensePage": "https://kawaipianogallery.com/contact",
-            "license": "https://kawaipianogallery.com/terms",
-            "isPartOf": {
-              "@type": "Product",
-              "name": "Kawai ES60 Digital Piano"
-            }
-          })
-        }}
-      />
-
-      {/* Additional ImageObject for product detail image */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "ImageObject",
-            "contentUrl": "https://kawaipianogallery.com/images/es60-above-closeup.png",
-            "url": "https://kawaipianogallery.com/images/es60-above-closeup.png",
-            "name": "Kawai ES60 Digital Piano - Top View Close-up",
-            "description": "Close-up view of Kawai ES60 digital piano showing Responsive Hammer Lite weighted key action and professional control panel. Best beginner digital piano under $500.",
-            "caption": "Kawai ES60 top view showing authentic 88 weighted keys and intuitive control panel",
-            "creator": {
-              "@type": "Organization",
-              "name": "Kawai Piano Gallery"
-            },
-            "creditText": "Kawai Piano Gallery",
-            "isPartOf": {
-              "@type": "Product",
-              "name": "Kawai ES60 Digital Piano"
-            }
           })
         }}
       />
