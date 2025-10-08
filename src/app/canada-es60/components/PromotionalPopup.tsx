@@ -97,22 +97,24 @@ export function PromotionalPopup({ show, onClose }: PromotionalPopupProps) {
                   {/* Carousel Container */}
                   <div className="relative w-full h-full">
                     <AnimatePresence mode="wait">
-                      <motion.div
-                        key={currentImageIndex}
-                        initial={{ opacity: 0, x: 100 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -100 }}
-                        transition={{ duration: 0.3 }}
-                        className="relative w-full h-full"
-                      >
-                        <Image
-                          src={carouselImages[currentImageIndex].src}
-                          alt={carouselImages[currentImageIndex].alt}
-                          fill
-                          className="object-contain"
-                          priority={currentImageIndex === 0}
-                        />
-                      </motion.div>
+                      {carouselImages[currentImageIndex] && (
+                        <motion.div
+                          key={currentImageIndex}
+                          initial={{ opacity: 0, x: 100 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -100 }}
+                          transition={{ duration: 0.3 }}
+                          className="relative w-full h-full"
+                        >
+                          <Image
+                            src={carouselImages[currentImageIndex].src}
+                            alt={carouselImages[currentImageIndex].alt}
+                            fill
+                            className="object-contain"
+                            priority={currentImageIndex === 0}
+                          />
+                        </motion.div>
+                      )}
                     </AnimatePresence>
 
                     {/* Navigation Arrows */}
