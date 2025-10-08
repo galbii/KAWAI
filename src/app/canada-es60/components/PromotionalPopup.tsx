@@ -194,12 +194,12 @@ export function PromotionalPopup({ show, onClose }: PromotionalPopupProps) {
                       <div className="relative">
                         <div className="flex items-center gap-3">
                           <div className="text-center">
-                            <p className="text-2xl font-bold text-black">$599</p>
+                            <p className="text-2xl font-bold text-black">$999</p>
                             <p className="text-xs text-black/70">Kawai ES60</p>
                           </div>
                           <p className="text-xl font-bold text-black">+</p>
                           <div className="text-center">
-                            <p className="text-2xl font-bold text-black">$119</p>
+                            <p className="text-2xl font-bold text-black">$189</p>
                             <p className="text-xs text-black/70">HML-3 Designer Stand</p>
                           </div>
                         </div>
@@ -230,7 +230,7 @@ export function PromotionalPopup({ show, onClose }: PromotionalPopupProps) {
                         </motion.div>
                       </div>
 
-                      {/* "Only $499 until December 1st" reveal */}
+                      {/* "Only $799 until December 1st" reveal */}
                       <motion.div
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -238,7 +238,7 @@ export function PromotionalPopup({ show, onClose }: PromotionalPopupProps) {
                         className="text-center"
                       >
                         <p className="text-3xl md:text-4xl font-bold text-red-600">
-                          Only $499
+                          Only $799
                         </p>
                         <p className="text-sm md:text-base text-black mt-1">
                           until December 1st
@@ -251,12 +251,12 @@ export function PromotionalPopup({ show, onClose }: PromotionalPopupProps) {
                       <div className="relative">
                         <div className="flex items-center gap-4">
                           <div className="text-center">
-                            <p className="text-3xl font-bold text-black">$599</p>
+                            <p className="text-3xl font-bold text-black">$999</p>
                             <p className="text-sm text-black/70">Kawai ES60</p>
                           </div>
                           <p className="text-2xl font-bold text-black">+</p>
                           <div className="text-center">
-                            <p className="text-3xl font-bold text-black">$119</p>
+                            <p className="text-3xl font-bold text-black">$189</p>
                             <p className="text-sm text-black/70">HML-3 Designer Stand</p>
                           </div>
                         </div>
@@ -287,7 +287,7 @@ export function PromotionalPopup({ show, onClose }: PromotionalPopupProps) {
                         </motion.div>
                       </div>
 
-                      {/* "Only $499 until December 1st" reveal */}
+                      {/* "Only $799 until December 1st" reveal */}
                       <motion.div
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -295,7 +295,7 @@ export function PromotionalPopup({ show, onClose }: PromotionalPopupProps) {
                         className="text-center"
                       >
                         <p className="text-4xl md:text-5xl font-bold text-red-600">
-                          Only $499
+                          Only $799
                         </p>
                         <p className="text-sm md:text-base text-black mt-1">
                           until December 1st

@@ -344,7 +344,7 @@ export function OpeningSlide({ onOpenBundle }: OpeningSlideProps = {}) {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 1.6, duration: 0.5 }}
                 >
-                  $599
+                  $999
                   <motion.div
                     className="absolute top-1/2 left-0 right-0 h-1 bg-red-500 transform -translate-y-1/2"
                     initial={{ scaleX: 0 }}
@@ -365,7 +365,7 @@ export function OpeningSlide({ onOpenBundle }: OpeningSlideProps = {}) {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 2.8, duration: 0.5 }}
                 >
-                  Only $499.
+                  Only $799.
                 </motion.span>
               </motion.div>
             </motion.div>

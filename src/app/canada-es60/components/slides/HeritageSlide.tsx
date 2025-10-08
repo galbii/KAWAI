@@ -206,10 +206,10 @@ export function HeritageSlide() {
               <span className="text-amber-400 font-medium"> the same piano trusted by concert halls worldwide</span>
             </p>
             <p className="text-xl md:text-2xl text-amber-400 font-bold">
-              Now accessible to beginners and students at only $499
+              Now accessible to beginners and students at only $799
             </p>
             <p className="text-base md:text-lg text-white/70 leading-relaxed">
-              The best piano sound quality under $500, verified by professional reviewers
+              The best piano sound quality under $1000, verified by professional reviewers
             </p>
           </motion.div>
         </div>

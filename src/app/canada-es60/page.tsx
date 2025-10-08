@@ -28,7 +28,7 @@ function CinematicLoader() {
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
             <span>Concert Grand Sound</span>
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-            <span>$499</span>
+            <span>$799</span>
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
           </div>
         </div>
@@ -84,7 +84,7 @@ export default function ES60CinematicPage() {
             "image": "https://kawaipianogallery.com/images/es60-hero.jpg",
             "offers": {
               "@type": "Offer",
-              "price": "499",
+              "price": "799",
               "priceCurrency": "USD",
               "availability": "https://schema.org/InStock",
               "priceValidUntil": "2025-12-31",
@@ -244,7 +244,7 @@ export default function ES60CinematicPage() {
                 "name": "Why is the ES60 so affordable compared to pianos with similar sound quality?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "The ES60's affordability comes from smart engineering, not compromised quality. Kawai focused on essential features that matter most for learning and playing, rather than adding excessive voice options or complex features. The Shigeru Kawai SK-EX concert grand sampling - the same professional sound engine found in Kawai's premium models costing thousands more - is now accessible at $499 through efficient manufacturing and strategic feature selection. You're getting authentic concert grand sound, 88 weighted keys, and 192-note polyphony without paying for features most beginners won't use. This makes it the best value in digital pianos under $500."
+                  "text": "The ES60's affordability comes from smart engineering, not compromised quality. Kawai focused on essential features that matter most for learning and playing, rather than adding excessive voice options or complex features. The Shigeru Kawai SK-EX concert grand sampling - the same professional sound engine found in Kawai's premium models costing thousands more - is now accessible at $799 through efficient manufacturing and strategic feature selection. You're getting authentic concert grand sound, 88 weighted keys, and 192-note polyphony without paying for features most beginners won't use. This makes it the best value in digital pianos under $1000."
                 }
               },
               {
@@ -292,7 +292,7 @@ export default function ES60CinematicPage() {
                 "name": "Can adult learners use the ES60?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Absolutely - the ES60 is ideal for adult learners starting their piano journey. Adult learners particularly benefit from the authentic weighted key action that teaches proper technique from the start, the professional Shigeru Kawai SK-EX concert grand sound quality that makes practice enjoyable and inspiring, and the silent practice capability that fits busy adult schedules and shared living spaces. The $499 price point makes starting piano lessons accessible without a major financial commitment."
+                  "text": "Absolutely - the ES60 is ideal for adult learners starting their piano journey. Adult learners particularly benefit from the authentic weighted key action that teaches proper technique from the start, the professional Shigeru Kawai SK-EX concert grand sound quality that makes practice enjoyable and inspiring, and the silent practice capability that fits busy adult schedules and shared living spaces. The $799 price point makes starting piano lessons accessible without a major financial commitment."
                 }
               }
             ]

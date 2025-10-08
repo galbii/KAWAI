@@ -14,7 +14,7 @@ export const slideContent = {
       main: "Concert Grand Sound Made Affordable",
       sub: ""
     },
-    price: "Only $499",
+    price: "Only $799",
     subtitle: "Professional sound quality for students, adult learners, and everyone starting their musical journey",
     scrollHint: "Scroll to explore"
   },
@@ -36,7 +36,7 @@ export const slideContent = {
     },
     description: {
       main: "Every note in the ES60 contains the soul of our legendary Shigeru Kawai SK-EX concert grand—the same piano trusted by concert halls worldwide.",
-      emphasis: "Now accessible to beginners and students at just $499"
+      emphasis: "Now accessible to beginners and students at just $799"
     }
   },
 
@@ -60,7 +60,7 @@ export const slideContent = {
       },
       priceSection: {
         lead: "Professional features that won't break the bank",
-        price: "Just $499"
+        price: "Just $799"
       }
     }
   },
@@ -115,14 +115,14 @@ export const slideContent = {
     primaryCTA: {
       text: "Get Your ES60 Today",
       link: "/contact?product=es60&action=purchase",
-      subtitle: "Best beginner digital piano. Professional sound. Unbeatable value at $499."
+      subtitle: "Best beginner digital piano. Professional sound. Unbeatable value at $799."
     },
     secondaryCTAs: [
       { text: "Schedule Demo", link: "/contact?product=es60&action=demo" },
       { text: "Learn More", link: "/es60" }
     ],
     valueReminder: [
-      { value: "$499", label: "Concert Grand Sound" },
+      { value: "$799", label: "Concert Grand Sound" },
       { value: "24 lbs", label: "Ultra Portable" },
       { value: "∞", label: "Musical Possibilities" }
     ]

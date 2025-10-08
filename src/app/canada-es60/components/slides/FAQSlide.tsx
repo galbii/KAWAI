@@ -27,11 +27,11 @@ interface FAQItem {
 const cinematicFAQData: FAQItem[] = [
   {
     question: "Is the Kawai ES60 good for beginners?",
-    answer: "Absolutely. The ES60 is specifically designed as the best affordable digital piano for beginners. Features authentic 88 weighted keys with Responsive Hammer Lite action, professional Shigeru Kawai SK-EX concert grand sound, and intuitive controls. Perfect for students, adult learners, and anyone starting their musical journey at only $499."
+    answer: "Absolutely. The ES60 is specifically designed as the best affordable digital piano for beginners. Features authentic 88 weighted keys with Responsive Hammer Lite action, professional Shigeru Kawai SK-EX concert grand sound, and intuitive controls. Perfect for students, adult learners, and anyone starting their musical journey at only $799."
   },
   {
     question: "Why is the ES60 so affordable?",
-    answer: "Smart engineering, not compromised quality. Kawai focused on essential features that matter most - authentic SK-EX concert grand sampling (same sound as $2000+ models), 88 weighted keys, and 192-note polyphony. You get professional sound without paying for unnecessary extras. Only $499 for the best value under $500."
+    answer: "Smart engineering, not compromised quality. Kawai focused on essential features that matter most - authentic SK-EX concert grand sampling (same sound as $2000+ models), 88 weighted keys, and 192-note polyphony. You get professional sound without paying for unnecessary extras. Only $799 for the best value under $1000."
   },
   {
     question: "Does it feel like a real piano?",
@@ -43,7 +43,7 @@ const cinematicFAQData: FAQItem[] = [
   },
   {
     question: "Will I outgrow it?",
-    answer: "Not for years. The ES60 supports beginners through advanced intermediate levels. Authentic SK-EX sampling, 88 weighted keys, and 192-note polyphony are professional-grade features. Many serious pianists keep an ES60 as a portable practice instrument. Excellent long-term investment at only $499."
+    answer: "Not for years. The ES60 supports beginners through advanced intermediate levels. Authentic SK-EX sampling, 88 weighted keys, and 192-note polyphony are professional-grade features. Many serious pianists keep an ES60 as a portable practice instrument. Excellent long-term investment at only $799."
   },
   {
     question: "Is it portable for students?",
@@ -55,7 +55,7 @@ const cinematicFAQData: FAQItem[] = [
   },
   {
     question: "Good for adult learners?",
-    answer: "Ideal for adult learners. Authentic weighted action teaches proper technique from day one. Professional SK-EX sound makes practice inspiring. Silent practice fits busy schedules. Only $499 makes starting piano accessible. Portable design fits modern lifestyles. Adult learners report the authentic feel keeps them motivated."
+    answer: "Ideal for adult learners. Authentic weighted action teaches proper technique from day one. Professional SK-EX sound makes practice inspiring. Silent practice fits busy schedules. Only $799 makes starting piano accessible. Portable design fits modern lifestyles. Adult learners report the authentic feel keeps them motivated."
   }
 ];
 

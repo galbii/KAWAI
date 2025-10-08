@@ -284,7 +284,7 @@ export function PremiumSoundSlide() {
                     className="text-2xl md:text-3xl text-blue-300 font-bold"
                     style={{ textShadow: '2px 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.6)' }}
                   >
-                    Only $499
+                    Only $799
                   </motion.p>
                 </div>
               </motion.div>
@@ -455,7 +455,7 @@ export function PremiumSoundSlide() {
                 className="relative text-xl sm:text-2xl md:text-5xl font-bold text-white"
                 style={{ textShadow: '2px 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.6)' }}
               >
-                $599
+                $999
                 <motion.div
                   className="absolute top-1/2 left-0 right-0 h-1 bg-red-500 transform -translate-y-1/2"
                   initial={{ scaleX: 0 }}
@@ -481,7 +481,7 @@ export function PremiumSoundSlide() {
                 whileTap={{ scale: 0.95 }}
                 className="bg-white text-red-600 px-4 sm:px-6 md:px-12 py-2 sm:py-3 md:py-6 text-sm sm:text-base md:text-xl font-bold rounded-xl sm:rounded-2xl shadow-2xl hover:bg-gray-100 transition-all duration-300 min-h-[44px] sm:min-h-[48px]"
               >
-                Only $499
+                Only $799
               </motion.button>
             </div>
           </motion.div>

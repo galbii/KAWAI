@@ -117,7 +117,7 @@ export const trackBundleDealerClick = (source: string = 'es60_bundle_popup') => 
     // (window as any).fbq('track', 'Contact', {
     //   content_name: 'Find a Dealer - ES60 Bundle',
     //   content_category: 'Dealer Locator',
-    //   value: 499, // Bundle value
+    //   value: 799, // Bundle value
     //   currency: 'USD',
     //   utm_campaign: utmCampaign,
     //   utm_source: utmSource,
@@ -146,7 +146,7 @@ export const trackBundleDealerClick = (source: string = 'es60_bundle_popup') => 
       utm_medium: utmMedium,
       utm_content: utmContent,
       intent: 'find_dealer_bundle',
-      value: 499,
+      value: 799,
       currency: 'USD'
     });
 

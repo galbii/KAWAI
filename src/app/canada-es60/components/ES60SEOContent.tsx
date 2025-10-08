@@ -10,19 +10,19 @@ export function ES60SEOContent() {
     <div className="sr-only" aria-hidden="false">
       {/* Primary heading for SEO */}
       <h1>
-        Kawai ES60 - The Best Affordable Beginner Digital Piano Under $500
+        Kawai ES60 - The Best Affordable Beginner Digital Piano Under $1000
       </h1>
 
       {/* Introduction section with primary keywords */}
       <section>
-        <h2>Professional Concert Grand Sound for Beginners at Just $499</h2>
+        <h2>Professional Concert Grand Sound for Beginners at Just $799</h2>
         <p>
           The Kawai ES60 is the best affordable digital piano for beginners,
           offering authentic Shigeru Kawai SK-EX concert grand sampling at an
           entry-level price. With 88 weighted keys, 192-note polyphony, and
           ultra-portable 24 lb design, the ES60 delivers professional sound
           quality that inspires practice and accelerates learning - all at just
-          $499.
+          $799.
         </p>
         <p>
           Whether you're a student, adult learner, or living in an apartment,
@@ -38,7 +38,7 @@ export function ES60SEOContent() {
         <p>
           The ES60 stands out as the best beginner digital piano because it
           combines professional features with an affordable price point. Unlike
-          other digital pianos under $500, the ES60 features authentic Shigeru
+          other digital pianos under $1000, the ES60 features authentic Shigeru
           Kawai SK-EX concert grand samples - the same sound engine found in
           Kawai's premium models, now accessible at entry-level pricing.
         </p>
@@ -57,9 +57,9 @@ export function ES60SEOContent() {
         <h3>Professional Sound Quality at Beginner Prices</h3>
         <p>
           Professional reviewers consistently praise the ES60 as having the best
-          piano sound available under $500. AZ Piano Reviews called it "by far
+          piano sound available under $1000. AZ Piano Reviews called it "by far
           the most realistic acoustic grand piano reproduction through headphones
-          I have ever heard from a $500 digital piano." This exceptional sound
+          I have ever heard from a $1000 digital piano." This exceptional sound
           quality comes from authentic Shigeru Kawai SK-EX concert grand
           sampling, with Harmonic Imaging technology delivering smooth dynamic
           transitions from pianissimo to fortissimo.
@@ -114,7 +114,7 @@ export function ES60SEOContent() {
         <p>
           The ES60's primary competitive advantage lies in delivering premium
           features at an entry-level price point. Here's why it offers the best
-          value for beginner digital pianos under $500:
+          value for beginner digital pianos under $1000:
         </p>
 
         <h3>Premium Sound Engine at Entry-Level Price</h3>
@@ -122,7 +122,7 @@ export function ES60SEOContent() {
           The Shigeru Kawai SK-EX concert grand sampling is the same sound
           engine found in Kawai's premium models costing thousands of dollars
           more. The ES60 makes this professional sound quality accessible to
-          beginners and students for the first time at just $499.
+          beginners and students for the first time at just $799.
         </p>
 
         <h3>Quality Over Quantity</h3>
@@ -192,7 +192,7 @@ export function ES60SEOContent() {
           <li>Weight: 11kg (24.25 lbs) - ultra-portable</li>
           <li>PianoRemote app integration via USB</li>
           <li>Professional dual 1/4" stereo line outputs</li>
-          <li>Price: $499</li>
+          <li>Price: $799</li>
         </ul>
       </section>
 
@@ -205,7 +205,7 @@ export function ES60SEOContent() {
           affordable price. With authentic Shigeru Kawai SK-EX concert grand
           sampling, 88 weighted keys, silent practice capability, and
           ultra-portable design, the ES60 delivers everything you need to start
-          playing piano seriously - all at just $499.
+          playing piano seriously - all at just $799.
         </p>
         <p>
           Discover why the ES60 is consistently rated as the best affordable

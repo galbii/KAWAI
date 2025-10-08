@@ -208,7 +208,7 @@ export function FinaleSlide({ onOpenBundle }: FinaleSlideProps = {}) {
               </div>
 
               <p className="text-white text-sm sm:text-base md:text-lg font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] leading-relaxed">
-                Professional sound. Unbeatable value at only $499.
+                Professional sound. Unbeatable value at only $799.
               </p>
               <p className="text-white/90 text-xs sm:text-sm md:text-base drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)]">
                 Perfect for students and apartment living
@@ -229,10 +229,10 @@ export function FinaleSlide({ onOpenBundle }: FinaleSlideProps = {}) {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-center">
               <div className="space-y-2">
                 <p className="text-3xl md:text-3xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-                  Only $499
+                  Only $799
                 </p>
                 <p className="text-white text-sm font-medium drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)]">
-                  Best Sound Under $500
+                  Best Sound Under $1000
                 </p>
               </div>
               <div className="space-y-2">
