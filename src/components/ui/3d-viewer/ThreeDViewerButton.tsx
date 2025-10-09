@@ -47,7 +47,7 @@ export function ThreeDViewerButton({
   }, [])
 
   // Track GTM event on click
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     // Fire GTM event
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'click', {

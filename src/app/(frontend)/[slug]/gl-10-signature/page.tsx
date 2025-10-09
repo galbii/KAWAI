@@ -29,7 +29,7 @@ function GL10SignaturePageContent() {
     config: {
       enabled: true,
       viewerUrl: 'https://www.kawai-global.com/modelviewer/index.php',
-      modelParams: '?model=gl10',
+      modelParams: '?model=ca901',
       autoOpen: true,
       buttonText: 'View the GL-10 in 3D'
     },
@@ -234,7 +234,7 @@ function GL10SignaturePageContent() {
         productName="GL-10 Grand Piano"
       />
 
-      {/* 3D Viewer - Modal */}
+      {/* 3D Viewer - Modal with iframe */}
       <ThreeDViewerModal
         isOpen={viewer3D.isOpen}
         onClose={viewer3D.close}

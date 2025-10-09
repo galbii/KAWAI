@@ -40,25 +40,27 @@ export function use3DViewer({
 }: Use3DViewerOptions): Use3DViewerReturn {
   const [isOpen, setIsOpen] = useState(false)
 
-  // Build the full viewer URL by combining base URL and parameters
+  // Build the full viewer URL using our proxy API route
   const fullViewerUrl = useMemo(() => {
-    if (!config?.enabled || !config?.viewerUrl) {
+    if (!config?.enabled || !config?.modelParams) {
       return ''
     }
 
-    const baseUrl = config.viewerUrl
-    const params = config.modelParams || ''
+    // Extract model parameter from modelParams
+    // Expected format: "?model=ca901" or "model=ca901"
+    const params = config.modelParams
+    const modelMatch = params.match(/model=([^&]+)/)
 
-    // If modelParams starts with ?, just append it
-    // Otherwise, add ? if baseUrl doesn't have query params yet
-    if (params.startsWith('?')) {
-      return `${baseUrl}${params}`
-    } else if (params) {
-      const separator = baseUrl.includes('?') ? '&' : '?'
-      return `${baseUrl}${separator}${params}`
+    if (!modelMatch || !modelMatch[1]) {
+      console.warn('3D Viewer: No model parameter found in modelParams:', params)
+      return ''
     }
 
-    return baseUrl
+    const modelId = modelMatch[1]
+
+    // Use our proxy API route instead of external URL
+    // This bypasses X-Frame-Options header restrictions
+    return `/api/3d-viewer-proxy?model=${encodeURIComponent(modelId)}`
   }, [config])
 
   // Determine if viewer should auto-open based on URL parameter
@@ -71,10 +73,22 @@ export function use3DViewer({
     return modeParam?.toLowerCase() === '3d'
   }, [config, searchParams])
 
-  // Open modal
+  // Open modal with iframe (now works thanks to proxy stripping X-Frame-Options)
   const open = useCallback(() => {
-    setIsOpen(true)
-  }, [])
+    if (fullViewerUrl) {
+      // Open as iframe modal instead of popup window
+      setIsOpen(true)
+
+      // Track GTM event for modal open
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', '3d_viewer_opened', {
+          product_name: productName,
+          viewer_url: fullViewerUrl,
+          method: 'iframe'
+        })
+      }
+    }
+  }, [fullViewerUrl, productName])
 
   // Close modal
   const close = useCallback(() => {
