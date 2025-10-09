@@ -486,6 +486,60 @@ export const Products: CollectionConfig = {
                 description: 'Mark this product as discontinued',
                 position: 'sidebar'
               }
+            },
+            // 3D Viewer Configuration
+            {
+              name: 'viewer3D',
+              type: 'group',
+              fields: [
+                {
+                  name: 'enabled',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Enable 3D model viewer for this product'
+                  }
+                },
+                {
+                  name: 'viewerUrl',
+                  type: 'text',
+                  admin: {
+                    description: 'Full URL to the 3D viewer (e.g., https://www.kawai-global.com/modelviewer/index.php)',
+                    condition: (data, siblingData) => siblingData?.enabled === true
+                  }
+                },
+                {
+                  name: 'modelParams',
+                  type: 'text',
+                  admin: {
+                    description: 'URL parameters for the model (e.g., ?model=gl-10&color=ebony)',
+                    placeholder: '?model=piano-name&color=finish',
+                    condition: (data, siblingData) => siblingData?.enabled === true
+                  }
+                },
+                {
+                  name: 'autoOpen',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Automatically open 3D viewer when ?mode=3d URL parameter is present',
+                    condition: (data, siblingData) => siblingData?.enabled === true
+                  }
+                },
+                {
+                  name: 'buttonText',
+                  type: 'text',
+                  defaultValue: 'View in 3D',
+                  admin: {
+                    description: 'Custom text for the 3D viewer button',
+                    condition: (data, siblingData) => siblingData?.enabled === true
+                  }
+                }
+              ],
+              admin: {
+                description: '3D model viewer configuration',
+                condition: (data) => data.type === 'piano'
+              }
             }
           ]
         },

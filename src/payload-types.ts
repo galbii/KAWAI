@@ -890,6 +890,31 @@ export interface Product {
    */
   discontinued?: boolean | null;
   /**
+   * 3D model viewer configuration
+   */
+  viewer3D?: {
+    /**
+     * Enable 3D model viewer for this product
+     */
+    enabled?: boolean | null;
+    /**
+     * Full URL to the 3D viewer (e.g., https://www.kawai-global.com/modelviewer/index.php)
+     */
+    viewerUrl?: string | null;
+    /**
+     * URL parameters for the model (e.g., ?model=gl-10&color=ebony)
+     */
+    modelParams?: string | null;
+    /**
+     * Automatically open 3D viewer when ?mode=3d URL parameter is present
+     */
+    autoOpen?: boolean | null;
+    /**
+     * Custom text for the 3D viewer button
+     */
+    buttonText?: string | null;
+  };
+  /**
    * Build your product page content using flexible blocks
    */
   pageContent?:
@@ -5034,6 +5059,15 @@ export interface ProductsSelect<T extends boolean = true> {
         showButton?: T;
       };
   discontinued?: T;
+  viewer3D?:
+    | T
+    | {
+        enabled?: T;
+        viewerUrl?: T;
+        modelParams?: T;
+        autoOpen?: T;
+        buttonText?: T;
+      };
   pageContent?: T | {};
   seo?:
     | T
