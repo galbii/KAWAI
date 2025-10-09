@@ -3,6 +3,10 @@
  *
  * Centralized tracking functions for Meta Pixel and PostHog events to ensure
  * consistent tracking across all components and slides.
+ *
+ * Active Tracking:
+ * - Meta Pixel: Contact event for "Find a Dealer" clicks
+ * - PostHog: Custom events for product analytics and funnel tracking
  */
 
 import posthog from 'posthog-js'
@@ -10,8 +14,7 @@ import posthog from 'posthog-js'
 /**
  * Track "Find a Dealer" link clicks
  *
- * Fires both standard Contact event (for Meta ad optimization) and
- * custom ES60_DealerLinkClick event (for custom audiences and reporting)
+ * Fires standard Contact event (for Meta ad optimization)
  * Also tracks to PostHog for product analytics
  *
  * @param source - Identifier for where the click originated (e.g., 'es60_landing_page_opening')
@@ -24,27 +27,19 @@ export const trackDealerLinkClick = (source: string) => {
   const utmMedium = urlParams.get('utm_medium') || 'none';
   const utmContent = urlParams.get('utm_content') || 'none';
 
-  // Meta Pixel tracking - DISABLED per request
+  // Meta Pixel tracking - Standard Contact event
   if (typeof window !== 'undefined' && (window as any).fbq) {
-    // DISABLED: Standard Meta event for dealer contact intent
-    // (window as any).fbq('track', 'Contact', {
-    //   content_name: 'Find a Dealer - ES60',
-    //   content_category: 'Dealer Locator',
-    //   utm_campaign: utmCampaign,
-    //   utm_source: utmSource,
-    //   utm_medium: utmMedium,
-    //   utm_content: utmContent,
-    //   source: source
-    // });
+    (window as any).fbq('track', 'Contact', {
+      content_name: 'Find a Dealer - ES60',
+      content_category: 'Dealer Locator',
+      utm_campaign: utmCampaign,
+      utm_source: utmSource,
+      utm_medium: utmMedium,
+      utm_content: utmContent,
+      source: source
+    });
 
-    // DISABLED: ES60_DealerLinkClick custom event
-    // (window as any).fbq('trackCustom', 'ES60_DealerLinkClick', {
-    //   campaign: utmCampaign,
-    //   source: source,
-    //   intent: 'find_dealer'
-    // });
-
-    // console.log('🎯 Meta Pixel: Dealer link click tracked', { source, utmCampaign });
+    console.log('🎯 Meta Pixel: Contact event tracked', { source, utmCampaign });
   }
 
   // PostHog tracking for product analytics
