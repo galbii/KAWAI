@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
 import { useSignatureExperience } from './SignatureExperienceContext'
 import { cn } from '@/lib/utils'
-import { CalendlyBookingWidget } from './CalendlyBookingWidget'
+import { CalendlyBookingWidget } from '@/components/pages/signature/CalendlyBookingWidget'
 import { usePostHog } from 'posthog-js/react'
 
 // Interfaces

@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { useParams, useSearchParams } from 'next/navigation'
-import Lenis from 'lenis'
+import { useEffect, useState } from 'react'
+import { useParams } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
+import { cn } from '@/lib/utils'
 import {
   GL10Provider,
   useGL10Context,
@@ -13,55 +14,49 @@ import {
   GL10Contact,
   GL10Booking,
   GL10SuccessOverlay,
+  GL10Navigation,
+  GL10Gallery,
+  GL10BabyGrand,
+  GL10MillenniumAction,
   MUSICAL_IDENTITY_QUESTION,
   TIMELINE_QUESTION,
+  type ViewType,
 } from './components'
-import { ThreeDViewerButton, ThreeDViewerModal, use3DViewer } from '@/components/ui/3d-viewer'
 
 function GL10SignaturePageContent() {
-  const { progress, updateProgress, scrollToSection } = useGL10Context()
+  const { progress, updateProgress } = useGL10Context()
   const [showSuccess, setShowSuccess] = useState(false)
-  const lenisRef = useRef<Lenis | null>(null)
-  const searchParams = useSearchParams()
+  const [currentStep, setCurrentStep] = useState(0)
+  const [currentView, setCurrentView] = useState<ViewType>('signature')
 
-  // Initialize 3D Viewer
-  const viewer3D = use3DViewer({
-    config: {
-      enabled: true,
-      viewerUrl: 'https://www.kawai-global.com/modelviewer/index.php',
-      modelParams: '?model=ca901',
-      autoOpen: true,
-      buttonText: 'View the GL-10 in 3D'
-    },
-    productName: 'GL-10 Grand Piano',
-    searchParams
-  })
-
-  // Initialize smooth scroll with Lenis
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-    })
-
-    lenisRef.current = lenis
-
-    function raf(time: number) {
-      lenis.raf(time)
-      requestAnimationFrame(raf)
+  // Handle view changes
+  const handleViewChange = (view: ViewType) => {
+    setCurrentView(view)
+    // Scroll to top when switching views (except signature which doesn't scroll)
+    if (view !== 'signature') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
+  }
 
-    requestAnimationFrame(raf)
+  // Control scrolling based on current view
+  useEffect(() => {
+    if (currentView === 'signature') {
+      // Disable scrolling for signature experience
+      document.body.style.overflow = 'hidden'
+    } else {
+      // Enable scrolling for gallery, baby-grand, millennium-action
+      document.body.style.overflow = 'auto'
+    }
 
     return () => {
-      lenis.destroy()
+      // Re-enable scrolling on unmount
+      document.body.style.overflow = ''
     }
-  }, [])
+  }, [currentView])
 
   // Handle hero CTA click
   const handleBeginJourney = () => {
-    scrollToSection('welcome')
+    setCurrentStep(1) // Move to Welcome step
   }
 
   // Handle email completion
@@ -72,9 +67,9 @@ function GL10SignaturePageContent() {
     }
     updateProgress({ email, completedSections: newCompleted })
 
-    // Auto-scroll to first assessment after brief delay
+    // Move to first assessment after brief delay
     setTimeout(() => {
-      scrollToSection('assessment-1')
+      setCurrentStep(2)
     }, 500)
   }
 
@@ -93,9 +88,9 @@ function GL10SignaturePageContent() {
       completedSections: newCompleted,
     })
 
-    // Auto-scroll to second assessment
+    // Move to second assessment
     setTimeout(() => {
-      scrollToSection('assessment-2')
+      setCurrentStep(3)
     }, 500)
   }
 
@@ -113,11 +108,23 @@ function GL10SignaturePageContent() {
       completedSections: newCompleted,
     })
 
-    // Auto-scroll to showcase
+    // Move to showcase
     setTimeout(() => {
-      scrollToSection('showcase')
+      setCurrentStep(4)
     }, 500)
   }
+
+  // Auto-advance from showcase to contact after viewing
+  useEffect(() => {
+    if (currentStep === 4) {
+      // Auto-advance to contact after 3 seconds of viewing showcase
+      const timer = setTimeout(() => {
+        setCurrentStep(5)
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+    return undefined
+  }, [currentStep])
 
   // Handle contact details completion
   const handleContactComplete = (contactData: {
@@ -138,9 +145,9 @@ function GL10SignaturePageContent() {
       completedSections: newCompleted,
     })
 
-    // Auto-scroll to booking
+    // Move to booking
     setTimeout(() => {
-      scrollToSection('booking')
+      setCurrentStep(6)
     }, 500)
   }
 
@@ -163,84 +170,192 @@ function GL10SignaturePageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <GL10Hero onBeginJourney={handleBeginJourney} />
-
-      {/* Welcome + Email Capture */}
-      <div id="welcome">
-        <GL10Welcome
-          onComplete={handleEmailComplete}
-          savedEmail={progress.email}
+    <div className={cn(
+      "min-h-screen bg-white",
+      currentView === 'signature' ? 'overflow-hidden' : 'overflow-auto'
+    )}>
+      {/* Navigation Bar - Appears from step 1 onwards */}
+      {currentStep >= 1 && (
+        <GL10Navigation
+          currentView={currentView}
+          onViewChange={handleViewChange}
+          currentStep={currentStep}
         />
-      </div>
+      )}
 
-      {/* Assessment Q1: Musical Journey */}
-      <div id="assessment-1">
-        <GL10AssessmentQuestion
-          question={MUSICAL_IDENTITY_QUESTION.question}
-          options={MUSICAL_IDENTITY_QUESTION.options}
-          onSelect={handleAssessment1Complete}
-          selectedValue={progress.musicalIdentity.experience}
-          backgroundColor="white"
-        />
-      </div>
+      <AnimatePresence mode="wait">
+        {/* Signature Experience Flow */}
+        {currentView === 'signature' && (
+          <>
+            {/* Step 0: Hero Section */}
+            {currentStep === 0 && (
+              <motion.div
+                key="hero"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="min-h-screen"
+              >
+                <GL10Hero onBeginJourney={handleBeginJourney} />
+              </motion.div>
+            )}
 
-      {/* Assessment Q2: Timeline */}
-      <div id="assessment-2">
-        <GL10AssessmentQuestion
-          question={TIMELINE_QUESTION.question}
-          options={TIMELINE_QUESTION.options}
-          onSelect={handleAssessment2Complete}
-          selectedValue={progress.timeline.purchaseWindow}
-          backgroundColor="pearl"
-        />
-      </div>
+            {/* Step 1: Welcome + Email Capture */}
+            {currentStep === 1 && (
+              <motion.div
+                key="welcome"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="min-h-screen"
+              >
+                <GL10Welcome
+                  onComplete={handleEmailComplete}
+                  savedEmail={progress.email}
+                />
+              </motion.div>
+            )}
 
-      {/* GL-10 Showcase */}
-      <div id="showcase">
-        <GL10Showcase />
-      </div>
+            {/* Step 2: Assessment Q1: Musical Journey */}
+            {currentStep === 2 && (
+              <motion.div
+                key="assessment-1"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="min-h-screen"
+              >
+                <GL10AssessmentQuestion
+                  question={MUSICAL_IDENTITY_QUESTION.question}
+                  options={MUSICAL_IDENTITY_QUESTION.options}
+                  onSelect={handleAssessment1Complete}
+                  selectedValue={progress.musicalIdentity.experience}
+                  backgroundColor="white"
+                />
+              </motion.div>
+            )}
 
-      {/* Contact Details */}
-      <div id="contact">
-        <GL10Contact
-          onComplete={handleContactComplete}
-          {...(progress.contactDetails.name && {
-            savedData: {
-              firstName: progress.contactDetails.name.split(' ')[0] || '',
-              lastName: progress.contactDetails.name.split(' ').slice(1).join(' ') || '',
-              phone: progress.contactDetails.phone,
-            }
-          })}
-        />
-      </div>
+            {/* Step 3: Assessment Q2: Timeline */}
+            {currentStep === 3 && (
+              <motion.div
+                key="assessment-2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="min-h-screen"
+              >
+                <GL10AssessmentQuestion
+                  question={TIMELINE_QUESTION.question}
+                  options={TIMELINE_QUESTION.options}
+                  onSelect={handleAssessment2Complete}
+                  selectedValue={progress.timeline.purchaseWindow}
+                  backgroundColor="pearl"
+                />
+              </motion.div>
+            )}
 
-      {/* Booking Section */}
-      <div id="booking">
-        <GL10Booking
-          prefillData={prefillData}
-          onBookingComplete={handleBookingComplete}
-        />
-      </div>
+            {/* Step 4: GL-10 Showcase */}
+            {currentStep === 4 && (
+              <motion.div
+                key="showcase"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="min-h-screen"
+              >
+                <GL10Showcase />
+              </motion.div>
+            )}
 
-      {/* Success Overlay */}
+            {/* Step 5: Contact Details */}
+            {currentStep === 5 && (
+              <motion.div
+                key="contact"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="min-h-screen"
+              >
+                <GL10Contact
+                  onComplete={handleContactComplete}
+                  {...(progress.contactDetails.name && {
+                    savedData: {
+                      firstName: progress.contactDetails.name.split(' ')[0] || '',
+                      lastName: progress.contactDetails.name.split(' ').slice(1).join(' ') || '',
+                      phone: progress.contactDetails.phone,
+                    }
+                  })}
+                />
+              </motion.div>
+            )}
+
+            {/* Step 6: Booking Section */}
+            {currentStep === 6 && (
+              <motion.div
+                key="booking"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="min-h-screen"
+              >
+                <GL10Booking
+                  prefillData={prefillData}
+                  onBookingComplete={handleBookingComplete}
+                />
+              </motion.div>
+            )}
+          </>
+        )}
+
+        {/* Gallery View */}
+        {currentView === 'gallery' && (
+          <motion.div
+            key="gallery"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <GL10Gallery />
+          </motion.div>
+        )}
+
+        {/* Baby Grand Features View */}
+        {currentView === 'baby-grand' && (
+          <motion.div
+            key="baby-grand"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <GL10BabyGrand />
+          </motion.div>
+        )}
+
+        {/* Millennium III Action View */}
+        {currentView === 'millennium-action' && (
+          <motion.div
+            key="millennium-action"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <GL10MillenniumAction />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Success Overlay (appears on top of any view) */}
       <GL10SuccessOverlay isOpen={showSuccess} onClose={() => setShowSuccess(false)} />
-
-      {/* 3D Viewer - Floating Button */}
-      <ThreeDViewerButton
-        onClick={viewer3D.open}
-        text="View the GL-10 in 3D"
-        productName="GL-10 Grand Piano"
-      />
-
-      {/* 3D Viewer - Modal with iframe */}
-      <ThreeDViewerModal
-        isOpen={viewer3D.isOpen}
-        onClose={viewer3D.close}
-        viewerUrl={viewer3D.fullViewerUrl}
-        productName="GL-10 Grand Piano"
-      />
     </div>
   )
 }

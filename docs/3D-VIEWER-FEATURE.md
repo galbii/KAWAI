@@ -2,9 +2,9 @@
 
 > **Interactive 3D model viewing system for KAWAI piano products**
 >
-> Version: 1.0.0
-> Last Updated: 2025-01-09
-> Status: ✅ Production Ready (Phase 1 & 2 Complete)
+> Version: 2.0.0
+> Last Updated: 2025-10-09
+> Status: ✅ Production Ready (With Server-Side Proxy)
 
 ---
 
@@ -31,6 +31,9 @@ The 3D Viewer feature allows customers to interactively view KAWAI piano product
 ### Key Features
 
 ✅ **Full-Screen Modal Viewer** - Immersive 3D experience with smooth animations
+✅ **Server-Side Proxy** - Bypasses X-Frame-Options restrictions via Next.js API route
+✅ **CORS Asset Proxying** - All 3D assets (GLTF, textures) proxied with proper headers
+✅ **URL Rewriting** - Automatic rewriting of asset URLs for seamless loading
 ✅ **Iframe-Based Integration** - Works with existing kawai-global.com viewer
 ✅ **Floating Action Button** - Bottom-left positioned with fade-in animation
 ✅ **URL Parameter Auto-Open** - Share direct links to 3D view (`?mode=3d`)
@@ -40,6 +43,7 @@ The 3D Viewer feature allows customers to interactively view KAWAI piano product
 ✅ **Error Handling** - Graceful fallback UI if viewer fails to load
 ✅ **Body Scroll Lock** - Prevents background scrolling when modal open
 ✅ **Accessibility** - ARIA labels, keyboard navigation, screen reader support
+✅ **Performance Optimized** - Aggressive caching (15min HTML, 1 year assets)
 
 ### Technology Stack
 
@@ -75,21 +79,48 @@ The 3D Viewer feature allows customers to interactively view KAWAI piano product
 │  │  │ - State mgmt    │           ↓ onClick              │  │
 │  │  │ - URL detection │  ┌──────────────────────────┐   │  │
 │  │  │ - Auto-open     │  │  ThreeDViewerModal       │   │  │
-│  │  │ - Preloading    │  │  (Full-screen iframe)    │   │  │
+│  │  │ - Proxy URL     │  │  (Full-screen iframe)    │   │  │
 │  │  └─────────────────┘  └──────────────────────────┘   │  │
 │  └───────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
                             ↓
-              ┌─────────────────────────────┐
-              │  External 3D Viewer (iframe) │
-              │  kawai-global.com/modelviewer│
-              └─────────────────────────────┘
+              ┌─────────────────────────────────────┐
+              │  Next.js API Route (Proxy)          │
+              │  /api/3d-viewer-proxy?model=ca901   │
+              │                                     │
+              │  1. Fetch HTML from kawai-global    │
+              │  2. Strip X-Frame-Options header    │
+              │  3. Rewrite asset URLs              │
+              │  4. Add CORS headers                │
+              │  5. Return proxied content          │
+              └─────────────────────────────────────┘
+                            ↓
+              ┌─────────────────────────────────────┐
+              │  External 3D Viewer Service         │
+              │  kawai-global.com/modelviewer       │
+              │                                     │
+              │  - HTML & JavaScript                │
+              │  - GLTF 3D Models                   │
+              │  - Textures & Assets                │
+              └─────────────────────────────────────┘
 ```
 
 ### File Structure
 
 ```
 src/
+├── app/
+│   ├── api/
+│   │   └── 3d-viewer-proxy/
+│   │       └── route.ts           # 🔥 Server-side proxy API route
+│   │
+│   └── (frontend)/
+│       ├── [slug]/
+│       │   └── gl-10-signature/
+│       │       └── page.tsx       # Example: GL-10 page integration
+│       └── products/[slug]/
+│           └── page.tsx           # Product page integration point
+│
 ├── components/ui/3d-viewer/
 │   ├── ThreeDViewerModal.tsx      # Full-screen modal component
 │   ├── ThreeDViewerButton.tsx     # Floating action button
@@ -97,21 +128,139 @@ src/
 │   ├── types.ts                   # TypeScript definitions
 │   └── index.ts                   # Barrel exports
 │
-├── collections/
-│   └── Products.ts                # CMS schema with viewer3D fields
-│
-└── app/(frontend)/products/[slug]/
-    └── page.tsx                   # Product page integration point
+└── collections/
+    └── Products.ts                # CMS schema with viewer3D fields
 ```
 
 ### Component Responsibilities
 
 | Component | Type | Responsibility |
 |-----------|------|----------------|
-| `use3DViewer` | Hook | State management, URL detection, auto-open logic |
+| `3d-viewer-proxy/route.ts` | API Route | Server-side proxy, X-Frame-Options bypass, URL rewriting, CORS |
+| `use3DViewer` | Hook | State management, URL detection, auto-open logic, proxy URL construction |
 | `ThreeDViewerButton` | Client | Floating button UI, GTM tracking, animations |
 | `ThreeDViewerModal` | Client | Full-screen modal, iframe rendering, error handling |
 | `ProductPageRenderer` | Server | Conditional rendering based on CMS data |
+
+---
+
+## Server-Side Proxy Solution
+
+### Why Do We Need a Proxy?
+
+The external 3D viewer at `kawai-global.com/modelviewer` sends an **X-Frame-Options: SAMEORIGIN** header, which prevents iframe embedding from different domains. This is a security feature that blocks cross-origin iframe usage.
+
+**Problem**: Direct iframe embedding fails with console error:
+```
+Refused to display 'https://www.kawai-global.com/modelviewer/' in a frame because it set 'X-Frame-Options' to 'SAMEORIGIN'.
+```
+
+**Solution**: Server-side proxy that:
+1. Fetches content from kawai-global.com on the server
+2. Strips the X-Frame-Options header
+3. Rewrites asset URLs to proxy through our API
+4. Adds CORS headers for all assets
+5. Returns proxied content to the iframe
+
+### How the Proxy Works
+
+#### Request Flow
+
+```
+User clicks "View in 3D"
+    ↓
+Modal opens with iframe src="/api/3d-viewer-proxy?model=ca901"
+    ↓
+Next.js API Route receives request
+    ↓
+Server fetches HTML from kawai-global.com
+    ↓
+Server rewrites URLs in HTML:
+    src="models/file.gltf" → src="/api/3d-viewer-proxy?asset=models/file.gltf"
+    ↓
+Server strips X-Frame-Options and adds CORS headers
+    ↓
+HTML returned to iframe
+    ↓
+Browser loads rewritten HTML
+    ↓
+Asset requests go to /api/3d-viewer-proxy?asset=...
+    ↓
+Proxy fetches assets from kawai-global.com with CORS headers
+    ↓
+3D model loads successfully ✅
+```
+
+### Proxy Implementation Details
+
+**Location**: `/src/app/api/3d-viewer-proxy/route.ts`
+
+**Key Features**:
+- **Dual-mode operation**: Handles both HTML and asset requests
+- **URL rewriting**: Rewrites both absolute (`/models/file.gltf`) and relative (`models/file.gltf`) paths
+- **Path normalization**: Ensures asset paths include `/modelviewer/` prefix
+- **CORS headers**: Adds `Access-Control-Allow-Origin: *` to all responses
+- **Caching strategy**: 15 minutes for HTML, 1 year for immutable assets
+- **Timeout handling**: 10s for HTML, 30s for large assets
+- **Error handling**: Graceful fallback with detailed error messages
+
+**Example URLs**:
+```typescript
+// HTML request
+GET /api/3d-viewer-proxy?model=ca901
+→ Fetches https://www.kawai-global.com/modelviewer/index.php?model=ca901
+
+// Asset request
+GET /api/3d-viewer-proxy?asset=models/_CA901EP_74_WRBEPA20250530.gltf
+→ Fetches https://www.kawai-global.com/modelviewer/models/_CA901EP_74_WRBEPA20250530.gltf
+```
+
+### URL Rewriting Strategy
+
+The proxy uses two regex patterns to catch all asset references:
+
+```typescript
+// Pattern 1: Absolute paths starting with /
+/(src|href)=(["'])\/([^"']*\.(?:gltf|glb|bin|png|jpg|jpeg|webp|js|css))/gi
+// Matches: src="/models/file.gltf"
+// Becomes: src="/api/3d-viewer-proxy?asset=/models/file.gltf"
+
+// Pattern 2: Relative paths without leading /
+/(src|href)=(["'])(?!http|\/\/|\/api|data:)([^"']*\.(?:gltf|glb|bin|png|jpg|jpeg|webp|js|css))/gi
+// Matches: src="models/file.gltf"
+// Becomes: src="/api/3d-viewer-proxy?asset=models/file.gltf"
+```
+
+### Performance Optimization
+
+**Caching Headers**:
+```typescript
+// HTML (15 minutes, stale-while-revalidate)
+'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800'
+
+// Assets (1 year, immutable)
+'Cache-Control': 'public, max-age=31536000, immutable'
+```
+
+**Why These Values**:
+- **HTML**: Relatively short cache (15min) allows updates while maintaining performance
+- **Assets**: Aggressive cache (1yr) since 3D models rarely change
+- **Stale-while-revalidate**: Serves cached content immediately while fetching fresh content in background
+
+### Security Considerations
+
+**What We Do**:
+- ✅ Strip X-Frame-Options to allow embedding
+- ✅ Add CORS headers for cross-origin asset loading
+- ✅ Validate model parameter to prevent injection
+- ✅ Timeout requests to prevent hanging
+- ✅ Set proper Content-Type headers
+
+**What We Don't Do**:
+- ❌ We don't modify the actual 3D viewer code
+- ❌ We don't store or cache sensitive data
+- ❌ We don't expose internal APIs
+- ❌ We don't bypass authentication (viewer is public)
 
 ---
 
@@ -156,13 +305,19 @@ viewer3D: {
 
 #### Example Configuration
 
-**Product**: GL-10 Grand Piano
+**Product**: CA901 Digital Piano
 **Viewer URL**: `https://www.kawai-global.com/modelviewer/index.php`
-**Model Params**: `?model=gl-10&color=polished-ebony`
+**Model Params**: `?model=ca901`
 **Button Text**: `View the GL-10 in 3D`
 **Auto Open**: ✅ Enabled
 
-**Result URL**: `https://www.kawai-global.com/modelviewer/index.php?model=gl-10&color=polished-ebony`
+**How It Works**:
+1. System extracts `model=ca901` from modelParams
+2. Hook constructs proxy URL: `/api/3d-viewer-proxy?model=ca901`
+3. Proxy fetches: `https://www.kawai-global.com/modelviewer/index.php?model=ca901`
+4. Assets are automatically proxied with CORS headers
+
+**Important**: The viewerUrl field is currently used for reference only. The actual URL construction happens in the `use3DViewer` hook, which always uses the proxy route.
 
 ---
 
@@ -284,21 +439,84 @@ interface ThreeDViewerModalProps {
 
 ## Integration Guide
 
-### Phase 3: Product Page Integration (Next Step)
+### Real-World Example: GL-10 Signature Page
 
-To integrate the 3D viewer into product pages, follow these steps:
+Here's the actual implementation from the GL-10 signature page (`src/app/(frontend)/[slug]/gl-10-signature/page.tsx`):
 
-#### 1. Update `ProductPageRenderer.tsx`
+#### Complete Implementation
 
 ```tsx
-// src/components/products/ProductPageRenderer.tsx
+'use client'
+
+import { useSearchParams } from 'next/navigation'
 import { ThreeDViewerButton, ThreeDViewerModal, use3DViewer } from '@/components/ui/3d-viewer'
 
-export function ProductPageRenderer({ product }: ProductPageRendererProps) {
-  // Initialize 3D viewer hook
+function GL10SignaturePageContent() {
+  const searchParams = useSearchParams()
+
+  // Initialize 3D Viewer with configuration
+  const viewer3D = use3DViewer({
+    config: {
+      enabled: true,
+      viewerUrl: 'https://www.kawai-global.com/modelviewer/index.php',
+      modelParams: '?model=ca901',
+      autoOpen: true,
+      buttonText: 'View the GL-10 in 3D'
+    },
+    productName: 'GL-10 Grand Piano',
+    searchParams
+  })
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Page Content */}
+      {/* ... hero, sections, etc ... */}
+
+      {/* 3D Viewer - Floating Button */}
+      <ThreeDViewerButton
+        onClick={viewer3D.open}
+        text="View the GL-10 in 3D"
+        productName="GL-10 Grand Piano"
+      />
+
+      {/* 3D Viewer - Modal with iframe */}
+      <ThreeDViewerModal
+        isOpen={viewer3D.isOpen}
+        onClose={viewer3D.close}
+        viewerUrl={viewer3D.fullViewerUrl}
+        productName="GL-10 Grand Piano"
+      />
+    </div>
+  )
+}
+
+export default function GL10SignaturePage() {
+  return <GL10SignaturePageContent />
+}
+```
+
+### Product Page Integration (With CMS Data)
+
+For dynamic product pages that fetch config from Payload CMS:
+
+```tsx
+// src/app/(frontend)/products/[slug]/page.tsx
+'use client'
+
+import { ThreeDViewerButton, ThreeDViewerModal, use3DViewer } from '@/components/ui/3d-viewer'
+import type { Product } from '@/payload-types'
+
+interface ProductPageProps {
+  product: Product
+  searchParams?: URLSearchParams
+}
+
+export function ProductPageRenderer({ product, searchParams }: ProductPageProps) {
+  // Initialize 3D viewer hook with CMS data
   const viewer = use3DViewer({
     config: product.viewer3D,
-    productName: product.name
+    productName: product.name,
+    searchParams
   })
 
   return (
@@ -306,7 +524,7 @@ export function ProductPageRenderer({ product }: ProductPageRendererProps) {
       {/* Existing page content */}
       <BlocksList blocks={product.pageContent} product={product} />
 
-      {/* 3D Viewer components - only render if enabled */}
+      {/* 3D Viewer components - only render if enabled in CMS */}
       {product.viewer3D?.enabled && (
         <>
           <ThreeDViewerButton
@@ -483,23 +701,91 @@ console.log('3D Viewer Config:', product.viewer3D)
 console.log('Is Enabled:', product.viewer3D?.enabled)
 ```
 
-#### 2. Iframe Not Loading
+#### 2. Iframe Not Loading / Black Screen
 
-**Symptoms**: Modal opens but shows error message
+**Symptoms**: Modal opens but iframe is black or shows error message
 
 **Possible Causes**:
-- Invalid `viewerUrl` in CMS
+- Proxy route not compiling correctly
+- Model parameter missing or incorrect
 - External viewer service is down
-- CORS issues with iframe
-- Network connectivity problems
+- Asset loading failures (404 errors)
+- Browser caching old HTML
 
 **Solution**:
-1. **Verify URL** in CMS is correct and accessible
-2. **Test URL directly** in browser
-3. **Check browser console** for CORS errors
-4. **Contact external viewer** service provider
+1. **Check dev server logs** for proxy errors:
+   ```bash
+   # Should see:
+   [3D Viewer Proxy] Fetching HTML: https://www.kawai-global.com/...
+   [3D Viewer Proxy] Rewritten model-viewer src: /api/3d-viewer-proxy?asset=...
+   [3D Viewer Proxy] Successfully proxied content for model: ca901
+   ```
 
-#### 3. Auto-Open Not Working
+2. **Verify model parameter** is correct:
+   ```typescript
+   // Check that modelParams extracts correctly
+   const modelMatch = config.modelParams.match(/model=([^&]+)/)
+   console.log('Model ID:', modelMatch[1]) // Should log: "ca901"
+   ```
+
+3. **Test proxy directly** in browser:
+   ```
+   http://localhost:3000/api/3d-viewer-proxy?model=ca901
+   ```
+   Should show HTML (not error page)
+
+4. **Hard refresh browser** to clear cache:
+   - Mac: `Cmd + Shift + R`
+   - Windows/Linux: `Ctrl + Shift + R`
+
+5. **Check for asset 404 errors** in Network tab:
+   - All asset requests should go to `/api/3d-viewer-proxy?asset=...`
+   - If you see `/api/models/...` then URL rewriting failed
+
+6. **Verify external service** is accessible:
+   ```bash
+   curl -I "https://www.kawai-global.com/modelviewer/index.php?model=ca901"
+   ```
+
+#### 3. CORS Errors on 3D Assets
+
+**Symptoms**: Console shows CORS errors like:
+```
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading
+the remote resource at https://www.kawai-global.com/modelviewer/models/...
+```
+
+**Root Cause**: Asset URLs are not being rewritten to go through the proxy
+
+**Solution**:
+1. **Verify URL rewriting is working**:
+   ```bash
+   # Test the proxy HTML output
+   curl -s "http://localhost:3000/api/3d-viewer-proxy?model=ca901" | grep "model-viewer"
+
+   # Should show:
+   # <model-viewer src="/api/3d-viewer-proxy?asset=models/..."
+   # NOT:
+   # <model-viewer src="models/..." (without proxy)
+   ```
+
+2. **Check regex patterns** in `route.ts`:
+   - Pattern 1 catches absolute paths: `src="/models/file.gltf"`
+   - Pattern 2 catches relative paths: `src="models/file.gltf"`
+
+3. **Restart dev server** after proxy changes:
+   ```bash
+   # Kill all processes
+   pkill -f "bun.*dev"
+
+   # Start fresh
+   bun run dev
+   ```
+
+4. **Clear browser cache completely** (not just hard refresh):
+   - Open DevTools → Application → Clear Storage → Clear site data
+
+#### 4. Auto-Open Not Working
 
 **Symptoms**: `?mode=3d` URL parameter doesn't auto-open viewer
 
@@ -518,7 +804,7 @@ const viewer = use3DViewer({
 })
 ```
 
-#### 4. GTM Events Not Firing
+#### 5. GTM Events Not Firing
 
 **Symptoms**: No events in GTM debugger
 
@@ -533,7 +819,7 @@ const viewer = use3DViewer({
 console.log('GTM Available:', typeof window.gtag !== 'undefined')
 ```
 
-#### 5. Modal Animation Issues
+#### 6. Modal Animation Issues
 
 **Symptoms**: Janky animations or modal doesn't close smoothly
 
@@ -711,6 +997,41 @@ Track additional metrics:
 
 ## Changelog
 
+### Version 2.0.0 (2025-10-09)
+
+**Server-Side Proxy Implementation**
+
+🔥 **Breaking Changes**:
+- Hook now constructs proxy URLs instead of external URLs
+- `viewerUrl` field is now reference-only (not used in URL construction)
+
+✅ **New Features**:
+- Server-side proxy route at `/api/3d-viewer-proxy`
+- X-Frame-Options header stripping for iframe embedding
+- Automatic URL rewriting for all assets (GLTF, textures, JS, CSS)
+- CORS header injection for cross-origin asset loading
+- Dual-mode proxy (HTML + assets)
+- Path normalization for relative URLs
+- Aggressive caching (15min HTML, 1yr assets)
+
+✅ **Implementation**:
+- Production deployment on GL-10 Signature page
+- Tested with CA901 3D model
+- Full asset proxying working
+- Performance optimized with proper cache headers
+
+🐛 **Fixes**:
+- Resolved X-Frame-Options blocking issue
+- Fixed CORS errors on 3D model assets
+- Fixed relative URL rewriting (both `/models/...` and `models/...`)
+- Added browser cache handling instructions
+
+📚 **Documentation**:
+- Complete proxy architecture documentation
+- Updated troubleshooting guide
+- Added real-world integration examples
+- Security considerations documented
+
 ### Version 1.0.0 (2025-01-09)
 
 **Initial Release**
@@ -719,7 +1040,6 @@ Track additional metrics:
 ✅ Core components built and tested
 ✅ TypeScript types defined
 ✅ Documentation completed
-⏳ Product page integration (pending Phase 3)
 
 **Components Delivered**:
 - `ThreeDViewerModal` - Full-screen modal with iframe
@@ -728,10 +1048,9 @@ Track additional metrics:
 - Complete TypeScript definitions
 - Comprehensive documentation
 
-**Next Steps**:
-- Phase 3: Integrate into ProductPageRenderer
-- Test with real product data
-- Deploy to production
+**Known Issues** (Resolved in v2.0):
+- Direct iframe embedding blocked by X-Frame-Options
+- CORS errors on external assets
 
 ---
 
@@ -788,5 +1107,40 @@ interface ViewerGTMEvent {
 ---
 
 **Documentation maintained by**: Development Team
-**Last reviewed**: 2025-01-09
-**Next review**: 2025-04-09
+**Last reviewed**: 2025-10-09
+**Next review**: 2026-01-09
+
+## Quick Reference
+
+### Testing the 3D Viewer
+
+1. **Start dev server**: `bun run dev`
+2. **Navigate to**: `http://localhost:3000/houston/gl-10-signature`
+3. **Click**: "View the GL-10 in 3D" button (bottom-left)
+4. **Verify**: 3D model loads without errors
+5. **Check logs**: Should see proxy requests in terminal
+6. **Test URL**: Try adding `?mode=3d` to auto-open
+
+### Common Commands
+
+```bash
+# Test proxy HTML
+curl -s "http://localhost:3000/api/3d-viewer-proxy?model=ca901" | head -50
+
+# Test proxy asset
+curl -I "http://localhost:3000/api/3d-viewer-proxy?asset=models/test.gltf"
+
+# Check external service
+curl -I "https://www.kawai-global.com/modelviewer/index.php?model=ca901"
+
+# Restart dev server
+pkill -f "bun.*dev" && bun run dev
+```
+
+### Key Files to Remember
+
+- **Proxy Route**: `/src/app/api/3d-viewer-proxy/route.ts`
+- **Hook**: `/src/components/ui/3d-viewer/use3DViewer.ts`
+- **Modal**: `/src/components/ui/3d-viewer/ThreeDViewerModal.tsx`
+- **Button**: `/src/components/ui/3d-viewer/ThreeDViewerButton.tsx`
+- **Example**: `/src/app/(frontend)/[slug]/gl-10-signature/page.tsx`

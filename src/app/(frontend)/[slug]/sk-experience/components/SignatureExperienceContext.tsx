@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react'
 import type { AssessmentResponse } from './types'
-import type { AssessmentState } from './AssessmentControlHub'
+import type { AssessmentState } from '@/components/pages/signature/AssessmentControlHub'
 
 // Types for the context
 export type ExperienceStage = 'welcome' | 'email' | 'assessment' | 'conversion' | 'complete'

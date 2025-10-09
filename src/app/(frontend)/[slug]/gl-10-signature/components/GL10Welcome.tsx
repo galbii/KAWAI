@@ -37,22 +37,15 @@ export default function GL10Welcome({ onComplete, savedEmail }: GL10WelcomeProps
     setIsSubmitting(true)
 
     try {
-      // Integrate with Constant Contact
-      const response = await fetch('/api/constant-contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          listId: process.env.NEXT_PUBLIC_GL10_LIST_ID,
-          source: 'GL-10 Signature Experience',
-        }),
+      // Log the email capture locally (no external integration for now)
+      console.log('GL-10 Email captured:', {
+        email,
+        source: 'GL-10 Signature Experience',
+        timestamp: new Date().toISOString()
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to subscribe')
-      }
+      // Simulate brief processing delay for better UX
+      await new Promise(resolve => setTimeout(resolve, 500))
 
       onComplete(email)
     } catch (err) {
