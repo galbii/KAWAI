@@ -141,7 +141,7 @@ export default function GL10Contact({ onComplete, savedData }: GL10ContactProps)
                         className={cn(
                           'w-full min-h-[56px] pl-12 pr-4 py-4 text-lg',
                           'bg-white border-2 rounded-xl transition-all duration-200',
-                          'placeholder:text-gray-400',
+                          'text-gray-900 placeholder:text-gray-400',
                           'focus:outline-none focus:ring-2 focus:ring-kawai-red/20',
                           errors.firstName
                             ? 'border-red-300 focus:border-red-500'
@@ -187,7 +187,7 @@ export default function GL10Contact({ onComplete, savedData }: GL10ContactProps)
                         className={cn(
                           'w-full min-h-[56px] pl-12 pr-4 py-4 text-lg',
                           'bg-white border-2 rounded-xl transition-all duration-200',
-                          'placeholder:text-gray-400',
+                          'text-gray-900 placeholder:text-gray-400',
                           'focus:outline-none focus:ring-2 focus:ring-kawai-red/20',
                           errors.lastName
                             ? 'border-red-300 focus:border-red-500'
@@ -235,7 +235,7 @@ export default function GL10Contact({ onComplete, savedData }: GL10ContactProps)
                       className={cn(
                         'w-full min-h-[56px] pl-12 pr-4 py-4 text-lg',
                         'bg-white border-2 rounded-xl transition-all duration-200',
-                        'placeholder:text-gray-400',
+                        'text-gray-900 placeholder:text-gray-400',
                         'focus:outline-none focus:ring-2 focus:ring-kawai-red/20',
                         errors.phone
                           ? 'border-red-300 focus:border-red-500'
