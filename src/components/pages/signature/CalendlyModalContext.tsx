@@ -30,7 +30,7 @@ interface CalendlyModalProviderProps {
 function CalendlyModalProviderInner({
   children,
   slug,
-  calendlyUrl = 'https://calendly.com/kawaipianogallery/houston-baby-grand-sale'
+  calendlyUrl = 'https://calendly.com/kawaipianogallery/houston-baby-grand-sale-clone'
 }: {
   children: React.ReactNode
   slug: string

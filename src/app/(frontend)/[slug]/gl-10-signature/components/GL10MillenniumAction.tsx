@@ -113,7 +113,7 @@ export default function GL10MillenniumAction() {
           className="relative w-full h-[400px] md:h-[500px] rounded-3xl overflow-hidden mb-20 shadow-2xl"
         >
           <Image
-            src="/images/gl10-hero.jpg"
+            src="/images/signature/pianos/gl-10/gl-10-secondary.webp"
             alt="Millennium III Action Technology"
             fill
             className="object-cover"
