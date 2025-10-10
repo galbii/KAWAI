@@ -19,7 +19,7 @@ interface CalendlyEmbedSectionProps {
  */
 export function CalendlyEmbedSection({
   slug,
-  calendlyUrl = 'https://calendly.com/kawaipianogallery/houston-baby-grand-sale-clone'
+  calendlyUrl = 'https://calendly.com/kawaipianogallery/dallas-baby-grand-sale-clone'
 }: CalendlyEmbedSectionProps) {
 
   const [showQuickContact, setShowQuickContact] = useState(false)
