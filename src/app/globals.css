@@ -16,6 +16,7 @@
   /* Official Kawai Brand Colors - Standard Namespace for Auto-generation */
   --color-kawai-red: #E11922;        /* Official Kawai Red */
   --color-kawai-black: #1E1B16;      /* Deep Black */
+  --color-kawai-charcoal: #2C2C2C;   /* Charcoal Gray */
   --color-kawai-pearl: #FAF8F5;      /* Warm Off-White / Light Beige */
   --color-kawai-neutral: #DBDBDB;    /* Light Grey */
   --color-kawai-gold: #d5c78c;       /* Shigeru Kawai Gold */
@@ -43,6 +44,18 @@
   --color-kawai-black-700: #404040;
   --color-kawai-black-800: #262626;
   --color-kawai-black-900: #1E1B16;
+
+  /* Extended Kawai Charcoal Scale */
+  --color-kawai-charcoal-50: #f9f9f9;
+  --color-kawai-charcoal-100: #f0f0f0;
+  --color-kawai-charcoal-200: #e0e0e0;
+  --color-kawai-charcoal-300: #c8c8c8;
+  --color-kawai-charcoal-400: #a0a0a0;
+  --color-kawai-charcoal-500: #2C2C2C;    /* Primary charcoal */
+  --color-kawai-charcoal-600: #262626;
+  --color-kawai-charcoal-700: #1f1f1f;
+  --color-kawai-charcoal-800: #1a1a1a;
+  --color-kawai-charcoal-900: #141414;
 
   /* ES60 Earthy Color Palette - Campaign-specific */
   --color-es60-primary-bg: #FAF8F5;      /* Warm off-white */
@@ -186,12 +199,14 @@
   shadow-brand-cinematic,
   bg-kawai-red,
   bg-kawai-black,
+  bg-kawai-charcoal,
   bg-kawai-pearl,
   bg-kawai-neutral,
   bg-kawai-gold,
   bg-card,
   text-kawai-red,
   text-kawai-black,
+  text-kawai-charcoal,
   text-kawai-pearl,
   text-kawai-neutral,
   text-kawai-gold,
@@ -199,6 +214,7 @@
   text-muted-foreground,
   border-kawai-red,
   border-kawai-black,
+  border-kawai-charcoal,
   border-kawai-neutral,
   border-kawai-gold,
   card-brand-news,

@@ -18,16 +18,32 @@ import {
   GL10Gallery,
   GL10BabyGrand,
   GL10MillenniumAction,
+  GL10BookingTab,
+  GL10Location,
+  ViewIndicator,
   MUSICAL_IDENTITY_QUESTION,
   TIMELINE_QUESTION,
   type ViewType,
 } from './components'
+import { useSwipeNavigation } from './hooks/useSwipeNavigation'
 
 function GL10SignaturePageContent() {
   const { progress, updateProgress } = useGL10Context()
   const [showSuccess, setShowSuccess] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
   const [currentView, setCurrentView] = useState<ViewType>('signature')
+
+  // Define navigable views (tabs that support swipe navigation)
+  const navigableViews: ViewType[] = ['signature', 'millennium-action', 'baby-grand', 'gallery', 'booking', 'location']
+
+  // Swipe navigation hook
+  const swipeNavigation = useSwipeNavigation({
+    currentView,
+    views: navigableViews,
+    onViewChange: (view: ViewType) => handleViewChange(view),
+    threshold: 50,
+    velocityThreshold: 500
+  })
 
   // Handle view changes
   const handleViewChange = (view: ViewType) => {
@@ -44,7 +60,7 @@ function GL10SignaturePageContent() {
       // Disable scrolling for signature experience
       document.body.style.overflow = 'hidden'
     } else {
-      // Enable scrolling for gallery, baby-grand, millennium-action
+      // Enable scrolling for gallery, baby-grand, millennium-action, booking
       document.body.style.overflow = 'auto'
     }
 
@@ -108,23 +124,11 @@ function GL10SignaturePageContent() {
       completedSections: newCompleted,
     })
 
-    // Move to showcase
+    // Move to contact
     setTimeout(() => {
       setCurrentStep(4)
     }, 500)
   }
-
-  // Auto-advance from showcase to contact after viewing
-  useEffect(() => {
-    if (currentStep === 4) {
-      // Auto-advance to contact after 3 seconds of viewing showcase
-      const timer = setTimeout(() => {
-        setCurrentStep(5)
-      }, 3000)
-      return () => clearTimeout(timer)
-    }
-    return undefined
-  }, [currentStep])
 
   // Handle contact details completion
   const handleContactComplete = (contactData: {
@@ -147,7 +151,7 @@ function GL10SignaturePageContent() {
 
     // Move to booking
     setTimeout(() => {
-      setCurrentStep(6)
+      setCurrentStep(5)
     }, 500)
   }
 
@@ -180,10 +184,30 @@ function GL10SignaturePageContent() {
           currentView={currentView}
           onViewChange={handleViewChange}
           currentStep={currentStep}
+          autoHide={false}
         />
       )}
 
-      <AnimatePresence mode="wait">
+      {/* View Indicator (Progress Dots) - Mobile Only */}
+      {currentStep >= 1 && currentView !== 'signature' && (
+        <ViewIndicator
+          currentView={currentView}
+          views={navigableViews.filter(v => v !== 'signature')}
+          onViewChange={handleViewChange}
+        />
+      )}
+
+      {/* Swipeable Content Container */}
+      <motion.div
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.2}
+        onDragStart={swipeNavigation.handleDragStart}
+        onDrag={swipeNavigation.handleDrag}
+        onDragEnd={swipeNavigation.handleDragEnd}
+        className="min-h-screen"
+      >
+        <AnimatePresence mode="wait">
         {/* Signature Experience Flow */}
         {currentView === 'signature' && (
           <>
@@ -195,7 +219,7 @@ function GL10SignaturePageContent() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="min-h-screen"
+                className="h-screen overflow-y-auto"
               >
                 <GL10Hero onBeginJourney={handleBeginJourney} />
               </motion.div>
@@ -209,7 +233,7 @@ function GL10SignaturePageContent() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="min-h-screen"
+                className="h-screen overflow-y-auto"
               >
                 <GL10Welcome
                   onComplete={handleEmailComplete}
@@ -226,7 +250,7 @@ function GL10SignaturePageContent() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="min-h-screen"
+                className="h-screen overflow-y-auto"
               >
                 <GL10AssessmentQuestion
                   question={MUSICAL_IDENTITY_QUESTION.question}
@@ -246,7 +270,7 @@ function GL10SignaturePageContent() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="min-h-screen"
+                className="h-screen overflow-y-auto"
               >
                 <GL10AssessmentQuestion
                   question={TIMELINE_QUESTION.question}
@@ -258,29 +282,15 @@ function GL10SignaturePageContent() {
               </motion.div>
             )}
 
-            {/* Step 4: GL-10 Showcase */}
+            {/* Step 4: Contact Details */}
             {currentStep === 4 && (
-              <motion.div
-                key="showcase"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                className="min-h-screen"
-              >
-                <GL10Showcase />
-              </motion.div>
-            )}
-
-            {/* Step 5: Contact Details */}
-            {currentStep === 5 && (
               <motion.div
                 key="contact"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="min-h-screen"
+                className="h-screen overflow-y-auto"
               >
                 <GL10Contact
                   onComplete={handleContactComplete}
@@ -295,15 +305,15 @@ function GL10SignaturePageContent() {
               </motion.div>
             )}
 
-            {/* Step 6: Booking Section */}
-            {currentStep === 6 && (
+            {/* Step 5: Booking Section */}
+            {currentStep === 5 && (
               <motion.div
                 key="booking"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="min-h-screen"
+                className="h-screen overflow-y-auto"
               >
                 <GL10Booking
                   prefillData={prefillData}
@@ -316,14 +326,21 @@ function GL10SignaturePageContent() {
 
         {/* Gallery View */}
         {currentView === 'gallery' && (
+          <div key="gallery">
+            <GL10Gallery />
+          </div>
+        )}
+
+        {/* Millennium III Action View */}
+        {currentView === 'millennium-action' && (
           <motion.div
-            key="gallery"
+            key="millennium-action"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <GL10Gallery />
+            <GL10MillenniumAction />
           </motion.div>
         )}
 
@@ -340,19 +357,33 @@ function GL10SignaturePageContent() {
           </motion.div>
         )}
 
-        {/* Millennium III Action View */}
-        {currentView === 'millennium-action' && (
+        {/* Booking Tab View */}
+        {currentView === 'booking' && (
           <motion.div
-            key="millennium-action"
+            key="booking-tab"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <GL10MillenniumAction />
+            <GL10BookingTab />
+          </motion.div>
+        )}
+
+        {/* Location View */}
+        {currentView === 'location' && (
+          <motion.div
+            key="location"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <GL10Location />
           </motion.div>
         )}
       </AnimatePresence>
+      </motion.div>
 
       {/* Success Overlay (appears on top of any view) */}
       <GL10SuccessOverlay isOpen={showSuccess} onClose={() => setShowSuccess(false)} />

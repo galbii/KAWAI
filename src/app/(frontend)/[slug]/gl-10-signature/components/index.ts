@@ -14,6 +14,9 @@ export { default as GL10Navigation } from './GL10Navigation'
 export { default as GL10Gallery } from './GL10Gallery'
 export { default as GL10BabyGrand } from './GL10BabyGrand'
 export { default as GL10MillenniumAction } from './GL10MillenniumAction'
+export { default as GL10BookingTab } from './GL10BookingTab'
+export { default as GL10Location } from './GL10Location'
+export { default as ViewIndicator } from './ViewIndicator'
 
 // Types
 export type { ViewType } from './GL10Navigation'

@@ -1,16 +1,20 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { PlayCircle, Grid3x3, Piano, Settings } from 'lucide-react'
+import { PlayCircle, Grid3x3, Piano, Calendar, Volume2, MapPin } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useScrollDirection } from '../hooks/useScrollDirection'
+import { triggerHaptic } from '../utils/haptics'
 
-export type ViewType = 'signature' | 'gallery' | 'baby-grand' | 'millennium-action'
+export type ViewType = 'signature' | 'gallery' | 'baby-grand' | 'millennium-action' | 'booking' | 'location'
 
 interface GL10NavigationProps {
   currentView: ViewType
   onViewChange: (view: ViewType) => void
   currentStep: number
   className?: string
+  autoHide?: boolean
 }
 
 interface NavItem {
@@ -30,8 +34,14 @@ const NAV_ITEMS: NavItem[] = [
   {
     id: 'millennium-action',
     label: 'GL-10',
-    icon: <Settings className="w-5 h-5" />,
+    icon: <Piano className="w-5 h-5" />,
     description: 'Advanced action technology'
+  },
+  {
+    id: 'baby-grand',
+    label: 'Sound',
+    icon: <Volume2 className="w-5 h-5" />,
+    description: 'Sound features & specifications'
   },
   {
     id: 'gallery',
@@ -40,10 +50,16 @@ const NAV_ITEMS: NavItem[] = [
     description: 'Explore stunning imagery'
   },
   {
-    id: 'baby-grand',
-    label: 'Features',
-    icon: <Piano className="w-5 h-5" />,
-    description: 'Features & specifications'
+    id: 'booking',
+    label: 'Booking',
+    icon: <Calendar className="w-5 h-5" />,
+    description: 'Schedule your consultation'
+  },
+  {
+    id: 'location',
+    label: 'Location',
+    icon: <MapPin className="w-5 h-5" />,
+    description: 'Find us in Plano, Texas'
   }
 ]
 
@@ -51,17 +67,34 @@ export default function GL10Navigation({
   currentView,
   onViewChange,
   currentStep,
-  className
+  className,
+  autoHide = true
 }: GL10NavigationProps) {
+  const [isVisible, setIsVisible] = useState(true)
+  const scrollDirection = useScrollDirection({ threshold: 30 })
+
+  // Auto-hide navigation on scroll down (only for non-signature views)
+  useEffect(() => {
+    if (autoHide && currentView !== 'signature') {
+      setIsVisible(scrollDirection !== 'down')
+    } else {
+      setIsVisible(true)
+    }
+  }, [scrollDirection, currentView, autoHide])
+
   const handleNavClick = (view: ViewType) => {
+    triggerHaptic('light')
     onViewChange(view)
   }
 
   return (
     <motion.nav
       initial={{ y: 100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 30, delay: 0.2 }}
+      animate={{
+        y: isVisible ? 0 : 100,
+        opacity: isVisible ? 1 : 0
+      }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       className={cn(
         'fixed bottom-6 left-0 right-0 z-50',
         'flex justify-center items-center',
@@ -125,8 +158,14 @@ export default function GL10Navigation({
                 {item.icon}
               </span>
 
-              {/* Label - Hidden on mobile, shown on desktop */}
-              <span className="hidden md:inline-block whitespace-nowrap">
+              {/* Label - Show on active tab (mobile) or always (desktop) */}
+              <span className={cn(
+                'whitespace-nowrap overflow-hidden transition-all duration-300',
+                // Mobile: show only active label
+                currentView === item.id ? 'inline-block max-w-[100px] opacity-100' : 'max-w-0 opacity-0',
+                // Desktop: always show
+                'md:inline-block md:max-w-none md:opacity-100'
+              )}>
                 {item.label}
               </span>
 

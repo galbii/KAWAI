@@ -121,11 +121,11 @@ export default function GL10MillenniumAction() {
             priority
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-end p-8">
-            <div className="text-kawai-red">
+            <div className="text-white">
               <h3 className="text-2xl md:text-3xl font-serif mb-2">
                 Precision Engineering
               </h3>
-              <p className="text-kawai-red/90">
+              <p className="text-white/90">
                 Every component machined to microscopic tolerances
               </p>
             </div>
@@ -145,11 +145,8 @@ export default function GL10MillenniumAction() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {BENEFITS.map((benefit, index) => (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 + index * 0.1 }}
                 className={cn(
                   'group relative p-8 rounded-2xl',
                   'bg-gradient-to-br from-white to-kawai-pearl',
@@ -160,13 +157,13 @@ export default function GL10MillenniumAction() {
               >
                 {/* Stat Badge */}
                 {benefit.stat && (
-                  <div className="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-[#8B7355] to-[#D4AF37] text-kawai-red text-xs font-bold rounded-full">
+                  <div className="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-[#8B7355] to-[#D4AF37] text-white text-xs font-bold rounded-full">
                     {benefit.stat}
                   </div>
                 )}
 
                 {/* Icon */}
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br from-[#8B7355] to-[#D4AF37] text-kawai-red mb-4 group-hover:scale-110 transition-transform">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br from-[#8B7355] to-[#D4AF37] text-white mb-4 group-hover:scale-110 transition-transform">
                   {benefit.icon}
                 </div>
 
@@ -179,7 +176,7 @@ export default function GL10MillenniumAction() {
                 <p className="text-gray-600 leading-relaxed">
                   {benefit.description}
                 </p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -197,7 +194,7 @@ export default function GL10MillenniumAction() {
 
           <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border border-[#8B7355]/10">
             {/* Table Header */}
-            <div className="grid grid-cols-3 gap-4 p-6 bg-gradient-to-br from-kawai-charcoal to-gray-900 text-kawai-red">
+            <div className="grid grid-cols-3 gap-4 p-6 bg-gradient-to-br from-kawai-charcoal to-gray-900 text-white">
               <div className="font-semibold">Feature</div>
               <div className="font-semibold text-center">Traditional Wood</div>
               <div className="font-semibold text-center bg-gradient-to-r from-[#8B7355] to-[#D4AF37] rounded-lg px-4 py-2">

@@ -42,63 +42,29 @@ export default function GL10AssessmentQuestion({
     }
   }
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
-      },
-    },
-  }
-
-  const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-    },
-  }
-
   return (
     <section
       className={cn(
-        'relative min-h-screen flex items-center justify-center px-4 py-16',
+        'relative min-h-screen px-4',
         backgroundColor === 'pearl' ? 'bg-[#FAF8F5]' : 'bg-white'
       )}
     >
-      <div className="w-full max-w-6xl mx-auto">
+      <div className="w-full max-w-6xl mx-auto py-8 md:py-16">
         {/* Question Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center mb-12 md:mb-16"
-        >
-          <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-tight text-[#2C2C2C] max-w-4xl mx-auto">
+        <div className="text-center mb-8 md:mb-12">
+          <h2 className="font-serif text-2xl md:text-3xl lg:text-4xl leading-tight text-[#2C2C2C] max-w-4xl mx-auto px-2">
             {question}
           </h2>
-        </motion.div>
+        </div>
 
         {/* Options Grid */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-100px' }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pb-64">
           {options.map((option) => {
             const isSelected = selectedValue === option.id
 
             return (
-              <motion.div
+              <div
                 key={option.id}
-                variants={cardVariants}
-                whileHover={{ y: -4 }}
-                whileTap={{ scale: 0.98 }}
                 onClick={() => handleCardClick(option.id)}
                 onKeyDown={(e) => handleKeyPress(e, option.id)}
                 role="button"
@@ -107,10 +73,11 @@ export default function GL10AssessmentQuestion({
                 aria-label={`${option.title}${option.description ? `: ${option.description}` : ''}`}
                 className={cn(
                   'relative group cursor-pointer',
-                  'bg-white rounded-2xl p-6 md:p-8',
+                  'bg-white rounded-2xl p-5 md:p-6',
                   'border-2 transition-all duration-300',
                   'shadow-sm hover:shadow-xl',
                   'focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:ring-offset-2',
+                  'hover:-translate-y-1 active:scale-[0.98]',
                   isSelected
                     ? 'border-[#C41E3A] bg-[#8B7355]/5 shadow-lg'
                     : 'border-[#2C2C2C]/10 hover:border-[#C41E3A]'
@@ -118,12 +85,7 @@ export default function GL10AssessmentQuestion({
               >
                 {/* Selection Indicator */}
                 {isSelected && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                    className="absolute top-4 right-4 w-6 h-6 bg-[#C41E3A] rounded-full flex items-center justify-center"
-                  >
+                  <div className="absolute top-4 right-4 w-6 h-6 bg-[#C41E3A] rounded-full flex items-center justify-center">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
@@ -136,14 +98,14 @@ export default function GL10AssessmentQuestion({
                         clipRule="evenodd"
                       />
                     </svg>
-                  </motion.div>
+                  </div>
                 )}
 
                 {/* Icon */}
                 {option.icon && (
                   <div
                     className={cn(
-                      'mb-4 text-4xl transition-colors duration-300',
+                      'mb-3 text-3xl md:text-4xl transition-colors duration-300',
                       isSelected ? 'text-[#C41E3A]' : 'text-[#D4AF37]'
                     )}
                   >
@@ -154,7 +116,7 @@ export default function GL10AssessmentQuestion({
                 {/* Title */}
                 <h3
                   className={cn(
-                    'font-serif text-xl md:text-2xl mb-2 transition-colors duration-300',
+                    'font-serif text-lg md:text-xl mb-2 transition-colors duration-300',
                     isSelected ? 'text-[#C41E3A]' : 'text-[#2C2C2C] group-hover:text-[#C41E3A]'
                   )}
                 >
@@ -163,7 +125,7 @@ export default function GL10AssessmentQuestion({
 
                 {/* Description */}
                 {option.description && (
-                  <p className="text-[#2C2C2C]/70 text-sm md:text-base leading-relaxed">
+                  <p className="text-[#2C2C2C]/70 text-sm leading-relaxed">
                     {option.description}
                   </p>
                 )}
@@ -177,10 +139,10 @@ export default function GL10AssessmentQuestion({
                   )}
                   aria-hidden="true"
                 />
-              </motion.div>
+              </div>
             )
           })}
-        </motion.div>
+        </div>
       </div>
     </section>
   )

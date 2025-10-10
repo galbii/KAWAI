@@ -89,7 +89,7 @@ export default function GL10Contact({ onComplete, savedData }: GL10ContactProps)
   }
 
   return (
-    <section className="py-16 md:py-24 bg-kawai-pearl">
+    <section className="py-16 md:py-24 pb-64 bg-kawai-pearl">
       <div className="container mx-auto px-4 max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

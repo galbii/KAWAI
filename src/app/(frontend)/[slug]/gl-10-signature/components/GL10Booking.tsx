@@ -24,7 +24,7 @@ interface GL10BookingProps {
 }
 
 // Calendly URL for GL-10 Signature bookings
-const GL10_CALENDLY_URL = 'https://calendly.com/kawaipianogallery/gl10-signature'
+const GL10_CALENDLY_URL = 'https://calendly.com/kawaipianogallery/houston-baby-grand-sale-clone'
 
 // Benefits data
 const BENEFITS = [
@@ -82,62 +82,138 @@ export default function GL10Booking({ prefillData, onBookingComplete, className 
     showAuthPrompts: false
   })
 
+  // Submit contact to SHOWROOM KAWAI list when booking COMPLETES successfully (NON-BLOCKING)
+  const handleConstantContactSubmission = async (eventData: any) => {
+    console.log('🎯 Calendly onEventScheduled fired: ' + (+new Date()))
+    console.log('📋 Calendly event data:', eventData?.data?.payload)
+
+    // Implement timeout protection to prevent hanging
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Constant Contact submission timeout')), 10000)
+    )
+
+    try {
+      // Get email from prefillData
+      const email = prefillData?.email
+      if (!email) {
+        console.warn('⚠️ No email available for successful booking submission (non-blocking)')
+        return
+      }
+
+      // Create contact data with available information for SHOWROOM KAWAI list
+      const contactData: ConstantContactSubmissionData = {
+        email,
+        ...(prefillData?.firstName && { firstName: prefillData.firstName }),
+        ...(prefillData?.lastName && { lastName: prefillData.lastName }),
+        ...(prefillData?.phone && { phone: prefillData.phone }),
+        optInMarketing: true // Default to opted in for consultation bookings
+      }
+
+      console.log('🎉 Booking COMPLETED successfully! Adding to SHOWROOM KAWAI list:', contactData)
+
+      // Submit to SHOWROOM KAWAI list (non-blocking)
+      const success = await Promise.race([
+        submitToConstantContact(contactData), // This should target SHOWROOM KAWAI list
+        timeoutPromise
+      ])
+
+      if (success) {
+        console.log('📧 Constant Contact SHOWROOM KAWAI submission: ' + (+new Date()))
+        console.log('✅ Contact successfully added to SHOWROOM KAWAI list')
+      } else {
+        console.warn('⚠️ Failed to add contact to SHOWROOM KAWAI list, but booking still succeeded')
+      }
+    } catch (error) {
+      console.error('❌ Error adding successful booking to SHOWROOM KAWAI list (non-blocking):', error)
+      // This is non-blocking - booking completion is not affected
+    }
+  }
+
   // Handle successful booking submission
   const handleSuccessfulBooking = async (eventData: any) => {
     console.log('🎯 GL-10 Booking completed:', eventData)
+    console.log('📋 Event payload:', eventData?.data?.payload)
 
     // Call parent callback immediately
     onBookingComplete?.()
 
-    // Non-blocking tracking
+    // Create contact data for tracking
+    const contactData = {
+      email: prefillData?.email,
+      firstName: prefillData?.firstName,
+      lastName: prefillData?.lastName,
+      phone: prefillData?.phone
+    }
+
+    console.log('📊 Contact data prepared for tracking:', {
+      email: contactData.email ? '[PRESENT]' : '[MISSING]',
+      firstName: contactData.firstName ? '[PRESENT]' : '[MISSING]',
+      lastName: contactData.lastName ? '[PRESENT]' : '[MISSING]',
+      phone: contactData.phone ? '[PRESENT]' : '[MISSING]',
+      posthogAvailable: !!posthog
+    })
+
+    // Verify we have essential data for tracking
+    if (!contactData.email) {
+      console.error('❌ CRITICAL: No email available for tracking - events may fail', {
+        prefillData,
+        contactData
+      })
+    }
+
+    // Non-blocking tracking sequence: Meta Pixel → PostHog → Constant Contact
+    // All tracking is non-blocking and won't affect booking completion
     setTimeout(() => {
+      console.log('🚀 Starting tracking sequence...')
+
       // Fire Meta Pixel
       try {
-        trackSubmitApplication({
+        const metaPixelData = {
           content_name: 'GL-10 Baby Grand Signature Booking',
           content_category: 'Premium Piano Consultation',
           value: 1500,
           currency: 'USD',
           status: 'completed'
+        }
+
+        console.log('🎯 Meta Pixel: Firing SubmitApplication event with data:', {
+          ...metaPixelData,
+          email: prefillData?.email ? '[PRESENT]' : '[MISSING]'
         })
+
+        trackSubmitApplication(metaPixelData)
+
+        console.log('✅ Meta Pixel SubmitApplication fired via utility function: ' + (+new Date()))
       } catch (error) {
-        console.error('Meta Pixel error:', error)
+        console.error('❌ Meta Pixel error (non-blocking):', error)
       }
 
       // Fire PostHog
       setTimeout(() => {
         try {
           if (posthog) {
-            posthog.capture('gl10_signature_booking', {
-              source: 'gl10-landing-page',
+            posthog.capture('signature_dallas_booking', {
+              source: 'gl10-signature-booking',
               email: prefillData?.email,
               firstName: prefillData?.firstName,
               lastName: prefillData?.lastName,
               conversionType: 'showroom-consultation',
               timestamp: +new Date()
             })
+            console.log('✅ PostHog signature_dallas_booking fired successfully: ' + (+new Date()))
+          } else {
+            console.warn('⚠️ PostHog not available - signature_dallas_booking event not fired')
           }
         } catch (error) {
-          console.error('PostHog error:', error)
+          console.error('❌ PostHog error:', error)
         }
       }, 100)
 
-      // Submit to Constant Contact
-      setTimeout(async () => {
-        try {
-          if (prefillData?.email) {
-            const contactData: ConstantContactSubmissionData = {
-              email: prefillData.email,
-              ...(prefillData.firstName && { firstName: prefillData.firstName }),
-              ...(prefillData.lastName && { lastName: prefillData.lastName }),
-              ...(prefillData.phone && { phone: prefillData.phone }),
-              optInMarketing: true
-            }
-            await submitToConstantContact(contactData)
-          }
-        } catch (error) {
-          console.error('Constant Contact error:', error)
-        }
+      // Submit to SHOWROOM KAWAI list (fire and forget, largest delay)
+      setTimeout(() => {
+        handleConstantContactSubmission(eventData).catch(error => {
+          console.error('⚠️ SHOWROOM KAWAI list submission failed (non-blocking):', error)
+        })
       }, 200)
     }, 50)
   }
@@ -196,7 +272,7 @@ export default function GL10Booking({ prefillData, onBookingComplete, className 
   return (
     <section
       ref={containerRef}
-      className={cn('bg-white py-16 md:py-24 overflow-hidden', className)}
+      className={cn('bg-white py-16 md:py-24 pb-64 overflow-hidden', className)}
     >
       <div className="container mx-auto px-4">
         <motion.div

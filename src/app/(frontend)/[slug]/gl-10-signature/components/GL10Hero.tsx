@@ -12,13 +12,19 @@ interface GL10HeroProps {
 
 export default function GL10Hero({ onBeginJourney, className }: GL10HeroProps) {
   const [animationStage, setAnimationStage] = useState(0)
+  const [showLogo, setShowLogo] = useState<'show' | 'hide' | 'done'>('show')
 
-  // Animation sequence controller
+  // Animation sequence controller - KAWAI fades in, then out, then rest appears
   useEffect(() => {
     const timers = [
-      setTimeout(() => setAnimationStage(1), 500),   // Stage 1: GL-10 Baby Grand appears
-      setTimeout(() => setAnimationStage(2), 1500),  // Stage 2: KAWAI Signature appears
-      setTimeout(() => setAnimationStage(3), 2500)   // Stage 3: CTA appears
+      setTimeout(() => setAnimationStage(1), 200),    // Stage 1: KAWAI Logo fades in
+      setTimeout(() => setShowLogo('hide'), 1200),    // Hide KAWAI logo after 1s visible
+      setTimeout(() => {
+        setShowLogo('done')
+        setAnimationStage(2)                          // Stage 2: Show Signature Event
+      }, 2000),                                        // Total 2s before next content
+      setTimeout(() => setAnimationStage(3), 2200),   // Stage 3: GL-10 + Body text (200ms after stage 2)
+      setTimeout(() => setAnimationStage(4), 2400)    // Stage 4: CTA button (200ms after stage 3)
     ]
 
     return () => timers.forEach(clearTimeout)
@@ -47,68 +53,104 @@ export default function GL10Hero({ onBeginJourney, className }: GL10HeroProps) {
             priority
             quality={90}
           />
-          {/* Warm Off-White Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-kawai-pearl/60 via-kawai-pearl/40 to-kawai-pearl/70" />
+          {/* Stone Brown Gradient Overlay - matches signature popup */}
+          <div className="absolute inset-0 bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900" />
         </motion.div>
       </div>
 
       {/* Content Container */}
       <div className="relative z-10 container mx-auto px-4 text-center">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-5xl mx-auto space-y-6">
 
-          {/* Stage 1: GL-10 Baby Grand */}
+          {/* Stage 1: KAWAI Logo - Fades in, then out */}
+          <AnimatePresence mode="wait">
+            {showLogo !== 'done' && (
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{
+                  opacity: showLogo === 'show' ? 1 : 0,
+                  y: showLogo === 'show' ? 0 : -30
+                }}
+                exit={{ opacity: 0, y: -30 }}
+                transition={{ duration: 0.6, ease: 'easeInOut' }}
+                className="flex justify-center mb-8"
+              >
+                <Image
+                  src="/images/logos/kawai-logo-red.png"
+                  alt="KAWAI"
+                  width={120}
+                  height={30}
+                  priority
+                  className="w-auto h-6 md:h-8"
+                  style={{ filter: 'brightness(0) invert(1)' }}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Stage 2: BABY GRAND (White) */}
           <AnimatePresence>
-            {animationStage >= 1 && (
+            {animationStage >= 2 && (
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
+                transition={{ duration: 0.6, ease: 'easeInOut' }}
                 className="mb-4"
               >
                 <h1
-                  className="font-serif font-light tracking-wider"
+                  className="font-serif font-light tracking-wide"
                   style={{
-                    fontSize: 'clamp(2.5rem, 6vw, 5rem)',
-                    color: '#8B7355', // Earthy gold
+                    fontSize: 'clamp(3rem, 8vw, 6rem)',
+                    color: '#FFFFFF',
                     lineHeight: 1.2
                   }}
                 >
-                  GL-10 Baby Grand
+                  BABY GRAND
                 </h1>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Stage 2: KAWAI Signature */}
+          {/* Stage 3: Signature Sale + Body Text */}
           <AnimatePresence>
-            {animationStage >= 2 && (
+            {animationStage >= 3 && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
-                className="mb-12"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: 'easeInOut' }}
+                className="space-y-6"
               >
                 <h2
-                  className="font-sans font-semibold tracking-wide"
+                  className="font-serif font-normal tracking-wide"
                   style={{
-                    fontSize: 'clamp(1.75rem, 4vw, 3.5rem)',
-                    lineHeight: 1.3,
-                    color: '#C41E3A' // kawai-red for visibility
+                    fontSize: 'clamp(2rem, 5vw, 4rem)',
+                    color: '#D4AF37',
+                    lineHeight: 1.3
                   }}
                 >
-                  KAWAI Signature
+                  Signature Sale
                 </h2>
+
+                <p
+                  className="text-lg md:text-xl lg:text-2xl font-light max-w-3xl mx-auto"
+                  style={{
+                    color: '#FFFFFF'
+                  }}
+                >
+                  Claim your invitation to get access to free delivery and tuning as well as exclusive invitational pricing.
+                </p>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Stage 3: CTA Button */}
+          {/* Stage 4: CTA Button */}
           <AnimatePresence>
-            {animationStage >= 3 && (
+            {animationStage >= 4 && (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: 'easeOut' }}
+                transition={{ duration: 0.6, ease: 'easeInOut' }}
+                className="pt-6"
               >
                 <button
                   onClick={onBeginJourney}
@@ -124,7 +166,7 @@ export default function GL10Hero({ onBeginJourney, className }: GL10HeroProps) {
                     fontSize: 'clamp(1rem, 2vw, 1.25rem)'
                   }}
                 >
-                  <span className="relative z-10">Begin Your Journey</span>
+                  <span className="relative z-10">Claim Your Invite</span>
 
                   {/* Subtle gradient overlay on hover */}
                   <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -138,7 +180,7 @@ export default function GL10Hero({ onBeginJourney, className }: GL10HeroProps) {
 
       {/* Scroll Indicator */}
       <AnimatePresence>
-        {animationStage >= 3 && (
+        {animationStage >= 4 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

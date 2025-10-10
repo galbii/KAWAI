@@ -57,7 +57,7 @@ export default function GL10Welcome({ onComplete, savedEmail }: GL10WelcomeProps
   }
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center px-4 py-16 bg-[#FAF8F5]">
+    <section className="relative min-h-screen flex items-center justify-center px-4 py-16 pb-64 bg-[#FAF8F5]">
       <div className="w-full max-w-2xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -88,7 +88,7 @@ export default function GL10Welcome({ onComplete, savedEmail }: GL10WelcomeProps
             transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' }}
             className="text-lg md:text-xl text-[#2C2C2C]/70 font-light"
           >
-            An exclusive journey crafted just for you
+            Take the assessment to claim free delivery and tuning or book an appointment to reserve special financing offers!
           </motion.p>
 
           {/* Form */}

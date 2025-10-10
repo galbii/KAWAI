@@ -9,41 +9,70 @@ import { cn } from '@/lib/utils'
 interface GalleryImage {
   src: string
   alt: string
-  aspect: 'portrait' | 'landscape' | 'square'
-  featured?: boolean
+  model: string
+  gridClass: string
 }
 
 const GALLERY_IMAGES: GalleryImage[] = [
   {
-    src: '/images/gl10-hero.jpg',
-    alt: 'GL-10 Baby Grand - Full View',
-    aspect: 'landscape',
-    featured: true
+    src: '/images/signature/pianos/gl-10/gl-10-hero.webp',
+    alt: 'GL-10 Baby Grand Piano - Full Elegance in Ebony Polish',
+    model: 'GL-10',
+    gridClass: 'col-span-2 md:col-span-4 lg:col-span-4 row-span-2'
   },
   {
-    src: '/images/gl10-hero.jpg',
-    alt: 'GL-10 Side Profile',
-    aspect: 'portrait'
+    src: '/images/signature/pianos/gx-2/gx-2-detail.webp',
+    alt: 'Millennium III Action - Precision Engineering',
+    model: 'GX-2',
+    gridClass: 'col-span-1 md:col-span-2 lg:col-span-2 row-span-1'
   },
   {
-    src: '/images/gl10-hero.jpg',
-    alt: 'Millennium III Action Keyboard',
-    aspect: 'landscape'
+    src: '/images/signature/pianos/gl-30/gl-30-hero.webp',
+    alt: 'GL-30 Grand Piano - Exceptional Performance',
+    model: 'GL-30',
+    gridClass: 'col-span-1 md:col-span-2 lg:col-span-2 row-span-1'
   },
   {
-    src: '/images/gl10-hero.jpg',
-    alt: 'GL-10 Interior - Soundboard',
-    aspect: 'square'
+    src: '/images/signature/pianos/gx-1/gx-1-hero.webp',
+    alt: 'GX-1 Grand Piano - Concert Hall Excellence',
+    model: 'GX-1',
+    gridClass: 'col-span-1 md:col-span-2 lg:col-span-2 row-span-2'
   },
   {
-    src: '/images/gl10-hero.jpg',
-    alt: 'GL-10 Pedals Close-up',
-    aspect: 'portrait'
+    src: '/images/signature/pianos/gl-10/gl-10-detail.webp',
+    alt: 'GL-10 Action Detail - Master Craftsmanship',
+    model: 'GL-10',
+    gridClass: 'col-span-1 md:col-span-2 lg:col-span-2 row-span-1'
   },
   {
-    src: '/images/gl10-hero.jpg',
-    alt: 'GL-10 in Living Room Setting',
-    aspect: 'landscape'
+    src: '/images/signature/pianos/gl-50/gl-50-hero.webp',
+    alt: 'GL-50 Grand Piano - Studio Professional',
+    model: 'GL-50',
+    gridClass: 'col-span-1 md:col-span-2 lg:col-span-2 row-span-1'
+  },
+  {
+    src: '/images/signature/pianos/gx-3/gx-3-hero.webp',
+    alt: 'GX-3 Grand Piano - Sophisticated Design',
+    model: 'GX-3',
+    gridClass: 'col-span-1 md:col-span-2 lg:col-span-2 row-span-1'
+  },
+  {
+    src: '/images/signature/pianos/gx-2/gx-2-hero.webp',
+    alt: 'GX-2 Grand Piano - Premium Elegance',
+    model: 'GX-2',
+    gridClass: 'col-span-1 md:col-span-2 lg:col-span-2 row-span-1'
+  },
+  {
+    src: '/images/signature/pianos/gl-10/f4QT8LYQ.jpeg',
+    alt: 'Keyboard Detail - Responsive Touch',
+    model: 'GL-10',
+    gridClass: 'col-span-2 md:col-span-2 lg:col-span-3 row-span-1'
+  },
+  {
+    src: '/images/signature/pianos/gl-30/GL-30 AURES2 EP 450.jpg',
+    alt: 'GL-30 AURES2 - Advanced Technology',
+    model: 'GL-30',
+    gridClass: 'col-span-2 md:col-span-2 lg:col-span-3 row-span-1'
   }
 ]
 
@@ -72,38 +101,30 @@ export default function GL10Gallery() {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-kawai-charcoal mb-4">
-              GL-10 Gallery
+            <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl mb-4">
+              <span className="text-[#D4AF37]">Elevate</span>{' '}
+              <span className="text-kawai-charcoal">your Space</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
-              Explore the exquisite craftsmanship and timeless elegance of the GL-10 Baby Grand
+              See how you can elevate your space with a beautiful centerpiece that represents your legacy
             </p>
           </motion.div>
 
-          {/* Masonry Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          {/* Bento Box Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 auto-rows-[180px] md:auto-rows-[200px] gap-3 md:gap-4">
             {GALLERY_IMAGES.map((image, index) => (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
                 className={cn(
-                  'group relative overflow-hidden rounded-2xl bg-gray-100',
+                  'group relative overflow-hidden rounded-xl md:rounded-2xl bg-gray-100',
                   'cursor-pointer transition-all duration-300',
                   'hover:shadow-2xl hover:scale-[1.02]',
-                  image.featured && 'md:col-span-2 md:row-span-2',
-                  image.aspect === 'portrait' && !image.featured && 'md:row-span-2',
-                  image.aspect === 'square' && 'aspect-square'
+                  image.gridClass
                 )}
                 onClick={() => openLightbox(image)}
               >
                 {/* Image */}
-                <div className={cn(
-                  'relative w-full',
-                  image.featured ? 'h-[500px]' : 'h-[300px]',
-                  image.aspect === 'portrait' && !image.featured && 'h-[400px]'
-                )}>
+                <div className="relative w-full h-full">
                   <Image
                     src={image.src}
                     alt={image.alt}
@@ -115,18 +136,15 @@ export default function GL10Gallery() {
 
                 {/* Overlay */}
                 <div className={cn(
-                  'absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0',
+                  'absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent',
                   'opacity-0 group-hover:opacity-100 transition-opacity duration-300',
-                  'flex items-end justify-between p-6'
+                  'flex items-center justify-center'
                 )}>
-                  <p className="text-white font-medium text-lg">
-                    {image.alt}
-                  </p>
-                  <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                    <ZoomIn className="w-5 h-5 text-white" />
+                  <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <ZoomIn className="w-6 h-6 text-white" />
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
 
@@ -142,13 +160,14 @@ export default function GL10Gallery() {
                 Every Detail, Perfected
               </h3>
               <p className="text-gray-600 leading-relaxed mb-6">
-                The GL-10 represents the pinnacle of Kawai&apos;s baby grand piano craftsmanship.
-                At just 5&apos;0&quot;, it delivers a full grand piano experience with Millennium III
-                Action technology, premium materials, and award-winning design.
+                Kawai&apos;s Signature Collection represents the pinnacle of piano craftsmanship. From the
+                compact GL-10 baby grand to the concert-worthy GX series, each instrument delivers
+                exceptional tone, touch, and timeless design with Millennium III Action technology and
+                premium materials handcrafted in Japan.
               </p>
               <div className="flex flex-wrap justify-center gap-4 text-sm">
                 <div className="px-4 py-2 bg-white/60 rounded-full">
-                  <span className="text-[#8B7355] font-semibold">5&apos;0&quot;</span> Compact Length
+                  <span className="text-[#8B7355] font-semibold">6 Models</span> Showcased
                 </div>
                 <div className="px-4 py-2 bg-white/60 rounded-full">
                   <span className="text-[#8B7355] font-semibold">Millennium III</span> Action
@@ -198,19 +217,6 @@ export default function GL10Gallery() {
                 sizes="100vw"
                 priority
               />
-            </motion.div>
-
-            {/* Caption */}
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 20, opacity: 0 }}
-              transition={{ delay: 0.1 }}
-              className="absolute bottom-6 left-6 right-6 text-center"
-            >
-              <p className="text-white text-lg font-medium">
-                {selectedImage.alt}
-              </p>
             </motion.div>
           </motion.div>
         )}
