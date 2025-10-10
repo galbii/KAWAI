@@ -53,7 +53,7 @@ export function CalendlyEmbedSection({
   // internally by CalendlyBookingWidget. This callback is just for logging.
   const handleCalendlyBooking = async (eventData: any) => {
     console.log('✅ Inline Calendly booking completed:', eventData)
-    console.log('📊 Tracking handled by CalendlyBookingWidget: Meta Pixel SubmitApplication + PostHog signature_houston_booking + Constant Contact')
+    console.log('📊 Tracking handled by CalendlyBookingWidget: Meta Pixel SubmitApplication + PostHog signature_dallas_booking + Constant Contact')
     console.log('📧 Contact data passed via prefillData:', {
       email: contactData?.email ? '[PRESENT]' : '[MISSING]',
       firstName: contactData?.firstName ? '[PRESENT]' : '[MISSING]',

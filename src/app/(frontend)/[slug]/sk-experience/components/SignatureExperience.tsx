@@ -234,7 +234,7 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
 
       // Track PostHog event for signature houston booking (this should match the CalendlyBookingWidget event)
       const bookingTimestamp = new Date().toISOString()
-      posthog?.capture('signature_houston_booking', {
+      posthog?.capture('signature_dallas_booking', {
         signature_page: slug,
         conversion_type: data.conversionType || 'booking',
         booking_method: data.conversionType === 'calendly' ? 'calendly' : 'manual_form',
@@ -247,7 +247,7 @@ export function SignatureExperience({ slug }: SignatureExperienceProps) {
         timestamp: bookingTimestamp
       })
 
-      console.log(`📈 PostHog signature_houston_booking fired from SignatureExperience: ${bookingTimestamp}`)
+      console.log(`📈 PostHog signature_dallas_booking fired from SignatureExperience: ${bookingTimestamp}`)
     } else if (type === 'email') {
       // Track lead generation for email capture
       trackSubmitApplication({

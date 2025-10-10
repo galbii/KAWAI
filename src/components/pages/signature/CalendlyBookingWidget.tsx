@@ -191,14 +191,14 @@ function CalendlyWidgetContent({
           timestamp: +new Date()
         }
 
-        console.log('🎯 PostHog: Firing signature_houston_booking event with data:', {
+        console.log('🎯 PostHog: Firing signature_dallas_booking event with data:', {
           ...trackingData,
           email: contactData?.email ? '[PRESENT]' : '[MISSING]'
         })
 
-        posthog.capture('signature_houston_booking', trackingData)
+        posthog.capture('signature_dallas_booking', trackingData)
 
-        console.log('✅ PostHog signature_houston_booking fired successfully: ' + (+new Date()))
+        console.log('✅ PostHog signature_dallas_booking fired successfully: ' + (+new Date()))
       } else {
         console.warn('⚠️ PostHog not available - event not fired', {
           posthogHook: !!posthog,
