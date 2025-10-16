@@ -6,6 +6,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Image from 'next/image';
+import { usePostHog } from 'posthog-js/react';
+import { trackSubmitApplication } from '@/components/MetaPixel';
 
 // Form validation schema - split by step
 const step1Schema = z.object({
@@ -57,6 +59,7 @@ export default function MusicSchoolEnrollmentPage({
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const posthog = usePostHog();
 
   const {
     register,
@@ -125,6 +128,21 @@ export default function MusicSchoolEnrollmentPage({
       }
 
       console.log('Enrollment successful:', result);
+
+      // Track successful application submission with Meta Pixel
+      trackSubmitApplication({
+        content_name: `${data.studentFirstName} ${data.studentLastName} - Music School Enrollment`,
+        content_category: data.instrument,
+        value: 0, // Free first lesson promotion
+        currency: 'USD',
+        status: 'completed'
+      });
+
+      // Track custom PostHog event
+      if (posthog) {
+        posthog.capture('notrick_submit');
+      }
+
       setIsSubmitted(true);
     } catch (error) {
       console.error('Form submission error:', error);
