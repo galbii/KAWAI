@@ -6,15 +6,19 @@ import { InlineWidget, useCalendlyEventListener } from 'react-calendly'
 import { usePostHog } from 'posthog-js/react'
 import { trackSubmitApplication } from '@/components/MetaPixel'
 import { cn } from '@/lib/utils'
+import { useGL10Context } from './GL10Context'
 
 // Calendly URL for Houston Baby Grand Sale
 const HOUSTON_CALENDLY_URL = 'https://calendly.com/kawaipianogallery/houston-baby-grand-sale-clone'
 
 interface GL10BookingTabProps {
   className?: string
+  onViewChange?: (view: 'signature' | 'gallery' | 'baby-grand' | 'millennium-action' | 'booking' | 'location') => void
 }
 
-export default function GL10BookingTab({ className }: GL10BookingTabProps) {
+export default function GL10BookingTab({ className, onViewChange }: GL10BookingTabProps) {
+  // Get user data from GL10 context
+  const { progress } = useGL10Context()
   const [isLoading, setIsLoading] = useState(true)
 
   // PostHog hook for event tracking
@@ -71,6 +75,35 @@ export default function GL10BookingTab({ className }: GL10BookingTabProps) {
     return () => clearTimeout(timer)
   }, [])
 
+  // Build prefill object from context data
+  const buildPrefill = () => {
+    const prefill: any = {}
+
+    // Add email if available
+    if (progress.email) {
+      prefill.email = progress.email
+    }
+
+    // Parse name into firstName and lastName
+    if (progress.contactDetails.name) {
+      const nameParts = progress.contactDetails.name.split(' ')
+      if (nameParts.length > 0) {
+        prefill.firstName = nameParts[0]
+        if (nameParts.length > 1) {
+          prefill.lastName = nameParts.slice(1).join(' ')
+        }
+      }
+      prefill.name = progress.contactDetails.name
+    }
+
+    // Add phone if available
+    if (progress.contactDetails.phone) {
+      prefill.phone = progress.contactDetails.phone
+    }
+
+    return Object.keys(prefill).length > 0 ? prefill : undefined
+  }
+
   return (
     <section
       className={cn(
@@ -91,10 +124,9 @@ export default function GL10BookingTab({ className }: GL10BookingTabProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.6 }}
-              className="text-3xl md:text-4xl lg:text-5xl font-light text-gray-900 leading-tight"
+              className="text-3xl md:text-4xl lg:text-5xl font-normal text-kawai-red leading-tight"
             >
-              Special offers when you reserve your spot to the{' '}
-              <span className="text-kawai-red font-normal">Kawai Signature Showroom Sale Event</span>
+              Reserve your spot!
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -102,7 +134,7 @@ export default function GL10BookingTab({ className }: GL10BookingTabProps) {
               transition={{ delay: 0.3, duration: 0.6 }}
               className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed"
             >
-              Bring your invitation to the event to secure free delivery and tuning services along with exclusive financing offers.
+              Reserve your spot for special pricing on your personal baby grand piano. Show your invitation at the door for exclusive offers!
             </motion.p>
           </div>
 
@@ -142,7 +174,23 @@ export default function GL10BookingTab({ className }: GL10BookingTabProps) {
                 primaryColor: 'C41E3A', // Kawai red
                 textColor: '2C2C2C' // Kawai charcoal
               }}
+              {...(buildPrefill() && { prefill: buildPrefill() })}
             />
+          </motion.div>
+
+          {/* Free Delivery CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+            className="text-center mt-8"
+          >
+            <button
+              onClick={() => onViewChange?.('signature')}
+              className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium text-white bg-kawai-red rounded-lg hover:bg-kawai-red/90 transition-colors duration-200 shadow-lg hover:shadow-xl"
+            >
+              I want free delivery and tuning!
+            </button>
           </motion.div>
 
           {/* Trust Indicators */}

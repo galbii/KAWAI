@@ -1,5 +1,6 @@
 // Core Components
 export { GL10Provider, useGL10Context } from './GL10Context'
+export { default as GL10IntroAnimation } from './GL10IntroAnimation'
 export { default as GL10Hero } from './GL10Hero'
 export { default as GL10Welcome } from './GL10Welcome'
 export { default as GL10AssessmentQuestion } from './GL10AssessmentQuestion'

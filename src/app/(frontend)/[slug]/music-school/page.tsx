@@ -56,6 +56,7 @@ export default function MusicSchoolEnrollmentPage({
   const [showIntro, setShowIntro] = useState(true);
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
@@ -101,13 +102,34 @@ export default function MusicSchoolEnrollmentPage({
   };
 
   const onSubmit = async (data: EnrollmentFormData) => {
+    setIsSubmitting(true);
     try {
       console.log('Enrollment submitted:', data);
-      // Send to backend/CRM
-      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Submit to Constant Contact API
+      const response = await fetch('/api/music-school/enroll', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        console.error('Enrollment submission failed:', result);
+        alert(`Enrollment failed: ${result.error || 'Unknown error'}\n\nPlease try again or contact us directly.`);
+        setIsSubmitting(false);
+        return;
+      }
+
+      console.log('Enrollment successful:', result);
       setIsSubmitted(true);
     } catch (error) {
       console.error('Form submission error:', error);
+      alert('An error occurred while submitting your enrollment. Please try again or contact us directly.');
+      setIsSubmitting(false);
     }
   };
 
@@ -503,7 +525,6 @@ export default function MusicSchoolEnrollmentPage({
                         <option value="keyboard">🎹 Keyboard</option>
                         <option value="voice">🎤 Voice/Singing</option>
                         <option value="guitar">🎸 Guitar</option>
-                        <option value="drums">🥁 Drums</option>
                         <option value="violin">🎻 Violin</option>
                         <option value="other">🎵 Other</option>
                       </select>
@@ -786,14 +807,21 @@ export default function MusicSchoolEnrollmentPage({
                 ) : (
                   <button
                     type="submit"
-                    disabled={!isStepComplete(4)}
+                    disabled={!isStepComplete(4) || isSubmitting}
                     className={`px-8 py-4 rounded-xl font-bold text-base transition-all transform ${
-                      isStepComplete(4)
+                      isStepComplete(4) && !isSubmitting
                         ? 'bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white shadow-lg hover:shadow-xl hover:scale-105'
                         : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                     }`}
                   >
-                    🎃 Claim Free Lesson! 🎃
+                    {isSubmitting ? (
+                      <>
+                        <span className="inline-block animate-spin mr-2">⏳</span>
+                        Enrolling...
+                      </>
+                    ) : (
+                      '🎃 Claim Free Lesson! 🎃'
+                    )}
                   </button>
                 )}
               </div>

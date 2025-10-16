@@ -20,6 +20,7 @@ import { DealerLocations } from './collections/DealerLocations'
 import { Products } from './collections/Products'
 import { LandingPages } from './collections/LandingPages'
 import { ConstantContactSettings } from './collections/ConstantContactSettings'
+import { ConstantContactCustomFields } from './collections/ConstantContactCustomFields'
 import { ConsultationBookings } from './collections/ConsultationBookings'
 import {
   ProductShowcase,
@@ -67,6 +68,7 @@ export default buildConfig({
     PianosPage,     // Keep for backward compatibility during migration
     Products,
     ConstantContactSettings, // Constant Contact API credentials and tokens
+    ConstantContactCustomFields, // Constant Contact custom field ID mappings
     ConsultationBookings, // Premium consultation booking requests
   ],
   // Define blocks at root level for performance optimization using blockReferences

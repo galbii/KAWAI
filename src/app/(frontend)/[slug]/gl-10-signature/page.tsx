@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import {
   GL10Provider,
   useGL10Context,
+  GL10IntroAnimation,
   GL10Hero,
   GL10Welcome,
   GL10AssessmentQuestion,
@@ -30,8 +31,9 @@ import { useSwipeNavigation } from './hooks/useSwipeNavigation'
 function GL10SignaturePageContent() {
   const { progress, updateProgress } = useGL10Context()
   const [showSuccess, setShowSuccess] = useState(false)
-  const [currentStep, setCurrentStep] = useState(0)
-  const [currentView, setCurrentView] = useState<ViewType>('signature')
+  const [currentStep, setCurrentStep] = useState(1) // Start at step 1 to show navigation
+  const [currentView, setCurrentView] = useState<ViewType>('booking') // Load directly on booking tab
+  const [showIntro, setShowIntro] = useState(true) // Show intro animation on load
 
   // Define navigable views (tabs that support swipe navigation)
   const navigableViews: ViewType[] = ['signature', 'millennium-action', 'baby-grand', 'gallery', 'booking', 'location']
@@ -48,10 +50,10 @@ function GL10SignaturePageContent() {
   // Handle view changes
   const handleViewChange = (view: ViewType) => {
     setCurrentView(view)
-    // Scroll to top when switching views (except signature which doesn't scroll)
-    if (view !== 'signature') {
+    // Scroll to top when switching views - use setTimeout to ensure DOM is ready
+    setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
+    }, 100)
   }
 
   // Control scrolling based on current view
@@ -70,9 +72,15 @@ function GL10SignaturePageContent() {
     }
   }, [currentView])
 
-  // Handle hero CTA click
+  // Handle intro animation completion
+  const handleIntroComplete = () => {
+    setShowIntro(false)
+    // Already on booking tab, so just hide intro
+  }
+
+  // Handle hero CTA click - go directly to booking tab
   const handleBeginJourney = () => {
-    setCurrentStep(1) // Move to Welcome step
+    setCurrentView('booking') // Skip signature flow, go straight to booking
   }
 
   // Handle email completion
@@ -149,35 +157,23 @@ function GL10SignaturePageContent() {
       completedSections: newCompleted,
     })
 
-    // Move to booking
+    // Switch to booking tab instead of continuing to step 5
     setTimeout(() => {
-      setCurrentStep(5)
+      setCurrentView('booking')
     }, 500)
   }
 
-  // Handle booking completion
-  const handleBookingComplete = () => {
-    const newCompleted = [...progress.completedSections]
-    if (!newCompleted.includes('booking')) {
-      newCompleted.push('booking')
-    }
-    updateProgress({ completedSections: newCompleted })
-    setShowSuccess(true)
-  }
-
-  // Prepare prefill data for booking
-  const prefillData = {
-    email: progress.email,
-    firstName: progress.contactDetails.name.split(' ')[0] || '',
-    lastName: progress.contactDetails.name.split(' ').slice(1).join(' ') || '',
-    phone: progress.contactDetails.phone,
-  }
+  // Note: handleBookingComplete and prefillData are no longer needed
+  // since booking now happens in the separate booking tab which uses GL10Context directly
 
   return (
     <div className={cn(
       "min-h-screen bg-white",
       currentView === 'signature' ? 'overflow-hidden' : 'overflow-auto'
     )}>
+      {/* Intro Animation - Shows on page load */}
+      {showIntro && <GL10IntroAnimation onComplete={handleIntroComplete} />}
+
       {/* Navigation Bar - Appears from step 1 onwards */}
       {currentStep >= 1 && (
         <GL10Navigation
@@ -305,22 +301,7 @@ function GL10SignaturePageContent() {
               </motion.div>
             )}
 
-            {/* Step 5: Booking Section */}
-            {currentStep === 5 && (
-              <motion.div
-                key="booking"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                className="h-screen overflow-y-auto"
-              >
-                <GL10Booking
-                  prefillData={prefillData}
-                  onBookingComplete={handleBookingComplete}
-                />
-              </motion.div>
-            )}
+            {/* Step 5: Removed - Users are now redirected to booking tab after contact completion */}
           </>
         )}
 
@@ -366,7 +347,7 @@ function GL10SignaturePageContent() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <GL10BookingTab />
+            <GL10BookingTab onViewChange={handleViewChange} />
           </motion.div>
         )}
 

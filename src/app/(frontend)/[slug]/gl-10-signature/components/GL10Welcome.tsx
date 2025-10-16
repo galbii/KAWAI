@@ -88,7 +88,7 @@ export default function GL10Welcome({ onComplete, savedEmail }: GL10WelcomeProps
             transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' }}
             className="text-lg md:text-xl text-[#2C2C2C]/70 font-light"
           >
-            Take the assessment to claim free delivery and tuning or book an appointment to reserve special financing offers!
+            Fill out the form to claim your spot and get free delivery and tuning!
           </motion.p>
 
           {/* Form */}

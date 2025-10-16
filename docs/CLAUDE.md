@@ -122,6 +122,41 @@ Payload CMS manages the following content types:
 
 ### TypeScript Architecture
 
+**⚠️ CRITICAL: This project uses TypeScript STRICT MODE**
+
+The project is configured with `"strict": true` in `tsconfig.json`, which enforces:
+- **All function parameters MUST have explicit types** - No implicit `any`
+- **Strict null checks** - Must handle `null` and `undefined` explicitly
+- **No implicit `this`** - All `this` usage must be typed
+- **Strict property initialization** - Class properties must be initialized
+
+**Common Strict Mode Requirements:**
+
+```typescript
+// ❌ WRONG - Will cause build errors in strict mode
+const validate = (value) => {  // Error: Parameter 'value' implicitly has an 'any' type
+  return value.length > 0
+}
+
+// ✅ CORRECT - Explicit type annotation required
+const validate = (value: string | null | undefined) => {
+  if (!value) return false
+  return value.length > 0
+}
+
+// ❌ WRONG - Implicit any in callback
+items.map(item => item.name)  // If 'item' type can't be inferred
+
+// ✅ CORRECT - Explicit type in callback
+items.map((item: Product) => item.name)
+
+// ❌ WRONG - Nullable property access without check
+const name = user.profile.name  // Error if profile can be null
+
+// ✅ CORRECT - Optional chaining or null check
+const name = user.profile?.name ?? 'Unknown'
+```
+
 **Type Organization:**
 - **Custom Types**: Centralized in `src/lib/types.ts` with comprehensive interfaces
 - **Payload Types**: Auto-generated to `types/payload-types.ts` (configured in `payload.config.ts`)
@@ -130,9 +165,28 @@ Payload CMS manages the following content types:
 
 **Key Type Definitions:**
 - `Piano`, `Series`, `Category`, `Media` - Core content types
-- `FilterCriteria`, `SearchFilters` - Search and filtering interfaces  
+- `FilterCriteria`, `SearchFilters` - Search and filtering interfaces
 - `StructuredData` - SEO and schema markup types
 - Global window extensions for analytics (GTM, Facebook Pixel)
+
+**Payload CMS Validation Functions:**
+When writing validation functions for Payload fields, always type parameters explicitly:
+
+```typescript
+// ✅ CORRECT - Properly typed validation function
+{
+  name: 'fieldName',
+  type: 'text',
+  validate: (value: string | null | undefined, { data }: { data: any }) => {
+    if (!value) return true // Optional field
+    if (value.length < 3) return 'Must be at least 3 characters'
+    return true
+  }
+}
+
+// ❌ WRONG - Will fail in strict mode
+validate: (value) => value.length > 3  // Error: implicit any
+```
 
 ### Design System
 
@@ -200,6 +254,15 @@ DATABASE_URI=mongodb://localhost:27017/kawai-piano
 - **IMPORTANT: Only run `bun run dev` or `bun run build` when explicitly requested by the user**
 
 ### TypeScript Best Practices - CRITICAL
+
+**⚠️ STRICT MODE REQUIREMENTS:**
+- **ALL function parameters MUST be explicitly typed** - Build will fail with implicit `any` errors
+- **Always type validation functions** - Especially for Payload CMS field validators
+- **Type callback functions** - Map, filter, reduce callbacks need explicit types when inference fails
+- **Handle nullable values** - Use optional chaining (`?.`) and nullish coalescing (`??`)
+- **Never use `any`** - Use `unknown` if type is truly unknown, then narrow with type guards
+
+**Type Safety Standards:**
 - **Maintain Strict Type Safety**: Always use proper TypeScript types, never use `any`
 - **Use Project Type Definitions**: Import types from `src/lib/types.ts` for consistency
 - **Path Aliases**: Use `@/` for absolute imports (configured in `tsconfig.json`)
@@ -209,6 +272,13 @@ DATABASE_URI=mongodb://localhost:27017/kawai-piano
 - **Type-Only Imports**: Use `import type` for type-only imports to optimize bundles
 - **Strict Configuration**: Never modify `tsconfig.json` strict settings or disable type checking
 - **Performance**: Leverage `skipLibCheck: true` for faster compilation (already configured)
+
+**Before Writing Any Code:**
+1. ✅ Check if function parameters are explicitly typed
+2. ✅ Verify callback functions have type annotations
+3. ✅ Handle potential `null`/`undefined` values
+4. ✅ Use type guards for runtime type narrowing
+5. ✅ Run `bun run lint` to catch TypeScript errors early
 
 ### Component Organization
 - Place piano-specific components in `src/components/piano/`

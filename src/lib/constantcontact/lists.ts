@@ -49,6 +49,10 @@ export interface Contact {
     country: string;
   }>;
   list_memberships: ListMembership[] | string[]; // Can be objects (from API) or strings (for creation)
+  custom_fields?: Array<{
+    custom_field_id: string;
+    value: string;
+  }>;
   create_source?: string; // Required for creation
   created_at?: string;
   updated_at?: string;
@@ -62,6 +66,10 @@ export interface CreateContactRequest {
   company_name?: string;
   phone_number?: string;
   list_ids: string[];
+  custom_fields?: Array<{
+    custom_field_id: string;
+    value: string;
+  }>;
 }
 
 export class ConstantContactListManager {
@@ -185,6 +193,13 @@ export class ConstantContactListManager {
       }];
     }
 
+    // Add custom fields if provided
+    if (contactData.custom_fields && contactData.custom_fields.length > 0) {
+      contact.custom_fields = contactData.custom_fields.filter(field =>
+        field.custom_field_id && field.value // Only include fields with both ID and value
+      );
+    }
+
     console.log('Constant Contact: Sending contact data to API:', JSON.stringify(contact, null, 2));
 
     return this.client.post<Contact>('/contacts', contact);
@@ -199,16 +214,27 @@ export class ConstantContactListManager {
   }
 
   /**
-   * Update contact's list memberships
+   * Update contact's list memberships and optionally custom fields
    */
-  async updateContactLists(contactId: string, listIds: string[]): Promise<ApiResponse<Contact>> {
+  async updateContactLists(
+    contactId: string,
+    listIds: string[],
+    customFields?: Array<{ custom_field_id: string; value: string }>
+  ): Promise<ApiResponse<Contact>> {
     // For updates, try the simple array format first (consistent with creation)
     // If this fails, the API might require the object format for updates
-    const data = {
+    const data: any = {
       list_memberships: listIds
     };
 
-    console.log('Constant Contact: Updating contact list memberships:', JSON.stringify(data, null, 2));
+    // Add custom fields if provided
+    if (customFields && customFields.length > 0) {
+      data.custom_fields = customFields.filter(field =>
+        field.custom_field_id && field.value // Only include fields with both ID and value
+      );
+    }
+
+    console.log('Constant Contact: Updating contact:', JSON.stringify(data, null, 2));
 
     return this.client.put<Contact>(`/contacts/${contactId}`, data);
   }
@@ -363,10 +389,10 @@ export class ConstantContactListManager {
       const existingContact = await this.getContactListMemberships(contactData.email_address);
 
       if (existingContact.exists && existingContact.contact) {
-        console.log('Constant Contact: Contact exists, updating list memberships');
+        console.log('Constant Contact: Contact exists, updating list memberships and custom fields');
         // Update existing contact
         const allListIds = [...new Set([...existingContact.listIds, ...contactData.list_ids])];
-        return this.updateContactLists(existingContact.contact.contact_id!, allListIds);
+        return this.updateContactLists(existingContact.contact.contact_id!, allListIds, contactData.custom_fields);
       } else {
         console.log('Constant Contact: Contact does not exist, creating new contact');
         // Try to create new contact
@@ -398,7 +424,7 @@ export class ConstantContactListManager {
 
               if (retryContact.exists && retryContact.contact) {
                 const allListIds = [...new Set([...retryContact.listIds, ...contactData.list_ids])];
-                return this.updateContactLists(retryContact.contact.contact_id!, allListIds);
+                return this.updateContactLists(retryContact.contact.contact_id!, allListIds, contactData.custom_fields);
               }
             }
           }

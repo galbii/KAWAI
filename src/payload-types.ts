@@ -91,6 +91,7 @@ export interface Config {
     'pianos-page': PianosPage;
     products: Product;
     'constant-contact-settings': ConstantContactSetting;
+    'constant-contact-custom-fields': ConstantContactCustomField;
     'consultation-bookings': ConsultationBooking;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -112,6 +113,7 @@ export interface Config {
     'pianos-page': PianosPageSelect<false> | PianosPageSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     'constant-contact-settings': ConstantContactSettingsSelect<false> | ConstantContactSettingsSelect<true>;
+    'constant-contact-custom-fields': ConstantContactCustomFieldsSelect<false> | ConstantContactCustomFieldsSelect<true>;
     'consultation-bookings': ConsultationBookingsSelect<false> | ConsultationBookingsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -3764,6 +3766,41 @@ export interface ConstantContactSetting {
   updatedAt: string;
 }
 /**
+ * Custom field ID mappings for Constant Contact API integration
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "constant-contact-custom-fields".
+ */
+export interface ConstantContactCustomField {
+  id: string;
+  /**
+   * Internal field name used in code (e.g., student_first_name)
+   */
+  fieldName: string;
+  /**
+   * Human-readable label shown in Constant Contact UI
+   */
+  fieldLabel: string;
+  /**
+   * Constant Contact API custom field ID (auto-populated)
+   */
+  customFieldId: string;
+  /**
+   * Data type for this custom field
+   */
+  fieldType: 'string' | 'date' | 'single_select' | 'multi_select';
+  /**
+   * Whether this field exists in Constant Contact
+   */
+  createdInConstantContact?: boolean | null;
+  /**
+   * Last time this field was verified with Constant Contact
+   */
+  lastSyncedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Premium piano consultation booking requests from signature experience
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3872,6 +3909,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'constant-contact-settings';
         value: string | ConstantContactSetting;
+      } | null)
+    | ({
+        relationTo: 'constant-contact-custom-fields';
+        value: string | ConstantContactCustomField;
       } | null)
     | ({
         relationTo: 'consultation-bookings';
@@ -5117,6 +5158,20 @@ export interface ConstantContactSettingsSelect<T extends boolean = true> {
   notes?: T;
   createdAt?: T;
   updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "constant-contact-custom-fields_select".
+ */
+export interface ConstantContactCustomFieldsSelect<T extends boolean = true> {
+  fieldName?: T;
+  fieldLabel?: T;
+  customFieldId?: T;
+  fieldType?: T;
+  createdInConstantContact?: T;
+  lastSyncedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
