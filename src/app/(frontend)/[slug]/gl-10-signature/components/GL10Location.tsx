@@ -114,7 +114,7 @@ export default function GL10Location() {
             Find Us in <span className="text-kawai-red">Plano</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Experience the GL-10 in person. Located in the heart of Plano, Texas, serving a 20-mile radius.
+            Join us on the event days with your invitation to secure free delivery and tuning services. Located in the heart of Plano, Texas.
           </p>
         </motion.div>
 
@@ -238,50 +238,6 @@ export default function GL10Location() {
                 </button>
               </div>
             </div>
-          </div>
-        </motion.div>
-
-        {/* Features Grid */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto"
-        >
-          <div className="text-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-14 h-14 bg-gradient-to-br from-kawai-red to-kawai-red/80 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-serif text-kawai-charcoal mb-2">Expert Consultation</h3>
-            <p className="text-gray-600 text-sm">
-              Personalized guidance from certified KAWAI specialists
-            </p>
-          </div>
-
-          <div className="text-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-14 h-14 bg-gradient-to-br from-kawai-red to-kawai-red/80 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M14.5 8.25A2.25 2.25 0 0112.25 6v0A2.25 2.25 0 0110 8.25v7.5A2.25 2.25 0 0112.25 18v0a2.25 2.25 0 012.25-2.25h5.25A2.25 2.25 0 0122 13.5V8.25A2.25 2.25 0 0119.75 6H14.5z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-serif text-kawai-charcoal mb-2">Full Service Center</h3>
-            <p className="text-gray-600 text-sm">
-              Professional tuning, repair, and maintenance services
-            </p>
-          </div>
-
-          <div className="text-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-14 h-14 bg-gradient-to-br from-kawai-red to-kawai-red/80 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M2 12C2 6.48 6.48 2 12 2s10 4.48 10 10-4.48 10-10 10S2 17.52 2 12zm4.64-1.96l3.54 3.54 5.66-5.66L17 9.08l-4.24 4.24-2.12-2.12L8.64 10.04z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-serif text-kawai-charcoal mb-2">Financing Available</h3>
-            <p className="text-gray-600 text-sm">
-              Flexible payment options to make your dreams accessible
-            </p>
           </div>
         </motion.div>
       </div>

@@ -206,7 +206,7 @@ export default function GL10Gallery() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: 'spring', damping: 25 }}
-              className="relative max-w-6xl w-full aspect-video"
+              className="relative w-full h-full max-w-[95vw] max-h-[90vh]"
               onClick={(e) => e.stopPropagation()}
             >
               <Image
@@ -214,7 +214,7 @@ export default function GL10Gallery() {
                 alt={selectedImage.alt}
                 fill
                 className="object-contain"
-                sizes="100vw"
+                sizes="95vw"
                 priority
               />
             </motion.div>

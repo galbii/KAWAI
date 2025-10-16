@@ -93,8 +93,8 @@ export default function GL10BookingTab({ className }: GL10BookingTabProps) {
               transition={{ delay: 0.2, duration: 0.6 }}
               className="text-3xl md:text-4xl lg:text-5xl font-light text-gray-900 leading-tight"
             >
-              Schedule Your{' '}
-              <span className="text-kawai-red font-normal">Private Consultation</span>
+              Special offers when you reserve your spot to the{' '}
+              <span className="text-kawai-red font-normal">Kawai Signature Showroom Sale Event</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -102,8 +102,7 @@ export default function GL10BookingTab({ className }: GL10BookingTabProps) {
               transition={{ delay: 0.3, duration: 0.6 }}
               className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed"
             >
-              Experience the GL-10 Baby Grand firsthand. Book your appointment with our piano
-              specialists and discover why this instrument represents the pinnacle of craftsmanship.
+              Bring your invitation to the event to secure free delivery and tuning services along with exclusive financing offers.
             </motion.p>
           </div>
 
