@@ -210,19 +210,16 @@ export default function MusicSchoolEnrollmentPage({
           </p>
           <div className="bg-gradient-to-r from-orange-100 to-amber-100 p-6 rounded-xl mb-8">
             <p className="text-lg font-semibold text-orange-900 mb-3">
-              🎉 Your Halloween Special Benefits:
+              Your Halloween Special Benefits:
             </p>
             <ul className="text-left space-y-3 text-orange-900">
               <li className="flex items-center">
-                <span className="text-2xl mr-3">🎹</span>
                 <span className="font-medium">First lesson completely FREE</span>
               </li>
               <li className="flex items-center">
-                <span className="text-2xl mr-3">👻</span>
                 <span className="font-medium">Registration fee WAIVED</span>
               </li>
               <li className="flex items-center">
-                <span className="text-2xl mr-3">🎃</span>
                 <span className="font-medium">No tricks—just the treat of learning music!</span>
               </li>
             </ul>
@@ -328,12 +325,10 @@ export default function MusicSchoolEnrollmentPage({
             </h1>
             <div className="flex items-center justify-center gap-4 text-sm sm:text-base">
               <div className="flex items-center gap-2">
-                <span className="text-2xl">🎹</span>
                 <span className="font-semibold">First Lesson FREE</span>
               </div>
               <div className="hidden sm:block w-px h-6 bg-white/30"></div>
               <div className="flex items-center gap-2">
-                <span className="text-2xl">👻</span>
                 <span className="font-semibold">Registration Fee WAIVED</span>
               </div>
             </div>
@@ -539,12 +534,12 @@ export default function MusicSchoolEnrollmentPage({
                         className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 focus:outline-none transition-all text-base bg-white cursor-pointer text-kawai-black"
                       >
                         <option value="">Select an instrument...</option>
-                        <option value="piano">🎹 Piano</option>
-                        <option value="keyboard">🎹 Keyboard</option>
-                        <option value="voice">🎤 Voice/Singing</option>
-                        <option value="guitar">🎸 Guitar</option>
-                        <option value="violin">🎻 Violin</option>
-                        <option value="other">🎵 Other</option>
+                        <option value="piano">Piano</option>
+                        <option value="keyboard">Keyboard</option>
+                        <option value="voice">Voice/Singing</option>
+                        <option value="guitar">Guitar</option>
+                        <option value="violin">Violin</option>
+                        <option value="other">Other</option>
                       </select>
                       {errors.instrument && (
                         <p className="text-red-600 text-sm mt-2">{errors.instrument.message}</p>
@@ -577,10 +572,10 @@ export default function MusicSchoolEnrollmentPage({
                       </label>
                       <div className="space-y-2">
                         {[
-                          { value: 'in-person', label: 'In-Person Lessons', icon: '👤' },
-                          { value: 'online', label: 'Online Lessons', icon: '💻' },
-                          { value: 'hybrid', label: 'Hybrid (Both In-Person & Online)', icon: '🔄' },
-                          { value: 'undecided', label: 'Not sure yet', icon: '🤔' }
+                          { value: 'in-person', label: 'In-Person Lessons' },
+                          { value: 'online', label: 'Online Lessons' },
+                          { value: 'hybrid', label: 'Hybrid (Both In-Person & Online)' },
+                          { value: 'undecided', label: 'Not sure yet' }
                         ].map((type) => (
                           <label
                             key={type.value}
@@ -592,8 +587,7 @@ export default function MusicSchoolEnrollmentPage({
                               {...register('privateLessonType')}
                               className="w-5 h-5 text-orange-500 border-gray-300 focus:ring-orange-500 focus:ring-2"
                             />
-                            <span className="ml-3 text-2xl">{type.icon}</span>
-                            <span className="ml-2 text-base font-medium text-kawai-black group-hover:text-orange-700">
+                            <span className="ml-3 text-base font-medium text-kawai-black group-hover:text-orange-700">
                               {type.label}
                             </span>
                           </label>
@@ -654,12 +648,12 @@ export default function MusicSchoolEnrollmentPage({
                         className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 focus:outline-none transition-all text-base bg-white cursor-pointer text-kawai-black"
                       >
                         <option value="">Select a time...</option>
-                        <option value="weekday-morning">🌅 Weekday Mornings (9am - 12pm)</option>
-                        <option value="weekday-afternoon">☀️ Weekday Afternoons (12pm - 5pm)</option>
-                        <option value="weekday-evening">🌆 Weekday Evenings (5pm - 8pm)</option>
-                        <option value="weekend-morning">🌄 Weekend Mornings (9am - 12pm)</option>
-                        <option value="weekend-afternoon">🌤️ Weekend Afternoons (12pm - 5pm)</option>
-                        <option value="flexible">✨ Flexible - Any time</option>
+                        <option value="weekday-morning">Weekday Mornings (9am - 12pm)</option>
+                        <option value="weekday-afternoon">Weekday Afternoons (12pm - 5pm)</option>
+                        <option value="weekday-evening">Weekday Evenings (5pm - 8pm)</option>
+                        <option value="weekend-morning">Weekend Mornings (9am - 12pm)</option>
+                        <option value="weekend-afternoon">Weekend Afternoons (12pm - 5pm)</option>
+                        <option value="flexible">Flexible - Any time</option>
                       </select>
                       {errors.preferredTime && (
                         <p className="text-red-600 text-sm mt-2">{errors.preferredTime.message}</p>
@@ -679,16 +673,13 @@ export default function MusicSchoolEnrollmentPage({
                     </div>
 
                     <div className="bg-gradient-to-r from-orange-50 to-amber-50 p-6 rounded-xl border-2 border-orange-200">
-                      <div className="flex items-start gap-3">
-                        <div className="text-3xl">🎁</div>
-                        <div>
-                          <h3 className="font-semibold text-orange-900 mb-1">
-                            Almost done!
-                          </h3>
-                          <p className="text-sm text-orange-800">
-                            One more step to complete your enrollment and claim your <strong>FREE first lesson</strong>!
-                          </p>
-                        </div>
+                      <div>
+                        <h3 className="font-semibold text-orange-900 mb-1">
+                          Almost done!
+                        </h3>
+                        <p className="text-sm text-orange-800">
+                          One more step to complete your enrollment and claim your <strong>FREE first lesson</strong>!
+                        </p>
                       </div>
                     </div>
                   </motion.div>
@@ -833,10 +824,7 @@ export default function MusicSchoolEnrollmentPage({
                     }`}
                   >
                     {isSubmitting ? (
-                      <>
-                        <span className="inline-block animate-spin mr-2">⏳</span>
-                        Enrolling...
-                      </>
+                      'Enrolling...'
                     ) : (
                       '🎃 Claim Free Lesson! 🎃'
                     )}
@@ -849,17 +837,14 @@ export default function MusicSchoolEnrollmentPage({
             <div className="mt-8 pt-6 border-t-2 border-gray-100 text-center">
               <div className="flex flex-wrap justify-center items-center gap-4 text-sm text-gray-600">
                 <div className="flex items-center gap-2">
-                  <span>🎵</span>
                   <span>Professional Instructors</span>
                 </div>
                 <div className="w-px h-4 bg-gray-300"></div>
                 <div className="flex items-center gap-2">
-                  <span>🏆</span>
                   <span>Award-Winning</span>
                 </div>
                 <div className="w-px h-4 bg-gray-300"></div>
                 <div className="flex items-center gap-2">
-                  <span>❤️</span>
                   <span>Family-Friendly</span>
                 </div>
               </div>
