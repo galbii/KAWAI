@@ -321,7 +321,7 @@ export default function MusicSchoolEnrollmentPage({
             className="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white rounded-2xl p-6 mb-8 shadow-xl"
           >
             <h1 className="text-2xl sm:text-3xl font-serif text-center mb-3">
-              🎃 Halloween Special Enrollment 🎃
+              🎃 No Tricks - Just the treat of Music 🎃
             </h1>
             <div className="flex items-center justify-center gap-4 text-sm sm:text-base">
               <div className="flex items-center gap-2">

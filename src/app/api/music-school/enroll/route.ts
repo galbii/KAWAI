@@ -3,6 +3,7 @@
  *
  * Handles form submissions from the music school enrollment form
  * Integrates with Constant Contact API to create/update contacts with custom fields
+ * Sends email notifications via Resend
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -11,6 +12,7 @@ import config from '@/payload.config';
 import { createConstantContactClient } from '@/lib/constantcontact/client';
 import { ConstantContactListManager } from '@/lib/constantcontact/lists';
 import { createCustomFieldManager } from '@/lib/constantcontact/custom-fields';
+import { Resend } from 'resend';
 
 interface MusicSchoolEnrollmentData {
   // Student Information
@@ -194,6 +196,130 @@ export async function POST(request: NextRequest) {
     console.log(`  - Guardian: ${formData.emergencyContactFirstName} ${formData.emergencyContactLastName}`);
     console.log(`  - Email: ${formData.emergencyContactEmail}`);
     console.log(`  - List: KPM DALLAS (${kpmDallasList.data.list_id})`);
+
+    // Step 5: Send email notification via Resend
+    console.log('📧 Starting email notification process...');
+    console.log('📧 Resend API Key present:', !!process.env.RESEND_API_KEY);
+    console.log('📧 API Key first 10 chars:', process.env.RESEND_API_KEY?.substring(0, 10));
+
+    try {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      console.log('📧 Resend client initialized successfully');
+
+      const emailHtml = `
+        <h1 style="color: #C41E3A; font-family: Arial, sans-serif;">New Music School Enrollment</h1>
+
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <h2 style="color: #2C2C2C; border-bottom: 2px solid #C41E3A; padding-bottom: 8px;">Student Information</h2>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr>
+              <td style="padding: 8px; background-color: #f8f8f8;"><strong>Name:</strong></td>
+              <td style="padding: 8px;">${formData.studentFirstName} ${formData.studentLastName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; background-color: #f8f8f8;"><strong>Birth Year:</strong></td>
+              <td style="padding: 8px;">${formData.studentBirthYear}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; background-color: #f8f8f8;"><strong>Gender:</strong></td>
+              <td style="padding: 8px;">${formData.studentGender}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; background-color: #f8f8f8;"><strong>School Grade:</strong></td>
+              <td style="padding: 8px;">${formData.schoolGrade || 'Not provided'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; background-color: #f8f8f8;"><strong>Current School:</strong></td>
+              <td style="padding: 8px;">${formData.currentSchool || 'Not provided'}</td>
+            </tr>
+          </table>
+
+          <h2 style="color: #2C2C2C; border-bottom: 2px solid #C41E3A; padding-bottom: 8px;">Musical Background</h2>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr>
+              <td style="padding: 8px; background-color: #f8f8f8;"><strong>Instrument:</strong></td>
+              <td style="padding: 8px;">${formData.instrument}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; background-color: #f8f8f8;"><strong>Previous Study Length:</strong></td>
+              <td style="padding: 8px;">${formData.lengthOfPreviousStudy}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; background-color: #f8f8f8;"><strong>Lesson Type:</strong></td>
+              <td style="padding: 8px;">${formData.privateLessonType}</td>
+            </tr>
+          </table>
+
+          <h2 style="color: #2C2C2C; border-bottom: 2px solid #C41E3A; padding-bottom: 8px;">Lesson Preferences</h2>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr>
+              <td style="padding: 8px; background-color: #f8f8f8;"><strong>Price Range:</strong></td>
+              <td style="padding: 8px;">${formData.lessonPrice}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; background-color: #f8f8f8;"><strong>Preferred Time:</strong></td>
+              <td style="padding: 8px;">${formData.preferredTime}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; background-color: #f8f8f8;"><strong>Additional Notes:</strong></td>
+              <td style="padding: 8px;">${formData.notes || 'None'}</td>
+            </tr>
+          </table>
+
+          <h2 style="color: #2C2C2C; border-bottom: 2px solid #C41E3A; padding-bottom: 8px;">Emergency Contact Information</h2>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr>
+              <td style="padding: 8px; background-color: #f8f8f8;"><strong>Name:</strong></td>
+              <td style="padding: 8px;">${formData.emergencyContactFirstName} ${formData.emergencyContactLastName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; background-color: #f8f8f8;"><strong>Phone:</strong></td>
+              <td style="padding: 8px;">${formData.emergencyContactPhone}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; background-color: #f8f8f8;"><strong>Email:</strong></td>
+              <td style="padding: 8px;">${formData.emergencyContactEmail}</td>
+            </tr>
+          </table>
+
+          <div style="margin-top: 30px; padding: 15px; background-color: #f0f0f0; border-left: 4px solid #C41E3A;">
+            <p style="margin: 0;"><strong>Contact ID:</strong> ${result.data?.contact_id || 'N/A'}</p>
+            <p style="margin: 5px 0 0 0;"><strong>List:</strong> KPM DALLAS (${kpmDallasList.data.list_id})</p>
+          </div>
+        </div>
+      `;
+
+      console.log('📧 Preparing to send email...');
+      console.log('📧 From: KPM Music School <onboarding@resend.dev>');
+      console.log('📧 To: cnoonan@kawaius.com');
+      console.log('📧 Subject: New Music School Enrollment:', formData.studentFirstName, formData.studentLastName);
+
+      const emailResult = await resend.emails.send({
+        from: 'KPM Music School <onboarding@resend.dev>',
+        to: 'cnoonan@kawaius.com',
+        subject: `New Music School Enrollment: ${formData.studentFirstName} ${formData.studentLastName}`,
+        html: emailHtml,
+      });
+
+      console.log('✉️ Email send result:', JSON.stringify(emailResult, null, 2));
+
+      if (emailResult.error) {
+        console.error('❌ Resend API returned an error:', emailResult.error);
+      } else {
+        console.log('✅ Email notification sent successfully!');
+        console.log('✅ Email ID:', emailResult.data?.id);
+      }
+    } catch (emailError) {
+      // Log detailed email error but don't fail the request
+      console.error('⚠️ Failed to send email notification - DETAILED ERROR:');
+      console.error('⚠️ Error type:', emailError instanceof Error ? emailError.constructor.name : typeof emailError);
+      console.error('⚠️ Error message:', emailError instanceof Error ? emailError.message : emailError);
+      console.error('⚠️ Full error:', JSON.stringify(emailError, null, 2));
+      if (emailError instanceof Error && emailError.stack) {
+        console.error('⚠️ Stack trace:', emailError.stack);
+      }
+      console.error('⚠️ (Note: Enrollment was still successful in Constant Contact)');
+    }
 
     return NextResponse.json({
       success: true,
