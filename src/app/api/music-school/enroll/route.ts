@@ -291,12 +291,12 @@ export async function POST(request: NextRequest) {
 
       console.log('📧 Preparing to send email...');
       console.log('📧 From: KPM Music School <onboarding@resend.dev>');
-      console.log('📧 To: aHakimi@kawaius.com');
+      console.log('📧 To: ahakimi@kawaius.com');
       console.log('📧 Subject: New Music School Enrollment:', formData.studentFirstName, formData.studentLastName);
 
       const emailResult = await resend.emails.send({
         from: 'KPM Music School <onboarding@resend.dev>',
-        to: 'aHakimi@kawaius.com',
+        to: 'ahakimi@kawaius.com',
         subject: `New Music School Enrollment: ${formData.studentFirstName} ${formData.studentLastName}`,
         html: emailHtml,
       });
