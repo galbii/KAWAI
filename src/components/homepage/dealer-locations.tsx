@@ -3,11 +3,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import type { DealerLocation } from '@/payload-types';
+import type { Storefront } from '@/payload-types';
 
 interface DealerLocationsProps {
   className?: string;
-  locations?: DealerLocation[];
+  locations?: Storefront[];
 }
 
 export function DealerLocations({ className = '', locations = [] }: DealerLocationsProps) {

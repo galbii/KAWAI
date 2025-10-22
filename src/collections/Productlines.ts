@@ -7,7 +7,8 @@ export const Productlines: CollectionConfig = {
     plural: 'Product Lines',
   },
   admin: {
-    group: 'Products',
+    group: 'Commerce',
+    description: 'Piano product lines and series management',
     defaultColumns: ['name', 'category', 'featured', 'updatedAt'],
     useAsTitle: 'name',
   },

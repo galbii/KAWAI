@@ -7,7 +7,7 @@ export const Products: CollectionConfig = {
     plural: 'Products',
   },
   admin: {
-    group: 'Products',
+    group: 'Commerce',
     defaultColumns: ['name', 'type', 'category', 'status', 'updatedAt'],
     useAsTitle: 'name',
     description: 'Unified product management - pianos, accessories, and other products with dynamic page building',

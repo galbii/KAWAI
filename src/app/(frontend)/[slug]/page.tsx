@@ -6,7 +6,7 @@ import {
   ContactForm,
   ShowroomLocation
 } from "@/components/homepage";
-import { getDealerLocationData, getHomePageData } from "@/lib/payload";
+import { getStorefrontData, getHomePageData } from "@/lib/payload";
 import type { HomePageData } from "@/lib/types/homepage";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
@@ -146,73 +146,73 @@ function ContactFormSkeleton() {
   );
 }
 
-// Server Component that fetches dealer location data and homepage data for piano gallery
-async function DealerLocationContent({ slug }: { slug: string }) {
-  let dealerLocationData: HomePageData | null = null;
+// Server Component that fetches storefront data and homepage data for piano gallery
+async function StorefrontContent({ slug }: { slug: string }) {
+  let storefrontData: HomePageData | null = null;
   let pianoGalleryData: any = null;
   let error: string | null = null;
 
   try {
-    // Fetch dealer location data (contains all sections except piano gallery)
-    dealerLocationData = await getDealerLocationData(slug);
-    
-    // If dealer location doesn't exist or is inactive, show 404
-    if (!dealerLocationData) {
+    // Fetch storefront data (contains all sections except piano gallery)
+    storefrontData = await getStorefrontData(slug);
+
+    // If storefront doesn't exist or is inactive, show 404
+    if (!storefrontData) {
       notFound();
     }
-    
+
     // Fetch HomePage data for fallbacks
     const homePageData = await getHomePageData();
     pianoGalleryData = homePageData?.pianoGallerySection;
-    
-    // Merge dealer location data with HomePage fallbacks for news carousel
-    if (dealerLocationData && homePageData) {
-      const originalCarouselEmpty = isNewsCarouselDataEmpty(dealerLocationData.newsCarouselSection);
-      const originalDurationMissing = !dealerLocationData.newsCarouselSection?.autoPlayDuration;
-      
-      dealerLocationData = mergeNewsCarouselWithFallback(dealerLocationData, homePageData);
-      
+
+    // Merge storefront data with HomePage fallbacks for news carousel
+    if (storefrontData && homePageData) {
+      const originalCarouselEmpty = isNewsCarouselDataEmpty(storefrontData.newsCarouselSection);
+      const originalDurationMissing = !storefrontData.newsCarouselSection?.autoPlayDuration;
+
+      storefrontData = mergeNewsCarouselWithFallback(storefrontData, homePageData);
+
       // Log what fallbacks were applied for debugging
       if (originalCarouselEmpty || originalDurationMissing) {
         const fallbacks = [];
         if (originalCarouselEmpty) fallbacks.push('news items');
         if (originalDurationMissing) fallbacks.push('auto-play duration');
-        console.log(`Dealer location ${slug} using HomePage fallback for: ${fallbacks.join(', ')}`);
+        console.log(`Storefront ${slug} using HomePage fallback for: ${fallbacks.join(', ')}`);
       }
     }
-    
+
   } catch (err) {
-    error = err instanceof Error ? err.message : 'Failed to load dealer location data';
-    console.error('Dealer location data fetch error:', error);
-    
+    error = err instanceof Error ? err.message : 'Failed to load storefront data';
+    console.error('Storefront data fetch error:', error);
+
     // If there's a fetch error, show 404 as well since we can't determine if location exists
     notFound();
   }
 
   // If there's an error but we still have data, components will use their fallback defaults
   if (error) {
-    console.warn(`Dealer location CMS data partially unavailable: ${error}. Using available data with fallbacks.`);
+    console.warn(`Storefront CMS data partially unavailable: ${error}. Using available data with fallbacks.`);
   }
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <Hero {...(dealerLocationData?.heroSection && { data: dealerLocationData.heroSection })} />
+      <Hero {...(storefrontData?.heroSection && { data: storefrontData.heroSection })} />
 
       {/* Showroom Location Section */}
-      <ShowroomLocation {...(dealerLocationData?.showroomSection && { data: dealerLocationData.showroomSection })} />
+      <ShowroomLocation {...(storefrontData?.showroomSection && { data: storefrontData.showroomSection })} />
 
       {/* Piano Collection Section */}
-      <PianoCollection {...(dealerLocationData?.pianoCollectionSection && { data: dealerLocationData.pianoCollectionSection })} />
-      
+      <PianoCollection {...(storefrontData?.pianoCollectionSection && { data: storefrontData.pianoCollectionSection })} />
+
       {/* Piano Gallery Section - Uses HomePage collection data */}
       <PianoGallery data={pianoGalleryData} />
-      
+
       {/* News Carousel Section */}
-      <NewsCarousel {...(dealerLocationData?.newsCarouselSection && { data: dealerLocationData.newsCarouselSection })} />
+      <NewsCarousel {...(storefrontData?.newsCarouselSection && { data: storefrontData.newsCarouselSection })} />
 
       {/* Contact Form Section */}
-      <ContactForm {...(dealerLocationData?.contactFormSection && { data: dealerLocationData.contactFormSection })} />
+      <ContactForm {...(storefrontData?.contactFormSection && { data: storefrontData.contactFormSection })} />
     </div>
   );
 }
@@ -221,41 +221,41 @@ async function DealerLocationContent({ slug }: { slug: string }) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await params;
-    const dealerLocationData = await getDealerLocationData(slug);
-    
-    if (!dealerLocationData?.seo) {
+    const storefrontData = await getStorefrontData(slug);
+
+    if (!storefrontData?.seo) {
       return {
-        title: 'Piano Gallery Location Not Found',
-        description: 'The requested Piano Gallery location could not be found.'
+        title: 'Storefront Location Not Found',
+        description: 'The requested storefront location could not be found.'
       };
     }
 
     return {
-      title: dealerLocationData.seo.metaTitle || 'Kawai Piano Gallery',
-      description: dealerLocationData.seo.metaDescription || 'Find your local Kawai Piano Gallery.',
-      keywords: dealerLocationData.seo.keywords,
+      title: storefrontData.seo.metaTitle || 'Kawai Piano Gallery',
+      description: storefrontData.seo.metaDescription || 'Find your local Kawai Piano Gallery.',
+      keywords: storefrontData.seo.keywords,
       openGraph: {
-        title: dealerLocationData.seo.openGraphTitle || dealerLocationData.seo.metaTitle,
-        description: dealerLocationData.seo.openGraphDescription || dealerLocationData.seo.metaDescription,
-        images: dealerLocationData.seo.openGraphImage ? [
+        title: storefrontData.seo.openGraphTitle || storefrontData.seo.metaTitle,
+        description: storefrontData.seo.openGraphDescription || storefrontData.seo.metaDescription,
+        images: storefrontData.seo.openGraphImage ? [
           {
-            url: typeof dealerLocationData.seo.openGraphImage === 'string' 
-              ? dealerLocationData.seo.openGraphImage 
-              : dealerLocationData.seo.openGraphImage.url || ''
+            url: typeof storefrontData.seo.openGraphImage === 'string'
+              ? storefrontData.seo.openGraphImage
+              : storefrontData.seo.openGraphImage.url || ''
           }
         ] : []
       }
     };
   } catch (error) {
-    console.error('Error generating metadata for dealer location:', error);
+    console.error('Error generating metadata for storefront:', error);
     return {
-      title: 'Piano Gallery Location Not Found',
-      description: 'The requested Piano Gallery location could not be found.'
+      title: 'Storefront Location Not Found',
+      description: 'The requested storefront location could not be found.'
     };
   }
 }
 
-export default async function DealerLocationPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function StorefrontPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   return (
     <Suspense fallback={
@@ -268,7 +268,7 @@ export default async function DealerLocationPage({ params }: { params: Promise<{
         <ContactFormSkeleton />
       </div>
     }>
-      <DealerLocationContent slug={slug} />
+      <StorefrontContent slug={slug} />
     </Suspense>
   );
 }

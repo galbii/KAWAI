@@ -7,7 +7,7 @@ export const PianosPage: CollectionConfig = {
     plural: 'Pianos Page',
   },
   admin: {
-    group: 'PAGES',
+    group: 'Content',
     useAsTitle: 'heroTitle',
     description: 'Manage all content for the main Pianos page including hero, categories, featured models, and CTAs.',
   },

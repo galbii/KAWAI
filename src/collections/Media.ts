@@ -3,7 +3,8 @@ import type { CollectionConfig } from 'payload'
 export const Media: CollectionConfig = {
   slug: 'media',
   admin: {
-    group: 'Media',
+    group: 'System',
+    description: 'Media library for images, videos, and documents',
     defaultColumns: ['filename', 'alt', 'mediaType', 'updatedAt'],
     useAsTitle: 'alt',
   },

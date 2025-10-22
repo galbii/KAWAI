@@ -1,6 +1,5 @@
-import type { 
-  Productline, 
-  PianoModel,
+import type {
+  Productline,
   Product
 } from '@/payload-types'
 
@@ -104,7 +103,7 @@ export async function getFeaturedProductlinesServer(category?: string): Promise<
 // Piano Model server functions
 
 // Server-side fetch all piano models with optional filtering by productline
-export async function getPianoModelsServer(productlineSlug?: string): Promise<PianoModel[]> {
+export async function getPianoModelsServer(productlineSlug?: string): Promise<Product[]> {
   try {
     const queryParams = new URLSearchParams()
     
@@ -127,7 +126,7 @@ export async function getPianoModelsServer(productlineSlug?: string): Promise<Pi
 }
 
 // Server-side fetch piano models for a specific productline
-export async function getPianoModelsByProductlineServer(productlineId: string): Promise<PianoModel[]> {
+export async function getPianoModelsByProductlineServer(productlineId: string): Promise<Product[]> {
   try {
     const queryParams = new URLSearchParams()
     queryParams.append('where[productline][equals]', productlineId)
@@ -160,7 +159,7 @@ function preserveMediaOrFallback(media: any): any {
 }
 
 // Transform Piano Model to component format for server
-function transformPianoModelToComponentServer(pianoModel: PianoModel) {
+function transformPianoModelToComponentServer(pianoModel: Product) {
   // Generate slug from name since slug is no longer in PianoModel
   const slug = pianoModel.name
     .toLowerCase()
@@ -172,17 +171,17 @@ function transformPianoModelToComponentServer(pianoModel: PianoModel) {
   return {
     slug,
     name: pianoModel.name,
-    series: typeof pianoModel.productline === 'object' ? pianoModel.productline.name : 'Unknown Series',
+    series: typeof pianoModel.productline === 'object' && pianoModel.productline !== null ? pianoModel.productline.name : 'Unknown Series',
     rating: 0, // Rating is now handled by Products collection
     reviews: 0, // Reviews are now handled by Products collection
-    image: preserveMediaOrFallback(pianoModel.image),
+    image: preserveMediaOrFallback(pianoModel.mainImage),
     description: pianoModel.description,
     keyFeatures: (pianoModel.keyFeatures || []).map(kf => kf.feature)
   }
 }
 
 // Transform server-fetched data to component format
-export function transformProductlineToSeriesServer(productline: Productline, pianoModels?: PianoModel[]) {
+export function transformProductlineToSeriesServer(productline: Productline, pianoModels?: Product[]) {
   // Use provided piano models (legacy) or extract from products join field
   let pianos: any[] = []
   
@@ -212,7 +211,7 @@ export function transformProductlineToSeriesServer(productline: Productline, pia
 }
 
 // Transform multiple Productlines to Series array for server components
-export function transformProductlinesToSeriesServer(productlines: Productline[], pianoModelsByProductline?: Record<string, PianoModel[]>) {
+export function transformProductlinesToSeriesServer(productlines: Productline[], pianoModelsByProductline?: Record<string, Product[]>) {
   return productlines.map(productline => {
     const pianoModels = pianoModelsByProductline?.[productline.id]
     return transformProductlineToSeriesServer(productline, pianoModels)

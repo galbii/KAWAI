@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 import { useScrollAnimations } from '@/components/pages/dallas-university/hooks/useScrollAnimations';
 import { usePageTracking } from '@/components/pages/dallas-university/hooks/usePageTracking';
-import Header from '@/components/pages/dallas-university/Header';
 import HeroSection from '@/components/pages/dallas-university/sections/HeroSection';
 import ValuePropositionSection from '@/components/pages/dallas-university/sections/ValuePropositionSection';
 import AboutEventSection from '@/components/pages/dallas-university/sections/AboutEventSection';
@@ -17,7 +16,7 @@ import { NewsletterPopup } from '@/components/pages/dallas-university/Newsletter
 
 export default function ClientHomePage() {
   useScrollAnimations();
-  
+
   // Enable comprehensive page tracking for the KAWAI piano sale landing page
   usePageTracking({
     pageName: 'kawai_piano_sale_landing',
@@ -33,7 +32,6 @@ export default function ClientHomePage() {
   return (
     <div className="min-h-screen w-full overflow-x-hidden">
       <StructuredData />
-      <Header />
       <HeroSection />
       <AboutEventSection />
       <ValuePropositionSection />

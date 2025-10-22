@@ -2,18 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 
-interface DealerLocationHeaderData {
+interface StorefrontHeaderData {
   locationName: string
   slug: string
 }
 
 export async function GET(
-  request: NextRequest, 
+  request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const { slug } = await params
-    
+
     if (!slug) {
       return NextResponse.json(
         { success: false, error: 'Slug parameter is required' },
@@ -22,10 +22,10 @@ export async function GET(
     }
 
     const payload = await getPayload({ config })
-    
-    // Query the DealerLocations collection by slug - only get header-relevant fields
+
+    // Query the Storefronts collection by slug - only get header-relevant fields
     const result = await payload.find({
-      collection: 'dealer-locations',
+      collection: 'storefronts',
       where: {
         and: [
           {
@@ -46,38 +46,38 @@ export async function GET(
         slug: true
       }
     })
-    
-    const dealerLocation = result.docs[0]
 
-    if (dealerLocation) {
-      
-      const headerData: DealerLocationHeaderData = {
-        locationName: dealerLocation.locationName,
-        slug: dealerLocation.slug
+    const storefront = result.docs[0]
+
+    if (storefront) {
+
+      const headerData: StorefrontHeaderData = {
+        locationName: storefront.locationName,
+        slug: storefront.slug
       }
-      
+
       return NextResponse.json({
         success: true,
         data: headerData
       })
     } else {
       return NextResponse.json(
-        { success: false, error: 'Dealer location not found or inactive' }, 
+        { success: false, error: 'Storefront not found or inactive' },
         { status: 404 }
       )
     }
   } catch (error) {
-    console.error('Error fetching dealer location header data:', error)
+    console.error('Error fetching storefront header data:', error)
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to fetch dealer location header data',
+      {
+        success: false,
+        error: 'Failed to fetch storefront header data',
         details: error instanceof Error ? error.message : 'Unknown error'
-      }, 
+      },
       { status: 500 }
     )
   }
 }
 
-// Cache the response for 5 minutes since dealer locations don't change frequently
+// Cache the response for 5 minutes since storefronts don't change frequently
 export const revalidate = 300

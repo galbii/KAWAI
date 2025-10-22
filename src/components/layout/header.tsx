@@ -597,19 +597,25 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       }
       
       setIsLoadingLocation(true)
-      
+
       try {
-        const response = await fetch(`/api/dealer-locations/header/${origin.dealerSlug}`)
+        const response = await fetch(`/api/storefronts/by-slug/${origin.dealerSlug}`)
         const result = await response.json()
-        
+
         if (result.success && result.data) {
-          setCurrentLocationData(result.data)
+          // Extract just the location name from the storefront data
+          // The API returns the full storefront structure, but we only need name and slug
+          const locationData = {
+            locationName: result.data.showroomSection?.showroomInfo?.name || origin.dealerSlug,
+            slug: origin.dealerSlug
+          }
+          setCurrentLocationData(locationData)
         } else {
-          console.warn(`Failed to fetch dealer data for ${origin.dealerSlug}:`, result.error)
+          console.warn(`Failed to fetch storefront data for ${origin.dealerSlug}:`, result.error)
           setCurrentLocationData(null)
         }
       } catch (error) {
-        console.error(`Error fetching dealer data for ${origin.dealerSlug}:`, error)
+        console.error(`Error fetching storefront data for ${origin.dealerSlug}:`, error)
         setCurrentLocationData(null)
       } finally {
         setIsLoadingLocation(false)

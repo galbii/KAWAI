@@ -3,21 +3,21 @@ import { notFound } from "next/navigation";
 import type { Media } from "@/payload-types";
 import { getHomePageData } from "@/lib/payload";
 
-interface DealerLocationData {
+interface StorefrontData {
   locationName: string;
   slug: string;
   isActive: boolean;
 }
 
-// Function to fetch just the basic dealer location info needed for the layout
-async function getDealerLocationMetadata(slug: string): Promise<DealerLocationData | null> {
+// Function to fetch just the basic storefront info needed for the layout
+async function getStorefrontMetadata(slug: string): Promise<StorefrontData | null> {
   try {
     const payload = await import('payload').then(m => m.getPayload);
     const config = await import('@/payload.config').then(m => m.default);
     const payloadInstance = await payload({ config });
-    
+
     const result = await payloadInstance.find({
-      collection: 'dealer-locations',
+      collection: 'storefronts',
       where: {
         and: [
           {
@@ -40,19 +40,19 @@ async function getDealerLocationMetadata(slug: string): Promise<DealerLocationDa
       }
     });
     
-    const dealerLocation = result.docs[0];
+    const storefront = result.docs[0];
 
-    if (!dealerLocation) {
+    if (!storefront) {
       return null;
     }
 
     return {
-      locationName: dealerLocation.locationName,
-      slug: dealerLocation.slug,
-      isActive: dealerLocation.isActive || false
+      locationName: storefront.locationName,
+      slug: storefront.slug,
+      isActive: storefront.isActive || false
     };
   } catch (error) {
-    console.error('Error fetching dealer location metadata:', error);
+    console.error('Error fetching storefront metadata:', error);
     return null;
   }
 }
@@ -61,12 +61,12 @@ async function getDealerLocationMetadata(slug: string): Promise<DealerLocationDa
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   try {
     const { slug } = await params;
-    const dealerData = await getDealerLocationMetadata(slug);
-    
-    if (!dealerData) {
+    const storefrontData = await getStorefrontMetadata(slug);
+
+    if (!storefrontData) {
       return {
-        title: 'Piano Gallery Location Not Found',
-        description: 'The requested Piano Gallery location could not be found.',
+        title: 'Storefront Location Not Found',
+        description: 'The requested storefront location could not be found.',
         robots: { index: false, follow: false }
       };
     }
@@ -74,13 +74,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     // Get SEO data from HomePage collection
     const homePageData = await getHomePageData();
     const seo = homePageData?.seo;
-    
+
     // Create location-specific titles and descriptions using HomePage SEO data
-    const locationTitle = seo?.metaTitle?.replace(/St\. Louis/g, dealerData.locationName) || 
-                         `${dealerData.locationName} | Kawai Piano Gallery`;
-    const locationDescription = seo?.metaDescription?.replace(/St\. Louis/g, dealerData.locationName) || 
-      `Visit ${dealerData.locationName} for premium Kawai pianos, expert consultation, and personalized piano guidance.`;
-    
+    const locationTitle = seo?.metaTitle?.replace(/St\. Louis/g, storefrontData.locationName) ||
+                         `${storefrontData.locationName} | Kawai Piano Gallery`;
+    const locationDescription = seo?.metaDescription?.replace(/St\. Louis/g, storefrontData.locationName) ||
+      `Visit ${storefrontData.locationName} for premium Kawai pianos, expert consultation, and personalized piano guidance.`;
+
     // Generate location-specific keywords
     const baseKeywords = (typeof seo?.keywords === 'string' ? seo.keywords.split(', ') : null) || [
       'Kawai Piano Gallery',
@@ -91,9 +91,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       'piano services',
       'piano consultation'
     ];
-    
+
     const locationKeywords = [
-      dealerData.locationName,
+      storefrontData.locationName,
       ...baseKeywords
     ];
 
@@ -101,25 +101,25 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title: locationTitle,
       description: locationDescription,
       keywords: locationKeywords.join(', '),
-      authors: [{ name: dealerData.locationName }],
+      authors: [{ name: storefrontData.locationName }],
       openGraph: {
-        title: seo?.openGraphTitle?.replace(/St\. Louis/g, dealerData.locationName) || locationTitle,
-        description: seo?.openGraphDescription?.replace(/St\. Louis/g, dealerData.locationName) || locationDescription,
+        title: seo?.openGraphTitle?.replace(/St\. Louis/g, storefrontData.locationName) || locationTitle,
+        description: seo?.openGraphDescription?.replace(/St\. Louis/g, storefrontData.locationName) || locationDescription,
         type: "website",
         locale: "en_US",
-        siteName: dealerData.locationName,
+        siteName: storefrontData.locationName,
         images: seo?.openGraphImage ? [
           {
-            url: typeof seo.openGraphImage === 'string' 
-              ? seo.openGraphImage 
+            url: typeof seo.openGraphImage === 'string'
+              ? seo.openGraphImage
               : seo.openGraphImage.url || ''
           }
         ] : []
       },
       twitter: {
         card: "summary_large_image",
-        title: seo?.openGraphTitle?.replace(/St\. Louis/g, dealerData.locationName) || locationTitle,
-        description: seo?.openGraphDescription?.replace(/St\. Louis/g, dealerData.locationName) || locationDescription,
+        title: seo?.openGraphTitle?.replace(/St\. Louis/g, storefrontData.locationName) || locationTitle,
+        description: seo?.openGraphDescription?.replace(/St\. Louis/g, storefrontData.locationName) || locationDescription,
       },
       robots: {
         index: true,
@@ -127,53 +127,53 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       },
     };
   } catch (error) {
-    console.error('Error generating metadata for dealer location layout:', error);
+    console.error('Error generating metadata for storefront layout:', error);
     return {
-      title: 'Piano Gallery Location Not Found',
-      description: 'The requested Piano Gallery location could not be found.',
+      title: 'Storefront Location Not Found',
+      description: 'The requested storefront location could not be found.',
       robots: { index: false, follow: false }
     };
   }
 }
 
-// Nested layout for dealer location pages
-export default async function DealerLocationLayout({ 
-  children, 
-  params 
-}: { 
+// Nested layout for storefront pages
+export default async function StorefrontLayout({
+  children,
+  params
+}: {
   children: React.ReactNode;
   params: Promise<{ slug: string }>;
 }) {
   // Await params to get the slug
   const { slug } = await params;
-  
-  // Fetch dealer location data for the layout
-  let dealerData: DealerLocationData | null = null;
-  
+
+  // Fetch storefront data for the layout
+  let storefrontData: StorefrontData | null = null;
+
   try {
-    dealerData = await getDealerLocationMetadata(slug);
-    
-    // If dealer location doesn't exist or is inactive, show 404
-    if (!dealerData) {
+    storefrontData = await getStorefrontMetadata(slug);
+
+    // If storefront doesn't exist or is inactive, show 404
+    if (!storefrontData) {
       notFound();
     }
   } catch (error) {
-    console.error('Dealer location layout fetch error:', error);
+    console.error('Storefront layout fetch error:', error);
     // If there's a fetch error, show 404 as well since we can't determine if location exists
     notFound();
   }
 
   // Get homepage data for structured data description
   const homePageData = await getHomePageData();
-  
-  // Generate local business schema for this specific dealer location
-  const businessDescription = homePageData?.heroSection?.description?.replace(/St\. Louis/g, dealerData.locationName) || 
-    `${dealerData.locationName} - Premier Kawai Piano Gallery offering expert piano consultation, services, and personalized guidance.`;
-  
+
+  // Generate local business schema for this specific storefront
+  const businessDescription = homePageData?.heroSection?.description?.replace(/St\. Louis/g, storefrontData.locationName) ||
+    `${storefrontData.locationName} - Premier Kawai Piano Gallery offering expert piano consultation, services, and personalized guidance.`;
+
   const localBusinessSchema = {
     "@context": "https://schema.org",
     "@type": "MusicStore",
-    "name": dealerData.locationName,
+    "name": storefrontData.locationName,
     "description": businessDescription,
     "url": `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianostlouis.com'}/${slug}`,
     "brand": "Kawai",
@@ -189,7 +189,7 @@ export default async function DealerLocationLayout({
           }
         },
         {
-          "@type": "Offer", 
+          "@type": "Offer",
           "itemOffered": {
             "@type": "Product",
             "name": "Kawai Digital Pianos"

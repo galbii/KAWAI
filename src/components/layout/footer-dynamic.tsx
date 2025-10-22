@@ -18,7 +18,7 @@ async function getDealerLocationContactInfo(slug: string): Promise<DealerLocatio
     const payload = await getPayload({ config })
 
     const result = await payload.find({
-      collection: 'dealer-locations',
+      collection: 'storefronts',
       where: {
         and: [
           {
@@ -59,7 +59,7 @@ async function getDealerLocationContactInfo(slug: string): Promise<DealerLocatio
 
     return null
   } catch (error) {
-    console.error('Error fetching dealer location contact info:', error)
+    console.error('Error fetching storefront location contact info:', error)
     return null
   }
 }

@@ -1,7 +1,7 @@
 // Piano domain types - Core business domain for piano retail
 // Types specific to piano products, specifications, and retail operations
 
-import type { Media, Product, Productline, PianoModel } from '@/payload-types'
+import type { Media, Product, Productline } from '@/payload-types'
 import type { ProductId, PriceValue, PianoCategory, PianoModel as PianoModelBrand } from '@/types/common/utils'
 import type { Timestamps, RequireFields } from '@/types/common/utils'
 

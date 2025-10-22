@@ -25,9 +25,9 @@ interface DealerLocationData {
 async function getDealerLocationBySlug(slug: string): Promise<DealerLocationData | null> {
   try {
     const payload = await getPayload({ config })
-    
+
     const result = await payload.find({
-      collection: 'dealer-locations',
+      collection: 'storefronts',
       where: {
         and: [
           {
@@ -48,7 +48,7 @@ async function getDealerLocationBySlug(slug: string): Promise<DealerLocationData
         slug: true
       }
     })
-    
+
     const location = result.docs[0]
 
     if (location) {
@@ -57,10 +57,10 @@ async function getDealerLocationBySlug(slug: string): Promise<DealerLocationData
         slug: location.slug
       }
     }
-    
+
     return null
   } catch (error) {
-    console.error('Error fetching dealer location:', error)
+    console.error('Error fetching storefront location:', error)
     return null
   }
 }

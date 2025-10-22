@@ -7,7 +7,7 @@ export const ConstantContactSettings: CollectionConfig = {
     plural: 'Constant Contact Settings',
   },
   admin: {
-    group: 'SYSTEM',
+    group: 'Integrations',
     useAsTitle: 'id',
     description: 'Manage Constant Contact API credentials and OAuth2 tokens. Restricted to admin users only.',
     hidden: ({ user }) => !user || user.role !== 'admin', // Hide from non-admin users

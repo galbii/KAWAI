@@ -2,7 +2,6 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import type {
   Productline,
-  PianoModel,
   Product,
   PianosPage,
   HomePage,
@@ -560,6 +559,126 @@ export async function getProductsDirect(category?: string): Promise<Product[]> {
     return result.docs
   } catch (error) {
     console.error('Error fetching products with direct Payload access:', error)
+    return []
+  }
+}
+
+/**
+ * Get a single product by slug using direct Payload access
+ * @param slug - The URL-friendly slug identifier for the product
+ * @returns Product object or null if not found
+ */
+export async function getProductBySlugDirect(slug: string): Promise<Product | null> {
+  try {
+    const payload = await getPayloadClient()
+
+    const result = await payload.find({
+      collection: 'products',
+      where: {
+        slug: { equals: slug },
+        status: { not_equals: 'draft' }
+      },
+      depth: 3,
+      limit: 1
+    })
+
+    return result.docs[0] || null
+  } catch (error) {
+    console.error(`Error fetching product with slug "${slug}" using direct Payload access:`, error)
+    return null
+  }
+}
+
+/**
+ * Get active products using direct Payload access
+ * @param category - Optional category filter (e.g., 'digital', 'grand', 'upright', 'hybrid')
+ * @param options - Additional query options
+ * @param options.limit - Maximum number of products to return (default: 100)
+ * @param options.featured - If true, only return featured products
+ * @returns Array of active Product objects
+ */
+export async function getActiveProductsDirect(
+  category?: string,
+  options?: { limit?: number; featured?: boolean }
+): Promise<Product[]> {
+  try {
+    const payload = await getPayloadClient()
+
+    const whereClause: any = {
+      status: { equals: 'active' },
+      discontinued: { not_equals: true }
+    }
+
+    if (category) {
+      whereClause.category = { equals: category }
+    }
+
+    if (options?.featured) {
+      whereClause['visibility.featured'] = { equals: true }
+    }
+
+    const result = await payload.find({
+      collection: 'products',
+      where: whereClause,
+      sort: 'visibility.sortOrder,name',
+      limit: options?.limit || 100,
+      depth: 3
+    })
+
+    return result.docs
+  } catch (error) {
+    console.error('Error fetching active products with direct Payload access:', error)
+    return []
+  }
+}
+
+/**
+ * Get a single storefront by slug using direct Payload access
+ * @param slug - The URL-friendly slug identifier for the storefront
+ * @returns Storefront object or null if not found
+ */
+export async function getStorefrontBySlugDirect(slug: string): Promise<any | null> {
+  try {
+    const payload = await getPayloadClient()
+
+    const result = await payload.find({
+      collection: 'storefronts',
+      where: {
+        slug: { equals: slug },
+        isActive: { equals: true }
+      },
+      depth: 3,
+      limit: 1
+    })
+
+    return result.docs[0] || null
+  } catch (error) {
+    console.error(`Error fetching storefront with slug "${slug}" using direct Payload access:`, error)
+    return null
+  }
+}
+
+/**
+ * Get all active storefronts using direct Payload access
+ * @returns Array of active Storefront objects sorted by most recently updated
+ */
+export async function getActiveStorefrontsDirect(): Promise<any[]> {
+  try {
+    const payload = await getPayloadClient()
+
+    const result = await payload.find({
+      collection: 'storefronts',
+      where: {
+        isActive: { equals: true }
+      },
+      sort: '-updatedAt',
+      limit: 100,
+      depth: 2
+    })
+
+    return result.docs
+  } catch (error) {
+    console.error('Error fetching active storefronts with direct Payload access:', error)
     return []
   }
 }

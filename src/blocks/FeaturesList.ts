@@ -24,7 +24,7 @@ export const FeaturesList: Block = {
     {
       name: 'pianoModel',
       type: 'relationship',
-      relationTo: 'piano-models',
+      relationTo: 'products',
       admin: {
         description: 'Select piano model to automatically populate key features',
         condition: (data, siblingData) => {

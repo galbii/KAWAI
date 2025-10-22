@@ -1,15 +1,15 @@
 import type { CollectionConfig } from 'payload'
 
-export const DealerLocations: CollectionConfig = {
-  slug: 'dealer-locations',
+export const Storefronts: CollectionConfig = {
+  slug: 'storefronts',
   labels: {
-    singular: 'Piano Gallery Location',
-    plural: 'Piano Gallery Locations',
+    singular: 'Storefront',
+    plural: 'Storefronts',
   },
   admin: {
-    group: 'PAGES',
+    group: 'Content',
     useAsTitle: 'locationName',
-    description: 'Manage Piano Gallery locations with customizable content structure including hero, showroom information, piano collection, gallery, news, contact form, and SEO.',
+    description: 'Manage storefront locations with customizable content structure including hero, showroom information, piano collection, gallery, news, contact form, and SEO.',
   },
   access: {
     read: () => true, // Public read access for frontend
@@ -21,7 +21,7 @@ export const DealerLocations: CollectionConfig = {
       required: true,
       unique: true,
       admin: {
-        description: 'URL-friendly identifier for this Piano Gallery location (e.g., "st-louis", "chicago")'
+        description: 'URL-friendly identifier for this storefront location (e.g., "st-louis", "chicago")'
       },
       validate: (val: string | string[] | null | undefined) => {
         if (!val || typeof val !== 'string') return 'Slug is required'
@@ -44,7 +44,7 @@ export const DealerLocations: CollectionConfig = {
       type: 'checkbox',
       defaultValue: true,
       admin: {
-        description: 'Controls whether this Piano Gallery location is visible on the frontend'
+        description: 'Controls whether this storefront location is visible on the frontend'
       }
     },
     {
@@ -399,6 +399,84 @@ export const DealerLocations: CollectionConfig = {
           ]
         },
 
+        // Service Area Tab
+        {
+          label: 'Service Area',
+          description: 'Define geographic coverage area for local SEO and "near me" searches',
+          fields: [
+            {
+              name: 'serviceAreaCoverage',
+              type: 'group',
+              label: 'Geographic Service Coverage',
+              fields: [
+                {
+                  name: 'primaryCity',
+                  type: 'text',
+                  label: 'Primary City',
+                  required: true,
+                  defaultValue: 'St. Louis',
+                  admin: {
+                    description: 'Main city where storefront is physically located'
+                  }
+                },
+                {
+                  name: 'coveredCities',
+                  type: 'array',
+                  label: 'Additional Cities Served',
+                  fields: [
+                    {
+                      name: 'cityName',
+                      type: 'text',
+                      required: true,
+                      admin: {
+                        placeholder: 'Clayton'
+                      }
+                    },
+                    {
+                      name: 'driveTime',
+                      type: 'text',
+                      admin: {
+                        description: 'Approximate drive time from this city to showroom',
+                        placeholder: '15 minutes'
+                      }
+                    }
+                  ],
+                  defaultValue: [
+                    { cityName: 'Clayton', driveTime: '15 minutes' },
+                    { cityName: 'Chesterfield', driveTime: '25 minutes' },
+                    { cityName: 'Webster Groves', driveTime: '20 minutes' }
+                  ],
+                  admin: {
+                    description: 'List major cities within service radius (recommended: ~2 hour drive maximum). Used for local SEO targeting.'
+                  }
+                },
+                {
+                  name: 'stateRegion',
+                  type: 'text',
+                  label: 'State/Region',
+                  required: true,
+                  defaultValue: 'Missouri & Southern Illinois',
+                  admin: {
+                    description: 'Broader geographic region served (e.g., "Missouri & Southern Illinois")'
+                  }
+                },
+                {
+                  name: 'zipCodes',
+                  type: 'textarea',
+                  label: 'Zip Codes Served',
+                  admin: {
+                    description: 'Comma-separated list of primary zip codes in service area',
+                    placeholder: '63101, 63102, 63103, 63108, 63110, 63112'
+                  }
+                }
+              ],
+              admin: {
+                description: 'Service area information enables ranking in multiple cities without physical locations'
+              }
+            }
+          ]
+        },
+
         // Piano Collection Tab
         {
           label: 'Piano Collection',
@@ -568,6 +646,110 @@ export const DealerLocations: CollectionConfig = {
               ],
               admin: {
                 description: 'News carousel items (leave empty to use main site news)'
+              }
+            }
+          ]
+        },
+
+        // Testimonials Tab
+        {
+          label: 'Customer Testimonials',
+          description: 'Location-specific customer reviews and success stories (renders only if populated)',
+          fields: [
+            {
+              name: 'customerTestimonials',
+              type: 'array',
+              label: 'Customer Testimonials',
+              required: false,
+              admin: {
+                description: 'Add location-specific customer testimonials. This section will only display on the storefront page if at least one testimonial is added. Prioritize local customers for maximum relevance.'
+              },
+              fields: [
+                {
+                  name: 'customerName',
+                  type: 'text',
+                  required: true,
+                  admin: {
+                    placeholder: 'John Smith',
+                    description: 'Full name of customer (first and last name recommended)'
+                  }
+                },
+                {
+                  name: 'customerCity',
+                  type: 'text',
+                  required: true,
+                  admin: {
+                    placeholder: 'St. Louis, MO',
+                    description: 'City and state for local relevance (e.g., "Clayton, MO")'
+                  }
+                },
+                {
+                  name: 'rating',
+                  type: 'number',
+                  min: 1,
+                  max: 5,
+                  required: true,
+                  defaultValue: 5,
+                  admin: {
+                    description: 'Star rating (1-5 stars)',
+                    step: 0.5
+                  }
+                },
+                {
+                  name: 'testimonialText',
+                  type: 'textarea',
+                  required: true,
+                  admin: {
+                    description: 'Customer testimonial text (150-300 words ideal for authenticity and SEO)'
+                  }
+                },
+                {
+                  name: 'pianoModel',
+                  type: 'text',
+                  admin: {
+                    placeholder: 'Kawai K-300',
+                    description: 'Piano model purchased (adds specificity and credibility)'
+                  }
+                },
+                {
+                  name: 'purchaseDate',
+                  type: 'date',
+                  admin: {
+                    description: 'Date of purchase (shows recency)',
+                    date: {
+                      pickerAppearance: 'monthOnly'
+                    }
+                  }
+                },
+                {
+                  name: 'customerPhoto',
+                  type: 'upload',
+                  relationTo: 'media',
+                  admin: {
+                    description: 'Photo of customer with their piano (optional but powerful for trust)'
+                  }
+                },
+                {
+                  name: 'videoTestimonial',
+                  type: 'upload',
+                  relationTo: 'media',
+                  admin: {
+                    description: 'Video testimonial (converts 10x better than text, optional)'
+                  }
+                },
+                {
+                  name: 'featured',
+                  type: 'checkbox',
+                  label: 'Feature Prominently',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Display this testimonial first/prominently on the page'
+                  }
+                }
+              ],
+              validate: (val) => {
+                // Allow empty array - testimonials section won't render if empty
+                return true
               }
             }
           ]
@@ -771,6 +953,111 @@ export const DealerLocations: CollectionConfig = {
               ],
               admin: {
                 description: 'Form field options and choices'
+              }
+            }
+          ]
+        },
+
+        // Schema & Structured Data Tab
+        {
+          label: 'Schema & Structured Data',
+          description: 'Configure structured data for search engines (MusicStore schema)',
+          fields: [
+            {
+              name: 'schemaData',
+              type: 'group',
+              label: 'Business Schema Information',
+              fields: [
+                {
+                  name: 'priceRange',
+                  type: 'select',
+                  label: 'Price Range Indicator',
+                  options: [
+                    { label: '$ (Budget-friendly)', value: '$' },
+                    { label: '$$ (Moderate)', value: '$$' },
+                    { label: '$$$ (Premium)', value: '$$$' },
+                    { label: '$$$$ (Luxury)', value: '$$$$' }
+                  ],
+                  defaultValue: '$$$',
+                  required: true,
+                  admin: {
+                    description: 'Indicates relative pricing level for schema.org MusicStore type'
+                  }
+                },
+                {
+                  name: 'geoCoordinates',
+                  type: 'group',
+                  label: 'Geographic Coordinates',
+                  fields: [
+                    {
+                      name: 'latitude',
+                      type: 'number',
+                      required: true,
+                      admin: {
+                        step: 0.000001,
+                        description: 'Latitude coordinate (e.g., 38.627003)'
+                      }
+                    },
+                    {
+                      name: 'longitude',
+                      type: 'number',
+                      required: true,
+                      admin: {
+                        step: 0.000001,
+                        description: 'Longitude coordinate (e.g., -90.199402)'
+                      }
+                    }
+                  ],
+                  admin: {
+                    description: 'Exact GPS coordinates for map placement and local search. Find coordinates at https://www.latlong.net/'
+                  }
+                },
+                {
+                  name: 'paymentMethods',
+                  type: 'array',
+                  label: 'Accepted Payment Methods',
+                  required: true,
+                  fields: [
+                    {
+                      name: 'method',
+                      type: 'select',
+                      required: true,
+                      options: [
+                        { label: 'Cash', value: 'Cash' },
+                        { label: 'Credit Card', value: 'Credit Card' },
+                        { label: 'Debit Card', value: 'Debit Card' },
+                        { label: 'Financing', value: 'Financing' },
+                        { label: 'Check', value: 'Check' },
+                        { label: 'Wire Transfer', value: 'Wire Transfer' },
+                        { label: 'Apple Pay', value: 'Apple Pay' },
+                        { label: 'Google Pay', value: 'Google Pay' }
+                      ]
+                    }
+                  ],
+                  defaultValue: [
+                    { method: 'Credit Card' },
+                    { method: 'Debit Card' },
+                    { method: 'Financing' },
+                    { method: 'Cash' }
+                  ],
+                  admin: {
+                    description: 'Payment methods accepted at this location (used in schema markup)'
+                  }
+                },
+                {
+                  name: 'foundingDate',
+                  type: 'date',
+                  label: 'Year Established',
+                  admin: {
+                    description: 'Date business was founded (e.g., 1985-03-15). Displays as "Est. 1985" and builds trust through longevity.',
+                    date: {
+                      pickerAppearance: 'dayOnly'
+                    }
+                  }
+                }
+              ],
+              admin: {
+                description: 'Schema.org structured data improves search result appearance and local SEO rankings'
               }
             }
           ]

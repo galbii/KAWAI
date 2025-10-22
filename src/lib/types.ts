@@ -2,20 +2,20 @@
 // Note: Core CMS types are auto-generated in payload-types.ts
 
 // Import Payload generated types
-import type { 
-  Productline, 
-  PianoModel, 
+import type {
+  Productline,
   Media as PayloadMedia,
   User,
-  PianosPage 
+  PianosPage,
+  Product
 } from '@/payload-types'
 
 // Re-export for convenience
-export type { 
-  Productline, 
-  PianoModel, 
+export type {
+  Productline,
+  Product,
   User,
-  PianosPage 
+  PianosPage
 }
 
 // Legacy interfaces for existing code compatibility
@@ -282,7 +282,7 @@ export interface ProductlinesResponse {
 }
 
 export interface PianoModelsResponse {
-  docs: PianoModel[]
+  docs: Product[]
   totalDocs: number
   limit: number
   totalPages: number

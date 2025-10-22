@@ -11,12 +11,9 @@ export type {
   // Content Types
   Product,
   Productline,
-  PianoModel,
   HomePage,
   PianosPage,
-  DealerLocation,
-  LandingPage,
-  ConsultationBooking,
+  Storefront,
   ConstantContactSetting,
 
   // Block Types

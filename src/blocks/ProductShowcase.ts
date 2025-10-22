@@ -24,7 +24,7 @@ export const ProductShowcase: Block = {
     {
       name: 'pianoModel',
       type: 'relationship',
-      relationTo: 'piano-models',
+      relationTo: 'products',
       admin: {
         description: 'Select piano model to automatically populate product information',
         condition: (data, siblingData) => {

@@ -42,6 +42,11 @@ export function ProductPageRenderer({ product }: ProductPageRendererProps) {
 function BasicProductLayout({ product }: { product: Product }) {
   const isPiano = product.type === 'piano'
 
+  // Construct the Learn More link to kawaius.com
+  const learnMoreLink = product.model
+    ? `https://kawaius.com/product/${product.model}`
+    : "https://kawaius.com/product"
+
   return (
     <div className="min-h-screen">
       {/* Hero Section - Adapted for product type */}
@@ -51,9 +56,9 @@ function BasicProductLayout({ product }: { product: Product }) {
           title: product.name,
           description: product.description,
           primaryCta: {
-            text: product.buyButton?.text || "Learn More",
-            link: product.buyButton?.link || "#specifications",
-            style: product.buyButton?.style || "primary"
+            text: "Learn More",
+            link: learnMoreLink,
+            style: "primary"
           }
         }}
         media={{
@@ -89,12 +94,17 @@ function BasicProductLayout({ product }: { product: Product }) {
             }
           }),
           ...(isPiano && product.finishes !== undefined && { finishes: product.finishes }),
-          buyButton: product.buyButton
+          buyButton: {
+            text: "Learn More",
+            link: learnMoreLink,
+            style: "primary",
+            openInNewTab: false
+          }
         }}
         layout={{
           imagePosition: "left",
           showFinishes: isPiano,
-          showPrice: true,
+          showPrice: false,
           compact: false
         }}
       />

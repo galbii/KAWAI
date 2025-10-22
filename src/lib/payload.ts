@@ -1,10 +1,8 @@
 import type {
   Productline,
-  PianoModel,
   Product,
   Media,
-  LandingPage,
-  DealerLocation
+  Storefront
 } from '@/payload-types'
 
 import type {
@@ -21,12 +19,10 @@ import {
   getPianoPageDataWithFallbacks,
   getPianoCategoriesWithFallbacks,
   getFeaturedModelsWithFallbacks,
-  getDealerLocationsWithFallbacks,
   FALLBACK_HOMEPAGE_DATA,
   FALLBACK_PIANO_PAGE_DATA,
   FALLBACK_PIANO_CATEGORIES,
-  FALLBACK_FEATURED_MODELS,
-  FALLBACK_DEALER_LOCATIONS
+  FALLBACK_FEATURED_MODELS
 } from '@/lib/fallbacks'
 
 // Product API response type
@@ -59,7 +55,7 @@ interface MediaResponse {
 
 // Define landing page response type for Payload API
 interface LandingPagesResponse {
-  docs: LandingPage[]
+  docs: any[]
   hasNextPage: boolean
   hasPrevPage: boolean
   limit: number
@@ -171,7 +167,7 @@ export async function getFeaturedProductlines(category?: string): Promise<Produc
 // Piano Model API Functions
 
 // Fetch all piano models with optional filtering by productline
-export async function getPianoModels(productlineSlug?: string): Promise<PianoModel[]> {
+export async function getPianoModels(productlineSlug?: string): Promise<Product[]> {
   const queryParams = new URLSearchParams()
   
   if (productlineSlug) {
@@ -190,7 +186,7 @@ export async function getPianoModels(productlineSlug?: string): Promise<PianoMod
 }
 
 // Fetch a single piano model by slug
-export async function getPianoModelBySlug(slug: string): Promise<PianoModel | null> {
+export async function getPianoModelBySlug(slug: string): Promise<Product | null> {
   const queryParams = new URLSearchParams()
   queryParams.append('where[slug][equals]', slug)
   queryParams.append('limit', '1')
@@ -203,7 +199,7 @@ export async function getPianoModelBySlug(slug: string): Promise<PianoModel | nu
 }
 
 // Fetch featured piano models
-export async function getFeaturedPianoModels(category?: string): Promise<PianoModel[]> {
+export async function getFeaturedPianoModels(category?: string): Promise<Product[]> {
   const queryParams = new URLSearchParams()
   queryParams.append('where[featured][equals]', 'true')
   
@@ -222,7 +218,7 @@ export async function getFeaturedPianoModels(category?: string): Promise<PianoMo
 }
 
 // Fetch piano models for a specific productline
-export async function getPianoModelsByProductline(productlineId: string): Promise<PianoModel[]> {
+export async function getPianoModelsByProductline(productlineId: string): Promise<Product[]> {
   const queryParams = new URLSearchParams()
   queryParams.append('where[productline][equals]', productlineId)
   queryParams.append('sort', 'sortOrder,name')
@@ -377,7 +373,7 @@ export function transformProductToComponent(product: any) {
 }
 
 // LEGACY: Keep for backward compatibility during transition
-export function transformPianoModelToComponent(pianoModel: PianoModel) {
+export function transformPianoModelToComponent(pianoModel: Product) {
   // Generate slug from name since slug is no longer in PianoModel
   const slug = pianoModel.name
     .toLowerCase()
@@ -389,10 +385,10 @@ export function transformPianoModelToComponent(pianoModel: PianoModel) {
   return {
     slug,
     name: pianoModel.name,
-    series: typeof pianoModel.productline === 'object' ? pianoModel.productline.name : 'Unknown Series',
+    series: typeof pianoModel.productline === 'object' && pianoModel.productline !== null ? pianoModel.productline.name : 'Unknown Series',
     rating: 0, // Rating is now handled by Products collection
     reviews: 0, // Reviews are now handled by Products collection
-    image: pianoModel.image, // Keep as Media object or string
+    image: pianoModel.mainImage, // Use mainImage from Product
     description: pianoModel.description,
     keyFeatures: (pianoModel.keyFeatures || []).map(kf => kf.feature),
     pianoModelId: pianoModel.id // Add the piano model ID for product slug fetching
@@ -400,7 +396,7 @@ export function transformPianoModelToComponent(pianoModel: PianoModel) {
 }
 
 // Transform Productline to the format expected by existing components
-export function transformProductlineToSeries(productline: Productline, pianoModels?: PianoModel[]) {
+export function transformProductlineToSeries(productline: Productline, pianoModels?: Product[]) {
   // Use provided piano models (legacy) or extract from products join field
   let pianos: any[] = []
   
@@ -430,7 +426,7 @@ export function transformProductlineToSeries(productline: Productline, pianoMode
 }
 
 // Transform multiple Productlines to Series array
-export function transformProductlinesToSeries(productlines: Productline[], pianoModelsByProductline?: Record<string, PianoModel[]>) {
+export function transformProductlinesToSeries(productlines: Productline[], pianoModelsByProductline?: Record<string, Product[]>) {
   return productlines.map(productline => {
     const pianoModels = pianoModelsByProductline?.[productline.id]
     return transformProductlineToSeries(productline, pianoModels)
@@ -892,83 +888,85 @@ export async function getPianoGalleryData(): Promise<{
   }
 }
 
-// Dealer Location API Functions
+// Storefront API Functions
 
-// Fetch DealerLocation data from API
-export async function getDealerLocation(slug: string): Promise<any | null> {
+// Fetch Storefront data from API
+export async function getStorefront(slug: string): Promise<any | null> {
   try {
     // Construct absolute URL for server-side requests
-    let apiUrl = `/api/dealer-locations/by-slug/${slug}`
+    let apiUrl = `/api/storefronts/by-slug/${slug}`
     if (typeof window === 'undefined') {
       // Server-side: need absolute URL
-      const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-      apiUrl = `${baseURL}/api/dealer-locations/by-slug/${slug}`
+      // In development, always use localhost. In production, use NEXT_PUBLIC_SITE_URL
+      const isDevelopment = process.env.NODE_ENV === 'development'
+      const baseURL = isDevelopment ? 'http://localhost:3000' : (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000')
+      apiUrl = `${baseURL}/api/storefronts/by-slug/${slug}`
     }
-    
-    console.log('[DEBUG] Fetching dealer location data from', apiUrl)
-    
+
+    console.log('[DEBUG] Fetching storefront data from', apiUrl)
+
     // Use the Next.js API route
     const response = await fetch(apiUrl, {
       cache: 'force-cache',
       next: { revalidate: 300 } // Revalidate every 5 minutes
     })
-    
+
     console.log('[DEBUG] Response status:', response.status)
-    
+
     if (response.status === 404) {
       // Location not found or inactive
-      console.log('[DEBUG] Dealer location not found or inactive')
+      console.log('[DEBUG] Storefront not found or inactive')
       return null
     }
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const result = await response.json()
     console.log('[DEBUG] API response result:', { success: result.success, hasData: !!result.data })
-    
+
     if (!result.success) {
-      if (result.error === 'Dealer location not found or inactive') {
+      if (result.error === 'Storefront not found or inactive') {
         return null
       }
-      throw new Error(result.error || 'Failed to fetch dealer location data')
+      throw new Error(result.error || 'Failed to fetch storefront data')
     }
-    
-    console.log('[DEBUG] Successfully fetched dealer location data')
+
+    console.log('[DEBUG] Successfully fetched storefront data')
     return result.data
   } catch (error) {
     // Handle null/undefined errors the same way as payloadFetch
     if (error === null || error === undefined) {
-      console.error('[ERROR] Failed to fetch dealer location: received null error')
-      throw new Error('Failed to fetch dealer location data')
+      console.error('[ERROR] Failed to fetch storefront: received null error')
+      throw new Error('Failed to fetch storefront data')
     }
-    
+
     if (!(error instanceof Error)) {
-      console.error('[ERROR] Failed to fetch dealer location:', String(error))
-      throw new Error(`Failed to fetch dealer location data: ${String(error)}`)
+      console.error('[ERROR] Failed to fetch storefront:', String(error))
+      throw new Error(`Failed to fetch storefront data: ${String(error)}`)
     }
-    
-    console.error('[ERROR] Failed to fetch dealer location:', error.message)
+
+    console.error('[ERROR] Failed to fetch storefront:', error.message)
     throw error
   }
 }
 
-// Cached version of DealerLocation API function
-export async function getCachedDealerLocation(slug: string): Promise<any | null> {
-  const cacheKey = `dealer-location-${slug}`
+// Cached version of Storefront API function
+export async function getCachedStorefront(slug: string): Promise<any | null> {
+  const cacheKey = `storefront-${slug}`
   const cached = getCachedData<any | null>(cacheKey)
-  
+
   if (cached !== null) return cached
-  
-  const data = await getDealerLocation(slug)
+
+  const data = await getStorefront(slug)
   setCachedData(cacheKey, data)
-  
+
   return data
 }
 
-// Get complete DealerLocation data - matching HomePageData structure for component compatibility
-export async function getDealerLocationData(slug: string): Promise<{
+// Get complete Storefront data - matching HomePageData structure for component compatibility
+export async function getStorefrontData(slug: string): Promise<{
   heroSection: any
   showroomSection: any
   pianoCollectionSection: any
@@ -978,25 +976,25 @@ export async function getDealerLocationData(slug: string): Promise<{
   seo: any
 } | null> {
   try {
-    const dealerLocationData = await getCachedDealerLocation(slug)
-    
-    if (!dealerLocationData) {
-      // Return null to trigger 404 - no fallback for dealer locations
+    const storefrontData = await getCachedStorefront(slug)
+
+    if (!storefrontData) {
+      // Return null to trigger 404 - no fallback for storefronts
       return null
     }
-    
+
     // Return the data structure that matches HomePageData interface
     return {
-      heroSection: dealerLocationData.heroSection,
-      showroomSection: dealerLocationData.showroomSection,
-      pianoCollectionSection: dealerLocationData.pianoCollectionSection,
-      pianoGallerySection: dealerLocationData.pianoGallerySection,
-      newsCarouselSection: dealerLocationData.newsCarouselSection,
-      contactFormSection: dealerLocationData.contactFormSection,
-      seo: dealerLocationData.seo
+      heroSection: storefrontData.heroSection,
+      showroomSection: storefrontData.showroomSection,
+      pianoCollectionSection: storefrontData.pianoCollectionSection,
+      pianoGallerySection: storefrontData.pianoGallerySection,
+      newsCarouselSection: storefrontData.newsCarouselSection,
+      contactFormSection: storefrontData.contactFormSection,
+      seo: storefrontData.seo
     }
   } catch (error) {
-    console.error('Error fetching complete dealer location data:', error)
+    console.error('Error fetching complete storefront data:', error)
     // Re-throw the error so the page can handle 404s properly
     throw error
   }
@@ -1150,7 +1148,7 @@ export async function getLandingPageData(dealerSlug: string, campaignSlug: strin
 
 
 // Fetch all active landing pages with optional dealer filtering
-export async function getActiveLandingPages(dealerSlug?: string): Promise<LandingPage[]> {
+export async function getActiveLandingPages(dealerSlug?: string): Promise<any[]> {
   try {
     const queryParams = new URLSearchParams()
     
@@ -1281,9 +1279,9 @@ export async function getCachedLandingPageData(dealerSlug: string, campaignSlug:
   return data
 }
 
-export async function getCachedActiveLandingPages(dealerSlug?: string): Promise<LandingPage[]> {
+export async function getCachedActiveLandingPages(dealerSlug?: string): Promise<any[]> {
   const cacheKey = `active-landing-pages${dealerSlug ? `-${dealerSlug}` : ''}`
-  const cached = getCachedData<LandingPage[]>(cacheKey)
+  const cached = getCachedData<any[]>(cacheKey)
   
   if (cached) return cached
   

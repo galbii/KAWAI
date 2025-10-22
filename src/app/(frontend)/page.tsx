@@ -131,7 +131,7 @@ async function HomePageContent() {
     const config = (await import('@payload-config')).default;
     const payload = await getPayload({ config });
     const result = await payload.find({
-      collection: 'dealer-locations',
+      collection: 'storefronts',
       where: {
         isActive: {
           equals: true

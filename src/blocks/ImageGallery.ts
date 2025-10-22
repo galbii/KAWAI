@@ -24,7 +24,7 @@ export const ImageGallery: Block = {
     {
       name: 'pianoModel',
       type: 'relationship',
-      relationTo: 'piano-models',
+      relationTo: 'products',
       admin: {
         description: 'Select piano model to automatically populate gallery from model images',
         condition: (data, siblingData) => {

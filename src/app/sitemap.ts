@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { getPayloadHMR } from '@payloadcms/next/utilities'
 import configPromise from '@payload-config'
-import type { Product, DealerLocation, LandingPage } from '@/payload-types'
+import type { Product, Storefront } from '@/payload-types'
 
 // Get the site URL from environment or use default
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
@@ -13,7 +13,6 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
  * - Static pages (homepage, core content)
  * - Dynamic product pages from Payload CMS
  * - Dealer location pages
- * - Active campaign landing pages
  * - Piano category pages
  *
  * Automatically regenerates on build and with ISR
@@ -200,12 +199,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
 
     // ==========================================
-    // DEALER LOCATION PAGES - Dynamic Locations
+    // STOREFRONT LOCATION PAGES - Dynamic Locations
     // ==========================================
 
     try {
-      const dealersResult = await payload.find({
-        collection: 'dealer-locations',
+      const storefrontsResult = await payload.find({
+        collection: 'storefronts',
         where: {
           isActive: {
             equals: true,
@@ -218,66 +217,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         },
       })
 
-      const dealerRoutes: MetadataRoute.Sitemap = dealersResult.docs.map((dealer: any) => ({
-        url: `${SITE_URL}/${dealer.slug}`,
-        lastModified: new Date(dealer.updatedAt),
+      const storefrontRoutes: MetadataRoute.Sitemap = storefrontsResult.docs.map((storefront: any) => ({
+        url: `${SITE_URL}/${storefront.slug}`,
+        lastModified: new Date(storefront.updatedAt),
         changeFrequency: 'monthly' as const,
         priority: 0.7,
       }))
 
-      sitemap.push(...dealerRoutes)
-      console.log(`✅ Added ${dealerRoutes.length} dealer location pages to sitemap`)
+      sitemap.push(...storefrontRoutes)
+      console.log(`✅ Added ${storefrontRoutes.length} storefront location pages to sitemap`)
     } catch (error) {
-      console.error('❌ Error fetching dealer locations for sitemap:', error)
+      console.error('❌ Error fetching storefront locations for sitemap:', error)
     }
 
     // ==========================================
-    // CAMPAIGN LANDING PAGES - Active Campaigns
+    // CAMPAIGN LANDING PAGES - REMOVED
     // ==========================================
-
-    try {
-      const landingPagesResult = await payload.find({
-        collection: 'landing-pages',
-        where: {
-          and: [
-            {
-              status: {
-                equals: 'active',
-              },
-            },
-            {
-              'seo.noIndex': {
-                not_equals: true,
-              },
-            },
-          ],
-        },
-        limit: 500,
-        select: {
-          slug: true,
-          dealerLocation: true,
-          updatedAt: true,
-        },
-        depth: 1,
-      })
-
-      const landingPageRoutes: MetadataRoute.Sitemap = landingPagesResult.docs
-        .filter((page: any) => {
-          // Ensure we have both slugs
-          return page.slug && page.dealerLocation?.slug
-        })
-        .map((page: any) => ({
-          url: `${SITE_URL}/${page.dealerLocation.slug}/${page.slug}`,
-          lastModified: new Date(page.updatedAt),
-          changeFrequency: 'weekly' as const,
-          priority: 0.6,
-        }))
-
-      sitemap.push(...landingPageRoutes)
-      console.log(`✅ Added ${landingPageRoutes.length} landing pages to sitemap`)
-    } catch (error) {
-      console.error('❌ Error fetching landing pages for sitemap:', error)
-    }
+    // Landing pages collection has been removed from the system
 
     // ==========================================
     // SPECIAL EXPERIENCE PAGES - Known Routes

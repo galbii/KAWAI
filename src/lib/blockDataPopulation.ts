@@ -1,12 +1,12 @@
-import type { Product, PianoModel, Media } from '@/payload-types'
+import type { Product, Media } from '@/payload-types'
 import { resolveMediaUrl } from '@/lib/payload'
 
 /**
  * Block Data Population System
- * 
+ *
  * This system handles the 3 data source modes for consolidated Products:
  * 1. 'manual' - Use only manual block data
- * 2. 'product' - Use product data (formerly 'pianomodel')  
+ * 2. 'product' - Use product data (formerly 'pianomodel')
  * 3. 'hybrid' - Use product data as base, override with manual data where provided
  */
 
@@ -18,13 +18,13 @@ interface BlockWithProduct {
   pianoModel?: string | Product | null
 }
 
-// Extract PianoModel from relationship field (legacy support)
-export function extractPianoModel(block: any, product: Product): PianoModel | null {
+// Extract product from relationship field (legacy support for pianoModel field name)
+export function extractPianoModel(block: any, product: Product): Product | null {
   // First check if block has a pianoModel relationship
   if (block.pianoModel && typeof block.pianoModel === 'object') {
-    return block.pianoModel
+    return block.pianoModel as Product
   }
-  
+
   // Since we consolidated PianoModels into Products, return null
   // The product itself now contains all the consolidated data
   return null
@@ -33,7 +33,7 @@ export function extractPianoModel(block: any, product: Product): PianoModel | nu
 // Hero Block Data Population
 interface HeroBlockData {
   dataSource?: 'manual' | 'pianomodel' | 'hybrid' | null
-  pianoModel?: string | PianoModel | null
+  pianoModel?: string | Product | null
   content?: {
     title?: string | null
     subtitle?: string | null
@@ -121,7 +121,7 @@ export function populateHeroData(block: HeroBlockData, product: Product) {
 // Product Showcase Block Data Population
 interface ProductShowcaseBlockData {
   dataSource?: 'manual' | 'pianomodel' | 'hybrid' | null
-  pianoModel?: string | PianoModel | null
+  pianoModel?: string | Product | null
   product?: {
     image?: string | Media | null
     title?: string | null
@@ -220,7 +220,7 @@ export function populateProductShowcaseData(block: ProductShowcaseBlockData, pro
 // Image Gallery Block Data Population
 interface ImageGalleryBlockData {
   dataSource?: 'manual' | 'pianomodel' | 'hybrid' | null
-  pianoModel?: string | PianoModel | null
+  pianoModel?: string | Product | null
   images?: Array<{
     image: string | Media
     caption?: string | null
@@ -279,7 +279,7 @@ export function populateImageGalleryData(block: ImageGalleryBlockData, product: 
 // Features List Block Data Population
 interface FeaturesListBlockData {
   dataSource?: 'manual' | 'pianomodel' | 'hybrid' | null
-  pianoModel?: string | PianoModel | null
+  pianoModel?: string | Product | null
   features?: Array<{
     icon?: string | null
     title?: string | null
@@ -337,7 +337,7 @@ export function populateFeaturesListData(block: FeaturesListBlockData, product: 
 // Specifications Block Data Population
 interface SpecificationsBlockData {
   dataSource?: 'manual' | 'pianomodel' | 'hybrid' | null
-  pianoModel?: string | PianoModel | null
+  pianoModel?: string | Product | null
   specifications?: Array<{
     category?: string | null
     specs?: Array<{

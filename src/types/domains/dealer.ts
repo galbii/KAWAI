@@ -1,13 +1,13 @@
 // Dealer domain types - Multi-tenant dealer management
 // Types for dealer locations, campaigns, and regional customization
 
-import type { DealerLocation, LandingPage, Media } from '@/payload-types'
+import type { Storefront, Media } from '@/payload-types'
 import type { DealerSlug, UserId } from '@/types/common/utils'
 import type { PianoProduct } from './piano'
 import type { Timestamps } from '@/types/common/utils'
 
-// Enhanced dealer location with business logic
-export interface EnhancedDealerLocation extends Omit<DealerLocation, 'createdAt' | 'updatedAt'>, Timestamps {
+// Enhanced storefront location with business logic
+export interface EnhancedStorefront extends Omit<Storefront, 'createdAt' | 'updatedAt'>, Timestamps {
   id: string
   slug: DealerSlug
   businessDetails: DealerBusinessDetails

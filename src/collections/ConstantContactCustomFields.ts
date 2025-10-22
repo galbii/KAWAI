@@ -11,7 +11,7 @@ import type { CollectionConfig } from 'payload';
 export const ConstantContactCustomFields: CollectionConfig = {
   slug: 'constant-contact-custom-fields',
   admin: {
-    group: 'SYSTEM',
+    group: 'Integrations',
     description: 'Custom field ID mappings for Constant Contact API integration',
     defaultColumns: ['fieldName', 'fieldLabel', 'customFieldId', 'fieldType'],
     useAsTitle: 'fieldLabel',

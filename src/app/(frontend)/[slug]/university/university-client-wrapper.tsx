@@ -6,6 +6,6 @@ const ClientHomePage = dynamic(() => import('./client-page'), {
   ssr: false,
 });
 
-export default function DallasHome() {
+export function UniversityClientWrapper() {
   return <ClientHomePage />;
 }

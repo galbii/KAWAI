@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { getDealerLocationData } from "@/lib/payload";
+import { getStorefrontData } from "@/lib/payload";
 import { 
   ContactHero,
   ContactInfo,
@@ -66,44 +66,44 @@ function ContactFormSkeleton() {
   );
 }
 
-// Server Component that fetches dealer location data and renders contact sections
+// Server Component that fetches storefront data and renders contact sections
 async function ContactPageContent({ slug }: { slug: string }) {
-  let dealerLocationData: HomePageData | null = null;
+  let storefrontData: HomePageData | null = null;
   let error: string | null = null;
 
   try {
-    dealerLocationData = await getDealerLocationData(slug);
-    
-    // If dealer location doesn't exist or is inactive, show 404
-    if (!dealerLocationData) {
+    storefrontData = await getStorefrontData(slug);
+
+    // If storefront doesn't exist or is inactive, show 404
+    if (!storefrontData) {
       notFound();
     }
   } catch (err) {
-    error = err instanceof Error ? err.message : 'Failed to load dealer location data';
-    console.error('Dealer location data fetch error:', error);
-    
+    error = err instanceof Error ? err.message : 'Failed to load storefront data';
+    console.error('Storefront data fetch error:', error);
+
     // If there's a fetch error, show 404 as well since we can't determine if location exists
     notFound();
   }
 
   // If there's an error but we still have data, components will use their fallback defaults
   if (error) {
-    console.warn(`Dealer location CMS data partially unavailable: ${error}. Using available data with fallbacks.`);
+    console.warn(`Storefront CMS data partially unavailable: ${error}. Using available data with fallbacks.`);
   }
 
   return (
     <div className="min-h-screen">
       {/* Contact Hero Section */}
-      <ContactHero data={dealerLocationData?.heroSection} />
-      
+      <ContactHero data={storefrontData?.heroSection} />
+
       {/* Contact Information Section */}
-      <ContactInfo data={dealerLocationData?.showroomSection} />
-      
+      <ContactInfo data={storefrontData?.showroomSection} />
+
       {/* Contact Form Section */}
-      <LocationContactForm data={dealerLocationData?.contactFormSection} />
-      
+      <LocationContactForm data={storefrontData?.contactFormSection} />
+
       {/* Map Section (if API key is available) */}
-      <ContactMap data={dealerLocationData?.showroomSection} />
+      <ContactMap data={storefrontData?.showroomSection} />
     </div>
   );
 }
@@ -112,47 +112,47 @@ async function ContactPageContent({ slug }: { slug: string }) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await params;
-    const dealerLocationData = await getDealerLocationData(slug);
-    
-    if (!dealerLocationData?.seo) {
+    const storefrontData = await getStorefrontData(slug);
+
+    if (!storefrontData?.seo) {
       return {
         title: 'Contact - Location Not Found',
-        description: 'The requested Piano Gallery location could not be found.'
+        description: 'The requested storefront location could not be found.'
       };
     }
 
-    const locationName = dealerLocationData.heroSection?.locationText || 'Kawai Piano Gallery';
-    const baseTitle = dealerLocationData.seo.metaTitle || 'Contact - Kawai Piano Gallery';
+    const locationName = storefrontData.heroSection?.locationText || 'Kawai Piano Gallery';
+    const baseTitle = storefrontData.seo.metaTitle || 'Contact - Kawai Piano Gallery';
     const contactTitle = `Contact ${locationName} | ${baseTitle}`;
 
     return {
       title: contactTitle,
-      description: `Contact ${locationName}. ${dealerLocationData.seo.metaDescription || 'Get in touch with your local Kawai Piano Gallery.'}`,
-      keywords: `contact, ${dealerLocationData.seo.keywords}`,
+      description: `Contact ${locationName}. ${storefrontData.seo.metaDescription || 'Get in touch with your local Kawai Piano Gallery.'}`,
+      keywords: `contact, ${storefrontData.seo.keywords}`,
       openGraph: {
         title: contactTitle,
-        description: `Contact ${locationName}. ${dealerLocationData.seo.openGraphDescription || dealerLocationData.seo.metaDescription || 'Get in touch with your local Kawai Piano Gallery.'}`,
-        images: dealerLocationData.seo.openGraphImage ? [
+        description: `Contact ${locationName}. ${storefrontData.seo.openGraphDescription || storefrontData.seo.metaDescription || 'Get in touch with your local Kawai Piano Gallery.'}`,
+        images: storefrontData.seo.openGraphImage ? [
           {
-            url: typeof dealerLocationData.seo.openGraphImage === 'string' 
-              ? dealerLocationData.seo.openGraphImage 
-              : dealerLocationData.seo.openGraphImage.url || ''
+            url: typeof storefrontData.seo.openGraphImage === 'string'
+              ? storefrontData.seo.openGraphImage
+              : storefrontData.seo.openGraphImage.url || ''
           }
         ] : []
       }
     };
   } catch (error) {
-    console.error('Error generating metadata for dealer location contact:', error);
+    console.error('Error generating metadata for storefront contact:', error);
     return {
       title: 'Contact - Location Not Found',
-      description: 'The requested Piano Gallery location could not be found.'
+      description: 'The requested storefront location could not be found.'
     };
   }
 }
 
 // Removed generateStaticParams to fix ECONNREFUSED errors during build
-// All dealer location contact pages will be dynamically generated at runtime
-// This is appropriate for a CMS-driven site where dealer locations may change frequently
+// All storefront contact pages will be dynamically generated at runtime
+// This is appropriate for a CMS-driven site where storefronts may change frequently
 
 export const dynamicParams = true; // Allow dynamic rendering for unknown slugs
 

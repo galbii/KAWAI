@@ -83,16 +83,13 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
-    productlines: Productline;
-    'piano-models': PianoModel;
     'home-page': HomePage;
-    'dealer-locations': DealerLocation;
-    'landing-pages': LandingPage;
     'pianos-page': PianosPage;
+    storefronts: Storefront;
     products: Product;
+    productlines: Productline;
     'constant-contact-settings': ConstantContactSetting;
     'constant-contact-custom-fields': ConstantContactCustomField;
-    'consultation-bookings': ConsultationBooking;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -105,16 +102,13 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
-    productlines: ProductlinesSelect<false> | ProductlinesSelect<true>;
-    'piano-models': PianoModelsSelect<false> | PianoModelsSelect<true>;
     'home-page': HomePageSelect<false> | HomePageSelect<true>;
-    'dealer-locations': DealerLocationsSelect<false> | DealerLocationsSelect<true>;
-    'landing-pages': LandingPagesSelect<false> | LandingPagesSelect<true>;
     'pianos-page': PianosPageSelect<false> | PianosPageSelect<true>;
+    storefronts: StorefrontsSelect<false> | StorefrontsSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
+    productlines: ProductlinesSelect<false> | ProductlinesSelect<true>;
     'constant-contact-settings': ConstantContactSettingsSelect<false> | ConstantContactSettingsSelect<true>;
     'constant-contact-custom-fields': ConstantContactCustomFieldsSelect<false> | ConstantContactCustomFieldsSelect<true>;
-    'consultation-bookings': ConsultationBookingsSelect<false> | ConsultationBookingsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -163,7 +157,7 @@ export interface ProductShowcaseBlock {
   /**
    * Select piano model to automatically populate product information
    */
-  pianoModel?: (string | null) | PianoModel;
+  pianoModel?: (string | null) | Product;
   /**
    * Product showcase configuration
    */
@@ -275,393 +269,6 @@ export interface ProductShowcaseBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'productShowcase';
-}
-/**
- * Piano models that can automatically generate product pages with blocks and content
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "piano-models".
- */
-export interface PianoModel {
-  id: string;
-  /**
-   * Piano model name (e.g., "CA901", "SK-EX")
-   */
-  name: string;
-  /**
-   * URL-friendly version of piano model name
-   */
-  slug: string;
-  /**
-   * Model number/identifier
-   */
-  model: string;
-  /**
-   * The product line/series this model belongs to
-   */
-  productline: string | Productline;
-  /**
-   * Brief model description
-   */
-  description: string;
-  /**
-   * Short description for listings
-   */
-  shortDescription?: string | null;
-  /**
-   * Main product image
-   */
-  image: string | Media;
-  /**
-   * Main selling points and key features
-   */
-  keyFeatures?:
-    | {
-        feature: string;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Technical specifications
-   */
-  specifications?: {
-    /**
-     * Number of keys
-     */
-    keys?: number | null;
-    /**
-     * Number of pedals
-     */
-    pedals?: number | null;
-    /**
-     * Number of voices/sounds
-     */
-    voices?: number | null;
-    /**
-     * Maximum polyphony
-     */
-    polyphony?: number | null;
-    dimensions?: {
-      /**
-       * Width (e.g., "145cm")
-       */
-      width?: string | null;
-      /**
-       * Depth (e.g., "46cm")
-       */
-      depth?: string | null;
-      /**
-       * Height (e.g., "88cm")
-       */
-      height?: string | null;
-    };
-    /**
-     * Weight (e.g., "68kg")
-     */
-    weight?: string | null;
-    /**
-     * Action technology (e.g., "Grand Feel III")
-     */
-    actionType?: string | null;
-    /**
-     * Sound engine technology
-     */
-    soundEngine?: string | null;
-  };
-  /**
-   * Available finish options for this piano model
-   */
-  availableFinishes?:
-    | {
-        /**
-         * Finish name (e.g., "Ebony Polish", "White Satin")
-         */
-        name: string;
-        /**
-         * Finish sample image
-         */
-        image?: (string | null) | Media;
-        /**
-         * Price difference for this finish (+ or -)
-         */
-        priceModifier?: number | null;
-        /**
-         * Is this finish currently available?
-         */
-        available?: boolean | null;
-        /**
-         * Optional finish description
-         */
-        description?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Pricing information
-   */
-  pricing?: {
-    /**
-     * Price currency
-     */
-    currency?: ('USD' | 'EUR' | 'GBP' | 'CAD') | null;
-    /**
-     * MSRP in selected currency
-     */
-    msrp?: number | null;
-    /**
-     * Sale price if different from MSRP
-     */
-    salePrice?: number | null;
-    /**
-     * Price range text (e.g., "$15,000 - $20,000")
-     */
-    priceRange?: string | null;
-    /**
-     * Custom price text (e.g., "Starting from", "Contact for pricing")
-     */
-    priceText?: string | null;
-    /**
-     * Check if pricing is by contact only
-     */
-    contactForPricing?: boolean | null;
-    /**
-     * Display price on product pages
-     */
-    showPrice?: boolean | null;
-  };
-  /**
-   * Auto-generated product page for this piano model
-   */
-  product?: (string | null) | Product;
-  /**
-   * Automatically create/update a Product page when this piano model is saved
-   */
-  autoGenerateProduct?: boolean | null;
-  /**
-   * Status affects auto-generated product visibility
-   */
-  status?: ('active' | 'discontinued' | 'coming-soon' | 'limited-edition') | null;
-  /**
-   * Feature this model prominently
-   */
-  featured?: boolean | null;
-  /**
-   * Display order within series (lower numbers first)
-   */
-  sortOrder?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "productlines".
- */
-export interface Productline {
-  id: string;
-  /**
-   * Series name (e.g., "CA Series", "Shigeru Kawai SK Series")
-   */
-  name: string;
-  /**
-   * URL-friendly version of name
-   */
-  slug: string;
-  /**
-   * Piano category for organizing series
-   */
-  category: 'digital' | 'grand' | 'hybrid' | 'upright';
-  /**
-   * Main series description for the browser
-   */
-  description: string;
-  /**
-   * Optional highlighted callout text
-   */
-  highlight?: string | null;
-  /**
-   * Main series image displayed in the browser (can be added after seeding)
-   */
-  image?: (string | null) | Media;
-  /**
-   * Additional slides for the clean series browser carousel
-   */
-  slides?:
-    | {
-        /**
-         * Title for this slide
-         */
-        title: string;
-        /**
-         * Slide image (can be added after seeding)
-         */
-        image?: (string | null) | Media;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Products in this series (automatically populated)
-   */
-  products?: {
-    docs?: (string | Product)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  /**
-   * Feature this series prominently
-   */
-  featured?: boolean | null;
-  /**
-   * Display order (lower numbers first)
-   */
-  sortOrder?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media".
- */
-export interface Media {
-  id: string;
-  /**
-   * Alternative text for accessibility and SEO. Describe what the image shows.
-   */
-  alt: string;
-  /**
-   * Optional caption displayed with the image
-   */
-  caption?: string | null;
-  /**
-   * Detailed description for administrative purposes
-   */
-  description?: string | null;
-  /**
-   * Type of media for better organization
-   */
-  mediaType?: ('image' | 'video' | 'audio' | 'document') | null;
-  /**
-   * Where this media is intended to be used
-   */
-  usage?:
-    | ('hero' | 'product' | 'category' | 'carousel' | 'background' | 'thumbnail' | 'technical' | 'marketing')[]
-    | null;
-  /**
-   * Video-specific metadata
-   */
-  videoMeta?: {
-    /**
-     * Video duration in seconds
-     */
-    duration?: number | null;
-    /**
-     * Custom thumbnail for the video
-     */
-    thumbnail?: (string | null) | Media;
-    /**
-     * Should this video autoplay (use sparingly)
-     */
-    autoplay?: boolean | null;
-    /**
-     * Start video muted (recommended for autoplay)
-     */
-    muted?: boolean | null;
-  };
-  /**
-   * Responsive image variants (generated automatically when uploaded)
-   */
-  variants?: {
-    /**
-     * Optimized for mobile devices (480px width)
-     */
-    mobile?: (string | null) | Media;
-    /**
-     * Optimized for tablets (768px width)
-     */
-    tablet?: (string | null) | Media;
-    /**
-     * Optimized for desktop (1200px width)
-     */
-    desktop?: (string | null) | Media;
-    /**
-     * Optimized for large screens (1920px width)
-     */
-    largeDesktop?: (string | null) | Media;
-  };
-  /**
-   * SEO and technical metadata
-   */
-  seoMeta?: {
-    /**
-     * Keywords this image relates to (comma-separated)
-     */
-    focusKeywords?: string | null;
-    /**
-     * Photo credit information
-     */
-    photographerCredit?: string | null;
-    /**
-     * Copyright or licensing information
-     */
-    copyrightInfo?: string | null;
-    /**
-     * Original source or URL if external
-     */
-    originalSource?: string | null;
-  };
-  /**
-   * Mark as featured media for easy access
-   */
-  featured?: boolean | null;
-  /**
-   * Tags for organization and search (e.g., "grand-piano", "black-finish")
-   */
-  tags?: string[] | null;
-  prefix?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-  sizes?: {
-    thumbnail?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    card?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    tablet?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    desktop?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-  };
 }
 /**
  * Unified product management - pianos, accessories, and other products with dynamic page building
@@ -999,6 +606,221 @@ export interface Product {
   createdAt: string;
 }
 /**
+ * Media library for images, videos, and documents
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media".
+ */
+export interface Media {
+  id: string;
+  /**
+   * Alternative text for accessibility and SEO. Describe what the image shows.
+   */
+  alt: string;
+  /**
+   * Optional caption displayed with the image
+   */
+  caption?: string | null;
+  /**
+   * Detailed description for administrative purposes
+   */
+  description?: string | null;
+  /**
+   * Type of media for better organization
+   */
+  mediaType?: ('image' | 'video' | 'audio' | 'document') | null;
+  /**
+   * Where this media is intended to be used
+   */
+  usage?:
+    | ('hero' | 'product' | 'category' | 'carousel' | 'background' | 'thumbnail' | 'technical' | 'marketing')[]
+    | null;
+  /**
+   * Video-specific metadata
+   */
+  videoMeta?: {
+    /**
+     * Video duration in seconds
+     */
+    duration?: number | null;
+    /**
+     * Custom thumbnail for the video
+     */
+    thumbnail?: (string | null) | Media;
+    /**
+     * Should this video autoplay (use sparingly)
+     */
+    autoplay?: boolean | null;
+    /**
+     * Start video muted (recommended for autoplay)
+     */
+    muted?: boolean | null;
+  };
+  /**
+   * Responsive image variants (generated automatically when uploaded)
+   */
+  variants?: {
+    /**
+     * Optimized for mobile devices (480px width)
+     */
+    mobile?: (string | null) | Media;
+    /**
+     * Optimized for tablets (768px width)
+     */
+    tablet?: (string | null) | Media;
+    /**
+     * Optimized for desktop (1200px width)
+     */
+    desktop?: (string | null) | Media;
+    /**
+     * Optimized for large screens (1920px width)
+     */
+    largeDesktop?: (string | null) | Media;
+  };
+  /**
+   * SEO and technical metadata
+   */
+  seoMeta?: {
+    /**
+     * Keywords this image relates to (comma-separated)
+     */
+    focusKeywords?: string | null;
+    /**
+     * Photo credit information
+     */
+    photographerCredit?: string | null;
+    /**
+     * Copyright or licensing information
+     */
+    copyrightInfo?: string | null;
+    /**
+     * Original source or URL if external
+     */
+    originalSource?: string | null;
+  };
+  /**
+   * Mark as featured media for easy access
+   */
+  featured?: boolean | null;
+  /**
+   * Tags for organization and search (e.g., "grand-piano", "black-finish")
+   */
+  tags?: string[] | null;
+  prefix?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    card?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    tablet?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    desktop?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * Piano product lines and series management
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "productlines".
+ */
+export interface Productline {
+  id: string;
+  /**
+   * Series name (e.g., "CA Series", "Shigeru Kawai SK Series")
+   */
+  name: string;
+  /**
+   * URL-friendly version of name
+   */
+  slug: string;
+  /**
+   * Piano category for organizing series
+   */
+  category: 'digital' | 'grand' | 'hybrid' | 'upright';
+  /**
+   * Main series description for the browser
+   */
+  description: string;
+  /**
+   * Optional highlighted callout text
+   */
+  highlight?: string | null;
+  /**
+   * Main series image displayed in the browser (can be added after seeding)
+   */
+  image?: (string | null) | Media;
+  /**
+   * Additional slides for the clean series browser carousel
+   */
+  slides?:
+    | {
+        /**
+         * Title for this slide
+         */
+        title: string;
+        /**
+         * Slide image (can be added after seeding)
+         */
+        image?: (string | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Products in this series (automatically populated)
+   */
+  products?: {
+    docs?: (string | Product)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Feature this series prominently
+   */
+  featured?: boolean | null;
+  /**
+   * Display order (lower numbers first)
+   */
+  sortOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ProductHeroBlock".
  */
@@ -1065,7 +887,7 @@ export interface HeroBlock {
   /**
    * Select piano model to automatically populate hero content
    */
-  pianoModel?: (string | null) | PianoModel;
+  pianoModel?: (string | null) | Product;
   /**
    * Hero content and call-to-action buttons
    */
@@ -1237,7 +1059,7 @@ export interface ImageGalleryBlock {
   /**
    * Select piano model to automatically populate gallery from model images
    */
-  pianoModel?: (string | null) | PianoModel;
+  pianoModel?: (string | null) | Product;
   /**
    * Optional gallery title
    */
@@ -1340,7 +1162,7 @@ export interface FeaturesListBlock {
   /**
    * Select piano model to automatically populate key features
    */
-  pianoModel?: (string | null) | PianoModel;
+  pianoModel?: (string | null) | Product;
   /**
    * Optional header content for the features section
    */
@@ -1442,7 +1264,7 @@ export interface SpecificationsBlock {
   /**
    * Select piano model to automatically populate specifications
    */
-  pianoModel?: (string | null) | PianoModel;
+  pianoModel?: (string | null) | Product;
   /**
    * Header content for the specifications section
    */
@@ -2579,6 +2401,8 @@ export interface LandingTestimonialsBlock {
   blockType: 'landingTestimonials';
 }
 /**
+ * User accounts and authentication management
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
@@ -2967,566 +2791,6 @@ export interface HomePage {
   createdAt: string;
 }
 /**
- * Manage Piano Gallery locations with customizable content structure including hero, showroom information, piano collection, gallery, news, contact form, and SEO.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "dealer-locations".
- */
-export interface DealerLocation {
-  id: string;
-  /**
-   * URL-friendly identifier for this Piano Gallery location (e.g., "st-louis", "chicago")
-   */
-  slug: string;
-  /**
-   * Location name for admin identification (e.g., "St. Louis Showroom", "Chicago Downtown")
-   */
-  locationName: string;
-  /**
-   * Controls whether this Piano Gallery location is visible on the frontend
-   */
-  isActive?: boolean | null;
-  /**
-   * Location/Piano Gallery status text displayed at the top
-   */
-  locationText: string;
-  /**
-   * Established date and location information
-   */
-  establishedText: string;
-  /**
-   * Title prefix word (e.g., "The")
-   */
-  titlePrefix: string;
-  /**
-   * Main title word - typically displayed prominently
-   */
-  titleMain: string;
-  /**
-   * Title suffix words (e.g., "to Life")
-   */
-  titleSuffix: string;
-  /**
-   * Hero description text displayed below the main title
-   */
-  description: string;
-  /**
-   * Primary call-to-action button configuration
-   */
-  primaryCta: {
-    /**
-     * Primary call-to-action button text
-     */
-    text: string;
-    /**
-     * Primary call-to-action button link/URL
-     */
-    link: string;
-  };
-  /**
-   * Secondary call-to-action button configuration
-   */
-  secondaryCta: {
-    /**
-     * Secondary call-to-action button text
-     */
-    text: string;
-    /**
-     * Secondary call-to-action button link/URL
-     */
-    link: string;
-  };
-  /**
-   * Background video for the hero section
-   */
-  backgroundVideo?: (string | null) | Media;
-  /**
-   * Section header text
-   */
-  sectionHeader: string;
-  /**
-   * Main showroom section title
-   */
-  showroomTitle: string;
-  /**
-   * Showroom section description
-   */
-  showroomDescription: string;
-  /**
-   * Basic showroom contact and location information
-   */
-  showroomInfo: {
-    /**
-     * Business/showroom name
-     */
-    name: string;
-    /**
-     * Full business address
-     */
-    address: string;
-    /**
-     * Primary phone number
-     */
-    phone: string;
-    /**
-     * Service area description
-     */
-    serviceArea: string;
-  };
-  /**
-   * Showroom operating hours for each day of the week
-   */
-  hours: {
-    /**
-     * Day of the week (e.g., "Monday", "Tuesday")
-     */
-    day: string;
-    /**
-     * Hours for this day (e.g., "10:00 AM - 7:00 PM", "Closed")
-     */
-    time: string;
-    id?: string | null;
-  }[];
-  /**
-   * Key features and services offered at the showroom
-   */
-  features: {
-    /**
-     * Icon to display for this feature
-     */
-    icon: 'piano' | 'music' | 'award' | 'users' | 'clock' | 'shield' | 'headphones' | 'car';
-    /**
-     * Feature title (e.g., "Expert Consultation")
-     */
-    title: string;
-    /**
-     * Feature description
-     */
-    description: string;
-    id?: string | null;
-  }[];
-  /**
-   * Google Maps API key for embedded map (optional)
-   */
-  mapApiKey?: string | null;
-  /**
-   * Call-to-action buttons for the showroom section
-   */
-  showroomCtas: {
-    /**
-     * Directions button text
-     */
-    directionsText: string;
-    /**
-     * Google Maps directions link
-     */
-    directionsLink: string;
-    /**
-     * Schedule visit button text
-     */
-    scheduleText: string;
-    /**
-     * Schedule visit link/URL
-     */
-    scheduleLink: string;
-  };
-  /**
-   * Piano collection section header
-   */
-  collectionSectionHeader: string;
-  /**
-   * Featured collection title
-   */
-  collectionTitle: string;
-  /**
-   * Featured collection description
-   */
-  collectionDescription: string;
-  /**
-   * Call-to-action for the piano collection section
-   */
-  collectionCta: {
-    /**
-     * Collection CTA button text
-     */
-    text: string;
-    /**
-     * Collection CTA button link/URL
-     */
-    link: string;
-  };
-  /**
-   * Featured video configuration for the collection section
-   */
-  featuredVideo?: {
-    /**
-     * YouTube video ID for featured video
-     */
-    youtubeId?: string | null;
-    /**
-     * Video player width
-     */
-    width?: number | null;
-    /**
-     * Video player height
-     */
-    height?: number | null;
-  };
-  /**
-   * Auto-play duration in milliseconds (leave empty to use main site default)
-   */
-  autoPlayDuration?: number | null;
-  /**
-   * News carousel items (leave empty to use main site news)
-   */
-  newsItems?:
-    | {
-        /**
-         * News item title
-         */
-        title: string;
-        /**
-         * News item description
-         */
-        description: string;
-        /**
-         * News item image
-         */
-        image?: (string | null) | Media;
-        /**
-         * News item category
-         */
-        category: 'news' | 'events' | 'promotions' | 'new-arrivals' | 'education';
-        /**
-         * Link to full article or page (optional)
-         */
-        link?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Contact form section title (first part)
-   */
-  contactTitle: string;
-  /**
-   * Contact form section title highlight word
-   */
-  contactTitleHighlight: string;
-  /**
-   * Contact form section description
-   */
-  contactDescription: string;
-  /**
-   * Step titles for the contact process
-   */
-  stepTitles: {
-    step: string;
-    id?: string | null;
-  }[];
-  /**
-   * Trust/credibility message
-   */
-  trustMessage: string;
-  /**
-   * Benefits/features of working with your Piano Gallery
-   */
-  benefits: {
-    /**
-     * Benefit icon
-     */
-    icon: 'shield-check' | 'clock' | 'users' | 'award' | 'music' | 'heart';
-    /**
-     * Benefit text
-     */
-    text: string;
-    id?: string | null;
-  }[];
-  /**
-   * Form field options and choices
-   */
-  formOptions: {
-    /**
-     * Musical experience level options
-     */
-    experienceLevels: {
-      level: string;
-      id?: string | null;
-    }[];
-    /**
-     * Piano type options for the form
-     */
-    pianoTypes: {
-      type: string;
-      id?: string | null;
-    }[];
-    /**
-     * Budget range options for the form
-     */
-    budgetRanges: {
-      range: string;
-      id?: string | null;
-    }[];
-    /**
-     * Primary use options for the piano
-     */
-    primaryUses: {
-      use: string;
-      id?: string | null;
-    }[];
-  };
-  /**
-   * SEO and metadata configuration
-   */
-  seo?: {
-    /**
-     * Page meta title for search engines
-     */
-    metaTitle?: string | null;
-    /**
-     * Page meta description for search engines (max 160 characters)
-     */
-    metaDescription?: string | null;
-    /**
-     * SEO keywords (comma-separated)
-     */
-    keywords?: string | null;
-    /**
-     * Open Graph title for social media sharing
-     */
-    openGraphTitle?: string | null;
-    /**
-     * Open Graph description for social media sharing
-     */
-    openGraphDescription?: string | null;
-    /**
-     * Open Graph image for social media sharing
-     */
-    openGraphImage?: (string | null) | Media;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Manage campaign landing pages with flexible content blocks and dealer location associations.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "landing-pages".
- */
-export interface LandingPage {
-  id: string;
-  /**
-   * URL-friendly identifier for this campaign (e.g., "summer-sale", "student-special")
-   */
-  slug: string;
-  /**
-   * Landing page title for admin identification (e.g., "Summer Piano Sale 2024")
-   */
-  title: string;
-  /**
-   * Associated dealer location for this campaign landing page
-   */
-  dealerLocation: string | DealerLocation;
-  /**
-   * Campaign status - controls visibility and access
-   */
-  status: 'active' | 'draft' | 'scheduled' | 'expired' | 'paused';
-  /**
-   * Legacy field - use Status field instead
-   */
-  isActive?: boolean | null;
-  /**
-   * Campaign start date (optional, for scheduling)
-   */
-  campaignStartDate?: string | null;
-  /**
-   * Campaign end date (optional, for scheduling)
-   */
-  campaignEndDate?: string | null;
-  /**
-   * Build your landing page content using flexible blocks
-   */
-  pageContent?:
-    | (
-        | HeroBlock
-        | ProductShowcaseBlock
-        | ProductHeroBlock
-        | TextContentBlock
-        | ImageGalleryBlock
-        | FeaturesListBlock
-        | SpecificationsBlock
-        | CallToActionBlock
-        | TestimonialsBlock
-      )[]
-    | null;
-  /**
-   * Type of campaign for this landing page
-   */
-  campaignType:
-    | 'promotional-sale'
-    | 'seasonal-campaign'
-    | 'product-launch'
-    | 'event-landing'
-    | 'educational-campaign'
-    | 'customer-acquisition'
-    | 'dealer-specific';
-  /**
-   * Internal description of the campaign purpose and goals
-   */
-  campaignDescription?: string | null;
-  /**
-   * Target audience(s) for this campaign
-   */
-  targetAudience?:
-    | (
-        | 'beginners'
-        | 'students'
-        | 'parents'
-        | 'professionals'
-        | 'teachers'
-        | 'institutions'
-        | 'existing-customers'
-        | 'general-public'
-      )[]
-    | null;
-  /**
-   * UTM tracking parameters for campaign analytics
-   */
-  utmParameters?: {
-    /**
-     * UTM Source (e.g., google, facebook, email)
-     */
-    source?: string | null;
-    /**
-     * UTM Medium (e.g., cpc, social, email)
-     */
-    medium?: string | null;
-    /**
-     * UTM Campaign name (e.g., summer-sale-2024)
-     */
-    campaign?: string | null;
-    /**
-     * UTM Content (optional, for A/B testing)
-     */
-    content?: string | null;
-    /**
-     * UTM Term (optional, for paid search keywords)
-     */
-    term?: string | null;
-  };
-  /**
-   * Define conversion goals and tracking for this campaign
-   */
-  conversionGoals?:
-    | {
-        /**
-         * Type of conversion goal to track
-         */
-        goalType:
-          | 'form-submission'
-          | 'phone-call'
-          | 'showroom-visit'
-          | 'brochure-download'
-          | 'newsletter-signup'
-          | 'product-page-visit'
-          | 'video-engagement'
-          | 'custom-event';
-        /**
-         * Name for this conversion goal
-         */
-        goalName: string;
-        /**
-         * Monetary value of this conversion (optional)
-         */
-        goalValue?: number | null;
-        /**
-         * Custom tracking code or pixel (optional)
-         */
-        trackingCode?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Configure analytics integrations for this landing page
-   */
-  analyticsIntegrations?: {
-    /**
-     * Enable Google Analytics tracking
-     */
-    googleAnalyticsEnabled?: boolean | null;
-    /**
-     * Enable Facebook Pixel tracking
-     */
-    facebookPixelEnabled?: boolean | null;
-    /**
-     * Enable PostHog analytics tracking
-     */
-    postHogEnabled?: boolean | null;
-    /**
-     * Custom tracking code to inject in the page head
-     */
-    customTrackingCode?: string | null;
-  };
-  /**
-   * SEO and metadata configuration specific to this landing page
-   */
-  seo?: {
-    /**
-     * Page meta title for search engines (will inherit from dealer location if not set)
-     */
-    metaTitle?: string | null;
-    /**
-     * Page meta description for search engines (max 160 characters)
-     */
-    metaDescription?: string | null;
-    /**
-     * SEO keywords (comma-separated, will combine with dealer location keywords)
-     */
-    keywords?: string | null;
-    /**
-     * Open Graph title for social media sharing
-     */
-    openGraphTitle?: string | null;
-    /**
-     * Open Graph description for social media sharing
-     */
-    openGraphDescription?: string | null;
-    /**
-     * Open Graph image for social media sharing
-     */
-    openGraphImage?: (string | null) | Media;
-    /**
-     * Prevent search engines from indexing this page (useful for short-term campaigns)
-     */
-    noIndex?: boolean | null;
-  };
-  /**
-   * URL to redirect to if campaign has expired (optional)
-   */
-  redirectAfterExpiry?: string | null;
-  /**
-   * Require password to access this landing page
-   */
-  passwordProtected?: boolean | null;
-  /**
-   * Password required to access this landing page
-   */
-  password?: string | null;
-  /**
-   * Custom CSS styles specific to this landing page
-   */
-  customCSS?: string | null;
-  /**
-   * Custom JavaScript code to inject into this landing page
-   */
-  customJavaScript?: string | null;
-  /**
-   * Internal notes about this landing page campaign
-   */
-  notes?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * Manage all content for the main Pianos page including hero, categories, featured models, and CTAs.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3699,6 +2963,461 @@ export interface PianosPage {
   createdAt: string;
 }
 /**
+ * Manage storefront locations with customizable content structure including hero, showroom information, piano collection, gallery, news, contact form, and SEO.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "storefronts".
+ */
+export interface Storefront {
+  id: string;
+  /**
+   * URL-friendly identifier for this storefront location (e.g., "st-louis", "chicago")
+   */
+  slug: string;
+  /**
+   * Location name for admin identification (e.g., "St. Louis Showroom", "Chicago Downtown")
+   */
+  locationName: string;
+  /**
+   * Controls whether this storefront location is visible on the frontend
+   */
+  isActive?: boolean | null;
+  /**
+   * Location/Piano Gallery status text displayed at the top
+   */
+  locationText: string;
+  /**
+   * Established date and location information
+   */
+  establishedText: string;
+  /**
+   * Title prefix word (e.g., "The")
+   */
+  titlePrefix: string;
+  /**
+   * Main title word - typically displayed prominently
+   */
+  titleMain: string;
+  /**
+   * Title suffix words (e.g., "to Life")
+   */
+  titleSuffix: string;
+  /**
+   * Hero description text displayed below the main title
+   */
+  description: string;
+  /**
+   * Primary call-to-action button configuration
+   */
+  primaryCta: {
+    /**
+     * Primary call-to-action button text
+     */
+    text: string;
+    /**
+     * Primary call-to-action button link/URL
+     */
+    link: string;
+  };
+  /**
+   * Secondary call-to-action button configuration
+   */
+  secondaryCta: {
+    /**
+     * Secondary call-to-action button text
+     */
+    text: string;
+    /**
+     * Secondary call-to-action button link/URL
+     */
+    link: string;
+  };
+  /**
+   * Background video for the hero section
+   */
+  backgroundVideo?: (string | null) | Media;
+  /**
+   * Section header text
+   */
+  sectionHeader: string;
+  /**
+   * Main showroom section title
+   */
+  showroomTitle: string;
+  /**
+   * Showroom section description
+   */
+  showroomDescription: string;
+  /**
+   * Basic showroom contact and location information
+   */
+  showroomInfo: {
+    /**
+     * Business/showroom name
+     */
+    name: string;
+    /**
+     * Full business address
+     */
+    address: string;
+    /**
+     * Primary phone number
+     */
+    phone: string;
+    /**
+     * Service area description
+     */
+    serviceArea: string;
+  };
+  /**
+   * Showroom operating hours for each day of the week
+   */
+  hours: {
+    /**
+     * Day of the week (e.g., "Monday", "Tuesday")
+     */
+    day: string;
+    /**
+     * Hours for this day (e.g., "10:00 AM - 7:00 PM", "Closed")
+     */
+    time: string;
+    id?: string | null;
+  }[];
+  /**
+   * Key features and services offered at the showroom
+   */
+  features: {
+    /**
+     * Icon to display for this feature
+     */
+    icon: 'piano' | 'music' | 'award' | 'users' | 'clock' | 'shield' | 'headphones' | 'car';
+    /**
+     * Feature title (e.g., "Expert Consultation")
+     */
+    title: string;
+    /**
+     * Feature description
+     */
+    description: string;
+    id?: string | null;
+  }[];
+  /**
+   * Google Maps API key for embedded map (optional)
+   */
+  mapApiKey?: string | null;
+  /**
+   * Call-to-action buttons for the showroom section
+   */
+  showroomCtas: {
+    /**
+     * Directions button text
+     */
+    directionsText: string;
+    /**
+     * Google Maps directions link
+     */
+    directionsLink: string;
+    /**
+     * Schedule visit button text
+     */
+    scheduleText: string;
+    /**
+     * Schedule visit link/URL
+     */
+    scheduleLink: string;
+  };
+  /**
+   * Service area information enables ranking in multiple cities without physical locations
+   */
+  serviceAreaCoverage: {
+    /**
+     * Main city where storefront is physically located
+     */
+    primaryCity: string;
+    /**
+     * List major cities within service radius (recommended: ~2 hour drive maximum). Used for local SEO targeting.
+     */
+    coveredCities?:
+      | {
+          cityName: string;
+          /**
+           * Approximate drive time from this city to showroom
+           */
+          driveTime?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Broader geographic region served (e.g., "Missouri & Southern Illinois")
+     */
+    stateRegion: string;
+    /**
+     * Comma-separated list of primary zip codes in service area
+     */
+    zipCodes?: string | null;
+  };
+  /**
+   * Piano collection section header
+   */
+  collectionSectionHeader: string;
+  /**
+   * Featured collection title
+   */
+  collectionTitle: string;
+  /**
+   * Featured collection description
+   */
+  collectionDescription: string;
+  /**
+   * Call-to-action for the piano collection section
+   */
+  collectionCta: {
+    /**
+     * Collection CTA button text
+     */
+    text: string;
+    /**
+     * Collection CTA button link/URL
+     */
+    link: string;
+  };
+  /**
+   * Featured video configuration for the collection section
+   */
+  featuredVideo?: {
+    /**
+     * YouTube video ID for featured video
+     */
+    youtubeId?: string | null;
+    /**
+     * Video player width
+     */
+    width?: number | null;
+    /**
+     * Video player height
+     */
+    height?: number | null;
+  };
+  /**
+   * Auto-play duration in milliseconds (leave empty to use main site default)
+   */
+  autoPlayDuration?: number | null;
+  /**
+   * News carousel items (leave empty to use main site news)
+   */
+  newsItems?:
+    | {
+        /**
+         * News item title
+         */
+        title: string;
+        /**
+         * News item description
+         */
+        description: string;
+        /**
+         * News item image
+         */
+        image?: (string | null) | Media;
+        /**
+         * News item category
+         */
+        category: 'news' | 'events' | 'promotions' | 'new-arrivals' | 'education';
+        /**
+         * Link to full article or page (optional)
+         */
+        link?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Add location-specific customer testimonials. This section will only display on the storefront page if at least one testimonial is added. Prioritize local customers for maximum relevance.
+   */
+  customerTestimonials?:
+    | {
+        /**
+         * Full name of customer (first and last name recommended)
+         */
+        customerName: string;
+        /**
+         * City and state for local relevance (e.g., "Clayton, MO")
+         */
+        customerCity: string;
+        /**
+         * Star rating (1-5 stars)
+         */
+        rating: number;
+        /**
+         * Customer testimonial text (150-300 words ideal for authenticity and SEO)
+         */
+        testimonialText: string;
+        /**
+         * Piano model purchased (adds specificity and credibility)
+         */
+        pianoModel?: string | null;
+        /**
+         * Date of purchase (shows recency)
+         */
+        purchaseDate?: string | null;
+        /**
+         * Photo of customer with their piano (optional but powerful for trust)
+         */
+        customerPhoto?: (string | null) | Media;
+        /**
+         * Video testimonial (converts 10x better than text, optional)
+         */
+        videoTestimonial?: (string | null) | Media;
+        /**
+         * Display this testimonial first/prominently on the page
+         */
+        featured?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Contact form section title (first part)
+   */
+  contactTitle: string;
+  /**
+   * Contact form section title highlight word
+   */
+  contactTitleHighlight: string;
+  /**
+   * Contact form section description
+   */
+  contactDescription: string;
+  /**
+   * Step titles for the contact process
+   */
+  stepTitles: {
+    step: string;
+    id?: string | null;
+  }[];
+  /**
+   * Trust/credibility message
+   */
+  trustMessage: string;
+  /**
+   * Benefits/features of working with your Piano Gallery
+   */
+  benefits: {
+    /**
+     * Benefit icon
+     */
+    icon: 'shield-check' | 'clock' | 'users' | 'award' | 'music' | 'heart';
+    /**
+     * Benefit text
+     */
+    text: string;
+    id?: string | null;
+  }[];
+  /**
+   * Form field options and choices
+   */
+  formOptions: {
+    /**
+     * Musical experience level options
+     */
+    experienceLevels: {
+      level: string;
+      id?: string | null;
+    }[];
+    /**
+     * Piano type options for the form
+     */
+    pianoTypes: {
+      type: string;
+      id?: string | null;
+    }[];
+    /**
+     * Budget range options for the form
+     */
+    budgetRanges: {
+      range: string;
+      id?: string | null;
+    }[];
+    /**
+     * Primary use options for the piano
+     */
+    primaryUses: {
+      use: string;
+      id?: string | null;
+    }[];
+  };
+  /**
+   * Schema.org structured data improves search result appearance and local SEO rankings
+   */
+  schemaData: {
+    /**
+     * Indicates relative pricing level for schema.org MusicStore type
+     */
+    priceRange: '$' | '$$' | '$$$' | '$$$$';
+    /**
+     * Exact GPS coordinates for map placement and local search. Find coordinates at https://www.latlong.net/
+     */
+    geoCoordinates: {
+      /**
+       * Latitude coordinate (e.g., 38.627003)
+       */
+      latitude: number;
+      /**
+       * Longitude coordinate (e.g., -90.199402)
+       */
+      longitude: number;
+    };
+    /**
+     * Payment methods accepted at this location (used in schema markup)
+     */
+    paymentMethods: {
+      method:
+        | 'Cash'
+        | 'Credit Card'
+        | 'Debit Card'
+        | 'Financing'
+        | 'Check'
+        | 'Wire Transfer'
+        | 'Apple Pay'
+        | 'Google Pay';
+      id?: string | null;
+    }[];
+    /**
+     * Date business was founded (e.g., 1985-03-15). Displays as "Est. 1985" and builds trust through longevity.
+     */
+    foundingDate?: string | null;
+  };
+  /**
+   * SEO and metadata configuration
+   */
+  seo?: {
+    /**
+     * Page meta title for search engines
+     */
+    metaTitle?: string | null;
+    /**
+     * Page meta description for search engines (max 160 characters)
+     */
+    metaDescription?: string | null;
+    /**
+     * SEO keywords (comma-separated)
+     */
+    keywords?: string | null;
+    /**
+     * Open Graph title for social media sharing
+     */
+    openGraphTitle?: string | null;
+    /**
+     * Open Graph description for social media sharing
+     */
+    openGraphDescription?: string | null;
+    /**
+     * Open Graph image for social media sharing
+     */
+    openGraphImage?: (string | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Manage Constant Contact API credentials and OAuth2 tokens. Restricted to admin users only.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3801,69 +3520,6 @@ export interface ConstantContactCustomField {
   createdAt: string;
 }
 /**
- * Premium piano consultation booking requests from signature experience
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "consultation-bookings".
- */
-export interface ConsultationBooking {
-  id: string;
-  /**
-   * Customer first name
-   */
-  firstName: string;
-  /**
-   * Customer last name
-   */
-  lastName: string;
-  /**
-   * Customer email address for confirmation
-   */
-  email: string;
-  /**
-   * Customer phone number (optional)
-   */
-  phoneNumber?: string | null;
-  /**
-   * Selected consultation date during the signature event
-   */
-  selectedDate: '2024-10-09' | '2024-10-10' | '2024-10-11' | '2024-10-12';
-  /**
-   * Selected consultation time slot
-   */
-  selectedTime: '09:00' | '10:00' | '11:00' | '13:00' | '14:00' | '15:00' | '16:00' | '17:00' | '18:00';
-  /**
-   * Type of consultation or event
-   */
-  eventType: 'premium-consultation' | 'signature-selection' | 'private-viewing';
-  /**
-   * Current booking status
-   */
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
-  /**
-   * Additional notes or special requests from customer
-   */
-  notes?: string | null;
-  /**
-   * Customer piano type interest
-   */
-  pianoInterest?: ('grand' | 'upright' | 'digital' | 'hybrid' | 'multiple') | null;
-  /**
-   * Which signature page generated this booking (slug)
-   */
-  sourceSignaturePage?: string | null;
-  /**
-   * Browser user agent for analytics
-   */
-  userAgent?: string | null;
-  /**
-   * IP address for security
-   */
-  ipAddress?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
@@ -3879,32 +3535,24 @@ export interface PayloadLockedDocument {
         value: string | Media;
       } | null)
     | ({
-        relationTo: 'productlines';
-        value: string | Productline;
-      } | null)
-    | ({
-        relationTo: 'piano-models';
-        value: string | PianoModel;
-      } | null)
-    | ({
         relationTo: 'home-page';
         value: string | HomePage;
-      } | null)
-    | ({
-        relationTo: 'dealer-locations';
-        value: string | DealerLocation;
-      } | null)
-    | ({
-        relationTo: 'landing-pages';
-        value: string | LandingPage;
       } | null)
     | ({
         relationTo: 'pianos-page';
         value: string | PianosPage;
       } | null)
     | ({
+        relationTo: 'storefronts';
+        value: string | Storefront;
+      } | null)
+    | ({
         relationTo: 'products';
         value: string | Product;
+      } | null)
+    | ({
+        relationTo: 'productlines';
+        value: string | Productline;
       } | null)
     | ({
         relationTo: 'constant-contact-settings';
@@ -3913,10 +3561,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'constant-contact-custom-fields';
         value: string | ConstantContactCustomField;
-      } | null)
-    | ({
-        relationTo: 'consultation-bookings';
-        value: string | ConsultationBooking;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -4078,95 +3722,6 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "productlines_select".
- */
-export interface ProductlinesSelect<T extends boolean = true> {
-  name?: T;
-  slug?: T;
-  category?: T;
-  description?: T;
-  highlight?: T;
-  image?: T;
-  slides?:
-    | T
-    | {
-        title?: T;
-        image?: T;
-        id?: T;
-      };
-  products?: T;
-  featured?: T;
-  sortOrder?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "piano-models_select".
- */
-export interface PianoModelsSelect<T extends boolean = true> {
-  name?: T;
-  slug?: T;
-  model?: T;
-  productline?: T;
-  description?: T;
-  shortDescription?: T;
-  image?: T;
-  keyFeatures?:
-    | T
-    | {
-        feature?: T;
-        id?: T;
-      };
-  specifications?:
-    | T
-    | {
-        keys?: T;
-        pedals?: T;
-        voices?: T;
-        polyphony?: T;
-        dimensions?:
-          | T
-          | {
-              width?: T;
-              depth?: T;
-              height?: T;
-            };
-        weight?: T;
-        actionType?: T;
-        soundEngine?: T;
-      };
-  availableFinishes?:
-    | T
-    | {
-        name?: T;
-        image?: T;
-        priceModifier?: T;
-        available?: T;
-        description?: T;
-        id?: T;
-      };
-  pricing?:
-    | T
-    | {
-        currency?: T;
-        msrp?: T;
-        salePrice?: T;
-        priceRange?: T;
-        priceText?: T;
-        contactForPricing?: T;
-        showPrice?: T;
-      };
-  product?: T;
-  autoGenerateProduct?: T;
-  status?: T;
-  featured?: T;
-  sortOrder?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "home-page_select".
  */
 export interface HomePageSelect<T extends boolean = true> {
@@ -4323,635 +3878,6 @@ export interface HomePageSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "dealer-locations_select".
- */
-export interface DealerLocationsSelect<T extends boolean = true> {
-  slug?: T;
-  locationName?: T;
-  isActive?: T;
-  locationText?: T;
-  establishedText?: T;
-  titlePrefix?: T;
-  titleMain?: T;
-  titleSuffix?: T;
-  description?: T;
-  primaryCta?:
-    | T
-    | {
-        text?: T;
-        link?: T;
-      };
-  secondaryCta?:
-    | T
-    | {
-        text?: T;
-        link?: T;
-      };
-  backgroundVideo?: T;
-  sectionHeader?: T;
-  showroomTitle?: T;
-  showroomDescription?: T;
-  showroomInfo?:
-    | T
-    | {
-        name?: T;
-        address?: T;
-        phone?: T;
-        serviceArea?: T;
-      };
-  hours?:
-    | T
-    | {
-        day?: T;
-        time?: T;
-        id?: T;
-      };
-  features?:
-    | T
-    | {
-        icon?: T;
-        title?: T;
-        description?: T;
-        id?: T;
-      };
-  mapApiKey?: T;
-  showroomCtas?:
-    | T
-    | {
-        directionsText?: T;
-        directionsLink?: T;
-        scheduleText?: T;
-        scheduleLink?: T;
-      };
-  collectionSectionHeader?: T;
-  collectionTitle?: T;
-  collectionDescription?: T;
-  collectionCta?:
-    | T
-    | {
-        text?: T;
-        link?: T;
-      };
-  featuredVideo?:
-    | T
-    | {
-        youtubeId?: T;
-        width?: T;
-        height?: T;
-      };
-  autoPlayDuration?: T;
-  newsItems?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-        image?: T;
-        category?: T;
-        link?: T;
-        id?: T;
-      };
-  contactTitle?: T;
-  contactTitleHighlight?: T;
-  contactDescription?: T;
-  stepTitles?:
-    | T
-    | {
-        step?: T;
-        id?: T;
-      };
-  trustMessage?: T;
-  benefits?:
-    | T
-    | {
-        icon?: T;
-        text?: T;
-        id?: T;
-      };
-  formOptions?:
-    | T
-    | {
-        experienceLevels?:
-          | T
-          | {
-              level?: T;
-              id?: T;
-            };
-        pianoTypes?:
-          | T
-          | {
-              type?: T;
-              id?: T;
-            };
-        budgetRanges?:
-          | T
-          | {
-              range?: T;
-              id?: T;
-            };
-        primaryUses?:
-          | T
-          | {
-              use?: T;
-              id?: T;
-            };
-      };
-  seo?:
-    | T
-    | {
-        metaTitle?: T;
-        metaDescription?: T;
-        keywords?: T;
-        openGraphTitle?: T;
-        openGraphDescription?: T;
-        openGraphImage?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "landing-pages_select".
- */
-export interface LandingPagesSelect<T extends boolean = true> {
-  slug?: T;
-  title?: T;
-  dealerLocation?: T;
-  status?: T;
-  isActive?: T;
-  campaignStartDate?: T;
-  campaignEndDate?: T;
-  pageContent?:
-    | T
-    | {
-        hero?: T | HeroBlockSelect<T>;
-        productShowcase?: T | ProductShowcaseBlockSelect<T>;
-        productHero?: T | ProductHeroBlockSelect<T>;
-        textContent?: T | TextContentBlockSelect<T>;
-        imageGallery?: T | ImageGalleryBlockSelect<T>;
-        featuresList?: T | FeaturesListBlockSelect<T>;
-        specifications?: T | SpecificationsBlockSelect<T>;
-        callToAction?: T | CallToActionBlockSelect<T>;
-        testimonials?: T | TestimonialsBlockSelect<T>;
-      };
-  campaignType?: T;
-  campaignDescription?: T;
-  targetAudience?: T;
-  utmParameters?:
-    | T
-    | {
-        source?: T;
-        medium?: T;
-        campaign?: T;
-        content?: T;
-        term?: T;
-      };
-  conversionGoals?:
-    | T
-    | {
-        goalType?: T;
-        goalName?: T;
-        goalValue?: T;
-        trackingCode?: T;
-        id?: T;
-      };
-  analyticsIntegrations?:
-    | T
-    | {
-        googleAnalyticsEnabled?: T;
-        facebookPixelEnabled?: T;
-        postHogEnabled?: T;
-        customTrackingCode?: T;
-      };
-  seo?:
-    | T
-    | {
-        metaTitle?: T;
-        metaDescription?: T;
-        keywords?: T;
-        openGraphTitle?: T;
-        openGraphDescription?: T;
-        openGraphImage?: T;
-        noIndex?: T;
-      };
-  redirectAfterExpiry?: T;
-  passwordProtected?: T;
-  password?: T;
-  customCSS?: T;
-  customJavaScript?: T;
-  notes?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "HeroBlock_select".
- */
-export interface HeroBlockSelect<T extends boolean = true> {
-  dataSource?: T;
-  pianoModel?: T;
-  content?:
-    | T
-    | {
-        title?: T;
-        subtitle?: T;
-        description?: T;
-        primaryCta?:
-          | T
-          | {
-              text?: T;
-              link?: T;
-              style?: T;
-              openInNewTab?: T;
-            };
-        secondaryCta?:
-          | T
-          | {
-              text?: T;
-              link?: T;
-              style?: T;
-              openInNewTab?: T;
-            };
-      };
-  media?:
-    | T
-    | {
-        type?: T;
-        backgroundImage?: T;
-        backgroundVideo?: T;
-        overlay?:
-          | T
-          | {
-              enable?: T;
-              color?: T;
-              opacity?: T;
-            };
-      };
-  layout?:
-    | T
-    | {
-        height?: T;
-        contentAlignment?: T;
-        verticalAlignment?: T;
-        maxWidth?: T;
-      };
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ProductShowcaseBlock_select".
- */
-export interface ProductShowcaseBlockSelect<T extends boolean = true> {
-  dataSource?: T;
-  pianoModel?: T;
-  product?:
-    | T
-    | {
-        image?: T;
-        title?: T;
-        description?: T;
-        price?:
-          | T
-          | {
-              currency?: T;
-              amount?: T;
-              saleAmount?: T;
-              priceText?: T;
-            };
-        finishes?:
-          | T
-          | {
-              name?: T;
-              image?: T;
-              priceModifier?: T;
-              id?: T;
-            };
-        buyButton?:
-          | T
-          | {
-              text?: T;
-              link?: T;
-              style?: T;
-              openInNewTab?: T;
-            };
-        badge?: T;
-        inStock?: T;
-      };
-  layout?:
-    | T
-    | {
-        imagePosition?: T;
-        showFinishes?: T;
-        showPrice?: T;
-        compact?: T;
-      };
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ProductHeroBlock_select".
- */
-export interface ProductHeroBlockSelect<T extends boolean = true> {
-  layout?:
-    | T
-    | {
-        imagePosition?: T;
-        backgroundColor?: T;
-        showFinishes?: T;
-        showPrice?: T;
-        showBuyButton?: T;
-      };
-  overrides?:
-    | T
-    | {
-        customTitle?: T;
-        customDescription?: T;
-        customImage?: T;
-        badge?: T;
-      };
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TextContentBlock_select".
- */
-export interface TextContentBlockSelect<T extends boolean = true> {
-  content?: T;
-  layout?:
-    | T
-    | {
-        maxWidth?: T;
-        textAlign?: T;
-        backgroundColor?: T;
-        padding?: T;
-        columns?: T;
-      };
-  enableDropCap?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ImageGalleryBlock_select".
- */
-export interface ImageGalleryBlockSelect<T extends boolean = true> {
-  dataSource?: T;
-  pianoModel?: T;
-  title?: T;
-  description?: T;
-  images?:
-    | T
-    | {
-        image?: T;
-        caption?: T;
-        alt?: T;
-        id?: T;
-      };
-  layout?:
-    | T
-    | {
-        style?: T;
-        columns?: T;
-        spacing?: T;
-        aspectRatio?: T;
-      };
-  carouselSettings?:
-    | T
-    | {
-        autoplay?: T;
-        autoplaySpeed?: T;
-        showDots?: T;
-        showArrows?: T;
-        slidesToShow?: T;
-        infinite?: T;
-      };
-  enableZoom?: T;
-  showCaptions?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeaturesListBlock_select".
- */
-export interface FeaturesListBlockSelect<T extends boolean = true> {
-  dataSource?: T;
-  pianoModel?: T;
-  header?:
-    | T
-    | {
-        title?: T;
-        subtitle?: T;
-        description?: T;
-      };
-  features?:
-    | T
-    | {
-        icon?:
-          | T
-          | {
-              type?: T;
-              image?: T;
-              iconName?: T;
-              emoji?: T;
-            };
-        title?: T;
-        description?: T;
-        highlight?: T;
-        id?: T;
-      };
-  layout?:
-    | T
-    | {
-        style?: T;
-        columns?: T;
-        iconPosition?: T;
-        spacing?: T;
-        backgroundColor?: T;
-      };
-  showNumbers?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "SpecificationsBlock_select".
- */
-export interface SpecificationsBlockSelect<T extends boolean = true> {
-  dataSource?: T;
-  pianoModel?: T;
-  header?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-      };
-  categories?:
-    | T
-    | {
-        categoryName?: T;
-        specifications?:
-          | T
-          | {
-              label?: T;
-              value?: T;
-              highlight?: T;
-              note?: T;
-              id?: T;
-            };
-        collapsible?: T;
-        defaultExpanded?: T;
-        id?: T;
-      };
-  layout?:
-    | T
-    | {
-        style?: T;
-        columns?: T;
-        showCategoryIcons?: T;
-        alternateRows?: T;
-        compactMode?: T;
-      };
-  downloadOptions?:
-    | T
-    | {
-        enableDownload?: T;
-        downloadFile?: T;
-        downloadButtonText?: T;
-      };
-  comparisonMode?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CallToActionBlock_select".
- */
-export interface CallToActionBlockSelect<T extends boolean = true> {
-  content?:
-    | T
-    | {
-        title?: T;
-        subtitle?: T;
-        description?: T;
-      };
-  buttons?:
-    | T
-    | {
-        text?: T;
-        link?: T;
-        style?: T;
-        size?: T;
-        icon?: T;
-        iconPosition?: T;
-        openInNewTab?: T;
-        id?: T;
-      };
-  media?:
-    | T
-    | {
-        type?: T;
-        backgroundImage?: T;
-        sideImage?: T;
-        iconName?: T;
-        imagePosition?: T;
-        overlay?:
-          | T
-          | {
-              enable?: T;
-              color?: T;
-              opacity?: T;
-            };
-      };
-  layout?:
-    | T
-    | {
-        style?: T;
-        alignment?: T;
-        size?: T;
-        backgroundColor?: T;
-        buttonLayout?: T;
-      };
-  urgency?:
-    | T
-    | {
-        enableUrgency?: T;
-        urgencyText?: T;
-        showCountdown?: T;
-        countdownEndDate?: T;
-      };
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TestimonialsBlock_select".
- */
-export interface TestimonialsBlockSelect<T extends boolean = true> {
-  header?:
-    | T
-    | {
-        title?: T;
-        subtitle?: T;
-        description?: T;
-      };
-  testimonials?:
-    | T
-    | {
-        quote?: T;
-        rating?: T;
-        customer?:
-          | T
-          | {
-              name?: T;
-              title?: T;
-              company?: T;
-              location?: T;
-              avatar?: T;
-            };
-        product?: T;
-        verified?: T;
-        featured?: T;
-        source?: T;
-        reviewDate?: T;
-        id?: T;
-      };
-  layout?:
-    | T
-    | {
-        style?: T;
-        columns?: T;
-        showAvatars?: T;
-        showRatings?: T;
-        showSource?: T;
-        showDates?: T;
-        backgroundColor?: T;
-      };
-  carouselSettings?:
-    | T
-    | {
-        autoplay?: T;
-        autoplaySpeed?: T;
-        showDots?: T;
-        showArrows?: T;
-        slidesToShow?: T;
-        infinite?: T;
-      };
-  aggregateRating?:
-    | T
-    | {
-        showOverallRating?: T;
-        overallRating?: T;
-        totalReviews?: T;
-        ratingText?: T;
-      };
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pianos-page_select".
  */
 export interface PianosPageSelect<T extends boolean = true> {
@@ -5016,6 +3942,199 @@ export interface PianosPageSelect<T extends boolean = true> {
         metaTitle?: T;
         metaDescription?: T;
         keywords?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "storefronts_select".
+ */
+export interface StorefrontsSelect<T extends boolean = true> {
+  slug?: T;
+  locationName?: T;
+  isActive?: T;
+  locationText?: T;
+  establishedText?: T;
+  titlePrefix?: T;
+  titleMain?: T;
+  titleSuffix?: T;
+  description?: T;
+  primaryCta?:
+    | T
+    | {
+        text?: T;
+        link?: T;
+      };
+  secondaryCta?:
+    | T
+    | {
+        text?: T;
+        link?: T;
+      };
+  backgroundVideo?: T;
+  sectionHeader?: T;
+  showroomTitle?: T;
+  showroomDescription?: T;
+  showroomInfo?:
+    | T
+    | {
+        name?: T;
+        address?: T;
+        phone?: T;
+        serviceArea?: T;
+      };
+  hours?:
+    | T
+    | {
+        day?: T;
+        time?: T;
+        id?: T;
+      };
+  features?:
+    | T
+    | {
+        icon?: T;
+        title?: T;
+        description?: T;
+        id?: T;
+      };
+  mapApiKey?: T;
+  showroomCtas?:
+    | T
+    | {
+        directionsText?: T;
+        directionsLink?: T;
+        scheduleText?: T;
+        scheduleLink?: T;
+      };
+  serviceAreaCoverage?:
+    | T
+    | {
+        primaryCity?: T;
+        coveredCities?:
+          | T
+          | {
+              cityName?: T;
+              driveTime?: T;
+              id?: T;
+            };
+        stateRegion?: T;
+        zipCodes?: T;
+      };
+  collectionSectionHeader?: T;
+  collectionTitle?: T;
+  collectionDescription?: T;
+  collectionCta?:
+    | T
+    | {
+        text?: T;
+        link?: T;
+      };
+  featuredVideo?:
+    | T
+    | {
+        youtubeId?: T;
+        width?: T;
+        height?: T;
+      };
+  autoPlayDuration?: T;
+  newsItems?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+        category?: T;
+        link?: T;
+        id?: T;
+      };
+  customerTestimonials?:
+    | T
+    | {
+        customerName?: T;
+        customerCity?: T;
+        rating?: T;
+        testimonialText?: T;
+        pianoModel?: T;
+        purchaseDate?: T;
+        customerPhoto?: T;
+        videoTestimonial?: T;
+        featured?: T;
+        id?: T;
+      };
+  contactTitle?: T;
+  contactTitleHighlight?: T;
+  contactDescription?: T;
+  stepTitles?:
+    | T
+    | {
+        step?: T;
+        id?: T;
+      };
+  trustMessage?: T;
+  benefits?:
+    | T
+    | {
+        icon?: T;
+        text?: T;
+        id?: T;
+      };
+  formOptions?:
+    | T
+    | {
+        experienceLevels?:
+          | T
+          | {
+              level?: T;
+              id?: T;
+            };
+        pianoTypes?:
+          | T
+          | {
+              type?: T;
+              id?: T;
+            };
+        budgetRanges?:
+          | T
+          | {
+              range?: T;
+              id?: T;
+            };
+        primaryUses?:
+          | T
+          | {
+              use?: T;
+              id?: T;
+            };
+      };
+  schemaData?:
+    | T
+    | {
+        priceRange?: T;
+        geoCoordinates?:
+          | T
+          | {
+              latitude?: T;
+              longitude?: T;
+            };
+        paymentMethods?:
+          | T
+          | {
+              method?: T;
+              id?: T;
+            };
+        foundingDate?: T;
+      };
+  seo?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+        keywords?: T;
+        openGraphTitle?: T;
+        openGraphDescription?: T;
+        openGraphImage?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -5139,6 +4258,30 @@ export interface ProductsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "productlines_select".
+ */
+export interface ProductlinesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  category?: T;
+  description?: T;
+  highlight?: T;
+  image?: T;
+  slides?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        id?: T;
+      };
+  products?: T;
+  featured?: T;
+  sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "constant-contact-settings_select".
  */
 export interface ConstantContactSettingsSelect<T extends boolean = true> {
@@ -5170,27 +4313,6 @@ export interface ConstantContactCustomFieldsSelect<T extends boolean = true> {
   fieldType?: T;
   createdInConstantContact?: T;
   lastSyncedAt?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "consultation-bookings_select".
- */
-export interface ConsultationBookingsSelect<T extends boolean = true> {
-  firstName?: T;
-  lastName?: T;
-  email?: T;
-  phoneNumber?: T;
-  selectedDate?: T;
-  selectedTime?: T;
-  eventType?: T;
-  status?: T;
-  notes?: T;
-  pianoInterest?: T;
-  sourceSignaturePage?: T;
-  userAgent?: T;
-  ipAddress?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -13,15 +13,12 @@ import { Media } from './collections/Media'
 // import { Sites } from './collections/Sites'
 // import { SitePages } from './collections/SitePages'
 import { Productlines } from './collections/Productlines'
-import { PianoModels } from './collections/PianoModels'
 import { PianosPage } from './collections/PianosPage'
 import { HomePage } from './collections/HomePage'
-import { DealerLocations } from './collections/DealerLocations'
+import { Storefronts } from './collections/Storefronts'
 import { Products } from './collections/Products'
-import { LandingPages } from './collections/LandingPages'
 import { ConstantContactSettings } from './collections/ConstantContactSettings'
 import { ConstantContactCustomFields } from './collections/ConstantContactCustomFields'
-import { ConsultationBookings } from './collections/ConsultationBookings'
 import {
   ProductShowcase,
   ProductHero,
@@ -38,7 +35,6 @@ import {
   LandingTestimonials
 } from './blocks'
 import { productlinesSeedPlugin } from './plugins/productlines-seed'
-import { pianoModelsSeedPlugin } from './plugins/piano-models-seed'
 import { pianosPageSeedPlugin } from './plugins/pianos-page-seed'
 // import DealerLocationsSeedPlugin from './plugins/dealer-locations-seed' // Temporarily disabled
 
@@ -56,20 +52,22 @@ export default buildConfig({
     },
   },
   collections: [
+    // System Collections
     Users,
     Media,
-    // Sites,        // Multi-site management (disabled)
-    // SitePages,    // Site-specific pages with template inheritance (disabled)
-    Productlines,
-    PianoModels,
-    HomePage,       // Main homepage content
-    DealerLocations, // Multiple dealer location pages
-    LandingPages,   // Campaign landing pages
-    PianosPage,     // Keep for backward compatibility during migration
+
+    // Content Collections
+    HomePage,
+    PianosPage,
+    Storefronts,
+
+    // Commerce Collections
     Products,
-    ConstantContactSettings, // Constant Contact API credentials and tokens
-    ConstantContactCustomFields, // Constant Contact custom field ID mappings
-    ConsultationBookings, // Premium consultation booking requests
+    Productlines,
+
+    // Integration Collections
+    ConstantContactSettings,
+    ConstantContactCustomFields,
   ],
   // Define blocks at root level for performance optimization using blockReferences
   blocks: [
@@ -99,7 +97,6 @@ export default buildConfig({
   plugins: [
     payloadCloudPlugin(),
     productlinesSeedPlugin(),
-    pianoModelsSeedPlugin(),
     pianosPageSeedPlugin(),
     // DealerLocationsSeedPlugin, // Temporarily disabled due to TypeScript errors
     // storage-adapter-placeholder
