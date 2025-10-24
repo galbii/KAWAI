@@ -67,7 +67,7 @@ export default function AboutEventSection() {
         </div>
       </div>
 
-      <section id="about-event" className="py-16 sm:py-20 lg:py-24 bg-muted/30 scroll-container">
+      <section id="about-event" className="py-16 sm:py-20 lg:py-24 bg-kawai-pearl scroll-container">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
         {/* Event Description */}
@@ -76,13 +76,13 @@ export default function AboutEventSection() {
             <div className="flex flex-col items-center text-center mb-6">
               <Image 
                 src="/images/Kawai (Red)(2).png"
-                alt="KAWAI Piano Sales Dallas - Premium Piano Gallery"
+                alt="KAWAI Piano Sales Houston - Premium Piano Gallery"
                 width={240}
                 height={60}
                 className={`h-16 w-auto mb-4 transition-all duration-600 delay-200 ${contentVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
               />
               <h3 className={`text-2xl md:text-3xl font-bold tracking-tight transition-all duration-600 delay-400 ${contentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                Dallas&apos;s Premier <span className="text-kawai-red">Piano Sale Event</span>
+                Houston&apos;s Premier <span className="text-kawai-red">Piano Sale Event</span>
               </h3>
             </div>
 
@@ -93,7 +93,7 @@ export default function AboutEventSection() {
                   file="/utd_letter.pdf"
                   className="cursor-pointer hover:shadow-sm transition-shadow rounded-lg overflow-hidden"
                   width={320}
-                  onClick={() => openImageModal("/utd_letter.pdf", "UTD Dallas Piano Sale Event Letter - Piano Deals Dallas", 800, 600)}
+                  onClick={() => openImageModal("/utd_letter.pdf", "TSU Houston Piano Sale Event Letter - Piano Deals Houston", 800, 600)}
                   loading="Loading piano sale letter..."
                   error="Unable to load letter PDF"
                 />
@@ -102,27 +102,27 @@ export default function AboutEventSection() {
             
             <div className="space-y-4 text-muted-foreground leading-relaxed">
               <p className={`text-base transition-all duration-600 delay-600 ${contentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                For over five years, our exclusive partnership with University of Texas at Dallas has made us Dallas&apos;s trusted Piano Gallery, bringing Greater Dallas Area families access to premium KAWAI piano sales at specially negotiated pricing.
+                For over five years, our exclusive partnership with Texas Southern University has made us Houston&apos;s trusted Piano Gallery, bringing Greater Houston Area families access to premium KAWAI piano sales at specially negotiated pricing.
               </p>
               
               <p className={`text-base transition-all duration-600 delay-750 ${contentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                This four-day exclusive Dallas piano sale event features carefully selected digital and acoustic instruments. From used pianos Dallas families love to brand new grand pianos, each instrument meets UTD&apos;s rigorous quality standards for exceptional sound and craftsmanship.
+                This four-day exclusive Houston piano sale event features carefully selected digital and acoustic instruments. From used pianos Houston families love to brand new grand pianos, each instrument meets TSU&apos;s rigorous quality standards for exceptional sound and craftsmanship.
               </p>
               
               <p className={`text-base transition-all duration-600 delay-900 ${contentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                Whether you&apos;re seeking piano deals Dallas residents can trust, need piano lessons Dallas area, or want professional-grade instruments, this event offers unmatched piano sales Dallas has to offer with institutional endorsement.
+                Whether you&apos;re seeking piano deals Houston residents can trust, need piano lessons Houston area, or want professional-grade instruments, this event offers unmatched piano sales Houston has to offer with institutional endorsement.
               </p>
             </div>
 
             <div className={`bg-gradient-to-r from-kawai-red/5 to-tsu-blue/5 rounded-lg p-6 border border-kawai-red/20 transition-all duration-700 delay-1100 ${contentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
               <div className="text-center">
-                <h4 className="text-lg font-semibold text-black mb-2">Limited Dallas Event Capacity - UTD Priority Access</h4>
-                <p className="text-sm text-muted-foreground mb-4">Only 25 private consultation slots available for this exclusive Dallas event. <span className="text-kawai-red/80 font-medium">UTD VIP early access bookings get guaranteed first selection</span> plus <span className="text-kawai-red font-medium">complimentary Dallas delivery and premium tuning service</span></p>
+                <h4 className="text-lg font-semibold text-black mb-2">Limited Houston Event Capacity - TSU Priority Access</h4>
+                <p className="text-sm text-muted-foreground mb-4">Only 25 private consultation slots available for this exclusive Houston event. <span className="text-kawai-red/80 font-medium">TSU VIP early access bookings get guaranteed first selection</span> plus <span className="text-kawai-red font-medium">complimentary Houston delivery and premium tuning service</span></p>
                 <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-xs font-semibold mb-4">
                   <svg className="w-3 h-3 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                   </svg>
-                  68% of Dallas slots already reserved
+                  68% of Houston slots already reserved
                 </div>
                 <div className="space-y-3">
                   <button 
@@ -154,7 +154,7 @@ export default function AboutEventSection() {
               file="/utd_letter.pdf"
               className="cursor-pointer hover:shadow-lg transition-shadow rounded-lg overflow-hidden"
               width={600}
-              onClick={() => openImageModal("/utd_letter.pdf", "UTD Dallas Piano Sale Event Letter - Piano Deals Dallas", 800, 600)}
+              onClick={() => openImageModal("/utd_letter.pdf", "TSU Houston Piano Sale Event Letter - Piano Deals Houston", 800, 600)}
               loading="Loading piano sale letter..."
               error="Unable to load letter PDF"
             />

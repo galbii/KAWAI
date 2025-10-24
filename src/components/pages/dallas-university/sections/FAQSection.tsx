@@ -10,40 +10,40 @@ interface FAQItem {
 
 const faqData: FAQItem[] = [
   {
-    question: "Where can I find piano sales in Dallas?",
-    answer: "Our KAWAI piano sales Dallas event at our Piano Gallery offers the best selection of digital and acoustic pianos in the Greater Dallas Area. We're Dallas's trusted Piano Gallery with over 5 years of partnership with UTD."
+    question: "Where can I find piano sales in Houston?",
+    answer: "Our KAWAI piano sales Houston event at our Piano Gallery offers the best selection of digital and acoustic pianos in the Greater Houston Area. We're Houston's trusted Piano Gallery with over 5 years of partnership with TSU."
   },
   {
-    question: "Do you have used pianos for sale in Dallas?",
-    answer: "Yes! Our Dallas piano sale event features both new and carefully selected used pianos Dallas families love. All used pianos are inspected by UTD music faculty and come with warranties. Prices start at $949 for digital pianos."
+    question: "Do you have used pianos for sale in Houston?",
+    answer: "Yes! Our Houston piano sale event features both new and carefully selected used pianos Houston families love. All used pianos are inspected by TSU music faculty and come with warranties. Prices start at $949 for digital pianos."
   },
   {
-    question: "What piano deals are available in Dallas during the event?",
-    answer: "Piano deals Dallas residents can save up to $6,000 on premium KAWAI instruments. Our event features special pricing on digital pianos, upright pianos, and grand pianos, plus free delivery and tuning for VIP early access customers. Limited quantities available - only 25 consultation slots for guaranteed first selection."
+    question: "What piano deals are available in Houston during the event?",
+    answer: "Piano deals Houston residents can save up to $6,000 on premium KAWAI instruments. Our event features special pricing on digital pianos, upright pianos, and grand pianos, plus free delivery and tuning for VIP early access customers. Limited quantities available - only 25 consultation slots for guaranteed first selection."
   },
   {
-    question: "Do you offer piano lessons in Dallas area?",
-    answer: "While our primary focus is piano sales Dallas, we can connect you with qualified piano teachers in the Dallas area through our UTD Music Department partnership. Many of our piano customers also take advantage of piano lessons Dallas has to offer."
+    question: "Do you offer piano lessons in Houston area?",
+    answer: "While our primary focus is piano sales Houston, we can connect you with qualified piano teachers in the Houston area through our TSU Music Department partnership. Many of our piano customers also take advantage of piano lessons Houston has to offer."
   },
   {
-    question: "Where is your Dallas piano store located?",
-    answer: "Our Dallas piano sale event takes place at our KAWAI Piano Gallery Dallas showroom at 601 W. Plano Parkway, Suite 153. As Dallas's premier Piano Gallery, our convenient location makes it easy for Greater Dallas Area families to shop for pianos."
+    question: "Where is your Houston piano store located?",
+    answer: "Our Houston piano sale event takes place at our KAWAI Piano Gallery Houston showroom at 601 W. Plano Parkway, Suite 153. As Houston's premier Piano Gallery, our convenient location makes it easy for Greater Houston Area families to shop for pianos."
   },
   {
-    question: "What types of pianos are available at your Dallas location?",
-    answer: "Our piano store Dallas event features KAWAI digital pianos, upright acoustic pianos, and grand pianos. From compact ES-120 models perfect for apartments to full-size GL-10 grand pianos, we have options for every Dallas piano family."
+    question: "What types of pianos are available at your Houston location?",
+    answer: "Our piano store Houston event features KAWAI digital pianos, upright acoustic pianos, and grand pianos. From compact ES-120 models perfect for apartments to full-size GL-10 grand pianos, we have options for every Houston piano family."
   },
   {
-    question: "Do you provide financing for piano purchases in Dallas?",
-    answer: "Yes! We offer financing options for our piano sales Dallas event. Monthly payments start as low as $79 for digital pianos. VIP consultation customers receive priority approval and exclusive financing terms. Limited-time special rates available only during this event."
+    question: "Do you provide financing for piano purchases in Houston?",
+    answer: "Yes! We offer financing options for our piano sales Houston event. Monthly payments start as low as $79 for digital pianos. VIP consultation customers receive priority approval and exclusive financing terms. Limited-time special rates available only during this event."
   },
   {
-    question: "What makes your Dallas piano sale different from other galleries?",
-    answer: "Our partnership with University of Texas at Dallas's Music Department ensures every piano meets institutional quality standards. Unlike other Piano Galleries Dallas offers, our instruments are faculty-approved and your purchase directly supports UTD's music programs through our ongoing partnership."
+    question: "What makes your Houston piano sale different from other galleries?",
+    answer: "Our partnership with Texas Southern University's Music Department ensures every piano meets institutional quality standards. Unlike other Piano Galleries Houston offers, our instruments are faculty-approved and your purchase directly supports TSU's music programs through our ongoing partnership."
   },
   {
-    question: "How do I get priority booking for the Dallas event?",
-    answer: "UTD students, faculty, and staff receive automatic priority booking privileges. With only 15 VIP consultation slots available for Day 1 early access, we recommend booking within 48 hours to guarantee your preferred time slot and first selection of our premium Dallas inventory."
+    question: "How do I get priority booking for the Houston event?",
+    answer: "TSU students, faculty, and staff receive automatic priority booking privileges. With only 15 VIP consultation slots available for Day 1 early access, we recommend booking within 48 hours to guarantee your preferred time slot and first selection of our premium Houston inventory."
   },
   {
     question: "How do I secure priority access to the best piano deals?",
@@ -66,7 +66,7 @@ export default function FAQSection() {
             Frequently Asked Questions
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Everything you need to know about our Dallas piano sales event and KAWAI piano deals
+            Everything you need to know about our Houston piano sales event and KAWAI piano deals
           </p>
         </div>
 
@@ -102,7 +102,7 @@ export default function FAQSection() {
 
         <div className="text-center mt-12">
           <p className="text-gray-600 mb-4">
-            Have more questions about our Dallas piano sales?
+            Have more questions about our Houston piano sales?
           </p>
           <div className="space-y-2">
             <button className="bg-kawai-red text-white px-8 py-3 rounded-lg font-medium hover:bg-kawai-red/90 transition-colors">

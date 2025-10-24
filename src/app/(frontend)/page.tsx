@@ -15,6 +15,12 @@ import { getHomePageDataDirect } from "@/lib/payload-direct";
 import type { HomePageData } from "@/lib/types/homepage";
 import { Suspense } from "react";
 
+// Enable Incremental Static Regeneration (ISR)
+// Revalidate the homepage every 5 minutes (300 seconds)
+// This allows the page to be statically generated at build time with fallback data,
+// then regenerated in the background when CMS content changes
+export const revalidate = 300;
+
 // Loading components for each section
 function HeroSkeleton() {
   return (

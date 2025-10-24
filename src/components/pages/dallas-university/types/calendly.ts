@@ -1,4 +1,5 @@
 // Shared Calendly type declarations
+// Note: Meta Pixel (fbq) type is declared in /src/lib/types.ts
 
 declare global {
   interface Window {

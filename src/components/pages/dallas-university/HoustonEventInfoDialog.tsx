@@ -75,7 +75,7 @@ export default function HoustonEventInfoDialog({ isOpen, onClose }: HoustonEvent
             <div className="text-4xl">🎹</div>
             <h3 className="text-lg font-semibold">Event Information Sent!</h3>
             <p className="text-gray-600">
-              You&apos;ll receive exclusive Dallas event details and special offers within 24 hours.
+              You&apos;ll receive exclusive Houston event details and special offers within 24 hours.
             </p>
             <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">
               <strong>Next Step:</strong> Check your email for VIP access details and priority booking information.
@@ -93,19 +93,19 @@ export default function HoustonEventInfoDialog({ isOpen, onClose }: HoustonEvent
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-kawai-red">Dallas Piano Event Information</DialogTitle>
+          <DialogTitle className="text-kawai-red">Houston Piano Event Information</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold text-xs">UTD</span>
+                <span className="text-white font-bold text-xs">TSU</span>
               </div>
               <div>
-                <h3 className="font-semibold text-amber-800">Exclusive Dallas Showcase</h3>
+                <h3 className="font-semibold text-amber-800">Exclusive Houston Showcase</h3>
                 <p className="text-sm text-amber-700">
-                  September 18-21, 2025 • UTD Partnership Event
+                  September 18-21, 2025 • TSU Partnership Event
                 </p>
               </div>
             </div>
@@ -162,7 +162,7 @@ export default function HoustonEventInfoDialog({ isOpen, onClose }: HoustonEvent
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Dallas Area</label>
+              <label className="block text-sm font-medium mb-1">Houston Area</label>
               <select
                 name="dallasArea"
                 value={formData.dallasArea}
@@ -179,7 +179,7 @@ export default function HoustonEventInfoDialog({ isOpen, onClose }: HoustonEvent
                 <option value="plano">Plano</option>
                 <option value="frisco">Frisco</option>
                 <option value="allen">Allen</option>
-                <option value="other">Other Dallas Area</option>
+                <option value="other">Other Houston Area</option>
               </select>
             </div>
 
@@ -207,7 +207,7 @@ export default function HoustonEventInfoDialog({ isOpen, onClose }: HoustonEvent
               <ul className="text-sm space-y-1 text-gray-600">
                 <li>• Exclusive pricing information</li>
                 <li>• VIP appointment priority</li>
-                <li>• Special Dallas area offers</li>
+                <li>• Special Houston area offers</li>
                 <li>• Event schedule and location details</li>
               </ul>
             </div>

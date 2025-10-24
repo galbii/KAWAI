@@ -19,11 +19,11 @@ export function ShowroomLocation() {
     return () => clearTimeout(timer);
   }, []);
   const showroomInfo = {
-    name: 'Kawai Piano Gallery Dallas',
-    address: '601 W. Plano Parkway, Suite 153, Plano, TX 75075',
+    name: 'Kawai Piano Gallery Houston',
+    address: '5800 Richmond Ave., Houston, TX 77057',
     website: 'https://www.kawaipianosdallas.com/',
     phone: '(972) 645-2514',
-    serviceArea: 'Serving Dallas, Texas and surrounding areas',
+    serviceArea: 'Serving Houston, Texas and surrounding areas',
     hours: [
       { day: 'Monday', time: '10:00 am–7:00 pm' },
       { day: 'Tuesday', time: '10:00 am–7:00 pm' },
@@ -57,7 +57,7 @@ export function ShowroomLocation() {
         }}
       />
       
-      <section className="relative bg-gradient-to-b from-white via-kawai-pearl/20 to-kawai-pearl/40">
+      <section className="relative bg-white">
         {/* Section Header */}
         <div className="container mx-auto px-6 pt-24 pb-8 text-center">
           <h2 className="text-5xl md:text-6xl font-light font-serif text-kawai-black mb-4 leading-tight">
@@ -79,15 +79,13 @@ export function ShowroomLocation() {
                     loading="lazy"
                     allowFullScreen
                     referrerPolicy="no-referrer-when-downgrade"
-                    src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=601+W+Plano+Parkway+Suite+153+Plano+TX+75075&zoom=15`}
+                    src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=5800+Richmond+Ave+Houston+TX+77057&zoom=15`}
                   />
                 </div>
-                {/* Subtle overlay gradient */}
-                <div className="absolute inset-0 bg-gradient-to-r from-kawai-black/5 via-transparent to-transparent pointer-events-none" />
               </div>
 
               {/* Contact Form - Right Side */}
-              <div className="lg:col-span-2 p-12 flex flex-col justify-center bg-gradient-to-br from-white to-kawai-pearl/30">
+              <div className="lg:col-span-2 p-12 flex flex-col justify-center bg-white">
                 <div className="mb-8">
                   <h3 className="text-3xl font-serif text-kawai-black mb-3 leading-tight">
                     Get In Touch
@@ -177,7 +175,7 @@ export function ShowroomLocation() {
 
         {/* Bottom Section - Contact Information */}
         <div className="container mx-auto px-6 pb-24">
-          <div className="bg-white rounded-2xl shadow-2xl p-12 bg-gradient-to-br from-white to-kawai-pearl/30">
+          <div className="bg-white rounded-2xl shadow-2xl p-12">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
               {/* Showroom Info */}
               <div className="space-y-4">

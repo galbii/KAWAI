@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-// import { LoadingSkeleton } from '../ui/loading-skeleton';
-// Calendly tracking imports removed
-// Calendly debug utilities removed
+import useCalendlyTracking from '@/hooks/useCalendlyTracking';
 import '../types/calendly';
 
 export default function BookingSection() {
@@ -11,6 +9,29 @@ export default function BookingSection() {
   const [shouldLoadCalendly, setShouldLoadCalendly] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
   const calendlyContainerRef = useRef<HTMLDivElement>(null);
+
+  // Set up comprehensive Calendly tracking with Meta Pixel, PostHog, and Constant Contact
+  const { hasTrackedEvent, isTrackingReady } = useCalendlyTracking({
+    eventName: 'TSU Piano Sale',
+    posthogEventName: 'tsu_piano_booking',
+    metaPixel: {
+      content_name: 'TSU Piano Sale Consultation',
+      content_category: 'appointment_booking',
+      value: 1000,
+      currency: 'USD',
+      status: 'calendly_booking'
+    },
+    constantContact: {
+      enabled: true,
+      targetList: 'TSU LEADS',
+      createListIfMissing: true,
+      showAuthPrompts: false
+    },
+    additionalData: {
+      source: 'university-landing-page',
+      campaign: 'tsu-piano-sale-2025'
+    }
+  });
 
   // Initialize Calendly when section should load
   useEffect(() => {
@@ -67,12 +88,12 @@ export default function BookingSection() {
                 
                 // Initialize the Calendly widget
                 window.Calendly.initInlineWidget({
-                  url: 'https://calendly.com/kawaipianogallery/utd-x-kawai-piano-sale',
+                  url: 'https://calendly.com/kawaipianogallery/tsu-kawai-piano-sale',
                   parentElement: calendlyContainerRef.current,
                   utm: {
                     utmSource: 'kawai-landing-page',
                     utmMedium: 'booking-section',
-                    utmCampaign: 'utd-piano-sale-2025'
+                    utmCampaign: 'tsu-piano-sale-2025'
                   }
                 });
                 
@@ -242,7 +263,7 @@ export default function BookingSection() {
 
 
   return (
-    <section ref={sectionRef} id="booking-consultation" className="bg-white py-16">
+    <section ref={sectionRef} id="booking-consultation" className="bg-kawai-pearl py-16">
       <div className="max-w-7xl mx-auto px-6">
         <div>
           {/* Header */}
@@ -280,9 +301,9 @@ export default function BookingSection() {
           {shouldLoadCalendly && (
             <div className="calendly-widget-wrapper">
               {/* Calendly inline widget begin */}
-              <div 
-                className="calendly-inline-widget" 
-                data-url="https://calendly.com/kawaipianogallery/utd-x-kawai-piano-sale"
+              <div
+                className="calendly-inline-widget"
+                data-url="https://calendly.com/kawaipianogallery/tsu-kawai-piano-sale"
                 style={{minWidth: '320px', height: '700px'}}
               />
               <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>

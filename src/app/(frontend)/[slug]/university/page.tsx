@@ -1,6 +1,10 @@
 import { UniversityClientWrapper } from './university-client-wrapper';
-import { getStorefront } from '@/lib/payload';
+import { getStorefrontBySlugDirect } from '@/lib/payload-direct';
 import { notFound } from 'next/navigation';
+
+// Force dynamic rendering - this page needs the slug param which is only available at request time
+// University pages are unique per storefront and require database validation
+export const dynamic = 'force-dynamic';
 
 // Allow dynamic rendering for unknown slugs
 // This enables the page to work with any storefront slug from the CMS
@@ -24,11 +28,12 @@ export default async function UniversityPage({ params }: { params: Promise<{ slu
   // Await params as required by Next.js 15
   const { slug } = await params;
 
-  // Validate that the storefront exists and is active using the existing API
+  // Validate that the storefront exists and is active using direct database access
+  // This works during build time unlike API fetch
   let storefrontExists = false;
 
   try {
-    const storefront = await getStorefront(slug);
+    const storefront = await getStorefrontBySlugDirect(slug);
     storefrontExists = storefront !== null;
   } catch (error) {
     console.error(`Error checking storefront ${slug}:`, error);

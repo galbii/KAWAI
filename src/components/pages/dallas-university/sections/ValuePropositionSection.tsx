@@ -18,7 +18,7 @@ export default function ValuePropositionSection() {
             Special University Pricing
           </h2>
           <p className="font-body text-lg sm:text-xl text-white/90 max-w-2xl mx-auto">
-            Exclusive savings for the UTD community with flexible financing options
+            Exclusive savings for the TSU community with flexible financing options
           </p>
         </div>
 
@@ -35,7 +35,7 @@ export default function ValuePropositionSection() {
                 University Pricing
               </h3>
               <p className="font-body text-white/80 leading-relaxed text-sm sm:text-base max-w-xs mx-auto">
-                Exclusive discounts for UTD students, faculty, and staff with special financing available
+                Exclusive discounts for TSU students, faculty, and staff with special financing available
               </p>
             </div>
           </div>
@@ -80,7 +80,7 @@ export default function ValuePropositionSection() {
             </p>
             <div className="inline-flex items-center gap-2 bg-red-600/20 backdrop-blur-sm rounded-full px-4 py-2 mb-4 border border-red-500/30">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-              <span className="text-white/90 text-sm font-medium">Limited Dallas appointment slots - UTD priority access</span>
+              <span className="text-white/90 text-sm font-medium">Limited Houston appointment slots - TSU priority access</span>
             </div>
           </div>
           <a 
@@ -91,7 +91,7 @@ export default function ValuePropositionSection() {
             <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             <div className="text-left">
               <p className="font-body text-white/70 text-xs sm:text-sm">
-                Call now for appointment priority - Dallas event
+                Call now for appointment priority - Houston event
               </p>
               <p className="font-heading text-white text-base sm:text-lg font-medium">
                 (972) 645-2514
@@ -99,7 +99,7 @@ export default function ValuePropositionSection() {
             </div>
           </a>
           <p className="text-white/60 text-xs sm:text-sm mt-3">
-            UTD partnership exclusive • Only 8 Dallas appointment slots remaining
+            TSU partnership exclusive • Only 8 Houston appointment slots remaining
           </p>
         </div>
 

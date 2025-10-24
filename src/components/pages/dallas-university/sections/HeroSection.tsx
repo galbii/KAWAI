@@ -125,7 +125,7 @@ export default function HeroSection() {
         
         
         <div className="space-y-2 mb-6 sm:mb-8 hero-animate hero-animate-1">
-          <div className="text-xs sm:text-sm text-orange-400 font-medium tracking-wider uppercase px-2 drop-shadow-sm">University of Texas at Dallas is proud to present</div>
+          <div className="text-xs sm:text-sm text-orange-400 font-medium tracking-wider uppercase px-2 drop-shadow-sm">Texas Southern University is proud to present</div>
         </div>
 
         {/* Main Headlines - Centerpiece */}
@@ -144,10 +144,10 @@ export default function HeroSection() {
                 />
                 {/* Cross symbol */}
                 <div className="text-xl font-black text-white drop-shadow-2xl">✕</div>
-                {/* UTD Logo - Last on mobile */}
+                {/* TSU Logo - Last on mobile */}
                 <Image
-                  src="/images/cd908542103759.57c06762b252e.jpg"
-                  alt="UT Dallas Logo"
+                  src="/university/Texas_Southern_University_box_logo.png"
+                  alt="Texas Southern University Logo"
                   width={160}
                   height={80}
                   className="h-12 w-auto drop-shadow-2xl"
@@ -166,10 +166,10 @@ export default function HeroSection() {
                 />
                 {/* Cross symbol */}
                 <div className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-white drop-shadow-2xl">✕</div>
-                {/* UTD Logo - Last on desktop */}
+                {/* TSU Logo - Last on desktop */}
                 <Image
-                  src="/images/cd908542103759.57c06762b252e.jpg"
-                  alt="UT Dallas Logo"
+                  src="/university/Texas_Southern_University_box_logo.png"
+                  alt="Texas Southern University Logo"
                   width={320}
                   height={160}
                   className="h-24 md:h-28 lg:h-32 xl:h-36 w-auto drop-shadow-2xl"
@@ -177,7 +177,7 @@ export default function HeroSection() {
               </div>
             </div>
             <div className="block text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-light text-white tracking-wide drop-shadow-2xl hero-animate hero-animate-3">
-              DALLAS EXCLUSIVE EVENT
+              HOUSTON EXCLUSIVE EVENT
             </div>
           </h1>
           
@@ -225,7 +225,7 @@ export default function HeroSection() {
           
           {/* Supporting Message */}
           <div className="text-sm sm:text-base text-white/90 italic drop-shadow-sm hero-animate hero-animate-8">
-            Your purchase supports the UTD Music Department
+            Your purchase supports the TSU Music Department
           </div>
         </div>
       </div>

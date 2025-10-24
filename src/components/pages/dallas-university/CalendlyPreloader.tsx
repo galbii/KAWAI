@@ -11,7 +11,7 @@ export default function CalendlyPreloader() {
       
       // Create invisible iframe to preload the booking page and warm up servers
       const preloadFrame = document.createElement('iframe');
-      preloadFrame.src = 'https://calendly.com/kawaipianogallery/utd-x-kawai-piano-sale?utm_source=kawai-landing-page&utm_medium=preload&utm_campaign=utd-piano-sale-2025';
+      preloadFrame.src = 'https://calendly.com/kawaipianogallery/tsu-kawai-piano-sale?utm_source=kawai-landing-page&utm_medium=preload&utm_campaign=tsu-piano-sale-2025';
       preloadFrame.style.cssText = `
         position: fixed;
         top: -9999px;

@@ -8,8 +8,8 @@ export function StructuredData() {
       <LocalBusinessJsonLd
         type="Store"
         id="https://www.kawai-piano-sale-houston.com"
-        name="KAWAI Piano Sales Houston - UTD Partnership Event"
-        description="Exclusive KAWAI piano sale event in Houston featuring digital and acoustic pianos at special prices. Partnership with University of Texas at Dallas."
+        name="KAWAI Piano Sales Houston - TSU Partnership Event"
+        description="Exclusive KAWAI piano sale event in Houston featuring digital and acoustic pianos at special prices. Partnership with Texas Southern University."
         url="https://www.kawai-piano-sale-houston.com"
         telephone="+1-972-645-2514"
         address={{
@@ -30,7 +30,7 @@ export function StructuredData() {
         ]}
         sameAs={[
           "https://www.kawai-global.com",
-          "https://www.utdallas.edu",
+          "https://www.tsu.edu",
         ]}
         openingHours={[
           {
@@ -59,7 +59,7 @@ export function StructuredData() {
             },
             itemOffered: {
               name: "KAWAI Piano Sales",
-              description: "Digital and acoustic pianos including upright and grand pianos with special Dallas pricing.",
+              description: "Digital and acoustic pianos including upright and grand pianos with special Houston pricing.",
             },
           },
         ]}
@@ -69,7 +69,7 @@ export function StructuredData() {
               latitude: "32.7767",
               longitude: "-96.7970",
             },
-            geoRadius: "50000", // 50km radius covering Greater Dallas Area
+            geoRadius: "50000", // 50km radius covering Greater Houston Area
           },
         ]}
       />
@@ -78,14 +78,14 @@ export function StructuredData() {
         name="KAWAI Piano Sale Event Houston"
         startDate="2025-09-18T09:00:00-05:00"
         endDate="2025-09-21T18:00:00-05:00"
-        description="Exclusive KAWAI piano sale event in Houston featuring digital and acoustic pianos at special reduced prices. Partnership with University of Texas at Dallas offering savings up to $6,000."
+        description="Exclusive KAWAI piano sale event in Houston featuring digital and acoustic pianos at special reduced prices. Partnership with Texas Southern University offering savings up to $6,000."
         location={{
-          name: "University of Texas at Dallas",
+          name: "Texas Southern University",
           address: {
-            streetAddress: "800 W Campbell Rd",
-            addressLocality: "Richardson",
+            streetAddress: "3100 Cleburne St",
+            addressLocality: "Houston",
             addressRegion: "TX",
-            postalCode: "75080",
+            postalCode: "77004",
             addressCountry: "US",
           },
         }}
@@ -110,8 +110,8 @@ export function StructuredData() {
           sameAs: "https://www.kawai-global.com",
         }}
         organizer={{
-          name: "University of Texas at Dallas Music Department",
-          sameAs: "https://www.utdallas.edu",
+          name: "Texas Southern University Music Department",
+          sameAs: "https://www.tsu.edu",
         }}
         eventStatus="https://schema.org/EventScheduled"
         eventAttendanceMode="https://schema.org/OfflineEventAttendanceMode"

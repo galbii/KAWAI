@@ -25,7 +25,7 @@ const featuredPianos: FeaturedPiano[] = [
     id: "es-120",
     model: "ES-120",
     title: "Kawai ES-120",
-    description: "Compact digital piano with Responsive Hammer Compact action, 88 weighted keys, and premium piano sounds. Perfect for Dallas piano lessons, home practice, and portable performances.",
+    description: "Compact digital piano with Responsive Hammer Compact action, 88 weighted keys, and premium piano sounds. Perfect for Houston piano lessons, home practice, and portable performances.",
     image: "/images/optimized/pianos/es120.webp",
     category: "Digital Piano",
     originalPrice: 1099,
@@ -51,7 +51,7 @@ const featuredPianos: FeaturedPiano[] = [
     id: "k-200",
     model: "K-200",
     title: "Kawai K-200",
-    description: "Professional upright piano with premium spruce soundboard, responsive action, and rich, resonant tone. Popular choice for Dallas piano families, serious students, teachers, and music institutions.",
+    description: "Professional upright piano with premium spruce soundboard, responsive action, and rich, resonant tone. Popular choice for Houston piano families, serious students, teachers, and music institutions.",
     image: "/images/optimized/pianos/K-200_EP_styling_1200.webp",
     category: "Upright Piano",
     originalPrice: 8395,
@@ -134,7 +134,7 @@ function PianoSection({ piano, index, hasTrackedAnyPiano }: PianoSectionProps) {
             <div className={`relative transition-all duration-700 delay-300 ${isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-6 scale-95'}`}>
               <Image
                 src={piano.image}
-                alt={`${piano.title} - Dallas Piano Sales - Available at KAWAI Piano Store Dallas`}
+                alt={`${piano.title} - Houston Piano Sales - Available at KAWAI Piano Store Houston`}
                 width={800}
                 height={600}
                 className="w-full h-auto object-cover"
@@ -207,17 +207,17 @@ export function FeaturedDeals() {
   });
 
   return (
-    <div id="featured-deals" className="bg-kawai-pearl">
+    <div id="featured-deals" className="bg-white">
       {/* Section Header */}
       <section ref={headerRef} className="py-12 text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-kawai-pearl via-white to-kawai-pearl opacity-50"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50 to-white opacity-50"></div>
         <div className="relative z-10 max-w-4xl mx-auto px-6">
           <div className={`mb-8 transition-all duration-600 ${headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
             {/* Premium Gallery Title */}
             <div className={`relative inline-block mb-6 transition-all duration-600 delay-200 ${headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
               <div className="text-red-600 font-bold text-lg mb-2 tracking-wide">FEATURED MODELS</div>
               <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-kawai-black mb-2">
-                DALLAS PIANO GALLERY
+                HOUSTON PIANO GALLERY
               </h1>
               <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-red-600 to-red-700 rounded-full shadow-lg"></div>
             </div>
@@ -237,7 +237,7 @@ export function FeaturedDeals() {
           </div>
           
           <p className={`text-base md:text-lg leading-relaxed text-kawai-black/70 max-w-3xl mx-auto transition-all duration-600 delay-600 ${headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            Check out some featured models we have available. Book your appointment to experience our handpicked selection of premium digital and acoustic pianos with exclusive university pricing. Each masterfully crafted instrument showcases KAWAI&apos;s legendary quality, available at special event pricing through scheduled appointments with our piano experts. Partnership with UTD brings special pricing and music education benefits to our community.
+            Check out some featured models we have available. Book your appointment to experience our handpicked selection of premium digital and acoustic pianos with exclusive university pricing. Each masterfully crafted instrument showcases KAWAI&apos;s legendary quality, available at special event pricing through scheduled appointments with our piano experts. Partnership with TSU brings special pricing and music education benefits to our community.
           </p>
         </div>
         
@@ -252,7 +252,7 @@ export function FeaturedDeals() {
       ))}
       
       {/* CTA Section */}
-      <section className="py-12 text-center bg-kawai-pearl">
+      <section className="py-12 text-center bg-white">
         <div className="max-w-2xl mx-auto px-6 space-y-4">
           <h3 className="font-heading text-2xl font-semibold text-kawai-black">
             Schedule Your Personal Appointment

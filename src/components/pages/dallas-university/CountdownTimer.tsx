@@ -69,7 +69,7 @@ export function CountdownTimer() {
   useEffect(() => {
     if (!mounted) return;
 
-    const targetDate = new Date('2025-09-18T00:00:00').getTime();
+    const targetDate = new Date('2025-11-06T00:00:00').getTime();
 
     const calculateTimeLeft = () => {
       const now = new Date().getTime();
