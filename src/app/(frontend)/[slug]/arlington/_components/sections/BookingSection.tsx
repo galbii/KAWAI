@@ -7,7 +7,7 @@ import useCalendlyTracking from '@/hooks/useCalendlyTracking';
 /**
  * BookingSection Component
  *
- * Displays a Calendly booking widget for TSU Piano Sale consultations.
+ * Displays a Calendly booking widget for UTA x KAWAI Piano Sale consultations.
  * Integrates with Meta Pixel, PostHog, and Constant Contact for comprehensive tracking.
  *
  * Features:
@@ -15,11 +15,12 @@ import useCalendlyTracking from '@/hooks/useCalendlyTracking';
  * - Loading skeleton for better UX
  * - Comprehensive event tracking via useCalendlyTracking hook
  * - UTM parameters for campaign tracking
+ * - React Calendly InlineWidget component (reliable React implementation)
  * - Customized Calendly branding (KAWAI red color scheme)
  */
 
 // Calendly configuration
-const CALENDLY_URL = 'https://calendly.com/kawaipianogallery/tsu-kawai-piano-sale';
+const CALENDLY_URL = 'https://calendly.com/kawaipianogallery/uta-x-kawai-piano-sale';
 const CALENDLY_HEIGHT = '700px';
 
 export default function BookingSection() {
@@ -30,10 +31,10 @@ export default function BookingSection() {
   // Memoize tracking config to prevent unnecessary re-renders and callback recreation
   // This prevents multiple event listeners from accumulating
   const trackingConfig = useMemo(() => ({
-    eventName: 'TSU Piano Sale',
-    posthogEventName: 'tsu_piano_booking',
+    eventName: 'UTA x KAWAI Piano Sale',
+    posthogEventName: 'uta_piano_booking',
     metaPixel: {
-      content_name: 'TSU Piano Sale Consultation',
+      content_name: 'UTA x KAWAI Piano Sale Consultation',
       content_category: 'appointment_booking',
       value: 1000,
       currency: 'USD',
@@ -41,13 +42,13 @@ export default function BookingSection() {
     },
     constantContact: {
       enabled: true,
-      targetList: 'TSU LEADS',
+      targetList: 'UTA LEADS',
       createListIfMissing: true,
       showAuthPrompts: false
     },
     additionalData: {
-      source: 'university-landing-page',
-      campaign: 'tsu-piano-sale-2025'
+      source: 'arlington-landing-page',
+      campaign: 'uta-piano-sale-2025'
     }
   }), []); // Empty deps - config never changes
 
@@ -162,7 +163,7 @@ export default function BookingSection() {
                   utm={{
                     utmSource: 'kawai-landing-page',
                     utmMedium: 'booking-section',
-                    utmCampaign: 'tsu-piano-sale-2025'
+                    utmCampaign: 'uta-piano-sale-2025'
                   }}
                 />
               </div>

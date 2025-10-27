@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useCalendlyEventListener } from 'react-calendly'
 import { usePostHog } from 'posthog-js/react'
 import { trackSubmitApplication } from '@/components/MetaPixel'
@@ -68,7 +68,10 @@ export default function useCalendlyTracking(
   config: CalendlyTrackingConfig,
   prefillData?: CalendlyPrefillData
 ) {
-  const [hasTrackedEvent, setHasTrackedEvent] = useState(false)
+  // Use ref instead of state to prevent re-renders and callback recreation
+  // This prevents multiple event listeners from accumulating
+  const hasTrackedEvent = useRef(false)
+  const lastTrackingTimestamp = useRef<number>(0)
   const [isTrackingReady, setIsTrackingReady] = useState(true)
 
   // PostHog hook for event tracking
@@ -134,9 +137,18 @@ export default function useCalendlyTracking(
 
   // Handle successful booking submission
   const handleSuccessfulBooking = useCallback(async (eventData: any) => {
-    // Prevent duplicate tracking
-    if (hasTrackedEvent) {
+    const now = Date.now()
+
+    // Prevent duplicate tracking with two-layer protection:
+    // 1. Check if we've already tracked (ref-based)
+    // 2. Check if this is a rapid duplicate (< 1 second since last track)
+    if (hasTrackedEvent.current) {
       console.log('⚠️ Event already tracked, skipping duplicate')
+      return
+    }
+
+    if (now - lastTrackingTimestamp.current < 1000) {
+      console.log('⚠️ Duplicate event detected (< 1s since last), skipping')
       return
     }
 
@@ -171,7 +183,8 @@ export default function useCalendlyTracking(
     }
 
     // Mark as tracked immediately to prevent duplicates
-    setHasTrackedEvent(true)
+    hasTrackedEvent.current = true
+    lastTrackingTimestamp.current = now
 
     // Non-blocking tracking sequence: Meta Pixel → PostHog → Constant Contact
     // All tracking is non-blocking and won't affect booking completion
@@ -229,7 +242,8 @@ export default function useCalendlyTracking(
         })
       }, 200)
     }, 50)
-  }, [config, prefillData, posthog, hasTrackedEvent, handleConstantContactSubmission])
+  }, [config, prefillData, posthog, handleConstantContactSubmission])
+  // Note: hasTrackedEvent and lastTrackingTimestamp are refs, not dependencies
 
   // Set up Calendly event listeners
   useCalendlyEventListener({
@@ -244,8 +258,11 @@ export default function useCalendlyTracking(
 
   return {
     isTrackingReady,
-    hasTrackedEvent,
+    hasTrackedEvent: hasTrackedEvent.current,
     // Expose for manual reset if needed
-    resetTracking: () => setHasTrackedEvent(false)
+    resetTracking: () => {
+      hasTrackedEvent.current = false
+      lastTrackingTimestamp.current = 0
+    }
   }
 }

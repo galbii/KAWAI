@@ -22,14 +22,14 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianostlouis.com'),
-  title: "Piano Sales Houston | KAWAI Piano Deals & Used Pianos | TSU Event Sept 2025",
-  description: "Houston piano sales event featuring KAWAI digital & acoustic pianos. Save up to $6,000 on new & used pianos. Piano deals Houston - TSU partnership Sept 18-21, 2025. Free delivery!",
+  title: "Piano Sales Arlington | KAWAI Piano Deals & Used Pianos | Special Event 2025",
+  description: "Arlington piano sales event featuring KAWAI digital & acoustic pianos. Save up to $6,000 on new & used pianos. Piano deals Arlington - Special partnership event 2025. Free delivery!",
   icons: {
     apple: '/images/optimized/logos/Kawai-Red.webp',
   },
   openGraph: {
-    title: "Piano Sales Houston | KAWAI Piano Deals & Used Pianos | TSU Event Sept 2025",
-    description: "Houston piano sales event featuring KAWAI digital & acoustic pianos. Save up to $6,000 on new & used pianos. Piano deals Houston - TSU partnership Sept 18-21, 2025. Free delivery!",
+    title: "Piano Sales Arlington | KAWAI Piano Deals & Used Pianos | Special Event 2025",
+    description: "Arlington piano sales event featuring KAWAI digital & acoustic pianos. Save up to $6,000 on new & used pianos. Piano deals Arlington - Special partnership event 2025. Free delivery!",
     images: [
       {
         url: '/images/optimized/misc/kawai-piano-hands_1200.webp',
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function UniversityLayout({
+export default function ArlingtonLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
