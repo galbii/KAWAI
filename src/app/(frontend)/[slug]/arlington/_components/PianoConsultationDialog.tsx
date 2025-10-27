@@ -1,14 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useCallback, useState } from 'react';
-import { useCalendlyEventListener } from 'react-calendly';
+import { useEffect, useRef, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogTitle,
 } from './ui/dialog';
-import { trackSubmitApplication } from '@/components/MetaPixel';
-// PostHog import removed
 import './types/calendly';
 
 interface PianoConsultationDialogProps {
@@ -17,63 +14,16 @@ interface PianoConsultationDialogProps {
 }
 
 export default function PianoConsultationDialog({ isOpen, onClose }: PianoConsultationDialogProps) {
-  // PostHog tracking removed
   const calendlyContainerRef = useRef<HTMLDivElement>(null);
-  const [hasTrackedEvent, setHasTrackedEvent] = useState(false);
 
-  // Set up Calendly event listeners for Meta Pixel tracking
-  useCalendlyEventListener({
-    onEventScheduled: (event) => {
-      // Prevent duplicate tracking
-      if (hasTrackedEvent) {
-        console.log('⚠️ Event already tracked (Modal), skipping duplicate');
-        return;
-      }
-
-      console.log('🎉 Calendly Event Scheduled via Modal (UTA Piano Sale):', event);
-      console.log('📋 Event payload:', event.data?.payload);
-
-      try {
-        // Check if Meta Pixel is available
-        if (typeof window !== 'undefined' && window.fbq) {
-          const metaPixelData = {
-            content_name: 'UTA Piano Sale Consultation',
-            content_category: 'appointment_booking',
-            value: 1000,
-            currency: 'USD',
-            status: 'calendly_booking_modal'
-          };
-
-          console.log('🎯 Meta Pixel (Modal): Firing SubmitApplication event with data:', metaPixelData);
-
-          // Track the event using the utility function
-          trackSubmitApplication(metaPixelData);
-
-          console.log('✅ Meta Pixel SubmitApplication event fired successfully from Modal: ' + (+new Date()));
-
-          // Mark as tracked
-          setHasTrackedEvent(true);
-        } else {
-          console.warn('⚠️ Meta Pixel (window.fbq) not available - event not tracked (Modal)');
-        }
-      } catch (error) {
-        console.error('❌ Error firing Meta Pixel event from Modal (non-blocking):', error);
-      }
-    },
-    onProfilePageViewed: (event) => {
-      console.log('📊 Calendly Profile Page Viewed (UTA Modal):', event);
-    },
-    onDateAndTimeSelected: (event) => {
-      console.log('📅 Calendly Date/Time Selected (UTA Modal):', event);
-    }
-  });
+  // NOTE: Tracking is handled globally by BookingSection's useCalendlyTracking hook
+  // useCalendlyEventListener is a GLOBAL listener that hears ALL Calendly events on the page
+  // Adding another listener here would cause duplicate tracking (5x SubmitApplication events)
+  // The modal is just another UI for the same Calendly booking - no separate tracking needed
   
   const initializeFallbackWidget = useCallback(() => {
     console.log('🔄 Initializing fallback Calendly widget...');
-    
-    // Initialize tracking
-    // Calendly tracking removed
-    
+
     let attempts = 0;
     const maxAttempts = 100; // 10 seconds timeout (100 * 100ms)
     
@@ -168,28 +118,19 @@ export default function PianoConsultationDialog({ isOpen, onClose }: PianoConsul
       // Return the widget content to the preloader
       preloadedWidget.innerHTML = modalContainer.innerHTML;
       modalContainer.innerHTML = '';
-      
+
       console.log('🔄 Widget returned to preloader for next use');
     }
-    
-    // Clean up tracking
-    // Calendly cleanup removed
   }, []);
 
   useEffect(() => {
     if (isOpen) {
-      // Modal opened tracking removed for basic setup
-
-      // Use the preloaded widget instead of initializing a new one
       console.log('🚀 Using preloaded Calendly widget for instant display');
       movePreloadedWidget();
     }
 
     return () => {
       if (isOpen) {
-        // Modal abandoned tracking removed for basic setup
-
-        // Return the widget to the preloader when modal closes
         returnWidgetToPreloader();
       }
     };
