@@ -202,7 +202,7 @@ export default function HeroSection() {
               <div className="w-2 h-2 bg-red-200 rounded-full animate-pulse"></div>
               <span className="text-white font-bold tracking-wide text-xs sm:text-sm">SCHEDULE YOUR APPOINTMENT</span>
             </div>
-            <div className="hero-text-shadow text-lg sm:text-xl md:text-2xl font-bold text-white tracking-wider hero-animate hero-animate-6">November 14-17, 2025</div>
+            <div className="hero-text-shadow text-lg sm:text-xl md:text-2xl font-bold text-white tracking-wider hero-animate hero-animate-6">November 13-16, 2025</div>
             <div className="hero-text-shadow text-sm sm:text-base text-white font-medium hero-animate hero-animate-7">Book your appointment for special event pricing on a wide variety of KAWAI pianos with free delivery and tuning</div>
           </div>
           
