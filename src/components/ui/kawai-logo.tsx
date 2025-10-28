@@ -79,23 +79,29 @@ export function KawaiLogo({
 
   // Parse dealer name into location and suffix based on navigation context
   const parseLocationText = (dealerName?: string) => {
-    // If we're on the main site (not a dealer location), show just PIANO GALLERY
+    // If we're on the main site (not a dealer location), no text - just logo
     if (!origin.isDealerLocation) {
-      return { location: '', suffix: 'PIANO GALLERY' }
+      return { location: '', suffix: '' }
     }
-    
-    // For dealer locations, show the dealer name
+
+    // For dealer locations without a name, just show logo
     if (!dealerName) {
-      return { location: 'ST. LOUIS', suffix: 'PIANO GALLERY' }
+      return { location: '', suffix: '' }
     }
-    
-    // Handle different dealer name formats
-    if (dealerName.toUpperCase().includes('PIANO GALLERY')) {
-      const location = dealerName.replace(/PIANO GALLERY/i, '').trim().toUpperCase()
-      return { location: location || 'KAWAI', suffix: 'PIANO GALLERY' }
-    } else {
-      return { location: dealerName.toUpperCase(), suffix: 'PIANO GALLERY' }
+
+    // Handle different dealer name formats - strip out "Piano Gallery" and "Kawai" references
+    const cleanName = dealerName
+      .replace(/PIANO GALLERY/gi, '')
+      .replace(/KAWAI/gi, '')
+      .trim()
+    const locationName = cleanName ? cleanName.toUpperCase() : ''
+
+    // Only show text if we have a valid location name
+    if (!locationName) {
+      return { location: '', suffix: '' }
     }
+
+    return { location: locationName, suffix: 'Instrumental to Life' }
   }
 
   const { location, suffix } = parseLocationText(dealerName)
@@ -116,60 +122,43 @@ export function KawaiLogo({
           height: 'auto'
         }}
       />
-      {animated ? (
-        <motion.div variants={textVariants} className="flex-shrink-0">
-          {location ? (
-            <>
+      {location && (
+        <>
+          {animated ? (
+            <motion.div variants={textVariants} className="flex-shrink-0">
               <div className={cn("font-bold tracking-wide kawai-heading whitespace-nowrap", textColors[theme].primary, textSize)}>
                 {location}
               </div>
               <div className={cn("-mt-1 tracking-widest font-medium whitespace-nowrap", textColors[theme].secondary, subText)}>
                 {suffix}
               </div>
-            </>
+            </motion.div>
           ) : (
-            <>
-              <div className={cn("font-bold tracking-wide kawai-heading whitespace-nowrap", textColors[theme].primary, textSize)}>
-                {suffix}
-              </div>
-              <div className={cn("-mt-1 tracking-widest font-medium whitespace-nowrap", textColors[theme].secondary, subText)}>
-                Instrumental to Life
-              </div>
-            </>
-          )}
-        </motion.div>
-      ) : (
-        <div className="flex-shrink-0">
-          {location ? (
-            <>
+            <div className="flex-shrink-0">
               <div className={cn("font-bold tracking-wide kawai-heading whitespace-nowrap", textColors[theme].primary, textSize)}>
                 {location}
               </div>
               <div className={cn("-mt-1 tracking-widest font-medium whitespace-nowrap", textColors[theme].secondary, subText)}>
                 {suffix}
               </div>
-            </>
-          ) : (
-            <>
-              <div className={cn("font-bold tracking-wide kawai-heading whitespace-nowrap", textColors[theme].primary, textSize)}>
-                {suffix}
-              </div>
-              <div className={cn("-mt-1 tracking-widest font-medium whitespace-nowrap", textColors[theme].secondary, subText)}>
-                Instrumental to Life
-              </div>
-            </>
+            </div>
           )}
-        </div>
+        </>
       )}
     </>
   )
+
+  // Determine layout direction based on whether we have a location
+  const layoutClasses = location
+    ? "flex items-center space-x-2 sm:space-x-3"
+    : "flex flex-col items-center space-y-1"
 
   if (animated) {
     if (nonClickable) {
       return (
         <div className={cn("kawai-logo-container", className)}>
           <motion.div
-            className="flex items-center space-x-2 sm:space-x-3"
+            className={layoutClasses}
             variants={logoVariants}
             initial="initial"
             whileHover="hover"
@@ -187,7 +176,7 @@ export function KawaiLogo({
         aria-label={contextAwareAriaLabel}
       >
         <motion.div
-          className="flex items-center space-x-2 sm:space-x-3"
+          className={layoutClasses}
           variants={logoVariants}
           initial="initial"
           whileHover="hover"
@@ -201,7 +190,7 @@ export function KawaiLogo({
   if (nonClickable) {
     return (
       <div className={cn("kawai-logo-container", className)}>
-        <div className="flex items-center space-x-2 sm:space-x-3">
+        <div className={layoutClasses}>
           <LogoContent />
         </div>
       </div>
@@ -214,7 +203,7 @@ export function KawaiLogo({
       className={cn("kawai-logo-container", className)}
       aria-label={contextAwareAriaLabel}
     >
-      <div className="flex items-center space-x-2 sm:space-x-3">
+      <div className={layoutClasses}>
         <LogoContent />
       </div>
     </Link>

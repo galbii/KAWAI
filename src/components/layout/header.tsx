@@ -907,7 +907,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                     exit={{ rotate: 90, opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <X className="h-6 w-6" />
+                    <X className="h-6 w-6 text-gray-900" />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -917,7 +917,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                     exit={{ rotate: -90, opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Menu className="h-6 w-6" />
+                    <Menu className="h-6 w-6 text-gray-900" />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -950,16 +950,13 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
               exit="closed"
             >
             <div className="sticky top-0 bg-white border-b border-gray-200/50 p-4 z-10 flex-shrink-0">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <h2 className="text-lg font-semibold text-gray-900">Piano Categories</h2>
-                </div>
+              <div className="flex items-center justify-end">
                 <button
                   onClick={closeMobileMenu}
                   className="p-2 rounded-md hover:bg-gray-100/80 transition-colors"
                   aria-label="Close menu"
                 >
-                  <X className="h-6 w-6" />
+                  <X className="h-6 w-6 text-gray-900" />
                 </button>
               </div>
             </div>

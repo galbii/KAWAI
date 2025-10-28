@@ -50,10 +50,10 @@ export function DealerLocations({ className = '', locations = [] }: DealerLocati
           </div>
           <h2 className="text-3xl sm:text-5xl md:text-6xl font-light font-serif text-kawai-black mb-6 sm:mb-8 leading-tight px-4 sm:px-0">
             Find Your Nearest
-            <span className="text-kawai-red block">Piano Gallery</span>
+            <span className="text-kawai-red block">Kawai Showroom</span>
           </h2>
           <p className="text-lg sm:text-xl text-kawai-black/70 max-w-3xl mx-auto leading-relaxed px-4 sm:px-0">
-            Visit our Piano Galleries and experience our complete collection of acoustic and digital pianos with expert consultation.
+            Visit our Kawai Showrooms and experience our complete collection of acoustic and digital pianos with expert consultation.
           </p>
         </motion.div>
 
@@ -74,7 +74,7 @@ export function DealerLocations({ className = '', locations = [] }: DealerLocati
                 {/* Location Header */}
                 <div className="mb-4 sm:mb-6">
                   <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-2 sm:mb-3">
-                    {location.locationText || 'Piano Gallery'}
+                    {location.locationText || 'Kawai Showroom'}
                   </div>
                   <h3 className="text-xl sm:text-2xl font-serif text-kawai-black mb-2 group-hover:text-kawai-red transition-colors leading-tight">
                     {location.locationName}
@@ -145,7 +145,7 @@ export function DealerLocations({ className = '', locations = [] }: DealerLocati
                 <div className="pt-3 sm:pt-4 border-t border-kawai-pearl mt-auto">
                   <div className="flex items-center justify-between min-h-[44px]">
                     <span className="text-sm font-medium text-kawai-black group-hover:text-kawai-red transition-colors">
-                      Visit Gallery
+                      Visit Showroom
                     </span>
                     <div className="w-8 h-8 sm:w-6 sm:h-6 bg-kawai-red/10 group-hover:bg-kawai-red rounded-full flex items-center justify-center transition-colors">
                       <svg 

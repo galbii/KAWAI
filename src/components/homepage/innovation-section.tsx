@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 
 export function InnovationSection() {
   const [isVisible, setIsVisible] = useState(false);
@@ -108,9 +109,6 @@ export function InnovationSection() {
           <div className="grid lg:grid-cols-2 gap-0">
             {/* Content */}
             <div className="p-8 lg:p-12 flex flex-col justify-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-kawai-red/10 text-kawai-red rounded-xl mb-6">
-                {innovations[0]?.icon}
-              </div>
               <h3 className="text-2xl sm:text-3xl lg:text-4xl font-serif text-kawai-black mb-4">
                 {innovations[0]?.title}
               </h3>
@@ -139,10 +137,14 @@ export function InnovationSection() {
             </div>
 
             {/* Visual */}
-            <div className="relative bg-gradient-to-br from-kawai-black to-kawai-red/10 p-8 lg:p-12 flex items-center justify-center min-h-[300px] lg:min-h-0">
-              <div className="text-white/10 text-9xl font-black">
-                III
-              </div>
+            <div className="relative min-h-[300px] lg:min-h-[400px] overflow-hidden">
+              <Image
+                src="https://kawai.com.au/wp-content/uploads/2019/12/millennium3SK.jpg"
+                alt="Millennium III Carbon Fiber Action"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
             </div>
           </div>
         </motion.div>

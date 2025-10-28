@@ -94,7 +94,7 @@ interface FooterProps {
 
 export function Footer({ locationContactData, isSignaturePage = false }: FooterProps) {
   // Generate location-aware business name and description
-  const businessName = locationContactData?.name || 'Kawai Piano Gallery St. Louis'
+  const businessName = locationContactData?.name || 'Kawai'
   const locationDescription = locationContactData?.locationName
     ? `${locationContactData.locationName}'s premier piano destination. Experience the harmony of traditional Japanese craftsmanship and innovative technology.`
     : 'Crafting exceptional pianos for over 95 years. Experience the harmony of traditional Japanese craftsmanship and innovative technology.'
@@ -144,21 +144,27 @@ export function Footer({ locationContactData, isSignaturePage = false }: FooterP
               <div>"Making beautiful music accessible to all"</div>
             </div>
             
-            {/* Contact Info - Hidden on signature page */}
-            {!isSignaturePage && (
+            {/* Contact Info - Only show when location data is available */}
+            {!isSignaturePage && locationContactData && (
               <div className="space-y-3">
-                <div className="flex items-center space-x-3">
-                  <Phone className="h-5 w-5 text-kawai-red" />
-                  <span>{locationContactData?.phone || '(636) 265-2866'}</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Mail className="h-5 w-5 text-kawai-red" />
-                  <span>{locationContactData?.email || 'info@kawaipianostlouis.com'}</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <MapPin className="h-5 w-5 text-kawai-red" />
-                  <span>{locationContactData?.address || '21 Meadows Circle Drive, Suite 312, Lake St. Louis, MO 63367'}</span>
-                </div>
+                {locationContactData.phone && (
+                  <div className="flex items-center space-x-3">
+                    <Phone className="h-5 w-5 text-kawai-red" />
+                    <span>{locationContactData.phone}</span>
+                  </div>
+                )}
+                {locationContactData.email && (
+                  <div className="flex items-center space-x-3">
+                    <Mail className="h-5 w-5 text-kawai-red" />
+                    <span>{locationContactData.email}</span>
+                  </div>
+                )}
+                {locationContactData.address && (
+                  <div className="flex items-center space-x-3">
+                    <MapPin className="h-5 w-5 text-kawai-red" />
+                    <span>{locationContactData.address}</span>
+                  </div>
+                )}
               </div>
             )}
           </div>

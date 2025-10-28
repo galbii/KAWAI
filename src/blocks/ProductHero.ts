@@ -46,7 +46,7 @@ export const ProductHero: Block = {
         {
           name: 'showPrice',
           type: 'checkbox',
-          defaultValue: true,
+          defaultValue: false,
           admin: {
             description: 'Show pricing information'
           }

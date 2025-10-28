@@ -15,7 +15,7 @@ export function ShowroomLocation({ data = DEFAULT_SHOWROOM_DATA }: ShowroomLocat
         </div>
         <h2 className="text-5xl md:text-6xl font-light font-serif text-kawai-black mb-8 leading-tight">
           {data.showroomTitle}
-          <span className="text-kawai-red block">Piano Gallery</span>
+          <span className="text-kawai-red block">Kawai Showroom</span>
         </h2>
         <p className="text-xl text-kawai-black/70 max-w-3xl mx-auto leading-relaxed">
           {data.showroomDescription}

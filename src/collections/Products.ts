@@ -442,7 +442,7 @@ export const Products: CollectionConfig = {
                 {
                   name: 'text',
                   type: 'text',
-                  defaultValue: 'Contact for Details',
+                  defaultValue: 'View More',
                   required: true,
                   admin: {
                     description: 'Buy button text'

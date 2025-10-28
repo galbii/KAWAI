@@ -164,9 +164,6 @@ export function SoundQualitySection() {
               key={characteristic.title}
               className="text-center group"
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-kawai-red/10 text-kawai-red rounded-full mb-4 group-hover:bg-kawai-red group-hover:text-white transition-colors duration-300">
-                {characteristic.icon}
-              </div>
               <h3 className="text-xl font-serif text-kawai-black mb-3">
                 {characteristic.title}
               </h3>

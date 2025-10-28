@@ -23,6 +23,11 @@ const nextConfig = {
         hostname: 'cdn.kawaius.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'kawai.com.au',
+        pathname: '/**',
+      },
     ],
   },
   eslint: {

@@ -44,7 +44,7 @@ export function HeritageSection() {
             initial={{ opacity: 0, y: 30 }}
             animate={isVisible ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8 }}
-            className="space-y-8"
+            className="space-y-8 order-2 lg:order-1"
           >
             {/* Section Label */}
             <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase">
@@ -108,12 +108,12 @@ export function HeritageSection() {
             initial={{ opacity: 0, x: 30 }}
             animate={isVisible ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative"
+            className="relative order-1 lg:order-2"
           >
             <div className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl">
               <Image
-                src="/images/heritage/kawai-craftsman.jpg"
-                alt="Kawai piano craftsman demonstrating Japanese piano craftsmanship and traditional piano making techniques"
+                src="https://kawaius.com/wp-content/uploads/2017/10/Koichi-Kawai.jpg"
+                alt="Koichi Kawai, founder of Kawai pianos, demonstrating Japanese piano craftsmanship and traditional piano making techniques"
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 600px"

@@ -59,7 +59,7 @@ export function ProductHeroBlock({
   const imagePosition = layout.imagePosition || 'left'
   const backgroundColor = layout.backgroundColor || 'pearl'
   const showFinishes = layout.showFinishes !== false
-  const showPrice = layout.showPrice !== false
+  const showPrice = layout.showPrice === true
   const showBuyButton = layout.showBuyButton !== false
   
   // If no product data is available, show a placeholder
@@ -163,36 +163,22 @@ export function ProductHeroBlock({
     buyButtonData: product.buyButton
   })
      
-  // Get the buy button text - product.buyButton.text is required when buyButton exists
+  // Get the buy button text - hardcoded to "Learn More"
   const getBuyButtonText = () => {
-    console.log('Debug - Buy button data:', {
-      buyButton: product.buyButton,
-      buyButtonText: product.buyButton?.text,
-      hasPrice,
-      showBuyButton,
-      shouldShowBuyButton
-    })
-    
-    if (!product.buyButton?.text) {
-      console.log('No buy button text found, returning default')
-      return 'Contact for Details'
-    }
-    
-    console.log('Using buy button text from product:', product.buyButton.text)
-    return product.buyButton.text
+    return 'Learn More'
   }
   
   // Enhanced price formatting with animations
   const formatPrice = () => {
-    if (!product.price) return 'Contact for pricing'
-    
+    if (!product.price) return 'Learn more'
+
     if (product.price.priceText) {
       return product.price.priceText
     }
-    
+
     // CONSOLIDATED: Updated to use msrp instead of amount
     if (!product.price.msrp) {
-      return 'Contact for pricing'
+      return 'Learn more'
     }
     
     const currency = product.price.currency || 'USD'
@@ -485,24 +471,6 @@ export function ProductHeroBlock({
                       </svg>
                     </span>
                   </Link>
-                </Button>
-                
-                {/* Secondary CTA */}
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "px-8 lg:px-10 py-4 lg:py-6 border-2 font-medium rounded-full transition-all duration-300 text-base lg:text-lg hover:border-kawai-red",
-                    backgroundColor === 'black' 
-                      ? 'border-white/30 text-white hover:bg-white/5' 
-                      : backgroundColor === 'white'
-                        ? 'border-black/30 text-black hover:bg-black/5'
-                        : 'border-slate-400 text-slate-600 hover:bg-slate-100'
-                  )}
-                >
-                  <span className="flex items-center justify-center space-x-2">
-                    <Volume2 className="w-4 h-4 lg:w-5 lg:h-5" />
-                    <span>Listen Now</span>
-                  </span>
                 </Button>
               </div>
             )}
