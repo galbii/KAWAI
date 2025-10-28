@@ -2,21 +2,23 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { InlineWidget } from 'react-calendly';
-import useCalendlyTracking from '@/hooks/useCalendlyTracking';
+import useCalendlyTracking, { type CalendlyPrefillData } from '@/hooks/useCalendlyTracking';
+import QuickContactForm from '../QuickContactForm';
 
 /**
  * BookingSection Component
  *
- * Displays a Calendly booking widget for UTA x KAWAI Piano Sale consultations.
- * Integrates with Meta Pixel, PostHog, and Constant Contact for comprehensive tracking.
+ * Two-step booking process for Arlington event:
+ * 1. Quick contact form to capture lead data and submit to Constant Contact
+ * 2. Calendly widget with prefilled data for appointment booking
  *
  * Features:
+ * - Lead capture before Calendly (increases conversion)
+ * - Automatic Constant Contact integration (arlington2025 list)
  * - Lazy loading with Intersection Observer (performance optimization)
- * - Loading skeleton for better UX
  * - Comprehensive event tracking via useCalendlyTracking hook
+ * - Prefilled Calendly form for better UX
  * - UTM parameters for campaign tracking
- * - React Calendly InlineWidget component (reliable React implementation)
- * - Customized Calendly branding (KAWAI red color scheme)
  */
 
 // Calendly configuration
@@ -26,6 +28,8 @@ const CALENDLY_HEIGHT = '700px';
 export default function BookingSection() {
   const [shouldLoadCalendly, setShouldLoadCalendly] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showForm, setShowForm] = useState(true);
+  const [prefillData, setPrefillData] = useState<CalendlyPrefillData | undefined>(undefined);
   const sectionRef = useRef<HTMLDivElement>(null);
 
   // Memoize tracking config to prevent unnecessary re-renders and callback recreation
@@ -54,30 +58,35 @@ export default function BookingSection() {
 
   // Set up comprehensive Calendly tracking with Meta Pixel, PostHog, and Constant Contact
   // This hook automatically listens for Calendly events and fires all tracking
-  useCalendlyTracking(trackingConfig);
+  // Pass prefill data for tracking purposes
+  useCalendlyTracking(trackingConfig, prefillData);
 
-  // Intersection Observer for lazy loading
-  // Only loads Calendly when the section is about to come into view
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          console.log('📍 Booking section came into view, loading Calendly widget...');
-          setShouldLoadCalendly(true);
-        }
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '200px' // Pre-load when within 200px of viewport
-      }
-    );
+  // Handle form submission success
+  const handleFormSuccess = (data: { email: string; firstName: string; lastName: string }) => {
+    console.log('BookingSection: Form submitted successfully, showing Calendly with prefill:', data);
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
+    // Set prefill data for Calendly
+    setPrefillData({
+      email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName,
+    });
 
-    return () => observer.disconnect();
-  }, []);
+    // Hide form and show Calendly
+    setShowForm(false);
+    setShouldLoadCalendly(true);
+  };
+
+  // Handle skip option (if they want to book without form)
+  const handleSkip = () => {
+    console.log('BookingSection: User skipped form, showing Calendly without prefill');
+    setShowForm(false);
+    setShouldLoadCalendly(true);
+  };
+
+  // Intersection Observer for lazy loading - no longer needed since we show form first
+  // The form is lightweight and can be rendered immediately
+  // Calendly only loads after form submission
 
   // Handle widget loading state
   useEffect(() => {
@@ -103,20 +112,32 @@ export default function BookingSection() {
           {/* Header */}
           <div className="text-center mb-8">
             <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-kawai-black mb-4">
-              Schedule Your Piano Consultation
+              Early Bird Pricing RSVP
             </h2>
             <p className="text-lg md:text-xl leading-relaxed text-kawai-black/70 max-w-2xl mx-auto">
-              Get personalized recommendations from our expert piano consultants. Select a convenient time for your one-on-one session.
+              {showForm
+                ? 'Lock in exclusive event pricing by claiming your appointment slot today.'
+                : 'Get personalized recommendations from our expert piano consultants. Select a convenient time for your one-on-one session.'}
             </p>
           </div>
 
-          {/* Loading skeleton - shown before Calendly loads */}
-          {!shouldLoadCalendly && (
+          {/* Step 1: Contact Form - shown first */}
+          {showForm && (
+            <QuickContactForm
+              onSuccess={handleFormSuccess}
+              onSkip={handleSkip}
+            />
+          )}
+
+          {/* Loading state - shown while waiting for Calendly to load */}
+          {!showForm && shouldLoadCalendly && isLoading && (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-8">
               <div className="text-center mb-6">
                 <div className="w-8 h-8 border-2 border-kawai-red border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-gray-600">Loading booking calendar...</p>
-                <p className="text-sm text-gray-500 mt-2">Preparing your consultation options</p>
+                <p className="text-gray-600">Preparing your personalized booking experience...</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  {prefillData?.firstName && `Welcome, ${prefillData.firstName}!`}
+                </p>
               </div>
               {/* Calendar skeleton */}
               <div className="space-y-4">
@@ -131,44 +152,62 @@ export default function BookingSection() {
             </div>
           )}
 
-          {/* Calendly Widget - rendered when section comes into view */}
-          {shouldLoadCalendly && (
-            <div className="relative">
-              {/* Loading overlay - shown briefly while widget initializes */}
-              {isLoading && (
-                <div className="absolute inset-0 bg-white/95 flex items-center justify-center z-10 rounded-lg">
-                  <div className="text-center space-y-4">
-                    <div className="w-8 h-8 border-2 border-kawai-red border-t-transparent rounded-full animate-spin mx-auto" />
-                    <p className="text-gray-600 text-sm font-medium">Loading calendar...</p>
-                  </div>
-                </div>
-              )}
+          {/* Step 2: Calendly Widget - rendered after form submission */}
+          {!showForm && shouldLoadCalendly && (() => {
+            // Build prefill object only with defined values (strict mode requirement)
+            const prefillObject: Record<string, string> = {};
+            if (prefillData?.email) {
+              prefillObject.email = prefillData.email;
+            }
+            if (prefillData?.firstName) {
+              prefillObject.firstName = prefillData.firstName;
+            }
+            if (prefillData?.lastName) {
+              prefillObject.lastName = prefillData.lastName;
+            }
+            if (prefillData?.firstName && prefillData?.lastName) {
+              prefillObject.name = `${prefillData.firstName} ${prefillData.lastName}`;
+            }
 
-              {/* Calendly InlineWidget Component */}
-              <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
-                <InlineWidget
-                  url={CALENDLY_URL}
-                  styles={{
-                    height: CALENDLY_HEIGHT,
-                    minWidth: '320px',
-                    width: '100%'
-                  }}
-                  pageSettings={{
-                    backgroundColor: 'ffffff',
-                    hideEventTypeDetails: false,
-                    hideLandingPageDetails: false,
-                    primaryColor: 'C41E3A', // KAWAI red
-                    textColor: '2C2C2C' // KAWAI charcoal
-                  }}
-                  utm={{
-                    utmSource: 'kawai-landing-page',
-                    utmMedium: 'booking-section',
-                    utmCampaign: 'uta-piano-sale-2025'
-                  }}
-                />
+            return (
+              <div className="relative">
+                {/* Loading overlay - shown briefly while widget initializes */}
+                {isLoading && (
+                  <div className="absolute inset-0 bg-white/95 flex items-center justify-center z-10 rounded-lg">
+                    <div className="text-center space-y-4">
+                      <div className="w-8 h-8 border-2 border-kawai-red border-t-transparent rounded-full animate-spin mx-auto" />
+                      <p className="text-gray-600 text-sm font-medium">Loading calendar...</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Calendly InlineWidget Component with Prefill */}
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+                  <InlineWidget
+                    url={CALENDLY_URL}
+                    {...(Object.keys(prefillObject).length > 0 ? { prefill: prefillObject } : {})}
+                    styles={{
+                      height: CALENDLY_HEIGHT,
+                      minWidth: '320px',
+                      width: '100%'
+                    }}
+                    pageSettings={{
+                      backgroundColor: 'ffffff',
+                      hideEventTypeDetails: false,
+                      hideLandingPageDetails: false,
+                      primaryColor: 'C41E3A', // KAWAI red
+                      textColor: '2C2C2C' // KAWAI charcoal
+                    }}
+                    utm={{
+                      utmSource: 'kawai-landing-page',
+                      utmMedium: 'booking-section',
+                      utmCampaign: 'uta-piano-sale-2025'
+                    }}
+                  />
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
       </div>
     </section>

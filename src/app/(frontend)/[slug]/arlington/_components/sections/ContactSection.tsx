@@ -2,9 +2,50 @@
 
 import { useState } from 'react';
 import PianoConsultationDialog from '../PianoConsultationDialog';
+import QuickContactForm from '../QuickContactForm';
+import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
+
+interface CalendlyPrefillData {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+}
 
 export default function ContactSection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showForm, setShowForm] = useState(true);
+  const [prefillData, setPrefillData] = useState<CalendlyPrefillData | undefined>(undefined);
+
+  const handleFormSuccess = (data: { email: string; firstName: string; lastName: string }) => {
+    console.log('ContactSection: Form submitted successfully, showing Calendly with prefill:', data);
+
+    setPrefillData({
+      email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName,
+    });
+
+    setShowForm(false);
+  };
+
+  const handleSkip = () => {
+    console.log('ContactSection: User skipped form, showing Calendly without prefill');
+    setShowForm(false);
+  };
+
+  const handleOpenModal = () => {
+    setShowForm(true);
+    setPrefillData(undefined);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setTimeout(() => {
+      setShowForm(true);
+      setPrefillData(undefined);
+    }, 300);
+  };
   
   return (
     <section id="contact" className="py-20 bg-gradient-to-br from-gray-50 to-white relative overflow-hidden">
@@ -102,7 +143,7 @@ export default function ContactSection() {
                 Get Directions
               </button>
               <button
-                onClick={() => setIsModalOpen(true)}
+                onClick={handleOpenModal}
                 className="w-full border-2 border-primary text-primary font-semibold py-3 px-6 rounded-xl hover:bg-primary hover:text-white transition-all duration-300"
               >
                 Schedule Private Tour
@@ -159,11 +200,31 @@ export default function ContactSection() {
         </div>
       </div>
       
-      {/* Piano Consultation Dialog */}
-      <PianoConsultationDialog 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-      />
+      {/* Two-Step Booking Modal with Form */}
+      {showForm && isModalOpen && (
+        <Dialog open={isModalOpen} onOpenChange={handleCloseModal}>
+          <DialogContent className="max-w-md w-full p-0 overflow-hidden">
+            <DialogTitle className="sr-only">
+              Secure Your Spot
+            </DialogTitle>
+            <div className="p-6">
+              <QuickContactForm
+                onSuccess={handleFormSuccess}
+                onSkip={handleSkip}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Calendly Modal with Prefill */}
+      {!showForm && isModalOpen && (
+        <PianoConsultationDialog
+          isOpen={true}
+          onClose={handleCloseModal}
+          {...(prefillData ? { prefillData } : {})}
+        />
+      )}
     </section>
   );
 }

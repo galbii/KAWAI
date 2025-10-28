@@ -8,12 +8,19 @@ import {
 } from './ui/dialog';
 import './types/calendly';
 
+interface CalendlyPrefillData {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+}
+
 interface PianoConsultationDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  prefillData?: CalendlyPrefillData;
 }
 
-export default function PianoConsultationDialog({ isOpen, onClose }: PianoConsultationDialogProps) {
+export default function PianoConsultationDialog({ isOpen, onClose, prefillData }: PianoConsultationDialogProps) {
   const calendlyContainerRef = useRef<HTMLDivElement>(null);
 
   // NOTE: Tracking is handled globally by BookingSection's useCalendlyTracking hook
@@ -35,9 +42,19 @@ export default function PianoConsultationDialog({ isOpen, onClose }: PianoConsul
           // Clear container first
           calendlyContainerRef.current.innerHTML = '';
           
+          // Build prefill object only with defined values (strict mode requirement)
+          const prefillObject: Record<string, string> = {};
+          if (prefillData?.email) {
+            prefillObject.email = prefillData.email;
+          }
+          if (prefillData?.firstName && prefillData?.lastName) {
+            prefillObject.name = `${prefillData.firstName} ${prefillData.lastName}`;
+          }
+
           window.Calendly.initInlineWidget({
             url: 'https://calendly.com/kawaipianogallery/uta-x-kawai-piano-sale',
             parentElement: calendlyContainerRef.current,
+            ...(Object.keys(prefillObject).length > 0 ? { prefill: prefillObject } : {}),
             utm: {
               utmSource: 'kawai-landing-page',
               utmMedium: 'modal',

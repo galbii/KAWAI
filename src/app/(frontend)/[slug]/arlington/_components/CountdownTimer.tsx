@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Calendar, X } from 'lucide-react';
 import PianoConsultationDialog from './PianoConsultationDialog';
+import QuickContactForm from './QuickContactForm';
+import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
 
 interface TimeLeft {
   days: number;
@@ -11,10 +13,18 @@ interface TimeLeft {
   minutes: number;
 }
 
+interface CalendlyPrefillData {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+}
+
 export function CountdownTimer() {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0 });
   const [mounted, setMounted] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showForm, setShowForm] = useState(true);
+  const [prefillData, setPrefillData] = useState<CalendlyPrefillData | undefined>(undefined);
   const [isVisible, setIsVisible] = useState(false);
   const [isMinimized, setIsMinimized] = useState(true); // Start minimized
   const [hasScrolled, setHasScrolled] = useState(false);
@@ -93,8 +103,38 @@ export function CountdownTimer() {
   }, [mounted]);
 
   const handleBookNowClick = () => {
-    // Open the piano consultation dialog
+    // Reset state and open modal with form
+    setShowForm(true);
+    setPrefillData(undefined);
     setIsModalOpen(true);
+  };
+
+  const handleFormSuccess = (data: { email: string; firstName: string; lastName: string }) => {
+    console.log('CountdownTimer: Form submitted successfully, showing Calendly with prefill:', data);
+
+    // Set prefill data and hide form
+    setPrefillData({
+      email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName,
+    });
+
+    // Hide form to show Calendly
+    setShowForm(false);
+  };
+
+  const handleSkip = () => {
+    console.log('CountdownTimer: User skipped form, showing Calendly without prefill');
+    setShowForm(false);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    // Reset for next time
+    setTimeout(() => {
+      setShowForm(true);
+      setPrefillData(undefined);
+    }, 300);
   };
 
   const handleMinimize = () => {
@@ -200,11 +240,31 @@ export function CountdownTimer() {
         )}
       </div>
 
-      {/* Piano Consultation Dialog */}
-      <PianoConsultationDialog 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-      />
+      {/* Two-Step Booking Modal with Form */}
+      {showForm && isModalOpen && (
+        <Dialog open={isModalOpen} onOpenChange={handleCloseModal}>
+          <DialogContent className="max-w-md w-full p-0 overflow-hidden">
+            <DialogTitle className="sr-only">
+              Secure Your Spot
+            </DialogTitle>
+            <div className="p-6">
+              <QuickContactForm
+                onSuccess={handleFormSuccess}
+                onSkip={handleSkip}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Calendly Modal with Prefill */}
+      {!showForm && isModalOpen && (
+        <PianoConsultationDialog
+          isOpen={true}
+          onClose={handleCloseModal}
+          {...(prefillData ? { prefillData } : {})}
+        />
+      )}
     </>
   );
 }

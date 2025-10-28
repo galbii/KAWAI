@@ -2,9 +2,19 @@ import Image from 'next/image';
 import { useState } from 'react';
 import type { MouseEvent } from 'react';
 import PianoConsultationDialog from '../PianoConsultationDialog';
+import QuickContactForm from '../QuickContactForm';
+import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
+
+interface CalendlyPrefillData {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+}
 
 export default function HeroSection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showForm, setShowForm] = useState(true);
+  const [prefillData, setPrefillData] = useState<CalendlyPrefillData | undefined>(undefined);
 
   const handleExploreCollectionClick = () => {
     console.log('Explore Collection clicked');
@@ -34,9 +44,39 @@ export default function HeroSection() {
     console.log('Reserve Appointment clicked');
     // Track the analytics event
     // Analytics tracking removed
-    
-    // Open the piano consultation dialog
+
+    // Reset state and open modal with form
+    setShowForm(true);
+    setPrefillData(undefined);
     setIsModalOpen(true);
+  };
+
+  const handleFormSuccess = (data: { email: string; firstName: string; lastName: string }) => {
+    console.log('HeroSection: Form submitted successfully, showing Calendly with prefill:', data);
+
+    // Set prefill data and hide form
+    setPrefillData({
+      email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName,
+    });
+
+    // Hide form to show Calendly
+    setShowForm(false);
+  };
+
+  const handleSkip = () => {
+    console.log('HeroSection: User skipped form, showing Calendly without prefill');
+    setShowForm(false);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    // Reset for next time
+    setTimeout(() => {
+      setShowForm(true);
+      setPrefillData(undefined);
+    }, 300);
   };
 
   return (
@@ -236,11 +276,31 @@ export default function HeroSection() {
         </div>
       </div>
       
-      {/* Piano Consultation Dialog */}
-      <PianoConsultationDialog
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
+      {/* Two-Step Booking Modal with Form */}
+      {showForm && isModalOpen && (
+        <Dialog open={isModalOpen} onOpenChange={handleCloseModal}>
+          <DialogContent className="max-w-md w-full p-0 overflow-hidden">
+            <DialogTitle className="sr-only">
+              Secure Your Spot
+            </DialogTitle>
+            <div className="p-6">
+              <QuickContactForm
+                onSuccess={handleFormSuccess}
+                onSkip={handleSkip}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Calendly Modal with Prefill */}
+      {!showForm && isModalOpen && (
+        <PianoConsultationDialog
+          isOpen={true}
+          onClose={handleCloseModal}
+          {...(prefillData ? { prefillData } : {})}
+        />
+      )}
     </section>
   );
 }

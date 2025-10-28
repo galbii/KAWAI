@@ -72,10 +72,12 @@ export async function HeaderDynamic() {
     const pathname = headersList.get('x-pathname') || ''
     const origin = parseNavigationOrigin(pathname)
 
-    // Check if we're on a signature page (signature, signature2, or gl-10-signature)
+    // Check if we're on a signature page (signature, signature2, or gl-10-signature) or Arlington page
     const isSignaturePage = pathname.endsWith('/signature') || pathname.endsWith('/signature/') ||
                             pathname.endsWith('/signature2') || pathname.endsWith('/signature2/') ||
-                            pathname.endsWith('/gl-10-signature') || pathname.endsWith('/gl-10-signature/')
+                            pathname.endsWith('/gl-10-signature') || pathname.endsWith('/gl-10-signature/') ||
+                            pathname.endsWith('/arlington') || pathname.endsWith('/arlington/') ||
+                            pathname.endsWith('/arlington') || pathname.endsWith('/arlington/')
 
     // Generate piano categories navigation (each category becomes a top-level nav item)
     const pianoCategories = await generatePianoCategoriesNavigationServer()
@@ -116,7 +118,8 @@ export async function HeaderDynamic() {
     const fallbackOrigin = parseNavigationOrigin(pathname)
     const isSignaturePage = pathname.endsWith('/signature') || pathname.endsWith('/signature/') ||
                             pathname.endsWith('/signature2') || pathname.endsWith('/signature2/') ||
-                            pathname.endsWith('/gl-10-signature') || pathname.endsWith('/gl-10-signature/')
+                            pathname.endsWith('/gl-10-signature') || pathname.endsWith('/gl-10-signature/') ||
+                            pathname.endsWith('/arlington') || pathname.endsWith('/arlington/')
 
     const fallbackNavigation: NavigationItem[] = [
       { label: 'Digital Pianos', href: getContextAwareUrl('/pianos/digital', fallbackOrigin), dropdown: [] },

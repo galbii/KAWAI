@@ -4,12 +4,22 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import PianoConsultationDialog from '../PianoConsultationDialog';
+import QuickContactForm from '../QuickContactForm';
+import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import ImageModal from '../ImageModal';
 import PdfViewer from '../PdfViewer';
 import { useIntersectionAnimation } from '../hooks/useIntersectionAnimation';
 
+interface CalendlyPrefillData {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+}
+
 export default function AboutEventSection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showForm, setShowForm] = useState(true);
+  const [prefillData, setPrefillData] = useState<CalendlyPrefillData | undefined>(undefined);
   const [imageModal, setImageModal] = useState<{
     isOpen: boolean;
     src: string;
@@ -21,6 +31,37 @@ export default function AboutEventSection() {
     src: '',
     alt: '',
   });
+
+  const handleFormSuccess = (data: { email: string; firstName: string; lastName: string }) => {
+    console.log('AboutEventSection: Form submitted successfully, showing Calendly with prefill:', data);
+
+    setPrefillData({
+      email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName,
+    });
+
+    setShowForm(false);
+  };
+
+  const handleSkip = () => {
+    console.log('AboutEventSection: User skipped form, showing Calendly without prefill');
+    setShowForm(false);
+  };
+
+  const handleOpenModal = () => {
+    setShowForm(true);
+    setPrefillData(undefined);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setTimeout(() => {
+      setShowForm(true);
+      setPrefillData(undefined);
+    }, 300);
+  };
 
   // Animation hooks
   const { ref: headerRef, isVisible: headerVisible } = useIntersectionAnimation<HTMLDivElement>({
@@ -125,8 +166,8 @@ export default function AboutEventSection() {
                   68% of Arlington slots already reserved
                 </div>
                 <div className="space-y-3">
-                  <button 
-                    onClick={() => setIsModalOpen(true)}
+                  <button
+                    onClick={handleOpenModal}
                     className="block w-full bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors"
                     style={{backgroundColor: '#CC0000', color: '#FFFFFF'}}
                   >
@@ -367,11 +408,31 @@ export default function AboutEventSection() {
         </div>
       </div>
       
-        {/* Piano Consultation Dialog */}
-        <PianoConsultationDialog 
-          isOpen={isModalOpen} 
-          onClose={() => setIsModalOpen(false)} 
-        />
+        {/* Two-Step Booking Modal with Form */}
+        {showForm && isModalOpen && (
+          <Dialog open={isModalOpen} onOpenChange={handleCloseModal}>
+            <DialogContent className="max-w-md w-full p-0 overflow-hidden">
+              <DialogTitle className="sr-only">
+                Secure Your Spot
+              </DialogTitle>
+              <div className="p-6">
+                <QuickContactForm
+                  onSuccess={handleFormSuccess}
+                  onSkip={handleSkip}
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Calendly Modal with Prefill */}
+        {!showForm && isModalOpen && (
+          <PianoConsultationDialog
+            isOpen={true}
+            onClose={handleCloseModal}
+            {...(prefillData ? { prefillData } : {})}
+          />
+        )}
         
         {/* Image Modal */}
         <ImageModal

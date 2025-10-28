@@ -3,7 +3,15 @@
 import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import PianoConsultationDialog from '../PianoConsultationDialog';
+import QuickContactForm from '../QuickContactForm';
+import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import { useIntersectionAnimation } from '../hooks/useIntersectionAnimation';
+
+interface CalendlyPrefillData {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+}
 // PostHog import removed
 
 interface FeaturedPiano {
@@ -199,12 +207,45 @@ function PianoSection({ piano, index, hasTrackedAnyPiano }: PianoSectionProps) {
 
 export function FeaturedDeals() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showForm, setShowForm] = useState(true);
+  const [prefillData, setPrefillData] = useState<CalendlyPrefillData | undefined>(undefined);
   const hasTrackedAnyPiano = useRef<boolean>(false);
   // const heroRef = useRef<HTMLDivElement>(null);
   const { ref: headerRef, isVisible: headerVisible } = useIntersectionAnimation({
     threshold: 0.2,
     rootMargin: '0px 0px -100px 0px'
   });
+
+  const handleFormSuccess = (data: { email: string; firstName: string; lastName: string }) => {
+    console.log('FeaturedDeals: Form submitted successfully, showing Calendly with prefill:', data);
+
+    setPrefillData({
+      email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName,
+    });
+
+    setShowForm(false);
+  };
+
+  const handleSkip = () => {
+    console.log('FeaturedDeals: User skipped form, showing Calendly without prefill');
+    setShowForm(false);
+  };
+
+  const handleOpenModal = () => {
+    setShowForm(true);
+    setPrefillData(undefined);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setTimeout(() => {
+      setShowForm(true);
+      setPrefillData(undefined);
+    }, 300);
+  };
 
   return (
     <div id="featured-deals" className="bg-white">
@@ -261,8 +302,8 @@ export function FeaturedDeals() {
             Get priority access to special university pricing and deals when you book your appointment. See more models in person and connect with our KAWAI piano experts for personalized recommendations.
           </p>
           <div className="space-y-2">
-            <button 
-              onClick={() => setIsModalOpen(true)}
+            <button
+              onClick={handleOpenModal}
               className="inline-flex items-center px-8 py-4 bg-red-700 hover:bg-red-600 text-white font-semibold text-lg rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 group"
             >
               <span>Book Appointment</span>
@@ -283,11 +324,31 @@ export function FeaturedDeals() {
         </div>
       </section>
       
-      {/* Piano Consultation Dialog */}
-      <PianoConsultationDialog 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-      />
+      {/* Two-Step Booking Modal with Form */}
+      {showForm && isModalOpen && (
+        <Dialog open={isModalOpen} onOpenChange={handleCloseModal}>
+          <DialogContent className="max-w-md w-full p-0 overflow-hidden">
+            <DialogTitle className="sr-only">
+              Secure Your Spot
+            </DialogTitle>
+            <div className="p-6">
+              <QuickContactForm
+                onSuccess={handleFormSuccess}
+                onSkip={handleSkip}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Calendly Modal with Prefill */}
+      {!showForm && isModalOpen && (
+        <PianoConsultationDialog
+          isOpen={true}
+          onClose={handleCloseModal}
+          {...(prefillData ? { prefillData } : {})}
+        />
+      )}
     </div>
   );
 }
