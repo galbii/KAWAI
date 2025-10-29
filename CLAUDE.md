@@ -856,6 +856,224 @@ const HomePage: GlobalConfig = {
 }
 ```
 
+### On-Demand Revalidation with Payload Hooks
+
+**Instant Content Updates**: Trigger Next.js page revalidation automatically when CMS content changes using Payload's `afterChange` hook.
+
+**Use Case**: When content editors update a Storefront, Product, or Landing Page in the CMS, changes should appear immediately on the frontend without waiting for time-based ISR revalidation.
+
+#### Architecture Pattern
+
+```
+Content Editor → Payload CMS → afterChange Hook → Revalidation API → Next.js revalidatePath() → Fresh Page
+```
+
+#### Implementation Steps
+
+**Step 1: Create Revalidation API Route** (`src/app/api/revalidate/route.ts`):
+
+```typescript
+import { revalidatePath } from 'next/cache'
+import { NextRequest, NextResponse } from 'next/server'
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { secret, slug, path, type } = body
+
+    // Security: Validate secret token
+    if (secret !== process.env.REVALIDATION_SECRET) {
+      return NextResponse.json({ revalidated: false, error: 'Invalid secret' }, { status: 401 })
+    }
+
+    // Determine path to revalidate
+    let pathToRevalidate: string
+    if (path) {
+      pathToRevalidate = path
+    } else if (slug && type) {
+      switch (type) {
+        case 'storefront':
+          pathToRevalidate = `/${slug}`
+          break
+        case 'product':
+          pathToRevalidate = `/products/${slug}`
+          break
+        default:
+          pathToRevalidate = `/${slug}`
+      }
+    } else {
+      return NextResponse.json({ revalidated: false, error: 'Missing parameters' }, { status: 400 })
+    }
+
+    // Trigger Next.js on-demand revalidation
+    revalidatePath(pathToRevalidate)
+
+    console.log(`[Revalidation] Successfully revalidated: ${pathToRevalidate}`)
+    return NextResponse.json({ revalidated: true, path: pathToRevalidate })
+
+  } catch (error) {
+    console.error('[Revalidation] Error:', error)
+    return NextResponse.json({ revalidated: false, error: 'Revalidation failed' }, { status: 500 })
+  }
+}
+```
+
+**Step 2: Add afterChange Hook to Collection** (`src/collections/Storefronts.ts`):
+
+```typescript
+export const Storefronts: CollectionConfig = {
+  slug: 'storefronts',
+  // ... fields configuration ...
+
+  hooks: {
+    afterChange: [
+      async ({ doc, req, operation, context }) => {
+        // Prevent infinite loops
+        if (context.skipRevalidation) {
+          return doc
+        }
+
+        // Only revalidate if storefront is active
+        if (!doc.isActive) {
+          console.log(`[Storefronts Hook] Skipping revalidation (inactive)`)
+          return doc
+        }
+
+        console.log(`[Storefronts Hook] Triggering revalidation for slug="${doc.slug}"`)
+
+        try {
+          // Trigger revalidation in the background (don't await)
+          const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
+          fetch(`${baseURL}/api/revalidate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              secret: process.env.REVALIDATION_SECRET,
+              slug: doc.slug,
+              type: 'storefront'
+            })
+          })
+            .then(async (response) => {
+              if (response.ok) {
+                const result = await response.json()
+                console.log(`[Storefronts Hook] Revalidation successful:`, result)
+              } else {
+                console.error(`[Storefronts Hook] Revalidation failed:`, response.status)
+              }
+            })
+            .catch((error) => {
+              console.error(`[Storefronts Hook] Revalidation error:`, error)
+            })
+
+        } catch (error) {
+          // Log error but don't throw - don't block saves
+          console.error(`[Storefronts Hook] Error during revalidation:`, error)
+        }
+
+        return doc
+      }
+    ]
+  }
+}
+```
+
+**Step 3: Configure Environment Variables** (`.env.local`):
+
+```bash
+# On-Demand Revalidation Secret
+# Used by Payload CMS hooks to trigger Next.js page revalidation
+REVALIDATION_SECRET=your-secure-random-string-here-min-32-characters
+
+# Site URL for internal revalidation requests
+NEXT_PUBLIC_SITE_URL=http://localhost:3000  # Production: https://your-domain.com
+```
+
+#### Benefits of On-Demand Revalidation
+
+✅ **Instant Updates** - Content changes appear immediately after CMS save (no 5-minute wait)
+✅ **Efficient** - Only revalidates changed pages, not entire site
+✅ **Secure** - Token-based authentication prevents unauthorized revalidation
+✅ **Non-Blocking** - Background fetch doesn't slow down CMS operations
+✅ **Cache Coherence** - Clears both Next.js ISR cache and application-level cache
+
+#### When to Use This Pattern
+
+- **Storefronts**: Dynamic dealer location pages (`/st-louis`, `/chicago`)
+- **Products**: Product detail pages (`/products/gx-7-blak`)
+- **Landing Pages**: Campaign-specific pages (`/dealer/campaign`)
+- **Global Content**: Homepage, navigation, footer (use with Global collections)
+
+#### Common Pitfalls to Avoid
+
+**❌ DON'T await the fetch** - This blocks the CMS save operation:
+```typescript
+// ❌ BAD - Blocks CMS save
+await fetch(revalidateUrl, {...})
+```
+
+**✅ DO use fire-and-forget pattern**:
+```typescript
+// ✅ GOOD - Background revalidation
+fetch(revalidateUrl, {...}).then(...).catch(...)
+```
+
+**❌ DON'T throw errors** - Failed revalidation shouldn't break saves:
+```typescript
+// ❌ BAD - Throws error, blocks save
+throw new Error('Revalidation failed')
+```
+
+**✅ DO log errors gracefully**:
+```typescript
+// ✅ GOOD - Logs but continues
+console.error('[Hook] Revalidation error:', error)
+return doc
+```
+
+#### Advanced: Multiple Path Revalidation
+
+For collections that appear on multiple pages (e.g., Featured Products on homepage + category pages):
+
+```typescript
+hooks: {
+  afterChange: [
+    async ({ doc }) => {
+      const pathsToRevalidate = [
+        `/products/${doc.slug}`,           // Product detail page
+        `/pianos/${doc.category}`,         // Category page
+        '/'                                 // Homepage (if featured)
+      ]
+
+      for (const path of pathsToRevalidate) {
+        fetch(`${baseURL}/api/revalidate`, {
+          method: 'POST',
+          body: JSON.stringify({
+            secret: process.env.REVALIDATION_SECRET,
+            path: path
+          })
+        }).catch(err => console.error(`Failed to revalidate ${path}:`, err))
+      }
+
+      return doc
+    }
+  ]
+}
+```
+
+#### Testing Revalidation
+
+**1. Via CMS**: Edit a storefront → Save → Check frontend page (should update immediately)
+
+**2. Via API** (Development only):
+```bash
+curl -X POST http://localhost:3000/api/revalidate \
+  -H "Content-Type: application/json" \
+  -d '{"secret":"your-secret","slug":"st-louis","type":"storefront"}'
+```
+
+**3. Check Logs**: Look for console output confirming revalidation success
+
 ## 🧪 Testing & Quality Assurance
 
 ### Testing Strategy

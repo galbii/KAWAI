@@ -46,7 +46,7 @@ export default async function PianosPageCMS() {
       <PianoPageHero heroData={pageData.hero} />
 
       {/* Featured Models Carousel */}
-      <ScrollAnimatedSection className="py-12 lg:py-16 bg-kawai-pearl">
+      <ScrollAnimatedSection className="py-12 lg:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-10">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-kawai-black mb-4">
@@ -64,7 +64,7 @@ export default async function PianosPageCMS() {
       </ScrollAnimatedSection>
 
       {/* Piano Categories */}
-      <div id="categories" className="bg-kawai-pearl">
+      <div id="categories" className="bg-white">
         {pageData.categories.map((category: any, index: number) => (
           <ErrorBoundary key={category.slug} fallback={PianoSectionErrorFallback}>
             <PianoCategorySection category={category} index={index} />
@@ -73,7 +73,7 @@ export default async function PianosPageCMS() {
       </div>
 
       {/* CTA Section */}
-      <ScrollAnimatedSection className="py-16 lg:py-24 text-center bg-kawai-pearl">
+      <ScrollAnimatedSection className="py-16 lg:py-24 text-center bg-white">
         <div className="max-w-4xl mx-auto px-6">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-kawai-black mb-6">
             {pageData.cta.title}

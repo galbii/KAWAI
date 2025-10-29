@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { GoogleMapsEmbed } from '@next/third-parties/google';
 import type { ShowroomLocationProps } from "@/lib/types/homepage";
 import { DEFAULT_SHOWROOM_DATA } from "@/lib/types/homepage";
@@ -15,7 +16,6 @@ export function ShowroomLocation({ data = DEFAULT_SHOWROOM_DATA }: ShowroomLocat
         </div>
         <h2 className="text-5xl md:text-6xl font-light font-serif text-kawai-black mb-8 leading-tight">
           {data.showroomTitle}
-          <span className="text-kawai-red block">Kawai Showroom</span>
         </h2>
         <p className="text-xl text-kawai-black/70 max-w-3xl mx-auto leading-relaxed">
           {data.showroomDescription}
@@ -43,9 +43,20 @@ export function ShowroomLocation({ data = DEFAULT_SHOWROOM_DATA }: ShowroomLocat
             
             {/* Information Panel */}
             <div className="lg:col-span-2 p-12 flex flex-col justify-center bg-gradient-to-br from-white to-kawai-pearl">
+              {/* KAWAI Logo */}
+              <div className="mb-3">
+                <Image
+                  src="/images/Kawai (Red)(2).png"
+                  alt="KAWAI"
+                  width={200}
+                  height={60}
+                  className="h-8 w-auto md:h-10"
+                />
+              </div>
+
               {/* Showroom Title */}
               <div className="mb-8">
-                <h3 className="text-3xl font-serif text-kawai-black mb-3 leading-tight">
+                <h3 className="text-3xl font-medium text-kawai-black mb-3 leading-tight">
                   {data.showroomInfo.name}
                 </h3>
                 <div className="w-16 h-px bg-kawai-red mb-6"></div>

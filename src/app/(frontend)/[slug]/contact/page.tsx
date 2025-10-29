@@ -1,12 +1,11 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getStorefrontData } from "@/lib/payload";
-import { 
+import {
   ContactHero,
-  ContactInfo,
-  LocationContactForm,
-  ContactMap 
+  LocationContactForm
 } from "@/components/contact";
+import { ShowroomLocation } from "@/components/homepage";
 import type { HomePageData } from "@/lib/types/homepage";
 
 // Loading components for each section
@@ -27,29 +26,17 @@ function ContactHeroSkeleton() {
   );
 }
 
-function ContactInfoSkeleton() {
+function ShowroomLocationSkeleton() {
   return (
-    <section className="py-16 bg-kawai-pearl animate-pulse">
-      <div className="container mx-auto px-6">
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div className="space-y-4">
-            <div className="h-8 bg-kawai-black/20 rounded w-3/4"></div>
-            <div className="h-6 bg-kawai-black/20 rounded"></div>
-            <div className="h-6 bg-kawai-black/20 rounded w-5/6"></div>
-          </div>
-          <div className="space-y-4">
-            <div className="h-8 bg-kawai-black/20 rounded w-2/3"></div>
-            <div className="h-32 bg-kawai-black/20 rounded"></div>
-          </div>
-          <div className="space-y-4">
-            <div className="h-8 bg-kawai-black/20 rounded w-3/4"></div>
-            <div className="space-y-2">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-4 bg-kawai-black/20 rounded"></div>
-              ))}
-            </div>
-          </div>
-        </div>
+    <section className="relative bg-kawai-pearl animate-pulse">
+      <div className="container mx-auto px-6 pt-24 pb-16 text-center">
+        <div className="h-4 bg-kawai-black/20 rounded mx-auto mb-6 w-32"></div>
+        <div className="h-16 bg-kawai-black/20 rounded mx-auto mb-8 w-48"></div>
+        <div className="h-12 bg-kawai-black/20 rounded mx-auto mb-8 w-96"></div>
+        <div className="h-6 bg-kawai-black/20 rounded mx-auto w-3/4 max-w-3xl"></div>
+      </div>
+      <div className="container mx-auto px-6 pb-24">
+        <div className="h-96 bg-kawai-black/20 rounded-2xl"></div>
       </div>
     </section>
   );
@@ -96,14 +83,11 @@ async function ContactPageContent({ slug }: { slug: string }) {
       {/* Contact Hero Section */}
       <ContactHero data={storefrontData?.heroSection} />
 
-      {/* Contact Information Section */}
-      <ContactInfo data={storefrontData?.showroomSection} />
+      {/* Showroom Location Section - Same as homepage */}
+      <ShowroomLocation data={storefrontData?.showroomSection} />
 
       {/* Contact Form Section */}
       <LocationContactForm data={storefrontData?.contactFormSection} />
-
-      {/* Map Section (if API key is available) */}
-      <ContactMap data={storefrontData?.showroomSection} />
     </div>
   );
 }
@@ -163,7 +147,7 @@ export default async function ContactPage({ params }: { params: Promise<{ slug: 
     <Suspense fallback={
       <div className="min-h-screen">
         <ContactHeroSkeleton />
-        <ContactInfoSkeleton />
+        <ShowroomLocationSkeleton />
         <ContactFormSkeleton />
       </div>
     }>

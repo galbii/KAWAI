@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { Storefront } from '@/payload-types';
 
 interface DealerLocationsProps {
@@ -45,13 +46,19 @@ export function DealerLocations({ className = '', locations = [] }: DealerLocati
           transition={{ duration: 0.7 }}
           className="text-center mb-12 sm:mb-16"
         >
-          <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-4 sm:mb-6">
+          <div className="mb-4 sm:mb-6 flex justify-center">
+            <Image
+              src="/images/Kawai (Red)(2).png"
+              alt="KAWAI"
+              width={300}
+              height={90}
+              className="h-12 sm:h-16 md:h-20 w-auto"
+              priority
+            />
+          </div>
+          <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-6 sm:mb-8">
             Our Locations
           </div>
-          <h2 className="text-3xl sm:text-5xl md:text-6xl font-light font-serif text-kawai-black mb-6 sm:mb-8 leading-tight px-4 sm:px-0">
-            Find Your Nearest
-            <span className="text-kawai-red block">Kawai Showroom</span>
-          </h2>
           <p className="text-lg sm:text-xl text-kawai-black/70 max-w-3xl mx-auto leading-relaxed px-4 sm:px-0">
             Visit our Kawai Showrooms and experience our complete collection of acoustic and digital pianos with expert consultation.
           </p>
@@ -175,7 +182,7 @@ export function DealerLocations({ className = '', locations = [] }: DealerLocati
             Can't find a location near you?
           </p>
           <Link
-            href="/contact"
+            href="/piano-finder"
             className="inline-flex items-center space-x-2 bg-kawai-red hover:bg-kawai-black text-white px-6 sm:px-8 py-3 sm:py-4 font-medium transition-colors text-sm tracking-wide uppercase rounded-lg min-h-[44px] touch-manipulation"
           >
             <span>Find Your Perfect Piano</span>

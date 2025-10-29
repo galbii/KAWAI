@@ -1128,5 +1128,67 @@ export const Storefronts: CollectionConfig = {
         }
       ]
     }
-  ]
+  ],
+
+  hooks: {
+    afterChange: [
+      async ({ doc, req, operation, context }) => {
+        // Prevent infinite loops - skip revalidation if triggered by another hook
+        if (context.skipRevalidation) {
+          console.log(`[Storefronts Hook] Skipping revalidation (context flag set)`)
+          return doc
+        }
+
+        console.log(`[Storefronts Hook] afterChange triggered: operation=${operation}, slug="${doc.slug}", isActive=${doc.isActive}`)
+
+        // Only revalidate if storefront is active
+        if (!doc.isActive) {
+          console.log(`[Storefronts Hook] Storefront is inactive, skipping revalidation`)
+          return doc
+        }
+
+        try {
+          // Construct the revalidation URL
+          const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+          const revalidateUrl = `${baseURL}/api/revalidate`
+
+          console.log(`[Storefronts Hook] Triggering revalidation for slug="${doc.slug}" at ${revalidateUrl}`)
+
+          // Trigger on-demand revalidation in the background
+          // Don't await this - we don't want to block the CMS save operation
+          fetch(revalidateUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              secret: process.env.REVALIDATION_SECRET,
+              slug: doc.slug,
+              type: 'storefront'
+            })
+          })
+            .then(async (response) => {
+              if (response.ok) {
+                const result = await response.json()
+                console.log(`[Storefronts Hook] Revalidation successful:`, result)
+              } else {
+                const errorText = await response.text()
+                console.error(`[Storefronts Hook] Revalidation failed:`, response.status, errorText)
+              }
+            })
+            .catch((error) => {
+              console.error(`[Storefronts Hook] Revalidation request error:`, error)
+            })
+
+          console.log(`[Storefronts Hook] Revalidation request sent (background)`)
+
+        } catch (error) {
+          // Log the error but don't throw - we don't want revalidation failures to block saves
+          console.error(`[Storefronts Hook] Error during revalidation:`, error)
+        }
+
+        return doc
+      }
+    ]
+  }
 }
