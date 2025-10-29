@@ -1,106 +1,98 @@
-import Link from 'next/link';
-import { MediaRenderer } from '@/components/ui/media/MediaRenderer';
-import type { HeroSectionData } from '@/lib/types/homepage';
+'use client'
+
+import Image from 'next/image';
+import type { ShowroomSectionData } from '@/lib/types/homepage';
 
 interface ContactHeroProps {
-  data?: HeroSectionData;
+  data?: ShowroomSectionData;
 }
 
-const DEFAULT_CONTACT_HERO_DATA: HeroSectionData = {
-  locationText: "St. Louis's Premier Piano Gallery",
-  establishedText: "Est. 1927 • Lake St. Louis, Missouri",
-  titlePrefix: "Contact",
-  titleMain: "OUR TEAM",
-  titleSuffix: "Today",
-  description: "Ready to find your perfect piano? Our Lake St. Louis showroom experts are here to help guide your musical journey. Schedule a visit, ask questions, or request more information about our complete collection of Kawai instruments.",
-  primaryCta: {
-    text: "Schedule Showroom Visit",
-    link: "/contact/schedule-visit"
+const DEFAULT_SHOWROOM_DATA: ShowroomSectionData = {
+  sectionHeader: "Our Showroom",
+  showroomTitle: "Visit Our Location",
+  showroomDescription: "Experience the artistry of Kawai pianos",
+  showroomInfo: {
+    name: "Kawai Piano Gallery St. Louis",
+    address: "21 Meadows Circle Drive, Suite 312, Lake St. Louis, MO 63367",
+    phone: "636-265-2866",
+    serviceArea: "Serving St. Louis, St. Charles County, O'Fallon, Wentzville & surrounding Missouri areas"
   },
-  secondaryCta: {
-    text: "Call Us Now",
-    link: "tel:636-265-2866"
-  },
-  backgroundVideo: null
+  hours: [],
+  features: [],
+  showroomCtas: {
+    directionsText: "Get Directions",
+    directionsLink: "https://maps.google.com",
+    scheduleText: "Schedule Visit",
+    scheduleLink: "/contact/schedule-visit"
+  }
 };
 
-export function ContactHero({ data = DEFAULT_CONTACT_HERO_DATA }: ContactHeroProps) {
+export function ContactHero({ data = DEFAULT_SHOWROOM_DATA }: ContactHeroProps) {
+  // Remove "Kawai" from the beginning of the storefront name
+  const displayName = data.showroomInfo.name.replace(/^Kawai\s+/i, '');
+
   return (
-    <section className="relative min-h-[70vh] flex items-center overflow-hidden bg-kawai-black">
-      {/* Background Video */}
-      {data.backgroundVideo && (
-        <div className="absolute inset-0 z-0">
-          <MediaRenderer
-            media={data.backgroundVideo}
-            preset="hero"
-            priority
-            className="w-full h-full object-cover opacity-30"
-          />
-          <div className="absolute inset-0 bg-kawai-black/60"></div>
-        </div>
-      )}
+    <section className="relative h-[50vh] min-h-[400px] flex items-center justify-center text-white overflow-hidden w-full">
+      {/* Video Background - Same as Arlington */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        controls={false}
+        disablePictureInPicture
+        className="absolute inset-0 w-full h-full object-cover z-0"
+        style={{ pointerEvents: 'none' }}
+        onLoadedData={(e) => {
+          const video = e.target as HTMLVideoElement;
+          video.currentTime = 13.10;
+          video.play().catch(() => {
+            // Fallback if autoplay fails
+          });
+        }}
+      >
+        <source src="/videos/CA.webm" type="video/webm" />
+        <source src="/videos/CA.mp4" type="video/mp4" />
+      </video>
 
-      {/* Fallback gradient background */}
-      {!data.backgroundVideo && (
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-kawai-black via-kawai-black/95 to-kawai-black/90"></div>
-        </div>
-      )}
+      {/* Lighter overlay for better visibility */}
+      <div className="absolute inset-0 bg-black/30 z-10"></div>
 
-      {/* Content */}
-      <div className="container relative z-10 mx-auto px-8 lg:px-16">
-        <div className="max-w-4xl">
-          {/* Location Text */}
-          <p className="text-kawai-pearl/80 text-sm md:text-base font-medium tracking-wider uppercase mb-4">
-            {data.locationText}
-          </p>
+      {/* Content - Centered Logo and Storefront Name */}
+      <div className="relative z-30 w-full max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="flex flex-col items-center gap-6">
+          {/* Flex container - vertical on mobile, horizontal on desktop */}
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8">
+            {/* Kawai Logo */}
+            <div className="flex-shrink-0">
+              <Image
+                src="/images/Kawai (Red)(2).png"
+                alt="KAWAI Logo"
+                width={400}
+                height={120}
+                priority
+                className="h-20 sm:h-24 md:h-28 lg:h-32 w-auto drop-shadow-2xl"
+              />
+            </div>
 
-          {/* Established Text */}
-          <p className="text-kawai-pearl/60 text-xs md:text-sm font-light tracking-wide mb-8">
-            {data.establishedText}
-          </p>
-
-          {/* Main Title */}
-          <h1 className="text-kawai-pearl font-serif mb-8">
-            <span className="block text-3xl md:text-4xl lg:text-5xl font-light tracking-wide">
-              {data.titlePrefix}
-            </span>
-            <span className="block text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight -mt-2 mb-2">
-              {data.titleMain}
-            </span>
-            <span className="block text-3xl md:text-4xl lg:text-5xl font-light tracking-wide">
-              {data.titleSuffix}
-            </span>
-          </h1>
-
-          {/* Description */}
-          <p className="text-kawai-pearl/90 text-lg md:text-xl leading-relaxed mb-12 max-w-3xl">
-            {data.description}
-          </p>
-
-          {/* Call-to-Actions */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            {/* Primary CTA */}
-            <Link
-              href={data.primaryCta.link}
-              className="inline-flex items-center justify-center px-8 py-4 bg-kawai-red hover:bg-kawai-red/90 text-white font-medium text-lg rounded-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
-            >
-              {data.primaryCta.text}
-            </Link>
-
-            {/* Secondary CTA */}
-            <Link
-              href={data.secondaryCta.link}
-              className="inline-flex items-center justify-center px-8 py-4 border-2 border-kawai-pearl/30 hover:border-kawai-pearl text-kawai-pearl hover:text-kawai-pearl font-medium text-lg rounded-sm transition-all duration-300 hover:bg-kawai-pearl/10"
-            >
-              {data.secondaryCta.text}
-            </Link>
+            {/* Storefront Name and Subtitle */}
+            <div className="flex flex-col gap-2">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-wide font-sans drop-shadow-2xl uppercase text-center md:text-left">
+                {displayName}
+              </h1>
+              <p className="text-lg sm:text-xl md:text-2xl font-medium text-white drop-shadow-2xl text-center md:text-left uppercase">
+                Instrumental to Life
+              </p>
+            </div>
           </div>
+
+          {/* Est 1927 - Centered below everything */}
+          <p className="text-base sm:text-lg md:text-xl font-light text-kawai-red drop-shadow-xl text-center tracking-wider">
+            Est. 1927
+          </p>
         </div>
       </div>
-
-      {/* Decorative gradient overlay */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-kawai-pearl/10 to-transparent z-5"></div>
     </section>
   );
 }

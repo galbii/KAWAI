@@ -81,7 +81,7 @@ async function ContactPageContent({ slug }: { slug: string }) {
   return (
     <div className="min-h-screen">
       {/* Contact Hero Section */}
-      <ContactHero data={storefrontData?.heroSection} />
+      <ContactHero data={storefrontData?.showroomSection} />
 
       {/* Showroom Location Section - Same as homepage */}
       <ShowroomLocation data={storefrontData?.showroomSection} />
