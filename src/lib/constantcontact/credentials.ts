@@ -1,4 +1,6 @@
 import type { Payload } from 'payload'
+import { ReauthRequiredError } from './errors'
+import { getAuthUrlWithReturn } from './auth-helpers'
 
 /**
  * Interface for Constant Contact credentials stored in the database
@@ -274,6 +276,8 @@ export async function initializeConstantContactCredentials(payload: Payload): Pr
 /**
  * Get valid access token, refreshing if necessary
  * This is the main function to use when making API calls
+ *
+ * @throws {ReauthRequiredError} When refresh token is expired or invalid (requires user re-authorization)
  */
 export async function getValidAccessToken(payload: Payload): Promise<string | null> {
   try {
@@ -281,7 +285,13 @@ export async function getValidAccessToken(payload: Payload): Promise<string | nu
 
     if (!credentials) {
       console.error('No Constant Contact credentials found')
-      return null
+      // Throw error to trigger re-auth flow
+      const authUrl = getAuthUrlWithReturn()
+      throw new ReauthRequiredError(
+        'No Constant Contact credentials found. Please complete authorization.',
+        authUrl,
+        'expired'
+      )
     }
 
     // If token is not expired, return it
@@ -310,6 +320,15 @@ export async function getValidAccessToken(payload: Payload): Promise<string | nu
         await updateCredentialsStatus(payload, credentials.id, 'refresh_failed',
           refreshError instanceof Error ? refreshError.message : 'Failed to refresh token'
         )
+
+        // Throw error to trigger re-auth flow
+        const authUrl = getAuthUrlWithReturn()
+        throw new ReauthRequiredError(
+          'Refresh token expired or invalid. Please re-authorize with Constant Contact.',
+          authUrl,
+          'refresh_failed',
+          credentials.expiresAt
+        )
       }
     }
 
@@ -318,9 +337,28 @@ export async function getValidAccessToken(payload: Payload): Promise<string | nu
       'Access token expired and refresh failed. Re-authorization required.'
     )
 
-    return null
+    // Throw error to trigger re-auth flow
+    const authUrl = getAuthUrlWithReturn()
+    throw new ReauthRequiredError(
+      'Access token expired and no refresh token available. Please re-authorize.',
+      authUrl,
+      'expired',
+      credentials.expiresAt
+    )
   } catch (error) {
+    // If it's already a ReauthRequiredError, re-throw it
+    if (error instanceof ReauthRequiredError) {
+      throw error
+    }
+
     console.error('Error getting valid access token:', error)
-    return null
+
+    // For other errors, throw ReauthRequiredError to be safe
+    const authUrl = getAuthUrlWithReturn()
+    throw new ReauthRequiredError(
+      'Authentication error. Please re-authorize with Constant Contact.',
+      authUrl,
+      'expired'
+    )
   }
 }

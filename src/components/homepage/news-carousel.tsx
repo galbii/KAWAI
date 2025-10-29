@@ -112,162 +112,148 @@ export function NewsCarousel({ data }: NewsCarouselProps) {
   return (
     <section
       ref={sectionRef}
-      className="relative bg-white py-16 sm:py-24"
+      className="relative bg-kawai-pearl py-16 sm:py-20 lg:py-28"
     >
-      <div className="w-full px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         {/* Section Header */}
-        <div className="text-center mb-8 sm:mb-12">
-          <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-2">
+        <div className="text-center mb-12 sm:mb-16">
+          <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-3">
             Latest News
           </div>
-          <h2 className="text-2xl sm:text-4xl md:text-5xl font-light font-serif text-kawai-black">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light font-serif text-kawai-black">
             Stay Updated
           </h2>
         </div>
 
         {/* Carousel Container */}
-        <div 
+        <div
           ref={carouselRef}
-          className="relative overflow-hidden w-full"
+          className="relative"
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
         >
-          {/* Carousel Track */}
-          <div className="relative w-full h-[60vh] sm:h-[70vh] min-h-[500px] max-h-[800px]">
-            <AnimatePresence mode="wait">
+          {/* Main Carousel Card */}
+          <div className="relative overflow-hidden">
+            <AnimatePresence mode="wait" custom={currentIndex}>
               <motion.div
                 key={currentIndex}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-                className="absolute inset-0"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                transition={{
+                  duration: 0.6,
+                  ease: [0.25, 0.46, 0.45, 0.94]
+                }}
+                className="w-full"
               >
-                {/* News Card - Full Image with Overlay */}
-                <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl">
-                  <div className="relative w-full h-full">
-                    {(() => {
-                      const currentItem = newsItems[currentIndex];
-                      if (!currentItem) return null;
+                {/* Split Layout Card */}
+                <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                  <div className="grid lg:grid-cols-2 min-h-[500px] lg:min-h-[600px]">
+                    {/* Content Side - Left */}
+                    <div className="relative flex flex-col justify-center p-8 sm:p-10 lg:p-12 xl:p-16 order-2 lg:order-1">
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.2 }}
+                        className="space-y-6"
+                      >
+                        {(() => {
+                          const currentItem = newsItems[currentIndex];
+                          if (!currentItem) return null;
 
-                      const defaultItem = FALLBACK_NEWS_CAROUSEL_DATA.newsItems.find(
-                        defaultNews => defaultNews.title === currentItem.title
-                      );
-                      const fallbackImage = (typeof defaultItem?.image === 'string' ? defaultItem.image : null) || '/images/banners/I2LNew-banner.jpg';
+                          return (
+                            <>
+                              {/* Category Badge */}
+                              <div>
+                                <span className="inline-block px-4 py-2 text-xs font-bold tracking-[0.2em] uppercase bg-kawai-red text-white rounded-full">
+                                  {currentItem.category}
+                                </span>
+                              </div>
 
-                      // Use enhanced fallback utility with context
-                      const imageProps = getFallbackImageProps(
-                        currentItem.image,
-                        fallbackImage,
-                        'hero',
-                        {
-                          fill: true,
-                          className: 'object-cover',
-                          sizes: '100vw',
-                          priority: currentIndex === 0,
-                          context: {
+                              {/* Title */}
+                              <h3 className="text-3xl sm:text-4xl lg:text-5xl font-light font-serif text-kawai-black leading-tight">
+                                {currentItem.title}
+                              </h3>
+
+                              {/* Description */}
+                              <p className="text-lg sm:text-xl text-kawai-black/70 leading-relaxed">
+                                {currentItem.description}
+                              </p>
+
+                              {/* CTA Button */}
+                              <div className="pt-4">
+                                <Link
+                                  href={currentItem.link || '#'}
+                                  className="inline-flex items-center space-x-3 bg-kawai-red hover:bg-kawai-red/90 text-white px-8 py-4 rounded-full font-medium text-sm tracking-wide uppercase transition-all duration-300 shadow-lg hover:shadow-xl group"
+                                >
+                                  <span>Read Full Story</span>
+                                  <svg
+                                    className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    strokeWidth={2}
+                                  >
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                  </svg>
+                                </Link>
+                              </div>
+                            </>
+                          );
+                        })()}
+                      </motion.div>
+
+                    </div>
+
+                    {/* Image Side - Right */}
+                    <div className="relative min-h-[300px] lg:min-h-full order-1 lg:order-2">
+                      <motion.div
+                        initial={{ opacity: 0, scale: 1.1 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.8 }}
+                        className="relative w-full h-full"
+                      >
+                        {(() => {
+                          const currentItem = newsItems[currentIndex];
+                          if (!currentItem) return null;
+
+                          const defaultItem = FALLBACK_NEWS_CAROUSEL_DATA.newsItems.find(
+                            defaultNews => defaultNews.title === currentItem.title
+                          );
+                          const fallbackImage = (typeof defaultItem?.image === 'string' ? defaultItem.image : null) || '/images/banners/I2LNew-banner.jpg';
+
+                          const imageProps = getFallbackImageProps(
+                            currentItem.image,
+                            fallbackImage,
+                            'hero',
+                            {
+                              fill: true,
+                              className: 'object-cover',
+                              sizes: '(max-width: 1024px) 100vw, 50vw',
+                              priority: currentIndex === 0,
+                              context: {
+                                type: 'news'
+                              }
+                            }
+                          );
+
+                          const handleImageError = createImageErrorHandler({
                             type: 'news'
-                          }
-                        }
-                      );
+                          });
 
-                      // Create error handler for automatic fallback
-                      const handleImageError = createImageErrorHandler({
-                        type: 'news'
-                      });
+                          return (
+                            <Image
+                              {...imageProps}
+                              alt={currentItem.title}
+                              onError={handleImageError}
+                            />
+                          );
+                        })()}
 
-                      return (
-                        <Image
-                          {...imageProps}
-                          alt={currentItem.title}
-                          onError={handleImageError}
-                        />
-                      );
-                    })()}
-
-                    {/* Navigation Arrows - On Image */}
-                    <button
-                      onClick={goToPrevious}
-                      className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-10 w-12 h-12 sm:w-14 sm:h-14 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all duration-300 border border-white/30 hover:border-white/50"
-                      aria-label="Previous slide"
-                    >
-                      <svg
-                        className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300 hover:-translate-x-0.5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                      </svg>
-                    </button>
-
-                    <button
-                      onClick={goToNext}
-                      className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-10 w-12 h-12 sm:w-14 sm:h-14 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all duration-300 border border-white/30 hover:border-white/50"
-                      aria-label="Next slide"
-                    >
-                      <svg
-                        className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300 hover:translate-x-0.5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-
-                    {/* Content Overlay */}
-                    <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-8 md:p-12 lg:p-16">
-                      {(() => {
-                        const currentItem = newsItems[currentIndex];
-                        if (!currentItem) return null;
-
-                        return (
-                          <motion.div
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6, delay: 0.3 }}
-                            className="max-w-3xl"
-                          >
-                            {/* Category Badge */}
-                            <div className="mb-4">
-                              <span className="inline-block px-4 py-2 text-xs font-bold tracking-[0.2em] uppercase bg-kawai-red text-white rounded-full shadow-lg">
-                                {currentItem.category}
-                              </span>
-                            </div>
-
-                            {/* Title - Bold and Prominent */}
-                            <h3 className="font-brand-luxury text-white font-black text-2xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight mb-4 sm:mb-6 tracking-tight drop-shadow-lg">
-                              {currentItem.title}
-                            </h3>
-
-                            {/* Description */}
-                            <p className="text-white/90 text-lg sm:text-xl md:text-2xl leading-relaxed font-light mb-6 sm:mb-8 max-w-2xl drop-shadow-md">
-                              {currentItem.description}
-                            </p>
-
-                            {/* Read More Link */}
-                            <Link
-                              href={currentItem.link || '#'}
-                          className="inline-flex items-center space-x-3 text-kawai-red hover:text-white bg-white/20 hover:bg-kawai-red/90 backdrop-blur-sm px-6 py-3 rounded-full font-medium text-sm tracking-wide uppercase transition-all duration-300 border border-white/30 hover:border-kawai-red/90 group"
-                        >
-                          <span>Read Full Story</span>
-                          <svg
-                            className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                          </svg>
-                            </Link>
-                          </motion.div>
-                        );
-                      })()}
+                        {/* Gradient Overlay - Subtle */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/20 via-transparent to-transparent lg:hidden" />
+                      </motion.div>
                     </div>
                   </div>
                 </div>
@@ -275,6 +261,42 @@ export function NewsCarousel({ data }: NewsCarouselProps) {
             </AnimatePresence>
           </div>
 
+          {/* Navigation Controls */}
+          <div className="flex items-center justify-center mt-8 sm:mt-10">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={goToPrevious}
+                className="w-12 h-12 sm:w-14 sm:h-14 bg-white hover:bg-kawai-red text-kawai-black hover:text-white rounded-full flex items-center justify-center transition-all duration-300 shadow-lg hover:shadow-xl border border-kawai-pearl hover:border-kawai-red group"
+                aria-label="Previous slide"
+              >
+                <svg
+                  className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300 group-hover:-translate-x-0.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              <button
+                onClick={goToNext}
+                className="w-12 h-12 sm:w-14 sm:h-14 bg-white hover:bg-kawai-red text-kawai-black hover:text-white rounded-full flex items-center justify-center transition-all duration-300 shadow-lg hover:shadow-xl border border-kawai-pearl hover:border-kawai-red group"
+                aria-label="Next slide"
+              >
+                <svg
+                  className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300 group-hover:translate-x-0.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </section>

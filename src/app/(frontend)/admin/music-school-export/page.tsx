@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useConstantContactAuth } from '@/hooks/useConstantContactAuth';
 
 interface ExportStats {
   totalContacts: number;
@@ -11,9 +12,30 @@ interface ExportStats {
 }
 
 export default function MusicSchoolExportPage() {
+  // Proactive authentication check with auto-redirect
+  const { isAuthenticated, isChecking, needsReauth, redirectToAuth } = useConstantContactAuth({
+    autoRedirect: true, // Automatically redirect if auth is needed
+    checkOnMount: true  // Check on page load
+  });
+
   const [isExporting, setIsExporting] = useState(false);
   const [stats, setStats] = useState<ExportStats | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [authSuccess, setAuthSuccess] = useState(false);
+
+  // Handle successful authentication callback
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('auth_success') === 'true') {
+        setAuthSuccess(true);
+        // Clean up URL without reloading page
+        window.history.replaceState({}, '', window.location.pathname);
+        // Auto-hide success message after 5 seconds
+        setTimeout(() => setAuthSuccess(false), 5000);
+      }
+    }
+  }, []);
 
   const handleExportJSON = async () => {
     setIsExporting(true);
@@ -87,6 +109,49 @@ export default function MusicSchoolExportPage() {
     }
   };
 
+  // Show loading state while checking authentication
+  if (isChecking) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 py-12 px-4 flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center"
+        >
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-kawai-red mx-auto mb-4" />
+          <p className="text-lg text-kawai-black/70">Checking authentication...</p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Show re-auth message if needed (backup in case auto-redirect fails)
+  if (needsReauth && !isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 py-12 px-4 flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center"
+        >
+          <div className="text-5xl mb-4">🔐</div>
+          <h2 className="text-2xl font-semibold text-kawai-black mb-3">
+            Authentication Required
+          </h2>
+          <p className="text-kawai-black/70 mb-6">
+            Please re-authenticate with Constant Contact to access this page.
+          </p>
+          <button
+            onClick={() => redirectToAuth()}
+            className="bg-gradient-to-r from-kawai-red to-red-600 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
+          >
+            Authenticate Now
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 py-12 px-4">
       <div className="max-w-4xl mx-auto">
@@ -103,6 +168,26 @@ export default function MusicSchoolExportPage() {
             Export all music school enrollment data from Constant Contact
           </p>
         </motion.div>
+
+        {/* Authentication Success Message */}
+        {authSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-green-50 border-2 border-green-200 rounded-xl p-4 mb-6"
+          >
+            <div className="flex items-center gap-3">
+              <div className="text-2xl">✅</div>
+              <div>
+                <div className="font-semibold text-green-900">Authentication Successful!</div>
+                <div className="text-sm text-green-700">
+                  You can now export contacts from Constant Contact.
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Export Card */}
         <motion.div

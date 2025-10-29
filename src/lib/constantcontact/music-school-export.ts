@@ -155,7 +155,7 @@ export class MusicSchoolContactExporter {
         const params: Record<string, string> = {
           lists: listId,              // Filter by list membership
           limit: limit.toString(),    // Max 500 per page
-          include: 'custom_fields',   // Include custom fields in response
+          include: 'custom_fields,phone_numbers',   // Include custom fields and phone numbers in response
           status: 'all'               // Get all contact statuses
         };
 

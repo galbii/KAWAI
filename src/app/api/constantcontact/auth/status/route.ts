@@ -1,11 +1,11 @@
 /**
  * Constant Contact Authentication Status Route
  *
- * Provides a lightweight endpoint for checking authentication status
+ * Provides detailed authentication status including expiration and re-auth requirements
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getValidAccessToken } from '@/lib/constantcontact/credentials';
+import { checkAuthStatus } from '@/lib/constantcontact/auth-helpers';
 import { getPayload } from 'payload';
 import config from '@/payload.config';
 
@@ -13,22 +13,22 @@ export async function GET(request: NextRequest) {
   try {
     const payload = await getPayload({ config });
 
-    // Check if we have a valid access token
-    const accessToken = await getValidAccessToken(payload);
+    // Get comprehensive auth status
+    const status = await checkAuthStatus(payload);
 
-    if (accessToken) {
-      return NextResponse.json({
-        success: true,
-        authenticated: true,
-        message: 'Valid authentication found'
-      });
-    } else {
-      return NextResponse.json({
-        success: true,
-        authenticated: false,
-        message: 'No valid authentication found'
-      });
-    }
+    return NextResponse.json({
+      success: true,
+      authenticated: status.authenticated,
+      needs_reauth: status.needsReauth,
+      auth_url: status.authUrl,
+      expires_at: status.expiresAt,
+      status: status.status,
+      message: status.authenticated
+        ? 'Valid authentication found'
+        : status.needsReauth
+          ? 'Re-authorization required'
+          : 'No authentication found'
+    });
   } catch (error) {
     console.error('Authentication status check error:', error);
 
@@ -36,6 +36,8 @@ export async function GET(request: NextRequest) {
       {
         success: false,
         authenticated: false,
+        needs_reauth: true,
+        auth_url: '/api/auth/constantcontact/authorize',
         error: 'Failed to check authentication status',
         details: error instanceof Error ? error.message : 'Unknown error'
       },

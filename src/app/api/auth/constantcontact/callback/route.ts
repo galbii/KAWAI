@@ -1,8 +1,9 @@
 /**
  * Constant Contact OAuth Callback Route
- * Enhanced with Payload CMS database integration
+ * Enhanced with Payload CMS database integration and return URL support
  *
- * Handles OAuth callback, exchanges code for tokens, and stores them securely in database
+ * Handles OAuth callback, exchanges code for tokens, stores them securely in database,
+ * and redirects user back to their original location
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -60,12 +61,23 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Clear state cookie
-    const response = NextResponse.redirect(
-      new URL('/constantcontact-demo?success=true', request.url)
-    );
+    // Get return URL from cookie (defaults to /admin if not found)
+    const returnTo = request.cookies.get('cc_oauth_return')?.value || '/admin';
 
+    // Redirect to original location with success parameter
+    const redirectUrl = new URL(returnTo, request.url);
+    redirectUrl.searchParams.set('auth_success', 'true');
+    const response = NextResponse.redirect(redirectUrl);
+
+    // Clear OAuth cookies
     response.cookies.set('cc_oauth_state', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 0 // Delete cookie
+    });
+
+    response.cookies.set('cc_oauth_return', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

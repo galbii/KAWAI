@@ -256,7 +256,7 @@ export function UnifiedPianoSeries({
   // Early return if no series have any models
   if (filteredSeries.length === 0) {
     return (
-      <section className="pt-16 lg:pt-24 pb-0 bg-kawai-pearl" id="series">
+      <section className="pt-16 lg:pt-24 pb-0 bg-white" id="series">
         <div className="text-center mb-16">
           <div className="w-full px-6 lg:px-8 xl:px-12">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-kawai-black mb-6">
@@ -380,7 +380,7 @@ export function UnifiedPianoSeries({
     ) : [];
 
   return (
-    <section className="pt-16 lg:pt-24 pb-0 bg-kawai-pearl" id="series">
+    <section className="pt-16 lg:pt-24 pb-0 bg-white" id="series">
       {/* Section Header */}
       <div ref={titleRef} className="text-center mb-16">
         <div className="w-full px-6 lg:px-8 xl:px-12">
@@ -458,7 +458,7 @@ export function UnifiedPianoSeries({
       </motion.div>
 
       {/* Continuous Scrolling Carousel */}
-      <section className="bg-kawai-pearl mt-32 lg:mt-40 pb-16 md:pb-20 lg:pb-24">
+      <section className="bg-white mt-32 lg:mt-40 pb-16 md:pb-20 lg:pb-24">
         <div ref={sliderRef} className="keen-slider py-8 md:py-12 lg:py-16 px-4 md:px-6 lg:px-8">
           {carouselItems.map((item, index) => {
             // Check if item is a slide or piano

@@ -8,6 +8,7 @@
 import type { Payload } from 'payload';
 import { ConstantContactAuth, createConstantContactAuth } from './auth';
 import { getValidAccessToken } from './credentials';
+import { ReauthRequiredError } from './errors';
 
 export interface ConstantContactError {
   error_key: string;
@@ -20,6 +21,8 @@ export interface ApiResponse<T = any> {
   error?: ConstantContactError[];
   success: boolean;
   status: number;
+  reauth_required?: boolean;
+  auth_url?: string;
 }
 
 export interface RateLimitInfo {
@@ -91,7 +94,7 @@ export class ConstantContactClient {
       // Wait for rate limit
       await this.rateLimiter.waitForAvailableSlot();
 
-      // Get valid access token
+      // Get valid access token (may throw ReauthRequiredError)
       const accessToken = await this.getValidTokens();
       if (!accessToken) {
         return {
@@ -153,6 +156,21 @@ export class ConstantContactClient {
       };
 
     } catch (error) {
+      // Handle re-authentication required error
+      if (error instanceof ReauthRequiredError) {
+        return {
+          success: false,
+          status: 401,
+          reauth_required: true,
+          auth_url: error.authUrl,
+          error: [{
+            error_key: 'reauth_required',
+            error_message: error.message
+          }]
+        };
+      }
+
+      // Handle other errors
       return {
         success: false,
         status: 500,

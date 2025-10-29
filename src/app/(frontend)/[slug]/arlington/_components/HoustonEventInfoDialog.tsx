@@ -162,7 +162,7 @@ export default function ArlingtonEventInfoDialog({ isOpen, onClose }: ArlingtonE
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Arlington Area</label>
+              <label className="block text-sm font-medium mb-1">Dallas/Arlington Area</label>
               <select
                 name="dallasArea"
                 value={formData.dallasArea}
@@ -171,15 +171,15 @@ export default function ArlingtonEventInfoDialog({ isOpen, onClose }: ArlingtonE
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-kawai-red focus:border-transparent"
               >
                 <option value="">Select your area</option>
-                <option value="river-oaks">River Oaks</option>
-                <option value="memorial">Memorial</option>
-                <option value="uptown">Uptown</option>
-                <option value="the-woodlands">The Woodlands</option>
-                <option value="katy">Katy</option>
+                <option value="arlington">Arlington</option>
+                <option value="dallas">Dallas</option>
+                <option value="fort-worth">Fort Worth</option>
                 <option value="plano">Plano</option>
                 <option value="frisco">Frisco</option>
-                <option value="allen">Allen</option>
-                <option value="other">Other Arlington Area</option>
+                <option value="irving">Irving</option>
+                <option value="grand-prairie">Grand Prairie</option>
+                <option value="richardson">Richardson</option>
+                <option value="other">Other DFW Area</option>
               </select>
             </div>
 
@@ -207,7 +207,7 @@ export default function ArlingtonEventInfoDialog({ isOpen, onClose }: ArlingtonE
               <ul className="text-sm space-y-1 text-gray-600">
                 <li>• Exclusive pricing information</li>
                 <li>• VIP appointment priority</li>
-                <li>• Special Arlington area offers</li>
+                <li>• Special DFW area offers</li>
                 <li>• Event schedule and location details</li>
               </ul>
             </div>

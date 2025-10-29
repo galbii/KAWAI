@@ -258,7 +258,7 @@ export function FeaturedDeals() {
             <div className={`relative inline-block mb-6 transition-all duration-600 delay-200 ${headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
               <div className="text-red-600 font-bold text-lg mb-2 tracking-wide">FEATURED MODELS</div>
               <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-kawai-black mb-2">
-                HOUSTON PIANO GALLERY
+                DALLAS PIANO GALLERY
               </h1>
               <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-red-600 to-red-700 rounded-full shadow-lg"></div>
             </div>
