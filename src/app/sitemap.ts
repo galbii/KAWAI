@@ -4,7 +4,7 @@ import configPromise from '@payload-config'
 import type { Product, Storefront } from '@/payload-types'
 
 // Get the site URL from environment or use default
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
 
 /**
  * Dynamic sitemap generation for KAWAI Piano website

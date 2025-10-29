@@ -58,7 +58,7 @@ export async function generateMetadata({
     ).join(', ');
 
     // Create canonical URL for the campaign
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianostlouis.com';
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com';
     const canonicalUrl = `${siteUrl}/${dealerSlug}/${campaignSlug}`;
 
     return {
@@ -154,7 +154,7 @@ export default async function LandingPageLayout({
     "@type": "WebPage",
     "name": landingPage?.title || `Campaign - ${dealerLocation?.locationName}`,
     "description": landingPage?.campaignDescription || `Special campaign from ${dealerLocation?.locationName}`,
-    "url": `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianostlouis.com'}/${dealerSlug}/${campaignSlug}`,
+    "url": `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'}/${dealerSlug}/${campaignSlug}`,
     "mainEntity": {
       "@type": "Event",
       "name": landingPage?.title,
@@ -167,7 +167,7 @@ export default async function LandingPageLayout({
         "name": dealerLocation?.locationName,
         "address": dealerLocation?.showroomSection?.showroomInfo?.address,
         "telephone": dealerLocation?.showroomSection?.showroomInfo?.phone,
-        "url": `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianostlouis.com'}/${dealerSlug}`
+        "url": `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'}/${dealerSlug}`
       },
       "offers": {
         "@type": "Offer",
@@ -185,19 +185,19 @@ export default async function LandingPageLayout({
           "@type": "ListItem",
           "position": 1,
           "name": "Home",
-          "item": process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianostlouis.com'
+          "item": process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
         },
         {
           "@type": "ListItem",
           "position": 2,
           "name": dealerLocation?.locationName,
-          "item": `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianostlouis.com'}/${dealerSlug}`
+          "item": `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'}/${dealerSlug}`
         },
         {
           "@type": "ListItem",
           "position": 3,
           "name": landingPage?.title,
-          "item": `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianostlouis.com'}/${dealerSlug}/${campaignSlug}`
+          "item": `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'}/${dealerSlug}/${campaignSlug}`
         }
       ]
     }

@@ -83,7 +83,17 @@ export function DealerLocations({ className = '', locations = [] }: DealerLocati
                   <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-2 sm:mb-3">
                     {location.locationText || 'Kawai Showroom'}
                   </div>
-                  <h3 className="text-xl sm:text-2xl font-serif text-kawai-black mb-2 group-hover:text-kawai-red transition-colors leading-tight">
+                  {/* Small Kawai Logo above location name */}
+                  <div className="mb-3 flex justify-start">
+                    <Image
+                      src="/images/Kawai (Red)(2).png"
+                      alt="KAWAI"
+                      width={60}
+                      height={18}
+                      className="h-3 w-auto"
+                    />
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-bold text-kawai-black mb-2 group-hover:text-kawai-red transition-colors leading-tight uppercase">
                     {location.locationName}
                   </h3>
                   <div className="w-12 h-px bg-kawai-red opacity-50 group-hover:opacity-100 transition-opacity"></div>

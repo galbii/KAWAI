@@ -6,8 +6,9 @@ import { ErrorBoundary } from '@/components/ui/error-boundary'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-// Ensure dynamic rendering for product pages
-export const dynamic = 'force-dynamic'
+// Use ISR (Incremental Static Regeneration) for better SEO and performance
+// Pages are statically generated and revalidated every 15 minutes
+export const revalidate = 900
 
 interface PageProps {
   params: Promise<{ slug: string }>

@@ -56,7 +56,7 @@ export function ShowroomLocation({ data = DEFAULT_SHOWROOM_DATA }: ShowroomLocat
 
               {/* Showroom Title */}
               <div className="mb-8">
-                <h3 className="text-3xl font-medium text-kawai-black mb-3 leading-tight">
+                <h3 className="text-3xl font-bold text-kawai-black mb-3 leading-tight uppercase">
                   {data.showroomInfo.name}
                 </h3>
                 <div className="w-16 h-px bg-kawai-red mb-6"></div>

@@ -447,19 +447,19 @@ export class RegionalPricing {
 
 // SEO support for multiple languages
 export function generateHrefLangTags(path: string): Array<{ hrefLang: string; href: string }> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawai-piano.com'
-  
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
+
   return SUPPORTED_LOCALES.map(locale => ({
     hrefLang: locale.code,
-    href: locale.code === DEFAULT_LOCALE 
+    href: locale.code === DEFAULT_LOCALE
       ? `${baseUrl}${path}`
       : `${baseUrl}/${locale.code}${path}`
   }))
 }
 
 export function getCanonicalUrl(path: string, locale: string): string {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawai-piano.com'
-  return locale === DEFAULT_LOCALE 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
+  return locale === DEFAULT_LOCALE
     ? `${baseUrl}${path}`
     : `${baseUrl}/${locale}${path}`
 }
