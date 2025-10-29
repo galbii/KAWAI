@@ -7,7 +7,7 @@ import { DEFAULT_SHOWROOM_DATA } from "@/lib/types/homepage";
 export function ShowroomLocation({ data = DEFAULT_SHOWROOM_DATA }: ShowroomLocationProps) {
 
   return (
-    <section className="relative bg-gradient-to-b from-white via-kawai-pearl/20 to-kawai-pearl/40">
+    <section className="relative bg-kawai-pearl">
       {/* Section Header */}
       <div className="container mx-auto px-6 pt-24 pb-16 text-center">
         <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-6">
@@ -42,7 +42,7 @@ export function ShowroomLocation({ data = DEFAULT_SHOWROOM_DATA }: ShowroomLocat
             </div>
             
             {/* Information Panel */}
-            <div className="lg:col-span-2 p-12 flex flex-col justify-center bg-gradient-to-br from-white to-kawai-pearl/30">
+            <div className="lg:col-span-2 p-12 flex flex-col justify-center bg-gradient-to-br from-white to-kawai-pearl">
               {/* Showroom Title */}
               <div className="mb-8">
                 <h3 className="text-3xl font-serif text-kawai-black mb-3 leading-tight">
@@ -141,7 +141,7 @@ export function ShowroomLocation({ data = DEFAULT_SHOWROOM_DATA }: ShowroomLocat
       </div>
 
       {/* Features Section */}
-      <div className="bg-kawai-pearl py-20">
+      <div className="bg-white py-20">
         <div className="container mx-auto px-6">
           <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
             <div className="text-center">

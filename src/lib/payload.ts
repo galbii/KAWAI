@@ -765,52 +765,54 @@ export async function getPianosPageData(): Promise<{
 
 // HomePage API Functions
 
-// Fetch HomePage data from API
+// Fetch HomePage data from API using the custom singleton endpoint
 export async function getHomePage(): Promise<any | null> {
   try {
     // Construct absolute URL for server-side requests
-    let apiUrl = '/api/home-page'
+    // Use the custom singleton endpoint defined in HomePage collection
+    let apiUrl = '/api/home-page/singleton'
     if (typeof window === 'undefined') {
       // Server-side: need absolute URL
       const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-      apiUrl = `${baseURL}/api/home-page`
+      apiUrl = `${baseURL}/api/home-page/singleton`
     }
-    
+
     console.log('[DEBUG] Fetching home page data from', apiUrl)
-    
-    // Use the Next.js API route
+
+    // Use the custom singleton endpoint
     const response = await fetch(apiUrl, {
       cache: 'force-cache',
       next: { revalidate: 300 } // Revalidate every 5 minutes
     })
-    
+
     console.log('[DEBUG] Response status:', response.status)
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
-    const result = await response.json()
-    console.log('[DEBUG] API response result:', { success: result.success, hasData: !!result.data })
-    
-    if (!result.success) {
-      throw new Error(result.error || 'Failed to fetch home page data')
+
+    const data = await response.json()
+    console.log('[DEBUG] API response data:', { hasData: !!data, hasNewsItems: !!data?.newsItems })
+
+    // The singleton endpoint returns the document directly, not wrapped in success/data
+    if (!data) {
+      throw new Error('No home page data found')
     }
-    
+
     console.log('[DEBUG] Successfully fetched home page data')
-    return result.data
+    return data
   } catch (error) {
     // Handle null/undefined errors the same way as payloadFetch
     if (error === null || error === undefined) {
       console.error('[ERROR] Failed to fetch home page: received null error')
       return null
     }
-    
+
     if (!(error instanceof Error)) {
       console.error('[ERROR] Failed to fetch home page:', String(error))
       return null
     }
-    
+
     console.error('[ERROR] Failed to fetch home page:', error.message)
     return null
   }
@@ -842,7 +844,63 @@ export async function getHomePageData(): Promise<{
   let cmsData = null
 
   try {
-    cmsData = await getCachedHomePage()
+    const rawData = await getCachedHomePage()
+
+    if (rawData) {
+      // Transform the raw CMS data to match the expected structure
+      // HomePage collection has fields at root level, need to wrap them in section objects
+      cmsData = {
+        heroSection: {
+          locationText: rawData.locationText,
+          establishedText: rawData.establishedText,
+          titlePrefix: rawData.titlePrefix,
+          titleMain: rawData.titleMain,
+          titleSuffix: rawData.titleSuffix,
+          description: rawData.description,
+          primaryCta: rawData.primaryCta,
+          secondaryCta: rawData.secondaryCta,
+          backgroundVideo: rawData.backgroundVideo
+        },
+        showroomSection: {
+          sectionHeader: rawData.sectionHeader,
+          showroomTitle: rawData.showroomTitle,
+          showroomDescription: rawData.showroomDescription,
+          showroomInfo: rawData.showroomInfo,
+          hours: rawData.hours,
+          features: rawData.features,
+          mapApiKey: rawData.mapApiKey,
+          showroomCtas: rawData.showroomCtas
+        },
+        pianoCollectionSection: {
+          collectionSectionHeader: rawData.collectionSectionHeader,
+          collectionTitle: rawData.collectionTitle,
+          collectionDescription: rawData.collectionDescription,
+          collectionCta: rawData.collectionCta,
+          featuredVideo: rawData.featuredVideo
+        },
+        pianoGallerySection: {
+          galleryTitle: rawData.galleryTitle,
+          galleryDescription: rawData.galleryDescription,
+          pianoCategories: rawData.pianoCategories
+        },
+        newsCarouselSection: {
+          autoPlayDuration: rawData.autoPlayDuration,
+          newsItems: rawData.newsItems
+        },
+        contactFormSection: {
+          contactTitle: rawData.contactTitle,
+          contactTitleHighlight: rawData.contactTitleHighlight,
+          contactDescription: rawData.contactDescription,
+          stepTitles: rawData.stepTitles,
+          trustMessage: rawData.trustMessage,
+          benefits: rawData.benefits,
+          formOptions: rawData.formOptions
+        },
+        seo: rawData.seo
+      }
+
+      console.log('[DEBUG] Transformed homepage data structure with news items:', cmsData.newsCarouselSection?.newsItems?.length || 0)
+    }
   } catch (error) {
     console.warn('Error fetching homepage data from CMS, using fallbacks:', error)
   }

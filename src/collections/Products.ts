@@ -122,6 +122,14 @@ export const Products: CollectionConfig = {
               }
             },
             {
+              name: 'learnMore',
+              type: 'text',
+              required: false,
+              admin: {
+                description: 'Optional URL for the "Learn More" button (e.g., /products/piano-name or https://example.com)'
+              }
+            },
+            {
               name: 'price',
               type: 'group',
               fields: [

@@ -315,6 +315,10 @@ export interface Product {
    */
   shortDescription?: string | null;
   /**
+   * Optional URL for the "Learn More" button (e.g., /products/piano-name or https://example.com)
+   */
+  learnMore?: string | null;
+  /**
    * Product pricing information
    */
   price?: {
@@ -4153,6 +4157,7 @@ export interface ProductsSelect<T extends boolean = true> {
   imageUrl?: T;
   description?: T;
   shortDescription?: T;
+  learnMore?: T;
   price?:
     | T
     | {

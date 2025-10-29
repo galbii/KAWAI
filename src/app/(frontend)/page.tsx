@@ -167,6 +167,9 @@ async function HomePageContent() {
       {/* Piano Collection Section - Featured Models */}
       <PianoCollection {...(homePageData?.pianoCollectionSection && { data: homePageData.pianoCollectionSection })} />
 
+            {/* Dealer Locations Section */}
+      <DealerLocations locations={dealerLocations} />
+
       {/* News Carousel Section */}
       <NewsCarousel {...(homePageData?.newsCarouselSection && { data: homePageData.newsCarouselSection })} />
 
@@ -175,9 +178,6 @@ async function HomePageContent() {
 
       {/* Sound Quality & Tone Section - NEW for SEO */}
       <SoundQualitySection />
-
-      {/* Dealer Locations Section */}
-      <DealerLocations locations={dealerLocations} />
 
       {/* Piano Gallery Section */}
       <PianoGallery {...(homePageData?.pianoGallerySection && { data: homePageData.pianoGallerySection })} />
