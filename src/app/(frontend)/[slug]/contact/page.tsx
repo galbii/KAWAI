@@ -31,8 +31,8 @@ function ShowroomLocationSkeleton() {
     <section className="relative bg-kawai-pearl animate-pulse">
       <div className="container mx-auto px-6 pt-24 pb-16 text-center">
         <div className="h-4 bg-kawai-black/20 rounded mx-auto mb-6 w-32"></div>
-        <div className="h-16 bg-kawai-black/20 rounded mx-auto mb-8 w-48"></div>
-        <div className="h-12 bg-kawai-black/20 rounded mx-auto mb-8 w-96"></div>
+        <div className="h-8 bg-kawai-black/20 rounded mx-auto mb-8 w-32"></div>
+        <div className="h-16 bg-kawai-black/20 rounded mx-auto mb-8 w-96"></div>
         <div className="h-6 bg-kawai-black/20 rounded mx-auto w-3/4 max-w-3xl"></div>
       </div>
       <div className="container mx-auto px-6 pb-24">

@@ -44,19 +44,19 @@ export function ShowroomLocation({ data = DEFAULT_SHOWROOM_DATA }: ShowroomLocat
             {/* Information Panel */}
             <div className="lg:col-span-2 p-12 flex flex-col justify-center bg-gradient-to-br from-white to-kawai-pearl">
               {/* KAWAI Logo */}
-              <div className="mb-3">
+              <div className="mb-2">
                 <Image
                   src="/images/Kawai (Red)(2).png"
                   alt="KAWAI"
                   width={200}
                   height={60}
-                  className="h-8 w-auto md:h-10"
+                  className="h-5 w-auto md:h-6"
                 />
               </div>
 
               {/* Showroom Title */}
               <div className="mb-8">
-                <h3 className="text-3xl font-bold text-kawai-black mb-3 leading-tight uppercase">
+                <h3 className="text-4xl md:text-5xl font-bold text-kawai-black mb-3 leading-tight uppercase">
                   {data.showroomInfo.name}
                 </h3>
                 <div className="w-16 h-px bg-kawai-red mb-6"></div>
