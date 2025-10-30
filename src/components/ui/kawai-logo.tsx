@@ -38,11 +38,29 @@ export function KawaiLogo({
   nonClickable = false
 }: KawaiLogoProps) {
   const { width, height, textSize, subText } = sizeMap[size]
-  
+
   // Use navigation context for context-aware home URL
   const { origin, isInitialized } = useNavigationContext()
   const contextAwareHomeUrl = homeUrl || (isInitialized ? origin.basePath : '/')
   const contextAwareAriaLabel = ariaLabel || getContextAwareAriaLabel('Kawai Piano - Home', origin)
+
+  // Handle logo click - scroll to top if already on home page
+  const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Check if we're on the home page by comparing current path with contextAwareHomeUrl
+    if (typeof window !== 'undefined') {
+      const currentPath = window.location.pathname.replace(/\/$/, '') // Remove trailing slash
+      const targetPath = contextAwareHomeUrl.replace(/\/$/, '') // Remove trailing slash
+
+      // If we're already on the target page, scroll to top instead of navigating
+      if (currentPath === targetPath || (currentPath === '' && targetPath === '')) {
+        e.preventDefault()
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        })
+      }
+    }
+  }
   
   
   const textColors = {
@@ -174,6 +192,7 @@ export function KawaiLogo({
         href={contextAwareHomeUrl}
         className={cn("kawai-logo-container", className)}
         aria-label={contextAwareAriaLabel}
+        onClick={handleLogoClick}
       >
         <motion.div
           className={layoutClasses}
@@ -202,6 +221,7 @@ export function KawaiLogo({
       href={contextAwareHomeUrl}
       className={cn("kawai-logo-container", className)}
       aria-label={contextAwareAriaLabel}
+      onClick={handleLogoClick}
     >
       <div className={layoutClasses}>
         <LogoContent />

@@ -1,64 +1,101 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const models = [
   {
     id: 'ca401',
     name: 'CA401',
-    descriptor: 'Essential Wooden Action',
+    tagline: 'Where Mastery Begins',
+    descriptor: 'Entry to the Concert Artist lineage—wooden keys from lesson one',
     price: 'From $3,199',
     image: '/images/concert-artist/ca401.jpg',
-    features: ['Grand Feel Compact Action', 'SK-EX Concert Grand Sampling', '88 Wooden Keys'],
+    features: ['Grand Feel Compact III Action', 'SK-EX Concert Grand Sampling', '100% Wooden Keys'],
     link: '/products/ca401',
+    videoId: 'HoPhUcrFrFk',
   },
   {
     id: 'ca501',
     name: 'CA501',
-    descriptor: 'Premium Sound Performance',
+    tagline: 'The Journey Instrument',
+    descriptor: 'Professional sound supporting Grade 1 through Graduate-level growth',
     price: 'From $4,099',
     image: '/images/concert-artist/ca501.jpg',
     features: ['Harmonic Imaging XL', '100W Speaker System', '360° Sound Diffusion'],
     link: '/products/ca501',
+    videoId: 'C1AQ7w2Htf0',
   },
   {
     id: 'ca701',
     name: 'CA701',
-    descriptor: 'Professional Grade Touch',
+    tagline: 'The Artist\'s Choice',
+    descriptor: 'Grand Feel III action and SK-EX Rendering for concert-level practice',
     price: 'From $5,049',
     image: '/images/concert-artist/ca701.jpg',
     features: ['Grand Feel III Action', 'SK-EX Rendering Engine', 'Extended Pivot Length'],
     link: '/products/ca701',
+    videoId: 'V3qb8Q3ZPn4',
   },
   {
     id: 'ca901',
     name: 'CA901',
-    descriptor: 'Flagship TwinDrive Sound',
+    tagline: 'The Master\'s Companion',
+    descriptor: 'TwinDrive genuine spruce soundboard—concert physics in your home',
     price: 'From $6,549',
     image: '/images/concert-artist/ca901.jpg',
     features: ['Genuine Spruce Soundboard', 'TwinDrive Technology', '135W Premium System'],
     link: '/products/ca901',
+    videoId: 'Ehx8nmfwc1k',
   },
 ]
 
 export default function ModelGrid() {
+  const [activeVideo, setActiveVideo] = useState<string | null>(null)
+
+  const handlePlayClick = (e: React.MouseEvent, videoId: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setActiveVideo(videoId)
+  }
+
+  const closeModal = () => {
+    setActiveVideo(null)
+  }
   return (
-    <section className="py-16 md:py-24 bg-[#FAF8F5]">
+    <section id="model-grid" className="py-16 md:py-24 bg-[#FAF8F5]">
       <div className="max-w-7xl mx-auto px-4">
         {/* Section Heading */}
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.6 }}
-          className="text-3xl md:text-5xl text-center mb-12 md:mb-16 font-serif"
-          style={{ fontFamily: 'Crimson Text, serif' }}
-        >
-          Four Expressions
-        </motion.h2>
+        <div className="text-center mb-16 md:mb-24 space-y-4">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.6 }}
+            className="text-xs sm:text-sm font-light uppercase tracking-[0.3em] text-neutral-500"
+          >
+            THE COLLECTION
+          </motion.p>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-4xl md:text-6xl font-light font-serif text-neutral-900"
+            style={{ fontFamily: 'Crimson Text, serif' }}
+          >
+            Four Expressions
+          </motion.h2>
+          <motion.div
+            initial={{ opacity: 0, scaleX: 0 }}
+            whileInView={{ opacity: 1, scaleX: 1 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="w-24 h-px bg-neutral-300 mx-auto"
+          />
+        </div>
 
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -70,55 +107,81 @@ export default function ModelGrid() {
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.6, delay: index * 0.15 }}
             >
-              <Link href={model.link}>
-                <div className="group relative bg-white rounded-xl shadow-lg border border-neutral-900/20 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:border-[#C41E3A]">
-                  {/* Product Image */}
-                  <div className="relative aspect-square overflow-hidden">
-                    <Image
-                      src={model.image}
-                      alt={`${model.name} - ${model.descriptor}`}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                    />
-                  </div>
+              <div className="group relative bg-white border border-neutral-200 overflow-hidden transition-all duration-500 hover:border-neutral-400 hover:shadow-xl">
+                {/* Product Image */}
+                <div className="relative aspect-[16/9] overflow-hidden bg-neutral-100">
+                  <Image
+                    src={`https://img.youtube.com/vi/${model.videoId}/maxresdefault.jpg`}
+                    alt={`${model.name} - ${model.tagline}`}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    unoptimized
+                  />
+
+                  {/* Play Button Overlay */}
+                  <button
+                    onClick={(e) => handlePlayClick(e, model.videoId)}
+                    className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 hover:bg-black/40 transition-all duration-300 cursor-pointer"
+                    aria-label={`Play ${model.name} video`}
+                    type="button"
+                  >
+                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white backdrop-blur-sm flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 border-2 border-white/50 pointer-events-none">
+                      <svg
+                        className="w-8 h-8 md:w-10 md:h-10 text-neutral-900 ml-1"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                  </button>
+                </div>
+
+                <Link href={model.link}>
 
                   {/* Content */}
-                  <div className="p-6">
+                  <div className="p-8 space-y-4">
                     {/* Model Name */}
-                    <h3 className="text-2xl font-bold text-neutral-900 mb-1">
+                    <h3 className="text-3xl font-light font-serif text-neutral-900" style={{ fontFamily: 'Crimson Text, serif' }}>
                       {model.name}
                     </h3>
 
+                    {/* Tagline */}
+                    <p className="text-sm font-medium uppercase tracking-[0.2em] text-neutral-500">
+                      {model.tagline}
+                    </p>
+
+                    {/* Thin divider */}
+                    <div className="w-12 h-px bg-neutral-300" />
+
                     {/* Descriptor */}
-                    <p className="text-sm text-neutral-900/60 mb-3">
+                    <p className="text-sm leading-relaxed text-neutral-600 font-light">
                       {model.descriptor}
                     </p>
 
                     {/* Features */}
-                    <ul className="space-y-1 mb-4">
+                    <ul className="space-y-2 pt-2">
                       {model.features.map((feature, featureIndex) => (
                         <li
                           key={featureIndex}
-                          className="text-sm text-neutral-700 flex items-start"
+                          className="text-xs text-neutral-500 flex items-start font-light tracking-wide"
                         >
-                          <span className="mr-2 text-[#C41E3A]">•</span>
+                          <span className="mr-2 text-neutral-400">—</span>
                           <span>{feature}</span>
                         </li>
                       ))}
                     </ul>
 
-                    {/* Price */}
-                    <p className="text-xl font-semibold text-[#C41E3A] mb-4">
-                      {model.price}
-                    </p>
-
-                    {/* Explore Button (appears on hover) */}
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="inline-flex items-center justify-center w-full px-6 py-3 bg-[#C41E3A] text-white font-medium rounded-md transition-colors hover:bg-[#A01828]">
-                        Explore Model
+                    {/* Price and CTA */}
+                    <div className="pt-6 flex items-center justify-between border-t border-neutral-200">
+                      <p className="text-lg font-light text-neutral-900">
+                        {model.price}
+                      </p>
+                      <div className="text-xs uppercase tracking-wider text-neutral-500 group-hover:text-neutral-900 transition-colors flex items-center">
+                        Explore
                         <svg
-                          className="ml-2 w-4 h-4"
+                          className="ml-1 w-3 h-3 transition-transform group-hover:translate-x-1"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -133,12 +196,70 @@ export default function ModelGrid() {
                       </div>
                     </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+              </div>
             </motion.div>
           ))}
         </div>
       </div>
+
+      {/* Video Modal */}
+      <AnimatePresence>
+        {activeVideo && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm"
+            onClick={closeModal}
+          >
+            {/* Modal Content */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="relative w-full max-w-5xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                onClick={closeModal}
+                className="absolute -top-12 right-0 text-white hover:text-neutral-300 transition-colors"
+                aria-label="Close video"
+              >
+                <svg
+                  className="w-8 h-8"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+
+              {/* Video Container */}
+              <div className="relative w-full bg-black rounded-sm overflow-hidden shadow-2xl" style={{ paddingBottom: '56.25%' }}>
+                <iframe
+                  className="absolute top-0 left-0 w-full h-full"
+                  src={`https://www.youtube.com/embed/${activeVideo}?autoplay=1`}
+                  title="Piano Video"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   )
 }

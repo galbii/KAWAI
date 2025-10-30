@@ -10,7 +10,6 @@ import { HeritageSection } from "@/components/homepage/heritage-section";
 import { InnovationSection } from "@/components/homepage/innovation-section";
 import { SoundQualitySection } from "@/components/homepage/sound-quality-section";
 import { FAQSection } from "@/components/homepage/faq-section";
-import EmailCapturePopup from "@/components/ui/EmailCapturePopup";
 import { getHomePageDataDirect } from "@/lib/payload-direct";
 import type { HomePageData } from "@/lib/types/homepage";
 import { Suspense } from "react";
@@ -206,9 +205,6 @@ export default function Home() {
       }>
         <HomePageContent />
       </Suspense>
-      
-      {/* Email capture popup - appears after 3 seconds or 25% scroll */}
-      <EmailCapturePopup delay={3000} scrollTrigger={25} />
     </>
   );
 }

@@ -97,6 +97,11 @@ export function Footer({ locationContactData, isSignaturePage = false }: FooterP
                 nonClickable={isSignaturePage}
               />
             </div>
+            {locationContactData?.locationName && (
+              <h2 className="text-2xl md:text-3xl font-semibold text-kawai-pearl mb-4 uppercase tracking-wide">
+                {locationContactData.locationName}
+              </h2>
+            )}
             <p className="text-kawai-neutral mb-6 leading-relaxed">
               {locationDescription}
             </p>
@@ -107,7 +112,7 @@ export function Footer({ locationContactData, isSignaturePage = false }: FooterP
 
             {/* Contact Info - Only show when location data is available */}
             {!isSignaturePage && locationContactData && (
-              <div className="space-y-3 inline-block text-left">
+              <div className="space-y-3 flex flex-col items-center">
                 {locationContactData.phone && (
                   <div className="flex items-center space-x-3">
                     <Phone className="h-5 w-5 text-kawai-red" />

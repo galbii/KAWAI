@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
 import { motion, useReducedMotion, type Variants } from 'framer-motion'
 
 export default function ConcertArtistHero() {
@@ -52,6 +51,15 @@ export default function ConcertArtistHero() {
     }
   }
 
+  const ctaVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: shouldReduceMotion ? 0 : 0.8, ease: [0.4, 0, 0.2, 1] as const }
+    }
+  }
+
   const scrollIndicatorVariants: Variants = {
     animate: {
       y: [0, 10, 0],
@@ -63,54 +71,101 @@ export default function ConcertArtistHero() {
     }
   }
 
+  const handleExploreCollection = () => {
+    const modelGridSection = document.getElementById('model-grid')
+    if (modelGridSection) {
+      modelGridSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
   return (
     <section className="relative min-h-screen w-full overflow-hidden bg-black">
-      {/* Background Image */}
-      <div className="absolute inset-0">
-        <Image
-          src="/images/concert-artist/hero-ca901.jpg"
-          alt="Concert Artist Series Piano"
-          fill
-          className="object-cover"
-          priority
-          quality={90}
-        />
-        {/* Dark Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/40 to-black/60" />
-      </div>
+      {/* Background Video */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        className="absolute inset-0 w-full h-full object-cover z-0"
+        style={{ pointerEvents: 'none' }}
+        onLoadedData={(e) => {
+          const video = e.target as HTMLVideoElement
+          video.currentTime = 13.10
+          video.play().catch(() => {
+            // Fallback if autoplay fails
+          })
+        }}
+      >
+        <source src="/videos/CA.webm" type="video/webm" />
+        <source src="/videos/CA.mp4" type="video/mp4" />
+      </video>
+      {/* Dark Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/40 to-black/60 z-[5]" />
 
       {/* Content */}
       <motion.div
-        className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 py-20 text-center"
+        className="relative z-10 flex min-h-screen flex-col items-center justify-start px-6 pt-48 md:pt-56 lg:pt-64 pb-20 text-center"
         variants={containerVariants}
         initial="hidden"
         animate={isLoaded ? 'visible' : 'hidden'}
       >
-        <div className="max-w-5xl space-y-8">
+        <div className="max-w-6xl space-y-6">
           {/* Eyebrow */}
           <motion.p
             variants={eyebrowVariants}
-            className="text-sm font-semibold uppercase tracking-[0.2em] text-kawai-red"
+            className="text-xs sm:text-sm font-light uppercase tracking-[0.3em] text-white/70"
           >
-            Introducing
+            KAWAI Concert Artist Series
           </motion.p>
 
-          {/* H1 */}
-          <motion.h1
+          {/* Brand Positioning */}
+          <motion.div
             variants={h1Variants}
-            className="font-serif text-5xl font-bold leading-tight text-white md:text-7xl"
-            style={{ fontFamily: 'Crimson Text, serif' }}
+            className="space-y-4"
           >
-            Concert Artist Series
-          </motion.h1>
+            <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-light leading-[1.1] text-white tracking-tight">
+              The Sound of Mastery
+            </h1>
+          </motion.div>
 
-          {/* Subheading */}
+          {/* Tagline */}
           <motion.p
             variants={subheadingVariants}
-            className="mx-auto max-w-3xl text-xl leading-relaxed text-white/90 md:text-2xl"
+            className="mx-auto max-w-2xl text-base sm:text-lg md:text-xl font-light leading-relaxed text-white/80 tracking-wide"
           >
-            Authentic wooden keys. Shigeru Kawai sound. Four expressions.
+            From First Touch to Final Bow
           </motion.p>
+
+          {/* Separator */}
+          <motion.div
+            variants={ctaVariants}
+            className="flex justify-center pt-2"
+          >
+            <div className="w-24 h-px bg-white/30" />
+          </motion.div>
+
+          {/* Value Proposition */}
+          <motion.p
+            variants={ctaVariants}
+            className="mx-auto max-w-3xl text-sm sm:text-base font-light leading-relaxed text-white/70 tracking-wide"
+          >
+            100% wooden keys. Shigeru Kawai SK-EX concert grand sampling. 97 years of Japanese craftsmanship.
+          </motion.p>
+
+          {/* CTA */}
+          <motion.div
+            variants={ctaVariants}
+            className="flex justify-center items-center pt-8"
+          >
+            <button
+              onClick={handleExploreCollection}
+              className="group relative px-8 sm:px-12 py-3 sm:py-4 text-sm sm:text-base font-medium tracking-wider uppercase text-white border border-white/40 hover:border-white/80 transition-all duration-500 overflow-hidden"
+            >
+              <span className="relative z-10">Explore the Collection</span>
+              <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-500" />
+            </button>
+          </motion.div>
         </div>
 
         {/* Scroll Indicator */}

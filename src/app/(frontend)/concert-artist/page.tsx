@@ -1,16 +1,18 @@
 import { Metadata } from 'next'
 import ConcertArtistHero from './components/ConcertArtistHero'
-import WoodenKeyManifesto from './components/WoodenKeyManifesto'
+import ConcertArtistModels from './components/ConcertArtistModels'
+import CraftsmanPromise from './components/CraftsmanPromise'
+import SKEXConnection from './components/SKEXConnection'
 import ModelGrid from './components/ModelGrid'
-import HeritageSection from './components/HeritageSection'
+import StoriesOfTouch from './components/StoriesOfTouch'
+import HeritageMark from './components/HeritageMark'
 import ExperienceInvitation from './components/ExperienceInvitation'
-import TrustFinale from './components/TrustFinale'
 
 // SEO Metadata
 export const metadata: Metadata = {
-  title: 'Concert Artist Series | Premium Digital Pianos - KAWAI',
+  title: 'The Sound of Mastery™ | Concert Artist Series - KAWAI',
   description:
-    'KAWAI Concert Artist: 100% wooden keys, Shigeru Kawai SK-EX sampling. CA401, CA501, CA701, CA901. Authentic acoustic feel from $3,199. Explore now.',
+    'From First Touch to Final Bow. KAWAI Concert Artist: 100% wooden keys, Shigeru Kawai SK-EX concert grand sampling, 97 years of Japanese craftsmanship. CA401, CA501, CA701, CA901 from $3,199.',
   keywords: [
     'KAWAI Concert Artist',
     'digital piano',
@@ -46,9 +48,9 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://kawaius.com/concert-artist',
-    title: 'Concert Artist Series | Premium Digital Pianos - KAWAI',
+    title: 'The Sound of Mastery™ | Concert Artist Series - KAWAI',
     description:
-      'KAWAI Concert Artist: 100% wooden keys, Shigeru Kawai SK-EX sampling. CA401, CA501, CA701, CA901. Authentic acoustic feel from $3,199. Explore now.',
+      'From First Touch to Final Bow. 100% wooden keys, Shigeru Kawai SK-EX concert grand sampling, 97 years of Japanese craftsmanship.',
     siteName: 'KAWAI',
     images: [
       {
@@ -61,9 +63,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Concert Artist Series | Premium Digital Pianos - KAWAI',
+    title: 'The Sound of Mastery™ | Concert Artist Series - KAWAI',
     description:
-      'KAWAI Concert Artist: 100% wooden keys, Shigeru Kawai SK-EX sampling. Authentic acoustic feel from $3,199.',
+      'From First Touch to Final Bow. 100% wooden keys, Shigeru Kawai SK-EX concert grand sampling, 97 years of craftsmanship.',
     images: ['/images/banners/CA901EP-bench-styling.webp'],
     creator: '@KAWAI',
   },
@@ -297,33 +299,36 @@ const structuredData = {
 
 export default function ConcertArtistPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <>
       {/* Structured Data */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      {/* Main Content */}
+      {/* Main Content - Narrative Arc: "The Sound of Mastery™" */}
       <main>
-        {/* Hero Section - Full viewport introduction */}
+        {/* 1. Hero - Brand positioning and promise */}
         <ConcertArtistHero />
 
-        {/* Wooden Key Manifesto - Key differentiator */}
-        <WoodenKeyManifesto />
+        {/* 2. Model Showcase - Minimal introduction to the lineup */}
+        <ConcertArtistModels />
 
-        {/* Model Grid - Four CA models */}
+        {/* 3. The Craftsman's Promise - Heritage foundation (1927) */}
+        <CraftsmanPromise />
+
+        {/* 4. SK-EX Connection - The concert grand lineage */}
+        <SKEXConnection />
+
+        {/* 5. Four Expressions - The product lineup with positioning */}
         <ModelGrid />
 
-        {/* Heritage Section - Shigeru Kawai SK-EX story */}
-        <HeritageSection />
+        {/* 6. Stories of Touch - Real testimonials from owners */}
+        <StoriesOfTouch />
 
-        {/* Experience Invitation - CTAs for engagement */}
-        <ExperienceInvitation />
-
-        {/* Trust & Finale - Closing conversion */}
-        <TrustFinale />
+        {/* 7. Heritage Mark - The seal of authenticity */}
+        <HeritageMark />
       </main>
-    </div>
+    </>
   )
 }
