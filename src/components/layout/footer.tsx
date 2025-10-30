@@ -10,73 +10,84 @@ const footerLinks = {
   instruments: {
     title: 'Instruments',
     links: [
-      { label: 'Shigeru Kawai', href: '/pianos/series/shigeru-kawai' },
+      { label: 'Shigeru Kawai', href: '/pianos/shigeru-kawai' },
       { label: 'Grand Pianos', href: '/pianos/grand' },
       { label: 'Upright Pianos', href: '/pianos/upright' },
       { label: 'Digital Pianos', href: '/pianos/digital' },
       { label: 'Hybrid Pianos', href: '/pianos/hybrid' },
-      { label: 'Pre-Owned', href: '/pianos/pre-owned' },
+      // { label: 'Pre-Owned', href: '/pianos/pre-owned' }, // Hidden - page doesn't exist
       { label: 'Piano Finder', href: '/piano-finder' },
     ]
   },
-  innovation: {
-    title: 'Innovation',
+  // innovation: {
+  //   title: 'Innovation',
+  //   links: [
+  //     { label: 'Millennium III Action', href: '/innovation/millennium-action' },
+  //     { label: 'Harmonic Imaging', href: '/innovation/harmonic-imaging' },
+  //     { label: 'Grand Feel Action', href: '/innovation/grand-feel-action' },
+  //     { label: 'Sound Technologies', href: '/innovation/sound-tech' },
+  //     { label: 'Craftsmanship', href: '/innovation/craftsmanship' },
+  //   ]
+  // },
+  // heritage: {
+  //   title: 'Heritage',
+  //   links: [
+  //     { label: 'Kawai Story', href: '/heritage/kawai-story' },
+  //     { label: 'Family Legacy', href: '/heritage/family-legacy' },
+  //     { label: 'Awards', href: '/heritage/awards' },
+  //     { label: 'Artists', href: '/heritage/artists' },
+  //     { label: 'Manufacturing', href: '/heritage/manufacturing' },
+  //   ]
+  // },
+  explore: {
+    title: 'Explore',
     links: [
-      { label: 'Millennium III Action', href: '/innovation/millennium-action' },
-      { label: 'Harmonic Imaging', href: '/innovation/harmonic-imaging' },
-      { label: 'Grand Feel Action', href: '/innovation/grand-feel-action' },
-      { label: 'Sound Technologies', href: '/innovation/sound-tech' },
-      { label: 'Craftsmanship', href: '/innovation/craftsmanship' },
+      { label: 'About Kawai', href: '/about' },
+      { label: 'Artists', href: '/artists' },
+      { label: 'Technology', href: '/technology' },
+      { label: 'Showroom', href: '/showroom' },
+      { label: 'Guides', href: '/guides' },
     ]
   },
-  heritage: {
-    title: 'Heritage',
-    links: [
-      { label: 'Kawai Story', href: '/heritage/kawai-story' },
-      { label: 'Family Legacy', href: '/heritage/family-legacy' },
-      { label: 'Awards', href: '/heritage/awards' },
-      { label: 'Artists', href: '/heritage/artists' },
-      { label: 'Manufacturing', href: '/heritage/manufacturing' },
-    ]
-  },
-  experience: {
-    title: 'Experience',
-    links: [
-      { label: 'Showroom Locations', href: '/experience/showrooms' },
-      { label: 'Schedule Visit', href: '/experience/schedule-visit' },
-      { label: 'Virtual Tours', href: '/experience/virtual-tours' },
-      { label: 'Piano Services', href: '/experience/services' },
-      { label: 'Events', href: '/experience/events' },
-    ]
-  },
-  resources: {
-    title: 'Resources',
-    links: [
-      { label: 'Buying Guide', href: '/resources/buying-guide' },
-      { label: 'Piano Care', href: '/resources/piano-care' },
-      { label: 'Learning Center', href: '/resources/learning-center' },
-      { label: 'Financing', href: '/resources/financing' },
-      { label: 'Downloads', href: '/resources/downloads' },
-    ]
-  },
-  support: {
-    title: 'Support',
-    links: [
-      { label: 'Contact Us', href: '/contact' },
-      { label: 'Service Centers', href: '/support/service-centers' },
-      { label: 'Warranty', href: '/support/warranty' },
-      { label: 'FAQ', href: '/support/faq' },
-      { label: 'Privacy Policy', href: '/privacy' },
-    ]
-  }
+  // experience: {
+  //   title: 'Experience',
+  //   links: [
+  //     { label: 'Showroom Locations', href: '/experience/showrooms' },
+  //     { label: 'Schedule Visit', href: '/experience/schedule-visit' },
+  //     { label: 'Virtual Tours', href: '/experience/virtual-tours' },
+  //     { label: 'Piano Services', href: '/experience/services' },
+  //     { label: 'Events', href: '/experience/events' },
+  //   ]
+  // },
+  // resources: {
+  //   title: 'Resources',
+  //   links: [
+  //     { label: 'Buying Guide', href: '/resources/buying-guide' },
+  //     { label: 'Piano Care', href: '/resources/piano-care' },
+  //     { label: 'Learning Center', href: '/resources/learning-center' },
+  //     { label: 'Financing', href: '/resources/financing' },
+  //     { label: 'Downloads', href: '/resources/downloads' },
+  //   ]
+  // },
+  // support: {
+  //   title: 'Support',
+  //   links: [
+  //     { label: 'Contact Us', href: '/contact' },
+  //     { label: 'Service Centers', href: '/support/service-centers' },
+  //     { label: 'Warranty', href: '/support/warranty' },
+  //     { label: 'FAQ', href: '/support/faq' },
+  //     { label: 'Privacy Policy', href: '/privacy' },
+  //   ]
+  // }
 }
 
-const socialLinks = [
-  { icon: Facebook, href: '#', label: 'Facebook' },
-  { icon: Instagram, href: '#', label: 'Instagram' },
-  { icon: Youtube, href: '#', label: 'YouTube' },
-  { icon: Twitter, href: '#', label: 'Twitter' },
-]
+// Social links hidden until actual URLs are configured
+// const socialLinks = [
+//   { icon: Facebook, href: '#', label: 'Facebook' },
+//   { icon: Instagram, href: '#', label: 'Instagram' },
+//   { icon: Youtube, href: '#', label: 'YouTube' },
+//   { icon: Twitter, href: '#', label: 'Twitter' },
+// ]
 
 interface DealerLocationContactData {
   name: string
@@ -124,7 +135,7 @@ export function Footer({ locationContactData, isSignaturePage = false }: FooterP
     <footer className="backdrop-blur-md bg-kawai-black/95 text-kawai-pearl border-t border-kawai-neutral/20">
       {/* Main Footer Content */}
       <div className="container mx-auto px-6 py-16">
-        <div className={`grid gap-6 ${isSignaturePage ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-8'}`}>
+        <div className={`grid gap-6 ${isSignaturePage ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
           {/* Company Info */}
           <div className={isSignaturePage ? '' : 'lg:col-span-2'}>
             <div className="mb-6">
@@ -238,8 +249,8 @@ export function Footer({ locationContactData, isSignaturePage = false }: FooterP
               <div className="mt-1">Crafted with precision in Hamamatsu, Japan since 1927.</div>
             </div>
 
-            {/* Social Links - Hidden on signature page */}
-            {!isSignaturePage && (
+            {/* Social Links - Hidden until actual URLs are configured */}
+            {/* {!isSignaturePage && (
               <div className="flex space-x-4">
                 {socialLinks.map((social) => {
                   const Icon = social.icon
@@ -256,7 +267,7 @@ export function Footer({ locationContactData, isSignaturePage = false }: FooterP
                   )
                 })}
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>
