@@ -50,7 +50,7 @@ export function ShowroomLocation({ data = DEFAULT_SHOWROOM_DATA }: ShowroomLocat
                   alt="KAWAI"
                   width={200}
                   height={60}
-                  className="h-5 w-auto md:h-6"
+                  className="h-4 w-auto md:h-5"
                 />
               </div>
 
