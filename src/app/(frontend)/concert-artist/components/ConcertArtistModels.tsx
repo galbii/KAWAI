@@ -2,42 +2,54 @@
 
 import { motion } from 'framer-motion'
 import Image from 'next/image'
-import Link from 'next/link'
 import { useRef } from 'react'
 import { useInView } from 'framer-motion'
+import type { ConcertArtistPage } from '@/payload-types'
+import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
 
-const models = [
-  {
-    name: 'CA401',
-    tagline: 'Where Mastery Begins',
-    descriptor: 'Entry to the Concert Artist lineage—wooden keys from lesson one',
-    image: '/images/concert-artist/ca401.jpg',
-    link: '/products/ca401',
-  },
-  {
-    name: 'CA501',
-    tagline: 'The Journey Instrument',
-    descriptor: 'Professional sound and features supporting Grade 1 through Graduate-level growth',
-    image: '/images/concert-artist/ca501.jpg',
-    link: '/products/ca501',
-  },
-  {
-    name: 'CA701',
-    tagline: 'The Artist\'s Choice',
-    descriptor: 'Grand Feel III action and SK-EX Rendering for those who demand concert-level practice',
-    image: '/images/concert-artist/ca701.jpg',
-    link: '/products/ca701',
-  },
-  {
-    name: 'CA901',
-    tagline: 'The Master\'s Companion',
-    descriptor: 'TwinDrive genuine spruce soundboard—concert physics in your home',
-    image: '/images/concert-artist/ca901.jpg',
-    link: '/products/ca901',
-  },
-]
+interface ConcertArtistModelsProps {
+  data?: ConcertArtistPage | null
+}
 
-export default function ConcertArtistModels() {
+export default function ConcertArtistModels({ data }: ConcertArtistModelsProps) {
+  // Get models from CMS or use fallback
+  const modelsData = data?.modelsOverviewSection
+  const sectionHeader = modelsData?.sectionHeader || 'The Lineup'
+  const sectionTitle = modelsData?.sectionTitle || 'Four Voices, One Vision'
+
+  const cmsModels = data?.concertArtistModels || []
+  const fallbackModels = [
+    {
+      name: 'CA401',
+      tagline: 'Where Mastery Begins',
+      descriptor: 'Entry to the Concert Artist lineage—wooden keys from lesson one',
+      image: '/images/concert-artist/ca401.jpg',
+      link: '/products/ca401',
+    },
+    {
+      name: 'CA501',
+      tagline: 'The Journey Instrument',
+      descriptor: 'Professional sound and features supporting Grade 1 through Graduate-level growth',
+      image: '/images/concert-artist/ca501.jpg',
+      link: '/products/ca501',
+    },
+    {
+      name: 'CA701',
+      tagline: 'The Artist\'s Choice',
+      descriptor: 'Grand Feel III action and SK-EX Rendering for those who demand concert-level practice',
+      image: '/images/concert-artist/ca701.jpg',
+      link: '/products/ca701',
+    },
+    {
+      name: 'CA901',
+      tagline: 'The Master\'s Companion',
+      descriptor: 'TwinDrive genuine spruce soundboard—concert physics in your home',
+      image: '/images/concert-artist/ca901.jpg',
+      link: '/products/ca901',
+    },
+  ]
+
+  const models = cmsModels.length > 0 ? cmsModels : fallbackModels
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
@@ -54,38 +66,51 @@ export default function ConcertArtistModels() {
           <div className="flex items-center justify-center gap-4 mb-6">
             <div className="h-px bg-black/20 w-12"></div>
             <p className="text-[11px] md:text-xs font-medium uppercase tracking-[0.25em] text-black/60">
-              The Lineup
+              {sectionHeader}
             </p>
             <div className="h-px bg-black/20 w-12"></div>
           </div>
           <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-light text-black leading-tight">
-            Four Voices, One Vision
+            {sectionTitle}
           </h2>
         </motion.div>
 
         {/* Models Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-6 lg:gap-8">
-          {models.map((model, index) => (
-            <motion.div
-              key={model.name}
-              initial={{ opacity: 0, y: 30 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="group"
-            >
-              <Link href={model.link} className="block">
-                {/* Model Card */}
-                <div className="space-y-4">
-                  {/* Product Image */}
-                  <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100 mb-6">
-                    <Image
-                      src={model.image}
-                      alt={`${model.name} - ${model.tagline}`}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    />
-                  </div>
+          {models.map((model, index) => {
+            const imageProps = getImagePropsWithFallback(
+              model.image,
+              '/images/concert-artist/placeholder.jpg',
+              'card',
+              {
+                sizes: '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw'
+              }
+            )
+
+            return (
+              <motion.div
+                key={model.name}
+                initial={{ opacity: 0, y: 30 }}
+                animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                className="group"
+              >
+                <div className="block cursor-pointer" onClick={() => {
+                  const modelGrid = document.getElementById('model-grid')
+                  if (modelGrid) {
+                    modelGrid.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  }
+                }}>
+                  {/* Model Card */}
+                  <div className="space-y-4">
+                    {/* Product Image */}
+                    <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100 mb-6">
+                      <Image
+                        {...imageProps}
+                        alt={`${model.name} - ${model.tagline}`}
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
 
                   <div className="pb-6 border-b border-black/10 transition-all duration-300 group-hover:border-black/30">
                     {/* Model Name */}
@@ -125,9 +150,9 @@ export default function ConcertArtistModels() {
                     </div>
                   </div>
                 </div>
-              </Link>
+              </div>
             </motion.div>
-          ))}
+          )})}
         </div>
       </div>
     </section>

@@ -1,16 +1,18 @@
 import { Metadata } from 'next'
+import { getConcertArtistPageServer } from '@/lib/payload-server'
 import ConcertArtistHero from './components/ConcertArtistHero'
 import ConcertArtistModels from './components/ConcertArtistModels'
 import CraftsmanPromise from './components/CraftsmanPromise'
 import SKEXConnection from './components/SKEXConnection'
 import ModelGrid from './components/ModelGrid'
+import ModelImageGallery from './components/ModelImageGallery'
 import StoriesOfTouch from './components/StoriesOfTouch'
 import HeritageMark from './components/HeritageMark'
 import ExperienceInvitation from './components/ExperienceInvitation'
 
 // SEO Metadata
 export const metadata: Metadata = {
-  title: 'The Sound of Mastery™ | Concert Artist Series - KAWAI',
+  title: 'The Sound of Mastery | Concert Artist Series - KAWAI',
   description:
     'From First Touch to Final Bow. KAWAI Concert Artist: 100% wooden keys, Shigeru Kawai SK-EX concert grand sampling, 97 years of Japanese craftsmanship. CA401, CA501, CA701, CA901 from $3,199.',
   keywords: [
@@ -48,7 +50,7 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://kawaius.com/concert-artist',
-    title: 'The Sound of Mastery™ | Concert Artist Series - KAWAI',
+    title: 'The Sound of Mastery | Concert Artist Series - KAWAI',
     description:
       'From First Touch to Final Bow. 100% wooden keys, Shigeru Kawai SK-EX concert grand sampling, 97 years of Japanese craftsmanship.',
     siteName: 'KAWAI',
@@ -63,7 +65,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'The Sound of Mastery™ | Concert Artist Series - KAWAI',
+    title: 'The Sound of Mastery | Concert Artist Series - KAWAI',
     description:
       'From First Touch to Final Bow. 100% wooden keys, Shigeru Kawai SK-EX concert grand sampling, 97 years of craftsmanship.',
     images: ['/images/banners/CA901EP-bench-styling.webp'],
@@ -297,7 +299,10 @@ const structuredData = {
   ],
 }
 
-export default function ConcertArtistPage() {
+export default async function ConcertArtistPage() {
+  // Fetch Concert Artist page data from CMS
+  const pageData = await getConcertArtistPageServer()
+
   return (
     <>
       {/* Structured Data */}
@@ -306,13 +311,13 @@ export default function ConcertArtistPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      {/* Main Content - Narrative Arc: "The Sound of Mastery™" */}
+      {/* Main Content - Narrative Arc: "The Sound of Mastery" */}
       <main>
         {/* 1. Hero - Brand positioning and promise */}
         <ConcertArtistHero />
 
-        {/* 2. Model Showcase - Minimal introduction to the lineup */}
-        <ConcertArtistModels />
+        {/* 2. Model Showcase - CMS Managed */}
+        <ConcertArtistModels data={pageData} />
 
         {/* 3. The Craftsman's Promise - Heritage foundation (1927) */}
         <CraftsmanPromise />
@@ -323,10 +328,13 @@ export default function ConcertArtistPage() {
         {/* 5. Four Expressions - The product lineup with positioning */}
         <ModelGrid />
 
-        {/* 6. Stories of Touch - Real testimonials from owners */}
+        {/* 6. Model Image Gallery - CMS Managed */}
+        <ModelImageGallery data={pageData} />
+
+        {/* 7. Stories of Touch - Real testimonials from owners */}
         <StoriesOfTouch />
 
-        {/* 7. Heritage Mark - The seal of authenticity */}
+        {/* 8. Heritage Mark - The seal of authenticity */}
         <HeritageMark />
       </main>
     </>

@@ -494,6 +494,7 @@ interface HeaderProps {
   navigation?: NavigationItem[]
   locationData?: DealerLocationData | null
   isSignaturePage?: boolean
+  hidePianoLinks?: boolean
 }
 
 // Default fallback navigation - URLs will be made context-aware at runtime
@@ -550,7 +551,7 @@ const defaultNavigation: NavigationItem[] = [
   },
 ]
 
-export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false }: HeaderProps) {
+export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [openMobileItems, setOpenMobileItems] = useState<Set<string>>(new Set())
@@ -851,8 +852,8 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
             />
           </motion.div>
 
-          {/* Desktop Navigation - Auto-hide on smaller screens to prevent overlap, hidden on signature page */}
-          {!isSignaturePage && (
+          {/* Desktop Navigation - Auto-hide on smaller screens to prevent overlap, hidden on signature page and concert artist page */}
+          {!isSignaturePage && !hidePianoLinks && (
             <nav className="hidden xl:flex flex-1 justify-center">
               <div className="flex items-center space-x-1">
                 {navigation.map((item) => (
@@ -890,8 +891,8 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
             </motion.div>
           )}
 
-          {/* Mobile Menu Button - Hidden on signature page */}
-          {!isSignaturePage && (
+          {/* Mobile Menu Button - Hidden on signature page and concert artist page */}
+          {!isSignaturePage && !hidePianoLinks && (
             <motion.button
               ref={menuButtonRef}
               className="xl:hidden p-2 rounded-md transition-colors hover:bg-gray-100/80 focus:outline-none focus:ring-2 focus:ring-kawai-red focus:ring-offset-2 flex-shrink-0 ml-4"
@@ -929,9 +930,9 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         </div>
       </div>
 
-      {/* Mobile Menu - Hidden on signature page */}
+      {/* Mobile Menu - Hidden on signature page and concert artist page */}
       <AnimatePresence>
-        {isMenuOpen && !isSignaturePage && (
+        {isMenuOpen && !isSignaturePage && !hidePianoLinks && (
           <>
             <motion.div 
               className="fixed inset-0 z-[190] bg-black/20 xl:hidden"

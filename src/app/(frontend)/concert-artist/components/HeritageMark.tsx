@@ -29,7 +29,7 @@ export default function HeritageMark() {
             <div className="h-px bg-black/20 w-12"></div>
           </div>
           <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-light text-black leading-tight max-w-3xl mx-auto">
-            Your Piano's Unique Identity
+            Your Piano's Unique Identifier
           </h2>
         </motion.div>
 
@@ -66,37 +66,13 @@ export default function HeritageMark() {
                     Serial Number
                   </p>
                   <div className="font-mono text-2xl md:text-3xl text-black tracking-wider mb-2">
-                    CA901-2024-001234
+                    G512650
                   </div>
                   <p className="text-xs text-black/50 italic">
-                    (Example format)
+                    (Example: G = Country, followed by unique identifier)
                   </p>
                 </div>
 
-                {/* What the serial number represents */}
-                <div className="space-y-4 text-sm">
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-black/30 mt-1.5 flex-shrink-0"></div>
-                    <div>
-                      <p className="font-medium text-black/80">Model Designation</p>
-                      <p className="text-black/60 text-xs">CA401, CA501, CA701, or CA901</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-black/30 mt-1.5 flex-shrink-0"></div>
-                    <div>
-                      <p className="font-medium text-black/80">Manufacturing Year</p>
-                      <p className="text-black/60 text-xs">Traceable to production facility</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-black/30 mt-1.5 flex-shrink-0"></div>
-                    <div>
-                      <p className="font-medium text-black/80">Unique Unit Number</p>
-                      <p className="text-black/60 text-xs">Individual instrument identifier</p>
-                    </div>
-                  </div>
-                </div>
 
                 {/* Date and signature area */}
                 <div className="pt-6 border-t border-black/10 text-center">
@@ -129,16 +105,10 @@ export default function HeritageMark() {
               </p>
 
               <p className="font-light">
-                It's your piano's fingerprint. A permanent registry entry in Kawai's manufacturing records. Proof that your instrument came from the same Hamamatsu facility that builds our $200,000 Shigeru Kawai concert grands.
+                It's your piano's fingerprint. A permanent registry entry in Kawai's manufacturing records. Proof that your instrument came from the same Hamamatsu facility that builds our prestigious Shigeru Kawai concert grands.
               </p>
             </div>
 
-            {/* Highlighted statement */}
-            <div className="pt-6 pl-6 border-l-2 border-black/20">
-              <p className="font-serif text-xl md:text-2xl text-black italic leading-relaxed">
-                "This isn't mass production. This is accountable craftsmanship."
-              </p>
-            </div>
 
             {/* Additional details */}
             <div className="pt-6 space-y-3 text-sm text-black/60">
@@ -149,10 +119,6 @@ export default function HeritageMark() {
               <p className="flex items-start gap-2">
                 <span className="text-black/40">—</span>
                 <span>Required for warranty registration</span>
-              </p>
-              <p className="flex items-start gap-2">
-                <span className="text-black/40">—</span>
-                <span>Enhances resale value and authenticity</span>
               </p>
             </div>
           </motion.div>

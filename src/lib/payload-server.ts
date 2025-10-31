@@ -1,11 +1,12 @@
 import type {
   Productline,
-  Product
+  Product,
+  ConcertArtistPage
 } from '@/payload-types'
 
-import type { 
+import type {
   ProductlinesResponse,
-  PianoModelsResponse 
+  PianoModelsResponse
 } from './types'
 
 // Server-side Payload CMS API functions
@@ -403,4 +404,16 @@ export async function generatePianoCategoriesNavigationServer() {
 export async function getProductlinesWithPianoModelsServer(category?: string): Promise<any[]> {
   console.warn('getProductlinesWithPianoModelsServer is deprecated. Use getProductlinesWithProductsServer instead.')
   return getProductlinesWithProductsServer(category)
+}
+
+// Server-side fetch Concert Artist page data
+export async function getConcertArtistPageServer(): Promise<ConcertArtistPage | null> {
+  try {
+    const endpoint = '/concert-artist-page/singleton'
+    const data = await payloadServerFetch<ConcertArtistPage>(endpoint)
+    return data
+  } catch (error) {
+    console.error('Failed to fetch Concert Artist page on server:', error)
+    return null
+  }
 }

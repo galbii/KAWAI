@@ -86,7 +86,7 @@ export default function CraftsmanPromise() {
             </p>
 
             <p className="text-xl md:text-2xl text-black font-light leading-relaxed">
-              When you place your fingers on CA401 wooden keys—the entry model at $3,199—you're touching the same craftsmanship philosophy that goes into our $200,000 Shigeru Kawai SK-EX concert grands.
+              When you place your fingers on Concert Artist wooden keys, you're touching the same craftsmanship philosophy that goes into our prestigious Shigeru Kawai SK-EX concert grands.
             </p>
 
             <div className="grid md:grid-cols-3 gap-6 md:gap-8 pt-8 md:pt-12">

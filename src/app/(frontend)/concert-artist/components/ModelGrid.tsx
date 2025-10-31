@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const models = [
@@ -14,7 +13,7 @@ const models = [
     price: 'From $3,199',
     image: '/images/concert-artist/ca401.jpg',
     features: ['Grand Feel Compact III Action', 'SK-EX Concert Grand Sampling', '100% Wooden Keys'],
-    link: '/products/ca401',
+    link: 'https://kawaius.com/product/kawai-ca401-digital-piano/?utm_source=kawaipianogallery&utm_medium=referral&utm_campaign=CA_Series_Campaign&utm_content=ca401_product_link&utm_term=ca401',
     videoId: 'HoPhUcrFrFk',
   },
   {
@@ -25,7 +24,7 @@ const models = [
     price: 'From $4,099',
     image: '/images/concert-artist/ca501.jpg',
     features: ['Harmonic Imaging XL', '100W Speaker System', '360° Sound Diffusion'],
-    link: '/products/ca501',
+    link: 'https://kawaius.com/product/kawai-ca501-digital-piano/?utm_source=kawaipianogallery&utm_medium=referral&utm_campaign=CA_Series_Campaign&utm_content=ca501_product_link&utm_term=ca501',
     videoId: 'C1AQ7w2Htf0',
   },
   {
@@ -36,7 +35,7 @@ const models = [
     price: 'From $5,049',
     image: '/images/concert-artist/ca701.jpg',
     features: ['Grand Feel III Action', 'SK-EX Rendering Engine', 'Extended Pivot Length'],
-    link: '/products/ca701',
+    link: 'https://kawaius.com/product/ca701/?utm_source=kawaipianogallery&utm_medium=referral&utm_campaign=CA_Series_Campaign&utm_content=ca701_product_link&utm_term=ca701',
     videoId: 'V3qb8Q3ZPn4',
   },
   {
@@ -47,7 +46,7 @@ const models = [
     price: 'From $6,549',
     image: '/images/concert-artist/ca901.jpg',
     features: ['Genuine Spruce Soundboard', 'TwinDrive Technology', '135W Premium System'],
-    link: '/products/ca901',
+    link: 'https://kawaius.com/product/ca901/?utm_source=kawaipianogallery&utm_medium=referral&utm_campaign=CA_Series_Campaign&utm_content=ca901_product_link&utm_term=ca901',
     videoId: 'Ehx8nmfwc1k',
   },
 ]
@@ -59,6 +58,27 @@ export default function ModelGrid() {
     e.preventDefault()
     e.stopPropagation()
     setActiveVideo(videoId)
+  }
+
+  const handleProductClick = (modelName: string, modelId: string) => {
+    // Track product link click with Meta Pixel
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      (window as any).fbq('trackCustom', 'CA_Series_ProductClick', {
+        content_name: modelName,
+        content_category: 'Digital Piano',
+        campaign: 'CA_Series_Campaign',
+        model: modelId,
+      })
+    }
+
+    // Track with PostHog
+    if (typeof window !== 'undefined' && (window as any).posthog) {
+      (window as any).posthog.capture('ca_series_product_click', {
+        product: modelName,
+        model_id: modelId,
+        campaign: 'CA_Series_Campaign',
+      })
+    }
   }
 
   const closeModal = () => {
@@ -138,8 +158,12 @@ export default function ModelGrid() {
                   </button>
                 </div>
 
-                <Link href={model.link}>
-
+                <a
+                  href={model.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => handleProductClick(model.name, model.id)}
+                >
                   {/* Content */}
                   <div className="p-8 space-y-4">
                     {/* Model Name */}
@@ -179,7 +203,7 @@ export default function ModelGrid() {
                         {model.price}
                       </p>
                       <div className="text-xs uppercase tracking-wider text-neutral-500 group-hover:text-neutral-900 transition-colors flex items-center">
-                        Explore
+                        Learn More
                         <svg
                           className="ml-1 w-3 h-3 transition-transform group-hover:translate-x-1"
                           fill="none"
@@ -196,7 +220,7 @@ export default function ModelGrid() {
                       </div>
                     </div>
                   </div>
-                </Link>
+                </a>
               </div>
             </motion.div>
           ))}

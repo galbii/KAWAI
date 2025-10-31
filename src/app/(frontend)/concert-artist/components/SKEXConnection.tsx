@@ -5,17 +5,17 @@ import { motion } from 'framer-motion'
 
 export default function SKEXConnection() {
   return (
-    <section className="relative bg-[#1A1A1A] py-20 md:py-32">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16 items-center">
+    <section className="relative bg-[#1A1A1A]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-0 items-stretch min-h-[600px]">
           {/* Text Content */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="order-2 lg:order-1"
+            className="order-2 lg:order-1 px-6 lg:px-12 xl:px-16 py-20 md:py-32 flex items-center"
           >
+            <div className="max-w-2xl mx-auto lg:mx-0 lg:ml-auto lg:mr-8">
             {/* Eyebrow */}
             <div className="mb-6">
               <span className="text-sm tracking-[0.2em] text-neutral-400 uppercase">
@@ -78,35 +78,30 @@ export default function SKEXConnection() {
             <p className="text-lg text-neutral-200 leading-relaxed">
               Your child's first lesson. Your midnight practice. Your Sunday morning playing. All on the sound that artists perform on.
             </p>
+            </div>
           </motion.div>
 
           {/* Image */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 1, ease: "easeOut" }}
-            className="order-1 lg:order-2 relative"
+            className="order-1 lg:order-2 relative h-[500px] lg:h-full"
           >
-            <div className="relative aspect-[3/4] rounded-lg overflow-hidden shadow-2xl">
-              <Image
-                src="/images/skmax.jpg"
-                alt="Shigeru Kawai SK-EX Concert Grand Piano"
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
+            <Image
+              src="/images/skmax.jpg"
+              alt="Shigeru Kawai SK-EX Concert Grand Piano"
+              fill
+              className="object-cover object-center"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              priority
+            />
 
-              {/* Subtle overlay gradient for depth */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-            </div>
-
-            {/* Decorative Element */}
-            <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-white/5 rounded-lg -z-10" />
-            <div className="absolute -top-6 -left-6 w-24 h-24 bg-white/5 rounded-lg -z-10" />
+            {/* Subtle overlay gradient for depth */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
           </motion.div>
         </div>
-      </div>
 
       {/* Background Texture Overlay (Optional) */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.02),transparent_50%)] pointer-events-none" />

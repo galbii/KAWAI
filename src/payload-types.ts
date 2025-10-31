@@ -86,6 +86,7 @@ export interface Config {
     'home-page': HomePage;
     'pianos-page': PianosPage;
     storefronts: Storefront;
+    'concert-artist-page': ConcertArtistPage;
     products: Product;
     productlines: Productline;
     'constant-contact-settings': ConstantContactSetting;
@@ -105,6 +106,7 @@ export interface Config {
     'home-page': HomePageSelect<false> | HomePageSelect<true>;
     'pianos-page': PianosPageSelect<false> | PianosPageSelect<true>;
     storefronts: StorefrontsSelect<false> | StorefrontsSelect<true>;
+    'concert-artist-page': ConcertArtistPageSelect<false> | ConcertArtistPageSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     productlines: ProductlinesSelect<false> | ProductlinesSelect<true>;
     'constant-contact-settings': ConstantContactSettingsSelect<false> | ConstantContactSettingsSelect<true>;
@@ -3422,6 +3424,89 @@ export interface Storefront {
   createdAt: string;
 }
 /**
+ * Manage Concert Artist page content - models overview and image gallery
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "concert-artist-page".
+ */
+export interface ConcertArtistPage {
+  id: string;
+  /**
+   * Internal title for admin identification
+   */
+  pageTitle: string;
+  modelsOverviewSection: {
+    /**
+     * Section header eyebrow text
+     */
+    sectionHeader: string;
+    /**
+     * Section main title
+     */
+    sectionTitle: string;
+  };
+  /**
+   * Four Concert Artist models displayed in the overview section
+   */
+  concertArtistModels: {
+    /**
+     * Model name (e.g., "CA401", "CA501")
+     */
+    name: string;
+    /**
+     * Model tagline (e.g., "Where Mastery Begins")
+     */
+    tagline: string;
+    /**
+     * Brief model description (1-2 sentences)
+     */
+    descriptor: string;
+    /**
+     * Model showcase image
+     */
+    image?: (string | null) | Media;
+    /**
+     * Link to product page (e.g., "/products/ca401")
+     */
+    link: string;
+    id?: string | null;
+  }[];
+  /**
+   * Image galleries for all four Concert Artist models
+   */
+  modelGalleries: {
+    /**
+     * Model identifier
+     */
+    modelId: 'ca401' | 'ca501' | 'ca701' | 'ca901';
+    /**
+     * Model name display (e.g., "CA401")
+     */
+    modelName: string;
+    /**
+     * Model tagline for gallery tab
+     */
+    tagline: string;
+    /**
+     * Six showcase images for this model
+     */
+    images: {
+      /**
+       * Gallery image
+       */
+      image?: (string | null) | Media;
+      /**
+       * Image alt text for accessibility
+       */
+      alt: string;
+      id?: string | null;
+    }[];
+    id?: string | null;
+  }[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Manage Constant Contact API credentials and OAuth2 tokens. Restricted to admin users only.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3549,6 +3634,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'storefronts';
         value: string | Storefront;
+      } | null)
+    | ({
+        relationTo: 'concert-artist-page';
+        value: string | ConcertArtistPage;
       } | null)
     | ({
         relationTo: 'products';
@@ -4139,6 +4228,46 @@ export interface StorefrontsSelect<T extends boolean = true> {
         openGraphTitle?: T;
         openGraphDescription?: T;
         openGraphImage?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "concert-artist-page_select".
+ */
+export interface ConcertArtistPageSelect<T extends boolean = true> {
+  pageTitle?: T;
+  modelsOverviewSection?:
+    | T
+    | {
+        sectionHeader?: T;
+        sectionTitle?: T;
+      };
+  concertArtistModels?:
+    | T
+    | {
+        name?: T;
+        tagline?: T;
+        descriptor?: T;
+        image?: T;
+        link?: T;
+        id?: T;
+      };
+  modelGalleries?:
+    | T
+    | {
+        modelId?: T;
+        modelName?: T;
+        tagline?: T;
+        images?:
+          | T
+          | {
+              image?: T;
+              alt?: T;
+              id?: T;
+            };
+        id?: T;
       };
   updatedAt?: T;
   createdAt?: T;

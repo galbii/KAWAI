@@ -17,6 +17,7 @@ import { PianosPage } from './collections/PianosPage'
 import { HomePage } from './collections/HomePage'
 import { Storefronts } from './collections/Storefronts'
 import { Products } from './collections/Products'
+import { ConcertArtistPage } from './collections/ConcertArtistPage'
 import { ConstantContactSettings } from './collections/ConstantContactSettings'
 import { ConstantContactCustomFields } from './collections/ConstantContactCustomFields'
 import {
@@ -60,6 +61,9 @@ export default buildConfig({
     HomePage,
     PianosPage,
     Storefronts,
+
+    // Landing Pages
+    ConcertArtistPage,
 
     // Commerce Collections
     Products,
