@@ -10,7 +10,8 @@ const models = [
     name: 'CA401',
     tagline: 'Where Mastery Begins',
     descriptor: 'Entry to the Concert Artist lineage—wooden keys from lesson one',
-    price: 'From $3,199',
+    price: '$3,199',
+    originalPrice: '$4,199',
     image: '/images/concert-artist/ca401.jpg',
     features: ['Grand Feel Compact III Action', 'SK-EX Concert Grand Sampling', '100% Wooden Keys'],
     link: 'https://kawaius.com/product/kawai-ca401-digital-piano/?utm_source=kawaipianogallery&utm_medium=referral&utm_campaign=CA_Series_Campaign&utm_content=ca401_product_link&utm_term=ca401',
@@ -21,7 +22,8 @@ const models = [
     name: 'CA501',
     tagline: 'The Journey Instrument',
     descriptor: 'Professional sound supporting Grade 1 through Graduate-level growth',
-    price: 'From $4,099',
+    price: '$4,099',
+    originalPrice: '$5,199',
     image: '/images/concert-artist/ca501.jpg',
     features: ['Harmonic Imaging XL', '100W Speaker System', '360° Sound Diffusion'],
     link: 'https://kawaius.com/product/kawai-ca501-digital-piano/?utm_source=kawaipianogallery&utm_medium=referral&utm_campaign=CA_Series_Campaign&utm_content=ca501_product_link&utm_term=ca501',
@@ -32,7 +34,8 @@ const models = [
     name: 'CA701',
     tagline: 'The Artist\'s Choice',
     descriptor: 'Grand Feel III action and SK-EX Rendering for concert-level practice',
-    price: 'From $5,049',
+    price: '$5,049',
+    originalPrice: '$6,549',
     image: '/images/concert-artist/ca701.jpg',
     features: ['Grand Feel III Action', 'SK-EX Rendering Engine', 'Extended Pivot Length'],
     link: 'https://kawaius.com/product/ca701/?utm_source=kawaipianogallery&utm_medium=referral&utm_campaign=CA_Series_Campaign&utm_content=ca701_product_link&utm_term=ca701',
@@ -43,7 +46,8 @@ const models = [
     name: 'CA901',
     tagline: 'The Master\'s Companion',
     descriptor: 'TwinDrive genuine spruce soundboard—concert physics in your home',
-    price: 'From $6,549',
+    price: '$6,549',
+    originalPrice: '$8,599',
     image: '/images/concert-artist/ca901.jpg',
     features: ['Genuine Spruce Soundboard', 'TwinDrive Technology', '135W Premium System'],
     link: 'https://kawaius.com/product/ca901/?utm_source=kawaipianogallery&utm_medium=referral&utm_campaign=CA_Series_Campaign&utm_content=ca901_product_link&utm_term=ca901',
@@ -199,9 +203,17 @@ export default function ModelGrid() {
 
                     {/* Price and CTA */}
                     <div className="pt-6 flex items-center justify-between border-t border-neutral-200">
-                      <p className="text-lg font-light text-neutral-900">
-                        {model.price}
-                      </p>
+                      <div className="flex flex-col gap-1">
+                        <p className="text-xs text-neutral-500 font-light">Starting at</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-lg font-light text-neutral-900">
+                            {model.price}
+                          </p>
+                          <p className="text-sm text-neutral-400 line-through">
+                            {model.originalPrice}
+                          </p>
+                        </div>
+                      </div>
                       <div className="text-xs uppercase tracking-wider text-neutral-500 group-hover:text-neutral-900 transition-colors flex items-center">
                         Learn More
                         <svg
