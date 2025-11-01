@@ -12,7 +12,7 @@ import ExperienceInvitation from './components/ExperienceInvitation'
 
 // SEO Metadata
 export const metadata: Metadata = {
-  title: 'The Sound of Mastery | Concert Artist Series - KAWAI',
+  title: 'The Sound of Mastery | Concert Artist Series',
   description:
     'From First Touch to Final Bow. KAWAI Concert Artist: 100% wooden keys, Shigeru Kawai SK-EX concert grand sampling, 97 years of Japanese craftsmanship. CA401, CA501, CA701, CA901 from $3,199.',
   keywords: [
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://kawaius.com/concert-artist',
-    title: 'The Sound of Mastery | Concert Artist Series - KAWAI',
+    title: 'The Sound of Mastery | Concert Artist Series',
     description:
       'From First Touch to Final Bow. 100% wooden keys, Shigeru Kawai SK-EX concert grand sampling, 97 years of Japanese craftsmanship.',
     siteName: 'KAWAI',
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'The Sound of Mastery | Concert Artist Series - KAWAI',
+    title: 'The Sound of Mastery | Concert Artist Series',
     description:
       'From First Touch to Final Bow. 100% wooden keys, Shigeru Kawai SK-EX concert grand sampling, 97 years of craftsmanship.',
     images: ['/images/banners/CA901EP-bench-styling.webp'],
