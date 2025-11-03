@@ -99,14 +99,6 @@ export default function HeritageMark() {
               <p>
                 Every Concert Artist piano carries a unique serial number—not a decoration, but a traceable connection to its birth.
               </p>
-
-              <p className="font-light">
-                This number tells us who assembled your soundboard, which craftsman voiced your hammers, the exact day your SK-EX samples were installed, and which quality inspector signed off on final assembly.
-              </p>
-
-              <p className="font-light">
-                It's your piano's fingerprint. A permanent registry entry in Kawai's manufacturing records. Proof that your instrument came from the same Hamamatsu facility that builds our prestigious Shigeru Kawai concert grands.
-              </p>
             </div>
 
 

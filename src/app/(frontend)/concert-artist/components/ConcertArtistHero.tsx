@@ -150,7 +150,7 @@ export default function ConcertArtistHero() {
             variants={ctaVariants}
             className="mx-auto max-w-3xl text-sm sm:text-base font-light leading-relaxed text-white/70 tracking-wide"
           >
-            100% wooden keys. Shigeru Kawai SK-EX concert grand sampling. 97 years of Japanese craftsmanship.
+            Solid wooden keys. Shigeru Kawai SK-EX concert grand sampling. 97 years of Japanese craftsmanship.
           </motion.p>
 
           {/* CTA */}

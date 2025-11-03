@@ -14,7 +14,7 @@ import ExperienceInvitation from './components/ExperienceInvitation'
 export const metadata: Metadata = {
   title: 'The Sound of Mastery | Concert Artist Series',
   description:
-    'From First Touch to Final Bow. KAWAI Concert Artist: 100% wooden keys, Shigeru Kawai SK-EX concert grand sampling, 97 years of Japanese craftsmanship. CA401, CA501, CA701, CA901 from $3,199.',
+    'From First Touch to Final Bow. KAWAI Concert Artist: solid wooden keys, Shigeru Kawai SK-EX concert grand sampling, 97 years of Japanese craftsmanship. CA401, CA501, CA701, CA901 from $3,199.',
   keywords: [
     'KAWAI Concert Artist',
     'digital piano',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     url: 'https://kawaius.com/concert-artist',
     title: 'The Sound of Mastery | Concert Artist Series',
     description:
-      'From First Touch to Final Bow. 100% wooden keys, Shigeru Kawai SK-EX concert grand sampling, 97 years of Japanese craftsmanship.',
+      'From First Touch to Final Bow. solid wooden keys, Shigeru Kawai SK-EX concert grand sampling, 97 years of Japanese craftsmanship.',
     siteName: 'KAWAI',
     images: [
       {
@@ -67,7 +67,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'The Sound of Mastery | Concert Artist Series',
     description:
-      'From First Touch to Final Bow. 100% wooden keys, Shigeru Kawai SK-EX concert grand sampling, 97 years of craftsmanship.',
+      'From First Touch to Final Bow. solid wooden keys, Shigeru Kawai SK-EX concert grand sampling, 97 years of craftsmanship.',
     images: ['/images/banners/CA901EP-bench-styling.webp'],
     creator: '@KAWAI',
   },
@@ -142,7 +142,7 @@ const structuredData = {
       '@id': 'https://kawaius.com/concert-artist/#productgroup',
       name: 'KAWAI Concert Artist Series',
       description:
-        'Premium digital pianos featuring 100% wooden keys and Shigeru Kawai SK-EX sampling for authentic acoustic piano feel.',
+        'Premium digital pianos featuring solid wooden keys and Shigeru Kawai SK-EX sampling for authentic acoustic piano feel.',
       brand: {
         '@type': 'Brand',
         name: 'KAWAI',
@@ -156,7 +156,7 @@ const structuredData = {
           '@id': 'https://kawaius.com/products/ca401',
           name: 'KAWAI CA401',
           description:
-            'Entry-level Concert Artist model with 100% wooden keys, Grand Feel Compact III action, and SK-EX sampling.',
+            'Entry-level Concert Artist model with solid wooden keys, Grand Feel Compact III action, and SK-EX sampling.',
           brand: {
             '@type': 'Brand',
             name: 'KAWAI',
@@ -185,7 +185,7 @@ const structuredData = {
           '@id': 'https://kawaius.com/products/ca501',
           name: 'KAWAI CA501',
           description:
-            'Mid-range Concert Artist model with enhanced 5-speaker sound system, Grand Feel Compact III action, and 100% wooden keys.',
+            'Mid-range Concert Artist model with enhanced 5-speaker sound system, Grand Feel Compact III action, and solid wooden keys.',
           brand: {
             '@type': 'Brand',
             name: 'KAWAI',
@@ -282,7 +282,7 @@ const structuredData = {
       url: 'https://kawaius.com/concert-artist',
       name: 'Concert Artist Series | Premium Digital Pianos - KAWAI',
       description:
-        'KAWAI Concert Artist: 100% wooden keys, Shigeru Kawai SK-EX sampling. CA401, CA501, CA701, CA901. Authentic acoustic feel from $3,199.',
+        'KAWAI Concert Artist: solid wooden keys, Shigeru Kawai SK-EX sampling. CA401, CA501, CA701, CA901. Authentic acoustic feel from $3,199.',
       isPartOf: {
         '@id': 'https://kawaius.com/#website',
       },

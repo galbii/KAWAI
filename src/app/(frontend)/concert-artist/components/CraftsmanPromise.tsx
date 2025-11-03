@@ -98,7 +98,7 @@ export default function CraftsmanPromise() {
               >
                 <div className="h-px bg-black/20 w-8"></div>
                 <p className="text-sm md:text-base text-black/80 leading-relaxed">
-                  The same master builders.
+                  Master technicians who voice both concert grands and your keys.
                 </p>
               </motion.div>
 
@@ -110,7 +110,7 @@ export default function CraftsmanPromise() {
               >
                 <div className="h-px bg-black/20 w-8"></div>
                 <p className="text-sm md:text-base text-black/80 leading-relaxed">
-                  The same Japanese <span className="italic">takumi</span> (匠) artisan tradition.
+                  Standards that require years, never shortcuts.
                 </p>
               </motion.div>
 
@@ -122,7 +122,7 @@ export default function CraftsmanPromise() {
               >
                 <div className="h-px bg-black/20 w-8"></div>
                 <p className="text-sm md:text-base text-black/80 leading-relaxed">
-                  The same obsessive attention to how wood responds to human touch.
+                  A commitment unchanged for 97 years: strive for the finest.
                 </p>
               </motion.div>
             </div>
@@ -139,7 +139,7 @@ export default function CraftsmanPromise() {
                 style={{ fontFamily: "'Crimson Text', 'Playfair Display', serif" }}
               >
                 This is not compromise. <br className="hidden md:inline" />
-                This is democratic mastery.
+                This is the Kawai Standard.
               </p>
             </motion.div>
           </motion.div>
