@@ -100,6 +100,19 @@ export default function ConcertArtistModels({ data }: ConcertArtistModelsProps) 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block"
+                  onClick={() => {
+                    // Track to Meta Pixel - Contact event
+                    if (typeof window !== 'undefined' && (window as any).fbq) {
+                      (window as any).fbq('track', 'Contact', {
+                        content_name: `Find a Dealer - ${model.name}`,
+                        content_category: 'Dealer Locator',
+                        utm_campaign: 'CA_Series_CampaignCAD',
+                        source: 'concert_artist_ca_overview',
+                        model: model.name
+                      })
+                      console.log('🎯 Meta Pixel: Contact event tracked', { model: model.name })
+                    }
+                  }}
                 >
                   {/* Model Card */}
                   <div className="space-y-4">

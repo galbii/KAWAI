@@ -65,14 +65,16 @@ export default function ModelGrid() {
   }
 
   const handleProductClick = (modelName: string, modelId: string) => {
-    // Track product link click with Meta Pixel
+    // Track standard Contact event with Meta Pixel
     if (typeof window !== 'undefined' && (window as any).fbq) {
-      (window as any).fbq('trackCustom', 'CA_Series_ProductClick', {
-        content_name: modelName,
-        content_category: 'Digital Piano',
-        campaign: 'CA_Series_Campaign',
+      (window as any).fbq('track', 'Contact', {
+        content_name: `Find a Dealer - ${modelName}`,
+        content_category: 'Dealer Locator',
+        utm_campaign: 'CA_Series_CampaignCAD',
+        source: 'concert_artist_ca_model_grid',
         model: modelId,
       })
+      console.log('🎯 Meta Pixel: Contact event tracked', { model: modelName })
     }
 
     // Track with PostHog
