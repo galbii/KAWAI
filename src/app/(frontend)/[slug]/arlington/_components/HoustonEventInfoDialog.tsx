@@ -105,7 +105,7 @@ export default function ArlingtonEventInfoDialog({ isOpen, onClose }: ArlingtonE
               <div>
                 <h3 className="font-semibold text-amber-800">Exclusive Arlington Showcase</h3>
                 <p className="text-sm text-amber-700">
-                  September 18-21, 2025 • UTA Partnership Event
+                  November 13-16, 2025 • UTA Partnership Event
                 </p>
               </div>
             </div>

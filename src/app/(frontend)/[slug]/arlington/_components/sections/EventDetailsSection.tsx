@@ -1,9 +1,9 @@
 export default function EventDetailsSection() {
   const schedules = [
-    { day: "Wednesday, Sept 18", time: "9:00 AM - 6:00 PM", highlight: false },
-    { day: "Thursday, Sept 19", time: "9:00 AM - 6:00 PM", highlight: true },
-    { day: "Friday, Sept 20", time: "10:00 AM - 5:00 PM", highlight: false },
-    { day: "Saturday, Sept 21", time: "9:00 AM - 4:00 PM", highlight: false }
+    { day: "Wednesday, Nov 13", time: "9:00 AM - 6:00 PM", highlight: false },
+    { day: "Thursday, Nov 14", time: "9:00 AM - 6:00 PM", highlight: true },
+    { day: "Friday, Nov 15", time: "10:00 AM - 5:00 PM", highlight: false },
+    { day: "Saturday, Nov 16", time: "9:00 AM - 4:00 PM", highlight: false }
   ];
 
   const offers = [

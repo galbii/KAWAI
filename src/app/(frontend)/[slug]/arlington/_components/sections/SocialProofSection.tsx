@@ -13,7 +13,7 @@ export default function SocialProofSection() {
             Join the <span className="text-amber-300">Musical Community</span>
           </h2>
           <p className="text-amber-200 text-lg">
-            September 18-21, 2025 • Limited Appointment Slots Available
+            November 13-16, 2025 • Limited Appointment Slots Available
           </p>
           <p className="text-slate-300 max-w-3xl mx-auto">
             Be part of Arlington&apos;s exclusive piano community with UTA-endorsed expert guidance and premium instrument selection

@@ -272,7 +272,7 @@ export function FeaturedDeals() {
                 <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                   EXCLUSIVE SHOWCASE
                 </div>
-                <span className="text-red-600 font-bold text-lg">September 18th - 21st, 2025</span>
+                <span className="text-red-600 font-bold text-lg">November 13th - 16th, 2025</span>
               </div>
             </div>
           </div>
@@ -318,7 +318,7 @@ export function FeaturedDeals() {
               </svg>
             </button>
             <p className="text-sm text-blue-600 font-medium">
-              September 18th-21st experiences available • Walk-ins welcome
+              November 13th-16th experiences available • Walk-ins welcome
             </p>
           </div>
         </div>
