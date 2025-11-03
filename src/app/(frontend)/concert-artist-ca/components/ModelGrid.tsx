@@ -64,17 +64,20 @@ export default function ModelGrid() {
     setActiveVideo(videoId)
   }
 
-  const handleProductClick = (modelName: string, modelId: string) => {
-    // Track standard Contact event with Meta Pixel
+  const handleProductClick = (modelName: string, modelId: string, price: string) => {
+    // Track standard ViewContent event with Meta Pixel
     if (typeof window !== 'undefined' && (window as any).fbq) {
-      (window as any).fbq('track', 'Contact', {
-        content_name: `Find a Dealer - ${modelName}`,
-        content_category: 'Dealer Locator',
+      (window as any).fbq('track', 'ViewContent', {
+        content_name: modelName,
+        content_ids: [modelId],
+        content_type: 'product',
+        content_category: 'Digital Piano - Concert Artist',
+        value: parseFloat(price.replace(/[$,\s]/g, '')),
+        currency: 'CAD',
         utm_campaign: 'CA_Series_CampaignCAD',
-        source: 'concert_artist_ca_model_grid',
-        model: modelId,
+        source: 'concert_artist_ca_model_grid'
       })
-      console.log('🎯 Meta Pixel: Contact event tracked', { model: modelName })
+      console.log('🎯 Meta Pixel: ViewContent event tracked', { model: modelName, value: price })
     }
 
     // Track with PostHog
@@ -168,7 +171,7 @@ export default function ModelGrid() {
                   href={model.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => handleProductClick(model.name, model.id)}
+                  onClick={() => handleProductClick(model.name, model.id, model.price)}
                 >
                   {/* Content */}
                   <div className="p-8 space-y-4">

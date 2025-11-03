@@ -101,16 +101,17 @@ export default function ConcertArtistModels({ data }: ConcertArtistModelsProps) 
                   rel="noopener noreferrer"
                   className="block"
                   onClick={() => {
-                    // Track to Meta Pixel - Contact event
+                    // Track to Meta Pixel - ViewContent event
                     if (typeof window !== 'undefined' && (window as any).fbq) {
-                      (window as any).fbq('track', 'Contact', {
-                        content_name: `Find a Dealer - ${model.name}`,
-                        content_category: 'Dealer Locator',
+                      (window as any).fbq('track', 'ViewContent', {
+                        content_name: model.name,
+                        content_ids: [model.name.toLowerCase()],
+                        content_type: 'product',
+                        content_category: 'Digital Piano - Concert Artist',
                         utm_campaign: 'CA_Series_CampaignCAD',
-                        source: 'concert_artist_ca_overview',
-                        model: model.name
+                        source: 'concert_artist_ca_overview'
                       })
-                      console.log('🎯 Meta Pixel: Contact event tracked', { model: model.name })
+                      console.log('🎯 Meta Pixel: ViewContent event tracked', { model: model.name })
                     }
                   }}
                 >
