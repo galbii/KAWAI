@@ -84,7 +84,7 @@ export default function StoriesOfTouch() {
             {/* Quote */}
             <blockquote className="relative pl-6 md:pl-8 border-l-2 border-black/15">
               <p className="font-serif text-lg md:text-xl lg:text-2xl text-black/85 leading-relaxed italic">
-                "The CA901 has become my daily companion. The Grand Feel III action responds like a concert grand, and the TwinDrive soundboard captures the resonance I need for jazz improvisation. It's rare to find a digital piano that inspires rather than compromises."
+                "This is a high end instrument I would not be shy to use in concert halls, composing or working acrobatics... everything"
               </p>
             </blockquote>
 
@@ -97,18 +97,6 @@ export default function StoriesOfTouch() {
                 The CA901's wooden keys and authentic hammer action provide the tactile feedback essential for hours of daily practice, while the SK-EX concert grand sampling delivers the tonal complexity his music requires.
               </p>
             </div>
-
-            {/* Closing Statement */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              className="pt-6 border-t border-black/10"
-            >
-              <p className="font-serif text-base md:text-lg text-black/80 italic">
-                "This is the instrument I wish I'd had from the beginning—where practice feels like performance, and performance feels like home."
-              </p>
-            </motion.div>
           </motion.div>
         </div>
       </div>

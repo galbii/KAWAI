@@ -24,7 +24,7 @@ export default function HeritageMark() {
           <div className="flex items-center justify-center gap-4 mb-6">
             <div className="h-px bg-black/20 w-12"></div>
             <p className="text-[11px] md:text-xs font-medium uppercase tracking-[0.25em] text-black/60">
-              Certificate of Authenticity
+              Authenticity Verification
             </p>
             <div className="h-px bg-black/20 w-12"></div>
           </div>
@@ -112,6 +112,31 @@ export default function HeritageMark() {
                 <span className="text-black/40">—</span>
                 <span>Required for warranty registration</span>
               </p>
+            </div>
+
+            {/* CTA Button */}
+            <div className="pt-8">
+              <a
+                href="https://kawaius.com/registration/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-8 py-4 bg-black text-white text-sm font-medium uppercase tracking-wider hover:bg-black/90 transition-colors duration-200"
+              >
+                Register Your Piano
+                <svg
+                  className="ml-2 w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </a>
             </div>
           </motion.div>
         </div>
