@@ -27,13 +27,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const mainImageUrl = resolveMediaUrl(product.mainImage)
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
 
   return {
     title: product.name,
     description: product.description,
+    alternates: {
+      canonical: `${siteUrl}/products/${slug}`
+    },
     openGraph: {
       title: product.name,
       description: product.description,
+      url: `${siteUrl}/products/${slug}`,
       images: mainImageUrl ? [{ url: mainImageUrl }] : [],
       type: 'website'
     },
@@ -69,6 +74,50 @@ export default async function ProductPage({ params }: PageProps) {
   }
 }
 
-// Removed generateStaticParams to fix ECONNREFUSED errors during build
-// All product pages will be dynamically generated at runtime
-// This is appropriate for a CMS-driven site where content changes frequently
+// Pre-generate all active product pages at build time for optimal SEO
+// This ensures Google crawler gets fast, pre-rendered HTML for all products
+export async function generateStaticParams() {
+  try {
+    const { getPayloadHMR } = await import('@payloadcms/next/utilities')
+    const configPromise = await import('@payload-config')
+    const payload = await getPayloadHMR({ config: configPromise.default })
+
+    const products = await payload.find({
+      collection: 'products',
+      where: {
+        and: [
+          {
+            status: {
+              equals: 'active',
+            },
+          },
+          {
+            discontinued: {
+              not_equals: true,
+            },
+          },
+        ],
+      },
+      limit: 500, // Adjust based on product catalog size
+      select: {
+        slug: true,
+        visibility: true,
+      },
+    })
+
+    // Filter out products that shouldn't be in catalog
+    const visibleProducts = products.docs.filter((product: any) => {
+      return product.visibility?.showInCatalog !== false
+    })
+
+    console.log(`✅ [SEO] Pre-rendering ${visibleProducts.length} product pages for Google indexing`)
+
+    return visibleProducts.map((product: any) => ({
+      slug: product.slug,
+    }))
+  } catch (error) {
+    console.error('❌ [SEO] Error generating static params for products:', error)
+    // Return empty array to allow build to continue with on-demand generation
+    return []
+  }
+}

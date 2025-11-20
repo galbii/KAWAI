@@ -217,6 +217,43 @@ async function StorefrontContent({ slug }: { slug: string }) {
   );
 }
 
+// Enable ISR (Incremental Static Regeneration) for storefront pages
+// Pages are statically generated at build time and revalidated every 15 minutes
+export const revalidate = 900
+
+// Pre-generate all active storefront pages at build time for optimal SEO
+// This ensures Google crawler gets fast, pre-rendered HTML
+export async function generateStaticParams() {
+  try {
+    const { getPayloadHMR } = await import('@payloadcms/next/utilities')
+    const configPromise = await import('@payload-config')
+    const payload = await getPayloadHMR({ config: configPromise.default })
+
+    const storefronts = await payload.find({
+      collection: 'storefronts',
+      where: {
+        isActive: {
+          equals: true
+        }
+      },
+      limit: 100, // Adjust based on number of dealer locations
+      select: {
+        slug: true
+      }
+    })
+
+    console.log(`✅ [SEO] Pre-rendering ${storefronts.docs.length} storefront pages for Google indexing`)
+
+    return storefronts.docs.map((storefront: any) => ({
+      slug: storefront.slug
+    }))
+  } catch (error) {
+    console.error('❌ [SEO] Error generating static params for storefronts:', error)
+    // Return empty array to allow build to continue with on-demand generation
+    return []
+  }
+}
+
 // Generate metadata for SEO
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   try {
@@ -230,13 +267,19 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       };
     }
 
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
+
     return {
       title: storefrontData.seo.metaTitle || 'Kawai Piano Gallery',
       description: storefrontData.seo.metaDescription || 'Find your local Kawai Piano Gallery.',
       keywords: storefrontData.seo.keywords,
+      alternates: {
+        canonical: `${siteUrl}/${slug}`
+      },
       openGraph: {
         title: storefrontData.seo.openGraphTitle || storefrontData.seo.metaTitle,
         description: storefrontData.seo.openGraphDescription || storefrontData.seo.metaDescription,
+        url: `${siteUrl}/${slug}`,
         images: storefrontData.seo.openGraphImage ? [
           {
             url: typeof storefrontData.seo.openGraphImage === 'string'
