@@ -19,19 +19,16 @@ export function ShowroomLocation() {
     return () => clearTimeout(timer);
   }, []);
   const showroomInfo = {
-    name: 'Kawai Piano Gallery Houston',
-    address: '5800 Richmond Ave., Houston, TX 77057',
+    name: 'TSU Piano Event - C.S. Lane Home Economics Center',
+    address: '3100 Cleburne St, Houston, TX 77004',
     website: 'https://www.kawaipianosdallas.com/',
-    phone: '(972) 645-2514',
-    serviceArea: 'Serving Houston, Texas and surrounding areas',
+    phone: '(713) 904-0001',
+    serviceArea: 'Texas Southern University Event - December 4-7, 2025',
     hours: [
-      { day: 'Monday', time: '10:00 am–7:00 pm' },
-      { day: 'Tuesday', time: '10:00 am–7:00 pm' },
-      { day: 'Wednesday', time: '10:00 am–7:00 pm' },
-      { day: 'Thursday', time: '10:00 am–7:00 pm' },
-      { day: 'Friday', time: '10:00 am–7:00 pm' },
-      { day: 'Saturday', time: '10:00 am–6:00 pm' },
-      { day: 'Sunday', time: '1:00 pm–5:00 pm' }
+      { day: 'Wednesday, Dec 4', time: '10:00 am–7:00 pm' },
+      { day: 'Thursday, Dec 5', time: '10:00 am–7:00 pm' },
+      { day: 'Friday, Dec 6', time: '10:00 am–7:00 pm' },
+      { day: 'Sunday, Dec 7', time: '12:00 pm–5:00 pm' }
     ]
   };
 
@@ -79,7 +76,7 @@ export function ShowroomLocation() {
                     loading="lazy"
                     allowFullScreen
                     referrerPolicy="no-referrer-when-downgrade"
-                    src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=5800+Richmond+Ave+Houston+TX+77057&zoom=15`}
+                    src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=3100+Cleburne+St+Houston+TX+77004&zoom=15`}
                   />
                 </div>
               </div>
@@ -232,20 +229,14 @@ export function ShowroomLocation() {
 
               {/* Hours */}
               <div className="space-y-4">
-                <h4 className="text-kawai-black font-medium text-sm mb-3">Hours</h4>
+                <h4 className="text-kawai-black font-medium text-sm mb-3">Event Hours</h4>
                 <div className="space-y-2 text-sm text-kawai-black/70">
-                  <div className="flex justify-between">
-                    <span>Mon – Fri</span>
-                    <span>10am – 7pm</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Saturday</span>
-                    <span>10am – 6pm</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Sunday</span>
-                    <span>1pm – 5pm</span>
-                  </div>
+                  {showroomInfo.hours.map((hour, index) => (
+                    <div key={index} className="flex justify-between">
+                      <span>{hour.day}</span>
+                      <span>{hour.time}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 

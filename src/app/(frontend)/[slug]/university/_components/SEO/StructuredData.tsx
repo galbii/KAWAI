@@ -11,7 +11,7 @@ export function StructuredData() {
         name="KAWAI Piano Sales Houston - TSU Partnership Event"
         description="Exclusive KAWAI piano sale event in Houston featuring digital and acoustic pianos at special prices. Partnership with Texas Southern University."
         url="https://www.kawai-piano-sale-houston.com"
-        telephone="+1-972-645-2514"
+        telephone="+1-713-904-0001"
         address={{
           streetAddress: "601 W. Plano Parkway, Suite 153",
           addressLocality: "Plano",
@@ -34,16 +34,24 @@ export function StructuredData() {
         ]}
         openingHours={[
           {
-            opens: "09:00",
-            closes: "18:00",
+            opens: "10:00",
+            closes: "19:00",
             dayOfWeek: [
               "Wednesday",
               "Thursday",
               "Friday",
-              "Saturday",
             ],
-            validFrom: "2025-09-18",
-            validThrough: "2025-09-21",
+            validFrom: "2025-12-04",
+            validThrough: "2025-12-06",
+          },
+          {
+            opens: "12:00",
+            closes: "17:00",
+            dayOfWeek: [
+              "Sunday",
+            ],
+            validFrom: "2025-12-07",
+            validThrough: "2025-12-07",
           },
         ]}
         rating={{
@@ -76,11 +84,11 @@ export function StructuredData() {
       
       <EventJsonLd
         name="KAWAI Piano Sale Event Houston"
-        startDate="2025-09-18T09:00:00-05:00"
-        endDate="2025-09-21T18:00:00-05:00"
+        startDate="2025-12-04T09:00:00-06:00"
+        endDate="2025-12-07T18:00:00-06:00"
         description="Exclusive KAWAI piano sale event in Houston featuring digital and acoustic pianos at special reduced prices. Partnership with Texas Southern University offering savings up to $6,000."
         location={{
-          name: "Texas Southern University",
+          name: "C.S. Lane Home Economics Center at Texas Southern University",
           address: {
             streetAddress: "3100 Cleburne St",
             addressLocality: "Houston",
@@ -101,8 +109,8 @@ export function StructuredData() {
             priceCurrency: "USD",
             availability: "https://schema.org/InStock",
             url: "https://www.kawai-piano-sale-houston.com",
-            validFrom: "2025-09-18",
-            validThrough: "2025-09-21",
+            validFrom: "2025-12-04",
+            validThrough: "2025-12-07",
           },
         ]}
         performer={{

@@ -38,7 +38,6 @@ export default function ClientHomePage() {
       <FeaturedDeals />
       <BookingSection />
       <ShowroomLocation />
-      <Footer />
       <CountdownTimer />
       <NewsletterPopup />
     </div>

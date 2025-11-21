@@ -43,11 +43,11 @@ export default function ContactSection() {
                   </svg>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-dark mb-1">Showroom Address</h4>
+                  <h4 className="font-semibold text-gray-dark mb-1">Event Address</h4>
                   <p className="text-gray-medium leading-relaxed">
-                    601 W. Plano Parkway, Suite 153<br />
-                    Plano, TX 75075<br />
-                    <span className="text-sm text-primary font-medium">Official Kawai Piano Gallery</span>
+                    3100 Cleburne St<br />
+                    Houston, TX 77004<br />
+                    <span className="text-sm text-primary font-medium">C.S. Lane Home Economics Center - TSU</span>
                   </p>
                 </div>
               </div>
@@ -62,10 +62,10 @@ export default function ContactSection() {
                   <h4 className="font-semibold text-gray-dark mb-1">Phone & Email</h4>
                   <p className="text-gray-medium">
                     <a
-                      href="tel:9726452514"
+                      href="tel:7139040001"
                       className="hover:text-primary transition-colors"
                     >
-                      (972) 645-2514
+                      (713) 904-0001
                     </a><br />
                     <a
                       href="mailto:info@kawaipianosdallas.com"
@@ -86,9 +86,8 @@ export default function ContactSection() {
                 <div>
                   <h4 className="font-semibold text-gray-dark mb-1">Event Hours</h4>
                   <p className="text-gray-medium text-sm">
-                    Mon-Fri: 10:00 AM - 7:00 PM<br />
-                    Saturday: 10:00 AM - 6:00 PM<br />
-                    Sunday: 1:00 PM - 5:00 PM
+                    Wed-Fri, Dec 4-6: 10:00 AM - 7:00 PM<br />
+                    Sunday, Dec 7: 12:00 PM - 5:00 PM
                   </p>
                 </div>
               </div>
@@ -96,7 +95,7 @@ export default function ContactSection() {
             
             <div className="mt-8 space-y-3">
               <button
-                onClick={() => window.open('https://maps.google.com/maps?q=601+W.+Plano+Parkway,+Suite+153,+Plano,+TX+75075', '_blank')}
+                onClick={() => window.open('https://maps.google.com/maps?q=3100+Cleburne+St,+Houston,+TX+77004', '_blank')}
                 className="w-full btn-primary text-white font-semibold py-3 px-6 rounded-xl shadow-lg"
               >
                 Get Directions
@@ -131,7 +130,7 @@ export default function ContactSection() {
                   <h4 className="text-xl font-bold text-gray-dark mb-2">Interactive Map</h4>
                   <p className="text-gray-medium mb-6">Click to view detailed directions<br />and parking information</p>
                   <button
-                    onClick={() => window.open('https://maps.google.com/maps?q=601+W.+Plano+Parkway,+Suite+153,+Plano,+TX+75075', '_blank')}
+                    onClick={() => window.open('https://maps.google.com/maps?q=3100+Cleburne+St,+Houston,+TX+77004', '_blank')}
                     className="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-primary-dark transition-colors"
                   >
                     Open Map

@@ -82,6 +82,9 @@ export async function HeaderDynamic() {
     // Check if we're on the concert-artist page
     const isConcertArtistPage = pathname === '/concert-artist' || pathname === '/concert-artist/'
 
+    // Check if we're on a university event page
+    const isUniversityPage = pathname.includes('/university')
+
     // Generate piano categories navigation (each category becomes a top-level nav item)
     const pianoCategories = await generatePianoCategoriesNavigationServer()
 
@@ -111,6 +114,7 @@ export async function HeaderDynamic() {
         locationData={locationData}
         isSignaturePage={isSignaturePage}
         hidePianoLinks={isConcertArtistPage}
+        isUniversityPage={isUniversityPage}
       />
     )
   } catch (error) {
@@ -125,6 +129,7 @@ export async function HeaderDynamic() {
                             pathname.endsWith('/gl-10-signature') || pathname.endsWith('/gl-10-signature/') ||
                             pathname.endsWith('/arlington') || pathname.endsWith('/arlington/')
     const isConcertArtistPage = pathname === '/concert-artist' || pathname === '/concert-artist/'
+    const isUniversityPage = pathname.includes('/university')
 
     const fallbackNavigation: NavigationItem[] = [
       { label: 'Digital Pianos', href: getContextAwareUrl('/pianos/digital', fallbackOrigin), dropdown: [] },
@@ -133,6 +138,6 @@ export async function HeaderDynamic() {
       { label: 'Hybrid Pianos', href: getContextAwareUrl('/pianos/hybrid', fallbackOrigin), dropdown: [] },
     ]
 
-    return <Header navigation={fallbackNavigation} isSignaturePage={isSignaturePage} hidePianoLinks={isConcertArtistPage} />
+    return <Header navigation={fallbackNavigation} isSignaturePage={isSignaturePage} hidePianoLinks={isConcertArtistPage} isUniversityPage={isUniversityPage} />
   }
 }

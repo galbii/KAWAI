@@ -66,12 +66,7 @@ export default function HeroSection() {
         <source src="/videos/CA.webm" type="video/webm" />
         <source src="/videos/CA.mp4" type="video/mp4" />
       </video>
-      
-      {/* Enhanced Background Overlay for Better Text Readability */}
-      <div className="absolute inset-0 z-5" style={{ pointerEvents: 'none' }}>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/40"></div>
-      </div>
-      
+
       <div className="relative z-30 w-full max-w-7xl mx-auto px-4 sm:px-6 text-center hero-content py-8 sm:py-12 lg:pt-20 lg:pb-12">
         <style jsx>{`
           @keyframes fadeInUp {
@@ -196,7 +191,7 @@ export default function HeroSection() {
               <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse drop-shadow-sm"></div>
               <span className="text-red-200 font-semibold tracking-wide text-xs sm:text-sm drop-shadow-sm">SCHEDULE YOUR APPOINTMENT</span>
             </div>
-            <div className="text-lg sm:text-xl md:text-2xl font-light text-white tracking-wider drop-shadow-lg hero-animate hero-animate-6">September 18-21, 2025</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-light text-white tracking-wider drop-shadow-lg hero-animate hero-animate-6">December 4-7, 2025</div>
             <div className="text-sm sm:text-base text-white/95 drop-shadow-sm hero-animate hero-animate-7">Book your appointment for special event pricing on a wide variety of KAWAI pianos with free delivery and tuning</div>
           </div>
           
@@ -212,9 +207,9 @@ export default function HeroSection() {
               <span className="hidden sm:block drop-shadow-sm">Book Appointment</span>
             </button>
             
-            <button 
+            <button
               onClick={handleExploreCollectionClick}
-              className="bg-white/80 backdrop-blur-sm text-black hover:bg-white/90 px-6 sm:px-8 py-3 text-base sm:text-lg font-medium rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl w-full sm:w-auto cursor-pointer relative drop-shadow-lg"
+              className="bg-white/80 backdrop-blur-sm !text-black hover:bg-white/90 px-6 sm:px-8 py-3 text-base sm:text-lg font-medium rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl w-full sm:w-auto cursor-pointer relative drop-shadow-lg"
               style={{ pointerEvents: 'auto', zIndex: 50 }}
               type="button"
             >

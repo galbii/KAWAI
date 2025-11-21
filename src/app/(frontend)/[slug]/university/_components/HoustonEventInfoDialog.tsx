@@ -105,7 +105,8 @@ export default function HoustonEventInfoDialog({ isOpen, onClose }: HoustonEvent
               <div>
                 <h3 className="font-semibold text-amber-800">Exclusive Houston Showcase</h3>
                 <p className="text-sm text-amber-700">
-                  September 18-21, 2025 • TSU Partnership Event
+                  December 4-7, 2025 • TSU Partnership Event<br />
+                  <span className="text-xs">3100 Cleburne St, Houston TX 77004<br />C.S. Lane Home Economics Center</span>
                 </p>
               </div>
             </div>

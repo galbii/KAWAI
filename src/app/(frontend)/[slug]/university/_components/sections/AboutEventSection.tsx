@@ -67,7 +67,7 @@ export default function AboutEventSection() {
         </div>
       </div>
 
-      <section id="about-event" className="py-16 sm:py-20 lg:py-24 bg-kawai-pearl scroll-container">
+      <section id="about-event" className="py-16 sm:py-20 lg:py-24 bg-white scroll-container">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
         {/* Event Description */}
@@ -90,10 +90,10 @@ export default function AboutEventSection() {
             <div className={`lg:hidden relative mb-8 transition-all duration-700 delay-500 ${contentVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
               <div className="max-w-xs sm:max-w-sm mx-auto">
                 <PdfViewer
-                  file="/utd_letter.pdf"
+                  file="/tsu_letter.pdf"
                   className="cursor-pointer hover:shadow-sm transition-shadow rounded-lg overflow-hidden"
                   width={320}
-                  onClick={() => openImageModal("/utd_letter.pdf", "TSU Houston Piano Sale Event Letter - Piano Deals Houston", 800, 600)}
+                  onClick={() => openImageModal("/tsu_letter.pdf", "TSU Houston Piano Sale Event Letter - Piano Deals Houston", 800, 600)}
                   loading="Loading piano sale letter..."
                   error="Unable to load letter PDF"
                 />
@@ -151,10 +151,10 @@ export default function AboutEventSection() {
           {/* Desktop Letter PDF - Hidden on mobile */}
           <div className={`hidden lg:block relative transition-all duration-700 delay-700 ${contentVisible ? 'opacity-100 translate-x-0 scale-100' : 'opacity-0 translate-x-6 scale-95'}`}>
             <PdfViewer
-              file="/utd_letter.pdf"
+              file="/tsu_letter.pdf"
               className="cursor-pointer hover:shadow-lg transition-shadow rounded-lg overflow-hidden"
               width={600}
-              onClick={() => openImageModal("/utd_letter.pdf", "TSU Houston Piano Sale Event Letter - Piano Deals Houston", 800, 600)}
+              onClick={() => openImageModal("/tsu_letter.pdf", "TSU Houston Piano Sale Event Letter - Piano Deals Houston", 800, 600)}
               loading="Loading piano sale letter..."
               error="Unable to load letter PDF"
             />

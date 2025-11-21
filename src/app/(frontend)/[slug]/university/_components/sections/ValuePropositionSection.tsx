@@ -83,8 +83,8 @@ export default function ValuePropositionSection() {
               <span className="text-white/90 text-sm font-medium">Limited Houston appointment slots - TSU priority access</span>
             </div>
           </div>
-          <a 
-            href="tel:9726452514"
+          <a
+            href="tel:7139040001"
             onClick={() => {}}
             className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-6 sm:px-8 py-3 sm:py-4 border border-white/20 hover:bg-white/15 hover:scale-105 transition-all duration-300 transform"
           >
@@ -94,7 +94,7 @@ export default function ValuePropositionSection() {
                 Call now for appointment priority - Houston event
               </p>
               <p className="font-heading text-white text-base sm:text-lg font-medium">
-                (972) 645-2514
+                (713) 904-0001
               </p>
             </div>
           </a>

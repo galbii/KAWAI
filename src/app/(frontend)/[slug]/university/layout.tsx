@@ -22,14 +22,14 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'),
-  title: "Piano Sales Houston | KAWAI Piano Deals & Used Pianos | TSU Event Sept 2025",
-  description: "Houston piano sales event featuring KAWAI digital & acoustic pianos. Save up to $6,000 on new & used pianos. Piano deals Houston - TSU partnership Sept 18-21, 2025. Free delivery!",
+  title: "Piano Sales Houston | KAWAI Piano Deals & Used Pianos | TSU Event Dec 2025",
+  description: "Houston piano sales event featuring KAWAI digital & acoustic pianos. Save up to $6,000 on new & used pianos. Piano deals Houston - TSU partnership Dec 4-7, 2025 at C.S. Lane Home Economics Center. Free delivery!",
   icons: {
     apple: '/images/optimized/logos/Kawai-Red.webp',
   },
   openGraph: {
-    title: "Piano Sales Houston | KAWAI Piano Deals & Used Pianos | TSU Event Sept 2025",
-    description: "Houston piano sales event featuring KAWAI digital & acoustic pianos. Save up to $6,000 on new & used pianos. Piano deals Houston - TSU partnership Sept 18-21, 2025. Free delivery!",
+    title: "Piano Sales Houston | KAWAI Piano Deals & Used Pianos | TSU Event Dec 2025",
+    description: "Houston piano sales event featuring KAWAI digital & acoustic pianos. Save up to $6,000 on new & used pianos. Piano deals Houston - TSU partnership Dec 4-7, 2025 at C.S. Lane Home Economics Center. Free delivery!",
     images: [
       {
         url: '/images/optimized/misc/kawai-piano-hands_1200.webp',

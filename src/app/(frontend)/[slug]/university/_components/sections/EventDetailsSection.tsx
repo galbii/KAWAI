@@ -1,9 +1,9 @@
 export default function EventDetailsSection() {
   const schedules = [
-    { day: "Wednesday, Sept 18", time: "9:00 AM - 6:00 PM", highlight: false },
-    { day: "Thursday, Sept 19", time: "9:00 AM - 6:00 PM", highlight: true },
-    { day: "Friday, Sept 20", time: "10:00 AM - 5:00 PM", highlight: false },
-    { day: "Saturday, Sept 21", time: "9:00 AM - 4:00 PM", highlight: false }
+    { day: "Wednesday, Dec 4", time: "10:00 AM - 7:00 PM", highlight: false },
+    { day: "Thursday, Dec 5", time: "10:00 AM - 7:00 PM", highlight: true },
+    { day: "Friday, Dec 6", time: "10:00 AM - 7:00 PM", highlight: false },
+    { day: "Sunday, Dec 7", time: "12:00 PM - 5:00 PM", highlight: false }
   ];
 
   const offers = [
@@ -54,7 +54,7 @@ export default function EventDetailsSection() {
             
             <div className="mt-6 p-4 bg-gradient-to-r from-gold/10 to-gold-light/10 rounded-xl border border-gold/20">
               <p className="text-sm text-gray-dark font-medium">
-                ✨ <span className="text-gradient-gold font-semibold">Peak Hours:</span> Saturday 11 AM - 3 PM for maximum selection
+                ✨ <span className="text-gradient-gold font-semibold">Peak Hours:</span> Sunday 1 PM - 4 PM for maximum selection
               </p>
             </div>
           </div>

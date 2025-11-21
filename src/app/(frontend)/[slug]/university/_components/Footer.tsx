@@ -85,11 +85,11 @@ export function Footer() {
               <div className="flex items-center space-x-3">
                 <Phone className="h-5 w-5 text-kawai-red" />
                 <a 
-                  href="tel:9726452514"
+                  href="tel:7139040001"
                   onClick={() => {}}
                   className="hover:text-kawai-red transition-colors cursor-pointer"
                 >
-                  (972) 645-2514
+                  (713) 904-0001
                 </a>
               </div>
               <div className="flex items-center space-x-3">
