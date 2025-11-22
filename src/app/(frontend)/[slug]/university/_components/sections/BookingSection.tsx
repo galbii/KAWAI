@@ -11,7 +11,7 @@ import QuickContactForm from '../QuickContactForm';
  * Two-step booking process for TSU event:
  * 1. Quick contact form to capture lead data (validates locally, no API call)
  * 2. Calendly widget with prefilled data for appointment booking
- * 3. After Calendly booking completes → Submit to Constant Contact (TSU LEADS list)
+ * 3. After Calendly booking completes → Submit to Constant Contact (TSU2025 list)
  *
  * Features:
  * - Lead capture before Calendly (increases conversion + better UX with prefill)
@@ -50,7 +50,7 @@ export default function BookingSection() {
     },
     constantContact: {
       enabled: true,
-      targetList: 'TSU LEADS',
+      targetList: 'TSU2025',
       createListIfMissing: true,
       showAuthPrompts: false
     },
@@ -120,7 +120,7 @@ export default function BookingSection() {
           {/* Header */}
           <div className="text-center mb-8">
             <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-kawai-black mb-4">
-              Early Bird Pricing RSVP
+              RSVP
             </h2>
             <p className="text-lg md:text-xl leading-relaxed text-kawai-black/70 max-w-2xl mx-auto">
               {showForm

@@ -143,16 +143,16 @@ export default function useCalendlyTracking(
     // 1. Check if we've already tracked (ref-based)
     // 2. Check if this is a rapid duplicate (< 1 second since last track)
     if (hasTrackedEvent.current) {
-      console.log('⚠️ Event already tracked, skipping duplicate')
+      console.log(`⚠️ [${config.eventName}] Event already tracked, skipping duplicate`)
       return
     }
 
     if (now - lastTrackingTimestamp.current < 1000) {
-      console.log('⚠️ Duplicate event detected (< 1s since last), skipping')
+      console.log(`⚠️ [${config.eventName}] Duplicate event detected (< 1s since last), skipping`)
       return
     }
 
-    console.log(`🎯 ${config.eventName} Booking completed:`, eventData)
+    console.log(`🎯 [${config.eventName}] Booking completed:`, eventData)
     console.log('📋 Event payload:', eventData?.data?.payload)
 
     // Call parent callback immediately

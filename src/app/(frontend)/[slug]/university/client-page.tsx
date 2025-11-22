@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useState } from 'react';
 import { useScrollAnimations } from './_components/hooks/useScrollAnimations';
 import { usePageTracking } from './_components/hooks/usePageTracking';
 import HeroSection from './_components/sections/HeroSection';
@@ -13,9 +13,13 @@ import { Footer } from './_components/Footer';
 import { StructuredData } from './_components/SEO/StructuredData';
 import { CountdownTimer } from './_components/CountdownTimer';
 import { NewsletterPopup } from './_components/NewsletterPopup';
+import PianoConsultationDialog from './_components/PianoConsultationDialog';
 
 export default function ClientHomePage() {
   useScrollAnimations();
+
+  // Shared modal state - single instance for entire page
+  const [isConsultationModalOpen, setIsConsultationModalOpen] = useState(false);
 
   // Enable comprehensive page tracking for the KAWAI piano sale landing page
   usePageTracking({
@@ -32,14 +36,20 @@ export default function ClientHomePage() {
   return (
     <div className="min-h-screen w-full overflow-x-hidden">
       <StructuredData />
-      <HeroSection />
-      <AboutEventSection />
+      <HeroSection onOpenConsultation={() => setIsConsultationModalOpen(true)} />
+      <AboutEventSection onOpenConsultation={() => setIsConsultationModalOpen(true)} />
       <ValuePropositionSection />
-      <FeaturedDeals />
+      <FeaturedDeals onOpenConsultation={() => setIsConsultationModalOpen(true)} />
       <BookingSection />
       <ShowroomLocation />
       <CountdownTimer />
       <NewsletterPopup />
+
+      {/* Single shared consultation modal for entire page */}
+      <PianoConsultationDialog
+        isOpen={isConsultationModalOpen}
+        onClose={() => setIsConsultationModalOpen(false)}
+      />
     </div>
   );
 }

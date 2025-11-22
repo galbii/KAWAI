@@ -1,12 +1,11 @@
 import Image from 'next/image';
-import { useState } from 'react';
 import type { MouseEvent } from 'react';
-import PianoConsultationDialog from '../PianoConsultationDialog';
-import HoustonEventInfoDialog from '../HoustonEventInfoDialog';
 
-export default function HeroSection() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEventInfoModalOpen, setIsEventInfoModalOpen] = useState(false);
+interface HeroSectionProps {
+  onOpenConsultation: () => void;
+}
+
+export default function HeroSection({ onOpenConsultation }: HeroSectionProps) {
 
   const handleExploreCollectionClick = () => {
     console.log('Explore Collection clicked');
@@ -36,9 +35,9 @@ export default function HeroSection() {
     console.log('Reserve Appointment clicked');
     // Track the analytics event
     // Analytics tracking removed
-    
-    // Open the piano consultation dialog
-    setIsModalOpen(true);
+
+    // Open the shared piano consultation dialog
+    onOpenConsultation();
   };
 
   return (
@@ -171,15 +170,8 @@ export default function HeroSection() {
                 />
               </div>
             </div>
-            <div className="block text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-light text-white tracking-wide drop-shadow-2xl hero-animate hero-animate-3">
-              HOUSTON EXCLUSIVE EVENT
-            </div>
           </h1>
           
-          {/* Premium Value Proposition */}
-          <div className="space-y-4 px-2 hero-animate hero-animate-4">
-            <div className="text-base sm:text-lg md:text-xl text-white font-light drop-shadow-lg">Cutting Edge Technology • Expert Piano Guidance</div>
-          </div>
         </div>
         
         {/* Event Details & CTA */}
@@ -224,18 +216,6 @@ export default function HeroSection() {
           </div>
         </div>
       </div>
-      
-      {/* Piano Consultation Dialog */}
-      <PianoConsultationDialog 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-      />
-      
-      {/* Houston Event Information Dialog */}
-      <HoustonEventInfoDialog 
-        isOpen={isEventInfoModalOpen} 
-        onClose={() => setIsEventInfoModalOpen(false)} 
-      />
     </section>
   );
 }

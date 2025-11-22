@@ -75,9 +75,6 @@ export default function ValuePropositionSection() {
         {/* Call to Action */}
         <div className="mt-12 sm:mt-16 text-center opacity-0 animate-fade-in-up [animation-delay:800ms]">
           <div className="max-w-2xl mx-auto mb-6">
-            <p className="font-body text-white/90 text-base sm:text-lg mb-4 sm:mb-6">
-              Don&apos;t miss this limited-time opportunity to own a world-class KAWAI piano at university pricing.
-            </p>
             <div className="inline-flex items-center gap-2 bg-red-600/20 backdrop-blur-sm rounded-full px-4 py-2 mb-4 border border-red-500/30">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
               <span className="text-white/90 text-sm font-medium">Limited Houston appointment slots - TSU priority access</span>
@@ -91,16 +88,13 @@ export default function ValuePropositionSection() {
             <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             <div className="text-left">
               <p className="font-body text-white/70 text-xs sm:text-sm">
-                Call now for appointment priority - Houston event
+                Call now
               </p>
               <p className="font-heading text-white text-base sm:text-lg font-medium">
                 (713) 904-0001
               </p>
             </div>
           </a>
-          <p className="text-white/60 text-xs sm:text-sm mt-3">
-            TSU partnership exclusive • Only 8 Houston appointment slots remaining
-          </p>
         </div>
 
       </div>
