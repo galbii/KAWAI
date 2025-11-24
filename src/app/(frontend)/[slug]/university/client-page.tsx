@@ -42,7 +42,10 @@ export default function ClientHomePage() {
       <FeaturedDeals onOpenConsultation={() => setIsConsultationModalOpen(true)} />
       <BookingSection />
       <ShowroomLocation />
-      <CountdownTimer />
+      <CountdownTimer
+        onOpenConsultation={() => setIsConsultationModalOpen(true)}
+        isConsultationModalOpen={isConsultationModalOpen}
+      />
       <NewsletterPopup />
 
       {/* Single shared consultation modal for entire page */}

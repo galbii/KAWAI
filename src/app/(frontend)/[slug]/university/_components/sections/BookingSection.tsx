@@ -52,7 +52,8 @@ export default function BookingSection() {
       enabled: true,
       targetList: 'TSU2025',
       createListIfMissing: true,
-      showAuthPrompts: false
+      showAuthPrompts: false,
+      listDescription: 'TSU Piano Sale 2025 - Event consultation bookings'
     },
     additionalData: {
       source: 'university-landing-page',

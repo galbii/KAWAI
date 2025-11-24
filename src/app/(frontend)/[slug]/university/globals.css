@@ -1908,6 +1908,8 @@ section {
 
 .react-pdf__Page__canvas {
   @apply max-w-full h-auto;
+  /* Allow browser to scale down the high-res canvas smoothly */
+  image-rendering: auto;
 }
 
 .react-pdf__Page__textContent {
@@ -1916,6 +1918,17 @@ section {
 
 .react-pdf__Page__annotations {
   @apply opacity-100;
+}
+
+/* Prevent red borders and lines on PDF annotations */
+.react-pdf__Page__annotations .linkAnnotation > a {
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+}
+
+.react-pdf__Page__annotations .annotationLayer section {
+  border: none !important;
 }
 
 /* PDF Modal Specific Styles */
@@ -1953,8 +1966,8 @@ section {
   max-height: 75vh !important;
 }
 
-/* Remove PDF text cutoff - allow full content visibility */
+/* Contain PDF content to prevent scrollbars and overflow issues */
 .pdf-viewer .react-pdf__Page {
   position: relative;
-  overflow: visible;
+  overflow: hidden;
 }

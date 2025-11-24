@@ -221,9 +221,9 @@ export class ConstantContactListManager {
     listIds: string[],
     customFields?: Array<{ custom_field_id: string; value: string }>
   ): Promise<ApiResponse<Contact>> {
-    // For updates, try the simple array format first (consistent with creation)
-    // If this fails, the API might require the object format for updates
+    // Build update payload with required fields
     const data: any = {
+      update_source: 'Contact', // Required field for updates (similar to create_source for creation)
       list_memberships: listIds
     };
 
@@ -249,6 +249,7 @@ export class ConstantContactListManager {
     }));
 
     const data = {
+      update_source: 'Contact', // Required field for updates
       list_memberships: listMemberships
     };
 
@@ -299,7 +300,7 @@ export class ConstantContactListManager {
         if (!contact) {
           return { exists: false, listIds: [] };
         }
-        const listIds = contact.list_memberships
+        const listIds = (contact.list_memberships || [])
           .filter((membership): membership is ListMembership =>
             typeof membership === 'object' && membership.membership_status === 'active'
           )
@@ -345,8 +346,8 @@ export class ConstantContactListManager {
         };
       }
 
-      // Get current list IDs
-      const currentListIds = contact.list_memberships
+      // Get current list IDs (handle undefined list_memberships)
+      const currentListIds = (contact.list_memberships || [])
         .filter((membership): membership is ListMembership =>
           typeof membership === 'object' && membership.membership_status === 'active'
         )

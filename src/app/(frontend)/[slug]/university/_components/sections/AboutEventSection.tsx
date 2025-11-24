@@ -94,7 +94,7 @@ export default function AboutEventSection({ onOpenConsultation }: AboutEventSect
                 <PdfViewer
                   file="/tsu_letter.pdf"
                   className="cursor-pointer hover:shadow-sm transition-shadow rounded-lg overflow-hidden"
-                  width={320}
+                  width={768}
                   onClick={() => openImageModal("/tsu_letter.pdf", "TSU Houston Piano Sale Event Letter - Piano Deals Houston", 800, 600)}
                   loading="Loading piano sale letter..."
                   error="Unable to load letter PDF"
@@ -155,7 +155,7 @@ export default function AboutEventSection({ onOpenConsultation }: AboutEventSect
             <PdfViewer
               file="/tsu_letter.pdf"
               className="cursor-pointer hover:shadow-lg transition-shadow rounded-lg overflow-hidden"
-              width={600}
+              width={1200}
               onClick={() => openImageModal("/tsu_letter.pdf", "TSU Houston Piano Sale Event Letter - Piano Deals Houston", 800, 600)}
               loading="Loading piano sale letter..."
               error="Unable to load letter PDF"

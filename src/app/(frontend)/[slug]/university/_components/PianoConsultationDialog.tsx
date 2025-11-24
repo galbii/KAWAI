@@ -43,9 +43,11 @@ export default function PianoConsultationDialog({ isOpen, onClose }: PianoConsul
   const [isCalendlyLoading, setIsCalendlyLoading] = useState(true);
 
   // Memoize tracking config to prevent unnecessary re-renders
+  // Only enable tracking when modal is actually open to prevent duplicate events
   const trackingConfig = useMemo(() => ({
     eventName: 'TSU Piano Sale',
     posthogEventName: 'tsu_piano_booking_modal',
+    enabled: isOpen, // Only track when modal is open
     metaPixel: {
       content_name: 'TSU Piano Sale Consultation (Modal)',
       content_category: 'appointment_booking',
@@ -57,13 +59,14 @@ export default function PianoConsultationDialog({ isOpen, onClose }: PianoConsul
       enabled: true,
       targetList: 'TSU2025',
       createListIfMissing: true,
-      showAuthPrompts: false
+      showAuthPrompts: false,
+      listDescription: 'TSU Piano Sale 2025 - Event consultation bookings'
     },
     additionalData: {
       source: 'university-modal-popup',
       campaign: 'tsu-piano-sale-2025'
     }
-  }), []);
+  }), [isOpen]);
 
   // Set up comprehensive Calendly tracking
   // Only active when we have prefillData and Calendly is loaded

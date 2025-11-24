@@ -27,7 +27,7 @@ The Constant Contact v3 API is a RESTful API that provides contact management, e
 
 **🟢 COMPLETED (Production Fixes - December 2024):**
 - ✅ **Authentication Initialization** - Automatic database credential setup from environment variables
-- ✅ **Correct API Payload Format** - Fixed `create_source`, `list_memberships`, and required fields
+- ✅ **Correct API Payload Format** - Fixed `create_source`, `update_source`, `list_memberships`, and required fields
 - ✅ **Enhanced Error Handling** - Comprehensive 500 error debugging and resolution
 - ✅ **List Management Fallbacks** - Graceful handling of duplicate list creation attempts
 - ✅ **Production-Tested Integration** - Fully working signature form with SHOWROOM KAWAI list
@@ -876,6 +876,7 @@ interface Contact {
     membership_status: 'active' | 'unsubscribed' | 'removed';
   }>;
   create_source?: string; // Required for POST /contacts - use "Contact"
+  update_source?: string; // Required for PUT /contacts/:id - use "Contact"
   birthday_month?: number;
   birthday_day?: number;
   anniversary?: string;
@@ -1035,21 +1036,101 @@ const contact = await listManager.createContact(contactRequest);
 console.log('Contact created:', contact.contact_id);
 ```
 
-### List Management Example
+### List Management - Modern Approach ✅ RECOMMENDED (January 2025)
+
+**Location**: `src/lib/constantcontact/signature-utils.ts`
+
+The new generic list utilities provide automatic list discovery, creation, and caching with comprehensive error handling.
+
+#### **Core Utility Functions**
 
 ```typescript
-// Example: Get or create a list
-const listManager = new ConstantContactListManager(client);
+import {
+  findListByName,
+  ensureListExists
+} from '@/lib/constantcontact/signature-utils';
 
-// Get all lists with UI formatting
-const response = await listManager.getAllLists();
-if (response.success) {
-  const uiLists = listManager.formatListsForUI(response.data?.lists || []);
-  console.log('Available lists:', uiLists);
+/**
+ * findListByName() - Smart list finder with fallback matching
+ * Returns: ContactList | null
+ */
+const list = findListByName(lists, 'TSU2025');
+// Tries: exact match → partial match → null
+
+/**
+ * ensureListExists() - Complete list discovery & creation workflow
+ * Returns: Promise<{ listId: string | null; error?: string }>
+ *
+ * Process:
+ * 1. Search local cache (fastest)
+ * 2. API-level search by name
+ * 3. Attempt creation if not found
+ * 4. Handle "not unique" errors gracefully
+ * 5. Auto-refresh list cache
+ */
+const result = await ensureListExists(
+  'TSU2025',                                      // List name
+  'TSU Piano Sale 2025 - Event bookings',       // Description for creation
+  lists,                                          // Local cache array
+  loadLists                                       // Refresh callback (optional)
+);
+
+if (result.listId) {
+  console.log('List ready:', result.listId);
+} else {
+  console.error('List error:', result.error);
+}
+```
+
+#### **Integration with useConstantContactIntegration Hook**
+
+```typescript
+import useConstantContactIntegration from '@/hooks/useConstantContactIntegration';
+
+// Modern pattern - automatic list discovery + creation
+const { submitToConstantContact, submitError, submitSuccess } = useConstantContactIntegration({
+  targetList: 'TSU2025',                          // Any list name
+  createListIfMissing: true,                      // Auto-create if needed
+  listDescription: 'TSU Piano Sale 2025',         // Used for creation
+  showAuthPrompts: false                          // Silent reauth
+});
+
+// Submit contact - list is automatically found/created
+const success = await submitToConstantContact({
+  email: 'customer@example.com',
+  firstName: 'John',
+  lastName: 'Doe',
+  optInMarketing: true
+});
+```
+
+#### **When to Use Each Approach**
+
+| Use Case | Function | Best For |
+|----------|----------|----------|
+| **Simple lookup in cache** | `findListByName(lists, 'MyList')` | Quick checks with known cache |
+| **Ensure list exists** | `ensureListExists('MyList', ...)` | Production workflows with auto-creation |
+| **Special SHOWROOM KAWAI** | `ensureShowroomKawaiList(lists, loadLists)` | Legacy - has hardcoded fallback ID |
+| **Hook-based submission** | `useConstantContactIntegration({ targetList: 'MyList' })` | React components with form submission |
+
+#### **Legacy Patterns (Deprecated)**
+
+```typescript
+// ❌ OLD PATTERN - Don't use anymore
+const targetList = lists.find(list =>
+  list.label.toLowerCase() === 'mylist'
+);
+if (!targetList) {
+  // Fails silently - no auto-creation
+  throw new Error('List not found');
 }
 
-// Create a new list
-const newList = await listManager.createList('Showroom Visitors', 'Piano showroom inquiries');
+// ✅ NEW PATTERN - Use instead
+const result = await ensureListExists('MyList', 'Description', lists, loadLists);
+if (!result.listId) {
+  // Comprehensive error handling
+  console.error(result.error);
+}
 ```
 
 ## 🚨 Authentication Initialization ✅ CRITICAL
@@ -1094,6 +1175,7 @@ curl -X GET http://localhost:3000/api/constantcontact/initialize
 | Issue | Symptoms | Root Cause | Solution |
 |-------|----------|------------|----------|
 | **500 Internal Server Error** | `contacts.api.internal_server_error` | Incorrect API payload format | Ensure `create_source: "Contact"` and `list_memberships: string[]` |
+| **Update Validation Error** | `update_source is missing, update_source does not have a valid value` | Missing required field in update payload | Ensure `update_source: "Contact"` for all PUT /contacts/:id requests |
 | **OAuth Token Storage Fails** | "Failed to store tokens in database" | No database credentials record | Run initialization: `POST /api/constantcontact/initialize` |
 | **List Not Found Error** | "Failed to find or create SHOWROOM KAWAI list" | List lookup failing + duplicate creation | Enhanced with fallback logic and duplicate handling |
 | **Missing Required Fields** | API rejects contact creation | Missing `first_name`, `last_name`, or `create_source` | All are effectively required despite being marked optional |
@@ -1137,6 +1219,19 @@ if (response.reauth_required) {
 
 ### Required API Payload Format
 
+#### **Understanding `create_source` vs `update_source`**
+
+The Constant Contact API requires different "source" fields depending on the operation type:
+
+| Operation | HTTP Method | Required Field | Value | Purpose |
+|-----------|-------------|----------------|-------|---------|
+| **Create Contact** | `POST /contacts` | `create_source` | `"Contact"` | Tracks where the contact was created |
+| **Update Contact** | `PUT /contacts/:id` | `update_source` | `"Contact"` | Tracks where the contact was updated |
+
+**⚠️ CRITICAL**: Both fields are **required** for their respective operations. Omitting them causes validation errors.
+
+#### **Contact Creation Payload**
+
 **❌ WRONG (causes 500 errors):**
 ```json
 {
@@ -1146,6 +1241,7 @@ if (response.reauth_required) {
   "list_memberships": [                         // ❌ Wrong structure for creation
     { "list_id": "123", "membership_status": "active" }
   ]
+  // ❌ Missing create_source field
 }
 ```
 
@@ -1158,10 +1254,77 @@ if (response.reauth_required) {
   },
   "first_name": "John",                        // ✅ Required field
   "last_name": "Doe",                          // ✅ Required field
-  "create_source": "Contact",                  // ✅ Required field
+  "create_source": "Contact",                  // ✅ Required for creation
   "list_memberships": ["list-id-string"]      // ✅ Array of strings
 }
 ```
+
+#### **Contact Update Payload**
+
+**❌ WRONG (causes validation error):**
+```json
+{
+  "list_memberships": ["new-list-id"]          // ❌ Missing update_source
+}
+```
+
+**✅ CORRECT (works):**
+```json
+{
+  "update_source": "Contact",                  // ✅ Required for updates
+  "list_memberships": ["new-list-id"],
+  "custom_fields": [                           // ✅ Optional fields
+    {
+      "custom_field_id": "field-id",
+      "value": "updated value"
+    }
+  ]
+}
+```
+
+#### **Implementation in Our Codebase**
+
+Our `ConstantContactListManager` class (`src/lib/constantcontact/lists.ts`) automatically handles both fields correctly:
+
+```typescript
+// ✅ Contact Creation - Automatically includes create_source
+async createContact(contactData: CreateContactRequest): Promise<ApiResponse<Contact>> {
+  const contact: any = {
+    email_address: {
+      address: contactData.email_address,
+      permission_to_send: 'implicit'
+    },
+    create_source: 'Contact', // ✅ Required field for POST
+    list_memberships: contactData.list_ids,
+    first_name: contactData.first_name?.trim() || 'Contact',
+    last_name: contactData.last_name?.trim() || 'Subscriber'
+  };
+
+  return this.client.post<Contact>('/contacts', contact);
+}
+
+// ✅ Contact Update - Automatically includes update_source
+async updateContactLists(
+  contactId: string,
+  listIds: string[],
+  customFields?: Array<{ custom_field_id: string; value: string }>
+): Promise<ApiResponse<Contact>> {
+  const data: any = {
+    update_source: 'Contact', // ✅ Required field for PUT
+    list_memberships: listIds
+  };
+
+  if (customFields && customFields.length > 0) {
+    data.custom_fields = customFields.filter(field =>
+      field.custom_field_id && field.value
+    );
+  }
+
+  return this.client.put<Contact>(`/contacts/${contactId}`, data);
+}
+```
+
+**Key Takeaway**: When using our API client, you don't need to manually add `create_source` or `update_source` - the implementation handles this automatically. However, if you're building custom API requests, always remember to include the appropriate field.
 
 ### Debugging Authentication Issues
 
@@ -2019,7 +2182,227 @@ export class ConstantContactAutomation {
 }
 ```
 
-## 📚 Rate Limits & Best Practices
+## 📚 List Management Best Practices & Maintainability ✅ UPDATED (January 2025)
+
+### **Modern List Management Architecture**
+
+The system now uses a layered approach for list management with automatic fallbacks:
+
+```
+User Request
+    ↓
+useConstantContactIntegration Hook
+    ↓
+ensureListExists() Utility
+    ↓
+┌─────────────────────────────────────┐
+│ 1. Local Cache Search (Fastest)    │
+│ 2. API Search by Name (Fallback)   │
+│ 3. Create List (Auto)               │
+│ 4. Handle "Not Unique" (Refresh)    │
+└─────────────────────────────────────┘
+    ↓
+Contact Submission
+```
+
+### **Implementation Guidelines**
+
+#### **1. For New Features - Use the Hook Pattern**
+
+```typescript
+// ✅ RECOMMENDED: React components with Calendly/forms
+import useConstantContactIntegration from '@/hooks/useConstantContactIntegration';
+
+const { submitToConstantContact } = useConstantContactIntegration({
+  targetList: 'MY_EVENT_2025',                    // Descriptive list name
+  createListIfMissing: true,                      // Auto-create enabled
+  listDescription: 'My Event 2025 - Leads',      // Clear description
+  showAuthPrompts: false                          // Silent mode for events
+});
+
+// Hook handles: list discovery → creation → submission → error handling
+await submitToConstantContact(contactData);
+```
+
+**Benefits:**
+- ✅ Automatic list discovery + creation
+- ✅ Built-in error handling
+- ✅ Retry logic for auth failures
+- ✅ React state management
+- ✅ Loading/success states included
+
+#### **2. For Server-Side Operations - Use Utility Functions**
+
+```typescript
+// ✅ RECOMMENDED: API routes or server actions
+import { ensureListExists } from '@/lib/constantcontact/signature-utils';
+
+const listResult = await ensureListExists(
+  'NEWSLETTER_2025',
+  'Newsletter subscribers 2025',
+  lists,
+  loadLists
+);
+
+if (!listResult.listId) {
+  return NextResponse.json({ error: listResult.error }, { status: 500 });
+}
+
+// Use listResult.listId for contact submission
+```
+
+**Benefits:**
+- ✅ Works in any async context
+- ✅ No React dependencies
+- ✅ Fine-grained error handling
+- ✅ Database-agnostic
+
+#### **3. List Naming Conventions**
+
+```typescript
+// ✅ GOOD: Clear, descriptive names
+'TSU2025'                    // Event-based, year included
+'NEWSLETTER_SUBSCRIBERS'     // Purpose-based, all caps
+'VIP_CUSTOMERS_Q4'          // Segment + timeframe
+
+// ❌ BAD: Vague or inconsistent
+'list1'                      // Not descriptive
+'My List'                    // Spaces complicate matching
+'test'                       // Not production-ready
+```
+
+#### **4. Error Handling Strategy**
+
+```typescript
+// ✅ COMPREHENSIVE: Production-ready error handling
+const result = await ensureListExists('MyList', 'Description', lists, loadLists);
+
+if (!result.listId) {
+  // Log structured error for debugging
+  console.error('List Management Error:', {
+    listName: 'MyList',
+    error: result.error,
+    timestamp: new Date().toISOString(),
+    context: 'user_registration_flow'
+  });
+
+  // User-friendly fallback
+  setSubmitError('Unable to complete registration. Please try again.');
+
+  // Optional: Alert monitoring service
+  // monitoringService.captureError('list_creation_failed', { listName: 'MyList' });
+
+  return false;
+}
+
+// Success path
+console.log('List confirmed:', result.listId);
+```
+
+### **Common Patterns & Anti-Patterns**
+
+#### **Pattern: Event-Based Lists**
+
+```typescript
+// ✅ GOOD: Event-specific lists with year
+const eventConfig = {
+  targetList: 'TSU2025',
+  listDescription: 'Tennessee State University Piano Sale 2025',
+  createListIfMissing: true
+};
+
+// Auto-creates if needed, finds if exists
+const { submitToConstantContact } = useConstantContactIntegration(eventConfig);
+```
+
+#### **Anti-Pattern: Hardcoded List IDs**
+
+```typescript
+// ❌ BAD: Hardcoded list IDs break across environments
+const listId = '40d1d690-8d9d-11f0-9bdc-fa163ea70839'; // Prod ID won't work in dev
+
+// ✅ GOOD: Use list names with auto-discovery
+const result = await ensureListExists('SHOWROOM KAWAI', 'Description', lists, loadLists);
+```
+
+#### **Pattern: Multi-List Submission**
+
+```typescript
+// ✅ GOOD: Submit to multiple lists with individual error handling
+const lists = ['PRIMARY_LEADS', 'VIP_SEGMENT', 'REGIONAL_TX'];
+const results = await Promise.allSettled(
+  lists.map(listName =>
+    ensureListExists(listName, `${listName} - Auto-managed`, cachedLists, loadLists)
+  )
+);
+
+const validListIds = results
+  .filter(r => r.status === 'fulfilled' && r.value.listId)
+  .map(r => r.value.listId);
+
+// Submit contact to all valid lists
+```
+
+### **Debugging Checklist**
+
+When list management fails, check these in order:
+
+1. **✅ Console Logs** - Look for `ensureListExists` detailed logs
+2. **✅ List Name Spelling** - Exact match required (case-insensitive helps)
+3. **✅ API Search Endpoint** - Verify `/api/constantcontact/lists/search-by-name` works
+4. **✅ List Cache** - Check if `lists` array is populated (call `loadLists()`)
+5. **✅ Authentication** - Verify OAuth tokens are valid
+6. **✅ Network Tab** - Check for API request failures
+7. **✅ Database** - Confirm list exists in Constant Contact dashboard
+
+### **Migration Guide: Old → New Patterns**
+
+```typescript
+// OLD PATTERN (Before January 2025)
+const targetList = lists.find(list =>
+  list.label.toLowerCase() === 'mylist'
+);
+if (!targetList) {
+  throw new Error('List not found'); // ❌ No auto-creation
+}
+const listId = targetList.value;
+
+// NEW PATTERN (January 2025+)
+const result = await ensureListExists(
+  'MyList',
+  'MyList - Auto-managed',
+  lists,
+  loadLists
+);
+if (!result.listId) {
+  console.error(result.error); // ✅ Comprehensive error
+  return false;
+}
+const listId = result.listId; // ✅ Auto-created if needed
+```
+
+### **Performance Optimization**
+
+```typescript
+// ✅ GOOD: Cache lists at component mount
+useEffect(() => {
+  loadLists(); // Fetch once
+}, [loadLists]);
+
+// ✅ GOOD: Memoize config to prevent re-renders
+const trackingConfig = useMemo(() => ({
+  constantContact: {
+    targetList: 'TSU2025',
+    createListIfMissing: true,
+    listDescription: 'TSU Sale 2025'
+  }
+}), []); // Empty deps - config never changes
+
+// ❌ BAD: Fetching lists on every submission
+await loadLists(); // Don't do this in submission handler
+```
+
+## 📚 Rate Limits & API Best Practices
 
 ### Rate Limiting
 - **Default Limit**: 10,000 API requests per hour
@@ -2030,23 +2413,26 @@ export class ConstantContactAutomation {
 
 1. **Authentication**
    - Store tokens securely (encrypted database, not .env files in production)
-   - Implement automatic token refresh
+   - Implement automatic token refresh (✅ Built-in via `getValidAccessToken()`)
    - Use appropriate OAuth scopes
 
 2. **Error Handling**
    - Always handle 429 (rate limit) responses
    - Implement retry logic with exponential backoff
-   - Log errors for debugging
+   - Log errors with structured data for debugging
+   - Use `ensureListExists()` for comprehensive error recovery
 
 3. **Data Management**
    - Validate email addresses before API calls
    - Use batch operations when possible
    - Implement duplicate contact detection
+   - Leverage list caching to reduce API calls
 
 4. **Performance**
    - Cache frequently accessed data (lists, custom fields)
    - Use pagination for large datasets
    - Implement async operations for bulk updates
+   - Prefer `ensureListExists()` over multiple API calls
 
 ## 🚀 Deployment Checklist
 

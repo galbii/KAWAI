@@ -33,12 +33,14 @@ export default function PdfViewer({
 }: PdfViewerProps) {
   const [numPages, setNumPages] = useState<number>();
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [devicePixelRatio, setDevicePixelRatio] = useState(2);
+  const [devicePixelRatio, setDevicePixelRatio] = useState(3);
 
-  // Set device pixel ratio on mount
+  // Set device pixel ratio on mount - use higher value for crisp rendering
   useMemo(() => {
     if (typeof window !== 'undefined') {
-      setDevicePixelRatio(window.devicePixelRatio || 2);
+      // Use at least 2x for Retina displays, cap at 3 for performance
+      const dpr = Math.min(window.devicePixelRatio || 2, 3);
+      setDevicePixelRatio(dpr);
     }
   }, []);
 
@@ -98,7 +100,7 @@ export default function PdfViewer({
           {...(height && { height })}
           {...(scale && { scale })}
           renderTextLayer={true}
-          renderAnnotationLayer={true}
+          renderAnnotationLayer={false}
           className="pdf-page"
           devicePixelRatio={devicePixelRatio}
         />

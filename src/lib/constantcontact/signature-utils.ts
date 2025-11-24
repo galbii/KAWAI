@@ -414,6 +414,175 @@ export function formatSignatureContact(data: SignatureContactData, listId: strin
 }
 
 /**
+ * Generic function to find a list by name (case-insensitive with fallbacks)
+ */
+export function findListByName(lists: ContactList[], listName: string): ContactList | null {
+  console.log('findListByName: Searching through', lists.length, 'lists for:', listName)
+  console.log('findListByName: Available lists:', lists.map(l => ({ label: l.label, value: l.value })))
+
+  // Validate input
+  if (!Array.isArray(lists) || lists.length === 0) {
+    console.log('findListByName: No lists provided or empty array')
+    return null
+  }
+
+  if (!listName || typeof listName !== 'string') {
+    console.log('findListByName: Invalid list name:', listName)
+    return null
+  }
+
+  const normalizedName = listName.toLowerCase().trim()
+
+  // Try exact match first (case-insensitive)
+  let matchedList = lists.find(list => {
+    if (!list || !list.label) {
+      console.log('findListByName: Invalid list item found:', list)
+      return false
+    }
+    const match = list.label.toLowerCase().trim() === normalizedName
+    if (match) console.log('findListByName: Exact match candidate:', list.label, '===', listName)
+    return match
+  })
+
+  if (matchedList) {
+    console.log('findListByName: Found exact match:', matchedList.label)
+    return matchedList
+  }
+
+  // Try partial match (contains)
+  matchedList = lists.find(list => {
+    if (!list || !list.label) return false
+    const label = list.label.toLowerCase().trim()
+    const match = label.includes(normalizedName) || normalizedName.includes(label)
+    if (match) console.log('findListByName: Partial match candidate:', list.label)
+    return match
+  })
+
+  if (matchedList) {
+    console.log('findListByName: Found partial match:', matchedList.label)
+    return matchedList
+  }
+
+  console.log('findListByName: No matching list found for:', listName)
+  return null
+}
+
+/**
+ * Generic function to ensure any list exists with API-level search
+ *
+ * IMPORTANT: This function doesn't use the lists parameter for refresh lookups
+ * because the parameter won't update after calling onListsUpdate(). Instead,
+ * we fetch fresh lists from the API when needed.
+ */
+export async function ensureListExists(
+  listName: string,
+  listDescription: string,
+  lists: ContactList[],
+  onListsUpdate?: () => Promise<void>
+): Promise<{ listId: string | null; error?: string }> {
+  console.log('ensureListExists: Starting enhanced list discovery for:', listName)
+  console.log('ensureListExists: Local cache has', lists.length, 'lists')
+
+  // Step 1: Try to find existing list in local cache first (fastest)
+  const existingList = findListByName(lists, listName)
+  if (existingList) {
+    console.log('ensureListExists: Found in local cache with ID:', existingList.value)
+    return { listId: existingList.value }
+  }
+
+  // Step 2: If not in cache, search API directly by name
+  console.log('ensureListExists: Not found in cache, searching API by name...')
+  try {
+    const apiSearchResult = await fetch('/api/constantcontact/lists/search-by-name', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: listName })
+    })
+
+    if (apiSearchResult.ok) {
+      const searchData = await apiSearchResult.json()
+      if (searchData.success && searchData.data) {
+        console.log('ensureListExists: Found via API search with ID:', searchData.data.list_id)
+        // Refresh local cache if callback provided
+        if (onListsUpdate) {
+          await onListsUpdate()
+        }
+        return { listId: searchData.data.list_id }
+      }
+    }
+  } catch (apiError) {
+    console.warn('ensureListExists: API search failed, continuing with creation attempt')
+  }
+
+  // Step 3: If API search fails, try to create the list
+  console.log('ensureListExists: List not found via API search, attempting creation...')
+  try {
+    const createResponse = await fetch('/api/constantcontact/lists', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: listName,
+        description: listDescription
+      })
+    })
+
+    const createResult = await createResponse.json()
+
+    // Step 4: Handle creation response
+    if (createResponse.ok && createResult.success) {
+      console.log('ensureListExists: Successfully created list with ID:', createResult.data?.list_id)
+      // Refresh lists if callback provided
+      if (onListsUpdate) {
+        await onListsUpdate()
+      }
+      return { listId: createResult.data?.list_id }
+    }
+
+    // Step 5: If creation fails with "not unique" error, list exists but API search missed it
+    if (!createResponse.ok && createResult.error?.includes('not unique')) {
+      console.log('ensureListExists: Creation failed - list already exists. Fetching fresh lists...')
+
+      // Fetch fresh lists from API since the parameter won't update
+      try {
+        const listsResponse = await fetch('/api/constantcontact/lists?format=ui')
+        if (listsResponse.ok) {
+          const listsData = await listsResponse.json()
+          if (listsData.success && Array.isArray(listsData.data)) {
+            const freshLists = listsData.data as ContactList[]
+            console.log('ensureListExists: Fetched', freshLists.length, 'fresh lists from API')
+
+            // Try to find it in fresh lists
+            const refreshedList = findListByName(freshLists, listName)
+            if (refreshedList) {
+              console.log('ensureListExists: Found after fetching fresh lists with ID:', refreshedList.value)
+
+              // Also trigger the callback to update the hook's state
+              if (onListsUpdate) {
+                await onListsUpdate()
+              }
+
+              return { listId: refreshedList.value }
+            }
+          }
+        }
+      } catch (fetchError) {
+        console.error('ensureListExists: Error fetching fresh lists:', fetchError)
+      }
+    }
+
+    // Step 6: Complete failure
+    const error = `Failed to find or create list "${listName}": ${createResult.error || 'Unknown error'}`
+    console.error('ensureListExists: Complete failure -', error)
+    return { listId: null, error }
+
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('ensureListExists: Error during list creation:', errorMessage)
+    return { listId: null, error: errorMessage }
+  }
+}
+
+/**
  * Add a user to the signature uncommitted list when they see their results
  */
 export async function addUserToSignatureUncommittedList(

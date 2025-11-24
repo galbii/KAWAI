@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Calendar, X } from 'lucide-react';
-import PianoConsultationDialog from './PianoConsultationDialog';
 
 interface TimeLeft {
   days: number;
@@ -11,10 +10,14 @@ interface TimeLeft {
   minutes: number;
 }
 
-export function CountdownTimer() {
+interface CountdownTimerProps {
+  onOpenConsultation: () => void;
+  isConsultationModalOpen: boolean;
+}
+
+export function CountdownTimer({ onOpenConsultation, isConsultationModalOpen }: CountdownTimerProps) {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0 });
   const [mounted, setMounted] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isMinimized, setIsMinimized] = useState(true); // Start minimized
   const [hasScrolled, setHasScrolled] = useState(false);
@@ -93,8 +96,8 @@ export function CountdownTimer() {
   }, [mounted]);
 
   const handleBookNowClick = () => {
-    // Open the piano consultation dialog
-    setIsModalOpen(true);
+    // Open the shared piano consultation dialog via callback
+    onOpenConsultation();
   };
 
   const handleMinimize = () => {
@@ -112,8 +115,9 @@ export function CountdownTimer() {
 
   return (
     <>
+      {/* Hide countdown timer when consultation modal is open */}
       <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6" style={{ paddingRight: '12px', paddingTop: '12px', zIndex: 1050 }}>
-        {isVisible && (
+        {isVisible && !isConsultationModalOpen && (
           <>
             {isMinimized ? (
               // Minimized State - Small circular button
@@ -199,12 +203,6 @@ export function CountdownTimer() {
           </>
         )}
       </div>
-
-      {/* Piano Consultation Dialog */}
-      <PianoConsultationDialog 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-      />
     </>
   );
 }

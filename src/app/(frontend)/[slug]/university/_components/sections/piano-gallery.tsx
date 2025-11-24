@@ -35,19 +35,6 @@ const featuredPianos: FeaturedPiano[] = [
     availability: "Available for demonstration"
   },
   {
-    id: "es-520",
-    model: "ES-520",
-    title: "Kawai ES-520",
-    description: "Advanced digital piano featuring Responsive Hammer III action, premium sound engine, and comprehensive connectivity. Professional performance in a portable design.",
-    image: "/images/optimized/pianos/ES520W_above_1200.webp",
-    category: "Digital Piano",
-    originalPrice: 1399,
-    salePrice: 999,
-    savings: 400,
-    keyFeatures: ["88 Weighted Keys", "Bluetooth Connectivity", "38 Premium Sounds"],
-    availability: "Available for demonstration"
-  },
-  {
     id: "k-200",
     model: "K-200",
     title: "Kawai K-200",

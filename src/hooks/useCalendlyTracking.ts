@@ -4,6 +4,10 @@ import { usePostHog } from 'posthog-js/react'
 import { trackSubmitApplication } from '@/components/MetaPixel'
 import useConstantContactIntegration, { type ConstantContactSubmissionData } from '@/hooks/useConstantContactIntegration'
 
+// Global tracking registry (module-level, shared across all hook instances)
+// This prevents duplicate tracking when multiple components use useCalendlyTracking
+const globalTrackedEvents = new Set<string>()
+
 // Types for prefill data
 export interface CalendlyPrefillData {
   email?: string
@@ -18,6 +22,9 @@ export interface CalendlyTrackingConfig {
   eventName: string // e.g., 'TSU Piano Sale', 'GL-10 Signature'
   posthogEventName?: string // e.g., 'tsu_piano_booking', 'signature_dallas_booking'
 
+  // Enable/disable tracking (useful for modals that are mounted but hidden)
+  enabled?: boolean // default: true
+
   // Meta Pixel configuration
   metaPixel: {
     content_name: string // e.g., 'TSU Piano Sale Consultation'
@@ -30,9 +37,10 @@ export interface CalendlyTrackingConfig {
   // Constant Contact integration (optional)
   constantContact?: {
     enabled: boolean
-    targetList: string // e.g., 'SHOWROOM KAWAI', 'TSU LEADS'
+    targetList: string // e.g., 'SHOWROOM KAWAI', 'TSU2025'
     createListIfMissing?: boolean
     showAuthPrompts?: boolean
+    listDescription?: string // Description for list creation
   }
 
   // Callbacks
@@ -81,7 +89,11 @@ export default function useCalendlyTracking(
   const { submitToConstantContact } = useConstantContactIntegration({
     targetList: config.constantContact?.targetList || 'SHOWROOM KAWAI',
     createListIfMissing: config.constantContact?.createListIfMissing ?? true,
-    showAuthPrompts: config.constantContact?.showAuthPrompts ?? false
+    showAuthPrompts: config.constantContact?.showAuthPrompts ?? false,
+    // Only include listDescription if it has a value (exactOptionalPropertyTypes: true)
+    ...(config.constantContact?.listDescription && {
+      listDescription: config.constantContact.listDescription
+    })
   })
 
   // Handle Constant Contact submission (non-blocking)
@@ -100,21 +112,39 @@ export default function useCalendlyTracking(
     )
 
     try {
-      // Get email from prefillData
-      const email = prefillData?.email
+      // Extract data from Calendly event payload (actual user-entered data)
+      const payload = eventData?.data?.payload
+      const invitee = payload?.event?.invitees?.[0]
+
+      // Get email from Calendly payload (what user actually entered)
+      const email = invitee?.email || payload?.invitee?.email || prefillData?.email
+
       if (!email) {
-        console.warn('⚠️ No email available for Constant Contact submission (non-blocking)')
+        console.warn('⚠️ No email available for Constant Contact submission (non-blocking)', {
+          payload,
+          invitee,
+          prefillData
+        })
         return
       }
+
+      // Extract name from Calendly payload, fallback to prefill
+      const name = invitee?.name || payload?.invitee?.name || ''
+      const nameParts = name.split(' ')
+      const firstName = nameParts[0] || prefillData?.firstName
+      const lastName = nameParts.slice(1).join(' ') || prefillData?.lastName
 
       // Create contact data with available information
       const contactData: ConstantContactSubmissionData = {
         email,
-        ...(prefillData?.firstName && { firstName: prefillData.firstName }),
-        ...(prefillData?.lastName && { lastName: prefillData.lastName }),
+        ...(firstName && { firstName }),
+        ...(lastName && { lastName }),
         ...(prefillData?.phone && { phone: prefillData.phone }),
         optInMarketing: true // Default to opted in for consultation bookings
       }
+
+      console.log('📧 Extracted email from Calendly:', email)
+      console.log('👤 Extracted name from Calendly:', { firstName, lastName })
 
       console.log(`🎉 Booking COMPLETED! Adding to ${config.constantContact.targetList} list:`, contactData)
 
@@ -139,11 +169,22 @@ export default function useCalendlyTracking(
   const handleSuccessfulBooking = useCallback(async (eventData: any) => {
     const now = Date.now()
 
-    // Prevent duplicate tracking with two-layer protection:
-    // 1. Check if we've already tracked (ref-based)
+    // Extract Calendly event UUID for global deduplication
+    const eventUuid = eventData?.data?.payload?.event?.uuid
+    const eventId = eventUuid || `fallback-${now}`
+
+    // GLOBAL duplicate prevention (shared across all hook instances)
+    // This prevents multiple components from tracking the same Calendly event
+    if (globalTrackedEvents.has(eventId)) {
+      console.log(`⚠️ [${config.eventName}] Event ${eventId} already tracked GLOBALLY, skipping duplicate`)
+      return
+    }
+
+    // Instance-level duplicate prevention (fallback)
+    // 1. Check if THIS instance has already tracked (ref-based)
     // 2. Check if this is a rapid duplicate (< 1 second since last track)
     if (hasTrackedEvent.current) {
-      console.log(`⚠️ [${config.eventName}] Event already tracked, skipping duplicate`)
+      console.log(`⚠️ [${config.eventName}] Event already tracked by this instance, skipping duplicate`)
       return
     }
 
@@ -152,39 +193,59 @@ export default function useCalendlyTracking(
       return
     }
 
+    // Mark as tracked GLOBALLY first (prevents other instances from tracking)
+    globalTrackedEvents.add(eventId)
+    console.log(`✅ [${config.eventName}] Event ${eventId} marked as tracked globally`)
+
+    // Also mark in this instance
+    hasTrackedEvent.current = true
+    lastTrackingTimestamp.current = now
+
     console.log(`🎯 [${config.eventName}] Booking completed:`, eventData)
     console.log('📋 Event payload:', eventData?.data?.payload)
 
     // Call parent callback immediately
     config.onBookingComplete?.(eventData)
 
+    // Extract data from Calendly event payload (actual user-entered data)
+    const payload = eventData?.data?.payload
+    const invitee = payload?.event?.invitees?.[0]
+
+    // Get email from Calendly payload (what user actually entered)
+    const email = invitee?.email || payload?.invitee?.email || prefillData?.email
+
+    // Extract name from Calendly payload, fallback to prefill
+    const name = invitee?.name || payload?.invitee?.name || ''
+    const nameParts = name.split(' ')
+    const firstName = nameParts[0] || prefillData?.firstName || ''
+    const lastName = nameParts.slice(1).join(' ') || prefillData?.lastName || ''
+
     // Prepare contact data for tracking
     const contactData = {
-      email: prefillData?.email,
-      firstName: prefillData?.firstName,
-      lastName: prefillData?.lastName,
+      email,
+      firstName,
+      lastName,
       phone: prefillData?.phone
     }
 
-    console.log('📊 Contact data prepared for tracking:', {
+    console.log('📊 Contact data prepared for tracking (from Calendly payload):', {
       email: contactData.email ? '[PRESENT]' : '[MISSING]',
       firstName: contactData.firstName ? '[PRESENT]' : '[MISSING]',
       lastName: contactData.lastName ? '[PRESENT]' : '[MISSING]',
       phone: contactData.phone ? '[PRESENT]' : '[MISSING]',
-      posthogAvailable: !!posthog
+      posthogAvailable: !!posthog,
+      source: email === invitee?.email ? 'calendly-invitee' : email === payload?.invitee?.email ? 'calendly-payload' : 'prefillData'
     })
 
     // Verify we have essential data for tracking
     if (!contactData.email) {
       console.error('❌ CRITICAL: No email available for tracking - events may fail', {
         prefillData,
+        payload,
+        invitee,
         contactData
       })
     }
-
-    // Mark as tracked immediately to prevent duplicates
-    hasTrackedEvent.current = true
-    lastTrackingTimestamp.current = now
 
     // Non-blocking tracking sequence: Meta Pixel → PostHog → Constant Contact
     // All tracking is non-blocking and won't affect booking completion
@@ -201,7 +262,8 @@ export default function useCalendlyTracking(
 
         console.log('🎯 Meta Pixel: Firing SubmitApplication event with data:', {
           ...metaPixelData,
-          email: prefillData?.email ? '[PRESENT]' : '[MISSING]'
+          email: contactData.email ? '[PRESENT]' : '[MISSING]',
+          dataSource: email === invitee?.email ? 'calendly-invitee' : email === payload?.invitee?.email ? 'calendly-payload' : 'prefillData'
         })
 
         trackSubmitApplication(metaPixelData)
@@ -217,11 +279,12 @@ export default function useCalendlyTracking(
           if (posthog && config.posthogEventName) {
             posthog.capture(config.posthogEventName, {
               source: config.eventName.toLowerCase().replace(/\s+/g, '-'),
-              email: prefillData?.email,
-              firstName: prefillData?.firstName,
-              lastName: prefillData?.lastName,
+              email: contactData.email,
+              firstName: contactData.firstName,
+              lastName: contactData.lastName,
               conversionType: 'showroom-consultation',
               timestamp: +new Date(),
+              dataSource: email === invitee?.email ? 'calendly-invitee' : email === payload?.invitee?.email ? 'calendly-payload' : 'prefillData',
               ...(config.additionalData && config.additionalData)
             })
             console.log(`✅ PostHog ${config.posthogEventName} fired successfully: ` + (+new Date()))
@@ -245,15 +308,21 @@ export default function useCalendlyTracking(
   }, [config, prefillData, posthog, handleConstantContactSubmission])
   // Note: hasTrackedEvent and lastTrackingTimestamp are refs, not dependencies
 
-  // Set up Calendly event listeners
+  // Set up Calendly event listeners (only if enabled)
+  // This prevents hidden modals from firing duplicate tracking events
+  const isEnabled = config.enabled !== false // Default to true if not specified
+
   useCalendlyEventListener({
-    onEventScheduled: handleSuccessfulBooking,
-    onProfilePageViewed: (event) => {
-      console.log(`📊 Calendly Profile Page Viewed (${config.eventName}):`, event)
-    },
-    onDateAndTimeSelected: (event) => {
-      console.log(`📅 Calendly Date/Time Selected (${config.eventName}):`, event)
-    }
+    // Only include handlers if enabled (exactOptionalPropertyTypes: true)
+    ...(isEnabled && {
+      onEventScheduled: handleSuccessfulBooking,
+      onProfilePageViewed: (event) => {
+        console.log(`📊 Calendly Profile Page Viewed (${config.eventName}):`, event)
+      },
+      onDateAndTimeSelected: (event) => {
+        console.log(`📅 Calendly Date/Time Selected (${config.eventName}):`, event)
+      }
+    })
   })
 
   return {
