@@ -71,22 +71,21 @@ export default function QuickContactForm({ onSuccess, onSkip }: QuickContactForm
     try {
       // Local validation complete - no API call needed
       // Constant Contact submission happens AFTER Calendly booking via useCalendlyTracking hook
-      console.log('QuickContactForm: Form validated, preparing Calendly...', {
-        email: formData.email,
-        firstName: formData.firstName,
-        lastName: formData.lastName
-      });
+      const submissionData = {
+        email: formData.email.trim().toLowerCase(),
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+      };
+
+      console.log('QuickContactForm: Form validated, preparing Calendly with data:', submissionData);
+      console.log('QuickContactForm: Email for prefill:', submissionData.email);
 
       // Brief delay for better UX (shows submitting state)
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // Call success callback with form data
       // This data will be passed to Calendly and useCalendlyTracking hook
-      onSuccess({
-        email: formData.email.trim().toLowerCase(),
-        firstName: formData.firstName.trim(),
-        lastName: formData.lastName.trim(),
-      });
+      onSuccess(submissionData);
     } catch (error) {
       console.error('QuickContactForm: Validation error:', error);
       setSubmitError(

@@ -98,6 +98,7 @@ export default function AboutEventSection({ onOpenConsultation }: AboutEventSect
                   onClick={() => openImageModal("/tsu_letter.pdf", "TSU Houston Piano Sale Event Letter - Piano Deals Houston", 800, 600)}
                   loading="Loading piano sale letter..."
                   error="Unable to load letter PDF"
+                  showPageCount={false}
                 />
               </div>
             </div>
@@ -159,6 +160,7 @@ export default function AboutEventSection({ onOpenConsultation }: AboutEventSect
               onClick={() => openImageModal("/tsu_letter.pdf", "TSU Houston Piano Sale Event Letter - Piano Deals Houston", 800, 600)}
               loading="Loading piano sale letter..."
               error="Unable to load letter PDF"
+              showPageCount={false}
             />
           </div>
         </div>

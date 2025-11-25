@@ -82,6 +82,10 @@ export default function useCalendlyTracking(
   const lastTrackingTimestamp = useRef<number>(0)
   const [isTrackingReady, setIsTrackingReady] = useState(true)
 
+  // Store prefillData in a ref so callbacks always have access to latest value
+  const prefillDataRef = useRef(prefillData)
+  prefillDataRef.current = prefillData
+
   // PostHog hook for event tracking
   const posthog = usePostHog()
 
@@ -117,13 +121,13 @@ export default function useCalendlyTracking(
       const invitee = payload?.event?.invitees?.[0]
 
       // Get email from Calendly payload (what user actually entered)
-      const email = invitee?.email || payload?.invitee?.email || prefillData?.email
+      const email = invitee?.email || payload?.invitee?.email || prefillDataRef.current?.email
 
       if (!email) {
         console.warn('⚠️ No email available for Constant Contact submission (non-blocking)', {
           payload,
           invitee,
-          prefillData
+          prefillData: prefillDataRef.current
         })
         return
       }
@@ -131,22 +135,44 @@ export default function useCalendlyTracking(
       // Extract name from Calendly payload, fallback to prefill
       const name = invitee?.name || payload?.invitee?.name || ''
       const nameParts = name.split(' ')
-      const firstName = nameParts[0] || prefillData?.firstName
-      const lastName = nameParts.slice(1).join(' ') || prefillData?.lastName
+      const firstName = nameParts[0] || prefillDataRef.current?.firstName
+      const lastName = nameParts.slice(1).join(' ') || prefillDataRef.current?.lastName
 
       // Create contact data with available information
       const contactData: ConstantContactSubmissionData = {
         email,
         ...(firstName && { firstName }),
         ...(lastName && { lastName }),
-        ...(prefillData?.phone && { phone: prefillData.phone }),
+        ...(prefillDataRef.current?.phone && { phone: prefillDataRef.current.phone }),
         optInMarketing: true // Default to opted in for consultation bookings
       }
 
       console.log('📧 Extracted email from Calendly:', email)
       console.log('👤 Extracted name from Calendly:', { firstName, lastName })
+      console.log('📦 prefillData passed to hook:', prefillDataRef.current)
+      console.log('🔍 Calendly payload structure:', {
+        hasPayload: !!payload,
+        hasEvent: !!payload?.event,
+        hasInvitees: !!payload?.event?.invitees,
+        inviteesLength: payload?.event?.invitees?.length,
+        hasInvitee: !!invitee,
+        inviteeEmail: invitee?.email,
+        payloadInviteeEmail: payload?.invitee?.email
+      })
 
       console.log(`🎉 Booking COMPLETED! Adding to ${config.constantContact.targetList} list:`, contactData)
+
+      // CRITICAL: Verify email is present before submission
+      if (!contactData.email) {
+        console.error('❌ CRITICAL ERROR: Email is missing from contactData! Cannot submit to Constant Contact.')
+        console.error('Debug info:', {
+          prefillData: prefillDataRef.current,
+          payload,
+          invitee,
+          extractedEmail: email
+        })
+        return
+      }
 
       // Submit to Constant Contact list (non-blocking)
       const success = await Promise.race([
@@ -163,7 +189,8 @@ export default function useCalendlyTracking(
       console.error(`❌ Error adding contact to ${config.constantContact.targetList} list (non-blocking):`, error)
       // This is non-blocking - booking completion is not affected
     }
-  }, [config, prefillData, submitToConstantContact])
+  }, [config, submitToConstantContact])
+  // Note: prefillDataRef is a ref, not a dependency
 
   // Handle successful booking submission
   const handleSuccessfulBooking = useCallback(async (eventData: any) => {
@@ -172,6 +199,13 @@ export default function useCalendlyTracking(
     // Extract Calendly event UUID for global deduplication
     const eventUuid = eventData?.data?.payload?.event?.uuid
     const eventId = eventUuid || `fallback-${now}`
+
+    console.log(`🔍 [${config.eventName}] Checking event deduplication:`, {
+      eventId,
+      hasUuid: !!eventUuid,
+      alreadyTracked: globalTrackedEvents.has(eventId),
+      globalTrackedSize: globalTrackedEvents.size
+    })
 
     // GLOBAL duplicate prevention (shared across all hook instances)
     // This prevents multiple components from tracking the same Calendly event
@@ -212,20 +246,20 @@ export default function useCalendlyTracking(
     const invitee = payload?.event?.invitees?.[0]
 
     // Get email from Calendly payload (what user actually entered)
-    const email = invitee?.email || payload?.invitee?.email || prefillData?.email
+    const email = invitee?.email || payload?.invitee?.email || prefillDataRef.current?.email
 
     // Extract name from Calendly payload, fallback to prefill
     const name = invitee?.name || payload?.invitee?.name || ''
     const nameParts = name.split(' ')
-    const firstName = nameParts[0] || prefillData?.firstName || ''
-    const lastName = nameParts.slice(1).join(' ') || prefillData?.lastName || ''
+    const firstName = nameParts[0] || prefillDataRef.current?.firstName || ''
+    const lastName = nameParts.slice(1).join(' ') || prefillDataRef.current?.lastName || ''
 
     // Prepare contact data for tracking
     const contactData = {
       email,
       firstName,
       lastName,
-      phone: prefillData?.phone
+      phone: prefillDataRef.current?.phone
     }
 
     console.log('📊 Contact data prepared for tracking (from Calendly payload):', {
@@ -240,7 +274,7 @@ export default function useCalendlyTracking(
     // Verify we have essential data for tracking
     if (!contactData.email) {
       console.error('❌ CRITICAL: No email available for tracking - events may fail', {
-        prefillData,
+        prefillData: prefillDataRef.current,
         payload,
         invitee,
         contactData
@@ -305,8 +339,8 @@ export default function useCalendlyTracking(
         })
       }, 200)
     }, 50)
-  }, [config, prefillData, posthog, handleConstantContactSubmission])
-  // Note: hasTrackedEvent and lastTrackingTimestamp are refs, not dependencies
+  }, [config, posthog, handleConstantContactSubmission])
+  // Note: hasTrackedEvent, lastTrackingTimestamp, and prefillDataRef are refs, not dependencies
 
   // Set up Calendly event listeners (only if enabled)
   // This prevents hidden modals from firing duplicate tracking events

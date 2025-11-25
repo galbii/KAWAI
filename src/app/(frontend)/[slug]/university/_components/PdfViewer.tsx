@@ -18,6 +18,7 @@ interface PdfViewerProps {
   loading?: React.ReactNode;
   error?: React.ReactNode;
   onClick?: () => void;
+  showPageCount?: boolean;
 }
 
 export default function PdfViewer({
@@ -29,7 +30,8 @@ export default function PdfViewer({
   scale,
   loading = "Loading PDF...",
   error = "Failed to load PDF",
-  onClick
+  onClick,
+  showPageCount = true
 }: PdfViewerProps) {
   const [numPages, setNumPages] = useState<number>();
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -105,8 +107,8 @@ export default function PdfViewer({
           devicePixelRatio={devicePixelRatio}
         />
       </Document>
-      
-      {numPages && (
+
+      {showPageCount && numPages && (
         <div className="text-center mt-2 text-sm text-gray-500">
           Page {pageNumber} of {numPages}
         </div>

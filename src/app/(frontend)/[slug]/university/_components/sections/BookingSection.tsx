@@ -71,15 +71,19 @@ export default function BookingSection() {
   // Constant Contact submission happens AFTER Calendly booking via useCalendlyTracking hook
   const handleFormSuccess = (data: { email: string; firstName: string; lastName: string }) => {
     console.log('BookingSection: Form validated, storing data and showing Calendly:', data);
+    console.log('BookingSection: Storing prefill data with email:', data.email);
 
     // Store prefill data for:
     // 1. Calendly widget (better UX with prefilled form)
     // 2. useCalendlyTracking hook (submits to Constant Contact after booking)
-    setPrefillData({
+    const prefillDataToStore = {
       email: data.email,
       firstName: data.firstName,
       lastName: data.lastName,
-    });
+    };
+
+    setPrefillData(prefillDataToStore);
+    console.log('BookingSection: prefillData state updated:', prefillDataToStore);
 
     // Hide form and show Calendly
     setShowForm(false);
