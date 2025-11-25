@@ -31,67 +31,56 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const staticRoutes: MetadataRoute.Sitemap = [
       {
         url: SITE_URL,
-        lastModified: new Date(),
         changeFrequency: 'daily',
         priority: 1.0,
       },
       {
         url: `${SITE_URL}/pianos`,
-        lastModified: new Date(),
         changeFrequency: 'daily',
         priority: 0.9,
       },
       {
         url: `${SITE_URL}/piano-finder`,
-        lastModified: new Date(),
         changeFrequency: 'weekly',
         priority: 0.9,
       },
       {
         url: `${SITE_URL}/find-my-piano`,
-        lastModified: new Date(),
         changeFrequency: 'weekly',
         priority: 0.9,
       },
       {
         url: `${SITE_URL}/pianos/compare`,
-        lastModified: new Date(),
         changeFrequency: 'weekly',
         priority: 0.8,
       },
       {
         url: `${SITE_URL}/pianos/search`,
-        lastModified: new Date(),
         changeFrequency: 'weekly',
         priority: 0.8,
       },
       {
         url: `${SITE_URL}/about`,
-        lastModified: new Date(),
         changeFrequency: 'monthly',
         priority: 0.7,
       },
       {
         url: `${SITE_URL}/artists`,
-        lastModified: new Date(),
         changeFrequency: 'monthly',
         priority: 0.7,
       },
       {
         url: `${SITE_URL}/technology`,
-        lastModified: new Date(),
         changeFrequency: 'monthly',
         priority: 0.7,
       },
       {
         url: `${SITE_URL}/showroom`,
-        lastModified: new Date(),
         changeFrequency: 'monthly',
         priority: 0.7,
       },
       {
         url: `${SITE_URL}/guides`,
-        lastModified: new Date(),
         changeFrequency: 'weekly',
         priority: 0.6,
       },
@@ -106,43 +95,36 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const categoryRoutes: MetadataRoute.Sitemap = [
       {
         url: `${SITE_URL}/pianos/digital`,
-        lastModified: new Date(),
         changeFrequency: 'weekly',
         priority: 0.8,
       },
       {
         url: `${SITE_URL}/pianos/grand`,
-        lastModified: new Date(),
         changeFrequency: 'weekly',
         priority: 0.8,
       },
       {
         url: `${SITE_URL}/pianos/upright`,
-        lastModified: new Date(),
         changeFrequency: 'weekly',
         priority: 0.8,
       },
       {
         url: `${SITE_URL}/pianos/hybrid`,
-        lastModified: new Date(),
         changeFrequency: 'weekly',
         priority: 0.8,
       },
       {
         url: `${SITE_URL}/pianos/shigeru-kawai`,
-        lastModified: new Date(),
         changeFrequency: 'weekly',
         priority: 0.85,
       },
       {
         url: `${SITE_URL}/pianos/shigeru-kawai/sk-ex`,
-        lastModified: new Date(),
         changeFrequency: 'monthly',
         priority: 0.75,
       },
       {
         url: `${SITE_URL}/pianos/digital/ca901`,
-        lastModified: new Date(),
         changeFrequency: 'monthly',
         priority: 0.7,
       },
@@ -254,19 +236,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return [
       {
         url: SITE_URL,
-        lastModified: new Date(),
         changeFrequency: 'daily',
         priority: 1.0,
       },
       {
         url: `${SITE_URL}/pianos`,
-        lastModified: new Date(),
         changeFrequency: 'daily',
         priority: 0.9,
       },
       {
         url: `${SITE_URL}/piano-finder`,
-        lastModified: new Date(),
         changeFrequency: 'weekly',
         priority: 0.9,
       },

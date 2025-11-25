@@ -218,8 +218,8 @@ async function StorefrontContent({ slug }: { slug: string }) {
 }
 
 // Enable ISR (Incremental Static Regeneration) for storefront pages
-// Pages are statically generated at build time and revalidated every 15 minutes
-export const revalidate = 900
+// Pages are statically generated at build time and revalidated every 1 hour
+export const revalidate = 3600
 
 // Pre-generate all active storefront pages at build time for optimal SEO
 // This ensures Google crawler gets fast, pre-rendered HTML

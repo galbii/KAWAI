@@ -7,8 +7,8 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 // Use ISR (Incremental Static Regeneration) for better SEO and performance
-// Pages are statically generated and revalidated every 15 minutes
-export const revalidate = 900
+// Pages are statically generated and revalidated every 1 hour
+export const revalidate = 3600
 
 interface PageProps {
   params: Promise<{ slug: string }>
