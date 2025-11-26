@@ -28,7 +28,7 @@ export function ConsentBanner() {
 
   const loadTrackingScripts = useCallback((preferences: ConsentPreferences) => {
     if (scriptsLoaded) return
-    
+
     // Load Google Ads if advertising consent given
     if (preferences.advertising && typeof window !== 'undefined') {
       const gtagScript = document.createElement('script')
@@ -43,21 +43,8 @@ export function ConsentBanner() {
         }
       }
 
-      // Load Meta Pixel
-      const fbqScript = document.createElement('script')
-      fbqScript.innerHTML = `
-        !function(f,b,e,v,n,t,s)
-        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-        n.queue=[];t=b.createElement(e);t.async=!0;
-        t.src=v;s=b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t,s)}(window, document,'script',
-        'https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init', '783258114117252');
-        fbq('track', 'PageView');
-      `
-      document.head.appendChild(fbqScript)
+      // Meta Pixel is already loaded in layout.tsx - no need to load again
+      // This prevents duplicate tracking events
     }
 
     setScriptsLoaded(true)
@@ -176,31 +163,6 @@ export function ConsentBanner() {
           </div>
         </div>
       </div>
-      
-      {/* Consent management scripts - only load when needed */}
-      {consent?.advertising && (
-        <>
-          <Script 
-            id="google-ads-delayed"
-            src="https://www.googletagmanager.com/gtag/js?id=AW-755074614" 
-            strategy="afterInteractive"
-          />
-          <Script id="meta-pixel-delayed" strategy="afterInteractive">
-            {`
-              !function(f,b,e,v,n,t,s)
-              {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-              n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-              if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-              n.queue=[];t=b.createElement(e);t.async=!0;
-              t.src=v;s=b.getElementsByTagName(e)[0];
-              s.parentNode.insertBefore(t,s)}(window, document,'script',
-              'https://connect.facebook.net/en_US/fbevents.js');
-              fbq('init', '783258114117252');
-              fbq('track', 'PageView');
-            `}
-          </Script>
-        </>
-      )}
     </>
   )
 }
