@@ -87,7 +87,7 @@ export function generateProductSchema(product: {
 
 /**
  * Featured Products Schema for Homepage
- * Highlights key piano categories
+ * Highlights key piano categories using ItemList to avoid Product validation requirements
  */
 export const featuredProductsSchema = {
   "@context": "https://schema.org",
@@ -99,70 +99,50 @@ export const featuredProductsSchema = {
       "@type": "ListItem",
       "position": 1,
       "item": {
-        "@type": "Product",
+        "@type": "Thing",
         "name": "Kawai Grand Pianos",
         "description": "Premium grand pianos featuring the revolutionary Millennium III Carbon Fiber Action for unmatched performance and durability",
-        "brand": {
-          "@type": "Brand",
-          "name": "Kawai"
-        },
-        "category": "Grand Piano"
+        "url": "https://kawaipianos.com/pianos/grand"
       }
     },
     {
       "@type": "ListItem",
       "position": 2,
       "item": {
-        "@type": "Product",
+        "@type": "Thing",
         "name": "Shigeru Kawai Grand Pianos",
         "description": "Hand-crafted concert grand pianos representing the pinnacle of piano artistry and Japanese craftsmanship",
-        "brand": {
-          "@type": "Brand",
-          "name": "Shigeru Kawai"
-        },
-        "category": "Grand Piano"
+        "url": "https://kawaipianos.com/pianos/shigeru-kawai"
       }
     },
     {
       "@type": "ListItem",
       "position": 3,
       "item": {
-        "@type": "Product",
+        "@type": "Thing",
         "name": "Kawai Digital Pianos",
         "description": "Advanced digital pianos with authentic wooden-key action and world-class piano sound sampling",
-        "brand": {
-          "@type": "Brand",
-          "name": "Kawai"
-        },
-        "category": "Digital Piano"
+        "url": "https://kawaipianos.com/pianos/digital"
       }
     },
     {
       "@type": "ListItem",
       "position": 4,
       "item": {
-        "@type": "Product",
+        "@type": "Thing",
         "name": "Kawai Upright Pianos",
         "description": "Space-efficient upright pianos delivering rich tone and responsive touch for home and studio",
-        "brand": {
-          "@type": "Brand",
-          "name": "Kawai"
-        },
-        "category": "Upright Piano"
+        "url": "https://kawaipianos.com/pianos/upright"
       }
     },
     {
       "@type": "ListItem",
       "position": 5,
       "item": {
-        "@type": "Product",
+        "@type": "Thing",
         "name": "Kawai Hybrid Pianos",
         "description": "Revolutionary instruments combining acoustic piano touch with digital versatility via AnyTime silent system",
-        "brand": {
-          "@type": "Brand",
-          "name": "Kawai"
-        },
-        "category": "Hybrid Piano"
+        "url": "https://kawaipianos.com/pianos/hybrid"
       }
     }
   ]

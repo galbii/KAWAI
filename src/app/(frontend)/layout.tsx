@@ -82,7 +82,6 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
         {
           "@type": "Offer",
           "itemOffered": {
-            "@type": "Product",
             "name": "Kawai Grand Pianos",
             "description": "Premium acoustic grand pianos including Shigeru Kawai concert grands"
           }
@@ -90,7 +89,6 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
         {
           "@type": "Offer",
           "itemOffered": {
-            "@type": "Product",
             "name": "Kawai Digital Pianos",
             "description": "Advanced digital pianos with authentic sound and touch"
           }
@@ -98,7 +96,6 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
         {
           "@type": "Offer",
           "itemOffered": {
-            "@type": "Product",
             "name": "Kawai Upright Pianos",
             "description": "Space-saving upright pianos with exceptional tone quality"
           }
@@ -106,7 +103,6 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
         {
           "@type": "Offer",
           "itemOffered": {
-            "@type": "Product",
             "name": "Kawai Hybrid Pianos",
             "description": "Innovative hybrid pianos combining acoustic and digital technology"
           }

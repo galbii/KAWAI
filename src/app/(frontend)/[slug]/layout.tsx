@@ -184,22 +184,37 @@ export default async function StorefrontLayout({
         {
           "@type": "Offer",
           "itemOffered": {
-            "@type": "Product",
-            "name": "Kawai Grand Pianos"
+            "name": "Kawai Grand Pianos",
+            "description": "Premium grand pianos featuring the revolutionary Millennium III Carbon Fiber Action for unmatched performance and durability"
           }
         },
         {
           "@type": "Offer",
           "itemOffered": {
-            "@type": "Product",
-            "name": "Kawai Digital Pianos"
+            "name": "Kawai Digital Pianos",
+            "description": "Advanced digital pianos with authentic wooden-key action and world-class piano sound sampling"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "name": "Kawai Upright Pianos",
+            "description": "Space-efficient upright pianos delivering rich tone and responsive touch for home and studio"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "name": "Kawai Hybrid Pianos",
+            "description": "Revolutionary instruments combining acoustic piano touch with digital versatility"
           }
         },
         {
           "@type": "Offer",
           "itemOffered": {
             "@type": "Service",
-            "name": "Piano Services & Consultation"
+            "name": "Piano Services & Consultation",
+            "description": "Expert piano consultation, delivery, tuning, and personalized guidance"
           }
         }
       ]
