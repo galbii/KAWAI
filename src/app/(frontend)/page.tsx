@@ -13,12 +13,71 @@ import { FAQSection } from "@/components/homepage/faq-section";
 import { getHomePageDataDirect } from "@/lib/payload-direct";
 import type { HomePageData } from "@/lib/types/homepage";
 import { Suspense } from "react";
+import type { Metadata } from 'next';
 
 // Enable Incremental Static Regeneration (ISR)
 // Revalidate the homepage every 5 minutes (300 seconds)
 // This allows the page to be statically generated at build time with fallback data,
 // then regenerated in the background when CMS content changes
 export const revalidate = 300;
+
+// Generate metadata for SEO
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const homePageData = await getHomePageDataDirect();
+
+    // Use CMS SEO data if available
+    if (homePageData?.seo) {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com';
+
+      return {
+        title: homePageData.seo.metaTitle || 'KAWAI | Find a storefront near you',
+        description: homePageData.seo.metaDescription || 'Discover premium KAWAI pianos at authorized dealers nationwide. Explore our collection of grand, upright, and digital pianos. Find a KAWAI storefront near you.',
+        keywords: homePageData.seo.keywords,
+        alternates: {
+          canonical: siteUrl
+        },
+        openGraph: {
+          title: homePageData.seo.openGraphTitle || homePageData.seo.metaTitle || 'KAWAI | Find a storefront near you',
+          description: homePageData.seo.openGraphDescription || homePageData.seo.metaDescription || 'Discover premium KAWAI pianos at authorized dealers nationwide.',
+          url: siteUrl,
+          siteName: 'KAWAI Pianos',
+          type: 'website',
+          images: homePageData.seo.openGraphImage ? [
+            {
+              url: typeof homePageData.seo.openGraphImage === 'string'
+                ? homePageData.seo.openGraphImage
+                : homePageData.seo.openGraphImage.url || ''
+            }
+          ] : []
+        },
+        twitter: {
+          card: 'summary_large_image',
+          title: homePageData.seo.openGraphTitle || homePageData.seo.metaTitle || 'KAWAI | Find a storefront near you',
+          description: homePageData.seo.openGraphDescription || homePageData.seo.metaDescription || 'Discover premium KAWAI pianos at authorized dealers nationwide.'
+        }
+      };
+    }
+
+    // Fallback metadata if CMS data is unavailable
+    return {
+      title: 'KAWAI | Find a storefront near you',
+      description: 'Discover premium KAWAI pianos at authorized dealers nationwide. Explore our collection of grand, upright, and digital pianos crafted with 95+ years of Japanese excellence.',
+      keywords: ['kawai piano', 'piano dealer', 'grand piano', 'digital piano', 'upright piano', 'piano store', 'kawai authorized dealer'],
+      alternates: {
+        canonical: process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
+      }
+    };
+  } catch (error) {
+    console.error('Error generating homepage metadata:', error);
+
+    // Error fallback
+    return {
+      title: 'KAWAI | Find a storefront near you',
+      description: 'Discover premium KAWAI pianos at authorized dealers nationwide. Explore our collection of grand, upright, and digital pianos crafted with 95+ years of Japanese excellence.'
+    };
+  }
+}
 
 // Loading components for each section
 function HeroSkeleton() {
@@ -160,14 +219,14 @@ async function HomePageContent() {
       {/* Hero Section */}
       <HomeHero />
 
-      {/* Heritage & Craftsmanship Section - NEW for SEO */}
-      <HeritageSection />
-
+      {/* Dealer Locations Section */}
+      <DealerLocations locations={dealerLocations} />
+      
       {/* Piano Collection Section - Featured Models */}
       <PianoCollection {...(homePageData?.pianoCollectionSection && { data: homePageData.pianoCollectionSection })} />
 
-            {/* Dealer Locations Section */}
-      <DealerLocations locations={dealerLocations} />
+      {/* Heritage & Craftsmanship Section - NEW for SEO */}
+      <HeritageSection />
 
       {/* News Carousel Section */}
       <NewsCarousel {...(homePageData?.newsCarouselSection && { data: homePageData.newsCarouselSection })} />

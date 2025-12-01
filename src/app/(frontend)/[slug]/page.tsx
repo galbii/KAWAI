@@ -260,7 +260,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const { slug } = await params;
     const storefrontData = await getStorefrontData(slug);
 
-    if (!storefrontData?.seo) {
+    if (!storefrontData) {
       return {
         title: 'Storefront Location Not Found',
         description: 'The requested storefront location could not be found.'
@@ -269,24 +269,50 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
 
+    // Extract storefront name from showroom info for dynamic title
+    const storefrontName = storefrontData.showroomSection?.showroomInfo?.name || 'Piano Gallery';
+
+    // Create dynamic title like "KAWAI Houston" or "KAWAI Dallas"
+    // Extract city name from the storefront name (e.g., "Kawai Piano Gallery Houston" -> "Houston")
+    let cityName = '';
+    if (storefrontName) {
+      // Try to extract city from patterns like "Kawai Piano Gallery [City]" or "[City] Kawai Piano Gallery"
+      const cityMatch = storefrontName.match(/(?:Gallery\s+)([A-Za-z\s]+?)(?:\s*$|,|\|)/i) ||
+                       storefrontName.match(/^([A-Za-z\s]+?)(?:\s+Kawai)/i);
+      if (cityMatch && cityMatch[1]) {
+        cityName = cityMatch[1].trim();
+      }
+    }
+
+    // Fallback: Generate default titles using SEO data or storefront name
+    const defaultTitle = cityName ? `KAWAI ${cityName}` : storefrontData.seo?.metaTitle || `KAWAI ${storefrontName}`;
+    const defaultDescription = storefrontData.seo?.metaDescription || `Visit your local KAWAI authorized dealer at ${storefrontName}. Explore grand, upright, and digital pianos with expert consultation.`;
+
     return {
-      title: storefrontData.seo.metaTitle || 'Kawai Piano Gallery',
-      description: storefrontData.seo.metaDescription || 'Find your local Kawai Piano Gallery.',
-      keywords: storefrontData.seo.keywords,
+      title: storefrontData.seo?.metaTitle || defaultTitle,
+      description: defaultDescription,
+      keywords: storefrontData.seo?.keywords,
       alternates: {
         canonical: `${siteUrl}/${slug}`
       },
       openGraph: {
-        title: storefrontData.seo.openGraphTitle || storefrontData.seo.metaTitle,
-        description: storefrontData.seo.openGraphDescription || storefrontData.seo.metaDescription,
+        title: storefrontData.seo?.openGraphTitle || storefrontData.seo?.metaTitle || defaultTitle,
+        description: storefrontData.seo?.openGraphDescription || defaultDescription,
         url: `${siteUrl}/${slug}`,
-        images: storefrontData.seo.openGraphImage ? [
+        siteName: 'KAWAI Pianos',
+        type: 'website',
+        images: storefrontData.seo?.openGraphImage ? [
           {
             url: typeof storefrontData.seo.openGraphImage === 'string'
               ? storefrontData.seo.openGraphImage
               : storefrontData.seo.openGraphImage.url || ''
           }
         ] : []
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: storefrontData.seo?.openGraphTitle || storefrontData.seo?.metaTitle || defaultTitle,
+        description: storefrontData.seo?.openGraphDescription || defaultDescription
       }
     };
   } catch (error) {

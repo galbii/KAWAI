@@ -1075,24 +1075,21 @@ export const Storefronts: CollectionConfig = {
                 {
                   name: 'metaTitle',
                   type: 'text',
-                  defaultValue: 'Kawai Piano Gallery St. Louis | Premier Piano Gallery Since 1927 | Lake St. Louis',
                   admin: {
-                    description: 'Page meta title for search engines'
+                    description: 'Page meta title for search engines (leave empty to auto-generate "KAWAI [City Name]" from storefront name)'
                   }
                 },
                 {
                   name: 'metaDescription',
                   type: 'textarea',
                   maxLength: 160,
-                  defaultValue: 'St. Louis\'s premier Kawai Piano Gallery since 1927. Explore acoustic & digital pianos at our Lake St. Louis Piano Gallery. Expert consultation & service.',
                   admin: {
-                    description: 'Page meta description for search engines (max 160 characters)'
+                    description: 'Page meta description for search engines (max 160 characters, leave empty for auto-generated description)'
                   }
                 },
                 {
                   name: 'keywords',
                   type: 'text',
-                  defaultValue: 'Kawai pianos, St. Louis Piano Gallery, Lake St. Louis piano gallery, acoustic pianos, digital pianos, piano showroom, Missouri Piano Gallery, piano sales, piano consultation',
                   admin: {
                     description: 'SEO keywords (comma-separated)'
                   }
