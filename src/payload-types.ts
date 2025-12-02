@@ -3396,11 +3396,11 @@ export interface Storefront {
    */
   seo?: {
     /**
-     * Page meta title for search engines
+     * Page meta title for search engines (leave empty to auto-generate "KAWAI [City Name]" from storefront name)
      */
     metaTitle?: string | null;
     /**
-     * Page meta description for search engines (max 160 characters)
+     * Page meta description for search engines (max 160 characters, leave empty for auto-generated description)
      */
     metaDescription?: string | null;
     /**

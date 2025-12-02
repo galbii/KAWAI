@@ -6,6 +6,7 @@ import { useRef } from 'react'
 import { useInView } from 'framer-motion'
 import type { ConcertArtistPage } from '@/payload-types'
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
+import YouTubeEmbed from '@/components/ui/youtube-embed'
 
 interface ConcertArtistModelsProps {
   data?: ConcertArtistPage | null
@@ -154,6 +155,26 @@ export default function ConcertArtistModels({ data }: ConcertArtistModelsProps) 
             </motion.div>
           )})}
         </div>
+
+        {/* Showcase Video */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="mt-16 md:mt-20"
+        >
+          <div className="max-w-5xl mx-auto">
+            <div className="[&_.group]:hover:scale-100 [&_img]:!transition-none [&_button]:hover:scale-100">
+              <YouTubeEmbed
+                videoId="WW6Us-oDKIY"
+                title="Four Voices, One Vision - Concert Artist Series"
+                aspectRatio="video"
+                showTitle={false}
+                privacy={true}
+              />
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   )
