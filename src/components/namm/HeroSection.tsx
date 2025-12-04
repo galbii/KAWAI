@@ -64,7 +64,8 @@ export default function HeroSection({
     const interval = setInterval(() => {
       setNammLogoIndex((prev) => {
         const newIndex = (prev + 1) % nammLogos.length
-        console.log('[NAMM Logo] Cycling to index:', newIndex, '- Logo:', nammLogos[newIndex])
+        const currentLogo = nammLogos[newIndex] ?? nammLogos[0]!
+        console.log('[NAMM Logo] Cycling to index:', newIndex, '- Logo:', currentLogo)
         return newIndex
       })
     }, 800)
@@ -160,7 +161,7 @@ export default function HeroSection({
           >
             <Image
               key={nammLogoIndex}
-              src={nammLogos[nammLogoIndex]}
+              src={nammLogos[nammLogoIndex] ?? nammLogos[0]!}
               alt="The NAMM Show"
               width={600}
               height={200}

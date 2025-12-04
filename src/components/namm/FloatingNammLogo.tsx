@@ -31,6 +31,9 @@ export default function FloatingNammLogo() {
     return () => clearInterval(interval)
   }, [reducedMotion, nammLogos.length])
 
+  // Get current logo with fallback to first logo (type-safe for strict mode)
+  const currentLogo = nammLogos[nammLogoIndex] ?? nammLogos[0]!
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.8 }}
@@ -40,7 +43,7 @@ export default function FloatingNammLogo() {
     >
       <Image
         key={nammLogoIndex}
-        src={nammLogos[nammLogoIndex]}
+        src={currentLogo}
         alt="The NAMM Show"
         width={600}
         height={200}
