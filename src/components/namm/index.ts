@@ -16,7 +16,6 @@ export { NAMMStructuredData } from './NAMMStructuredData'
 
 // Featured Products & Booth Experience (Agent 2)
 export { default as FeaturedProductsSection } from './FeaturedProductsSection'
-export type { ProductCardProps } from './FeaturedProductsSection'
 
 export { default as BoothExperienceSection } from './BoothExperienceSection'
 export type { BoothFeature } from './BoothExperienceSection'

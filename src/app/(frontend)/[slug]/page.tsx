@@ -1,41 +1,102 @@
-import { 
+import {
   Hero,
-  NewsCarousel, 
+  NewsCarousel,
   PianoGallery,
-  PianoCollection, 
+  PianoCollection,
   ContactForm,
   ShowroomLocation
 } from "@/components/homepage";
-import { getStorefrontData, getHomePageData } from "@/lib/payload";
+import { getHomePageData } from "@/lib/payload";
+import { getStorefrontBySlugDirect, getHomePageDataDirect } from "@/lib/payload-direct";
+import { LocalBusinessSchema } from "@/components/seo/LocalBusinessSchema";
 import type { HomePageData } from "@/lib/types/homepage";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
+import type { Metadata } from 'next';
+
+/**
+ * Transform raw Payload storefront data into structured HomePageData format
+ * This ensures compatibility with existing homepage components
+ */
+function transformStorefrontData(rawData: any): HomePageData | null {
+  if (!rawData) return null;
+
+  return {
+    heroSection: {
+      locationText: rawData.locationText,
+      establishedText: rawData.establishedText,
+      titlePrefix: rawData.titlePrefix,
+      titleMain: rawData.titleMain,
+      titleSuffix: rawData.titleSuffix,
+      description: rawData.description,
+      primaryCta: rawData.primaryCta,
+      secondaryCta: rawData.secondaryCta,
+      backgroundVideo: rawData.backgroundVideo
+    },
+    showroomSection: {
+      sectionHeader: rawData.sectionHeader,
+      showroomTitle: rawData.showroomTitle,
+      showroomDescription: rawData.showroomDescription,
+      showroomInfo: rawData.showroomInfo,
+      hours: rawData.hours,
+      features: rawData.features,
+      mapApiKey: rawData.mapApiKey,
+      showroomCtas: rawData.showroomCtas
+    },
+    pianoCollectionSection: {
+      collectionSectionHeader: rawData.collectionSectionHeader,
+      collectionTitle: rawData.collectionTitle,
+      collectionDescription: rawData.collectionDescription,
+      collectionCta: rawData.collectionCta,
+      featuredVideo: rawData.featuredVideo
+    },
+    pianoGallerySection: {
+      galleryTitle: '',
+      galleryDescription: '',
+      pianoCategories: []
+    }, // Will be populated from homepage in StorefrontContent
+    newsCarouselSection: {
+      autoPlayDuration: rawData.autoPlayDuration,
+      newsItems: rawData.newsItems
+    },
+    contactFormSection: {
+      contactTitle: rawData.contactTitle,
+      contactTitleHighlight: rawData.contactTitleHighlight,
+      contactDescription: rawData.contactDescription,
+      stepTitles: rawData.stepTitles,
+      trustMessage: rawData.trustMessage,
+      benefits: rawData.benefits,
+      formOptions: rawData.formOptions
+    },
+    seo: rawData.seo
+  };
+}
 
 // Helper function to check if news carousel data is meaningful/populated
 function isNewsCarouselDataEmpty(newsCarouselSection: any): boolean {
   if (!newsCarouselSection) return true;
-  
+
   // Check if newsItems array exists and has meaningful content
   if (!newsCarouselSection.newsItems || !Array.isArray(newsCarouselSection.newsItems)) {
     return true;
   }
-  
+
   // Check if array is empty
   if (newsCarouselSection.newsItems.length === 0) {
     return true;
   }
-  
+
   // Check if all items in the array are empty/meaningless
   const hasValidItems = newsCarouselSection.newsItems.some((item: any) => {
-    return item && 
-           item.title && 
-           item.title.trim().length > 0 && 
-           item.description && 
+    return item &&
+           item.title &&
+           item.title.trim().length > 0 &&
+           item.description &&
            item.description.trim().length > 0 &&
-           item.category && 
+           item.category &&
            item.category.trim().length > 0;
   });
-  
+
   return !hasValidItems;
 }
 
@@ -150,19 +211,24 @@ function ContactFormSkeleton() {
 async function StorefrontContent({ slug }: { slug: string }) {
   let storefrontData: HomePageData | null = null;
   let pianoGalleryData: any = null;
-  let error: string | null = null;
+  let rawStorefrontData: any = null;
 
   try {
-    // Fetch storefront data (contains all sections except piano gallery)
-    storefrontData = await getStorefrontData(slug);
+    // ✅ FIX: Use direct Payload access instead of HTTP fetch
+    // This works during build time when the dev server isn't running
+    rawStorefrontData = await getStorefrontBySlugDirect(slug);
 
     // If storefront doesn't exist or is inactive, show 404
-    if (!storefrontData) {
+    if (!rawStorefrontData) {
+      console.log(`[SEO] Storefront "${slug}" not found or inactive`);
       notFound();
     }
 
-    // Fetch HomePage data for fallbacks
-    const homePageData = await getHomePageData();
+    // Transform raw Payload data into structured format
+    storefrontData = transformStorefrontData(rawStorefrontData);
+
+    // Fetch HomePage data for piano gallery and fallbacks using direct access
+    const homePageData = await getHomePageDataDirect();
     pianoGalleryData = homePageData?.pianoGallerySection;
 
     // Merge storefront data with HomePage fallbacks for news carousel
@@ -177,43 +243,45 @@ async function StorefrontContent({ slug }: { slug: string }) {
         const fallbacks = [];
         if (originalCarouselEmpty) fallbacks.push('news items');
         if (originalDurationMissing) fallbacks.push('auto-play duration');
-        console.log(`Storefront ${slug} using HomePage fallback for: ${fallbacks.join(', ')}`);
+        console.log(`[SEO] Storefront "${slug}" using HomePage fallback for: ${fallbacks.join(', ')}`);
       }
     }
 
   } catch (err) {
-    error = err instanceof Error ? err.message : 'Failed to load storefront data';
-    console.error('Storefront data fetch error:', error);
+    const error = err instanceof Error ? err.message : 'Failed to load storefront data';
+    console.error(`[SEO] Storefront data fetch error for "${slug}":`, error);
 
     // If there's a fetch error, show 404 as well since we can't determine if location exists
     notFound();
   }
 
-  // If there's an error but we still have data, components will use their fallback defaults
-  if (error) {
-    console.warn(`Storefront CMS data partially unavailable: ${error}. Using available data with fallbacks.`);
-  }
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com';
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <Hero {...(storefrontData?.heroSection && { data: storefrontData.heroSection })} />
+    <>
+      {/* LocalBusiness Structured Data for SEO */}
+      <LocalBusinessSchema storefront={rawStorefrontData} siteUrl={siteUrl} />
 
-      {/* Showroom Location Section */}
-      <ShowroomLocation {...(storefrontData?.showroomSection && { data: storefrontData.showroomSection })} />
+      <div className="min-h-screen">
+        {/* Hero Section */}
+        <Hero {...(storefrontData?.heroSection && { data: storefrontData.heroSection })} />
 
-      {/* Piano Collection Section */}
-      <PianoCollection {...(storefrontData?.pianoCollectionSection && { data: storefrontData.pianoCollectionSection })} />
+        {/* Showroom Location Section */}
+        <ShowroomLocation {...(storefrontData?.showroomSection && { data: storefrontData.showroomSection })} />
 
-      {/* Piano Gallery Section - Uses HomePage collection data */}
-      <PianoGallery data={pianoGalleryData} />
+        {/* Piano Collection Section */}
+        <PianoCollection {...(storefrontData?.pianoCollectionSection && { data: storefrontData.pianoCollectionSection })} />
 
-      {/* News Carousel Section */}
-      <NewsCarousel {...(storefrontData?.newsCarouselSection && { data: storefrontData.newsCarouselSection })} />
+        {/* Piano Gallery Section - Uses HomePage collection data */}
+        <PianoGallery data={pianoGalleryData} />
 
-      {/* Contact Form Section */}
-      <ContactForm {...(storefrontData?.contactFormSection && { data: storefrontData.contactFormSection })} />
-    </div>
+        {/* News Carousel Section */}
+        <NewsCarousel {...(storefrontData?.newsCarouselSection && { data: storefrontData.newsCarouselSection })} />
+
+        {/* Contact Form Section */}
+        <ContactForm {...(storefrontData?.contactFormSection && { data: storefrontData.contactFormSection })} />
+      </div>
+    </>
   );
 }
 
@@ -254,20 +322,40 @@ export async function generateStaticParams() {
   }
 }
 
-// Generate metadata for SEO
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+// Generate metadata for SEO - CRITICAL FOR GOOGLE INDEXING
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string }> }
+): Promise<Metadata> {
   try {
     const { slug } = await params;
-    const storefrontData = await getStorefrontData(slug);
+
+    // ✅ FIX: Use direct Payload access instead of HTTP fetch
+    // This works during build time when the dev server isn't running
+    const rawStorefrontData = await getStorefrontBySlugDirect(slug);
+
+    if (!rawStorefrontData) {
+      console.log(`[SEO] Metadata generation: Storefront "${slug}" not found`);
+      return {
+        title: 'Storefront Location Not Found',
+        description: 'The requested storefront location could not be found.',
+        robots: {
+          index: false,
+          follow: false,
+        }
+      };
+    }
+
+    // Transform raw data to structured format
+    const storefrontData = transformStorefrontData(rawStorefrontData);
 
     if (!storefrontData) {
       return {
         title: 'Storefront Location Not Found',
-        description: 'The requested storefront location could not be found.'
+        description: 'The requested storefront location could not be found.',
       };
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com';
 
     // Extract storefront name from showroom info for dynamic title
     const storefrontName = storefrontData.showroomSection?.showroomInfo?.name || 'Piano Gallery';
@@ -288,6 +376,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const defaultTitle = cityName ? `KAWAI ${cityName}` : storefrontData.seo?.metaTitle || `KAWAI ${storefrontName}`;
     const defaultDescription = storefrontData.seo?.metaDescription || `Visit your local KAWAI authorized dealer at ${storefrontName}. Explore grand, upright, and digital pianos with expert consultation.`;
 
+    console.log(`[SEO] Generated metadata for "${slug}": ${defaultTitle}`);
+
     return {
       title: storefrontData.seo?.metaTitle || defaultTitle,
       description: defaultDescription,
@@ -295,17 +385,29 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       alternates: {
         canonical: `${siteUrl}/${slug}`
       },
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+        }
+      },
       openGraph: {
         title: storefrontData.seo?.openGraphTitle || storefrontData.seo?.metaTitle || defaultTitle,
         description: storefrontData.seo?.openGraphDescription || defaultDescription,
         url: `${siteUrl}/${slug}`,
         siteName: 'KAWAI Pianos',
         type: 'website',
+        locale: 'en_US',
         images: storefrontData.seo?.openGraphImage ? [
           {
             url: typeof storefrontData.seo.openGraphImage === 'string'
               ? storefrontData.seo.openGraphImage
-              : storefrontData.seo.openGraphImage.url || ''
+              : storefrontData.seo.openGraphImage.url || '',
+            width: 1200,
+            height: 630,
+            alt: defaultTitle,
           }
         ] : []
       },
@@ -316,10 +418,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       }
     };
   } catch (error) {
-    console.error('Error generating metadata for storefront:', error);
+    console.error(`[SEO] Error generating metadata for storefront:`, error);
     return {
-      title: 'Storefront Location Not Found',
-      description: 'The requested storefront location could not be found.'
+      title: 'Storefront Location | KAWAI Pianos',
+      description: 'Visit your local KAWAI authorized dealer to explore our collection of grand, upright, and digital pianos.',
     };
   }
 }

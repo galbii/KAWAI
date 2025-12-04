@@ -45,33 +45,41 @@ export const revalidate = 86400 // 24 hours
 
 // SEO Metadata for NAMM 2026 Landing Page
 export const metadata: Metadata = {
-  title: 'Kawai at NAMM 2026 | January 22-24 | Anaheim Convention Center',
-  description: 'Visit Kawai at NAMM 2026 to experience the latest piano innovations. Try the Novus NV6/NV12 hybrid pianos, Shigeru Kawai concert grands, and digital pianos. Booth TBA, Anaheim Convention Center.',
+  title: 'Kawai Booth at NAMM 2026 | Premium Piano Experience | Jan 22-24',
+  description: 'Experience the Kawai booth at NAMM Show 2026. Live artist performances, hands-on piano demonstrations, and exclusive consultations. Discover what to expect at the premier piano exhibition in Anaheim.',
   keywords: [
     'namm 2026',
     'namm show 2026',
-    'kawai namm',
+    'kawai booth namm 2026',
     'namm 2026 dates',
-    'namm anaheim',
-    'kawai pianos',
-    'hybrid pianos',
-    'digital pianos',
-    'novus hybrid piano',
-    'shigeru kawai',
-    'namm booths',
-    'piano demos',
-    'kawai booth namm',
+    'kawai namm',
+    'best booths at namm',
+    'piano demonstrations namm 2026',
+    'what to expect at namm 2026',
+    'namm 2026 performances',
+    'live artist performances',
+    'hands on piano demos',
+    'kawai pianos namm 2026',
+    'namm anaheim 2026',
     'anaheim convention center',
-    'music trade show',
-    'piano exhibition',
-    'kawai namm 2026'
+    'namm 2026 exhibitors',
+    'piano booth experience',
+    'namm 2026 piano showcase',
+    'hybrid piano demonstrations',
+    'shigeru kawai',
+    'novus hybrid piano',
+    'concert grand piano demos',
+    'piano technology showcase',
+    'professional piano demonstration',
+    'namm 2026 schedule',
+    'namm 2026 tickets'
   ],
   alternates: {
     canonical: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/namm-2026`
   },
   openGraph: {
-    title: 'Experience Kawai at NAMM 2026',
-    description: 'January 22-24, 2026 | Anaheim Convention Center | Hands-on demos, artist performances, and exclusive product reveals',
+    title: 'Kawai Booth Experience at NAMM Show 2026',
+    description: 'Visit the premier Kawai piano booth. Live performances, hands-on demonstrations, and professional consultations. Jan 22-24 at Anaheim Convention Center.',
     type: 'website',
     url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/namm-2026`,
     siteName: 'Kawai Piano',
@@ -86,8 +94,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Kawai at NAMM 2026',
-    description: 'Visit us January 22-24 in Anaheim for exclusive piano demos and performances',
+    title: 'Kawai Booth at NAMM 2026',
+    description: 'Experience live performances, hands-on demos, and expert consultations. Jan 22-24 at Anaheim Convention Center.',
     images: ['/images/namm/og-namm-2026.jpg']
   },
   robots: {
@@ -220,17 +228,17 @@ export default function NAMM2026Page() {
       <div className="relative bg-white">
         {/* Main Content Sections */}
         <div>
-          {/* Featured Products Section - Scroll Anchor */}
-          <section id="featured-products" className="scroll-mt-20">
-            <Suspense fallback={<FeaturedProductsSkeleton />}>
-              <FeaturedProductsSection />
-            </Suspense>
-          </section>
-
-          {/* Booth Experience Section - Scroll Anchor */}
+          {/* Booth Experience Section - Scroll Anchor (FIRST - What to expect) */}
           <section id="booth-experience" className="scroll-mt-20">
             <Suspense fallback={<BoothExperienceSkeleton />}>
               <BoothExperienceSection />
+            </Suspense>
+          </section>
+
+          {/* Featured Products Section - Scroll Anchor (SECOND - What you'll see) */}
+          <section id="featured-products" className="scroll-mt-20">
+            <Suspense fallback={<FeaturedProductsSkeleton />}>
+              <FeaturedProductsSection />
             </Suspense>
           </section>
 
@@ -249,11 +257,6 @@ export default function NAMM2026Page() {
           </section>
         </div>
       </div>
-
-      {/* Can't Attend CTA - Full Width Footer */}
-      <Suspense fallback={<CTASkeleton />}>
-        <CantAttendCTA />
-      </Suspense>
     </main>
   )
 }

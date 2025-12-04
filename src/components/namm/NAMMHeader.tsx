@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { useState, useEffect, useRef } from 'react'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, ChevronDown } from 'lucide-react'
 
 /**
  * NAMM 2026 Custom Header
@@ -13,13 +13,16 @@ import { Menu, X } from 'lucide-react'
  * Black-themed minimal header for the NAMM landing page.
  * Features:
  * - Solid black background
- * - No logo (clean minimal design)
- * - Mobile menu with artist and booth links
+ * - Dropdown navigation for "The Kawai Experience"
+ * - Direct links to main page sections
  */
 export function NAMMHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [isMobileDropdownOpen, setIsMobileDropdownOpen] = useState(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -33,14 +36,20 @@ export function NAMMHeader() {
       ) {
         setIsMenuOpen(false)
       }
+
+      // Close dropdown when clicking outside
+      if (
+        isDropdownOpen &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false)
+      }
     }
 
-    if (isMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
-    }
-    return undefined
-  }, [isMenuOpen])
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isMenuOpen, isDropdownOpen])
 
   // Scroll lock for mobile menu
   useEffect(() => {
@@ -57,6 +66,7 @@ export function NAMMHeader() {
 
   const closeMobileMenu = () => {
     setIsMenuOpen(false)
+    setIsMobileDropdownOpen(false)
   }
 
   const mobileMenuVariants = {
@@ -92,57 +102,91 @@ export function NAMMHeader() {
       {/* Main Header Container */}
       <div className="relative flex items-center justify-between h-16">
         {/* Left side - NAMM Logo Banner (aligned to screen edge) */}
-        <motion.div
-          initial={{ x: -200, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{
-            duration: 1,
-            delay: 0.3,
-            ease: [0.25, 0.1, 0.25, 1.0]
-          }}
-          className="relative h-16 w-auto flex-shrink-0"
-        >
-          <Image
-            src="/images/namm/NS26_LogoSideBanner_M.png"
-            alt="NAMM Show 2026"
-            width={300}
-            height={64}
-            className="h-full w-auto object-contain"
-            priority
-          />
-        </motion.div>
+        <Link href="/namm-2026" className="relative h-16 w-auto flex-shrink-0">
+          <motion.div
+            initial={{ x: -200, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{
+              duration: 1,
+              delay: 0.3,
+              ease: [0.25, 0.1, 0.25, 1.0]
+            }}
+            className="relative h-16 w-auto"
+          >
+            <Image
+              src="/images/namm/NS26_LogoSideBanner_M.png"
+              alt="NAMM Show 2026"
+              width={300}
+              height={64}
+              className="h-full w-auto object-contain"
+              priority
+            />
+          </motion.div>
+        </Link>
 
         {/* Center Navigation - Desktop */}
         <nav className="hidden md:flex items-center space-x-8 mx-auto">
+          {/* The Kawai Experience Dropdown */}
+          <div
+            ref={dropdownRef}
+            className="relative"
+            onMouseEnter={() => setIsDropdownOpen(true)}
+            onMouseLeave={() => setIsDropdownOpen(false)}
+          >
+            <button
+              className="flex items-center gap-1 text-white/90 hover:text-white font-medium transition-colors duration-200 text-sm tracking-wide"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            >
+              The Kawai Experience
+              <ChevronDown
+                className={cn(
+                  "w-4 h-4 transition-transform duration-200",
+                  isDropdownOpen && "rotate-180"
+                )}
+              />
+            </button>
+
+            {/* Dropdown Menu */}
+            <AnimatePresence>
+              {isDropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute top-full left-0 mt-2 w-48 bg-black/95 backdrop-blur-sm border border-white/10 rounded-lg shadow-xl overflow-hidden"
+                >
+                  <Link
+                    href="/namm-2026/experience"
+                    className="block px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 transition-colors text-sm"
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    Booth
+                  </Link>
+                  <Link
+                    href="/namm-2026/artists"
+                    className="block px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 transition-colors text-sm border-t border-white/10"
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    Artists
+                  </Link>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Direct Section Links */}
           <Link
-            href="#featured-products"
+            href="/namm-2026#featured-products"
             className="text-white/90 hover:text-white font-medium transition-colors duration-200 text-sm tracking-wide"
           >
             Featured Products
           </Link>
           <Link
-            href="#booth-experience"
-            className="text-white/90 hover:text-white font-medium transition-colors duration-200 text-sm tracking-wide"
-          >
-            Booth Experience
-          </Link>
-          <Link
-            href="#artists"
-            className="text-white/90 hover:text-white font-medium transition-colors duration-200 text-sm tracking-wide"
-          >
-            Artists
-          </Link>
-          <Link
-            href="#plan-your-visit"
+            href="/namm-2026#plan-your-visit"
             className="text-white/90 hover:text-white font-medium transition-colors duration-200 text-sm tracking-wide"
           >
             Plan Your Visit
-          </Link>
-          <Link
-            href="/"
-            className="text-white/90 hover:text-white font-medium transition-colors duration-200 text-sm tracking-wide"
-          >
-            Main Site
           </Link>
         </nav>
 
@@ -154,7 +198,7 @@ export function NAMMHeader() {
             whileTap={{ scale: 0.95 }}
           >
             <Link
-              href="#plan-your-visit"
+              href="/namm-2026#plan-your-visit"
               className={cn(
                 "inline-flex items-center px-6 py-2.5 rounded-full font-semibold text-sm",
                 "bg-gradient-to-r from-[#E31937] to-[#FF3B55]",
@@ -238,47 +282,73 @@ export function NAMMHeader() {
 
               <nav className="flex-1 p-6 overflow-y-auto">
                 <div className="space-y-2">
+                  {/* The Kawai Experience - Mobile Expandable */}
+                  <div>
+                    <button
+                      onClick={() => setIsMobileDropdownOpen(!isMobileDropdownOpen)}
+                      className="w-full flex items-center justify-between py-3 px-4 text-white/90 hover:text-white hover:bg-white/10 font-medium transition-colors rounded-lg"
+                    >
+                      <span>The Kawai Experience</span>
+                      <ChevronDown
+                        className={cn(
+                          "w-4 h-4 transition-transform duration-200",
+                          isMobileDropdownOpen && "rotate-180"
+                        )}
+                      />
+                    </button>
+
+                    {/* Mobile Dropdown Items */}
+                    <AnimatePresence>
+                      {isMobileDropdownOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="pl-4 space-y-1 mt-1">
+                            <Link
+                              href="/namm-2026/experience"
+                              className="block py-2 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors rounded-lg text-sm"
+                              onClick={closeMobileMenu}
+                            >
+                              Booth
+                            </Link>
+                            <Link
+                              href="/namm-2026/artists"
+                              className="block py-2 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors rounded-lg text-sm"
+                              onClick={closeMobileMenu}
+                            >
+                              Artists
+                            </Link>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* Direct Links */}
                   <Link
-                    href="#featured-products"
+                    href="/namm-2026#featured-products"
                     className="block py-3 px-4 text-white/90 hover:text-white hover:bg-white/10 font-medium transition-colors rounded-lg"
                     onClick={closeMobileMenu}
                   >
                     Featured Products
                   </Link>
                   <Link
-                    href="#booth-experience"
-                    className="block py-3 px-4 text-white/90 hover:text-white hover:bg-white/10 font-medium transition-colors rounded-lg"
-                    onClick={closeMobileMenu}
-                  >
-                    Booth Experience
-                  </Link>
-                  <Link
-                    href="#artists"
-                    className="block py-3 px-4 text-white/90 hover:text-white hover:bg-white/10 font-medium transition-colors rounded-lg"
-                    onClick={closeMobileMenu}
-                  >
-                    Artists
-                  </Link>
-                  <Link
-                    href="#plan-your-visit"
+                    href="/namm-2026#plan-your-visit"
                     className="block py-3 px-4 text-white/90 hover:text-white hover:bg-white/10 font-medium transition-colors rounded-lg"
                     onClick={closeMobileMenu}
                   >
                     Plan Your Visit
-                  </Link>
-                  <Link
-                    href="/"
-                    className="block py-3 px-4 text-white/90 hover:text-white hover:bg-white/10 font-medium transition-colors rounded-lg"
-                    onClick={closeMobileMenu}
-                  >
-                    Main Site
                   </Link>
                 </div>
               </nav>
 
               <div className="mt-auto bg-black border-t border-white/10 p-6 flex-shrink-0">
                 <Link
-                  href="#plan-your-visit"
+                  href="/namm-2026#plan-your-visit"
                   className={cn(
                     "block text-center px-6 py-3 rounded-full font-semibold text-sm",
                     "bg-gradient-to-r from-[#E31937] to-[#FF3B55]",

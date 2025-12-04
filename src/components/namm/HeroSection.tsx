@@ -75,7 +75,7 @@ export default function HeroSection({
 
   // Handle smooth scroll to next section
   const scrollToNextSection = () => {
-    const nextSection = document.querySelector('#featured-products')
+    const nextSection = document.querySelector('#booth-experience')
     if (nextSection) {
       nextSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
@@ -237,7 +237,7 @@ export default function HeroSection({
               className="px-8 py-3 md:px-10 md:py-4 bg-transparent text-white text-base md:text-lg font-semibold rounded-md
                          border-2 border-white hover:bg-white hover:text-kawai-black transition-all duration-300 hover:scale-105"
             >
-              View Lineup
+              View Pianos
             </button>
           </motion.div>
         </div>
