@@ -57,6 +57,9 @@ export const metadata: Metadata = {
     'piano demonstrations namm 2026',
     'what to expect at namm 2026',
     'namm 2026 performances',
+    'namm 2026 artists',
+    'namm 2026 artist schedule',
+    'namm 2026 events schedule',
     'live artist performances',
     'hands on piano demos',
     'kawai pianos namm 2026',
@@ -72,7 +75,9 @@ export const metadata: Metadata = {
     'piano technology showcase',
     'professional piano demonstration',
     'namm 2026 schedule',
-    'namm 2026 tickets'
+    'namm 2026 tickets',
+    'namm 2026 live music',
+    'piano performance calendar'
   ],
   alternates: {
     canonical: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/namm-2026`

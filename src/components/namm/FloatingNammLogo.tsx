@@ -1,13 +1,13 @@
 'use client'
 
 /**
- * Floating NAMM Logo - Cycles between white and blue versions
- * Fixed position in bottom right corner
+ * Floating NAMM Logo - Smooth crossfade between white and blue versions
+ * Fixed position in bottom left corner with elegant fade transitions
  */
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { prefersReducedMotion } from '@/lib/namm-utils'
 
 export default function FloatingNammLogo() {
@@ -20,13 +20,13 @@ export default function FloatingNammLogo() {
     '/images/namm/NS_Logo_Blue.png',
   ]
 
-  // Cycle NAMM logo every 800ms
+  // Cycle NAMM logo every 4 seconds (slower, more elegant)
   useEffect(() => {
     if (reducedMotion) return
 
     const interval = setInterval(() => {
       setNammLogoIndex((prev) => (prev + 1) % nammLogos.length)
-    }, 800) // Change every 800ms for faster cycling
+    }, 4000) // Changed from 800ms to 4000ms (4 seconds)
 
     return () => clearInterval(interval)
   }, [reducedMotion, nammLogos.length])
@@ -41,15 +41,29 @@ export default function FloatingNammLogo() {
       transition={{ duration: 0.8, delay: 1.5, ease: 'easeOut' }}
       className="fixed bottom-8 left-8 z-50 w-[120px] md:w-[160px]"
     >
-      <Image
-        key={nammLogoIndex}
-        src={currentLogo}
-        alt="The NAMM Show"
-        width={600}
-        height={200}
-        priority
-        className="w-full h-auto"
-      />
+      {/* AnimatePresence enables exit animations */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={nammLogoIndex}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{
+            duration: 1.2, // Slower fade (1.2 seconds)
+            ease: [0.4, 0.0, 0.2, 1.0] // Smooth cubic-bezier easing
+          }}
+          className="absolute inset-0"
+        >
+          <Image
+            src={currentLogo}
+            alt="The NAMM Show"
+            width={600}
+            height={200}
+            priority
+            className="w-full h-auto"
+          />
+        </motion.div>
+      </AnimatePresence>
     </motion.div>
   )
 }

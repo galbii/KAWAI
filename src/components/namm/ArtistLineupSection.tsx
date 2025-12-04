@@ -1,170 +1,305 @@
 /**
- * ArtistLineupSection Component
+ * ArtistLineupSection Component - NAMM 2026 Performance Calendar
  *
- * Showcases featured artist performances at NAMM 2026
- * Provides social proof and entertainment draw for booth visitors
+ * Interactive 3-day performance schedule featuring:
+ * - Mobile: Tab-based navigation with swipe gestures
+ * - Desktop: 3-column day grid with vibrant gradients
+ * - SEO: Rich Schema.org Event markup
+ * - Animations: Scroll-triggered and hover effects
+ *
+ * Design inspired by FeaturedProductsSection gradient treatments
  */
 
-import Image from 'next/image'
-import { cn } from '@/lib/utils'
+'use client'
 
-export interface ArtistCardProps {
-  name: string
-  genre: string
-  performanceTime?: string
-  imageUrl: string
-  bio: string
-}
+import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import PerformanceCard from './performances/PerformanceCard'
+import { DAYS_SCHEDULE, PERFORMANCE_KEYWORDS } from './performances/performance-data'
+import { DAY_THEMES, PATTERN_OVERLAYS } from './performances/performance-themes'
 
 interface ArtistLineupSectionProps {
-  artists?: ArtistCardProps[]
   className?: string
 }
 
-// Placeholder artist data (can be replaced with CMS data later)
-const DEFAULT_ARTISTS: ArtistCardProps[] = [
-  {
-    name: 'Sarah Chen',
-    genre: 'Classical Virtuoso',
-    performanceTime: 'January 22, 2:00 PM',
-    imageUrl: '/images/placeholders/artist-1.jpg',
-    bio: 'Award-winning pianist known for her interpretations of Chopin and Rachmaninoff.'
-  },
-  {
-    name: 'Marcus Williams',
-    genre: 'Jazz Innovator',
-    performanceTime: 'January 23, 11:00 AM',
-    imageUrl: '/images/placeholders/artist-2.jpg',
-    bio: 'Contemporary jazz artist blending traditional techniques with modern improvisation.'
-  },
-  {
-    name: 'Elena Rodriguez',
-    genre: 'Contemporary Composer',
-    performanceTime: 'January 23, 3:30 PM',
-    imageUrl: '/images/placeholders/artist-3.jpg',
-    bio: 'Grammy-nominated composer specializing in cinematic and ambient piano compositions.'
-  },
-  {
-    name: 'David Thompson',
-    genre: 'Pop & Broadway',
-    performanceTime: 'January 24, 1:00 PM',
-    imageUrl: '/images/placeholders/artist-4.jpg',
-    bio: 'Broadway musical director and performer bringing theatrical flair to the piano.'
-  }
-]
+/**
+ * Main Artist Lineup Section
+ */
+export default function ArtistLineupSection({ className }: ArtistLineupSectionProps) {
+  const [activeDay, setActiveDay] = useState<'thursday' | 'friday' | 'saturday'>('thursday')
+  const [isTitleVisible, setIsTitleVisible] = useState(false)
+  const titleRef = useRef<HTMLDivElement>(null)
 
-function ArtistCard({ artist }: { artist: ArtistCardProps }) {
+  // Intersection Observer for title animation
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setIsTitleVisible(true)
+        }
+      },
+      { threshold: 0.3 }
+    )
+
+    if (titleRef.current) {
+      observer.observe(titleRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [])
+
+  // Swipe navigation handlers
+  const handleSwipeLeft = () => {
+    if (activeDay === 'thursday') setActiveDay('friday')
+    else if (activeDay === 'friday') setActiveDay('saturday')
+  }
+
+  const handleSwipeRight = () => {
+    if (activeDay === 'saturday') setActiveDay('friday')
+    else if (activeDay === 'friday') setActiveDay('thursday')
+  }
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') handleSwipeRight()
+      if (e.key === 'ArrowRight') handleSwipeLeft()
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [activeDay])
+
+  const activeDayData = DAYS_SCHEDULE.find(day => day.id === activeDay)
+
   return (
-    <div className={cn(
-      "group flex flex-col items-center text-center",
-      "transition-all duration-300 ease-out",
-      "hover:scale-105"
-    )}>
-      {/* Artist Photo */}
-      <div className={cn(
-        "relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden",
-        "ring-4 ring-white shadow-lg",
-        "group-hover:ring-kawai-red transition-all duration-300"
-      )}>
-        <Image
-          src={artist.imageUrl}
-          alt={artist.name}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 128px, 160px"
+    <section
+      id="artists"
+      className={cn('scroll-mt-20 py-24 lg:py-32 relative overflow-hidden', className)}
+      aria-labelledby="performances-heading"
+    >
+      {/* Warm beige gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#F5F1E8] via-[#EDE8DF] to-[#F0EBE3]" />
+
+      {/* Subtle paper texture overlay */}
+      <div className="absolute inset-0 opacity-[0.02]">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: 'url("data:image/svg+xml,%3Csvg width="200" height="200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noise)" /%3E%3C/svg%3E")',
+            backgroundRepeat: 'repeat'
+          }}
         />
       </div>
 
-      {/* Artist Info */}
-      <div className="mt-4 space-y-1">
-        <h3 className="font-bold text-lg md:text-xl text-gray-900">
-          {artist.name}
-        </h3>
-        <p className="text-sm font-medium text-kawai-red">
-          {artist.genre}
-        </p>
-        {artist.performanceTime && (
-          <p className="text-xs text-gray-600 font-medium">
-            {artist.performanceTime}
-          </p>
-        )}
-      </div>
-
-      {/* Bio */}
-      <p className="mt-3 text-sm text-gray-600 leading-relaxed max-w-xs">
-        {artist.bio}
-      </p>
-    </div>
-  )
-}
-
-export default function ArtistLineupSection({
-  artists = DEFAULT_ARTISTS,
-  className
-}: ArtistLineupSectionProps) {
-  // If no artists provided, show fallback message
-  if (!artists || artists.length === 0) {
-    return (
-      <section className={cn(
-        "py-16 px-4 md:py-20 bg-[#F5F0E8]",
-        className
-      )}>
-        <div className="container mx-auto max-w-6xl text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Featured Artist Performances
-          </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Artist lineup coming soon - check back for performance schedules and exclusive artist demonstrations
-          </p>
-        </div>
-      </section>
-    )
-  }
-
-  return (
-    <section className={cn(
-      "py-16 px-4 md:py-20 bg-[#F5F0E8]",
-      className
-    )}>
-      <div className="container mx-auto max-w-6xl">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
         {/* Section Header */}
-        <div className="text-center mb-12 md:mb-16">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+        <div ref={titleRef} className="text-center mb-16 lg:mb-20">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.8 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#3A3530] border border-[#2C2826]/20 mb-6 shadow-sm"
+          >
+            <Calendar className="w-4 h-4 text-[#F5F1E8]" />
+            <span className="text-sm font-medium text-[#F5F1E8]">
+              3-Day Performance Schedule
+            </span>
+          </motion.div>
+
+          <motion.h2
+            id="performances-heading"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.8, delay: 0.1 }}
+            className="text-4xl md:text-5xl lg:text-6xl font-light tracking-tight text-[#2C2826] mb-6"
+          >
             Featured Artist Performances
-          </h2>
-          <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
-            Watch Kawai artists showcase the power of our instruments
-          </p>
+          </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-lg md:text-xl font-light leading-relaxed text-[#5A5550] max-w-3xl mx-auto"
+          >
+            Experience live piano artistry from world-class musicians at NAMM 2026.
+            Free performances daily at the Kawai booth in Anaheim Convention Center.
+          </motion.p>
         </div>
 
-        {/* Artist Cards */}
-        <div className={cn(
-          // Mobile: Horizontal scroll
-          "flex gap-8 overflow-x-auto pb-6 md:pb-0 snap-x snap-mandatory scrollbar-hide",
-          // Tablet & Desktop: Grid layout
-          "md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-8 lg:gap-10",
-          // Hide scrollbar but maintain functionality
-          "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-        )}>
-          {artists.map((artist, index) => (
-            <div
-              key={`${artist.name}-${index}`}
-              className="flex-shrink-0 w-72 md:w-auto snap-center"
+        {/* Mobile: Tab Navigation */}
+        <div className="lg:hidden mb-8">
+          <nav
+            aria-label="NAMM 2026 performance schedule by day"
+            className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide"
+          >
+            {DAYS_SCHEDULE.map((day) => {
+              const theme = DAY_THEMES[day.id]
+              const isActive = activeDay === day.id
+
+              return (
+                <button
+                  key={day.id}
+                  onClick={() => setActiveDay(day.id)}
+                  aria-label={`${day.dayName} ${day.date} performances`}
+                  aria-pressed={isActive}
+                  className={cn(
+                    'flex-shrink-0 px-6 py-4 rounded-2xl whitespace-nowrap transition-all duration-300',
+                    'border shadow-sm',
+                    isActive
+                      ? `bg-gradient-to-r ${theme.badge} ${theme.cardBorder} scale-105`
+                      : 'bg-[#D4CFC7] border-[#C9C3BB] text-[#5A5550] hover:bg-[#C9C3BB]'
+                  )}
+                >
+                  <div className={cn('text-xs font-light uppercase tracking-wider mb-1', isActive ? 'opacity-90' : 'opacity-70')}>
+                    {day.dateShort}
+                  </div>
+                  <div className={cn('text-base font-semibold', isActive ? `text-${theme.text}` : 'text-[#2C2826]')}>
+                    {day.dayName}
+                  </div>
+                </button>
+              )
+            })}
+          </nav>
+
+          {/* Mobile navigation arrows */}
+          <div className="flex justify-between items-center mt-6 mb-4">
+            <button
+              onClick={handleSwipeRight}
+              disabled={activeDay === 'thursday'}
+              aria-label="Previous day"
+              className={cn(
+                'p-2 rounded-full transition-all duration-300',
+                activeDay === 'thursday'
+                  ? 'opacity-30 cursor-not-allowed'
+                  : 'bg-[#3A3530] hover:bg-[#2C2826] border border-[#2C2826]/20 shadow-sm'
+              )}
             >
-              <ArtistCard artist={artist} />
-            </div>
-          ))}
+              <ChevronLeft className={cn('w-5 h-5', activeDay === 'thursday' ? 'text-[#5A5550]' : 'text-[#F5F1E8]')} />
+            </button>
+
+            <span className="text-sm text-[#5A5550]">
+              Swipe or use arrows to navigate
+            </span>
+
+            <button
+              onClick={handleSwipeLeft}
+              disabled={activeDay === 'saturday'}
+              aria-label="Next day"
+              className={cn(
+                'p-2 rounded-full transition-all duration-300',
+                activeDay === 'saturday'
+                  ? 'opacity-30 cursor-not-allowed'
+                  : 'bg-[#3A3530] hover:bg-[#2C2826] border border-[#2C2826]/20 shadow-sm'
+              )}
+            >
+              <ChevronRight className={cn('w-5 h-5', activeDay === 'saturday' ? 'text-[#5A5550]' : 'text-[#F5F1E8]')} />
+            </button>
+          </div>
+
+          {/* Mobile: Swipeable Day Content */}
+          <AnimatePresence mode="wait">
+            {activeDayData && (
+              <motion.div
+                key={activeDay}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.2}
+                onDragEnd={(_, info) => {
+                  if (info.offset.x < -50) handleSwipeLeft()
+                  if (info.offset.x > 50) handleSwipeRight()
+                }}
+                className="space-y-6"
+              >
+                {activeDayData.performances.map((performance, idx) => (
+                  <PerformanceCard
+                    key={performance.id}
+                    performance={performance}
+                    theme={DAY_THEMES[activeDay]}
+                    index={idx}
+                  />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Mobile scroll hint */}
-        <div className="md:hidden mt-6 text-center">
-          <p className="text-xs text-gray-500">
-            Swipe to see more artists
+        {/* Desktop: 3-Column Day Grid */}
+        <div className="hidden lg:grid lg:grid-cols-3 gap-8">
+          {DAYS_SCHEDULE.map((day) => {
+            const theme = DAY_THEMES[day.id]
+
+            return (
+              <div key={day.id} className="space-y-6">
+                {/* Day Header */}
+                <div
+                  className={cn(
+                    'relative overflow-hidden rounded-2xl p-6 text-center',
+                    `bg-gradient-to-br ${theme.background}`
+                  )}
+                >
+                  {/* Pattern overlay */}
+                  {PATTERN_OVERLAYS[theme.pattern]}
+
+                  {/* Header content */}
+                  <div className="relative z-10">
+                    <div className="text-sm font-light text-white/80 uppercase tracking-wide mb-2">
+                      {day.dayName}
+                    </div>
+                    <div className="text-3xl font-bold text-white mb-1">
+                      {day.dayNumber}
+                    </div>
+                    <div className="text-sm text-white/70">
+                      {day.performances.length} Performance{day.performances.length !== 1 ? 's' : ''}
+                    </div>
+                  </div>
+
+                  {/* Glow effect */}
+                  <div className={cn('absolute inset-0 bg-gradient-radial', theme.glow, 'blur-2xl -z-10')} />
+                </div>
+
+                {/* Performance Cards */}
+                <div className="space-y-6">
+                  {day.performances.map((performance, idx) => (
+                    <PerformanceCard
+                      key={performance.id}
+                      performance={performance}
+                      theme={theme}
+                      index={idx}
+                    />
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Important Note - Inverse dark design */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={isTitleVisible ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="mt-12 p-6 rounded-xl bg-[#2C2826] border border-[#3A3530] shadow-lg"
+        >
+          <p className="text-sm text-[#EDE8DF] text-center leading-relaxed">
+            <span className="text-kawai-red font-semibold">Note:</span>{' '}
+            All performances are free with NAMM badge. Seating is first-come, first-served.
+            Performance times and artists subject to change.
           </p>
+        </motion.div>
+
+        {/* SEO Keywords (hidden) */}
+        <div className="sr-only" aria-hidden="true">
+          {PERFORMANCE_KEYWORDS.join(', ')}
         </div>
       </div>
     </section>
   )
 }
-
-export { ArtistCard }

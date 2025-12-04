@@ -1,4 +1,5 @@
 import { KAWAI_SEO_CONFIG } from '@/lib/seo'
+import { PERFORMANCES } from '@/components/namm/performances/performance-data'
 
 /**
  * NAMMStructuredData Component
@@ -7,13 +8,15 @@ import { KAWAI_SEO_CONFIG } from '@/lib/seo'
  *
  * Schemas Implemented:
  * 1. Event Schema - For event dates, location, organizer information
- * 2. Organization Schema - For Kawai brand credibility and E-E-A-T
- * 3. FAQPage Schema - For common NAMM-related questions
+ * 2. Performance EventSeries Schema - For artist performance schedule
+ * 3. Organization Schema - For Kawai brand credibility and E-E-A-T
+ * 4. FAQPage Schema - For common NAMM-related questions
  *
  * SEO Benefits:
  * - Enhanced search result appearance with event rich snippets
  * - Improved visibility in Google event searches
  * - FAQ rich results in SERPs
+ * - Performance schedule appears in Google Calendar integrations
  * - Brand authority and trust signals
  */
 export function NAMMStructuredData() {
@@ -126,6 +129,64 @@ export function NAMMStructuredData() {
     }
   }
 
+  // Performance EventSeries Schema
+  const performanceSeriesSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'EventSeries',
+    name: 'NAMM 2026 Kawai Artist Performance Schedule',
+    description: 'Live piano performances by world-class artists at the Kawai booth during NAMM Show 2026. Free performances daily featuring solo piano, vocal performances, and ensemble pieces.',
+    organizer: {
+      '@type': 'Organization',
+      name: 'Kawai America Corporation',
+      url: siteUrl
+    },
+    location: {
+      '@type': 'Place',
+      name: 'Kawai Booth - Anaheim Convention Center',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: '800 W Katella Ave',
+        addressLocality: 'Anaheim',
+        addressRegion: 'CA',
+        postalCode: '92802',
+        addressCountry: 'US'
+      }
+    },
+    subEvent: PERFORMANCES.map((performance) => {
+      // Build social media URLs array for sameAs property
+      const socialUrls = performance.socialLinks
+        ? Object.values(performance.socialLinks).filter((url): url is string => Boolean(url))
+        : []
+
+      return {
+        '@type': 'MusicEvent',
+        name: `${performance.artistName} - ${performance.performanceType}`,
+        description: performance.description || performance.artistBio || `${performance.performanceType} performance featuring ${performance.artistName}`,
+        performer: {
+          '@type': 'Person',
+          name: performance.artistName,
+          ...(performance.artistImage && { image: `${siteUrl}${performance.artistImage}` }),
+          ...(socialUrls.length > 0 && { sameAs: socialUrls }),
+          ...(performance.artistBio && { description: performance.artistBio })
+        },
+        startDate: performance.startDateTime,
+        endDate: performance.endDateTime,
+        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+        eventStatus: 'https://schema.org/EventScheduled',
+        location: {
+          '@type': 'Place',
+          name: 'Kawai Booth - Anaheim Convention Center'
+        },
+        isAccessibleForFree: true,
+        organizer: {
+          '@type': 'Organization',
+          name: 'Kawai America Corporation'
+        },
+        ...(performance.genre && { genre: performance.genre })
+      }
+    })
+  }
+
   // FAQ Schema for Common NAMM Questions
   const faqSchema = {
     '@context': 'https://schema.org',
@@ -197,6 +258,14 @@ export function NAMMStructuredData() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(eventSchema)
+        }}
+      />
+
+      {/* Performance EventSeries Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(performanceSeriesSchema)
         }}
       />
 

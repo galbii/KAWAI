@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { prefersReducedMotion } from '@/lib/namm-utils'
 
@@ -57,7 +57,7 @@ export default function HeroSection({
     '/images/namm/NS_Logo_Blue.png',
   ]
 
-  // Cycle NAMM logo every 800ms
+  // Cycle NAMM logo every 4 seconds with smooth fade
   useEffect(() => {
     if (reducedMotion) return
 
@@ -68,7 +68,7 @@ export default function HeroSection({
         console.log('[NAMM Logo] Cycling to index:', newIndex, '- Logo:', currentLogo)
         return newIndex
       })
-    }, 800)
+    }, 4000) // Changed from 800ms to 4000ms (4 seconds)
 
     return () => clearInterval(interval)
   }, [reducedMotion, nammLogos.length])
@@ -152,23 +152,40 @@ export default function HeroSection({
       {/* Main Content - Centered Composition */}
       <div className="relative z-10 w-full max-w-6xl mx-auto px-6 md:px-12 pt-24 pb-20">
         <div className="flex flex-col items-center text-center space-y-8 md:space-y-12">
-          {/* NAMM Logo - Small, Above */}
+          {/* NAMM Logo - Small, Above with smooth crossfade */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.2, ease: 'easeOut' }}
-            className="relative w-full max-w-[80px] md:max-w-[100px]"
+            className="relative w-full max-w-[80px] md:max-w-[100px] h-[27px] md:h-[33px] -mt-8 md:-mt-12"
           >
-            <Image
-              key={nammLogoIndex}
-              src={nammLogos[nammLogoIndex] ?? nammLogos[0]!}
-              alt="The NAMM Show"
-              width={600}
-              height={200}
-              priority
-              className="w-full h-auto"
-              unoptimized
-            />
+            {/* Subtle blur background */}
+            <div className="absolute left-0 right-0 -inset-x-12 top-[-0.75rem] bottom-[-2rem] bg-black/20 backdrop-blur-md rounded-xl" />
+
+            {/* AnimatePresence WITHOUT mode="wait" for true crossfade (both logos visible during transition) */}
+            <AnimatePresence>
+              <motion.div
+                key={nammLogoIndex}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{
+                  duration: 1.5, // 1.5 second smooth crossfade
+                  ease: [0.4, 0.0, 0.2, 1.0] // Smooth cubic-bezier easing
+                }}
+                className="absolute inset-0"
+              >
+                <Image
+                  src={nammLogos[nammLogoIndex] ?? nammLogos[0]!}
+                  alt="The NAMM Show"
+                  width={600}
+                  height={200}
+                  priority
+                  className="w-full h-auto relative z-10"
+                  unoptimized
+                />
+              </motion.div>
+            </AnimatePresence>
           </motion.div>
 
           {/* Kawai Logo */}

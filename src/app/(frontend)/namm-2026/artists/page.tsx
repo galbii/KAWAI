@@ -4,9 +4,6 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { ArrowLeft, Calendar, MapPin, Music } from 'lucide-react'
 
-// Import artist data type
-import type { ArtistCardProps } from '@/components/namm/ArtistLineupSection'
-
 // Lazy load components for optimal performance
 const ArtistHero = dynamic(() => import('@/components/namm/artists/ArtistHero'), {
   loading: () => <ArtistHeroSkeleton />
