@@ -11,6 +11,3 @@ export { Testimonials } from './Testimonials'
 
 // Landing page specific blocks
 export { Hello } from './Hello'
-export { LandingHero } from './LandingHero'
-export { LandingFeatures } from './LandingFeatures'
-export { LandingTestimonials } from './LandingTestimonials'

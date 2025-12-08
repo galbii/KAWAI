@@ -30,10 +30,7 @@ import {
   Specifications,
   CallToAction,
   Testimonials,
-  Hello,
-  LandingHero,
-  LandingFeatures,
-  LandingTestimonials
+  Hello
 } from './blocks'
 import { productlinesSeedPlugin } from './plugins/productlines-seed'
 import { pianosPageSeedPlugin } from './plugins/pianos-page-seed'
@@ -84,10 +81,7 @@ export default buildConfig({
     Specifications,
     CallToAction,
     Testimonials,
-    Hello,
-    LandingHero,
-    LandingFeatures,
-    LandingTestimonials
+    Hello
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

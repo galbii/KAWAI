@@ -13,9 +13,6 @@ export { TestimonialsBlock } from './TestimonialsBlock'
 
 // Landing Page Block Components
 export { HelloBlock } from './HelloBlock'
-export { LandingHeroBlock } from './LandingHeroBlock'
-export { LandingFeaturesBlock } from './LandingFeaturesBlock'
-export { LandingTestimonialsBlock } from './LandingTestimonialsBlock'
 
 // Re-export main ProductPageRenderer
 export { ProductPageRenderer } from '../products/ProductPageRenderer'

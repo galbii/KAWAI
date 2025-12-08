@@ -63,7 +63,22 @@ export function parseNavigationOrigin(
 
   // Check if first segment looks like a dealer location
   // Exclude known non-dealer routes
-  const knownRoutes = ['pianos', 'admin', 'api', 'sitemap.xml', 'robots.txt', 'products', 'innovation', 'heritage', 'resources', 'experience', 'contact', 'find-my-piano']
+  const knownRoutes = [
+    // Core pages
+    'pianos', 'products', 'piano-finder', 'find-my-piano',
+    // Product-specific pages
+    'concert-artist', 'concert-artist-ca', 'es60', 'technology',
+    // Content pages
+    'about', 'artists', 'guides', 'showroom',
+    // Events & special pages
+    'namm-2026',
+    // System routes
+    'admin', 'api', 'sitemap.xml', 'robots.txt',
+    // Static assets
+    'images', 'favicon.ico', '_next', 'media',
+    // Legacy/resources
+    'innovation', 'heritage', 'resources', 'experience', 'contact'
+  ]
 
   if (!knownRoutes.includes(firstSegment)) {
     // Likely a dealer location
