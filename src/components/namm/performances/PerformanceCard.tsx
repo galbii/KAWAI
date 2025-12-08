@@ -23,19 +23,33 @@ interface PerformanceCardProps {
   theme: DayTheme
   index?: number
   className?: string
+  // Staggered stack interaction props
+  isHovered?: boolean
+  siblingHovered?: boolean
+  onHoverChange?: (id: string | null) => void
 }
 
 /**
- * Artist Performance Card - Image-prominent premium design
+ * Artist Performance Card - Clean, modern design integrated with page aesthetic
  */
 export default function PerformanceCard({
   performance,
-  theme,
+  theme, // Available for future use (e.g., day-specific accents)
   index = 0,
-  className
+  className,
+  isHovered = false,
+  siblingHovered = false,
+  onHoverChange
 }: PerformanceCardProps) {
   const hasImage = performance.artistImage
   const hasSocials = performance.socialLinks && Object.values(performance.socialLinks).some(Boolean)
+
+  // Theme prop intentionally unused in current minimal design
+  // Available for future day-specific styling if needed
+  void theme
+
+  // Determine if content should be compressed (second card in desktop grid)
+  const isCompressed = index > 0 && !isHovered
 
   return (
     <Link
@@ -43,30 +57,44 @@ export default function PerformanceCard({
       className="block group"
     >
       <motion.article
-        // NEW: Scale + fade animation (premium product reveal)
-        initial={{ opacity: 0, scale: 0.95 }}
-        whileInView={{ opacity: 1, scale: 1 }}
+        // Initial reveal animation (scroll-triggered)
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-50px' }}
         transition={{
-          duration: 0.5,
-          delay: index * 0.15,
-          ease: [0.25, 0.46, 0.45, 0.94]
+          duration: 0.6,
+          delay: index * 0.1,
+          ease: [0.25, 0.1, 0.25, 1]
         }}
+        // Staggered stack animations (desktop only, via parent)
+        animate={{
+          y: isHovered ? -4 : siblingHovered ? -8 : 0,
+        }}
+        whileHover={{
+          transition: { duration: 0.3, ease: 'easeOut' }
+        }}
+        onHoverStart={() => onHoverChange?.(performance.id)}
+        onHoverEnd={() => onHoverChange?.(null)}
         itemScope
         itemType="https://schema.org/MusicEvent"
         className={cn(
-          'relative overflow-hidden rounded-xl bg-white',
+          'relative overflow-hidden rounded-2xl',
+          // Warm subtle background that blends with page beige
+          'bg-gradient-to-br from-[#FAF8F3] to-[#F5F1E8]',
           'transition-all duration-300 ease-out',
-          'hover:-translate-y-2 hover:shadow-2xl',
-          'shadow-md',
+          // Minimal shadow - subtle depth
+          'shadow-sm hover:shadow-lg',
+          // Very subtle border for definition
+          'border border-[#E5E0D8]/50',
           className
         )}
         style={{
-          borderLeft: `4px solid ${theme.cardLeftBorder}`
+          // Desktop-only stagger margin (applied via parent wrapper)
+          zIndex: isHovered ? 20 : 10 - index,
         }}
       >
         {/* Artist Image Section with Overlay */}
-        <div className="relative h-64 sm:h-72 lg:h-80 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
+        <div className="relative h-72 sm:h-80 lg:h-96 overflow-hidden bg-gradient-to-br from-stone-100 to-stone-200 rounded-t-2xl">
           {hasImage ? (
             <>
               {/* Artist Portrait Image */}
@@ -74,161 +102,151 @@ export default function PerformanceCard({
                 src={performance.artistImage!}
                 alt={`${performance.artistName} portrait`}
                 fill
-                className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
 
-              {/* Dark gradient overlay for text legibility */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+              {/* Refined gradient overlay for text legibility */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             </>
           ) : (
-            // Placeholder: Day-specific gradient with musical note
+            // Placeholder: Subtle musical note on neutral background
             <>
-              <div
-                className="absolute inset-0"
-                style={{
-                  background: `linear-gradient(135deg, ${theme.cardLeftBorder}20, ${theme.cardLeftBorder}40)`
-                }}
-              />
+              <div className="absolute inset-0 bg-gradient-to-br from-stone-100 to-stone-200" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <Music className="w-20 h-20 text-gray-300" />
+                <Music className="w-16 h-16 text-stone-300" />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             </>
           )}
 
           {/* Artist Name Overlaid on Image */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
+          <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8 z-10">
             <h3
               itemProp="name"
-              className="text-3xl lg:text-4xl font-bold text-white mb-1 leading-tight drop-shadow-lg"
+              className="text-2xl lg:text-3xl font-light text-white mb-2 leading-tight tracking-tight"
             >
               {performance.artistName}
             </h3>
-            <p className="text-base font-medium text-white/90 drop-shadow">
+            <p className="text-sm lg:text-base font-light text-white/80">
               {performance.performanceType}
             </p>
           </div>
-
-          {/* Genre Badge - Positioned Top Right */}
-          {performance.genre && (
-            <div
-              className="absolute top-4 right-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm z-10"
-              style={{
-                backgroundColor: `${theme.genreBadgeBg}E6`, // 90% opacity
-                color: theme.genreBadgeText
-              }}
-            >
-              <Music className="w-3.5 h-3.5" />
-              <span className="text-xs font-semibold uppercase tracking-wide">
-                {performance.genre}
-              </span>
-            </div>
-          )}
         </div>
 
         {/* Card Content Body */}
-        <div className="relative p-6">
-          {/* Time Badge - Kawai Red */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#E31937] shadow-sm mb-4">
-            <Clock className="w-3.5 h-3.5 text-white" />
+        <div className="relative p-6 lg:p-8">
+          {/* Time Badge - Kawai Red (always visible) */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#E31937] shadow-sm mb-5">
+            <Clock className="w-4 h-4 text-white" />
             <time
               dateTime={performance.startDateTime}
               itemProp="startDate"
-              className="text-sm font-bold text-white"
+              className="text-sm font-medium text-white"
             >
               {performance.time} • {performance.date.split(',')[0]}
             </time>
           </div>
 
-          {/* Artist Bio */}
-          {performance.artistBio && (
-            <p
-              itemProp="description"
-              className="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-3"
-            >
-              {performance.artistBio}
-            </p>
-          )}
+          {/* Collapsible content section - hidden when compressed (desktop second card) */}
+          <motion.div
+            initial={false}
+            animate={{
+              height: isCompressed ? 0 : 'auto',
+              opacity: isCompressed ? 0 : 1,
+            }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            style={{ overflow: 'hidden' }}
+          >
+            {/* Artist Bio */}
+            {performance.artistBio && (
+              <p
+                itemProp="description"
+                className="text-sm lg:text-base text-[#5A5550] font-light leading-relaxed mb-5 line-clamp-3"
+              >
+                {performance.artistBio}
+              </p>
+            )}
 
-          {/* Performance Description (if no bio) */}
-          {!performance.artistBio && performance.description && (
-            <p
-              itemProp="description"
-              className="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-2"
-            >
-              {performance.description}
-            </p>
-          )}
+            {/* Performance Description (if no bio) */}
+            {!performance.artistBio && performance.description && (
+              <p
+                itemProp="description"
+                className="text-sm lg:text-base text-[#5A5550] font-light leading-relaxed mb-5 line-clamp-2"
+              >
+                {performance.description}
+              </p>
+            )}
 
-          {/* Social Media Links */}
-          {hasSocials && (
-            <>
-              <div className="border-t border-gray-200 my-4" />
-              <div className="flex items-center gap-4">
-                {performance.socialLinks?.website && (
-                  <a
-                    href={performance.socialLinks.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-gray-400 hover:text-[#C41E3A] transition-colors"
-                    aria-label={`Visit ${performance.artistName}'s website`}
-                  >
-                    <Globe className="w-5 h-5" />
-                  </a>
-                )}
-                {performance.socialLinks?.instagram && (
-                  <a
-                    href={performance.socialLinks.instagram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-gray-400 hover:text-[#C41E3A] transition-colors"
-                    aria-label={`Follow ${performance.artistName} on Instagram`}
-                  >
-                    <Instagram className="w-5 h-5" />
-                  </a>
-                )}
-                {performance.socialLinks?.youtube && (
-                  <a
-                    href={performance.socialLinks.youtube}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-gray-400 hover:text-[#C41E3A] transition-colors"
-                    aria-label={`Watch ${performance.artistName} on YouTube`}
-                  >
-                    <Youtube className="w-5 h-5" />
-                  </a>
-                )}
-                {performance.socialLinks?.spotify && (
-                  <a
-                    href={performance.socialLinks.spotify}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-gray-400 hover:text-[#C41E3A] transition-colors"
-                    aria-label={`Listen to ${performance.artistName} on Spotify`}
-                  >
-                    <Spotify className="w-5 h-5" />
-                  </a>
-                )}
-                {performance.socialLinks?.facebook && (
-                  <a
-                    href={performance.socialLinks.facebook}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-gray-400 hover:text-[#C41E3A] transition-colors"
-                    aria-label={`Follow ${performance.artistName} on Facebook`}
-                  >
-                    <Facebook className="w-5 h-5" />
-                  </a>
-                )}
-              </div>
-            </>
-          )}
+            {/* Social Media Links */}
+            {hasSocials && (
+              <>
+                <div className="border-t border-[#E5E0D8] my-5" />
+                <div className="flex items-center gap-4">
+                  {performance.socialLinks?.website && (
+                    <a
+                      href={performance.socialLinks.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-[#8A8580] hover:text-[#E31937] transition-colors duration-200"
+                      aria-label={`Visit ${performance.artistName}'s website`}
+                    >
+                      <Globe className="w-5 h-5" />
+                    </a>
+                  )}
+                  {performance.socialLinks?.instagram && (
+                    <a
+                      href={performance.socialLinks.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-[#8A8580] hover:text-[#E31937] transition-colors duration-200"
+                      aria-label={`Follow ${performance.artistName} on Instagram`}
+                    >
+                      <Instagram className="w-5 h-5" />
+                    </a>
+                  )}
+                  {performance.socialLinks?.youtube && (
+                    <a
+                      href={performance.socialLinks.youtube}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-[#8A8580] hover:text-[#E31937] transition-colors duration-200"
+                      aria-label={`Watch ${performance.artistName} on YouTube`}
+                    >
+                      <Youtube className="w-5 h-5" />
+                    </a>
+                  )}
+                  {performance.socialLinks?.spotify && (
+                    <a
+                      href={performance.socialLinks.spotify}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-[#8A8580] hover:text-[#E31937] transition-colors duration-200"
+                      aria-label={`Listen to ${performance.artistName} on Spotify`}
+                    >
+                      <Spotify className="w-5 h-5" />
+                    </a>
+                  )}
+                  {performance.socialLinks?.facebook && (
+                    <a
+                      href={performance.socialLinks.facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-[#8A8580] hover:text-[#E31937] transition-colors duration-200"
+                      aria-label={`Follow ${performance.artistName} on Facebook`}
+                    >
+                      <Facebook className="w-5 h-5" />
+                    </a>
+                  )}
+                </div>
+              </>
+            )}
+          </motion.div>
 
           {/* Schema.org metadata (hidden) */}
           <meta itemProp="eventAttendanceMode" content="https://schema.org/OfflineEventAttendanceMode" />
@@ -249,15 +267,6 @@ export default function PerformanceCard({
             <span itemProp="name">Kawai Piano</span>
           </span>
         </div>
-
-        {/* Hover glow effect on border */}
-        <div
-          className="absolute left-0 top-0 bottom-0 w-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          style={{
-            background: `linear-gradient(to bottom, ${theme.cardLeftBorder}, transparent)`,
-            filter: 'blur(4px)'
-          }}
-        />
       </motion.article>
     </Link>
   )

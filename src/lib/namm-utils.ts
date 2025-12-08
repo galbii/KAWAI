@@ -34,8 +34,8 @@ export const NAMM_EVENT = {
   venue: 'Anaheim Convention Center',
   /** Event location */
   location: 'Anaheim, California',
-  /** Booth number (TBA - placeholder) */
-  booth: 'TBA',
+  /** Booth number */
+  booth: '9110',
 } as const
 
 /**

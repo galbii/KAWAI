@@ -45,7 +45,7 @@ export const revalidate = 86400 // 24 hours
 
 // SEO Metadata for NAMM 2026 Landing Page
 export const metadata: Metadata = {
-  title: 'Kawai Booth at NAMM 2026 | Premium Piano Experience | Jan 22-24',
+  title: 'The KAWAI Experience | NAMM 2026 Booth Location and Artist Lineup',
   description: 'Experience the Kawai booth at NAMM Show 2026. Live artist performances, hands-on piano demonstrations, and exclusive consultations. Discover what to expect at the premier piano exhibition in Anaheim.',
   keywords: [
     'namm 2026',

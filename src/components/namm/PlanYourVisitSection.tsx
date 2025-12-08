@@ -1,15 +1,18 @@
 /**
- * PlanYourVisitSection Component
+ * PlanYourVisitSection Component - NAMM 2026
  *
- * Provides practical logistics information to reduce friction for booth visits
- * Includes event dates, location, registration info, hotels, and transportation
+ * Premium logistics section with warm beige aesthetic matching ArtistLineupSection
+ * Features:
+ * - Framer Motion animations with scroll triggers
+ * - Premium card styling with gradients and glows
+ * - Elevated icon badges with accent colors
+ * - Warm beige background with paper texture
  */
 
 'use client'
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { useState, useEffect, useRef } from 'react'
+import { motion } from 'motion/react'
 import { cn } from '@/lib/utils'
 
 interface PlanYourVisitSectionProps {
@@ -17,65 +20,102 @@ interface PlanYourVisitSectionProps {
   showMap?: boolean
 }
 
-// Icon components (using SVG for lightweight implementation)
-const CalendarIcon = () => (
-  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-  </svg>
-)
-
-const LocationIcon = () => (
-  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-  </svg>
-)
-
-const TicketIcon = () => (
-  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
-  </svg>
-)
-
-const HotelIcon = () => (
-  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-  </svg>
-)
-
-const PlaneIcon = () => (
-  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l7-7 3 3-7 7-3-3z" />
-  </svg>
-)
-
 interface InfoCardProps {
-  icon: React.ReactNode
   title: string
   children: React.ReactNode
-  className?: string
+  index: number
+  accentColor?: 'red' | 'amber' | 'emerald' | 'blue'
 }
 
-function InfoCard({ icon, title, children, className }: InfoCardProps) {
+function InfoCard({ title, children, index, accentColor = 'red' }: InfoCardProps) {
+  const [isVisible, setIsVisible] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setIsVisible(true)
+        }
+      },
+      { threshold: 0.2 }
+    )
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [])
+
+  const accentColors = {
+    red: {
+      border: 'border-kawai-red/20 hover:border-kawai-red/40',
+      glow: 'from-kawai-red/10 via-transparent to-transparent'
+    },
+    amber: {
+      border: 'border-amber-600/20 hover:border-amber-600/40',
+      glow: 'from-amber-600/10 via-transparent to-transparent'
+    },
+    emerald: {
+      border: 'border-emerald-600/20 hover:border-emerald-600/40',
+      glow: 'from-emerald-600/10 via-transparent to-transparent'
+    },
+    blue: {
+      border: 'border-blue-600/20 hover:border-blue-600/40',
+      glow: 'from-blue-600/10 via-transparent to-transparent'
+    }
+  }
+
+  const colors = accentColors[accentColor]
+
   return (
-    <Card className={cn("border-2 hover:border-kawai-red transition-colors", className)}>
-      <CardContent className="p-6">
-        <div className="flex items-start gap-4">
-          <div className="flex-shrink-0 text-kawai-red mt-1">
-            {icon}
-          </div>
-          <div className="flex-1 space-y-3">
-            <h3 className="font-bold text-lg text-gray-900">
-              {title}
-            </h3>
-            <div className="text-sm text-gray-700 space-y-2">
-              {children}
-            </div>
+    <motion.div
+      ref={cardRef}
+      initial={{ opacity: 0, y: 30 }}
+      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+      transition={{ duration: 0.6, delay: index * 0.1 }}
+      className="group h-full"
+    >
+      <div className={cn(
+        'relative h-full overflow-hidden rounded-2xl p-6 lg:p-8',
+        'bg-gradient-to-br from-white via-white to-[#F5F1E8]/30',
+        'border-2',
+        colors.border,
+        'shadow-lg shadow-[#2C2826]/5',
+        'hover:shadow-xl hover:shadow-[#2C2826]/10',
+        'hover:scale-[1.02]',
+        'transition-all duration-500 ease-out'
+      )}>
+        {/* Subtle gradient glow effect */}
+        <div className={cn(
+          'absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500',
+          'bg-gradient-radial',
+          colors.glow,
+          'blur-2xl pointer-events-none'
+        )} />
+
+        {/* Subtle pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.02]">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'radial-gradient(circle at 20% 50%, currentColor 1px, transparent 1px)',
+            backgroundSize: '24px 24px'
+          }} />
+        </div>
+
+        <div className="relative z-10">
+          {/* Title */}
+          <h3 className="font-semibold text-xl text-[#2C2826] mb-4 leading-tight">
+            {title}
+          </h3>
+
+          {/* Content */}
+          <div className="text-sm text-[#5A5550] space-y-3 leading-relaxed">
+            {children}
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </motion.div>
   )
 }
 
@@ -83,185 +123,236 @@ export default function PlanYourVisitSection({
   className,
   showMap = true
 }: PlanYourVisitSectionProps) {
-  const [mapLoaded, setMapLoaded] = useState(false)
+  const [isTitleVisible, setIsTitleVisible] = useState(false)
+  const titleRef = useRef<HTMLDivElement>(null)
+
+  // Intersection Observer for title animation
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setIsTitleVisible(true)
+        }
+      },
+      { threshold: 0.3 }
+    )
+
+    if (titleRef.current) {
+      observer.observe(titleRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [])
 
   return (
     <section className={cn(
-      "py-16 px-4 md:py-20 bg-white",
+      "py-24 lg:py-32 relative overflow-hidden",
       className
     )}>
-      <div className="container mx-auto max-w-6xl">
+      {/* Warm beige gradient background - matching ArtistLineupSection */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#F5F1E8] via-[#EDE8DF] to-[#F0EBE3]" />
+
+      {/* Subtle paper texture overlay */}
+      <div className="absolute inset-0 opacity-[0.02]">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: 'url("data:image/svg+xml,%3Csvg width="200" height="200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noise)" /%3E%3C/svg%3E")',
+            backgroundRepeat: 'repeat'
+          }}
+        />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
         {/* Section Header */}
-        <div className="text-center mb-12 md:mb-16">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+        <div ref={titleRef} className="text-center mb-16 lg:mb-20">
+          <motion.h2
+            initial={{ opacity: 0, y: 30 }}
+            animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.8 }}
+            className="text-4xl md:text-5xl lg:text-6xl font-light tracking-tight text-[#2C2826] mb-6"
+          >
             Plan Your Visit
-          </h2>
-          <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
-            Everything you need to know to experience Kawai at NAMM 2026
-          </p>
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-lg md:text-xl font-light leading-relaxed text-[#5A5550] max-w-3xl mx-auto"
+          >
+            Everything you need to know to experience Kawai at NAMM 2026. From event details to travel logistics, we've got you covered.
+          </motion.p>
         </div>
 
         {/* Info Cards Grid */}
-        <div className="grid gap-6 md:grid-cols-2 mb-8">
-          {/* Event Dates */}
-          <InfoCard icon={<CalendarIcon />} title="Event Dates">
-            <p className="font-semibold text-gray-900">
-              NAMM 2026: January 20-24, 2026
-            </p>
-            <p className="text-gray-600">
-              Exhibit Hall Open: January 22-24, 2026
-            </p>
-            <p className="text-xs text-gray-500 mt-2">
-              Visit us during exhibit hours for live demonstrations and exclusive previews
-            </p>
+        <div className="grid gap-8 md:grid-cols-2 mb-12">
+          {/* Event Dates & Hotels Combined */}
+          <InfoCard title="Event Dates & Hotels" index={0} accentColor="red">
+            <div className="space-y-2">
+              <p className="font-semibold text-[#2C2826]">
+                NAMM 2026: January 20-24, 2026
+              </p>
+              <p className="text-[#5A5550]">
+                Exhibit Hall Open: January 22-24, 2026
+              </p>
+              <p className="text-xs text-[#7A7570] mt-2">
+                Visit us during exhibit hours for live demonstrations and exclusive previews
+              </p>
+            </div>
+
+            {/* Visual separator */}
+            <div className="my-4 border-t border-[#D4CFC7]" />
+
+            {/* Hotels section */}
+            <div className="space-y-3">
+              <p className="font-semibold text-[#2C2826]">
+                Hotels Nearby
+              </p>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-2">
+                  <span className="text-kawai-red mt-0.5 flex-shrink-0">•</span>
+                  <div>
+                    <strong className="text-[#2C2826]">Disneyland Hotels</strong>
+                    <p className="text-xs text-[#7A7570] mt-0.5">Walking distance to convention center</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-kawai-red mt-0.5 flex-shrink-0">•</span>
+                  <div>
+                    <strong className="text-[#2C2826]">Anaheim Marriott</strong>
+                    <p className="text-xs text-[#7A7570] mt-0.5">Adjacent to convention center</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-kawai-red mt-0.5 flex-shrink-0">•</span>
+                  <div>
+                    <strong className="text-[#2C2826]">Hilton Anaheim</strong>
+                    <p className="text-xs text-[#7A7570] mt-0.5">Connected via skywalk</p>
+                  </div>
+                </li>
+              </ul>
+              <p className="text-xs text-[#7A7570] mt-4 pt-3 border-t border-[#D4CFC7]">
+                💡 Book early for best rates during NAMM week
+              </p>
+            </div>
           </InfoCard>
 
-          {/* Location & Booth */}
-          <InfoCard icon={<LocationIcon />} title="Location & Booth">
-            <p className="font-medium text-gray-900">
-              Anaheim Convention Center
-            </p>
-            <p className="text-gray-600">
-              800 W Katella Ave, Anaheim, CA 92802
-            </p>
-            <p className="font-semibold text-kawai-red mt-2">
-              Kawai Booth: Hall [TBA], Booth [TBA]
-            </p>
-            <p className="text-xs text-gray-500 mt-2">
-              Booth number will be announced closer to the event
-            </p>
-          </InfoCard>
+          {/* Booth Location */}
+          <InfoCard title="Booth Location" index={1} accentColor="amber">
+            <div className="space-y-3">
+              <p className="font-semibold text-[#2C2826]">
+                Anaheim Convention Center
+              </p>
+              <p className="text-[#5A5550]">
+                800 W Katella Ave, Anaheim, CA 92802
+              </p>
+              <div className="mt-3 pt-3 border-t border-[#D4CFC7]">
+                <p className="font-bold text-kawai-red">
+                  Kawai Booth 9110
+                </p>
+                <p className="text-xs text-[#7A7570] mt-1">
+                  Hall B · First Floor
+                </p>
+              </div>
 
-          {/* Registration */}
-          <InfoCard icon={<TicketIcon />} title="Registration">
-            <p className="text-gray-700">
-              NAMM requires advance registration for all attendees.
-            </p>
-            <p className="text-gray-600 text-xs">
-              Industry professionals, music educators, and qualified buyers can register through the NAMM website.
-            </p>
-            <Button
-              asChild
-              variant="default"
-              size="sm"
-              className="mt-3 bg-kawai-red hover:bg-kawai-red/90"
-            >
-              <a
-                href="https://www.namm.org"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Register at NAMM.org
-              </a>
-            </Button>
-          </InfoCard>
-
-          {/* Hotels Nearby */}
-          <InfoCard icon={<HotelIcon />} title="Hotels Nearby">
-            <ul className="space-y-2">
-              <li className="flex items-start">
-                <span className="text-kawai-red mr-2">•</span>
-                <span>
-                  <strong>Disneyland Hotels</strong> - Walking distance to convention center
-                </span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-kawai-red mr-2">•</span>
-                <span>
-                  <strong>Anaheim Marriott</strong> - Adjacent to convention center
-                </span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-kawai-red mr-2">•</span>
-                <span>
-                  <strong>Hilton Anaheim</strong> - Connected via skywalk
-                </span>
-              </li>
-            </ul>
-            <p className="text-xs text-gray-500 mt-3">
-              Book early for best rates during NAMM week
-            </p>
+              {/* Booth Map */}
+              <div className="mt-4 pt-3 border-t border-[#D4CFC7]">
+                <img
+                  src="/images/namm/nammkawaimap.png"
+                  alt="Kawai Booth 9110 location map at NAMM 2026"
+                  className="w-full h-auto rounded-lg border border-[#D4CFC7]"
+                />
+              </div>
+            </div>
           </InfoCard>
         </div>
 
-        {/* Transportation */}
-        <Card className="border-2 mb-8">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 text-kawai-red mt-1">
-                <PlaneIcon />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-lg text-gray-900 mb-3">
-                  Getting There
-                </h3>
-                <div className="grid md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="font-semibold text-gray-900">
-                      John Wayne Airport (SNA)
-                    </p>
-                    <p className="text-gray-600">
-                      15 minutes from convention center
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Closest airport, convenient for domestic travelers
-                    </p>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">
-                      Los Angeles International (LAX)
-                    </p>
-                    <p className="text-gray-600">
-                      45 minutes from convention center
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      More international flight options available
-                    </p>
-                  </div>
+        {/* Transportation - Premium card treatment */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="mb-12"
+        >
+          <div className={cn(
+            'relative overflow-hidden rounded-2xl p-8 lg:p-10',
+            'bg-gradient-to-br from-white via-white to-[#F5F1E8]/30',
+            'border-2 border-purple-600/20 hover:border-purple-600/40',
+            'shadow-lg shadow-[#2C2826]/5',
+            'hover:shadow-xl hover:shadow-[#2C2826]/10',
+            'transition-all duration-500 ease-out',
+            'group'
+          )}>
+            {/* Subtle gradient glow effect */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-radial from-purple-600/10 via-transparent to-transparent blur-2xl pointer-events-none" />
+
+            {/* Subtle pattern overlay */}
+            <div className="absolute inset-0 opacity-[0.02]">
+              <div className="absolute inset-0" style={{
+                backgroundImage: 'radial-gradient(circle at 20% 50%, currentColor 1px, transparent 1px)',
+                backgroundSize: '24px 24px'
+              }} />
+            </div>
+
+            <div className="relative z-10">
+              {/* Title */}
+              <h3 className="font-semibold text-2xl text-[#2C2826] mb-6 leading-tight">
+                Getting There
+              </h3>
+
+              {/* Airport Grid */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <p className="font-bold text-[#2C2826] text-lg">
+                    John Wayne Airport (SNA)
+                  </p>
+                  <p className="text-[#5A5550]">
+                    15 minutes from convention center
+                  </p>
+                  <p className="text-xs text-[#7A7570] leading-relaxed">
+                    Closest airport, convenient for domestic travelers
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="font-bold text-[#2C2826] text-lg">
+                    Los Angeles International (LAX)
+                  </p>
+                  <p className="text-[#5A5550]">
+                    45 minutes from convention center
+                  </p>
+                  <p className="text-xs text-[#7A7570] leading-relaxed">
+                    More international flight options available
+                  </p>
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Interactive Map */}
-        {showMap && (
-          <div className="relative">
-            <h3 className="font-bold text-xl text-gray-900 mb-4 text-center">
-              Convention Center Location
-            </h3>
-
-            {!mapLoaded && (
-              <div className="relative h-96 bg-gray-100 rounded-lg flex items-center justify-center">
-                <Button
-                  onClick={() => setMapLoaded(true)}
-                  variant="default"
-                  className="bg-kawai-red hover:bg-kawai-red/90"
-                >
-                  Load Map
-                </Button>
-              </div>
-            )}
-
-            {mapLoaded && (
-              <div className="relative h-96 rounded-lg overflow-hidden shadow-lg">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3316.4982887935785!2d-117.92301768478739!3d33.80067698067456!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80dcd7d12b3b5e6b%3A0x2ef62f8418225cfa!2sAnaheim%20Convention%20Center!5e0!3m2!1sen!2sus!4v1234567890123"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Anaheim Convention Center Location"
-                />
-              </div>
-            )}
-
-            <p className="text-xs text-gray-500 text-center mt-3">
-              Click for directions and surrounding area information
-            </p>
           </div>
+        </motion.div>
+
+        {/* Convention Center Access Map */}
+        {showMap && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="relative"
+          >
+            {/* Header */}
+            <div className="text-center mb-6">
+              <h3 className="font-semibold text-2xl text-[#2C2826]">
+                Convention Center Access
+              </h3>
+            </div>
+
+            {/* Access Map Image */}
+            <div className="flex justify-center">
+              <img
+                src="/images/namm/access-map.png"
+                alt="Anaheim Convention Center access map showing Hall B #9110"
+                className="max-w-full h-auto rounded-2xl shadow-lg"
+              />
+            </div>
+          </motion.div>
         )}
       </div>
     </section>

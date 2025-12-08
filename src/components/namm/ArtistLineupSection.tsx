@@ -32,6 +32,9 @@ export default function ArtistLineupSection({ className }: ArtistLineupSectionPr
   const [isTitleVisible, setIsTitleVisible] = useState(false)
   const titleRef = useRef<HTMLDivElement>(null)
 
+  // Hover state management for staggered stack (desktop only)
+  const [hoveredCardId, setHoveredCardId] = useState<string | null>(null)
+
   // Intersection Observer for title animation
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -231,7 +234,7 @@ export default function ArtistLineupSection({ className }: ArtistLineupSectionPr
           </AnimatePresence>
         </div>
 
-        {/* Desktop: 3-Column Day Grid */}
+        {/* Desktop: 3-Column Day Grid with Staggered Stack */}
         <div className="hidden lg:grid lg:grid-cols-3 gap-8">
           {DAYS_SCHEDULE.map((day) => {
             const theme = DAY_THEMES[day.id]
@@ -265,35 +268,36 @@ export default function ArtistLineupSection({ className }: ArtistLineupSectionPr
                   <div className={cn('absolute inset-0 bg-gradient-radial', theme.glow, 'blur-2xl -z-10')} />
                 </div>
 
-                {/* Performance Cards */}
-                <div className="space-y-6">
-                  {day.performances.map((performance, idx) => (
-                    <PerformanceCard
-                      key={performance.id}
-                      performance={performance}
-                      theme={theme}
-                      index={idx}
-                    />
-                  ))}
+                {/* Performance Cards - Staggered Stack Layout */}
+                <div className="relative">
+                  {day.performances.map((performance, idx) => {
+                    const adjacentPerformance = idx === 0 ? day.performances[1] : day.performances[0]
+                    const isCurrentHovered = hoveredCardId === performance.id
+                    const isSiblingHovered = Boolean(adjacentPerformance && hoveredCardId === adjacentPerformance.id)
+
+                    return (
+                      <div
+                        key={performance.id}
+                        style={{
+                          marginTop: idx === 0 ? 0 : '-240px', // 60% overlap for stagger effect
+                        }}
+                      >
+                        <PerformanceCard
+                          performance={performance}
+                          theme={theme}
+                          index={idx}
+                          isHovered={isCurrentHovered}
+                          siblingHovered={isSiblingHovered}
+                          onHoverChange={setHoveredCardId}
+                        />
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             )
           })}
         </div>
-
-        {/* Important Note - Inverse dark design */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={isTitleVisible ? { opacity: 1 } : { opacity: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="mt-12 p-6 rounded-xl bg-[#2C2826] border border-[#3A3530] shadow-lg"
-        >
-          <p className="text-sm text-[#EDE8DF] text-center leading-relaxed">
-            <span className="text-kawai-red font-semibold">Note:</span>{' '}
-            All performances are free with NAMM badge. Seating is first-come, first-served.
-            Performance times and artists subject to change.
-          </p>
-        </motion.div>
 
         {/* SEO Keywords (hidden) */}
         <div className="sr-only" aria-hidden="true">

@@ -20,6 +20,12 @@ const HERO_IMAGES = [
   '/images/namm/general/018.jpg',
 ] as const
 
+// NAMM logo variants for cycling - defined outside component to prevent stale closures
+const NAMM_LOGOS = [
+  '/images/namm/NS_Logo_White.png',
+  '/images/namm/NS_Logo_Blue.png',
+] as const
+
 interface HeroSectionProps {
   /** Additional CSS classes */
   className?: string
@@ -51,27 +57,21 @@ export default function HeroSection({
   const reducedMotion = prefersReducedMotion()
   const [nammLogoIndex, setNammLogoIndex] = useState(0)
 
-  // NAMM logo variants for cycling
-  const nammLogos = [
-    '/images/namm/NS_Logo_White.png',
-    '/images/namm/NS_Logo_Blue.png',
-  ]
-
   // Cycle NAMM logo every 4 seconds with smooth fade
   useEffect(() => {
     if (reducedMotion) return
 
     const interval = setInterval(() => {
       setNammLogoIndex((prev) => {
-        const newIndex = (prev + 1) % nammLogos.length
-        const currentLogo = nammLogos[newIndex] ?? nammLogos[0]!
+        const newIndex = (prev + 1) % NAMM_LOGOS.length
+        const currentLogo = NAMM_LOGOS[newIndex] ?? NAMM_LOGOS[0]!
         console.log('[NAMM Logo] Cycling to index:', newIndex, '- Logo:', currentLogo)
         return newIndex
       })
     }, 4000) // Changed from 800ms to 4000ms (4 seconds)
 
     return () => clearInterval(interval)
-  }, [reducedMotion, nammLogos.length])
+  }, [reducedMotion])
 
   // Handle smooth scroll to next section
   const scrollToNextSection = () => {
@@ -176,7 +176,7 @@ export default function HeroSection({
                 className="absolute inset-0"
               >
                 <Image
-                  src={nammLogos[nammLogoIndex] ?? nammLogos[0]!}
+                  src={NAMM_LOGOS[nammLogoIndex] ?? NAMM_LOGOS[0]!}
                   alt="The NAMM Show"
                   width={600}
                   height={200}

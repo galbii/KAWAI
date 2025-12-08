@@ -15,11 +15,11 @@
  * - Minimize/expand toggle
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Calendar, MapPin, ExternalLink, Navigation, ChevronRight, ChevronLeft, Info, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { NAMM_EVENT } from '@/lib/namm-utils'
+import { NAMM_EVENT, getCountdownToNAMM, type CountdownTime } from '@/lib/namm-utils'
 import { cn } from '@/lib/utils'
 
 interface EventInfoBoxProps {
@@ -36,6 +36,16 @@ interface EventInfoBoxProps {
  */
 export default function EventInfoBox({ className }: EventInfoBoxProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [countdown, setCountdown] = useState<CountdownTime>(getCountdownToNAMM())
+
+  // Update countdown every second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCountdown(getCountdownToNAMM())
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [])
 
   const scrollToPlanYourVisit = () => {
     const element = document.getElementById('plan-your-visit')
@@ -89,9 +99,16 @@ export default function EventInfoBox({ className }: EventInfoBoxProps) {
           >
             <div className="flex items-center gap-3">
               <Calendar className="w-5 h-5 text-kawai-red flex-shrink-0" />
-              <span className="text-sm font-bold text-kawai-red tracking-wider whitespace-nowrap">
-                EVENT INFO
-              </span>
+              <div className="flex flex-col items-start">
+                <span className="text-sm font-bold text-kawai-red tracking-wider whitespace-nowrap">
+                  EVENT INFO
+                </span>
+                {!countdown.hasStarted && !countdown.hasEnded && countdown.days > 0 && (
+                  <span className="text-[10px] text-kawai-black/50 font-medium whitespace-nowrap">
+                    {countdown.days}d {countdown.hours}h {countdown.minutes}m
+                  </span>
+                )}
+              </div>
             </div>
             <ChevronLeft className="w-5 h-5 text-kawai-red -rotate-90" />
           </button>
@@ -130,6 +147,26 @@ export default function EventInfoBox({ className }: EventInfoBoxProps) {
             <p className="text-sm text-kawai-black/60">
               9:00 AM - 6:00 PM Daily
             </p>
+
+            {/* Countdown Timer - Subtle */}
+            {!countdown.hasStarted && !countdown.hasEnded && countdown.days > 0 && (
+              <div className="mt-3 pt-3 border-t border-kawai-black/5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-kawai-black/50 uppercase tracking-wide">Countdown</span>
+                  <span className="font-mono font-semibold text-kawai-red/80">
+                    {countdown.days}d {countdown.hours}h {countdown.minutes}m {countdown.seconds}s
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {countdown.hasStarted && !countdown.hasEnded && (
+              <div className="mt-3 pt-3 border-t border-kawai-black/5">
+                <p className="text-xs text-kawai-red font-semibold uppercase tracking-wide">
+                  🔴 Event is Live Now!
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Divider */}
@@ -175,9 +212,10 @@ export default function EventInfoBox({ className }: EventInfoBoxProps) {
                 Booth {NAMM_EVENT.booth}
               </p>
               <p className="text-xs text-kawai-black/60 mt-1">
-                {NAMM_EVENT.booth === 'TBA'
-                  ? 'Booth location to be announced'
-                  : 'Visit us for hands-on demos'}
+                Hall B · First Floor
+              </p>
+              <p className="text-xs text-kawai-black/50 mt-1">
+                Visit us for hands-on demos
               </p>
             </div>
           </div>
