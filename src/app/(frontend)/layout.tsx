@@ -64,8 +64,8 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
   const pathname = headersList.get('x-pathname') || '/'
   const initialOrigin = parseNavigationOrigin(pathname)
 
-  // Check if this is the NAMM 2026 page (has its own custom header/footer)
-  const isNAMMPage = pathname === '/namm-2026' || pathname === '/namm-2026/'
+  // Check if this is any NAMM 2026 page (has its own custom header/footer)
+  const isNAMMPage = pathname.startsWith('/namm-2026')
 
   const localBusinessSchema = {
     "@context": "https://schema.org",

@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion } from 'motion/react'
+import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 /**
@@ -21,6 +21,23 @@ interface FeaturedPianoDetailed {
   ctaLink: string
   theme: 'crystal' | 'artistic' | 'tech' | 'craftsmanship'
   badge?: string
+}
+
+/**
+ * Artist bio information for HERALBONY collaboration
+ */
+interface ArtistBio {
+  name: string
+  imageUrl: string
+  bio: string
+  artwork: string
+}
+
+const SATO_BIO: ArtistBio = {
+  name: 'Sato',
+  imageUrl: '/images/placeholders/artist-sato.jpg',
+  bio: 'Sato is a talented artist whose vibrant, energetic artwork transforms everyday objects into extraordinary experiences. Working through HERALBONY, a Japanese social enterprise that supports artists with intellectual disabilities, Sato\'s distinctive style brings joy and color to the world. Their collaboration with Kawai represents a groundbreaking fusion of visual art and musical craftsmanship.',
+  artwork: 'Radiant Energy - A celebration of color, movement, and creative expression'
 }
 
 /**
@@ -189,9 +206,11 @@ function CrystalGrandShowcase({ piano, index }: { piano: FeaturedPianoDetailed; 
 /**
  * HERALBONY K-200 - Artistic collaboration piano
  * Vibrant multi-color theme (purple/fuchsia/pink/yellow)
+ * Enhanced with expandable artist bio section
  */
 function ArtisticShowcase({ piano, index }: { piano: FeaturedPianoDetailed; index: number }) {
   const [isVisible, setIsVisible] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -205,13 +224,18 @@ function ArtisticShowcase({ piano, index }: { piano: FeaturedPianoDetailed; inde
     return () => observer.disconnect()
   }, [])
 
+  const handleCardClick = () => {
+    setIsExpanded(!isExpanded)
+  }
+
   return (
     <motion.div
       ref={cardRef}
       initial={{ opacity: 0, y: 80 }}
       animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 80 }}
       transition={{ duration: 1, delay: index * 0.15, ease: [0.25, 0.1, 0.25, 1] }}
-      className="group relative overflow-hidden rounded-3xl shadow-2xl"
+      className="group relative overflow-hidden rounded-3xl shadow-2xl cursor-pointer"
+      onClick={handleCardClick}
     >
       {/* Vibrant artistic background with explosive colors */}
       <div className="relative min-h-[800px] bg-gradient-to-br from-purple-950 via-fuchsia-900 to-pink-900 p-10 lg:p-20">
@@ -310,8 +334,11 @@ function ArtisticShowcase({ piano, index }: { piano: FeaturedPianoDetailed; inde
               animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ duration: 0.8, delay: 0.7 }}
             >
-              <Link
-                href={piano.ctaLink}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleCardClick()
+                }}
                 className={cn(
                   "inline-flex items-center gap-3 px-10 py-5 rounded-full",
                   "bg-gradient-to-r from-fuchsia-500/15 to-pink-500/15",
@@ -322,15 +349,91 @@ function ArtisticShowcase({ piano, index }: { piano: FeaturedPianoDetailed; inde
                   "transform-gpu"
                 )}
               >
-                <span>{piano.ctaText}</span>
-                <svg className="w-5 h-5 transition-transform group-hover/btn:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <span>{isExpanded ? 'Show Less' : piano.ctaText}</span>
+                <svg
+                  className={cn(
+                    "w-5 h-5 transition-transform",
+                    isExpanded ? "rotate-90" : "group-hover/btn:translate-x-2"
+                  )}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
-              </Link>
+              </button>
             </motion.div>
           </div>
         </div>
       </div>
+
+      {/* Expandable Artist Bio Section */}
+      <motion.div
+        initial={false}
+        animate={{
+          height: isExpanded ? 'auto' : 0,
+          opacity: isExpanded ? 1 : 0
+        }}
+        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+        className="overflow-hidden bg-gradient-to-br from-purple-950 via-fuchsia-950 to-pink-950"
+      >
+        <div className="p-10 lg:p-20 border-t border-fuchsia-400/20">
+          <div className="grid lg:grid-cols-2 gap-16 items-start max-w-7xl mx-auto">
+            {/* Artist Photo */}
+            <div className="relative h-[500px] lg:h-[600px] rounded-3xl overflow-hidden shadow-2xl">
+              <Image
+                src={SATO_BIO.imageUrl}
+                alt={SATO_BIO.name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-purple-950/90 via-purple-950/40 to-transparent" />
+              <div className="absolute bottom-8 left-8 right-8">
+                <h4 className="text-4xl lg:text-5xl font-bold text-white mb-3 drop-shadow-2xl">
+                  {SATO_BIO.name}
+                </h4>
+                <p className="text-xl lg:text-2xl text-fuchsia-100 font-light drop-shadow-lg">
+                  {SATO_BIO.artwork}
+                </p>
+              </div>
+            </div>
+
+            {/* Artist Bio */}
+            <div className="space-y-8 flex flex-col justify-center">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-16 h-1 bg-gradient-to-r from-fuchsia-400 to-pink-400 rounded-full" />
+                <span className="text-sm font-semibold tracking-widest uppercase text-fuchsia-300">
+                  Meet the Artist
+                </span>
+              </div>
+              <p className="text-xl lg:text-2xl text-purple-100 leading-relaxed font-light drop-shadow-md">
+                {SATO_BIO.bio}
+              </p>
+              <div className="pt-8">
+                <Link
+                  href="/products/heralbony-k200"
+                  onClick={(e) => e.stopPropagation()}
+                  className={cn(
+                    "inline-flex items-center gap-4 px-12 py-6 rounded-full",
+                    "bg-gradient-to-r from-fuchsia-500/20 to-pink-500/20",
+                    "border-2 border-fuchsia-400/50 hover:border-fuchsia-300/70",
+                    "text-fuchsia-50 hover:text-white text-xl font-semibold",
+                    "backdrop-blur-md transition-all duration-500",
+                    "hover:scale-110 hover:shadow-2xl hover:shadow-fuchsia-500/40",
+                    "transform-gpu"
+                  )}
+                >
+                  <span>View Full Details</span>
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </motion.div>
   )
 }
@@ -644,8 +747,27 @@ function CraftsmanshipShowcase({ piano, index }: { piano: FeaturedPianoDetailed;
 /**
  * NAMM 2026 Featured Pianos - Complete Data
  * All details included for the experience page
+ * HERALBONY moved to top position as featured showcase
  */
 const FEATURED_PIANOS_DETAILED: FeaturedPianoDetailed[] = [
+  {
+    id: 'heralbony',
+    name: 'HERALBONY × Kawai',
+    tagline: 'Where Music Radiates Color',
+    description: 'A bold artistic collaboration featuring vibrant artwork by artists with intellectual disabilities. This K-200 upright transforms into a public art installation that challenges perceptions and celebrates inclusive creativity through sound and vision.',
+    highlights: [
+      'Vibrant original artwork by artist Sato',
+      'Social mission supporting artists with disabilities',
+      'Professional K-200 upright base (114cm)',
+      'Interactive public art piano experience',
+      'Limited edition with certificate of authenticity'
+    ],
+    imageUrl: '/images/placeholders/piano-upright.jpg',
+    ctaText: 'Discover The Story',
+    ctaLink: '/products/heralbony-k200',
+    theme: 'artistic',
+    badge: 'Artistic Collaboration'
+  },
   {
     id: 'cr45',
     name: 'CR-45 Crystal Grand',
@@ -663,24 +785,6 @@ const FEATURED_PIANOS_DETAILED: FeaturedPianoDetailed[] = [
     ctaLink: '/products/cr-45',
     theme: 'crystal',
     badge: 'Ultra Exclusive • 3 Per Year'
-  },
-  {
-    id: 'heralbony',
-    name: 'HERALBONY × Kawai',
-    tagline: 'Where Music Radiates Color',
-    description: 'A bold artistic collaboration featuring vibrant artwork by artists with intellectual disabilities. This K-200 upright transforms into a public art installation that challenges perceptions and celebrates inclusive creativity through sound and vision.',
-    highlights: [
-      'Vibrant original artwork by artist Chihiro Yagyu',
-      'Social mission supporting artists with disabilities',
-      'Professional K-200 upright base (114cm)',
-      'Interactive public art piano experience',
-      'Limited edition with certificate of authenticity'
-    ],
-    imageUrl: '/images/placeholders/piano-upright.jpg',
-    ctaText: 'Discover The Story',
-    ctaLink: '/products/heralbony-k200',
-    theme: 'artistic',
-    badge: 'Artistic Collaboration'
   },
   {
     id: 'novus',

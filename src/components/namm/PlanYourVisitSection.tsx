@@ -12,7 +12,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { motion } from 'motion/react'
+import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 interface PlanYourVisitSectionProps {
@@ -238,8 +238,17 @@ export default function PlanYourVisitSection({
           </InfoCard>
 
           {/* Booth Location */}
-          <InfoCard title="Booth Location" index={1} accentColor="amber">
+          <InfoCard title="Booth Location" index={1} accentColor="red">
             <div className="space-y-3">
+              {/* Convention Center Access Map */}
+              <div className="mb-6 -mx-6 lg:-mx-8 -mt-6 lg:-mt-8">
+                <img
+                  src="/images/namm/access-map.png"
+                  alt="Anaheim Convention Center access map showing Hall B #9110"
+                  className="w-full h-auto"
+                />
+              </div>
+
               <p className="font-semibold text-[#2C2826]">
                 Anaheim Convention Center
               </p>
@@ -253,15 +262,6 @@ export default function PlanYourVisitSection({
                 <p className="text-xs text-[#7A7570] mt-1">
                   Hall B · First Floor
                 </p>
-              </div>
-
-              {/* Booth Map */}
-              <div className="mt-4 pt-3 border-t border-[#D4CFC7]">
-                <img
-                  src="/images/namm/nammkawaimap.png"
-                  alt="Kawai Booth 9110 location map at NAMM 2026"
-                  className="w-full h-auto rounded-lg border border-[#D4CFC7]"
-                />
               </div>
             </div>
           </InfoCard>
@@ -329,31 +329,6 @@ export default function PlanYourVisitSection({
           </div>
         </motion.div>
 
-        {/* Convention Center Access Map */}
-        {showMap && (
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="relative"
-          >
-            {/* Header */}
-            <div className="text-center mb-6">
-              <h3 className="font-semibold text-2xl text-[#2C2826]">
-                Convention Center Access
-              </h3>
-            </div>
-
-            {/* Access Map Image */}
-            <div className="flex justify-center">
-              <img
-                src="/images/namm/access-map.png"
-                alt="Anaheim Convention Center access map showing Hall B #9110"
-                className="max-w-full h-auto rounded-2xl shadow-lg"
-              />
-            </div>
-          </motion.div>
-        )}
       </div>
     </section>
   )

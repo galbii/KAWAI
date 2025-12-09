@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion } from 'motion/react'
+import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 /**
@@ -117,9 +117,11 @@ function CrystalGrandCard({ piano, index }: { piano: FeaturedPiano; index: numbe
 
 /**
  * HERALBONY K-200 - Artistic collaboration piano
+ * Enhanced with expandable artist bio section
  */
 function ArtisticPianoCard({ piano, index }: { piano: FeaturedPiano; index: number }) {
   const [isVisible, setIsVisible] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -133,13 +135,18 @@ function ArtisticPianoCard({ piano, index }: { piano: FeaturedPiano; index: numb
     return () => observer.disconnect()
   }, [])
 
+  const handleCardClick = () => {
+    setIsExpanded(!isExpanded)
+  }
+
   return (
     <motion.div
       ref={cardRef}
       initial={{ opacity: 0, y: 60 }}
       animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }}
       transition={{ duration: 0.8, delay: index * 0.2 }}
-      className="group relative overflow-hidden rounded-3xl"
+      className="group relative overflow-hidden rounded-3xl cursor-pointer"
+      onClick={handleCardClick}
     >
       {/* Vibrant artistic background */}
       <div className="relative min-h-[600px] lg:min-h-[700px] bg-gradient-to-br from-purple-900 via-fuchsia-900 to-pink-900 p-8 lg:p-16">
@@ -180,8 +187,11 @@ function ArtisticPianoCard({ piano, index }: { piano: FeaturedPiano; index: numb
               </p>
             </div>
 
-            <Link
-              href={piano.ctaLink}
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                handleCardClick()
+              }}
               className={cn(
                 "inline-flex items-center gap-3 px-8 py-4 rounded-full",
                 "bg-gradient-to-r from-fuchsia-500/10 to-pink-500/10",
@@ -191,14 +201,89 @@ function ArtisticPianoCard({ piano, index }: { piano: FeaturedPiano; index: numb
                 "group/btn hover:scale-105"
               )}
             >
-              <span className="font-light">{piano.ctaText}</span>
-              <svg className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <span className="font-light">{isExpanded ? 'Show Less' : piano.ctaText}</span>
+              <svg
+                className={cn(
+                  "w-4 h-4 transition-transform",
+                  isExpanded ? "rotate-90" : "group-hover/btn:translate-x-1"
+                )}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
-            </Link>
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Expandable Artist Bio Section */}
+      <motion.div
+        initial={false}
+        animate={{
+          height: isExpanded ? 'auto' : 0,
+          opacity: isExpanded ? 1 : 0
+        }}
+        transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+        className="overflow-hidden bg-gradient-to-br from-purple-950 via-fuchsia-950 to-pink-950"
+      >
+        <div className="p-8 lg:p-16 border-t border-fuchsia-400/20">
+          <div className="grid lg:grid-cols-2 gap-12 items-start max-w-6xl mx-auto">
+            {/* Artist Photo */}
+            <div className="relative h-[400px] lg:h-[500px] rounded-2xl overflow-hidden">
+              <Image
+                src={SATO_BIO.imageUrl}
+                alt={SATO_BIO.name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-purple-950/80 via-transparent to-transparent" />
+              <div className="absolute bottom-6 left-6 right-6">
+                <h4 className="text-3xl lg:text-4xl font-bold text-white mb-2">
+                  {SATO_BIO.name}
+                </h4>
+                <p className="text-lg text-fuchsia-200 font-light">
+                  {SATO_BIO.artwork}
+                </p>
+              </div>
+            </div>
+
+            {/* Artist Bio */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-0.5 bg-gradient-to-r from-fuchsia-400 to-pink-400" />
+                <span className="text-sm font-medium tracking-widest uppercase text-fuchsia-300">
+                  Meet the Artist
+                </span>
+              </div>
+              <p className="text-lg lg:text-xl text-purple-100 leading-relaxed font-light">
+                {SATO_BIO.bio}
+              </p>
+              <div className="pt-6">
+                <Link
+                  href="/namm-2026/experience"
+                  onClick={(e) => e.stopPropagation()}
+                  className={cn(
+                    "inline-flex items-center gap-3 px-8 py-4 rounded-full",
+                    "bg-gradient-to-r from-fuchsia-500/20 to-pink-500/20",
+                    "border border-fuchsia-400/40 hover:border-fuchsia-300/60",
+                    "text-fuchsia-100 hover:text-white",
+                    "backdrop-blur-sm transition-all duration-300",
+                    "hover:scale-105"
+                  )}
+                >
+                  <span className="font-light">View Full Experience</span>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </motion.div>
   )
 }
@@ -384,18 +469,27 @@ function CraftsmanshipCard({ piano, index }: { piano: FeaturedPiano; index: numb
 }
 
 /**
+ * Artist bio information for HERALBONY collaboration
+ */
+interface ArtistBio {
+  name: string
+  imageUrl: string
+  bio: string
+  artwork: string
+}
+
+const SATO_BIO: ArtistBio = {
+  name: 'Sato',
+  imageUrl: '/images/placeholders/artist-sato.jpg',
+  bio: 'Sato is a talented artist whose vibrant, energetic artwork transforms everyday objects into extraordinary experiences. Working through HERALBONY, a Japanese social enterprise that supports artists with intellectual disabilities, Sato\'s distinctive style brings joy and color to the world. Their collaboration with Kawai represents a groundbreaking fusion of visual art and musical craftsmanship.',
+  artwork: 'Radiant Energy - A celebration of color, movement, and creative expression'
+}
+
+/**
  * NAMM 2026 Featured Pianos Data
+ * HERALBONY moved to top position as featured showcase
  */
 const FEATURED_PIANOS: FeaturedPiano[] = [
-  {
-    id: 'cr45',
-    name: 'CR-45 Crystal Grand',
-    tagline: 'The World\'s Most Exclusive Piano',
-    imageUrl: '/images/placeholders/piano-grand.jpg',
-    ctaText: 'Explore Crystal Grand',
-    ctaLink: '/namm-2026/experience',
-    theme: 'crystal'
-  },
   {
     id: 'heralbony',
     name: 'HERALBONY × Kawai',
@@ -404,6 +498,15 @@ const FEATURED_PIANOS: FeaturedPiano[] = [
     ctaText: 'Discover The Story',
     ctaLink: '/namm-2026/experience',
     theme: 'artistic'
+  },
+  {
+    id: 'cr45',
+    name: 'CR-45 Crystal Grand',
+    tagline: 'The World\'s Most Exclusive Piano',
+    imageUrl: '/images/placeholders/piano-grand.jpg',
+    ctaText: 'Explore Crystal Grand',
+    ctaLink: '/namm-2026/experience',
+    theme: 'crystal'
   },
   {
     id: 'novus',

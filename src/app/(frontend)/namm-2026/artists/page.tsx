@@ -5,11 +5,11 @@ import Link from 'next/link'
 import { ArrowLeft, Calendar, MapPin, Music } from 'lucide-react'
 
 // Lazy load components for optimal performance
-const ArtistHero = dynamic(() => import('@/components/namm/artists/ArtistHero'), {
+const ArtistCarouselHero = dynamic(() => import('@/components/namm/artists/ArtistCarouselHero'), {
   loading: () => <ArtistHeroSkeleton />
 })
 
-const FeaturedArtistsGrid = dynamic(() => import('@/components/namm/artists/FeaturedArtistsGrid'), {
+const ArtistLineupSection = dynamic(() => import('@/components/namm/ArtistLineupSection'), {
   loading: () => <FeaturedArtistsGridSkeleton />
 })
 
@@ -79,11 +79,17 @@ export const metadata: Metadata = {
 // Loading Skeletons
 function ArtistHeroSkeleton() {
   return (
-    <section className="relative min-h-[60vh] flex items-center justify-center bg-black animate-pulse">
-      <div className="container mx-auto px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="h-16 bg-white/10 rounded-lg mb-6 w-3/4 mx-auto" />
-          <div className="h-8 bg-white/10 rounded-lg mb-8 w-1/2 mx-auto" />
+    <section className="relative min-h-screen bg-black animate-pulse">
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black" />
+      <div className="relative z-10 flex items-center justify-center h-full">
+        <div className="text-center space-y-6 px-6">
+          <div className="h-20 bg-white/10 rounded-lg w-[600px] max-w-full mx-auto" />
+          <div className="h-10 bg-white/10 rounded-lg w-[400px] max-w-full mx-auto" />
+          <div className="flex gap-3 justify-center mt-12">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-2 w-12 bg-white/10 rounded-full" />
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -92,12 +98,16 @@ function ArtistHeroSkeleton() {
 
 function FeaturedArtistsGridSkeleton() {
   return (
-    <section className="py-24 bg-black animate-pulse">
+    <section className="py-24 bg-gradient-to-b from-[#F5F1E8] via-[#EDE8DF] to-[#F0EBE3] animate-pulse">
       <div className="container mx-auto px-6">
-        <div className="h-10 bg-white/10 rounded-lg mb-12 w-1/3 mx-auto" />
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-96 bg-white/5 rounded-xl" />
+        <div className="h-10 bg-[#2C2826]/10 rounded-lg mb-12 w-1/3 mx-auto" />
+        <div className="grid lg:grid-cols-3 gap-8">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="space-y-4">
+              <div className="h-32 bg-[#2C2826]/10 rounded-xl" />
+              <div className="h-64 bg-[#2C2826]/10 rounded-xl" />
+              <div className="h-64 bg-[#2C2826]/10 rounded-xl" />
+            </div>
           ))}
         </div>
       </div>
@@ -203,22 +213,16 @@ function QuickInfoBar() {
 // Main NAMM 2026 Artists Page Component
 export default function NAMMArtistsPage() {
   return (
-    <main className="relative scroll-smooth">
-      {/* Breadcrumb Navigation */}
-      <ArtistsBreadcrumb />
-
-      {/* Quick Info Bar */}
-      <QuickInfoBar />
-
-      {/* Hero Section */}
+    <>
+      {/* Hero Carousel Section */}
       <Suspense fallback={<ArtistHeroSkeleton />}>
-        <ArtistHero />
+        <ArtistCarouselHero />
       </Suspense>
 
-      {/* Featured Artists Grid Section */}
-      <section id="featured-artists" className="scroll-mt-20">
+      {/* Artist Lineup Section - Matches main NAMM page design */}
+      <section id="artists" className="scroll-mt-20">
         <Suspense fallback={<FeaturedArtistsGridSkeleton />}>
-          <FeaturedArtistsGrid />
+          <ArtistLineupSection />
         </Suspense>
       </section>
 
@@ -240,6 +244,6 @@ export default function NAMMArtistsPage() {
       <Suspense fallback={<ArtistsCTASkeleton />}>
         <ArtistsCTA />
       </Suspense>
-    </main>
+    </>
   )
 }

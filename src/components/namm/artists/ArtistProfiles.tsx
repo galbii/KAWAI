@@ -8,6 +8,7 @@
 import Image from 'next/image'
 import { Award, Music2, Calendar, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { PERFORMANCES } from '../performances/performance-data'
 
 export interface ArtistProfile {
   id: string
@@ -27,81 +28,51 @@ interface ArtistProfilesProps {
   className?: string
 }
 
-// Default artist profiles (replace with CMS data)
-const DEFAULT_PROFILES: ArtistProfile[] = [
-  {
-    id: '1',
-    name: 'Sarah Chen',
-    title: 'International Concert Pianist',
-    imageUrl: '/images/placeholders/artist-1.jpg',
-    fullBio: 'Sarah Chen has captivated audiences worldwide with her passionate interpretations of Romantic-era masterworks. A graduate of The Juilliard School, she has performed with major orchestras across five continents and maintains a busy concert schedule while serving as a professor at the San Francisco Conservatory of Music. Her recordings of Chopin\'s complete Nocturnes received critical acclaim and established her as one of the leading interpreters of the composer\'s work.',
-    achievements: [
-      'Gold Medal - Van Cliburn International Piano Competition',
-      'Grammy Award - Best Classical Instrumental Solo',
-      'Avery Fisher Career Grant Recipient',
-      '50+ orchestral performances annually'
-    ],
-    yearsActive: '2008 - Present',
-    notableWorks: [
-      'Chopin: Complete Nocturnes (2018)',
-      'Rachmaninoff: Piano Concerto No. 3 with Boston Symphony',
-      'Liszt: Transcendental Études (2021)'
-    ],
-    instruments: ['Shigeru Kawai SK-EX Concert Grand'],
-    website: 'sarahchen.com'
-  },
-  {
-    id: '2',
-    name: 'Marcus Williams',
-    title: 'Jazz Virtuoso & Composer',
-    imageUrl: '/images/placeholders/artist-2.jpg',
-    fullBio: 'Marcus Williams is at the forefront of contemporary jazz piano, seamlessly blending bebop traditions with modern electronic elements. His innovative approach to improvisation has earned him recognition from DownBeat Magazine as "Rising Star Pianist" for three consecutive years. Marcus regularly performs at premier jazz venues worldwide and has collaborated with legends like Herbie Hancock and Chick Corea. His latest album explores the intersection of acoustic piano and digital synthesis.',
-    achievements: [
-      'DownBeat Critics Poll - Rising Star Pianist (3x)',
-      'NEA Jazz Masters Fellowship',
-      'Blue Note Records Recording Artist',
-      'Thelonious Monk International Jazz Competition Finalist'
-    ],
-    yearsActive: '2010 - Present',
-    notableWorks: [
-      'Digital Dreams - Jazz Fusion Album (2022)',
-      'Live at the Village Vanguard (2020)',
-      'Collaborations with The Marcus Williams Trio'
-    ],
-    instruments: ['Kawai Novus NV10S Hybrid Piano', 'Kawai MP11SE Stage Piano'],
-    website: 'marcuswilliams.jazz'
-  },
-  {
-    id: '3',
-    name: 'Elena Rodriguez',
-    title: 'Film Composer & Producer',
-    imageUrl: '/images/placeholders/artist-3.jpg',
-    fullBio: 'Elena Rodriguez creates haunting, evocative soundscapes that have become signature elements in modern film scores. Her work spans over 40 feature films, including award-winning documentaries and Hollywood blockbusters. Elena\'s compositional style combines minimalist piano textures with orchestral arrangements, creating deeply emotional moments that resonate with audiences. She divides her time between her recording studio in Los Angeles and concert performances showcasing her cinematic compositions.',
-    achievements: [
-      'Grammy Award - Best Score Soundtrack for Visual Media',
-      'Academy Award Nomination - Best Original Score',
-      'BAFTA Award - Best Original Music',
-      '40+ Film Score Compositions'
-    ],
-    yearsActive: '2012 - Present',
-    notableWorks: [
-      '"Echoes of Tomorrow" - Feature Film Score (2023)',
-      '"Ambient Nocturnes" - Solo Piano Album (2021)',
-      '"The Last Light" - Documentary Score (2022)'
-    ],
-    instruments: ['Kawai CA901 Digital Piano', 'Shigeru Kawai SK-7L'],
-    website: 'elenarodriguez.com'
-  }
-]
+// Generate profiles from actual performance data
+const generateProfilesFromPerformances = (): ArtistProfile[] => {
+  const artistMap = new Map<string, ArtistProfile>()
+
+  PERFORMANCES.forEach((perf) => {
+    if (!artistMap.has(perf.artistName)) {
+      const profile: ArtistProfile = {
+        id: perf.id,
+        name: perf.artistName,
+        title: perf.performanceType,
+        imageUrl: perf.artistImage || '/images/placeholders/artist-default.jpg',
+        fullBio: perf.artistBio || `${perf.artistName} is a talented ${perf.genre?.toLowerCase() || 'piano'} artist performing at NAMM 2026. Experience their exceptional performance showcasing the expressive capabilities of Kawai instruments.`,
+        achievements: [
+          `Performing ${perf.genre || 'Piano'} at NAMM 2026`,
+          'Kawai Artist',
+          'Professional Pianist'
+        ],
+        instruments: ['Kawai Piano']
+      }
+
+      const websiteUrl = perf.socialLinks?.website?.replace('https://', '')
+      if (websiteUrl !== undefined) {
+        profile.website = websiteUrl
+      }
+
+      artistMap.set(perf.artistName, profile)
+    }
+  })
+
+  return Array.from(artistMap.values())
+}
+
+const PROFILES_FROM_PERFORMANCES = generateProfilesFromPerformances()
 
 function ProfileCard({ profile, index }: { profile: ArtistProfile; index: number }) {
   const isEven = index % 2 === 0
 
   return (
-    <div className={cn(
-      "grid md:grid-cols-2 gap-8 lg:gap-12 items-center",
-      !isEven && "md:grid-flow-dense"
-    )}>
+    <div
+      id={`profile-${profile.id}`}
+      className={cn(
+        "grid md:grid-cols-2 gap-8 lg:gap-12 items-center scroll-mt-20",
+        !isEven && "md:grid-flow-dense"
+      )}
+    >
       {/* Image */}
       <div className={cn(
         "relative aspect-[3/4] md:aspect-square rounded-2xl overflow-hidden",
@@ -204,7 +175,7 @@ function ProfileCard({ profile, index }: { profile: ArtistProfile; index: number
 }
 
 export default function ArtistProfiles({
-  profiles = DEFAULT_PROFILES,
+  profiles = PROFILES_FROM_PERFORMANCES,
   className
 }: ArtistProfilesProps) {
   if (!profiles || profiles.length === 0) {

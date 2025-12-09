@@ -27,9 +27,6 @@ export type {
   CallToActionBlock,
   TestimonialsBlock,
   HelloBlock,
-  LandingHeroBlock,
-  LandingFeaturesBlock,
-  LandingTestimonialsBlock,
 } from '@/payload-types'
 
 // Re-export common types

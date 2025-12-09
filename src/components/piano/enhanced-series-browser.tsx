@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { Search, Filter } from "lucide-react";
 import {

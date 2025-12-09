@@ -1,52 +1,63 @@
 'use client'
 
-// WIP: This component will be enhanced with real NAMM booth images and additional features
-// Current version uses placeholder images and basic carousel functionality
+/**
+ * ArtistCarouselHero Component
+ *
+ * Fullscreen carousel hero for NAMM 2026 Artists page
+ * Design matches the ExperienceCarouselHero with artist-focused content
+ */
 
 import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { PERFORMANCES } from '../performances/performance-data'
 
-interface CarouselSlide {
-  id: number
-  image: string
-  alt: string
+interface ArtistSlide {
+  id: string
+  artistName: string
+  genre?: string
+  artistImage?: string
+  performanceType: string
 }
 
-// WIP: Replace with actual NAMM booth images
-const PLACEHOLDER_SLIDES: CarouselSlide[] = [
-  {
-    id: 1,
-    image: '/images/namm/booth-placeholder-1.jpg',
-    alt: 'Kawai NAMM Booth Overview'
-  },
-  {
-    id: 2,
-    image: '/images/namm/booth-placeholder-2.jpg',
-    alt: 'Kawai Grand Piano Display'
-  },
-  {
-    id: 3,
-    image: '/images/namm/booth-placeholder-3.jpg',
-    alt: 'Kawai Digital Piano Collection'
-  },
-  {
-    id: 4,
-    image: '/images/namm/booth-placeholder-4.jpg',
-    alt: 'Kawai Interactive Experience Zone'
-  }
-]
+// Get unique artists from performances data
+const getUniqueArtists = (): ArtistSlide[] => {
+  const artistMap = new Map<string, ArtistSlide>()
 
+  PERFORMANCES.forEach((performance) => {
+    if (!artistMap.has(performance.artistName)) {
+      const slide: ArtistSlide = {
+        id: performance.id,
+        artistName: performance.artistName,
+        performanceType: performance.performanceType
+      }
+
+      if (performance.genre !== undefined) {
+        slide.genre = performance.genre
+      }
+
+      if (performance.artistImage !== undefined) {
+        slide.artistImage = performance.artistImage
+      }
+
+      artistMap.set(performance.artistName, slide)
+    }
+  })
+
+  return Array.from(artistMap.values())
+}
+
+const ARTIST_SLIDES = getUniqueArtists()
 const AUTO_PLAY_INTERVAL = 5000 // 5 seconds
 
-export default function ExperienceCarouselHero() {
+export default function ArtistCarouselHero() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
   const [direction, setDirection] = useState<'left' | 'right'>('right')
 
-  const totalSlides = PLACEHOLDER_SLIDES.length
+  const totalSlides = ARTIST_SLIDES.length
 
   // Auto-play functionality
   useEffect(() => {
@@ -127,12 +138,14 @@ export default function ExperienceCarouselHero() {
     }
   }
 
+  const currentArtist = ARTIST_SLIDES[currentSlide]
+
   return (
     <section
       className="relative min-h-screen w-full overflow-hidden bg-black pt-16"
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(true)}
-      aria-label="NAMM 2026 Booth Experience Carousel"
+      aria-label="NAMM 2026 Artist Lineup Carousel"
     >
       {/* Carousel Images */}
       <AnimatePresence initial={false} custom={direction} mode="wait">
@@ -145,24 +158,23 @@ export default function ExperienceCarouselHero() {
           exit="exit"
           className="absolute inset-0"
         >
-          {/* WIP: Using placeholder - replace with actual R2-optimized images */}
           <div className="relative h-full w-full">
             <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80 z-10" />
             <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/50 z-10" />
 
-            {/* Placeholder background - will be replaced with actual images */}
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black" />
-
-            {/* WIP: Uncomment when actual images are available
-            <Image
-              src={PLACEHOLDER_SLIDES[currentSlide].image}
-              alt={PLACEHOLDER_SLIDES[currentSlide].alt}
-              fill
-              priority={currentSlide === 0}
-              className="object-cover"
-              sizes="100vw"
-            />
-            */}
+            {/* Artist image or gradient background */}
+            {currentArtist?.artistImage ? (
+              <Image
+                src={currentArtist.artistImage}
+                alt={currentArtist.artistName}
+                fill
+                priority={currentSlide === 0}
+                className="object-cover"
+                sizes="100vw"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black" />
+            )}
           </div>
         </motion.div>
       </AnimatePresence>
@@ -170,35 +182,65 @@ export default function ExperienceCarouselHero() {
       {/* Content Overlay */}
       <div className="relative z-20 flex min-h-screen items-center justify-center px-4">
         <motion.div
+          key={`content-${currentSlide}`}
           variants={overlayVariants}
           initial="hidden"
           animate="visible"
           className="max-w-5xl text-center"
         >
-          <h1 className="mb-6 text-5xl font-light tracking-tight text-white md:text-7xl lg:text-8xl">
-            Experience the Kawai Booth
-            <br />
-            <span className="bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
-              at NAMM 2026
-            </span>
+          {currentArtist?.genre && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6 backdrop-blur-sm"
+            >
+              <span className="text-sm font-medium text-white/80 uppercase tracking-wide">
+                {currentArtist.genre}
+              </span>
+            </motion.div>
+          )}
+
+          <h1 className="mb-4 text-5xl font-light tracking-tight text-white md:text-7xl lg:text-8xl">
+            {currentArtist?.artistName}
           </h1>
 
-          <p className="mx-auto max-w-2xl text-lg font-light text-gray-300 md:text-xl lg:text-2xl">
-            Step into innovation. Discover our latest pianos and revolutionary technology.
+          <p className="mx-auto max-w-2xl text-lg font-light text-gray-300 md:text-xl lg:text-2xl mb-2">
+            {currentArtist?.performanceType}
           </p>
 
-          {/* Scroll indicator */}
+          <p className="mx-auto max-w-2xl text-base font-light text-gray-400 md:text-lg">
+            Performing at NAMM 2026
+          </p>
+
+          {/* Learn More CTA Button */}
           <motion.div
-            className="mt-16 flex justify-center"
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            className="mt-12 flex justify-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
           >
-            <div className="flex flex-col items-center gap-2">
-              <span className="text-xs font-light uppercase tracking-widest text-gray-400">
-                Explore
-              </span>
-              <div className="h-12 w-px bg-gradient-to-b from-transparent via-white to-transparent" />
-            </div>
+            <a
+              href={`#profile-${currentArtist?.id || ''}`}
+              className={cn(
+                'group inline-flex items-center gap-3 px-8 py-4 rounded-full',
+                'bg-white text-black hover:bg-white/90',
+                'font-semibold text-base',
+                'transition-all duration-300',
+                'shadow-lg hover:shadow-xl hover:shadow-white/20',
+                'hover:scale-105'
+              )}
+            >
+              <span>Learn More</span>
+              <svg
+                className="w-5 h-5 transition-transform group-hover:translate-x-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </a>
           </motion.div>
         </motion.div>
       </div>
@@ -214,7 +256,7 @@ export default function ExperienceCarouselHero() {
             'transition-all duration-300 hover:bg-white/10 hover:border-white/40',
             'focus:outline-none focus:ring-2 focus:ring-white/50'
           )}
-          aria-label="Previous slide"
+          aria-label="Previous artist"
         >
           <ChevronLeft className="h-6 w-6 text-white transition-transform group-hover:-translate-x-0.5" />
         </button>
@@ -228,7 +270,7 @@ export default function ExperienceCarouselHero() {
             'transition-all duration-300 hover:bg-white/10 hover:border-white/40',
             'focus:outline-none focus:ring-2 focus:ring-white/50'
           )}
-          aria-label="Next slide"
+          aria-label="Next artist"
         >
           <ChevronRight className="h-6 w-6 text-white transition-transform group-hover:translate-x-0.5" />
         </button>
@@ -236,7 +278,7 @@ export default function ExperienceCarouselHero() {
 
       {/* Dot Indicators */}
       <div className="absolute bottom-8 left-1/2 z-30 flex -translate-x-1/2 gap-3">
-        {PLACEHOLDER_SLIDES.map((_, index) => (
+        {ARTIST_SLIDES.map((_, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}
@@ -245,7 +287,7 @@ export default function ExperienceCarouselHero() {
               'focus:outline-none focus:ring-2 focus:ring-white/50',
               currentSlide === index ? 'w-12 bg-white' : 'w-2 bg-white/30 hover:bg-white/50'
             )}
-            aria-label={`Go to slide ${index + 1}`}
+            aria-label={`Go to ${ARTIST_SLIDES[index]?.artistName}`}
             aria-current={currentSlide === index}
           >
             {/* Progress bar for active slide */}

@@ -64,26 +64,6 @@ export const PERFORMANCES: Performance[] = [
       youtube: 'https://youtube.com/@davidsnyder' // Placeholder
     }
   },
-  {
-    id: 'thu-2',
-    day: 'thursday',
-    date: 'Thursday, January 22, 2026',
-    time: '3:30 PM',
-    artistName: 'Abi Carter',
-    performanceType: 'Piano and Vocal',
-    description: 'Original compositions blending piano artistry and vocal performance in an intimate musical experience',
-    startDateTime: '2026-01-22T15:30:00-08:00',
-    endDateTime: '2026-01-22T16:15:00-08:00',
-    genre: 'Contemporary',
-    artistImage: '/images/artists/namm-2026/abi-carter.jpg', // Placeholder
-    artistBio: 'Singer-songwriter and pianist blending heartfelt lyrics with sophisticated piano arrangements. Rising star with viral performances and critically acclaimed debut. Known for intimate, emotionally resonant compositions.',
-    artistSlug: 'abi-carter',
-    socialLinks: {
-      website: 'https://example.com/abicarter', // Placeholder
-      instagram: 'https://instagram.com/abicarter', // Placeholder
-      spotify: 'https://open.spotify.com/artist/abicarter' // Placeholder
-    }
-  },
 
   // FRIDAY, JANUARY 23
   {

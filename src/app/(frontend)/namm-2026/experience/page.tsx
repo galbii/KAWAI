@@ -116,7 +116,7 @@ function ShowcaseSkeleton() {
 // Main NAMM 2026 Experience Page Component
 export default function NAMMExperiencePage() {
   return (
-    <main className="relative scroll-smooth bg-black">
+    <>
       {/* Carousel Hero Section (WIP) */}
       <Suspense fallback={<HeroSkeleton />}>
         <ExperienceCarouselHero />
@@ -126,6 +126,6 @@ export default function NAMMExperiencePage() {
       <Suspense fallback={<ShowcaseSkeleton />}>
         <PianoShowcaseDetailed />
       </Suspense>
-    </main>
+    </>
   )
 }

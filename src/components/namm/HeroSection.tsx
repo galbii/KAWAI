@@ -86,6 +86,7 @@ export default function HeroSection({
       className={cn(
         'relative min-h-screen flex items-center justify-center overflow-hidden',
         'bg-kawai-black',
+        'pt-16', // Account for fixed header height (h-16 = 64px)
         className
       )}
     >

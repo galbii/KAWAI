@@ -14,9 +14,9 @@ import { NAMMHeader } from '@/components/namm/NAMMHeader'
  */
 export default function NAMM2026Layout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-black">
       <NAMMHeader />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 bg-black">{children}</main>
       {/* No footer - page has custom CantAttendCTA */}
     </div>
   )

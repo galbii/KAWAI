@@ -7,6 +7,7 @@
 
 import { Calendar, Clock, MapPin, Music } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { PERFORMANCES } from '../performances/performance-data'
 
 export interface PerformanceEvent {
   id: string
@@ -24,94 +25,27 @@ interface PerformanceScheduleProps {
   className?: string
 }
 
-// Default schedule (replace with CMS data)
-const DEFAULT_SCHEDULE: PerformanceEvent[] = [
-  // Day 1: January 22
-  {
-    id: '1',
-    artistName: 'Sarah Chen',
-    title: 'Classical Masterworks',
-    date: 'January 22, 2026',
-    time: '10:00 AM - 10:45 AM',
-    location: 'Kawai Booth - Main Stage',
-    description: 'Featuring works by Chopin and Rachmaninoff on the Shigeru Kawai SK-EX',
-    genre: 'Classical'
-  },
-  {
-    id: '2',
-    artistName: 'Marcus Williams',
-    title: 'Jazz Explorations',
-    date: 'January 22, 2026',
-    time: '1:00 PM - 1:45 PM',
-    location: 'Kawai Booth - Demo Area',
-    description: 'Modern jazz improvisation on the Kawai Novus NV10S',
-    genre: 'Jazz'
-  },
-  {
-    id: '3',
-    artistName: 'Elena Rodriguez',
-    title: 'Cinematic Soundscapes',
-    date: 'January 22, 2026',
-    time: '3:30 PM - 4:15 PM',
-    location: 'Kawai Booth - Main Stage',
-    description: 'Original compositions for film and media',
-    genre: 'Contemporary'
-  },
-
-  // Day 2: January 23
-  {
-    id: '4',
-    artistName: 'David Thompson',
-    title: 'Broadway & Beyond',
-    date: 'January 23, 2026',
-    time: '11:00 AM - 11:45 AM',
-    location: 'Kawai Booth - Main Stage',
-    description: 'Musical theater classics and contemporary hits',
-    genre: 'Broadway'
-  },
-  {
-    id: '5',
-    artistName: 'Yuki Tanaka',
-    title: 'Modern Classical',
-    date: 'January 23, 2026',
-    time: '2:00 PM - 2:45 PM',
-    location: 'Kawai Booth - Demo Area',
-    description: 'Contemporary classical works on the Shigeru Kawai SK-7L',
-    genre: 'Modern Classical'
-  },
-  {
-    id: '6',
-    artistName: 'Andre Dubois',
-    title: 'Soul Sessions',
-    date: 'January 23, 2026',
-    time: '4:30 PM - 5:15 PM',
-    location: 'Kawai Booth - Main Stage',
-    description: 'R&B and soul piano showcase',
-    genre: 'R&B'
-  },
-
-  // Day 3: January 24
-  {
-    id: '7',
-    artistName: 'Sarah Chen',
-    title: 'Romantic Era Favorites',
-    date: 'January 24, 2026',
-    time: '10:30 AM - 11:15 AM',
-    location: 'Kawai Booth - Main Stage',
-    description: 'Liszt, Brahms, and Schumann performances',
-    genre: 'Classical'
-  },
-  {
-    id: '8',
-    artistName: 'Marcus Williams',
-    title: 'Jazz Fusion Finale',
-    date: 'January 24, 2026',
-    time: '1:30 PM - 2:15 PM',
-    location: 'Kawai Booth - Demo Area',
-    description: 'Closing performance featuring collaborative improvisation',
-    genre: 'Jazz'
+// Convert performance data to schedule format
+const SCHEDULE_FROM_PERFORMANCES: PerformanceEvent[] = PERFORMANCES.map(perf => {
+  const event: PerformanceEvent = {
+    id: perf.id,
+    artistName: perf.artistName,
+    title: perf.performanceType,
+    date: perf.date,
+    time: perf.time,
+    location: 'Kawai Booth - Main Stage'
   }
-]
+
+  if (perf.description !== undefined) {
+    event.description = perf.description
+  }
+
+  if (perf.genre !== undefined) {
+    event.genre = perf.genre
+  }
+
+  return event
+})
 
 // Group events by date
 function groupEventsByDate(events: PerformanceEvent[]): Record<string, PerformanceEvent[]> {
@@ -185,7 +119,7 @@ function PerformanceEventCard({ event }: { event: PerformanceEvent }) {
 }
 
 export default function PerformanceSchedule({
-  events = DEFAULT_SCHEDULE,
+  events = SCHEDULE_FROM_PERFORMANCES,
   className
 }: PerformanceScheduleProps) {
   if (!events || events.length === 0) {
@@ -204,7 +138,16 @@ export default function PerformanceSchedule({
   }
 
   const eventsByDate = groupEventsByDate(events)
-  const dates = Object.keys(eventsByDate).sort()
+
+  // Sort dates chronologically (Thursday → Friday → Saturday)
+  const dateOrder = [
+    'Thursday, January 22, 2026',
+    'Friday, January 23, 2026',
+    'Saturday, January 24, 2026'
+  ]
+  const dates = Object.keys(eventsByDate).sort((a, b) => {
+    return dateOrder.indexOf(a) - dateOrder.indexOf(b)
+  })
 
   return (
     <section className={cn("py-24 bg-zinc-950", className)}>

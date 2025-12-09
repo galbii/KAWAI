@@ -61,17 +61,16 @@ export default function PerformanceCard({
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-50px' }}
-        transition={{
-          duration: 0.6,
-          delay: index * 0.1,
-          ease: [0.25, 0.1, 0.25, 1]
-        }}
-        // Staggered stack animations (desktop only, via parent)
+        // Enhanced staggered stack animations with scale and lift
         animate={{
-          y: isHovered ? -4 : siblingHovered ? -8 : 0,
+          y: isHovered ? -16 : siblingHovered ? 4 : 0,
+          scale: isHovered ? 1.03 : siblingHovered ? 0.98 : 1,
+          opacity: siblingHovered ? 0.85 : 1,
         }}
-        whileHover={{
-          transition: { duration: 0.3, ease: 'easeOut' }
+        transition={{
+          opacity: { duration: 0.6, delay: index * 0.1, ease: [0.25, 0.1, 0.25, 1] },
+          y: { duration: 0.4, ease: [0.34, 1.56, 0.64, 1] },
+          scale: { duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }
         }}
         onHoverStart={() => onHoverChange?.(performance.id)}
         onHoverEnd={() => onHoverChange?.(null)}
@@ -81,11 +80,15 @@ export default function PerformanceCard({
           'relative overflow-hidden rounded-2xl',
           // Warm subtle background that blends with page beige
           'bg-gradient-to-br from-[#FAF8F3] to-[#F5F1E8]',
-          'transition-all duration-300 ease-out',
-          // Minimal shadow - subtle depth
-          'shadow-sm hover:shadow-lg',
-          // Very subtle border for definition
-          'border border-[#E5E0D8]/50',
+          'transition-all duration-400 ease-out',
+          // Enhanced shadow with more dramatic change
+          'shadow-md',
+          isHovered && 'shadow-2xl shadow-[#2C2826]/20',
+          // Border with hover enhancement
+          'border-2',
+          isHovered ? 'border-kawai-red/40' : 'border-[#E5E0D8]/50',
+          // Add ring glow on hover
+          isHovered && 'ring-4 ring-kawai-red/10',
           className
         )}
         style={{
@@ -102,21 +105,45 @@ export default function PerformanceCard({
                 src={performance.artistImage!}
                 alt={`${performance.artistName} portrait`}
                 fill
-                className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-110"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
 
-              {/* Refined gradient overlay for text legibility */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              {/* Enhanced gradient overlay with hover effect */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent group-hover:from-black/80 transition-all duration-500" />
+
+              {/* "View Details" indicator - appears on hover */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="bg-white/95 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                  <span className="text-sm font-semibold text-[#2C2826] flex items-center gap-2">
+                    View Artist Details
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </span>
+                </div>
+              </div>
             </>
           ) : (
             // Placeholder: Subtle musical note on neutral background
             <>
               <div className="absolute inset-0 bg-gradient-to-br from-stone-100 to-stone-200" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <Music className="w-16 h-16 text-stone-300" />
+                <Music className="w-16 h-16 text-stone-300 transition-transform duration-500 group-hover:scale-110" />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent group-hover:from-black/80 transition-all duration-500" />
+
+              {/* "View Details" indicator for placeholder too */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                <div className="bg-white/95 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                  <span className="text-sm font-semibold text-[#2C2826] flex items-center gap-2">
+                    View Artist Details
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </span>
+                </div>
+              </div>
             </>
           )}
 
@@ -124,11 +151,11 @@ export default function PerformanceCard({
           <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8 z-10">
             <h3
               itemProp="name"
-              className="text-2xl lg:text-3xl font-light text-white mb-2 leading-tight tracking-tight"
+              className="text-2xl lg:text-3xl font-light text-white mb-2 leading-tight tracking-tight transform group-hover:translate-x-1 transition-transform duration-300"
             >
               {performance.artistName}
             </h3>
-            <p className="text-sm lg:text-base font-light text-white/80">
+            <p className="text-sm lg:text-base font-light text-white/80 transform group-hover:translate-x-1 transition-transform duration-300">
               {performance.performanceType}
             </p>
           </div>
@@ -136,9 +163,9 @@ export default function PerformanceCard({
 
         {/* Card Content Body */}
         <div className="relative p-6 lg:p-8">
-          {/* Time Badge - Kawai Red (always visible) */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#E31937] shadow-sm mb-5">
-            <Clock className="w-4 h-4 text-white" />
+          {/* Time Badge - Kawai Red (always visible) with hover animation */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#E31937] shadow-sm mb-5 group-hover:shadow-md group-hover:scale-105 transition-all duration-300">
+            <Clock className="w-4 h-4 text-white group-hover:animate-pulse" />
             <time
               dateTime={performance.startDateTime}
               itemProp="startDate"
