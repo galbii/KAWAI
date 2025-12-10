@@ -145,9 +145,25 @@ export default function HeroSection({
           </motion.div>
         </div>
 
-        {/* Dark gradient overlay for readability and sophistication */}
-        <div className="absolute inset-0 bg-gradient-to-b from-kawai-black/50 via-kawai-black/60 to-kawai-black/80" />
-        <div className="absolute inset-0 bg-gradient-to-t from-kawai-black via-transparent to-transparent" />
+        {/* HERALBONY Artistic Design - Vibrant overlays */}
+        {/* Base gradient overlay maintaining sophistication */}
+        <div className="absolute inset-0 bg-gradient-to-b from-kawai-black/40 via-purple-900/30 to-kawai-black/60" />
+
+        {/* Color splash effects - HERALBONY inspired */}
+        <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-radial from-yellow-500/15 via-orange-500/10 to-transparent blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-gradient-radial from-cyan-500/15 via-blue-500/10 to-transparent blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2/3 h-2/3 bg-gradient-radial from-fuchsia-500/10 via-transparent to-transparent blur-3xl" />
+
+        {/* Paint splatter pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.04]">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'radial-gradient(circle at 20% 30%, white 2px, transparent 2px), radial-gradient(circle at 80% 70%, white 3px, transparent 3px), radial-gradient(circle at 60% 50%, white 1.5px, transparent 1.5px)',
+            backgroundSize: '100px 100px, 120px 120px, 80px 80px'
+          }} />
+        </div>
+
+        {/* Final dark gradient for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/60 via-transparent to-transparent" />
       </div>
 
       {/* Main Content - Centered Composition */}

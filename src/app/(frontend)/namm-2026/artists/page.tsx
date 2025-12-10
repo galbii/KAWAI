@@ -226,17 +226,17 @@ export default function NAMMArtistsPage() {
         </Suspense>
       </section>
 
-      {/* Performance Schedule Section */}
-      <section id="schedule" className="scroll-mt-20">
-        <Suspense fallback={<PerformanceScheduleSkeleton />}>
-          <PerformanceSchedule />
-        </Suspense>
-      </section>
-
       {/* Artist Profiles Section */}
       <section id="profiles" className="scroll-mt-20">
         <Suspense fallback={<ArtistProfilesSkeleton />}>
           <ArtistProfiles />
+        </Suspense>
+      </section>
+
+      {/* Performance Schedule Section */}
+      <section id="schedule" className="scroll-mt-20">
+        <Suspense fallback={<PerformanceScheduleSkeleton />}>
+          <PerformanceSchedule />
         </Suspense>
       </section>
 

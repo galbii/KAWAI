@@ -1,12 +1,11 @@
 /**
  * ArtistProfiles Component
  *
- * Detailed artist biography section with alternating layouts
+ * Detailed artist biography section with clean, modern design
  * In-depth look at featured artists' backgrounds and achievements
  */
 
 import Image from 'next/image'
-import { Award, Music2, Calendar, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { PERFORMANCES } from '../performances/performance-data'
 
@@ -69,81 +68,76 @@ function ProfileCard({ profile, index }: { profile: ArtistProfile; index: number
     <div
       id={`profile-${profile.id}`}
       className={cn(
-        "grid md:grid-cols-2 gap-8 lg:gap-12 items-center scroll-mt-20",
+        "group relative grid md:grid-cols-2 gap-10 lg:gap-16 items-start scroll-mt-20",
         !isEven && "md:grid-flow-dense"
       )}
     >
       {/* Image */}
       <div className={cn(
-        "relative aspect-[3/4] md:aspect-square rounded-2xl overflow-hidden",
-        "bg-zinc-900 shadow-2xl",
+        "relative aspect-[4/5] rounded-3xl overflow-hidden",
+        "bg-gradient-to-br from-zinc-900 to-black shadow-2xl",
+        "transition-transform duration-500 group-hover:scale-[1.02]",
         !isEven && "md:col-start-2"
       )}>
         <Image
           src={profile.imageUrl}
           alt={profile.name}
           fill
-          className="object-cover"
+          className="object-cover transition-all duration-700 group-hover:scale-105"
           sizes="(max-width: 768px) 100vw, 50vw"
         />
-        {/* Overlay Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        {/* Subtle gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
       </div>
 
       {/* Content */}
       <div className={cn(
-        "space-y-6",
+        "space-y-8 pt-4",
         !isEven && "md:col-start-1 md:row-start-1"
       )}>
         {/* Header */}
-        <div>
-          <h3 className="text-3xl md:text-4xl font-bold text-white mb-2">
+        <div className="space-y-3">
+          <h3 className="text-4xl md:text-5xl lg:text-6xl font-light tracking-tight text-white leading-tight">
             {profile.name}
           </h3>
-          <p className="text-lg text-[#E31937] font-semibold">
+          <div className="h-1 w-16 bg-gradient-to-r from-[#E31937] to-[#FF3B55] rounded-full" />
+          <p className="text-xl md:text-2xl text-white/60 font-light">
             {profile.title}
           </p>
-          {profile.yearsActive && (
-            <div className="flex items-center gap-2 text-sm text-white/50 mt-2">
-              <Calendar className="w-4 h-4" />
-              <span>{profile.yearsActive}</span>
-            </div>
-          )}
         </div>
 
         {/* Bio */}
-        <p className="text-base text-white/70 leading-relaxed">
+        <p className="text-lg md:text-xl text-white/80 leading-relaxed font-light">
           {profile.fullBio}
         </p>
 
-        {/* Achievements */}
-        <div>
-          <div className="flex items-center gap-2 text-white/80 mb-3">
-            <Award className="w-5 h-5 text-[#E31937]" />
-            <h4 className="text-sm font-bold uppercase tracking-wide">Notable Achievements</h4>
+        {/* Achievements - Clean list without icons */}
+        {profile.achievements && profile.achievements.length > 0 && (
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold uppercase tracking-widest text-white/40">
+              Notable Achievements
+            </h4>
+            <ul className="space-y-3 pl-5 border-l-2 border-white/10">
+              {profile.achievements.map((achievement, idx) => (
+                <li key={idx} className="text-base md:text-lg text-white/70 leading-relaxed -ml-5 pl-5">
+                  {achievement}
+                </li>
+              ))}
+            </ul>
           </div>
-          <ul className="space-y-2">
-            {profile.achievements.map((achievement, idx) => (
-              <li key={idx} className="flex items-start gap-2 text-sm text-white/60">
-                <span className="text-[#E31937] mt-1">•</span>
-                <span>{achievement}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        )}
 
-        {/* Instruments */}
+        {/* Instruments - Clean pill design */}
         {profile.instruments && profile.instruments.length > 0 && (
-          <div>
-            <div className="flex items-center gap-2 text-white/80 mb-3">
-              <Music2 className="w-5 h-5 text-[#E31937]" />
-              <h4 className="text-sm font-bold uppercase tracking-wide">Preferred Instruments</h4>
-            </div>
-            <div className="flex flex-wrap gap-2">
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold uppercase tracking-widest text-white/40">
+              Preferred Instruments
+            </h4>
+            <div className="flex flex-wrap gap-3">
               {profile.instruments.map((instrument, idx) => (
                 <span
                   key={idx}
-                  className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-white"
+                  className="px-5 py-2.5 rounded-full bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 text-sm font-light text-white/90 backdrop-blur-sm"
                 >
                   {instrument}
                 </span>
@@ -152,21 +146,22 @@ function ProfileCard({ profile, index }: { profile: ArtistProfile; index: number
           </div>
         )}
 
-        {/* Website Link */}
+        {/* Website Link - Clean button without icon */}
         {profile.website && (
           <a
             href={`https://${profile.website}`}
             target="_blank"
             rel="noopener noreferrer"
             className={cn(
-              "inline-flex items-center gap-2 px-4 py-2 rounded-lg",
-              "bg-white/5 border border-white/10 hover:border-[#E31937]/50",
-              "text-sm font-medium text-white hover:text-[#E31937]",
-              "transition-all duration-300 group"
+              "inline-block px-8 py-4 rounded-full mt-2",
+              "bg-gradient-to-r from-[#E31937] to-[#FF3B55]",
+              "text-base font-medium text-white",
+              "transition-all duration-300",
+              "hover:shadow-lg hover:shadow-[#E31937]/25 hover:scale-105",
+              "active:scale-95"
             )}
           >
-            <span>Visit Website</span>
-            <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            Visit Website
           </a>
         )}
       </div>
@@ -183,27 +178,31 @@ export default function ArtistProfiles({
   }
 
   return (
-    <section className={cn("py-24 bg-black", className)}>
-      <div className="container mx-auto px-6 max-w-6xl">
+    <section className={cn("py-32 lg:py-40 bg-gradient-to-b from-black via-zinc-950 to-black", className)}>
+      <div className="container mx-auto px-6 max-w-7xl">
         {/* Section Header */}
-        <div className="text-center mb-20">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6">
-            <Music2 className="w-4 h-4 text-[#E31937]" />
-            <span className="text-sm font-medium text-white/80">
+        <div className="text-center mb-24 lg:mb-32">
+          <div className="inline-block px-6 py-2.5 rounded-full bg-white/5 border border-white/10 mb-8 backdrop-blur-sm">
+            <span className="text-sm font-light uppercase tracking-widest text-white/70">
               In-Depth Profiles
             </span>
           </div>
 
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+          <h2 className="text-5xl md:text-6xl lg:text-7xl font-light tracking-tight text-white mb-6 leading-tight">
             Get to Know Our Artists
           </h2>
-          <p className="text-lg text-white/60 max-w-2xl mx-auto">
-            Discover the stories, achievements, and artistry behind each performer
+
+          <div className="flex justify-center mb-8">
+            <div className="h-1 w-24 bg-gradient-to-r from-[#E31937] to-[#FF3B55] rounded-full" />
+          </div>
+
+          <p className="text-xl md:text-2xl font-light leading-relaxed text-white/60 max-w-3xl mx-auto">
+            Discover the stories, achievements, and artistry behind each performer bringing exceptional music to NAMM 2026
           </p>
         </div>
 
         {/* Artist Profile Cards */}
-        <div className="space-y-24">
+        <div className="space-y-32 lg:space-y-40">
           {profiles.map((profile, index) => (
             <ProfileCard key={profile.id} profile={profile} index={index} />
           ))}

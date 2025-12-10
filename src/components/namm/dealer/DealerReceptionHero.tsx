@@ -1,72 +1,54 @@
 'use client'
 
 /**
- * ArtistCarouselHero Component
+ * DealerReceptionHero Component
  *
- * Fullscreen carousel hero for NAMM 2026 Artists page
- * Design matches the ExperienceCarouselHero with artist-focused content
+ * Fullscreen carousel hero for NAMM 2026 Dealer Reception page
+ * Design matches ExperienceCarouselHero and ArtistCarouselHero with elegant gold accents
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { PERFORMANCES } from '../performances/performance-data'
 
-interface ArtistSlide {
-  id: string
-  artistName: string
-  genre?: string
-  artistImage?: string
-  performanceType: string
+interface ReceptionSlide {
+  id: number
+  title: string
+  description: string
 }
 
-// Hero-specific image overrides
-const HERO_IMAGE_OVERRIDES: Record<string, string> = {
-  'David Snyder': 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/David%20Snyder%20Photo%202.jpg'
-}
+const RECEPTION_SLIDES: ReceptionSlide[] = [
+  {
+    id: 1,
+    title: "You're Invited: Exclusive Dealer Reception",
+    description: 'An evening of innovation, networking, and celebration at NAMM 2026'
+  },
+  {
+    id: 2,
+    title: 'Connect & Collaborate',
+    description: 'Network with fellow dealers and Kawai leadership in an elegant atmosphere'
+  },
+  {
+    id: 3,
+    title: 'Experience Innovation',
+    description: 'Hands-on demonstrations of our latest piano technology and product previews'
+  },
+  {
+    id: 4,
+    title: 'Celebrate Excellence',
+    description: 'Enjoy cocktails, hors d\'oeuvres, and an evening dedicated to your success'
+  }
+]
 
-// Get unique artists from performances data
-const getUniqueArtists = (): ArtistSlide[] => {
-  const artistMap = new Map<string, ArtistSlide>()
-
-  PERFORMANCES.forEach((performance) => {
-    if (!artistMap.has(performance.artistName)) {
-      const slide: ArtistSlide = {
-        id: performance.id,
-        artistName: performance.artistName,
-        performanceType: performance.performanceType
-      }
-
-      if (performance.genre !== undefined) {
-        slide.genre = performance.genre
-      }
-
-      // Use hero-specific override if available, otherwise use performance image
-      const heroOverride = HERO_IMAGE_OVERRIDES[performance.artistName]
-      if (heroOverride !== undefined) {
-        slide.artistImage = heroOverride
-      } else if (performance.artistImage !== undefined) {
-        slide.artistImage = performance.artistImage
-      }
-
-      artistMap.set(performance.artistName, slide)
-    }
-  })
-
-  return Array.from(artistMap.values())
-}
-
-const ARTIST_SLIDES = getUniqueArtists()
 const AUTO_PLAY_INTERVAL = 5000 // 5 seconds
 
-export default function ArtistCarouselHero() {
+export default function DealerReceptionHero() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
   const [direction, setDirection] = useState<'left' | 'right'>('right')
 
-  const totalSlides = ARTIST_SLIDES.length
+  const totalSlides = RECEPTION_SLIDES.length
 
   // Auto-play functionality
   useEffect(() => {
@@ -147,16 +129,23 @@ export default function ArtistCarouselHero() {
     }
   }
 
-  const currentArtist = ARTIST_SLIDES[currentSlide]
+  const currentContent = RECEPTION_SLIDES[currentSlide]
+
+  const scrollToRSVP = () => {
+    const rsvpSection = document.getElementById('rsvp')
+    if (rsvpSection) {
+      rsvpSection.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
 
   return (
     <section
       className="relative min-h-screen w-full overflow-hidden bg-black pt-16"
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(true)}
-      aria-label="NAMM 2026 Artist Lineup Carousel"
+      aria-label="NAMM 2026 Dealer Reception Invitation"
     >
-      {/* Carousel Images */}
+      {/* Carousel Backgrounds */}
       <AnimatePresence initial={false} custom={direction} mode="wait">
         <motion.div
           key={currentSlide}
@@ -168,22 +157,23 @@ export default function ArtistCarouselHero() {
           className="absolute inset-0"
         >
           <div className="relative h-full w-full">
+            {/* Overlays for depth and readability */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80 z-10" />
             <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/50 z-10" />
 
-            {/* Artist image or gradient background */}
-            {currentArtist?.artistImage ? (
-              <Image
-                src={currentArtist.artistImage}
-                alt={currentArtist.artistName}
-                fill
-                priority={currentSlide === 0}
-                className="object-cover"
-                sizes="100vw"
-              />
-            ) : (
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black" />
-            )}
+            {/* Gold accent gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37]/10 via-transparent to-[#D4AF37]/5 z-10" />
+
+            {/* Placeholder gradient backgrounds (replace with actual images later) */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#2C2826] via-gray-900 to-black" />
+
+            {/* Subtle pattern overlay for elegance */}
+            <div className="absolute inset-0 opacity-[0.03] z-10">
+              <div className="absolute inset-0" style={{
+                backgroundImage: 'radial-gradient(circle at 20% 50%, #D4AF37 1px, transparent 1px)',
+                backgroundSize: '40px 40px'
+              }} />
+            </div>
           </div>
         </motion.div>
       </AnimatePresence>
@@ -197,59 +187,69 @@ export default function ArtistCarouselHero() {
           animate="visible"
           className="max-w-5xl text-center"
         >
-          {currentArtist?.genre && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6 backdrop-blur-sm"
-            >
-              <span className="text-sm font-medium text-white/80 uppercase tracking-wide">
-                {currentArtist.genre}
-              </span>
-            </motion.div>
-          )}
+          {/* Event Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 mb-8 backdrop-blur-sm"
+          >
+            <div className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" />
+            <span className="text-sm font-medium text-[#D4AF37] uppercase tracking-wide">
+              January 23, 2026 • 6:00 PM - 9:00 PM
+            </span>
+          </motion.div>
 
-          <h1 className="mb-4 text-5xl font-light tracking-tight text-white md:text-7xl lg:text-8xl">
-            {currentArtist?.artistName}
+          <h1 className="mb-6 text-5xl font-light tracking-tight text-white md:text-7xl lg:text-8xl">
+            {currentContent?.title}
           </h1>
 
-          <p className="mx-auto max-w-2xl text-lg font-light text-gray-300 md:text-xl lg:text-2xl mb-2">
-            {currentArtist?.performanceType}
+          <p className="mx-auto max-w-2xl text-lg font-light text-gray-300 md:text-xl lg:text-2xl mb-12">
+            {currentContent?.description}
           </p>
 
-          <p className="mx-auto max-w-2xl text-base font-light text-gray-400 md:text-lg">
-            Performing at NAMM 2026
-          </p>
-
-          {/* Learn More CTA Button */}
+          {/* CTA Button */}
           <motion.div
-            className="mt-12 flex justify-center"
+            className="flex justify-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <a
-              href={`#performance-${currentArtist?.id || ''}`}
+            <button
+              onClick={scrollToRSVP}
               className={cn(
                 'group inline-flex items-center gap-3 px-8 py-4 rounded-full',
-                'bg-white text-black hover:bg-white/90',
+                'bg-[#D4AF37] text-black hover:bg-[#D4AF37]/90',
                 'font-semibold text-base',
                 'transition-all duration-300',
-                'shadow-lg hover:shadow-xl hover:shadow-white/20',
+                'shadow-lg hover:shadow-xl hover:shadow-[#D4AF37]/30',
                 'hover:scale-105'
               )}
             >
-              <span>View Performance</span>
+              <span>Reserve Your Spot</span>
               <svg
                 className="w-5 h-5 transition-transform group-hover:translate-x-1"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
-            </a>
+            </button>
+          </motion.div>
+
+          {/* Scroll indicator */}
+          <motion.div
+            className="mt-16 flex justify-center"
+            animate={{ y: [0, 10, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-xs font-light uppercase tracking-widest text-gray-400">
+                Scroll to Explore
+              </span>
+              <div className="h-12 w-px bg-gradient-to-b from-transparent via-[#D4AF37] to-transparent" />
+            </div>
           </motion.div>
         </motion.div>
       </div>
@@ -261,13 +261,13 @@ export default function ArtistCarouselHero() {
           onClick={handlePrevious}
           className={cn(
             'group flex h-12 w-12 items-center justify-center rounded-full',
-            'border border-white/20 bg-black/30 backdrop-blur-sm',
-            'transition-all duration-300 hover:bg-white/10 hover:border-white/40',
-            'focus:outline-none focus:ring-2 focus:ring-white/50'
+            'border border-[#D4AF37]/30 bg-black/30 backdrop-blur-sm',
+            'transition-all duration-300 hover:bg-[#D4AF37]/10 hover:border-[#D4AF37]/50',
+            'focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50'
           )}
-          aria-label="Previous artist"
+          aria-label="Previous slide"
         >
-          <ChevronLeft className="h-6 w-6 text-white transition-transform group-hover:-translate-x-0.5" />
+          <ChevronLeft className="h-6 w-6 text-[#D4AF37] transition-transform group-hover:-translate-x-0.5" />
         </button>
 
         {/* Next Button */}
@@ -275,34 +275,34 @@ export default function ArtistCarouselHero() {
           onClick={handleNext}
           className={cn(
             'group flex h-12 w-12 items-center justify-center rounded-full',
-            'border border-white/20 bg-black/30 backdrop-blur-sm',
-            'transition-all duration-300 hover:bg-white/10 hover:border-white/40',
-            'focus:outline-none focus:ring-2 focus:ring-white/50'
+            'border border-[#D4AF37]/30 bg-black/30 backdrop-blur-sm',
+            'transition-all duration-300 hover:bg-[#D4AF37]/10 hover:border-[#D4AF37]/50',
+            'focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50'
           )}
-          aria-label="Next artist"
+          aria-label="Next slide"
         >
-          <ChevronRight className="h-6 w-6 text-white transition-transform group-hover:translate-x-0.5" />
+          <ChevronRight className="h-6 w-6 text-[#D4AF37] transition-transform group-hover:translate-x-0.5" />
         </button>
       </div>
 
       {/* Dot Indicators */}
       <div className="absolute bottom-8 left-1/2 z-30 flex -translate-x-1/2 gap-3">
-        {ARTIST_SLIDES.map((_, index) => (
+        {RECEPTION_SLIDES.map((_, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}
             className={cn(
               'group relative h-2 rounded-full transition-all duration-300',
-              'focus:outline-none focus:ring-2 focus:ring-white/50',
-              currentSlide === index ? 'w-12 bg-white' : 'w-2 bg-white/30 hover:bg-white/50'
+              'focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50',
+              currentSlide === index ? 'w-12 bg-[#D4AF37]' : 'w-2 bg-[#D4AF37]/30 hover:bg-[#D4AF37]/50'
             )}
-            aria-label={`Go to ${ARTIST_SLIDES[index]?.artistName}`}
+            aria-label={`Go to slide ${index + 1}`}
             aria-current={currentSlide === index}
           >
             {/* Progress bar for active slide */}
             {currentSlide === index && isAutoPlaying && (
               <motion.div
-                className="absolute left-0 top-0 h-full rounded-full bg-white/50"
+                className="absolute left-0 top-0 h-full rounded-full bg-[#D4AF37]/50"
                 initial={{ width: '0%' }}
                 animate={{ width: '100%' }}
                 transition={{ duration: AUTO_PLAY_INTERVAL / 1000, ease: 'linear' }}
@@ -314,12 +314,12 @@ export default function ArtistCarouselHero() {
 
       {/* Slide Counter */}
       <div className="absolute bottom-8 right-8 z-30 hidden md:block">
-        <div className="flex items-center gap-2 rounded-full border border-white/20 bg-black/30 px-4 py-2 backdrop-blur-sm">
-          <span className="text-sm font-light text-white">
+        <div className="flex items-center gap-2 rounded-full border border-[#D4AF37]/30 bg-black/30 px-4 py-2 backdrop-blur-sm">
+          <span className="text-sm font-light text-[#D4AF37]">
             {String(currentSlide + 1).padStart(2, '0')}
           </span>
-          <span className="text-sm font-light text-white/50">/</span>
-          <span className="text-sm font-light text-white/50">
+          <span className="text-sm font-light text-[#D4AF37]/50">/</span>
+          <span className="text-sm font-light text-[#D4AF37]/50">
             {String(totalSlides).padStart(2, '0')}
           </span>
         </div>

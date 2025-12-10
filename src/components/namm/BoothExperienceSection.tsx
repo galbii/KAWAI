@@ -1,8 +1,9 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 import Image from 'next/image'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 /**
@@ -52,53 +53,31 @@ const Icons = {
 }
 
 /**
- * Individual feature card with alternating image/content layout - Dark theme
+ * Individual feature card for carousel - Dark theme with alternating layout
  */
-function FeatureCard({ feature, index }: { feature: BoothFeature; index: number }) {
-  const [isVisible, setIsVisible] = useState(false)
-  const cardRef = useRef<HTMLDivElement>(null)
+function FeatureCard({
+  feature,
+  index,
+  isActive
+}: {
+  feature: BoothFeature
+  index: number
+  isActive: boolean
+}) {
   const isEven = index % 2 === 0
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          setIsVisible(true)
-        }
-      },
-      { threshold: 0.2 }
-    )
-
-    if (cardRef.current) {
-      observer.observe(cardRef.current)
-    }
-
-    return () => observer.disconnect()
-  }, [])
 
   return (
     <motion.div
-      ref={cardRef}
-      initial={{
-        opacity: 0,
-        x: isEven ? -60 : 60,
-        scale: 0.95
-      }}
-      animate={isVisible ? {
-        opacity: 1,
-        x: 0,
-        scale: 1
-      } : {
-        opacity: 0,
-        x: isEven ? -60 : 60,
-        scale: 0.95
+      initial={{ opacity: 0.5, scale: 0.98 }}
+      animate={{
+        opacity: isActive ? 1 : 0.6,
+        scale: isActive ? 1 : 0.98
       }}
       transition={{
-        duration: 1,
-        delay: index * 0.2,
+        duration: 0.6,
         ease: [0.25, 0.1, 0.25, 1]
       }}
-      className="group h-full"
+      className="group h-full flex-shrink-0"
     >
       <div className={cn(
         'h-full overflow-hidden rounded-2xl',
@@ -133,6 +112,7 @@ function FeatureCard({ feature, index }: { feature: BoothFeature; index: number 
                 'brightness-90 group-hover:brightness-100'
               )}
               sizes="(max-width: 1024px) 100vw, 50vw"
+              priority={index === 0}
             />
             {/* Enhanced gradient overlay for dark theme */}
             <div className={cn(
@@ -186,6 +166,18 @@ function FeatureCard({ feature, index }: { feature: BoothFeature; index: number 
               {feature.description}
             </p>
 
+            {/* CTA for Artist Performances */}
+            {feature.title === 'Artist Performances' && (
+              <a
+                href="/namm-2026/artists"
+                className="inline-block text-white hover:text-kawai-red transition-colors duration-300 mb-6"
+              >
+                <span className="text-base lg:text-lg font-light border-b border-white/40 hover:border-kawai-red">
+                  See Lineup
+                </span>
+              </a>
+            )}
+
             {/* Accent line with glow effect */}
             <div className="relative">
               <div className={cn(
@@ -213,18 +205,18 @@ function FeatureCard({ feature, index }: { feature: BoothFeature; index: number 
  */
 const DEFAULT_FEATURES: BoothFeature[] = [
   {
-    icon: <Icons.Collection />,
-    title: 'Curated Collections',
-    description: 'Explore thoughtfully curated piano collections designed for every artist. From concert grands to hybrid innovations, experience instruments selected for their exceptional voice and craftsmanship through hands-on demonstrations.',
-    image: '/images/namm/general/TK7_7390.jpg',
-    imageAlt: 'Kawai piano collection showcase'
-  },
-  {
     icon: <Icons.Performance />,
     title: 'Artist Performances',
-    description: 'Witness world-class pianists perform throughout the day on our premium stage. Each live performance showcases the expressive capabilities of Kawai instruments in an intimate showroom setting.',
-    image: '/images/namm/general/_MG_7325.jpg',
+    description: 'Watch your favorite artists and influencers deliver captivating performances throughout the show.',
+    image: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/David%20Snyder%20Photo%202.jpg',
     imageAlt: 'Live artist performance at Kawai booth'
+  },
+  {
+    icon: <Icons.Collection />,
+    title: 'Event Giveaways',
+    description: 'Visit our booth to receive a complimentary Kawai Pianos tote—a NAMM Show exclusive. While supplies last.',
+    image: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/homepage/Gemini_Generated_Image_wl6yomwl6yomwl6y.png',
+    imageAlt: 'NAMM 2026 event giveaways and prizes'
   },
   {
     icon: <Icons.Consultation />,
@@ -242,18 +234,25 @@ const DEFAULT_FEATURES: BoothFeature[] = [
   }
 ]
 
+const AUTO_PLAY_INTERVAL = 6000 // 6 seconds
+
 /**
  * Booth Experience Section Component
- * Premium dark theme with alternating image/content cards
+ * Premium dark theme carousel with peek effect
  */
 export default function BoothExperienceSection({
   title = 'The Kawai Booth Experience at NAMM 2026',
   subtitle = 'Where artistry meets innovation. Discover our premium showroom designed to immerse you in over a century of piano craftsmanship.',
   features = DEFAULT_FEATURES
 }: BoothExperienceSectionProps) {
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
   const [isTitleVisible, setIsTitleVisible] = useState(false)
   const titleRef = useRef<HTMLDivElement>(null)
 
+  const totalSlides = features.length
+
+  // Title intersection observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -271,85 +270,105 @@ export default function BoothExperienceSection({
     return () => observer.disconnect()
   }, [])
 
+  // Autoplay functionality
+  useEffect(() => {
+    if (!isAutoPlaying) return
+
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev === totalSlides - 1 ? 0 : prev + 1))
+    }, AUTO_PLAY_INTERVAL)
+
+    return () => clearInterval(interval)
+  }, [currentSlide, isAutoPlaying, totalSlides])
+
+  // Navigation handlers
+  const handlePrevious = useCallback(() => {
+    setCurrentSlide((prev) => (prev === 0 ? totalSlides - 1 : prev - 1))
+    setIsAutoPlaying(false)
+  }, [totalSlides])
+
+  const handleNext = useCallback(() => {
+    setCurrentSlide((prev) => (prev === totalSlides - 1 ? 0 : prev + 1))
+    setIsAutoPlaying(false)
+  }, [totalSlides])
+
+  const goToSlide = useCallback((index: number) => {
+    setCurrentSlide(index)
+    setIsAutoPlaying(false)
+  }, [])
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') handlePrevious()
+      else if (e.key === 'ArrowRight') handleNext()
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [handlePrevious, handleNext])
+
   return (
-    <section className={cn(
-      'py-24 lg:py-32 relative overflow-hidden',
-      // Rich dark gradient base
-      'bg-gradient-to-b from-zinc-900 via-zinc-950 to-zinc-900'
-    )}>
-      {/* Strong vertical spotlight down center - Main feature */}
+    <section
+      className={cn(
+        'py-24 lg:py-32 relative overflow-hidden',
+        'bg-gradient-to-b from-zinc-900 via-zinc-950 to-zinc-900'
+      )}
+      onMouseEnter={() => setIsAutoPlaying(false)}
+      onMouseLeave={() => setIsAutoPlaying(true)}
+      aria-label="Kawai Booth Experience Carousel"
+    >
+      {/* Background lighting effects */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-800/40 to-zinc-950" />
       </div>
-
-      {/* Top spotlight beam - Stage lighting from above */}
       <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[1200px] h-[800px]">
         <div className="absolute inset-0 bg-gradient-radial from-white/20 via-zinc-700/10 to-transparent blur-3xl" />
       </div>
-
-      {/* Center glow enhancement */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[900px] h-[600px]">
         <div className="absolute inset-0 bg-gradient-radial from-zinc-600/25 via-zinc-800/10 to-transparent blur-2xl" />
       </div>
-
-      {/* Diagonal accent beams from corners */}
       <div className="absolute inset-0 opacity-30">
         <div className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-br from-kawai-red/20 via-transparent to-transparent" />
         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-bl from-amber-500/15 via-transparent to-transparent" />
       </div>
-
-      {/* Geometric light rays - Stage effect */}
       <div className="absolute inset-0 opacity-[0.08]">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-full bg-gradient-to-b from-white via-white to-transparent" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 -ml-32 w-px h-3/4 bg-gradient-to-b from-transparent via-white/50 to-transparent" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 ml-32 w-px h-3/4 bg-gradient-to-b from-transparent via-white/50 to-transparent" />
       </div>
-
-      {/* Textured overlay for depth */}
       <div className="absolute inset-0 opacity-[0.03]">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `
-            repeating-linear-gradient(
-              0deg,
-              transparent,
-              transparent 2px,
-              white 2px,
-              white 3px
-            )
-          `,
-          backgroundSize: '100% 60px'
-        }} />
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, white 2px, white 3px)`,
+            backgroundSize: '100% 60px'
+          }}
+        />
       </div>
 
       <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
-        {/* Section Header - Dark theme */}
+        {/* Section Header */}
         <div ref={titleRef} className="text-center mb-20">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 1 }}
-            className={cn(
-              'text-4xl md:text-5xl lg:text-6xl font-light tracking-tight',
-              'text-white mb-6'
-            )}
+            className="text-4xl md:text-5xl lg:text-6xl font-light tracking-tight text-white mb-6"
           >
             {title}
           </motion.h2>
-
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 1, delay: 0.2 }}
-            className={cn(
-              'text-xl lg:text-2xl font-light leading-relaxed',
-              'text-stone-300 max-w-4xl mx-auto'
-            )}
+            className="text-xl lg:text-2xl font-light leading-relaxed text-stone-300 max-w-4xl mx-auto"
           >
             {subtitle}
           </motion.p>
         </div>
 
-        {/* Event Details Section */}
+        {/* Event Details */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
@@ -357,70 +376,148 @@ export default function BoothExperienceSection({
           className={cn(
             'mb-20 p-8 lg:p-12 rounded-2xl',
             'bg-gradient-to-br from-zinc-950/90 via-black to-zinc-950/90',
-            'border border-stone-800/50',
-            'shadow-2xl shadow-black/50',
-            'relative overflow-hidden'
+            'border border-stone-800/50 shadow-2xl shadow-black/50 relative overflow-hidden'
           )}
         >
-          {/* Subtle glow effect */}
           <div className="absolute inset-0 bg-gradient-radial from-kawai-red/5 via-transparent to-transparent" />
-
-          <div className="relative z-10">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-              {/* Event Dates */}
-              <div>
-                <p className="text-sm uppercase tracking-wider text-amber-600/70 mb-3 font-light">
-                  Event Dates
-                </p>
-                <p className="text-2xl lg:text-3xl font-light text-white mb-1">
-                  January 22–24, 2026
-                </p>
-                <p className="text-base text-stone-400 font-light">
-                  All Show Hours
-                </p>
-              </div>
-
-              {/* Location */}
-              <div>
-                <p className="text-sm uppercase tracking-wider text-amber-600/70 mb-3 font-light">
-                  Location
-                </p>
-                <p className="text-2xl lg:text-3xl font-light text-white mb-1">
-                  Anaheim Convention Center
-                </p>
-                <p className="text-base text-stone-400 font-light">
-                  Anaheim, California
-                </p>
-              </div>
-
-              {/* Booth Information */}
-              <div>
-                <p className="text-sm uppercase tracking-wider text-amber-600/70 mb-3 font-light">
-                  Visit Us
-                </p>
-                <p className="text-2xl lg:text-3xl font-light text-white mb-1">
-                  Booth 9011
-                </p>
-                <p className="text-base text-stone-400 font-light">
-                  Hall B · First Floor
-                </p>
-              </div>
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div>
+              <p className="text-sm uppercase tracking-wider text-amber-600/70 mb-3 font-light">Event Dates</p>
+              <p className="text-2xl lg:text-3xl font-light text-white mb-1">January 22–24, 2026</p>
+              <p className="text-base text-stone-400 font-light">All Show Hours</p>
+            </div>
+            <div>
+              <p className="text-sm uppercase tracking-wider text-amber-600/70 mb-3 font-light">Location</p>
+              <p className="text-2xl lg:text-3xl font-light text-white mb-1">Anaheim Convention Center</p>
+              <p className="text-base text-stone-400 font-light">Anaheim, California</p>
+            </div>
+            <div>
+              <p className="text-sm uppercase tracking-wider text-amber-600/70 mb-3 font-light">Visit Us</p>
+              <p className="text-2xl lg:text-3xl font-light text-white mb-1">Booth 9011</p>
+              <p className="text-base text-stone-400 font-light">Hall B · First Floor</p>
             </div>
           </div>
         </motion.div>
 
-        {/* Features Grid - Full Width Cards with Alternating Layout */}
-        <div className="space-y-12 lg:space-y-16">
-          {features.map((feature, index) => (
-            <FeatureCard
-              key={typeof feature.title === 'string' ? feature.title : index}
-              feature={feature}
-              index={index}
-            />
+        {/* Carousel Container with Peek */}
+        <div className="relative -mx-6 lg:mx-0">
+          {/* Carousel Track - Mobile: full width, Desktop: with peek */}
+          <div className="overflow-visible px-6 lg:px-0">
+            <div className="lg:px-16 xl:px-24">
+              <div className="overflow-hidden rounded-2xl">
+                <motion.div
+                  className="flex"
+                  animate={{
+                    x: `calc(-${currentSlide * 100}%)`
+                  }}
+                  transition={{
+                    type: 'spring',
+                    stiffness: 300,
+                    damping: 30
+                  }}
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={0.1}
+                  onDragEnd={(_, info) => {
+                    if (info.offset.x < -50) handleNext()
+                    else if (info.offset.x > 50) handlePrevious()
+                  }}
+                >
+                  {features.map((feature, index) => (
+                    <div
+                      key={typeof feature.title === 'string' ? feature.title : index}
+                      className="w-full flex-shrink-0 px-0"
+                    >
+                      <FeatureCard feature={feature} index={index} isActive={currentSlide === index} />
+                    </div>
+                  ))}
+                </motion.div>
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation Arrows - Desktop */}
+          <div className="hidden lg:flex absolute inset-x-0 top-1/2 -translate-y-1/2 justify-between pointer-events-none z-20 px-4">
+            <button
+              onClick={handlePrevious}
+              className={cn(
+                'pointer-events-auto group flex h-14 w-14 items-center justify-center rounded-full',
+                'border border-white/20 bg-black/40 backdrop-blur-md',
+                'transition-all duration-300 hover:bg-white/10 hover:border-white/40 hover:scale-110',
+                'focus:outline-none focus:ring-2 focus:ring-white/50 shadow-xl'
+              )}
+              aria-label="Previous feature"
+            >
+              <ChevronLeft className="h-7 w-7 text-white transition-transform group-hover:-translate-x-0.5" />
+            </button>
+            <button
+              onClick={handleNext}
+              className={cn(
+                'pointer-events-auto group flex h-14 w-14 items-center justify-center rounded-full',
+                'border border-white/20 bg-black/40 backdrop-blur-md',
+                'transition-all duration-300 hover:bg-white/10 hover:border-white/40 hover:scale-110',
+                'focus:outline-none focus:ring-2 focus:ring-white/50 shadow-xl'
+              )}
+              aria-label="Next feature"
+            >
+              <ChevronRight className="h-7 w-7 text-white transition-transform group-hover:translate-x-0.5" />
+            </button>
+          </div>
+
+          {/* Navigation Arrows - Mobile */}
+          <div className="flex lg:hidden justify-between items-center mt-8 px-4">
+            <button
+              onClick={handlePrevious}
+              className={cn(
+                'group flex h-12 w-12 items-center justify-center rounded-full',
+                'border border-white/20 bg-black/30 backdrop-blur-sm',
+                'transition-all duration-300 hover:bg-white/10'
+              )}
+              aria-label="Previous feature"
+            >
+              <ChevronLeft className="h-6 w-6 text-white" />
+            </button>
+            <button
+              onClick={handleNext}
+              className={cn(
+                'group flex h-12 w-12 items-center justify-center rounded-full',
+                'border border-white/20 bg-black/30 backdrop-blur-sm',
+                'transition-all duration-300 hover:bg-white/10'
+              )}
+              aria-label="Next feature"
+            >
+              <ChevronRight className="h-6 w-6 text-white" />
+            </button>
+          </div>
+        </div>
+
+        {/* Dot Indicators */}
+        <div className="flex justify-center gap-3 mt-12">
+          {features.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={cn(
+                'group relative h-2 rounded-full transition-all duration-300',
+                'focus:outline-none focus:ring-2 focus:ring-white/50',
+                currentSlide === index ? 'w-12 bg-white' : 'w-2 bg-white/30 hover:bg-white/50'
+              )}
+              aria-label={`Go to ${features[index]?.title}`}
+              aria-current={currentSlide === index}
+            >
+              {currentSlide === index && isAutoPlaying && (
+                <motion.div
+                  className="absolute left-0 top-0 h-full rounded-full bg-white/50"
+                  initial={{ width: '0%' }}
+                  animate={{ width: '100%' }}
+                  transition={{ duration: AUTO_PLAY_INTERVAL / 1000, ease: 'linear' }}
+                />
+              )}
+            </button>
           ))}
         </div>
 
-        {/* NAMM Logo Section */}
+        {/* NAMM Logo */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={isTitleVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
@@ -439,7 +536,7 @@ export default function BoothExperienceSection({
           </div>
         </motion.div>
 
-        {/* SEO-optimized keywords naturally integrated */}
+        {/* SEO Keywords */}
         <div className="sr-only">
           NAMM 2026, NAMM Show 2026, Kawai booth NAMM 2026, best booths at NAMM,
           piano demonstrations NAMM 2026, live artist performances, hands-on piano demos,

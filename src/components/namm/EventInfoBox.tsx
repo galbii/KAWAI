@@ -36,6 +36,7 @@ interface EventInfoBoxProps {
  */
 export default function EventInfoBox({ className }: EventInfoBoxProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [showMapOptions, setShowMapOptions] = useState(false)
   const [countdown, setCountdown] = useState<CountdownTime>(getCountdownToNAMM())
 
   // Update countdown every second
@@ -47,12 +48,8 @@ export default function EventInfoBox({ className }: EventInfoBoxProps) {
     return () => clearInterval(interval)
   }, [])
 
-  const scrollToPlanYourVisit = () => {
-    const element = document.getElementById('plan-your-visit')
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }
+  const googleMapsUrl = "https://www.google.com/maps/place/Anaheim+Convention+Center"
+  const appleMapsUrl = "https://maps.apple.com/?address=800%20W%20Katella%20Ave,%20Anaheim,%20CA%2092802"
 
   return (
     <>
@@ -187,16 +184,17 @@ export default function EventInfoBox({ className }: EventInfoBoxProps) {
                 Anaheim, CA 92802
               </p>
             </div>
-            <a
-              href="https://www.google.com/maps/place/Anaheim+Convention+Center"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => setShowMapOptions(!showMapOptions)}
               className="inline-flex items-center gap-1 text-sm text-kawai-red hover:text-kawai-red/80 transition-colors font-medium"
             >
               <Navigation className="w-4 h-4" />
               Get Directions
-              <ExternalLink className="w-3 h-3" />
-            </a>
+              <ChevronRight className={cn(
+                "w-3 h-3 transition-transform",
+                showMapOptions && "rotate-90"
+              )} />
+            </button>
           </div>
 
           {/* Divider */}
@@ -239,13 +237,67 @@ export default function EventInfoBox({ className }: EventInfoBoxProps) {
             </a>
           </div>
 
-          {/* CTA Button */}
-          <Button
-            onClick={scrollToPlanYourVisit}
-            className="w-full bg-kawai-red hover:bg-kawai-red/90 text-white font-semibold h-12 text-base shadow-md hover:shadow-lg transition-all"
-          >
-            Plan Your Visit
-          </Button>
+          {/* CTA Button - Get Directions */}
+          <div className="space-y-3">
+            <Button
+              onClick={() => setShowMapOptions(!showMapOptions)}
+              className="w-full bg-kawai-red hover:bg-kawai-red/90 text-white font-semibold h-12 text-base shadow-md hover:shadow-lg transition-all"
+            >
+              <Navigation className="w-4 h-4 mr-2" />
+              Get Directions
+              <ChevronRight className={cn(
+                "w-4 h-4 ml-auto transition-transform",
+                showMapOptions && "rotate-90"
+              )} />
+            </Button>
+
+            {/* Map Options Dropdown */}
+            {showMapOptions && (
+              <div className="space-y-2 p-3 bg-kawai-black/5 rounded-lg border border-kawai-red/10">
+                <p className="text-xs text-kawai-black/60 font-medium uppercase tracking-wide mb-2">
+                  Choose your map app:
+                </p>
+                <a
+                  href={googleMapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 bg-white border border-kawai-black/10 rounded-lg hover:border-kawai-red/30 hover:bg-kawai-red/5 transition-all group"
+                >
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-kawai-black group-hover:text-kawai-red transition-colors">
+                      Google Maps
+                    </p>
+                    <p className="text-xs text-kawai-black/50">
+                      Open in Google Maps
+                    </p>
+                  </div>
+                  <ExternalLink className="w-4 h-4 text-kawai-black/30 group-hover:text-kawai-red transition-colors" />
+                </a>
+                <a
+                  href={appleMapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 bg-white border border-kawai-black/10 rounded-lg hover:border-kawai-red/30 hover:bg-kawai-red/5 transition-all group"
+                >
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-kawai-black group-hover:text-kawai-red transition-colors">
+                      Apple Maps
+                    </p>
+                    <p className="text-xs text-kawai-black/50">
+                      Open in Apple Maps
+                    </p>
+                  </div>
+                  <ExternalLink className="w-4 h-4 text-kawai-black/30 group-hover:text-kawai-red transition-colors" />
+                </a>
+              </div>
+            )}
+          </div>
 
           {/* Additional Info */}
           <div className="pt-4 border-t border-kawai-black/10">

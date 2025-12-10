@@ -15,6 +15,11 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'pub-486ee03121a24ede8b51409434e22709.r2.dev',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'kawaius.com',
         pathname: '/**',
       },

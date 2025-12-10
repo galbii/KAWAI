@@ -53,10 +53,12 @@ export default function PerformanceCard({
 
   return (
     <Link
-      href={`/namm-2026/artists/${performance.artistSlug || '#'}`}
+      href={`#profile-${performance.id}`}
       className="block group"
+      scroll={true}
     >
       <motion.article
+        id={`performance-${performance.id}`}
         // Initial reveal animation (scroll-triggered)
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -77,7 +79,7 @@ export default function PerformanceCard({
         itemScope
         itemType="https://schema.org/MusicEvent"
         className={cn(
-          'relative overflow-hidden rounded-2xl',
+          'relative overflow-hidden rounded-2xl scroll-mt-20',
           // Warm subtle background that blends with page beige
           'bg-gradient-to-br from-[#FAF8F3] to-[#F5F1E8]',
           'transition-all duration-400 ease-out',

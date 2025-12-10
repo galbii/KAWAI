@@ -55,7 +55,7 @@ export const PERFORMANCES: Performance[] = [
     startDateTime: '2026-01-22T11:00:00-08:00',
     endDateTime: '2026-01-22T11:45:00-08:00',
     genre: 'Classical',
-    artistImage: '/images/artists/namm-2026/david-snyder.jpg', // Placeholder - replace with actual headshot
+    artistImage: '/images/namm/david-snyder.jpg',
     artistBio: 'Renowned classical pianist with performances at Carnegie Hall and international concert venues. Known for interpretations of Chopin, Rachmaninoff, and contemporary composers. Faculty member at prestigious conservatory.',
     artistSlug: 'david-snyder',
     socialLinks: {
