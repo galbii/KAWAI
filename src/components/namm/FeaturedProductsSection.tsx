@@ -53,11 +53,23 @@ function CrystalGrandCard({ piano, index }: { piano: FeaturedPiano; index: numbe
       transition={{ duration: 1, delay: index * 0.15, ease: [0.25, 0.1, 0.25, 1] }}
       className="group relative overflow-hidden rounded-3xl"
     >
-      {/* Crystalline background with glass effects */}
-      <div className="relative min-h-[600px] lg:min-h-[700px] bg-gradient-to-br from-zinc-900 via-slate-900 to-zinc-950 p-8 lg:p-16">
+      {/* Full-bleed image background */}
+      <div className="relative min-h-[700px] lg:min-h-[800px]">
+        {/* Piano Image - Full Card Background */}
+        <div className="absolute inset-0">
+          <Image
+            src={piano.imageUrl}
+            alt={piano.name}
+            fill
+            className="object-cover object-center"
+            sizes="100vw"
+            priority
+          />
+        </div>
+
         {/* Glass reflection effects */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-tl from-cyan-500/[0.05] via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-tl from-cyan-500/[0.15] via-transparent to-transparent" />
 
         {/* Crystalline pattern overlay */}
         <div className="absolute inset-0 opacity-[0.03]">
@@ -67,52 +79,47 @@ function CrystalGrandCard({ piano, index }: { piano: FeaturedPiano; index: numbe
           }} />
         </div>
 
-        <div className="relative z-10 grid lg:grid-cols-2 gap-12 items-center">
-          {/* Content */}
-          <div className="space-y-8">
-            <div>
-              <h3 className="text-4xl lg:text-5xl xl:text-6xl font-light text-white mb-4 tracking-tight leading-tight">
-                {piano.name}
-              </h3>
-              <p className="text-xl lg:text-2xl font-light text-cyan-100/80">
-                {piano.tagline}
-              </p>
-            </div>
+        {/* Content - Centered overlay */}
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-[700px] lg:min-h-[800px] px-6 lg:px-12 py-16">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+            transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="text-center space-y-8 max-w-5xl"
+          >
+            <h3 className="text-4xl lg:text-5xl xl:text-6xl font-light text-white mb-4 tracking-tight leading-tight drop-shadow-2xl">
+              {piano.name}
+            </h3>
+            <p className="text-xl lg:text-2xl font-light text-cyan-100/90 drop-shadow-2xl">
+              {piano.tagline}
+            </p>
+          </motion.div>
 
+          {/* CTA Button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="mt-12"
+          >
             <Link
               href={piano.ctaLink}
               className={cn(
-                "inline-flex items-center gap-3 px-8 py-4 rounded-full",
+                "inline-flex items-center gap-3 px-10 py-5 rounded-full",
                 "bg-gradient-to-r from-cyan-500/10 to-blue-500/10",
-                "border border-cyan-500/30 hover:border-cyan-400/50",
+                "border-2 border-cyan-500/30 hover:border-cyan-400/50",
                 "text-cyan-100 hover:text-white",
-                "backdrop-blur-sm transition-all duration-300",
-                "group/btn hover:scale-105"
+                "backdrop-blur-md transition-all duration-500",
+                "group/btn hover:scale-110 shadow-2xl hover:shadow-cyan-500/50",
+                "transform-gpu"
               )}
             >
-              <span className="font-light">{piano.ctaText}</span>
-              <svg className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              <span className="font-medium text-lg">{piano.ctaText}</span>
+              <svg className="w-5 h-5 transition-transform group-hover/btn:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
             </Link>
-          </div>
-
-          {/* Prominent transparent piano image */}
-          <div className="relative h-[500px] lg:h-[700px]">
-            <Image
-              src={piano.imageUrl}
-              alt={piano.name}
-              fill
-              className="object-cover object-center drop-shadow-2xl mix-blend-screen"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-            />
-            {/* Top edge fade to blend with background */}
-            <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-zinc-900 via-zinc-900/60 to-transparent pointer-events-none" />
-            {/* Bottom edge fade to blend with background */}
-            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-zinc-950 via-slate-900/60 to-transparent pointer-events-none" />
-            {/* Glow effect behind piano */}
-            <div className="absolute inset-0 bg-gradient-radial from-cyan-500/20 via-transparent to-transparent blur-3xl -z-10" />
-          </div>
+          </motion.div>
         </div>
       </div>
     </motion.div>
@@ -287,7 +294,7 @@ function ArtisticPianoCard({ piano, index }: { piano: FeaturedPiano; index: numb
               </p>
               <div className="pt-6">
                 <Link
-                  href="/namm-2026/experience"
+                  href="/products/heralbony-sk3"
                   onClick={(e) => e.stopPropagation()}
                   className={cn(
                     "inline-flex items-center gap-3 px-8 py-4 rounded-full",
@@ -298,7 +305,7 @@ function ArtisticPianoCard({ piano, index }: { piano: FeaturedPiano; index: numb
                     "hover:scale-105"
                   )}
                 >
-                  <span className="font-light">View Full Experience</span>
+                  <span className="font-light">View Full Details</span>
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
@@ -338,67 +345,76 @@ function TechHybridCard({ piano, index }: { piano: FeaturedPiano; index: number 
       transition={{ duration: 1, delay: index * 0.15, ease: [0.25, 0.1, 0.25, 1] }}
       className="group relative overflow-hidden rounded-3xl"
     >
-      {/* Clean tech aesthetic background */}
-      <div className="relative min-h-[600px] lg:min-h-[700px] bg-gradient-to-br from-slate-900 via-zinc-900 to-stone-900 p-8 lg:p-16">
-        {/* Technical grid pattern */}
-        <div className="absolute inset-0 opacity-[0.03]">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)',
-            backgroundSize: '40px 40px'
-          }} />
+      {/* Full-bleed image background */}
+      <div className="relative min-h-[700px] lg:min-h-[800px]">
+        {/* Piano Image - Full Card Background */}
+        <div className="absolute inset-0">
+          <Image
+            src={piano.imageUrl}
+            alt={piano.name}
+            fill
+            className="object-cover object-center"
+            sizes="100vw"
+            priority
+          />
         </div>
 
-        {/* Blueprint-style accent lines */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-400 to-transparent" />
-          <div className="absolute top-3/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-emerald-400 to-transparent" />
+        {/* Tech-themed gradient overlays */}
+        <div className="absolute top-0 right-0 w-2/3 h-2/3 bg-gradient-radial from-emerald-500/20 via-teal-500/10 to-transparent blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-2/3 h-2/3 bg-gradient-radial from-teal-500/20 via-emerald-500/10 to-transparent blur-3xl" />
+
+        {/* Novus logo overlay - positioned on the right */}
+        <div className="absolute top-8 right-8 z-10">
+          <Image
+            src="https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/Novus_Hybrid%20Piano_NV5_logo_black.png"
+            alt="Novus Hybrid Piano"
+            width={200}
+            height={100}
+            className="w-32 lg:w-48 h-auto drop-shadow-2xl"
+          />
         </div>
 
-        {/* Ambient tech glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-radial from-emerald-500/10 via-transparent to-transparent blur-3xl" />
+        {/* Content - Centered overlay */}
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-[700px] lg:min-h-[800px] px-6 lg:px-12 py-16">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+            transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="text-center space-y-8 max-w-5xl"
+          >
+            <h3 className="text-4xl lg:text-5xl xl:text-6xl font-light text-black mb-4 tracking-tight leading-tight drop-shadow-2xl">
+              {piano.name}
+            </h3>
+            <p className="text-xl lg:text-2xl font-light text-black drop-shadow-2xl">
+              {piano.tagline}
+            </p>
+          </motion.div>
 
-        <div className="relative z-10 grid lg:grid-cols-2 gap-12 items-center">
-          {/* Content */}
-          <div className="space-y-8">
-            <div>
-              <h3 className="text-4xl lg:text-5xl xl:text-6xl font-light text-white mb-4 tracking-tight leading-tight">
-                {piano.name}
-              </h3>
-              <p className="text-xl lg:text-2xl font-light text-emerald-100/80">
-                {piano.tagline}
-              </p>
-            </div>
-
+          {/* CTA Button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="mt-12"
+          >
             <Link
               href={piano.ctaLink}
               className={cn(
-                "inline-flex items-center gap-3 px-8 py-4 rounded-full",
-                "bg-gradient-to-r from-emerald-500/10 to-teal-500/10",
-                "border border-emerald-500/30 hover:border-emerald-400/50",
-                "text-emerald-100 hover:text-white",
-                "backdrop-blur-sm transition-all duration-300",
-                "group/btn hover:scale-105"
+                "inline-flex items-center gap-3 px-10 py-5 rounded-full",
+                "bg-gradient-to-r from-white/10 to-white/5",
+                "border-2 border-black/30 hover:border-black/50",
+                "text-black hover:text-black",
+                "backdrop-blur-md transition-all duration-500",
+                "group/btn hover:scale-110 shadow-2xl hover:shadow-emerald-500/50",
+                "transform-gpu"
               )}
             >
-              <span className="font-light">{piano.ctaText}</span>
-              <svg className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              <span className="font-medium text-lg">{piano.ctaText}</span>
+              <svg className="w-5 h-5 transition-transform group-hover/btn:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
             </Link>
-          </div>
-
-          {/* Prominent transparent piano image */}
-          <div className="relative h-[400px] lg:h-[600px]">
-            <Image
-              src={piano.imageUrl}
-              alt={piano.name}
-              fill
-              className="object-contain drop-shadow-2xl"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-            />
-            {/* Tech glow effect */}
-            <div className="absolute inset-0 bg-gradient-radial from-emerald-500/15 via-transparent to-transparent blur-3xl -z-10" />
-          </div>
+          </motion.div>
         </div>
       </div>
     </motion.div>
@@ -539,14 +555,14 @@ const FEATURED_PIANOS: FeaturedPiano[] = [
     tagline: 'Where Music Radiates Color',
     imageUrl: '/images/namm/heralbony closeup.JPG',
     ctaText: 'Discover The Story',
-    ctaLink: '/products/heralbony-k200',
+    ctaLink: '/products/heralbony-sk3',
     theme: 'artistic'
   },
   {
     id: 'cr45',
     name: 'CR-45 Crystal Grand',
     tagline: 'The World\'s Most Exclusive Piano',
-    imageUrl: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/012.jpg',
+    imageUrl: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/024.jpg',
     ctaText: 'Explore Crystal Grand',
     ctaLink: '/products/cr-45',
     theme: 'crystal'
@@ -555,7 +571,7 @@ const FEATURED_PIANOS: FeaturedPiano[] = [
     id: 'novus',
     name: 'Novus NV6 & NV12',
     tagline: 'Feel Acoustic. Play Silent.',
-    imageUrl: '/images/placeholders/piano-hybrid.jpg',
+    imageUrl: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/DSC_1820_sRGB.jpg',
     ctaText: 'Experience Novus Technology',
     ctaLink: '/products/novus-series',
     theme: 'tech'

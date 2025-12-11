@@ -54,6 +54,7 @@ interface PianoShowcaseDetailedProps {
  */
 function CrystalGrandShowcase({ piano, index }: { piano: FeaturedPianoDetailed; index: number }) {
   const [isVisible, setIsVisible] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -75,8 +76,20 @@ function CrystalGrandShowcase({ piano, index }: { piano: FeaturedPianoDetailed; 
       transition={{ duration: 1, delay: index * 0.15, ease: [0.25, 0.1, 0.25, 1] }}
       className="group relative overflow-hidden rounded-3xl shadow-2xl"
     >
-      {/* Crystalline background with enhanced glass effects */}
-      <div className="relative min-h-[800px] bg-gradient-to-br from-slate-950 via-blue-950 to-cyan-950 p-10 lg:p-20">
+      {/* Full-bleed image background */}
+      <div className="relative min-h-[700px] lg:min-h-[800px]">
+        {/* Piano Image - Full Card Background */}
+        <div className="absolute inset-0">
+          <Image
+            src={piano.imageUrl}
+            alt={piano.name}
+            fill
+            className="object-cover object-center"
+            sizes="100vw"
+            priority
+          />
+        </div>
+
         {/* Multi-layer glass reflection effects */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-cyan-100/5 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-tl from-cyan-400/10 via-blue-400/5 to-transparent" />
@@ -100,109 +113,123 @@ function CrystalGrandShowcase({ piano, index }: { piano: FeaturedPianoDetailed; 
           <div className="absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-transparent via-blue-400 to-transparent" />
         </div>
 
-        <div className="relative z-10 grid lg:grid-cols-2 gap-16 items-center">
-          {/* Content */}
-          <div className="space-y-8">
+        {/* Content - Centered overlay */}
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-[700px] lg:min-h-[800px] px-10 lg:px-20 py-20">
+          {/* Main content - centered */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+            transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="text-center space-y-8 max-w-5xl"
+          >
             {piano.badge && (
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={isVisible ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/40 backdrop-blur-md shadow-lg"
-              >
+              <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/40 backdrop-blur-md shadow-lg">
                 <div className="w-2.5 h-2.5 rounded-full bg-cyan-300 animate-pulse shadow-lg shadow-cyan-400/50" />
                 <span className="text-xs font-medium tracking-widest uppercase text-cyan-100 drop-shadow-sm">{piano.badge}</span>
-              </motion.div>
+              </div>
             )}
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
+            <h3 className="text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-5 tracking-tight leading-none drop-shadow-2xl">
+              {piano.name}
+            </h3>
+            <p className="text-2xl lg:text-3xl xl:text-4xl font-light text-cyan-50 drop-shadow-lg">
+              {piano.tagline}
+            </p>
+          </motion.div>
+
+          {/* CTA Button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="mt-12"
+          >
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className={cn(
+                "inline-flex items-center gap-3 px-10 py-5 rounded-full",
+                "bg-gradient-to-r from-cyan-500/15 to-blue-500/15",
+                "border-2 border-cyan-400/50 hover:border-cyan-300/70",
+                "text-cyan-50 hover:text-white",
+                "backdrop-blur-md transition-all duration-500",
+                "group/btn hover:scale-110 hover:shadow-2xl hover:shadow-cyan-500/30",
+                "transform-gpu"
+              )}
             >
-              <h3 className="text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-5 tracking-tight leading-none drop-shadow-2xl">
-                {piano.name}
-              </h3>
-              <p className="text-2xl lg:text-3xl font-light text-cyan-50 mb-6 drop-shadow-lg">
-                {piano.tagline}
-              </p>
-              <p className="text-lg lg:text-xl text-slate-200 leading-relaxed drop-shadow-md">
+              <span className="font-medium text-lg">{isExpanded ? 'Show Less' : 'Learn More'}</span>
+              <svg
+                className={cn(
+                  "w-5 h-5 transition-transform duration-500",
+                  isExpanded ? "rotate-90" : "group-hover/btn:translate-x-2"
+                )}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </button>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Expandable Details Section */}
+      <motion.div
+        initial={false}
+        animate={{
+          height: isExpanded ? 'auto' : 0,
+          opacity: isExpanded ? 1 : 0
+        }}
+        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+        className="overflow-hidden bg-gradient-to-br from-slate-950 via-cyan-950 to-blue-950"
+      >
+        <div className="p-10 lg:p-20 border-t border-cyan-400/20">
+          <div className="max-w-5xl mx-auto space-y-10">
+            {/* Description */}
+            <div className="text-center space-y-6">
+              <p className="text-2xl lg:text-3xl text-cyan-50 leading-relaxed font-light drop-shadow-lg">
                 {piano.description}
               </p>
-            </motion.div>
+            </div>
 
-            <motion.ul
-              initial={{ opacity: 0 }}
-              animate={isVisible ? { opacity: 1 } : { opacity: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="space-y-4"
-            >
+            {/* Highlights */}
+            <div className="grid md:grid-cols-2 gap-6">
               {piano.highlights.map((highlight, idx) => (
-                <motion.li
+                <div
                   key={idx}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={isVisible ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
-                  transition={{ duration: 0.6, delay: 0.5 + idx * 0.1 }}
                   className="flex items-start gap-4 text-slate-100"
                 >
                   <div className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-400/30 to-blue-500/30 flex items-center justify-center mt-1 flex-shrink-0 border border-cyan-400/40 shadow-lg shadow-cyan-500/20">
                     <div className="w-2 h-2 rounded-full bg-cyan-300 shadow-sm" />
                   </div>
-                  <span className="text-base lg:text-lg font-light leading-relaxed drop-shadow-sm">{highlight}</span>
-                </motion.li>
+                  <span className="text-lg lg:text-xl font-light leading-relaxed drop-shadow-sm">{highlight}</span>
+                </div>
               ))}
-            </motion.ul>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.8, delay: 0.7 }}
-            >
+            {/* CTA */}
+            <div className="text-center pt-6">
               <Link
                 href={piano.ctaLink}
                 className={cn(
-                  "inline-flex items-center gap-3 px-10 py-5 rounded-full",
-                  "bg-gradient-to-r from-cyan-500/15 to-blue-500/15",
+                  "inline-flex items-center gap-4 px-12 py-6 rounded-full",
+                  "bg-gradient-to-r from-cyan-500/20 to-blue-500/20",
                   "border-2 border-cyan-400/50 hover:border-cyan-300/70",
-                  "text-cyan-50 hover:text-white text-lg font-medium",
+                  "text-cyan-50 hover:text-white text-xl font-semibold",
                   "backdrop-blur-md transition-all duration-500",
-                  "group/btn hover:scale-110 hover:shadow-2xl hover:shadow-cyan-500/30",
+                  "hover:scale-110 hover:shadow-2xl hover:shadow-cyan-500/40",
                   "transform-gpu"
                 )}
               >
-                <span>{piano.ctaText}</span>
-                <svg className="w-5 h-5 transition-transform group-hover/btn:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <span>View Full Details</span>
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
               </Link>
-            </motion.div>
+            </div>
           </div>
-
-          {/* Prominent Piano Image */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
-            transition={{ duration: 1.2, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-            className="relative h-[600px] lg:h-[800px]"
-          >
-            <Image
-              src={piano.imageUrl}
-              alt={piano.name}
-              fill
-              className="object-cover object-center drop-shadow-2xl mix-blend-screen"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              priority={index === 0}
-            />
-            {/* Top edge fade to blend with background */}
-            <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-slate-950 via-blue-950/70 to-transparent pointer-events-none" />
-            {/* Bottom edge fade to blend with background */}
-            <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-cyan-950 via-slate-950/70 to-transparent pointer-events-none" />
-            {/* Enhanced glow effect */}
-            <div className="absolute inset-0 bg-gradient-radial from-cyan-400/30 via-blue-500/15 to-transparent blur-3xl -z-10 group-hover:from-cyan-400/40 transition-all duration-1000" />
-            <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-cyan-500/10 blur-2xl -z-10" />
-          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   )
 }
@@ -210,7 +237,7 @@ function CrystalGrandShowcase({ piano, index }: { piano: FeaturedPianoDetailed; 
 /**
  * HERALBONY K-200 - Artistic collaboration piano
  * Vibrant multi-color theme (purple/fuchsia/pink/yellow)
- * Enhanced with expandable artist bio section
+ * Enhanced with TWO expandable sections: Piano Details + Artist Bio
  */
 function ArtisticShowcase({ piano, index }: { piano: FeaturedPianoDetailed; index: number }) {
   const [isVisible, setIsVisible] = useState(false)
@@ -228,21 +255,16 @@ function ArtisticShowcase({ piano, index }: { piano: FeaturedPianoDetailed; inde
     return () => observer.disconnect()
   }, [])
 
-  const handleCardClick = () => {
-    setIsExpanded(!isExpanded)
-  }
-
   return (
     <motion.div
       ref={cardRef}
       initial={{ opacity: 0, y: 60 }}
       animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }}
       transition={{ duration: 1.2, delay: index * 0.15, ease: [0.25, 0.1, 0.25, 1] }}
-      className="group relative overflow-hidden rounded-3xl shadow-2xl cursor-pointer"
-      onClick={handleCardClick}
+      className="group relative overflow-hidden rounded-3xl shadow-2xl"
     >
       {/* Full-bleed image background */}
-      <div className="relative min-h-[900px] lg:min-h-[1000px]">
+      <div className="relative min-h-[700px] lg:min-h-[800px]">
         {/* Piano Image - Full Card Background */}
         <div className="absolute inset-0">
           <Image
@@ -259,115 +281,111 @@ function ArtisticShowcase({ piano, index }: { piano: FeaturedPianoDetailed; inde
         <div className="absolute top-0 right-0 w-2/3 h-2/3 bg-gradient-radial from-yellow-400/25 via-orange-500/15 to-transparent blur-3xl" />
         <div className="absolute bottom-0 left-0 w-2/3 h-2/3 bg-gradient-radial from-cyan-400/20 via-blue-500/10 to-transparent blur-3xl" />
 
-        {/* Content - Centered overlay */}
-        <div className="relative z-10 flex flex-col items-center justify-center min-h-[900px] lg:min-h-[1000px] px-10 lg:px-20 py-20">
-          {/* Logos and content - CENTERED IN MIDDLE */}
-          <div className="text-center space-y-10 max-w-6xl">
-            {piano.badge && (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-gradient-to-r from-fuchsia-500/25 to-pink-500/25 border border-fuchsia-300/50 backdrop-blur-md shadow-lg mb-6"
-              >
-                <div className="w-2.5 h-2.5 rounded-full bg-fuchsia-300 shadow-lg shadow-fuchsia-400/50" />
-                <span className="text-xs font-medium tracking-widest uppercase text-fuchsia-100 drop-shadow-sm">{piano.badge}</span>
-              </motion.div>
-            )}
+        {/* Content - Centered overlay with minimal content */}
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-[700px] lg:min-h-[800px] px-10 lg:px-20 py-20">
+          {/* Logos - CENTERED IN MIDDLE */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+            transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="text-center space-y-8 max-w-5xl"
+          >
+            <h3 className="flex flex-col lg:flex-row items-center justify-center gap-4 lg:gap-6">
+              <Image
+                src="/images/namm/HERALBONY_7_logotype-symbol_2_black.png"
+                alt="HERALBONY"
+                width={500}
+                height={100}
+                className="h-14 lg:h-16 xl:h-20 w-auto brightness-0 invert drop-shadow-2xl"
+                priority
+              />
+              <span className="text-3xl lg:text-4xl xl:text-5xl font-light text-white drop-shadow-2xl">with</span>
+              <Image
+                src="/images/optimized/logos/Kawai-Red.png"
+                alt="KAWAI"
+                width={400}
+                height={80}
+                className="h-12 lg:h-14 xl:h-18 w-auto drop-shadow-2xl"
+                priority
+              />
+            </h3>
+            <p className="text-2xl lg:text-3xl xl:text-4xl font-light text-white drop-shadow-2xl leading-relaxed">
+              {piano.tagline}
+            </p>
+          </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
+          {/* CTA Button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="mt-12"
+          >
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className={cn(
+                "inline-flex items-center gap-3 px-10 py-5 rounded-full",
+                "bg-gradient-to-r from-white/10 to-white/5",
+                "border-2 border-white/30 hover:border-white/50",
+                "text-white hover:text-white",
+                "backdrop-blur-md transition-all duration-500",
+                "group/btn hover:scale-110 shadow-2xl hover:shadow-fuchsia-500/50",
+                "transform-gpu"
+              )}
             >
-              <h3 className="flex flex-col lg:flex-row items-center justify-center gap-4 lg:gap-6 mb-6">
-                <Image
-                  src="/images/namm/HERALBONY_7_logotype-symbol_2_black.png"
-                  alt="HERALBONY"
-                  width={500}
-                  height={100}
-                  className="h-14 lg:h-16 xl:h-20 w-auto brightness-0 invert drop-shadow-2xl"
-                  priority
-                />
-                <span className="text-3xl lg:text-4xl xl:text-5xl font-bold text-white tracking-tight leading-none drop-shadow-2xl">with</span>
-                <Image
-                  src="/images/optimized/logos/Kawai-Red.png"
-                  alt="KAWAI"
-                  width={400}
-                  height={80}
-                  className="h-12 lg:h-14 xl:h-16 w-auto drop-shadow-2xl"
-                  priority
-                />
-              </h3>
-              <p className="text-2xl lg:text-3xl font-light text-fuchsia-50 mb-6 drop-shadow-lg">
-                {piano.tagline}
-              </p>
-              <p className="text-xl lg:text-2xl text-white leading-relaxed drop-shadow-lg max-w-4xl mx-auto">
-                {piano.description}
-              </p>
-            </motion.div>
-
-            {/* Highlights */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={isVisible ? { opacity: 1 } : { opacity: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="space-y-4"
-            >
-              {piano.highlights.map((highlight, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-                  transition={{ duration: 0.6, delay: 0.5 + idx * 0.1 }}
-                  className="flex items-center justify-center gap-4 text-white"
-                >
-                  <div className="w-2 h-2 rounded-full bg-white shadow-lg shadow-white/50" />
-                  <span className="text-lg lg:text-xl font-light drop-shadow-md">{highlight}</span>
-                </motion.div>
-              ))}
-            </motion.div>
-
-            {/* CTA Button */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.8, delay: 0.7 }}
-            >
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleCardClick()
-                }}
+              <span className="font-medium text-lg">{isExpanded ? 'Show Less' : 'Discover The Story'}</span>
+              <svg
                 className={cn(
-                  "inline-flex items-center gap-4 px-12 py-6 rounded-full",
-                  "bg-gradient-to-r from-white/15 to-white/10",
-                  "border-2 border-white/40 hover:border-white/60",
-                  "text-white hover:text-white text-xl font-semibold",
-                  "backdrop-blur-md transition-all duration-500",
-                  "hover:scale-110 hover:shadow-2xl hover:shadow-fuchsia-500/50",
-                  "transform-gpu"
+                  "w-5 h-5 transition-transform duration-500",
+                  isExpanded ? "rotate-90" : "group-hover/btn:translate-x-2"
                 )}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <span>{isExpanded ? 'Show Less' : piano.ctaText}</span>
-                <svg
-                  className={cn(
-                    "w-6 h-6 transition-transform duration-500",
-                    isExpanded ? "rotate-90" : "group-hover/btn:translate-x-2"
-                  )}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </button>
-            </motion.div>
-          </div>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </button>
+          </motion.div>
         </div>
       </div>
 
-      {/* Expandable Artist Bio Section */}
+      {/* Expandable Section 1: Piano Details */}
+      <motion.div
+        initial={false}
+        animate={{
+          height: isExpanded ? 'auto' : 0,
+          opacity: isExpanded ? 1 : 0
+        }}
+        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+        className="overflow-hidden bg-gradient-to-br from-pink-950 via-rose-950 to-purple-950"
+      >
+        <div className="p-10 lg:p-20 border-t border-fuchsia-400/20">
+          <div className="max-w-5xl mx-auto space-y-10">
+            {/* Piano Details Content */}
+            <div className="text-center space-y-6">
+              <p className="text-2xl lg:text-3xl text-white leading-relaxed font-light drop-shadow-lg">
+                {piano.description}
+              </p>
+            </div>
+
+            {/* Highlights */}
+            <div className="grid md:grid-cols-2 gap-6">
+              {piano.highlights.map((highlight, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-start gap-4 text-white"
+                >
+                  <div className="w-2 h-2 rounded-full bg-fuchsia-300 shadow-lg shadow-fuchsia-400/50 mt-2 flex-shrink-0" />
+                  <span className="text-lg lg:text-xl font-light drop-shadow-md">{highlight}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Expandable Section 2: Sato Artist Bio */}
       <motion.div
         initial={false}
         animate={{
@@ -404,7 +422,7 @@ function ArtisticShowcase({ piano, index }: { piano: FeaturedPianoDetailed; inde
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-16 h-1 bg-gradient-to-r from-fuchsia-400 to-pink-400 rounded-full" />
                 <span className="text-sm font-semibold tracking-widest uppercase text-fuchsia-300">
-                  Meet the Artist
+                  About the Artist
                 </span>
               </div>
               <p className="text-xl lg:text-2xl text-purple-100 leading-relaxed font-light drop-shadow-md">
@@ -412,8 +430,7 @@ function ArtisticShowcase({ piano, index }: { piano: FeaturedPianoDetailed; inde
               </p>
               <div className="pt-8">
                 <Link
-                  href="/products/heralbony-k200"
-                  onClick={(e) => e.stopPropagation()}
+                  href="/products/heralbony-sk3"
                   className={cn(
                     "inline-flex items-center gap-4 px-12 py-6 rounded-full",
                     "bg-gradient-to-r from-fuchsia-500/20 to-pink-500/20",
@@ -441,9 +458,11 @@ function ArtisticShowcase({ piano, index }: { piano: FeaturedPianoDetailed; inde
 /**
  * Novus Series - Tech hybrid pianos
  * Clean tech aesthetic with emerald/teal
+ * Expandable design with centered main content
  */
 function TechHybridShowcase({ piano, index }: { piano: FeaturedPianoDetailed; index: number }) {
   const [isVisible, setIsVisible] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -465,128 +484,154 @@ function TechHybridShowcase({ piano, index }: { piano: FeaturedPianoDetailed; in
       transition={{ duration: 1, delay: index * 0.15, ease: [0.25, 0.1, 0.25, 1] }}
       className="group relative overflow-hidden rounded-3xl shadow-2xl"
     >
-      {/* Clean tech aesthetic with emerald/teal */}
-      <div className="relative min-h-[800px] bg-gradient-to-br from-slate-950 via-zinc-900 to-teal-950 p-10 lg:p-20">
-        {/* Technical grid pattern */}
-        <div className="absolute inset-0 opacity-[0.05]">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'linear-gradient(to right, emerald 1px, transparent 1px), linear-gradient(to bottom, emerald 1px, transparent 1px)',
-            backgroundSize: '35px 35px'
-          }} />
+      {/* Full-bleed image background */}
+      <div className="relative min-h-[700px] lg:min-h-[800px]">
+        {/* Piano Image - Full Card Background */}
+        <div className="absolute inset-0">
+          <Image
+            src={piano.imageUrl}
+            alt={piano.name}
+            fill
+            className="object-cover object-center"
+            sizes="100vw"
+            priority
+          />
         </div>
 
-        {/* Circuit board inspired accent lines */}
-        <div className="absolute inset-0 opacity-15">
-          <div className="absolute top-1/4 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent" />
-          <div className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-teal-400 to-transparent" />
-          <div className="absolute top-3/4 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-emerald-500 to-transparent" />
-          <div className="absolute left-1/4 top-0 h-full w-px bg-gradient-to-b from-transparent via-emerald-400/50 to-transparent" />
-          <div className="absolute right-1/4 top-0 h-full w-px bg-gradient-to-b from-transparent via-teal-400/50 to-transparent" />
+        {/* Tech-themed gradient overlays */}
+        <div className="absolute top-0 right-0 w-2/3 h-2/3 bg-gradient-radial from-emerald-500/20 via-teal-500/10 to-transparent blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-2/3 h-2/3 bg-gradient-radial from-teal-500/20 via-emerald-500/10 to-transparent blur-3xl" />
+
+        {/* Novus logo overlay - positioned on the right */}
+        <div className="absolute top-8 right-8 z-10">
+          <Image
+            src="https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/Novus_Hybrid%20Piano_NV5_logo_black.png"
+            alt="Novus Hybrid Piano"
+            width={200}
+            height={100}
+            className="w-32 lg:w-48 h-auto drop-shadow-2xl"
+          />
         </div>
 
-        {/* Enhanced ambient tech glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-radial from-emerald-500/15 via-teal-500/8 to-transparent blur-3xl" />
-
-        <div className="relative z-10 grid lg:grid-cols-2 gap-16 items-center">
-          {/* Content */}
-          <div className="space-y-8">
+        {/* Content - Centered overlay */}
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-[700px] lg:min-h-[800px] px-10 lg:px-20 py-20">
+          {/* Main content - centered */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+            transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="text-center space-y-8 max-w-5xl"
+          >
             {piano.badge && (
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={isVisible ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/40 backdrop-blur-md shadow-lg"
-              >
+              <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/40 backdrop-blur-md shadow-lg">
                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-pulse shadow-lg shadow-emerald-400/50" />
-                <span className="text-xs font-medium tracking-widest uppercase text-emerald-100 drop-shadow-sm">{piano.badge}</span>
-              </motion.div>
+                <span className="text-xs font-medium tracking-widest uppercase text-black drop-shadow-sm">{piano.badge}</span>
+              </div>
             )}
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
+            <h3 className="text-5xl lg:text-6xl xl:text-7xl font-bold text-black mb-5 tracking-tight leading-none drop-shadow-2xl">
+              {piano.name}
+            </h3>
+            <p className="text-2xl lg:text-3xl xl:text-4xl font-light text-black drop-shadow-2xl">
+              {piano.tagline}
+            </p>
+          </motion.div>
+
+          {/* CTA Button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="mt-12"
+          >
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className={cn(
+                "inline-flex items-center gap-3 px-10 py-5 rounded-full",
+                "bg-gradient-to-r from-white/10 to-white/5",
+                "border-2 border-black/30 hover:border-black/50",
+                "text-black hover:text-black",
+                "backdrop-blur-md transition-all duration-500",
+                "group/btn hover:scale-110 shadow-2xl hover:shadow-emerald-500/50",
+                "transform-gpu"
+              )}
             >
-              <h3 className="text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-5 tracking-tight leading-none drop-shadow-2xl">
-                {piano.name}
-              </h3>
-              <p className="text-2xl lg:text-3xl font-light text-emerald-50 mb-6 drop-shadow-lg">
-                {piano.tagline}
-              </p>
-              <p className="text-lg lg:text-xl text-slate-200 leading-relaxed drop-shadow-md">
+              <span className="font-medium text-lg">{isExpanded ? 'Show Less' : 'Learn More'}</span>
+              <svg
+                className={cn(
+                  "w-5 h-5 transition-transform duration-500",
+                  isExpanded ? "rotate-90" : "group-hover/btn:translate-x-2"
+                )}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </button>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Expandable Details Section */}
+      <motion.div
+        initial={false}
+        animate={{
+          height: isExpanded ? 'auto' : 0,
+          opacity: isExpanded ? 1 : 0
+        }}
+        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+        className="overflow-hidden bg-gradient-to-br from-slate-950 via-teal-950 to-emerald-950"
+      >
+        <div className="p-10 lg:p-20 border-t border-emerald-400/20">
+          <div className="max-w-5xl mx-auto space-y-10">
+            {/* Description */}
+            <div className="text-center space-y-6">
+              <p className="text-2xl lg:text-3xl text-emerald-50 leading-relaxed font-light drop-shadow-lg">
                 {piano.description}
               </p>
-            </motion.div>
+            </div>
 
-            <motion.ul
-              initial={{ opacity: 0 }}
-              animate={isVisible ? { opacity: 1 } : { opacity: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="space-y-4"
-            >
+            {/* Highlights */}
+            <div className="grid md:grid-cols-2 gap-6">
               {piano.highlights.map((highlight, idx) => (
-                <motion.li
+                <div
                   key={idx}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={isVisible ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
-                  transition={{ duration: 0.6, delay: 0.5 + idx * 0.1 }}
                   className="flex items-start gap-4 text-slate-100"
                 >
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500/30 to-teal-500/30 flex items-center justify-center mt-1 flex-shrink-0 border border-emerald-400/40 shadow-lg shadow-emerald-500/20">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-400/30 to-teal-500/30 flex items-center justify-center mt-1 flex-shrink-0 border border-emerald-400/40 shadow-lg shadow-emerald-500/20">
                     <svg className="w-3.5 h-3.5 text-emerald-300" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </div>
-                  <span className="text-base lg:text-lg font-light leading-relaxed drop-shadow-sm">{highlight}</span>
-                </motion.li>
+                  <span className="text-lg lg:text-xl font-light leading-relaxed drop-shadow-sm">{highlight}</span>
+                </div>
               ))}
-            </motion.ul>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.8, delay: 0.7 }}
-            >
+            {/* CTA */}
+            <div className="text-center pt-6">
               <Link
                 href={piano.ctaLink}
                 className={cn(
-                  "inline-flex items-center gap-3 px-10 py-5 rounded-full",
-                  "bg-gradient-to-r from-emerald-500/15 to-teal-500/15",
+                  "inline-flex items-center gap-4 px-12 py-6 rounded-full",
+                  "bg-gradient-to-r from-emerald-500/20 to-teal-500/20",
                   "border-2 border-emerald-400/50 hover:border-emerald-300/70",
-                  "text-emerald-50 hover:text-white text-lg font-medium",
+                  "text-emerald-50 hover:text-white text-xl font-semibold",
                   "backdrop-blur-md transition-all duration-500",
-                  "group/btn hover:scale-110 hover:shadow-2xl hover:shadow-emerald-500/30",
+                  "hover:scale-110 hover:shadow-2xl hover:shadow-emerald-500/40",
                   "transform-gpu"
                 )}
               >
-                <span>{piano.ctaText}</span>
-                <svg className="w-5 h-5 transition-transform group-hover/btn:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <span>View Full Details</span>
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
               </Link>
-            </motion.div>
+            </div>
           </div>
-
-          {/* Prominent Piano Image */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
-            transition={{ duration: 1.2, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-            className="relative h-[500px] lg:h-[700px]"
-          >
-            <Image
-              src={piano.imageUrl}
-              alt={piano.name}
-              fill
-              className="object-contain drop-shadow-2xl"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-            />
-            {/* Tech glow effect */}
-            <div className="absolute inset-0 bg-gradient-radial from-emerald-500/25 via-teal-500/12 to-transparent blur-3xl -z-10 group-hover:from-emerald-500/35 transition-all duration-1000" />
-            <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-emerald-400/10 blur-2xl -z-10" />
-          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   )
 }
@@ -594,9 +639,11 @@ function TechHybridShowcase({ piano, index }: { piano: FeaturedPianoDetailed; in
 /**
  * Master Series - Premium craftsmanship teaser with video
  * Mysterious reveal with cinematic video background
+ * Expandable design heightens the mystery
  */
 function CraftsmanshipShowcase({ piano, index }: { piano: FeaturedPianoDetailed; index: number }) {
   const [isVisible, setIsVisible] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -626,7 +673,7 @@ function CraftsmanshipShowcase({ piano, index }: { piano: FeaturedPianoDetailed;
       className="group relative overflow-hidden rounded-3xl shadow-2xl"
     >
       {/* Mysterious dark background with cinematic video */}
-      <div className="relative min-h-[900px] bg-black p-10 lg:p-20">
+      <div className="relative min-h-[800px] bg-black p-10 lg:p-20">
         {/* Video background - Minimal overlay */}
         <div className="absolute inset-0 overflow-hidden">
           <video
@@ -653,75 +700,113 @@ function CraftsmanshipShowcase({ piano, index }: { piano: FeaturedPianoDetailed;
         {/* Mysterious glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-gradient-radial from-amber-600/25 via-transparent to-transparent blur-3xl" />
 
-        <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-12 min-h-[700px] lg:min-h-[800px]">
-          {/* Main content */}
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-[600px] lg:min-h-[700px] px-10 lg:px-20 py-20">
+          {/* Main content - centered */}
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="space-y-8 max-w-4xl"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+            transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="text-center space-y-8 max-w-5xl"
           >
             <h3 className="text-6xl lg:text-7xl xl:text-8xl font-bold text-white mb-8 tracking-tight leading-none drop-shadow-2xl">
               {piano.name}
             </h3>
-            <p className="text-3xl lg:text-4xl font-light text-black leading-relaxed drop-shadow-xl">
+            <p className="text-3xl lg:text-4xl xl:text-5xl font-light text-black drop-shadow-xl leading-relaxed">
               {piano.tagline}
             </p>
-            <p className="text-xl lg:text-2xl text-black leading-relaxed drop-shadow-md max-w-3xl mx-auto">
-              {piano.description}
-            </p>
           </motion.div>
 
-          {/* Mysterious hints - styled as elegant list */}
+          {/* CTA Button */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={isVisible ? { opacity: 1 } : { opacity: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="space-y-6 max-w-2xl"
+            className="mt-12"
           >
-            <div className="space-y-4">
-              {piano.highlights.map((highlight, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, x: -30 }}
-                  animate={isVisible ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
-                  transition={{ duration: 0.6, delay: 0.6 + idx * 0.1 }}
-                  className="flex items-center justify-center gap-4 text-black"
-                >
-                  <div className="w-2 h-2 rounded-full bg-black shadow-lg shadow-black/50" />
-                  <span className="text-lg lg:text-xl font-light tracking-wide drop-shadow-sm">{highlight}</span>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* CTA */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={isVisible ? { opacity: 1 } : { opacity: 0 }}
-            transition={{ duration: 1, delay: 1.0 }}
-            className="pt-6"
-          >
-            <Link
-              href={piano.ctaLink}
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
               className={cn(
-                "inline-flex items-center gap-4 px-12 py-6 rounded-full",
+                "inline-flex items-center gap-3 px-10 py-5 rounded-full",
                 "bg-black hover:bg-black",
-                "border-2 border-black hover:border-white/50",
-                "text-white hover:text-white text-xl font-semibold",
-                "transition-all duration-500",
+                "border-2 border-white/30 hover:border-white/50",
+                "text-white hover:text-white",
+                "backdrop-blur-md transition-all duration-500",
                 "group/btn hover:scale-110 hover:shadow-2xl hover:shadow-white/50",
                 "transform-gpu"
               )}
             >
-              <span className="font-light">Learn More</span>
-              <svg className="w-6 h-6 transition-transform group-hover/btn:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <span className="font-light text-lg">{isExpanded ? 'Hide The Mystery' : 'Unveil The Mystery'}</span>
+              <svg
+                className={cn(
+                  "w-5 h-5 transition-transform duration-500",
+                  isExpanded ? "rotate-90" : "group-hover/btn:translate-x-2"
+                )}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
-            </Link>
+            </button>
           </motion.div>
         </div>
       </div>
+
+      {/* Expandable Mystery Section */}
+      <motion.div
+        initial={false}
+        animate={{
+          height: isExpanded ? 'auto' : 0,
+          opacity: isExpanded ? 1 : 0
+        }}
+        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+        className="overflow-hidden bg-black"
+      >
+        <div className="p-10 lg:p-20 border-t border-white/20">
+          <div className="max-w-5xl mx-auto space-y-10">
+            {/* Description */}
+            <div className="text-center space-y-6">
+              <p className="text-2xl lg:text-3xl text-white leading-relaxed font-light drop-shadow-lg">
+                {piano.description}
+              </p>
+            </div>
+
+            {/* Mysterious hints */}
+            <div className="space-y-6 max-w-2xl mx-auto">
+              {piano.highlights.map((highlight, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-center gap-4 text-white"
+                >
+                  <div className="w-2 h-2 rounded-full bg-white shadow-lg shadow-white/50" />
+                  <span className="text-lg lg:text-xl font-light tracking-wide drop-shadow-sm">{highlight}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA */}
+            <div className="text-center pt-6">
+              <Link
+                href={piano.ctaLink}
+                className={cn(
+                  "inline-flex items-center gap-4 px-12 py-6 rounded-full",
+                  "bg-white/10 hover:bg-white/15",
+                  "border-2 border-white/30 hover:border-white/50",
+                  "text-white hover:text-white text-xl font-semibold",
+                  "backdrop-blur-md transition-all duration-500",
+                  "hover:scale-110 hover:shadow-2xl hover:shadow-white/40",
+                  "transform-gpu"
+                )}
+              >
+                <span>Learn More</span>
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </motion.div>
   )
 }
@@ -736,17 +821,17 @@ const FEATURED_PIANOS_DETAILED: FeaturedPianoDetailed[] = [
     id: 'heralbony',
     name: 'HERALBONY with Kawai',
     tagline: 'Where Music Radiates Color',
-    description: 'A bold artistic collaboration featuring vibrant artwork by artists with intellectual disabilities. This K-200 upright transforms into a public art installation that challenges perceptions and celebrates inclusive creativity through sound and vision.',
+    description: 'A bold artistic collaboration featuring vibrant artwork by artists with intellectual disabilities. This SK-3 concert grand transforms into a public art installation that challenges perceptions and celebrates inclusive creativity through sound and vision.',
     highlights: [
       'Vibrant original artwork by artist Sato',
       'Social mission supporting artists with disabilities',
-      'Professional K-200 upright base (114cm)',
+      'Shigeru Kawai SK-3 concert grand base (186cm / 6\'1")',
       'Interactive public art piano experience',
       'Limited edition with certificate of authenticity'
     ],
     imageUrl: '/images/namm/heralbony closeup.JPG',
     ctaText: 'Discover The Story',
-    ctaLink: '/products/heralbony-k200',
+    ctaLink: '/products/heralbony-sk3',
     theme: 'artistic',
     badge: 'Artistic Collaboration'
   },
@@ -762,7 +847,7 @@ const FEATURED_PIANOS_DETAILED: FeaturedPianoDetailed[] = [
       '185cm (6\'2") grand with premium spruce soundboard',
       'Individually numbered and certified'
     ],
-    imageUrl: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/012.jpg',
+    imageUrl: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/024.jpg',
     ctaText: 'Explore Crystal Grand',
     ctaLink: '/products/cr-45',
     theme: 'crystal',
@@ -780,7 +865,7 @@ const FEATURED_PIANOS_DETAILED: FeaturedPianoDetailed[] = [
       'Silent practice with authentic acoustic touch',
       'Bluetooth audio streaming and recording'
     ],
-    imageUrl: '/images/placeholders/piano-hybrid.jpg',
+    imageUrl: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/DSC_1820_sRGB.jpg',
     ctaText: 'Experience Novus Technology',
     ctaLink: '/products/novus-series',
     theme: 'tech',
@@ -815,6 +900,7 @@ export default function PianoShowcaseDetailed({
   subtitle = 'From crystal-clear transparency to revolutionary hybrid technology, experience the most innovative pianos ever created. Each one pushes the boundaries of what a piano can be.'
 }: PianoShowcaseDetailedProps) {
   const [isTitleVisible, setIsTitleVisible] = useState(false)
+  const [isIntroExpanded, setIsIntroExpanded] = useState(false)
   const titleRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -852,14 +938,58 @@ export default function PianoShowcaseDetailed({
             {title}
           </motion.h2>
 
-          <motion.p
-            initial={{ opacity: 0, y: 40 }}
-            animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-            transition={{ duration: 1, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-            className="text-xl md:text-2xl lg:text-3xl font-light leading-relaxed text-zinc-300 max-w-5xl mx-auto drop-shadow-lg"
+          {/* Expandable Intro Text */}
+          <motion.div
+            initial={false}
+            animate={{
+              height: isIntroExpanded ? 'auto' : 0,
+              opacity: isIntroExpanded ? 1 : 0
+            }}
+            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+            className="overflow-hidden"
           >
-            {subtitle}
-          </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 40 }}
+              animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+              transition={{ duration: 1, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+              className="text-xl md:text-2xl lg:text-3xl font-light leading-relaxed text-zinc-300 max-w-5xl mx-auto drop-shadow-lg mb-8"
+            >
+              {subtitle}
+            </motion.p>
+          </motion.div>
+
+          {/* Learn More Button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+          >
+            <button
+              onClick={() => setIsIntroExpanded(!isIntroExpanded)}
+              className={cn(
+                "inline-flex items-center gap-3 px-8 py-4 rounded-full",
+                "bg-gradient-to-r from-white/10 to-white/5",
+                "border-2 border-white/30 hover:border-white/50",
+                "text-white hover:text-white",
+                "backdrop-blur-md transition-all duration-500",
+                "hover:scale-105 shadow-xl hover:shadow-white/20",
+                "transform-gpu"
+              )}
+            >
+              <span className="font-light text-lg">{isIntroExpanded ? 'Show Less' : 'Learn More'}</span>
+              <svg
+                className={cn(
+                  "w-5 h-5 transition-transform duration-500",
+                  isIntroExpanded ? "rotate-90" : ""
+                )}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </button>
+          </motion.div>
         </div>
 
         {/* Featured Pianos - Full-width hero cards */}

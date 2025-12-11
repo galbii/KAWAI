@@ -3,6 +3,7 @@
 /**
  * NAMM 2026 Hero Section - Premium Minimal Design
  * Full viewport hero with continuous horizontal scrolling background
+ * Optimized for mobile performance with CSS animations
  */
 
 import { useState, useEffect } from 'react'
@@ -20,6 +21,13 @@ const HERO_IMAGES = [
   '/images/namm/general/018.jpg',
 ] as const
 
+// Mobile-optimized subset (fewer images for better performance)
+const HERO_IMAGES_MOBILE = [
+  '/images/namm/general/TK7_7390.jpg',
+  '/images/namm/general/_MG_7325.jpg',
+  '/images/namm/general/018.jpg',
+] as const
+
 // NAMM logo variants for cycling - defined outside component to prevent stale closures
 const NAMM_LOGOS = [
   '/images/namm/NS_Logo_White.png',
@@ -29,8 +37,6 @@ const NAMM_LOGOS = [
 interface HeroSectionProps {
   /** Additional CSS classes */
   className?: string
-  /** Scroll speed in pixels per second */
-  scrollSpeed?: number
 }
 
 /**
@@ -40,22 +46,33 @@ interface HeroSectionProps {
  * - Continuous horizontal scrolling background of piano images
  * - Centered dual-logo composition (Kawai + NAMM)
  * - Minimal, elegant typography
- * - Dark gradient overlay for sophistication
  * - Apple-like premium aesthetic
  * - Fully responsive and accessible
  * - Respects prefers-reduced-motion
+ * - Optimized CSS animations for mobile performance
  *
  * Design Philosophy:
  * - Less is more - let the brand and imagery speak
  * - Premium luxury aesthetic
  * - Focus on visual impact over information density
+ * - Performance-first approach for mobile devices
  */
 export default function HeroSection({
   className,
-  scrollSpeed = 30, // pixels per second
 }: HeroSectionProps) {
   const reducedMotion = prefersReducedMotion()
   const [nammLogoIndex, setNammLogoIndex] = useState(0)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Cycle NAMM logo every 4 seconds with smooth fade
   useEffect(() => {
@@ -81,6 +98,11 @@ export default function HeroSection({
     }
   }
 
+  // Select images based on viewport
+  const imagesToUse = isMobile ? HERO_IMAGES_MOBILE : HERO_IMAGES
+  const imageWidth = isMobile ? 400 : 800
+  const imageQuality = isMobile ? 75 : 90
+
   return (
     <section
       className={cn(
@@ -90,80 +112,80 @@ export default function HeroSection({
         className
       )}
     >
+      {/* CSS Keyframes for smooth scrolling */}
+      <style jsx>{`
+        @keyframes scroll-desktop {
+          0% {
+            transform: translate3d(0, 0, 0);
+          }
+          100% {
+            transform: translate3d(-4000px, 0, 0);
+          }
+        }
+        @keyframes scroll-mobile {
+          0% {
+            transform: translate3d(0, 0, 0);
+          }
+          100% {
+            transform: translate3d(-1200px, 0, 0);
+          }
+        }
+        .hero-scroll-container {
+          will-change: transform;
+          animation: ${isMobile ? 'scroll-mobile' : 'scroll-desktop'} ${isMobile ? '30s' : '60s'} linear infinite;
+        }
+        .hero-scroll-container.paused {
+          animation-play-state: paused;
+        }
+      `}</style>
+
       {/* Continuous Scrolling Background */}
       <div className="absolute inset-0 z-0">
         <div className="relative w-full h-full overflow-hidden">
           {/* Scrolling container with duplicated images for seamless loop */}
-          <motion.div
-            className="absolute inset-0 flex"
-            animate={
-              reducedMotion
-                ? {}
-                : {
-                    x: [0, -4800], // Move left by total width of image set (800px * 6 images)
-                  }
-            }
-            transition={{
-              duration: 100, // Slow, smooth scroll
-              repeat: Infinity,
-              ease: 'linear',
-            }}
+          <div
+            className={cn(
+              'absolute inset-0 flex hero-scroll-container',
+              reducedMotion && 'paused'
+            )}
           >
             {/* First set of images */}
-            {HERO_IMAGES.map((src, index) => (
+            {imagesToUse.map((src, index) => (
               <div
                 key={`set1-${index}`}
-                className="relative h-full flex-shrink-0 w-[800px]"
+                className="relative h-full flex-shrink-0"
+                style={{ width: `${imageWidth}px` }}
               >
                 <Image
                   src={src}
                   alt=""
                   fill
                   priority={index === 0}
-                  quality={90}
+                  quality={imageQuality}
                   className="object-cover"
-                  sizes="800px"
+                  sizes={`${imageWidth}px`}
                 />
               </div>
             ))}
             {/* Duplicate set for seamless loop */}
-            {HERO_IMAGES.map((src, index) => (
+            {imagesToUse.map((src, index) => (
               <div
                 key={`set2-${index}`}
-                className="relative h-full flex-shrink-0 w-[800px]"
+                className="relative h-full flex-shrink-0"
+                style={{ width: `${imageWidth}px` }}
               >
                 <Image
                   src={src}
                   alt=""
+                  quality={imageQuality}
                   fill
-                  quality={90}
                   className="object-cover"
-                  sizes="800px"
+                  sizes={`${imageWidth}px`}
                 />
               </div>
             ))}
-          </motion.div>
+          </div>
         </div>
-
-        {/* HERALBONY Artistic Design - Vibrant overlays */}
-        {/* Base gradient overlay maintaining sophistication */}
-        <div className="absolute inset-0 bg-gradient-to-b from-kawai-black/40 via-purple-900/30 to-kawai-black/60" />
-
-        {/* Color splash effects - HERALBONY inspired */}
-        <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-radial from-yellow-500/15 via-orange-500/10 to-transparent blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-gradient-radial from-cyan-500/15 via-blue-500/10 to-transparent blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2/3 h-2/3 bg-gradient-radial from-fuchsia-500/10 via-transparent to-transparent blur-3xl" />
-
-        {/* Paint splatter pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.04]">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'radial-gradient(circle at 20% 30%, white 2px, transparent 2px), radial-gradient(circle at 80% 70%, white 3px, transparent 3px), radial-gradient(circle at 60% 50%, white 1.5px, transparent 1.5px)',
-            backgroundSize: '100px 100px, 120px 120px, 80px 80px'
-          }} />
-        </div>
-
-        {/* Final dark gradient for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/60 via-transparent to-transparent" />
       </div>
 
       {/* Main Content - Centered Composition */}
@@ -256,8 +278,7 @@ export default function HeroSection({
           >
             <button
               onClick={scrollToNextSection}
-              className="px-8 py-3 md:px-10 md:py-4 bg-white text-kawai-black text-base md:text-lg font-semibold rounded-md
-                         hover:bg-kawai-pearl transition-all duration-300 hover:scale-105 shadow-lg"
+              className="px-8 py-3 md:px-10 md:py-4 bg-white text-kawai-black text-base md:text-lg font-semibold rounded-md hover:bg-kawai-pearl transition-all duration-300 hover:scale-105 shadow-lg"
             >
               Learn More
             </button>
@@ -268,8 +289,7 @@ export default function HeroSection({
                   lineup.scrollIntoView({ behavior: 'smooth', block: 'start' })
                 }
               }}
-              className="px-8 py-3 md:px-10 md:py-4 bg-transparent text-white text-base md:text-lg font-semibold rounded-md
-                         border-2 border-white hover:bg-white hover:text-kawai-black transition-all duration-300 hover:scale-105"
+              className="px-8 py-3 md:px-10 md:py-4 bg-transparent text-white text-base md:text-lg font-semibold rounded-md border-2 border-white hover:bg-white hover:text-kawai-black transition-all duration-300 hover:scale-105"
             >
               View Pianos
             </button>

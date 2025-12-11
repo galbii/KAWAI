@@ -15,6 +15,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import PerformanceCard from './performances/PerformanceCard'
 import { DAYS_SCHEDULE, PERFORMANCE_KEYWORDS } from './performances/performance-data'
@@ -126,11 +127,29 @@ export default function ArtistLineupSection({ className }: ArtistLineupSectionPr
             initial={{ opacity: 0, y: 30 }}
             animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-lg md:text-xl font-light leading-relaxed text-[#5A5550] max-w-3xl mx-auto"
+            className="text-lg md:text-xl font-light leading-relaxed text-[#5A5550] max-w-3xl mx-auto mb-8"
           >
             Experience live piano artistry from world-class musicians at NAMM 2026.
             Free performances daily at the Kawai booth in Anaheim Convention Center.
           </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="flex justify-center px-4"
+          >
+            <div className="relative w-full max-w-2xl h-48">
+              <Image
+                src="https://pub-486ee03121a24ede8b51409434e22709.r2.dev/homepage/NS26_Badges.png"
+                alt="NAMM 2026 Official Badges"
+                fill
+                className="object-contain"
+                sizes="(max-width: 768px) 100vw, 672px"
+                unoptimized
+              />
+            </div>
+          </motion.div>
         </div>
 
         {/* Mobile: Tab Navigation */}
