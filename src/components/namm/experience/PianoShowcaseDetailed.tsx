@@ -129,10 +129,10 @@ function CrystalGrandShowcase({ piano, index }: { piano: FeaturedPianoDetailed; 
               </div>
             )}
 
-            <h3 className="text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-5 tracking-tight leading-none drop-shadow-2xl">
+            <h3 className="text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-5 tracking-tight leading-none drop-shadow-2xl" style={{ textShadow: '0 4px 12px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.6)' }}>
               {piano.name}
             </h3>
-            <p className="text-2xl lg:text-3xl xl:text-4xl font-light text-cyan-50 drop-shadow-lg">
+            <p className="text-2xl lg:text-3xl xl:text-4xl font-light text-cyan-50 drop-shadow-lg" style={{ textShadow: '0 2px 8px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.5)' }}>
               {piano.tagline}
             </p>
           </motion.div>
@@ -502,37 +502,30 @@ function TechHybridShowcase({ piano, index }: { piano: FeaturedPianoDetailed; in
         <div className="absolute top-0 right-0 w-2/3 h-2/3 bg-gradient-radial from-emerald-500/20 via-teal-500/10 to-transparent blur-3xl" />
         <div className="absolute bottom-0 left-0 w-2/3 h-2/3 bg-gradient-radial from-teal-500/20 via-emerald-500/10 to-transparent blur-3xl" />
 
-        {/* Novus logo overlay - positioned on the right */}
-        <div className="absolute top-8 right-8 z-10">
-          <Image
-            src="https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/Novus_Hybrid%20Piano_NV5_logo_black.png"
-            alt="Novus Hybrid Piano"
-            width={200}
-            height={100}
-            className="w-32 lg:w-48 h-auto drop-shadow-2xl"
-          />
-        </div>
-
-        {/* Content - Centered overlay */}
-        <div className="relative z-10 flex flex-col items-center justify-center min-h-[700px] lg:min-h-[800px] px-10 lg:px-20 py-20">
-          {/* Main content - centered */}
+        {/* Content - Top-aligned overlay */}
+        <div className="relative z-10 flex flex-col items-center justify-start min-h-[700px] lg:min-h-[800px] px-10 lg:px-20 pt-24 pb-20">
+          {/* Main content - top-aligned */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
             transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
             className="text-center space-y-8 max-w-5xl"
           >
-            {piano.badge && (
-              <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/40 backdrop-blur-md shadow-lg">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-pulse shadow-lg shadow-emerald-400/50" />
-                <span className="text-xs font-medium tracking-widest uppercase text-black drop-shadow-sm">{piano.badge}</span>
-              </div>
-            )}
+            {/* Novus Logo - Above Text */}
+            <div className="mb-8">
+              <Image
+                src="https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/Novus_Hybrid%20Piano_NV5_logo_black.png"
+                alt="Novus Hybrid Piano"
+                width={500}
+                height={250}
+                className="w-64 lg:w-80 xl:w-96 h-auto mx-auto drop-shadow-2xl"
+              />
+            </div>
 
-            <h3 className="text-5xl lg:text-6xl xl:text-7xl font-bold text-black mb-5 tracking-tight leading-none drop-shadow-2xl">
+            <h3 className="text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-5 tracking-tight leading-none drop-shadow-2xl" style={{ textShadow: '0 4px 12px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.6)' }}>
               {piano.name}
             </h3>
-            <p className="text-2xl lg:text-3xl xl:text-4xl font-light text-black drop-shadow-2xl">
+            <p className="text-2xl lg:text-3xl xl:text-4xl font-light text-white drop-shadow-2xl" style={{ textShadow: '0 2px 8px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.5)' }}>
               {piano.tagline}
             </p>
           </motion.div>
@@ -549,8 +542,8 @@ function TechHybridShowcase({ piano, index }: { piano: FeaturedPianoDetailed; in
               className={cn(
                 "inline-flex items-center gap-3 px-10 py-5 rounded-full",
                 "bg-gradient-to-r from-white/10 to-white/5",
-                "border-2 border-black/30 hover:border-black/50",
-                "text-black hover:text-black",
+                "border-2 border-white/30 hover:border-white/50",
+                "text-white hover:text-white",
                 "backdrop-blur-md transition-all duration-500",
                 "group/btn hover:scale-110 shadow-2xl hover:shadow-emerald-500/50",
                 "transform-gpu"
@@ -700,29 +693,30 @@ function CraftsmanshipShowcase({ piano, index }: { piano: FeaturedPianoDetailed;
         {/* Mysterious glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-gradient-radial from-amber-600/25 via-transparent to-transparent blur-3xl" />
 
-        <div className="relative z-10 flex flex-col items-center justify-center min-h-[600px] lg:min-h-[700px] px-10 lg:px-20 py-20">
-          {/* Main content - centered */}
+        <div className="relative z-10 flex flex-col justify-between items-center text-center min-h-[600px] lg:min-h-[700px] px-10 lg:px-20 py-20 pb-8">
+          {/* Main title - upper area */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
-            transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-            className="text-center space-y-8 max-w-5xl"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="flex-1 flex items-center justify-center"
           >
-            <h3 className="text-6xl lg:text-7xl xl:text-8xl font-bold text-white mb-8 tracking-tight leading-none drop-shadow-2xl">
+            <h3 className="text-6xl lg:text-7xl xl:text-8xl font-bold text-white tracking-tight leading-none drop-shadow-2xl max-w-5xl" style={{ textShadow: '0 4px 12px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.6)' }}>
               {piano.name}
             </h3>
-            <p className="text-3xl lg:text-4xl xl:text-5xl font-light text-black drop-shadow-xl leading-relaxed">
-              {piano.tagline}
-            </p>
           </motion.div>
 
-          {/* CTA Button */}
+          {/* Tagline and CTA - bottom area */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="mt-12"
+            className="space-y-10 max-w-5xl"
           >
+            <p className="text-3xl lg:text-4xl xl:text-5xl font-light text-black drop-shadow-xl leading-relaxed" style={{ textShadow: '0 2px 8px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.5)' }}>
+              {piano.tagline}
+            </p>
+
             <button
               onClick={() => setIsExpanded(!isExpanded)}
               className={cn(
@@ -855,7 +849,7 @@ const FEATURED_PIANOS_DETAILED: FeaturedPianoDetailed[] = [
   },
   {
     id: 'novus',
-    name: 'Novus NV6 & NV12',
+    name: 'NV6 & NV12',
     tagline: 'Feel Acoustic. Play Silent.',
     description: 'Revolutionary hybrid pianos featuring real acoustic piano actions (not simulations) with digital versatility. The NV12 introduces groundbreaking PentaDrive technology—transducers energizing a full-size soundboard instead of traditional speakers.',
     highlights: [
