@@ -27,6 +27,7 @@ export interface Performance {
     youtube?: string
     spotify?: string
     facebook?: string
+    tiktok?: string
   }
 }
 
@@ -59,9 +60,10 @@ export const PERFORMANCES: Performance[] = [
     artistBio: 'Renowned classical pianist with performances at Carnegie Hall and international concert venues. Known for interpretations of Chopin, Rachmaninoff, and contemporary composers. Faculty member at prestigious conservatory.',
     artistSlug: 'david-snyder',
     socialLinks: {
-      website: 'https://example.com/davidsnyder', // Placeholder
-      instagram: 'https://instagram.com/davidsnyder', // Placeholder
-      youtube: 'https://youtube.com/@davidsnyder' // Placeholder
+      website: 'https://www.thepianosaysitbetter.com/',
+      instagram: 'https://www.instagram.com/david_msnyder',
+      youtube: 'https://www.youtube.com/channel/UCgu8vTd8CLpeQnWKBdLN_aw',
+      tiktok: 'https://www.tiktok.com/@david_msnyder'
     }
   },
 
@@ -77,13 +79,11 @@ export const PERFORMANCES: Performance[] = [
     startDateTime: '2026-01-23T11:00:00-08:00',
     endDateTime: '2026-01-23T11:45:00-08:00',
     genre: 'Modern Classical',
-    artistImage: '/images/artists/namm-2026/sergio-de-miguel.jpg', // Placeholder
+    artistImage: '/images/artists/namm-2026/sergio-de-miguel.jpg',
     artistBio: 'Internationally acclaimed pianist bridging classical tradition with modern innovation. Performed at prestigious festivals worldwide. Known for dynamic interpretations that push boundaries while honoring musical heritage.',
     artistSlug: 'sergio-de-miguel',
     socialLinks: {
-      website: 'https://example.com/sergiomiguel', // Placeholder
-      facebook: 'https://facebook.com/sergiomiguel', // Placeholder
-      youtube: 'https://youtube.com/@sergiomiguel' // Placeholder
+      website: 'https://sergiodemiguelmusic.com/'
     }
   },
   {
@@ -97,13 +97,14 @@ export const PERFORMANCES: Performance[] = [
     startDateTime: '2026-01-23T15:30:00-08:00',
     endDateTime: '2026-01-23T16:15:00-08:00',
     genre: 'Romantic',
-    artistImage: '/images/artists/namm-2026/artur-zakiyan.jpg', // Placeholder
+    artistImage: '/images/artists/namm-2026/artur-zakiyan.jpg',
     artistBio: 'Virtuoso pianist specializing in Romantic era masterworks. Winner of multiple international competitions with performances across Europe, Asia, and North America. Brings passionate intensity to every performance.',
     artistSlug: 'artur-zakiyan',
     socialLinks: {
-      website: 'https://example.com/arturzakiyan', // Placeholder
-      instagram: 'https://instagram.com/arturzakiyan', // Placeholder
-      youtube: 'https://youtube.com/@arturzakiyan' // Placeholder
+      website: 'https://www.arturzakiyan.com/',
+      instagram: 'https://www.instagram.com/arturzakiyan',
+      youtube: 'https://www.youtube.com/@artur_zakiyan',
+      tiktok: 'https://www.tiktok.com/@artur_zakiyan'
     }
   },
 
@@ -119,33 +120,29 @@ export const PERFORMANCES: Performance[] = [
     startDateTime: '2026-01-24T11:00:00-08:00',
     endDateTime: '2026-01-24T11:45:00-08:00',
     genre: 'Jazz',
-    artistImage: '/images/artists/namm-2026/sergio-de-miguel.jpg', // Same artist, different performance
+    artistImage: '/images/artists/namm-2026/sergio-de-miguel.jpg',
     artistBio: 'Internationally acclaimed pianist bridging classical tradition with modern innovation. Performed at prestigious festivals worldwide. Known for dynamic interpretations that push boundaries while honoring musical heritage.',
     artistSlug: 'sergio-de-miguel',
     socialLinks: {
-      website: 'https://example.com/sergiomiguel', // Placeholder
-      facebook: 'https://facebook.com/sergiomiguel', // Placeholder
-      youtube: 'https://youtube.com/@sergiomiguel' // Placeholder
+      website: 'https://sergiodemiguelmusic.com/'
     }
   },
   {
     id: 'sat-2',
     day: 'saturday',
     date: 'Saturday, January 24, 2026',
-    time: '3:30 PM', // CORRECTED from original data (was incorrectly marked as "AM")
+    time: '3:30 PM',
     artistName: 'Alec Van Khajadourian',
     performanceType: 'Piano Solo',
     description: 'Closing performance featuring powerful solo piano works that demonstrate the versatility of Kawai pianos',
     startDateTime: '2026-01-24T15:30:00-08:00',
     endDateTime: '2026-01-24T16:15:00-08:00',
     genre: 'Contemporary',
-    artistImage: '/images/artists/namm-2026/alec-van-khajadourian.jpg', // Placeholder
+    artistImage: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/alec/IMG_4838.JPG',
     artistBio: 'Electrifying contemporary pianist known for bold, boundary-pushing performances. Festival favorite with commanding stage presence and technical brilliance. Perfect finale artist bringing explosive energy to close NAMM 2026.',
     artistSlug: 'alec-van-khajadourian',
     socialLinks: {
-      website: 'https://example.com/alecvk', // Placeholder
-      instagram: 'https://instagram.com/alecvk', // Placeholder
-      spotify: 'https://open.spotify.com/artist/alecvk' // Placeholder
+      instagram: 'https://www.instagram.com/alecvanmusic/'
     }
   }
 ]

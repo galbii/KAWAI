@@ -34,10 +34,10 @@ interface ArtistBio {
 }
 
 const SATO_BIO: ArtistBio = {
-  name: 'Sato',
+  name: 'SATO',
   imageUrl: '/images/namm/sato.jpg',
-  bio: 'Sato is a talented artist whose vibrant, energetic artwork transforms everyday objects into extraordinary experiences. Working through HERALBONY, a Japanese social enterprise that supports artists with intellectual disabilities, Sato\'s distinctive style brings joy and color to the world. Their collaboration with Kawai represents a groundbreaking fusion of visual art and musical craftsmanship.',
-  artwork: 'Radiant Energy - A celebration of color, movement, and creative expression'
+  bio: 'Sato is a visionary artist whose vibrant, energetic artwork transforms everyday objects into extraordinary experiences. Working through HERALBONY, a Japanese creative company that champions bold artistic perspectives, Sato\'s distinctive style radiates joy and color to the world. Their collaboration with Kawai represents a groundbreaking fusion of visual art and musical craftsmanship.',
+  artwork: ''
 }
 
 /**
@@ -55,6 +55,7 @@ interface PianoShowcaseDetailedProps {
 function CrystalGrandShowcase({ piano, index }: { piano: FeaturedPianoDetailed; index: number }) {
   const [isVisible, setIsVisible] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -70,11 +71,12 @@ function CrystalGrandShowcase({ piano, index }: { piano: FeaturedPianoDetailed; 
 
   return (
     <motion.div
+      id={piano.id}
       ref={cardRef}
       initial={{ opacity: 0, y: 80 }}
       animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 80 }}
       transition={{ duration: 1, delay: index * 0.15, ease: [0.25, 0.1, 0.25, 1] }}
-      className="group relative overflow-hidden rounded-3xl shadow-2xl"
+      className="group relative overflow-hidden rounded-3xl shadow-2xl scroll-mt-20"
     >
       {/* Full-bleed image background */}
       <div className="relative min-h-[700px] lg:min-h-[800px]">
@@ -185,11 +187,24 @@ function CrystalGrandShowcase({ piano, index }: { piano: FeaturedPianoDetailed; 
       >
         <div className="p-10 lg:p-20 border-t border-cyan-400/20">
           <div className="max-w-5xl mx-auto space-y-10">
-            {/* Description */}
-            <div className="text-center space-y-6">
-              <p className="text-2xl lg:text-3xl text-cyan-50 leading-relaxed font-light drop-shadow-lg">
-                {piano.description}
+            {/* Hook Line */}
+            <div className="text-center">
+              <p className="text-3xl lg:text-4xl font-light text-cyan-200 leading-tight drop-shadow-lg italic">
+                Witness the soul of a piano—every hammer, every string, every moment of musical artistry made visible.
               </p>
+            </div>
+
+            {/* Description with Read More */}
+            <div className="text-center space-y-4">
+              <p className="text-xl lg:text-2xl text-cyan-50 leading-relaxed font-light drop-shadow-lg">
+                {isDescriptionExpanded ? piano.description : `${piano.description.slice(0, 180)}...`}
+              </p>
+              <button
+                onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                className="text-cyan-300 hover:text-cyan-100 text-lg font-medium transition-colors duration-200 underline decoration-cyan-400/50 underline-offset-4"
+              >
+                {isDescriptionExpanded ? 'Show Less' : 'Read More'}
+              </button>
             </div>
 
             {/* Highlights */}
@@ -205,27 +220,6 @@ function CrystalGrandShowcase({ piano, index }: { piano: FeaturedPianoDetailed; 
                   <span className="text-lg lg:text-xl font-light leading-relaxed drop-shadow-sm">{highlight}</span>
                 </div>
               ))}
-            </div>
-
-            {/* CTA */}
-            <div className="text-center pt-6">
-              <Link
-                href={piano.ctaLink}
-                className={cn(
-                  "inline-flex items-center gap-4 px-12 py-6 rounded-full",
-                  "bg-gradient-to-r from-cyan-500/20 to-blue-500/20",
-                  "border-2 border-cyan-400/50 hover:border-cyan-300/70",
-                  "text-cyan-50 hover:text-white text-xl font-semibold",
-                  "backdrop-blur-md transition-all duration-500",
-                  "hover:scale-110 hover:shadow-2xl hover:shadow-cyan-500/40",
-                  "transform-gpu"
-                )}
-              >
-                <span>View Full Details</span>
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </Link>
             </div>
           </div>
         </div>
@@ -257,11 +251,12 @@ function ArtisticShowcase({ piano, index }: { piano: FeaturedPianoDetailed; inde
 
   return (
     <motion.div
+      id={piano.id}
       ref={cardRef}
       initial={{ opacity: 0, y: 60 }}
       animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }}
       transition={{ duration: 1.2, delay: index * 0.15, ease: [0.25, 0.1, 0.25, 1] }}
-      className="group relative overflow-hidden rounded-3xl shadow-2xl"
+      className="group relative overflow-hidden rounded-3xl shadow-2xl scroll-mt-20"
     >
       {/* Full-bleed image background */}
       <div className="relative min-h-[700px] lg:min-h-[800px]">
@@ -406,14 +401,10 @@ function ArtisticShowcase({ piano, index }: { piano: FeaturedPianoDetailed; inde
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-purple-950/90 via-purple-950/40 to-transparent" />
               <div className="absolute bottom-8 left-8 right-8">
                 <h4 className="text-4xl lg:text-5xl font-bold text-white mb-3 drop-shadow-2xl">
                   {SATO_BIO.name}
                 </h4>
-                <p className="text-xl lg:text-2xl text-fuchsia-100 font-light drop-shadow-lg">
-                  {SATO_BIO.artwork}
-                </p>
               </div>
             </div>
 
@@ -428,25 +419,6 @@ function ArtisticShowcase({ piano, index }: { piano: FeaturedPianoDetailed; inde
               <p className="text-xl lg:text-2xl text-purple-100 leading-relaxed font-light drop-shadow-md">
                 {SATO_BIO.bio}
               </p>
-              <div className="pt-8">
-                <Link
-                  href="/products/heralbony-sk3"
-                  className={cn(
-                    "inline-flex items-center gap-4 px-12 py-6 rounded-full",
-                    "bg-gradient-to-r from-fuchsia-500/20 to-pink-500/20",
-                    "border-2 border-fuchsia-400/50 hover:border-fuchsia-300/70",
-                    "text-fuchsia-50 hover:text-white text-xl font-semibold",
-                    "backdrop-blur-md transition-all duration-500",
-                    "hover:scale-110 hover:shadow-2xl hover:shadow-fuchsia-500/40",
-                    "transform-gpu"
-                  )}
-                >
-                  <span>View Full Details</span>
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </Link>
-              </div>
             </div>
           </div>
         </div>
@@ -463,6 +435,7 @@ function ArtisticShowcase({ piano, index }: { piano: FeaturedPianoDetailed; inde
 function TechHybridShowcase({ piano, index }: { piano: FeaturedPianoDetailed; index: number }) {
   const [isVisible, setIsVisible] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -478,11 +451,12 @@ function TechHybridShowcase({ piano, index }: { piano: FeaturedPianoDetailed; in
 
   return (
     <motion.div
+      id={piano.id}
       ref={cardRef}
       initial={{ opacity: 0, y: 80 }}
       animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 80 }}
       transition={{ duration: 1, delay: index * 0.15, ease: [0.25, 0.1, 0.25, 1] }}
-      className="group relative overflow-hidden rounded-3xl shadow-2xl"
+      className="group relative overflow-hidden rounded-3xl shadow-2xl scroll-mt-20"
     >
       {/* Full-bleed image background */}
       <div className="relative min-h-[700px] lg:min-h-[800px]">
@@ -502,26 +476,31 @@ function TechHybridShowcase({ piano, index }: { piano: FeaturedPianoDetailed; in
         <div className="absolute top-0 right-0 w-2/3 h-2/3 bg-gradient-radial from-emerald-500/20 via-teal-500/10 to-transparent blur-3xl" />
         <div className="absolute bottom-0 left-0 w-2/3 h-2/3 bg-gradient-radial from-teal-500/20 via-emerald-500/10 to-transparent blur-3xl" />
 
-        {/* Content - Top-aligned overlay */}
-        <div className="relative z-10 flex flex-col items-center justify-start min-h-[700px] lg:min-h-[800px] px-10 lg:px-20 pt-24 pb-20">
-          {/* Main content - top-aligned */}
+        {/* Novus Logo - Top Left */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={isVisible ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="absolute top-8 left-8 lg:top-12 lg:left-12 z-20"
+        >
+          <Image
+            src="https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/Novus_Hybrid%20Piano_NV5_logo_black.png"
+            alt="Novus Hybrid Piano"
+            width={500}
+            height={250}
+            className="w-32 lg:w-40 xl:w-48 h-auto drop-shadow-2xl"
+          />
+        </motion.div>
+
+        {/* Content - Centered overlay */}
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-[700px] lg:min-h-[800px] px-10 lg:px-20 py-20">
+          {/* Main content - centered */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
             transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
             className="text-center space-y-8 max-w-5xl"
           >
-            {/* Novus Logo - Above Text */}
-            <div className="mb-8">
-              <Image
-                src="https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/Novus_Hybrid%20Piano_NV5_logo_black.png"
-                alt="Novus Hybrid Piano"
-                width={500}
-                height={250}
-                className="w-64 lg:w-80 xl:w-96 h-auto mx-auto drop-shadow-2xl"
-              />
-            </div>
-
             <h3 className="text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-5 tracking-tight leading-none drop-shadow-2xl" style={{ textShadow: '0 4px 12px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.6)' }}>
               {piano.name}
             </h3>
@@ -578,49 +557,57 @@ function TechHybridShowcase({ piano, index }: { piano: FeaturedPianoDetailed; in
       >
         <div className="p-10 lg:p-20 border-t border-emerald-400/20">
           <div className="max-w-5xl mx-auto space-y-10">
-            {/* Description */}
-            <div className="text-center space-y-6">
-              <p className="text-2xl lg:text-3xl text-emerald-50 leading-relaxed font-light drop-shadow-lg">
-                {piano.description}
+            {/* Hook Line */}
+            <div className="text-center">
+              <p className="text-3xl lg:text-4xl font-light text-emerald-200 leading-tight drop-shadow-lg italic">
+                The world's first hybrid piano to eliminate speakers—sound radiates naturally through a living, breathing soundboard.
               </p>
             </div>
 
-            {/* Highlights */}
-            <div className="grid md:grid-cols-2 gap-6">
-              {piano.highlights.map((highlight, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-start gap-4 text-slate-100"
-                >
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-400/30 to-teal-500/30 flex items-center justify-center mt-1 flex-shrink-0 border border-emerald-400/40 shadow-lg shadow-emerald-500/20">
-                    <svg className="w-3.5 h-3.5 text-emerald-300" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <span className="text-lg lg:text-xl font-light leading-relaxed drop-shadow-sm">{highlight}</span>
-                </div>
-              ))}
+            {/* Description with Read More */}
+            <div className="text-center space-y-4">
+              <p className="text-xl lg:text-2xl text-emerald-50 leading-relaxed font-light drop-shadow-lg">
+                {isDescriptionExpanded ? piano.description : `${piano.description.slice(0, 200)}...`}
+              </p>
+              <button
+                onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                className="text-emerald-300 hover:text-emerald-100 text-lg font-medium transition-colors duration-200 underline decoration-emerald-400/50 underline-offset-4"
+              >
+                {isDescriptionExpanded ? 'Show Less' : 'Read More'}
+              </button>
             </div>
 
-            {/* CTA */}
-            <div className="text-center pt-6">
-              <Link
-                href={piano.ctaLink}
-                className={cn(
-                  "inline-flex items-center gap-4 px-12 py-6 rounded-full",
-                  "bg-gradient-to-r from-emerald-500/20 to-teal-500/20",
-                  "border-2 border-emerald-400/50 hover:border-emerald-300/70",
-                  "text-emerald-50 hover:text-white text-xl font-semibold",
-                  "backdrop-blur-md transition-all duration-500",
-                  "hover:scale-110 hover:shadow-2xl hover:shadow-emerald-500/40",
-                  "transform-gpu"
-                )}
-              >
-                <span>View Full Details</span>
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </Link>
+            {/* Highlights */}
+            <div className="space-y-8">
+              {piano.highlights.map((highlight, idx) => {
+                // Check if this is a section header (starts and ends with **)
+                const isHeader = highlight.startsWith('**') && highlight.endsWith('**')
+                // Check if this is a spacer (empty string)
+                const isSpacer = highlight.trim() === ''
+
+                if (isSpacer) {
+                  return <div key={idx} className="h-4" />
+                }
+
+                if (isHeader) {
+                  return (
+                    <h4 key={idx} className="text-2xl lg:text-3xl font-semibold text-emerald-300 mt-8 first:mt-0 mb-4 tracking-wide">
+                      {highlight.replace(/\*\*/g, '')}
+                    </h4>
+                  )
+                }
+
+                return (
+                  <div key={idx} className="flex items-start gap-4 text-slate-100">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-400/30 to-teal-500/30 flex items-center justify-center mt-1 flex-shrink-0 border border-emerald-400/40 shadow-lg shadow-emerald-500/20">
+                      <svg className="w-3.5 h-3.5 text-emerald-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <span className="text-lg lg:text-xl font-light leading-relaxed drop-shadow-sm">{highlight}</span>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>
@@ -636,7 +623,6 @@ function TechHybridShowcase({ piano, index }: { piano: FeaturedPianoDetailed; in
  */
 function CraftsmanshipShowcase({ piano, index }: { piano: FeaturedPianoDetailed; index: number }) {
   const [isVisible, setIsVisible] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -659,14 +645,15 @@ function CraftsmanshipShowcase({ piano, index }: { piano: FeaturedPianoDetailed;
 
   return (
     <motion.div
+      id={piano.id}
       ref={cardRef}
       initial={{ opacity: 0, y: 80 }}
       animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 80 }}
       transition={{ duration: 1, delay: index * 0.15, ease: [0.25, 0.1, 0.25, 1] }}
-      className="group relative overflow-hidden rounded-3xl shadow-2xl"
+      className="group relative overflow-hidden rounded-3xl shadow-2xl scroll-mt-20"
     >
       {/* Mysterious dark background with cinematic video */}
-      <div className="relative min-h-[800px] bg-black p-10 lg:p-20">
+      <div className="relative min-h-[1000px] lg:min-h-[1200px] xl:min-h-[1400px] bg-black p-12 lg:p-24 xl:p-32">
         {/* Video background - Minimal overlay */}
         <div className="absolute inset-0 overflow-hidden">
           <video
@@ -693,7 +680,7 @@ function CraftsmanshipShowcase({ piano, index }: { piano: FeaturedPianoDetailed;
         {/* Mysterious glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-gradient-radial from-amber-600/25 via-transparent to-transparent blur-3xl" />
 
-        <div className="relative z-10 flex flex-col justify-between items-center text-center min-h-[600px] lg:min-h-[700px] px-10 lg:px-20 py-20 pb-8">
+        <div className="relative z-10 flex flex-col justify-between items-center text-center min-h-[900px] lg:min-h-[1100px] xl:min-h-[1300px] px-10 lg:px-20 py-24 lg:py-32 xl:py-40">
           {/* Main title - upper area */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -701,106 +688,24 @@ function CraftsmanshipShowcase({ piano, index }: { piano: FeaturedPianoDetailed;
             transition={{ duration: 0.8, delay: 0.3 }}
             className="flex-1 flex items-center justify-center"
           >
-            <h3 className="text-6xl lg:text-7xl xl:text-8xl font-bold text-white tracking-tight leading-none drop-shadow-2xl max-w-5xl" style={{ textShadow: '0 4px 12px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.6)' }}>
+            <h3 className="text-7xl lg:text-8xl xl:text-9xl font-bold text-white tracking-tight leading-none drop-shadow-2xl max-w-6xl" style={{ textShadow: '0 4px 12px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.6)' }}>
               {piano.name}
             </h3>
           </motion.div>
 
-          {/* Tagline and CTA - bottom area */}
+          {/* Tagline - bottom area */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="space-y-10 max-w-5xl"
+            className="max-w-6xl"
           >
-            <p className="text-3xl lg:text-4xl xl:text-5xl font-light text-black drop-shadow-xl leading-relaxed" style={{ textShadow: '0 2px 8px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.5)' }}>
+            <p className="text-4xl lg:text-5xl xl:text-6xl font-light text-black drop-shadow-xl leading-relaxed" style={{ textShadow: '0 2px 8px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.5)', fontFamily: '"Miller Banner Compressed", Georgia, serif' }}>
               {piano.tagline}
             </p>
-
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className={cn(
-                "inline-flex items-center gap-3 px-10 py-5 rounded-full",
-                "bg-black hover:bg-black",
-                "border-2 border-white/30 hover:border-white/50",
-                "text-white hover:text-white",
-                "backdrop-blur-md transition-all duration-500",
-                "group/btn hover:scale-110 hover:shadow-2xl hover:shadow-white/50",
-                "transform-gpu"
-              )}
-            >
-              <span className="font-light text-lg">{isExpanded ? 'Hide The Mystery' : 'Unveil The Mystery'}</span>
-              <svg
-                className={cn(
-                  "w-5 h-5 transition-transform duration-500",
-                  isExpanded ? "rotate-90" : "group-hover/btn:translate-x-2"
-                )}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </button>
           </motion.div>
         </div>
       </div>
-
-      {/* Expandable Mystery Section */}
-      <motion.div
-        initial={false}
-        animate={{
-          height: isExpanded ? 'auto' : 0,
-          opacity: isExpanded ? 1 : 0
-        }}
-        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-        className="overflow-hidden bg-black"
-      >
-        <div className="p-10 lg:p-20 border-t border-white/20">
-          <div className="max-w-5xl mx-auto space-y-10">
-            {/* Description */}
-            <div className="text-center space-y-6">
-              <p className="text-2xl lg:text-3xl text-white leading-relaxed font-light drop-shadow-lg">
-                {piano.description}
-              </p>
-            </div>
-
-            {/* Mysterious hints */}
-            <div className="space-y-6 max-w-2xl mx-auto">
-              {piano.highlights.map((highlight, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-center gap-4 text-white"
-                >
-                  <div className="w-2 h-2 rounded-full bg-white shadow-lg shadow-white/50" />
-                  <span className="text-lg lg:text-xl font-light tracking-wide drop-shadow-sm">{highlight}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* CTA */}
-            <div className="text-center pt-6">
-              <Link
-                href={piano.ctaLink}
-                className={cn(
-                  "inline-flex items-center gap-4 px-12 py-6 rounded-full",
-                  "bg-white/10 hover:bg-white/15",
-                  "border-2 border-white/30 hover:border-white/50",
-                  "text-white hover:text-white text-xl font-semibold",
-                  "backdrop-blur-md transition-all duration-500",
-                  "hover:scale-110 hover:shadow-2xl hover:shadow-white/40",
-                  "transform-gpu"
-                )}
-              >
-                <span>Learn More</span>
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </motion.div>
     </motion.div>
   )
 }
@@ -815,12 +720,10 @@ const FEATURED_PIANOS_DETAILED: FeaturedPianoDetailed[] = [
     id: 'heralbony',
     name: 'HERALBONY with Kawai',
     tagline: 'Where Music Radiates Color',
-    description: 'A bold artistic collaboration featuring vibrant artwork by artists with intellectual disabilities. This SK-3 concert grand transforms into a public art installation that challenges perceptions and celebrates inclusive creativity through sound and vision.',
+    description: 'A bold artistic collaboration celebrating unique creative vision. This SK-3 concert grand becomes a canvas for Sato\'s vibrant artwork, transforming into a public art installation that challenges preconceptions and reveals the extraordinary power of different perspectives through sound and vision.',
     highlights: [
-      'Vibrant original artwork by artist Sato',
-      'Social mission supporting artists with disabilities',
+      'Vibrant original artwork by visionary artist Sato',
       'Shigeru Kawai SK-3 concert grand base (186cm / 6\'1")',
-      'Interactive public art piano experience',
       'Limited edition with certificate of authenticity'
     ],
     imageUrl: '/images/namm/heralbony closeup.JPG',
@@ -832,43 +735,57 @@ const FEATURED_PIANOS_DETAILED: FeaturedPianoDetailed[] = [
   {
     id: 'cr45',
     name: 'CR-45 Crystal Grand',
-    tagline: 'The World\'s Most Exclusive Piano',
-    description: 'Only 3 units crafted per year worldwide. This ultra-rare transparent acrylic grand piano reveals the intricate inner workings of acoustic piano artistry—a stunning fusion of engineering precision and sculptural beauty.',
+    tagline: 'Not Just an Instrument—A Masterpiece',
+    description: 'A symbol of luxury and exclusivity—the CR-45\'s transparent acrylic body offers a rare glimpse into piano mechanics, revealing hammers and strings in motion. This 185cm (6\'1") masterpiece features Millennium III ABS-Carbon action, concert-length key buttons, NEOTEX™ key surfaces, and a solid spruce soundboard. Owning a CR-45 is not merely playing an instrument—it is felt, seen, and heard as a manifestation of unparalleled craftsmanship.',
     highlights: [
-      'Transparent acrylic construction with visible mechanics',
-      'Handcrafted in Shigeru Kawai Ryuyo factory',
-      'Concert-length key buttons for maximum energy transfer',
-      '185cm (6\'2") grand with premium spruce soundboard',
-      'Individually numbered and certified'
+      'Transparent acrylic reveals hammers & strings in motion',
+      'Millennium III Action with ABS-Carbon fiber technology',
+      'Concert-length key buttons & NEOTEX™ moisture-absorbing keys',
+      'Extended keysticks & vertically laminated bridge with solid maple cap',
+      'Ultra-slow "Soft Fall" system & stepless angle music stand',
+      '185cm (6\'1") with solid spruce soundboard & dual-duplex scaling'
     ],
     imageUrl: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/024.jpg',
     ctaText: 'Explore Crystal Grand',
     ctaLink: '/products/cr-45',
-    theme: 'crystal',
-    badge: 'Ultra Exclusive • 3 Per Year'
+    theme: 'crystal'
   },
   {
     id: 'novus',
     name: 'NV6 & NV12',
-    tagline: 'Feel Acoustic. Play Silent.',
-    description: 'Revolutionary hybrid pianos featuring real acoustic piano actions (not simulations) with digital versatility. The NV12 introduces groundbreaking PentaDrive technology—transducers energizing a full-size soundboard instead of traditional speakers.',
+    tagline: 'The Hybrid Reinvented. Acoustic Action. Acoustic Sound.',
+    description: 'Kawai\'s flagship hybrid series combines the expressive touch and nuanced response of real acoustic piano actions with modern digital versatility. The groundbreaking NV12 grand features the world\'s first PentaDrive speakerless soundboard system, while the NV6 upright delivers authentic performance in a space-conscious design. Both feature Millennium III Hybrid actions, SK-EX Rendering piano engine, and modern connectivity.',
     highlights: [
-      'Real Millennium III acoustic actions (upright & grand)',
-      'PentaDrive™ soundboard technology (NV12)',
-      'SK-EX Concert Grand multi-channel sampling',
-      'Silent practice with authentic acoustic touch',
-      'Bluetooth audio streaming and recording'
+      '**NV12 Grand Piano Hybrid**',
+      'Peerless Millennium III Hybrid grand piano keyboard action',
+      'Unique real grand piano damper mechanism',
+      'Groundbreaking PentaDrive speakerless soundboard system',
+      'SK-EX Rendering piano engine with Competition Grand sounds',
+      'Stunning grand-piano cabinet with 3-position topboard',
+      '',
+      '**NV6 Upright Piano Hybrid**',
+      'Superb Millennium III Hybrid upright piano keyboard action',
+      'Unique real upright piano damper mechanism',
+      'High-performance speaker system with wooden soundboard',
+      'Ultra-slim ebony polish cabinet with Soft Fall fallboard',
+      '',
+      '**Shared Features (Both Models)**',
+      'Bluetooth® MIDI and Audio v5 wireless connectivity',
+      'Large 5" LCD touchscreen display in cheekblock',
+      'USB audio interface with USB-C port & power delivery',
+      'Spatial Headphone Sound for enhanced depth and realism',
+      'Premium audio processing and amplification technologies'
     ],
     imageUrl: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/DSC_1820_sRGB.jpg',
     ctaText: 'Experience Novus Technology',
     ctaLink: '/products/novus-series',
     theme: 'tech',
-    badge: 'Revolutionary Hybrid'
+    badge: 'NEW 2025 • PentaDrive Technology'
   },
   {
     id: 'master-series',
     name: 'Something Extraordinary',
-    tagline: 'A New Chapter in Piano Craftsmanship',
+    tagline: 'Just You, the Sound, and the Moment.',
     description: 'We\'ve been working on something special. A new expression of artisanal excellence that redefines what\'s possible. Details will be revealed at NAMM 2026—this is your first glimpse.',
     highlights: [
       'Handcrafted by master artisans',
@@ -891,7 +808,7 @@ const FEATURED_PIANOS_DETAILED: FeaturedPianoDetailed[] = [
  */
 export default function PianoShowcaseDetailed({
   title = 'Pianos That Redefine Possibility',
-  subtitle = 'From crystal-clear transparency to revolutionary hybrid technology, experience the most innovative pianos ever created. Each one pushes the boundaries of what a piano can be.'
+  subtitle = ''
 }: PianoShowcaseDetailedProps) {
   const [isTitleVisible, setIsTitleVisible] = useState(false)
   const [isIntroExpanded, setIsIntroExpanded] = useState(false)
@@ -915,7 +832,7 @@ export default function PianoShowcaseDetailed({
   }, [])
 
   return (
-    <section className="py-32 lg:py-40 bg-black relative overflow-hidden">
+    <section id="pianos" className="py-32 lg:py-40 bg-black relative overflow-hidden scroll-mt-0">
       {/* Enhanced background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-zinc-950 via-black to-zinc-950" />
       <div className="absolute inset-0 bg-gradient-radial from-purple-950/20 via-transparent to-transparent" />
@@ -932,58 +849,62 @@ export default function PianoShowcaseDetailed({
             {title}
           </motion.h2>
 
-          {/* Expandable Intro Text */}
-          <motion.div
-            initial={false}
-            animate={{
-              height: isIntroExpanded ? 'auto' : 0,
-              opacity: isIntroExpanded ? 1 : 0
-            }}
-            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-            className="overflow-hidden"
-          >
-            <motion.p
-              initial={{ opacity: 0, y: 40 }}
-              animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-              transition={{ duration: 1, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-              className="text-xl md:text-2xl lg:text-3xl font-light leading-relaxed text-zinc-300 max-w-5xl mx-auto drop-shadow-lg mb-8"
-            >
-              {subtitle}
-            </motion.p>
-          </motion.div>
-
-          {/* Learn More Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          >
-            <button
-              onClick={() => setIsIntroExpanded(!isIntroExpanded)}
-              className={cn(
-                "inline-flex items-center gap-3 px-8 py-4 rounded-full",
-                "bg-gradient-to-r from-white/10 to-white/5",
-                "border-2 border-white/30 hover:border-white/50",
-                "text-white hover:text-white",
-                "backdrop-blur-md transition-all duration-500",
-                "hover:scale-105 shadow-xl hover:shadow-white/20",
-                "transform-gpu"
-              )}
-            >
-              <span className="font-light text-lg">{isIntroExpanded ? 'Show Less' : 'Learn More'}</span>
-              <svg
-                className={cn(
-                  "w-5 h-5 transition-transform duration-500",
-                  isIntroExpanded ? "rotate-90" : ""
-                )}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+          {/* Expandable Intro Text - Only show if subtitle exists */}
+          {subtitle && (
+            <>
+              <motion.div
+                initial={false}
+                animate={{
+                  height: isIntroExpanded ? 'auto' : 0,
+                  opacity: isIntroExpanded ? 1 : 0
+                }}
+                transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+                className="overflow-hidden"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </button>
-          </motion.div>
+                <motion.p
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+                  transition={{ duration: 1, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+                  className="text-xl md:text-2xl lg:text-3xl font-light leading-relaxed text-zinc-300 max-w-5xl mx-auto drop-shadow-lg mb-8"
+                >
+                  {subtitle}
+                </motion.p>
+              </motion.div>
+
+              {/* Learn More Button */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+              >
+                <button
+                  onClick={() => setIsIntroExpanded(!isIntroExpanded)}
+                  className={cn(
+                    "inline-flex items-center gap-3 px-8 py-4 rounded-full",
+                    "bg-gradient-to-r from-white/10 to-white/5",
+                    "border-2 border-white/30 hover:border-white/50",
+                    "text-white hover:text-white",
+                    "backdrop-blur-md transition-all duration-500",
+                    "hover:scale-105 shadow-xl hover:shadow-white/20",
+                    "transform-gpu"
+                  )}
+                >
+                  <span className="font-light text-lg">{isIntroExpanded ? 'Show Less' : 'Learn More'}</span>
+                  <svg
+                    className={cn(
+                      "w-5 h-5 transition-transform duration-500",
+                      isIntroExpanded ? "rotate-90" : ""
+                    )}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </button>
+              </motion.div>
+            </>
+          )}
         </div>
 
         {/* Featured Pianos - Full-width hero cards */}

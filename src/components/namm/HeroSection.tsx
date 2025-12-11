@@ -19,6 +19,7 @@ const HERO_IMAGES = [
   '/images/namm/general/_MG_7325.jpg',
   '/images/namm/general/KAWAI_K_Serie_Detail-33(1).jpg',
   '/images/namm/general/018.jpg',
+  'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/DSC_1820_sRGB.jpg',
 ] as const
 
 // Mobile-optimized subset (fewer images for better performance)
@@ -26,6 +27,7 @@ const HERO_IMAGES_MOBILE = [
   '/images/namm/general/TK7_7390.jpg',
   '/images/namm/general/_MG_7325.jpg',
   '/images/namm/general/018.jpg',
+  'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/DSC_1820_sRGB.jpg',
 ] as const
 
 // NAMM logo variants for cycling - defined outside component to prevent stale closures
@@ -244,14 +246,26 @@ export default function HeroSection({
             />
           </motion.div>
 
-          {/* "Experience" Text */}
+          {/* Decorative Line under Kawai Logo */}
+          <motion.div
+            initial={{ opacity: 0, scaleX: 0 }}
+            animate={{ opacity: 1, scaleX: 1 }}
+            transition={{ duration: 0.8, delay: 0.5, ease: 'easeOut' }}
+            className="w-24 md:w-32 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent"
+          />
+
+          {/* "Instrumental to Life." Text */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.6, ease: 'easeOut' }}
-            className="text-2xl md:text-4xl lg:text-5xl font-light text-white tracking-wide -mt-4"
+            className="text-2xl md:text-4xl lg:text-5xl font-bold text-white tracking-wide -mt-4 md:-mt-6"
+            style={{
+              fontFamily: 'BuenaParkJF, Georgia, serif',
+              textShadow: '0 4px 12px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.6)'
+            }}
           >
-            Experience
+            Instrumental to Life.
           </motion.div>
 
           {/* Event Details - Minimal Typography */}

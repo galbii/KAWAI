@@ -13,10 +13,6 @@ const ArtistLineupSection = dynamic(() => import('@/components/namm/ArtistLineup
   loading: () => <FeaturedArtistsGridSkeleton />
 })
 
-const PerformanceSchedule = dynamic(() => import('@/components/namm/artists/PerformanceSchedule'), {
-  loading: () => <PerformanceScheduleSkeleton />
-})
-
 const ArtistProfiles = dynamic(() => import('@/components/namm/artists/ArtistProfiles'), {
   loading: () => <ArtistProfilesSkeleton />
 })
@@ -108,21 +104,6 @@ function FeaturedArtistsGridSkeleton() {
               <div className="h-64 bg-[#2C2826]/10 rounded-xl" />
               <div className="h-64 bg-[#2C2826]/10 rounded-xl" />
             </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function PerformanceScheduleSkeleton() {
-  return (
-    <section className="py-24 bg-zinc-950 animate-pulse">
-      <div className="container mx-auto px-6">
-        <div className="h-10 bg-white/10 rounded-lg mb-12 w-1/3 mx-auto" />
-        <div className="space-y-4 max-w-4xl mx-auto">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-32 bg-white/5 rounded-xl" />
           ))}
         </div>
       </div>
@@ -230,13 +211,6 @@ export default function NAMMArtistsPage() {
       <section id="profiles" className="scroll-mt-20">
         <Suspense fallback={<ArtistProfilesSkeleton />}>
           <ArtistProfiles />
-        </Suspense>
-      </section>
-
-      {/* Performance Schedule Section */}
-      <section id="schedule" className="scroll-mt-20">
-        <Suspense fallback={<PerformanceScheduleSkeleton />}>
-          <PerformanceSchedule />
         </Suspense>
       </section>
 

@@ -270,14 +270,10 @@ function ArtisticPianoCard({ piano, index }: { piano: FeaturedPiano; index: numb
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-purple-950/80 via-transparent to-transparent" />
               <div className="absolute bottom-6 left-6 right-6">
                 <h4 className="text-3xl lg:text-4xl font-bold text-white mb-2">
                   {SATO_BIO.name}
                 </h4>
-                <p className="text-lg text-fuchsia-200 font-light">
-                  {SATO_BIO.artwork}
-                </p>
               </div>
             </div>
 
@@ -294,7 +290,7 @@ function ArtisticPianoCard({ piano, index }: { piano: FeaturedPiano; index: numb
               </p>
               <div className="pt-6">
                 <Link
-                  href="/products/heralbony-sk3"
+                  href="/namm-2026/experience#heralbony"
                   onClick={(e) => e.stopPropagation()}
                   className={cn(
                     "inline-flex items-center gap-3 px-8 py-4 rounded-full",
@@ -501,7 +497,7 @@ function CraftsmanshipCard({ piano, index }: { piano: FeaturedPiano; index: numb
             transition={{ duration: 0.8, delay: 0.5 }}
             className="space-y-8 max-w-3xl"
           >
-            <p className="text-2xl lg:text-3xl font-light text-black leading-relaxed drop-shadow-xl" style={{ textShadow: '0 2px 8px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.5)' }}>
+            <p className="text-2xl lg:text-3xl font-light text-black leading-relaxed drop-shadow-xl" style={{ textShadow: '0 2px 8px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.5)', fontFamily: '"Miller Banner Compressed", Georgia, serif' }}>
               {piano.tagline}
             </p>
 
@@ -540,10 +536,10 @@ interface ArtistBio {
 }
 
 const SATO_BIO: ArtistBio = {
-  name: 'Sato',
+  name: 'SATO',
   imageUrl: '/images/namm/sato.jpg',
-  bio: 'Sato is a talented artist whose vibrant, energetic artwork transforms everyday objects into extraordinary experiences. Working through HERALBONY, a Japanese social enterprise that supports artists with intellectual disabilities, Sato\'s distinctive style brings joy and color to the world. Their collaboration with Kawai represents a groundbreaking fusion of visual art and musical craftsmanship.',
-  artwork: 'Radiant Energy - A celebration of color, movement, and creative expression'
+  bio: 'Sato is a visionary artist whose vibrant, energetic artwork transforms everyday objects into extraordinary experiences. Working through HERALBONY, a Japanese creative company that champions bold artistic perspectives, Sato\'s distinctive style radiates joy and color to the world. Their collaboration with Kawai represents a groundbreaking fusion of visual art and musical craftsmanship.',
+  artwork: ''
 }
 
 /**
@@ -563,28 +559,28 @@ const FEATURED_PIANOS: FeaturedPiano[] = [
   {
     id: 'cr45',
     name: 'CR-45 Crystal Grand',
-    tagline: 'The World\'s Most Exclusive Piano',
+    tagline: 'Not Just an Instrument—A Masterpiece',
     imageUrl: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/024.jpg',
     ctaText: 'Explore Crystal Grand',
-    ctaLink: '/products/cr-45',
+    ctaLink: '/namm-2026/experience#cr45',
     theme: 'crystal'
   },
   {
     id: 'novus',
     name: 'NV6 & NV12',
-    tagline: 'Feel Acoustic. Play Silent.',
+    tagline: 'The Hybrid Reinvented. Acoustic Action. Acoustic Sound.',
     imageUrl: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/DSC_1820_sRGB.jpg',
     ctaText: 'Experience Novus Technology',
-    ctaLink: '/products/novus-series',
+    ctaLink: '/namm-2026/experience#novus',
     theme: 'tech'
   },
   {
     id: 'master-series',
     name: 'Something Extraordinary',
-    tagline: 'A New Chapter in Piano Craftsmanship',
+    tagline: 'Just You, the Sound, and the Moment.',
     imageUrl: '/images/placeholders/piano-upright.jpg',
     ctaText: 'Learn More',
-    ctaLink: '#contact',
+    ctaLink: '/namm-2026/experience#master-series',
     theme: 'craftsmanship'
   }
 ]

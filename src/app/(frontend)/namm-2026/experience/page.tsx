@@ -124,7 +124,9 @@ export default function NAMMExperiencePage() {
 
       {/* Detailed Piano Showcase Section */}
       <Suspense fallback={<ShowcaseSkeleton />}>
-        <PianoShowcaseDetailed />
+        <PianoShowcaseDetailed
+          subtitle="We've curated a special collection of pianos showcasing the innovations that keep Kawai at the forefront of piano craftsmanship. Experience these exceptional instruments firsthand at the Kawai booth, NAMM Show 2026."
+        />
       </Suspense>
     </>
   )

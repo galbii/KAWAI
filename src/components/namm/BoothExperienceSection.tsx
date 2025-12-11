@@ -84,11 +84,8 @@ function FeatureCard({
         // Dark theme background with subtle border
         'bg-zinc-950/90 backdrop-blur-sm',
         'border border-stone-800/50',
-        // Enhanced shadows and glow on hover
+        // Shadows
         'shadow-2xl shadow-black/50',
-        'hover:shadow-[0_20px_70px_-15px_rgba(0,0,0,0.9)]',
-        'hover:border-stone-700',
-        'transition-all duration-700 ease-out',
         // Alternating layout using grid
         'grid grid-cols-1 lg:grid-cols-2',
         'min-h-[500px] lg:min-h-[400px]'
@@ -105,12 +102,7 @@ function FeatureCard({
               src={feature.image}
               alt={feature.imageAlt}
               fill
-              className={cn(
-                'object-cover',
-                'group-hover:scale-110 transition-transform duration-1000 ease-out',
-                // Slightly reduce brightness to blend with dark theme
-                'brightness-90 group-hover:brightness-100'
-              )}
+              className="object-cover brightness-90"
               sizes="(max-width: 1024px) 100vw, 50vw"
               priority={index === 0}
             />
@@ -121,25 +113,6 @@ function FeatureCard({
               'lg:bg-gradient-to-r',
               isEven ? 'lg:from-black/20 lg:to-black/50' : 'lg:from-black/50 lg:to-black/20'
             )} />
-          </div>
-
-          {/* Floating icon badge on image - Light badge for dark theme */}
-          <div className={cn(
-            'absolute bottom-6 z-10',
-            isEven ? 'right-6 lg:right-auto lg:left-6' : 'left-6 lg:left-auto lg:right-6'
-          )}>
-            <div className={cn(
-              'p-4 rounded-xl',
-              // Light badge that pops on dark theme
-              'bg-white/95 backdrop-blur-md',
-              'shadow-2xl shadow-black/50',
-              'text-stone-800',
-              'group-hover:text-kawai-red group-hover:scale-110',
-              'group-hover:shadow-kawai-red/30 group-hover:shadow-xl',
-              'transition-all duration-300'
-            )}>
-              {feature.icon}
-            </div>
           </div>
         </div>
 
@@ -180,18 +153,9 @@ function FeatureCard({
 
             {/* Accent line with glow effect */}
             <div className="relative">
-              <div className={cn(
-                'w-16 h-0.5 bg-gradient-to-r',
-                'from-kawai-red to-amber-600',
-                'group-hover:w-24 transition-all duration-500'
-              )} />
+              <div className="w-16 h-0.5 bg-gradient-to-r from-kawai-red to-amber-600" />
               {/* Subtle glow effect */}
-              <div className={cn(
-                'absolute inset-0 w-16 h-0.5 bg-gradient-to-r',
-                'from-kawai-red to-amber-600',
-                'blur-sm opacity-50',
-                'group-hover:w-24 group-hover:opacity-75 transition-all duration-500'
-              )} />
+              <div className="absolute inset-0 w-16 h-0.5 bg-gradient-to-r from-kawai-red to-amber-600 blur-sm opacity-50" />
             </div>
           </div>
         </div>
@@ -219,16 +183,9 @@ const DEFAULT_FEATURES: BoothFeature[] = [
     imageAlt: 'NAMM 2026 event giveaways and prizes'
   },
   {
-    icon: <Icons.Consultation />,
-    title: 'Master Artisan Consultation',
-    description: 'Connect with Kawai Master Piano Artisans and professional representatives. Discover the meticulous craftsmanship behind each instrument and receive personalized guidance tailored to your musical journey.',
-    image: '/images/namm/general/KAWAI_K_Serie_Detail-33(1).jpg',
-    imageAlt: 'Kawai master artisan craftsmanship detail'
-  },
-  {
     icon: <Icons.Innovation />,
     title: 'Innovation Showcase',
-    description: 'Experience cutting-edge piano technology in our elegant demonstration area. From the revolutionary Novus NV6 hybrid system to our flagship concert grands, witness innovation that respects tradition.',
+    description: 'Experience cutting-edge piano technology in our elegant demonstration area. From the new Novus NV6 hybrid system to our flagship concert grands, witness innovation that respects tradition.',
     image: '/images/namm/general/CA98R_Side_Dynamic.jpg',
     imageAlt: 'Kawai innovative piano technology'
   }
@@ -241,8 +198,8 @@ const AUTO_PLAY_INTERVAL = 6000 // 6 seconds
  * Premium dark theme carousel with peek effect
  */
 export default function BoothExperienceSection({
-  title = 'The Kawai Booth Experience at NAMM 2026',
-  subtitle = 'Where artistry meets innovation. Discover our premium showroom designed to immerse you in over a century of piano craftsmanship.',
+  title,
+  subtitle,
   features = DEFAULT_FEATURES
 }: BoothExperienceSectionProps) {
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -348,24 +305,30 @@ export default function BoothExperienceSection({
       </div>
 
       <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
-        {/* Section Header */}
+        {/* Section Header with Kawai Logo */}
         <div ref={titleRef} className="text-center mb-20">
-          <motion.h2
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 1 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-light tracking-tight text-white mb-6"
+            className="flex flex-col items-center justify-center gap-4 md:gap-6"
           >
-            {title}
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="text-xl lg:text-2xl font-light leading-relaxed text-stone-300 max-w-4xl mx-auto"
-          >
-            {subtitle}
-          </motion.p>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-light tracking-tight text-white">
+              The
+            </h2>
+            <div className="relative w-48 md:w-64 lg:w-80 h-12 md:h-16 lg:h-20">
+              <Image
+                src="/images/Kawai (Red)(2).png"
+                alt="Kawai"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-light tracking-tight text-white">
+              Experience
+            </h2>
+          </motion.div>
         </div>
 
         {/* Event Details */}

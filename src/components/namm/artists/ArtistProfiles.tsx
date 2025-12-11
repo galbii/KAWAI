@@ -27,6 +27,46 @@ interface ArtistProfilesProps {
   className?: string
 }
 
+// Artist-specific achievements based on research
+const ARTIST_ACHIEVEMENTS: Record<string, string[]> = {
+  'David Snyder': [
+    'Over 12 years of classical training with advanced expertise in Renaissance through Modern era repertoire',
+    'Featured performer on America\'s Got Talent Season 17, advancing past initial auditions',
+    '2+ million streams across piano music catalog with 120,000+ social media followers',
+    'Performed with major artists including Snoop Dogg, Ice Cube, and Flo Rida',
+    'Creator of popular online piano education content including "Piano Basics and Essentials" course on Domestika',
+    'Professional film and commercial composer based in Los Angeles'
+  ],
+  'Sergio De Miguel': [
+    'Winner of 2024 ASCAP Foundation Herb Alpert Young Jazz Composer Award',
+    'Latin Grammy Cultural Foundation "Prodigy" Award recipient (2019), youngest musician to receive this honor',
+    '"Best Small Jazz Combo" at 2023 and 2022 Downbeat Magazine Awards (Sergio de Miguel Septet and Trio)',
+    '2022 Yamaha Young Performing Artist',
+    'Full scholarship recipient from Latin Grammy Cultural Foundation, sponsored by Gloria and Emilio Estefan',
+    'Double major graduate from Berklee College of Music in Film Scoring and Jazz Piano Performance (2023)',
+    'Released acclaimed debut album "Atlántida" (2023), fusing Galician traditional music with jazz, flamenco, and classical elements',
+    'Currently pursuing MFA in Music Composition for the Screen at Columbia College Chicago'
+  ],
+  'Artur Zakiyan': [
+    'Graduate of the prestigious Yerevan State Conservatory After Komitas',
+    'Acclaimed composer blending Armenian ethnic music with classical contemporary and new age influences',
+    'Music Producer at Solidwave Studios',
+    'Touring artist with performances at major venues including Catalina Jazz Club (Los Angeles) and Tower Theatre (Fresno)',
+    'Known for innovative fusion of Armenian classics with world-renowned classical masterpieces',
+    'Original compositions featured in contemporary piano performance circuits'
+  ],
+  'Alec Van Khajadourian': [
+    'Youngest performer ever at Carnegie Hall (July 20, 2025, age 5)',
+    'First Prize Winner - 2025 Charleston International Music Competition',
+    'First Prize Winner - 2025 NY Classical Debut Awards International Competition',
+    'First Prize Winner - 2025 Los Angeles Golden Classical Music Awards International Competition',
+    '"Exceptional Young Talent Special Prize" recipient',
+    'Performed at Walt Disney Concert Hall (July 2025), met Gustavo Dudamel, director of LA Philharmonic',
+    'Possesses perfect pitch, began performing publicly at age 4',
+    'Repertoire includes works by Beethoven, Bach, Gillock, and Burgmüller'
+  ]
+}
+
 // Generate profiles from actual performance data
 const generateProfilesFromPerformances = (): ArtistProfile[] => {
   const artistMap = new Map<string, ArtistProfile>()
@@ -39,7 +79,7 @@ const generateProfilesFromPerformances = (): ArtistProfile[] => {
         title: perf.performanceType,
         imageUrl: perf.artistImage || '/images/placeholders/artist-default.jpg',
         fullBio: perf.artistBio || `${perf.artistName} is a talented ${perf.genre?.toLowerCase() || 'piano'} artist performing at NAMM 2026. Experience their exceptional performance showcasing the expressive capabilities of Kawai instruments.`,
-        achievements: [
+        achievements: ARTIST_ACHIEVEMENTS[perf.artistName] || [
           `Performing ${perf.genre || 'Piano'} at NAMM 2026`,
           'Kawai Artist',
           'Professional Pianist'
@@ -83,7 +123,10 @@ function ProfileCard({ profile, index }: { profile: ArtistProfile; index: number
           src={profile.imageUrl}
           alt={profile.name}
           fill
-          className="object-cover transition-all duration-700 group-hover:scale-105"
+          className={cn(
+            "object-cover transition-all duration-700 group-hover:scale-105",
+            profile.name === 'Alec Van Khajadourian' ? 'object-[center_60%]' : ''
+          )}
           sizes="(max-width: 768px) 100vw, 50vw"
         />
         {/* Subtle gradient overlay */}

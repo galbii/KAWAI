@@ -126,6 +126,14 @@ export function NAMMHeader() {
 
         {/* Center Navigation - Desktop */}
         <nav className="hidden md:flex items-center space-x-8 mx-auto">
+          {/* Home Link */}
+          <Link
+            href="/namm-2026"
+            className="text-white/90 hover:text-white font-medium transition-colors duration-200 text-sm tracking-wide"
+          >
+            Home
+          </Link>
+
           {/* The Kawai Experience Dropdown */}
           <div
             ref={dropdownRef}
@@ -282,6 +290,15 @@ export function NAMMHeader() {
 
               <nav className="flex-1 p-6 overflow-y-auto">
                 <div className="space-y-2">
+                  {/* Home Link */}
+                  <Link
+                    href="/namm-2026"
+                    className="block py-3 px-4 text-white/90 hover:text-white hover:bg-white/10 font-medium transition-colors rounded-lg"
+                    onClick={closeMobileMenu}
+                  >
+                    Home
+                  </Link>
+
                   {/* The Kawai Experience - Mobile Expandable */}
                   <div>
                     <button

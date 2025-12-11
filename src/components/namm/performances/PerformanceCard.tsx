@@ -107,7 +107,10 @@ export default function PerformanceCard({
                 src={performance.artistImage!}
                 alt={`${performance.artistName} portrait`}
                 fill
-                className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-110"
+                className={cn(
+                  "object-cover transition-transform duration-500 ease-out group-hover:scale-110",
+                  performance.artistName === 'Alec Van Khajadourian' ? 'object-[center_60%]' : 'object-center'
+                )}
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
 
