@@ -28,10 +28,24 @@ export function NAMMStructuredData() {
     '@type': 'Event',
     name: 'Kawai at NAMM 2026',
     description: 'Experience Kawai\'s latest piano innovations at NAMM 2026. Hands-on demos of Novus hybrid pianos, Shigeru Kawai concert grands, digital pianos, and exclusive artist performances.',
+    identifier: 'kawai-namm-2026-booth',
+    inLanguage: 'en-US',
     startDate: '2026-01-22T09:00:00-08:00',
     endDate: '2026-01-24T18:00:00-08:00',
+    doorTime: '09:00:00-08:00',
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    typicalAgeRange: '18+',
+    superEvent: {
+      '@type': 'Event',
+      name: 'The NAMM Show 2026',
+      url: 'https://www.namm.org',
+      organizer: {
+        '@type': 'Organization',
+        name: 'NAMM (National Association of Music Merchants)',
+        url: 'https://www.namm.org'
+      }
+    },
     location: {
       '@type': 'Place',
       name: 'Anaheim Convention Center',
@@ -69,14 +83,18 @@ export function NAMMStructuredData() {
     offers: {
       '@type': 'Offer',
       url: 'https://www.namm.org/registration',
+      price: '0',
+      priceCurrency: 'USD',
       availability: 'https://schema.org/InStock',
       validFrom: '2025-09-01T00:00:00-08:00',
-      description: 'NAMM Show registration required. Register at namm.org'
+      category: 'Trade Show Registration',
+      description: 'NAMM Show registration required. Free for NAMM members and music industry professionals. Register at namm.org'
     },
     image: [
-      `${siteUrl}/images/namm/namm-2026-event.jpg`,
-      `${siteUrl}/images/namm/kawai-booth.jpg`,
-      `${siteUrl}/images/namm/kawai-artists.jpg`
+      // TODO: Replace with actual NAMM 2026 event images when available
+      'https://via.placeholder.com/1200x630/C41E3A/FFFFFF?text=NAMM+2026+Event',
+      'https://via.placeholder.com/1200x630/1A1A1A/FFFFFF?text=Kawai+Booth',
+      'https://via.placeholder.com/1200x630/C41E3A/FFFFFF?text=Kawai+Artists'
     ],
     url: `${siteUrl}/namm-2026`
   }
@@ -158,6 +176,12 @@ export function NAMMStructuredData() {
         ? Object.values(performance.socialLinks).filter((url): url is string => Boolean(url))
         : []
 
+      // Calculate duration in ISO 8601 format (PT#M)
+      const start = new Date(performance.startDateTime)
+      const end = new Date(performance.endDateTime)
+      const durationMinutes = Math.round((end.getTime() - start.getTime()) / 60000)
+      const duration = `PT${durationMinutes}M`
+
       return {
         '@type': 'MusicEvent',
         name: `${performance.artistName} - ${performance.performanceType}`,
@@ -171,6 +195,7 @@ export function NAMMStructuredData() {
         },
         startDate: performance.startDateTime,
         endDate: performance.endDateTime,
+        duration: duration,
         eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
         eventStatus: 'https://schema.org/EventScheduled',
         location: {

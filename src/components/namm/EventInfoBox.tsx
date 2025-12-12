@@ -237,19 +237,17 @@ export default function EventInfoBox({ className }: EventInfoBoxProps) {
             </a>
           </div>
 
-          {/* CTA Button - Get Directions */}
+          {/* CTA Button - Visit Kawai.us */}
           <div className="space-y-3">
-            <Button
-              onClick={() => setShowMapOptions(!showMapOptions)}
-              className="w-full bg-kawai-red hover:bg-kawai-red/90 text-white font-semibold h-12 text-base shadow-md hover:shadow-lg transition-all"
+            <a
+              href="https://kawai.us"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full bg-kawai-red hover:bg-kawai-red/90 text-white font-semibold h-12 text-base shadow-md hover:shadow-lg transition-all inline-flex items-center justify-center rounded-md"
             >
-              <Navigation className="w-4 h-4 mr-2" />
-              Get Directions
-              <ChevronRight className={cn(
-                "w-4 h-4 ml-auto transition-transform",
-                showMapOptions && "rotate-90"
-              )} />
-            </Button>
+              Visit Kawai.us
+              <ExternalLink className="w-4 h-4 ml-2" />
+            </a>
 
             {/* Map Options Dropdown */}
             {showMapOptions && (

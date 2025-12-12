@@ -84,6 +84,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: 'weekly',
         priority: 0.6,
       },
+      // NAMM 2026 Event Pages - High Priority
+      {
+        url: `${SITE_URL}/namm-2026`,
+        changeFrequency: 'daily',
+        priority: 0.9,
+      },
+      {
+        url: `${SITE_URL}/namm-2026/dealer`,
+        changeFrequency: 'weekly',
+        priority: 0.7,
+      },
+      {
+        url: `${SITE_URL}/namm-2026/artists`,
+        changeFrequency: 'weekly',
+        priority: 0.7,
+      },
+      {
+        url: `${SITE_URL}/namm-2026/experience`,
+        changeFrequency: 'weekly',
+        priority: 0.7,
+      },
     ]
 
     sitemap.push(...staticRoutes)
