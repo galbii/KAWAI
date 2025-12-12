@@ -356,7 +356,7 @@ export default function BoothExperienceSection({
             </div>
             <div>
               <p className="text-sm uppercase tracking-wider text-amber-600/70 mb-3 font-light">Visit Us</p>
-              <p className="text-2xl lg:text-3xl font-light text-white mb-1">Booth 9011</p>
+              <p className="text-2xl lg:text-3xl font-light text-white mb-1">Booth 9110</p>
               <p className="text-base text-stone-400 font-light">Hall B · First Floor</p>
             </div>
           </div>

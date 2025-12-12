@@ -57,7 +57,7 @@ export const PERFORMANCES: Performance[] = [
     endDateTime: '2026-01-22T11:45:00-08:00',
     genre: 'Classical',
     artistImage: '/images/namm/david-snyder.jpg',
-    artistBio: 'Renowned classical pianist with performances at Carnegie Hall and international concert venues. Known for interpretations of Chopin, Rachmaninoff, and contemporary composers. Faculty member at prestigious conservatory.',
+    artistBio: 'Los Angeles-based pianist and composer David Snyder bridges classical tradition with contemporary innovation. With over 12 years of rigorous classical training spanning Renaissance through Modern era repertoire, David has evolved into a multifaceted artist whose work encompasses performance, film scoring, and digital education. Featured on America\'s Got Talent Season 17 and boasting 2+ million streams across his catalog, David brings virtuosic technique and modern sensibility to the concert stage. His collaborations with artists like Snoop Dogg and Ice Cube showcase his versatility, while his popular online piano courses inspire the next generation of musicians.',
     artistSlug: 'david-snyder',
     socialLinks: {
       website: 'https://www.thepianosaysitbetter.com/',
@@ -80,7 +80,7 @@ export const PERFORMANCES: Performance[] = [
     endDateTime: '2026-01-23T11:45:00-08:00',
     genre: 'Modern Classical',
     artistImage: '/images/artists/namm-2026/sergio-de-miguel.jpg',
-    artistBio: 'Internationally acclaimed pianist bridging classical tradition with modern innovation. Performed at prestigious festivals worldwide. Known for dynamic interpretations that push boundaries while honoring musical heritage.',
+    artistBio: 'At just 21 years old, Galician pianist and composer Sergio De Miguel has already claimed some of music\'s highest honors. Winner of the 2024 ASCAP Foundation Herb Alpert Young Jazz Composer Award and recipient of the Latin Grammy Cultural Foundation\'s prestigious "Prodigy" Award (as its youngest honoree), Sergio represents a new generation of boundary-pushing artists. A Berklee College of Music graduate with dual majors in Film Scoring and Jazz Piano Performance, he\'s currently pursuing his MFA in Music Composition at Columbia College Chicago. His acclaimed debut album "Atlántida" masterfully weaves together his Galician heritage with jazz, flamenco, and classical influences, creating a sound that is both deeply rooted and refreshingly innovative.',
     artistSlug: 'sergio-de-miguel',
     socialLinks: {
       website: 'https://sergiodemiguelmusic.com/'
@@ -98,7 +98,7 @@ export const PERFORMANCES: Performance[] = [
     endDateTime: '2026-01-23T16:15:00-08:00',
     genre: 'Romantic',
     artistImage: '/images/artists/namm-2026/artur-zakiyan.jpg',
-    artistBio: 'Virtuoso pianist specializing in Romantic era masterworks. Winner of multiple international competitions with performances across Europe, Asia, and North America. Brings passionate intensity to every performance.',
+    artistBio: 'Armenian pianist and composer Artur Zakiyan creates a mesmerizing sonic landscape where centuries-old Armenian traditions meet contemporary classical expression. A graduate of the prestigious Yerevan State Conservatory After Komitas, Artur has dedicated his artistry to reimagining the rich heritage of Armenian music through a modern lens. As Music Producer at Solidwave Studios and an active touring artist performing at venues from Los Angeles\' Catalina Jazz Club to Fresno\'s Tower Theatre, he brings passionate intensity and cultural depth to every performance. His innovative fusion of Armenian ethnic melodies with classical contemporary and new age influences offers audiences a unique and emotionally powerful musical journey.',
     artistSlug: 'artur-zakiyan',
     socialLinks: {
       website: 'https://www.arturzakiyan.com/',
@@ -121,7 +121,7 @@ export const PERFORMANCES: Performance[] = [
     endDateTime: '2026-01-24T11:45:00-08:00',
     genre: 'Jazz',
     artistImage: '/images/artists/namm-2026/sergio-de-miguel.jpg',
-    artistBio: 'Internationally acclaimed pianist bridging classical tradition with modern innovation. Performed at prestigious festivals worldwide. Known for dynamic interpretations that push boundaries while honoring musical heritage.',
+    artistBio: 'At just 21 years old, Galician pianist and composer Sergio De Miguel has already claimed some of music\'s highest honors. Winner of the 2024 ASCAP Foundation Herb Alpert Young Jazz Composer Award and recipient of the Latin Grammy Cultural Foundation\'s prestigious "Prodigy" Award (as its youngest honoree), Sergio represents a new generation of boundary-pushing artists. A Berklee College of Music graduate with dual majors in Film Scoring and Jazz Piano Performance, he\'s currently pursuing his MFA in Music Composition at Columbia College Chicago. His acclaimed debut album "Atlántida" masterfully weaves together his Galician heritage with jazz, flamenco, and classical influences, creating a sound that is both deeply rooted and refreshingly innovative.',
     artistSlug: 'sergio-de-miguel',
     socialLinks: {
       website: 'https://sergiodemiguelmusic.com/'
@@ -139,7 +139,7 @@ export const PERFORMANCES: Performance[] = [
     endDateTime: '2026-01-24T16:15:00-08:00',
     genre: 'Contemporary',
     artistImage: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/alec/IMG_4838.JPG',
-    artistBio: 'Electrifying contemporary pianist known for bold, boundary-pushing performances. Festival favorite with commanding stage presence and technical brilliance. Perfect finale artist bringing explosive energy to close NAMM 2026.',
+    artistBio: 'Five-year-old piano prodigy Alec Van Khajadourian has already made history as the youngest performer ever to grace the stage at Carnegie Hall. In 2025 alone, this Los Angeles-based virtuoso swept three first-place prizes at major international competitions: the Charleston International Music Competition, NY Classical Debut Awards, and LA Golden Classical Music Awards. Born with perfect pitch and an innate musical gift, Alec began matching melodies to piano keys at just two years old. By age four, he was performing publicly, captivating audiences with interpretations of Beethoven, Bach, and contemporary composers that belie his young age. His July 2025 performance at Walt Disney Concert Hall, where he met LA Philharmonic director Gustavo Dudamel, marked another milestone in what promises to be an extraordinary musical journey.',
     artistSlug: 'alec-van-khajadourian',
     socialLinks: {
       instagram: 'https://www.instagram.com/alecvanmusic/'

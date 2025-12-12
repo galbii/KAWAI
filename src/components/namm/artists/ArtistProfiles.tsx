@@ -5,6 +5,9 @@
  * In-depth look at featured artists' backgrounds and achievements
  */
 
+'use client'
+
+import { useState } from 'react'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { PERFORMANCES } from '../performances/performance-data'
@@ -103,6 +106,12 @@ const PROFILES_FROM_PERFORMANCES = generateProfilesFromPerformances()
 
 function ProfileCard({ profile, index }: { profile: ArtistProfile; index: number }) {
   const isEven = index % 2 === 0
+  const [showAllAchievements, setShowAllAchievements] = useState(false)
+
+  const visibleAchievements = showAllAchievements
+    ? profile.achievements
+    : profile.achievements?.slice(0, 2) || []
+  const hasMoreAchievements = (profile.achievements?.length || 0) > 2
 
   return (
     <div
@@ -161,31 +170,39 @@ function ProfileCard({ profile, index }: { profile: ArtistProfile; index: number
               Notable Achievements
             </h4>
             <ul className="space-y-3 pl-5 border-l-2 border-white/10">
-              {profile.achievements.map((achievement, idx) => (
+              {visibleAchievements.map((achievement, idx) => (
                 <li key={idx} className="text-base md:text-lg text-white/70 leading-relaxed -ml-5 pl-5">
                   {achievement}
                 </li>
               ))}
             </ul>
-          </div>
-        )}
 
-        {/* Instruments - Clean pill design */}
-        {profile.instruments && profile.instruments.length > 0 && (
-          <div className="space-y-4">
-            <h4 className="text-sm font-semibold uppercase tracking-widest text-white/40">
-              Preferred Instruments
-            </h4>
-            <div className="flex flex-wrap gap-3">
-              {profile.instruments.map((instrument, idx) => (
-                <span
-                  key={idx}
-                  className="px-5 py-2.5 rounded-full bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 text-sm font-light text-white/90 backdrop-blur-sm"
+            {/* Read More/Less Button */}
+            {hasMoreAchievements && (
+              <button
+                onClick={() => setShowAllAchievements(!showAllAchievements)}
+                className={cn(
+                  "inline-flex items-center gap-2 px-6 py-3 rounded-full",
+                  "bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20",
+                  "text-sm font-medium text-white/80 hover:text-white",
+                  "transition-all duration-300",
+                  "hover:scale-105 active:scale-95"
+                )}
+              >
+                <span>{showAllAchievements ? 'Show Less' : `Show ${profile.achievements.length - 2} More`}</span>
+                <svg
+                  className={cn(
+                    "w-4 h-4 transition-transform duration-300",
+                    showAllAchievements && "rotate-180"
+                  )}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
                 >
-                  {instrument}
-                </span>
-              ))}
-            </div>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            )}
           </div>
         )}
 

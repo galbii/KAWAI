@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { useState, useEffect, useRef } from 'react'
+import { usePathname } from 'next/navigation'
 import { Menu, X, ChevronDown } from 'lucide-react'
 
 /**
@@ -17,12 +18,23 @@ import { Menu, X, ChevronDown } from 'lucide-react'
  * - Direct links to main page sections
  */
 export function NAMMHeader() {
+  const pathname = usePathname()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isMobileDropdownOpen, setIsMobileDropdownOpen] = useState(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Check if a link is active
+  const isActiveLink = (href: string) => {
+    // For hash links, don't show active state (they're just anchors on the same page)
+    if (href.includes('#')) {
+      return false
+    }
+    // For regular paths, exact match
+    return pathname === href
+  }
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -129,9 +141,23 @@ export function NAMMHeader() {
           {/* Home Link */}
           <Link
             href="/namm-2026"
-            className="text-white/90 hover:text-white font-medium transition-colors duration-200 text-sm tracking-wide"
+            className="relative text-white/90 hover:text-white font-medium transition-colors duration-200 text-sm tracking-wide py-1"
           >
             Home
+            {isActiveLink('/namm-2026') && (
+              <motion.div
+                layoutId="activeIndicator"
+                className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-[#E31937] to-[#FF3B55] rounded-full"
+                style={{
+                  boxShadow: '0 0 8px rgba(227, 25, 55, 0.6), 0 0 16px rgba(227, 25, 55, 0.3)'
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 380,
+                  damping: 30
+                }}
+              />
+            )}
           </Link>
 
           {/* The Kawai Experience Dropdown */}
@@ -142,7 +168,7 @@ export function NAMMHeader() {
             onMouseLeave={() => setIsDropdownOpen(false)}
           >
             <button
-              className="flex items-center gap-1 text-white/90 hover:text-white font-medium transition-colors duration-200 text-sm tracking-wide"
+              className="relative flex items-center gap-1 text-white/90 hover:text-white font-medium transition-colors duration-200 text-sm tracking-wide py-1"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
               The Kawai Experience
@@ -152,6 +178,20 @@ export function NAMMHeader() {
                   isDropdownOpen && "rotate-180"
                 )}
               />
+              {(isActiveLink('/namm-2026/experience') || isActiveLink('/namm-2026/artists')) && (
+                <motion.div
+                  layoutId="activeIndicator"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-[#E31937] to-[#FF3B55] rounded-full"
+                  style={{
+                    boxShadow: '0 0 8px rgba(227, 25, 55, 0.6), 0 0 16px rgba(227, 25, 55, 0.3)'
+                  }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 380,
+                    damping: 30
+                  }}
+                />
+              )}
             </button>
 
             {/* Dropdown Menu */}
@@ -166,17 +206,37 @@ export function NAMMHeader() {
                 >
                   <Link
                     href="/namm-2026/experience"
-                    className="block px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 transition-colors text-sm"
+                    className={cn(
+                      "block px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 transition-colors text-sm relative",
+                      isActiveLink('/namm-2026/experience') && "text-white bg-white/5"
+                    )}
                     onClick={() => setIsDropdownOpen(false)}
                   >
                     Booth
+                    {isActiveLink('/namm-2026/experience') && (
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#E31937] to-[#FF3B55] rounded-r-full"
+                        style={{
+                          boxShadow: '0 0 8px rgba(227, 25, 55, 0.6)'
+                        }}
+                      />
+                    )}
                   </Link>
                   <Link
                     href="/namm-2026/artists"
-                    className="block px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 transition-colors text-sm border-t border-white/10"
+                    className={cn(
+                      "block px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 transition-colors text-sm border-t border-white/10 relative",
+                      isActiveLink('/namm-2026/artists') && "text-white bg-white/5"
+                    )}
                     onClick={() => setIsDropdownOpen(false)}
                   >
                     Artists
+                    {isActiveLink('/namm-2026/artists') && (
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#E31937] to-[#FF3B55] rounded-r-full"
+                        style={{
+                          boxShadow: '0 0 8px rgba(227, 25, 55, 0.6)'
+                        }}
+                      />
+                    )}
                   </Link>
                 </motion.div>
               )}
@@ -186,15 +246,43 @@ export function NAMMHeader() {
           {/* Direct Section Links */}
           <Link
             href="/namm-2026#featured-products"
-            className="text-white/90 hover:text-white font-medium transition-colors duration-200 text-sm tracking-wide"
+            className="relative text-white/90 hover:text-white font-medium transition-colors duration-200 text-sm tracking-wide py-1"
           >
             Featured Products
+            {isActiveLink('/namm-2026#featured-products') && (
+              <motion.div
+                layoutId="activeIndicator"
+                className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-[#E31937] to-[#FF3B55] rounded-full"
+                style={{
+                  boxShadow: '0 0 8px rgba(227, 25, 55, 0.6), 0 0 16px rgba(227, 25, 55, 0.3)'
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 380,
+                  damping: 30
+                }}
+              />
+            )}
           </Link>
           <Link
             href="/namm-2026#plan-your-visit"
-            className="text-white/90 hover:text-white font-medium transition-colors duration-200 text-sm tracking-wide"
+            className="relative text-white/90 hover:text-white font-medium transition-colors duration-200 text-sm tracking-wide py-1"
           >
             Plan Your Visit
+            {isActiveLink('/namm-2026#plan-your-visit') && (
+              <motion.div
+                layoutId="activeIndicator"
+                className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-[#E31937] to-[#FF3B55] rounded-full"
+                style={{
+                  boxShadow: '0 0 8px rgba(227, 25, 55, 0.6), 0 0 16px rgba(227, 25, 55, 0.3)'
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 380,
+                  damping: 30
+                }}
+              />
+            )}
           </Link>
         </nav>
 
@@ -293,17 +381,30 @@ export function NAMMHeader() {
                   {/* Home Link */}
                   <Link
                     href="/namm-2026"
-                    className="block py-3 px-4 text-white/90 hover:text-white hover:bg-white/10 font-medium transition-colors rounded-lg"
+                    className={cn(
+                      "block py-3 px-4 text-white/90 hover:text-white hover:bg-white/10 font-medium transition-colors rounded-lg relative",
+                      isActiveLink('/namm-2026') && "text-white bg-white/5"
+                    )}
                     onClick={closeMobileMenu}
                   >
                     Home
+                    {isActiveLink('/namm-2026') && (
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#E31937] to-[#FF3B55] rounded-r-full"
+                        style={{
+                          boxShadow: '0 0 8px rgba(227, 25, 55, 0.6)'
+                        }}
+                      />
+                    )}
                   </Link>
 
                   {/* The Kawai Experience - Mobile Expandable */}
                   <div>
                     <button
                       onClick={() => setIsMobileDropdownOpen(!isMobileDropdownOpen)}
-                      className="w-full flex items-center justify-between py-3 px-4 text-white/90 hover:text-white hover:bg-white/10 font-medium transition-colors rounded-lg"
+                      className={cn(
+                        "w-full flex items-center justify-between py-3 px-4 text-white/90 hover:text-white hover:bg-white/10 font-medium transition-colors rounded-lg relative",
+                        (isActiveLink('/namm-2026/experience') || isActiveLink('/namm-2026/artists')) && "text-white bg-white/5"
+                      )}
                     >
                       <span>The Kawai Experience</span>
                       <ChevronDown
@@ -312,6 +413,13 @@ export function NAMMHeader() {
                           isMobileDropdownOpen && "rotate-180"
                         )}
                       />
+                      {(isActiveLink('/namm-2026/experience') || isActiveLink('/namm-2026/artists')) && (
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#E31937] to-[#FF3B55] rounded-r-full"
+                          style={{
+                            boxShadow: '0 0 8px rgba(227, 25, 55, 0.6)'
+                          }}
+                        />
+                      )}
                     </button>
 
                     {/* Mobile Dropdown Items */}
@@ -327,17 +435,37 @@ export function NAMMHeader() {
                           <div className="pl-4 space-y-1 mt-1">
                             <Link
                               href="/namm-2026/experience"
-                              className="block py-2 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors rounded-lg text-sm"
+                              className={cn(
+                                "block py-2 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors rounded-lg text-sm relative",
+                                isActiveLink('/namm-2026/experience') && "text-white bg-white/5"
+                              )}
                               onClick={closeMobileMenu}
                             >
                               Booth
+                              {isActiveLink('/namm-2026/experience') && (
+                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#E31937] to-[#FF3B55] rounded-r-full"
+                                  style={{
+                                    boxShadow: '0 0 8px rgba(227, 25, 55, 0.6)'
+                                  }}
+                                />
+                              )}
                             </Link>
                             <Link
                               href="/namm-2026/artists"
-                              className="block py-2 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors rounded-lg text-sm"
+                              className={cn(
+                                "block py-2 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors rounded-lg text-sm relative",
+                                isActiveLink('/namm-2026/artists') && "text-white bg-white/5"
+                              )}
                               onClick={closeMobileMenu}
                             >
                               Artists
+                              {isActiveLink('/namm-2026/artists') && (
+                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#E31937] to-[#FF3B55] rounded-r-full"
+                                  style={{
+                                    boxShadow: '0 0 8px rgba(227, 25, 55, 0.6)'
+                                  }}
+                                />
+                              )}
                             </Link>
                           </div>
                         </motion.div>
@@ -348,17 +476,37 @@ export function NAMMHeader() {
                   {/* Direct Links */}
                   <Link
                     href="/namm-2026#featured-products"
-                    className="block py-3 px-4 text-white/90 hover:text-white hover:bg-white/10 font-medium transition-colors rounded-lg"
+                    className={cn(
+                      "block py-3 px-4 text-white/90 hover:text-white hover:bg-white/10 font-medium transition-colors rounded-lg relative",
+                      isActiveLink('/namm-2026#featured-products') && "text-white bg-white/5"
+                    )}
                     onClick={closeMobileMenu}
                   >
                     Featured Products
+                    {isActiveLink('/namm-2026#featured-products') && (
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#E31937] to-[#FF3B55] rounded-r-full"
+                        style={{
+                          boxShadow: '0 0 8px rgba(227, 25, 55, 0.6)'
+                        }}
+                      />
+                    )}
                   </Link>
                   <Link
                     href="/namm-2026#plan-your-visit"
-                    className="block py-3 px-4 text-white/90 hover:text-white hover:bg-white/10 font-medium transition-colors rounded-lg"
+                    className={cn(
+                      "block py-3 px-4 text-white/90 hover:text-white hover:bg-white/10 font-medium transition-colors rounded-lg relative",
+                      isActiveLink('/namm-2026#plan-your-visit') && "text-white bg-white/5"
+                    )}
                     onClick={closeMobileMenu}
                   >
                     Plan Your Visit
+                    {isActiveLink('/namm-2026#plan-your-visit') && (
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#E31937] to-[#FF3B55] rounded-r-full"
+                        style={{
+                          boxShadow: '0 0 8px rgba(227, 25, 55, 0.6)'
+                        }}
+                      />
+                    )}
                   </Link>
                 </div>
               </nav>
