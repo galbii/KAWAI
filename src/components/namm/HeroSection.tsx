@@ -290,25 +290,20 @@ export default function HeroSection({
             transition={{ duration: 1, delay: 1.0, ease: 'easeOut' }}
             className="flex flex-col sm:flex-row gap-4 md:gap-6 pt-6"
           >
+            <button
+              onClick={scrollToNextSection}
+              className="px-8 py-3 md:px-10 md:py-4 bg-white text-kawai-black text-base md:text-lg font-semibold rounded-md hover:bg-kawai-pearl transition-all duration-300 hover:scale-105 shadow-lg text-center"
+            >
+              Learn More
+            </button>
             <a
               href="https://kawai.us"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-8 py-3 md:px-10 md:py-4 bg-white text-kawai-black text-base md:text-lg font-semibold rounded-md hover:bg-kawai-pearl transition-all duration-300 hover:scale-105 shadow-lg text-center"
+              className="px-8 py-3 md:px-10 md:py-4 bg-kawai-red text-white text-base md:text-lg font-semibold rounded-md hover:bg-kawai-red/90 transition-all duration-300 hover:scale-105 shadow-lg text-center"
             >
               Visit Kawai.us
             </a>
-            <button
-              onClick={() => {
-                const lineup = document.querySelector('#featured-products')
-                if (lineup) {
-                  lineup.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                }
-              }}
-              className="px-8 py-3 md:px-10 md:py-4 bg-transparent text-white text-base md:text-lg font-semibold rounded-md border-2 border-white hover:bg-white hover:text-kawai-black transition-all duration-300 hover:scale-105"
-            >
-              View Pianos
-            </button>
           </motion.div>
         </div>
       </div>
