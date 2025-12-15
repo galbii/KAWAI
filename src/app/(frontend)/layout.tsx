@@ -67,66 +67,13 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
   // Check if this is any NAMM 2026 page (has its own custom header/footer)
   const isNAMMPage = pathname.startsWith('/namm-2026')
 
-  const localBusinessSchema = {
-    "@context": "https://schema.org",
-    "@type": "MusicStore",
-    "name": "Kawai Piano Gallery",
-    "description": "Official authorized Kawai Piano dealer offering expert piano consultation, Shigeru Kawai grand pianos, digital pianos, upright pianos, and hybrid pianos. Over 95 years of Japanese craftsmanship excellence.",
-    "url": "https://kawaipianostlouis.com",
-    "brand": {
-      "@type": "Brand",
-      "name": "Kawai"
-    },
-    "priceRange": "$$-$$$$",
-    "hasOfferCatalog": {
-      "@type": "OfferCatalog",
-      "name": "Kawai Piano Products & Services",
-      "itemListElement": [
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "name": "Kawai Grand Pianos",
-            "description": "Premium acoustic grand pianos including Shigeru Kawai concert grands"
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "name": "Kawai Digital Pianos",
-            "description": "Advanced digital pianos with authentic sound and touch"
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "name": "Kawai Upright Pianos",
-            "description": "Space-saving upright pianos with exceptional tone quality"
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "name": "Kawai Hybrid Pianos",
-            "description": "Innovative hybrid pianos combining acoustic and digital technology"
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Piano Consultation Services",
-            "description": "Expert guidance to help you find the perfect Kawai piano"
-          }
-        }
-      ]
-    }
-  };
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com';
 
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Kawai Piano Gallery",
-    "url": "https://kawaipianostlouis.com",
+    "url": siteUrl,
     "description": "Official authorized Kawai Piano dealer. Explore grand pianos, digital pianos, upright pianos, and exclusive Shigeru Kawai concert grands.",
     "publisher": {
       "@type": "Organization",
@@ -136,7 +83,7 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
       "@type": "SearchAction",
       "target": {
         "@type": "EntryPoint",
-        "urlTemplate": "https://kawaipianostlouis.com/pianos/search?q={search_term_string}"
+        "urlTemplate": `${siteUrl}/pianos/search?q={search_term_string}`
       },
       "query-input": "required name=search_term_string"
     },
@@ -154,13 +101,6 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(websiteSchema),
-        }}
-      />
-      {/* LocalBusiness Schema for local SEO */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(localBusinessSchema),
         }}
       />
       {/* Organization Schema for brand identity and E-E-A-T */}

@@ -199,6 +199,9 @@ export default function HeroSection({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.2, ease: 'easeOut' }}
             className="relative w-full max-w-[80px] md:max-w-[100px] h-[27px] md:h-[33px] -mt-8 md:-mt-12"
+            style={{
+              filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4)) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3))'
+            }}
           >
             {/* Subtle blur background */}
             <div className="absolute left-0 right-0 -inset-x-12 top-[-0.75rem] bottom-[-2rem] bg-black/20 backdrop-blur-md rounded-xl" />
@@ -229,43 +232,24 @@ export default function HeroSection({
             </AnimatePresence>
           </motion.div>
 
-          {/* Kawai Logo */}
+          {/* Kawai Instrumental to Life Logo */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.4, ease: 'easeOut' }}
-            className="relative w-full max-w-md md:max-w-2xl"
+            className="relative w-full max-w-lg md:max-w-xl lg:max-w-2xl px-4 mt-8 md:mt-12"
+            style={{
+              filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4)) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3))'
+            }}
           >
             <Image
-              src="/images/Kawai (Red)(2).png"
-              alt="Kawai"
-              width={800}
-              height={200}
+              src="/images/InstrumentaltoLife Logo (Red+White) 1.svg"
+              alt="Kawai - Instrumental to Life"
+              width={1566}
+              height={618}
               priority
               className="w-full h-auto"
             />
-          </motion.div>
-
-          {/* Decorative Line under Kawai Logo */}
-          <motion.div
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={{ opacity: 1, scaleX: 1 }}
-            transition={{ duration: 0.8, delay: 0.5, ease: 'easeOut' }}
-            className="w-24 md:w-32 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent"
-          />
-
-          {/* "Instrumental to Life." Text */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.6, ease: 'easeOut' }}
-            className="text-2xl md:text-4xl lg:text-5xl font-bold text-white tracking-wide -mt-4 md:-mt-6"
-            style={{
-              fontFamily: 'BuenaParkJF, Georgia, serif',
-              textShadow: '0 4px 12px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.6)'
-            }}
-          >
-            Instrumental to Life.
           </motion.div>
 
           {/* Event Details - Minimal Typography */}
@@ -274,6 +258,9 @@ export default function HeroSection({
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.8, ease: 'easeOut' }}
             className="space-y-2 md:space-y-3 pt-4"
+            style={{
+              filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4)) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3))'
+            }}
           >
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-light text-white/90 tracking-tight">
               January 22–24, 2026
@@ -292,7 +279,10 @@ export default function HeroSection({
           >
             <button
               onClick={scrollToNextSection}
-              className="px-8 py-3 md:px-10 md:py-4 bg-white text-kawai-black text-base md:text-lg font-semibold rounded-md hover:bg-kawai-pearl transition-all duration-300 hover:scale-105 shadow-lg text-center"
+              className="px-8 py-3 md:px-10 md:py-4 bg-white text-kawai-black text-base md:text-lg font-semibold rounded-md hover:bg-kawai-pearl transition-all duration-300 hover:scale-105 text-center"
+              style={{
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2)'
+              }}
             >
               Learn More
             </button>
@@ -300,7 +290,10 @@ export default function HeroSection({
               href="https://kawai.us"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-8 py-3 md:px-10 md:py-4 bg-kawai-red text-white text-base md:text-lg font-semibold rounded-md hover:bg-kawai-red/90 transition-all duration-300 hover:scale-105 shadow-lg text-center"
+              className="px-8 py-3 md:px-10 md:py-4 bg-kawai-red text-white text-base md:text-lg font-semibold rounded-md hover:bg-kawai-red/90 transition-all duration-300 hover:scale-105 text-center"
+              style={{
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2)'
+              }}
             >
               Visit Kawai.us
             </a>
