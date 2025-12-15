@@ -1,6 +1,7 @@
 import { Award, Calendar, Globe, Music, Star, Trophy, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
 
 const competitionVictories = [
   {
@@ -126,8 +127,21 @@ export default function Artists() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white py-24 lg:py-32">
-        <div className="container mx-auto px-4">
+      <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white py-24 lg:py-32 overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          <Image
+            src="https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/sergio/sergiohero.jpg"
+            alt="Sergio De Miguel performing at piano"
+            fill
+            className="object-cover object-center opacity-30"
+            priority
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-900/90 via-gray-800/85 to-black/90" />
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
               <span className="block text-yellow-400">Artists Choose</span>

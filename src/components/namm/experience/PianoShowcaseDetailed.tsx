@@ -720,15 +720,15 @@ const FEATURED_PIANOS_DETAILED: FeaturedPianoDetailed[] = [
     id: 'heralbony',
     name: 'HERALBONY with Kawai',
     tagline: 'Where Music Radiates Color',
-    description: 'A bold artistic collaboration celebrating unique creative vision. This SK-3 concert grand becomes a canvas for Sato\'s vibrant artwork, transforming into a public art installation that challenges preconceptions and reveals the extraordinary power of different perspectives through sound and vision.',
+    description: 'A bold artistic collaboration celebrating unique creative vision. This SK-5 concert grand becomes a canvas for Sato\'s vibrant artwork, transforming into a public art installation that challenges preconceptions and reveals the extraordinary power of different perspectives through sound and vision.',
     highlights: [
       'Vibrant original artwork by visionary artist Sato',
-      'Shigeru Kawai SK-3 concert grand base (186cm / 6\'1")',
+      'Shigeru Kawai SK-5 concert grand base (227cm / 7\'5")',
       'Limited edition with certificate of authenticity'
     ],
     imageUrl: '/images/namm/heralbony closeup.JPG',
     ctaText: 'Discover The Story',
-    ctaLink: '/products/heralbony-sk3',
+    ctaLink: '/products/heralbony-sk5',
     theme: 'artistic',
     badge: 'Artistic Collaboration'
   },

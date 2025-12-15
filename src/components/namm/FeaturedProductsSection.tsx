@@ -553,7 +553,7 @@ const FEATURED_PIANOS: FeaturedPiano[] = [
     tagline: 'Where Music Radiates Color',
     imageUrl: '/images/namm/heralbony closeup.JPG',
     ctaText: 'Discover The Story',
-    ctaLink: '/products/heralbony-sk3',
+    ctaLink: '/products/heralbony-sk5',
     theme: 'artistic'
   },
   {

@@ -79,8 +79,8 @@ export const PERFORMANCES: Performance[] = [
     startDateTime: '2026-01-23T11:00:00-08:00',
     endDateTime: '2026-01-23T11:45:00-08:00',
     genre: 'Modern Classical',
-    artistImage: '/images/artists/namm-2026/sergio-de-miguel.jpg',
-    artistBio: 'At just 21 years old, Galician pianist and composer Sergio De Miguel has already claimed some of music\'s highest honors. Winner of the 2024 ASCAP Foundation Herb Alpert Young Jazz Composer Award and recipient of the Latin Grammy Cultural Foundation\'s prestigious "Prodigy" Award (as its youngest honoree), Sergio represents a new generation of boundary-pushing artists. A Berklee College of Music graduate with dual majors in Film Scoring and Jazz Piano Performance, he\'s currently pursuing his MFA in Music Composition at Columbia College Chicago. His acclaimed debut album "Atlántida" masterfully weaves together his Galician heritage with jazz, flamenco, and classical influences, creating a sound that is both deeply rooted and refreshingly innovative.',
+    artistImage: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/sergio/DSC06342-2.jpg',
+    artistBio: 'Sergio de Miguel is a Spanish pianist and composer from Vigo, Galicia, now based in Los Angeles. His music blends his Galician and Spanish roots with jazz, flamenco, classical and contemporary music elements, and world music. Guided by the belief that melodies can tell stories words cannot, he creates music full of emotional depth, color, and cultural richness, inviting listeners into a unique, multicultural soundscape.',
     artistSlug: 'sergio-de-miguel',
     socialLinks: {
       website: 'https://sergiodemiguelmusic.com/'
@@ -120,8 +120,8 @@ export const PERFORMANCES: Performance[] = [
     startDateTime: '2026-01-24T11:00:00-08:00',
     endDateTime: '2026-01-24T11:45:00-08:00',
     genre: 'Jazz',
-    artistImage: '/images/artists/namm-2026/sergio-de-miguel.jpg',
-    artistBio: 'At just 21 years old, Galician pianist and composer Sergio De Miguel has already claimed some of music\'s highest honors. Winner of the 2024 ASCAP Foundation Herb Alpert Young Jazz Composer Award and recipient of the Latin Grammy Cultural Foundation\'s prestigious "Prodigy" Award (as its youngest honoree), Sergio represents a new generation of boundary-pushing artists. A Berklee College of Music graduate with dual majors in Film Scoring and Jazz Piano Performance, he\'s currently pursuing his MFA in Music Composition at Columbia College Chicago. His acclaimed debut album "Atlántida" masterfully weaves together his Galician heritage with jazz, flamenco, and classical influences, creating a sound that is both deeply rooted and refreshingly innovative.',
+    artistImage: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/sergio/DSC06342-2.jpg',
+    artistBio: 'Sergio de Miguel is a Spanish pianist and composer from Vigo, Galicia, now based in Los Angeles. His music blends his Galician and Spanish roots with jazz, flamenco, classical and contemporary music elements, and world music. Guided by the belief that melodies can tell stories words cannot, he creates music full of emotional depth, color, and cultural richness, inviting listeners into a unique, multicultural soundscape.',
     artistSlug: 'sergio-de-miguel',
     socialLinks: {
       website: 'https://sergiodemiguelmusic.com/'
