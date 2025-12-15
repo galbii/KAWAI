@@ -225,8 +225,8 @@ export default function HeroSection({
                   width={600}
                   height={200}
                   priority
-                  className="w-full h-auto relative z-10"
                   unoptimized
+                  className="w-full h-auto relative z-10"
                 />
               </motion.div>
             </AnimatePresence>
@@ -243,11 +243,12 @@ export default function HeroSection({
             }}
           >
             <Image
-              src="/images/InstrumentaltoLife Logo (Red+White) 1.svg"
+              src="/images/instrumental-to-life-logo.svg"
               alt="Kawai - Instrumental to Life"
               width={1566}
               height={618}
               priority
+              unoptimized
               className="w-full h-auto"
             />
           </motion.div>
