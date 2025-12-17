@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
@@ -13,9 +14,6 @@ export function HomeHero() {
   const heroData = {
     locationText: "",
     establishedText: "Est. 1927",
-    titlePrefix: "The",
-    titleMain: "INSTRUMENTAL",
-    titleSuffix: "to Life",
     description: "Every musician harbors a vision. Every performance seeks perfection. Since 1927, we've been crafting the instruments that transform inspiration into reality.",
     primaryCta: {
       text: "Find Your Store",
@@ -107,85 +105,64 @@ export function HomeHero() {
 
         <div className="w-full mt-16 sm:mt-20 md:mt-24 lg:mt-28">
           <div className="mb-12 lg:mb-16">
-            <h1 className="heading-brand-luxury text-kawai-pearl mb-8 lg:mb-12 leading-[0.75] text-center">
-              <motion.span 
-                className="block font-normal mb-4 sm:mb-6 tracking-[0.15em] sm:tracking-[0.2em] opacity-90 text-center"
-                style={{ fontSize: 'clamp(0.875rem, 2.5vw, 2.5rem)' }}
+            <h1 className="heading-brand-luxury text-kawai-pearl mb-8 lg:mb-12 leading-tight tracking-tight text-center">
+              <motion.div
+                className="flex justify-center"
                 variants={wordReveal}
-                custom={0.8}
+                custom={0.4}
                 initial="hidden"
                 animate={isInView ? "visible" : "hidden"}
               >
-                {heroData.titlePrefix}
-              </motion.span>
-              <motion.span 
-                className="block font-black leading-[0.8] sm:leading-[0.75] text-center w-full"
-                style={{ 
-                  fontSize: 'clamp(3rem, 12vw, 10rem)',
-                  letterSpacing: '0',
-                  textAlign: 'center'
-                }}
-                variants={wordReveal}
-                custom={1.6}
-                initial="hidden"
-                animate={isInView ? "visible" : "hidden"}
-              >
-                {heroData.titleMain}
-              </motion.span>
-              <motion.div 
-                className="block font-light mt-3 sm:mt-4 tracking-[0.05em] sm:tracking-[0.1em] opacity-90 text-center"
-                style={{ fontSize: 'clamp(1.125rem, 4vw, 3rem)' }}
-                variants={wordReveal}
-                custom={2.0}
-                initial="hidden"
-                animate={isInView ? "visible" : "hidden"}
-              >
-                {heroData.titleSuffix}
+                <Image
+                  src="/images/instrumental-to-life-logo.svg"
+                  alt="Instrumental to Life"
+                  width={600}
+                  height={180}
+                  className="w-full max-w-[350px] sm:max-w-[450px] md:max-w-[550px] lg:max-w-[650px] h-auto"
+                  priority
+                />
               </motion.div>
             </h1>
           </div>
-          
-          <motion.p 
-            className="text-brand-sophisticated text-kawai-pearl/80 mb-brand-4xl mx-auto max-w-lg text-base sm:text-lg md:text-xl leading-relaxed font-light text-center px-4 sm:px-0"
+
+          <motion.p
+            className="text-brand-sophisticated text-kawai-pearl/80 mb-12 lg:mb-16 max-w-2xl text-lg md:text-xl leading-relaxed font-light text-center mx-auto"
             variants={contentReveal}
-            custom={2.5}
+            custom={1.6}
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
           >
             {heroData.description}
           </motion.p>
         </div>
-        
-        {/* CTA Buttons - Side by side */}
-        <motion.div
-          variants={contentReveal}
-          custom={3.0}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
-          className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4 sm:px-0"
-        >
-          {/* Find Your Store - White button on left */}
-          <Button
-            size="lg"
-            className="bg-white hover:bg-kawai-pearl text-kawai-black border-2 border-white hover:border-kawai-pearl text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4 min-h-[44px] w-full sm:w-auto font-medium transition-all duration-300"
-            asChild
-          >
-            <Link href={heroData.primaryCta.link}>
-              <span className="text-center leading-tight">{heroData.primaryCta.text}</span>
-            </Link>
-          </Button>
 
-          {/* View Our Collection - Red primary button on right */}
-          <Button
-            size="lg"
-            className="btn-brand-primary text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4 min-h-[44px] w-full sm:w-auto"
-            asChild
+        {/* CTA Buttons - Side by side */}
+        <div className="flex flex-col sm:flex-row gap-6 items-center justify-center">
+          <motion.div
+            variants={contentReveal}
+            custom={2.0}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
           >
-            <Link href={heroData.secondaryCta.link}>
-              <span className="text-center leading-tight">{heroData.secondaryCta.text}</span>
-            </Link>
-          </Button>
-        </motion.div>
+            <Button size="lg" className="btn-brand-primary text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7" asChild>
+              <Link href={heroData.primaryCta.link}>
+                {heroData.primaryCta.text}
+              </Link>
+            </Button>
+          </motion.div>
+          <motion.div
+            variants={contentReveal}
+            custom={2.2}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+          >
+            <Button size="lg" className="btn-brand-secondary text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7" asChild>
+              <Link href={heroData.secondaryCta.link}>
+                {heroData.secondaryCta.text}
+              </Link>
+            </Button>
+          </motion.div>
+        </div>
       </div>
     </section>
   );

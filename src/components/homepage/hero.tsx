@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
@@ -77,13 +78,13 @@ export function Hero({ data = DEFAULT_HERO_DATA }: HeroProps) {
       
       {/* Lighter Overlay - Let Background Video Shine */}
       <div className="absolute top-0 left-0 w-full h-full bg-kawai-black/35 z-10" />
-      
-      {/* Content - Centered on Mobile, Left on Desktop */}
+
+      {/* Content - Centered */}
       <div className="container-brand max-w-8xl mx-auto px-8 sm:px-12 lg:px-16 relative z-20">
-        <div className="max-w-5xl mx-auto lg:mx-0">
-          {/* Location and Established - Natural Flow */}
-          <motion.div 
-            className="text-center lg:text-left mb-8 sm:mb-12"
+        <div className="max-w-6xl mx-auto">
+          {/* Location and Established - Centered */}
+          <motion.div
+            className="text-center mb-8 sm:mb-12"
             variants={contentReveal}
             custom={0}
             initial="hidden"
@@ -98,39 +99,28 @@ export function Hero({ data = DEFAULT_HERO_DATA }: HeroProps) {
           </motion.div>
 
           <div className="mb-12 lg:mb-16">
-            <h1 className="heading-brand-luxury text-kawai-pearl mb-8 lg:mb-12 leading-tight tracking-tight text-center lg:text-left">
-              <motion.span 
-                className="block text-xl sm:text-2xl md:text-3xl font-normal mb-4 sm:mb-6 tracking-[0.15em] opacity-90"
+            <h1 className="heading-brand-luxury text-kawai-pearl mb-8 lg:mb-12 leading-tight tracking-tight text-center">
+              <motion.div
+                className="flex justify-center"
                 variants={wordReveal}
                 custom={0.4}
                 initial="hidden"
                 animate={isInView ? "visible" : "hidden"}
               >
-                {data.titlePrefix}
-              </motion.span>
-              <motion.span 
-                className="block text-lg min-[400px]:text-xl sm:text-2xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-black tracking-[-0.05em] sm:tracking-tight md:tracking-normal lg:tracking-[-0.01em] leading-[0.9] px-8 sm:px-4 md:px-2 lg:px-0 max-w-full overflow-hidden"
-                variants={wordReveal}
-                custom={0.8}
-                initial="hidden"
-                animate={isInView ? "visible" : "hidden"}
-              >
-                {data.titleMain}
-              </motion.span>
-              <motion.div 
-                className="block text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light mt-3 sm:mt-4 tracking-[0.08em] opacity-90"
-                variants={wordReveal}
-                custom={1.2}
-                initial="hidden"
-                animate={isInView ? "visible" : "hidden"}
-              >
-                {data.titleSuffix}
+                <Image
+                  src="/images/instrumental-to-life-logo.svg"
+                  alt="Instrumental to Life"
+                  width={600}
+                  height={180}
+                  className="w-full max-w-[350px] sm:max-w-[450px] md:max-w-[550px] lg:max-w-[650px] h-auto"
+                  priority
+                />
               </motion.div>
             </h1>
           </div>
-          
-          <motion.p 
-            className="text-brand-sophisticated text-kawai-pearl/80 mb-brand-4xl max-w-lg text-lg md:text-xl leading-relaxed font-light text-center lg:text-left mx-auto lg:mx-0"
+
+          <motion.p
+            className="text-brand-sophisticated text-kawai-pearl/80 mb-12 lg:mb-16 max-w-2xl text-lg md:text-xl leading-relaxed font-light text-center mx-auto"
             variants={contentReveal}
             custom={1.6}
             initial="hidden"
@@ -138,27 +128,27 @@ export function Hero({ data = DEFAULT_HERO_DATA }: HeroProps) {
           >
             {data.description}
           </motion.p>
-          
-          <div className="flex flex-col sm:flex-row gap-brand-lg items-center lg:items-start justify-center lg:justify-start">
-            <motion.div 
+
+          <div className="flex flex-col sm:flex-row gap-6 items-center justify-center">
+            <motion.div
               variants={contentReveal}
               custom={2.0}
               initial="hidden"
               animate={isInView ? "visible" : "hidden"}
             >
-              <Button size="lg" className="btn-brand-primary" asChild>
+              <Button size="lg" className="btn-brand-primary text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7" asChild>
                 <Link href={data.primaryCta.link}>
                   {data.primaryCta.text}
                 </Link>
               </Button>
             </motion.div>
-            <motion.div 
+            <motion.div
               variants={contentReveal}
               custom={2.2}
               initial="hidden"
               animate={isInView ? "visible" : "hidden"}
             >
-              <Button size="lg" className="btn-brand-secondary" asChild>
+              <Button size="lg" className="btn-brand-secondary text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7" asChild>
                 <Link href={data.secondaryCta.link}>
                   {data.secondaryCta.text}
                 </Link>

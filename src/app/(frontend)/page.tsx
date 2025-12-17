@@ -10,6 +10,7 @@ import { HeritageSection } from "@/components/homepage/heritage-section";
 import { InnovationSection } from "@/components/homepage/innovation-section";
 import { SoundQualitySection } from "@/components/homepage/sound-quality-section";
 import { FAQSection } from "@/components/homepage/faq-section";
+import { PianoKeyboardDivider } from "@/components/ui/PianoKeyboardDivider";
 import { getHomePageDataDirect } from "@/lib/payload-direct";
 import type { HomePageData } from "@/lib/types/homepage";
 import { Suspense } from "react";
@@ -137,6 +138,20 @@ function PianoGallerySkeleton() {
   );
 }
 
+function PianoKeyboardSkeleton() {
+  return (
+    <section className="bg-kawai-black py-12 animate-pulse">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-center gap-1">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="h-32 sm:h-40 w-12 bg-gray-300/20 rounded-b"></div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function NewsCarouselSkeleton() {
   return (
     <section className="py-24 animate-pulse">
@@ -219,17 +234,20 @@ async function HomePageContent() {
       {/* Hero Section */}
       <HomeHero />
 
+      {/* Piano Keyboard Divider - Brand Element */}
+      <PianoKeyboardDivider />
+
+      {/* News Carousel Section */}
+      <NewsCarousel {...(homePageData?.newsCarouselSection && { data: homePageData.newsCarouselSection })} />
+
       {/* Dealer Locations Section */}
       <DealerLocations locations={dealerLocations} />
-      
+
       {/* Piano Collection Section - Featured Models */}
       <PianoCollection {...(homePageData?.pianoCollectionSection && { data: homePageData.pianoCollectionSection })} />
 
       {/* Heritage & Craftsmanship Section - NEW for SEO */}
       <HeritageSection />
-
-      {/* News Carousel Section */}
-      <NewsCarousel {...(homePageData?.newsCarouselSection && { data: homePageData.newsCarouselSection })} />
 
       {/* Innovation & Technology Section - NEW for SEO */}
       <InnovationSection />
@@ -255,9 +273,10 @@ export default function Home() {
       <Suspense fallback={
         <div className="min-h-screen">
           <HeroSkeleton />
-          <PianoCollectionSkeleton />
+          <PianoKeyboardSkeleton />
           <NewsCarouselSkeleton />
           <DealerLocationsSkeleton />
+          <PianoCollectionSkeleton />
           <PianoGallerySkeleton />
           <ContactFormSkeleton />
         </div>

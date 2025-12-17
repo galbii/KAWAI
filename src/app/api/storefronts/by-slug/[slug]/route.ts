@@ -48,9 +48,6 @@ export async function GET(
         heroSection: {
           locationText: storefront.locationText,
           establishedText: storefront.establishedText,
-          titlePrefix: storefront.titlePrefix,
-          titleMain: storefront.titleMain,
-          titleSuffix: storefront.titleSuffix,
           description: storefront.description,
           primaryCta: storefront.primaryCta,
           secondaryCta: storefront.secondaryCta,

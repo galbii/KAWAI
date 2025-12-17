@@ -74,39 +74,12 @@ export const Storefronts: CollectionConfig = {
               }
             },
             {
-              name: 'titlePrefix',
-              type: 'text',
-              required: true,
-              defaultValue: 'The',
-              admin: {
-                description: 'Title prefix word (e.g., "The")'
-              }
-            },
-            {
-              name: 'titleMain',
-              type: 'text',
-              required: true,
-              defaultValue: 'INSTRUMENTAL',
-              admin: {
-                description: 'Main title word - typically displayed prominently'
-              }
-            },
-            {
-              name: 'titleSuffix',
-              type: 'text',
-              required: true,
-              defaultValue: 'to Life',
-              admin: {
-                description: 'Title suffix words (e.g., "to Life")'
-              }
-            },
-            {
               name: 'description',
               type: 'textarea',
               required: true,
               defaultValue: 'Every musician harbors a vision. Every performance seeks perfection. Since 1927, we\'ve been crafting the instruments that transform inspiration into reality. Visit our Lake St. Louis showroom and discover why we\'re Missouri\'s trusted Kawai piano experts.',
               admin: {
-                description: 'Hero description text displayed below the main title'
+                description: 'Hero description text displayed below the logo'
               }
             },
             {

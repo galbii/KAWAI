@@ -2344,19 +2344,7 @@ export interface Storefront {
    */
   establishedText: string;
   /**
-   * Title prefix word (e.g., "The")
-   */
-  titlePrefix: string;
-  /**
-   * Main title word - typically displayed prominently
-   */
-  titleMain: string;
-  /**
-   * Title suffix words (e.g., "to Life")
-   */
-  titleSuffix: string;
-  /**
-   * Hero description text displayed below the main title
+   * Hero description text displayed below the logo
    */
   description: string;
   /**
@@ -3396,9 +3384,6 @@ export interface StorefrontsSelect<T extends boolean = true> {
   isActive?: T;
   locationText?: T;
   establishedText?: T;
-  titlePrefix?: T;
-  titleMain?: T;
-  titleSuffix?: T;
   description?: T;
   primaryCta?:
     | T

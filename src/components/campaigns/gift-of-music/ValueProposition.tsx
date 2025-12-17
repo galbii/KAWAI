@@ -9,83 +9,123 @@ interface ValuePropositionProps {
 
 const values = [
   {
-    icon: '🎹',
-    title: '45-Minute Private Lesson',
-    value: '$75 Value',
-    description: 'Learn your first song in one session with personalized instruction'
+    title: 'Complimentary Private Lesson',
+    value: '45 Minutes',
+    description: 'Train on professional-grade instruments in soundproof studios—the same facility trusted by Dallas Jazz Piano Society for professional concerts'
   },
   {
-    icon: '💰',
-    title: 'Registration Fee WAIVED',
-    value: '$100 Value',
-    description: 'No upfront costs or hidden fees - start learning immediately'
+    title: 'Exclusive Concert Hall Access',
+    value: 'Premium',
+    description: 'Experience our acoustically-engineered 200-seat performance space featuring the Shigeru Kawai SK-EX concert grand—Kawai\'s flagship instrument'
   },
   {
-    icon: '📋',
-    title: 'Personalized Learning Plan',
+    title: 'Zero Enrollment Barriers',
+    value: 'Registration Waived',
+    description: 'Immediate access with no registration fees or hidden costs—join a community of students learning from competition-winning faculty'
+  },
+  {
+    title: 'Personalized Assessment & Plan',
     value: 'Included',
-    description: 'Customized curriculum tailored to skill level & musical goals'
-  },
-  {
-    icon: '⭐',
-    title: 'Professional Assessment',
-    value: 'Included',
-    description: 'Expert guidance from nationally certified instructors'
+    description: 'Custom curriculum designed by conservatory-trained instructors who\'ve won national competitions and hold degrees from Johns Hopkins Peabody Institute'
   }
 ]
 
 export default function ValueProposition({ className }: ValuePropositionProps) {
   return (
-    <section className={cn("py-16 sm:py-24 bg-gradient-to-br from-white via-gray-50 to-white", className)}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-8">
+    <section className={cn("py-24 sm:py-32 lg:py-40 bg-gradient-to-br from-gray-50 via-white to-gray-50", className)}>
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+        {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="text-center mb-16"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="text-center mb-20"
         >
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-serif text-gray-900 mb-4">
-            What Your Child Gets <span className="text-kawai-red">(FREE)</span>
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-kawai-black mb-6 leading-tight">
+            World-Class Training. Premium Facility.{' '}
+            <span className="text-kawai-red">Complimentary Access.</span>
           </h2>
-          <p className="text-xl sm:text-2xl text-gray-600 max-w-3xl mx-auto">
-            Over $175 in value - completely free this holiday season
+          <div className="w-24 h-1 bg-gradient-to-r from-kawai-red via-kawai-gold to-emerald-600 mx-auto mb-8" />
+          <p className="text-lg sm:text-xl lg:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed font-light">
+            Experience Dallas's most prestigious music academy—{' '}
+            <span className="font-semibold text-kawai-black">exclusive access to our state-of-the-art facility</span>, professional recording capabilities, and elite instruction, yours complimentary this holiday season
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+        {/* Value Cards */}
+        <div className="grid md:grid-cols-2 gap-8 lg:gap-10 mb-16">
           {values.map((item, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.7 + index * 0.1 }}
-              className="group relative p-8 bg-white rounded-2xl border-2 border-gray-200 hover:border-kawai-gold/70 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{
+                duration: 0.6,
+                delay: index * 0.1,
+                ease: "easeOut"
+              }}
+              className="group relative"
             >
-              {/* Icon */}
-              <div className="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">
-                {item.icon}
+              {/* Clean White Card */}
+              <div className="relative p-8 lg:p-10 bg-white rounded-none border-l-4 border-kawai-gold hover:border-kawai-red transition-all duration-300 shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.18)]">
+                {/* Corner Accent */}
+                <div className="absolute top-0 right-0 w-16 h-16">
+                  <div className="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-kawai-gold/20" />
+                  <div className="absolute top-2 right-2 text-kawai-gold/30 text-xs">✦</div>
+                </div>
+
+                {/* Content */}
+                <div className="relative">
+                  {/* Value Badge */}
+                  <div className="inline-block mb-4">
+                    <span className="text-2xl sm:text-3xl font-bold text-kawai-red">
+                      {item.value}
+                    </span>
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="font-serif text-2xl sm:text-3xl mb-4 text-kawai-black leading-tight">
+                    {item.title}
+                  </h3>
+
+                  {/* Description */}
+                  <p className="text-base sm:text-lg text-gray-700 leading-relaxed font-light">
+                    {item.description}
+                  </p>
+
+                  {/* Decorative Line */}
+                  <div className="mt-6 w-12 h-0.5 bg-gradient-to-r from-kawai-red via-kawai-gold to-emerald-600 group-hover:w-20 transition-all duration-300" />
+                </div>
               </div>
-
-              {/* Title */}
-              <h3 className="font-bold text-xl text-gray-900 mb-3 leading-tight">
-                {item.title}
-              </h3>
-
-              {/* Value */}
-              <p className="text-2xl text-kawai-red font-bold mb-3">
-                {item.value}
-              </p>
-
-              {/* Description */}
-              <p className="text-base text-gray-600 leading-relaxed">
-                {item.description}
-              </p>
-
-              {/* Decorative element */}
-              <div className="absolute top-4 right-4 w-12 h-12 bg-gradient-to-br from-kawai-red/10 to-kawai-gold/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </motion.div>
           ))}
         </div>
+
+        {/* Facility Badges */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-600 font-light"
+        >
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 bg-kawai-gold rounded-full" />
+            <span>Est. 2018</span>
+          </div>
+          <div className="w-px h-4 bg-gray-300" />
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 bg-kawai-gold rounded-full" />
+            <span>200-Seat Concert Hall</span>
+          </div>
+          <div className="w-px h-4 bg-gray-300" />
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 bg-kawai-gold rounded-full" />
+            <span>Professional Recording Studio</span>
+          </div>
+        </motion.div>
       </div>
     </section>
   )

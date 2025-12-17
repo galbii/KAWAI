@@ -1176,6 +1176,8 @@ curl -X GET http://localhost:3000/api/constantcontact/initialize
 |-------|----------|------------|----------|
 | **500 Internal Server Error** | `contacts.api.internal_server_error` | Incorrect API payload format | Ensure `create_source: "Contact"` and `list_memberships: string[]` |
 | **Update Validation Error** | `update_source is missing, update_source does not have a valid value` | Missing required field in update payload | Ensure `update_source: "Contact"` for all PUT /contacts/:id requests |
+| **Missing Email in Update** | `email_address, sms_channel are missing, at least one parameter must be provided` | Update payload missing required email_address object | Always include `email_address` object in every contact update (see Contact Update Requirements) |
+| **Permission State Transition Error** | `Cannot transition state via :implicit_confirm from "E"` | Attempting to downgrade permission_to_send (e.g., explicit → implicit) | Fetch existing contact first, preserve `permission_to_send` value in updates |
 | **OAuth Token Storage Fails** | "Failed to store tokens in database" | No database credentials record | Run initialization: `POST /api/constantcontact/initialize` |
 | **List Not Found Error** | "Failed to find or create SHOWROOM KAWAI list" | List lookup failing + duplicate creation | Enhanced with fallback logic and duplicate handling |
 | **Missing Required Fields** | API rejects contact creation | Missing `first_name`, `last_name`, or `create_source` | All are effectively required despite being marked optional |
@@ -1229,6 +1231,163 @@ The Constant Contact API requires different "source" fields depending on the ope
 | **Update Contact** | `PUT /contacts/:id` | `update_source` | `"Contact"` | Tracks where the contact was updated |
 
 **⚠️ CRITICAL**: Both fields are **required** for their respective operations. Omitting them causes validation errors.
+
+#### **Contact Update Requirements (January 2025)**
+
+Constant Contact API v3 has **strict requirements** for all contact update operations:
+
+**1. Email Address is REQUIRED in Every Update**
+
+Even when updating by `contact_id`, you **must** include the `email_address` object:
+
+```json
+{
+  "update_source": "Contact",
+  "email_address": {
+    "address": "contact@example.com",
+    "permission_to_send": "explicit"  // Must preserve existing value!
+  },
+  "list_memberships": ["new-list-id"]
+}
+```
+
+**Why?** Constant Contact requires `email_address` OR `sms_channel` in every update for security/audit purposes.
+
+**2. Permission State Preservation is CRITICAL**
+
+**DO NOT** change `permission_to_send` values arbitrarily. Constant Contact enforces strict state transitions:
+
+**Permission States (in order of strength):**
+- `not_set` - No permission established
+- `implicit` - Implicit consent (form submission)
+- `pending_confirmation` - Awaiting email confirmation
+- `explicit` - Explicit consent (double opt-in)
+- `temporary_hold` - Temporary suspension
+- `unsubscribed` - User opted out
+
+**State Transition Rules:**
+- ✅ **Can upgrade**: `implicit` → `explicit`
+- ❌ **Cannot downgrade**: `explicit` → `implicit` (causes error!)
+- ❌ **Cannot change**: `unsubscribed` → any other state
+
+**Error Example:**
+```json
+{
+  "error_key": "contacts.api.bad_request",
+  "error_message": "Cannot transition state via :implicit_confirm from \"E\" (Reason(s): State cannot transition via \"implicit confirm\")"
+}
+```
+
+**Solution: Always Preserve Existing Permission**
+
+```typescript
+// ✅ CORRECT: Fetch contact first, preserve permission
+const existingContact = await getContactByEmail(email);
+
+const updatePayload = {
+  update_source: 'Contact',
+  email_address: {
+    address: email,
+    // CRITICAL: Use existing permission status
+    permission_to_send: existingContact.email_address.permission_to_send
+  },
+  list_memberships: newListIds,
+  custom_fields: newCustomFields
+};
+```
+
+**3. Best Practice: Preserve All Contact Data**
+
+When updating contacts, include current values for key fields to avoid data loss:
+
+```typescript
+// ✅ RECOMMENDED: Include existing data in updates
+const updatePayload = {
+  update_source: 'Contact',
+  email_address: {
+    address: contact.email_address.address,
+    permission_to_send: contact.email_address.permission_to_send  // Preserve!
+  },
+  first_name: contact.first_name,      // Preserve existing
+  last_name: contact.last_name,        // Preserve existing
+  phone_numbers: contact.phone_numbers, // Preserve existing
+  list_memberships: [...existingListIds, ...newListIds], // Merge lists
+  custom_fields: [...existingFields, ...newFields]       // Merge fields
+};
+```
+
+#### **Implementation in Our Codebase**
+
+Our `ConstantContactListManager` (`src/lib/constantcontact/lists.ts`) handles this automatically:
+
+```typescript
+async updateContactLists(
+  contactId: string,
+  listIds: string[],
+  customFields?: Array<{ custom_field_id: string; value: string }>,
+  contactInfo?: {
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    permissionToSend?: 'implicit' | 'explicit' | ...;  // ← Accepts permission status
+  }
+): Promise<ApiResponse<Contact>> {
+  const data: any = {
+    update_source: 'Contact',
+    list_memberships: listIds
+  };
+
+  // REQUIRED: Include email_address
+  if (contactInfo?.email) {
+    data.email_address = {
+      address: contactInfo.email,
+      permission_to_send: contactInfo.permissionToSend || 'implicit'  // ← Uses provided or defaults
+    };
+  }
+
+  // Preserve other contact fields
+  if (contactInfo?.firstName) data.first_name = contactInfo.firstName;
+  if (contactInfo?.lastName) data.last_name = contactInfo.lastName;
+  if (contactInfo?.phone) {
+    data.phone_numbers = [{
+      phone_number: contactInfo.phone,
+      kind: 'mobile' as const
+    }];
+  }
+
+  // Add custom fields
+  if (customFields?.length) {
+    data.custom_fields = customFields.filter(field =>
+      field.custom_field_id && field.value
+    );
+  }
+
+  return this.client.put<Contact>(`/contacts/${contactId}`, data);
+}
+```
+
+**Usage Example:**
+
+```typescript
+// When updating existing contact, fetch and preserve permission
+const existingContact = await getContactListMemberships(email);
+
+if (existingContact.exists && existingContact.contact) {
+  await updateContactLists(
+    existingContact.contact.contact_id,
+    allListIds,
+    customFields,
+    {
+      email: email,
+      firstName: firstName,
+      lastName: lastName,
+      phone: phone,
+      permissionToSend: existingContact.contact.email_address.permission_to_send  // ← CRITICAL!
+    }
+  );
+}
+```
 
 #### **Contact Creation Payload**
 

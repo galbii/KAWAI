@@ -110,9 +110,6 @@ export function getMediaWithFallback(
 export const FALLBACK_HERO_DATA: HeroSectionData = {
   locationText: "St. Louis's Premier Kawai Piano Dealer",
   establishedText: "Est. 1927 • Lake St. Louis, Missouri",
-  titlePrefix: "The",
-  titleMain: "INSTRUMENTAL",
-  titleSuffix: "to Life",
   description: "Every musician harbors a vision. Every performance seeks perfection. Since 1927, we've been crafting the instruments that transform inspiration into reality. Visit our Lake St. Louis showroom and discover why we're Missouri's trusted Kawai piano experts.",
   primaryCta: {
     text: "View Our Piano Collection",

@@ -6,6 +6,7 @@ import {
   ContactForm,
   ShowroomLocation
 } from "@/components/homepage";
+import { PianoKeyboardDivider } from "@/components/ui/PianoKeyboardDivider";
 import { getHomePageData } from "@/lib/payload";
 import { getStorefrontBySlugDirect, getHomePageDataDirect } from "@/lib/payload-direct";
 import { LocalBusinessSchema } from "@/components/seo/LocalBusinessSchema";
@@ -25,9 +26,6 @@ function transformStorefrontData(rawData: any): HomePageData | null {
     heroSection: {
       locationText: rawData.locationText,
       establishedText: rawData.establishedText,
-      titlePrefix: rawData.titlePrefix,
-      titleMain: rawData.titleMain,
-      titleSuffix: rawData.titleSuffix,
       description: rawData.description,
       primaryCta: rawData.primaryCta,
       secondaryCta: rawData.secondaryCta,
@@ -194,6 +192,20 @@ function NewsCarouselSkeleton() {
   );
 }
 
+function PianoKeyboardSkeleton() {
+  return (
+    <section className="bg-kawai-black py-12 animate-pulse">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-center gap-1">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="h-32 sm:h-40 w-12 bg-gray-300/20 rounded-b"></div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function ContactFormSkeleton() {
   return (
     <section className="bg-kawai-pearl py-24 animate-pulse">
@@ -266,6 +278,12 @@ async function StorefrontContent({ slug }: { slug: string }) {
         {/* Hero Section */}
         <Hero {...(storefrontData?.heroSection && { data: storefrontData.heroSection })} />
 
+        {/* Piano Keyboard Divider - Brand Element */}
+        <PianoKeyboardDivider />
+
+        {/* News Carousel Section */}
+        <NewsCarousel {...(storefrontData?.newsCarouselSection && { data: storefrontData.newsCarouselSection })} />
+
         {/* Showroom Location Section */}
         <ShowroomLocation {...(storefrontData?.showroomSection && { data: storefrontData.showroomSection })} />
 
@@ -274,9 +292,6 @@ async function StorefrontContent({ slug }: { slug: string }) {
 
         {/* Piano Gallery Section - Uses HomePage collection data */}
         <PianoGallery data={pianoGalleryData} />
-
-        {/* News Carousel Section */}
-        <NewsCarousel {...(storefrontData?.newsCarouselSection && { data: storefrontData.newsCarouselSection })} />
 
         {/* Contact Form Section */}
         <ContactForm {...(storefrontData?.contactFormSection && { data: storefrontData.contactFormSection })} />
@@ -432,10 +447,11 @@ export default async function StorefrontPage({ params }: { params: Promise<{ slu
     <Suspense fallback={
       <div className="min-h-screen">
         <HeroSkeleton />
+        <PianoKeyboardSkeleton />
+        <NewsCarouselSkeleton />
         <ShowroomSkeleton />
         <PianoCollectionSkeleton />
         <PianoGallerySkeleton />
-        <NewsCarouselSkeleton />
         <ContactFormSkeleton />
       </div>
     }>

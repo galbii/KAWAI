@@ -215,17 +215,48 @@ export class ConstantContactListManager {
 
   /**
    * Update contact's list memberships and optionally custom fields
+   * Note: Constant Contact API requires at least one of email_address or sms_channel in every update
    */
   async updateContactLists(
     contactId: string,
     listIds: string[],
-    customFields?: Array<{ custom_field_id: string; value: string }>
+    customFields?: Array<{ custom_field_id: string; value: string }>,
+    contactInfo?: {
+      email?: string;
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+      permissionToSend?: 'implicit' | 'explicit' | 'pending_confirmation' | 'temporary_hold' | 'unsubscribed' | 'not_set';
+    }
   ): Promise<ApiResponse<Contact>> {
     // Build update payload with required fields
     const data: any = {
       update_source: 'Contact', // Required field for updates (similar to create_source for creation)
       list_memberships: listIds
     };
+
+    // Add email_address if provided (REQUIRED by Constant Contact API v3)
+    // IMPORTANT: Always preserve existing permission_to_send to avoid state transition errors
+    if (contactInfo?.email) {
+      data.email_address = {
+        address: contactInfo.email,
+        permission_to_send: contactInfo.permissionToSend || 'implicit'
+      };
+    }
+
+    // Add optional contact fields if provided
+    if (contactInfo?.firstName) {
+      data.first_name = contactInfo.firstName;
+    }
+    if (contactInfo?.lastName) {
+      data.last_name = contactInfo.lastName;
+    }
+    if (contactInfo?.phone) {
+      data.phone_numbers = [{
+        phone_number: contactInfo.phone,
+        kind: 'mobile' as const
+      }];
+    }
 
     // Add custom fields if provided
     if (customFields && customFields.length > 0) {
@@ -243,14 +274,27 @@ export class ConstantContactListManager {
    * Remove contact from specific lists
    */
   async removeContactFromLists(contactId: string, listIds: string[]): Promise<ApiResponse<Contact>> {
+    // Fetch contact first to get email (required by Constant Contact API)
+    const contactResponse = await this.client.get<Contact>(`/contacts/${contactId}`);
+
+    if (!contactResponse.success || !contactResponse.data) {
+      return contactResponse;
+    }
+
+    const contact = contactResponse.data;
     const listMemberships = listIds.map(list_id => ({
       list_id,
       membership_status: 'removed' as const
     }));
 
-    const data = {
+    const data: any = {
       update_source: 'Contact', // Required field for updates
-      list_memberships: listMemberships
+      list_memberships: listMemberships,
+      // Include email_address (required by Constant Contact API v3 for all updates)
+      email_address: {
+        address: contact.email_address.address,
+        permission_to_send: contact.email_address.permission_to_send
+      }
     };
 
     return this.client.put<Contact>(`/contacts/${contactId}`, data);
@@ -356,8 +400,19 @@ export class ConstantContactListManager {
       // Merge with new list IDs
       const allListIds = [...new Set([...currentListIds, ...listIds])];
 
-      // Update contact with all list memberships
-      return this.updateContactLists(contactId, allListIds);
+      // Update contact with all list memberships (include email from existing contact)
+      return this.updateContactLists(
+        contactId,
+        allListIds,
+        undefined,
+        {
+          email: contact.email_address.address,
+          ...(contact.first_name && { firstName: contact.first_name }),
+          ...(contact.last_name && { lastName: contact.last_name }),
+          ...(contact.phone_numbers?.[0]?.phone_number && { phone: contact.phone_numbers[0].phone_number }),
+          permissionToSend: contact.email_address.permission_to_send
+        }
+      );
     } catch (error) {
       return {
         success: false,
@@ -393,7 +448,18 @@ export class ConstantContactListManager {
         console.log('Constant Contact: Contact exists, updating list memberships and custom fields');
         // Update existing contact
         const allListIds = [...new Set([...existingContact.listIds, ...contactData.list_ids])];
-        return this.updateContactLists(existingContact.contact.contact_id!, allListIds, contactData.custom_fields);
+        return this.updateContactLists(
+          existingContact.contact.contact_id!,
+          allListIds,
+          contactData.custom_fields,
+          {
+            email: contactData.email_address,
+            ...(contactData.first_name && { firstName: contactData.first_name }),
+            ...(contactData.last_name && { lastName: contactData.last_name }),
+            ...(contactData.phone_number && { phone: contactData.phone_number }),
+            permissionToSend: existingContact.contact.email_address.permission_to_send
+          }
+        );
       } else {
         console.log('Constant Contact: Contact does not exist, creating new contact');
         // Try to create new contact
@@ -425,7 +491,18 @@ export class ConstantContactListManager {
 
               if (retryContact.exists && retryContact.contact) {
                 const allListIds = [...new Set([...retryContact.listIds, ...contactData.list_ids])];
-                return this.updateContactLists(retryContact.contact.contact_id!, allListIds, contactData.custom_fields);
+                return this.updateContactLists(
+                  retryContact.contact.contact_id!,
+                  allListIds,
+                  contactData.custom_fields,
+                  {
+                    email: contactData.email_address,
+                    ...(contactData.first_name && { firstName: contactData.first_name }),
+                    ...(contactData.last_name && { lastName: contactData.last_name }),
+                    ...(contactData.phone_number && { phone: contactData.phone_number }),
+                    permissionToSend: retryContact.contact.email_address.permission_to_send
+                  }
+                );
               }
             }
           }

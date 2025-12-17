@@ -132,7 +132,7 @@ function LocationSectionComponent({ locationName, address, phone, spotsRemaining
                   onClick={onCTAClick}
                   className="w-full bg-gradient-to-r from-kawai-red to-red-700 hover:from-kawai-red/90 hover:to-red-800 text-white px-8 py-5 rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] shadow-lg"
                 >
-                  🎁 RESERVE MY FREE LESSON NOW 🎄
+                  RESERVE MY FREE LESSON NOW
                 </button>
               )}
 

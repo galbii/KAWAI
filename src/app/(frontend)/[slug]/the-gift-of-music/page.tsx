@@ -12,7 +12,6 @@ import StickyHeader from '@/components/campaigns/gift-of-music/StickyHeader';
 import HeroSection from '@/components/campaigns/gift-of-music/HeroSection';
 import ValueProposition from '@/components/campaigns/gift-of-music/ValueProposition';
 import EmotionalBenefits from '@/components/campaigns/gift-of-music/EmotionalBenefits';
-import SocialProof from '@/components/campaigns/gift-of-music/SocialProof';
 import InstructorCredentials from '@/components/campaigns/gift-of-music/InstructorCredentials';
 import LocationSection from '@/components/campaigns/gift-of-music/LocationSection';
 
@@ -371,63 +370,88 @@ export default function MusicSchoolEnrollmentPage({
               />
 
               {/* Full-width sections */}
+              <EmotionalBenefits onCTAClick={handleCTAClick} />
               <ValueProposition />
-              <EmotionalBenefits />
-              <SocialProof />
               <InstructorCredentials />
 
               {/* Final CTA Section - Constrained */}
-              <div className="max-w-5xl mx-auto px-4 py-12 sm:py-16">
-                <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl p-8 sm:p-12 text-center border-4 border-kawai-red relative overflow-hidden">
-                  {/* Decorative background */}
-                  <div className="absolute inset-0 opacity-5">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-kawai-gold rounded-full blur-3xl" />
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-kawai-red rounded-full blur-3xl" />
-                  </div>
+              <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20 lg:py-24">
+                <div className="bg-white rounded-none border-t-4 border-kawai-gold shadow-[0_12px_50px_rgba(0,0,0,0.25)] p-10 sm:p-14 lg:p-20 text-center relative overflow-hidden">
+                  {/* Subtle decorative accents */}
+                  <div className="absolute top-0 left-8 text-kawai-red text-2xl opacity-30">✦</div>
+                  <div className="absolute top-0 right-8 text-emerald-600 text-2xl opacity-30">✦</div>
 
                   <div className="relative z-10">
-                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-kawai-black mb-6">
-                      Don't Let Your Child Miss This Opportunity
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-serif text-kawai-black mb-4 leading-tight">
+                      Reserve Your Place at Dallas's
+                      <br />
+                      Premier Music Academy
                     </h2>
-                    <div className="flex items-center justify-center gap-6 sm:gap-8 mb-8">
+
+                    <p className="text-base sm:text-lg text-gray-600 font-light mb-8 max-w-3xl mx-auto leading-relaxed">
+                      Limited Spots in Our State-of-the-Art Facility
+                    </p>
+
+                    <div className="w-32 h-1 bg-gradient-to-r from-kawai-red via-kawai-gold to-emerald-600 mx-auto mb-10" />
+
+                    {/* Urgency Bar */}
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 mb-10 pb-10 border-b-2 border-gray-100">
                       <div className="text-center">
-                        <p className="text-kawai-red font-bold text-lg mb-2">⏰ Deadline</p>
-                        <p className="text-gray-700 text-xl font-semibold">January 3rd, 2026</p>
+                        <p className="text-sm text-gray-500 font-light mb-2 uppercase tracking-wide">Holiday Special Deadline</p>
+                        <p className="text-2xl sm:text-3xl font-serif text-kawai-black">January 3rd, 2026</p>
                       </div>
-                      <div className="w-px h-16 bg-gray-300"></div>
+                      <div className="hidden sm:block w-px h-16 bg-gray-200"></div>
                       <div className="text-center">
-                        <p className="text-kawai-red font-bold text-lg mb-2">🔴 Spots Left</p>
-                        <p className="text-gray-700 text-4xl font-bold">{spotsRemaining}</p>
+                        <p className="text-sm text-gray-500 font-light mb-2 uppercase tracking-wide">Remaining Spots</p>
+                        <p className="text-5xl sm:text-6xl font-bold text-kawai-red tabular-nums">{spotsRemaining}</p>
                       </div>
                     </div>
+
+                    {/* Premium Description */}
+                    <div className="max-w-3xl mx-auto mb-10">
+                      <p className="text-base sm:text-lg text-gray-700 leading-relaxed font-light mb-6">
+                        Since opening in 2018, Kawai School of Music Dallas has maintained the highest standards in musical education. Our 200-seat concert hall, professional recording studio, and Shigeru Kawai SK-EX concert grand—Kawai's flagship instrument—represent an investment in excellence, and this is your opportunity to experience it free.
+                      </p>
+                      <p className="text-lg sm:text-xl font-serif text-kawai-black">
+                        Only <span className="text-kawai-red font-bold text-2xl">{spotsRemaining}</span> students will secure enrollment before spaces fill.
+                      </p>
+                    </div>
+
+                    {/* CTA Button */}
                     <button
                       onClick={handleCTAClick}
-                      className="w-full bg-gradient-to-r from-kawai-red to-red-700 hover:from-kawai-red/90 hover:to-red-800 text-white px-8 py-5 rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] shadow-lg mb-4"
+                      className="bg-kawai-red hover:bg-kawai-red/90 text-white px-12 py-5 font-bold text-lg sm:text-xl transition-all transform hover:scale-105 shadow-lg hover:shadow-xl mb-4 w-full sm:w-auto"
                     >
-                      🎁 CLAIM MY FREE LESSON NOW 🎄
+                      Secure My Spot Now
                     </button>
-                    <p className="text-center text-sm text-gray-600">
-                      🔒 Secure Registration • No Credit Card Required • Privacy Guaranteed
+
+                    <p className="text-sm sm:text-base text-gray-600 font-light">
+                      Enrollment closes January 3rd or when all {spotsRemaining} spots are filled—whichever comes first.
                     </p>
                   </div>
                 </div>
 
-                {/* Trust Badges */}
-                <div className="mt-8 text-center">
-                  <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-600">
+                {/* Trust Badges - Premium Facility Focus */}
+                <div className="mt-10 text-center">
+                  <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 text-xs sm:text-sm text-gray-600 font-light">
                     <div className="flex items-center gap-2">
-                      <span>🔒</span>
-                      <span className="font-medium">SSL Secured</span>
+                      <div className="w-1.5 h-1.5 bg-kawai-gold rounded-full" />
+                      <span>Est. 2018</span>
                     </div>
                     <div className="w-px h-4 bg-gray-300"></div>
                     <div className="flex items-center gap-2">
-                      <span>✓</span>
-                      <span className="font-medium">No Hidden Fees</span>
+                      <div className="w-1.5 h-1.5 bg-kawai-gold rounded-full" />
+                      <span>Competition-Winning Faculty</span>
                     </div>
                     <div className="w-px h-4 bg-gray-300"></div>
                     <div className="flex items-center gap-2">
-                      <span>📞</span>
-                      <span className="font-medium">24/7 Support</span>
+                      <div className="w-1.5 h-1.5 bg-kawai-gold rounded-full" />
+                      <span>200-Seat Concert Hall</span>
+                    </div>
+                    <div className="w-px h-4 bg-gray-300"></div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-kawai-gold rounded-full" />
+                      <span>Professional Recording Studio</span>
                     </div>
                   </div>
                 </div>
@@ -666,7 +690,7 @@ export default function MusicSchoolEnrollmentPage({
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-base font-semibold text-kawai-black mb-2">
-                          School Grade <span className="text-sm font-normal text-gray-500">(optional)</span>
+                          School Grade <span className="text-sm font-normal text-gray-500">(if applicable)</span>
                         </label>
                         <input
                           type="text"
@@ -678,7 +702,7 @@ export default function MusicSchoolEnrollmentPage({
 
                       <div>
                         <label className="block text-base font-semibold text-kawai-black mb-2">
-                          Current School <span className="text-sm font-normal text-gray-500">(optional)</span>
+                          Current School <span className="text-sm font-normal text-gray-500">(if applicable)</span>
                         </label>
                         <input
                           type="text"
@@ -882,10 +906,10 @@ export default function MusicSchoolEnrollmentPage({
                   >
                     <div className="text-center mb-8">
                       <h2 className="text-3xl font-serif text-kawai-black mb-2">
-                        Emergency Contact
+                        Primary Contact
                       </h2>
                       <p className="text-kawai-black/60">
-                        Who should we contact in case of emergency?
+                        Who should we contact regarding this enrollment?
                       </p>
                     </div>
 
