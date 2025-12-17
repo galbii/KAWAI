@@ -97,7 +97,7 @@ export const PERFORMANCES: Performance[] = [
     startDateTime: '2026-01-23T15:30:00-08:00',
     endDateTime: '2026-01-23T16:15:00-08:00',
     genre: 'Romantic',
-    artistImage: '/images/artists/namm-2026/artur-zakiyan.jpg',
+    artistImage: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/artur/Artur%20Zakiyan%20Kawai-1%202.jpg',
     artistBio: 'Armenian pianist and composer Artur Zakiyan creates a mesmerizing sonic landscape where centuries-old Armenian traditions meet contemporary classical expression. A graduate of the prestigious Yerevan State Conservatory After Komitas, Artur has dedicated his artistry to reimagining the rich heritage of Armenian music through a modern lens. As Music Producer at Solidwave Studios and an active touring artist performing at venues from Los Angeles\' Catalina Jazz Club to Fresno\'s Tower Theatre, he brings passionate intensity and cultural depth to every performance. His innovative fusion of Armenian ethnic melodies with classical contemporary and new age influences offers audiences a unique and emotionally powerful musical journey.',
     artistSlug: 'artur-zakiyan',
     socialLinks: {
@@ -120,7 +120,7 @@ export const PERFORMANCES: Performance[] = [
     startDateTime: '2026-01-24T11:00:00-08:00',
     endDateTime: '2026-01-24T11:45:00-08:00',
     genre: 'Jazz',
-    artistImage: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/sergio/DSC06342-2.jpg',
+    artistImage: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/sergio/sergiohero.jpg',
     artistBio: 'Sergio de Miguel is a Spanish pianist and composer from Vigo, Galicia, now based in Los Angeles. His music blends his Galician and Spanish roots with jazz, flamenco, classical and contemporary music elements, and world music. Guided by the belief that melodies can tell stories words cannot, he creates music full of emotional depth, color, and cultural richness, inviting listeners into a unique, multicultural soundscape.',
     artistSlug: 'sergio-de-miguel',
     socialLinks: {

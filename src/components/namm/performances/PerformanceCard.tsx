@@ -95,7 +95,8 @@ export default function PerformanceCard({
         )}
         style={{
           // Desktop-only stagger margin (applied via parent wrapper)
-          zIndex: isHovered ? 20 : 10 - index,
+          // Reversed z-index: higher index = higher z-index (bottom card on top)
+          zIndex: isHovered ? 20 : 10 + index,
         }}
       >
         {/* Artist Image Section with Overlay */}

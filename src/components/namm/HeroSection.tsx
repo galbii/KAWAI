@@ -193,6 +193,11 @@ export default function HeroSection({
       {/* Main Content - Centered Composition */}
       <div className="relative z-10 w-full max-w-6xl mx-auto px-6 md:px-12 pt-24 pb-20">
         <div className="flex flex-col items-center text-center space-y-8 md:space-y-12">
+          {/* SEO H1 - Visually hidden but accessible to search engines */}
+          <h1 className="sr-only">
+            NAMM 2026: Kawai Piano Booth Experience - Live Artist Performances and Piano Demonstrations at Anaheim Convention Center
+          </h1>
+
           {/* NAMM Logo - Small, Above with smooth crossfade */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -288,7 +293,7 @@ export default function HeroSection({
               Learn More
             </button>
             <a
-              href="https://kawai.us"
+              href="https://kawaius.com"
               target="_blank"
               rel="noopener noreferrer"
               className="px-8 py-3 md:px-10 md:py-4 bg-kawai-red text-white text-base md:text-lg font-semibold rounded-md hover:bg-kawai-red/90 transition-all duration-300 hover:scale-105 text-center"
@@ -296,7 +301,7 @@ export default function HeroSection({
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2)'
               }}
             >
-              Visit Kawai.us
+              Visit Kawai US
             </a>
           </motion.div>
         </div>

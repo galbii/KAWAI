@@ -40,72 +40,143 @@ const CantAttendCTA = dynamic(() => import('@/components/namm/CantAttendCTA'), {
   loading: () => <CTASkeleton />
 })
 
-// Enable ISR - revalidate daily for event updates
+// Enable ISR - revalidate daily for event updates to refresh dynamic title
 export const revalidate = 86400 // 24 hours
 
-// SEO Metadata for NAMM 2026 Landing Page
-export const metadata: Metadata = {
-  title: 'The KAWAI Experience | NAMM 2026 Booth Location and Artist Lineup',
-  description: 'Experience the Kawai booth at NAMM Show 2026. Live artist performances, hands-on piano demonstrations, and exclusive consultations. Discover what to expect at the premier piano exhibition in Anaheim.',
-  keywords: [
-    'namm 2026',
-    'namm show 2026',
-    'kawai booth namm 2026',
-    'namm 2026 dates',
-    'kawai namm',
-    'best booths at namm',
-    'piano demonstrations namm 2026',
-    'what to expect at namm 2026',
-    'namm 2026 performances',
-    'namm 2026 artists',
-    'namm 2026 artist schedule',
-    'namm 2026 events schedule',
-    'live artist performances',
-    'hands on piano demos',
-    'kawai pianos namm 2026',
-    'namm anaheim 2026',
-    'anaheim convention center',
-    'namm 2026 exhibitors',
-    'piano booth experience',
-    'namm 2026 piano showcase',
-    'hybrid piano demonstrations',
-    'shigeru kawai',
-    'novus hybrid piano',
-    'concert grand piano demos',
-    'piano technology showcase',
-    'professional piano demonstration',
-    'namm 2026 schedule',
-    'namm 2026 tickets',
-    'namm 2026 live music',
-    'piano performance calendar'
-  ],
-  alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/namm-2026`
-  },
-  openGraph: {
-    title: 'Kawai Booth Experience at NAMM Show 2026',
-    description: 'Visit the premier Kawai piano booth. Live performances, hands-on demonstrations, and professional consultations. Jan 22-24 at Anaheim Convention Center.',
-    type: 'website',
-    url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/namm-2026`,
-    siteName: 'Kawai Piano',
-    images: [
-      {
-        url: '/images/namm/og-namm-2026.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'Kawai at NAMM 2026 - Experience Innovation'
-      }
-    ]
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Kawai Booth at NAMM 2026',
-    description: 'Experience live performances, hands-on demos, and expert consultations. Jan 22-24 at Anaheim Convention Center.',
-    images: ['/images/namm/og-namm-2026.jpg']
-  },
-  robots: {
-    index: true,
-    follow: true
+/**
+ * Dynamic Metadata Generation for NAMM 2026
+ *
+ * Automatically adjusts page title and description based on proximity to the event date.
+ * This optimizes for time-sensitive search queries and improves CTR.
+ *
+ * SEO Benefits:
+ * - Matches search intent at different stages (preview, countdown, live, recap)
+ * - Creates urgency with countdown messaging
+ * - Signals fresh content to Google's QDF (Query Deserves Freshness) algorithm
+ * - Captures different keyword variations over time
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const eventStartDate = new Date('2026-01-22T09:00:00-08:00') // Jan 22, 2026
+  const eventEndDate = new Date('2026-01-24T18:00:00-08:00')   // Jan 24, 2026
+  const now = new Date()
+
+  // Calculate days until event (positive = future, negative = past)
+  const daysUntil = Math.ceil((eventStartDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+  const eventInProgress = now >= eventStartDate && now <= eventEndDate
+
+  // Dynamic title and description based on time period
+  let dynamicTitle: string
+  let dynamicDescription: string
+  let ogTitle: string
+  let twitterTitle: string
+
+  if (daysUntil > 30) {
+    // More than a month away - Preview phase
+    dynamicTitle = 'Kawai at NAMM 2026 | Booth Preview, Artist Lineup & Featured Pianos'
+    dynamicDescription = 'Preview the Kawai booth at NAMM Show 2026 (January 22-24, Anaheim). Discover featured artists, new piano releases, and exclusive demonstrations at Booth #9110, Hall B.'
+    ogTitle = 'Kawai Booth Experience at NAMM Show 2026 - Preview & Details'
+    twitterTitle = 'Preview Kawai at NAMM 2026'
+  } else if (daysUntil > 14) {
+    // 2-4 weeks away - Early anticipation
+    dynamicTitle = `Kawai at NAMM 2026 | ${daysUntil} Days Until Show - Booth #9110 Details`
+    dynamicDescription = `NAMM 2026 is ${daysUntil} days away! Get ready for the complete Kawai booth experience: live artist performances, hands-on piano demos, and expert consultations at Booth #9110, Hall B, Anaheim Convention Center.`
+    ogTitle = `Kawai at NAMM 2026 - ${daysUntil} Days Until Show`
+    twitterTitle = `NAMM 2026 in ${daysUntil} Days - Kawai Booth`
+  } else if (daysUntil > 7) {
+    // 1-2 weeks away - Building momentum
+    dynamicTitle = `Kawai at NAMM 2026 | ${daysUntil} Days Away - Artist Schedule & Demos`
+    dynamicDescription = `Only ${daysUntil} days until NAMM 2026! Experience Kawai's latest innovations: Crystal Grand Piano, HERALBONY collaboration, Novus hybrids, and Shigeru Kawai concert grands. Live performances daily at Booth #9110.`
+    ogTitle = `Kawai at NAMM 2026 - ${daysUntil} Days to Go!`
+    twitterTitle = `${daysUntil} Days Until NAMM 2026`
+  } else if (daysUntil > 0) {
+    // Final week - High urgency
+    dynamicTitle = `Kawai at NAMM 2026 This Week | ${daysUntil} Days Away - Final Details`
+    dynamicDescription = `NAMM 2026 starts in just ${daysUntil} days! Final details for the Kawai booth at Anaheim Convention Center. Live artist performances, exclusive product launches, and hands-on demos. Booth #9110, Hall B. Jan 22-24.`
+    ogTitle = `NAMM 2026 This Week - Kawai Booth in ${daysUntil} Days`
+    twitterTitle = `${daysUntil} Days Until NAMM!`
+  } else if (eventInProgress) {
+    // During the event - Maximum urgency
+    dynamicTitle = 'LIVE NOW: Kawai at NAMM 2026 | Booth #9110, Hall B, Anaheim'
+    dynamicDescription = 'Visit Kawai at NAMM Show 2026 TODAY! Booth #9110, Hall B, Anaheim Convention Center. Live artist performances, hands-on piano demonstrations, and exclusive consultations. Show hours: 10 AM - 6 PM.'
+    ogTitle = 'LIVE NOW: Kawai at NAMM 2026 - Booth #9110'
+    twitterTitle = 'LIVE: Kawai at NAMM 2026'
+  } else {
+    // After the event - Recap phase
+    dynamicTitle = 'Kawai at NAMM 2026 | Highlights, Recap & New Product Reveals'
+    dynamicDescription = 'Relive the Kawai experience at NAMM 2026. Performance highlights, new product announcements, exclusive booth photos, and coverage from the show. Discover what we unveiled at Booth #9110.'
+    ogTitle = 'NAMM 2026 Highlights - Kawai Booth Recap'
+    twitterTitle = 'NAMM 2026 Kawai Recap'
+  }
+
+  return {
+    title: dynamicTitle,
+    description: dynamicDescription,
+    keywords: [
+      'namm 2026',
+      'namm show 2026',
+      'kawai booth namm 2026',
+      'namm 2026 dates',
+      'kawai namm',
+      'best booths at namm',
+      'piano demonstrations namm 2026',
+      'what to expect at namm 2026',
+      'namm 2026 performances',
+      'namm 2026 artists',
+      'namm 2026 artist schedule',
+      'namm 2026 events schedule',
+      'live artist performances',
+      'hands on piano demos',
+      'kawai pianos namm 2026',
+      'namm anaheim 2026',
+      'anaheim convention center',
+      'namm 2026 exhibitors',
+      'piano booth experience',
+      'namm 2026 piano showcase',
+      'hybrid piano demonstrations',
+      'shigeru kawai',
+      'novus hybrid piano',
+      'concert grand piano demos',
+      'piano technology showcase',
+      'professional piano demonstration',
+      'namm 2026 schedule',
+      'namm 2026 tickets',
+      'namm 2026 live music',
+      'piano performance calendar'
+    ],
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/namm-2026`
+    },
+    openGraph: {
+      title: ogTitle,
+      description: dynamicDescription,
+      type: 'website',
+      url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/namm-2026`,
+      siteName: 'Kawai Piano',
+      images: [
+        {
+          url: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/DSC_1820_sRGB.jpg',
+          width: 1200,
+          height: 800,
+          alt: 'Kawai Crystal Grand Piano at NAMM 2026 - Premium Piano Experience'
+        },
+        {
+          url: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/David%20Snyder%20Photo%202.jpg',
+          width: 1200,
+          height: 800,
+          alt: 'Live Artist Performance at Kawai NAMM 2026 Booth'
+        }
+      ]
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: twitterTitle,
+      description: dynamicDescription,
+      images: ['https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/DSC_1820_sRGB.jpg']
+    },
+    robots: {
+      index: true,
+      follow: true
+    }
   }
 }
 

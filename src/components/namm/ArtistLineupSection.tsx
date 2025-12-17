@@ -289,8 +289,9 @@ export default function ArtistLineupSection({ className }: ArtistLineupSectionPr
 
                 {/* Performance Cards - Staggered Stack Layout */}
                 <div className="relative">
-                  {day.performances.map((performance, idx) => {
-                    const adjacentPerformance = idx === 0 ? day.performances[1] : day.performances[0]
+                  {[...day.performances].reverse().map((performance, idx) => {
+                    const originalIdx = day.performances.length - 1 - idx
+                    const adjacentPerformance = originalIdx === 0 ? day.performances[1] : day.performances[0]
                     const isCurrentHovered = hoveredCardId === performance.id
                     const isSiblingHovered = Boolean(adjacentPerformance && hoveredCardId === adjacentPerformance.id)
 
@@ -304,7 +305,7 @@ export default function ArtistLineupSection({ className }: ArtistLineupSectionPr
                         <PerformanceCard
                           performance={performance}
                           theme={theme}
-                          index={idx}
+                          index={originalIdx}
                           isHovered={isCurrentHovered}
                           siblingHovered={isSiblingHovered}
                           onHoverChange={setHoveredCardId}

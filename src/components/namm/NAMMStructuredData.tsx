@@ -91,10 +91,12 @@ export function NAMMStructuredData() {
       description: 'NAMM Show registration required. Free for NAMM members and music industry professionals. Register at namm.org'
     },
     image: [
-      // TODO: Replace with actual NAMM 2026 event images when available
-      'https://via.placeholder.com/1200x630/C41E3A/FFFFFF?text=NAMM+2026+Event',
-      'https://via.placeholder.com/1200x630/1A1A1A/FFFFFF?text=Kawai+Booth',
-      'https://via.placeholder.com/1200x630/C41E3A/FFFFFF?text=Kawai+Artists'
+      // Actual NAMM 2026 event images from the page
+      'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/DSC_1820_sRGB.jpg', // Crystal Grand Piano
+      'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/David%20Snyder%20Photo%202.jpg', // Artist Performance
+      `${siteUrl}/images/namm/heralbony closeup.JPG`, // HERALBONY Collaboration
+      `${siteUrl}/images/namm/general/TK7_7390.jpg`, // Piano Showcase
+      `${siteUrl}/images/namm/general/CA98R_Side_Dynamic.jpg` // Digital Piano Display
     ],
     url: `${siteUrl}/namm-2026`
   }
@@ -212,6 +214,26 @@ export function NAMMStructuredData() {
     })
   }
 
+  // BreadcrumbList Schema for Navigation Hierarchy
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: siteUrl
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'NAMM 2026',
+        item: `${siteUrl}/namm-2026`
+      }
+    ]
+  }
+
   // FAQ Schema for Common NAMM Questions
   const faqSchema = {
     '@context': 'https://schema.org',
@@ -299,6 +321,14 @@ export function NAMMStructuredData() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(organizationSchema)
+        }}
+      />
+
+      {/* BreadcrumbList Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema)
         }}
       />
 

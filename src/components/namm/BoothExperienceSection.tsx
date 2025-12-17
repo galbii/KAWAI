@@ -185,7 +185,7 @@ const DEFAULT_FEATURES: BoothFeature[] = [
   {
     icon: <Icons.Innovation />,
     title: 'Innovation Showcase',
-    description: 'Experience cutting-edge piano technology in our elegant demonstration area. From the new Novus NV6 hybrid system to our flagship concert grands, witness innovation that respects tradition.',
+    description: 'Experience cutting-edge piano technology in our elegant demonstration area. From the new Novus NV6 hybrid to our flagship concert grands, witness innovation that respects tradition.',
     image: '/images/namm/general/CA98R_Side_Dynamic.jpg',
     imageAlt: 'Kawai innovative piano technology'
   }
