@@ -5,7 +5,7 @@
  * Features:
  * - Framer Motion animations with scroll triggers
  * - Premium card styling with gradients and glows
- * - SEO-optimized FAQ section with schema markup
+ * - Visual FAQ component (structured data handled by NAMMStructuredData)
  * - Warm beige background with paper texture
  */
 
@@ -154,9 +154,6 @@ function FAQItem({ question, answer, index }: FAQItemProps) {
       animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
       transition={{ duration: 0.5, delay: index * 0.05 }}
       className="border-b border-[#D4CFC7] last:border-b-0"
-      itemScope
-      itemProp="mainEntity"
-      itemType="https://schema.org/Question"
     >
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -167,7 +164,7 @@ function FAQItem({ question, answer, index }: FAQItemProps) {
         )}
         aria-expanded={isOpen}
       >
-        <span className="font-semibold text-lg leading-tight" itemProp="name">
+        <span className="font-semibold text-lg leading-tight">
           {question}
         </span>
         <svg
@@ -191,11 +188,8 @@ function FAQItem({ question, answer, index }: FAQItemProps) {
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
-            itemScope
-            itemProp="acceptedAnswer"
-            itemType="https://schema.org/Answer"
           >
-            <div className="pb-6 text-[#5A5550] leading-relaxed" itemProp="text">
+            <div className="pb-6 text-[#5A5550] leading-relaxed">
               {answer}
             </div>
           </motion.div>
@@ -250,14 +244,12 @@ export default function PlanYourVisitSection({
       </div>
 
       <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
-        {/* FAQ Section - SEO Optimized */}
+        {/* FAQ Section - Visual Component (Schema handled by NAMMStructuredData) */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
           transition={{ duration: 0.6, delay: 0.4 }}
           className="max-w-4xl mx-auto mb-16"
-          itemScope
-          itemType="https://schema.org/FAQPage"
         >
           {/* FAQ Subheader */}
           <div className="text-center mb-12">

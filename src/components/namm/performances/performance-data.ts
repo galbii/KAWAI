@@ -98,7 +98,7 @@ export const PERFORMANCES: Performance[] = [
     endDateTime: '2026-01-23T16:15:00-08:00',
     genre: 'Romantic',
     artistImage: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/artur/Artur%20Zakiyan%20Kawai-1%202.jpg',
-    artistBio: 'Armenian pianist and composer Artur Zakiyan creates a mesmerizing sonic landscape where centuries-old Armenian traditions meet contemporary classical expression. A graduate of the prestigious Yerevan State Conservatory After Komitas, Artur has dedicated his artistry to reimagining the rich heritage of Armenian music through a modern lens. As Music Producer at Solidwave Studios and an active touring artist performing at venues from Los Angeles\' Catalina Jazz Club to Fresno\'s Tower Theatre, he brings passionate intensity and cultural depth to every performance. His innovative fusion of Armenian ethnic melodies with classical contemporary and new age influences offers audiences a unique and emotionally powerful musical journey.',
+    artistBio: 'Artur Zakiyan is a modern composer and pianist. Influenced by his cultural roots, his music deeply reflects the spirit of Armenian heritage. With a unique style that blends elements of cinematic and classical music, Artur creates captivating soundscapes. Through his music, he paints a mesmerizing journey that resonates with listeners, inviting them to explore the beauty of his cultural identity. His compositions are marked by emotional depth and atmospheric textures, drawing listeners into a meditative and evocative experience.',
     artistSlug: 'artur-zakiyan',
     socialLinks: {
       website: 'https://www.arturzakiyan.com/',

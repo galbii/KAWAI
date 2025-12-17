@@ -156,7 +156,7 @@ export default function ArtistLineupSection({ className }: ArtistLineupSectionPr
         <div className="lg:hidden mb-8">
           <nav
             aria-label="NAMM 2026 performance schedule by day"
-            className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide"
+            className="flex gap-3 justify-center pb-2 mb-6"
           >
             {DAYS_SCHEDULE.map((day) => {
               const theme = DAY_THEMES[day.id]
@@ -169,17 +169,17 @@ export default function ArtistLineupSection({ className }: ArtistLineupSectionPr
                   aria-label={`${day.dayName} ${day.date} performances`}
                   aria-pressed={isActive}
                   className={cn(
-                    'flex-shrink-0 px-6 py-4 rounded-2xl whitespace-nowrap transition-all duration-300',
+                    'flex-1 max-w-[110px] px-4 py-3.5 rounded-xl whitespace-nowrap transition-all duration-300',
                     'border shadow-sm',
                     isActive
-                      ? `bg-gradient-to-r ${theme.badge} ${theme.cardBorder} scale-105`
+                      ? `bg-gradient-to-r ${theme.badge} ${theme.cardBorder} scale-105 shadow-md`
                       : 'bg-[#D4CFC7] border-[#C9C3BB] text-[#5A5550] hover:bg-[#C9C3BB]'
                   )}
                 >
-                  <div className={cn('text-xs font-light uppercase tracking-wider mb-1', isActive ? 'opacity-90' : 'opacity-70')}>
+                  <div className={cn('text-[10px] font-light uppercase tracking-wider mb-0.5', isActive ? 'opacity-90' : 'opacity-70')}>
                     {day.dateShort}
                   </div>
-                  <div className={cn('text-base font-semibold', isActive ? `text-${theme.text}` : 'text-[#2C2826]')}>
+                  <div className={cn('text-sm font-semibold', isActive ? `text-${theme.text}` : 'text-[#2C2826]')}>
                     {day.dayName}
                   </div>
                 </button>
@@ -187,39 +187,11 @@ export default function ArtistLineupSection({ className }: ArtistLineupSectionPr
             })}
           </nav>
 
-          {/* Mobile navigation arrows */}
-          <div className="flex justify-between items-center mt-6 mb-4">
-            <button
-              onClick={handleSwipeRight}
-              disabled={activeDay === 'thursday'}
-              aria-label="Previous day"
-              className={cn(
-                'p-2 rounded-full transition-all duration-300',
-                activeDay === 'thursday'
-                  ? 'opacity-30 cursor-not-allowed'
-                  : 'bg-[#3A3530] hover:bg-[#2C2826] border border-[#2C2826]/20 shadow-sm'
-              )}
-            >
-              <ChevronLeft className={cn('w-5 h-5', activeDay === 'thursday' ? 'text-[#5A5550]' : 'text-[#F5F1E8]')} />
-            </button>
-
-            <span className="text-sm text-[#5A5550]">
-              Swipe or use arrows to navigate
+          {/* Mobile navigation hint - centered */}
+          <div className="text-center mb-6">
+            <span className="text-xs text-[#5A5550]/70">
+              Swipe or tap to navigate days
             </span>
-
-            <button
-              onClick={handleSwipeLeft}
-              disabled={activeDay === 'saturday'}
-              aria-label="Next day"
-              className={cn(
-                'p-2 rounded-full transition-all duration-300',
-                activeDay === 'saturday'
-                  ? 'opacity-30 cursor-not-allowed'
-                  : 'bg-[#3A3530] hover:bg-[#2C2826] border border-[#2C2826]/20 shadow-sm'
-              )}
-            >
-              <ChevronRight className={cn('w-5 h-5', activeDay === 'saturday' ? 'text-[#5A5550]' : 'text-[#F5F1E8]')} />
-            </button>
           </div>
 
           {/* Mobile: Swipeable Day Content */}
@@ -253,8 +225,8 @@ export default function ArtistLineupSection({ className }: ArtistLineupSectionPr
           </AnimatePresence>
         </div>
 
-        {/* Desktop: 3-Column Day Grid with Staggered Stack */}
-        <div className="hidden lg:grid lg:grid-cols-3 gap-8">
+        {/* Desktop: 3-Column Day Grid */}
+        <div className="hidden lg:grid lg:grid-cols-3 gap-12">
           {DAYS_SCHEDULE.map((day) => {
             const theme = DAY_THEMES[day.id]
 
@@ -287,25 +259,19 @@ export default function ArtistLineupSection({ className }: ArtistLineupSectionPr
                   <div className={cn('absolute inset-0 bg-gradient-radial', theme.glow, 'blur-2xl -z-10')} />
                 </div>
 
-                {/* Performance Cards - Staggered Stack Layout */}
-                <div className="relative">
-                  {[...day.performances].reverse().map((performance, idx) => {
-                    const originalIdx = day.performances.length - 1 - idx
-                    const adjacentPerformance = originalIdx === 0 ? day.performances[1] : day.performances[0]
+                {/* Performance Cards - Clean Grid Layout */}
+                <div className="space-y-6">
+                  {day.performances.map((performance, idx) => {
+                    const adjacentPerformance = idx === 0 ? day.performances[1] : day.performances[0]
                     const isCurrentHovered = hoveredCardId === performance.id
                     const isSiblingHovered = Boolean(adjacentPerformance && hoveredCardId === adjacentPerformance.id)
 
                     return (
-                      <div
-                        key={performance.id}
-                        style={{
-                          marginTop: idx === 0 ? 0 : '-240px', // 60% overlap for stagger effect
-                        }}
-                      >
+                      <div key={performance.id}>
                         <PerformanceCard
                           performance={performance}
                           theme={theme}
-                          index={originalIdx}
+                          index={idx}
                           isHovered={isCurrentHovered}
                           siblingHovered={isSiblingHovered}
                           onHoverChange={setHoveredCardId}

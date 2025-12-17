@@ -23,7 +23,7 @@ interface PerformanceCardProps {
   theme: DayTheme
   index?: number
   className?: string
-  // Staggered stack interaction props
+  // Staggered stack interaction props (desktop only)
   isHovered?: boolean
   siblingHovered?: boolean
   onHoverChange?: (id: string | null) => void
@@ -48,8 +48,9 @@ export default function PerformanceCard({
   // Available for future day-specific styling if needed
   void theme
 
-  // Determine if content should be compressed (second card in desktop grid)
-  const isCompressed = index > 0 && !isHovered
+  // Always show full content on desktop for better UX
+  // No compression needed with clean grid layout
+  const isCompressed = false
 
   return (
     <Link
@@ -63,11 +64,10 @@ export default function PerformanceCard({
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-50px' }}
-        // Enhanced staggered stack animations with scale and lift
+        // Clean hover animation - subtle lift
         animate={{
-          y: isHovered ? -16 : siblingHovered ? 4 : 0,
-          scale: isHovered ? 1.03 : siblingHovered ? 0.98 : 1,
-          opacity: siblingHovered ? 0.85 : 1,
+          y: isHovered ? -8 : 0,
+          scale: isHovered ? 1.02 : 1,
         }}
         transition={{
           opacity: { duration: 0.6, delay: index * 0.1, ease: [0.25, 0.1, 0.25, 1] },
@@ -94,13 +94,12 @@ export default function PerformanceCard({
           className
         )}
         style={{
-          // Desktop-only stagger margin (applied via parent wrapper)
-          // Reversed z-index: higher index = higher z-index (bottom card on top)
-          zIndex: isHovered ? 20 : 10 + index,
+          // Hover elevation
+          zIndex: isHovered ? 10 : 1,
         }}
       >
         {/* Artist Image Section with Overlay */}
-        <div className="relative h-72 sm:h-80 lg:h-96 overflow-hidden bg-gradient-to-br from-stone-100 to-stone-200 rounded-t-2xl">
+        <div className="relative h-[32rem] sm:h-[36rem] lg:h-96 overflow-hidden bg-gradient-to-br from-stone-100 to-stone-200 rounded-t-2xl">
           {hasImage ? (
             <>
               {/* Artist Portrait Image */}
@@ -154,28 +153,28 @@ export default function PerformanceCard({
           )}
 
           {/* Artist Name Overlaid on Image */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8 z-10">
+          <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 lg:p-8 z-10">
             <h3
               itemProp="name"
-              className="text-2xl lg:text-3xl font-light text-white mb-2 leading-tight tracking-tight transform group-hover:translate-x-1 transition-transform duration-300"
+              className="text-3xl sm:text-4xl lg:text-3xl font-light text-white mb-2 leading-tight tracking-tight transform group-hover:translate-x-1 transition-transform duration-300"
             >
               {performance.artistName}
             </h3>
-            <p className="text-sm lg:text-base font-light text-white/80 transform group-hover:translate-x-1 transition-transform duration-300">
+            <p className="text-base sm:text-lg lg:text-base font-light text-white/80 transform group-hover:translate-x-1 transition-transform duration-300">
               {performance.performanceType}
             </p>
           </div>
         </div>
 
         {/* Card Content Body */}
-        <div className="relative p-6 lg:p-8">
+        <div className="relative p-6 sm:p-8 lg:p-8">
           {/* Time Badge - Kawai Red (always visible) with hover animation */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#E31937] shadow-sm mb-5 group-hover:shadow-md group-hover:scale-105 transition-all duration-300">
+          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#E31937] shadow-sm mb-6 group-hover:shadow-md group-hover:scale-105 transition-all duration-300">
             <Clock className="w-4 h-4 text-white group-hover:animate-pulse" />
             <time
               dateTime={performance.startDateTime}
               itemProp="startDate"
-              className="text-sm font-medium text-white"
+              className="text-sm sm:text-base font-medium text-white"
             >
               {performance.time} • {performance.date.split(',')[0]}
             </time>
@@ -195,7 +194,7 @@ export default function PerformanceCard({
             {performance.artistBio && (
               <p
                 itemProp="description"
-                className="text-sm lg:text-base text-[#5A5550] font-light leading-relaxed mb-5 line-clamp-3"
+                className="text-base sm:text-lg lg:text-base text-[#5A5550] font-light leading-relaxed mb-6 line-clamp-3"
               >
                 {performance.artistBio}
               </p>
@@ -205,7 +204,7 @@ export default function PerformanceCard({
             {!performance.artistBio && performance.description && (
               <p
                 itemProp="description"
-                className="text-sm lg:text-base text-[#5A5550] font-light leading-relaxed mb-5 line-clamp-2"
+                className="text-base sm:text-lg lg:text-base text-[#5A5550] font-light leading-relaxed mb-6 line-clamp-2"
               >
                 {performance.description}
               </p>
@@ -214,18 +213,18 @@ export default function PerformanceCard({
             {/* Social Media Links */}
             {hasSocials && (
               <>
-                <div className="border-t border-[#E5E0D8] my-5" />
-                <div className="flex items-center gap-4">
+                <div className="border-t border-[#E5E0D8] my-6" />
+                <div className="flex items-center gap-5">
                   {performance.socialLinks?.website && (
                     <a
                       href={performance.socialLinks.website}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="text-[#8A8580] hover:text-[#E31937] transition-colors duration-200"
+                      className="text-[#8A8580] hover:text-[#E31937] transition-colors duration-200 active:scale-95"
                       aria-label={`Visit ${performance.artistName}'s website`}
                     >
-                      <Globe className="w-5 h-5" />
+                      <Globe className="w-6 h-6 sm:w-7 sm:h-7 lg:w-5 lg:h-5" />
                     </a>
                   )}
                   {performance.socialLinks?.instagram && (
@@ -234,10 +233,10 @@ export default function PerformanceCard({
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="text-[#8A8580] hover:text-[#E31937] transition-colors duration-200"
+                      className="text-[#8A8580] hover:text-[#E31937] transition-colors duration-200 active:scale-95"
                       aria-label={`Follow ${performance.artistName} on Instagram`}
                     >
-                      <Instagram className="w-5 h-5" />
+                      <Instagram className="w-6 h-6 sm:w-7 sm:h-7 lg:w-5 lg:h-5" />
                     </a>
                   )}
                   {performance.socialLinks?.youtube && (
@@ -246,10 +245,10 @@ export default function PerformanceCard({
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="text-[#8A8580] hover:text-[#E31937] transition-colors duration-200"
+                      className="text-[#8A8580] hover:text-[#E31937] transition-colors duration-200 active:scale-95"
                       aria-label={`Watch ${performance.artistName} on YouTube`}
                     >
-                      <Youtube className="w-5 h-5" />
+                      <Youtube className="w-6 h-6 sm:w-7 sm:h-7 lg:w-5 lg:h-5" />
                     </a>
                   )}
                   {performance.socialLinks?.spotify && (
@@ -258,10 +257,10 @@ export default function PerformanceCard({
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="text-[#8A8580] hover:text-[#E31937] transition-colors duration-200"
+                      className="text-[#8A8580] hover:text-[#E31937] transition-colors duration-200 active:scale-95"
                       aria-label={`Listen to ${performance.artistName} on Spotify`}
                     >
-                      <Spotify className="w-5 h-5" />
+                      <Spotify className="w-6 h-6 sm:w-7 sm:h-7 lg:w-5 lg:h-5" />
                     </a>
                   )}
                   {performance.socialLinks?.facebook && (
@@ -270,10 +269,10 @@ export default function PerformanceCard({
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="text-[#8A8580] hover:text-[#E31937] transition-colors duration-200"
+                      className="text-[#8A8580] hover:text-[#E31937] transition-colors duration-200 active:scale-95"
                       aria-label={`Follow ${performance.artistName} on Facebook`}
                     >
-                      <Facebook className="w-5 h-5" />
+                      <Facebook className="w-6 h-6 sm:w-7 sm:h-7 lg:w-5 lg:h-5" />
                     </a>
                   )}
                 </div>
