@@ -1,28 +1,24 @@
 /**
  * DealerEventDetailsSection Component - NAMM 2026 Dealer Reception
  *
- * Redesigned with attention-catching layout:
- * - Hero-style Date/Time/Venue section with dramatic typography
- * - Auto-playing carousel showcasing 5 experiences
- * - Compact grid for additional details
- * - Gold accents and premium aesthetic
+ * Compact design with homepage gray/red aesthetic:
+ * - Clean carousel showcasing 5 experiences
+ * - Minimal Date/Time/Venue section
+ * - Red accents matching homepage branding
  */
 
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useRef } from 'react'
+import { motion } from 'framer-motion'
 import {
   Calendar,
   Clock,
   MapPin,
-  Wine,
-  Piano,
-  MessageSquare,
-  UsersRound,
-  Eye,
-  ChevronLeft,
-  ChevronRight
+  UtensilsCrossed,
+  Users,
+  User,
+  Gift
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -30,436 +26,267 @@ interface EventDetailsSectionProps {
   className?: string
 }
 
-interface CarouselSlide {
+interface ExperienceItem {
   id: number
   icon: React.ElementType
   title: string
   description: string
-  gradient: string
 }
 
-const EXPERIENCE_SLIDES: CarouselSlide[] = [
+const EXPERIENCES: ExperienceItem[] = [
   {
     id: 1,
-    icon: Wine,
-    title: 'Premium Cocktails & Cuisine',
-    description: 'Enjoy carefully curated hors d\'oeuvres and signature cocktails throughout the evening',
-    gradient: 'from-amber-900/20 via-orange-800/20 to-amber-900/20'
+    icon: UtensilsCrossed,
+    title: 'Catering',
+    description: 'Enjoy a meal and some drinks as an appreciation for your partnership and dedication to the Kawai brand.'
   },
   {
     id: 2,
-    icon: Piano,
-    title: 'Hands-On Experience',
-    description: 'Try our exclusive instruments including the CR-45 Crystal Grand, HERALBONY collaboration, and revolutionary Novus hybrids',
-    gradient: 'from-yellow-900/20 via-[#D4AF37]/20 to-yellow-900/20'
+    icon: Users,
+    title: 'Connection',
+    description: 'Meet with similar individuals in the business and create connections, share ideas, and expand your network.'
   },
   {
     id: 3,
-    icon: MessageSquare,
-    title: 'One-on-One Expertise',
-    description: 'Meet with Kawai specialists for personalized consultations about our latest innovations and dealer programs',
-    gradient: 'from-red-950/20 via-red-900/20 to-red-950/20'
+    icon: User,
+    title: 'Kentaro Kawai',
+    description: 'Meet the current president of Kawai Musical Instruments and hear a special word from him about our vision for the future.'
   },
   {
     id: 4,
-    icon: UsersRound,
-    title: 'Connect with Peers',
-    description: 'Network with fellow authorized dealers and industry professionals in an exclusive setting',
-    gradient: 'from-slate-900/20 via-gray-800/20 to-slate-900/20'
-  },
-  {
-    id: 5,
-    icon: Eye,
-    title: 'First Look at New Releases',
-    description: 'Be among the first to see and experience our latest innovations before they\'re available to the public',
-    gradient: 'from-purple-950/20 via-purple-900/20 to-purple-950/20'
+    icon: Gift,
+    title: 'A Special Offer',
+    description: 'We\'d like to offer the committed individuals an exclusive event offer as a thanks for attending our special event. Find out more at the event.'
   }
 ]
 
-const AUTO_PLAY_INTERVAL = 4500 // 4.5 seconds
+interface ExperienceCardProps {
+  experience: ExperienceItem
+  index: number
+  isVisible: boolean
+}
 
-function ExperienceCarousel() {
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
-
-  const totalSlides = EXPERIENCE_SLIDES.length
-
-  // Auto-play functionality
-  useEffect(() => {
-    if (!isAutoPlaying) return
-
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev === totalSlides - 1 ? 0 : prev + 1))
-    }, AUTO_PLAY_INTERVAL)
-
-    return () => clearInterval(interval)
-  }, [currentSlide, isAutoPlaying, totalSlides])
-
-  const handlePrevious = useCallback(() => {
-    setCurrentSlide((prev) => (prev === 0 ? totalSlides - 1 : prev - 1))
-    setIsAutoPlaying(false)
-  }, [totalSlides])
-
-  const handleNext = useCallback(() => {
-    setCurrentSlide((prev) => (prev === totalSlides - 1 ? 0 : prev + 1))
-    setIsAutoPlaying(false)
-  }, [totalSlides])
-
-  const goToSlide = useCallback((index: number) => {
-    setCurrentSlide(index)
-    setIsAutoPlaying(false)
-  }, [])
-
-  const currentExperience = EXPERIENCE_SLIDES[currentSlide]
-  const IconComponent = currentExperience?.icon
-
-  // Animation variants
-  const slideVariants = {
-    enter: {
-      opacity: 0,
-      x: 100,
-      scale: 0.95
-    },
-    center: {
-      opacity: 1,
-      x: 0,
-      scale: 1,
-      transition: {
-        duration: 0.7,
-        ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number]
-      }
-    },
-    exit: {
-      opacity: 0,
-      x: -100,
-      scale: 0.95,
-      transition: {
-        duration: 0.5,
-        ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number]
-      }
-    }
-  }
+function ExperienceCard({ experience, index, isVisible }: ExperienceCardProps) {
+  const Icon = experience.icon
+  const isEven = index % 2 === 0
 
   return (
-    <div
-      className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-white via-[#F5F1E8] to-white border-2 border-[#D4AF37]/30 shadow-2xl shadow-[#D4AF37]/20"
-      onMouseEnter={() => setIsAutoPlaying(false)}
-      onMouseLeave={() => setIsAutoPlaying(true)}
+    <motion.div
+      initial={{ opacity: 0, y: 60 }}
+      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }}
+      transition={{ duration: 0.8, delay: index * 0.2 }}
+      className={cn(
+        'grid md:grid-cols-2 gap-8 md:gap-12 items-center',
+        isEven ? '' : 'md:grid-flow-dense'
+      )}
     >
-      {/* Carousel content */}
-      <div className="relative h-[400px] md:h-[500px] lg:h-[550px]">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentSlide}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            className="absolute inset-0 flex flex-col items-center justify-center p-8 md:p-12 lg:p-16"
-          >
-            {/* Background gradient */}
-            <div className={cn(
-              'absolute inset-0 bg-gradient-to-br',
-              currentExperience?.gradient
-            )} />
+      {/* Icon Section */}
+      <div className={cn(
+        'relative',
+        isEven ? 'md:order-1' : 'md:order-2'
+      )}>
+        <div className="flex justify-center md:justify-start">
+          <div className="relative">
+            {/* Icon container with elegant styling */}
+            <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-kawai-red/10 to-kawai-red/5 flex items-center justify-center shadow-lg">
+              <Icon className="w-16 h-16 md:w-20 md:h-20 text-kawai-red" strokeWidth={1.5} />
 
-            {/* Pattern overlay */}
-            <div className="absolute inset-0 opacity-[0.03]">
-              <div className="absolute inset-0" style={{
-                backgroundImage: 'radial-gradient(circle at 20% 50%, currentColor 1px, transparent 1px)',
-                backgroundSize: '32px 32px'
-              }} />
+              {/* Decorative ring */}
+              <div className="absolute inset-0 rounded-full border-2 border-kawai-red/20" />
+              <div className="absolute inset-[-8px] rounded-full border border-kawai-red/10" />
             </div>
 
-            {/* Content */}
-            <div className="relative z-10 text-center max-w-3xl">
-              {/* Icon */}
-              <motion.div
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ delay: 0.2, duration: 0.6, ease: 'easeOut' }}
-                className="inline-flex items-center justify-center w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#B8941F] text-white mb-8 shadow-lg shadow-[#D4AF37]/30"
-              >
-                {IconComponent && <IconComponent className="w-10 h-10 md:w-12 md:h-12" strokeWidth={1.5} />}
-              </motion.div>
-
-              {/* Title */}
-              <motion.h3
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.6 }}
-                className="text-3xl md:text-4xl lg:text-5xl font-light text-[#2C2826] mb-6 tracking-tight"
-              >
-                {currentExperience?.title}
-              </motion.h3>
-
-              {/* Description */}
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="text-lg md:text-xl lg:text-2xl font-light text-[#5A5550] leading-relaxed"
-              >
-                {currentExperience?.description}
-              </motion.p>
+            {/* Number badge */}
+            <div className="absolute -top-2 -right-2 w-10 h-10 rounded-full bg-kawai-red text-white flex items-center justify-center font-serif text-lg font-semibold shadow-lg">
+              {index + 1}
             </div>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Navigation arrows */}
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-between px-4 md:px-6 z-20">
-          <button
-            onClick={handlePrevious}
-            className={cn(
-              'flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full',
-              'bg-[#D4AF37] text-white hover:bg-[#B8941F]',
-              'shadow-lg hover:shadow-xl shadow-[#D4AF37]/30',
-              'transition-all duration-300 hover:scale-110',
-              'focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50'
-            )}
-            aria-label="Previous experience"
-          >
-            <ChevronLeft className="w-6 h-6 md:w-7 md:h-7" strokeWidth={2.5} />
-          </button>
-
-          <button
-            onClick={handleNext}
-            className={cn(
-              'flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full',
-              'bg-[#D4AF37] text-white hover:bg-[#B8941F]',
-              'shadow-lg hover:shadow-xl shadow-[#D4AF37]/30',
-              'transition-all duration-300 hover:scale-110',
-              'focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50'
-            )}
-            aria-label="Next experience"
-          >
-            <ChevronRight className="w-6 h-6 md:w-7 md:h-7" strokeWidth={2.5} />
-          </button>
+          </div>
         </div>
       </div>
 
-      {/* Dot indicators */}
-      <div className="relative bg-gradient-to-r from-[#F5F1E8] to-white py-6 px-4 border-t-2 border-[#D4AF37]/20">
-        <div className="flex items-center justify-center gap-3">
-          {EXPERIENCE_SLIDES.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => goToSlide(index)}
-              className={cn(
-                'relative h-2.5 rounded-full transition-all duration-300',
-                'focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50',
-                currentSlide === index
-                  ? 'w-16 bg-[#D4AF37] shadow-md shadow-[#D4AF37]/30'
-                  : 'w-2.5 bg-[#D4AF37]/30 hover:bg-[#D4AF37]/50'
-              )}
-              aria-label={`Go to experience ${index + 1}`}
-              aria-current={currentSlide === index}
-            >
-              {/* Progress indicator */}
-              {currentSlide === index && isAutoPlaying && (
-                <motion.div
-                  className="absolute left-0 top-0 h-full rounded-full bg-[#B8941F]"
-                  initial={{ width: '0%' }}
-                  animate={{ width: '100%' }}
-                  transition={{ duration: AUTO_PLAY_INTERVAL / 1000, ease: 'linear' }}
-                />
-              )}
-            </button>
-          ))}
-        </div>
+      {/* Content Section */}
+      <div className={cn(
+        'text-center md:text-left',
+        isEven ? 'md:order-2' : 'md:order-1'
+      )}>
+        <h3 className="text-3xl md:text-4xl lg:text-5xl font-serif text-kawai-black mb-4 tracking-tight">
+          {experience.title}
+        </h3>
+        <p className="text-lg md:text-xl text-kawai-black/70 leading-relaxed">
+          {experience.description}
+        </p>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
 export default function DealerEventDetailsSection({
   className
 }: EventDetailsSectionProps) {
-  const [isTitleVisible, setIsTitleVisible] = useState(false)
-  const [isHeroVisible, setIsHeroVisible] = useState(false)
-  const titleRef = useRef<HTMLDivElement>(null)
-  const heroRef = useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(false)
+  const [cardVisibility, setCardVisibility] = useState<boolean[]>(new Array(EXPERIENCES.length).fill(false))
+  const sectionRef = useRef<HTMLDivElement>(null)
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
 
-  // Intersection observers
+  // Section header visibility
   useEffect(() => {
-    const titleObserver = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) {
-          setIsTitleVisible(true)
-        }
-      },
-      { threshold: 0.3 }
-    )
-
-    const heroObserver = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          setIsHeroVisible(true)
+          setIsVisible(true)
         }
       },
       { threshold: 0.2 }
     )
 
-    if (titleRef.current) {
-      titleObserver.observe(titleRef.current)
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current)
     }
 
-    if (heroRef.current) {
-      heroObserver.observe(heroRef.current)
-    }
+    return () => observer.disconnect()
+  }, [])
+
+  // Individual card visibility with staggered animations
+  useEffect(() => {
+    const observers = cardRefs.current.map((ref, index) => {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry?.isIntersecting) {
+            setCardVisibility(prev => {
+              const newState = [...prev]
+              newState[index] = true
+              return newState
+            })
+          }
+        },
+        { threshold: 0.3 }
+      )
+
+      if (ref) {
+        observer.observe(ref)
+      }
+
+      return observer
+    })
 
     return () => {
-      titleObserver.disconnect()
-      heroObserver.disconnect()
+      observers.forEach(observer => observer.disconnect())
     }
   }, [])
 
   return (
-    <section className={cn(
-      "py-24 lg:py-32 relative overflow-hidden",
-      className
-    )}>
-      {/* Warm beige gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#F5F1E8] via-[#EDE8DF] to-[#F0EBE3]" />
-
-      {/* Subtle paper texture overlay */}
-      <div className="absolute inset-0 opacity-[0.02]">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg width="200" height="200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noise)" /%3E%3C/svg%3E")',
-            backgroundRepeat: 'repeat'
-          }}
-        />
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
+    <section
+      id="event-details"
+      className={cn(
+        "py-16 lg:py-20 relative overflow-hidden bg-white scroll-mt-20",
+        className
+      )}
+    >
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
         {/* Section Header */}
-        <div ref={titleRef} className="text-center mb-16 lg:mb-20">
-          <motion.h2
-            initial={{ opacity: 0, y: 30 }}
-            animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-            transition={{ duration: 0.8 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-light tracking-tight text-[#2C2826] mb-6"
-          >
-            Event Details
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-lg md:text-xl font-light leading-relaxed text-[#5A5550] max-w-3xl mx-auto"
-          >
-            Join us for an exclusive evening of innovation, networking, and celebration
-          </motion.p>
-        </div>
-
-        {/* "What to Expect" Carousel Section - MOVED TO TOP */}
         <motion.div
-          ref={heroRef}
+          ref={sectionRef}
           initial={{ opacity: 0, y: 40 }}
-          animate={isHeroVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+          animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
           transition={{ duration: 0.8 }}
-          className="mb-16 lg:mb-24"
+          className="text-center mb-16 lg:mb-20"
         >
-          <div className="text-center mb-10">
-            <h3 className="text-3xl md:text-4xl lg:text-5xl font-light text-[#2C2826] mb-4 tracking-tight">
-              What to Expect
-            </h3>
-            <p className="text-lg md:text-xl font-light text-[#5A5550]">
-              Five exceptional experiences await you
-            </p>
+          <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-4">
+            DEALER RECEPTION
           </div>
-
-          <ExperienceCarousel />
+          <h3 className="text-4xl md:text-5xl lg:text-6xl font-serif text-kawai-black mb-4 tracking-tight">
+            What to Expect
+          </h3>
+          <p className="text-xl text-kawai-black/70 max-w-3xl mx-auto">
+            An evening crafted with care, connection, and appreciation
+          </p>
         </motion.div>
 
-        {/* Hero Date/Time/Venue Section - MOVED BELOW CAROUSEL */}
+        {/* Staggered Alternating Experience Cards */}
+        <div className="space-y-20 lg:space-y-32 mb-16 lg:mb-20">
+          {EXPERIENCES.map((experience, index) => (
+            <div
+              key={experience.id}
+              ref={el => { cardRefs.current[index] = el }}
+            >
+              <ExperienceCard
+                experience={experience}
+                index={index}
+                isVisible={cardVisibility[index] ?? false}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Closing Message */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
+          className="text-center py-12 lg:py-16 px-6"
+        >
+          <div className="max-w-3xl mx-auto">
+            <div className="inline-block mb-6">
+              <div className="h-px w-24 bg-gradient-to-r from-transparent via-kawai-red to-transparent" />
+            </div>
+            <h4 className="text-4xl md:text-5xl lg:text-6xl font-serif text-kawai-black mb-6 tracking-tight">
+              We can't wait to see you there
+            </h4>
+            <p className="text-xl text-kawai-black/70">
+              Join us for an unforgettable evening celebrating our partnership
+            </p>
+            <div className="inline-block mt-6">
+              <div className="h-px w-24 bg-gradient-to-r from-transparent via-kawai-red to-transparent" />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Date/Time/Venue Section - Compact */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
-          animate={isHeroVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+          animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="mb-16 lg:mb-24"
         >
-          <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-white via-[#F5F1E8] to-white border-4 border-[#D4AF37] shadow-2xl shadow-[#D4AF37]/30">
-            {/* Gold accent frame decorations */}
-            <div className="absolute top-0 left-0 w-32 h-32 border-t-4 border-l-4 border-[#D4AF37]/40 rounded-tl-3xl" />
-            <div className="absolute top-0 right-0 w-32 h-32 border-t-4 border-r-4 border-[#D4AF37]/40 rounded-tr-3xl" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 border-b-4 border-l-4 border-[#D4AF37]/40 rounded-bl-3xl" />
-            <div className="absolute bottom-0 right-0 w-32 h-32 border-b-4 border-r-4 border-[#D4AF37]/40 rounded-br-3xl" />
-
-            {/* Radial gold glow effect */}
-            <div className="absolute inset-0 bg-gradient-radial from-[#D4AF37]/10 via-transparent to-transparent opacity-50" />
-
-            {/* Pattern overlay */}
-            <div className="absolute inset-0 opacity-[0.03]">
-              <div className="absolute inset-0" style={{
-                backgroundImage: 'radial-gradient(circle at 50% 50%, currentColor 1px, transparent 1px)',
-                backgroundSize: '40px 40px'
-              }} />
-            </div>
-
-            <div className="relative z-10 text-center py-16 px-8 md:py-20 md:px-12 lg:py-24 lg:px-16">
-              {/* Date - Hero Typography */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={isHeroVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="mb-8"
-              >
-                <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#B8941F] text-white mb-6 shadow-xl shadow-[#D4AF37]/40">
-                  <Calendar className="w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
+          <div className="bg-kawai-pearl rounded-xl p-8 md:p-10">
+            <div className="grid md:grid-cols-3 gap-6 md:gap-8">
+              {/* Date */}
+              <div className="text-center md:text-left">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-kawai-red/10 text-kawai-red mb-3">
+                  <Calendar className="w-6 h-6" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-light text-[#2C2826] tracking-tight mb-2">
+                <h4 className="text-xl md:text-2xl font-serif text-kawai-black mb-1">
                   January 23, 2026
-                </h3>
-                <p className="text-sm md:text-base uppercase tracking-[0.3em] text-[#D4AF37] font-semibold">
-                  Save the Date
+                </h4>
+                <p className="text-sm text-kawai-black/60">
+                  Save the date
                 </p>
-              </motion.div>
+              </div>
 
               {/* Time */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={isHeroVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.8, delay: 0.3 }}
-                className="mb-8 pb-8 border-b-2 border-[#D4AF37]/20"
-              >
-                <div className="inline-flex items-center justify-center gap-3 mb-2">
-                  <Clock className="w-8 h-8 md:w-10 md:h-10 text-[#D4AF37]" strokeWidth={1.5} />
-                  <h4 className="text-3xl md:text-4xl lg:text-5xl font-light text-[#2C2826] tracking-tight">
-                    6:00 PM - 9:00 PM PST
-                  </h4>
+              <div className="text-center md:text-left">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-kawai-red/10 text-kawai-red mb-3">
+                  <Clock className="w-6 h-6" strokeWidth={1.5} />
                 </div>
-                <p className="text-base md:text-lg text-[#5A5550] font-light">
-                  Three hours of exclusive networking and experiences
+                <h4 className="text-xl md:text-2xl font-serif text-kawai-black mb-1">
+                  6:00 PM - 9:00 PM PST
+                </h4>
+                <p className="text-sm text-kawai-black/60">
+                  Three hours of networking
                 </p>
-              </motion.div>
+              </div>
 
               {/* Venue */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={isHeroVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-              >
-                <div className="inline-flex items-center justify-center gap-3 mb-3">
-                  <MapPin className="w-8 h-8 md:w-10 md:h-10 text-[#D4AF37]" strokeWidth={1.5} />
-                  <h4 className="text-3xl md:text-4xl lg:text-5xl font-light text-[#2C2826] tracking-tight">
-                    Anaheim Convention Center
-                  </h4>
+              <div className="text-center md:text-left">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-kawai-red/10 text-kawai-red mb-3">
+                  <MapPin className="w-6 h-6" strokeWidth={1.5} />
                 </div>
-                <p className="text-lg md:text-xl text-[#5A5550] font-light mb-4">
-                  Private Reception Hall
+                <h4 className="text-xl md:text-2xl font-serif text-kawai-black mb-1">
+                  Anaheim Convention Center
+                </h4>
+                <p className="text-sm text-kawai-black/60">
+                  Private Reception Hall • Booth <span className="font-semibold text-kawai-red">#207</span>
                 </p>
-                <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B8941F] shadow-lg shadow-[#D4AF37]/40">
-                  <span className="text-xs md:text-sm uppercase tracking-wider text-white/90 font-medium">
-                    Visit our booth
-                  </span>
-                  <span className="text-2xl md:text-3xl font-bold text-white">
-                    #9110
-                  </span>
-                </div>
-              </motion.div>
+              </div>
             </div>
           </div>
         </motion.div>

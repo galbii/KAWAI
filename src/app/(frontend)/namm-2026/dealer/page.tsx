@@ -7,12 +7,12 @@ const DealerReceptionHero = dynamic(() => import('@/components/namm/dealer/Deale
   loading: () => <HeroSkeleton />
 })
 
-const DealerEventDetailsSection = dynamic(() => import('@/components/namm/dealer/DealerEventDetailsSection'), {
-  loading: () => <EventDetailsSkeleton />
+const FeaturedProductsSection = dynamic(() => import('@/components/namm/FeaturedProductsSection'), {
+  loading: () => <FeaturedProductsSkeleton />
 })
 
-const DealerFeaturedProductsSection = dynamic(() => import('@/components/namm/dealer/DealerFeaturedProductsSection'), {
-  loading: () => <FeaturedProductsSkeleton />
+const DealerEventDetailsSection = dynamic(() => import('@/components/namm/dealer/DealerEventDetailsSection'), {
+  loading: () => <EventDetailsSkeleton />
 })
 
 const DealerVenueMapSection = dynamic(() => import('@/components/namm/dealer/DealerVenueMapSection'), {
@@ -94,18 +94,14 @@ function HeroSkeleton() {
   )
 }
 
-function EventDetailsSkeleton() {
+function FeaturedProductsSkeleton() {
   return (
-    <section className="py-24 bg-gradient-to-b from-[#F5F1E8] via-[#EDE8DF] to-[#F0EBE3] animate-pulse">
+    <section className="py-24 bg-white animate-pulse">
       <div className="container mx-auto px-6">
-        <div className="h-10 bg-[#2C2826]/10 rounded-lg mb-12 w-1/3 mx-auto" />
-        <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="h-10 bg-kawai-black/10 rounded-lg mb-8 w-1/3 mx-auto" />
+        <div className="grid md:grid-cols-3 gap-8">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="space-y-4">
-              <div className="h-16 w-16 bg-[#2C2826]/10 rounded-full mx-auto" />
-              <div className="h-6 bg-[#2C2826]/10 rounded-lg w-3/4 mx-auto" />
-              <div className="h-32 bg-[#2C2826]/10 rounded-xl" />
-            </div>
+            <div key={i} className="h-96 bg-kawai-black/10 rounded-lg" />
           ))}
         </div>
       </div>
@@ -113,17 +109,20 @@ function EventDetailsSkeleton() {
   )
 }
 
-function FeaturedProductsSkeleton() {
+function EventDetailsSkeleton() {
   return (
-    <section className="py-24 bg-zinc-950 animate-pulse">
+    <section className="py-24 bg-white animate-pulse">
       <div className="container mx-auto px-6">
-        <div className="h-10 bg-white/10 rounded-lg mb-12 w-1/3 mx-auto" />
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="space-y-4">
-              <div className="h-80 bg-white/5 rounded-xl" />
-              <div className="h-6 bg-white/10 rounded w-3/4" />
-              <div className="h-4 bg-white/5 rounded w-1/2" />
+        <div className="h-10 bg-kawai-black/10 rounded-lg mb-12 w-1/3 mx-auto" />
+        <div className="space-y-20">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="grid md:grid-cols-2 gap-8 items-center">
+              <div className="h-40 w-40 bg-kawai-black/10 rounded-full mx-auto" />
+              <div className="space-y-4">
+                <div className="h-8 bg-kawai-black/10 rounded-lg w-3/4" />
+                <div className="h-4 bg-kawai-black/10 rounded w-full" />
+                <div className="h-4 bg-kawai-black/10 rounded w-5/6" />
+              </div>
             </div>
           ))}
         </div>
@@ -164,17 +163,17 @@ export default function NAMMDealerReceptionPage() {
         <DealerReceptionHero />
       </Suspense>
 
+      {/* Featured Products */}
+      <section id="featured-products" className="scroll-mt-20">
+        <Suspense fallback={<FeaturedProductsSkeleton />}>
+          <FeaturedProductsSection masterSeriesTitle="Master Series" />
+        </Suspense>
+      </section>
+
       {/* Event Details */}
       <section id="event-details" className="scroll-mt-20">
         <Suspense fallback={<EventDetailsSkeleton />}>
           <DealerEventDetailsSection />
-        </Suspense>
-      </section>
-
-      {/* Featured Products */}
-      <section id="featured-products" className="scroll-mt-20">
-        <Suspense fallback={<FeaturedProductsSkeleton />}>
-          <DealerFeaturedProductsSection />
         </Suspense>
       </section>
 

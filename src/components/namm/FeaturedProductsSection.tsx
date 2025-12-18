@@ -25,6 +25,7 @@ interface FeaturedPiano {
 interface FeaturedProductsSectionProps {
   title?: string
   subtitle?: string
+  masterSeriesTitle?: string // Custom title for master series card (e.g., "Master Series")
 }
 
 /**
@@ -588,10 +589,20 @@ const FEATURED_PIANOS: FeaturedPiano[] = [
  */
 export default function FeaturedProductsSection({
   title = 'Featured at NAMM 2026',
-  subtitle = 'Discover our most innovative and exclusive pianos. From transparent crystal grands to revolutionary hybrids, experience the future of piano craftsmanship.'
+  subtitle = 'Discover our most innovative and exclusive pianos. From transparent crystal grands to revolutionary hybrids, experience the future of piano craftsmanship.',
+  masterSeriesTitle
 }: FeaturedProductsSectionProps) {
   const [isTitleVisible, setIsTitleVisible] = useState(false)
   const titleRef = useRef<HTMLDivElement>(null)
+
+  // Apply custom master series title if provided
+  const displayPianos = masterSeriesTitle
+    ? FEATURED_PIANOS.map(piano =>
+        piano.id === 'master-series'
+          ? { ...piano, name: masterSeriesTitle }
+          : piano
+      )
+    : FEATURED_PIANOS
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -639,7 +650,7 @@ export default function FeaturedProductsSection({
 
         {/* Featured Pianos - Each with unique treatment */}
         <div className="space-y-16 lg:space-y-20">
-          {FEATURED_PIANOS.map((piano, index) => {
+          {displayPianos.map((piano, index) => {
             switch (piano.theme) {
               case 'crystal':
                 return <CrystalGrandCard key={piano.id} piano={piano} index={index} />

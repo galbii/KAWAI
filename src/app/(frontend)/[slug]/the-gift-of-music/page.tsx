@@ -382,6 +382,17 @@ export default function MusicSchoolEnrollmentPage({
                   <div className="absolute top-0 right-8 text-emerald-600 text-2xl opacity-30">✦</div>
 
                   <div className="relative z-10">
+                    {/* KMS Logo */}
+                    <div className="flex justify-center mb-8">
+                      <Image
+                        src="/images/kms/KMS Logo.png"
+                        alt="KMS Music School"
+                        width={400}
+                        height={50}
+                        className="h-12 sm:h-14 w-auto opacity-90"
+                      />
+                    </div>
+
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-serif text-kawai-black mb-4 leading-tight">
                       Reserve Your Place at Dallas's
                       <br />

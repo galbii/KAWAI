@@ -7,57 +7,108 @@
  * Features elegant design with KAWAI branding and exclusive event messaging
  */
 
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
-import { Calendar, Users, Gift, Sparkles } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Calendar } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default function DealerReceptionHero() {
-  const scrollToRSVP = () => {
-    const rsvpSection = document.getElementById('rsvp')
-    if (rsvpSection) {
-      rsvpSection.scrollIntoView({ behavior: 'smooth' })
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [showGreeting, setShowGreeting] = useState(true)
+  const [showContent, setShowContent] = useState(false)
+
+  // Set video to start at 9 seconds
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = 9
+    }
+  }, [])
+
+  // Handle greeting animation sequence
+  useEffect(() => {
+    // Show greeting for 3 seconds
+    const greetingTimer = setTimeout(() => {
+      setShowGreeting(false)
+    }, 3000)
+
+    // Show main content after greeting fades out (3s + 0.5s fade out)
+    const contentTimer = setTimeout(() => {
+      setShowContent(true)
+    }, 3500)
+
+    return () => {
+      clearTimeout(greetingTimer)
+      clearTimeout(contentTimer)
+    }
+  }, [])
+
+  const scrollToEventDetails = () => {
+    const eventDetailsSection = document.getElementById('event-details')
+    if (eventDetailsSection) {
+      eventDetailsSection.scrollIntoView({ behavior: 'smooth' })
     }
   }
 
   return (
     <section
-      className="relative min-h-screen w-full overflow-hidden bg-black pt-16"
+      className="relative min-h-screen w-full overflow-hidden pt-16"
       aria-label="NAMM 2026 Dealer Reception Invitation"
     >
-      {/* Background Elements */}
-      <div className="absolute inset-0">
-        {/* Base gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a1a] via-black to-[#0a0a0a]" />
+      {/* Video Background */}
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute top-0 left-0 w-full h-full object-cover z-0"
+        style={{ willChange: 'transform' }}
+        aria-hidden="true"
+      >
+        <source src="/assets/videos/Hero_compressed.mp4" type="video/mp4" />
+      </video>
 
-        {/* Radial glow effects */}
+      {/* Dark Overlay for Text Readability */}
+      <div className="absolute top-0 left-0 w-full h-full bg-black/60 z-10" />
+
+      {/* Subtle red and gold glow overlays */}
+      <div className="absolute inset-0 z-[11]">
         <div className="absolute top-0 left-1/4 w-[800px] h-[800px] bg-[#C41E3A]/10 rounded-full blur-[120px] opacity-30" />
         <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-[#D4AF37]/10 rounded-full blur-[100px] opacity-20" />
-
-        {/* Subtle pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.02]">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 1px)',
-            backgroundSize: '50px 50px'
-          }} />
-        </div>
-
-        {/* Gradient overlays for depth */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20" />
       </div>
 
       {/* Content Container */}
-      <div className="relative z-10 flex min-h-screen items-center justify-center px-6 py-20">
+      <div className="relative z-20 flex min-h-screen items-center justify-center px-6 py-20">
         <div className="max-w-6xl w-full">
 
-          {/* Event Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex justify-center mb-12"
-          >
+          {/* Greeting - "You're Invited" */}
+          <AnimatePresence>
+            {showGreeting && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.6 }}
+                className="absolute inset-0 flex items-center justify-center"
+              >
+                <h2 className="text-5xl md:text-6xl lg:text-7xl font-light tracking-tight text-white">
+                  You're Invited
+                </h2>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Main Content - Shows after greeting */}
+          {showContent && (
+            <>
+              {/* Event Badge */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0 }}
+                className="flex justify-center mb-12"
+              >
             <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 backdrop-blur-sm">
               <Calendar className="w-4 h-4 text-[#D4AF37]" />
               <span className="text-sm font-medium text-[#D4AF37] uppercase tracking-wide">
@@ -66,13 +117,32 @@ export default function DealerReceptionHero() {
             </div>
           </motion.div>
 
-          {/* KAWAI Logo */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="flex justify-center mb-12"
-          >
+              {/* NAMM Show Logo */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+                className="flex justify-center mb-6"
+              >
+            <div className="relative w-full max-w-[180px] aspect-[2/1]">
+              <Image
+                src="/images/namm/NS_Logo_Dark.png"
+                alt="The NAMM Show"
+                fill
+                className="object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+                priority
+                sizes="180px"
+              />
+            </div>
+          </motion.div>
+
+              {/* KAWAI Logo */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1, delay: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
+                className="flex justify-center mb-12"
+              >
             <div className="relative w-full max-w-2xl aspect-[5/1]">
               <Image
                 src="/images/Kawai (Red)(2).png"
@@ -85,26 +155,26 @@ export default function DealerReceptionHero() {
             </div>
           </motion.div>
 
-          {/* Main Heading */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="text-center mb-8"
-          >
+              {/* Main Heading */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="text-center mb-8"
+              >
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-light tracking-tight text-white mb-4">
               Dealer Reception
             </h1>
             <div className="w-24 h-1 bg-gradient-to-r from-transparent via-[#C41E3A] to-transparent mx-auto" />
           </motion.div>
 
-          {/* Description */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="max-w-3xl mx-auto text-center mb-12"
-          >
+              {/* Description */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                className="max-w-3xl mx-auto text-center mb-12"
+              >
             <p className="text-xl md:text-2xl lg:text-3xl font-light text-gray-200 leading-relaxed mb-6">
               Join us for an <span className="text-[#D4AF37] font-normal">exclusive evening</span> where we'd like to express our appreciation with fine food, craft cocktails, and exciting announcements.
             </p>
@@ -113,56 +183,15 @@ export default function DealerReceptionHero() {
             </p>
           </motion.div>
 
-          {/* Feature Highlights */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.7 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12"
-          >
-            {/* Food & Cocktails */}
-            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 p-6 backdrop-blur-sm transition-all duration-300 hover:border-[#D4AF37]/30 hover:bg-white/10">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-14 h-14 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Sparkles className="w-7 h-7 text-[#D4AF37]" />
-                </div>
-                <h3 className="text-lg font-medium text-white mb-2">Food & Cocktails</h3>
-                <p className="text-sm text-gray-400 font-light">Gourmet dining and premium beverages</p>
-              </div>
-            </div>
-
-            {/* Networking */}
-            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 p-6 backdrop-blur-sm transition-all duration-300 hover:border-[#D4AF37]/30 hover:bg-white/10">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-14 h-14 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Users className="w-7 h-7 text-[#D4AF37]" />
-                </div>
-                <h3 className="text-lg font-medium text-white mb-2">Special Announcements</h3>
-                <p className="text-sm text-gray-400 font-light">Exclusive updates and insights</p>
-              </div>
-            </div>
-
-            {/* Exclusive Pricing */}
-            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 p-6 backdrop-blur-sm transition-all duration-300 hover:border-[#D4AF37]/30 hover:bg-white/10">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-14 h-14 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Gift className="w-7 h-7 text-[#D4AF37]" />
-                </div>
-                <h3 className="text-lg font-medium text-white mb-2">Exclusive Pricing</h3>
-                <p className="text-sm text-gray-400 font-light">Special offers for attendees only</p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* CTA Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="flex justify-center mb-16"
-          >
+              {/* CTA Button */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.5 }}
+                className="flex justify-center mb-16"
+              >
             <button
-              onClick={scrollToRSVP}
+              onClick={scrollToEventDetails}
               className={cn(
                 'group relative inline-flex items-center gap-3 px-10 py-5 rounded-full overflow-hidden',
                 'bg-gradient-to-r from-[#C41E3A] to-[#A01828]',
@@ -173,7 +202,7 @@ export default function DealerReceptionHero() {
                 'border border-[#C41E3A]/50'
               )}
             >
-              <span className="relative z-10">Reserve Your Spot</span>
+              <span className="relative z-10">Learn More</span>
               <svg
                 className="relative z-10 w-5 h-5 transition-transform group-hover:translate-x-1"
                 fill="none"
@@ -188,13 +217,13 @@ export default function DealerReceptionHero() {
             </button>
           </motion.div>
 
-          {/* Scroll Indicator */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 1 }}
-            className="flex justify-center"
-          >
+              {/* Scroll Indicator */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1, delay: 0.6 }}
+                className="flex justify-center"
+              >
             <motion.div
               animate={{ y: [0, 12, 0] }}
               transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
@@ -204,8 +233,10 @@ export default function DealerReceptionHero() {
                 Scroll to Explore
               </span>
               <div className="w-px h-16 bg-gradient-to-b from-[#D4AF37] via-[#D4AF37]/50 to-transparent" />
-            </motion.div>
-          </motion.div>
+              </motion.div>
+              </motion.div>
+            </>
+          )}
 
         </div>
       </div>
