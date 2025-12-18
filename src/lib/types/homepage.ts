@@ -151,6 +151,7 @@ export interface HomePageData {
 // Component Props Types
 export interface HeroProps {
   data?: HeroSectionData
+  storefrontName?: string | undefined // Optional storefront name for SEO H1
 }
 
 export interface ShowroomLocationProps {
@@ -175,7 +176,7 @@ export interface ContactFormProps {
 
 // Fallback data constants
 export const DEFAULT_HERO_DATA: HeroSectionData = {
-  locationText: "St. Louis's Premier Piano Gallery",
+  locationText: "St. Louis's Premier Kawai Piano Gallery",
   establishedText: "Est. 1927 • Lake St. Louis, Missouri",
   description: "Every musician harbors a vision. Every performance seeks perfection. Since 1927, we've been crafting the instruments that transform inspiration into reality. Visit our Lake St. Louis showroom and discover why we're Missouri's trusted Kawai piano experts.",
   primaryCta: {

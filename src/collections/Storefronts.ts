@@ -59,9 +59,9 @@ export const Storefronts: CollectionConfig = {
               name: 'locationText',
               type: 'text',
               required: true,
-              defaultValue: 'St. Louis\'s Premier Piano Gallery',
+              defaultValue: 'St. Louis\'s Premier Kawai Piano Gallery',
               admin: {
-                description: 'Location/Piano Gallery status text displayed at the top'
+                description: 'Location/Piano Gallery status text displayed at the top (include "Kawai" for brand visibility)'
               }
             },
             {

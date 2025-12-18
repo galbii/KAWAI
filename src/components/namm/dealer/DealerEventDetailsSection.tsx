@@ -22,9 +22,7 @@ import {
   UsersRound,
   Eye,
   ChevronLeft,
-  ChevronRight,
-  Users,
-  Info
+  ChevronRight
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -462,80 +460,6 @@ export default function DealerEventDetailsSection({
                   </span>
                 </div>
               </motion.div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Bottom Grid - Additional Details */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={isHeroVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-          className="grid gap-6 md:grid-cols-2"
-        >
-          {/* Who Should Attend */}
-          <div className="rounded-2xl p-6 md:p-8 bg-gradient-to-br from-white via-white to-[#F5F1E8]/30 border-2 border-[#D4AF37]/20 shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-[#D4AF37]/10">
-                <Users className="w-6 h-6 text-[#D4AF37]" strokeWidth={1.5} />
-              </div>
-              <h4 className="text-xl md:text-2xl font-light text-[#2C2826]">
-                Who Should Attend
-              </h4>
-            </div>
-
-            <ul className="space-y-3 text-sm md:text-base">
-              <li className="flex items-start gap-2 text-[#5A5550]">
-                <span className="text-[#D4AF37] mt-1 flex-shrink-0">•</span>
-                <span><strong className="text-[#2C2826]">Authorized Kawai Dealers</strong> - Current partners in good standing</span>
-              </li>
-              <li className="flex items-start gap-2 text-[#5A5550]">
-                <span className="text-[#D4AF37] mt-1 flex-shrink-0">•</span>
-                <span><strong className="text-[#2C2826]">Prospective Partners</strong> - Interested in joining our family</span>
-              </li>
-              <li className="flex items-start gap-2 text-[#5A5550]">
-                <span className="text-[#D4AF37] mt-1 flex-shrink-0">•</span>
-                <span><strong className="text-[#2C2826]">Special Guests</strong> - VIP industry partners and stakeholders</span>
-              </li>
-              <li className="flex items-start gap-2 text-[#5A5550]">
-                <span className="text-[#D4AF37] mt-1 flex-shrink-0">•</span>
-                <span><strong className="text-[#2C2826]">Industry Professionals</strong> - Key decision makers</span>
-              </li>
-            </ul>
-          </div>
-
-          {/* Important Details */}
-          <div className="rounded-2xl p-6 md:p-8 bg-gradient-to-br from-white via-white to-[#F5F1E8]/30 border-2 border-[#D4AF37]/20 shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-[#D4AF37]/10">
-                <Info className="w-6 h-6 text-[#D4AF37]" strokeWidth={1.5} />
-              </div>
-              <h4 className="text-xl md:text-2xl font-light text-[#2C2826]">
-                Important Details
-              </h4>
-            </div>
-
-            <div className="space-y-4 text-sm md:text-base">
-              <div>
-                <p className="font-semibold text-[#2C2826] mb-1">Dress Code</p>
-                <p className="text-[#5A5550]">Business Casual / Cocktail Attire</p>
-              </div>
-
-              <div className="pt-4 border-t border-[#D4CFC7]">
-                <p className="font-semibold text-[#2C2826] mb-1">Parking</p>
-                <p className="text-[#5A5550]">Complimentary valet available</p>
-              </div>
-
-              <div className="pt-4 border-t border-[#D4CFC7]">
-                <p className="font-semibold text-[#2C2826] mb-1">RSVP Deadline</p>
-                <p className="text-[#D4AF37] font-bold text-lg">January 15, 2026</p>
-                <p className="text-xs text-[#7A7570] mt-1">Limited capacity - reserve early</p>
-              </div>
-
-              <div className="pt-4 border-t border-[#D4CFC7]">
-                <p className="font-semibold text-[#2C2826] mb-1">Questions?</p>
-                <p className="text-[#5A5550]">Contact your regional representative</p>
-              </div>
             </div>
           </div>
         </motion.div>

@@ -276,7 +276,12 @@ async function StorefrontContent({ slug }: { slug: string }) {
 
       <div className="min-h-screen">
         {/* Hero Section */}
-        <Hero {...(storefrontData?.heroSection && { data: storefrontData.heroSection })} />
+        <Hero
+          {...(storefrontData?.heroSection && { data: storefrontData.heroSection })}
+          {...(storefrontData?.showroomSection?.showroomInfo?.name && {
+            storefrontName: storefrontData.showroomSection.showroomInfo.name
+          })}
+        />
 
         {/* Piano Keyboard Divider - Brand Element */}
         <PianoKeyboardDivider />
@@ -298,6 +303,32 @@ async function StorefrontContent({ slug }: { slug: string }) {
       </div>
     </>
   );
+}
+
+// Helper function to extract city name from storefront name
+function extractCityName(storefrontName: string | undefined): string | null {
+  if (!storefrontName) return null;
+
+  // Try multiple patterns to extract city name
+  // Pattern 1: "Kawai Piano Gallery [City]" or "Piano Gallery [City]"
+  const galleryPattern = storefrontName.match(/(?:Gallery\s+)([A-Za-z\s]+?)(?:\s*$|,|\||–)/i);
+  if (galleryPattern && galleryPattern[1]) {
+    return galleryPattern[1].trim();
+  }
+
+  // Pattern 2: "[City] Kawai Piano Gallery" or "[City] Piano Gallery"
+  const cityFirstPattern = storefrontName.match(/^([A-Za-z\s]+?)(?:\s+(?:Kawai|Piano|Gallery))/i);
+  if (cityFirstPattern && cityFirstPattern[1]) {
+    return cityFirstPattern[1].trim();
+  }
+
+  // Pattern 3: "Kawai [City]" simple format
+  const simplePattern = storefrontName.match(/Kawai\s+([A-Za-z\s]+?)(?:\s*$|,|\||–)/i);
+  if (simplePattern && simplePattern[1]) {
+    return simplePattern[1].trim();
+  }
+
+  return null;
 }
 
 // Enable ISR (Incremental Static Regeneration) for storefront pages
@@ -372,26 +403,30 @@ export async function generateMetadata(
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com';
 
-    // Extract storefront name from showroom info for dynamic title
+    // Extract storefront name and city for SEO optimization
     const storefrontName = storefrontData.showroomSection?.showroomInfo?.name || 'Piano Gallery';
 
-    // Create dynamic title like "KAWAI Houston" or "KAWAI Dallas"
-    // Extract city name from the storefront name (e.g., "Kawai Piano Gallery Houston" -> "Houston")
-    let cityName = '';
-    if (storefrontName) {
-      // Try to extract city from patterns like "Kawai Piano Gallery [City]" or "[City] Kawai Piano Gallery"
-      const cityMatch = storefrontName.match(/(?:Gallery\s+)([A-Za-z\s]+?)(?:\s*$|,|\|)/i) ||
-                       storefrontName.match(/^([A-Za-z\s]+?)(?:\s+Kawai)/i);
-      if (cityMatch && cityMatch[1]) {
-        cityName = cityMatch[1].trim();
-      }
+    // Intelligently extract city name with multiple fallback strategies
+    let cityName = extractCityName(storefrontName);
+
+    // Fallback to service area primary city if extraction failed
+    if (!cityName && storefrontData.showroomSection?.showroomInfo) {
+      // Try to extract from raw storefront data if available
+      cityName = rawStorefrontData?.serviceAreaCoverage?.primaryCity || null;
     }
 
-    // Fallback: Generate default titles using SEO data or storefront name
-    const defaultTitle = cityName ? `KAWAI ${cityName}` : storefrontData.seo?.metaTitle || `KAWAI ${storefrontName}`;
-    const defaultDescription = storefrontData.seo?.metaDescription || `Visit your local KAWAI authorized dealer at ${storefrontName}. Explore grand, upright, and digital pianos with expert consultation.`;
+    // Build optimized title for brand + location searches
+    // Priority: "Kawai Piano Gallery [City] | Authorized Kawai Dealer"
+    const defaultTitle = cityName
+      ? `Kawai Piano Gallery ${cityName} | Authorized Kawai Dealer`
+      : `Kawai ${storefrontName}`;
 
-    console.log(`[SEO] Generated metadata for "${slug}": ${defaultTitle}`);
+    // Enhanced description with city mention for local SEO
+    const defaultDescription = cityName
+      ? `Visit Kawai Piano Gallery ${cityName} - Your authorized Kawai dealer. Explore grand, upright & digital pianos. Expert consultation, financing & professional service in ${cityName}.`
+      : `Visit your local KAWAI authorized dealer at ${storefrontName}. Explore grand, upright, and digital pianos with expert consultation.`;
+
+    console.log(`[SEO] Generated metadata for "${slug}": ${defaultTitle} (City: ${cityName || 'not extracted'})`);
 
     return {
       title: storefrontData.seo?.metaTitle || defaultTitle,

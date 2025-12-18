@@ -2336,7 +2336,7 @@ export interface Storefront {
    */
   isActive?: boolean | null;
   /**
-   * Location/Piano Gallery status text displayed at the top
+   * Location/Piano Gallery status text displayed at the top (include "Kawai" for brand visibility)
    */
   locationText: string;
   /**

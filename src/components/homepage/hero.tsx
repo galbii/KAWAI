@@ -9,7 +9,7 @@ import { MediaRenderer } from "@/components/ui/media/MediaRenderer";
 import type { HeroProps } from "@/lib/types/homepage";
 import { DEFAULT_HERO_DATA } from "@/lib/types/homepage";
 
-export function Hero({ data = DEFAULT_HERO_DATA }: HeroProps) {
+export function Hero({ data = DEFAULT_HERO_DATA, storefrontName }: HeroProps) {
   const heroRef = useRef(null);
   const isInView = useInView(heroRef, { once: true, amount: 0.2 });
 
@@ -48,11 +48,16 @@ export function Hero({ data = DEFAULT_HERO_DATA }: HeroProps) {
   };
 
   return (
-    <section 
+    <section
       ref={heroRef}
       className="section-brand-primary relative min-h-screen flex items-center overflow-hidden"
       style={{ willChange: 'transform' }}
     >
+      {/* Hidden H1 for SEO - Only rendered for storefront pages */}
+      {storefrontName && (
+        <h1 className="sr-only">KAWAI {storefrontName}</h1>
+      )}
+
       {/* Video Background */}
       {data.backgroundVideo ? (
         <MediaRenderer
@@ -99,7 +104,7 @@ export function Hero({ data = DEFAULT_HERO_DATA }: HeroProps) {
           </motion.div>
 
           <div className="mb-12 lg:mb-16">
-            <h1 className="heading-brand-luxury text-kawai-pearl mb-8 lg:mb-12 leading-tight tracking-tight text-center">
+            <div className="heading-brand-luxury text-kawai-pearl mb-8 lg:mb-12 leading-tight tracking-tight text-center">
               <motion.div
                 className="flex justify-center"
                 variants={wordReveal}
@@ -116,7 +121,7 @@ export function Hero({ data = DEFAULT_HERO_DATA }: HeroProps) {
                   priority
                 />
               </motion.div>
-            </h1>
+            </div>
           </div>
 
           <motion.p

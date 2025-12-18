@@ -170,18 +170,34 @@ export function LocalBusinessSchema({ storefront, siteUrl }: LocalBusinessSchema
       "foundingDate": new Date(storefront.schemaData.foundingDate).toISOString().split('T')[0]
     }),
 
-    // Service area (helps with "near me" searches)
+    // Service area (helps with "near me" searches and multi-city ranking)
     ...(storefront.serviceAreaCoverage?.primaryCity && {
-      "areaServed": {
-        "@type": "City",
-        "name": storefront.serviceAreaCoverage.primaryCity,
-        ...(storefront.serviceAreaCoverage?.stateRegion && {
-          "containedIn": {
-            "@type": "State",
-            "name": storefront.serviceAreaCoverage.stateRegion
-          }
-        })
-      }
+      "areaServed": [
+        // Primary city
+        {
+          "@type": "City",
+          "name": storefront.serviceAreaCoverage.primaryCity,
+          ...(storefront.serviceAreaCoverage?.stateRegion && {
+            "containedIn": {
+              "@type": "State",
+              "name": storefront.serviceAreaCoverage.stateRegion
+            }
+          })
+        },
+        // Additional covered cities for expanded local SEO reach
+        ...(storefront.serviceAreaCoverage?.coveredCities && Array.isArray(storefront.serviceAreaCoverage.coveredCities)
+          ? storefront.serviceAreaCoverage.coveredCities.map((city: any) => ({
+              "@type": "City",
+              "name": city.cityName,
+              ...(storefront.serviceAreaCoverage?.stateRegion && {
+                "containedIn": {
+                  "@type": "State",
+                  "name": storefront.serviceAreaCoverage.stateRegion
+                }
+              })
+            }))
+          : [])
+      ]
     }),
 
     // Parent organization
