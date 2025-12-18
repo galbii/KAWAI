@@ -272,7 +272,7 @@ export default function PlanYourVisitSection({
               question="What are the NAMM 2026 dates and hours?"
               answer={
                 <div className="space-y-3">
-                  <p><strong>The NAMM Show 2026</strong> runs January 20–24, 2026 at the Anaheim Convention Center in California.</p>
+                  <p><strong>The NAMM Show 2026</strong> runs January 22–24, 2026 at the Anaheim Convention Center in California.</p>
                   <p><strong>Exhibit Hall Hours:</strong></p>
                   <ul className="list-disc pl-5 space-y-1">
                     <li>Thursday, January 22: 10:00 AM – 6:00 PM</li>
@@ -319,48 +319,16 @@ export default function PlanYourVisitSection({
               question="Where should I park for NAMM 2026?"
               answer={
                 <div className="space-y-3">
-                  <p><strong>Parking Fee:</strong> $25 for Anaheim Convention Center, Toy Story, and Garden Walk lots.</p>
-                  <p><strong>Important Notes:</strong></p>
+                  <p>Several parking options are available near the Anaheim Convention Center:</p>
                   <ul className="list-disc pl-5 space-y-1">
-                    <li>A parking validation is required for the $25 rate at Garden Walk (available at Hall E, Arena Badge Will Call, and NAMM Help Desk)</li>
-                    <li>Overnight parking is NOT permitted</li>
-                    <li>All lots close at 2:00 AM (vehicles left after may be cited/towed)</li>
-                    <li>NVP badge holders receive complimentary parking (first-come, first-served)</li>
+                    <li>Anaheim Convention Center parking structure</li>
+                    <li>Toy Story parking lot</li>
+                    <li>Garden Walk parking (validation required - available at Hall E, Arena Badge Will Call, and NAMM Help Desk)</li>
                   </ul>
+                  <p className="text-sm"><strong>Important:</strong> Overnight parking is NOT permitted.</p>
                 </div>
               }
               index={3}
-            />
-
-            <FAQItem
-              question="What hotels are near the Anaheim Convention Center?"
-              answer={
-                <div className="space-y-3">
-                  <p>Over <strong>3,700+ hotel rooms</strong> surround the convention center. Recommended options:</p>
-                  <ul className="space-y-2">
-                    <li className="flex items-start gap-2">
-                      <span className="text-kawai-red mt-1 flex-shrink-0">•</span>
-                      <div>
-                        <strong>Hilton Anaheim</strong> – Connected via skywalk, extremely convenient
-                      </div>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-kawai-red mt-1 flex-shrink-0">•</span>
-                      <div>
-                        <strong>Anaheim Marriott</strong> – Adjacent to the convention center
-                      </div>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-kawai-red mt-1 flex-shrink-0">•</span>
-                      <div>
-                        <strong>Disneyland Hotels</strong> – Walking distance, family-friendly option
-                      </div>
-                    </li>
-                  </ul>
-                  <p className="text-sm font-semibold">💡 Tip: Book early for best rates during NAMM week!</p>
-                </div>
-              }
-              index={4}
             />
 
             <FAQItem
@@ -386,7 +354,7 @@ export default function PlanYourVisitSection({
                   <p className="text-sm">Consider shuttle services to avoid parking hassles and traffic.</p>
                 </div>
               }
-              index={5}
+              index={4}
             />
 
             <FAQItem
@@ -395,15 +363,15 @@ export default function PlanYourVisitSection({
                 <div className="space-y-2">
                   <p>Kawai will feature our most innovative and exclusive instruments, including:</p>
                   <ul className="list-disc pl-5 space-y-1">
-                    <li><strong>CR-45 Crystal Grand</strong> – Ultra-exclusive transparent acrylic grand (only 3 produced annually)</li>
-                    <li><strong>Novus NV12 & NV6</strong> – Revolutionary hybrid pianos with PentaDrive speakerless soundboard technology</li>
-                    <li><strong>HERALBORY Artistic Collaboration</strong> – Limited-edition pianos featuring vibrant Japanese contemporary art</li>
-                    <li><strong>Shigeru Kawai Premium Series</strong> – Handcrafted concert grands from our master artisans</li>
+                    <li><strong>CR-45 Crystal Grand</strong> – Ultra-exclusive transparent acrylic grand</li>
+                    <li><strong>Novus NV12 & NV6</strong> – Revolutionary hybrid pianos</li>
+                    <li><strong>HERALBONY Artistic Collaboration</strong> – One of a kind SK-5 with a new bold artistic twist</li>
+                    <li><strong>Shigeru Kawai</strong> – Handcrafted concert grands from our master artisans</li>
                   </ul>
                   <p className="text-sm">Visit <a href="/namm-2026/experience" className="text-kawai-red hover:underline">our featured pianos page</a> for detailed information and demonstrations.</p>
                 </div>
               }
-              index={6}
+              index={5}
             />
           </div>
         </motion.div>
@@ -438,7 +406,7 @@ export default function PlanYourVisitSection({
                   The NAMM Show 2026
                 </p>
                 <p className="text-[#5A5550] mt-1">
-                  January 20–24, 2026
+                  January 22–24, 2026
                 </p>
               </div>
 

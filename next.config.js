@@ -38,6 +38,11 @@ const nextConfig = {
         hostname: 'kawai.com.au',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'berqwp-cdn.sfo3.cdn.digitaloceanspaces.com',
+        pathname: '/**',
+      },
     ],
   },
   eslint: {

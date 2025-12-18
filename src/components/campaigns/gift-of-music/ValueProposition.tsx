@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
 
 interface ValuePropositionProps {
   className?: string
@@ -14,9 +15,9 @@ const values = [
     description: 'Train on professional-grade instruments in soundproof studios—the same facility trusted by Dallas Jazz Piano Society for professional concerts'
   },
   {
-    title: 'Exclusive Concert Hall Access',
-    value: 'Premium',
-    description: 'Experience our acoustically-engineered 200-seat performance space featuring the Shigeru Kawai SK-EX concert grand—Kawai\'s flagship instrument'
+    title: 'Join a Gifted Community',
+    value: 'Exclusive',
+    description: 'Join a community of gifted individuals under the instruction of professional and accomplished instructors'
   },
   {
     title: 'Zero Enrollment Barriers',
@@ -25,7 +26,7 @@ const values = [
   },
   {
     title: 'Personalized Assessment & Plan',
-    value: 'Included',
+    value: 'Tailored',
     description: 'Custom curriculum designed by conservatory-trained instructors who\'ve won national competitions and hold degrees from Johns Hopkins Peabody Institute'
   }
 ]
@@ -42,14 +43,23 @@ export default function ValueProposition({ className }: ValuePropositionProps) {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="text-center mb-20"
         >
+          {/* KMS Logo */}
+          <div className="flex justify-center mb-8">
+            <Image
+              src="/images/kms/KMS Logo.png"
+              alt="KMS Music School"
+              width={400}
+              height={50}
+              className="h-12 sm:h-14 w-auto opacity-90"
+            />
+          </div>
+
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-kawai-black mb-6 leading-tight">
-            World-Class Training. Premium Facility.{' '}
-            <span className="text-kawai-red">Complimentary Access.</span>
+            <span className="text-kawai-red">Learn from the Best</span>
           </h2>
           <div className="w-24 h-1 bg-gradient-to-r from-kawai-red via-kawai-gold to-emerald-600 mx-auto mb-8" />
           <p className="text-lg sm:text-xl lg:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed font-light">
-            Experience Dallas's most prestigious music academy—{' '}
-            <span className="font-semibold text-kawai-black">exclusive access to our state-of-the-art facility</span>, professional recording capabilities, and elite instruction, yours complimentary this holiday season
+            Study with accomplished instructors who bring professional experience and proven teaching methods to every lesson
           </p>
         </motion.div>
 
@@ -119,11 +129,6 @@ export default function ValueProposition({ className }: ValuePropositionProps) {
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 bg-kawai-gold rounded-full" />
             <span>200-Seat Concert Hall</span>
-          </div>
-          <div className="w-px h-4 bg-gray-300" />
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-kawai-gold rounded-full" />
-            <span>Professional Recording Studio</span>
           </div>
         </motion.div>
       </div>

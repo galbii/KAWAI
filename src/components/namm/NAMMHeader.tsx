@@ -286,27 +286,8 @@ export function NAMMHeader() {
           </Link>
         </nav>
 
-        {/* Right side - CTA Button (Desktop) + Mobile Menu */}
+        {/* Right side - Mobile Menu */}
         <div className="flex items-center gap-4 pr-4 sm:pr-6">
-          <motion.div
-            className="hidden md:block"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Link
-              href="/namm-2026#plan-your-visit"
-              className={cn(
-                "inline-flex items-center px-6 py-2.5 rounded-full font-semibold text-sm",
-                "bg-gradient-to-r from-[#E31937] to-[#FF3B55]",
-                "text-white shadow-lg shadow-red-500/30",
-                "hover:shadow-xl hover:shadow-red-500/40",
-                "transition-all duration-300"
-              )}
-            >
-              Get Directions
-            </Link>
-          </motion.div>
-
           {/* Mobile Menu Button */}
           <motion.button
             ref={menuButtonRef}
@@ -510,22 +491,6 @@ export function NAMMHeader() {
                   </Link>
                 </div>
               </nav>
-
-              <div className="mt-auto bg-black border-t border-white/10 p-6 flex-shrink-0">
-                <Link
-                  href="/namm-2026#plan-your-visit"
-                  className={cn(
-                    "block text-center px-6 py-3 rounded-full font-semibold text-sm",
-                    "bg-gradient-to-r from-[#E31937] to-[#FF3B55]",
-                    "text-white shadow-lg shadow-red-500/30",
-                    "hover:shadow-xl hover:shadow-red-500/40",
-                    "transition-all duration-300"
-                  )}
-                  onClick={closeMobileMenu}
-                >
-                  Get Directions
-                </Link>
-              </div>
             </motion.div>
           </>
         )}

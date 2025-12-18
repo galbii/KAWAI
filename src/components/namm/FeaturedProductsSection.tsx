@@ -90,9 +90,6 @@ function CrystalGrandCard({ piano, index }: { piano: FeaturedPiano; index: numbe
             <h3 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 tracking-tight leading-tight drop-shadow-2xl" style={{ textShadow: '0 4px 12px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.6)' }}>
               {piano.name}
             </h3>
-            <p className="text-xl lg:text-2xl font-light text-cyan-100/90 drop-shadow-2xl" style={{ textShadow: '0 2px 8px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.5)' }}>
-              {piano.tagline}
-            </p>
           </motion.div>
 
           {/* CTA Button */}
@@ -559,7 +556,7 @@ const FEATURED_PIANOS: FeaturedPiano[] = [
   {
     id: 'cr45',
     name: 'CR-45 Crystal Grand',
-    tagline: 'Not Just an Instrument—A Masterpiece',
+    tagline: 'Ultra-exclusive transparent acrylic grand',
     imageUrl: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/pianos/crystal/024.jpg',
     ctaText: 'Explore Crystal Grand',
     ctaLink: '/namm-2026/experience#cr45',

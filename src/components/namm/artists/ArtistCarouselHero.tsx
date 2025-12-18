@@ -181,7 +181,10 @@ export default function ArtistCarouselHero() {
                 alt={currentArtist.artistName}
                 fill
                 priority={currentSlide === 0}
-                className="object-cover"
+                className={cn(
+                  "object-cover",
+                  currentArtist.artistName === 'Artur Zakiyan' ? 'object-[center_20%]' : ''
+                )}
                 sizes="100vw"
               />
             ) : (
@@ -200,26 +203,9 @@ export default function ArtistCarouselHero() {
           animate="visible"
           className="max-w-5xl text-center"
         >
-          {currentArtist?.genre && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6 backdrop-blur-sm"
-            >
-              <span className="text-sm font-medium text-white/80 uppercase tracking-wide">
-                {currentArtist.genre}
-              </span>
-            </motion.div>
-          )}
-
-          <h1 className="mb-4 text-5xl font-light tracking-tight text-white md:text-7xl lg:text-8xl">
+          <h1 className="mb-8 text-5xl font-light tracking-tight text-white md:text-7xl lg:text-8xl">
             {currentArtist?.artistName}
           </h1>
-
-          <p className="mx-auto max-w-2xl text-lg font-light text-gray-300 md:text-xl lg:text-2xl mb-2">
-            {currentArtist?.performanceType}
-          </p>
 
           <p className="mx-auto max-w-2xl text-base font-light text-gray-400 md:text-lg">
             Performing at NAMM 2026

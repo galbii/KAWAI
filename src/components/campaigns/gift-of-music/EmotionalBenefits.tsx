@@ -11,24 +11,16 @@ interface EmotionalBenefitsProps {
 
 const benefits = [
   {
-    label: 'Discipline',
-    description: 'Build consistency in practice that transfers to careers, academics, and long-term goals'
+    label: 'Focus',
+    description: 'Learn to tune out distractions and concentrate on what matters'
   },
   {
-    label: 'Performance Confidence',
-    description: 'Learn to execute under pressure—from recitals to presentations to high-stakes meetings'
+    label: 'Confidence',
+    description: 'Feel proud as you watch yourself improve'
   },
   {
-    label: 'Emotional Communication',
-    description: 'Express complex feelings nonverbally—a skill that deepens relationships and self-awareness'
-  },
-  {
-    label: 'Intrinsic Excellence',
-    description: 'Develop internal standards that drive quality work, regardless of recognition or reward'
-  },
-  {
-    label: 'Pattern Recognition',
-    description: 'Train your brain to decode complexity—applicable to problem-solving across all fields'
+    label: 'Stress Relief',
+    description: 'Find a creative outlet to relax and unwind'
   },
   {
     label: 'Community',
@@ -116,76 +108,66 @@ export default function EmotionalBenefits({ className, onCTAClick }: EmotionalBe
           </p>
         </motion.div>
 
-        {/* Benefits Grid - Clean Typography Focused */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mb-24">
+        {/* Benefits Grid - FAQ Style */}
+        <div className="max-w-4xl mx-auto space-y-3 mb-24">
           {benefits.map((item, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{
-                duration: 0.6,
-                delay: index * 0.08,
+                duration: 0.5,
+                delay: index * 0.06,
                 ease: "easeOut"
               }}
-              className="group relative"
+              className="group"
             >
-              {/* Minimal Card - Pure White with Strong Shadow */}
-              <div className="relative p-8 lg:p-10 bg-white/95 backdrop-blur-sm rounded-none border-l-4 border-gradient-to-b from-kawai-red via-kawai-gold to-emerald-600 hover:bg-white transition-all duration-300 shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)]">
-                {/* Festive Corner Accent - Subtle Star/Ornament Shape */}
-                <div className="absolute top-0 right-0 w-16 h-16">
-                  <div className="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-kawai-gold/20" />
-                  <div className="absolute top-2 right-2 text-kawai-gold/30 text-xs">✦</div>
-                </div>
+              {/* Simple FAQ-Style Card - More Transparent & Compact */}
+              <div className="bg-white/60 backdrop-blur-md p-4 sm:p-5 border-l-4 border-kawai-red shadow-[0_2px_15px_rgba(0,0,0,0.25)] hover:bg-white/70 hover:shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all duration-300">
+                <div className="flex items-start gap-3">
+                  {/* Decorative Accent */}
+                  <div className="flex-shrink-0 w-1.5 h-1.5 bg-kawai-gold rounded-full mt-1.5" />
 
-                {/* Content */}
-                <div className="relative">
-                  {/* Title */}
-                  <h3 className="font-serif text-2xl sm:text-3xl mb-4 text-kawai-black leading-tight">
-                    {item.label}
-                  </h3>
+                  {/* Content */}
+                  <div className="flex-1">
+                    {/* Title - FAQ Style */}
+                    <h3 className="font-bold text-lg sm:text-xl mb-1 text-kawai-black">
+                      {item.label}
+                    </h3>
 
-                  {/* Description */}
-                  <p className="text-base sm:text-lg text-gray-700 leading-relaxed font-light">
-                    {item.description}
-                  </p>
-
-                  {/* Festive Decorative Element - Holiday Colors */}
-                  <div className="mt-6 w-12 h-0.5 bg-gradient-to-r from-kawai-red via-kawai-gold to-emerald-600 group-hover:w-20 transition-all duration-300" />
+                    {/* Description */}
+                    <p className="text-sm sm:text-base text-gray-800 leading-relaxed">
+                      {item.description}
+                    </p>
+                  </div>
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Bottom CTA - Minimalist */}
+        {/* Bottom CTA - Compact & Transparent */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-          className="text-center"
+          className="text-center max-w-4xl mx-auto"
         >
-          <div className="inline-block px-12 py-8 bg-white/95 backdrop-blur-sm border-t-4 border-gradient-to-r from-kawai-red via-kawai-gold to-emerald-600 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative">
-            {/* Festive corner decorations */}
-            <div className="absolute -top-2 left-8 text-kawai-red text-xl opacity-50">✦</div>
-            <div className="absolute -top-2 right-8 text-emerald-600 text-xl opacity-50">✦</div>
-
-            <p className="text-2xl sm:text-3xl lg:text-4xl text-kawai-black font-serif leading-relaxed mb-2">
+          <div className="bg-white/60 backdrop-blur-md px-8 py-5 border-t-4 border-kawai-red shadow-[0_2px_15px_rgba(0,0,0,0.25)] hover:bg-white/70 transition-all duration-300">
+            <p className="text-xl sm:text-2xl lg:text-3xl text-kawai-black font-serif mb-1">
               Give the gift that keeps giving
             </p>
 
-            <p className="text-xs sm:text-sm text-gray-600 mb-6 font-light">
+            <p className="text-xs sm:text-sm text-gray-700 mb-4 font-light">
               Spots are limited
             </p>
-
-            <div className="w-32 h-1 bg-gradient-to-r from-kawai-red via-kawai-gold to-emerald-600 mx-auto mb-8 shadow-md" />
 
             {/* Reserve Now CTA */}
             <button
               onClick={onCTAClick}
-              className="bg-gradient-to-r from-kawai-red via-kawai-gold to-emerald-600 hover:shadow-lg text-white px-10 py-4 font-bold text-lg transition-all duration-300 hover:scale-105 shadow-md"
+              className="bg-gradient-to-r from-kawai-red via-kawai-gold to-emerald-600 hover:shadow-lg text-white px-8 py-3 font-bold text-base sm:text-lg transition-all duration-300 hover:scale-105 shadow-md"
             >
               Reserve Now
             </button>

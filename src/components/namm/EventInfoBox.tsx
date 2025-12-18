@@ -227,25 +227,25 @@ export default function EventInfoBox({ className }: EventInfoBoxProps) {
               NAMM is a trade-only event. Registration required.
             </p>
             <a
-              href="https://www.namm.org/registration"
+              href="https://www.namm.org/"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm text-kawai-red hover:text-kawai-red/80 transition-colors font-semibold"
             >
-              Register at NAMM.org
+              Visit NAMM.org
               <ExternalLink className="w-4 h-4" />
             </a>
           </div>
 
-          {/* CTA Button - Visit Kawai.us */}
+          {/* CTA Button - Visit Kawai US */}
           <div className="space-y-3">
             <a
-              href="https://kawai.us"
+              href="https://kawaius.com"
               target="_blank"
               rel="noopener noreferrer"
               className="w-full bg-kawai-red hover:bg-kawai-red/90 text-white font-semibold h-12 text-base shadow-md hover:shadow-lg transition-all inline-flex items-center justify-center rounded-md"
             >
-              Visit Kawai.us
+              Visit Kawai US
               <ExternalLink className="w-4 h-4 ml-2" />
             </a>
 

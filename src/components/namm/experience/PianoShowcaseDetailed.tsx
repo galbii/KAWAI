@@ -134,9 +134,6 @@ function CrystalGrandShowcase({ piano, index }: { piano: FeaturedPianoDetailed; 
             <h3 className="text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-5 tracking-tight leading-none drop-shadow-2xl" style={{ textShadow: '0 4px 12px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.6)' }}>
               {piano.name}
             </h3>
-            <p className="text-2xl lg:text-3xl xl:text-4xl font-light text-cyan-50 drop-shadow-lg" style={{ textShadow: '0 2px 8px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.5)' }}>
-              {piano.tagline}
-            </p>
           </motion.div>
 
           {/* CTA Button */}
@@ -723,8 +720,7 @@ const FEATURED_PIANOS_DETAILED: FeaturedPianoDetailed[] = [
     description: 'A bold artistic collaboration celebrating unique creative vision. This SK-5 concert grand becomes a canvas for Sato\'s vibrant artwork, transforming into a public art installation that challenges preconceptions and reveals the extraordinary power of different perspectives through sound and vision.',
     highlights: [
       'Vibrant original artwork by visionary artist Sato',
-      'Shigeru Kawai SK-5 concert grand base (227cm / 7\'5")',
-      'Limited edition with certificate of authenticity'
+      'Shigeru Kawai SK-5 concert grand base (227cm / 7\'5")'
     ],
     imageUrl: '/images/namm/heralbony closeup.JPG',
     ctaText: 'Discover The Story',
@@ -735,8 +731,8 @@ const FEATURED_PIANOS_DETAILED: FeaturedPianoDetailed[] = [
   {
     id: 'cr45',
     name: 'CR-45 Crystal Grand',
-    tagline: 'Not Just an Instrument—A Masterpiece',
-    description: 'A symbol of luxury and exclusivity—the CR-45\'s transparent acrylic body offers a rare glimpse into piano mechanics, revealing hammers and strings in motion. This 185cm (6\'1") masterpiece features Millennium III ABS-Carbon action, concert-length key buttons, NEOTEX™ key surfaces, and a solid spruce soundboard. Owning a CR-45 is not merely playing an instrument—it is felt, seen, and heard as a manifestation of unparalleled craftsmanship.',
+    tagline: 'Ultra-exclusive transparent acrylic grand',
+    description: 'A symbol of luxury and exclusivity—the CR-45\'s transparent acrylic body offers a rare glimpse into piano mechanics, revealing hammers and strings in motion. This 185cm (6\'1") masterpiece features Millennium III ABS-Carbon action, concert-length key buttons, NEOTEX™ key surfaces, and a solid spruce soundboard.',
     highlights: [
       'Transparent acrylic reveals hammers & strings in motion',
       'Millennium III Action with ABS-Carbon fiber technology',
