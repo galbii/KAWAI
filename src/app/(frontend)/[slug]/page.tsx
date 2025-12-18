@@ -194,11 +194,11 @@ function NewsCarouselSkeleton() {
 
 function PianoKeyboardSkeleton() {
   return (
-    <section className="bg-kawai-black py-12 animate-pulse">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-center gap-1">
+    <section className="bg-kawai-black h-16 sm:h-20 md:h-24 lg:h-28 animate-pulse">
+      <div className="container mx-auto px-4 h-full">
+        <div className="flex justify-center gap-1 h-full">
           {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="h-32 sm:h-40 w-12 bg-gray-300/20 rounded-b"></div>
+            <div key={i} className="h-full w-12 bg-gray-300/20 rounded-b"></div>
           ))}
         </div>
       </div>

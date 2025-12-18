@@ -68,7 +68,8 @@ export function PianoKeyboardDivider({
   return (
     <section
       ref={sectionRef}
-      className={`relative w-full overflow-hidden bg-kawai-black h-32 sm:h-40 md:h-48 lg:h-56 ${className}`}
+      className={`relative w-full overflow-hidden bg-kawai-black h-16 sm:h-20 md:h-24 lg:h-28 border-t-8 ${className}`}
+      style={{ borderTopColor: '#A01829' }}
     >
       {/* Piano keyboard container - top-down view, fills full height */}
       <div className="relative w-full h-full">
