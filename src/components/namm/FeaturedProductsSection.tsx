@@ -165,7 +165,7 @@ function ArtisticPianoCard({ piano, index }: { piano: FeaturedPiano; index: numb
             src={piano.imageUrl}
             alt={piano.name}
             fill
-            className="object-cover object-center"
+            className="object-cover object-[center_60%]"
             sizes="100vw"
             priority
           />
@@ -190,7 +190,7 @@ function ArtisticPianoCard({ piano, index }: { piano: FeaturedPiano; index: numb
                 alt="HERALBONY"
                 width={500}
                 height={100}
-                className="h-14 lg:h-16 xl:h-20 w-auto brightness-0 invert drop-shadow-2xl"
+                className="h-14 lg:h-16 xl:h-20 w-auto brightness-0 invert drop-shadow-2xl mt-1 lg:mt-2"
                 priority
               />
               <span className="text-3xl lg:text-4xl xl:text-5xl font-light text-white drop-shadow-2xl">with</span>
