@@ -20,6 +20,7 @@ import { Products } from './collections/Products'
 import { ConcertArtistPage } from './collections/ConcertArtistPage'
 import { ConstantContactSettings } from './collections/ConstantContactSettings'
 import { ConstantContactCustomFields } from './collections/ConstantContactCustomFields'
+import { KPM_Christmas2k25 } from './collections/KPM_Christmas2k25'
 import {
   ProductShowcase,
   ProductHero,
@@ -69,6 +70,9 @@ export default buildConfig({
     // Integration Collections
     ConstantContactSettings,
     ConstantContactCustomFields,
+
+    // Campaign Lead Collections
+    KPM_Christmas2k25,
   ],
   // Define blocks at root level for performance optimization using blockReferences
   blocks: [

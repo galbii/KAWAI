@@ -433,8 +433,21 @@ export default function MusicSchoolEnrollmentPage({
                       onClick={handleCTAClick}
                       className="bg-kawai-red hover:bg-kawai-red/90 text-white px-12 py-5 font-bold text-lg sm:text-xl transition-all transform hover:scale-105 shadow-lg hover:shadow-xl mb-4 w-full sm:w-auto"
                     >
-                      Secure My Spot Now
+                      Contact for More Information
                     </button>
+
+                    {/* Contact Phone */}
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-600 font-light mb-2">
+                        Questions? Call us at:
+                      </p>
+                      <a
+                        href="tel:972-955-3339"
+                        className="text-2xl font-bold text-kawai-red hover:text-kawai-red/80 transition-colors"
+                      >
+                        972-955-3339
+                      </a>
+                    </div>
 
                     <p className="text-sm sm:text-base text-gray-600 font-light">
                       Enrollment closes January 3rd or when all {spotsRemaining} spots are filled—whichever comes first.
@@ -458,11 +471,6 @@ export default function MusicSchoolEnrollmentPage({
                     <div className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 bg-kawai-gold rounded-full" />
                       <span>200-Seat Concert Hall</span>
-                    </div>
-                    <div className="w-px h-4 bg-gray-300"></div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-kawai-gold rounded-full" />
-                      <span>Professional Recording Studio</span>
                     </div>
                   </div>
                 </div>

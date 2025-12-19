@@ -55,11 +55,11 @@ export default function ValueProposition({ className }: ValuePropositionProps) {
           </div>
 
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-kawai-black mb-6 leading-tight">
-            <span className="text-kawai-red">Learn from the Best</span>
+            <span className="text-kawai-red">Excellence in Every Detail</span>
           </h2>
           <div className="w-24 h-1 bg-gradient-to-r from-kawai-red via-kawai-gold to-emerald-600 mx-auto mb-8" />
           <p className="text-lg sm:text-xl lg:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed font-light">
-            Study with accomplished instructors who bring professional experience and proven teaching methods to every lesson
+            Where world-class facilities, comprehensive curriculum, and award-winning instruction come together in Dallas's premier music academy
           </p>
         </motion.div>
 

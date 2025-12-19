@@ -88,6 +88,7 @@ export interface Config {
     productlines: Productline;
     'constant-contact-settings': ConstantContactSetting;
     'constant-contact-custom-fields': ConstantContactCustomField;
+    'kpm-christmas-2k25': KpmChristmas2K25;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -108,6 +109,7 @@ export interface Config {
     productlines: ProductlinesSelect<false> | ProductlinesSelect<true>;
     'constant-contact-settings': ConstantContactSettingsSelect<false> | ConstantContactSettingsSelect<true>;
     'constant-contact-custom-fields': ConstantContactCustomFieldsSelect<false> | ConstantContactCustomFieldsSelect<true>;
+    'kpm-christmas-2k25': KpmChristmas2K25Select<false> | KpmChristmas2K25Select<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -2944,6 +2946,135 @@ export interface ConstantContactCustomField {
   createdAt: string;
 }
 /**
+ * Holiday 2025 music school enrollment campaign leads. All submissions are saved here first as a safety net before external integrations.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "kpm-christmas-2k25".
+ */
+export interface KpmChristmas2K25 {
+  id: string;
+  /**
+   * Auto-generated from first and last name
+   */
+  studentFullName?: string | null;
+  /**
+   * Student's first name
+   */
+  studentFirstName: string;
+  /**
+   * Student's last name
+   */
+  studentLastName: string;
+  /**
+   * Student's birth year (e.g., 2010)
+   */
+  studentBirthYear: string;
+  /**
+   * Student's gender
+   */
+  studentGender: 'male' | 'female' | 'non-binary' | 'prefer-not-to-say';
+  /**
+   * Current school grade (optional)
+   */
+  schoolGrade?: string | null;
+  /**
+   * Name of current school (optional)
+   */
+  currentSchool?: string | null;
+  /**
+   * Primary instrument of interest
+   */
+  instrument: 'piano' | 'keyboard' | 'voice' | 'guitar' | 'violin' | 'other';
+  /**
+   * How long the student has studied music
+   */
+  lengthOfPreviousStudy: 'none' | 'less-than-1-year' | '1-2-years' | '3-5-years' | '5-plus-years';
+  /**
+   * Preferred lesson format
+   */
+  privateLessonType: 'in-person' | 'online' | 'hybrid' | 'undecided';
+  /**
+   * Preferred price range for lessons
+   */
+  lessonPrice: '$25-$40' | '$40-$60' | '$60-$80' | '$80+' | 'flexible';
+  /**
+   * Preferred lesson time
+   */
+  preferredTime:
+    | 'weekday-morning'
+    | 'weekday-afternoon'
+    | 'weekday-evening'
+    | 'weekend-morning'
+    | 'weekend-afternoon'
+    | 'flexible';
+  /**
+   * Additional notes or questions from the applicant
+   */
+  notes?: string | null;
+  /**
+   * Emergency contact's first name
+   */
+  emergencyContactFirstName: string;
+  /**
+   * Emergency contact's last name
+   */
+  emergencyContactLastName: string;
+  /**
+   * Emergency contact's phone number
+   */
+  emergencyContactPhone: string;
+  /**
+   * Emergency contact's email address
+   */
+  emergencyContactEmail: string;
+  /**
+   * When this form was submitted (auto-generated)
+   */
+  submittedAt?: string | null;
+  /**
+   * Status of Constant Contact API submission
+   */
+  constantContactStatus: 'pending' | 'success' | 'failed' | 'skipped';
+  /**
+   * Constant Contact contact ID (if submission succeeded)
+   */
+  constantContactId?: string | null;
+  /**
+   * Error message from Constant Contact (if failed)
+   */
+  constantContactError?: string | null;
+  /**
+   * Status of Resend email notification
+   */
+  resendStatus: 'pending' | 'success' | 'failed' | 'skipped';
+  /**
+   * Resend email ID (if email sent successfully)
+   */
+  resendEmailId?: string | null;
+  /**
+   * Error message from Resend (if failed)
+   */
+  resendError?: string | null;
+  /**
+   * URL where the form was submitted
+   */
+  sourceUrl?: string | null;
+  /**
+   * Browser user agent string
+   */
+  userAgent?: string | null;
+  /**
+   * IP address of submission (if available)
+   */
+  ipAddress?: string | null;
+  /**
+   * Internal notes about processing this submission
+   */
+  processingNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
@@ -2989,6 +3120,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'constant-contact-custom-fields';
         value: string | ConstantContactCustomField;
+      } | null)
+    | ({
+        relationTo: 'kpm-christmas-2k25';
+        value: string | KpmChristmas2K25;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -3779,6 +3914,42 @@ export interface ConstantContactCustomFieldsSelect<T extends boolean = true> {
   fieldType?: T;
   createdInConstantContact?: T;
   lastSyncedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "kpm-christmas-2k25_select".
+ */
+export interface KpmChristmas2K25Select<T extends boolean = true> {
+  studentFullName?: T;
+  studentFirstName?: T;
+  studentLastName?: T;
+  studentBirthYear?: T;
+  studentGender?: T;
+  schoolGrade?: T;
+  currentSchool?: T;
+  instrument?: T;
+  lengthOfPreviousStudy?: T;
+  privateLessonType?: T;
+  lessonPrice?: T;
+  preferredTime?: T;
+  notes?: T;
+  emergencyContactFirstName?: T;
+  emergencyContactLastName?: T;
+  emergencyContactPhone?: T;
+  emergencyContactEmail?: T;
+  submittedAt?: T;
+  constantContactStatus?: T;
+  constantContactId?: T;
+  constantContactError?: T;
+  resendStatus?: T;
+  resendEmailId?: T;
+  resendError?: T;
+  sourceUrl?: T;
+  userAgent?: T;
+  ipAddress?: T;
+  processingNotes?: T;
   updatedAt?: T;
   createdAt?: T;
 }
