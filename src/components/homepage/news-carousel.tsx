@@ -15,11 +15,30 @@ import {
   getImagePropsWithFallback as getFallbackImageProps,
   createImageErrorHandler
 } from '@/lib/fallbacks/media';
+import { NAMMCarouselSlide } from './NAMMCarouselSlide';
+
+// Hardcoded NAMM 2026 carousel item (ALWAYS injected as first slide)
+const NAMM_CAROUSEL_ITEM = {
+  title: 'Visit Kawai at NAMM 2026',
+  description: 'Experience exclusive piano innovations, live artist performances, and hands-on demonstrations at our booth in Anaheim Convention Center',
+  image: '/images/namm/general/TK7_7390.jpg', // Placeholder - uses scrolling background instead
+  category: 'namm-event', // Special category triggers custom NAMM slide
+  link: '/namm-2026'
+} as const;
 
 export function NewsCarousel({ data }: NewsCarouselProps) {
   // Use comprehensive fallback system
   const carouselData = withFallback(data, FALLBACK_NEWS_CAROUSEL_DATA);
-  const newsItems = withArrayFallback(carouselData.newsItems, FALLBACK_NEWS_CAROUSEL_DATA.newsItems, 1);
+  const baseNewsItems = withArrayFallback(carouselData.newsItems, FALLBACK_NEWS_CAROUSEL_DATA.newsItems, 1);
+
+  // ALWAYS inject NAMM item as first slide (unless it already exists)
+  const hasNAMMItem = baseNewsItems.some(item =>
+    item.category === 'namm-event' || item.link === '/namm-2026'
+  );
+
+  const newsItems = hasNAMMItem
+    ? baseNewsItems
+    : [NAMM_CAROUSEL_ITEM, ...baseNewsItems];
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -141,6 +160,16 @@ export function NewsCarousel({ data }: NewsCarouselProps) {
               const currentItem = newsItems[currentIndex];
               if (!currentItem) return null;
 
+              // Check if this is the special NAMM slide with scrolling background
+              const isNAMMSlide = currentItem.category === 'namm-event' ||
+                                  currentItem.link === '/namm-2026';
+
+              // Render custom NAMM slide with scrolling background
+              if (isNAMMSlide) {
+                return <NAMMCarouselSlide prefersReducedMotion={prefersReducedMotion} />;
+              }
+
+              // Regular slide rendering
               const defaultItem = FALLBACK_NEWS_CAROUSEL_DATA.newsItems.find(
                 defaultNews => defaultNews.title === currentItem.title
               );

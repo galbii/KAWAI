@@ -1,5 +1,6 @@
 export { Hero } from './hero';
 export { NewsCarousel } from './news-carousel';
+export { NAMMCarouselSlide } from './NAMMCarouselSlide';
 export { PianoGallery } from './piano-gallery';
 export { BrandPhilosophy } from './brand-philosophy';
 export { PianoCollection } from './piano-collection';

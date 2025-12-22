@@ -208,6 +208,13 @@ export const FALLBACK_NEWS_CAROUSEL_DATA: NewsCarouselSectionData = {
   autoPlayDuration: 7000,
   newsItems: [
     {
+      title: 'Visit Kawai at NAMM 2026',
+      description: 'Experience exclusive piano innovations, live artist performances, and hands-on demonstrations at our booth in Anaheim Convention Center',
+      image: '/images/namm/general/TK7_7390.jpg', // Placeholder - uses scrolling background instead
+      category: 'namm-event', // Special category triggers custom NAMM slide
+      link: '/namm-2026'
+    },
+    {
       title: 'Instrumental to Life',
       description: 'Redefining harmony between tradition and innovation',
       image: '/images/banners/I2LNew-banner.jpg',

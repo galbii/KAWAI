@@ -433,7 +433,7 @@ export default function PlanYourVisitSection({
               {/* Convention Center Access Map */}
               <div className="mb-6 -mx-6 lg:-mx-8 -mt-6 lg:-mt-8">
                 <img
-                  src="/images/namm/access-map.png"
+                  src="https://pub-486ee03121a24ede8b51409434e22709.r2.dev/homepage/hall%20b.png"
                   alt="Anaheim Convention Center access map showing Hall B #9110"
                   className="w-full h-auto"
                 />
