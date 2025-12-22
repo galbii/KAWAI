@@ -7,7 +7,7 @@ const DealerReceptionHero = dynamic(() => import('@/components/namm/dealer/Deale
   loading: () => <HeroSkeleton />
 })
 
-const FeaturedProductsSection = dynamic(() => import('@/components/namm/FeaturedProductsSection'), {
+const PianoShowcaseDetailed = dynamic(() => import('@/components/namm/experience/PianoShowcaseDetailed'), {
   loading: () => <FeaturedProductsSkeleton />
 })
 
@@ -24,8 +24,8 @@ export const revalidate = 86400 // 24 hours
 
 // SEO Metadata
 export const metadata: Metadata = {
-  title: 'Exclusive Dealer Reception | Kawai at NAMM 2026 | January 23',
-  description: 'You\'re invited to an exclusive evening with Kawai at NAMM 2026. Join us for cocktails, hors d\'oeuvres, hands-on piano demonstrations, and networking. January 23, 6-9 PM at Anaheim Convention Center.',
+  title: 'Exclusive Dealer Reception | Kawai at NAMM 2026 | January 22',
+  description: 'You\'re invited to an exclusive evening with Kawai at NAMM 2026. Join us for cocktails, hors d\'oeuvres, hands-on piano demonstrations, and networking. January 22, 5:30-7 PM in Room 213D at Anaheim Convention Center.',
   keywords: [
     'dealer reception namm 2026',
     'kawai dealer event',
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Exclusive Dealer Reception | Kawai at NAMM 2026',
-    description: 'Join us for an exclusive evening with cocktails, hors d\'oeuvres, hands-on demonstrations, and networking. January 23, 6-9 PM.',
+    description: 'Join us for an exclusive evening with cocktails, hors d\'oeuvres, hands-on demonstrations, and networking. January 22, 5:30-7 PM in Room 213D.',
     type: 'website',
     url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/namm-2026/dealer`,
     siteName: 'Kawai Piano',
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Exclusive Dealer Reception | Kawai at NAMM 2026',
-    description: 'Join us for an exclusive evening January 23, 6-9 PM in Anaheim',
+    description: 'Join us for an exclusive evening January 22, 5:30-7 PM in Room 213D, Anaheim',
     images: ['/images/namm/og-namm-2026-dealer.jpg']
   },
   robots: {
@@ -163,17 +163,20 @@ export default function NAMMDealerReceptionPage() {
         <DealerReceptionHero />
       </Suspense>
 
-      {/* Featured Products */}
-      <section id="featured-products" className="scroll-mt-20">
-        <Suspense fallback={<FeaturedProductsSkeleton />}>
-          <FeaturedProductsSection masterSeriesTitle="Master Series" />
-        </Suspense>
-      </section>
-
       {/* Event Details */}
       <section id="event-details" className="scroll-mt-20">
         <Suspense fallback={<EventDetailsSkeleton />}>
           <DealerEventDetailsSection />
+        </Suspense>
+      </section>
+
+      {/* Featured Products */}
+      <section id="featured-products" className="scroll-mt-20">
+        <Suspense fallback={<FeaturedProductsSkeleton />}>
+          <PianoShowcaseDetailed
+            title="Featured at the Dealer Reception"
+            subtitle="Experience our most innovative and exclusive pianos firsthand. From transparent crystal grands to revolutionary hybrids, explore the instruments that define Kawai's commitment to excellence."
+          />
         </Suspense>
       </section>
 

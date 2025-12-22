@@ -757,7 +757,7 @@ const FEATURED_PIANOS_DETAILED: FeaturedPianoDetailed[] = [
       'Unique real grand piano damper mechanism',
       'Groundbreaking PentaDrive speakerless soundboard system',
       'SK-EX Rendering piano engine with Competition Grand sounds',
-      'Stunning grand-piano cabinet with 3-position topboard',
+      'Stunning grand-piano cabinet with 3-position toplid',
       '',
       '**NV6 Upright Piano Hybrid**',
       'Superb Millennium III Hybrid upright piano keyboard action',
@@ -932,7 +932,7 @@ export default function PianoShowcaseDetailed({
             Ready to experience these extraordinary instruments in person?
           </p>
           <Link
-            href="#contact"
+            href="/namm-2026"
             className={cn(
               "inline-flex items-center gap-4 px-12 py-6 rounded-full",
               "bg-gradient-to-r from-[#C41E3A]/80 to-[#E31937]/80",

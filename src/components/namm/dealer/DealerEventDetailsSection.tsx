@@ -11,14 +11,11 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import {
   Calendar,
   Clock,
-  MapPin,
-  UtensilsCrossed,
-  Users,
-  User,
-  Gift
+  MapPin
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -28,7 +25,7 @@ interface EventDetailsSectionProps {
 
 interface ExperienceItem {
   id: number
-  icon: React.ElementType
+  image: string
   title: string
   description: string
 }
@@ -36,27 +33,27 @@ interface ExperienceItem {
 const EXPERIENCES: ExperienceItem[] = [
   {
     id: 1,
-    icon: UtensilsCrossed,
+    image: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/homepage/pexels-larissafarber-34190190.jpg',
     title: 'Catering',
-    description: 'Enjoy a meal and some drinks as an appreciation for your partnership and dedication to the Kawai brand.'
+    description: 'Enjoy some food and drinks as our appreciation for your partnership and dedication to the Kawai brand.'
   },
   {
     id: 2,
-    icon: Users,
+    image: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/homepage/pexels-cottonbro-3171815.jpg',
     title: 'Connection',
     description: 'Meet with similar individuals in the business and create connections, share ideas, and expand your network.'
   },
   {
     id: 3,
-    icon: User,
+    image: 'https://kawaius.com/wp-content/uploads/2024/08/KentaroKawai.jpg',
     title: 'Kentaro Kawai',
     description: 'Meet the current president of Kawai Musical Instruments and hear a special word from him about our vision for the future.'
   },
   {
     id: 4,
-    icon: Gift,
-    title: 'A Special Offer',
-    description: 'We\'d like to offer the committed individuals an exclusive event offer as a thanks for attending our special event. Find out more at the event.'
+    image: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/homepage/pexels-caleboquendo-2927080.jpg',
+    title: 'Live Music',
+    description: 'Experience the David Arnay Trio, one of the finest jazz ensembles in Los Angeles. David is also a long-time Kawai artist and will perform throughout the evening.'
   }
 ]
 
@@ -67,7 +64,6 @@ interface ExperienceCardProps {
 }
 
 function ExperienceCard({ experience, index, isVisible }: ExperienceCardProps) {
-  const Icon = experience.icon
   const isEven = index % 2 === 0
 
   return (
@@ -80,27 +76,19 @@ function ExperienceCard({ experience, index, isVisible }: ExperienceCardProps) {
         isEven ? '' : 'md:grid-flow-dense'
       )}
     >
-      {/* Icon Section */}
+      {/* Image Section */}
       <div className={cn(
         'relative',
         isEven ? 'md:order-1' : 'md:order-2'
       )}>
-        <div className="flex justify-center md:justify-start">
-          <div className="relative">
-            {/* Icon container with elegant styling */}
-            <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-kawai-red/10 to-kawai-red/5 flex items-center justify-center shadow-lg">
-              <Icon className="w-16 h-16 md:w-20 md:h-20 text-kawai-red" strokeWidth={1.5} />
-
-              {/* Decorative ring */}
-              <div className="absolute inset-0 rounded-full border-2 border-kawai-red/20" />
-              <div className="absolute inset-[-8px] rounded-full border border-kawai-red/10" />
-            </div>
-
-            {/* Number badge */}
-            <div className="absolute -top-2 -right-2 w-10 h-10 rounded-full bg-kawai-red text-white flex items-center justify-center font-serif text-lg font-semibold shadow-lg">
-              {index + 1}
-            </div>
-          </div>
+        <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden shadow-xl">
+          <Image
+            src={experience.image}
+            alt={experience.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
         </div>
       </div>
 
@@ -198,12 +186,12 @@ export default function DealerEventDetailsSection({
             What to Expect
           </h3>
           <p className="text-xl text-kawai-black/70 max-w-3xl mx-auto">
-            An evening crafted with care, connection, and appreciation
+            An evening to connect, celebrate, and say thank you.
           </p>
         </motion.div>
 
         {/* Staggered Alternating Experience Cards */}
-        <div className="space-y-20 lg:space-y-32 mb-16 lg:mb-20">
+        <div className="space-y-12 lg:space-y-16 mb-16 lg:mb-20">
           {EXPERIENCES.map((experience, index) => (
             <div
               key={experience.id}
@@ -232,9 +220,21 @@ export default function DealerEventDetailsSection({
             <h4 className="text-4xl md:text-5xl lg:text-6xl font-serif text-kawai-black mb-6 tracking-tight">
               We can't wait to see you there
             </h4>
-            <p className="text-xl text-kawai-black/70">
-              Join us for an unforgettable evening celebrating our partnership
+            <p className="text-xl text-kawai-black/70 mb-4">
+              Join us for an unforgettable evening celebrating our partnership.
             </p>
+            <p className="text-xl font-semibold text-kawai-red mb-8">
+              Don't forget to claim your special event pricing available throughout The NAMM Show 2026.
+            </p>
+            <div className="relative w-full max-w-md mx-auto aspect-[16/9]">
+              <Image
+                src="https://pub-486ee03121a24ede8b51409434e22709.r2.dev/homepage/NS26_Badges.png"
+                alt="The NAMM Show 2026 Badges"
+                fill
+                className="object-contain"
+                sizes="(max-width: 768px) 100vw, 448px"
+              />
+            </div>
             <div className="inline-block mt-6">
               <div className="h-px w-24 bg-gradient-to-r from-transparent via-kawai-red to-transparent" />
             </div>
@@ -255,7 +255,7 @@ export default function DealerEventDetailsSection({
                   <Calendar className="w-6 h-6" strokeWidth={1.5} />
                 </div>
                 <h4 className="text-xl md:text-2xl font-serif text-kawai-black mb-1">
-                  January 23, 2026
+                  January 22, 2026
                 </h4>
                 <p className="text-sm text-kawai-black/60">
                   Save the date
@@ -268,10 +268,10 @@ export default function DealerEventDetailsSection({
                   <Clock className="w-6 h-6" strokeWidth={1.5} />
                 </div>
                 <h4 className="text-xl md:text-2xl font-serif text-kawai-black mb-1">
-                  6:00 PM - 9:00 PM PST
+                  5:30 PM - 7:00 PM PST
                 </h4>
                 <p className="text-sm text-kawai-black/60">
-                  Three hours of networking
+                  Ninety minutes of networking
                 </p>
               </div>
 
@@ -284,7 +284,7 @@ export default function DealerEventDetailsSection({
                   Anaheim Convention Center
                 </h4>
                 <p className="text-sm text-kawai-black/60">
-                  Private Reception Hall • Booth <span className="font-semibold text-kawai-red">#207</span>
+                  Room 213D
                 </p>
               </div>
             </div>

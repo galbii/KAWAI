@@ -112,7 +112,7 @@ export default function DealerReceptionHero() {
             <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 backdrop-blur-sm">
               <Calendar className="w-4 h-4 text-[#D4AF37]" />
               <span className="text-sm font-medium text-[#D4AF37] uppercase tracking-wide">
-                January 23, 2026 • 6:00 PM - 9:00 PM
+                January 22, 2026 • 5:30 PM - 7:00 PM
               </span>
             </div>
           </motion.div>
@@ -176,10 +176,10 @@ export default function DealerReceptionHero() {
                 className="max-w-3xl mx-auto text-center mb-12"
               >
             <p className="text-xl md:text-2xl lg:text-3xl font-light text-gray-200 leading-relaxed mb-6">
-              Join us for an <span className="text-[#D4AF37] font-normal">exclusive evening</span> where we'd like to express our appreciation with fine food, craft cocktails, and exciting announcements.
+              Join us for an <span className="text-[#D4AF37] font-normal">exclusive evening</span> where we'd like to express our appreciation with fine food, wine and cocktails, and exciting announcements.
             </p>
             <p className="text-lg md:text-xl text-gray-300 font-light">
-              We're also offering <span className="text-[#D4AF37] font-medium">exclusive pricing opportunities</span> available only to those who attend!
+              Dealers who attend NAMM will have access to <span className="text-[#D4AF37] font-medium">special event pricing</span>.
             </p>
           </motion.div>
 

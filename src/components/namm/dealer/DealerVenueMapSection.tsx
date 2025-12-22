@@ -81,13 +81,16 @@ export default function DealerVenueMapSection({
             <h3 className="text-xl md:text-2xl font-serif text-white mb-4">Booth Location</h3>
             <div className="relative w-full aspect-[4/3] bg-white/5 rounded-xl overflow-hidden">
               <Image
-                src="https://pub-486ee03121a24ede8b51409434e22709.r2.dev/homepage/namm.png"
-                alt="NAMM 2026 Booth Map - Kawai Booth #207"
+                src="https://pub-486ee03121a24ede8b51409434e22709.r2.dev/homepage/namm2026.png"
+                alt="NAMM 2026 Venue Map - Room 213D"
                 fill
-                className="object-contain scale-100 translate-y-8 -translate-x-12"
+                className="object-fill"
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />
             </div>
+            <p className="text-sm md:text-base text-white/70 italic mt-4 text-center">
+              Reception booth 213D and 206A for our private dealer meetings
+            </p>
           </motion.div>
 
           {/* Google Map */}
@@ -135,7 +138,7 @@ export default function DealerVenueMapSection({
                   Anaheim Convention Center
                 </h3>
                 <p className="text-base text-white/80 font-medium mb-1">
-                  Private Reception Hall
+                  Room 213D
                 </p>
                 <p className="text-sm text-white/60">
                   800 W Katella Ave, Anaheim, CA 92802
@@ -146,7 +149,7 @@ export default function DealerVenueMapSection({
             <div className="flex items-center justify-between mt-6 pt-6 border-t border-white/20">
               <p className="text-sm text-white/80 flex items-center gap-2">
                 <span className="text-kawai-red font-semibold">→</span>
-                Kawai Booth <span className="font-semibold text-kawai-red">#207</span>
+                Room <span className="font-semibold text-kawai-red">213D</span>
               </p>
 
               <a
