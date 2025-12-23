@@ -488,7 +488,7 @@ function CraftsmanshipCard({ piano, index }: { piano: FeaturedPiano; index: numb
             </h3>
           </motion.div>
 
-          {/* Tagline and CTA - bottom area */}
+          {/* Tagline - bottom area */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
@@ -498,24 +498,6 @@ function CraftsmanshipCard({ piano, index }: { piano: FeaturedPiano; index: numb
             <p className="text-2xl lg:text-3xl font-light text-black leading-relaxed drop-shadow-xl" style={{ textShadow: '0 2px 8px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.5)', fontFamily: '"Miller Banner Compressed", Georgia, serif' }}>
               {piano.tagline}
             </p>
-
-            <Link
-              href={piano.ctaLink}
-              className={cn(
-                "inline-flex items-center gap-3 px-10 py-5 rounded-full",
-                "bg-black hover:bg-black",
-                "border-2 border-black hover:border-white/50",
-                "text-white hover:text-white text-lg font-medium",
-                "transition-all duration-500",
-                "group/btn hover:scale-110 hover:shadow-2xl hover:shadow-white/40",
-                "transform-gpu"
-              )}
-            >
-              <span className="font-light">Learn More</span>
-              <svg className="w-5 h-5 transition-transform group-hover/btn:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
           </motion.div>
         </div>
       </div>
@@ -664,6 +646,27 @@ export default function FeaturedProductsSection({
                 return null
             }
           })}
+        </div>
+
+        {/* Learn More CTA */}
+        <div className="text-center mt-20 lg:mt-24">
+          <Link
+            href="/namm-2026/experience"
+            className={cn(
+              "inline-flex items-center gap-3 px-10 py-5 rounded-full",
+              "bg-gradient-to-r from-white/10 to-white/5",
+              "border-2 border-white/30 hover:border-white/50",
+              "text-white hover:text-white",
+              "backdrop-blur-md transition-all duration-500",
+              "group/btn hover:scale-110 shadow-2xl hover:shadow-white/50",
+              "transform-gpu"
+            )}
+          >
+            <span className="font-medium text-lg">Learn More</span>
+            <svg className="w-5 h-5 transition-transform group-hover/btn:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </Link>
         </div>
 
         {/* SEO Keywords */}

@@ -265,11 +265,11 @@ export function NAMMHeader() {
             )}
           </Link>
           <Link
-            href="/namm-2026#plan-your-visit"
+            href="/#dealer-locations"
             className="relative text-white/90 hover:text-white font-medium transition-colors duration-200 text-sm tracking-wide py-1"
           >
             Plan Your Visit
-            {isActiveLink('/namm-2026#plan-your-visit') && (
+            {isActiveLink('/#dealer-locations') && (
               <motion.div
                 layoutId="activeIndicator"
                 className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-[#E31937] to-[#FF3B55] rounded-full"
@@ -473,15 +473,15 @@ export function NAMMHeader() {
                     )}
                   </Link>
                   <Link
-                    href="/namm-2026#plan-your-visit"
+                    href="/#dealer-locations"
                     className={cn(
                       "block py-3 px-4 text-white/90 hover:text-white hover:bg-white/10 font-medium transition-colors rounded-lg relative",
-                      isActiveLink('/namm-2026#plan-your-visit') && "text-white bg-white/5"
+                      isActiveLink('/#dealer-locations') && "text-white bg-white/5"
                     )}
                     onClick={closeMobileMenu}
                   >
                     Plan Your Visit
-                    {isActiveLink('/namm-2026#plan-your-visit') && (
+                    {isActiveLink('/#dealer-locations') && (
                       <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#E31937] to-[#FF3B55] rounded-r-full"
                         style={{
                           boxShadow: '0 0 8px rgba(227, 25, 55, 0.6)'
