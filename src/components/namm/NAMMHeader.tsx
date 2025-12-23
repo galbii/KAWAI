@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { useState, useEffect, useRef } from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Menu, X, ChevronDown } from 'lucide-react'
 
 /**
@@ -19,6 +19,7 @@ import { Menu, X, ChevronDown } from 'lucide-react'
  */
 export function NAMMHeader() {
   const pathname = usePathname()
+  const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isMobileDropdownOpen, setIsMobileDropdownOpen] = useState(false)
@@ -90,29 +91,47 @@ export function NAMMHeader() {
       closeMobileMenu()
     }
 
-    // Retry mechanism to wait for lazy-loaded components
-    const scrollToElement = (retries = 0, maxRetries = 10) => {
-      const element = document.getElementById(targetId)
+    // Check if we're on the NAMM 2026 page
+    const isOnNAMMPage = pathname === '/namm-2026'
 
-      if (element) {
-        const headerOffset = 80 // Account for fixed header
-        const elementPosition = element.getBoundingClientRect().top
-        const offsetPosition = elementPosition + window.pageYOffset - headerOffset
-
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        })
-      } else if (retries < maxRetries) {
-        // Element not found yet, retry after a short delay
-        setTimeout(() => scrollToElement(retries + 1, maxRetries), 50)
-      } else {
-        console.warn(`Could not find element with id: ${targetId}`)
-      }
+    if (!isOnNAMMPage) {
+      // Navigate to NAMM page with hash - browser will handle scroll
+      router.push(`/namm-2026#${targetId}`)
+      return
     }
 
-    // Start scrolling with retry mechanism
-    scrollToElement()
+    // We're already on the page - scroll to element
+    // Since Featured Products and Plan Your Visit are now eagerly loaded, this should work immediately
+    const element = document.getElementById(targetId)
+
+    if (element) {
+      const headerOffset = 80 // Account for fixed header
+      const elementPosition = element.getBoundingClientRect().top
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      })
+    } else {
+      // Fallback: element might not be in DOM yet (shouldn't happen with eager loading)
+      console.warn(`Could not find element with id: ${targetId}`)
+
+      // Try one more time after a brief delay
+      setTimeout(() => {
+        const retryElement = document.getElementById(targetId)
+        if (retryElement) {
+          const headerOffset = 80
+          const elementPosition = retryElement.getBoundingClientRect().top
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          })
+        }
+      }, 100)
+    }
   }
 
   const mobileMenuVariants = {
@@ -300,12 +319,12 @@ export function NAMMHeader() {
             )}
           </Link>
           <Link
-            href="/namm-2026#plan-your-visit"
+            href="/namm-2026#plan-visit-details"
             className="relative text-white/90 hover:text-white font-medium transition-colors duration-200 text-sm tracking-wide py-1"
-            onClick={(e) => handleSmoothScroll(e, 'plan-your-visit')}
+            onClick={(e) => handleSmoothScroll(e, 'plan-visit-details')}
           >
             Plan Your Visit
-            {isActiveLink('/namm-2026#plan-your-visit') && (
+            {isActiveLink('/namm-2026#plan-visit-details') && (
               <motion.div
                 layoutId="activeIndicator"
                 className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-[#E31937] to-[#FF3B55] rounded-full"
@@ -509,15 +528,15 @@ export function NAMMHeader() {
                     )}
                   </Link>
                   <Link
-                    href="/namm-2026#plan-your-visit"
+                    href="/namm-2026#plan-visit-details"
                     className={cn(
                       "block py-3 px-4 text-white/90 hover:text-white hover:bg-white/10 font-medium transition-colors rounded-lg relative",
-                      isActiveLink('/namm-2026#plan-your-visit') && "text-white bg-white/5"
+                      isActiveLink('/namm-2026#plan-visit-details') && "text-white bg-white/5"
                     )}
-                    onClick={(e) => handleSmoothScroll(e, 'plan-your-visit')}
+                    onClick={(e) => handleSmoothScroll(e, 'plan-visit-details')}
                   >
                     Plan Your Visit
-                    {isActiveLink('/namm-2026#plan-your-visit') && (
+                    {isActiveLink('/namm-2026#plan-visit-details') && (
                       <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#E31937] to-[#FF3B55] rounded-r-full"
                         style={{
                           boxShadow: '0 0 8px rgba(227, 25, 55, 0.6)'

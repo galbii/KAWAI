@@ -377,7 +377,7 @@ export default function PlanYourVisitSection({
         </motion.div>
 
         {/* Plan Your Visit Section Header */}
-        <div ref={titleRef} className="text-center mb-16 lg:mb-20 mt-24">
+        <div ref={titleRef} id="plan-visit-details" className="text-center mb-16 lg:mb-20 mt-24">
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
             animate={isTitleVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}

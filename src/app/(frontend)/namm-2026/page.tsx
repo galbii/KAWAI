@@ -5,6 +5,13 @@ import dynamic from 'next/dynamic'
 // Structured Data
 import { NAMMStructuredData } from '@/components/namm/NAMMStructuredData'
 
+// Direct imports for hash-linked sections (no lazy loading for instant navigation)
+import FeaturedProductsSection from '@/components/namm/FeaturedProductsSection'
+import PlanYourVisitSection from '@/components/namm/PlanYourVisitSection'
+
+// Hash scroll handler for cross-page navigation
+import { HashScrollHandler } from '@/components/namm/HashScrollHandler'
+
 // Hero Section (from Agent 1)
 const HeroSection = dynamic(() => import('@/components/namm/HeroSection'), {
   loading: () => <HeroSkeleton />
@@ -15,24 +22,14 @@ const EventInfoBox = dynamic(() => import('@/components/namm/EventInfoBox'), {
   loading: () => <InfoBoxSkeleton />
 })
 
-// Featured Products Section (from Agent 2)
-const FeaturedProductsSection = dynamic(() => import('@/components/namm/FeaturedProductsSection'), {
-  loading: () => <FeaturedProductsSkeleton />
-})
-
-// Booth Experience Section (from Agent 2)
+// Booth Experience Section (from Agent 2) - Lazy loaded (not hash-linked)
 const BoothExperienceSection = dynamic(() => import('@/components/namm/BoothExperienceSection'), {
   loading: () => <BoothExperienceSkeleton />
 })
 
-// Artist Lineup Section (from Agent 3)
+// Artist Lineup Section (from Agent 3) - Lazy loaded (not hash-linked from header)
 const ArtistLineupSection = dynamic(() => import('@/components/namm/ArtistLineupSection'), {
   loading: () => <ArtistLineupSkeleton />
-})
-
-// Plan Your Visit Section (from Agent 3)
-const PlanYourVisitSection = dynamic(() => import('@/components/namm/PlanYourVisitSection'), {
-  loading: () => <PlanYourVisitSkeleton />
 })
 
 // Can't Attend CTA (from Agent 3)
@@ -285,6 +282,9 @@ function CTASkeleton() {
 export default function NAMM2026Page() {
   return (
     <main className="relative scroll-smooth">
+      {/* Hash Scroll Handler - handles cross-page navigation with hash */}
+      <HashScrollHandler />
+
       {/* Structured Data for SEO */}
       <NAMMStructuredData />
 
@@ -312,10 +312,9 @@ export default function NAMM2026Page() {
           </section>
 
           {/* Featured Products Section - Scroll Anchor (SECOND - What you'll see) */}
+          {/* No Suspense - loads immediately for instant hash navigation */}
           <section id="featured-products" className="scroll-mt-20">
-            <Suspense fallback={<FeaturedProductsSkeleton />}>
-              <FeaturedProductsSection />
-            </Suspense>
+            <FeaturedProductsSection />
           </section>
 
           {/* Artist Lineup Section - Scroll Anchor */}
@@ -326,10 +325,9 @@ export default function NAMM2026Page() {
           </section>
 
           {/* Plan Your Visit Section - Scroll Anchor */}
+          {/* No Suspense - loads immediately for instant hash navigation */}
           <section id="plan-your-visit" className="scroll-mt-20">
-            <Suspense fallback={<PlanYourVisitSkeleton />}>
-              <PlanYourVisitSection />
-            </Suspense>
+            <PlanYourVisitSection />
           </section>
         </div>
       </div>
