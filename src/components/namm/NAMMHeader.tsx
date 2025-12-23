@@ -81,6 +81,40 @@ export function NAMMHeader() {
     setIsMobileDropdownOpen(false)
   }
 
+  // Custom scroll handler for hash links to ensure content loads before scrolling
+  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
+    e.preventDefault()
+
+    // Close mobile menu if open
+    if (isMenuOpen) {
+      closeMobileMenu()
+    }
+
+    // Retry mechanism to wait for lazy-loaded components
+    const scrollToElement = (retries = 0, maxRetries = 10) => {
+      const element = document.getElementById(targetId)
+
+      if (element) {
+        const headerOffset = 80 // Account for fixed header
+        const elementPosition = element.getBoundingClientRect().top
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        })
+      } else if (retries < maxRetries) {
+        // Element not found yet, retry after a short delay
+        setTimeout(() => scrollToElement(retries + 1, maxRetries), 50)
+      } else {
+        console.warn(`Could not find element with id: ${targetId}`)
+      }
+    }
+
+    // Start scrolling with retry mechanism
+    scrollToElement()
+  }
+
   const mobileMenuVariants = {
     closed: {
       opacity: 0,
@@ -247,6 +281,7 @@ export function NAMMHeader() {
           <Link
             href="/namm-2026#featured-products"
             className="relative text-white/90 hover:text-white font-medium transition-colors duration-200 text-sm tracking-wide py-1"
+            onClick={(e) => handleSmoothScroll(e, 'featured-products')}
           >
             Featured Products
             {isActiveLink('/namm-2026#featured-products') && (
@@ -267,6 +302,7 @@ export function NAMMHeader() {
           <Link
             href="/namm-2026#plan-your-visit"
             className="relative text-white/90 hover:text-white font-medium transition-colors duration-200 text-sm tracking-wide py-1"
+            onClick={(e) => handleSmoothScroll(e, 'plan-your-visit')}
           >
             Plan Your Visit
             {isActiveLink('/namm-2026#plan-your-visit') && (
@@ -461,7 +497,7 @@ export function NAMMHeader() {
                       "block py-3 px-4 text-white/90 hover:text-white hover:bg-white/10 font-medium transition-colors rounded-lg relative",
                       isActiveLink('/namm-2026#featured-products') && "text-white bg-white/5"
                     )}
-                    onClick={closeMobileMenu}
+                    onClick={(e) => handleSmoothScroll(e, 'featured-products')}
                   >
                     Featured Products
                     {isActiveLink('/namm-2026#featured-products') && (
@@ -478,7 +514,7 @@ export function NAMMHeader() {
                       "block py-3 px-4 text-white/90 hover:text-white hover:bg-white/10 font-medium transition-colors rounded-lg relative",
                       isActiveLink('/namm-2026#plan-your-visit') && "text-white bg-white/5"
                     )}
-                    onClick={closeMobileMenu}
+                    onClick={(e) => handleSmoothScroll(e, 'plan-your-visit')}
                   >
                     Plan Your Visit
                     {isActiveLink('/namm-2026#plan-your-visit') && (
