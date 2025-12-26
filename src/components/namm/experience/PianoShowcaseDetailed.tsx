@@ -288,7 +288,7 @@ function ArtisticShowcase({ piano, index }: { piano: FeaturedPianoDetailed; inde
                 alt="HERALBONY"
                 width={500}
                 height={100}
-                className="h-14 lg:h-16 xl:h-20 w-auto brightness-0 invert drop-shadow-2xl"
+                className="h-14 lg:h-16 xl:h-20 w-auto brightness-0 invert drop-shadow-2xl mt-1 lg:mt-2"
                 priority
               />
               <span className="text-3xl lg:text-4xl xl:text-5xl font-light text-white drop-shadow-2xl">with</span>
@@ -719,7 +719,7 @@ const FEATURED_PIANOS_DETAILED: FeaturedPianoDetailed[] = [
     tagline: 'Where Music Radiates Color',
     description: 'A bold artistic collaboration celebrating unique creative vision. This SK-5 concert grand becomes a canvas for Sato\'s vibrant artwork, transforming into a public art installation that challenges preconceptions and reveals the extraordinary power of different perspectives through sound and vision.',
     highlights: [
-      'Vibrant original artwork by visionary artist Sato',
+      'Vibrant artwork by artist Sato',
       'Shigeru Kawai SK-5 concert grand base (227cm / 7\'5")'
     ],
     imageUrl: '/images/namm/heralbony closeup.JPG',
