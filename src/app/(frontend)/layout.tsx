@@ -38,6 +38,11 @@ export const metadata: Metadata = {
     "kawai hybrid piano"
   ],
   authors: [{ name: "Kawai Piano Gallery" }],
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
   openGraph: {
     title: "Kawai Piano Store | Authorized Dealer | Grand, Digital & Upright Pianos",
     description: "Official Kawai Piano authorized dealer. Explore premium grand pianos, digital pianos, upright pianos, and exclusive Shigeru Kawai concert grands. Expert consultation and 95+ years of Japanese craftsmanship.",
