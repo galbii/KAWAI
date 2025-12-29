@@ -1,0 +1,324 @@
+[
+  {
+    "node": {
+      "id": "gid://shopify/Product/10001630003498",
+      "title": "Kawai CR-45 Crystal Grand Piano",
+      "handle": "kawai-cr-45-crystal-grand-piano",
+      "description": "The Kawai CR-45 Crystal Grand Piano is not just an instrument—it is a masterpiece of artistry and engineering, a symbol of luxury and exclusivity. Crafted with meticulous attention to detail, each CR-45 stands as a pinnacle of design, featuring a transparent, nearly invisible acrylic body that offers a rare glimpse into the intricate world of its inner workings. This stunning visual transparency allows the player and audience to witness the piano's hammers and strings in motion, celebrating the pure beauty of its mechanical art. With only three units produced annually, the CR-45 is a rare gem in the world of grand pianos. Each piano is a unique testament to Kawai's legacy of quality and innovation, tailored for those who seek the ultimate in luxury and performance. This exclusivity makes the CR-45 not only a centrepiece for performance but also a significant investment in the world of musical and artistic achievements. Owning a Kawai CR-45 is an experience reserved for a select few, a privilege that offers not just a musical instrument but a piece of history. As much a work of art as a tool for artistic expression, the CR-45 Crystal Grand Piano stands as a beacon of Kawai’s dedication to blending aesthetic perfection with musical precision. This piano is not merely played; it is felt, seen, and heard as a manifestation of unparalleled craftsmanship.",
+      "descriptionHtml": "The Kawai CR-45 Crystal Grand Piano is not just an instrument—it is a masterpiece of artistry and engineering, a symbol of luxury and exclusivity. Crafted with meticulous attention to detail, each CR-45 stands as a pinnacle of design, featuring a transparent, nearly invisible acrylic body that offers a rare glimpse into the intricate world of its inner workings. This stunning visual transparency allows the player and audience to witness the piano&amp;#39;s hammers and strings in motion, celebrating the pure beauty of its mechanical art.\r\n\r\nWith only three units produced annually, the CR-45 is a rare gem in the world of grand pianos. Each piano is a unique testament to Kawai&amp;#39;s legacy of quality and innovation, tailored for those who seek the ultimate in luxury and performance. This exclusivity makes the CR-45 not only a centrepiece for performance but also a significant investment in the world of musical and artistic achievements.\r\n\r\nOwning a Kawai CR-45 is an experience reserved for a select few, a privilege that offers not just a musical instrument but a piece of history. As much a work of art as a tool for artistic expression, the CR-45 Crystal Grand Piano stands as a beacon of Kawai’s dedication to blending aesthetic perfection with musical precision. This piano is not merely played; it is felt, seen, and heard as a manifestation of unparalleled craftsmanship.",
+      "productType": "Grand Piano",
+      "vendor": "Kawai Pianos US",
+      "tags": [
+        "39\" (100 cm)",
+        "59\" (150 cm)",
+        "6'2\" (187 cm)",
+        "866.5 lbs. (393 kg)",
+        "cr-40a",
+        "cr-40a crystal piano",
+        "cr40a",
+        "cr40a crystal grand piano",
+        "Grand Pianos",
+        "Grand Pianos > Crystal Grand Piano",
+        "kawai cr40a",
+        "kawai cr40a crystal piano",
+        "kawai cr40a grand piano",
+        "Polished Ebony"
+      ],
+      "availableForSale": true,
+      "createdAt": "2025-12-29T17:23:09Z",
+      "updatedAt": "2025-12-29T18:17:32Z",
+      "onlineStoreUrl": null,
+      "priceRange": {
+        "minVariantPrice": {
+          "amount": "232695.0",
+          "currencyCode": "USD"
+        },
+        "maxVariantPrice": {
+          "amount": "232695.0",
+          "currencyCode": "USD"
+        }
+      },
+      "images": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/ProductImage/51359829852458",
+              "url": "https://cdn.shopify.com/s/files/1/0974/2283/6010/files/0ebec7bb-Kawai-CR-45-Crystal-Piano_jpg.jpg?v=1767028988",
+              "altText": "Kawai CR-45 Crystal Grand Piano image 0",
+              "width": 1000,
+              "height": 1000
+            }
+          }
+        ]
+      },
+      "variants": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/51003432632618",
+              "title": "Default Title",
+              "sku": null,
+              "availableForSale": true,
+              "price": {
+                "amount": "232695.0",
+                "currencyCode": "USD"
+              },
+              "compareAtPrice": null,
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0974/2283/6010/files/0ebec7bb-Kawai-CR-45-Crystal-Piano_jpg.jpg?v=1767028988",
+                "altText": "Kawai CR-45 Crystal Grand Piano image 0"
+              }
+            }
+          }
+        ]
+      },
+      "metafields": [
+        null,
+        null
+      ]
+    }
+  },
+  {
+    "node": {
+      "id": "gid://shopify/Product/10001630036266",
+      "title": "Kawai ES60 Digital Piano",
+      "handle": "kawai-es60-digital-piano",
+      "description": "Light in weight yet heavy on features, the Kawai ES60 is the perfect piano for budding pianists. Featuring a graded action for authentic piano touch, the ES60 allows the pianist a full range of expression on all 88 keys. Moreover, Kawai’s exclusive Harmonic Imaging tone generator creates the majestic sound of a concert grand in a small, portable cabinet. With 17 total sounds, the ES60 also provides a variety of authentic tones such as harpsichord, vibes, and more. Audio outputs and USB-MIDI ports allow for connectivity to other devices. The ES60 is a compact piano bursting with features.",
+      "descriptionHtml": "Light in weight yet heavy on features, the Kawai ES60 is the perfect piano for budding pianists. Featuring a graded action for authentic piano touch, the ES60 allows the pianist a full range of expression on all 88 keys. Moreover, Kawai’s exclusive Harmonic Imaging tone generator creates the majestic sound of a concert grand in a small, portable cabinet.\r\n\r\nWith 17 total sounds, the ES60 also provides a variety of authentic tones such as harpsichord, vibes, and more. Audio outputs and USB-MIDI ports allow for connectivity to other devices. The ES60 is a compact piano bursting with features.",
+      "productType": "Digital Piano",
+      "vendor": "Kawai Pianos US",
+      "tags": [
+        "Digital Piano",
+        "Digital Piano > ES Portables"
+      ],
+      "availableForSale": false,
+      "createdAt": "2025-12-29T17:23:09Z",
+      "updatedAt": "2025-12-29T18:17:32Z",
+      "onlineStoreUrl": null,
+      "priceRange": {
+        "minVariantPrice": {
+          "amount": "499.0",
+          "currencyCode": "USD"
+        },
+        "maxVariantPrice": {
+          "amount": "499.0",
+          "currencyCode": "USD"
+        }
+      },
+      "images": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/ProductImage/51359829917994",
+              "url": "https://cdn.shopify.com/s/files/1/0974/2283/6010/files/f72b2a1e-Kawai-ES-60-Digital-Piano.jpg?v=1767028988",
+              "altText": "Kawai ES60 Digital Piano image 0",
+              "width": 1000,
+              "height": 1000
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductImage/51359829950762",
+              "url": "https://cdn.shopify.com/s/files/1/0974/2283/6010/files/49b75e56-ES60-3-e1730705608475.jpg?v=1767028988",
+              "altText": "Kawai ES60 Digital Piano - Black image",
+              "width": 819,
+              "height": 697
+            }
+          }
+        ]
+      },
+      "variants": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/51003432698154",
+              "title": "Black",
+              "sku": null,
+              "availableForSale": false,
+              "price": {
+                "amount": "499.0",
+                "currencyCode": "USD"
+              },
+              "compareAtPrice": {
+                "amount": "599.0",
+                "currencyCode": "USD"
+              },
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0974/2283/6010/files/49b75e56-ES60-3-e1730705608475.jpg?v=1767028988",
+                "altText": "Kawai ES60 Digital Piano - Black image"
+              }
+            }
+          }
+        ]
+      },
+      "metafields": [
+        null,
+        null
+      ]
+    }
+  },
+  {
+    "node": {
+      "id": "gid://shopify/Product/10001630069034",
+      "title": "Kawai K-200 Upright Piano",
+      "handle": "kawai-k-200-upright-piano-1",
+      "description": "The K-200 K Series Professional Upright Piano delivers all the features that a well-crafted instrument needs to satisfy the demands of the most experienced pianists and professional teaching studios. Featuring the exclusive Millennium III Upright Action that is considered one of the finest upright actions in the world, the K-200 upright piano offers incredible touch that allows ease of musical expression. Complementing this responsive touch is the K-200's rich, warm tone enhanced by a premium tapered solid spruce soundboard. With excellent tone, consistent touch and a beautiful cabinet design, the K-200 upright piano is an exceptional choice for any pianist. [caption id=\"attachment_7308\" align=\"aligncenter\" width=\"422\"] Kawai K-200 Upright Piano Dimensions[/caption]",
+      "descriptionHtml": "<p class=\"thin-font\">The K-200 <a href=\"https://kawaius.com/pianos/upright-pianos/k-series/\">K Series Professional Upright Piano</a> delivers all the features that a well-crafted instrument needs to satisfy the demands of the most experienced pianists and professional teaching studios. Featuring the exclusive Millennium III Upright Action that is considered one of the finest upright actions in the world, the K-200 <a href=\"https://kawaius.com/pianos/upright-pianos/\">upright piano</a> offers incredible touch that allows ease of musical expression. Complementing this responsive touch is the K-200's rich, warm tone enhanced by a premium tapered solid spruce soundboard. With excellent tone, consistent touch and a beautiful cabinet design, the K-200 upright piano is an exceptional choice for any pianist.</p>\r\n\r\n\r\n[caption id=\"attachment_7308\" align=\"aligncenter\" width=\"422\"]<img class=\"wp-image-7308 size-full\" src=\"https://kawaius.com/wp-content/uploads/2018/04/Kawai-K-200-Upright-Piano-Dimensions.jpg\" alt=\"Kawai K-200 Upright Piano Dimensions\" width=\"422\" height=\"271\"> Kawai K-200 Upright Piano Dimensions[/caption]",
+      "productType": "Upright",
+      "vendor": "Kawai Pianos US",
+      "tags": [
+        "22.5” (57 cm)",
+        "45\" (114 cm)",
+        "459 lbs. (208 kg)",
+        "59\" (149 cm)",
+        "k-200",
+        "k200",
+        "k200 upright piano",
+        "kawai k200",
+        "kawai k200 upright piano",
+        "Upright Pianos",
+        "Upright Pianos > K Series"
+      ],
+      "availableForSale": true,
+      "createdAt": "2025-12-29T17:23:09Z",
+      "updatedAt": "2025-12-29T18:17:32Z",
+      "onlineStoreUrl": null,
+      "priceRange": {
+        "minVariantPrice": {
+          "amount": "0.0",
+          "currencyCode": "USD"
+        },
+        "maxVariantPrice": {
+          "amount": "0.0",
+          "currencyCode": "USD"
+        }
+      },
+      "images": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/ProductImage/51359829983530",
+              "url": "https://cdn.shopify.com/s/files/1/0974/2283/6010/files/fd3cd85e-K-200-Polished-Ebony.jpg?v=1767028988",
+              "altText": "Kawai K-200 Upright Piano image 0",
+              "width": 1000,
+              "height": 1000
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductImage/51359830016298",
+              "url": "https://cdn.shopify.com/s/files/1/0974/2283/6010/files/bfbad6d9-K-200-Polished-Ebony-with-Silver.jpg?v=1767028988",
+              "altText": "Kawai K-200 Upright Piano - Satin Ebony image",
+              "width": 1000,
+              "height": 1000
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductImage/51359830049066",
+              "url": "https://cdn.shopify.com/s/files/1/0974/2283/6010/files/1ed27f82-K-200-Polished-Ebony.jpg?v=1767028988",
+              "altText": "Kawai K-200 Upright Piano - Polished Ebony image",
+              "width": 1000,
+              "height": 1000
+            }
+          }
+        ]
+      },
+      "variants": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/51003432796458",
+              "title": "Default Title",
+              "sku": null,
+              "availableForSale": true,
+              "price": {
+                "amount": "0.0",
+                "currencyCode": "USD"
+              },
+              "compareAtPrice": null,
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0974/2283/6010/files/fd3cd85e-K-200-Polished-Ebony.jpg?v=1767028988",
+                "altText": "Kawai K-200 Upright Piano image 0"
+              }
+            }
+          }
+        ]
+      },
+      "metafields": [
+        null,
+        null
+      ]
+    }
+  },
+  {
+    "node": {
+      "id": "gid://shopify/Product/10001630232874",
+      "title": "Kawai HML-3 Designer Stand",
+      "handle": "kawai-hml-3-designer-stand",
+      "description": "This is the Kawai HML-3 Designer Stand, an outstanding platform designed to seamlessly transform your portable ES60 digital piano into an ultra-compact, stylish piano. Elevate your musical space’s aesthetic and functional aspects with this striking stand, perfectly marrying modern design with practicality. ﻿",
+      "descriptionHtml": "<span style=\"font-weight: 400;\">This is the Kawai HML-3 Designer Stand, an outstanding platform designed to seamlessly transform your portable ES60 digital piano into an ultra-compact, stylish piano. Elevate your musical space’s aesthetic and functional aspects with this striking stand, perfectly marrying modern design with practicality.</span>\r\n\r\n<iframe title=\"YouTube video player\" src=\"https://www.youtube.com/embed/cpcHEtgsm1A?si=mfEV5YtIdUQ7ngoz\" width=\"868\" height=\"488\" frameborder=\"0\" allowfullscreen=\"allowfullscreen\"><span data-mce-type=\"bookmark\" style=\"display: inline-block; width: 0px; overflow: hidden; line-height: 0;\" class=\"mce_SELRES_start\">﻿</span></iframe>\r\n\r\n ",
+      "productType": "Accessory",
+      "vendor": "Kawai Pianos US",
+      "tags": [
+        "Accessories",
+        "Black"
+      ],
+      "availableForSale": true,
+      "createdAt": "2025-12-29T17:23:09Z",
+      "updatedAt": "2025-12-29T18:17:02Z",
+      "onlineStoreUrl": null,
+      "priceRange": {
+        "minVariantPrice": {
+          "amount": "89.0",
+          "currencyCode": "USD"
+        },
+        "maxVariantPrice": {
+          "amount": "89.0",
+          "currencyCode": "USD"
+        }
+      },
+      "images": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/ProductImage/51359830409514",
+              "url": "https://cdn.shopify.com/s/files/1/0974/2283/6010/files/9214d202-Kawai-HML-2-Designer-Stand.jpg?v=1767028989",
+              "altText": "Kawai HML-3 Designer Stand image 0",
+              "width": 2538,
+              "height": 2538
+            }
+          }
+        ]
+      },
+      "variants": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/51003433025834",
+              "title": "Default Title",
+              "sku": null,
+              "availableForSale": true,
+              "price": {
+                "amount": "89.0",
+                "currencyCode": "USD"
+              },
+              "compareAtPrice": {
+                "amount": "119.0",
+                "currencyCode": "USD"
+              },
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0974/2283/6010/files/9214d202-Kawai-HML-2-Designer-Stand.jpg?v=1767028989",
+                "altText": "Kawai HML-3 Designer Stand image 0"
+              }
+            }
+          }
+        ]
+      },
+      "metafields": [
+        null,
+        null
+      ]
+    }
+  }
+]

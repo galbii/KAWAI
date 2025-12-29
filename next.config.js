@@ -43,6 +43,12 @@ const nextConfig = {
         hostname: 'berqwp-cdn.sfo3.cdn.digitaloceanspaces.com',
         pathname: '/**',
       },
+      // Shopify CDN for product images
+      {
+        protocol: 'https',
+        hostname: 'cdn.shopify.com',
+        pathname: '/**',
+      },
     ],
   },
   eslint: {

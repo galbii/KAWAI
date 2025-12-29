@@ -71,7 +71,7 @@ bun run seed         # Seed database with demo data
 
 ### Integrations & Security
 
-**External Services**: Constant Contact (CRM), Calendly (booking), PostHog/Meta Pixel (analytics), Google Maps, Cloudflare R2, MongoDB Atlas
+**External Services**: Shopify Commerce (product catalog, navigation), Constant Contact (CRM), Calendly (booking), PostHog/Meta Pixel (analytics), Google Maps, Cloudflare R2, MongoDB Atlas
 
 **Security Layers**: Public routes → Authenticated admin → API access control → Integration security (OAuth, API keys, CORS)
 
@@ -156,6 +156,7 @@ src/
 │   │   ├── media/             # Media optimization components
 │   │   └── animations/        # Animation utilities
 │   ├── layout/                # Layout components (header, footer)
+│   ├── navigation/            # Navigation components (mega menu, etc.)
 │   ├── forms/                 # Form components
 │   ├── piano/                 # Piano-specific components
 │   ├── homepage/              # Homepage sections
@@ -164,6 +165,7 @@ src/
 ├── blocks/                    # Content block definitions
 ├── lib/                       # Utilities & configuration
 │   ├── media/                 # Media optimization system
+│   ├── shopify/               # Shopify integration (products, cart, navigation)
 │   ├── actions/               # Server actions
 │   └── types/                 # Shared TypeScript types
 ├── hooks/                     # Custom React hooks
@@ -1105,6 +1107,9 @@ curl -X POST http://localhost:3000/api/revalidate \
 |------|---------|-------------|
 | `src/payload.config.ts` | CMS configuration & R2 setup | Media system, collections |
 | `src/lib/media/r2-utils.ts` | Media optimization core | Performance, image handling |
+| `src/lib/shopify/` | Shopify commerce integration | Product catalog, cart, navigation |
+| `src/lib/shopify/navigation.ts` | Shopify navigation utilities | Product type extraction, mega menu data |
+| `src/components/navigation/` | Navigation components | Mega menu, product navigation |
 | `src/components/ui/media/` | Media components | Consistent image rendering |
 | `src/collections/` | CMS data models | Content structure |
 | `src/blocks/` | Content block definitions | Dynamic page building |
@@ -1114,6 +1119,17 @@ curl -X POST http://localhost:3000/api/revalidate \
 - **Admin Panel**: http://localhost:3000/admin
 - **GraphQL Playground**: http://localhost:3000/api/graphql-playground
 - **API Documentation**: http://localhost:3000/api
+
+### Integration Documentation
+- **[Shopify Integration Guide](/docs/shopify-integration.md)** - Complete guide for Shopify commerce integration
+  - Environment setup and API configuration
+  - Product fetching and caching strategies
+  - Shopping cart implementation with persistent storage
+  - **Dynamic navigation & mega menu** - Product type extraction and full-width mega menu
+  - Type-safe GraphQL queries and server actions
+  - ISR implementation patterns with 5-minute cache
+  - Next.js configuration for Shopify CDN (`cdn.shopify.com` image domain)
+  - Error handling and troubleshooting
 
 ### Development Checklist
 

@@ -22,6 +22,7 @@ import { ConcertArtistPage } from './collections/ConcertArtistPage'
 import { ConstantContactSettings } from './collections/ConstantContactSettings'
 import { ConstantContactCustomFields } from './collections/ConstantContactCustomFields'
 import { KPM_Christmas2k25 } from './collections/KPM_Christmas2k25'
+import { Dealers } from './collections/Dealers'
 import {
   ProductShowcase,
   ProductHero,
@@ -50,6 +51,12 @@ export default buildConfig({
     meta: {
       // Payload meta configuration for HTML metadata
     },
+    components: {
+      graphics: {
+        Logo: '/components/admin/Logo.tsx#Logo',
+        Icon: '/components/admin/Icon.tsx#Icon',
+      },
+    },
   },
   collections: [
     // System Collections
@@ -67,6 +74,9 @@ export default buildConfig({
     // Commerce Collections
     Products,
     Productlines,
+
+    // Business Collections
+    Dealers,
 
     // Integration Collections
     ConstantContactSettings,

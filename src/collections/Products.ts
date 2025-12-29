@@ -336,6 +336,15 @@ export const Products: CollectionConfig = {
                 description: 'Product brand/manufacturer'
               }
             },
+            // Shopify Integration
+            {
+              name: 'shopifyHandle',
+              type: 'text',
+              admin: {
+                description: '⚠️ DEPRECATED: Use the "model" field instead. Shopify products are now automatically matched using product tags (e.g., tag:CA99). This field is kept for backward compatibility only.',
+                placeholder: 'e.g., kawai-ca99-digital-piano'
+              }
+            },
             // CONSOLIDATED: Key features from PianoModel
             {
               name: 'keyFeatures',

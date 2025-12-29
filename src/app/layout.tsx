@@ -3,6 +3,7 @@ import { Inter, Crimson_Text } from "next/font/google";
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { Suspense } from 'react';
 import { PHProvider } from './providers'
+import { CartProvider } from '@/contexts/CartContext'
 import PageViewTracker from '../components/PageViewTracker'
 import MetaPixel from '../components/MetaPixel'
 import "./globals.css";
@@ -39,10 +40,12 @@ export default function RootLayout({
     <html lang="en" className="scroll-smooth">
       <body className={`${inter.variable} ${crimsonText.variable} antialiased bg-kawai-black text-kawai-pearl`}>
         <PHProvider>
-          <Suspense fallback={null}>
-            <PageViewTracker />
-          </Suspense>
-          {children}
+          <CartProvider>
+            <Suspense fallback={null}>
+              <PageViewTracker />
+            </Suspense>
+            {children}
+          </CartProvider>
         </PHProvider>
         {process.env.NEXT_PUBLIC_GA_ID && (
           <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />

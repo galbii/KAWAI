@@ -19,6 +19,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { getProductByModel } from '@/lib/shopify'
+import type { Product as ShopifyProduct } from '@/lib/shopify/types'
+import { AddToCartButton } from '@/components/cart/AddToCartButton'
 
 interface ProductHeroBlockProps {
   layout?: {
@@ -45,16 +48,72 @@ export function ProductHeroBlock({
 }: ProductHeroBlockProps) {
   const [selectedFinish, setSelectedFinish] = useState(-1) // -1 means no finish selected
   const [isFavorited, setIsFavorited] = useState(false)
+  const [shopifyProduct, setShopifyProduct] = useState<ShopifyProduct | null>(null)
+  const [shopifyLoading, setShopifyLoading] = useState(false)
   const router = useRouter()
-  
+
+  // Fetch Shopify product data when model is available
+  useEffect(() => {
+    const fetchShopifyProduct = async () => {
+      if (!product?.model) {
+        console.log('[ProductHeroBlock] No model field available, skipping Shopify lookup')
+        setShopifyProduct(null)
+        return
+      }
+
+      setShopifyLoading(true)
+      try {
+        console.log(`[ProductHeroBlock] Fetching Shopify product for model: "${product.model}"`)
+        const shopifyData = await getProductByModel(product.model)
+        setShopifyProduct(shopifyData)
+
+        if (shopifyData) {
+          console.log(`[ProductHeroBlock] Successfully loaded Shopify product: "${shopifyData.title}"`)
+        } else {
+          console.log(`[ProductHeroBlock] No Shopify product found for model "${product.model}"`)
+        }
+      } catch (error) {
+        console.error('[ProductHeroBlock] Failed to fetch Shopify product:', error)
+        setShopifyProduct(null)
+      } finally {
+        setShopifyLoading(false)
+      }
+    }
+
+    fetchShopifyProduct()
+  }, [product?.model])
+
   // Helper function to truncate description
   const truncateDescription = (text: string, wordLimit: number = 25) => {
     const words = text.split(' ')
     if (words.length <= wordLimit) return text
     return words.slice(0, wordLimit).join(' ') + '...'
   }
-  
-  
+
+  // Get selected Shopify variant based on finish selection
+  const getSelectedVariant = () => {
+    if (!shopifyProduct) return null
+
+    // If no finish selected or only one variant, return first variant
+    if (selectedFinish < 0 || shopifyProduct.variants.length === 1) {
+      return shopifyProduct.variants[0]
+    }
+
+    // Try to match finish name with variant title
+    if (product?.finishes && product.finishes[selectedFinish]) {
+      const finishName = product.finishes[selectedFinish]?.name
+      const matchedVariant = shopifyProduct.variants.find(
+        (variant) => variant.title.toLowerCase().includes(finishName?.toLowerCase() || '')
+      )
+      if (matchedVariant) return matchedVariant
+    }
+
+    // Fallback to first variant
+    return shopifyProduct.variants[0]
+  }
+
+  const selectedVariant = getSelectedVariant()
+
   // Layout options
   const imagePosition = layout.imagePosition || 'left'
   const backgroundColor = layout.backgroundColor || 'pearl'
@@ -426,30 +485,102 @@ export function ProductHeroBlock({
             {/* Modern CTA Buttons */}
             {shouldShowBuyButton && (
               <div className="flex flex-col sm:flex-row gap-4 lg:gap-6 pt-4 lg:pt-6">
-                {/* Primary CTA - KAWAI styling */}
-                <Button
-                  asChild
-                  className={cn(
-                    "group relative overflow-hidden px-8 lg:px-10 py-4 lg:py-6 font-medium rounded-full transition-all duration-500 hover:scale-105 hover:shadow-2xl text-base lg:text-lg flex-1",
-                    product.buyButton?.style === 'outline'
-                      ? cn(
-                          "border-2 border-kawai-red bg-transparent hover:bg-kawai-red",
-                          backgroundColor === 'black' ? 'text-kawai-red hover:text-white' : 'text-kawai-red hover:text-white'
-                        )
-                      : "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/25"
-                  )}
-                >
-                  <Link href={product.learnMore || product.buyButton?.link || '#'}>
-                    <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    <span className="relative flex items-center justify-center space-x-2 lg:space-x-3">
-                      <ShoppingCart className="w-4 h-4 lg:w-5 lg:h-5" />
-                      <span>{getBuyButtonText()}</span>
-                      <svg className="w-4 h-4 lg:w-5 lg:h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                {shopifyProduct && selectedVariant ? (
+                  <>
+                    {/* Left CTA: Add to Cart Button (Shopify) */}
+                    <AddToCartButton
+                      variantId={selectedVariant.id}
+                      quantity={1}
+                      available={selectedVariant.available}
+                      className={cn(
+                        "group relative overflow-hidden px-8 lg:px-10 py-4 lg:py-6 font-medium rounded-full transition-all duration-500 hover:scale-105 hover:shadow-2xl text-base lg:text-lg flex-1",
+                        "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/25"
+                      )}
+                    >
+                      <span className="flex items-center justify-center space-x-2 lg:space-x-3">
+                        <ShoppingCart className="w-4 h-4 lg:w-5 lg:h-5" />
+                        <span>Add to Cart</span>
+                      </span>
+                    </AddToCartButton>
+
+                    {/* Right CTA: Learn More Button (White/Outline) */}
+                    <Button
+                      asChild
+                      className={cn(
+                        "group relative overflow-hidden px-8 lg:px-10 py-4 lg:py-6 font-medium rounded-full transition-all duration-500 hover:scale-105 hover:shadow-xl text-base lg:text-lg flex-1",
+                        "border-2 border-gray-300 bg-white hover:bg-gray-50",
+                        backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
+                      )}
+                    >
+                      <Link href={product.learnMore || product.buyButton?.link || '#'}>
+                        <span className="relative flex items-center justify-center space-x-2 lg:space-x-3">
+                          <span>{getBuyButtonText()}</span>
+                          <svg className="w-4 h-4 lg:w-5 lg:h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        </span>
+                      </Link>
+                    </Button>
+                  </>
+                ) : shopifyLoading ? (
+                  /* Loading state */
+                  <Button
+                    disabled
+                    className={cn(
+                      "group relative overflow-hidden px-8 lg:px-10 py-4 lg:py-6 font-medium rounded-full text-base lg:text-lg flex-1",
+                      "bg-gray-200 text-gray-500"
+                    )}
+                  >
+                    <span className="flex items-center justify-center space-x-2 lg:space-x-3">
+                      <svg
+                        className="animate-spin h-4 w-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
                       </svg>
+                      <span>Loading...</span>
                     </span>
-                  </Link>
-                </Button>
+                  </Button>
+                ) : (
+                  /* Fallback: Learn More button only (no Shopify integration) */
+                  <Button
+                    asChild
+                    className={cn(
+                      "group relative overflow-hidden px-8 lg:px-10 py-4 lg:py-6 font-medium rounded-full transition-all duration-500 hover:scale-105 hover:shadow-2xl text-base lg:text-lg flex-1",
+                      product.buyButton?.style === 'outline'
+                        ? cn(
+                            "border-2 border-kawai-red bg-transparent hover:bg-kawai-red",
+                            backgroundColor === 'black' ? 'text-kawai-red hover:text-white' : 'text-kawai-red hover:text-white'
+                          )
+                        : "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/25"
+                    )}
+                  >
+                    <Link href={product.learnMore || product.buyButton?.link || '#'}>
+                      <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      <span className="relative flex items-center justify-center space-x-2 lg:space-x-3">
+                        <ShoppingCart className="w-4 h-4 lg:w-5 lg:h-5" />
+                        <span>{getBuyButtonText()}</span>
+                        <svg className="w-4 h-4 lg:w-5 lg:h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </span>
+                    </Link>
+                  </Button>
+                )}
               </div>
             )}
           </div>

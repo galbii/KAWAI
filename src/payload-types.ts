@@ -86,6 +86,7 @@ export interface Config {
     'concert-artist-page': ConcertArtistPage;
     products: Product;
     productlines: Productline;
+    dealers: Dealer;
     'constant-contact-settings': ConstantContactSetting;
     'constant-contact-custom-fields': ConstantContactCustomField;
     'kpm-christmas-2k25': KpmChristmas2K25;
@@ -109,6 +110,7 @@ export interface Config {
     'concert-artist-page': ConcertArtistPageSelect<false> | ConcertArtistPageSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     productlines: ProductlinesSelect<false> | ProductlinesSelect<true>;
+    dealers: DealersSelect<false> | DealersSelect<true>;
     'constant-contact-settings': ConstantContactSettingsSelect<false> | ConstantContactSettingsSelect<true>;
     'constant-contact-custom-fields': ConstantContactCustomFieldsSelect<false> | ConstantContactCustomFieldsSelect<true>;
     'kpm-christmas-2k25': KpmChristmas2K25Select<false> | KpmChristmas2K25Select<true>;
@@ -423,6 +425,10 @@ export interface Product {
    * Product brand/manufacturer
    */
   brand?: string | null;
+  /**
+   * ⚠️ DEPRECATED: Use the "model" field instead. Shopify products are now automatically matched using product tags (e.g., tag:CA99). This field is kept for backward compatibility only.
+   */
+  shopifyHandle?: string | null;
   /**
    * Main selling points and key features
    */
@@ -2854,6 +2860,190 @@ export interface ConcertArtistPage {
   createdAt: string;
 }
 /**
+ * Manage authorized Kawai piano dealers with location, contact information, and service details for the dealer finder map.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dealers".
+ */
+export interface Dealer {
+  id: string;
+  /**
+   * Full business name of the dealer (e.g., "Kawai Piano Gallery St. Louis", "John's Piano Center"). Multiple locations can share the same dealer name.
+   */
+  dealerName: string;
+  /**
+   * URL-friendly identifier (auto-generated from dealer name, e.g., "kawai-piano-gallery-st-louis")
+   */
+  slug: string;
+  /**
+   * Controls whether this dealer appears in the dealer finder
+   */
+  isActive?: boolean | null;
+  /**
+   * Feature this dealer prominently in search results
+   */
+  isFeatured?: boolean | null;
+  contactInfo?: {
+    /**
+     * Primary phone number (e.g., "636-265-2866" or "(636) 265-2866")
+     */
+    phone?: string | null;
+    /**
+     * Primary contact email address
+     */
+    email?: string | null;
+    /**
+     * Dealer website URL (include https://)
+     */
+    website?: string | null;
+    /**
+     * Fax number (if applicable)
+     */
+    fax?: string | null;
+  };
+  /**
+   * Complete physical address for map placement and directions
+   */
+  address: {
+    /**
+     * Street address (e.g., "21 Meadows Circle Drive, Suite 312")
+     */
+    street: string;
+    /**
+     * City name
+     */
+    city: string;
+    /**
+     * State or region (2-letter abbreviation preferred: MO, CA, NY)
+     */
+    state: string;
+    /**
+     * ZIP or postal code
+     */
+    zipCode: string;
+    /**
+     * Country (defaults to USA)
+     */
+    country?: string | null;
+  };
+  /**
+   * Exact GPS coordinates for accurate map marker placement. REQUIRED for dealer finder map.
+   */
+  coordinates: {
+    /**
+     * Latitude (e.g., 38.627003). Find at https://www.latlong.net/
+     */
+    latitude: number;
+    /**
+     * Longitude (e.g., -90.199402)
+     */
+    longitude: number;
+  };
+  /**
+   * Brief description of the dealer (displayed in dealer finder results)
+   */
+  description?: string | null;
+  /**
+   * Business hours for each day of the week
+   */
+  hours?:
+    | {
+        /**
+         * Day of the week
+         */
+        day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+        /**
+         * Opening time (e.g., "10:00 AM")
+         */
+        openTime?: string | null;
+        /**
+         * Closing time (e.g., "7:00 PM")
+         */
+        closeTime?: string | null;
+        /**
+         * Check if closed on this day
+         */
+        isClosed?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Tags/categories to help customers find dealers with specific services (multi-select)
+   */
+  tags?:
+    | (
+        | 'authorized-dealer'
+        | 'full-service'
+        | 'grand-specialist'
+        | 'digital-specialist'
+        | 'tuning'
+        | 'repair'
+        | 'restoration'
+        | 'moving'
+        | 'rentals'
+        | 'financing'
+        | 'trade-ins'
+        | 'virtual-consult'
+        | 'education'
+        | 'performance'
+      )[]
+    | null;
+  /**
+   * Special services or unique features (displayed in dealer detail view)
+   */
+  specialties?: string | null;
+  /**
+   * Showroom or business photo (optional, for enhanced listings)
+   */
+  dealerImage?: (string | null) | Media;
+  /**
+   * Year the business was established (e.g., 1985)
+   */
+  yearEstablished?: number | null;
+  serviceArea?: {
+    /**
+     * Service radius in miles (e.g., 50 for 50-mile radius)
+     */
+    serviceRadius?: number | null;
+    /**
+     * Primary cities/regions served (for search filtering)
+     */
+    primaryMarkets?:
+      | {
+          /**
+           * City or region name
+           */
+          market?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * States where dealer provides services or delivery
+     */
+    statesServed?:
+      | {
+          /**
+           * State abbreviation (e.g., MO, IL)
+           */
+          state?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  seo?: {
+    /**
+     * Custom meta title (leave empty to auto-generate from dealer name)
+     */
+    metaTitle?: string | null;
+    /**
+     * Meta description for search engines (max 160 characters)
+     */
+    metaDescription?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Manage Constant Contact API credentials and OAuth2 tokens. Restricted to admin users only.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3250,6 +3440,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'productlines';
         value: string | Productline;
+      } | null)
+    | ({
+        relationTo: 'dealers';
+        value: string | Dealer;
       } | null)
     | ({
         relationTo: 'constant-contact-settings';
@@ -3930,6 +4124,7 @@ export interface ProductsSelect<T extends boolean = true> {
   badge?: T;
   highlight?: T;
   brand?: T;
+  shopifyHandle?: T;
   keyFeatures?:
     | T
     | {
@@ -4024,6 +4219,78 @@ export interface ProductlinesSelect<T extends boolean = true> {
   products?: T;
   featured?: T;
   sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dealers_select".
+ */
+export interface DealersSelect<T extends boolean = true> {
+  dealerName?: T;
+  slug?: T;
+  isActive?: T;
+  isFeatured?: T;
+  contactInfo?:
+    | T
+    | {
+        phone?: T;
+        email?: T;
+        website?: T;
+        fax?: T;
+      };
+  address?:
+    | T
+    | {
+        street?: T;
+        city?: T;
+        state?: T;
+        zipCode?: T;
+        country?: T;
+      };
+  coordinates?:
+    | T
+    | {
+        latitude?: T;
+        longitude?: T;
+      };
+  description?: T;
+  hours?:
+    | T
+    | {
+        day?: T;
+        openTime?: T;
+        closeTime?: T;
+        isClosed?: T;
+        id?: T;
+      };
+  tags?: T;
+  specialties?: T;
+  dealerImage?: T;
+  yearEstablished?: T;
+  serviceArea?:
+    | T
+    | {
+        serviceRadius?: T;
+        primaryMarkets?:
+          | T
+          | {
+              market?: T;
+              id?: T;
+            };
+        statesServed?:
+          | T
+          | {
+              state?: T;
+              id?: T;
+            };
+      };
+  seo?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

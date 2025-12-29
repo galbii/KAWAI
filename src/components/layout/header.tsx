@@ -6,9 +6,14 @@ import { Menu, X, ChevronDown } from 'lucide-react'
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { KawaiLogo } from '@/components/ui/kawai-logo'
+import { CartIcon } from '@/components/cart/CartIcon'
+import { CartDrawer } from '@/components/cart/CartDrawer'
+import { ProductsMegaMenu } from '@/components/navigation/ProductsMegaMenu'
 import { cn } from '@/lib/utils'
 import { useNavigationContext } from '@/contexts/NavigationContext'
 import { getContextAwareUrl } from '@/lib/navigation-utils'
+import { fetchProductsNavigation } from '@/lib/actions/shopify-navigation'
+import type { ProductsNavigation } from '@/lib/shopify'
 
 interface NavigationItem {
   label: string
@@ -554,9 +559,12 @@ const defaultNavigation: NavigationItem[] = [
 
 export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isUniversityPage = false }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isCartOpen, setIsCartOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [openMobileItems, setOpenMobileItems] = useState<Set<string>>(new Set())
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+  const [isProductsMenuOpen, setIsProductsMenuOpen] = useState(false)
+  const [productsNavData, setProductsNavData] = useState<ProductsNavigation | null>(null)
   const [currentLocationData, setCurrentLocationData] = useState<DealerLocationData | null>(locationData || null)
   const [isLoadingLocation, setIsLoadingLocation] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
@@ -564,10 +572,50 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const animationStartedRef = useRef(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
+  const headerRef = useRef<HTMLDivElement>(null)
   const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const productsMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
   // Use navigation context to detect location changes
   const { origin, isInitialized } = useNavigationContext()
+
+  // Fetch products navigation data on mount
+  useEffect(() => {
+    const loadProductsNav = async () => {
+      try {
+        const navData = await fetchProductsNavigation()
+        setProductsNavData(navData)
+      } catch (error) {
+        console.error('[Header] Failed to load products navigation:', error)
+      }
+    }
+
+    loadProductsNav()
+  }, [])
+
+  // Track header height for mega menu positioning
+  useEffect(() => {
+    const updateHeaderHeight = () => {
+      if (headerRef.current) {
+        const height = headerRef.current.offsetHeight
+        document.documentElement.style.setProperty('--header-height', `${height}px`)
+      }
+    }
+
+    // Initial measurement
+    updateHeaderHeight()
+
+    // Update on resize
+    window.addEventListener('resize', updateHeaderHeight)
+
+    // Update when scroll state changes (header height changes)
+    const timer = setTimeout(updateHeaderHeight, 350) // After transition completes
+
+    return () => {
+      window.removeEventListener('resize', updateHeaderHeight)
+      clearTimeout(timer)
+    }
+  }, [isScrolled])
   
   // Start fade-in animation once after mount
   useEffect(() => {
@@ -691,18 +739,24 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         if (activeDropdown) {
           setActiveDropdown(null)
         }
+        if (isProductsMenuOpen) {
+          setIsProductsMenuOpen(false)
+        }
       }
     }
 
     document.addEventListener('keydown', handleEscape)
-    
+
     return () => {
       document.removeEventListener('keydown', handleEscape)
       if (dropdownTimeoutRef.current) {
         clearTimeout(dropdownTimeoutRef.current)
       }
+      if (productsMenuTimeoutRef.current) {
+        clearTimeout(productsMenuTimeoutRef.current)
+      }
     }
-  }, [isMenuOpen, activeDropdown])
+  }, [isMenuOpen, activeDropdown, isProductsMenuOpen])
   
   // Scroll detection
   const { scrollY } = useScroll()
@@ -741,6 +795,23 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const handleDropdownClose = useCallback(() => {
     dropdownTimeoutRef.current = setTimeout(() => {
       setActiveDropdown(null)
+    }, 150)
+  }, [])
+
+  // Products menu handlers
+  const handleProductsMenuOpen = useCallback(() => {
+    if (productsMenuTimeoutRef.current) {
+      clearTimeout(productsMenuTimeoutRef.current)
+      productsMenuTimeoutRef.current = null
+    }
+    setIsProductsMenuOpen(true)
+    // Close other dropdowns
+    setActiveDropdown(null)
+  }, [])
+
+  const handleProductsMenuClose = useCallback(() => {
+    productsMenuTimeoutRef.current = setTimeout(() => {
+      setIsProductsMenuOpen(false)
     }, 150)
   }, [])
 
@@ -805,6 +876,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
 
   return (
     <motion.header
+      ref={headerRef}
       className={cn(
         "sticky top-0 z-50 w-full border-b border-gray-200/50 transition-shadow duration-300",
         isScrolled ? 'bg-white shadow-lg' : 'bg-white shadow-sm'
@@ -857,6 +929,18 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
           {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
             <nav className="hidden xl:flex flex-1 justify-center">
               <div className="flex items-center space-x-1">
+                {/* Products Mega Menu Item */}
+                <div
+                  onMouseEnter={handleProductsMenuOpen}
+                  onMouseLeave={handleProductsMenuClose}
+                >
+                  <button className="flex items-center px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md">
+                    <span>Products</span>
+                    <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isProductsMenuOpen && "rotate-180")} />
+                  </button>
+                </div>
+
+                {/* Regular Navigation Items */}
                 {navigation.map((item) => (
                   <DesktopMenuItem
                     key={item.label}
@@ -890,6 +974,42 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                 </ContextAwareLink>
               </Button>
             </motion.div>
+          )}
+
+          {/* Find a Dealer Nav Link - Show on non-signature, non-university, non-storefront pages */}
+          {!isSignaturePage && !isUniversityPage && !currentLocationData && (
+            <motion.div
+              className="hidden lg:flex items-center gap-3 flex-shrink-0 ml-4"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+            >
+              <ContextAwareLink
+                href="/find-a-dealer"
+                className="px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md"
+              >
+                Find a Dealer
+              </ContextAwareLink>
+            </motion.div>
+          )}
+
+          {/* Cart Icon - Desktop */}
+          {!isSignaturePage && !isUniversityPage && (
+            <motion.div
+              className="hidden lg:flex items-center flex-shrink-0 ml-2"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.35, duration: 0.4 }}
+            >
+              <CartIcon onOpen={() => setIsCartOpen(true)} />
+            </motion.div>
+          )}
+
+          {/* Cart Icon - Mobile (shown before menu button) */}
+          {!isSignaturePage && !isUniversityPage && (
+            <div className="lg:hidden flex items-center flex-shrink-0 ml-2">
+              <CartIcon onOpen={() => setIsCartOpen(true)} />
+            </div>
           )}
 
           {/* Mobile Menu Button - Hidden on signature page, concert artist page, and university page */}
@@ -977,6 +1097,17 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                     onToggle={() => toggleMobileItem(item.label)}
                   />
                 ))}
+
+                {/* Find a Dealer Link - Only show on non-storefront pages */}
+                {!currentLocationData && (
+                  <ContextAwareLink
+                    href="/find-a-dealer"
+                    className="block py-4 px-6 text-gray-800 hover:text-gray-900 hover:bg-gray-50 font-medium text-xl transition-colors rounded-lg border-2 border-kawai-red text-kawai-red hover:bg-kawai-red hover:text-white"
+                    onClick={closeMobileMenu}
+                  >
+                    Find a Dealer
+                  </ContextAwareLink>
+                )}
               </div>
             </nav>
             
@@ -989,6 +1120,23 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
           </>
         )}
       </AnimatePresence>
+
+      {/* Cart Drawer */}
+      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+
+      {/* Products Mega Menu - Rendered at root level for proper positioning */}
+      {productsNavData && productsNavData.types.length > 0 && (
+        <div
+          onMouseEnter={handleProductsMenuOpen}
+          onMouseLeave={handleProductsMenuClose}
+        >
+          <ProductsMegaMenu
+            productTypes={productsNavData.types}
+            isOpen={isProductsMenuOpen}
+            onClose={() => setIsProductsMenuOpen(false)}
+          />
+        </div>
+      )}
     </motion.header>
   )
 }

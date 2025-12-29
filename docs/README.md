@@ -30,11 +30,14 @@
 - **[KAWAI_PRODUCT_LINE_2024-2025.md](./KAWAI_PRODUCT_LINE_2024-2025.md)** - Product line specifications
 
 ### **🔌 Integrations & APIs**
+- **[shopify-integration.md](./shopify-integration.md)** - Shopify commerce integration guide ⭐ NEW
 - **[CONSTANT_CONTACT_INTEGRATION.md](./CONSTANT_CONTACT_INTEGRATION.md)** - Email marketing integration
+- **[CONSTANT_CONTACT_API_GUIDE.md](./CONSTANT_CONTACT_API_GUIDE.md)** - Constant Contact API reference
 - **[CONSTANT_CONTACT_SETUP.md](./CONSTANT_CONTACT_SETUP.md)** - Constant Contact setup guide
 - **[README_CONSTANT_CONTACT.md](./README_CONSTANT_CONTACT.md)** - Constant Contact overview
 - **[INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md)** - General integration guide
 - **[INTEGRATION_REPORT.md](./INTEGRATION_REPORT.md)** - Integration status report
+- **[CALENDLY_TRACKING_TEST_GUIDE.md](./CALENDLY_TRACKING_TEST_GUIDE.md)** - Calendly integration testing
 
 ### **🏠 Content Management**
 - **[homepage-cms-implementation-guide.md](./homepage-cms-implementation-guide.md)** - Homepage CMS setup
@@ -84,7 +87,8 @@
 ### **By Task**
 - **Creating Landing Pages** → [LANDINGPAGES.md](./LANDINGPAGES.md)
 - **Managing Media** → [MEDIA_SYSTEM_ARCHITECTURE.md](./MEDIA_SYSTEM_ARCHITECTURE.md)
-- **Setting Up Integrations** → [CONSTANT_CONTACT_SETUP.md](./CONSTANT_CONTACT_SETUP.md)
+- **Integrating Shopify** → [shopify-integration.md](./shopify-integration.md)
+- **Setting Up Email Marketing** → [CONSTANT_CONTACT_SETUP.md](./CONSTANT_CONTACT_SETUP.md)
 - **Understanding Architecture** → [CLAUDE.md](./CLAUDE.md)
 - **Migrating Data** → [MIGRATION_API_GUIDE.md](./MIGRATION_API_GUIDE.md)
 
@@ -98,6 +102,7 @@
 
 ## 🆕 Latest Updates
 
+- **shopify-integration.md** - NEW: Complete Shopify commerce integration guide (Dec 2024)
 - **LANDINGPAGES.md** - Comprehensive landing page system documentation
 - **CONSTANT_CONTACT_INTEGRATION.md** - Email marketing integration
 - **HEADER_SYSTEM_DOCUMENTATION.md** - Navigation system overhaul
