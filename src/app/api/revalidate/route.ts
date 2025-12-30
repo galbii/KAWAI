@@ -64,6 +64,9 @@ export async function POST(request: NextRequest) {
         case 'product':
           pathToRevalidate = `/products/${slug}`
           break
+        case 'post':
+          pathToRevalidate = `/blog/${slug}`
+          break
         case 'landing-page':
           // Landing pages use dealer/campaign slug pattern
           const [dealerSlug, campaignSlug] = slug.split('/')
@@ -140,6 +143,7 @@ export async function GET(request: NextRequest) {
       example: {
         storefront: { secret: 'your-secret', slug: 'st-louis', type: 'storefront' },
         product: { secret: 'your-secret', slug: 'gx-7-blak', type: 'product' },
+        post: { secret: 'your-secret', slug: 'my-blog-post', type: 'post' },
         customPath: { secret: 'your-secret', path: '/custom/path' }
       }
     })

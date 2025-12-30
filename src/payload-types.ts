@@ -75,6 +75,12 @@ export interface Config {
     specifications: SpecificationsBlock;
     callToAction: CallToActionBlock;
     testimonials: TestimonialsBlock;
+    image: ImageBlock;
+    text: TextBlock;
+    video: VideoBlock;
+    spacer: SpacerBlock;
+    divider: DividerBlock;
+    columns: ColumnsBlock;
     hello: HelloBlock;
   };
   collections: {
@@ -83,6 +89,7 @@ export interface Config {
     'home-page': HomePage;
     'pianos-page': PianosPage;
     storefronts: Storefront;
+    posts: Post;
     'concert-artist-page': ConcertArtistPage;
     products: Product;
     productlines: Productline;
@@ -107,6 +114,7 @@ export interface Config {
     'home-page': HomePageSelect<false> | HomePageSelect<true>;
     'pianos-page': PianosPageSelect<false> | PianosPageSelect<true>;
     storefronts: StorefrontsSelect<false> | StorefrontsSelect<true>;
+    posts: PostsSelect<false> | PostsSelect<true>;
     'concert-artist-page': ConcertArtistPageSelect<false> | ConcertArtistPageSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     productlines: ProductlinesSelect<false> | ProductlinesSelect<true>;
@@ -1706,6 +1714,185 @@ export interface TestimonialsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ImageBlock".
+ */
+export interface ImageBlock {
+  /**
+   * Upload an image
+   */
+  image: string | Media;
+  /**
+   * Alternative text for accessibility (describe the image)
+   */
+  alt: string;
+  /**
+   * Optional caption displayed below the image
+   */
+  caption?: string | null;
+  /**
+   * Image display size
+   */
+  size?: ('small' | 'medium' | 'large' | 'full') | null;
+  /**
+   * Image alignment
+   */
+  alignment?: ('left' | 'center' | 'right') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'image';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TextBlock".
+ */
+export interface TextBlock {
+  /**
+   * Text content with basic formatting (bold, italic, lists, links)
+   */
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Text alignment
+   */
+  alignment?: ('left' | 'center' | 'right' | 'justify') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'text';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "VideoBlock".
+ */
+export interface VideoBlock {
+  /**
+   * Video source type
+   */
+  source: 'upload' | 'youtube' | 'vimeo';
+  /**
+   * Upload a video file
+   */
+  videoFile?: (string | null) | Media;
+  /**
+   * YouTube or Vimeo video URL
+   */
+  videoUrl?: string | null;
+  /**
+   * Thumbnail image shown before video plays
+   */
+  posterImage?: (string | null) | Media;
+  /**
+   * Show video player controls
+   */
+  controls?: boolean | null;
+  /**
+   * Autoplay video on page load (muted)
+   */
+  autoplay?: boolean | null;
+  /**
+   * Loop video playback
+   */
+  loop?: boolean | null;
+  /**
+   * Optional caption displayed below the video
+   */
+  caption?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'video';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SpacerBlock".
+ */
+export interface SpacerBlock {
+  /**
+   * Vertical spacing height
+   */
+  height: 'xs' | 'small' | 'medium' | 'large' | 'xl';
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'spacer';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "DividerBlock".
+ */
+export interface DividerBlock {
+  /**
+   * Line style
+   */
+  style?: ('solid' | 'dashed' | 'dotted') | null;
+  /**
+   * Line color
+   */
+  color?: ('default' | 'dark' | 'brand') | null;
+  /**
+   * Line width
+   */
+  width?: ('full' | '75' | '50' | '25') | null;
+  /**
+   * Vertical spacing around divider
+   */
+  spacing?: ('small' | 'medium' | 'large') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'divider';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ColumnsBlock".
+ */
+export interface ColumnsBlock {
+  /**
+   * Add and configure columns (up to 4 columns)
+   */
+  columns: {
+    /**
+     * Column width percentage
+     */
+    width: '25' | '33' | '50' | '66' | '75' | '100';
+    /**
+     * Column content - add Image, Text, Video, Spacer, or Divider blocks
+     */
+    content: (ImageBlock | TextBlock | VideoBlock | SpacerBlock | DividerBlock)[];
+    id?: string | null;
+  }[];
+  /**
+   * Layout configuration for columns
+   */
+  layout?: {
+    /**
+     * Gap/spacing between columns
+     */
+    gap?: ('small' | 'medium' | 'large') | null;
+    /**
+     * Vertical alignment of column content
+     */
+    verticalAlign?: ('top' | 'center' | 'bottom') | null;
+    /**
+     * Background color for the columns section
+     */
+    backgroundColor?: ('transparent' | 'white' | 'light' | 'dark') | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'columns';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "HelloBlock".
  */
 export interface HelloBlock {
@@ -2777,6 +2964,107 @@ export interface Storefront {
   createdAt: string;
 }
 /**
+ * Blog posts with rich content, featured images, and flexible page building
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: string;
+  /**
+   * Post title/headline
+   */
+  title: string;
+  /**
+   * URL-friendly version of the post title (auto-generated)
+   */
+  slug: string;
+  /**
+   * Short excerpt for post listings and meta description (max 300 characters)
+   */
+  excerpt?: string | null;
+  /**
+   * Featured image for post header and social sharing
+   */
+  featuredImage?: (string | null) | Media;
+  /**
+   * Main post content with rich formatting and embedded blocks (Image, Text, Video, Spacer, Divider, Columns)
+   */
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Post author
+   */
+  author: string | User;
+  /**
+   * Post categories (select multiple)
+   */
+  categories?:
+    | (
+        | 'education'
+        | 'product-news'
+        | 'artists'
+        | 'maintenance'
+        | 'buying-guides'
+        | 'events'
+        | 'company-news'
+        | 'technology'
+      )[]
+    | null;
+  /**
+   * Comma-separated tags for SEO and filtering
+   */
+  tags?: string | null;
+  /**
+   * Post publication status
+   */
+  status: 'draft' | 'published' | 'scheduled' | 'archived';
+  /**
+   * Published date (auto-set on first publish)
+   */
+  publishedDate?: string | null;
+  /**
+   * Feature this post on homepage and blog landing
+   */
+  featured?: boolean | null;
+  /**
+   * SEO and social media optimization
+   */
+  seo?: {
+    /**
+     * Custom meta title (defaults to post title)
+     */
+    metaTitle?: string | null;
+    /**
+     * Meta description for search engines (max 160 characters, defaults to excerpt)
+     */
+    metaDescription?: string | null;
+    /**
+     * SEO keywords (comma-separated)
+     */
+    keywords?: string | null;
+    /**
+     * Open Graph image for social sharing (defaults to featured image)
+     */
+    ogImage?: (string | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Manage Concert Artist page content - models overview and image gallery
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3430,6 +3718,10 @@ export interface PayloadLockedDocument {
         value: string | Storefront;
       } | null)
     | ({
+        relationTo: 'posts';
+        value: string | Post;
+      } | null)
+    | ({
         relationTo: 'concert-artist-page';
         value: string | ConcertArtistPage;
       } | null)
@@ -4035,6 +4327,33 @@ export interface StorefrontsSelect<T extends boolean = true> {
         openGraphTitle?: T;
         openGraphDescription?: T;
         openGraphImage?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts_select".
+ */
+export interface PostsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  excerpt?: T;
+  featuredImage?: T;
+  content?: T;
+  author?: T;
+  categories?: T;
+  tags?: T;
+  status?: T;
+  publishedDate?: T;
+  featured?: T;
+  seo?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+        keywords?: T;
+        ogImage?: T;
       };
   updatedAt?: T;
   createdAt?: T;

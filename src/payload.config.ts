@@ -18,6 +18,7 @@ import { PianosPage } from './collections/PianosPage'
 import { HomePage } from './collections/HomePage'
 import { Storefronts } from './collections/Storefronts'
 import { Products } from './collections/Products'
+import { Posts } from './collections/Posts'
 import { ConcertArtistPage } from './collections/ConcertArtistPage'
 import { ConstantContactSettings } from './collections/ConstantContactSettings'
 import { ConstantContactCustomFields } from './collections/ConstantContactCustomFields'
@@ -33,6 +34,12 @@ import {
   Specifications,
   CallToAction,
   Testimonials,
+  Image,
+  Text,
+  Video,
+  Spacer,
+  Divider,
+  Columns,
   Hello
 } from './blocks'
 import { productlinesSeedPlugin } from './plugins/productlines-seed'
@@ -67,6 +74,7 @@ export default buildConfig({
     HomePage,
     PianosPage,
     Storefronts,
+    Posts,
 
     // Landing Pages
     ConcertArtistPage,
@@ -96,6 +104,14 @@ export default buildConfig({
     Specifications,
     CallToAction,
     Testimonials,
+    // Modular/Atomic blocks for blog content
+    Image,
+    Text,
+    Video,
+    Spacer,
+    Divider,
+    Columns,
+    // Landing page blocks
     Hello
   ],
   editor: lexicalEditor(),

@@ -490,9 +490,13 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const storefrontsMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const newsMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  
+
   // Use navigation context to detect location changes
   const { origin, isInitialized } = useNavigationContext()
+
+  // Feature flag: Control Products menu visibility
+  // Only show Products menu if feature flag is enabled (NEXT_PUBLIC_SHOW_PRODUCTS_MENU=true)
+  const isProductsMenuEnabled = process.env.NEXT_PUBLIC_SHOW_PRODUCTS_MENU === 'true'
 
   // Fetch products navigation data on mount and refresh periodically
   useEffect(() => {
@@ -1006,8 +1010,8 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                   </button>
                 </div>
 
-                {/* Products Mega Menu Item - Hidden on storefront pages */}
-                {!currentLocationData && (
+                {/* Products Mega Menu Item - Controlled by feature flag */}
+                {isProductsMenuEnabled && (
                   <div
                     onMouseEnter={productsNavData && animationComplete ? handleProductsMenuOpen : undefined}
                     onMouseLeave={productsNavData && animationComplete ? handleProductsMenuClose : undefined}
@@ -1239,8 +1243,8 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         />
       </div>
 
-      {/* Products Mega Menu - Rendered at root level for proper positioning, hidden on storefront pages */}
-      {!currentLocationData && (
+      {/* Products Mega Menu - Rendered at root level for proper positioning, controlled by feature flag */}
+      {isProductsMenuEnabled && (
         <div
           onMouseEnter={productsNavData && animationComplete ? handleProductsMenuOpen : undefined}
           onMouseLeave={productsNavData && animationComplete ? handleProductsMenuClose : undefined}
