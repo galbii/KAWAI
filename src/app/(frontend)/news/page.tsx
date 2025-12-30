@@ -3,11 +3,11 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'KAWAI Artists | KAWAI',
-  description: 'Discover the talented artists and musicians who trust KAWAI pianos for their performances and recordings.',
+  title: 'News & Updates | KAWAI',
+  description: 'Stay up to date with the latest news, updates, and announcements from KAWAI.',
 }
 
-export default function ArtistsPage() {
+export default function NewsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-kawai-pearl via-white to-gray-50">
       <div className="container mx-auto px-6 py-24">
@@ -25,7 +25,7 @@ export default function ArtistsPage() {
           <div className="bg-white rounded-2xl shadow-xl p-12 border border-gray-100">
             <div className="mb-8">
               <h1 className="text-5xl md:text-6xl font-bold text-kawai-charcoal mb-6">
-                KAWAI Artists
+                News & Updates
               </h1>
               <div className="w-24 h-1.5 bg-kawai-red mx-auto mb-8"></div>
               <p className="text-2xl text-gray-600 font-light">
@@ -35,17 +35,17 @@ export default function ArtistsPage() {
 
             <div className="max-w-2xl mx-auto space-y-6 text-gray-600">
               <p className="text-lg leading-relaxed">
-                We're building a showcase of the world-class artists and musicians who perform on KAWAI pianos.
+                We're working on bringing you the latest news, updates, and announcements from KAWAI.
               </p>
               <p className="text-lg leading-relaxed">
-                From concert halls to recording studios, discover the artists who trust KAWAI for their most important performances and creative work.
+                Stay tuned for exciting content featuring new product launches, artist spotlights, industry insights, and more.
               </p>
             </div>
 
             {/* Decorative Element */}
             <div className="mt-12 pt-8 border-t border-gray-200">
               <p className="text-sm text-gray-500 italic">
-                "The piano keys are black and white, but they sound like a million colors in your mind."
+                "Music is the universal language of mankind."
               </p>
             </div>
           </div>
@@ -53,7 +53,7 @@ export default function ArtistsPage() {
           {/* CTA Section */}
           <div className="mt-12">
             <p className="text-gray-600 mb-6">
-              Discover the instruments our artists play
+              In the meantime, explore our piano collection
             </p>
             <Link
               href="/"

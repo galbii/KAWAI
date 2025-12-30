@@ -3,11 +3,11 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'KAWAI Artists | KAWAI',
-  description: 'Discover the talented artists and musicians who trust KAWAI pianos for their performances and recordings.',
+  title: 'Resources | KAWAI',
+  description: 'Access helpful resources, guides, and information about KAWAI pianos and piano ownership.',
 }
 
-export default function ArtistsPage() {
+export default function ResourcesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-kawai-pearl via-white to-gray-50">
       <div className="container mx-auto px-6 py-24">
@@ -25,7 +25,7 @@ export default function ArtistsPage() {
           <div className="bg-white rounded-2xl shadow-xl p-12 border border-gray-100">
             <div className="mb-8">
               <h1 className="text-5xl md:text-6xl font-bold text-kawai-charcoal mb-6">
-                KAWAI Artists
+                Resources
               </h1>
               <div className="w-24 h-1.5 bg-kawai-red mx-auto mb-8"></div>
               <p className="text-2xl text-gray-600 font-light">
@@ -35,17 +35,17 @@ export default function ArtistsPage() {
 
             <div className="max-w-2xl mx-auto space-y-6 text-gray-600">
               <p className="text-lg leading-relaxed">
-                We're building a showcase of the world-class artists and musicians who perform on KAWAI pianos.
+                We're developing a comprehensive resource center to help you get the most out of your KAWAI piano.
               </p>
               <p className="text-lg leading-relaxed">
-                From concert halls to recording studios, discover the artists who trust KAWAI for their most important performances and creative work.
+                Soon you'll find piano care guides, buying tips, maintenance schedules, educational materials, downloads, and more.
               </p>
             </div>
 
             {/* Decorative Element */}
             <div className="mt-12 pt-8 border-t border-gray-200">
               <p className="text-sm text-gray-500 italic">
-                "The piano keys are black and white, but they sound like a million colors in your mind."
+                "Life is like a piano. What you get out of it depends on how you play it."
               </p>
             </div>
           </div>
@@ -53,7 +53,7 @@ export default function ArtistsPage() {
           {/* CTA Section */}
           <div className="mt-12">
             <p className="text-gray-600 mb-6">
-              Discover the instruments our artists play
+              Explore our piano collection while we prepare these resources
             </p>
             <Link
               href="/"

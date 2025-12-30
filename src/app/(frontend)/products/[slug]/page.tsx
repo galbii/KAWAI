@@ -15,8 +15,9 @@ interface PageProps {
 }
 
 // Generate metadata for dynamic Product pages
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+  const params = await props.params
+  const { slug } = params
   const product = await getProductBySlug(slug)
   
   if (!product) {
@@ -52,9 +53,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 // Dynamic Product page component
-export default async function ProductPage({ params }: PageProps) {
+export default async function ProductPage(props: PageProps) {
   try {
-    const { slug } = await params
+    const params = await props.params
+    const { slug } = params
     const product = await getProductBySlug(slug)
     
     if (!product) {
@@ -78,9 +80,9 @@ export default async function ProductPage({ params }: PageProps) {
 // This ensures Google crawler gets fast, pre-rendered HTML for all products
 export async function generateStaticParams() {
   try {
-    const { getPayloadHMR } = await import('@payloadcms/next/utilities')
+    const { getPayload } = await import('payload')
     const configPromise = await import('@payload-config')
-    const payload = await getPayloadHMR({ config: configPromise.default })
+    const payload = await getPayload({ config: configPromise.default })
 
     const products = await payload.find({
       collection: 'products',

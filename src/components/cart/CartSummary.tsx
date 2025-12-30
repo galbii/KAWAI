@@ -49,15 +49,39 @@ export function CartSummary({ cart, className }: CartSummaryProps) {
    * Handle checkout button click
    */
   const handleCheckout = () => {
+    console.log('[CartSummary] Checkout button clicked')
+    console.log('[CartSummary] Cart ID:', cart.id)
+    console.log('[CartSummary] Checkout URL:', cart.checkoutUrl)
+
     if (!cart.checkoutUrl) {
+      console.error('[CartSummary] No checkout URL available!')
+      console.error('[CartSummary] Cart object:', cart)
       alert('Unable to proceed to checkout. Please try again.')
       return
     }
 
     setRedirecting(true)
 
-    // Redirect to Shopify checkout
-    window.location.href = cart.checkoutUrl
+    try {
+      // Mark checkout in progress for return detection
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem('checkout_in_progress', cart.id)
+        sessionStorage.setItem('checkout_started_at', Date.now().toString())
+        console.log('[CartSummary] Checkout session marked for cart:', cart.id)
+      }
+
+      console.log('[CartSummary] Opening Shopify checkout in new tab:', cart.checkoutUrl)
+
+      // Open Shopify checkout in new tab
+      window.open(cart.checkoutUrl, '_blank', 'noopener,noreferrer')
+
+      // Reset redirecting state since we're opening in new tab (not redirecting current page)
+      setRedirecting(false)
+    } catch (error) {
+      console.error('[CartSummary] Redirect failed:', error)
+      alert('Failed to redirect to checkout. Please try again.')
+      setRedirecting(false)
+    }
   }
 
   // Check if cart is empty

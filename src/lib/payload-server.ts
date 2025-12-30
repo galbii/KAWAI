@@ -12,6 +12,7 @@ import type {
 // Server-side Payload CMS API functions
 // These run on the server and can use server-side environment variables
 
+// Payload 3.x uses /api as the base, NOT /admin/api
 const PAYLOAD_API_URL = process.env.PAYLOAD_API_URL || process.env.NEXT_PUBLIC_PAYLOAD_API_URL || 'http://localhost:3000/api'
 
 // Server-side fetch wrapper with better error handling
@@ -306,7 +307,16 @@ export async function getProductlinesWithProductsServer(category?: string): Prom
 }
 
 // Generate individual category navigation for header
+/**
+ * @deprecated This function is no longer used. Piano navigation is now handled by the Shopify-powered
+ * ProductsMegaMenu component. This function will be removed in a future version.
+ *
+ * Previously generated navigation dropdowns for piano categories (digital, grand, upright, hybrid)
+ * by fetching productlines and products from Payload CMS. Now replaced by Shopify integration.
+ */
 export async function generateCategoryNavigationServer(category: string): Promise<{label: string, href: string, description?: string, isProductline?: boolean, isProduct?: boolean}[]> {
+  console.warn('[DEPRECATED] generateCategoryNavigationServer is obsolete. Use ProductsMegaMenu component (Shopify) instead.')
+
   try {
     // Get productlines for this specific category with their products
     const categoryProductlines = await getProductlinesServer(category)
@@ -355,7 +365,20 @@ export async function generateCategoryNavigationServer(category: string): Promis
 }
 
 // Generate all piano categories for main navigation
+/**
+ * @deprecated This function is no longer used. Piano navigation is now handled by the Shopify-powered
+ * ProductsMegaMenu component and StorefrontsMegaMenu. This function will be removed in a future version.
+ *
+ * Previously generated the main navigation structure for all piano categories by fetching from Payload CMS.
+ * Now replaced by:
+ * - ProductsMegaMenu (Shopify integration) for product navigation
+ * - StorefrontsMegaMenu for dealer location navigation
+ *
+ * These are rendered separately in the Header component and not part of the navigation prop.
+ */
 export async function generatePianoCategoriesNavigationServer() {
+  console.warn('[DEPRECATED] generatePianoCategoriesNavigationServer is obsolete. Use ProductsMegaMenu and StorefrontsMegaMenu components instead.')
+
   try {
     // Get all productlines to determine which categories have content
     const allProductlines = await getProductlinesServer()

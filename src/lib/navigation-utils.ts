@@ -65,7 +65,7 @@ export function parseNavigationOrigin(
   // Exclude known non-dealer routes
   const knownRoutes = [
     // Core pages
-    'pianos', 'products', 'piano-finder', 'find-my-piano',
+    'pianos', 'products', 'piano-finder', 'find-my-piano', 'find-a-dealer',
     // Product-specific pages
     'concert-artist', 'concert-artist-ca', 'es60', 'technology',
     // Content pages

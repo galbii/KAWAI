@@ -9,6 +9,9 @@ import { KawaiLogo } from '@/components/ui/kawai-logo'
 import { CartIcon } from '@/components/cart/CartIcon'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { ProductsMegaMenu } from '@/components/navigation/ProductsMegaMenu'
+import { StorefrontsMegaMenu } from '@/components/navigation/StorefrontsMegaMenu'
+import { ResourcesMegaMenu } from '@/components/navigation/ResourcesMegaMenu'
+import { NewsMegaMenu } from '@/components/navigation/NewsMegaMenu'
 import { cn } from '@/lib/utils'
 import { useNavigationContext } from '@/contexts/NavigationContext'
 import { getContextAwareUrl } from '@/lib/navigation-utils'
@@ -22,8 +25,6 @@ interface NavigationItem {
     label: string
     href: string
     description?: string
-    isProductline?: boolean
-    isProduct?: boolean
   }[]
 }
 
@@ -133,52 +134,24 @@ const MobileMenuItem = ({ item, onClose, isOpen, onToggle }: MobileMenuItemProps
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="pl-6 space-y-4">
-              {(() => {
-                // Group items by productline for mobile too
-                const productlineGroups: { [key: string]: typeof item.dropdown } = {}
-                const currentProductline: string[] = []
-                
-                item.dropdown.forEach((subItem) => {
-                  if (subItem.isProductline) {
-                    currentProductline[0] = subItem.label
-                    if (!productlineGroups[subItem.label]) {
-                      productlineGroups[subItem.label] = []
-                    }
-                    productlineGroups[subItem.label]?.push(subItem)
-                  } else if (subItem.isProduct && currentProductline[0]) {
-                    if (!productlineGroups[currentProductline[0]]) {
-                      productlineGroups[currentProductline[0]] = []
-                    }
-                    productlineGroups[currentProductline[0]]?.push(subItem)
-                  }
-                })
-                
-                return Object.entries(productlineGroups).map(([productlineName, items]) => (
-                  <div key={productlineName} className="space-y-2">
-                    {items.map((subItem) => (
-                      <ContextAwareLink
-                        key={subItem.href}
-                        href={subItem.href}
-                        className={cn(
-                          "block py-2 px-4 text-base hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors",
-                          subItem.isProductline ? "text-gray-900 font-semibold border-b border-gray-200 mb-2 pb-2" :
-                          subItem.isProduct ? "text-gray-600 text-sm ml-4" : "text-gray-600"
-                        )}
-                        onClick={onClose}
-                      >
-                        <div className={cn(
-                          "leading-tight",
-                          subItem.isProductline ? "font-semibold text-base" : 
-                          subItem.isProduct ? "font-normal" : "font-medium"
-                        )}>
-                          {subItem.isProduct ? `• ${subItem.label}` : subItem.label}
-                        </div>
-                      </ContextAwareLink>
-                    ))}
+            <div className="pl-6 space-y-2">
+              {item.dropdown.map((subItem) => (
+                <ContextAwareLink
+                  key={subItem.href}
+                  href={subItem.href}
+                  className="block py-2 px-4 text-base text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                  onClick={onClose}
+                >
+                  <div className="leading-tight font-medium">
+                    {subItem.label}
                   </div>
-                ))
-              })()}
+                  {subItem.description && (
+                    <div className="text-xs text-gray-500 mt-0.5">
+                      {subItem.description}
+                    </div>
+                  )}
+                </ContextAwareLink>
+              ))}
             </div>
           </motion.div>
         )}
@@ -424,63 +397,29 @@ const DesktopMenuItem = ({ item, isOpen, onOpen, onClose }: DesktopMenuItemProps
               maxHeight: dropdownPosition.maxHeight
             }}
           >
-            <div 
+            <div
               className="p-6 overflow-y-auto"
               style={{
                 maxHeight: dropdownPosition.maxHeight === 'none' ? '600px' : dropdownPosition.maxHeight
               }}
             >
-              <div 
-                className="grid gap-8" 
-                style={{
-                  alignItems: 'start',
-                  gridTemplateColumns: `repeat(${columnConfig.columns}, 1fr)`
-                }}
-              >
-                {(() => {
-                  // Group items by productline
-                  const productlineGroups: { [key: string]: typeof item.dropdown } = {}
-                  const currentProductline: string[] = []
-                  
-                  item.dropdown.forEach((subItem) => {
-                    if (subItem.isProductline) {
-                      currentProductline[0] = subItem.label
-                      if (!productlineGroups[subItem.label]) {
-                        productlineGroups[subItem.label] = []
-                      }
-                      productlineGroups[subItem.label]?.push(subItem)
-                    } else if (subItem.isProduct && currentProductline[0]) {
-                      if (!productlineGroups[currentProductline[0]]) {
-                        productlineGroups[currentProductline[0]] = []
-                      }
-                      productlineGroups[currentProductline[0]]?.push(subItem)
-                    }
-                  })
-                  
-                  return Object.entries(productlineGroups).map(([productlineName, items]) => (
-                    <div key={productlineName} className="flex flex-col">
-                      {items.map((subItem) => (
-                        <ContextAwareLink
-                          key={subItem.href}
-                          href={subItem.href}
-                          className={cn(
-                            "block px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors group/item",
-                            subItem.isProductline ? "border-b border-gray-200 mb-2 pb-2" : "",
-                            subItem.isProduct ? "ml-2" : ""
-                          )}
-                        >
-                          <div className={cn(
-                            "text-sm group-hover/item:text-gray-900",
-                            subItem.isProductline ? "font-bold text-gray-900 text-base mb-1" :
-                            subItem.isProduct ? "font-normal text-gray-600 text-sm" : "font-semibold text-gray-900"
-                          )}>
-                            {subItem.isProduct ? `• ${subItem.label}` : subItem.label}
-                          </div>
-                        </ContextAwareLink>
-                      ))}
+              <div className="grid grid-cols-2 gap-4">
+                {item.dropdown.map((subItem) => (
+                  <ContextAwareLink
+                    key={subItem.href}
+                    href={subItem.href}
+                    className="block px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors group/item"
+                  >
+                    <div className="font-semibold text-gray-900 text-sm group-hover/item:text-gray-900">
+                      {subItem.label}
                     </div>
-                  ))
-                })()}
+                    {subItem.description && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        {subItem.description}
+                      </div>
+                    )}
+                  </ContextAwareLink>
+                ))}
               </div>
             </div>
           </motion.div>
@@ -504,57 +443,19 @@ interface HeaderProps {
 }
 
 // Default fallback navigation - URLs will be made context-aware at runtime
+// Note: Piano navigation is now handled by ProductsMegaMenu (Shopify integration),
+// StorefrontsMegaMenu, and ResourcesMegaMenu - these are rendered separately and not part of this navigation array
 const defaultNavigation: NavigationItem[] = [
   {
-    label: 'Pianos',
-    href: '/pianos',
-    dropdown: [
-      { label: 'Grand Pianos', href: '/pianos/grand', description: 'Concert-quality instruments' },
-      { label: 'Digital Pianos', href: '/pianos/digital', description: 'Modern technology' },
-      { label: 'Upright Pianos', href: '/pianos/upright', description: 'Home & studio pianos' },
-      { label: 'Hybrid Pianos', href: '/pianos/hybrid', description: 'Acoustic meets digital' },
-    ]
+    label: 'News',
+    href: '/news'
   },
+  // Artists positioned after mega menus in render order
   {
-    label: 'Innovation',
-    dropdown: [
-      { label: 'Millennium III Action', href: '/innovation/millennium-action', description: 'Revolutionary key action' },
-      { label: 'Harmonic Imaging', href: '/innovation/harmonic-imaging', description: 'Sound sampling technology' },
-      { label: 'Grand Feel Action', href: '/innovation/grand-feel-action', description: 'Digital piano action' },
-      { label: 'Bluetooth Audio', href: '/innovation/bluetooth-audio', description: 'Wireless connectivity' },
-      { label: 'All Technologies', href: '/innovation', description: 'Complete innovation story' },
-    ]
+    label: 'Artists',
+    href: '/artists'
   },
-  {
-    label: 'Heritage',
-    dropdown: [
-      { label: 'Kawai Story', href: '/heritage/kawai-story', description: '95+ years of craftsmanship' },
-      { label: 'Kawai Family Legacy', href: '/heritage/family-legacy', description: 'Three generations' },
-      { label: 'Awards & Recognition', href: '/heritage/awards', description: 'Industry honors' },
-      { label: 'Manufacturing Excellence', href: '/heritage/manufacturing', description: 'Japanese craftsmanship' },
-      { label: 'Artist Gallery', href: '/heritage/artists', description: 'Professional musicians' },
-    ]
-  },
-  {
-    label: 'Resources',
-    dropdown: [
-      { label: 'Piano Buying Guide', href: '/resources/buying-guide', description: 'Expert advice for buyers' },
-      { label: 'Piano Care & Maintenance', href: '/resources/piano-care', description: 'Keep your piano perfect' },
-      { label: 'Learning Center', href: '/resources/learning-center', description: 'Educational content' },
-      { label: 'Financing Options', href: '/resources/financing', description: 'Make it affordable' },
-      { label: 'Downloads & Brochures', href: '/resources/downloads', description: 'Specifications & catalogs' },
-    ]
-  },
-  {
-    label: 'Experience',
-    dropdown: [
-      { label: 'Showroom Locations', href: '/experience/showrooms', description: 'Visit us in person' },
-      { label: 'Virtual Piano Tours', href: '/experience/virtual-tours', description: 'Explore online' },
-      { label: 'Piano Services', href: '/experience/services', description: 'Complete piano care' },
-      { label: 'Events & Workshops', href: '/experience/events', description: 'Music community' },
-      { label: 'Schedule a Visit', href: '/experience/schedule-visit', description: 'Book your appointment' },
-    ]
-  },
+  // Resources has been moved to ResourcesMegaMenu - rendered separately below
 ]
 
 export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isUniversityPage = false }: HeaderProps) {
@@ -565,32 +466,82 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [isProductsMenuOpen, setIsProductsMenuOpen] = useState(false)
   const [productsNavData, setProductsNavData] = useState<ProductsNavigation | null>(null)
+  const [isStorefrontsMenuOpen, setIsStorefrontsMenuOpen] = useState(false)
+  const [storefrontsData, setStorefrontsData] = useState<Array<{
+    id: string
+    slug: string
+    locationName: string
+    locationText: string
+    establishedText?: string
+    showroomInfo?: { address?: string; phone?: string }
+    features?: Array<{ title: string }>
+  }> | null>(null)
+  const [isResourcesMenuOpen, setIsResourcesMenuOpen] = useState(false)
+  const [isNewsMenuOpen, setIsNewsMenuOpen] = useState(false)
   const [currentLocationData, setCurrentLocationData] = useState<DealerLocationData | null>(locationData || null)
   const [isLoadingLocation, setIsLoadingLocation] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const [animationComplete, setAnimationComplete] = useState(false)
-  const animationStartedRef = useRef(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
   const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const productsMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const storefrontsMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const newsMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
   // Use navigation context to detect location changes
   const { origin, isInitialized } = useNavigationContext()
 
-  // Fetch products navigation data on mount
+  // Fetch products navigation data on mount and refresh periodically
   useEffect(() => {
     const loadProductsNav = async () => {
       try {
         const navData = await fetchProductsNavigation()
         setProductsNavData(navData)
+        console.log('[Header] Products navigation loaded:', {
+          types: navData.types.length,
+          totalProducts: navData.totalProducts,
+          timestamp: new Date().toISOString()
+        })
       } catch (error) {
         console.error('[Header] Failed to load products navigation:', error)
       }
     }
 
+    // Initial load
     loadProductsNav()
+
+    // Refresh every 2 minutes (120000ms) to sync with Shopify changes
+    // This ensures navigation stays fresh even without webhooks
+    const refreshInterval = setInterval(() => {
+      console.log('[Header] Refreshing products navigation...')
+      loadProductsNav()
+    }, 2 * 60 * 1000) // 2 minutes
+
+    // Cleanup interval on unmount
+    return () => {
+      clearInterval(refreshInterval)
+    }
+  }, [])
+
+  // Fetch storefronts data on mount
+  useEffect(() => {
+    const loadStorefronts = async () => {
+      try {
+        const response = await fetch('/api/storefronts/active')
+        const result = await response.json()
+
+        if (result.success && result.data) {
+          setStorefrontsData(result.data)
+        }
+      } catch (error) {
+        console.error('[Header] Failed to load storefronts:', error)
+      }
+    }
+
+    loadStorefronts()
   }, [])
 
   // Track header height for mega menu positioning
@@ -609,7 +560,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     window.addEventListener('resize', updateHeaderHeight)
 
     // Update when scroll state changes (header height changes)
-    const timer = setTimeout(updateHeaderHeight, 350) // After transition completes
+    const timer = setTimeout(updateHeaderHeight, 1300) // After 1200ms fade-in animation completes
 
     return () => {
       window.removeEventListener('resize', updateHeaderHeight)
@@ -619,15 +570,12 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   
   // Start fade-in animation once after mount
   useEffect(() => {
-    if (!animationStartedRef.current) {
-      animationStartedRef.current = true
-      const timer = setTimeout(() => {
-        setIsVisible(true)
-      }, 100)
+    // Always set visible to true on mount to ensure header shows
+    const timer = setTimeout(() => {
+      setIsVisible(true)
+    }, 100)
 
-      return () => clearTimeout(timer)
-    }
-    return undefined
+    return () => clearTimeout(timer)
   }, [])
   
   // Fetch dealer location data when origin changes - but only after animation completes
@@ -742,6 +690,15 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         if (isProductsMenuOpen) {
           setIsProductsMenuOpen(false)
         }
+        if (isStorefrontsMenuOpen) {
+          setIsStorefrontsMenuOpen(false)
+        }
+        if (isResourcesMenuOpen) {
+          setIsResourcesMenuOpen(false)
+        }
+        if (isNewsMenuOpen) {
+          setIsNewsMenuOpen(false)
+        }
       }
     }
 
@@ -755,8 +712,17 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       if (productsMenuTimeoutRef.current) {
         clearTimeout(productsMenuTimeoutRef.current)
       }
+      if (storefrontsMenuTimeoutRef.current) {
+        clearTimeout(storefrontsMenuTimeoutRef.current)
+      }
+      if (resourcesMenuTimeoutRef.current) {
+        clearTimeout(resourcesMenuTimeoutRef.current)
+      }
+      if (newsMenuTimeoutRef.current) {
+        clearTimeout(newsMenuTimeoutRef.current)
+      }
     }
-  }, [isMenuOpen, activeDropdown, isProductsMenuOpen])
+  }, [isMenuOpen, activeDropdown, isProductsMenuOpen, isStorefrontsMenuOpen, isResourcesMenuOpen, isNewsMenuOpen])
   
   // Scroll detection
   const { scrollY } = useScroll()
@@ -790,6 +756,11 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       dropdownTimeoutRef.current = null
     }
     setActiveDropdown(itemLabel)
+    // Close mega menus when opening regular dropdown
+    setIsProductsMenuOpen(false)
+    setIsStorefrontsMenuOpen(false)
+    setIsResourcesMenuOpen(false)
+    setIsNewsMenuOpen(false)
   }, [])
 
   const handleDropdownClose = useCallback(() => {
@@ -800,20 +771,93 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
 
   // Products menu handlers
   const handleProductsMenuOpen = useCallback(() => {
+    // Don't open menu if header animation hasn't completed yet
+    if (!animationComplete) return
+
     if (productsMenuTimeoutRef.current) {
       clearTimeout(productsMenuTimeoutRef.current)
       productsMenuTimeoutRef.current = null
     }
     setIsProductsMenuOpen(true)
-    // Close other dropdowns
+    // Close other menus
     setActiveDropdown(null)
-  }, [])
+    setIsStorefrontsMenuOpen(false)
+    setIsResourcesMenuOpen(false)
+    setIsNewsMenuOpen(false)
+  }, [animationComplete])
 
   const handleProductsMenuClose = useCallback(() => {
     productsMenuTimeoutRef.current = setTimeout(() => {
       setIsProductsMenuOpen(false)
     }, 150)
   }, [])
+
+  // Storefronts menu handlers
+  const handleStorefrontsMenuOpen = useCallback(() => {
+    if (!animationComplete) return
+
+    if (storefrontsMenuTimeoutRef.current) {
+      clearTimeout(storefrontsMenuTimeoutRef.current)
+      storefrontsMenuTimeoutRef.current = null
+    }
+    setIsStorefrontsMenuOpen(true)
+    // Close other menus
+    setActiveDropdown(null)
+    setIsProductsMenuOpen(false)
+    setIsResourcesMenuOpen(false)
+    setIsNewsMenuOpen(false)
+  }, [animationComplete])
+
+  const handleStorefrontsMenuClose = useCallback(() => {
+    storefrontsMenuTimeoutRef.current = setTimeout(() => {
+      setIsStorefrontsMenuOpen(false)
+    }, 150)
+  }, [])
+
+  // Resources menu handlers
+  const handleResourcesMenuOpen = useCallback(() => {
+    if (!animationComplete) return
+
+    if (resourcesMenuTimeoutRef.current) {
+      clearTimeout(resourcesMenuTimeoutRef.current)
+      resourcesMenuTimeoutRef.current = null
+    }
+    setIsResourcesMenuOpen(true)
+    // Close other menus
+    setActiveDropdown(null)
+    setIsProductsMenuOpen(false)
+    setIsStorefrontsMenuOpen(false)
+    setIsNewsMenuOpen(false)
+  }, [animationComplete])
+
+  const handleResourcesMenuClose = useCallback(() => {
+    resourcesMenuTimeoutRef.current = setTimeout(() => {
+      setIsResourcesMenuOpen(false)
+    }, 150)
+  }, [])
+
+  // News menu handlers
+  const handleNewsMenuOpen = useCallback(() => {
+    if (!animationComplete) return
+
+    if (newsMenuTimeoutRef.current) {
+      clearTimeout(newsMenuTimeoutRef.current)
+      newsMenuTimeoutRef.current = null
+    }
+    setIsNewsMenuOpen(true)
+    // Close other menus
+    setActiveDropdown(null)
+    setIsProductsMenuOpen(false)
+    setIsStorefrontsMenuOpen(false)
+    setIsResourcesMenuOpen(false)
+  }, [animationComplete])
+
+  const handleNewsMenuClose = useCallback(() => {
+    newsMenuTimeoutRef.current = setTimeout(() => {
+      setIsNewsMenuOpen(false)
+    }, 150)
+  }, [])
+
 
   // Utility function to check if target is interactive
   const isInteractiveElement = useCallback((target: EventTarget | null): boolean => {
@@ -881,7 +925,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         "sticky top-0 z-50 w-full border-b border-gray-200/50 transition-shadow duration-300",
         isScrolled ? 'bg-white shadow-lg' : 'bg-white shadow-sm'
       )}
-      style={{ opacity: isVisible ? undefined : 0 }}
       initial={{ opacity: 0 }}
       animate={{ opacity: isVisible ? 1 : 0 }}
       transition={{
@@ -929,19 +972,59 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
           {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
             <nav className="hidden xl:flex flex-1 justify-center">
               <div className="flex items-center space-x-1">
+                {/* News Mega Menu Item */}
+                <div
+                  onMouseEnter={animationComplete ? handleNewsMenuOpen : undefined}
+                  onMouseLeave={animationComplete ? handleNewsMenuClose : undefined}
+                >
+                  <button
+                    className={cn(
+                      "flex items-center px-4 py-2 text-gray-700 font-medium transition-colors rounded-md",
+                      animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
+                    )}
+                    disabled={!animationComplete}
+                  >
+                    <span>News</span>
+                    <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isNewsMenuOpen && "rotate-180")} />
+                  </button>
+                </div>
+
+                {/* Kawai Official Storefronts Mega Menu Item */}
+                <div
+                  onMouseEnter={storefrontsData && animationComplete ? handleStorefrontsMenuOpen : undefined}
+                  onMouseLeave={storefrontsData && animationComplete ? handleStorefrontsMenuClose : undefined}
+                >
+                  <button
+                    className={cn(
+                      "flex items-center px-4 py-2 text-gray-700 font-medium transition-colors rounded-md",
+                      storefrontsData && animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
+                    )}
+                    disabled={!storefrontsData || !animationComplete}
+                  >
+                    <span>Official Storefronts</span>
+                    <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isStorefrontsMenuOpen && "rotate-180")} />
+                  </button>
+                </div>
+
                 {/* Products Mega Menu Item */}
                 <div
-                  onMouseEnter={handleProductsMenuOpen}
-                  onMouseLeave={handleProductsMenuClose}
+                  onMouseEnter={productsNavData && animationComplete ? handleProductsMenuOpen : undefined}
+                  onMouseLeave={productsNavData && animationComplete ? handleProductsMenuClose : undefined}
                 >
-                  <button className="flex items-center px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md">
+                  <button
+                    className={cn(
+                      "flex items-center px-4 py-2 text-gray-700 font-medium transition-colors rounded-md",
+                      productsNavData && animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
+                    )}
+                    disabled={!productsNavData || !animationComplete}
+                  >
                     <span>Products</span>
                     <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isProductsMenuOpen && "rotate-180")} />
                   </button>
                 </div>
 
-                {/* Regular Navigation Items */}
-                {navigation.map((item) => (
+                {/* Artists Link */}
+                {navigation.filter(item => item.label === 'Artists').map((item) => (
                   <DesktopMenuItem
                     key={item.label}
                     item={item}
@@ -950,6 +1033,23 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                     onClose={handleDropdownClose}
                   />
                 ))}
+
+                {/* Resources Mega Menu Item */}
+                <div
+                  onMouseEnter={animationComplete ? handleResourcesMenuOpen : undefined}
+                  onMouseLeave={animationComplete ? handleResourcesMenuClose : undefined}
+                >
+                  <button
+                    className={cn(
+                      "flex items-center px-4 py-2 text-gray-700 font-medium transition-colors rounded-md",
+                      animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
+                    )}
+                    disabled={!animationComplete}
+                  >
+                    <span>Resources</span>
+                    <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isResourcesMenuOpen && "rotate-180")} />
+                  </button>
+                </div>
               </div>
             </nav>
           )}
@@ -1124,19 +1224,53 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       {/* Cart Drawer */}
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
 
+      {/* Storefronts Mega Menu - Rendered at root level for proper positioning */}
+      <div
+        onMouseEnter={storefrontsData && animationComplete ? handleStorefrontsMenuOpen : undefined}
+        onMouseLeave={storefrontsData && animationComplete ? handleStorefrontsMenuClose : undefined}
+      >
+        <StorefrontsMegaMenu
+          storefronts={storefrontsData || []}
+          isOpen={isStorefrontsMenuOpen && animationComplete}
+          onClose={() => setIsStorefrontsMenuOpen(false)}
+          isLoading={!storefrontsData}
+        />
+      </div>
+
       {/* Products Mega Menu - Rendered at root level for proper positioning */}
-      {productsNavData && productsNavData.types.length > 0 && (
-        <div
-          onMouseEnter={handleProductsMenuOpen}
-          onMouseLeave={handleProductsMenuClose}
-        >
-          <ProductsMegaMenu
-            productTypes={productsNavData.types}
-            isOpen={isProductsMenuOpen}
-            onClose={() => setIsProductsMenuOpen(false)}
-          />
-        </div>
-      )}
+      <div
+        onMouseEnter={productsNavData && animationComplete ? handleProductsMenuOpen : undefined}
+        onMouseLeave={productsNavData && animationComplete ? handleProductsMenuClose : undefined}
+      >
+        <ProductsMegaMenu
+          productTypes={productsNavData?.types || []}
+          isOpen={isProductsMenuOpen && animationComplete}
+          onClose={() => setIsProductsMenuOpen(false)}
+          isLoading={!productsNavData}
+        />
+      </div>
+
+      {/* Resources Mega Menu - Rendered at root level for proper positioning */}
+      <div
+        onMouseEnter={animationComplete ? handleResourcesMenuOpen : undefined}
+        onMouseLeave={animationComplete ? handleResourcesMenuClose : undefined}
+      >
+        <ResourcesMegaMenu
+          isOpen={isResourcesMenuOpen && animationComplete}
+          onClose={() => setIsResourcesMenuOpen(false)}
+        />
+      </div>
+
+      {/* News Mega Menu - Rendered at root level for proper positioning */}
+      <div
+        onMouseEnter={animationComplete ? handleNewsMenuOpen : undefined}
+        onMouseLeave={animationComplete ? handleNewsMenuClose : undefined}
+      >
+        <NewsMegaMenu
+          isOpen={isNewsMenuOpen && animationComplete}
+          onClose={() => setIsNewsMenuOpen(false)}
+        />
+      </div>
     </motion.header>
   )
 }

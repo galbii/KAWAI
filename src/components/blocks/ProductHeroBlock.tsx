@@ -497,10 +497,7 @@ export function ProductHeroBlock({
                         "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/25"
                       )}
                     >
-                      <span className="flex items-center justify-center space-x-2 lg:space-x-3">
-                        <ShoppingCart className="w-4 h-4 lg:w-5 lg:h-5" />
-                        <span>Add to Cart</span>
-                      </span>
+                      Add to Cart
                     </AddToCartButton>
 
                     {/* Right CTA: Learn More Button (White/Outline) */}
@@ -572,7 +569,6 @@ export function ProductHeroBlock({
                     <Link href={product.learnMore || product.buyButton?.link || '#'}>
                       <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                       <span className="relative flex items-center justify-center space-x-2 lg:space-x-3">
-                        <ShoppingCart className="w-4 h-4 lg:w-5 lg:h-5" />
                         <span>{getBuyButtonText()}</span>
                         <svg className="w-4 h-4 lg:w-5 lg:h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />

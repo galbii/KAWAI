@@ -19,7 +19,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
 import { getCart } from '@/lib/shopify/cart'
-import { getCartId, clearCartId, saveCartMetadata, getCartMetadata } from '@/lib/shopify/cart-storage'
+import { getCartId, clearCartId, saveCartMetadata, getCartMetadata, clearCartMetadata } from '@/lib/shopify/cart-storage'
 import type { SimpleCart } from '@/lib/shopify/types'
 
 // ============================================================================
@@ -99,11 +99,9 @@ export function CartProvider({ children }: CartProviderProps) {
       })
     } catch (error) {
       console.error('[Cart Context] Failed to refresh cart:', error)
-      // On error, try to use cached metadata
-      const metadata = getCartMetadata()
-      if (metadata) {
-        console.log('[Cart Context] Using cached cart metadata')
-      }
+      // Clear stale data on error to prevent showing incorrect cart counts
+      setCart(null)
+      clearCartMetadata()
     } finally {
       setLoading(false)
     }
@@ -130,10 +128,48 @@ export function CartProvider({ children }: CartProviderProps) {
   }, [cart])
 
   /**
-   * Load cart on mount
+   * Load cart on mount and check for checkout completion
    */
   useEffect(() => {
-    refreshCart()
+    // Check if user returned from checkout
+    const checkCheckoutCompletion = async () => {
+      if (typeof sessionStorage === 'undefined') return
+
+      const checkoutInProgress = sessionStorage.getItem('checkout_in_progress')
+      const checkoutStartedAt = sessionStorage.getItem('checkout_started_at')
+
+      if (checkoutInProgress && checkoutStartedAt) {
+        const timeSinceCheckout = Date.now() - parseInt(checkoutStartedAt, 10)
+
+        // If less than 30 minutes since checkout started
+        if (timeSinceCheckout < 30 * 60 * 1000) {
+          console.log('[Cart Context] User may have returned from checkout, verifying cart status...')
+
+          // Refresh cart to check if it's empty
+          await refreshCart()
+
+          // Check if cart is now empty (indicating completed checkout)
+          const currentCartId = getCartId()
+          if (!currentCartId) {
+            console.log('[Cart Context] Cart cleared after checkout, cleaning up session')
+            sessionStorage.removeItem('checkout_in_progress')
+            sessionStorage.removeItem('checkout_started_at')
+            clearCartId()
+            clearCartMetadata()
+          }
+        } else {
+          // Session expired
+          console.log('[Cart Context] Checkout session expired, clearing')
+          sessionStorage.removeItem('checkout_in_progress')
+          sessionStorage.removeItem('checkout_started_at')
+        }
+      }
+    }
+
+    // Check for checkout completion first, then load cart
+    checkCheckoutCompletion().then(() => {
+      refreshCart()
+    })
 
     // Set up event listener for cart updates from other components
     const handleCartUpdate = () => {

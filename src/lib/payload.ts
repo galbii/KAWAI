@@ -58,7 +58,8 @@ interface MediaResponse {
 function getPayloadApiUrl(): string {
   if (typeof window === 'undefined') {
     // Server-side: need absolute URL
-    return process.env.NEXT_PUBLIC_PAYLOAD_API_URL || 
+    // Payload 3.x uses /api as the base, NOT /admin/api
+    return process.env.NEXT_PUBLIC_PAYLOAD_API_URL ||
            `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api`
   }
   // Client-side: relative URL works fine

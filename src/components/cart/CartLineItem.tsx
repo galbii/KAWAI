@@ -151,7 +151,7 @@ export function CartLineItem({ line, cartId, onUpdate }: CartLineItemProps) {
         <div>
           <Link
             href={`/shop/${line.productHandle}`}
-            className="font-semibold text-sm hover:text-kawai-red line-clamp-2 transition-colors"
+            className="font-semibold text-sm text-black hover:text-kawai-red line-clamp-2 transition-colors"
           >
             {line.productTitle}
           </Link>
@@ -176,7 +176,7 @@ export function CartLineItem({ line, cartId, onUpdate }: CartLineItemProps) {
               <Minus className="h-3.5 w-3.5 text-gray-600" />
             </button>
 
-            <span className="px-3 py-1 text-sm font-medium min-w-[2rem] text-center">
+            <span className="px-3 py-1 text-sm font-medium min-w-[2rem] text-center text-black">
               {updating ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin mx-auto" />
               ) : (
@@ -219,7 +219,7 @@ export function CartLineItem({ line, cartId, onUpdate }: CartLineItemProps) {
 
       {/* Price */}
       <div className="flex-shrink-0 text-right">
-        <p className="font-bold text-sm">{formatPrice(line.total)}</p>
+        <p className="font-bold text-sm text-black">{formatPrice(line.total)}</p>
         {quantity > 1 && (
           <p className="text-xs text-gray-500 mt-1">
             {formatPrice(line.price)} each

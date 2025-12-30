@@ -1,4 +1,3 @@
-import { generatePianoCategoriesNavigationServer } from '@/lib/payload-server'
 import { Header } from './header'
 import { headers } from 'next/headers'
 import { getPayload } from 'payload'
@@ -12,8 +11,6 @@ interface NavigationItem {
     label: string
     href: string
     description?: string
-    isProductline?: boolean
-    isProduct?: boolean
   }[]
 }
 
@@ -85,21 +82,19 @@ export async function HeaderDynamic() {
     // Check if we're on a university event page
     const isUniversityPage = pathname.includes('/university')
 
-    // Generate piano categories navigation (each category becomes a top-level nav item)
-    const pianoCategories = await generatePianoCategoriesNavigationServer()
-
-    // Create context-aware navigation structure
-    const dynamicNavigation: NavigationItem[] = pianoCategories.map(category => ({
-      label: category.label,
-      href: getContextAwareUrl(category.href, origin),
-      dropdown: category.dropdown?.map(item => ({
-        label: item.label,
-        href: getContextAwareUrl(item.href, origin),
-        ...(item.description && { description: item.description }),
-        ...(item.isProductline !== undefined && { isProductline: item.isProductline }),
-        ...(item.isProduct !== undefined && { isProduct: item.isProduct })
-      })) || []
-    }))
+    // Static navigation items (non-piano categories)
+    // Note: Piano navigation is now handled by ProductsMegaMenu (Shopify integration),
+    // StorefrontsMegaMenu, NewsMegaMenu, and ResourcesMegaMenu - these are rendered separately in header.tsx
+    // Artists appears after the mega menus in the header
+    const staticNavigation: NavigationItem[] = [
+      // News has been moved to NewsMegaMenu - see header.tsx
+      // Artists positioned after mega menus - see header.tsx
+      {
+        label: 'Artists',
+        href: getContextAwareUrl('/artists', origin)
+      },
+      // Resources has been moved to ResourcesMegaMenu - see header.tsx
+    ]
 
     // Check if we're on a dealer location page and fetch location data
     let locationData: DealerLocationData | null = null
@@ -110,7 +105,7 @@ export async function HeaderDynamic() {
 
     return (
       <Header
-        navigation={dynamicNavigation}
+        navigation={staticNavigation}
         locationData={locationData}
         isSignaturePage={isSignaturePage}
         hidePianoLinks={isConcertArtistPage}
@@ -120,7 +115,7 @@ export async function HeaderDynamic() {
   } catch (error) {
     console.error('Error in HeaderDynamic:', error)
 
-    // Fallback to basic piano category navigation with context awareness
+    // Fallback to basic static navigation (non-piano items only)
     const headersList = await headers()
     const pathname = headersList.get('x-pathname') || ''
     const fallbackOrigin = parseNavigationOrigin(pathname)
@@ -131,11 +126,17 @@ export async function HeaderDynamic() {
     const isConcertArtistPage = pathname === '/concert-artist' || pathname === '/concert-artist/'
     const isUniversityPage = pathname.includes('/university')
 
+    // Minimal fallback navigation (piano navigation handled by ProductsMegaMenu)
+    // News moved to NewsMegaMenu - see header.tsx
+    // Resources moved to ResourcesMegaMenu - see header.tsx
     const fallbackNavigation: NavigationItem[] = [
-      { label: 'Digital Pianos', href: getContextAwareUrl('/pianos/digital', fallbackOrigin), dropdown: [] },
-      { label: 'Grand Pianos', href: getContextAwareUrl('/pianos/grand', fallbackOrigin), dropdown: [] },
-      { label: 'Upright Pianos', href: getContextAwareUrl('/pianos/upright', fallbackOrigin), dropdown: [] },
-      { label: 'Hybrid Pianos', href: getContextAwareUrl('/pianos/hybrid', fallbackOrigin), dropdown: [] },
+      // News has been moved to NewsMegaMenu - see header.tsx
+      // Artists positioned after mega menus - see header.tsx
+      {
+        label: 'Artists',
+        href: getContextAwareUrl('/artists', fallbackOrigin)
+      },
+      // Resources has been moved to ResourcesMegaMenu - see header.tsx
     ]
 
     return <Header navigation={fallbackNavigation} isSignaturePage={isSignaturePage} hidePianoLinks={isConcertArtistPage} isUniversityPage={isUniversityPage} />
