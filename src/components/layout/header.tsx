@@ -1006,22 +1006,24 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                   </button>
                 </div>
 
-                {/* Products Mega Menu Item */}
-                <div
-                  onMouseEnter={productsNavData && animationComplete ? handleProductsMenuOpen : undefined}
-                  onMouseLeave={productsNavData && animationComplete ? handleProductsMenuClose : undefined}
-                >
-                  <button
-                    className={cn(
-                      "flex items-center px-4 py-2 text-gray-700 font-medium transition-colors rounded-md",
-                      productsNavData && animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
-                    )}
-                    disabled={!productsNavData || !animationComplete}
+                {/* Products Mega Menu Item - Hidden on storefront pages */}
+                {!currentLocationData && (
+                  <div
+                    onMouseEnter={productsNavData && animationComplete ? handleProductsMenuOpen : undefined}
+                    onMouseLeave={productsNavData && animationComplete ? handleProductsMenuClose : undefined}
                   >
-                    <span>Products</span>
-                    <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isProductsMenuOpen && "rotate-180")} />
-                  </button>
-                </div>
+                    <button
+                      className={cn(
+                        "flex items-center px-4 py-2 text-gray-700 font-medium transition-colors rounded-md",
+                        productsNavData && animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
+                      )}
+                      disabled={!productsNavData || !animationComplete}
+                    >
+                      <span>Products</span>
+                      <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isProductsMenuOpen && "rotate-180")} />
+                    </button>
+                  </div>
+                )}
 
                 {/* Artists Link */}
                 {navigation.filter(item => item.label === 'Artists').map((item) => (
@@ -1237,18 +1239,20 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         />
       </div>
 
-      {/* Products Mega Menu - Rendered at root level for proper positioning */}
-      <div
-        onMouseEnter={productsNavData && animationComplete ? handleProductsMenuOpen : undefined}
-        onMouseLeave={productsNavData && animationComplete ? handleProductsMenuClose : undefined}
-      >
-        <ProductsMegaMenu
-          productTypes={productsNavData?.types || []}
-          isOpen={isProductsMenuOpen && animationComplete}
-          onClose={() => setIsProductsMenuOpen(false)}
-          isLoading={!productsNavData}
-        />
-      </div>
+      {/* Products Mega Menu - Rendered at root level for proper positioning, hidden on storefront pages */}
+      {!currentLocationData && (
+        <div
+          onMouseEnter={productsNavData && animationComplete ? handleProductsMenuOpen : undefined}
+          onMouseLeave={productsNavData && animationComplete ? handleProductsMenuClose : undefined}
+        >
+          <ProductsMegaMenu
+            productTypes={productsNavData?.types || []}
+            isOpen={isProductsMenuOpen && animationComplete}
+            onClose={() => setIsProductsMenuOpen(false)}
+            isLoading={!productsNavData}
+          />
+        </div>
+      )}
 
       {/* Resources Mega Menu - Rendered at root level for proper positioning */}
       <div

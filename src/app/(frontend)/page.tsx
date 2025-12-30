@@ -240,11 +240,11 @@ async function HomePageContent() {
       {/* News Carousel Section */}
       <NewsCarousel {...(homePageData?.newsCarouselSection && { data: homePageData.newsCarouselSection })} />
 
-      {/* Dealer Locations Section */}
-      <DealerLocations locations={dealerLocations} />
-
       {/* Piano Collection Section - Featured Models */}
       <PianoCollection {...(homePageData?.pianoCollectionSection && { data: homePageData.pianoCollectionSection })} />
+
+      {/* Dealer Locations Section */}
+      <DealerLocations locations={dealerLocations} />
 
       {/* Heritage & Craftsmanship Section - NEW for SEO */}
       <HeritageSection />
