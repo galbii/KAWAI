@@ -90,6 +90,7 @@ export interface Config {
     'pianos-page': PianosPage;
     storefronts: Storefront;
     posts: Post;
+    artists: Artist;
     'concert-artist-page': ConcertArtistPage;
     products: Product;
     productlines: Productline;
@@ -115,6 +116,7 @@ export interface Config {
     'pianos-page': PianosPageSelect<false> | PianosPageSelect<true>;
     storefronts: StorefrontsSelect<false> | StorefrontsSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    artists: ArtistsSelect<false> | ArtistsSelect<true>;
     'concert-artist-page': ConcertArtistPageSelect<false> | ConcertArtistPageSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     productlines: ProductlinesSelect<false> | ProductlinesSelect<true>;
@@ -2922,6 +2924,19 @@ export interface Storefront {
      * Success message description shown after form submission
      */
     successMessage?: string | null;
+    /**
+     * Optional image URL to display on the left side of the modal (desktop only). Enter a full URL (e.g., https://example.com/image.jpg). Leave empty for centered form layout.
+     */
+    imageUrl?: string | null;
+    /**
+     * Additional Shopify customer tags to apply when someone signs up (e.g., "free-delivery-promo", "2025-campaign"). The storefront slug is always added automatically.
+     */
+    customTags?:
+      | {
+          tag: string;
+          id?: string | null;
+        }[]
+      | null;
   };
   /**
    * Schema.org structured data improves search result appearance and local SEO rankings
@@ -3021,7 +3036,7 @@ export interface Post {
    */
   featuredImage?: (string | null) | Media;
   /**
-   * Main post content with rich formatting and embedded blocks (Image, Text, Video, Spacer, Divider, Columns)
+   * Main post content with rich formatting (bold, italic, lists, links, headings)
    */
   content: {
     root: {
@@ -3038,6 +3053,10 @@ export interface Post {
     };
     [k: string]: unknown;
   };
+  /**
+   * Additional content blocks for images, videos, and custom layouts
+   */
+  contentBlocks?: (ImageBlock | TextBlock | VideoBlock | SpacerBlock | DividerBlock | ColumnsBlock)[] | null;
   /**
    * Post author
    */
@@ -3091,6 +3110,154 @@ export interface Post {
     keywords?: string | null;
     /**
      * Open Graph image for social sharing (defaults to featured image)
+     */
+    ogImage?: (string | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Manage KAWAI artists - musicians and performers who play KAWAI pianos
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "artists".
+ */
+export interface Artist {
+  id: string;
+  /**
+   * Artist full name (e.g., "John Smith", "Maria García")
+   */
+  name: string;
+  /**
+   * URL-friendly identifier for this artist (auto-generated from name)
+   */
+  slug: string;
+  /**
+   * Feature this artist prominently on the artists page
+   */
+  featured?: boolean | null;
+  /**
+   * Controls whether this artist is visible on the frontend
+   */
+  isActive?: boolean | null;
+  /**
+   * Artist profile photo or performance image
+   */
+  image?: (string | null) | Media;
+  /**
+   * Direct image URL (fallback if media upload is not available)
+   */
+  imageUrl?: string | null;
+  /**
+   * Optional high-resolution image URL for hero carousel (used when this artist is featured). If empty, will use the regular image.
+   */
+  heroImageUrl?: string | null;
+  /**
+   * Short bio for artist cards and listings (max 280 characters, like a tweet)
+   */
+  shortBio?: string | null;
+  /**
+   * Artist biography - tell their story, achievements, and connection to KAWAI pianos
+   */
+  bio: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Primary musical genre
+   */
+  genre?: ('classical' | 'jazz' | 'contemporary' | 'pop' | 'rock' | 'blues' | 'world' | 'film' | 'other') | null;
+  /**
+   * Primary KAWAI instrument type
+   */
+  instrument?: ('grand' | 'upright' | 'digital' | 'hybrid' | 'multiple') | null;
+  /**
+   * KAWAI piano model used by this artist (links to product page)
+   */
+  kawaiModel?: (string | null) | Product;
+  /**
+   * Add social media profiles, streaming platforms, and website links
+   */
+  socialLinks?:
+    | {
+        /**
+         * Social media platform or link type
+         */
+        platform:
+          | 'website'
+          | 'instagram'
+          | 'youtube'
+          | 'spotify'
+          | 'apple-music'
+          | 'soundcloud'
+          | 'facebook'
+          | 'twitter'
+          | 'tiktok'
+          | 'linkedin'
+          | 'bandcamp'
+          | 'other';
+        /**
+         * Full URL to artist profile or page
+         */
+        url: string;
+        /**
+         * Optional custom label (defaults to platform name)
+         */
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Featured performance video (optional)
+   */
+  featuredVideo?: {
+    /**
+     * YouTube video ID (e.g., "dQw4w9WgXcQ" from https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+     */
+    youtubeId?: string | null;
+    /**
+     * Video title or description
+     */
+    title?: string | null;
+  };
+  /**
+   * Notable awards, performances, or career highlights
+   */
+  achievements?:
+    | {
+        achievement: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * SEO and social media optimization
+   */
+  seo?: {
+    /**
+     * Custom meta title (defaults to artist name + "| KAWAI Artist")
+     */
+    metaTitle?: string | null;
+    /**
+     * Meta description for search engines (max 160 characters, auto-generated from short bio if empty)
+     */
+    metaDescription?: string | null;
+    /**
+     * SEO keywords (comma-separated)
+     */
+    keywords?: string | null;
+    /**
+     * Open Graph image for social sharing (defaults to artist image)
      */
     ogImage?: (string | null) | Media;
   };
@@ -3755,6 +3922,10 @@ export interface PayloadLockedDocument {
         value: string | Post;
       } | null)
     | ({
+        relationTo: 'artists';
+        value: string | Artist;
+      } | null)
+    | ({
         relationTo: 'concert-artist-page';
         value: string | ConcertArtistPage;
       } | null)
@@ -4343,6 +4514,13 @@ export interface StorefrontsSelect<T extends boolean = true> {
         showDelay?: T;
         successTitle?: T;
         successMessage?: T;
+        imageUrl?: T;
+        customTags?:
+          | T
+          | {
+              tag?: T;
+              id?: T;
+            };
       };
   schemaData?:
     | T
@@ -4385,12 +4563,61 @@ export interface PostsSelect<T extends boolean = true> {
   excerpt?: T;
   featuredImage?: T;
   content?: T;
+  contentBlocks?: T | {};
   author?: T;
   categories?: T;
   tags?: T;
   status?: T;
   publishedDate?: T;
   featured?: T;
+  seo?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+        keywords?: T;
+        ogImage?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "artists_select".
+ */
+export interface ArtistsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  featured?: T;
+  isActive?: T;
+  image?: T;
+  imageUrl?: T;
+  heroImageUrl?: T;
+  shortBio?: T;
+  bio?: T;
+  genre?: T;
+  instrument?: T;
+  kawaiModel?: T;
+  socialLinks?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        label?: T;
+        id?: T;
+      };
+  featuredVideo?:
+    | T
+    | {
+        youtubeId?: T;
+        title?: T;
+      };
+  achievements?:
+    | T
+    | {
+        achievement?: T;
+        id?: T;
+      };
   seo?:
     | T
     | {

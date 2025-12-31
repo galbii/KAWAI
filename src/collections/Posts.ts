@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { lexicalEditor, BlocksFeature } from '@payloadcms/richtext-lexical'
+import { lexicalEditor } from '@payloadcms/richtext-lexical'
 
 export const Posts: CollectionConfig = {
   slug: 'posts',
@@ -12,6 +12,24 @@ export const Posts: CollectionConfig = {
     defaultColumns: ['title', 'author', 'status', 'publishedDate', 'updatedAt'],
     useAsTitle: 'title',
     description: 'Blog posts with rich content, featured images, and flexible page building',
+    livePreview: {
+      url: ({ data }) => {
+        const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+        // If no slug yet, use a placeholder
+        const slug = data.slug || 'preview'
+        return `${baseURL}/blog/${slug}`
+      },
+    },
+    preview: ({ slug, collection }) => {
+      const params: Record<string, string> = {
+        slug: (slug as string) || '',
+        collection: (collection as string) || 'posts',
+        path: `/blog/${(slug as string) || 'preview'}`,
+        previewSecret: process.env.PREVIEW_SECRET || '',
+      }
+      const encodedParams = new URLSearchParams(params)
+      return `/api/preview?${encodedParams.toString()}`
+    },
   },
   access: {
     read: ({ req: { user } }) => {
@@ -74,16 +92,18 @@ export const Posts: CollectionConfig = {
               name: 'content',
               type: 'richText',
               required: true,
-              editor: lexicalEditor({
-                features: ({ defaultFeatures }) => [
-                  ...defaultFeatures,
-                  BlocksFeature({
-                    blocks: ['image', 'text', 'video', 'spacer', 'divider', 'columns'],
-                  }),
-                ],
-              }),
+              editor: lexicalEditor(),
               admin: {
-                description: 'Main post content with rich formatting and embedded blocks (Image, Text, Video, Spacer, Divider, Columns)',
+                description: 'Main post content with rich formatting (bold, italic, lists, links, headings)',
+              },
+            },
+            {
+              name: 'contentBlocks',
+              type: 'blocks',
+              blockReferences: ['image', 'text', 'video', 'spacer', 'divider', 'columns'],
+              blocks: [], // Use blockReferences for globally defined blocks
+              admin: {
+                description: 'Additional content blocks for images, videos, and custom layouts',
               },
             },
           ],

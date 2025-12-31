@@ -19,6 +19,7 @@ import { HomePage } from './collections/HomePage'
 import { Storefronts } from './collections/Storefronts'
 import { Products } from './collections/Products'
 import { Posts } from './collections/Posts'
+import { Artists } from './collections/Artists'
 import { ConcertArtistPage } from './collections/ConcertArtistPage'
 import { ConstantContactSettings } from './collections/ConstantContactSettings'
 import { ConstantContactCustomFields } from './collections/ConstantContactCustomFields'
@@ -64,6 +65,39 @@ export default buildConfig({
         Icon: '/components/admin/Icon.tsx#Icon',
       },
     },
+    livePreview: {
+      url: ({ data, collectionConfig }) => {
+        const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
+        // Generate preview URL based on collection
+        if (collectionConfig?.slug === 'posts') {
+          return `${baseURL}/blog/${data.slug || 'preview'}`
+        }
+
+        return baseURL
+      },
+      collections: ['posts'],
+      breakpoints: [
+        {
+          label: 'Mobile',
+          name: 'mobile',
+          width: 375,
+          height: 667,
+        },
+        {
+          label: 'Tablet',
+          name: 'tablet',
+          width: 768,
+          height: 1024,
+        },
+        {
+          label: 'Desktop',
+          name: 'desktop',
+          width: 1440,
+          height: 900,
+        },
+      ],
+    },
   },
   collections: [
     // System Collections
@@ -75,6 +109,7 @@ export default buildConfig({
     PianosPage,
     Storefronts,
     Posts,
+    Artists,
 
     // Landing Pages
     ConcertArtistPage,

@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { useFormState } from 'react-dom'
 import { submitSimpleCustomerSignup } from '@/lib/actions/simple-customer-signup'
 import { UserIcon, EnvelopeIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import Image from 'next/image'
 
 /**
  * Simple Customer Signup Form Component - Modal Popup
@@ -33,6 +34,10 @@ interface SimpleCustomerSignupProps {
   successTitle?: string
   /** Success message description shown after form submission */
   successMessage?: string
+  /** Optional image URL to display on the left side (desktop only) */
+  imageUrl?: string | null
+  /** Optional custom tags from Payload CMS to apply to customers */
+  customTags?: Array<{ tag: string }> | null
 }
 
 // Client-side validation schema (must match server-side)
@@ -51,7 +56,9 @@ export function SimpleCustomerSignup({
   submitButtonText = 'Sign Up',
   showDelay = 1000,
   successTitle = 'Thank You for Signing Up!',
-  successMessage = "We'll be in touch soon with updates about our piano collection."
+  successMessage = "We'll be in touch soon with updates about our piano collection.",
+  imageUrl = null,
+  customTags = null
 }: SimpleCustomerSignupProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -97,6 +104,12 @@ export function SimpleCustomerSignup({
     formData.append('lastName', data.lastName)
     formData.append('email', data.email)
     formData.append('storefrontSlug', storefrontSlug)
+
+    // Add custom tags from Payload CMS if provided
+    if (customTags && customTags.length > 0) {
+      const tagsString = customTags.map(t => t.tag).join(',')
+      formData.append('customTags', tagsString)
+    }
 
     setIsSubmitting(true)
     try {
@@ -198,7 +211,9 @@ export function SimpleCustomerSignup({
       {/* Modal Content */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
         <div
-          className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full relative animate-in fade-in zoom-in duration-300 my-8"
+          className={`bg-white rounded-lg shadow-2xl relative animate-in fade-in zoom-in duration-300 my-8 ${
+            imageUrl ? 'max-w-[90vw] w-full max-h-[90vh]' : 'max-w-md w-full p-8'
+          }`}
           role="dialog"
           aria-modal="true"
           onClick={(e) => e.stopPropagation()}
@@ -206,43 +221,62 @@ export function SimpleCustomerSignup({
           {/* Close Button */}
           <button
             onClick={handleClose}
-            className="absolute top-4 right-4 text-kawai-black/40 hover:text-kawai-black transition-colors"
+            className="absolute top-4 right-4 text-kawai-black/40 hover:text-kawai-black transition-colors z-10"
             aria-label="Close modal"
           >
             <XMarkIcon className="w-6 h-6" />
           </button>
 
-          {/* Header */}
-          <div className="text-center mb-6">
-            <h3 className="text-3xl font-serif text-kawai-black mb-2">{title}</h3>
-            <p className="text-kawai-black/70">{description}</p>
-          </div>
-
-          {/* Server Error Display */}
-          {formState && !formState.success && (
-            <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex items-center mb-1">
-                <svg
-                  className="w-5 h-5 text-red-600 mr-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 19c-.77.833.192 2.5 1.732 2.5z"
-                  />
-                </svg>
-                <h4 className="font-medium text-red-800">Error</h4>
+          {/* Conditional Layout: Flex with Image or Centered Form */}
+          <div className={imageUrl ? 'flex flex-col md:flex-row items-stretch h-full' : ''}>
+            {/* Image Section (Desktop Only) - 70% width */}
+            {imageUrl && (
+              <div className="hidden md:flex items-center justify-center rounded-l-lg overflow-hidden bg-gray-100 md:w-[70%] min-h-[600px]">
+                <Image
+                  src={imageUrl}
+                  alt="Piano gallery"
+                  width={1200}
+                  height={800}
+                  className="w-full h-full object-cover"
+                  priority
+                  sizes="70vw"
+                />
               </div>
-              <p className="text-red-700 text-sm">{formState.message}</p>
-            </div>
-          )}
+            )}
 
-          {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Form Section - 30% width */}
+            <div className={imageUrl ? 'p-8 md:p-12 lg:p-16 md:w-[30%] flex flex-col justify-center overflow-y-auto' : ''}>
+              {/* Header */}
+              <div className="text-center mb-6">
+                <h3 className="text-3xl font-serif text-kawai-black mb-2">{title}</h3>
+                <p className="text-kawai-black/70">{description}</p>
+              </div>
+
+              {/* Server Error Display */}
+              {formState && !formState.success && (
+                <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-center mb-1">
+                    <svg
+                      className="w-5 h-5 text-red-600 mr-2"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 19c-.77.833.192 2.5 1.732 2.5z"
+                      />
+                    </svg>
+                    <h4 className="font-medium text-red-800">Error</h4>
+                  </div>
+                  <p className="text-red-700 text-sm">{formState.message}</p>
+                </div>
+              )}
+
+              {/* Form */}
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* First Name */}
             <div>
               <label className="block text-sm font-medium text-kawai-black mb-2">
@@ -317,7 +351,9 @@ export function SimpleCustomerSignup({
             <p className="text-xs text-kawai-black/50 text-center mt-4">
               Your information is secure and will only be used to contact you about our piano services.
             </p>
-          </form>
+              </form>
+            </div>
+          </div>
         </div>
       </div>
     </>

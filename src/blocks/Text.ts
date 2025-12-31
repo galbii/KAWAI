@@ -1,5 +1,4 @@
 import type { Block } from 'payload'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
 
 export const Text: Block = {
   slug: 'text',
@@ -11,7 +10,7 @@ export const Text: Block = {
       name: 'content',
       type: 'richText',
       required: true,
-      editor: lexicalEditor(),
+      // Editor config inherited from parent - prevents nested editor serialization issues
       admin: {
         description: 'Text content with basic formatting (bold, italic, lists, links)',
       },

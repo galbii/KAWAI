@@ -24,6 +24,7 @@
     "@hookform/resolvers": "5.2.2",
     "@next/third-parties": "^15.5.3",
     "@payloadcms/db-mongodb": "^3.52.0",
+    "@payloadcms/live-preview-react": "3.52.0",
     "@payloadcms/next": "^3.52.0",
     "@payloadcms/payload-cloud": "^3.52.0",
     "@payloadcms/plugin-import-export": "3.52.0",

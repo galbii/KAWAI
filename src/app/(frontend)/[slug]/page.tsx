@@ -289,6 +289,8 @@ async function StorefrontContent({ slug }: { slug: string }) {
           showDelay={signupModalSettings?.showDelay}
           successTitle={signupModalSettings?.successTitle}
           successMessage={signupModalSettings?.successMessage}
+          imageUrl={signupModalSettings?.imageUrl}
+          customTags={signupModalSettings?.customTags}
         />
       )}
 

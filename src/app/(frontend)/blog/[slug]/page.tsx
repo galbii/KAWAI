@@ -1,9 +1,14 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { draftMode } from 'next/headers'
 import Image from 'next/image'
 import type { Post, User, Media } from '@/payload-types'
 import { resolveMediaUrl } from '@/lib/payload'
 import { BlocksList } from '@/lib/blocks/BlockRenderer'
+import { LivePreviewPost } from '@/components/blog/LivePreviewPost'
+import { ReadingProgressBar } from '@/components/blog/ReadingProgressBar'
+import { StickyHeaderBar } from '@/components/blog/StickyHeaderBar'
+import { ArticleSidebar } from '@/components/blog/ArticleSidebar'
 
 // Use ISR (Incremental Static Regeneration) for better SEO and performance
 // Pages are statically generated and revalidated every 5 minutes
@@ -14,7 +19,7 @@ interface BlogPostPageProps {
 }
 
 // Fetch post by slug
-async function getPostBySlug(slug: string): Promise<Post | null> {
+async function getPostBySlug(slug: string, isDraft: boolean = false): Promise<Post | null> {
   try {
     const { getPayload } = await import('payload')
     const configPromise = await import('@payload-config')
@@ -26,12 +31,13 @@ async function getPostBySlug(slug: string): Promise<Post | null> {
         slug: {
           equals: slug,
         },
-        status: {
-          equals: 'published',
-        },
+        // In draft mode, show all posts. In production, only show published
+        ...(isDraft ? {} : { status: { equals: 'published' } }),
       },
       limit: 1,
       depth: 2, // Populate relationships (author, media)
+      draft: isDraft, // Enable draft content when in preview mode
+      overrideAccess: isDraft, // Bypass access control in preview mode
     })
 
     return posts.docs[0] || null
@@ -128,11 +134,20 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
   try {
     const params = await props.params
     const { slug } = params
-    const post = await getPostBySlug(slug)
+
+    // Check if draft mode is enabled
+    const { isEnabled: isDraftMode } = await draftMode()
+
+    console.log(`[Blog Post Page] Loading post: slug="${slug}", isDraftMode=${isDraftMode}`)
+
+    const post = await getPostBySlug(slug, isDraftMode)
 
     if (!post) {
+      console.error(`[Blog Post Page] Post not found: slug="${slug}", isDraftMode=${isDraftMode}`)
       notFound()
     }
+
+    console.log(`[Blog Post Page] Post loaded successfully: title="${post.title}", status=${post.status}`)
 
     // Resolve featured image
     const featuredImageUrl = resolveMediaUrl(post.featuredImage)
@@ -164,125 +179,155 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
       'technology': 'Technology',
     }
 
+    // Calculate read time (estimate: 200 words per minute)
+    const wordCount = post.excerpt?.split(' ').length || 0
+    const readTime = Math.ceil(wordCount / 200) || 5 // Default to 5 min
+
+    // Get first category for display
+    const primaryCategory = post.categories?.[0] || ''
+    const categoryLabel = categoryLabels[primaryCategory] || primaryCategory
+
     return (
+      <LivePreviewPost post={post} isDraftMode={isDraftMode}>
+        {/* Reading Progress Bar */}
+        <ReadingProgressBar />
+
+        {/* Sticky Header Bar */}
+        <StickyHeaderBar
+          title={post.title}
+          category={categoryLabel}
+          readTime={readTime}
+        />
+
       <div className="min-h-screen bg-kawai-pearl">
-        {/* Featured Image Hero */}
+        {/* Cinematic Hero Section */}
         {hasFeaturedImage && (
-          <div className="relative w-full h-[400px] md:h-[500px] bg-gray-900">
+          <div
+            className="relative w-full h-[50vh] md:h-[60vh] lg:h-[65vh] bg-gray-900"
+            data-blog-hero
+          >
             <Image
               src={featuredImageUrl}
               alt={post.title}
               fill
               priority
-              className="object-cover opacity-90"
+              className="object-cover"
               sizes="100vw"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            {/* Gradient overlay for readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
+
+            {/* Hero Content */}
+            <div className="absolute inset-0 flex flex-col justify-end">
+              <div className="max-w-7xl mx-auto w-full px-6 md:px-12 lg:px-16 pb-12 md:pb-16">
+                {/* Category badges */}
+                {post.categories && post.categories.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {post.categories.slice(0, 3).map((category) => (
+                      <span
+                        key={category}
+                        className="inline-block px-3 py-1.5 text-xs font-semibold uppercase tracking-wider bg-kawai-red/90 text-white rounded-full backdrop-blur-sm"
+                      >
+                        {categoryLabels[category] || category}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Title */}
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight max-w-5xl">
+                  {post.title}
+                </h1>
+
+                {/* Metadata strip */}
+                <div className="mt-6 flex flex-wrap items-center gap-4 text-white/80 text-sm">
+                  <span>{authorName}</span>
+                  {formattedDate && (
+                    <>
+                      <span>•</span>
+                      <time dateTime={post.publishedDate || undefined}>
+                        {formattedDate}
+                      </time>
+                    </>
+                  )}
+                  <span>•</span>
+                  <span>{readTime} min read</span>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Article Container */}
-        <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Article Header */}
-          <header className={hasFeaturedImage ? '-mt-32 relative z-10 mb-12' : 'mb-12'}>
-            <div className={hasFeaturedImage ? 'bg-white rounded-lg shadow-lg p-8' : ''}>
-              {/* Categories */}
-              {post.categories && post.categories.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {post.categories.map((category) => (
-                    <span
-                      key={category}
-                      className="inline-block px-3 py-1 text-sm font-medium text-kawai-red bg-kawai-red/10 rounded"
-                    >
-                      {categoryLabels[category] || category}
-                    </span>
-                  ))}
-                </div>
-              )}
+        {/* Two-Column Article Layout */}
+        <div className="max-w-7xl mx-auto px-6 md:px-12 py-16 md:py-24">
+          <div className="flex flex-col lg:flex-row gap-12">
+            {/* Main Content Column */}
+            <article className="flex-1 min-w-0">
+              <div className="max-w-3xl mx-auto lg:mx-0 bg-white rounded-lg shadow-sm p-8 md:p-12">
 
-              {/* Title */}
-              <h1 className="text-4xl md:text-5xl font-bold text-kawai-charcoal mb-4">
-                {post.title}
-              </h1>
+                {/* Rich Text Content */}
+                {post.content && (
+                  <div className="prose prose-lg max-w-none">
+                    {/* Lead paragraph (excerpt) */}
+                    {post.excerpt && (
+                      <p className="text-xl font-medium text-gray-800 leading-relaxed mb-8">
+                        {post.excerpt}
+                      </p>
+                    )}
 
-              {/* Meta Info */}
-              <div className="flex flex-wrap items-center gap-4 text-gray-600">
-                <div className="flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                  <span>{authorName}</span>
-                </div>
-                {formattedDate && (
-                  <>
-                    <span className="text-gray-400">•</span>
-                    <time dateTime={post.publishedDate || undefined}>
-                      {formattedDate}
-                    </time>
-                  </>
+                    {/* Placeholder for rich text content - Phase 2 will add Lexical serializer */}
+                    <div className="text-lg text-gray-700 leading-relaxed space-y-6">
+                      <p>
+                        Rich text content will be rendered here by the Lexical serializer (Phase 2).
+                      </p>
+                      <p className="text-gray-600 italic text-base">
+                        For now, this is placeholder text to demonstrate the layout and typography system.
+                      </p>
+                    </div>
+                  </div>
                 )}
-              </div>
-            </div>
-          </header>
 
-          {/* Article Content */}
-          <div className="bg-white rounded-lg shadow-sm p-8 md:p-12">
-            {/* Rich Text Content */}
-            {post.content && (
-              <div className="prose prose-lg max-w-none mb-12">
-                {/* TODO: Agent 3 will add proper rich text serializer */}
-                {/* For now, display a placeholder */}
-                <div className="text-gray-700 leading-relaxed">
-                  {post.excerpt && (
-                    <p className="text-xl font-medium text-gray-800 mb-6">
-                      {post.excerpt}
+                {/* Content Blocks (if any) */}
+                {post.contentBlocks && post.contentBlocks.length > 0 && (
+                  <div className="mt-12 space-y-8">
+                    {/* TODO: Render content blocks in Phase 2 */}
+                    <p className="text-sm text-gray-500 italic">
+                      Content blocks will render here (Image, Video, Spacer, etc.)
                     </p>
-                  )}
-                  <p className="text-gray-600 italic">
-                    Rich text content will be rendered here by the Lexical serializer.
-                  </p>
+                  </div>
+                )}
+
+                {/* Back to Blog Link */}
+                <div className="mt-16 pt-8 border-t border-gray-200">
+                  <a
+                    href="/blog"
+                    className="inline-flex items-center text-kawai-red hover:text-kawai-red/80 font-medium transition-colors"
+                  >
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                      />
+                    </svg>
+                    Back to Blog
+                  </a>
                 </div>
               </div>
-            )}
+            </article>
 
-            {/* Layout Blocks (optional additional content) */}
-            {/* TODO: Add layout blocks to Post collection if needed */}
+            {/* Sidebar Column (desktop only) */}
+            <ArticleSidebar post={post} />
           </div>
-
-          {/* Back to Blog Link */}
-          <div className="mt-12">
-            <a
-              href="/blog"
-              className="inline-flex items-center text-kawai-red hover:underline font-medium"
-            >
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
-              Back to Blog
-            </a>
-          </div>
-        </article>
+        </div>
       </div>
+      </LivePreviewPost>
     )
   } catch (error) {
     console.error('Error loading blog post page:', error)

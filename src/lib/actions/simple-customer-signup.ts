@@ -21,7 +21,8 @@ const simpleSignupSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address'),
-  storefrontSlug: z.string().min(1, 'Storefront location is required')
+  storefrontSlug: z.string().min(1, 'Storefront location is required'),
+  customTags: z.string().optional() // Comma-separated tags from Payload CMS
 })
 
 type SimpleSignupData = z.infer<typeof simpleSignupSchema>
@@ -49,7 +50,8 @@ export async function submitSimpleCustomerSignup(
       firstName: formData.get('firstName')?.toString() || '',
       lastName: formData.get('lastName')?.toString() || '',
       email: formData.get('email')?.toString() || '',
-      storefrontSlug: formData.get('storefrontSlug')?.toString() || ''
+      storefrontSlug: formData.get('storefrontSlug')?.toString() || '',
+      customTags: formData.get('customTags')?.toString() || ''
     }
 
     // Validate the data
@@ -86,17 +88,30 @@ export async function submitSimpleCustomerSignup(
     }
 
     try {
+      // Build tags array: storefront slug + custom tags from CMS
+      const tags: string[] = [signupData.storefrontSlug]
+
+      // Parse and add custom tags if provided
+      if (signupData.customTags) {
+        const customTagsArray = signupData.customTags
+          .split(',')
+          .map(tag => tag.trim())
+          .filter(tag => tag.length > 0)
+        tags.push(...customTagsArray)
+      }
+
       // Create or update customer in Shopify using optimized upsert
       // This handles both new and existing customers in ONE API call
       await upsertCustomer({
         email: signupData.email,
         firstName: signupData.firstName,
         lastName: signupData.lastName,
-        tags: [signupData.storefrontSlug], // Tag with storefront slug (e.g., "dallas")
+        tags, // Tag with storefront slug + custom tags
       })
 
       console.log(
-        `[Simple Signup] Successfully created/updated customer ${signupData.email} with tag: ${signupData.storefrontSlug}`
+        `[Simple Signup] Successfully created/updated customer ${signupData.email} with tags:`,
+        tags
       )
 
       return {

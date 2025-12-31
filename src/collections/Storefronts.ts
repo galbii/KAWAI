@@ -1006,6 +1006,35 @@ export const Storefronts: CollectionConfig = {
                     description: 'Success message description shown after form submission',
                     condition: (data: any) => data?.signupModal?.enabled === true
                   }
+                },
+                {
+                  name: 'imageUrl',
+                  type: 'text',
+                  required: false,
+                  admin: {
+                    description: 'Optional image URL to display on the left side of the modal (desktop only). Enter a full URL (e.g., https://example.com/image.jpg). Leave empty for centered form layout.',
+                    condition: (data: any) => data?.signupModal?.enabled === true,
+                    placeholder: 'https://example.com/piano-image.jpg'
+                  }
+                },
+                {
+                  name: 'customTags',
+                  type: 'array',
+                  required: false,
+                  admin: {
+                    description: 'Additional Shopify customer tags to apply when someone signs up (e.g., "free-delivery-promo", "2025-campaign"). The storefront slug is always added automatically.',
+                    condition: (data: any) => data?.signupModal?.enabled === true
+                  },
+                  fields: [
+                    {
+                      name: 'tag',
+                      type: 'text',
+                      required: true,
+                      admin: {
+                        placeholder: 'free-delivery-promo'
+                      }
+                    }
+                  ]
                 }
               ],
               admin: {

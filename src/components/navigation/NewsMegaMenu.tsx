@@ -193,18 +193,6 @@ export function NewsMegaMenu({
                 </div>
               </Link>
             </motion.div>
-
-            {/* Footer - View All Link */}
-            <div className="mt-6 lg:mt-8 pt-4 lg:pt-6 border-t border-gray-200 text-center">
-              <Link
-                href="/news"
-                onClick={onClose}
-                className="inline-flex items-center gap-2 text-kawai-red hover:text-kawai-red/80 font-medium transition-colors"
-              >
-                <span>View All News & Updates</span>
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
           </div>
         </motion.div>
       )}

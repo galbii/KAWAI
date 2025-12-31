@@ -1181,3 +1181,4 @@ curl -X POST http://localhost:3000/api/revalidate \
 5. **Maintainable Architecture**: Clear separation of concerns and documented patterns
 6. **Progressive Enhancement**: Graceful degradation ensures universal accessibility
 - use this new system to efficiently debug and develop
+- use es module syntax
