@@ -1,6 +1,7 @@
 'use server'
 
 import { z } from 'zod'
+import { upsertCustomer } from '@/lib/shopify/customers'
 
 // Form validation schema matching your existing form
 const contactFormSchema = z.object({
@@ -24,111 +25,38 @@ interface SubmissionResult {
   errors?: Record<string, string>
 }
 
-/**
- * Get OAuth2 access token for Constant Contact API
- * This would typically be refreshed periodically and stored securely
- */
-async function getConstantContactAccessToken(): Promise<string> {
-  const clientId = process.env.CONSTANT_CONTACT_CLIENT_ID
-  const clientSecret = process.env.CONSTANT_CONTACT_CLIENT_SECRET
-  const refreshToken = process.env.CONSTANT_CONTACT_REFRESH_TOKEN
-
-  if (!clientId || !clientSecret || !refreshToken) {
-    throw new Error('Missing Constant Contact API credentials in environment variables')
-  }
-
-  try {
-    const response = await fetch('https://authz.constantcontact.com/oauth2/default/v1/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`
-      },
-      body: new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: refreshToken
-      })
-    })
-
-    if (!response.ok) {
-      throw new Error(`Token refresh failed: ${response.status} ${response.statusText}`)
-    }
-
-    const tokenData = await response.json()
-    return tokenData.access_token
-  } catch (error) {
-    console.error('Failed to get Constant Contact access token:', error)
-    throw new Error('Authentication failed with Constant Contact API')
-  }
-}
+// Constant Contact integration removed - using Shopify Admin API only
 
 /**
- * Create or update contact in Constant Contact
+ * Send internal notification email via Resend (optional)
+ * This notifies your team for immediate follow-up
  */
-async function createConstantContactContact(contactData: ContactFormData, accessToken: string) {
-  const constantContactPayload = {
-    email_address: {
-      address: contactData.email,
-      permission_to_send: contactData.subscribeToUpdates ? 'implicit' : 'not_set'
-    },
-    first_name: contactData.firstName,
-    last_name: contactData.lastName,
-    create_source: 'Contact',
-    phone_numbers: [
-      {
-        phone_number: contactData.phone,
-        kind: 'mobile'
-      }
-    ],
-    // Add contact to appropriate list based on inquiry type
-    list_memberships: [
-      process.env.CONSTANT_CONTACT_DEFAULT_LIST_ID || '1'
-    ]
-  }
-
-  // Note: Custom fields removed - they would need to be created in Constant Contact first
-  // The basic contact information above will be stored in Constant Contact
-
-  try {
-    const response = await fetch('https://api.cc.email/v3/contacts', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(constantContactPayload)
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(`Constant Contact API error: ${response.status} - ${JSON.stringify(errorData)}`)
-    }
-
-    return await response.json()
-  } catch (error) {
-    console.error('Failed to create Constant Contact contact:', error)
-    throw error
-  }
-}
-
-/**
- * Send internal notification email (optional)
- * This could be to your team for immediate follow-up
- */
-async function sendInternalNotification(contactData: ContactFormData) {
-  // This could integrate with your preferred email service
-  // For now, we'll just log it (replace with actual email service)
-  console.log('New contact form submission:', {
+async function sendInternalNotification(contactData: ContactFormData, storefrontSlug?: string) {
+  console.log('[Contact Form] New submission:', {
     name: `${contactData.firstName} ${contactData.lastName}`,
     email: contactData.email,
     phone: contactData.phone,
     inquiryType: contactData.inquiryType,
+    location: storefrontSlug || 'unknown',
     timestamp: new Date().toISOString()
   })
 
-  // TODO: Implement actual email notification
-  // This could use Resend, SendGrid, AWS SES, etc.
+  // TODO: Implement Resend email notification (optional)
+  // if (process.env.RESEND_API_KEY) {
+  //   await fetch('https://api.resend.com/emails', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+  //       'Content-Type': 'application/json'
+  //     },
+  //     body: JSON.stringify({
+  //       from: 'contact@kawai-pianos.com',
+  //       to: 'sales@kawai-pianos.com',
+  //       subject: `New Contact Form: ${contactData.inquiryType}`,
+  //       html: `<p>New inquiry from ${contactData.firstName} ${contactData.lastName}</p>`
+  //     })
+  //   })
+  // }
 }
 
 /**
@@ -172,28 +100,77 @@ export async function submitContactForm(
 
     const contactData = validationResult.data
 
-    // Check if Constant Contact integration is enabled
-    const isConstantContactEnabled = process.env.CONSTANT_CONTACT_CLIENT_ID && 
-                                   process.env.CONSTANT_CONTACT_CLIENT_SECRET && 
-                                   process.env.CONSTANT_CONTACT_REFRESH_TOKEN
+    // Extract storefront slug from form data
+    const storefrontSlug = formData.get('storefrontSlug')?.toString() || ''
 
-    if (isConstantContactEnabled) {
-      try {
-        // Get access token and create contact in Constant Contact
-        const accessToken = await getConstantContactAccessToken()
-        await createConstantContactContact(contactData, accessToken)
-        
-        console.log(`Successfully added contact ${contactData.email} to Constant Contact`)
-      } catch (error) {
-        console.error('Constant Contact integration failed, continuing with form submission:', error)
-        // Don't fail the entire form submission if Constant Contact fails
+    // Shopify Admin API - Create or update customer with tags (OAuth)
+    const isShopifyAdminEnabled = process.env.SHOPIFY_APP_API_KEY &&
+                                  process.env.SHOPIFY_APP_CLIENT_SECRET &&
+                                  process.env.SHOPIFY_STORE_DOMAIN
+
+    if (!isShopifyAdminEnabled) {
+      console.error('Shopify Admin API integration disabled - missing SHOPIFY_APP_API_KEY, SHOPIFY_APP_CLIENT_SECRET, or SHOPIFY_STORE_DOMAIN')
+      return {
+        success: false,
+        message: 'Form submission failed: Shopify integration not configured. Please contact support.'
       }
-    } else {
-      console.log('Constant Contact integration disabled - missing environment variables')
     }
 
-    // Send internal notification
-    await sendInternalNotification(contactData)
+    try {
+      // Build tags based on form data
+      const tags: string[] = []
+
+      // Only tag with storefront slug (no prefix)
+      if (storefrontSlug) {
+        tags.push(storefrontSlug)
+      }
+
+      // Create or update customer in Shopify using optimized upsert
+      // This uses the customerSet mutation which handles create/update in ONE API call
+      const customerInput: {
+        email: string
+        firstName: string
+        lastName: string
+        phone: string
+        tags: string[]
+        emailMarketingConsent?: { marketingState: 'SUBSCRIBED'; marketingOptInLevel: 'SINGLE_OPT_IN' }
+        note?: string
+      } = {
+        email: contactData.email,
+        firstName: contactData.firstName,
+        lastName: contactData.lastName,
+        phone: contactData.phone,
+        tags,
+      }
+
+      if (contactData.subscribeToUpdates) {
+        customerInput.emailMarketingConsent = {
+          marketingState: 'SUBSCRIBED',
+          marketingOptInLevel: 'SINGLE_OPT_IN',
+        }
+      }
+
+      if (contactData.message) {
+        customerInput.note = `Contact form inquiry: ${contactData.message}`
+      }
+
+      await upsertCustomer(customerInput)
+
+      console.log(`[Contact Form] Successfully created/updated Shopify customer ${contactData.email} with tags:`, tags)
+    } catch (error) {
+      console.error('[Contact Form] Shopify Admin API integration failed:', error)
+
+      return {
+        success: false,
+        message: 'Failed to submit your contact information. Please try again or contact us directly.',
+        errors: {
+          shopify: error instanceof Error ? error.message : 'Unknown error occurred'
+        }
+      }
+    }
+
+    // Send internal notification (optional)
+    await sendInternalNotification(contactData, storefrontSlug)
 
     return {
       success: true,

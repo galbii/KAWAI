@@ -2891,6 +2891,39 @@ export interface Storefront {
     }[];
   };
   /**
+   * Configure the customer signup modal popup that appears when visitors land on this storefront page. Customers are automatically tagged with this storefront's slug in Shopify.
+   */
+  signupModal?: {
+    /**
+     * Show the customer signup modal popup when visitors arrive at this storefront page
+     */
+    enabled?: boolean | null;
+    /**
+     * Modal headline text
+     */
+    title?: string | null;
+    /**
+     * Modal subheading/description text
+     */
+    description?: string | null;
+    /**
+     * Submit button text
+     */
+    submitButtonText?: string | null;
+    /**
+     * Delay in milliseconds before showing the modal (0 = instant, 1000 = 1 second, 3000 = 3 seconds)
+     */
+    showDelay?: number | null;
+    /**
+     * Success message headline shown after form submission
+     */
+    successTitle?: string | null;
+    /**
+     * Success message description shown after form submission
+     */
+    successMessage?: string | null;
+  };
+  /**
    * Schema.org structured data improves search result appearance and local SEO rankings
    */
   schemaData: {
@@ -4299,6 +4332,17 @@ export interface StorefrontsSelect<T extends boolean = true> {
               use?: T;
               id?: T;
             };
+      };
+  signupModal?:
+    | T
+    | {
+        enabled?: T;
+        title?: T;
+        description?: T;
+        submitButtonText?: T;
+        showDelay?: T;
+        successTitle?: T;
+        successMessage?: T;
       };
   schemaData?:
     | T

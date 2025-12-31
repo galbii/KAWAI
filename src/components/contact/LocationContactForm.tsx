@@ -17,6 +17,7 @@ import type { ContactFormSectionData } from '@/lib/types/homepage';
 
 interface LocationContactFormProps {
   data?: ContactFormSectionData;
+  storefrontSlug?: string;
 }
 
 // Form validation schema for location-specific contact form
@@ -49,8 +50,8 @@ const contactFormSchema = z.object({
 type ContactFormData = z.infer<typeof contactFormSchema>;
 
 const DEFAULT_CONTACT_FORM_DATA: ContactFormSectionData = {
-  contactTitle: "Get In Touch With",
-  contactTitleHighlight: "Our Team",
+  contactTitle: "Get in Touch",
+  contactTitleHighlight: "",
   contactDescription: "Ready to find your perfect piano or need assistance with your current instrument? Our Lake St. Louis team is here to help with personalized consultations, service inquiries, and expert guidance.",
   stepTitles: [
     { step: 'Share your contact information' },
@@ -94,7 +95,7 @@ const DEFAULT_CONTACT_FORM_DATA: ContactFormSectionData = {
   }
 };
 
-export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: LocationContactFormProps) {
+export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA, storefrontSlug }: LocationContactFormProps) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -122,7 +123,12 @@ export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: Locati
         formData.append(key, value.toString());
       }
     });
-    
+
+    // Add storefront slug for customer tagging
+    if (storefrontSlug) {
+      formData.append('storefrontSlug', storefrontSlug);
+    }
+
     setIsSubmitting(true);
     try {
       await formAction(formData);
@@ -223,7 +229,7 @@ export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: Locati
                   <input
                     type="text"
                     {...register('firstName')}
-                    className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white"
+                    className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white text-kawai-black placeholder:text-kawai-black/50"
                     placeholder="Enter your first name"
                   />
                   {errors.firstName && (
@@ -238,7 +244,7 @@ export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: Locati
                   <input
                     type="text"
                     {...register('lastName')}
-                    className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white"
+                    className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white text-kawai-black placeholder:text-kawai-black/50"
                     placeholder="Enter your last name"
                   />
                   {errors.lastName && (
@@ -253,7 +259,7 @@ export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: Locati
                   <input
                     type="email"
                     {...register('email')}
-                    className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white"
+                    className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white text-kawai-black placeholder:text-kawai-black/50"
                     placeholder="Enter your email"
                   />
                   {errors.email && (
@@ -268,7 +274,7 @@ export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: Locati
                   <input
                     type="tel"
                     {...register('phone')}
-                    className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white"
+                    className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white text-kawai-black placeholder:text-kawai-black/50"
                     placeholder="Enter your phone number"
                   />
                   {errors.phone && (
@@ -330,7 +336,7 @@ export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: Locati
                   </label>
                   <select
                     {...register('inquiryType')}
-                    className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white"
+                    className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white text-kawai-black"
                   >
                     <option value="">Select inquiry type</option>
                     <option value="piano-consultation">Piano Consultation & Recommendations</option>
@@ -352,7 +358,7 @@ export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: Locati
                     </label>
                     <select
                       {...register('pianoInterest')}
-                      className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white"
+                      className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white text-kawai-black"
                     >
                       <option value="">Select piano type</option>
                       {data.formOptions.pianoTypes.map((type) => (
@@ -370,7 +376,7 @@ export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: Locati
                     </label>
                     <select
                       {...register('bestTimeToCall')}
-                      className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white"
+                      className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white text-kawai-black"
                     >
                       <option value="">Select preferred time</option>
                       <option value="morning">Morning (9 AM - 12 PM)</option>
@@ -389,7 +395,7 @@ export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: Locati
                   <textarea
                     {...register('message')}
                     rows={4}
-                    className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white resize-vertical"
+                    className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white text-kawai-black placeholder:text-kawai-black/50 resize-vertical"
                     placeholder="Tell us more about your piano needs or questions..."
                   />
                 </div>
@@ -413,21 +419,6 @@ export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA }: Locati
                   </label>
                 </div>
               </div>
-            </div>
-
-            {/* Benefits */}
-            <div className="bg-white p-6 rounded-md">
-              <h4 className="font-medium text-kawai-black mb-4">What to expect:</h4>
-              <ul className="space-y-2 text-sm text-kawai-black/70">
-                {data.benefits.map((benefit, index) => (
-                  <li key={index} className="flex items-center">
-                    <svg className="w-4 h-4 text-kawai-red mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    {benefit.text}
-                  </li>
-                ))}
-              </ul>
             </div>
 
             {/* Submit Button */}

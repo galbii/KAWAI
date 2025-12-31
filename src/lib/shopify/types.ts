@@ -349,7 +349,7 @@ export interface CollectionQueryVariables {
 // ============================================================================
 
 /**
- * Shopify client configuration
+ * Shopify Storefront API client configuration
  */
 export interface ShopifyConfig {
   /** Store domain (e.g., "example.myshopify.com") */
@@ -357,6 +357,18 @@ export interface ShopifyConfig {
   /** Storefront API access token */
   storefrontAccessToken: string
   /** API version (e.g., "2024-01") */
+  apiVersion?: string
+}
+
+/**
+ * Shopify Admin API client configuration
+ */
+export interface ShopifyAdminConfig {
+  /** Store domain (e.g., "example.myshopify.com") */
+  storeDomain: string
+  /** Admin API access token (server-side only) */
+  adminAccessToken: string
+  /** API version (e.g., "2025-01") */
   apiVersion?: string
 }
 
@@ -715,6 +727,224 @@ export interface SimpleCart {
   currency: CurrencyCode
   discountCodes: string[]
   discounts: number
+}
+
+// ============================================================================
+// Customer Types (Admin API)
+// ============================================================================
+
+/**
+ * Email marketing consent input
+ */
+export interface EmailMarketingConsentInput {
+  /** Marketing state (SUBSCRIBED, UNSUBSCRIBED) */
+  marketingState?: 'SUBSCRIBED' | 'UNSUBSCRIBED'
+  /** Opt-in level */
+  marketingOptInLevel?: 'SINGLE_OPT_IN' | 'CONFIRMED_OPT_IN' | 'UNKNOWN'
+}
+
+/**
+ * Customer input for creating a new customer
+ */
+export interface CustomerInput {
+  /** Customer email */
+  email?: string
+  /** First name */
+  firstName?: string
+  /** Last name */
+  lastName?: string
+  /** Phone number */
+  phone?: string
+  /** Customer tags (for segmentation) */
+  tags?: string[]
+  /** Email marketing consent (replaces acceptsMarketing in API 2025-01+) */
+  emailMarketingConsent?: EmailMarketingConsentInput
+  /** Note about the customer */
+  note?: string
+  /** Whether customer is tax exempt */
+  taxExempt?: boolean
+  /** Addresses */
+  addresses?: CustomerAddressInput[]
+}
+
+/**
+ * Customer address input
+ */
+export interface CustomerAddressInput {
+  /** Address line 1 */
+  address1?: string
+  /** Address line 2 */
+  address2?: string
+  /** City */
+  city?: string
+  /** Company name */
+  company?: string
+  /** Country */
+  country?: string
+  /** Country code */
+  countryCode?: string
+  /** First name */
+  firstName?: string
+  /** Last name */
+  lastName?: string
+  /** Phone number */
+  phone?: string
+  /** Province/State */
+  province?: string
+  /** Province code */
+  provinceCode?: string
+  /** ZIP/Postal code */
+  zip?: string
+}
+
+/**
+ * Email marketing consent (Shopify Admin API 2025-01+)
+ */
+export interface EmailMarketingConsent {
+  /** Marketing state (SUBSCRIBED, UNSUBSCRIBED, NOT_SUBSCRIBED, etc.) */
+  marketingState: string
+  /** Opt-in level (SINGLE_OPT_IN, CONFIRMED_OPT_IN, UNKNOWN) */
+  marketingOptInLevel: string | null
+}
+
+/**
+ * Customer object (Admin API)
+ */
+export interface Customer {
+  /** Shopify customer ID */
+  id: ShopifyGID
+  /** Customer email */
+  email: string
+  /** First name */
+  firstName: string | null
+  /** Last name */
+  lastName: string | null
+  /** Phone number */
+  phone: string | null
+  /** Customer tags */
+  tags: string[]
+  /** Display name */
+  displayName: string
+  /** Email marketing consent (replaces acceptsMarketing in API 2025-01+) */
+  emailMarketingConsent: EmailMarketingConsent | null
+  /** Tax exempt status */
+  taxExempt: boolean
+  /** Note about the customer */
+  note: string | null
+  /** Verified email status */
+  verifiedEmail: boolean
+  /** Account state (e.g., "ENABLED", "DISABLED") */
+  state: string
+  /** Creation timestamp */
+  createdAt: string
+  /** Last update timestamp */
+  updatedAt: string
+  /** Addresses */
+  addresses?: CustomerAddress[]
+  /** Default address */
+  defaultAddress?: CustomerAddress | null
+}
+
+/**
+ * Customer address
+ */
+export interface CustomerAddress {
+  /** Address ID */
+  id?: ShopifyGID
+  /** Address line 1 */
+  address1: string | null
+  /** Address line 2 */
+  address2: string | null
+  /** City */
+  city: string | null
+  /** Company */
+  company: string | null
+  /** Country */
+  country: string | null
+  /** Country code */
+  countryCodeV2: string | null
+  /** First name */
+  firstName: string | null
+  /** Last name */
+  lastName: string | null
+  /** Phone */
+  phone: string | null
+  /** Province */
+  province: string | null
+  /** Province code */
+  provinceCode: string | null
+  /** ZIP/Postal code */
+  zip: string | null
+}
+
+/**
+ * Customer user error (from mutations)
+ */
+export interface CustomerUserError {
+  /** Error message */
+  message: string
+  /** Field path that caused error */
+  field: (string | number)[] | null
+}
+
+/**
+ * Customer create mutation response
+ */
+export interface CustomerCreateResponse {
+  customerCreate: {
+    customer: Customer | null
+    userErrors: CustomerUserError[]
+  }
+}
+
+/**
+ * Customer update mutation response
+ */
+export interface CustomerUpdateResponse {
+  customerUpdate: {
+    customer: Customer | null
+    userErrors: CustomerUserError[]
+  }
+}
+
+/**
+ * Customer set mutation response (create or update in one call)
+ */
+export interface CustomerSetResponse {
+  customerSet: {
+    customer: Customer | null
+    userErrors: CustomerUserError[]
+  }
+}
+
+/**
+ * Customer query response
+ */
+export interface CustomerQueryResponse {
+  customer: Customer | null
+}
+
+/**
+ * Variables for customer create mutation
+ */
+export interface CustomerCreateVariables {
+  input: CustomerInput
+}
+
+/**
+ * Variables for customer update mutation
+ */
+export interface CustomerUpdateVariables {
+  input: CustomerInput & {
+    id: ShopifyGID
+  }
+}
+
+/**
+ * Variables for customer query
+ */
+export interface CustomerQueryVariables {
+  id: ShopifyGID
 }
 
 // ============================================================================

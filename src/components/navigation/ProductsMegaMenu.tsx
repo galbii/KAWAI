@@ -80,11 +80,12 @@ export function ProductsMegaMenu({
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.3, ease: 'easeInOut' }}
           className={cn(
             'fixed left-0 right-0 z-50',
             'bg-white border-t border-b border-gray-200/50 shadow-2xl',
             'overflow-hidden',
+            'transition-[top] duration-300 ease-in-out',
             className
           )}
           style={{

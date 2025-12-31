@@ -931,6 +931,90 @@ export const Storefronts: CollectionConfig = {
           ]
         },
 
+        // Promotions Tab
+        {
+          label: 'Promotions',
+          description: 'Configure promotional popups and lead capture forms for this storefront',
+          fields: [
+            {
+              name: 'signupModal',
+              type: 'group',
+              label: 'Customer Signup Modal Popup',
+              fields: [
+                {
+                  name: 'enabled',
+                  type: 'checkbox',
+                  label: 'Enable Signup Modal Popup',
+                  defaultValue: true,
+                  admin: {
+                    description: 'Show the customer signup modal popup when visitors arrive at this storefront page'
+                  }
+                },
+                {
+                  name: 'title',
+                  type: 'text',
+                  defaultValue: 'Stay Connected',
+                  admin: {
+                    description: 'Modal headline text',
+                    condition: (data: any) => data?.signupModal?.enabled === true
+                  }
+                },
+                {
+                  name: 'description',
+                  type: 'textarea',
+                  defaultValue: 'Sign up to receive updates about our piano collection and exclusive offers.',
+                  admin: {
+                    description: 'Modal subheading/description text',
+                    condition: (data: any) => data?.signupModal?.enabled === true
+                  }
+                },
+                {
+                  name: 'submitButtonText',
+                  type: 'text',
+                  defaultValue: 'Sign Up',
+                  admin: {
+                    description: 'Submit button text',
+                    condition: (data: any) => data?.signupModal?.enabled === true
+                  }
+                },
+                {
+                  name: 'showDelay',
+                  type: 'number',
+                  defaultValue: 1000,
+                  min: 0,
+                  max: 10000,
+                  admin: {
+                    description: 'Delay in milliseconds before showing the modal (0 = instant, 1000 = 1 second, 3000 = 3 seconds)',
+                    step: 100,
+                    condition: (data: any) => data?.signupModal?.enabled === true
+                  }
+                },
+                {
+                  name: 'successTitle',
+                  type: 'text',
+                  defaultValue: 'Thank You for Signing Up!',
+                  admin: {
+                    description: 'Success message headline shown after form submission',
+                    condition: (data: any) => data?.signupModal?.enabled === true
+                  }
+                },
+                {
+                  name: 'successMessage',
+                  type: 'textarea',
+                  defaultValue: "We'll be in touch soon with updates about our piano collection.",
+                  admin: {
+                    description: 'Success message description shown after form submission',
+                    condition: (data: any) => data?.signupModal?.enabled === true
+                  }
+                }
+              ],
+              admin: {
+                description: 'Configure the customer signup modal popup that appears when visitors land on this storefront page. Customers are automatically tagged with this storefront\'s slug in Shopify.'
+              }
+            }
+          ]
+        },
+
         // Schema & Structured Data Tab
         {
           label: 'Schema & Structured Data',

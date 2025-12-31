@@ -87,7 +87,7 @@ async function ContactPageContent({ slug }: { slug: string }) {
       <ShowroomLocation data={storefrontData?.showroomSection} />
 
       {/* Contact Form Section */}
-      <LocationContactForm data={storefrontData?.contactFormSection} />
+      <LocationContactForm data={storefrontData?.contactFormSection} storefrontSlug={slug} />
     </div>
   );
 }

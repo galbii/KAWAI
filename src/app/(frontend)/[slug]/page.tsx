@@ -7,6 +7,7 @@ import {
   ShowroomLocation
 } from "@/components/homepage";
 import { PianoKeyboardDivider } from "@/components/ui/PianoKeyboardDivider";
+import { SimpleCustomerSignup } from "@/components/forms/SimpleCustomerSignup";
 import { getHomePageData } from "@/lib/payload";
 import { getStorefrontBySlugDirect, getHomePageDataDirect } from "@/lib/payload-direct";
 import { LocalBusinessSchema } from "@/components/seo/LocalBusinessSchema";
@@ -269,10 +270,27 @@ async function StorefrontContent({ slug }: { slug: string }) {
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com';
 
+  // Extract signup modal settings from CMS
+  const signupModalSettings = rawStorefrontData?.signupModal;
+  const isModalEnabled = signupModalSettings?.enabled !== false; // Default to true if not set
+
   return (
     <>
       {/* LocalBusiness Structured Data for SEO */}
       <LocalBusinessSchema storefront={rawStorefrontData} siteUrl={siteUrl} />
+
+      {/* Customer Signup Modal Popup - Conditionally rendered based on CMS settings */}
+      {isModalEnabled && (
+        <SimpleCustomerSignup
+          storefrontSlug={slug}
+          title={signupModalSettings?.title}
+          description={signupModalSettings?.description}
+          submitButtonText={signupModalSettings?.submitButtonText}
+          showDelay={signupModalSettings?.showDelay}
+          successTitle={signupModalSettings?.successTitle}
+          successMessage={signupModalSettings?.successMessage}
+        />
+      )}
 
       <div className="min-h-screen">
         {/* Hero Section */}
