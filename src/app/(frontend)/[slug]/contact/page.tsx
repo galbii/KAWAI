@@ -1,12 +1,13 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { getStorefrontData } from "@/lib/payload";
+import { getStorefrontBySlugDirect } from "@/lib/payload-direct";
 import {
   ContactHero,
   LocationContactForm
 } from "@/components/contact";
 import { ShowroomLocation } from "@/components/homepage";
 import type { HomePageData } from "@/lib/types/homepage";
+import { unstable_cache } from 'next/cache';
 
 // Loading components for each section
 function ContactHeroSkeleton() {
@@ -53,35 +54,105 @@ function ContactFormSkeleton() {
   );
 }
 
+// Transform raw Payload storefront data into structured HomePageData format
+function transformStorefrontData(rawData: any): HomePageData | null {
+  if (!rawData) return null;
+
+  return {
+    heroSection: {
+      locationText: rawData.locationText,
+      establishedText: rawData.establishedText,
+      description: rawData.description,
+      primaryCta: rawData.primaryCta,
+      secondaryCta: rawData.secondaryCta,
+      backgroundVideo: rawData.backgroundVideo
+    },
+    showroomSection: {
+      sectionHeader: rawData.sectionHeader,
+      showroomTitle: rawData.showroomTitle,
+      showroomDescription: rawData.showroomDescription,
+      showroomInfo: rawData.showroomInfo,
+      hours: rawData.hours,
+      features: rawData.features,
+      mapApiKey: rawData.mapApiKey,
+      showroomCtas: rawData.showroomCtas,
+      trustBanner: rawData.trustBanner
+    },
+    pianoCollectionSection: {
+      collectionSectionHeader: rawData.collectionSectionHeader,
+      collectionTitle: rawData.collectionTitle,
+      collectionDescription: rawData.collectionDescription,
+      collectionCta: rawData.collectionCta,
+      featuredVideo: rawData.featuredVideo
+    },
+    pianoGallerySection: {
+      galleryTitle: '',
+      galleryDescription: '',
+      pianoCategories: []
+    },
+    newsCarouselSection: {
+      autoPlayDuration: rawData.autoPlayDuration,
+      newsItems: rawData.newsItems
+    },
+    contactFormSection: {
+      contactTitle: rawData.contactTitle,
+      contactTitleHighlight: rawData.contactTitleHighlight,
+      contactDescription: rawData.contactDescription,
+      stepTitles: rawData.stepTitles,
+      trustMessage: rawData.trustMessage,
+      benefits: rawData.benefits,
+      formOptions: rawData.formOptions
+    },
+    seo: rawData.seo
+  };
+}
+
+// Cached storefront fetcher with proper Next.js cache tags
+function getCachedStorefront(slug: string) {
+  return unstable_cache(
+    async () => getStorefrontBySlugDirect(slug),
+    [`storefront-${slug}`],
+    {
+      tags: [`storefront-${slug}`],
+      revalidate: 3600 // 1 hour fallback
+    }
+  )()
+}
+
 // Server Component that fetches storefront data and renders contact sections
 async function ContactPageContent({ slug }: { slug: string }) {
   let storefrontData: HomePageData | null = null;
-  let error: string | null = null;
+  let rawStorefrontData: any = null;
 
   try {
-    storefrontData = await getStorefrontData(slug);
+    // Use cached fetch with proper tags for revalidation
+    rawStorefrontData = await getCachedStorefront(slug);
 
     // If storefront doesn't exist or is inactive, show 404
+    if (!rawStorefrontData) {
+      console.log(`[Contact Page] Storefront "${slug}" not found or inactive`);
+      notFound();
+    }
+
+    // Transform raw Payload data into structured format
+    storefrontData = transformStorefrontData(rawStorefrontData);
+
     if (!storefrontData) {
       notFound();
     }
   } catch (err) {
-    error = err instanceof Error ? err.message : 'Failed to load storefront data';
-    console.error('Storefront data fetch error:', error);
-
-    // If there's a fetch error, show 404 as well since we can't determine if location exists
+    const error = err instanceof Error ? err.message : 'Failed to load storefront data';
+    console.error(`[Contact Page] Storefront data fetch error for "${slug}":`, error);
     notFound();
-  }
-
-  // If there's an error but we still have data, components will use their fallback defaults
-  if (error) {
-    console.warn(`Storefront CMS data partially unavailable: ${error}. Using available data with fallbacks.`);
   }
 
   return (
     <div className="min-h-screen">
       {/* Contact Hero Section */}
-      <ContactHero data={storefrontData?.showroomSection} />
+      <ContactHero
+        data={storefrontData?.showroomSection}
+        establishedText={storefrontData?.heroSection?.establishedText}
+      />
 
       {/* Showroom Location Section - Same as homepage */}
       <ShowroomLocation data={storefrontData?.showroomSection} />
@@ -96,7 +167,19 @@ async function ContactPageContent({ slug }: { slug: string }) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await params;
-    const storefrontData = await getStorefrontData(slug);
+
+    // Use direct Payload access instead of HTTP fetch
+    const rawStorefrontData = await getStorefrontBySlugDirect(slug);
+
+    if (!rawStorefrontData) {
+      return {
+        title: 'Contact - Location Not Found',
+        description: 'The requested storefront location could not be found.'
+      };
+    }
+
+    // Transform data
+    const storefrontData = transformStorefrontData(rawStorefrontData);
 
     if (!storefrontData?.seo) {
       return {

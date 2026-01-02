@@ -368,6 +368,33 @@ export const Storefronts: CollectionConfig = {
               admin: {
                 description: 'Call-to-action buttons for the showroom section'
               }
+            },
+            {
+              name: 'trustBanner',
+              type: 'array',
+              required: false,
+              labels: {
+                singular: 'Trust Item',
+                plural: 'Trust Banner Items',
+              },
+              fields: [
+                {
+                  name: 'text',
+                  type: 'text',
+                  required: true,
+                  admin: {
+                    description: 'Trust banner item text (e.g., "95+ Years Experience", "Certified Kawai Specialists")'
+                  }
+                }
+              ],
+              defaultValue: [
+                { text: '95+ Years Experience' },
+                { text: 'Certified Kawai Specialists' },
+                { text: 'Missouri\'s Trusted Dealer' }
+              ],
+              admin: {
+                description: 'Trust/credibility banner items displayed at the bottom of contact section (appears as: Item 1 | Item 2 | Item 3)'
+              }
             }
           ]
         },
@@ -1215,59 +1242,49 @@ export const Storefronts: CollectionConfig = {
 
   hooks: {
     afterChange: [
-      async ({ doc, req, operation, context }) => {
-        // Prevent infinite loops - skip revalidation if triggered by another hook
-        if (context.skipRevalidation) {
-          console.log(`[Storefronts Hook] Skipping revalidation (context flag set)`)
+      ({ doc, previousDoc, req: { payload, context } }) => {
+        // Prevent infinite loops using Payload's standard context flag
+        if (context.disableRevalidate) {
           return doc
         }
-
-        console.log(`[Storefronts Hook] afterChange triggered: operation=${operation}, slug="${doc.slug}", isActive=${doc.isActive}`)
 
         // Only revalidate if storefront is active
-        if (!doc.isActive) {
-          console.log(`[Storefronts Hook] Storefront is inactive, skipping revalidation`)
-          return doc
+        if (doc.isActive) {
+          const path = `/${doc.slug}`
+          const tag = `storefront-${doc.slug}`
+          payload.logger.info(`Revalidating storefront at path: ${path} (tag: ${tag})`)
+
+          try {
+            // Use Next.js revalidateTag to clear cache (works better with unstable_cache)
+            const { revalidateTag, revalidatePath } = require('next/cache')
+
+            // Revalidate by tag (clears unstable_cache)
+            revalidateTag(tag)
+
+            // Also revalidate paths (clears route cache)
+            revalidatePath(path, 'page')
+            revalidatePath(`${path}/contact`, 'page')
+
+            payload.logger.info(`Successfully revalidated storefront: ${doc.slug}`)
+          } catch (error) {
+            payload.logger.error(`Failed to revalidate storefront ${doc.slug}: ${error}`)
+          }
         }
 
-        try {
-          // Construct the revalidation URL
-          const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-          const revalidateUrl = `${baseURL}/api/revalidate`
+        // Revalidate old path if storefront was unpublished
+        if (previousDoc?.isActive && !doc.isActive) {
+          const oldPath = `/${previousDoc.slug}`
+          const oldTag = `storefront-${previousDoc.slug}`
+          payload.logger.info(`Revalidating old storefront path (unpublished): ${oldPath}`)
 
-          console.log(`[Storefronts Hook] Triggering revalidation for slug="${doc.slug}" at ${revalidateUrl}`)
-
-          // Trigger on-demand revalidation in the background
-          // Don't await this - we don't want to block the CMS save operation
-          fetch(revalidateUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              secret: process.env.REVALIDATION_SECRET,
-              slug: doc.slug,
-              type: 'storefront'
-            })
-          })
-            .then(async (response) => {
-              if (response.ok) {
-                const result = await response.json()
-                console.log(`[Storefronts Hook] Revalidation successful:`, result)
-              } else {
-                const errorText = await response.text()
-                console.error(`[Storefronts Hook] Revalidation failed:`, response.status, errorText)
-              }
-            })
-            .catch((error) => {
-              console.error(`[Storefronts Hook] Revalidation request error:`, error)
-            })
-
-          console.log(`[Storefronts Hook] Revalidation request sent (background)`)
-
-        } catch (error) {
-          // Log the error but don't throw - we don't want revalidation failures to block saves
-          console.error(`[Storefronts Hook] Error during revalidation:`, error)
+          try {
+            const { revalidateTag, revalidatePath } = require('next/cache')
+            revalidateTag(oldTag)
+            revalidatePath(oldPath, 'page')
+            revalidatePath(`${oldPath}/contact`, 'page')
+          } catch (error) {
+            payload.logger.error(`Failed to revalidate old path ${oldPath}: ${error}`)
+          }
         }
 
         return doc

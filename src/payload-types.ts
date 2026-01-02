@@ -2675,6 +2675,18 @@ export interface Storefront {
     scheduleLink: string;
   };
   /**
+   * Trust/credibility banner items displayed at the bottom of contact section (appears as: Item 1 | Item 2 | Item 3)
+   */
+  trustBanner?:
+    | {
+        /**
+         * Trust banner item text (e.g., "95+ Years Experience", "Certified Kawai Specialists")
+         */
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * Service area information enables ranking in multiple cities without physical locations
    */
   serviceAreaCoverage: {
@@ -4403,6 +4415,12 @@ export interface StorefrontsSelect<T extends boolean = true> {
         directionsLink?: T;
         scheduleText?: T;
         scheduleLink?: T;
+      };
+  trustBanner?:
+    | T
+    | {
+        text?: T;
+        id?: T;
       };
   serviceAreaCoverage?:
     | T

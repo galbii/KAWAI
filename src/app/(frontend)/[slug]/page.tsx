@@ -15,6 +15,7 @@ import type { HomePageData } from "@/lib/types/homepage";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from 'next';
+import { unstable_cache } from 'next/cache';
 
 /**
  * Transform raw Payload storefront data into structured HomePageData format
@@ -40,7 +41,8 @@ function transformStorefrontData(rawData: any): HomePageData | null {
       hours: rawData.hours,
       features: rawData.features,
       mapApiKey: rawData.mapApiKey,
-      showroomCtas: rawData.showroomCtas
+      showroomCtas: rawData.showroomCtas,
+      trustBanner: rawData.trustBanner
     },
     pianoCollectionSection: {
       collectionSectionHeader: rawData.collectionSectionHeader,
@@ -220,6 +222,19 @@ function ContactFormSkeleton() {
   );
 }
 
+// Cached storefront fetcher with proper Next.js cache tags
+// This allows revalidateTag() to work properly
+function getCachedStorefront(slug: string) {
+  return unstable_cache(
+    async () => getStorefrontBySlugDirect(slug),
+    [`storefront-${slug}`],
+    {
+      tags: [`storefront-${slug}`],
+      revalidate: 3600 // 1 hour fallback
+    }
+  )()
+}
+
 // Server Component that fetches storefront data and homepage data for piano gallery
 async function StorefrontContent({ slug }: { slug: string }) {
   let storefrontData: HomePageData | null = null;
@@ -227,9 +242,9 @@ async function StorefrontContent({ slug }: { slug: string }) {
   let rawStorefrontData: any = null;
 
   try {
-    // ✅ FIX: Use direct Payload access instead of HTTP fetch
-    // This works during build time when the dev server isn't running
-    rawStorefrontData = await getStorefrontBySlugDirect(slug);
+    // ✅ FIX: Use cached fetch with proper tags for revalidation
+    // This works during build time AND allows revalidation via tags
+    rawStorefrontData = await getCachedStorefront(slug);
 
     // If storefront doesn't exist or is inactive, show 404
     if (!rawStorefrontData) {
@@ -237,8 +252,14 @@ async function StorefrontContent({ slug }: { slug: string }) {
       notFound();
     }
 
+    // Debug: Log raw hours data from database
+    console.log(`[DEBUG] Raw hours from DB for "${slug}":`, JSON.stringify(rawStorefrontData?.hours, null, 2))
+
     // Transform raw Payload data into structured format
     storefrontData = transformStorefrontData(rawStorefrontData);
+
+    // Debug: Log transformed hours data
+    console.log(`[DEBUG] Transformed hours for "${slug}":`, JSON.stringify(storefrontData?.showroomSection?.hours, null, 2))
 
     // Fetch HomePage data for piano gallery and fallbacks using direct access
     const homePageData = await getHomePageDataDirect();

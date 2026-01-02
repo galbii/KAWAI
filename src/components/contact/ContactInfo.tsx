@@ -1,7 +1,8 @@
+import React from 'react';
 import Link from 'next/link';
-import { 
-  MapPinIcon, 
-  PhoneIcon, 
+import {
+  MapPinIcon,
+  PhoneIcon,
   ClockIcon,
   UserGroupIcon,
   WrenchScrewdriverIcon,
@@ -44,7 +45,12 @@ const DEFAULT_CONTACT_INFO_DATA: ShowroomSectionData = {
     directionsLink: "https://maps.google.com/?q=Lake+St.+Louis+MO",
     scheduleText: "Schedule Visit",
     scheduleLink: "/contact/schedule-visit"
-  }
+  },
+  trustBanner: [
+    { text: '95+ Years Experience' },
+    { text: 'Certified Kawai Specialists' },
+    { text: "Missouri's Trusted Dealer" }
+  ]
 };
 
 // Helper function to get the appropriate icon for features
@@ -195,16 +201,21 @@ export function ContactInfo({ data = DEFAULT_CONTACT_INFO_DATA }: ContactInfoPro
           </div>
         </div>
 
-        {/* Trust Banner */}
-        <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-          <div className="flex justify-center items-center space-x-8 opacity-70">
-            <div className="text-sm text-kawai-black/60">95+ Years Experience</div>
-            <div className="w-px h-6 bg-kawai-black/20"></div>
-            <div className="text-sm text-kawai-black/60">Certified Kawai Specialists</div>
-            <div className="w-px h-6 bg-kawai-black/20"></div>
-            <div className="text-sm text-kawai-black/60">Missouri's Trusted Dealer</div>
+        {/* Trust Banner - Dynamic from CMS */}
+        {data.trustBanner && data.trustBanner.length > 0 && (
+          <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+            <div className="flex justify-center items-center space-x-8 opacity-70 flex-wrap gap-4">
+              {data.trustBanner.map((item, index) => (
+                <React.Fragment key={index}>
+                  {index > 0 && (
+                    <div className="w-px h-6 bg-kawai-black/20 hidden sm:block"></div>
+                  )}
+                  <div className="text-sm text-kawai-black/60">{item.text}</div>
+                </React.Fragment>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );

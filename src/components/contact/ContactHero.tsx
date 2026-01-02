@@ -27,7 +27,10 @@ const DEFAULT_SHOWROOM_DATA: ShowroomSectionData = {
   }
 };
 
-export function ContactHero({ data = DEFAULT_SHOWROOM_DATA }: ContactHeroProps) {
+export function ContactHero({
+  data = DEFAULT_SHOWROOM_DATA,
+  establishedText
+}: ContactHeroProps & { establishedText?: string }) {
   // Remove "Kawai" from the beginning of the storefront name
   const displayName = data.showroomInfo.name.replace(/^Kawai\s+/i, '');
 
@@ -87,9 +90,9 @@ export function ContactHero({ data = DEFAULT_SHOWROOM_DATA }: ContactHeroProps) 
             </div>
           </div>
 
-          {/* Est 1927 - Centered below everything */}
+          {/* Established Text - Centered below everything (from CMS or default) */}
           <p className="text-base sm:text-lg md:text-xl font-light text-kawai-red drop-shadow-xl text-center tracking-wider">
-            Est. 1927
+            {establishedText || 'Est. 1927'}
           </p>
         </div>
       </div>

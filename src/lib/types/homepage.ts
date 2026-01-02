@@ -41,6 +41,10 @@ export interface ShowroomCtas {
   scheduleLink: string
 }
 
+export interface TrustBannerItem {
+  text: string
+}
+
 export interface ShowroomSectionData {
   sectionHeader: string
   showroomTitle: string
@@ -50,6 +54,7 @@ export interface ShowroomSectionData {
   features: ShowroomFeature[]
   mapApiKey?: string
   showroomCtas: ShowroomCtas
+  trustBanner?: TrustBannerItem[]
 }
 
 export interface FeaturedVideo {
@@ -219,7 +224,12 @@ export const DEFAULT_SHOWROOM_DATA: ShowroomSectionData = {
     directionsLink: "https://maps.google.com/?q=Lake+St.+Louis+MO",
     scheduleText: "Schedule Visit",
     scheduleLink: "/contact/schedule-visit"
-  }
+  },
+  trustBanner: [
+    { text: '95+ Years Experience' },
+    { text: 'Certified Kawai Specialists' },
+    { text: "Missouri's Trusted Dealer" }
+  ]
 }
 
 export const DEFAULT_PIANO_COLLECTION_DATA: PianoCollectionSectionData = {

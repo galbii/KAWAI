@@ -648,8 +648,14 @@ export async function getStorefrontBySlugDirect(slug: string): Promise<any | nul
         isActive: { equals: true }
       },
       depth: 3,
-      limit: 1
+      limit: 1,
+      // Disable Next.js caching for this query to ensure fresh data
+      // This is necessary because revalidatePath may not clear Payload query cache
+      overrideAccess: false,
+      draft: false
     })
+
+    console.log(`[Payload Direct] Fetching storefront "${slug}" - Hours from DB:`, result.docs[0]?.hours?.slice(0, 2))
 
     return result.docs[0] || null
   } catch (error) {
