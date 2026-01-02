@@ -10,7 +10,7 @@ import { HeritageSection } from "@/components/homepage/heritage-section";
 import { InnovationSection } from "@/components/homepage/innovation-section";
 import { SoundQualitySection } from "@/components/homepage/sound-quality-section";
 import { FAQSection } from "@/components/homepage/faq-section";
-import { PianoKeyboardDivider } from "@/components/ui/PianoKeyboardDivider";
+import { SimpleDivider } from "@/components/ui/SimpleDivider";
 import { getHomePageDataDirect } from "@/lib/payload-direct";
 import type { HomePageData } from "@/lib/types/homepage";
 import { Suspense } from "react";
@@ -138,17 +138,9 @@ function PianoGallerySkeleton() {
   );
 }
 
-function PianoKeyboardSkeleton() {
+function SimpleDividerSkeleton() {
   return (
-    <section className="bg-kawai-black h-16 sm:h-20 md:h-24 lg:h-28 animate-pulse">
-      <div className="container mx-auto px-4 h-full">
-        <div className="flex justify-center gap-1 h-full">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="h-full w-12 bg-gray-300/20 rounded-b"></div>
-          ))}
-        </div>
-      </div>
-    </section>
+    <div className="w-full h-0.5 bg-gray-300/50 animate-pulse" />
   );
 }
 
@@ -234,8 +226,8 @@ async function HomePageContent() {
       {/* Hero Section */}
       <HomeHero />
 
-      {/* Piano Keyboard Divider - Brand Element */}
-      <PianoKeyboardDivider />
+      {/* Brand Divider */}
+      <SimpleDivider />
 
       {/* News Carousel Section */}
       <NewsCarousel {...(homePageData?.newsCarouselSection && { data: homePageData.newsCarouselSection })} />
@@ -273,7 +265,7 @@ export default function Home() {
       <Suspense fallback={
         <div className="min-h-screen">
           <HeroSkeleton />
-          <PianoKeyboardSkeleton />
+          <SimpleDividerSkeleton />
           <NewsCarouselSkeleton />
           <DealerLocationsSkeleton />
           <PianoCollectionSkeleton />
