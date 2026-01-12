@@ -40,6 +40,27 @@ interface ArtistProfilesProps {
 
 // Artist-specific achievements based on research
 const ARTIST_ACHIEVEMENTS: Record<string, string[]> = {
+  'Krista Marina': [
+    'Alternative R&B/Pop artist blending jazz, blues, and Middle Eastern soul influences',
+    'Collaborated with Arc North on "Meant To Be" - over 30 million Spotify streams',
+    'UCLA graduate in Music Business and Communication',
+    'Lead singer, keyboardist, and cajon player - performed at iconic venues including the Troubadour and Viper Room',
+    'Released debut EP "Bittersweet" (2016) - wrote and co-produced',
+    'Written music for networks including CBS',
+    'Collaborated with creators Tim Atlas, Jorg Huttner, and Bei Ru (Diaspora Dreams, 2022)',
+    'Starred in and composed original music for feature film (2024-2025)',
+    'Currently recording first full-length solo album (2026)'
+  ],
+  'Abi Carter': [
+    'Winner of American Idol Season 22 (2024)',
+    'Released debut album "ghosts in the backyard" (2024) - wrote every song on the 10-track LP',
+    'Near-virtuosic piano skill infused into every aspect of her music-making process',
+    'Coachella Valley native raised in a musical household as second-oldest of seven kids',
+    'Genre-blending artist embracing indie-pop, folk, and cinematic drama',
+    'Influences include Phoebe Bridgers, Manchester Orchestra, Gracie Abrams, and Renee Rapp',
+    'Known for raw earnestness and performing from the very bottom of her soul',
+    'Rare crossover artist with natural talent and technical skill to back it up'
+  ],
   'David Snyder': [
     'Raised in rural North Dakota, now based in Los Angeles',
     'Over 12 years of classical training creating breathtaking solo piano and instrumental tracks',

@@ -66,6 +66,26 @@ export const PERFORMANCES: Performance[] = [
       tiktok: 'https://www.tiktok.com/@david_msnyder'
     }
   },
+  {
+    id: 'thu-2',
+    day: 'thursday',
+    date: 'Thursday, January 22, 2026',
+    time: '3:30 PM',
+    artistName: 'Abi Carter',
+    performanceType: 'Solo',
+    description: 'American Idol Season 22 winner performing genre-blending indie-pop and folk with virtuosic piano artistry',
+    startDateTime: '2026-01-22T15:30:00-08:00',
+    endDateTime: '2026-01-22T16:15:00-08:00',
+    genre: 'Indie-Pop/Folk',
+    artistImage: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/%40mackenzieryanphoto-09201%5B34%5D.jpg.png',
+    artistBio: 'After winning American Idol Season 22, Coachella Valley native Abi Carter officially introduced herself as a confident, layered artist with her 2024 album "ghosts in the backyard." The second-oldest in a family of seven kids, Abi was raised in a musical household and learned piano, which changed the trajectory of her life. Her near-virtuosic skill on the instrument remains infused into every aspect of her music-making process. Abi embraces influences like Phoebe Bridgers, Manchester Orchestra, and Gracie Abrams, playing with indie-pop, folk, and cinematic drama throughout her discography.',
+    artistSlug: 'abi-carter',
+    socialLinks: {
+      instagram: 'https://www.instagram.com/abicartermusic',
+      youtube: 'https://www.youtube.com/@Abicartermusic',
+      spotify: 'https://open.spotify.com/artist/6ryJRp2gIl77hK36D8tz2m'
+    }
+  },
 
   // FRIDAY, JANUARY 23
   {
@@ -129,6 +149,26 @@ export const PERFORMANCES: Performance[] = [
   },
   {
     id: 'sat-2',
+    day: 'saturday',
+    date: 'Saturday, January 24, 2026',
+    time: '1:00 PM',
+    artistName: 'Krista Marina',
+    performanceType: 'Solo',
+    description: 'Alternative R&B/Pop performance blending jazz, blues, and Middle Eastern soul on the expressive Kawai piano',
+    startDateTime: '2026-01-24T13:00:00-08:00',
+    endDateTime: '2026-01-24T13:45:00-08:00',
+    genre: 'Alternative R&B/Pop',
+    artistImage: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/_MG_0968.JPG',
+    artistBio: 'Krista Marina is an alternative R&B/Pop singer, songwriter and producer whose music displays jazz, blues, and hints of the Middle Eastern soul she grew up with, crafting a sound that is familiar yet fresh. Raised in an Armenian household, Krista developed an ear for dynamic vocals and appealing melodies. Her interest in songwriting sparked from the various music genres she explored growing up, with artists like Amy Winehouse, Alicia Keys, and H.E.R. among her inspirations, though she maintains an original style evident in her music.',
+    artistSlug: 'krista-marina',
+    socialLinks: {
+      spotify: 'https://open.spotify.com/artist/7gh5SnyMRtWO5mzAThI4AB',
+      youtube: 'https://www.youtube.com/channel/UC0BEb1bKsrOyuL_MKcAIZsw',
+      instagram: 'https://instagram.com/kristamarina_'
+    }
+  },
+  {
+    id: 'sat-3',
     day: 'saturday',
     date: 'Saturday, January 24, 2026',
     time: '3:30 PM',

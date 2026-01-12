@@ -77,7 +77,7 @@ async function seedPianosPage(payload: import('payload').Payload): Promise<void>
     payload.logger.info('🎉 PianosPage seeding completed!')
 
   } catch (error) {
-    payload.logger.error('❌ PianosPage seeding failed:', error)
+    payload.logger.error(`❌ PianosPage seeding failed: ${error instanceof Error ? error.message : String(error)}`)
     console.error('Full error details:', error)
     if (error instanceof Error) {
       console.error('Error message:', error.message)

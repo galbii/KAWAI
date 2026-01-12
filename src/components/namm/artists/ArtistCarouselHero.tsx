@@ -27,7 +27,9 @@ const HERO_IMAGE_OVERRIDES: Record<string, string> = {
   'David Snyder': 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/David%20Snyder%20Photo%202.jpg',
   'Sergio De Miguel': 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/sergio/sergiohero.jpg',
   'Artur Zakiyan': 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/artur/Artur%20Zakiyan%20Kawai-1%202.jpg',
-  'Alec Van Khajadourian': 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/alec/Screenshot%202025-12-04%20at%2012.24.35%20AM.png'
+  'Alec Van Khajadourian': 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/alec/Screenshot%202025-12-04%20at%2012.24.35%20AM.png',
+  'Krista Marina': 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/_MG_0968.JPG',
+  'Abi Carter': 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/%40mackenzieryanphoto-09201%5B34%5D.jpg.png'
 }
 
 // Get unique artists from performances data

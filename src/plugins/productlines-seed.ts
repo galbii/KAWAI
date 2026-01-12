@@ -52,12 +52,12 @@ async function seedProductLines(payload: import('payload').Payload): Promise<voi
 
         payload.logger.info(`✅ Created: ${result.name} (${result.category})`)
       } catch (error) {
-        payload.logger.error(`❌ Failed to create ${productLineData.name}:`, error)
+        payload.logger.error(`❌ Failed to create ${productLineData.name}: ${error instanceof Error ? error.message : String(error)}`)
       }
     }
 
     payload.logger.info('🎉 Product Lines seeding completed!')
   } catch (error) {
-    payload.logger.error('❌ Product Lines seeding failed:', error)
+    payload.logger.error(`❌ Product Lines seeding failed: ${error instanceof Error ? error.message : String(error)}`)
   }
 }

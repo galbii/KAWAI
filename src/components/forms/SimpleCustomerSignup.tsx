@@ -9,6 +9,7 @@ import { useFormState } from 'react-dom'
 import { submitSimpleCustomerSignup } from '@/lib/actions/simple-customer-signup'
 import { UserIcon, EnvelopeIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import Image from 'next/image'
+import { trackLead } from '@/components/MetaPixel'
 
 /**
  * Simple Customer Signup Form Component - Modal Popup
@@ -128,8 +129,16 @@ export function SimpleCustomerSignup({
     if (formState?.success) {
       setIsSubmitted(true)
       reset() // Reset form fields
+
+      // Fire Meta Pixel Lead event
+      trackLead({
+        content_name: 'Simple Customer Signup',
+        content_category: storefrontSlug,
+        value: 1.0, // Estimated lead value
+        currency: 'USD'
+      })
     }
-  }, [formState, reset])
+  }, [formState, reset, storefrontSlug])
 
   // Don't render anything if modal is not open
   if (!isOpen) {

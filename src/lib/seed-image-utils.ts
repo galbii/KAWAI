@@ -74,7 +74,7 @@ export async function uploadImageToMedia(
       filename: uploadResult.filename || filename
     }
   } catch (error) {
-    payload.logger.error(`❌ Failed to upload ${filename}:`, error)
+    payload.logger.error(`❌ Failed to upload ${filename}: ${error instanceof Error ? error.message : String(error)}`)
     return null
   }
 }
@@ -161,7 +161,7 @@ export async function getOrCreateFallbackImage(payload: Payload): Promise<string
     payload.logger.warn('⚠️ No fallback image found, proceeding without fallback')
     return null
   } catch (error) {
-    payload.logger.error('❌ Error getting fallback image:', error)
+    payload.logger.error(`❌ Error getting fallback image: ${error instanceof Error ? error.message : String(error)}`)
     return null
   }
 }
