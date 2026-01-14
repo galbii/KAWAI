@@ -1,110 +1,135 @@
-# KAWAI Piano Database Migration Scripts
+# KAWAI Piano Scripts & Utilities
 
-This directory contains scripts for migrating piano data from the WooCommerce CSV export to Payload CMS.
+This directory contains scripts for database operations, integrations, data processing, and testing.
 
-## Quick Start
+---
 
-### 1. Install Dependencies
-```bash
-node scripts/install-migration-deps.js
+## Directory Structure
+
+```
+scripts/
+├── migration/        # Data migration scripts
+├── shopify/          # Shopify integration & testing
+├── artists/          # Artist data scraping & validation
+├── seeding/          # Database seeding scripts
+├── deployment/       # Deployment & setup scripts
+├── data-processing/  # Python data processing tools
+└── testing/          # Integration & validation tests
 ```
 
-### 2. Run Migration (Dry Run First)
-```bash
-# Test the migration without writing data
-DRY_RUN=true node scripts/migrate-csv-to-products.js
+---
 
-# Run the actual migration
-node scripts/migrate-csv-to-products.js
+## Categories
+
+### Migration (`scripts/migration/`)
+Database migration tools for importing data into Payload CMS.
+
+| Script | Description |
+|--------|-------------|
+| `migrate-csv-to-products.js` | Main CSV to Products migration |
+| `install-migration-deps.js` | Install migration dependencies |
+| `create-dealer-locations.js` | Create dealer location records |
+
+**Usage:**
+```bash
+# Dry run first
+DRY_RUN=true node scripts/migration/migrate-csv-to-products.js
+
+# Actual migration
+node scripts/migration/migrate-csv-to-products.js
 ```
 
-## Files Overview
+### Shopify (`scripts/shopify/`)
+Shopify Storefront & Admin API integration scripts.
 
-- **`migrate-csv-to-products.js`** - Main migration script
-- **`install-migration-deps.js`** - Dependency installer
-- **`../MIGRATION_ANALYSIS_REPORT.md`** - Comprehensive analysis report
+| Script | Description |
+|--------|-------------|
+| `test-shopify.ts` | Basic Shopify connection test |
+| `test-shopify-utilities.ts` | Utility function tests |
+| `test-shopify-cart.ts` | Cart API testing |
+| `test-shopify-integration.ts` | Full integration test |
+| `demo-shopify-integration.ts` | Demo integration flow |
+| `diagnose-shopify-products.ts` | Product diagnosis tool |
 
-## Migration Features
+**Usage:**
+```bash
+bun run scripts/shopify/test-shopify.ts
+```
 
-✅ **Safe Migration**
-- Dry run mode for testing
-- Batch processing to prevent overwhelming the database
-- Comprehensive error handling and logging
-- Duplicate prevention
+### Artists (`scripts/artists/`)
+Artist data scraping and validation tools.
 
-✅ **Data Processing**  
-- Automatic product line creation and linking
-- Price extraction from HTML descriptions
-- Feature parsing from description lists
-- Finish options parsing from attributes
-- Dimension extraction from attributes
+| Script | Description |
+|--------|-------------|
+| `scrape-artist-bios.ts` | Scrape artist biographies |
+| `scrape-artists.js` | General artist scraping |
+| `check-artist.cjs` | Validate artist data |
+| `check-social-links.cjs` | Validate social media links |
 
-✅ **Quality Assurance**
-- Validates data before insertion
-- Handles malformed CSV data gracefully
-- Provides detailed progress reporting
-- Creates proper slugs and relationships
+### Seeding (`scripts/seeding/`)
+Database seeding scripts for initial data setup.
 
-## Configuration Options
+| Script | Description |
+|--------|-------------|
+| `seed-pianos-page.js` | Seed pianos page content |
 
-### Environment Variables
-- `DRY_RUN=true` - Test mode, no database writes
-- `BATCH_SIZE=10` - Number of products to process per batch
+### Deployment (`scripts/deployment/`)
+Deployment and environment setup scripts.
 
-### Script Configuration
-Edit the constants at the top of `migrate-csv-to-products.js`:
-- `CSV_FILE_PATH` - Path to the CSV file
-- `BATCH_SIZE` - Batch processing size
-- `DRY_RUN` - Enable/disable dry run mode
+| Script | Description |
+|--------|-------------|
+| `create-dallas-signature.sh` | Create Dallas signature page |
 
-## Expected Results
+### Data Processing (`scripts/data-processing/`)
+Python scripts for data analysis and processing.
 
-The migration will create:
-- **Product Lines**: ~15-20 automatic product lines based on piano series
-- **Products**: ~500-800 piano products with full specifications
-- **Categories**: Proper categorization (digital, grand, upright, hybrid)
-- **Relationships**: Linked products to appropriate product lines
+| Script | Description |
+|--------|-------------|
+| `comprehensive_catalog_analysis_first_half.py` | Catalog analysis |
+| `extract_products.py` | Product data extraction |
 
-## Troubleshooting
+**Usage:**
+```bash
+python scripts/data-processing/extract_products.py
+```
 
-### Common Issues
-1. **CSV file not found** - Check the `CSV_FILE_PATH` constant
-2. **Permission errors** - Ensure Node.js has read access to the CSV file
-3. **Database connection issues** - Verify Payload CMS is properly configured
-4. **Memory issues** - Reduce `BATCH_SIZE` if processing large datasets
+### Testing (`scripts/testing/`)
+Integration and validation test scripts.
 
-### Logs and Monitoring
-The script provides detailed logging including:
-- Progress tracking with batch counts
-- Success/error/skip statistics
-- Individual product processing status
-- Final migration summary
+| Script | Description |
+|--------|-------------|
+| `test-calendly-integration.js` | Calendly integration test |
+| `test-calendly-simulation.cjs` | Calendly event simulation |
+| `test-calendly-tracking.html` | Browser-based tracking test |
+| `test-contact-submission.js` | Contact form submission test |
+| `test-migration-api.js` | Migration API test |
+| `validate-integration.js` | General integration validation |
+| `validate-tracking-implementation.cjs` | Analytics tracking validation |
 
-### Recovery
-If the migration fails partway through:
-1. Check the logs for the last successfully processed product
-2. The script tracks processed models to avoid duplicates
-3. Simply re-run the script - it will skip already processed items
+---
 
-## Performance
+## Environment Variables
 
-- **Processing Speed**: ~50-100 products per minute
-- **Memory Usage**: Low (thanks to batch processing)
-- **Database Load**: Moderate (configurable batch sizes)
-- **Total Time**: 10-15 minutes for full dataset
+Scripts may require these environment variables:
 
-## Support
+```bash
+# Database
+DATABASE_URI=mongodb+srv://...
 
-For migration issues or questions:
-1. Check the detailed analysis in `MIGRATION_ANALYSIS_REPORT.md`
-2. Review the script logs for specific error messages
-3. Test with `DRY_RUN=true` to validate data parsing
-4. Adjust batch sizes if experiencing performance issues
+# Shopify
+SHOPIFY_STORE_DOMAIN=your-store.myshopify.com
+SHOPIFY_STOREFRONT_ACCESS_TOKEN=...
+SHOPIFY_ADMIN_ACCESS_TOKEN=...
 
-## Safety Reminders
+# Payload CMS
+PAYLOAD_SECRET=...
+```
 
-⚠️ **Always backup your database before running the migration**
+---
 
-⚠️ **Test in a development environment first**
+## Notes
 
-⚠️ **Run with DRY_RUN=true initially to validate data parsing**
+- **Bun Runtime**: Use `bun run` for TypeScript files
+- **Node Runtime**: Use `node` for JavaScript files
+- **Python**: Use `python` for data processing scripts
+- **Dry Run**: Always test migrations with `DRY_RUN=true` first

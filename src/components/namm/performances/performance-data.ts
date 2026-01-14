@@ -148,6 +148,25 @@ export const PERFORMANCES: Performance[] = [
     }
   },
   {
+    id: 'sat-josh-levy',
+    day: 'saturday',
+    date: 'Saturday, January 24, 2026',
+    time: '12:00 PM',
+    artistName: 'Josh Levy',
+    performanceType: 'Solo Piano',
+    description: 'Grammy-nominated pianist and Big Bad Voodoo Daddy keyboardist performing swing and jazz piano showcasing the expressive power of Kawai instruments',
+    startDateTime: '2026-01-24T12:00:00-08:00',
+    endDateTime: '2026-01-24T12:45:00-08:00',
+    genre: 'Swing/Jazz',
+    artistImage: 'https://pub-486ee03121a24ede8b51409434e22709.r2.dev/artists/Josh%20Levy.jpg',
+    artistBio: 'With Big Bad Voodoo Daddy, Josh Levy has traveled the world, appeared before millions of people, and worked with many of the industry\'s finest musicians, engineers, producers, and conductors. Notable appearances include the Super Bowl XXXIII Halftime Show, The Tonight Show with Jay Leno, Late Night with Conan O\'Brien, and concerts with The Los Angeles Philharmonic, The National Symphony Orchestra at Kennedy Center, and The Hollywood Bowl Orchestra.',
+    artistSlug: 'josh-levy',
+    socialLinks: {
+      website: 'https://www.joshlevymusic.com/',
+      facebook: 'https://www.facebook.com/joshlevymusic'
+    }
+  },
+  {
     id: 'sat-2',
     day: 'saturday',
     date: 'Saturday, January 24, 2026',

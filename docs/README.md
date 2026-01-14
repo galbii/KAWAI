@@ -1,125 +1,166 @@
 # KAWAI Piano Website Documentation
 
-> **Comprehensive documentation for the KAWAI Piano retail platform**  
+> **Comprehensive documentation for the KAWAI Piano retail platform**
 > Built with Next.js 15, Payload CMS 3.52+, and advanced media optimization
 
-## 📚 Documentation Index
+---
 
-### **🏗️ System Architecture & Setup**
-- **[CLAUDE.md](./CLAUDE.md)** - Main developer guide and system overview ⭐
-- **[MULTI-SITE-SYSTEM.md](./MULTI-SITE-SYSTEM.md)** - Multi-site architecture documentation
-- **[AUTO_PRODUCT_GENERATION_ARCHITECTURE.md](./AUTO_PRODUCT_GENERATION_ARCHITECTURE.md)** - Product auto-generation system
+## Quick Navigation
 
-### **🎹 Feature Documentation** 
-- **[LANDINGPAGES.md](./LANDINGPAGES.md)** - Campaign landing pages system ⭐
-- **[HEADER_SYSTEM_DOCUMENTATION.md](./HEADER_SYSTEM_DOCUMENTATION.md)** - Navigation and header system
-- **[NAVIGATION_CONTEXT_SYSTEM.md](./NAVIGATION_CONTEXT_SYSTEM.md)** - Context-aware navigation
-
-### **🖼️ Media & Styling**
-- **[MEDIA_SYSTEM_ARCHITECTURE.md](./MEDIA_SYSTEM_ARCHITECTURE.md)** - R2 media optimization system
-- **[MEDIA_RENDERING_ARCHITECTURE.md](./MEDIA_RENDERING_ARCHITECTURE.md)** - Media rendering components
-- **[medias3.md](./medias3.md)** - S3/R2 storage configuration
-- **[KAWAI_STYLING_GUIDE.md](./KAWAI_STYLING_GUIDE.md)** - Brand styling guidelines
-- **[STYLING_QUICK_REFERENCE.md](./STYLING_QUICK_REFERENCE.md)** - Quick styling reference
-
-### **📊 Data Management & Migration**
-- **[MIGRATION_ANALYSIS_REPORT.md](./MIGRATION_ANALYSIS_REPORT.md)** - Data migration analysis
-- **[MIGRATION_API_GUIDE.md](./MIGRATION_API_GUIDE.md)** - Migration API documentation
-- **[migration-strategy.md](./migration-strategy.md)** - Migration strategy guide
-- **[csv-migration-api.md](./csv-migration-api.md)** - CSV data migration API
-- **[KAWAI_PRODUCT_LINE_2024-2025.md](./KAWAI_PRODUCT_LINE_2024-2025.md)** - Product line specifications
-
-### **🔌 Integrations & APIs**
-- **[shopify-integration.md](./shopify-integration.md)** - Shopify commerce integration guide ⭐ NEW
-- **[CONSTANT_CONTACT_INTEGRATION.md](./CONSTANT_CONTACT_INTEGRATION.md)** - Email marketing integration
-- **[CONSTANT_CONTACT_API_GUIDE.md](./CONSTANT_CONTACT_API_GUIDE.md)** - Constant Contact API reference
-- **[CONSTANT_CONTACT_SETUP.md](./CONSTANT_CONTACT_SETUP.md)** - Constant Contact setup guide
-- **[README_CONSTANT_CONTACT.md](./README_CONSTANT_CONTACT.md)** - Constant Contact overview
-- **[INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md)** - General integration guide
-- **[INTEGRATION_REPORT.md](./INTEGRATION_REPORT.md)** - Integration status report
-- **[CALENDLY_TRACKING_TEST_GUIDE.md](./CALENDLY_TRACKING_TEST_GUIDE.md)** - Calendly integration testing
-
-### **🏠 Content Management**
-- **[homepage-cms-implementation-guide.md](./homepage-cms-implementation-guide.md)** - Homepage CMS setup
-- **[copy-strategy-analysis.md](./copy-strategy-analysis.md)** - Content strategy analysis
-- **[CONVERSION_OPTIMIZATION_PLANS.md](./CONVERSION_OPTIMIZATION_PLANS.md)** - Conversion optimization
-
-### **🛠️ Development & Maintenance**
-- **[AGENT_COORDINATION.md](./AGENT_COORDINATION.md)** - Development agent coordination
-- **[cleanup-script.md](./cleanup-script.md)** - Cleanup and maintenance scripts
+| Category | Description | Path |
+|----------|-------------|------|
+| **Architecture** | System design, navigation, TypeScript | `docs/architecture/` |
+| **Media** | R2 storage, image optimization | `docs/media/` |
+| **Styling** | Brand guidelines, design system | `docs/styling/` |
+| **Integrations** | Shopify, Constant Contact, Calendly | `docs/integrations/` |
+| **Migration** | Data migration tools & guides | `docs/migration/` |
+| **SEO** | Search optimization, analytics, tracking | `docs/seo/` |
+| **Features** | Feature implementation docs | `docs/features/` |
+| **Campaigns** | NAMM, ES60, promotional pages | `docs/campaigns/` |
+| **CMS** | Content management guides | `docs/cms/` |
+| **Reference** | Product specs, data reference | `docs/reference/` |
+| **Internal** | Agent coordination, maintenance | `docs/internal/` |
+| **Presentations** | HTML presentations | `docs/presentations/` |
 
 ---
 
-## 🚀 Quick Start
+## Documentation Index
 
-### **New Developers**
-1. Start with **[CLAUDE.md](./CLAUDE.md)** for system overview
-2. Review **[LANDINGPAGES.md](./LANDINGPAGES.md)** for landing page system
-3. Check **[MEDIA_SYSTEM_ARCHITECTURE.md](./MEDIA_SYSTEM_ARCHITECTURE.md)** for media handling
+### Architecture (`docs/architecture/`)
+System design and core infrastructure documentation.
 
-### **Content Managers**
-1. Read **[LANDINGPAGES.md](./LANDINGPAGES.md)** for campaign creation
-2. Review **[homepage-cms-implementation-guide.md](./homepage-cms-implementation-guide.md)** for homepage management
-3. Check **[KAWAI_STYLING_GUIDE.md](./KAWAI_STYLING_GUIDE.md)** for brand guidelines
+- **[MULTI-SITE-SYSTEM.md](./architecture/MULTI-SITE-SYSTEM.md)** - Multi-site architecture
+- **[AUTO_PRODUCT_GENERATION_ARCHITECTURE.md](./architecture/AUTO_PRODUCT_GENERATION_ARCHITECTURE.md)** - Product auto-generation
+- **[HEADER_SYSTEM_DOCUMENTATION.md](./architecture/HEADER_SYSTEM_DOCUMENTATION.md)** - Navigation and header system
+- **[NAVIGATION_CONTEXT_SYSTEM.md](./architecture/NAVIGATION_CONTEXT_SYSTEM.md)** - Context-aware navigation
+- **[typescript.md](./architecture/typescript.md)** - TypeScript configuration guide
 
-### **System Administrators**
-1. Study **[MULTI-SITE-SYSTEM.md](./MULTI-SITE-SYSTEM.md)** for architecture
-2. Review **[MIGRATION_ANALYSIS_REPORT.md](./MIGRATION_ANALYSIS_REPORT.md)** for data management
-3. Check integration docs for third-party services
+### Media (`docs/media/`)
+Media system and asset optimization.
+
+- **[MEDIA_SYSTEM_ARCHITECTURE.md](./media/MEDIA_SYSTEM_ARCHITECTURE.md)** - R2 media optimization system
+- **[MEDIA_RENDERING_ARCHITECTURE.md](./media/MEDIA_RENDERING_ARCHITECTURE.md)** - Media rendering components
+- **[r2-storage-config.md](./media/r2-storage-config.md)** - Cloudflare R2 storage configuration
+
+### Styling (`docs/styling/`)
+Brand guidelines and design system.
+
+- **[KAWAI_STYLING_GUIDE.md](./styling/KAWAI_STYLING_GUIDE.md)** - Brand styling guidelines
+- **[STYLING_QUICK_REFERENCE.md](./styling/STYLING_QUICK_REFERENCE.md)** - Quick styling reference
+
+### Integrations (`docs/integrations/`)
+Third-party service integrations.
+
+#### Shopify (`docs/integrations/shopify/`)
+- **[shopify-integration.md](./integrations/shopify/shopify-integration.md)** - Shopify commerce integration guide
+- **[shopify-admin-api-integration.md](./integrations/shopify/shopify-admin-api-integration.md)** - Admin API with OAuth
+- **[webhook-shopify.md](./integrations/shopify/webhook-shopify.md)** - Webhook integration
+
+#### Constant Contact (`docs/integrations/constant-contact/`)
+- **[README.md](./integrations/constant-contact/README.md)** - Overview
+- **[integration.md](./integrations/constant-contact/integration.md)** - Integration setup
+- **[api-guide.md](./integrations/constant-contact/api-guide.md)** - API reference
+- **[setup.md](./integrations/constant-contact/setup.md)** - Setup guide
+
+#### Calendly (`docs/integrations/calendly/`)
+- **[CALENDLY_TRACKING_TEST_GUIDE.md](./integrations/calendly/CALENDLY_TRACKING_TEST_GUIDE.md)** - Calendly integration testing
+
+#### General
+- **[INTEGRATION_GUIDE.md](./integrations/INTEGRATION_GUIDE.md)** - General integration guide
+- **[INTEGRATION_REPORT.md](./integrations/INTEGRATION_REPORT.md)** - Integration status report
+
+### Migration (`docs/migration/`)
+Data migration tools and guides.
+
+- **[MIGRATION_ANALYSIS_REPORT.md](./migration/MIGRATION_ANALYSIS_REPORT.md)** - Data migration analysis
+- **[MIGRATION_API_GUIDE.md](./migration/MIGRATION_API_GUIDE.md)** - Migration API documentation
+- **[migration-strategy.md](./migration/migration-strategy.md)** - Migration strategy guide
+- **[csv-migration-api.md](./migration/csv-migration-api.md)** - CSV data migration API
+
+### SEO (`docs/seo/`)
+Search optimization and analytics.
+
+- **[piano-buyer-research-and-seo-strategy.md](./seo/piano-buyer-research-and-seo-strategy.md)** - SEO strategy research
+- **[piano-finder-page-strategy-2025.md](./seo/piano-finder-page-strategy-2025.md)** - Piano finder page strategy
+- **[SITEMAP_IMPLEMENTATION.md](./seo/SITEMAP_IMPLEMENTATION.md)** - Sitemap generation guide
+- **[GOOGLE_SEARCH_CONSOLE_QUICKSTART.md](./seo/GOOGLE_SEARCH_CONSOLE_QUICKSTART.md)** - GSC setup guide
+- **[CROSS_DOMAIN_TRACKING_SETUP.md](./seo/CROSS_DOMAIN_TRACKING_SETUP.md)** - Cross-domain tracking
+- **[COMPETITIVE_ANALYSIS_PIANO_FINDERS.md](./seo/COMPETITIVE_ANALYSIS_PIANO_FINDERS.md)** - Competitive analysis
+
+### Features (`docs/features/`)
+Feature implementation documentation.
+
+#### Signature Pages (`docs/features/signature-pages/`)
+- **[SIGNATURE2_IMPLEMENTATION_SUMMARY.md](./features/signature-pages/SIGNATURE2_IMPLEMENTATION_SUMMARY.md)** - Implementation overview
+- **[SIGNATURE2_TRACKING.md](./features/signature-pages/SIGNATURE2_TRACKING.md)** - Tracking system
+- **[SIGNATURE2_FINAL_SOLUTION.md](./features/signature-pages/SIGNATURE2_FINAL_SOLUTION.md)** - Final solution summary
+- **[SIGNATURE2_DOUBLE_FIRING_FIX.md](./features/signature-pages/SIGNATURE2_DOUBLE_FIRING_FIX.md)** - Double-firing fix
+- **[SIGNATURE2_HEADER_FOOTER_HIDING.md](./features/signature-pages/SIGNATURE2_HEADER_FOOTER_HIDING.md)** - Header/footer hiding
+
+#### Other Features
+- **[3D-VIEWER-FEATURE.md](./features/3D-VIEWER-FEATURE.md)** - 3D piano viewer
+- **[blog.md](./features/blog.md)** - Blog system documentation
+- **[ARTISTS_PAGE_SUMMARY.md](./features/ARTISTS_PAGE_SUMMARY.md)** - Artists page implementation
+
+### Campaigns (`docs/campaigns/`)
+Campaign and promotional page documentation.
+
+#### NAMM 2026 (`docs/campaigns/namm-2026/`)
+- **[namm-2026-seo-architecture.md](./campaigns/namm-2026/namm-2026-seo-architecture.md)** - NAMM 2026 SEO strategy
+- **[dealeremail.md](./campaigns/namm-2026/dealeremail.md)** - Dealer email template
+
+#### ES60 (`docs/campaigns/es60/`)
+- **[landing.md](./campaigns/es60/landing.md)** - ES60 landing page
+
+### CMS (`docs/cms/`)
+Content management guides.
+
+- **[homepage-cms-implementation-guide.md](./cms/homepage-cms-implementation-guide.md)** - Homepage CMS setup
+- **[copy-strategy-analysis.md](./cms/copy-strategy-analysis.md)** - Content strategy analysis
+- **[CONVERSION_OPTIMIZATION_PLANS.md](./cms/CONVERSION_OPTIMIZATION_PLANS.md)** - Conversion optimization
+
+### Reference (`docs/reference/`)
+Reference data and specifications.
+
+- **[KAWAI_PRODUCT_LINE_2024-2025.md](./reference/KAWAI_PRODUCT_LINE_2024-2025.md)** - Product line specifications
+
+### Internal (`docs/internal/`)
+Development and maintenance documentation.
+
+- **[AGENT_COORDINATION.md](./internal/AGENT_COORDINATION.md)** - Development agent coordination
+- **[cleanup-script.md](./internal/cleanup-script.md)** - Cleanup and maintenance scripts
+
+### Presentations (`docs/presentations/`)
+- **[luxury-seo-strategy-presentation.html](./presentations/luxury-seo-strategy-presentation.html)**
+- **[seo-strategy-presentation.html](./presentations/seo-strategy-presentation.html)**
 
 ---
 
-## 📖 Documentation Categories
+## Root Files
 
-| Category | Purpose | Key Files |
-|----------|---------|-----------|
-| **🏗️ Architecture** | System design and structure | CLAUDE.md, MULTI-SITE-SYSTEM.md |
-| **🎹 Features** | User-facing functionality | LANDINGPAGES.md, HEADER_SYSTEM_DOCUMENTATION.md |
-| **🖼️ Media** | Asset management and optimization | MEDIA_SYSTEM_ARCHITECTURE.md, medias3.md |
-| **📊 Data** | Database and content management | MIGRATION_*.md, csv-migration-api.md |
-| **🔌 Integration** | Third-party service connections | CONSTANT_CONTACT_*.md |
-| **🎨 Styling** | Design system and branding | KAWAI_STYLING_GUIDE.md |
+- **[CLAUDE.md](./CLAUDE.md)** - AI assistant development guide
+- **[README.md](./README.md)** - This file
 
 ---
 
-## 🔍 Finding What You Need
+## Getting Started
 
-### **By Task**
-- **Creating Landing Pages** → [LANDINGPAGES.md](./LANDINGPAGES.md)
-- **Managing Media** → [MEDIA_SYSTEM_ARCHITECTURE.md](./MEDIA_SYSTEM_ARCHITECTURE.md)
-- **Integrating Shopify** → [shopify-integration.md](./shopify-integration.md)
-- **Setting Up Email Marketing** → [CONSTANT_CONTACT_SETUP.md](./CONSTANT_CONTACT_SETUP.md)
-- **Understanding Architecture** → [CLAUDE.md](./CLAUDE.md)
-- **Migrating Data** → [MIGRATION_API_GUIDE.md](./MIGRATION_API_GUIDE.md)
+### For Developers
+1. Start with **[CLAUDE.md](./CLAUDE.md)** for development overview
+2. Review **[architecture/](./architecture/)** for system design
+3. Check **[media/](./media/)** for asset handling
 
-### **By Role**
-- **Frontend Developer** → CLAUDE.md, STYLING_QUICK_REFERENCE.md
-- **Backend Developer** → MULTI-SITE-SYSTEM.md, MIGRATION_ANALYSIS_REPORT.md
-- **Content Manager** → LANDINGPAGES.md, homepage-cms-implementation-guide.md
-- **DevOps/Admin** → medias3.md, INTEGRATION_GUIDE.md
+### For Content Managers
+1. Read **[cms/](./cms/)** for content management
+2. Review **[campaigns/](./campaigns/)** for campaign creation
+3. Check **[styling/](./styling/)** for brand guidelines
 
----
-
-## 🆕 Latest Updates
-
-- **shopify-integration.md** - NEW: Complete Shopify commerce integration guide (Dec 2024)
-- **LANDINGPAGES.md** - Comprehensive landing page system documentation
-- **CONSTANT_CONTACT_INTEGRATION.md** - Email marketing integration
-- **HEADER_SYSTEM_DOCUMENTATION.md** - Navigation system overhaul
-- **MIGRATION_API_GUIDE.md** - Enhanced data migration tools
+### For DevOps/Admin
+1. Study **[architecture/](./architecture/)** for system design
+2. Review **[migration/](./migration/)** for data management
+3. Check **[integrations/](./integrations/)** for third-party services
 
 ---
 
-## 💡 Contributing to Documentation
-
-When adding new documentation:
-1. Place files in the appropriate category folder
-2. Update this README.md index
-3. Follow existing naming conventions
-4. Include clear descriptions and examples
-5. Add cross-references to related docs
-
----
-
-*Last Updated: December 2024*  
+*Last Updated: January 2025*
 *System Version: Next.js 15 + Payload CMS 3.52+*

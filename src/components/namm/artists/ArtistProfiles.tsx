@@ -98,6 +98,16 @@ const ARTIST_ACHIEVEMENTS: Record<string, string[]> = {
     'Featured on World News Tonight, ABC, CBS, NBC, Fox, The Jennifer Hudson Show, UK\'s ClassicFM, The Today Show, and KTLA',
     'Performance videos viewed by millions on Instagram (@alecvanmusic)',
     'Born with perfect pitch, began exploring piano before he could walk and performing classical works by age 4'
+  ],
+  'Josh Levy': [
+    'Keyboardist and pianist for Big Bad Voodoo Daddy - traveled the world performing for millions',
+    'Super Bowl XXXIII Halftime Show performer',
+    'Featured on The Tonight Show with Jay Leno',
+    'Featured on Late Night with Conan O\'Brien',
+    'Performed with The Los Angeles Philharmonic',
+    'Performed with The National Symphony Orchestra at Kennedy Center',
+    'Performed with The Hollywood Bowl Orchestra',
+    'Worked with many of the industry\'s finest musicians, engineers, producers, and conductors'
   ]
 }
 
