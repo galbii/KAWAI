@@ -1,5 +1,5 @@
 import { UniversityClientWrapper } from './university-client-wrapper';
-import { getStorefrontBySlugDirect } from '@/lib/payload-direct';
+import { getStorefrontBySlugDirect } from '@/lib/payload/queries';
 import { notFound } from 'next/navigation';
 
 // Force dynamic rendering - this page needs the slug param which is only available at request time

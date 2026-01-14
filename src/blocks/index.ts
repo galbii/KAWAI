@@ -19,3 +19,7 @@ export { Columns } from './Columns'
 
 // Landing page specific blocks
 export { Hello } from './Hello'
+
+// Rich text content blocks (for blog posts)
+export { Banner } from './Banner/config'
+export { Code } from './Code/config'

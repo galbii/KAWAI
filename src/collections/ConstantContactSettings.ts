@@ -109,7 +109,7 @@ export const ConstantContactSettings: CollectionConfig = {
               required: true,
               admin: {
                 description: 'The redirect URI configured in your Constant Contact app',
-                placeholder: 'http://localhost:3000/api/auth/constantcontact/callback',
+                placeholder: 'http://localhost:3000/api/auth/constant-contact/callback',
               },
             },
             {

@@ -1,5 +1,5 @@
 import type { Config, Plugin } from 'payload'
-import { defaultProductLines } from '../lib/default-productlines'
+import { defaultProductLines } from '@/lib/data'
 
 export const productlinesSeedPlugin = (): Plugin => (config: Config): Config => {
   return {

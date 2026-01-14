@@ -5,7 +5,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import ImageModal from '../ImageModal';
 import PdfViewer from '../PdfViewer';
-import { useIntersectionAnimation } from '../hooks/useIntersectionAnimation';
+import { useIntersectionAnimation } from '@/hooks/useIntersectionAnimation';
 
 interface AboutEventSectionProps {
   onOpenConsultation: () => void;

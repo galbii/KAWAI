@@ -57,7 +57,7 @@ export function useConstantContactAuth(options: {
     setError(null);
 
     try {
-      const response = await fetch('/api/constantcontact/auth/status');
+      const response = await fetch('/api/constant-contact/auth/status');
       const data: AuthStatus & { success: boolean; message?: string; error?: string } = await response.json();
 
       if (!response.ok || !data.success) {
@@ -89,7 +89,7 @@ export function useConstantContactAuth(options: {
    */
   const redirectToAuth = useCallback((returnTo?: string) => {
     const returnUrl = returnTo || pathname || '/admin';
-    const authUrl = `/api/auth/constantcontact/authorize?return_to=${encodeURIComponent(returnUrl)}`;
+    const authUrl = `/api/auth/constant-contact/authorize?return_to=${encodeURIComponent(returnUrl)}`;
 
     console.log('Constant Contact: Redirecting to auth flow...', {
       authUrl,
@@ -128,7 +128,7 @@ export function useConstantContactAuthStatus() {
   useEffect(() => {
     const checkStatus = async () => {
       try {
-        const response = await fetch('/api/constantcontact/auth/status');
+        const response = await fetch('/api/constant-contact/auth/status');
         const data = await response.json();
 
         if (response.ok && data.success) {

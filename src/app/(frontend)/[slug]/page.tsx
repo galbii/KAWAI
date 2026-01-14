@@ -8,8 +8,7 @@ import {
 } from "@/components/homepage";
 import { SimpleDivider } from "@/components/ui/SimpleDivider";
 import { SimpleCustomerSignup } from "@/components/forms/SimpleCustomerSignup";
-import { getHomePageData } from "@/lib/payload";
-import { getStorefrontBySlugDirect, getHomePageDataDirect } from "@/lib/payload-direct";
+import { getStorefrontBySlugDirect, getHomePageDataDirect } from "@/lib/payload/queries";
 import { LocalBusinessSchema } from "@/components/seo/LocalBusinessSchema";
 import type { HomePageData } from "@/lib/types/homepage";
 import { Suspense } from "react";

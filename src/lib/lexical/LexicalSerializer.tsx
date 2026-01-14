@@ -23,6 +23,8 @@ import { VideoBlock } from '@/components/blocks/VideoBlock'
 import { SpacerBlock } from '@/components/blocks/SpacerBlock'
 import { DividerBlock } from '@/components/blocks/DividerBlock'
 import { ColumnsBlock } from '@/components/blocks/ColumnsBlock'
+import { BannerBlock } from '@/components/blocks/BannerBlock'
+import { CodeBlock } from '@/components/blocks/CodeBlock'
 
 // Custom upload converter component that uses Next.js Image
 const CustomUploadComponent: React.FC<{ node: SerializedUploadNode }> = ({ node }) => {
@@ -178,6 +180,9 @@ const jsxConverters: JSXConvertersFunction<DefaultNodeTypes> = ({ defaultConvert
     spacer: ({ node }: { node: any }) => <SpacerBlock {...node.fields} />,
     divider: ({ node }: { node: any }) => <DividerBlock {...node.fields} />,
     columns: ({ node }: { node: any }) => <ColumnsBlock {...node.fields} />,
+    // Rich text content blocks
+    banner: ({ node }: { node: any }) => <BannerBlock {...node.fields} />,
+    code: ({ node }: { node: any }) => <CodeBlock {...node.fields} />,
   },
 })
 

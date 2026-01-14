@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { Music, Music2, Radio, Waves, Disc3 } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { useAudioPlayer } from '../hooks/useAudioPlayer';
+import { useAudioPlayer } from '@/hooks/useAudioPlayer';
 
 // Sound card data with local audio files
 const SOUND_VOICES = [

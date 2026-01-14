@@ -4,7 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { MediaRenderer } from '@/components/ui/media/MediaRenderer'
-import { useScrollAnimation, fadeUpClass } from '@/lib/hooks/useScrollAnimation'
+import { useScrollAnimation, fadeUpClass } from '@/hooks/useScrollAnimation'
 import { cn } from '@/lib/utils'
 
 export interface PianoPageHeroData {

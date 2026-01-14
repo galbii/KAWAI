@@ -36,7 +36,7 @@ export function ContactHero({
 
   return (
     <section className="relative h-[50vh] min-h-[400px] flex items-center justify-center text-white overflow-hidden w-full">
-      {/* Video Background - Same as Arlington */}
+      {/* Video Background - Video background style */}
       <video
         autoPlay
         muted

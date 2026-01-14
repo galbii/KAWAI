@@ -9,12 +9,19 @@
     "start": "next start",
     "lint": "next lint",
     "seed": "PAYLOAD_SEED=true npm run dev",
+    "backup:db": "tsx scripts/backup-database.ts",
     "import:dealers": "tsx src/scripts/import-dealers.ts",
     "fix:dealer-index": "tsx src/scripts/fix-dealer-index.ts",
     "verify": "tsx src/lib/agents/kawai-verifier-cli.ts",
     "verify:test": "tsx src/lib/agents/test-kawai-verifier.ts",
     "verify:json": "tsx src/lib/agents/kawai-verifier-cli.ts --json",
-    "verify:html": "tsx src/lib/agents/kawai-verifier-cli.ts --html"
+    "verify:html": "tsx src/lib/agents/kawai-verifier-cli.ts --html",
+    "migrate:categories": "tsx scripts/migrate-posts-categories.ts",
+    "migrate:categories:dry-run": "tsx scripts/migrate-posts-categories.ts --dry-run",
+    "migrate:authors": "tsx scripts/migrate-posts-authors.ts",
+    "migrate:authors:dry-run": "tsx scripts/migrate-posts-authors.ts --dry-run",
+    "migrate:all": "tsx scripts/run-all-migrations.ts",
+    "migrate:all:dry-run": "tsx scripts/run-all-migrations.ts --dry-run"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.947.0",
@@ -62,6 +69,7 @@
     "payload": "^3.52.0",
     "pdfjs-dist": "5.4.449",
     "posthog-js": "1.302.2",
+    "prism-react-renderer": "^2.4.1",
     "react": "19.2.3",
     "react-calendly": "^4.4.0",
     "react-dom": "19.2.3",

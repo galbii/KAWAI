@@ -72,7 +72,7 @@ export async function checkAuthStatus(payload: Payload): Promise<AuthStatus> {
  */
 export function getAuthUrlWithReturn(returnTo?: string, baseUrl?: string): string {
   const base = baseUrl || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  const authPath = '/api/auth/constantcontact/authorize';
+  const authPath = '/api/auth/constant-contact/authorize';
 
   if (!returnTo) {
     return `${base}${authPath}`;

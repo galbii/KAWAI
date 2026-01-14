@@ -6,7 +6,7 @@ import configPromise from '@payload-config'
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
 import type { Artist, Media } from '@/payload-types'
 import { cn } from '@/lib/utils'
-import ArtistsHero from '@/components/artists/ArtistsHero'
+import ArtistsHeroWrapper from '@/components/artists/ArtistsHeroWrapper'
 
 export const metadata: Metadata = {
   title: 'KAWAI Artists | World-Class Musicians & Performers',
@@ -181,7 +181,7 @@ export default async function ArtistsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-kawai-pearl via-white to-gray-50">
       {/* Hero Carousel - Only show if there are featured artists */}
-      {hasHeroArtists && <ArtistsHero artists={featuredArtists} />}
+      {hasHeroArtists && <ArtistsHeroWrapper artists={featuredArtists} />}
 
       {/* Artists Grid */}
       <section id="artists-grid" className="pb-24 scroll-mt-20">

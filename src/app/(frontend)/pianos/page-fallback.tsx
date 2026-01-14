@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Piano, ArrowRight, Award, Crown, Music, Zap, ChevronLeft, ChevronRight } from "lucide-react"
-import { useScrollAnimation, fadeUpClass } from "@/lib/hooks/useScrollAnimation"
+import { useScrollAnimation, fadeUpClass } from "@/hooks/useScrollAnimation"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { getPianosPageData, resolveMediaUrl } from "@/lib/payload"
 import { MediaRenderer } from '@/components/ui/media/MediaRenderer'

@@ -11,7 +11,7 @@ import { InnovationSection } from "@/components/homepage/innovation-section";
 import { SoundQualitySection } from "@/components/homepage/sound-quality-section";
 import { FAQSection } from "@/components/homepage/faq-section";
 import { SimpleDivider } from "@/components/ui/SimpleDivider";
-import { getHomePageDataDirect } from "@/lib/payload-direct";
+import { getHomePageDataDirect } from "@/lib/payload/queries";
 import type { HomePageData } from "@/lib/types/homepage";
 import { Suspense } from "react";
 import type { Metadata } from 'next';

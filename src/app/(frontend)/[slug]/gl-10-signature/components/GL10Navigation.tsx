@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { PlayCircle, Grid3x3, Piano, Calendar, Volume2, MapPin } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useScrollDirection } from '../hooks/useScrollDirection'
+import { useScrollDirection } from '@/hooks/useScrollDirection'
 import { triggerHaptic } from '../utils/haptics'
 
 export type ViewType = 'signature' | 'gallery' | 'baby-grand' | 'millennium-action' | 'booking' | 'location'

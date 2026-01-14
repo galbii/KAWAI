@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from './ui/button'
-import { Card } from './ui/card'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 // Consent manager import removed
 import { 
   Shield, 

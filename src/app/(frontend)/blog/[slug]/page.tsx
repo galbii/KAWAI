@@ -9,6 +9,7 @@ import { LivePreviewPost } from '@/components/blog/LivePreviewPost'
 import { ReadingProgressBar } from '@/components/blog/ReadingProgressBar'
 import { StickyHeaderBar } from '@/components/blog/StickyHeaderBar'
 import { ArticleSidebar } from '@/components/blog/ArticleSidebar'
+import { RelatedPosts } from '@/components/blog/RelatedPosts'
 
 // Use ISR (Incremental Static Regeneration) for better SEO and performance
 // Pages are statically generated and revalidated every 5 minutes
@@ -35,7 +36,7 @@ async function getPostBySlug(slug: string, isDraft: boolean = false): Promise<Po
         ...(isDraft ? {} : { status: { equals: 'published' } }),
       },
       limit: 1,
-      depth: 2, // Populate relationships (author, media)
+      depth: 2, // Populate relationships (author, media, relatedPosts)
       draft: isDraft, // Enable draft content when in preview mode
       overrideAccess: isDraft, // Bypass access control in preview mode
     })
@@ -326,6 +327,11 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
             <ArticleSidebar post={post} />
           </div>
         </div>
+
+        {/* Related Posts Section */}
+        {post.relatedPosts && post.relatedPosts.length > 0 && (
+          <RelatedPosts relatedPosts={post.relatedPosts} />
+        )}
       </div>
       </LivePreviewPost>
     )

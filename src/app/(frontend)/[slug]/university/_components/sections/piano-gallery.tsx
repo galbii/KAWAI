@@ -2,7 +2,7 @@
 
 import { useRef, useEffect } from "react";
 import Image from "next/image";
-import { useIntersectionAnimation } from '../hooks/useIntersectionAnimation';
+import { useIntersectionAnimation } from '@/hooks/useIntersectionAnimation';
 
 // PostHog import removed
 

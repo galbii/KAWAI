@@ -229,7 +229,7 @@ export function useConstantContactIntegration(config: ConstantContactConfig = {}
       });
 
       // Submit to Constant Contact - backend handles automatic token refresh
-      const response = await fetch('/api/constantcontact/contacts', {
+      const response = await fetch('/api/constant-contact/contacts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(contactData)

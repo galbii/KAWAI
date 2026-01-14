@@ -3,16 +3,16 @@ import { Metadata } from 'next'
 import { CategoryHero } from "@/components/piano/category-hero"
 import { UnifiedPianoSeries } from "@/components/piano/unified-piano-series"
 import { CategoryCTA } from "@/components/piano/category-cta"
-import { 
+import {
   isValidCategory,
-  getCategoryConfig, 
+  getCategoryConfig,
   getCategorySlugs,
   getCategoryHeroTitle,
   getCategoryHeroImage,
   getCategoryStats,
   getCategoryCTA,
-  type PianoCategorySlug 
-} from '@/lib/categories'
+  type PianoCategorySlug
+} from '@/lib/data'
 import { getProductlines, getProductlinesWithProducts } from '@/lib/payload'
 import { Productline } from '@/lib/types'
 

@@ -6,7 +6,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-} from './ui/dialog';
+} from '@/components/ui/dialog';
 import useCalendlyTracking, { type CalendlyPrefillData } from '@/hooks/useCalendlyTracking';
 import QuickContactForm from './QuickContactForm';
 

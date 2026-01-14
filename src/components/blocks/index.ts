@@ -14,5 +14,9 @@ export { TestimonialsBlock } from './TestimonialsBlock'
 // Landing Page Block Components
 export { HelloBlock } from './HelloBlock'
 
+// Rich text content blocks
+export { BannerBlock } from './BannerBlock'
+export { CodeBlock } from './CodeBlock'
+
 // Re-export main ProductPageRenderer
 export { ProductPageRenderer } from '../products/ProductPageRenderer'

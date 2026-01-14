@@ -19,6 +19,7 @@ import { HomePage } from './collections/HomePage'
 import { Storefronts } from './collections/Storefronts'
 import { Products } from './collections/Products'
 import { Posts } from './collections/Posts'
+import { Categories } from './collections/Categories'
 import { Artists } from './collections/Artists'
 import { ConcertArtistPage } from './collections/ConcertArtistPage'
 import { ConstantContactSettings } from './collections/ConstantContactSettings'
@@ -41,16 +42,25 @@ import {
   Spacer,
   Divider,
   Columns,
-  Hello
+  Hello,
+  Banner,
+  Code
 } from './blocks'
 import { productlinesSeedPlugin } from './plugins/productlines-seed'
 import { pianosPageSeedPlugin } from './plugins/pianos-page-seed'
+// import { categoriesSeedPlugin } from './plugins/categories-seed' // Disabled - needs type regeneration
 // import DealerLocationsSeedPlugin from './plugins/dealer-locations-seed' // Temporarily disabled
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
+  // Enable folders for media organization
+  folders: {
+    browseByFolder: true,
+    slug: 'payload-folders',
+    fieldName: 'folder',
+  },
   admin: {
     user: Users.slug,
     importMap: {
@@ -64,6 +74,8 @@ export default buildConfig({
         Logo: '/components/admin/Logo.tsx#Logo',
         Icon: '/components/admin/Icon.tsx#Icon',
       },
+      // Media Manager - floating button on all admin pages
+      afterDashboard: ['/components/admin/media-manager/MediaManager.tsx#MediaManager'],
     },
     livePreview: {
       url: ({ data, collectionConfig }) => {
@@ -109,6 +121,7 @@ export default buildConfig({
     PianosPage,
     Storefronts,
     Posts,
+    Categories,
     Artists,
 
     // Landing Pages
@@ -147,7 +160,10 @@ export default buildConfig({
     Divider,
     Columns,
     // Landing page blocks
-    Hello
+    Hello,
+    // Rich text content blocks (for inline use in Lexical editor)
+    Banner,
+    Code
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
@@ -165,6 +181,7 @@ export default buildConfig({
     }),
     productlinesSeedPlugin(),
     pianosPageSeedPlugin(),
+    // categoriesSeedPlugin(), // Disabled - needs type regeneration
     // DealerLocationsSeedPlugin, // Temporarily disabled due to TypeScript errors
     // storage-adapter-placeholder
     s3Storage({

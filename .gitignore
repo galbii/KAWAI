@@ -40,6 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# database backups (contain sensitive data)
+/backups/
+
 # large video files
 public/assets/videos/Hero.mp4
 .env.local

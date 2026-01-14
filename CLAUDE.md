@@ -51,61 +51,144 @@ src/
 │   │   ├── blog/                # Blog posts
 │   │   ├── find-a-dealer/       # Dealer locator with map
 │   │   └── api/                 # Frontend API routes
-│   │       ├── home-page/
-│   │       ├── pianos-page/
 │   │       └── revalidate/      # On-demand ISR revalidation
 │   └── (payload)/               # CMS & API routes
 │       ├── admin/               # Payload admin UI (/admin)
 │       └── api/                 # Payload REST/GraphQL APIs
-├── collections/                 # Payload CMS collections
-│   ├── Users.ts
-│   ├── Media.ts
-│   ├── Products.ts
-│   ├── Productlines.ts
-│   ├── Storefronts.ts           # Dynamic dealer pages
-│   ├── HomePage.ts              # Global singleton
-│   ├── PianosPage.ts            # Global singleton
-│   ├── Posts.ts                 # Blog with live preview
-│   ├── Artists.ts
-│   ├── Dealers.ts               # Dealer directory
-│   └── ConcertArtistPage.ts
+├── collections/                 # Payload CMS collections (14 total)
 ├── blocks/                      # Content block definitions
-│   ├── ProductShowcase.ts
-│   ├── ProductHero.ts
-│   ├── Hero.ts
-│   ├── ImageGallery.ts
-│   ├── Specifications.ts
-│   └── CallToAction.ts
-├── components/
-│   ├── ui/                      # Reusable UI components
-│   │   └── media/               # Media optimization components
+├── components/                  # React components (organized by domain)
+│   ├── ui/                      # Shared reusable UI (button, card, dialog, etc.)
+│   │   ├── media/               # Media optimization components
+│   │   ├── animations/          # Animation components
+│   │   └── 3d-viewer/           # 3D piano viewer
 │   ├── layout/                  # Header, footer, navigation
-│   ├── navigation/              # Mega menu components
 │   ├── forms/                   # Contact forms (React Hook Form + Zod)
 │   ├── piano/                   # Piano-specific components
 │   ├── blocks/                  # Block renderers
-│   └── admin/                   # Custom admin components (Logo, Icon)
-├── lib/
-│   ├── payload-direct.ts        # Direct Payload client (no HTTP)
-│   ├── payload-server.ts        # Payload instance management
+│   ├── namm/                    # NAMM event components
+│   └── admin/                   # Custom admin components
+├── lib/                         # Utilities and integrations
+│   ├── payload/                 # Payload CMS utilities
+│   │   ├── client.ts            # Payload instance
+│   │   ├── queries.ts           # Direct database queries
+│   │   └── server.ts            # Server-side utilities
+│   ├── data/                    # Static data and seed utilities
+│   │   ├── categories.ts        # Piano category definitions
+│   │   ├── fallback-data.ts     # Fallback data for SSR
+│   │   └── default-productlines.ts
+│   ├── shopify/                 # Shopify integration (well-organized)
+│   ├── constantcontact/         # Constant Contact CRM integration
+│   ├── media/                   # R2 image optimization
+│   ├── seo/                     # SEO utilities and schemas
 │   ├── actions/                 # Server Actions
-│   │   ├── contact-form.ts      # Contact form (Shopify CRM)
-│   │   └── simple-customer-signup.ts
-│   ├── media/                   # Media optimization system
-│   │   ├── r2-utils.ts          # Cloudflare R2 transforms
-│   │   └── image-presets.ts     # Responsive presets
-│   ├── shopify/                 # Shopify integration
-│   │   ├── client.ts            # Storefront API
-│   │   ├── admin-client.ts      # Admin API (OAuth)
-│   │   ├── customers.ts         # Customer management (CRM)
-│   │   └── navigation.ts        # Mega menu data
-│   └── seo/                     # SEO utilities
-├── plugins/                     # Payload plugins
-│   ├── productlines-seed.ts     # Seed product lines
-│   └── pianos-page-seed.ts      # Seed pianos page
-├── hooks/                       # Custom React hooks
+│   └── utils.ts                 # General utilities (cn, formatPrice, etc.)
+├── hooks/                       # Custom React hooks (consolidated)
 ├── types/                       # TypeScript type definitions
+│   ├── common/                  # Shared utility types
+│   ├── domains/                 # Business domain types (piano, dealer, etc.)
+│   └── integrations/            # Third-party integration types
+├── plugins/                     # Payload plugins
 └── payload.config.ts            # Main Payload configuration
+```
+
+## Code Organization Principles
+
+### 1. Component Organization
+
+**CRITICAL: Never duplicate UI components in page-specific folders**
+
+```typescript
+// ❌ WRONG: Duplicating shared components in page folders
+src/app/(frontend)/[slug]/some-page/_components/ui/button.tsx  // DON'T DO THIS
+src/app/(frontend)/[slug]/some-page/_components/ui/card.tsx    // DON'T DO THIS
+
+// ✅ CORRECT: Use shared components from @/components/ui
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+```
+
+**Component hierarchy:**
+1. `@/components/ui/` - Shared, reusable UI primitives (Button, Card, Dialog, Input)
+2. `@/components/{domain}/` - Domain-specific components (piano/, forms/, layout/)
+3. `page/_components/` - ONLY for truly page-specific, non-reusable components
+
+### 2. Import Patterns
+
+**Always use path aliases:**
+
+```typescript
+// ✅ Preferred imports
+import { Button, Card, Dialog } from '@/components/ui'
+import { useScrollAnimation, useAudioPlayer } from '@/hooks'
+import { getProducts, transformProduct } from '@/lib/shopify'
+import { cn, formatPrice } from '@/lib/utils'
+import type { Product, Media } from '@/payload-types'
+
+// ❌ Avoid relative imports across directories
+import Button from '../../../components/ui/button'
+```
+
+### 3. Barrel Exports
+
+**Every directory should have an index.ts barrel export:**
+
+```typescript
+// src/components/ui/index.ts
+export { Button } from './button'
+export { Card, CardHeader, CardContent } from './card'
+export { Dialog, DialogContent, DialogTitle } from './dialog'
+// ... etc
+```
+
+**Benefits:**
+- Cleaner imports: `import { Button, Card } from '@/components/ui'`
+- Easier refactoring
+- Clear public API for each module
+
+### 4. Integration Organization
+
+**Each integration should be self-contained in its own folder:**
+
+```
+lib/shopify/           # ✅ Good: Well-organized integration
+├── index.ts           # Barrel export with documentation
+├── client.ts          # API client
+├── types.ts           # Type definitions
+├── queries.ts         # GraphQL queries
+├── products.ts        # Product operations
+├── cart.ts            # Cart operations
+└── customers.ts       # Customer operations
+```
+
+**Rules for integrations:**
+- Single folder per integration (`lib/shopify/`, `lib/constantcontact/`)
+- Single API route prefix (`/api/constant-contact/`, not multiple)
+- Types co-located with implementation
+- Comprehensive barrel export
+
+### 5. Hooks Organization
+
+**All hooks live in `src/hooks/`:**
+
+```typescript
+// ✅ Correct: Import from centralized hooks
+import { useScrollAnimation, useAudioPlayer } from '@/hooks'
+
+// ❌ Wrong: Page-specific hooks folder
+import { useAnimation } from '../_components/hooks/useAnimation'
+```
+
+**Exception:** Hooks with tightly-coupled page dependencies may remain page-local, but this should be rare.
+
+### 6. API Route Naming
+
+**Use kebab-case for all API routes:**
+
+```
+/api/constant-contact/    ✅ Correct
+/api/constantcontact/     ❌ Wrong (camelCase)
+/api/ConstantContact/     ❌ Wrong (PascalCase)
 ```
 
 ## CRITICAL SECURITY PATTERNS

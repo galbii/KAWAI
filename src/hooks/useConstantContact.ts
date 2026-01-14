@@ -89,7 +89,7 @@ export function useConstantContact(): UseConstantContactState & UseConstantConta
       setIsAuthenticating(true);
 
       // Check authentication status using dedicated endpoint
-      const response = await fetch('/api/constantcontact/auth/status');
+      const response = await fetch('/api/constant-contact/auth/status');
       const data = await response.json();
 
       if (response.ok && data.success) {
@@ -112,7 +112,7 @@ export function useConstantContact(): UseConstantContactState & UseConstantConta
   const startOAuthFlow = useCallback(() => {
     setAuthError(null);
     // Redirect to OAuth authorization endpoint
-    window.location.href = '/api/auth/constantcontact/authorize';
+    window.location.href = '/api/auth/constant-contact/authorize';
   }, []);
 
   const loadLists = useCallback(async () => {
@@ -120,7 +120,7 @@ export function useConstantContact(): UseConstantContactState & UseConstantConta
       setIsLoadingLists(true);
       setListsError(null);
 
-      const response = await fetch('/api/constantcontact/lists?format=ui');
+      const response = await fetch('/api/constant-contact/lists?format=ui');
       const data = await response.json();
 
       if (response.ok && data.success) {
@@ -150,7 +150,7 @@ export function useConstantContact(): UseConstantContactState & UseConstantConta
       setSubmitError(null);
       setLastSubmitResult(null);
 
-      const response = await fetch('/api/constantcontact/contacts', {
+      const response = await fetch('/api/constant-contact/contacts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

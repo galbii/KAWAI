@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Phone, Mail, MapPin, Facebook, Instagram, Youtube, Twitter } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { Button } from './ui/button'
+import { Button } from '@/components/ui/button'
 
 
 const socialLinks = [

@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import { getConcertArtistPageServer } from '@/lib/payload-server'
+import { getConcertArtistPageServer } from '@/lib/payload/server'
 import ConcertArtistHero from './components/ConcertArtistHero'
 import ConcertArtistModels from './components/ConcertArtistModels'
 import CraftsmanPromise from './components/CraftsmanPromise'

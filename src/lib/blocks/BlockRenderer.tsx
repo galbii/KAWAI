@@ -13,6 +13,8 @@ import { SpecificationsBlock } from '@/components/blocks/SpecificationsBlock'
 import { TextContentBlock } from '@/components/blocks/TextContentBlock'
 import { CallToActionBlock } from '@/components/blocks/CallToActionBlock'
 import { TestimonialsBlock } from '@/components/blocks/TestimonialsBlock'
+import { BannerBlock } from '@/components/blocks/BannerBlock'
+import { CodeBlock } from '@/components/blocks/CodeBlock'
 
 // Block component mapping
 const BLOCK_COMPONENTS = {
@@ -25,6 +27,8 @@ const BLOCK_COMPONENTS = {
   textContent: TextContentBlock,
   callToAction: CallToActionBlock,
   testimonials: TestimonialsBlock,
+  banner: BannerBlock,
+  code: CodeBlock,
 } as const
 
 // Type for valid block types

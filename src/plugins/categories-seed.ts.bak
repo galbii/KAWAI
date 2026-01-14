@@ -1,0 +1,107 @@
+import type { Config, Plugin } from 'payload'
+
+/**
+ * Initial categories from existing Posts collection hardcoded options
+ */
+const defaultCategories = [
+  {
+    title: 'Piano Education',
+    slug: 'education',
+    description: 'Educational content about piano playing, music theory, and practice techniques',
+  },
+  {
+    title: 'Product News',
+    slug: 'product-news',
+    description: 'Latest product announcements, launches, and updates from KAWAI',
+  },
+  {
+    title: 'Artist Spotlights',
+    slug: 'artists',
+    description: 'Featured artists, interviews, and performer showcases',
+  },
+  {
+    title: 'Maintenance & Care',
+    slug: 'maintenance',
+    description: 'Piano care, maintenance tips, and best practices',
+  },
+  {
+    title: 'Buying Guides',
+    slug: 'buying-guides',
+    description: 'Guides to help you choose the right piano for your needs',
+  },
+  {
+    title: 'Events',
+    slug: 'events',
+    description: 'KAWAI events, concerts, and community gatherings',
+  },
+  {
+    title: 'Company News',
+    slug: 'company-news',
+    description: 'Company announcements, milestones, and organizational updates',
+  },
+  {
+    title: 'Technology',
+    slug: 'technology',
+    description: 'Piano technology, innovation, and digital advancements',
+  },
+]
+
+export const categoriesSeedPlugin = (): Plugin => (config: Config): Config => {
+  return {
+    ...config,
+    onInit: async (payload) => {
+      if (config.onInit) await config.onInit(payload)
+
+      // Check if we should seed based on environment variable
+      if (process.env.PAYLOAD_SEED === 'true') {
+        await seedCategories(payload)
+      }
+    },
+  }
+}
+
+async function seedCategories(payload: import('payload').Payload): Promise<void> {
+  payload.logger.info('🌱 Checking Categories for seeding...')
+
+  try {
+    // Check if collection is empty
+    const existing = await payload.find({
+      collection: 'categories',
+      limit: 1,
+      pagination: false,
+    })
+
+    if (existing.docs.length > 0) {
+      payload.logger.info('📝 Categories already exist, skipping seed')
+      return
+    }
+
+    payload.logger.info('🚀 Seeding Categories...')
+
+    // Create each category
+    for (const categoryData of defaultCategories) {
+      try {
+        const result = await payload.create({
+          collection: 'categories',
+          data: {
+            title: categoryData.title,
+            slug: categoryData.slug,
+            description: categoryData.description,
+          } as any, // Type assertion to bypass strict type checking during seeding
+        })
+
+        payload.logger.info(`✅ Created: ${result.title} (${result.slug})`)
+      } catch (error) {
+        payload.logger.error(
+          `❌ Failed to create ${categoryData.title}: ${error instanceof Error ? error.message : String(error)}`,
+        )
+      }
+    }
+
+    payload.logger.info('🎉 Categories seeding completed!')
+  } catch (error) {
+    payload.logger.error(
+      `❌ Categories seeding failed: ${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
+}

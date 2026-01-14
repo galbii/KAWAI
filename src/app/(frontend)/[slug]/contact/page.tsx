@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { getStorefrontBySlugDirect } from "@/lib/payload-direct";
+import { getStorefrontBySlugDirect } from "@/lib/payload/queries";
 import {
   ContactHero,
   LocationContactForm

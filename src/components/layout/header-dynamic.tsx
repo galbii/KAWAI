@@ -69,12 +69,10 @@ export async function HeaderDynamic() {
     const pathname = headersList.get('x-pathname') || ''
     const origin = parseNavigationOrigin(pathname)
 
-    // Check if we're on a signature page (signature, signature2, or gl-10-signature) or Arlington page
+    // Check if we're on a signature page (signature, signature2, or gl-10-signature)
     const isSignaturePage = pathname.endsWith('/signature') || pathname.endsWith('/signature/') ||
                             pathname.endsWith('/signature2') || pathname.endsWith('/signature2/') ||
-                            pathname.endsWith('/gl-10-signature') || pathname.endsWith('/gl-10-signature/') ||
-                            pathname.endsWith('/arlington') || pathname.endsWith('/arlington/') ||
-                            pathname.endsWith('/arlington') || pathname.endsWith('/arlington/')
+                            pathname.endsWith('/gl-10-signature') || pathname.endsWith('/gl-10-signature/')
 
     // Check if we're on the concert-artist page
     const isConcertArtistPage = pathname === '/concert-artist' || pathname === '/concert-artist/'
@@ -121,8 +119,7 @@ export async function HeaderDynamic() {
     const fallbackOrigin = parseNavigationOrigin(pathname)
     const isSignaturePage = pathname.endsWith('/signature') || pathname.endsWith('/signature/') ||
                             pathname.endsWith('/signature2') || pathname.endsWith('/signature2/') ||
-                            pathname.endsWith('/gl-10-signature') || pathname.endsWith('/gl-10-signature/') ||
-                            pathname.endsWith('/arlington') || pathname.endsWith('/arlington/')
+                            pathname.endsWith('/gl-10-signature') || pathname.endsWith('/gl-10-signature/')
     const isConcertArtistPage = pathname === '/concert-artist' || pathname === '/concert-artist/'
     const isUniversityPage = pathname.includes('/university')
 

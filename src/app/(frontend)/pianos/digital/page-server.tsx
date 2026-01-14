@@ -1,6 +1,6 @@
 import { CategoryHero } from "@/components/piano/category-hero";
 import { DigitalPianoSeriesContainer } from "@/components/piano/digital-piano-series-container";
-import { useScrollAnimation, fadeUpClass, scaleInClass } from "@/lib/hooks/useScrollAnimation";
+import { useScrollAnimation, fadeUpClass, scaleInClass } from "@/hooks/useScrollAnimation";
 import { Suspense } from "react";
 
 // Loading component for the series section

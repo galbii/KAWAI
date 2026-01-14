@@ -1,5 +1,5 @@
 import { UnifiedPianoSeries } from './unified-piano-series'
-import { getProductlinesServer, transformProductlinesToSeriesServer } from '@/lib/payload-server'
+import { getProductlinesServer, transformProductlinesToSeriesServer } from '@/lib/payload/server'
 
 // Hardcoded fallback data in case CMS is unavailable
 const fallbackGrandPianoSeries = [

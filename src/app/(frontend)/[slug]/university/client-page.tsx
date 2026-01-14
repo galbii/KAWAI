@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useScrollAnimations } from './_components/hooks/useScrollAnimations';
-import { usePageTracking } from './_components/hooks/usePageTracking';
+import { useScrollAnimations } from '@/hooks/useScrollAnimations';
+import { usePageTracking } from '@/hooks/usePageTracking';
 import HeroSection from './_components/sections/HeroSection';
 import ValuePropositionSection from './_components/sections/ValuePropositionSection';
 import AboutEventSection from './_components/sections/AboutEventSection';

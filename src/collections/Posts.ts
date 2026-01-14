@@ -1,5 +1,23 @@
 import type { CollectionConfig } from 'payload'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import {
+  BlocksFeature,
+  FixedToolbarFeature,
+  HeadingFeature,
+  HorizontalRuleFeature,
+  InlineToolbarFeature,
+  lexicalEditor,
+} from '@payloadcms/richtext-lexical'
+import { slugField } from 'payload'
+
+// Import blocks for rich text content
+import { Banner } from '@/blocks/Banner/config'
+import { Code } from '@/blocks/Code/config'
+
+// Import access control utilities
+import { authenticated, authenticatedOrPublished, adminOnly } from '@/lib/payload/access'
+
+// Import hooks
+import { populateAuthors } from './Posts/hooks/populateAuthors'
 
 export const Posts: CollectionConfig = {
   slug: 'posts',
@@ -9,7 +27,8 @@ export const Posts: CollectionConfig = {
   },
   admin: {
     group: 'Content',
-    defaultColumns: ['title', 'author', 'status', 'publishedDate', 'updatedAt'],
+    // MIGRATION: Show both old and new fields during transition period
+    defaultColumns: ['title', 'author', 'authors', 'status', 'publishedDate', 'updatedAt'],
     useAsTitle: 'title',
     description: 'Blog posts with rich content, featured images, and flexible page building',
     livePreview: {
@@ -32,20 +51,23 @@ export const Posts: CollectionConfig = {
     },
   },
   access: {
-    read: ({ req: { user } }) => {
-      // Public can only read published posts
-      if (!user) {
-        return {
-          status: {
-            equals: 'published',
-          },
-        }
-      }
-      // Admins can read all posts
-      return true
-    },
+    create: authenticated,
+    read: authenticatedOrPublished,
+    update: authenticated,
+    delete: adminOnly,
   },
   fields: [
+    // Title field (outside tabs for visibility)
+    {
+      name: 'title',
+      type: 'text',
+      required: true,
+      admin: {
+        description: 'Post title/headline',
+      },
+    },
+    // Use Payload's slugField() helper instead of manual slug generation
+    slugField(),
     {
       type: 'tabs',
       tabs: [
@@ -54,24 +76,6 @@ export const Posts: CollectionConfig = {
           label: 'Content',
           description: 'Post content, title, and rich text editor',
           fields: [
-            {
-              name: 'title',
-              type: 'text',
-              required: true,
-              admin: {
-                description: 'Post title/headline',
-              },
-            },
-            {
-              name: 'slug',
-              type: 'text',
-              required: true,
-              unique: true,
-              admin: {
-                description: 'URL-friendly version of the post title (auto-generated)',
-                readOnly: false,
-              },
-            },
             {
               name: 'excerpt',
               type: 'textarea',
@@ -92,9 +96,19 @@ export const Posts: CollectionConfig = {
               name: 'content',
               type: 'richText',
               required: true,
-              editor: lexicalEditor(),
+              editor: lexicalEditor({
+                features: ({ rootFeatures }) => [
+                  ...rootFeatures,
+                  HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
+                  // Add Banner and Code blocks to rich text content
+                  BlocksFeature({ blocks: [Banner, Code] }),
+                  FixedToolbarFeature(),
+                  InlineToolbarFeature(),
+                  HorizontalRuleFeature(),
+                ],
+              }),
               admin: {
-                description: 'Main post content with rich formatting (bold, italic, lists, links, headings)',
+                description: 'Main post content with rich formatting, embedded blocks (Banner, Code), and media',
               },
             },
             {
@@ -103,7 +117,7 @@ export const Posts: CollectionConfig = {
               blockReferences: ['image', 'text', 'video', 'spacer', 'divider', 'columns'],
               blocks: [], // Use blockReferences for globally defined blocks
               admin: {
-                description: 'Additional content blocks for images, videos, and custom layouts',
+                description: 'Additional content blocks for complex layouts (separate from rich text content)',
               },
             },
           ],
@@ -114,16 +128,57 @@ export const Posts: CollectionConfig = {
           label: 'Settings',
           description: 'Author, categories, tags, and publishing settings',
           fields: [
+            // === NEW FIELD: Multiple Authors ===
+            {
+              name: 'authors',
+              type: 'relationship',
+              relationTo: 'users',
+              hasMany: true,
+              admin: {
+                description: 'Post authors (NEW: supports multiple authors)',
+                position: 'sidebar',
+              },
+            },
+            // === NEW FIELD: Privacy-conscious author data (hidden, populated by hook) ===
+            {
+              name: 'populatedAuthors',
+              type: 'array',
+              access: {
+                update: () => false,
+              },
+              admin: {
+                disabled: true,
+                readOnly: true,
+                hidden: true,
+                description: 'Auto-populated author data for privacy (hidden field)',
+              },
+              fields: [
+                { name: 'id', type: 'text' },
+                { name: 'name', type: 'text' },
+              ],
+            },
+            // === OLD FIELD: Single Author (DEPRECATED - kept for backward compatibility) ===
             {
               name: 'author',
               type: 'relationship',
               relationTo: 'users',
-              required: true,
               admin: {
-                description: 'Post author',
+                description: '⚠️ DEPRECATED: Use "authors" field instead. Will be removed after migration.',
                 position: 'sidebar',
               },
             },
+            // === NEW FIELD: Categories relationship (to Categories collection) ===
+            {
+              name: 'categoriesNew',
+              type: 'relationship',
+              relationTo: 'categories',
+              hasMany: true,
+              admin: {
+                description: 'Post categories (NEW: relationship to Categories collection)',
+                position: 'sidebar',
+              },
+            },
+            // === OLD FIELD: Categories select (DEPRECATED - kept for backward compatibility) ===
             {
               name: 'categories',
               type: 'select',
@@ -139,7 +194,23 @@ export const Posts: CollectionConfig = {
                 { label: 'Technology', value: 'technology' },
               ],
               admin: {
-                description: 'Post categories (select multiple)',
+                description: '⚠️ DEPRECATED: Use "categoriesNew" field instead. Will be removed after migration.',
+              },
+            },
+            // === NEW FIELD: Related Posts ===
+            {
+              name: 'relatedPosts',
+              type: 'relationship',
+              relationTo: 'posts',
+              hasMany: true,
+              filterOptions: ({ id }) => ({
+                id: {
+                  not_in: [id],
+                },
+              }),
+              admin: {
+                description: 'Related posts (prevents self-reference)',
+                position: 'sidebar',
               },
             },
             {
@@ -241,21 +312,39 @@ export const Posts: CollectionConfig = {
 
   hooks: {
     beforeChange: [
-      async ({ data, operation }) => {
+      /**
+       * MIGRATION SYNC HOOK: Syncs data between old and new fields
+       * This ensures backward compatibility during the migration period
+       * TODO: Remove after migration is complete and data is migrated
+       */
+      async ({ data, operation, context }) => {
         console.log(`📝 Posts beforeChange: operation=${operation}, title="${data.title}"`)
 
-        // Auto-generate slug from title if not provided or empty
-        if (data.title && (!data.slug || data.slug.trim() === '')) {
-          const generatedSlug = data.title
-            .toLowerCase()
-            .trim()
-            .replace(/\s+/g, '-')
-            .replace(/[^a-z0-9-]/g, '')
-            .replace(/-+/g, '-')
-            .replace(/^-+|-+$/g, '')
+        // Prevent infinite loops
+        if (context.skipSync) {
+          console.log(`[Posts Hook] Skipping sync (context flag set)`)
+          return data
+        }
 
-          data.slug = generatedSlug || 'post'
-          console.log(`🔗 Generated slug from title "${data.title}" -> "${data.slug}"`)
+        // === AUTHOR SYNC: author ↔ authors ===
+        // Sync old field → new field (if new field is empty)
+        if (data.author && (!data.authors || data.authors.length === 0)) {
+          data.authors = [data.author]
+          console.log(`🔄 Synced author → authors[0]`)
+        }
+        // Sync new field → old field (if old field is empty)
+        if (data.authors && data.authors.length > 0 && !data.author) {
+          data.author = data.authors[0]
+          console.log(`🔄 Synced authors[0] → author`)
+        }
+
+        // === CATEGORY SYNC: categories ↔ categoriesNew ===
+        // Only sync if both fields exist (Categories collection must be created first)
+        if (data.categoriesNew && data.categoriesNew.length > 0 && !data.categories) {
+          console.log(`🔄 categoriesNew exists but categories is empty (manual mapping needed)`)
+        }
+        if (data.categories && data.categories.length > 0 && !data.categoriesNew) {
+          console.log(`🔄 categories exists but categoriesNew is empty (run migration script to map)`)
         }
 
         // Set publishedDate on first publish
@@ -264,7 +353,7 @@ export const Posts: CollectionConfig = {
           console.log(`📅 Set publishedDate: ${data.publishedDate}`)
         }
 
-        console.log(`📝 Posts beforeChange END: returning data with slug="${data.slug}"`)
+        console.log(`📝 Posts beforeChange END: returning data`)
         return data
       },
     ],
@@ -342,5 +431,20 @@ export const Posts: CollectionConfig = {
         return doc
       },
     ],
+    afterRead: [
+      /**
+       * Populate authors hook
+       * Protects user privacy by only exposing id and name fields
+       */
+      populateAuthors,
+    ],
   },
 }
+
+// === MIGRATION NOTES ===
+// TODO: After migration is complete (estimated 1-2 weeks):
+// 1. Remove deprecated fields: 'author', 'categories'
+// 2. Rename 'categoriesNew' → 'categories'
+// 3. Remove sync logic from beforeChange hook
+// 4. Update frontend to use new field names
+// 5. Run data migration scripts to populate new fields from old fields

@@ -1,5 +1,5 @@
 import type { Config, Plugin } from 'payload'
-import { pianoPageSeedData, pianoPageImages } from '../lib/pianos-page-seed-data'
+import { pianoPageSeedData, pianoPageImages } from '@/lib/data'
 
 export const pianosPageSeedPlugin = (): Plugin => (config: Config): Config => {
   return {

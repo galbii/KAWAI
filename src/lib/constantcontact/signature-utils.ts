@@ -186,7 +186,7 @@ export function getShowroomKawaiListId(lists: ContactList[]): string | null {
  */
 export async function createSignatureUncommittedList(): Promise<{ success: boolean; listId?: string; error?: string }> {
   try {
-    const response = await fetch('/api/constantcontact/lists', {
+    const response = await fetch('/api/constant-contact/lists', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -223,7 +223,7 @@ export async function createSignatureUncommittedList(): Promise<{ success: boole
  */
 export async function createShowroomKawaiList(): Promise<{ success: boolean; listId?: string; error?: string }> {
   try {
-    const response = await fetch('/api/constantcontact/lists', {
+    const response = await fetch('/api/constant-contact/lists', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -331,7 +331,7 @@ export async function ensureShowroomKawaiList(
   // Step 2: If not in cache, search API directly by name
   console.log('ensureShowroomKawaiList: Not found in cache, searching API by name...')
   try {
-    const apiSearchResult = await fetch('/api/constantcontact/lists/search-by-name', {
+    const apiSearchResult = await fetch('/api/constant-contact/lists/search-by-name', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: SHOWROOM_KAWAI_LIST_NAME })
@@ -493,7 +493,7 @@ export async function ensureListExists(
   // Step 2: If not in cache, search API directly by name
   console.log('ensureListExists: Not found in cache, searching API by name...')
   try {
-    const apiSearchResult = await fetch('/api/constantcontact/lists/search-by-name', {
+    const apiSearchResult = await fetch('/api/constant-contact/lists/search-by-name', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: listName })
@@ -517,7 +517,7 @@ export async function ensureListExists(
   // Step 3: If API search fails, try to create the list
   console.log('ensureListExists: List not found via API search, attempting creation...')
   try {
-    const createResponse = await fetch('/api/constantcontact/lists', {
+    const createResponse = await fetch('/api/constant-contact/lists', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -544,7 +544,7 @@ export async function ensureListExists(
 
       // Fetch fresh lists from API since the parameter won't update
       try {
-        const listsResponse = await fetch('/api/constantcontact/lists?format=ui')
+        const listsResponse = await fetch('/api/constant-contact/lists?format=ui')
         if (listsResponse.ok) {
           const listsData = await listsResponse.json()
           if (listsData.success && Array.isArray(listsData.data)) {
@@ -592,7 +592,7 @@ export async function addUserToSignatureUncommittedList(
     console.log('addUserToSignatureUncommittedList: Starting to add user:', emailData.email)
 
     // Step 1: Get available lists first
-    const listsResponse = await fetch('/api/constantcontact/lists?format=ui')
+    const listsResponse = await fetch('/api/constant-contact/lists?format=ui')
     if (!listsResponse.ok) {
       throw new Error('Failed to fetch Constant Contact lists')
     }
@@ -623,7 +623,7 @@ export async function addUserToSignatureUncommittedList(
     })
 
     // Step 4: Add the contact to Constant Contact
-    const contactResponse = await fetch('/api/constantcontact/contacts', {
+    const contactResponse = await fetch('/api/constant-contact/contacts', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

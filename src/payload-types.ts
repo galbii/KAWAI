@@ -82,6 +82,8 @@ export interface Config {
     divider: DividerBlock;
     columns: ColumnsBlock;
     hello: HelloBlock;
+    banner: BannerBlock;
+    code: CodeBlock;
   };
   collections: {
     users: User;
@@ -90,6 +92,7 @@ export interface Config {
     'pianos-page': PianosPage;
     storefronts: Storefront;
     posts: Post;
+    categories: Category;
     artists: Artist;
     'concert-artist-page': ConcertArtistPage;
     products: Product;
@@ -101,6 +104,7 @@ export interface Config {
     exports: Export;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
+    'payload-folders': FolderInterface;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -108,6 +112,9 @@ export interface Config {
   collectionsJoins: {
     productlines: {
       products: 'products';
+    };
+    'payload-folders': {
+      documentsAndFolders: 'payload-folders' | 'media';
     };
   };
   collectionsSelect: {
@@ -117,6 +124,7 @@ export interface Config {
     'pianos-page': PianosPageSelect<false> | PianosPageSelect<true>;
     storefronts: StorefrontsSelect<false> | StorefrontsSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    categories: CategoriesSelect<false> | CategoriesSelect<true>;
     artists: ArtistsSelect<false> | ArtistsSelect<true>;
     'concert-artist-page': ConcertArtistPageSelect<false> | ConcertArtistPageSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
@@ -128,6 +136,7 @@ export interface Config {
     exports: ExportsSelect<false> | ExportsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
+    'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -648,6 +657,10 @@ export interface Product {
 export interface Media {
   id: string;
   /**
+   * Public CDN URL for this media file (auto-generated)
+   */
+  publicUrl?: string | null;
+  /**
    * Alternative text for accessibility and SEO. Describe what the image shows.
    */
   alt: string;
@@ -663,12 +676,6 @@ export interface Media {
    * Type of media for better organization
    */
   mediaType?: ('image' | 'video' | 'audio' | 'document') | null;
-  /**
-   * Where this media is intended to be used
-   */
-  usage?:
-    | ('hero' | 'product' | 'category' | 'carousel' | 'background' | 'thumbnail' | 'technical' | 'marketing')[]
-    | null;
   /**
    * Video-specific metadata
    */
@@ -741,6 +748,7 @@ export interface Media {
    */
   tags?: string[] | null;
   prefix?: string | null;
+  folder?: (string | null) | FolderInterface;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -786,6 +794,32 @@ export interface Media {
       filename?: string | null;
     };
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-folders".
+ */
+export interface FolderInterface {
+  id: string;
+  name: string;
+  folder?: (string | null) | FolderInterface;
+  documentsAndFolders?: {
+    docs?: (
+      | {
+          relationTo?: 'payload-folders';
+          value: string | FolderInterface;
+        }
+      | {
+          relationTo?: 'media';
+          value: string | Media;
+        }
+    )[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  folderType?: 'media'[] | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * Piano product lines and series management
@@ -1964,6 +1998,42 @@ export interface HelloBlock {
   blockType: 'hello';
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "BannerBlock".
+ */
+export interface BannerBlock {
+  style: 'info' | 'warning' | 'error' | 'success';
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'banner';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CodeBlock".
+ */
+export interface CodeBlock {
+  language: 'typescript' | 'javascript' | 'css' | 'python' | 'bash';
+  code: string;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'code';
+}
+/**
  * User accounts and authentication management
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3039,8 +3109,9 @@ export interface Post {
    */
   title: string;
   /**
-   * URL-friendly version of the post title (auto-generated)
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
+  generateSlug?: boolean | null;
   slug: string;
   /**
    * Short excerpt for post listings and meta description (max 300 characters)
@@ -3051,7 +3122,7 @@ export interface Post {
    */
   featuredImage?: (string | null) | Media;
   /**
-   * Main post content with rich formatting (bold, italic, lists, links, headings)
+   * Main post content with rich formatting, embedded blocks (Banner, Code), and media
    */
   content: {
     root: {
@@ -3069,15 +3140,32 @@ export interface Post {
     [k: string]: unknown;
   };
   /**
-   * Additional content blocks for images, videos, and custom layouts
+   * Additional content blocks for complex layouts (separate from rich text content)
    */
   contentBlocks?: (ImageBlock | TextBlock | VideoBlock | SpacerBlock | DividerBlock | ColumnsBlock)[] | null;
   /**
-   * Post author
+   * Post authors (NEW: supports multiple authors)
    */
-  author: string | User;
+  authors?: (string | User)[] | null;
   /**
-   * Post categories (select multiple)
+   * Auto-populated author data for privacy (hidden field)
+   */
+  populatedAuthors?:
+    | {
+        id?: string | null;
+        name?: string | null;
+      }[]
+    | null;
+  /**
+   * ⚠️ DEPRECATED: Use "authors" field instead. Will be removed after migration.
+   */
+  author?: (string | null) | User;
+  /**
+   * Post categories (NEW: relationship to Categories collection)
+   */
+  categoriesNew?: (string | Category)[] | null;
+  /**
+   * ⚠️ DEPRECATED: Use "categoriesNew" field instead. Will be removed after migration.
    */
   categories?:
     | (
@@ -3091,6 +3179,10 @@ export interface Post {
         | 'technology'
       )[]
     | null;
+  /**
+   * Related posts (prevents self-reference)
+   */
+  relatedPosts?: (string | Post)[] | null;
   /**
    * Comma-separated tags for SEO and filtering
    */
@@ -3128,6 +3220,33 @@ export interface Post {
      */
     ogImage?: (string | null) | Media;
   };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Blog post categories for organization and filtering
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: string;
+  /**
+   * Category display name
+   */
+  title: string;
+  /**
+   * URL-friendly version of the category name
+   */
+  slug: string;
+  /**
+   * Brief description of this category
+   */
+  description?: string | null;
+  /**
+   * Optional icon/image for this category
+   */
+  icon?: (string | null) | Media;
   updatedAt: string;
   createdAt: string;
 }
@@ -3955,6 +4074,10 @@ export interface PayloadLockedDocument {
         value: string | Post;
       } | null)
     | ({
+        relationTo: 'categories';
+        value: string | Category;
+      } | null)
+    | ({
         relationTo: 'artists';
         value: string | Artist;
       } | null)
@@ -3989,6 +4112,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'exports';
         value: string | Export;
+      } | null)
+    | ({
+        relationTo: 'payload-folders';
+        value: string | FolderInterface;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -4060,11 +4187,11 @@ export interface UsersSelect<T extends boolean = true> {
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
+  publicUrl?: T;
   alt?: T;
   caption?: T;
   description?: T;
   mediaType?: T;
-  usage?: T;
   videoMeta?:
     | T
     | {
@@ -4092,6 +4219,7 @@ export interface MediaSelect<T extends boolean = true> {
   featured?: T;
   tags?: T;
   prefix?: T;
+  folder?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -4594,13 +4722,23 @@ export interface StorefrontsSelect<T extends boolean = true> {
  */
 export interface PostsSelect<T extends boolean = true> {
   title?: T;
+  generateSlug?: T;
   slug?: T;
   excerpt?: T;
   featuredImage?: T;
   content?: T;
   contentBlocks?: T | {};
+  authors?: T;
+  populatedAuthors?:
+    | T
+    | {
+        id?: T;
+        name?: T;
+      };
   author?: T;
+  categoriesNew?: T;
   categories?: T;
+  relatedPosts?: T;
   tags?: T;
   status?: T;
   publishedDate?: T;
@@ -4613,6 +4751,18 @@ export interface PostsSelect<T extends boolean = true> {
         keywords?: T;
         ogImage?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  description?: T;
+  icon?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -5055,6 +5205,18 @@ export interface PayloadJobsSelect<T extends boolean = true> {
   queue?: T;
   waitUntil?: T;
   processing?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-folders_select".
+ */
+export interface PayloadFoldersSelect<T extends boolean = true> {
+  name?: T;
+  folder?: T;
+  documentsAndFolders?: T;
+  folderType?: T;
   updatedAt?: T;
   createdAt?: T;
 }
