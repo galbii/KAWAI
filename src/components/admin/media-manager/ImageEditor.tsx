@@ -58,10 +58,24 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
 
   const [isProcessing, setIsProcessing] = useState(false)
 
-  // Load image
+  // Load image and get its dimensions
   useEffect(() => {
     const url = URL.createObjectURL(file)
     setImageUrl(url)
+
+    // Load image to get dimensions BEFORE rendering
+    // This breaks the circular dependency where the img element
+    // only renders when displayDimensions > 0, but dimensions
+    // are only set via onLoad which requires the img to render
+    const img = new Image()
+    img.onload = () => {
+      setImageDimensions({
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+      })
+    }
+    img.src = url
+
     return () => URL.revokeObjectURL(url)
   }, [file])
 

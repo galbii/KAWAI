@@ -37,6 +37,25 @@ export interface MediaItem {
   createdAt: string
   updatedAt: string
   folder?: string | FolderItem | null // Folder relationship
+  // Extended fields from Media collection
+  caption?: string
+  description?: string
+  mediaType?: 'image' | 'video' | 'audio' | 'document'
+  tags?: string[]
+  featured?: boolean
+  // Video-specific metadata (nested group)
+  videoMeta?: {
+    duration?: number
+    autoplay?: boolean
+    muted?: boolean
+  }
+  // SEO and technical metadata (nested group)
+  seoMeta?: {
+    focusKeywords?: string
+    photographerCredit?: string
+    copyrightInfo?: string
+    originalSource?: string
+  }
   sizes?: {
     thumbnail?: { url: string; width: number; height: number }
     card?: { url: string; width: number; height: number }
@@ -80,6 +99,7 @@ export interface MediaManagerActions {
   setCurrentFolder: (folder: FolderItem | null) => void
   toggleFolderExpanded: (folderId: string) => void
   moveMediaToFolder: (mediaId: string, folderId: string | null) => Promise<void>
+  updateMedia: (id: string, data: Record<string, unknown>) => Promise<MediaItem | null>
 }
 
 export interface MediaManagerContextValue extends MediaManagerState, MediaManagerActions {}

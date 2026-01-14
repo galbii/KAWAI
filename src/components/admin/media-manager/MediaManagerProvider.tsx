@@ -15,6 +15,8 @@ import type { ToastMessage } from './Toast'
 interface ExtendedState extends MediaManagerState {
   toasts: ToastMessage[]
   editingFile: File | null
+  metadataEditingFile: File | null
+  editingMedia: MediaItem | null
   pendingFiles: File[]
 }
 
@@ -31,6 +33,8 @@ const initialState: ExtendedState = {
   totalDocs: 0,
   toasts: [],
   editingFile: null,
+  metadataEditingFile: null,
+  editingMedia: null,
   pendingFiles: [],
   // Folder state
   folders: [],
@@ -45,10 +49,15 @@ interface ExtendedContextValue extends MediaManagerContextValue {
   dismissToast: (id: string) => void
   showToast: (type: ToastMessage['type'], message: string) => void
   editingFile: File | null
+  metadataEditingFile: File | null
+  editingMedia: MediaItem | null
   pendingFiles: File[]
   setEditingFile: (file: File | null) => void
+  setMetadataEditingFile: (file: File | null) => void
+  setEditingMedia: (media: MediaItem | null) => void
   handleFilesSelected: (files: FileList | File[]) => void
-  uploadEditedFile: (file: File) => void
+  moveToMetadataEditing: (file: File) => void
+  uploadWithMetadata: (file: File, metadata: any) => void
   skipEditing: () => void
 }
 
@@ -149,6 +158,15 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
     updatedAt: doc.updatedAt,
     folder: doc.folder,
     sizes: doc.sizes,
+    // Extended fields
+    caption: doc.caption,
+    description: doc.description,
+    mediaType: doc.mediaType,
+    tags: doc.tags,
+    featured: doc.featured,
+    // Nested group fields
+    videoMeta: doc.videoMeta,
+    seoMeta: doc.seoMeta,
   }), [])
 
   // Fetch folders
@@ -374,11 +392,15 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
 
       const response = await fetch('/api/media', {
         method: 'POST',
+        credentials: 'include', // CRITICAL: Include auth cookies
         body: formData,
       })
 
       if (!response.ok) {
-        throw new Error(`Failed to upload ${file.name}`)
+        // Log the actual error response for debugging
+        const errorText = await response.text()
+        console.error(`Upload failed for ${file.name}:`, response.status, errorText)
+        throw new Error(`Failed to upload ${file.name}: ${response.statusText}`)
       }
 
       return response.json()
@@ -390,12 +412,14 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
       setState(prev => ({ ...prev, isUploading: false }))
       showToast('success', `Uploaded ${files.length} file${files.length > 1 ? 's' : ''}`)
     } catch (error) {
+      console.error('Upload error:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Upload failed'
       setState(prev => ({
         ...prev,
         isUploading: false,
-        error: error instanceof Error ? error.message : 'Upload failed',
+        error: errorMessage,
       }))
-      showToast('error', 'Upload failed')
+      showToast('error', errorMessage)
     }
   }, [fetchMedia, showToast, state.currentFolder])
 
@@ -422,11 +446,15 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
 
       const response = await fetch('/api/media', {
         method: 'POST',
+        credentials: 'include', // CRITICAL: Include auth cookies
         body: formData,
       })
 
       if (!response.ok) {
-        throw new Error(`Failed to upload ${file.name}`)
+        // Log the actual error response for debugging
+        const errorText = await response.text()
+        console.error(`Upload failed for ${file.name}:`, response.status, errorText)
+        throw new Error(`Failed to upload ${file.name}: ${response.statusText}`)
       }
 
       // Move to next file in queue or close editor
@@ -443,8 +471,10 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
       await fetchMedia(1)
       showToast('success', `Uploaded ${file.name}`)
     } catch (error) {
+      console.error('Upload error:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Upload failed'
       setState(prev => ({ ...prev, isUploading: false }))
-      showToast('error', 'Upload failed')
+      showToast('error', errorMessage)
     }
   }, [fetchMedia, showToast, state.currentFolder])
 
@@ -466,9 +496,89 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
     })
   }, [uploadFilesDirectly])
 
+  // Move from image editing to metadata editing
+  const moveToMetadataEditing = useCallback((file: File) => {
+    setState(prev => ({
+      ...prev,
+      editingFile: null,
+      metadataEditingFile: file,
+    }))
+  }, [])
+
+  // Upload file with metadata
+  const uploadWithMetadata = useCallback(async (file: File, metadata: any) => {
+    setState(prev => ({ ...prev, isUploading: true, metadataEditingFile: null }))
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      // Build payload with provided metadata
+      const payload: Record<string, any> = {
+        alt: metadata.alt,
+        mediaType: metadata.mediaType,
+        featured: metadata.featured,
+      }
+
+      if (metadata.caption) payload.caption = metadata.caption
+      if (metadata.description) payload.description = metadata.description
+      if (metadata.tags && metadata.tags.length > 0) payload.tags = metadata.tags
+      if (metadata.videoMeta) payload.videoMeta = metadata.videoMeta
+      if (metadata.seoMeta) payload.seoMeta = metadata.seoMeta
+
+      // Include folder if uploading to a specific folder
+      if (state.currentFolder) {
+        payload.folder = state.currentFolder.id
+      }
+
+      formData.append('_payload', JSON.stringify(payload))
+
+      const response = await fetch('/api/media', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`Upload failed for ${file.name}:`, response.status, errorText)
+        throw new Error(`Failed to upload ${file.name}: ${response.statusText}`)
+      }
+
+      // Move to next file in queue or close
+      setState(prev => {
+        const remainingFiles = prev.pendingFiles.slice(1)
+        return {
+          ...prev,
+          isUploading: false,
+          pendingFiles: remainingFiles,
+          editingFile: remainingFiles[0] || null,
+        }
+      })
+
+      await fetchMedia(1)
+      showToast('success', `Uploaded ${file.name}`)
+    } catch (error) {
+      console.error('Upload error:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Upload failed'
+      setState(prev => ({ ...prev, isUploading: false }))
+      showToast('error', errorMessage)
+    }
+  }, [fetchMedia, showToast, state.currentFolder])
+
   // Set editing file
   const setEditingFile = useCallback((file: File | null) => {
     setState(prev => ({ ...prev, editingFile: file }))
+  }, [])
+
+  // Set metadata editing file
+  const setMetadataEditingFile = useCallback((file: File | null) => {
+    setState(prev => ({ ...prev, metadataEditingFile: file }))
+  }, [])
+
+  // Set editing media
+  const setEditingMedia = useCallback((media: MediaItem | null) => {
+    setState(prev => ({ ...prev, editingMedia: media }))
   }, [])
 
   // Legacy upload function (now redirects to handleFilesSelected)
@@ -498,6 +608,38 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
     }
   }, [showToast])
 
+  // Update media item
+  const updateMedia = useCallback(async (id: string, data: Record<string, unknown>): Promise<MediaItem | null> => {
+    try {
+      const response = await fetch(`/api/media/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update media')
+      }
+
+      const result = await response.json()
+      const updatedItem = transformMedia(result.doc || result)
+
+      // Update the item in state
+      setState(prev => ({
+        ...prev,
+        media: prev.media.map(m => m.id === id ? updatedItem : m),
+        selectedMedia: prev.selectedMedia?.id === id ? updatedItem : prev.selectedMedia,
+      }))
+
+      showToast('success', 'Media updated')
+      return updatedItem
+    } catch (error) {
+      showToast('error', 'Failed to update media')
+      return null
+    }
+  }, [showToast, transformMedia])
+
   // Modal controls
   const openModal = useCallback(() => {
     setState(prev => ({ ...prev, isOpen: true }))
@@ -509,6 +651,8 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
       isOpen: false,
       selectedMedia: null,
       editingFile: null,
+      metadataEditingFile: null,
+      editingMedia: null,
       pendingFiles: [],
     }))
   }, [])
@@ -573,8 +717,11 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
     dismissToast,
     showToast,
     setEditingFile,
+    setMetadataEditingFile,
+    setEditingMedia,
     handleFilesSelected,
-    uploadEditedFile,
+    moveToMetadataEditing,
+    uploadWithMetadata,
     skipEditing,
     // Folder actions
     fetchFolders,
@@ -583,6 +730,7 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
     setCurrentFolder,
     toggleFolderExpanded,
     moveMediaToFolder,
+    updateMedia,
   }
 
   return (

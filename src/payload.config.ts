@@ -177,7 +177,7 @@ export default buildConfig({
   plugins: [
     payloadCloudPlugin(),
     importExportPlugin({
-      collections: ['kpm-christmas-2k25'],
+      collections: [{ slug: 'kpm-christmas-2k25' }],
     }),
     productlinesSeedPlugin(),
     pianosPageSeedPlugin(),
