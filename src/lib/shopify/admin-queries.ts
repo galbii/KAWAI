@@ -318,6 +318,84 @@ export const CUSTOMER_DELETE = `
 `
 
 // ============================================================================
+// Customer Metafields
+// ============================================================================
+
+/**
+ * Get customer metafields
+ *
+ * Retrieves all metafields for a customer, filtered by namespace/key if specified.
+ *
+ * @example
+ * ```typescript
+ * const data = await shopifyAdminClient.query(GET_CUSTOMER_METAFIELDS, {
+ *   id: 'gid://shopify/Customer/123456',
+ *   namespace: 'custom',
+ *   key: 'location'
+ * })
+ * ```
+ */
+export const GET_CUSTOMER_METAFIELDS = `
+  query getCustomerMetafields($id: ID!, $namespace: String, $key: String) {
+    customer(id: $id) {
+      id
+      metafields(namespace: $namespace, key: $key, first: 20) {
+        edges {
+          node {
+            id
+            namespace
+            key
+            value
+            type
+          }
+        }
+      }
+    }
+  }
+`
+
+/**
+ * Set customer metafields
+ *
+ * Creates or updates metafields on a customer. Supports up to 25 metafields per request.
+ * This operation is atomic - all metafields are set or none are.
+ *
+ * IMPORTANT: Requires `write_customers` scope
+ *
+ * @example
+ * ```typescript
+ * const data = await shopifyAdminClient.mutate(SET_CUSTOMER_METAFIELDS, {
+ *   metafields: [
+ *     {
+ *       key: 'location',
+ *       namespace: 'custom',
+ *       value: '["dallas", "chicago"]',
+ *       type: 'list.single_line_text_field',
+ *       ownerId: 'gid://shopify/Customer/123456'
+ *     }
+ *   ]
+ * })
+ * ```
+ */
+export const SET_CUSTOMER_METAFIELDS = `
+  mutation setCustomerMetafields($metafields: [MetafieldsSetInput!]!) {
+    metafieldsSet(metafields: $metafields) {
+      metafields {
+        id
+        namespace
+        key
+        value
+        type
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`
+
+// ============================================================================
 // Shop Query (for testing Admin API connection)
 // ============================================================================
 

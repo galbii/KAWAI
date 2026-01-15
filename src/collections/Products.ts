@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { fetchShopifyProduct } from '@/lib/shopify/fetch-product'
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -256,32 +257,12 @@ export const Products: CollectionConfig = {
                 condition: (data) => data.type === 'piano'
               }
             },
-            // CONSOLIDATED: Productline relationship from PianoModel
-            {
-              name: 'productline',
-              type: 'relationship',
-              relationTo: 'productlines',
-              admin: {
-                description: 'The product line/series this product belongs to',
-                condition: (data) => data.type === 'piano'
-              },
-              validate: (val: any, { data }: any) => {
-                if (data.type === 'piano' && !val) {
-                  return 'Piano products must be linked to a product line'
-                }
-                if (data.type !== 'piano' && val) {
-                  return 'Non-piano products cannot be linked to product lines'
-                }
-                return true
-              }
-            },
-            // CONSOLIDATED: Series name (from productData, moved to root)
+            // Series name (manually editable)
             {
               name: 'series',
               type: 'text',
               admin: {
-                description: 'Product series/collection (auto-populated for pianos)',
-                readOnly: true
+                description: 'Product series/collection (e.g., "CA Series", "GX Series")'
               }
             },
             // CONSOLIDATED: Model identifier (from productData, moved to root)
@@ -289,7 +270,8 @@ export const Products: CollectionConfig = {
               name: 'model',
               type: 'text',
               admin: {
-                description: 'Product model number/identifier'
+                description: 'Product model number/identifier (syncs with Shopify custom.model metafield)',
+                placeholder: 'e.g., CA99, GX-7, SK-EX'
               }
             },
             // CONSOLIDATED: Component data (moved to root level)
@@ -336,13 +318,26 @@ export const Products: CollectionConfig = {
                 description: 'Product brand/manufacturer'
               }
             },
-            // Shopify Integration
+            // Shopify Integration - Source of Truth
             {
-              name: 'shopifyHandle',
+              name: 'shopifyProductId',
               type: 'text',
               admin: {
-                description: '⚠️ DEPRECATED: Use the "model" field instead. Shopify products are now automatically matched using product tags (e.g., tag:CA99). This field is kept for backward compatibility only.',
-                placeholder: 'e.g., kawai-ca99-digital-piano'
+                description: 'Shopify Product ID or handle to fetch product data from Shopify',
+                placeholder: 'gid://shopify/Product/123456 or product-handle',
+              },
+              validate: (value: string | null | undefined) => {
+                if (!value) return true // Optional field
+
+                // Allow both GID format and handle
+                const isGid = value.startsWith('gid://shopify/Product/')
+                const isHandle = /^[a-z0-9-]+$/.test(value)
+
+                if (!isGid && !isHandle) {
+                  return 'Must be a Shopify Product ID (gid://shopify/Product/123) or handle (product-slug)'
+                }
+
+                return true
               }
             },
             // CONSOLIDATED: Key features from PianoModel
@@ -637,6 +632,141 @@ export const Products: CollectionConfig = {
           ]
         },
 
+        // Shopify Sync Tab
+        {
+          label: 'Shopify Data',
+          description: 'Product data fetched from Shopify (read-only)',
+          fields: [
+            {
+              name: 'shopifyData',
+              type: 'group',
+              admin: {
+                description: 'Data automatically fetched from Shopify when you provide a Product ID/handle above. This data is read-only and updates when you save.',
+                condition: (data) => !!data.shopifyProductId,
+              },
+              fields: [
+                {
+                  name: 'id',
+                  type: 'text',
+                  admin: {
+                    description: 'Shopify Product ID',
+                    readOnly: true,
+                  }
+                },
+                {
+                  name: 'title',
+                  type: 'text',
+                  admin: {
+                    description: 'Product title from Shopify',
+                    readOnly: true,
+                  }
+                },
+                {
+                  name: 'handle',
+                  type: 'text',
+                  admin: {
+                    description: 'Product handle/slug from Shopify',
+                    readOnly: true,
+                  }
+                },
+                {
+                  name: 'description',
+                  type: 'textarea',
+                  admin: {
+                    description: 'Product description from Shopify (plain text)',
+                    readOnly: true,
+                  }
+                },
+                {
+                  name: 'vendor',
+                  type: 'text',
+                  admin: {
+                    description: 'Product vendor from Shopify',
+                    readOnly: true,
+                  }
+                },
+                {
+                  name: 'productType',
+                  type: 'text',
+                  admin: {
+                    description: 'Product type/category from Shopify',
+                    readOnly: true,
+                  }
+                },
+                {
+                  name: 'modelMetafield',
+                  type: 'text',
+                  admin: {
+                    description: 'Model identifier from Shopify custom.model metafield',
+                    readOnly: true,
+                  }
+                },
+                {
+                  name: 'status',
+                  type: 'select',
+                  options: [
+                    { label: 'Active', value: 'ACTIVE' },
+                    { label: 'Draft', value: 'DRAFT' },
+                    { label: 'Archived', value: 'ARCHIVED' },
+                  ],
+                  admin: {
+                    description: 'Product status in Shopify',
+                    readOnly: true,
+                  }
+                },
+                {
+                  name: 'price',
+                  type: 'text',
+                  admin: {
+                    description: 'Price from Shopify (formatted)',
+                    readOnly: true,
+                  }
+                },
+                {
+                  name: 'inStock',
+                  type: 'checkbox',
+                  admin: {
+                    description: 'Product availability in Shopify',
+                    readOnly: true,
+                  }
+                },
+                {
+                  name: 'variantCount',
+                  type: 'number',
+                  admin: {
+                    description: 'Number of variants from Shopify',
+                    readOnly: true,
+                  }
+                },
+                {
+                  name: 'imageCount',
+                  type: 'number',
+                  admin: {
+                    description: 'Number of images from Shopify',
+                    readOnly: true,
+                  }
+                },
+                {
+                  name: 'lastFetchedAt',
+                  type: 'date',
+                  admin: {
+                    description: 'Last time data was fetched from Shopify',
+                    readOnly: true,
+                  }
+                },
+                {
+                  name: 'fetchError',
+                  type: 'textarea',
+                  admin: {
+                    description: 'Error message if fetch failed',
+                    readOnly: true,
+                  }
+                }
+              ]
+            }
+          ]
+        },
+
         // Settings Tab
         {
           label: 'Settings',
@@ -750,15 +880,7 @@ export const Products: CollectionConfig = {
           data.slug = generatedSlug || 'product'
           console.log(`🔗 Generated slug from name "${data.name}" -> "${data.slug}"`)
         }
-        
-        // Auto-populate series name for pianos from productline
-        if (data.type === 'piano' && data.productline && typeof data.productline === 'object') {
-          if (data.productline.name) {
-            data.series = data.productline.name
-            console.log(`🎹 Auto-populated series from productline: "${data.productline.name}"`)
-          }
-        }
-        
+
         // Add default productHero block for new products if pageContent is empty
         if (operation === 'create' && (!data.pageContent || data.pageContent.length === 0)) {
           data.pageContent = [

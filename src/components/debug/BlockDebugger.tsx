@@ -56,9 +56,9 @@ export function BlockDebugger({ product }: BlockDebuggerProps) {
               <p className="text-sm text-gray-600">
                 Type: {product.type} | Status: {product.status} | Category: {product.category}
               </p>
-              {product.productline && (
+              {product.series && (
                 <p className="text-xs text-gray-500">
-                  Series: {typeof product.productline === 'object' ? product.productline.name : product.productline}
+                  Series: {product.series}
                 </p>
               )}
             </div>

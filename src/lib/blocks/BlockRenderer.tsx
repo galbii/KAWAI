@@ -2,6 +2,7 @@ import React from 'react'
 import type { Product } from '@/payload-types'
 import { populateBlockData } from '@/lib/blockDataPopulation'
 import { validateBlock, logBlockValidation } from './BlockValidator'
+import { getProductByModel } from '@/lib/shopify'
 
 // Import all block components
 import { HeroBlock } from '@/components/blocks/HeroBlock'
@@ -44,7 +45,7 @@ interface BlockRendererProps {
 /**
  * BlockRenderer - Renders a single block with proper data population
  */
-export function BlockRenderer({ block, index, product }: BlockRendererProps) {
+export async function BlockRenderer({ block, index, product }: BlockRendererProps) {
   // Safely extract block type
   const blockType = block.blockType as BlockType
   
@@ -61,20 +62,44 @@ export function BlockRenderer({ block, index, product }: BlockRendererProps) {
   const BlockComponent = BLOCK_COMPONENTS[blockType]
 
   try {
-    // For ProductHero blocks, pass product data directly without complex data population
+    // For ProductHero blocks, fetch Shopify product and pass both CMS + Shopify data
     if (blockType === 'productHero') {
+      // Fetch Shopify product server-side using model field
+      let shopifyProduct = null
+
+      if (product.model) {
+        try {
+          console.log(`[BlockRenderer] Fetching Shopify product for model: "${product.model}"`)
+          shopifyProduct = await getProductByModel(product.model)
+
+          if (shopifyProduct) {
+            console.log(`[BlockRenderer] Shopify product loaded: "${shopifyProduct.title}" with ${shopifyProduct.variants.length} variant(s)`)
+          } else {
+            console.log(`[BlockRenderer] No Shopify product found for model "${product.model}"`)
+          }
+        } catch (error) {
+          console.error('[BlockRenderer] Failed to fetch Shopify product:', error)
+          shopifyProduct = null
+        }
+      } else {
+        console.log('[BlockRenderer] No model field available, skipping Shopify lookup')
+      }
+
       const populatedBlock = {
         ...block,
-        product: product
+        product: product,
+        shopifyProduct: shopifyProduct
       }
-      
+
       // Log ProductHero rendering in development
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[BlockRenderer] Rendering ProductHero block with direct product data:`, {
+        console.log(`[BlockRenderer] Rendering ProductHero block:`, {
           blockId: block.id,
           productName: product.name,
           hasMainImage: !!product.mainImage,
-          hasFinishes: !!(product.finishes && product.finishes.length > 0)
+          hasFinishes: !!(product.finishes && product.finishes.length > 0),
+          hasShopifyProduct: !!shopifyProduct,
+          shopifyVariants: shopifyProduct?.variants.length || 0
         })
       }
 
@@ -96,7 +121,7 @@ export function BlockRenderer({ block, index, product }: BlockRendererProps) {
         blockId: block.id,
         dataSource: block.dataSource,
         hasProduct: !!product,
-        hasProductline: !!(product.productline && typeof product.productline === 'object')
+        hasProductline: false // Productlines collection removed
       })
     }
 

@@ -3,7 +3,6 @@
 
 // Import Payload generated types
 import type {
-  Productline,
   Media as PayloadMedia,
   User,
   PianosPage,
@@ -12,7 +11,6 @@ import type {
 
 // Re-export for convenience
 export type {
-  Productline,
   Product,
   User,
   PianosPage
@@ -268,19 +266,6 @@ export interface ComponentPiano {
 }
 
 // API Response types (using Payload generated types)
-export interface ProductlinesResponse {
-  docs: Productline[]
-  totalDocs: number
-  limit: number
-  totalPages: number
-  page: number
-  pagingCounter: number
-  hasPrevPage: boolean
-  hasNextPage: boolean
-  prevPage?: number
-  nextPage?: number
-}
-
 export interface PianoModelsResponse {
   docs: Product[]
   totalDocs: number

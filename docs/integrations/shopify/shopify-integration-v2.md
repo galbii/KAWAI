@@ -73,6 +73,99 @@ The Shopify integration library is a **production-ready, type-safe bridge** betw
 | **Customer CRM** | `upsertCustomer()` (create-or-update with tags) | `customers.ts` |
 | **Navigation Menu** | `getProductTypesWithProducts()` | `navigation.ts` |
 | **Search/Filter** | `searchProducts()`, `getProductsByType()` | `products.ts` |
+| **Model Lookup** | `getProductByModel()` with metafield + tag fallback | `products.ts`, `fetch-product.ts` |
+
+---
+
+## Product Lookup Strategies
+
+The Shopify integration provides multiple methods for locating products, each optimized for different use cases.
+
+### Metafield-Based Lookup (Recommended)
+
+The integration supports **metafield-based product lookup** using the `custom.model` metafield. This is the preferred method for identifying products by model number.
+
+**Benefits:**
+- ✅ Structured data storage in Shopify
+- ✅ No tag pollution or conflicts
+- ✅ Type-safe queries with Admin API
+- ✅ Clear separation: metafields for IDs, tags for marketing
+- ✅ Automatic fallback to tag-based search
+
+**Setup in Shopify:**
+
+1. Navigate to Shopify Admin → Settings → Custom data → Products
+2. Add metafield definition:
+   - **Namespace**: `custom`
+   - **Key**: `model`
+   - **Type**: Single line text
+   - **Description**: "Product model identifier (e.g., CA99, GX-7)"
+3. For each product, set the `custom.model` metafield value to match your model identifier
+
+**Usage:**
+
+```typescript
+import { getProductByModel } from '@/lib/shopify'
+
+// Automatically uses metafield lookup with tag fallback
+const product = await getProductByModel('CA99')
+
+if (product) {
+  console.log(product.title) // "Kawai CA99 Digital Piano"
+}
+```
+
+**How It Works:**
+
+```
+┌─────────────────────────────────────────────┐
+│  getProductByModel('CA99')                  │
+└───────────────┬─────────────────────────────┘
+                │
+        ┌───────┴────────┐
+        │  Strategy 1:   │
+        │  Metafield     │────► Admin API: productByIdentifier
+        │  Lookup        │      with customId {namespace: "custom",
+        └───────┬────────┘      key: "model", value: "CA99"}
+                │
+                ├─ Found? ──► Return product ✅
+                │
+                └─ Not Found
+                   │
+           ┌───────┴────────┐
+           │  Strategy 2:   │
+           │  Tag Fallback  │────► Storefront API: search
+           │  (Legacy)      │      query: "tag:CA99"
+           └───────┬────────┘
+                   │
+                   ├─ Found? ──► Return product ✅
+                   │
+                   └─ Not Found ──► Return null
+```
+
+### Handle-Based Lookup (URL-Friendly)
+
+Use product handles (slugs) for SEO-friendly URLs and routing:
+
+```typescript
+const product = await getProductByHandle('ca99-digital-piano')
+```
+
+**When to use:**
+- Product detail pages (`/products/[handle]`)
+- URL routing
+- SEO optimization
+
+### Tag-Based Lookup (Legacy Fallback)
+
+The integration maintains backward compatibility with tag-based product lookup. This is automatically used as a fallback if metafield lookup fails.
+
+**When to use tags:**
+- Migration period (products not yet updated with metafields)
+- Quick testing without metafield setup
+- Redundant identifier for reliability
+
+**Best Practice:** Set both `custom.model` metafield AND product tag for maximum reliability during migration.
 
 ---
 
@@ -647,15 +740,97 @@ const shopifyProduct = payloadProduct.shopifyHandle
   : await getProductByModel(payloadProduct.model)
 ```
 
+**How It Works:**
+- **Primary Strategy**: Queries Admin API using `custom.model` metafield
+- **Fallback Strategy**: Queries Storefront API using product tags
+- **Case Handling**: Normalizes model to uppercase automatically
+- **Error Resilience**: Falls back to tags if Admin API fails
+
 **Requirements:**
-- Products must be tagged with model name in Shopify
-- Tag format: Exact match (case-sensitive)
-- Example tags: "CA99", "GX-7", "SK-EX"
+- **Recommended**: Set `custom.model` metafield in Shopify for optimal performance
+- **Fallback**: Products can be tagged with model name for backward compatibility
+- Model format: Uppercase alphanumeric (e.g., "CA99", "GX-7", "SK-EX")
 
 **Best Practices:**
-- Tag products consistently in Shopify
-- Use this for automatic product linking from CMS
-- Fallback to `getProductByHandle()` if tag not found
+- ✅ Set both metafield AND tag during migration period
+- ✅ Use consistent model format (uppercase recommended)
+- ✅ Case-insensitive: "ca99" and "CA99" both work
+- ❌ Don't rely solely on tags for new products
+
+---
+
+#### `fetchShopifyProductByModel(model)`
+
+Fetch a product from Shopify by model identifier using the `custom.model` metafield (Admin API only).
+
+**Type Signature:**
+```typescript
+async function fetchShopifyProductByModel(
+  model: string
+): Promise<ShopifyProductData | null>
+```
+
+**Return Value:**
+```typescript
+interface ShopifyProductData {
+  id: string
+  title: string
+  handle: string
+  description: string
+  descriptionHtml: string
+  vendor: string
+  productType: string
+  tags: string[]
+  status: 'ACTIVE' | 'DRAFT' | 'ARCHIVED'
+  price: {
+    min: string
+    max: string
+    currency: string
+    display: string
+  }
+  images: Array<{url: string, alt: string, width: number, height: number}>
+  featuredImage: {url: string, alt: string, width: number, height: number} | null
+  variants: Array<{
+    id: string
+    title: string
+    price: string
+    sku: string
+    available: boolean
+    inventoryQuantity: number
+  }>
+  metafields?: {
+    model?: string
+  }
+  inStock: boolean
+  createdAt: string
+  updatedAt: string
+  publishedAt: string | null
+}
+```
+
+**Usage Example:**
+```typescript
+import { fetchShopifyProductByModel } from '@/lib/shopify'
+
+const product = await fetchShopifyProductByModel('CA99')
+
+if (product) {
+  console.log(product.title)
+  console.log(product.metafields?.model) // "CA99"
+  console.log(product.price.display)     // "$1,299.00"
+}
+```
+
+**Admin API Requirements:**
+- Uses Admin GraphQL API (requires `read_products` scope)
+- OAuth 2.0 authentication (automatic via `shopifyAdminClient`)
+- Query: `productByIdentifier` with `customId` parameter
+
+**When to Use:**
+- Direct Admin API access needed
+- Server-side operations only
+- Need full Admin API product data structure
+- **Note**: Most use cases should use `getProductByModel()` which includes fallback logic
 
 ---
 
@@ -819,10 +994,8 @@ export async function submitContactForm(formData: FormData) {
 ```typescript
 // Recommended tag patterns for CRM organization:
 
-// Location tags
-'location-stlouis'
-'location-chicago'
-'location-nashville'
+// ⚠️ NOTE: Location tracking now uses metafields (see section below)
+// Do NOT use location tags anymore - use addCustomerLocation() instead
 
 // Inquiry type tags
 'inquiry-piano-consultation'
@@ -853,9 +1026,172 @@ export async function submitContactForm(formData: FormData) {
 - ✅ Tag customers consistently for CRM segmentation
 - ✅ Include source tracking tags
 - ✅ Use kebab-case for tag names
-- ✅ Namespace tags by category (location-, inquiry-, source-)
+- ✅ Namespace tags by category (inquiry-, source-)
+- ✅ **Use metafields for location tracking** (not tags)
 - ❌ Don't call from client components (server actions only)
 - ❌ Don't manually check if customer exists first (function does this)
+- ❌ Don't use `location-*` tags anymore (use `addCustomerLocation()` instead)
+
+---
+
+### Customer Metafields - Dealer Location Tracking
+
+#### Why Metafields Instead of Tags?
+
+The KAWAI integration uses **metafields** to track which dealer locations a customer has visited, rather than tags. This provides several advantages:
+
+| Feature | Tags (Old Approach) | Metafields (Current) |
+|---------|-------------------|----------------------|
+| **Multiple Locations** | Clutters tag list | Clean list in Shopify Admin |
+| **Querying** | Limited filtering | Advanced Shopify filters |
+| **Data Structure** | Flat strings | Native List type |
+| **Scalability** | Tag pollution | Organized namespaces |
+| **Use Case** | General categorization | Structured dealer tracking |
+| **Admin UI** | Mixed with other tags | Dedicated field with checkboxes |
+
+#### `addCustomerLocation(customerId, locationSlug)` ⭐ RECOMMENDED
+
+Add a dealer location to a customer's location metafield. Automatically handles duplicates and creates the metafield if it doesn't exist.
+
+**Type Signature:**
+```typescript
+async function addCustomerLocation(
+  customerId: string,     // Shopify customer GID
+  locationSlug: string    // Dealer slug (e.g., "dallas", "chicago")
+): Promise<string[]>      // Returns all locations
+```
+
+**How It Works:**
+
+```typescript
+1. Fetches existing locations from metafield (custom.location)
+2. Checks if new location already exists
+3. If duplicate → returns existing locations (no API call)
+4. If new → adds to array and updates metafield
+5. Returns complete list of all locations
+```
+
+**Metafield Structure:**
+```json
+{
+  "namespace": "custom",
+  "key": "location",
+  "type": "list.single_line_text_field",
+  "value": "[\"dallas\", \"chicago\", \"nashville\"]"
+}
+```
+
+**Shopify Admin Display:**
+When viewing in Shopify Admin, this appears as a clean list:
+```
+☐ dallas
+☐ chicago
+☐ nashville
+```
+
+**Usage Examples:**
+
+```typescript
+// Contact form submission with location tracking
+'use server'
+export async function submitContactForm(formData: FormData) {
+  const email = formData.get('email') as string
+  const storefrontSlug = formData.get('storefront') as string
+
+  // Create/update customer (WITHOUT location tag)
+  const customer = await upsertCustomer({
+    email,
+    firstName: formData.get('firstName') as string,
+    lastName: formData.get('lastName') as string,
+    tags: [
+      'inquiry-consultation',   // ✅ Custom tags
+      'source-contact-form',    // ✅ Source tracking
+      // ❌ NO 'location-dallas' tag
+    ]
+  })
+
+  // Track location via metafield
+  await addCustomerLocation(customer.id, storefrontSlug)
+  // If customer visited Dallas → ['dallas']
+  // If they later visit Chicago → ['dallas', 'chicago']
+}
+```
+
+**Multi-Location Scenario:**
+
+```typescript
+// Customer signs up from Dallas showroom
+const customer1 = await upsertCustomer({ email: 'customer@example.com' })
+await addCustomerLocation(customer1.id, 'dallas')
+// Metafield: ["dallas"]
+
+// Same customer later visits Chicago showroom
+const customer2 = await upsertCustomer({ email: 'customer@example.com' })
+await addCustomerLocation(customer2.id, 'chicago')
+// Metafield: ["dallas", "chicago"]
+
+// Duplicate visit to Dallas (no-op)
+await addCustomerLocation(customer2.id, 'dallas')
+// Metafield: ["dallas", "chicago"] (unchanged)
+```
+
+#### `getCustomerLocations(customerId)`
+
+Retrieve all dealer locations a customer has visited.
+
+**Type Signature:**
+```typescript
+async function getCustomerLocations(
+  customerId: string
+): Promise<string[]>  // Returns array of location slugs
+```
+
+**Usage Example:**
+
+```typescript
+// Get customer's location history
+const locations = await getCustomerLocations('gid://shopify/Customer/123456')
+console.log(locations)  // ['dallas', 'chicago', 'nashville']
+
+// Check if customer visited specific location
+const visitedDallas = locations.includes('dallas')
+
+// Count total dealer interactions
+const dealerInteractions = locations.length
+```
+
+**Best Practices:**
+- ✅ Use `addCustomerLocation()` for all dealer location tracking
+- ✅ Never use `location-*` tags anymore
+- ✅ Location metafield automatically handles duplicates
+- ✅ Query Shopify Admin for customers by metafield value
+- ✅ Use tags for categorization (inquiry type, source, lifecycle)
+- ❌ Don't manually set the metafield (use helper function)
+- ❌ Don't mix location tags and metafields (choose one approach)
+
+**Migration from Tags to Metafields:**
+
+If you have existing customers with `location-*` tags, you can migrate them:
+
+```typescript
+// Migration script (run once)
+const customers = await shopifyAdminClient.query(/* get all customers with location tags */)
+
+for (const customer of customers) {
+  // Extract location from tags
+  const locationTags = customer.tags.filter(tag => tag.startsWith('location-'))
+  const locations = locationTags.map(tag => tag.replace('location-', ''))
+
+  // Set metafield with all locations
+  for (const location of locations) {
+    await addCustomerLocation(customer.id, location)
+  }
+
+  // Optionally remove old location tags
+  const tagsWithoutLocation = customer.tags.filter(tag => !tag.startsWith('location-'))
+  await replaceCustomerTags(customer.id, tagsWithoutLocation)
+}
+```
 
 ---
 
@@ -2245,6 +2581,182 @@ if (json.extensions?.cost) {
   }
 }
 ```
+
+---
+
+## Migration Guide: Tags to Metafields
+
+If you're currently using tag-based product lookup, here's how to migrate to metafield-based lookup for improved reliability and structure.
+
+### Overview
+
+The metafield-based approach provides better data integrity and separates product identifiers from marketing tags. The migration is **non-breaking** with automatic fallback support.
+
+### Step 1: Audit Current Tags
+
+List all products using model tags to understand the scope:
+
+```typescript
+import { getProducts } from '@/lib/shopify'
+
+const products = await getProducts({ first: 250 })
+
+products.forEach(product => {
+  // Find tags that look like model identifiers (uppercase alphanumeric)
+  const modelTag = product.tags.find(tag => /^[A-Z0-9-]+$/.test(tag))
+  console.log(`${product.handle}: ${modelTag || 'NO MODEL TAG'}`)
+})
+```
+
+### Step 2: Create Metafield Definition in Shopify
+
+1. Navigate to Shopify Admin → Settings → Custom data → Products
+2. Click "Add definition"
+3. Configure metafield:
+   - **Namespace**: `custom`
+   - **Key**: `model`
+   - **Name**: Product Model
+   - **Type**: Single line text
+   - **Description**: "Product model identifier (e.g., CA99, GX-7, SK-EX)"
+4. Click "Save"
+
+### Step 3: Populate Metafield Values
+
+**Option A: Manual (Small Catalog)**
+
+Edit each product in Shopify Admin:
+1. Go to Products → Select product
+2. Scroll to "Metafields" section
+3. Find "Product Model" field
+4. Enter model value (e.g., "CA99")
+5. Save
+
+**Option B: Bulk via GraphQL (Large Catalog)**
+
+Use the Admin API to bulk update products:
+
+```typescript
+import { shopifyAdminClient } from '@/lib/shopify/admin-client'
+
+const SET_PRODUCT_METAFIELD = `
+  mutation SetProductMetafield($metafields: [MetafieldsSetInput!]!) {
+    metafieldsSet(metafields: $metafields) {
+      metafields {
+        id
+        namespace
+        key
+        value
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`
+
+// For each product
+const productId = 'gid://shopify/Product/1234567890'
+const modelValue = 'CA99'
+
+await shopifyAdminClient.mutate(SET_PRODUCT_METAFIELD, {
+  metafields: [{
+    ownerId: productId,
+    namespace: 'custom',
+    key: 'model',
+    value: modelValue,
+    type: 'single_line_text_field'
+  }]
+})
+```
+
+**Option C: Bulk via CSV Import**
+
+1. Export products from Shopify Admin
+2. Add column: `Metafield: custom.model [single_line_text_field]`
+3. Fill in model values for each product
+4. Import updated CSV
+
+### Step 4: Verify Lookup Works
+
+Test that the metafield-based lookup functions correctly:
+
+```typescript
+import { getProductByModel, fetchShopifyProductByModel } from '@/lib/shopify'
+
+// Test high-level function (with fallback)
+const product1 = await getProductByModel('CA99')
+console.log('High-level lookup:', product1?.title)
+
+// Test direct metafield query
+const product2 = await fetchShopifyProductByModel('CA99')
+console.log('Direct metafield lookup:', product2?.title)
+console.log('Metafield value:', product2?.metafields?.model)
+```
+
+Check console logs:
+- ✅ `[getProductByModel] Found via metafield` - Success!
+- ⚠️ `[getProductByModel] Found via tag fallback` - Metafield not set, using fallback
+- ❌ `[getProductByModel] No product found` - Neither metafield nor tag exists
+
+### Step 5: Monitor & Cleanup (Optional)
+
+After successful migration (2-4 weeks recommended), you can optionally clean up model tags:
+
+1. **Keep Tags**: Recommended approach - maintain both for redundancy
+2. **Remove Tags**: Only after 100% metafield coverage verified
+
+```typescript
+// Script to verify metafield coverage before removing tags
+const products = await getProducts({ first: 250 })
+
+const coverage = products.map(product => {
+  const hasMetafield = product.metadata?.model !== undefined
+  const hasTag = product.tags.some(tag => /^[A-Z0-9-]+$/.test(tag))
+
+  return {
+    handle: product.handle,
+    hasMetafield,
+    hasTag,
+    ready: hasMetafield // Ready for tag removal
+  }
+})
+
+const readyCount = coverage.filter(p => p.ready).length
+console.log(`${readyCount}/${coverage.length} products have metafields`)
+```
+
+### Migration Checklist
+
+- [ ] Audit existing model tags
+- [ ] Create `custom.model` metafield definition in Shopify
+- [ ] Populate metafield values for all products
+- [ ] Test `getProductByModel()` lookup
+- [ ] Verify metafield values in console logs
+- [ ] Monitor for 2-4 weeks
+- [ ] (Optional) Remove model tags after verification
+
+### Rollback Plan
+
+If issues arise, the tag-based fallback ensures continuity:
+
+1. **No Code Changes Needed**: Tag fallback is automatic
+2. **Metafield Issues**: Products without metafields fall back to tags
+3. **Full Rollback**: Remove metafield definitions in Shopify (tags continue working)
+
+### FAQ
+
+**Q: Do I need to update my code during migration?**
+A: No. The `getProductByModel()` function automatically tries metafields first, then falls back to tags. Existing code continues working.
+
+**Q: Can I have both metafield and tag set?**
+A: Yes! This is recommended during migration for maximum reliability.
+
+**Q: What happens if metafield and tag don't match?**
+A: The metafield takes priority. Ensure consistency or remove conflicting tags.
+
+**Q: Will this affect performance?**
+A: Metafield lookups are **faster** than tag searches. Admin API queries are indexed by metafield.
 
 ---
 

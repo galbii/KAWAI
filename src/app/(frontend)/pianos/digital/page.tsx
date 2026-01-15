@@ -2,9 +2,7 @@
 
 import { CategoryHero } from "@/components/piano/category-hero";
 import { UnifiedPianoSeries } from "@/components/piano/unified-piano-series";
-import { useEffect, useState } from "react";
-import { getProductlines, transformProductlinesToSeries, getProductlinesWithProducts } from "@/lib/payload";
-import { Productline } from "@/lib/types";
+import { useState } from "react";
 
 // Featured digital pianos - highlighting the best from each series
 const featuredDigitalPianos = [
@@ -228,36 +226,10 @@ const digitalPianoSeries = [
 
 
 export default function DigitalPianosPage() {
-  const [productlines, setProductlines] = useState<Productline[]>([]);
-  const [series, setSeries] = useState(digitalPianoSeries);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [series] = useState(digitalPianoSeries);
+  const [loading] = useState(false); // Productlines removed - using fallback data
+  const [error] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchProductlines() {
-      try {
-        setLoading(true);
-        // Use the function that fetches productlines WITH their products via join field
-        const seriesWithPianos = await getProductlinesWithProducts('digital');
-        
-        if (seriesWithPianos.length > 0) {
-          setSeries(seriesWithPianos);
-          // Also set productlines for compatibility
-          const productlines = await getProductlines('digital');
-          setProductlines(productlines);
-        }
-      } catch (err) {
-        console.error('Failed to fetch productlines:', err);
-        setError('Failed to load product data');
-        // Keep using hardcoded data as fallback
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchProductlines();
-  }, []);
-  
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -303,7 +275,6 @@ export default function DigitalPianosPage() {
           description="Discover our complete collection of digital piano series. Each series showcases distinct technologies and features for different musical needs."
           series={series}
           categorySlug="digital"
-          productlines={productlines}
         />
       )}
 

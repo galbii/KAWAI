@@ -35,6 +35,8 @@ interface StorefrontsMegaMenuProps {
   className?: string
   /** Whether data is still loading */
   isLoading?: boolean
+  /** Whether the header is in scrolled (compact) state */
+  isHeaderScrolled?: boolean
 }
 
 // ============================================================================
@@ -66,6 +68,7 @@ export function StorefrontsMegaMenu({
   onClose,
   className,
   isLoading = false,
+  isHeaderScrolled = false,
 }: StorefrontsMegaMenuProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
@@ -104,7 +107,7 @@ export function StorefrontsMegaMenu({
             className
           )}
           style={{
-            top: 'var(--header-height, 80px)',
+            top: isHeaderScrolled ? '64px' : '80px',
             width: '100vw',
           }}
         >

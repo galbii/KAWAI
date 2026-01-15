@@ -55,13 +55,10 @@ const DEFAULT_RETRY_CONFIG = {
  * Tokens are fetched dynamically via getAdminAccessToken() from auth.ts
  */
 function getShopifyAdminConfig(): ShopifyAdminConfig {
-  const storeDomain = process.env.SHOPIFY_STORE_DOMAIN
+  const storeDomain = process.env.SHOPIFY_STORE_DOMAIN || ''
 
-  if (!storeDomain) {
-    throw new Error(
-      'Missing Shopify Admin API configuration. Please set SHOPIFY_STORE_DOMAIN environment variable.'
-    )
-  }
+  // Note: We don't throw here during module load (for TypeScript compilation)
+  // Validation happens when the client is actually used in execute()
 
   return {
     storeDomain,
@@ -200,6 +197,13 @@ export class ShopifyAdminClient {
     variables?: TVariables,
     options: ShopifyRequestOptions = {}
   ): Promise<TData> {
+    // Validate configuration before executing (lazy validation)
+    if (!this.config.storeDomain) {
+      throw new Error(
+        'Shopify Admin API is not configured. Please set SHOPIFY_STORE_DOMAIN environment variable.'
+      )
+    }
+
     const {
       timeout = 10000,
       retries = DEFAULT_RETRY_CONFIG.maxRetries,

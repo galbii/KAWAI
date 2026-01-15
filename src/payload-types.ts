@@ -90,30 +90,22 @@ export interface Config {
     media: Media;
     'home-page': HomePage;
     'pianos-page': PianosPage;
+    'concert-artist-page': ConcertArtistPage;
     storefronts: Storefront;
     posts: Post;
     categories: Category;
     artists: Artist;
-    'concert-artist-page': ConcertArtistPage;
     products: Product;
-    productlines: Productline;
     dealers: Dealer;
     'constant-contact-settings': ConstantContactSetting;
     'constant-contact-custom-fields': ConstantContactCustomField;
-    'kpm-christmas-2k25': KpmChristmas2K25;
-    exports: Export;
-    imports: Import;
     'payload-kv': PayloadKv;
-    'payload-jobs': PayloadJob;
     'payload-folders': FolderInterface;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
   collectionsJoins: {
-    productlines: {
-      products: 'products';
-    };
     'payload-folders': {
       documentsAndFolders: 'payload-folders' | 'media';
     };
@@ -123,21 +115,16 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     'home-page': HomePageSelect<false> | HomePageSelect<true>;
     'pianos-page': PianosPageSelect<false> | PianosPageSelect<true>;
+    'concert-artist-page': ConcertArtistPageSelect<false> | ConcertArtistPageSelect<true>;
     storefronts: StorefrontsSelect<false> | StorefrontsSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     artists: ArtistsSelect<false> | ArtistsSelect<true>;
-    'concert-artist-page': ConcertArtistPageSelect<false> | ConcertArtistPageSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
-    productlines: ProductlinesSelect<false> | ProductlinesSelect<true>;
     dealers: DealersSelect<false> | DealersSelect<true>;
     'constant-contact-settings': ConstantContactSettingsSelect<false> | ConstantContactSettingsSelect<true>;
     'constant-contact-custom-fields': ConstantContactCustomFieldsSelect<false> | ConstantContactCustomFieldsSelect<true>;
-    'kpm-christmas-2k25': KpmChristmas2K25Select<false> | KpmChristmas2K25Select<true>;
-    exports: ExportsSelect<false> | ExportsSelect<true>;
-    imports: ImportsSelect<false> | ImportsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
-    'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -154,14 +141,7 @@ export interface Config {
     collection: 'users';
   };
   jobs: {
-    tasks: {
-      createCollectionExport: TaskCreateCollectionExport;
-      createCollectionImport: TaskCreateCollectionImport;
-      inline: {
-        input: unknown;
-        output: unknown;
-      };
-    };
+    tasks: unknown;
     workflows: unknown;
   };
 }
@@ -419,15 +399,11 @@ export interface Product {
       }[]
     | null;
   /**
-   * The product line/series this product belongs to
-   */
-  productline?: (string | null) | Productline;
-  /**
-   * Product series/collection (auto-populated for pianos)
+   * Product series/collection (e.g., "CA Series", "GX Series")
    */
   series?: string | null;
   /**
-   * Product model number/identifier
+   * Product model number/identifier (syncs with Shopify custom.model metafield)
    */
   model?: string | null;
   /**
@@ -451,9 +427,9 @@ export interface Product {
    */
   brand?: string | null;
   /**
-   * ⚠️ DEPRECATED: Use the "model" field instead. Shopify products are now automatically matched using product tags (e.g., tag:CA99). This field is kept for backward compatibility only.
+   * Shopify Product ID or handle to fetch product data from Shopify
    */
-  shopifyHandle?: string | null;
+  shopifyProductId?: string | null;
   /**
    * Main selling points and key features
    */
@@ -605,6 +581,67 @@ export interface Product {
      * Open Graph image for social sharing (defaults to main image)
      */
     ogImage?: (string | null) | Media;
+  };
+  /**
+   * Data automatically fetched from Shopify when you provide a Product ID/handle above. This data is read-only and updates when you save.
+   */
+  shopifyData?: {
+    /**
+     * Shopify Product ID
+     */
+    id?: string | null;
+    /**
+     * Product title from Shopify
+     */
+    title?: string | null;
+    /**
+     * Product handle/slug from Shopify
+     */
+    handle?: string | null;
+    /**
+     * Product description from Shopify (plain text)
+     */
+    description?: string | null;
+    /**
+     * Product vendor from Shopify
+     */
+    vendor?: string | null;
+    /**
+     * Product type/category from Shopify
+     */
+    productType?: string | null;
+    /**
+     * Model identifier from Shopify custom.model metafield
+     */
+    modelMetafield?: string | null;
+    /**
+     * Product status in Shopify
+     */
+    status?: ('ACTIVE' | 'DRAFT' | 'ARCHIVED') | null;
+    /**
+     * Price from Shopify (formatted)
+     */
+    price?: string | null;
+    /**
+     * Product availability in Shopify
+     */
+    inStock?: boolean | null;
+    /**
+     * Number of variants from Shopify
+     */
+    variantCount?: number | null;
+    /**
+     * Number of images from Shopify
+     */
+    imageCount?: number | null;
+    /**
+     * Last time data was fetched from Shopify
+     */
+    lastFetchedAt?: string | null;
+    /**
+     * Error message if fetch failed
+     */
+    fetchError?: string | null;
   };
   /**
    * Product visibility and display settings
@@ -817,73 +854,6 @@ export interface FolderInterface {
     totalDocs?: number;
   };
   folderType?: 'media'[] | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Piano product lines and series management
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "productlines".
- */
-export interface Productline {
-  id: string;
-  /**
-   * Series name (e.g., "CA Series", "Shigeru Kawai SK Series")
-   */
-  name: string;
-  /**
-   * URL-friendly version of name
-   */
-  slug: string;
-  /**
-   * Piano category for organizing series
-   */
-  category: 'digital' | 'grand' | 'hybrid' | 'upright';
-  /**
-   * Main series description for the browser
-   */
-  description: string;
-  /**
-   * Optional highlighted callout text
-   */
-  highlight?: string | null;
-  /**
-   * Main series image displayed in the browser (can be added after seeding)
-   */
-  image?: (string | null) | Media;
-  /**
-   * Additional slides for the clean series browser carousel
-   */
-  slides?:
-    | {
-        /**
-         * Title for this slide
-         */
-        title: string;
-        /**
-         * Slide image (can be added after seeding)
-         */
-        image?: (string | null) | Media;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Products in this series (automatically populated)
-   */
-  products?: {
-    docs?: (string | Product)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  /**
-   * Feature this series prominently
-   */
-  featured?: boolean | null;
-  /**
-   * Display order (lower numbers first)
-   */
-  sortOrder?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2595,6 +2565,89 @@ export interface PianosPage {
   createdAt: string;
 }
 /**
+ * Manage Concert Artist page content - models overview and image gallery
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "concert-artist-page".
+ */
+export interface ConcertArtistPage {
+  id: string;
+  /**
+   * Internal title for admin identification
+   */
+  pageTitle: string;
+  modelsOverviewSection: {
+    /**
+     * Section header eyebrow text
+     */
+    sectionHeader: string;
+    /**
+     * Section main title
+     */
+    sectionTitle: string;
+  };
+  /**
+   * Four Concert Artist models displayed in the overview section
+   */
+  concertArtistModels: {
+    /**
+     * Model name (e.g., "CA401", "CA501")
+     */
+    name: string;
+    /**
+     * Model tagline (e.g., "Where Mastery Begins")
+     */
+    tagline: string;
+    /**
+     * Brief model description (1-2 sentences)
+     */
+    descriptor: string;
+    /**
+     * Model showcase image
+     */
+    image?: (string | null) | Media;
+    /**
+     * Link to product page (e.g., "/products/ca401")
+     */
+    link: string;
+    id?: string | null;
+  }[];
+  /**
+   * Image galleries for all four Concert Artist models
+   */
+  modelGalleries: {
+    /**
+     * Model identifier
+     */
+    modelId: 'ca401' | 'ca501' | 'ca701' | 'ca901';
+    /**
+     * Model name display (e.g., "CA401")
+     */
+    modelName: string;
+    /**
+     * Model tagline for gallery tab
+     */
+    tagline: string;
+    /**
+     * Six showcase images for this model
+     */
+    images: {
+      /**
+       * Gallery image
+       */
+      image?: (string | null) | Media;
+      /**
+       * Image alt text for accessibility
+       */
+      alt: string;
+      id?: string | null;
+    }[];
+    id?: string | null;
+  }[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Manage storefront locations with customizable content structure including hero, showroom information, piano collection, gallery, news, contact form, and SEO.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3398,89 +3451,6 @@ export interface Artist {
   createdAt: string;
 }
 /**
- * Manage Concert Artist page content - models overview and image gallery
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "concert-artist-page".
- */
-export interface ConcertArtistPage {
-  id: string;
-  /**
-   * Internal title for admin identification
-   */
-  pageTitle: string;
-  modelsOverviewSection: {
-    /**
-     * Section header eyebrow text
-     */
-    sectionHeader: string;
-    /**
-     * Section main title
-     */
-    sectionTitle: string;
-  };
-  /**
-   * Four Concert Artist models displayed in the overview section
-   */
-  concertArtistModels: {
-    /**
-     * Model name (e.g., "CA401", "CA501")
-     */
-    name: string;
-    /**
-     * Model tagline (e.g., "Where Mastery Begins")
-     */
-    tagline: string;
-    /**
-     * Brief model description (1-2 sentences)
-     */
-    descriptor: string;
-    /**
-     * Model showcase image
-     */
-    image?: (string | null) | Media;
-    /**
-     * Link to product page (e.g., "/products/ca401")
-     */
-    link: string;
-    id?: string | null;
-  }[];
-  /**
-   * Image galleries for all four Concert Artist models
-   */
-  modelGalleries: {
-    /**
-     * Model identifier
-     */
-    modelId: 'ca401' | 'ca501' | 'ca701' | 'ca901';
-    /**
-     * Model name display (e.g., "CA401")
-     */
-    modelName: string;
-    /**
-     * Model tagline for gallery tab
-     */
-    tagline: string;
-    /**
-     * Six showcase images for this model
-     */
-    images: {
-      /**
-       * Gallery image
-       */
-      image?: (string | null) | Media;
-      /**
-       * Image alt text for accessibility
-       */
-      alt: string;
-      id?: string | null;
-    }[];
-    id?: string | null;
-  }[];
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * Manage authorized Kawai piano dealers with location, contact information, and service details for the dealer finder map.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3767,209 +3737,6 @@ export interface ConstantContactCustomField {
   createdAt: string;
 }
 /**
- * Holiday 2025 music school enrollment campaign leads. All submissions are saved here first as a safety net before external integrations.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "kpm-christmas-2k25".
- */
-export interface KpmChristmas2K25 {
-  id: string;
-  /**
-   * Auto-generated from first and last name
-   */
-  studentFullName?: string | null;
-  /**
-   * Student's first name
-   */
-  studentFirstName: string;
-  /**
-   * Student's last name
-   */
-  studentLastName: string;
-  /**
-   * Student's birth year (e.g., 2010)
-   */
-  studentBirthYear: string;
-  /**
-   * Student's gender
-   */
-  studentGender: 'male' | 'female' | 'non-binary' | 'prefer-not-to-say';
-  /**
-   * Current school grade (optional)
-   */
-  schoolGrade?: string | null;
-  /**
-   * Name of current school (optional)
-   */
-  currentSchool?: string | null;
-  /**
-   * Primary instrument of interest
-   */
-  instrument: 'piano' | 'keyboard' | 'voice' | 'guitar' | 'violin' | 'other';
-  /**
-   * How long the student has studied music
-   */
-  lengthOfPreviousStudy: 'none' | 'less-than-1-year' | '1-2-years' | '3-5-years' | '5-plus-years';
-  /**
-   * Preferred lesson format
-   */
-  privateLessonType: 'in-person' | 'online' | 'hybrid' | 'undecided';
-  /**
-   * Preferred price range for lessons
-   */
-  lessonPrice: '$25-$40' | '$40-$60' | '$60-$80' | '$80+' | 'flexible';
-  /**
-   * Preferred lesson time
-   */
-  preferredTime:
-    | 'weekday-morning'
-    | 'weekday-afternoon'
-    | 'weekday-evening'
-    | 'weekend-morning'
-    | 'weekend-afternoon'
-    | 'flexible';
-  /**
-   * Additional notes or questions from the applicant
-   */
-  notes?: string | null;
-  /**
-   * Emergency contact's first name
-   */
-  emergencyContactFirstName: string;
-  /**
-   * Emergency contact's last name
-   */
-  emergencyContactLastName: string;
-  /**
-   * Emergency contact's phone number
-   */
-  emergencyContactPhone: string;
-  /**
-   * Emergency contact's email address
-   */
-  emergencyContactEmail: string;
-  /**
-   * When this form was submitted (auto-generated)
-   */
-  submittedAt?: string | null;
-  /**
-   * Status of Constant Contact API submission
-   */
-  constantContactStatus: 'pending' | 'success' | 'failed' | 'skipped';
-  /**
-   * Constant Contact contact ID (if submission succeeded)
-   */
-  constantContactId?: string | null;
-  /**
-   * Error message from Constant Contact (if failed)
-   */
-  constantContactError?: string | null;
-  /**
-   * Status of Resend email notification
-   */
-  resendStatus: 'pending' | 'success' | 'failed' | 'skipped';
-  /**
-   * Resend email ID (if email sent successfully)
-   */
-  resendEmailId?: string | null;
-  /**
-   * Error message from Resend (if failed)
-   */
-  resendError?: string | null;
-  /**
-   * URL where the form was submitted
-   */
-  sourceUrl?: string | null;
-  /**
-   * Browser user agent string
-   */
-  userAgent?: string | null;
-  /**
-   * IP address of submission (if available)
-   */
-  ipAddress?: string | null;
-  /**
-   * Internal notes about processing this submission
-   */
-  processingNotes?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "exports".
- */
-export interface Export {
-  id: string;
-  name?: string | null;
-  format?: ('csv' | 'json') | null;
-  limit?: number | null;
-  page?: number | null;
-  sort?: string | null;
-  sortOrder?: ('asc' | 'desc') | null;
-  drafts?: ('yes' | 'no') | null;
-  selectionToUse?: ('currentSelection' | 'currentFilters' | 'all') | null;
-  fields?: string[] | null;
-  collectionSlug: string;
-  where?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "imports".
- */
-export interface Import {
-  id: string;
-  collectionSlug: 'kpm-christmas-2k25';
-  importMode?: ('create' | 'update' | 'upsert') | null;
-  matchField?: string | null;
-  status?: ('pending' | 'completed' | 'partial' | 'failed') | null;
-  summary?: {
-    imported?: number | null;
-    updated?: number | null;
-    total?: number | null;
-    issues?: number | null;
-    issueDetails?:
-      | {
-          [k: string]: unknown;
-        }
-      | unknown[]
-      | string
-      | number
-      | boolean
-      | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-}
-/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -3985,98 +3752,6 @@ export interface PayloadKv {
     | number
     | boolean
     | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payload-jobs".
- */
-export interface PayloadJob {
-  id: string;
-  /**
-   * Input data provided to the job
-   */
-  input?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  taskStatus?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  completedAt?: string | null;
-  totalTried?: number | null;
-  /**
-   * If hasError is true this job will not be retried
-   */
-  hasError?: boolean | null;
-  /**
-   * If hasError is true, this is the error that caused it
-   */
-  error?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  /**
-   * Task execution log
-   */
-  log?:
-    | {
-        executedAt: string;
-        completedAt: string;
-        taskSlug: 'inline' | 'createCollectionExport' | 'createCollectionImport';
-        taskID: string;
-        input?:
-          | {
-              [k: string]: unknown;
-            }
-          | unknown[]
-          | string
-          | number
-          | boolean
-          | null;
-        output?:
-          | {
-              [k: string]: unknown;
-            }
-          | unknown[]
-          | string
-          | number
-          | boolean
-          | null;
-        state: 'failed' | 'succeeded';
-        error?:
-          | {
-              [k: string]: unknown;
-            }
-          | unknown[]
-          | string
-          | number
-          | boolean
-          | null;
-        id?: string | null;
-      }[]
-    | null;
-  taskSlug?: ('inline' | 'createCollectionExport' | 'createCollectionImport') | null;
-  queue?: string | null;
-  waitUntil?: string | null;
-  processing?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4102,6 +3777,10 @@ export interface PayloadLockedDocument {
         value: string | PianosPage;
       } | null)
     | ({
+        relationTo: 'concert-artist-page';
+        value: string | ConcertArtistPage;
+      } | null)
+    | ({
         relationTo: 'storefronts';
         value: string | Storefront;
       } | null)
@@ -4118,16 +3797,8 @@ export interface PayloadLockedDocument {
         value: string | Artist;
       } | null)
     | ({
-        relationTo: 'concert-artist-page';
-        value: string | ConcertArtistPage;
-      } | null)
-    | ({
         relationTo: 'products';
         value: string | Product;
-      } | null)
-    | ({
-        relationTo: 'productlines';
-        value: string | Productline;
       } | null)
     | ({
         relationTo: 'dealers';
@@ -4140,10 +3811,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'constant-contact-custom-fields';
         value: string | ConstantContactCustomField;
-      } | null)
-    | ({
-        relationTo: 'kpm-christmas-2k25';
-        value: string | KpmChristmas2K25;
       } | null)
     | ({
         relationTo: 'payload-folders';
@@ -4535,6 +4202,46 @@ export interface PianosPageSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "concert-artist-page_select".
+ */
+export interface ConcertArtistPageSelect<T extends boolean = true> {
+  pageTitle?: T;
+  modelsOverviewSection?:
+    | T
+    | {
+        sectionHeader?: T;
+        sectionTitle?: T;
+      };
+  concertArtistModels?:
+    | T
+    | {
+        name?: T;
+        tagline?: T;
+        descriptor?: T;
+        image?: T;
+        link?: T;
+        id?: T;
+      };
+  modelGalleries?:
+    | T
+    | {
+        modelId?: T;
+        modelName?: T;
+        tagline?: T;
+        images?:
+          | T
+          | {
+              image?: T;
+              alt?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "storefronts_select".
  */
 export interface StorefrontsSelect<T extends boolean = true> {
@@ -4847,46 +4554,6 @@ export interface ArtistsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "concert-artist-page_select".
- */
-export interface ConcertArtistPageSelect<T extends boolean = true> {
-  pageTitle?: T;
-  modelsOverviewSection?:
-    | T
-    | {
-        sectionHeader?: T;
-        sectionTitle?: T;
-      };
-  concertArtistModels?:
-    | T
-    | {
-        name?: T;
-        tagline?: T;
-        descriptor?: T;
-        image?: T;
-        link?: T;
-        id?: T;
-      };
-  modelGalleries?:
-    | T
-    | {
-        modelId?: T;
-        modelName?: T;
-        tagline?: T;
-        images?:
-          | T
-          | {
-              image?: T;
-              alt?: T;
-              id?: T;
-            };
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
@@ -4922,7 +4589,6 @@ export interface ProductsSelect<T extends boolean = true> {
         imageUrl?: T;
         id?: T;
       };
-  productline?: T;
   series?: T;
   model?: T;
   rating?: T;
@@ -4930,7 +4596,7 @@ export interface ProductsSelect<T extends boolean = true> {
   badge?: T;
   highlight?: T;
   brand?: T;
-  shopifyHandle?: T;
+  shopifyProductId?: T;
   keyFeatures?:
     | T
     | {
@@ -4985,6 +4651,24 @@ export interface ProductsSelect<T extends boolean = true> {
         keywords?: T;
         ogImage?: T;
       };
+  shopifyData?:
+    | T
+    | {
+        id?: T;
+        title?: T;
+        handle?: T;
+        description?: T;
+        vendor?: T;
+        productType?: T;
+        modelMetafield?: T;
+        status?: T;
+        price?: T;
+        inStock?: T;
+        variantCount?: T;
+        imageCount?: T;
+        lastFetchedAt?: T;
+        fetchError?: T;
+      };
   visibility?:
     | T
     | {
@@ -5001,30 +4685,6 @@ export interface ProductsSelect<T extends boolean = true> {
         lowStockThreshold?: T;
         inStock?: T;
       };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "productlines_select".
- */
-export interface ProductlinesSelect<T extends boolean = true> {
-  name?: T;
-  slug?: T;
-  category?: T;
-  description?: T;
-  highlight?: T;
-  image?: T;
-  slides?:
-    | T
-    | {
-        title?: T;
-        image?: T;
-        id?: T;
-      };
-  products?: T;
-  featured?: T;
-  sortOrder?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -5138,136 +4798,11 @@ export interface ConstantContactCustomFieldsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "kpm-christmas-2k25_select".
- */
-export interface KpmChristmas2K25Select<T extends boolean = true> {
-  studentFullName?: T;
-  studentFirstName?: T;
-  studentLastName?: T;
-  studentBirthYear?: T;
-  studentGender?: T;
-  schoolGrade?: T;
-  currentSchool?: T;
-  instrument?: T;
-  lengthOfPreviousStudy?: T;
-  privateLessonType?: T;
-  lessonPrice?: T;
-  preferredTime?: T;
-  notes?: T;
-  emergencyContactFirstName?: T;
-  emergencyContactLastName?: T;
-  emergencyContactPhone?: T;
-  emergencyContactEmail?: T;
-  submittedAt?: T;
-  constantContactStatus?: T;
-  constantContactId?: T;
-  constantContactError?: T;
-  resendStatus?: T;
-  resendEmailId?: T;
-  resendError?: T;
-  sourceUrl?: T;
-  userAgent?: T;
-  ipAddress?: T;
-  processingNotes?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "exports_select".
- */
-export interface ExportsSelect<T extends boolean = true> {
-  name?: T;
-  format?: T;
-  limit?: T;
-  page?: T;
-  sort?: T;
-  sortOrder?: T;
-  drafts?: T;
-  selectionToUse?: T;
-  fields?: T;
-  collectionSlug?: T;
-  where?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "imports_select".
- */
-export interface ImportsSelect<T extends boolean = true> {
-  collectionSlug?: T;
-  importMode?: T;
-  matchField?: T;
-  status?: T;
-  summary?:
-    | T
-    | {
-        imported?: T;
-        updated?: T;
-        total?: T;
-        issues?: T;
-        issueDetails?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
   key?: T;
   data?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payload-jobs_select".
- */
-export interface PayloadJobsSelect<T extends boolean = true> {
-  input?: T;
-  taskStatus?: T;
-  completedAt?: T;
-  totalTried?: T;
-  hasError?: T;
-  error?: T;
-  log?:
-    | T
-    | {
-        executedAt?: T;
-        completedAt?: T;
-        taskSlug?: T;
-        taskID?: T;
-        input?: T;
-        output?: T;
-        state?: T;
-        error?: T;
-        id?: T;
-      };
-  taskSlug?: T;
-  queue?: T;
-  waitUntil?: T;
-  processing?: T;
-  updatedAt?: T;
-  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -5312,92 +4847,6 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskCreateCollectionExport".
- */
-export interface TaskCreateCollectionExport {
-  input: {
-    name?: string | null;
-    format?: ('csv' | 'json') | null;
-    limit?: number | null;
-    page?: number | null;
-    sort?: string | null;
-    sortOrder?: ('asc' | 'desc') | null;
-    drafts?: ('yes' | 'no') | null;
-    selectionToUse?: ('currentSelection' | 'currentFilters' | 'all') | null;
-    fields?: string[] | null;
-    collectionSlug: string;
-    where?:
-      | {
-          [k: string]: unknown;
-        }
-      | unknown[]
-      | string
-      | number
-      | boolean
-      | null;
-    userID?: string | null;
-    userCollection?: string | null;
-    exportsCollection?: string | null;
-  };
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskCreateCollectionImport".
- */
-export interface TaskCreateCollectionImport {
-  input: {
-    collectionSlug:
-      | 'users'
-      | 'media'
-      | 'home-page'
-      | 'pianos-page'
-      | 'storefronts'
-      | 'posts'
-      | 'categories'
-      | 'artists'
-      | 'concert-artist-page'
-      | 'products'
-      | 'productlines'
-      | 'dealers'
-      | 'constant-contact-settings'
-      | 'constant-contact-custom-fields'
-      | 'kpm-christmas-2k25'
-      | 'exports'
-      | 'imports';
-    importMode?: ('create' | 'update' | 'upsert') | null;
-    matchField?: string | null;
-    status?: ('pending' | 'completed' | 'partial' | 'failed') | null;
-    summary?: {
-      imported?: number | null;
-      updated?: number | null;
-      total?: number | null;
-      issues?: number | null;
-      issueDetails?:
-        | {
-            [k: string]: unknown;
-          }
-        | unknown[]
-        | string
-        | number
-        | boolean
-        | null;
-    };
-    user?: string | null;
-    userCollection?: string | null;
-    importsCollection?: string | null;
-    file?: {
-      data?: string | null;
-      mimetype?: string | null;
-      name?: string | null;
-    };
-    format?: ('csv' | 'json') | null;
-    debug?: boolean | null;
-  };
-  output?: unknown;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

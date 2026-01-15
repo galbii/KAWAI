@@ -64,13 +64,6 @@ export {
   getFallbackDataStats,
 } from './fallback-data'
 
-// Default productlines
-export {
-  defaultProductLines,
-  seedProductLines,
-  generateSlug,
-} from './default-productlines'
-
 // Pianos page seed data
 export {
   pianoPageImages,

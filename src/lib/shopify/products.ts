@@ -40,6 +40,7 @@ import type {
   ShopifyGID,
 } from './types'
 import { formatPrice } from '../utils'
+import { fetchShopifyProductByModel, type ShopifyProductData } from './fetch-product'
 
 // ============================================================================
 // Data Transformation
@@ -82,6 +83,69 @@ function parseMetafields(metafields: (Metafield | null)[]): Record<string, unkno
   })
 
   return metadata
+}
+
+/**
+ * Transform Admin API product data to Storefront API format
+ *
+ * The Admin API and Storefront API have slightly different response structures.
+ * This helper normalizes Admin API responses to match the Storefront API format
+ * that the rest of the application expects.
+ *
+ * @param adminProduct - Product data from Admin API
+ * @returns Product in Storefront API format
+ */
+function transformAdminProductToStorefront(adminProduct: ShopifyProductData): Product {
+  // Map Admin API structure to Storefront API structure
+  const minPrice = parseFloat(adminProduct.price.min)
+  const maxPrice = parseFloat(adminProduct.price.max)
+  const currency = adminProduct.price.currency
+
+  return {
+    id: extractId(adminProduct.id),
+    title: adminProduct.title,
+    handle: adminProduct.handle,
+    description: adminProduct.description,
+    descriptionHtml: adminProduct.descriptionHtml,
+    type: adminProduct.productType,
+    vendor: adminProduct.vendor,
+    tags: adminProduct.tags,
+    available: adminProduct.inStock,
+    createdAt: new Date(adminProduct.createdAt),
+    updatedAt: new Date(adminProduct.updatedAt),
+    price: {
+      min: minPrice,
+      max: maxPrice,
+      currency,
+      display: minPrice === maxPrice
+        ? formatPrice(minPrice)
+        : `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`,
+    },
+    image: adminProduct.featuredImage ? {
+      url: adminProduct.featuredImage.url,
+      alt: adminProduct.featuredImage.alt,
+      width: adminProduct.featuredImage.width,
+      height: adminProduct.featuredImage.height,
+    } : null,
+    images: adminProduct.images.map(img => ({
+      url: img.url,
+      alt: img.alt,
+      width: img.width,
+      height: img.height,
+    })),
+    variants: adminProduct.variants.map(variant => ({
+      id: extractId(variant.id),
+      title: variant.title,
+      sku: variant.sku,
+      available: variant.available,
+      price: parseFloat(variant.price),
+      compareAtPrice: variant.compareAtPrice ? parseFloat(variant.compareAtPrice) : null,
+      image: null, // Admin API doesn't include variant images in this query
+    })),
+    metadata: {
+      model: adminProduct.metafields?.model,
+    },
+  }
 }
 
 /**
@@ -256,9 +320,11 @@ export async function getProductById(
 }
 
 /**
- * Get a single product by model name (using Shopify product tags)
+ * Get a single product by model name (using Shopify metafield or tag fallback)
  *
- * Searches for products tagged with the specified model name.
+ * PRIMARY: Searches using custom.model metafield via Admin API (more robust)
+ * FALLBACK: Searches using product tags via Storefront API (backward compatibility)
+ *
  * This enables automatic product lookup without manual handle mapping.
  *
  * @param model - Product model name (e.g., 'CA99', 'GX-7')
@@ -267,7 +333,7 @@ export async function getProductById(
  *
  * @example
  * ```typescript
- * // Product tagged with "CA99" in Shopify
+ * // Product with custom.model metafield = "CA99" in Shopify
  * const product = await getProductByModel('CA99')
  *
  * if (product) {
@@ -275,28 +341,76 @@ export async function getProductById(
  * }
  * ```
  *
- * @see Shopify products must be tagged with the exact model name for this to work
+ * @see Shopify products should have custom.model metafield set for best performance
+ * @see Falls back to tag-based search if metafield lookup fails
  */
 export async function getProductByModel(
   model: string,
   options?: ShopifyRequestOptions
 ): Promise<Product | null> {
-  console.log(`[getProductByModel] Searching for model: "${model}"`)
+  const normalizedModel = model.toUpperCase().trim()
 
-  // Use tag-based search query: "tag:MODEL_NAME"
-  const data = await shopifyClient.query<ProductsResponse, ProductsQueryVariables>(
-    SEARCH_PRODUCTS,
-    { query: `tag:${model}`, first: 1 },
-    options
-  )
+  console.log(`[getProductByModel] Searching for model: "${normalizedModel}"`)
 
-  const foundProduct = data.products.edges[0]?.node || null
+  try {
+    // STRATEGY 1: Try metafield-based lookup via Admin API (preferred)
+    console.log(`[getProductByModel] Attempting metafield lookup...`)
 
-  if (foundProduct) {
-    console.log(`[getProductByModel] Found product: "${foundProduct.title}" for model "${model}"`)
-    return transformProduct(foundProduct)
-  } else {
-    console.log(`[getProductByModel] No product found with tag "${model}"`)
+    const adminProduct = await fetchShopifyProductByModel(normalizedModel)
+
+    if (adminProduct) {
+      console.log(
+        `[getProductByModel] Found via metafield: "${adminProduct.title}" (model: ${normalizedModel})`
+      )
+
+      // Transform Admin API response to match Storefront API format
+      return transformAdminProductToStorefront(adminProduct)
+    }
+
+    // STRATEGY 2: Fallback to tag-based search via Storefront API
+    console.log(`[getProductByModel] Metafield lookup failed, trying tag fallback...`)
+
+    const data = await shopifyClient.query<ProductsResponse, ProductsQueryVariables>(
+      SEARCH_PRODUCTS,
+      { query: `tag:${normalizedModel}`, first: 1 },
+      options
+    )
+
+    const foundProduct = data.products.edges[0]?.node || null
+
+    if (foundProduct) {
+      console.log(
+        `[getProductByModel] Found via tag fallback: "${foundProduct.title}" (tag: ${normalizedModel})`
+      )
+      return transformProduct(foundProduct)
+    }
+
+    console.log(`[getProductByModel] No product found for model "${normalizedModel}"`)
+    return null
+
+  } catch (error) {
+    console.error(`[getProductByModel] Error:`, error)
+
+    // If Admin API fails, still try tag fallback
+    console.log(`[getProductByModel] Admin API error, attempting tag fallback...`)
+
+    try {
+      const data = await shopifyClient.query<ProductsResponse, ProductsQueryVariables>(
+        SEARCH_PRODUCTS,
+        { query: `tag:${normalizedModel}`, first: 1 },
+        options
+      )
+
+      const foundProduct = data.products.edges[0]?.node || null
+
+      if (foundProduct) {
+        console.log(`[getProductByModel] Found via tag fallback after error`)
+        return transformProduct(foundProduct)
+      }
+    } catch (fallbackError) {
+      console.error(`[getProductByModel] Tag fallback also failed:`, fallbackError)
+    }
+
     return null
   }
 }

@@ -7,7 +7,7 @@ export const ConcertArtistPage: CollectionConfig = {
     plural: 'Concert Artist Page',
   },
   admin: {
-    group: 'Landing Pages',
+    group: 'Pages',
     useAsTitle: 'pageTitle',
     description: 'Manage Concert Artist page content - models overview and image gallery',
   },

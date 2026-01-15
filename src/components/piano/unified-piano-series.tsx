@@ -13,7 +13,6 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { MediaRenderer } from "@/components/ui/media";
-import { Productline } from "@/lib/types";
 import type { Media } from '@/payload-types';
 
 interface Piano {
@@ -46,7 +45,6 @@ interface UnifiedPianoSeriesProps {
   description: string;
   series: Series[];
   categorySlug: string;
-  productlines?: Productline[];
 }
 
 interface SeriesCardProps {

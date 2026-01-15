@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 import { CategoryHero } from "@/components/piano/category-hero"
 import { UnifiedPianoSeries } from "@/components/piano/unified-piano-series"
 import { CategoryCTA } from "@/components/piano/category-cta"
@@ -13,8 +15,7 @@ import {
   getCategoryCTA,
   type PianoCategorySlug
 } from '@/lib/data'
-import { getProductlines, getProductlinesWithProducts } from '@/lib/payload'
-import { Productline } from '@/lib/types'
+import type { Product } from '@/payload-types'
 
 // Route parameters interface
 interface CategoryPageParams {
@@ -122,35 +123,62 @@ export default async function CategoryPage({ params }: CategoryPageParams) {
   const heroTitle = getCategoryHeroTitle(category)
   const ctaText = getCategoryCTA(category)
 
-  // Fetch CMS data with fallback handling
-  let productlines: Productline[] = []
+  // Fetch products directly from CMS
   let series: any[] = []
-  let loading = false
   let error: string | null = null
 
   try {
-    // Try to fetch CMS data with products joined
-    const seriesWithPianos = await getProductlinesWithProducts(category)
-    
-    if (seriesWithPianos && seriesWithPianos.length > 0) {
-      series = seriesWithPianos
-      // Also fetch basic productlines for compatibility
-      productlines = await getProductlines(category)
-    } else {
-      // Fallback to basic productlines if no products are joined
-      productlines = await getProductlines(category)
-      // Create series data from productlines
-      series = productlines.map((productline) => ({
-        name: productline.name,
-        description: productline.description || categoryConfig.shortDescription,
-        pianos: [], // Will be populated by UnifiedPianoSeries if needed
-        slides: productline.slides || []
-      }))
-    }
+    const payload = await getPayload({ config })
+
+    // Fetch all active piano products for this category
+    const { docs: products } = await payload.find({
+      collection: 'products',
+      where: {
+        type: { equals: 'piano' },
+        category: { equals: category },
+        status: { equals: 'active' },
+        'visibility.showInCatalog': { equals: true }
+      },
+      depth: 2,
+      sort: 'visibility.sortOrder',
+      limit: 100
+    })
+
+    // Group products by series
+    const seriesMap = new Map<string, any>()
+
+    products.forEach((product: Product) => {
+      const seriesName = product.series || 'Other Series'
+
+      if (!seriesMap.has(seriesName)) {
+        seriesMap.set(seriesName, {
+          name: seriesName,
+          description: categoryConfig.shortDescription,
+          pianos: [],
+          slides: []
+        })
+      }
+
+      // Transform product to component format
+      seriesMap.get(seriesName)!.pianos.push({
+        slug: product.slug,
+        name: product.name,
+        series: seriesName,
+        rating: product.rating || 4.5,
+        reviews: product.reviews || 0,
+        badge: product.badge,
+        image: product.mainImage,
+        description: product.description,
+        keyFeatures: (product.keyFeatures || []).map((kf: any) => kf.feature)
+      })
+    })
+
+    // Convert map to array
+    series = Array.from(seriesMap.values())
+
   } catch (err) {
     console.error(`Failed to fetch ${category} category data:`, err)
     error = `Failed to load ${categoryConfig.name.toLowerCase()} piano data`
-    // Series will remain empty array, component will handle gracefully
   }
 
   // Generate hero stats based on category and CMS data
@@ -181,21 +209,7 @@ export default async function CategoryPage({ params }: CategoryPageParams) {
       />
 
       {/* Piano Series Section */}
-      {loading ? (
-        <section className="py-16 lg:py-24 bg-kawai-pearl text-center">
-          <div className="max-w-4xl mx-auto px-6">
-            <div className="animate-pulse">
-              <div className="h-8 bg-kawai-neutral/20 rounded-lg mb-4 max-w-md mx-auto" />
-              <div className="h-4 bg-kawai-neutral/20 rounded-lg mb-8 max-w-lg mx-auto" />
-              <div className="grid md:grid-cols-3 gap-6">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-64 bg-kawai-neutral/20 rounded-lg" />
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-      ) : error ? (
+      {error ? (
         <section className="py-16 lg:py-24 bg-kawai-pearl text-center">
           <div className="max-w-4xl mx-auto px-6">
             <div className="bg-kawai-red/10 border border-kawai-red/20 rounded-lg p-6">
@@ -213,7 +227,6 @@ export default async function CategoryPage({ params }: CategoryPageParams) {
           description={`Discover our complete collection of ${categoryConfig.name.toLowerCase()} series. Each series showcases distinct technologies and features for different musical needs.`}
           series={series}
           categorySlug={category}
-          productlines={productlines}
         />
       )}
 

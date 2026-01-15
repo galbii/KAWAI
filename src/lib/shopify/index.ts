@@ -190,6 +190,17 @@ export {
 } from './products'
 
 // ============================================================================
+// Admin API Product Fetch Exports
+// ============================================================================
+
+export {
+  fetchShopifyProduct,
+  fetchShopifyProductByModel,
+} from './fetch-product'
+
+export type { ShopifyProductData } from './fetch-product'
+
+// ============================================================================
 // Cart Utility Exports
 // ============================================================================
 

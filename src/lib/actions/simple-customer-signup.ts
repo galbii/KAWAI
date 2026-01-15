@@ -1,13 +1,13 @@
 'use server'
 
 import { z } from 'zod'
-import { upsertCustomer } from '@/lib/shopify/customers'
+import { upsertCustomer, addCustomerLocation } from '@/lib/shopify/customers'
 
 /**
  * Simple Customer Signup Server Action
  *
- * Creates or updates a Shopify customer with minimal information (email, firstName, lastName)
- * and tags them with the storefront location slug for segmentation.
+ * Creates or updates a Shopify customer with minimal information (email, firstName, lastName).
+ * Tracks dealer location via metafield (not tags) and applies custom tags from CMS.
  *
  * @example
  * ```tsx
@@ -88,8 +88,8 @@ export async function submitSimpleCustomerSignup(
     }
 
     try {
-      // Build tags array: storefront slug + custom tags from CMS
-      const tags: string[] = [signupData.storefrontSlug]
+      // Build tags array: ONLY custom tags from CMS (no location slug)
+      const tags: string[] = []
 
       // Parse and add custom tags if provided
       if (signupData.customTags) {
@@ -102,16 +102,23 @@ export async function submitSimpleCustomerSignup(
 
       // Create or update customer in Shopify using optimized upsert
       // This handles both new and existing customers in ONE API call
-      await upsertCustomer({
+      const customer = await upsertCustomer({
         email: signupData.email,
         firstName: signupData.firstName,
         lastName: signupData.lastName,
-        tags, // Tag with storefront slug + custom tags
+        tags, // Only custom tags from CMS (not location)
       })
 
+      // Track dealer location via metafield (supports multiple locations)
+      // If customer signs up from different dealers, all locations are tracked
+      await addCustomerLocation(customer.id, signupData.storefrontSlug)
+
       console.log(
-        `[Simple Signup] Successfully created/updated customer ${signupData.email} with tags:`,
-        tags
+        `[Simple Signup] Successfully created/updated customer ${signupData.email}`,
+        {
+          customTags: tags,
+          dealerLocation: signupData.storefrontSlug
+        }
       )
 
       return {

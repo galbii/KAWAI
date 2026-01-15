@@ -19,7 +19,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { getProductByModel } from '@/lib/shopify'
 import type { Product as ShopifyProduct } from '@/lib/shopify/types'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
 
@@ -39,49 +38,19 @@ interface ProductHeroBlockProps {
   }
   // The product data will be passed from the context (current product document)
   product?: Product | null
+  // Shopify product data fetched server-side
+  shopifyProduct?: ShopifyProduct | null
 }
 
 export function ProductHeroBlock({
   layout = {},
   overrides = {},
-  product
+  product,
+  shopifyProduct
 }: ProductHeroBlockProps) {
   const [selectedFinish, setSelectedFinish] = useState(-1) // -1 means no finish selected
   const [isFavorited, setIsFavorited] = useState(false)
-  const [shopifyProduct, setShopifyProduct] = useState<ShopifyProduct | null>(null)
-  const [shopifyLoading, setShopifyLoading] = useState(false)
   const router = useRouter()
-
-  // Fetch Shopify product data when model is available
-  useEffect(() => {
-    const fetchShopifyProduct = async () => {
-      if (!product?.model) {
-        console.log('[ProductHeroBlock] No model field available, skipping Shopify lookup')
-        setShopifyProduct(null)
-        return
-      }
-
-      setShopifyLoading(true)
-      try {
-        console.log(`[ProductHeroBlock] Fetching Shopify product for model: "${product.model}"`)
-        const shopifyData = await getProductByModel(product.model)
-        setShopifyProduct(shopifyData)
-
-        if (shopifyData) {
-          console.log(`[ProductHeroBlock] Successfully loaded Shopify product: "${shopifyData.title}"`)
-        } else {
-          console.log(`[ProductHeroBlock] No Shopify product found for model "${product.model}"`)
-        }
-      } catch (error) {
-        console.error('[ProductHeroBlock] Failed to fetch Shopify product:', error)
-        setShopifyProduct(null)
-      } finally {
-        setShopifyLoading(false)
-      }
-    }
-
-    fetchShopifyProduct()
-  }, [product?.model])
 
   // Helper function to truncate description
   const truncateDescription = (text: string, wordLimit: number = 25) => {
@@ -519,39 +488,6 @@ export function ProductHeroBlock({
                       </Link>
                     </Button>
                   </>
-                ) : shopifyLoading ? (
-                  /* Loading state */
-                  <Button
-                    disabled
-                    className={cn(
-                      "group relative overflow-hidden px-8 lg:px-10 py-4 lg:py-6 font-medium rounded-full text-base lg:text-lg flex-1",
-                      "bg-gray-200 text-gray-500"
-                    )}
-                  >
-                    <span className="flex items-center justify-center space-x-2 lg:space-x-3">
-                      <svg
-                        className="animate-spin h-4 w-4"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                      <span>Loading...</span>
-                    </span>
-                  </Button>
                 ) : (
                   /* Fallback: Learn More button only (no Shopify integration) */
                   <Button

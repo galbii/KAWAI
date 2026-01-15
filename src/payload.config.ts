@@ -13,7 +13,6 @@ import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 // import { Sites } from './collections/Sites'
 // import { SitePages } from './collections/SitePages'
-import { Productlines } from './collections/Productlines'
 import { PianosPage } from './collections/PianosPage'
 import { HomePage } from './collections/HomePage'
 import { Storefronts } from './collections/Storefronts'
@@ -24,7 +23,6 @@ import { Artists } from './collections/Artists'
 import { ConcertArtistPage } from './collections/ConcertArtistPage'
 import { ConstantContactSettings } from './collections/ConstantContactSettings'
 import { ConstantContactCustomFields } from './collections/ConstantContactCustomFields'
-import { KPM_Christmas2k25 } from './collections/KPM_Christmas2k25'
 import { Dealers } from './collections/Dealers'
 import {
   ProductShowcase,
@@ -46,7 +44,6 @@ import {
   Banner,
   Code
 } from './blocks'
-import { productlinesSeedPlugin } from './plugins/productlines-seed'
 import { pianosPageSeedPlugin } from './plugins/pianos-page-seed'
 // import { categoriesSeedPlugin } from './plugins/categories-seed' // Disabled - needs type regeneration
 // import DealerLocationsSeedPlugin from './plugins/dealer-locations-seed' // Temporarily disabled
@@ -125,20 +122,19 @@ export default buildConfig({
     Users,
     Media,
 
-    // Content Collections
+    // Pages (Singleton landing pages)
     HomePage,
     PianosPage,
+    ConcertArtistPage,
+
+    // Content Collections
     Storefronts,
     Posts,
     Categories,
     Artists,
 
-    // Landing Pages
-    ConcertArtistPage,
-
     // Commerce Collections
     Products,
-    Productlines,
 
     // Business Collections
     Dealers,
@@ -146,9 +142,6 @@ export default buildConfig({
     // Integration Collections
     ConstantContactSettings,
     ConstantContactCustomFields,
-
-    // Campaign Lead Collections
-    KPM_Christmas2k25,
   ],
   // Define blocks at root level for performance optimization using blockReferences
   blocks: [
@@ -186,10 +179,6 @@ export default buildConfig({
   plugins: [
     // NOTE: Temporarily disabled to test S3 plugin conflict
     // payloadCloudPlugin(),
-    importExportPlugin({
-      collections: [{ slug: 'kpm-christmas-2k25' }],
-    }),
-    productlinesSeedPlugin(),
     pianosPageSeedPlugin(),
     // categoriesSeedPlugin(), // Disabled - needs type regeneration
     // DealerLocationsSeedPlugin, // Temporarily disabled due to TypeScript errors

@@ -10,7 +10,6 @@ export type {
 
   // Content Types
   Product,
-  Productline,
   HomePage,
   PianosPage,
   Storefront,

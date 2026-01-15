@@ -2,9 +2,9 @@
 
 import { CategoryHero } from "@/components/piano/category-hero";
 import { UnifiedPianoSeries } from "@/components/piano/unified-piano-series";
-import { useEffect, useState } from "react";
-import { getProductlines, transformProductlinesToSeries } from "@/lib/payload";
-import { Productline } from "@/lib/types";
+import { useState } from "react";
+// Productlines removed - TODO: Update to fetch products directly
+// import { getProductlines, transformProductlinesToSeries } from "@/lib/payload";
 
 // Featured grand pianos - highlighting the best from each series
 const featuredGrandPianos = [
@@ -436,39 +436,12 @@ const grandPianoSeries = [
 ];
 
 export default function GrandPianosPage() {
-  const [productlines, setProductlines] = useState<Productline[]>([]);
   const [series, setSeries] = useState(grandPianoSeries);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading] = useState(false); // Productlines removed - using fallback data
+  const [error] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchProductlines() {
-      try {
-        setLoading(true);
-        const data = await getProductlines('grand');
-        setProductlines(data);
-        
-        if (data.length > 0) {
-          // Transform CMS data and use it, otherwise fallback to hardcoded data
-          const transformedSeries = transformProductlinesToSeries(data);
-          // Add slides from CMS data
-          const seriesWithSlides = transformedSeries.map((series, index) => ({
-            ...series,
-            slides: data[index]?.slides || []
-          }));
-          setSeries(seriesWithSlides);
-        }
-      } catch (err) {
-        console.error('Failed to fetch productlines:', err);
-        setError('Failed to load product data');
-        // Keep using hardcoded data as fallback
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchProductlines();
-  }, []);
+  // TODO: Implement direct product fetch if needed
+  // For now, using hardcoded fallback data
 
   return (
     <div className="min-h-screen">
@@ -515,7 +488,6 @@ export default function GrandPianosPage() {
           description="Discover our prestigious collection of grand piano series. From hand-crafted masterpieces to performance instruments, explore the pinnacle of piano craftsmanship."
           series={series}
           categorySlug="grand"
-          productlines={productlines}
         />
       )}
 

@@ -28,6 +28,8 @@ interface NewsMegaMenuProps {
   onClose: () => void
   /** Optional CSS class */
   className?: string
+  /** Whether the header is in scrolled (compact) state */
+  isHeaderScrolled?: boolean
 }
 
 // ============================================================================
@@ -90,6 +92,7 @@ export function NewsMegaMenu({
   isOpen,
   onClose,
   className,
+  isHeaderScrolled = false,
 }: NewsMegaMenuProps) {
   const featuredArticle = newsArticles.find(article => article.featured) || newsArticles[0]
 
@@ -114,9 +117,9 @@ export function NewsMegaMenu({
             className
           )}
           style={{
-            top: 'var(--header-height, 80px)',
+            top: isHeaderScrolled ? '64px' : '80px',
             width: '100vw',
-            maxHeight: 'calc(100vh - var(--header-height, 80px) - 20px)',
+            maxHeight: isHeaderScrolled ? 'calc(100vh - 64px - 20px)' : 'calc(100vh - 80px - 20px)',
             overflowY: 'auto',
           }}
         >

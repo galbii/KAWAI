@@ -1493,7 +1493,7 @@ class TypeSafetyVerifier extends BaseVerifier {
     
     // Check for usage of generated Payload types
     const payloadCollections = [
-      'Product', 'Productline', 'PianoModel', 'Media', 'User',
+      'Product', 'Media', 'User',
       'HomePage', 'PianosPage', 'DealerLocation', 'ConsultationBooking'
     ]
     
@@ -1921,7 +1921,7 @@ class TypeSafetyVerifier extends BaseVerifier {
     }
     
     // Check if types file is up to date (basic heuristic)
-    const expectedTypes = ['Product', 'Productline', 'Media', 'User', 'HomePage']
+    const expectedTypes = ['Product', 'Media', 'User', 'HomePage']
     const missingTypes = expectedTypes.filter(type => !typesContent.includes(`export interface ${type}`))
     
     if (missingTypes.length > 0) {

@@ -24,6 +24,8 @@ interface ResourcesMegaMenuProps {
   onClose: () => void
   /** Optional CSS class */
   className?: string
+  /** Whether the header is in scrolled (compact) state */
+  isHeaderScrolled?: boolean
 }
 
 // ============================================================================
@@ -80,6 +82,7 @@ export function ResourcesMegaMenu({
   isOpen,
   onClose,
   className,
+  isHeaderScrolled = false,
 }: ResourcesMegaMenuProps) {
   return (
     <AnimatePresence>
@@ -97,7 +100,7 @@ export function ResourcesMegaMenu({
             className
           )}
           style={{
-            top: 'var(--header-height, 80px)',
+            top: isHeaderScrolled ? '64px' : '80px',
             width: '100vw',
           }}
         >

@@ -1240,6 +1240,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
           isOpen={isStorefrontsMenuOpen && animationComplete}
           onClose={() => setIsStorefrontsMenuOpen(false)}
           isLoading={!storefrontsData}
+          isHeaderScrolled={isScrolled}
         />
       </div>
 
@@ -1254,6 +1255,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
             isOpen={isProductsMenuOpen && animationComplete}
             onClose={() => setIsProductsMenuOpen(false)}
             isLoading={!productsNavData}
+            isHeaderScrolled={isScrolled}
           />
         </div>
       )}
@@ -1266,6 +1268,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         <ResourcesMegaMenu
           isOpen={isResourcesMenuOpen && animationComplete}
           onClose={() => setIsResourcesMenuOpen(false)}
+          isHeaderScrolled={isScrolled}
         />
       </div>
 
@@ -1277,6 +1280,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         <NewsMegaMenu
           isOpen={isNewsMenuOpen && animationComplete}
           onClose={() => setIsNewsMenuOpen(false)}
+          isHeaderScrolled={isScrolled}
         />
       </div>
     </motion.header>

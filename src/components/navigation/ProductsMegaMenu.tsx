@@ -23,6 +23,8 @@ interface ProductsMegaMenuProps {
   className?: string
   /** Whether data is still loading */
   isLoading?: boolean
+  /** Whether the header is in scrolled (compact) state */
+  isHeaderScrolled?: boolean
 }
 
 // ============================================================================
@@ -53,6 +55,7 @@ export function ProductsMegaMenu({
   onClose,
   className,
   isLoading = false,
+  isHeaderScrolled = false,
 }: ProductsMegaMenuProps) {
   // Default to first product type
   const [selectedType, setSelectedType] = useState<string | null>(
@@ -89,7 +92,7 @@ export function ProductsMegaMenu({
             className
           )}
           style={{
-            top: 'var(--header-height, 80px)',
+            top: isHeaderScrolled ? '64px' : '80px',
             width: '100vw',
           }}
         >

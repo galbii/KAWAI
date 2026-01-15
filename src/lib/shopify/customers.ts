@@ -530,6 +530,8 @@ export async function createOrUpdateCustomerWithTags(
 /**
  * Tag customer by location slug from Payload CMS
  *
+ * ⚠️ DEPRECATED: Use `addCustomerLocation()` instead to track locations via metafields
+ *
  * Convenience function for tagging customers based on the storefront they visited.
  *
  * @param email - Customer email
@@ -562,5 +564,210 @@ export async function tagCustomerByLocation(
       email,
       tags,
     })
+  }
+}
+
+// ============================================================================
+// Customer Metafields - Location Tracking
+// ============================================================================
+
+/**
+ * Get customer's dealer locations from metafield
+ *
+ * Retrieves the list of dealer location slugs stored in the customer's metafield.
+ *
+ * @param customerId - Shopify customer ID (gid://shopify/Customer/...)
+ * @returns Array of location slugs, empty array if no locations set
+ *
+ * @example
+ * ```typescript
+ * const locations = await getCustomerLocations('gid://shopify/Customer/123456')
+ * // Returns: ['dallas', 'chicago', 'nashville']
+ * ```
+ */
+export async function getCustomerLocations(customerId: string): Promise<string[]> {
+  try {
+    const response = await shopifyAdminClient.query<{
+      customer: {
+        id: string
+        metafields: {
+          edges: Array<{
+            node: {
+              id: string
+              namespace: string
+              key: string
+              value: string
+              type: string
+            }
+          }>
+        }
+      }
+    }>(
+      `
+      query getCustomerMetafields($id: ID!) {
+        customer(id: $id) {
+          id
+          metafields(namespace: "custom", key: "location", first: 1) {
+            edges {
+              node {
+                id
+                namespace
+                key
+                value
+                type
+              }
+            }
+          }
+        }
+      }
+      `,
+      { id: customerId }
+    )
+
+    if (!response.customer) {
+      return []
+    }
+
+    const metafieldEdges = response.customer.metafields.edges
+    if (metafieldEdges.length === 0) {
+      return []
+    }
+
+    const metafield = metafieldEdges[0]?.node
+    if (!metafield) {
+      return []
+    }
+
+    // Parse JSON array from metafield value
+    try {
+      const locations = JSON.parse(metafield.value)
+      return Array.isArray(locations) ? locations : []
+    } catch {
+      return []
+    }
+  } catch (error) {
+    console.error('[Shopify Admin] Error fetching customer locations:', error)
+    return []
+  }
+}
+
+/**
+ * Add dealer location to customer metafield
+ *
+ * Adds a new dealer location to the customer's location metafield.
+ * If the location already exists, it won't be duplicated.
+ * If the customer has no location metafield yet, it will be created.
+ *
+ * @param customerId - Shopify customer ID (gid://shopify/Customer/...)
+ * @param locationSlug - Dealer location slug (e.g., "dallas", "chicago")
+ * @returns Updated list of locations
+ * @throws {CustomerError} If metafield update fails
+ *
+ * @example
+ * ```typescript
+ * // First visit from Dallas
+ * await addCustomerLocation('gid://shopify/Customer/123456', 'dallas')
+ * // Returns: ['dallas']
+ *
+ * // Later visit from Chicago
+ * await addCustomerLocation('gid://shopify/Customer/123456', 'chicago')
+ * // Returns: ['dallas', 'chicago']
+ *
+ * // Duplicate location (no-op)
+ * await addCustomerLocation('gid://shopify/Customer/123456', 'dallas')
+ * // Returns: ['dallas', 'chicago'] (unchanged)
+ * ```
+ */
+export async function addCustomerLocation(
+  customerId: string,
+  locationSlug: string
+): Promise<string[]> {
+  try {
+    // Get existing locations
+    const existingLocations = await getCustomerLocations(customerId)
+
+    // Check if location already exists
+    if (existingLocations.includes(locationSlug)) {
+      console.log('[Shopify Admin] Location already exists for customer:', {
+        customerId,
+        location: locationSlug,
+        existingLocations,
+      })
+      return existingLocations
+    }
+
+    // Add new location
+    const updatedLocations = [...existingLocations, locationSlug]
+
+    // Update metafield
+    const response = await shopifyAdminClient.mutate<{
+      metafieldsSet: {
+        metafields: Array<{
+          id: string
+          namespace: string
+          key: string
+          value: string
+          type: string
+        }>
+        userErrors: Array<{
+          field: string[]
+          message: string
+        }>
+      }
+    }>(
+      `
+      mutation setCustomerMetafields($metafields: [MetafieldsSetInput!]!) {
+        metafieldsSet(metafields: $metafields) {
+          metafields {
+            id
+            namespace
+            key
+            value
+            type
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+      `,
+      {
+        metafields: [
+          {
+            key: 'location',
+            namespace: 'custom',
+            value: JSON.stringify(updatedLocations),
+            type: 'list.single_line_text_field',
+            ownerId: customerId,
+          },
+        ],
+      }
+    )
+
+    // Check for errors
+    if (response.metafieldsSet.userErrors && response.metafieldsSet.userErrors.length > 0) {
+      const errorMessages = response.metafieldsSet.userErrors
+        .map((e) => `${e.field?.join('.')}: ${e.message}`)
+        .join(', ')
+      throw new CustomerError(`Failed to set location metafield: ${errorMessages}`)
+    }
+
+    console.log('[Shopify Admin] Location added to customer:', {
+      customerId,
+      newLocation: locationSlug,
+      allLocations: updatedLocations,
+    })
+
+    return updatedLocations
+  } catch (error) {
+    if (error instanceof CustomerError) {
+      throw error
+    }
+
+    console.error('[Shopify Admin] Error adding customer location:', error)
+    throw new CustomerError(
+      `Failed to add customer location: ${error instanceof Error ? error.message : 'Unknown error'}`
+    )
   }
 }

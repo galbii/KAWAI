@@ -23,18 +23,10 @@
 // Client-safe and universal API functions
 // These use HTTP fetch and work in both client and server contexts
 export {
-  // Productlines
-  getProductlines,
-  getProductlineBySlug,
-  getFeaturedProductlines,
-  getProductlinesWithProducts,
-  getProductlinesWithPianoModels, // Legacy
-
   // Piano Models
   getPianoModels,
   getPianoModelBySlug,
   getFeaturedPianoModels,
-  getPianoModelsByProductline,
 
   // Products
   getProducts,
@@ -72,8 +64,6 @@ export {
   // Transformers
   transformProductToComponent,
   transformPianoModelToComponent,
-  transformProductlineToSeries,
-  transformProductlinesToSeries,
   transformPianoCategoryToLegacy,
   transformFeaturedModelToLegacy,
 } from './client'

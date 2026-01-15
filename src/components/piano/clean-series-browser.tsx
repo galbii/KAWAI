@@ -10,7 +10,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { Productline } from "@/lib/types";
 
 interface Piano {
   slug: string;
@@ -41,7 +40,6 @@ interface CleanSeriesBrowserProps {
   description: string;
   series: Series[];
   categorySlug: string;
-  productlines?: Productline[];
   onActiveSeriesChange?: (activeSeriesData: Series) => void;
 }
 

@@ -7,7 +7,7 @@ export const HomePage: CollectionConfig = {
     plural: 'Home Page',
   },
   admin: {
-    group: 'Content',
+    group: 'Pages',
     useAsTitle: 'titleMain',
     description: 'Manage all content for the homepage including hero, showroom location, piano collection, gallery, news, contact form, and SEO.',
   },

@@ -3,7 +3,6 @@ import 'server-only'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import type {
-  Productline,
   Product,
   PianosPage,
   HomePage,
@@ -507,34 +506,6 @@ function getFallbackImageForModel(modelName: string): string {
   }
 
   return fallbackMap[modelName] || '/images/banners/placeholder-piano.jpg'
-}
-
-/**
- * Get productlines using direct Payload access
- */
-export async function getProductlinesDirect(category?: string): Promise<Productline[]> {
-  try {
-    const payload = await getPayloadClient()
-
-    const whereClause: any = {}
-
-    if (category) {
-      whereClause.category = { equals: category }
-    }
-
-    const result = await payload.find({
-      collection: 'productlines',
-      where: whereClause,
-      sort: 'sortOrder,name',
-      limit: 100,
-      depth: 2
-    })
-
-    return result.docs
-  } catch (error) {
-    console.error('Error fetching productlines with direct Payload access:', error)
-    return []
-  }
 }
 
 /**
