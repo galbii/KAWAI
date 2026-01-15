@@ -1,60 +1,12 @@
-import type { CollectionConfig, CollectionAfterChangeHook } from 'payload'
-
-/**
- * Generates the public R2 URL for a media file
- */
-function generatePublicUrl(filename: string): string {
-  const publicUrl = process.env.NEXT_PUBLIC_S3_PUBLIC_URL
-  if (!publicUrl) {
-    console.error('NEXT_PUBLIC_S3_PUBLIC_URL environment variable is not set')
-    return ''
-  }
-  const cleanPublicUrl = publicUrl.replace(/\/$/, '')
-  return `${cleanPublicUrl}/media/${filename}`
-}
-
-/**
- * Hook to automatically populate publicUrl field after upload
- */
-const populatePublicUrl: CollectionAfterChangeHook = async ({
-  doc,
-  req,
-  context,
-}) => {
-  // Prevent infinite loop - skip if we're already updating publicUrl
-  if (context.skipPublicUrlUpdate) return doc
-
-  // Only update if we have a filename and publicUrl is missing or outdated
-  if (doc.filename) {
-    const expectedUrl = generatePublicUrl(doc.filename)
-
-    if (doc.publicUrl !== expectedUrl) {
-      await req.payload.update({
-        collection: 'media',
-        id: doc.id,
-        data: {
-          publicUrl: expectedUrl,
-        },
-        context: { skipPublicUrlUpdate: true },
-        req,
-      })
-
-      // Return updated doc
-      return { ...doc, publicUrl: expectedUrl }
-    }
-  }
-
-  return doc
-}
+import type { CollectionConfig } from 'payload'
 
 export const Media: CollectionConfig = {
   slug: 'media',
-  // Enable Payload folders for media organization
   folders: true,
   admin: {
     group: 'System',
     description: 'Media library for images, videos, and documents',
-    defaultColumns: ['filename', 'alt', 'publicUrl', 'mediaType', 'updatedAt'],
+    defaultColumns: ['filename', 'alt', 'mediaType', 'updatedAt'],
     useAsTitle: 'alt',
   },
   access: {
@@ -63,20 +15,7 @@ export const Media: CollectionConfig = {
     update: ({ req: { user } }) => Boolean(user),
     delete: ({ req: { user } }) => Boolean(user),
   },
-  hooks: {
-    afterChange: [populatePublicUrl],
-  },
   fields: [
-    // Public R2 URL (auto-populated)
-    {
-      name: 'publicUrl',
-      type: 'text',
-      admin: {
-        readOnly: true,
-        description: 'Public CDN URL for this media file (auto-generated)',
-        position: 'sidebar',
-      },
-    },
     // Basic Media Information
     {
       name: 'alt',
@@ -265,7 +204,8 @@ export const Media: CollectionConfig = {
     },
   ],
   upload: {
-    staticDir: 'media',
+    // NOTE: disableLocalStorage is automatically set by the S3 storage plugin
+    // Do NOT set it manually here - let the plugin handle it
     imageSizes: [
       {
         name: 'thumbnail',

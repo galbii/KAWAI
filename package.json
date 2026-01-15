@@ -21,7 +21,8 @@
     "migrate:authors": "tsx scripts/migrate-posts-authors.ts",
     "migrate:authors:dry-run": "tsx scripts/migrate-posts-authors.ts --dry-run",
     "migrate:all": "tsx scripts/run-all-migrations.ts",
-    "migrate:all:dry-run": "tsx scripts/run-all-migrations.ts --dry-run"
+    "migrate:all:dry-run": "tsx scripts/run-all-migrations.ts --dry-run",
+    "test:s3": "tsx scripts/test-s3-connection.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.947.0",

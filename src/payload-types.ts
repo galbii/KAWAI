@@ -660,10 +660,6 @@ export interface Product {
 export interface Media {
   id: string;
   /**
-   * Public CDN URL for this media file (auto-generated)
-   */
-  publicUrl?: string | null;
-  /**
    * Alternative text for accessibility and SEO. Describe what the image shows.
    */
   alt: string;
@@ -4223,7 +4219,6 @@ export interface UsersSelect<T extends boolean = true> {
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
-  publicUrl?: T;
   alt?: T;
   caption?: T;
   description?: T;

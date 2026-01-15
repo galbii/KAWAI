@@ -374,6 +374,13 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
     setState(prev => ({ ...prev, isUploading: true, error: null }))
 
     const uploadPromises = files.map(async (file) => {
+      console.log('📤 [UPLOAD] Starting direct upload for:', {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: file.lastModified,
+      })
+
       const formData = new FormData()
       formData.append('file', file)
 
@@ -388,22 +395,33 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
         payload.folder = state.currentFolder.id
       }
 
+      console.log('📝 [UPLOAD] Payload data:', payload)
       formData.append('_payload', JSON.stringify(payload))
 
+      console.log('🌐 [UPLOAD] Sending request to /api/media')
       const response = await fetch('/api/media', {
         method: 'POST',
         credentials: 'include', // CRITICAL: Include auth cookies
         body: formData,
       })
 
+      console.log('📨 [UPLOAD] Response status:', response.status, response.statusText)
+
       if (!response.ok) {
         // Log the actual error response for debugging
         const errorText = await response.text()
-        console.error(`Upload failed for ${file.name}:`, response.status, errorText)
+        console.error('❌ [UPLOAD] Upload failed for', file.name, ':', response.status, errorText)
         throw new Error(`Failed to upload ${file.name}: ${response.statusText}`)
       }
 
-      return response.json()
+      const result = await response.json()
+      console.log('✅ [UPLOAD] Upload successful:', {
+        id: result.doc?.id,
+        url: result.doc?.url,
+        sizes: result.doc?.sizes ? Object.keys(result.doc.sizes) : 'none',
+      })
+
+      return result
     })
 
     try {
@@ -510,6 +528,13 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
     setState(prev => ({ ...prev, isUploading: true, metadataEditingFile: null }))
 
     try {
+      console.log('📤 [UPLOAD WITH METADATA] Starting upload for:', {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: file.lastModified,
+      })
+
       const formData = new FormData()
       formData.append('file', file)
 
@@ -531,19 +556,31 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
         payload.folder = state.currentFolder.id
       }
 
+      console.log('📝 [UPLOAD WITH METADATA] Payload data:', payload)
       formData.append('_payload', JSON.stringify(payload))
 
+      console.log('🌐 [UPLOAD WITH METADATA] Sending request to /api/media')
       const response = await fetch('/api/media', {
         method: 'POST',
         credentials: 'include',
         body: formData,
       })
 
+      console.log('📨 [UPLOAD WITH METADATA] Response status:', response.status, response.statusText)
+
       if (!response.ok) {
         const errorText = await response.text()
-        console.error(`Upload failed for ${file.name}:`, response.status, errorText)
+        console.error('❌ [UPLOAD WITH METADATA] Upload failed for', file.name, ':', response.status, errorText)
         throw new Error(`Failed to upload ${file.name}: ${response.statusText}`)
       }
+
+      const result = await response.json()
+      console.log('✅ [UPLOAD WITH METADATA] Upload successful:', {
+        id: result.doc?.id,
+        url: result.doc?.url,
+        publicUrl: result.doc?.publicUrl,
+        sizes: result.doc?.sizes ? Object.keys(result.doc.sizes) : 'none',
+      })
 
       // Move to next file in queue or close
       setState(prev => {

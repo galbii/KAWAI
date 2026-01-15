@@ -54,6 +54,15 @@ import { pianosPageSeedPlugin } from './plugins/pianos-page-seed'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+// Verify S3 configuration at startup
+console.log('🔧 [S3 CONFIG] Verifying environment variables...')
+console.log('  S3_BUCKET:', process.env.S3_BUCKET ? '✅ Set' : '❌ Missing')
+console.log('  S3_ENDPOINT:', process.env.S3_ENDPOINT ? '✅ Set' : '❌ Missing')
+console.log('  S3_REGION:', process.env.S3_REGION || 'auto')
+console.log('  S3_ACCESS_KEY_ID:', process.env.S3_ACCESS_KEY_ID ? '✅ Set' : '❌ Missing')
+console.log('  S3_SECRET_ACCESS_KEY:', process.env.S3_SECRET_ACCESS_KEY ? '✅ Set' : '❌ Missing')
+console.log('  NEXT_PUBLIC_S3_PUBLIC_URL:', process.env.NEXT_PUBLIC_S3_PUBLIC_URL || '❌ Missing')
+
 export default buildConfig({
   // Enable folders for media organization
   folders: {
@@ -175,7 +184,8 @@ export default buildConfig({
   }),
   sharp,
   plugins: [
-    payloadCloudPlugin(),
+    // NOTE: Temporarily disabled to test S3 plugin conflict
+    // payloadCloudPlugin(),
     importExportPlugin({
       collections: [{ slug: 'kpm-christmas-2k25' }],
     }),
@@ -186,34 +196,19 @@ export default buildConfig({
     // storage-adapter-placeholder
     s3Storage({
       collections: {
-        'media': {
+        media: {
           prefix: 'media',
-          disablePayloadAccessControl: true, // Use direct R2 URLs instead of proxying through Payload
+          disablePayloadAccessControl: true,
           generateFileURL: ({ filename, prefix }) => {
-            // Validate environment variable
-            const publicUrl = process.env.NEXT_PUBLIC_S3_PUBLIC_URL
-            if (!publicUrl) {
-              console.error('NEXT_PUBLIC_S3_PUBLIC_URL environment variable is not set')
-              throw new Error('R2 public URL not configured')
-            }
-            
-            // Construct the full URL ensuring proper path structure
-            const cleanPublicUrl = publicUrl.replace(/\/$/, '') // Remove trailing slash
-            const path = prefix ? `${prefix}/${filename}` : filename
-            const fullUrl = `${cleanPublicUrl}/${path}`
-            
-            // Log URL generation for debugging in development
-            if (process.env.NODE_ENV === 'development') {
-              console.debug(`Generated media URL: ${fullUrl}`)
-            }
-            
-            return fullUrl
+            // Construct direct R2 public URL
+            const baseUrl = process.env.NEXT_PUBLIC_S3_PUBLIC_URL?.replace(/\/$/, '') || ''
+            return `${baseUrl}/${prefix}/${filename}`
           },
         },
       },
       bucket: process.env.S3_BUCKET || '',
       config: {
-        ...(process.env.S3_ENDPOINT && { endpoint: process.env.S3_ENDPOINT }),
+        endpoint: process.env.S3_ENDPOINT || '',
         region: process.env.S3_REGION || 'auto',
         credentials: {
           accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
