@@ -25,6 +25,7 @@ export const FeaturesList: Block = {
       name: 'pianoModel',
       type: 'relationship',
       relationTo: 'products',
+      maxDepth: 0, // CRITICAL: Prevent circular relationship infinite loop
       admin: {
         description: 'Select piano model to automatically populate key features',
         condition: (data, siblingData) => {
@@ -95,6 +96,7 @@ export const FeaturesList: Block = {
               name: 'image',
               type: 'upload',
               relationTo: 'media',
+              maxDepth: 0, // Prevent deep media fetching
               admin: {
                 description: 'Custom icon image',
                 condition: (data, siblingData) => siblingData?.type === 'image'

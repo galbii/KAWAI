@@ -214,20 +214,20 @@ export interface ProductShowcaseBlock {
       priceText?: string | null;
     };
     /**
-     * Available finish options (overrides Piano Model finishes when provided)
+     * Available variation options (overrides Piano Model variations when provided)
      */
-    finishes?:
+    variations?:
       | {
           /**
-           * Finish name (e.g., "Ebony Polish", "White Satin")
+           * Variation name (e.g., "Ebony Polish", "White Satin")
            */
           name: string;
           /**
-           * Finish sample image (optional)
+           * Variation sample image (optional)
            */
           image?: (string | null) | Media;
           /**
-           * Price difference for this finish (+ or -)
+           * Price difference for this variation (+ or -)
            */
           priceModifier?: number | null;
           id?: string | null;
@@ -272,9 +272,9 @@ export interface ProductShowcaseBlock {
      */
     imagePosition?: ('left' | 'right' | 'top' | 'bottom') | null;
     /**
-     * Show available finishes in this block
+     * Show available variations in this block
      */
-    showFinishes?: boolean | null;
+    showVariations?: boolean | null;
     /**
      * Show pricing information in this block
      */
@@ -297,254 +297,125 @@ export interface ProductShowcaseBlock {
 export interface Product {
   id: string;
   /**
-   * Product type determines available features and data structure
+   * Product type
    */
-  type: 'piano' | 'accessory' | 'software' | 'other';
+  type?: ('piano' | 'accessory' | 'software') | null;
   /**
-   * Product name/title
+   * Model identifier - matches Shopify custom.model metafield (PRIMARY KEY)
    */
-  name: string;
+  model: string;
   /**
-   * URL-friendly version of product name
+   * Product name (synced from Shopify, or auto-generated from model)
    */
-  slug: string;
+  name?: string | null;
   /**
-   * Product category for organization
+   * URL slug (auto-generated from name or model)
    */
-  category: 'digital' | 'grand' | 'hybrid' | 'upright' | 'accessories' | 'software';
+  slug?: string | null;
   /**
-   * Product availability status
+   * Draft products are hidden from frontend
    */
-  status?: ('active' | 'draft' | 'discontinued' | 'coming-soon' | 'limited-edition') | null;
+  status?: ('draft' | 'active' | 'discontinued') | null;
   /**
-   * Primary product image (optional)
+   * Piano category
    */
-  mainImage?: (string | null) | Media;
+  category?: ('digital' | 'grand' | 'hybrid' | 'upright') | null;
   /**
-   * Direct image URL (used during CSV migration or when media upload is not available)
+   * Product description (synced from Shopify)
    */
-  imageUrl?: string | null;
+  description?: string | null;
   /**
-   * Product description for listings and meta
+   * Manufacturer (synced from Shopify vendor)
    */
-  description: string;
-  /**
-   * Short description for compact displays and listings
-   */
-  shortDescription?: string | null;
-  /**
-   * Optional URL for the "Learn More" button (e.g., /products/piano-name or https://example.com)
-   */
-  learnMore?: string | null;
+  brand?: string | null;
   /**
    * Product pricing information
    */
   price?: {
-    currency?: ('USD' | 'EUR' | 'GBP' | 'CAD') | null;
     /**
-     * MSRP (Manufacturer Suggested Retail Price)
+     * MSRP (synced from Shopify)
      */
     msrp?: number | null;
-    /**
-     * Sale price if different from MSRP
-     */
-    salePrice?: number | null;
-    /**
-     * Price range text (e.g., "$15,000 - $20,000")
-     */
-    priceRange?: string | null;
-    /**
-     * Custom price text (e.g., "Starting from", "Contact for pricing")
-     */
-    priceText?: string | null;
-    /**
-     * Check if pricing is by contact only
-     */
-    contactForPricing?: boolean | null;
-    /**
-     * Display price on product pages
-     */
-    showPrice?: boolean | null;
+    currency?: ('USD' | 'EUR' | 'GBP' | 'CAD') | null;
   };
   /**
-   * Available finish options
+   * Product image URL (synced from Shopify)
    */
-  finishes?:
+  imageUrl?: string | null;
+  /**
+   * Product variations from Shopify (variants with pricing, inventory, and options)
+   */
+  variations?:
     | {
         /**
-         * Finish name (e.g., "Ebony Polish", "White Satin")
+         * Variation name (synced from Shopify variant title)
          */
         name: string;
         /**
-         * Finish sample image
+         * Shopify Variant ID (gid://shopify/ProductVariant/...)
          */
-        image?: (string | null) | Media;
+        shopifyVariantId?: string | null;
         /**
-         * Price difference for this finish (+ or -)
+         * Variant price (synced from Shopify)
          */
-        priceModifier?: number | null;
+        price?: number | null;
         /**
-         * Is this finish currently available?
+         * Compare at price / MSRP (synced from Shopify)
+         */
+        compareAtPrice?: number | null;
+        /**
+         * Stock Keeping Unit (synced from Shopify)
+         */
+        sku?: string | null;
+        /**
+         * Product barcode/UPC (synced from Shopify)
+         */
+        barcode?: string | null;
+        /**
+         * Is this variation available for sale? (synced from Shopify)
          */
         available?: boolean | null;
         /**
-         * Optional finish description
+         * Current inventory quantity (synced from Shopify)
          */
-        description?: string | null;
+        inventoryQuantity?: number | null;
         /**
-         * Direct image URL for this finish (used during CSV migration)
+         * Variation image (optional manual override)
+         */
+        image?: (string | null) | Media;
+        /**
+         * Variant image URL (synced from Shopify)
          */
         imageUrl?: string | null;
+        /**
+         * Variant weight for shipping calculations
+         */
+        weight?: {
+          /**
+           * Weight value
+           */
+          value?: number | null;
+          unit?: ('POUNDS' | 'KILOGRAMS') | null;
+        };
+        /**
+         * What happens when inventory reaches zero
+         */
+        inventoryPolicy?: ('DENY' | 'CONTINUE') | null;
+        /**
+         * Variant options from Shopify (e.g., [{name: "Color", value: "Black"}])
+         */
+        options?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
         id?: string | null;
       }[]
     | null;
-  /**
-   * Product series/collection (e.g., "CA Series", "GX Series")
-   */
-  series?: string | null;
-  /**
-   * Product model number/identifier (syncs with Shopify custom.model metafield)
-   */
-  model?: string | null;
-  /**
-   * Customer rating (0-5 stars)
-   */
-  rating?: number | null;
-  /**
-   * Number of customer reviews
-   */
-  reviews?: number | null;
-  /**
-   * Optional badge text (e.g., "Best Seller", "Featured")
-   */
-  badge?: string | null;
-  /**
-   * Optional highlight text for special promotions
-   */
-  highlight?: string | null;
-  /**
-   * Product brand/manufacturer
-   */
-  brand?: string | null;
-  /**
-   * Shopify Product ID or handle to fetch product data from Shopify
-   */
-  shopifyProductId?: string | null;
-  /**
-   * Main selling points and key features
-   */
-  keyFeatures?:
-    | {
-        feature: string;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Complete product specifications and technical details
-   */
-  specifications?: {
-    /**
-     * Number of keys
-     */
-    keys?: number | null;
-    /**
-     * Number of pedals
-     */
-    pedals?: number | null;
-    /**
-     * Number of voices/sounds
-     */
-    voices?: number | null;
-    /**
-     * Maximum polyphony
-     */
-    polyphony?: number | null;
-    /**
-     * Action technology (e.g., "Grand Feel III")
-     */
-    actionType?: string | null;
-    /**
-     * Sound engine technology
-     */
-    soundEngine?: string | null;
-    dimensions?: {
-      /**
-       * Width (e.g., "145cm", "57 inches")
-       */
-      width?: string | null;
-      /**
-       * Depth (e.g., "46cm", "18 inches")
-       */
-      depth?: string | null;
-      /**
-       * Height (e.g., "88cm", "35 inches")
-       */
-      height?: string | null;
-    };
-    /**
-     * Product weight (e.g., "68kg", "150 lbs")
-     */
-    weight?: string | null;
-    /**
-     * Stock Keeping Unit (SKU)
-     */
-    sku?: string | null;
-    /**
-     * Warranty information
-     */
-    warranty?: string | null;
-    /**
-     * Country of manufacture
-     */
-    origin?: string | null;
-  };
-  /**
-   * Buy button configuration
-   */
-  buyButton: {
-    /**
-     * Buy button text
-     */
-    text: string;
-    /**
-     * Buy button link (leave empty to use default contact form)
-     */
-    link?: string | null;
-    style?: ('primary' | 'secondary' | 'outline') | null;
-    /**
-     * Show buy button on product pages
-     */
-    showButton?: boolean | null;
-  };
-  /**
-   * Mark this product as discontinued
-   */
-  discontinued?: boolean | null;
-  /**
-   * 3D model viewer configuration
-   */
-  viewer3D?: {
-    /**
-     * Enable 3D model viewer for this product
-     */
-    enabled?: boolean | null;
-    /**
-     * Full URL to the 3D viewer (e.g., https://www.kawai-global.com/modelviewer/index.php)
-     */
-    viewerUrl?: string | null;
-    /**
-     * URL parameters for the model (e.g., ?model=gl-10&color=ebony)
-     */
-    modelParams?: string | null;
-    /**
-     * Automatically open 3D viewer when ?mode=3d URL parameter is present
-     */
-    autoOpen?: boolean | null;
-    /**
-     * Custom text for the 3D viewer button
-     */
-    buttonText?: string | null;
-  };
   /**
    * Build your product page content using flexible blocks
    */
@@ -581,67 +452,6 @@ export interface Product {
      * Open Graph image for social sharing (defaults to main image)
      */
     ogImage?: (string | null) | Media;
-  };
-  /**
-   * Data automatically fetched from Shopify when you provide a Product ID/handle above. This data is read-only and updates when you save.
-   */
-  shopifyData?: {
-    /**
-     * Shopify Product ID
-     */
-    id?: string | null;
-    /**
-     * Product title from Shopify
-     */
-    title?: string | null;
-    /**
-     * Product handle/slug from Shopify
-     */
-    handle?: string | null;
-    /**
-     * Product description from Shopify (plain text)
-     */
-    description?: string | null;
-    /**
-     * Product vendor from Shopify
-     */
-    vendor?: string | null;
-    /**
-     * Product type/category from Shopify
-     */
-    productType?: string | null;
-    /**
-     * Model identifier from Shopify custom.model metafield
-     */
-    modelMetafield?: string | null;
-    /**
-     * Product status in Shopify
-     */
-    status?: ('ACTIVE' | 'DRAFT' | 'ARCHIVED') | null;
-    /**
-     * Price from Shopify (formatted)
-     */
-    price?: string | null;
-    /**
-     * Product availability in Shopify
-     */
-    inStock?: boolean | null;
-    /**
-     * Number of variants from Shopify
-     */
-    variantCount?: number | null;
-    /**
-     * Number of images from Shopify
-     */
-    imageCount?: number | null;
-    /**
-     * Last time data was fetched from Shopify
-     */
-    lastFetchedAt?: string | null;
-    /**
-     * Error message if fetch failed
-     */
-    fetchError?: string | null;
   };
   /**
    * Product visibility and display settings
@@ -684,6 +494,50 @@ export interface Product {
      * Product is currently in stock
      */
     inStock?: boolean | null;
+  };
+  /**
+   * Shopify synchronization and integration data
+   */
+  shopify?: {
+    /**
+     * Shopify Product ID (gid://shopify/Product/...)
+     */
+    productId?: string | null;
+    /**
+     * Shopify handle (auto-synced from slug)
+     */
+    handle?: string | null;
+    /**
+     * Current sync status with Shopify
+     */
+    syncStatus?: ('not_synced' | 'synced' | 'pending' | 'error') | null;
+    /**
+     * Last successful sync timestamp
+     */
+    lastSyncedAt?: string | null;
+    /**
+     * Sync error log (last 10 errors)
+     */
+    syncErrors?:
+      | {
+          timestamp?: string | null;
+          operation?: ('create' | 'update' | 'delete' | 'variant_create' | 'variant_update') | null;
+          errorMessage?: string | null;
+          /**
+           * Comma-separated list of fields that errored
+           */
+          errorFields?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Automatically sync changes to Shopify on save
+     */
+    autoSync?: boolean | null;
+    /**
+     * Shopify product status (synced from Shopify)
+     */
+    shopifyStatus?: ('ACTIVE' | 'DRAFT' | 'ARCHIVED') | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -875,9 +729,9 @@ export interface ProductHeroBlock {
      */
     backgroundColor?: ('pearl' | 'white' | 'black') | null;
     /**
-     * Show available finishes section
+     * Show available variations section
      */
-    showFinishes?: boolean | null;
+    showVariations?: boolean | null;
     /**
      * Show pricing information
      */
@@ -4558,89 +4412,42 @@ export interface ArtistsSelect<T extends boolean = true> {
  */
 export interface ProductsSelect<T extends boolean = true> {
   type?: T;
+  model?: T;
   name?: T;
   slug?: T;
-  category?: T;
   status?: T;
-  mainImage?: T;
-  imageUrl?: T;
+  category?: T;
   description?: T;
-  shortDescription?: T;
-  learnMore?: T;
+  brand?: T;
   price?:
     | T
     | {
-        currency?: T;
         msrp?: T;
-        salePrice?: T;
-        priceRange?: T;
-        priceText?: T;
-        contactForPricing?: T;
-        showPrice?: T;
+        currency?: T;
       };
-  finishes?:
+  imageUrl?: T;
+  variations?:
     | T
     | {
         name?: T;
-        image?: T;
-        priceModifier?: T;
+        shopifyVariantId?: T;
+        price?: T;
+        compareAtPrice?: T;
+        sku?: T;
+        barcode?: T;
         available?: T;
-        description?: T;
+        inventoryQuantity?: T;
+        image?: T;
         imageUrl?: T;
-        id?: T;
-      };
-  series?: T;
-  model?: T;
-  rating?: T;
-  reviews?: T;
-  badge?: T;
-  highlight?: T;
-  brand?: T;
-  shopifyProductId?: T;
-  keyFeatures?:
-    | T
-    | {
-        feature?: T;
-        id?: T;
-      };
-  specifications?:
-    | T
-    | {
-        keys?: T;
-        pedals?: T;
-        voices?: T;
-        polyphony?: T;
-        actionType?: T;
-        soundEngine?: T;
-        dimensions?:
+        weight?:
           | T
           | {
-              width?: T;
-              depth?: T;
-              height?: T;
+              value?: T;
+              unit?: T;
             };
-        weight?: T;
-        sku?: T;
-        warranty?: T;
-        origin?: T;
-      };
-  buyButton?:
-    | T
-    | {
-        text?: T;
-        link?: T;
-        style?: T;
-        showButton?: T;
-      };
-  discontinued?: T;
-  viewer3D?:
-    | T
-    | {
-        enabled?: T;
-        viewerUrl?: T;
-        modelParams?: T;
-        autoOpen?: T;
-        buttonText?: T;
+        inventoryPolicy?: T;
+        options?: T;
+        id?: T;
       };
   pageContent?: T | {};
   seo?:
@@ -4650,24 +4457,6 @@ export interface ProductsSelect<T extends boolean = true> {
         metaDescription?: T;
         keywords?: T;
         ogImage?: T;
-      };
-  shopifyData?:
-    | T
-    | {
-        id?: T;
-        title?: T;
-        handle?: T;
-        description?: T;
-        vendor?: T;
-        productType?: T;
-        modelMetafield?: T;
-        status?: T;
-        price?: T;
-        inStock?: T;
-        variantCount?: T;
-        imageCount?: T;
-        lastFetchedAt?: T;
-        fetchError?: T;
       };
   visibility?:
     | T
@@ -4684,6 +4473,25 @@ export interface ProductsSelect<T extends boolean = true> {
         stockQuantity?: T;
         lowStockThreshold?: T;
         inStock?: T;
+      };
+  shopify?:
+    | T
+    | {
+        productId?: T;
+        handle?: T;
+        syncStatus?: T;
+        lastSyncedAt?: T;
+        syncErrors?:
+          | T
+          | {
+              timestamp?: T;
+              operation?: T;
+              errorMessage?: T;
+              errorFields?: T;
+              id?: T;
+            };
+        autoSync?: T;
+        shopifyStatus?: T;
       };
   updatedAt?: T;
   createdAt?: T;

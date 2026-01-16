@@ -19,10 +19,10 @@ interface ProductShowcaseBlockProps {
       saleAmount?: number | null
       priceText?: string | null
     }
-    finishes?: Array<{
+    variations?: Array<{
       name: string
+      price?: number | null
       image?: string | Media | null
-      priceModifier?: number | null
     }> | null
     buyButton?: {
       text?: string | null
@@ -35,7 +35,7 @@ interface ProductShowcaseBlockProps {
   }
   layout?: {
     imagePosition?: 'left' | 'right' | 'top' | 'bottom' | null
-    showFinishes?: boolean | null
+    showVariations?: boolean | null
     showPrice?: boolean | null
     compact?: boolean | null
   }
@@ -45,14 +45,14 @@ export function ProductShowcaseBlock({
   product = {},
   layout = {}
 }: ProductShowcaseBlockProps) {
-  const [selectedFinish, setSelectedFinish] = useState(0)
-  
+  const [selectedVariation, setSelectedVariation] = useState(0)
+
   const imagePosition = layout.imagePosition || 'left'
-  const showFinishes = layout.showFinishes !== false
+  const showVariations = layout.showVariations !== false
   const showPrice = layout.showPrice !== false
   const compact = layout.compact || false
-  
-  const hasFinishes = product.finishes && product.finishes.length > 0
+
+  const hasVariations = product.variations && product.variations.length > 0
   
   // Price formatting
   const formatPrice = () => {
@@ -102,9 +102,9 @@ export function ProductShowcaseBlock({
           <div className="flex-1">
             <div className="relative">
               {product.image && (
-                <MediaRenderer 
-                  media={hasFinishes && product.finishes![selectedFinish]?.image 
-                    ? product.finishes![selectedFinish].image!
+                <MediaRenderer
+                  media={hasVariations && product.variations![selectedVariation]?.image
+                    ? product.variations![selectedVariation].image!
                     : product.image
                   }
                   preset="gallery"
@@ -151,27 +151,27 @@ export function ProductShowcaseBlock({
               </p>
             )}
             
-            {/* Finish Selection */}
-            {showFinishes && hasFinishes && (
+            {/* Variation Selection */}
+            {showVariations && hasVariations && (
               <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-kawai-black">Available Finishes</h3>
+                <h3 className="text-lg font-semibold text-kawai-black">Available Variations</h3>
                 <div className="flex flex-wrap gap-3">
-                  {product.finishes!.map((finish, index) => (
+                  {product.variations!.map((variation, index) => (
                     <button
                       key={index}
-                      onClick={() => setSelectedFinish(index)}
+                      onClick={() => setSelectedVariation(index)}
                       className={`
                         px-4 py-2 rounded-md border-2 transition-colors font-medium
-                        ${selectedFinish === index 
-                          ? 'border-kawai-red bg-kawai-red text-white' 
+                        ${selectedVariation === index
+                          ? 'border-kawai-red bg-kawai-red text-white'
                           : 'border-kawai-neutral/30 bg-white text-kawai-black hover:border-kawai-red/50'
                         }
                       `}
                     >
-                      {finish.name}
-                      {finish.priceModifier && (
+                      {variation.name}
+                      {variation.price && (
                         <span className="ml-2 text-sm">
-                          {finish.priceModifier > 0 ? '+' : ''}${finish.priceModifier.toLocaleString()}
+                          ${variation.price.toLocaleString()}
                         </span>
                       )}
                     </button>

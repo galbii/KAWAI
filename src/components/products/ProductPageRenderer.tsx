@@ -54,7 +54,7 @@ function BasicProductLayout({ product }: { product: Product }) {
         dataSource="manual"
         content={{
           title: product.name,
-          description: product.description,
+          description: product.description || null,
           primaryCta: {
             text: "Learn More",
             link: learnMoreLink,
@@ -63,7 +63,7 @@ function BasicProductLayout({ product }: { product: Product }) {
         }}
         media={{
           type: "image",
-          backgroundImage: product.mainImage ?? null,
+          backgroundImage: product.imageUrl || null,
           overlay: {
             enable: false,
             color: "dark",
@@ -83,17 +83,15 @@ function BasicProductLayout({ product }: { product: Product }) {
         dataSource="manual"
         product={{
           name: product.name,
-          description: product.description,
-          image: product.mainImage ?? null,
+          description: product.description || null,
+          image: product.imageUrl || null,
           ...(product.price && {
             price: {
               ...(product.price.currency !== undefined && { currency: product.price.currency }),
-              ...(product.price.msrp !== undefined && { amount: product.price.msrp }),
-              ...(product.price.salePrice !== undefined && { saleAmount: product.price.salePrice }),
-              ...(product.price.priceText !== undefined && { priceText: product.price.priceText })
+              ...(product.price.msrp !== undefined && { amount: product.price.msrp })
             }
           }),
-          ...(isPiano && product.finishes !== undefined && { finishes: product.finishes }),
+          ...(isPiano && product.variations !== undefined && { variations: product.variations }),
           buyButton: {
             text: "Learn More",
             link: learnMoreLink,
@@ -103,26 +101,16 @@ function BasicProductLayout({ product }: { product: Product }) {
         }}
         layout={{
           imagePosition: "left",
-          showFinishes: isPiano,
+          showVariations: isPiano,
           showPrice: false,
           compact: false
         }}
       />
 
-      {/* Features List - Only show for pianos with features */}
-      {isPiano && product.keyFeatures && product.keyFeatures.length > 0 && (
-        <FeaturesListBlock
-          dataSource="manual"
-          layout={{
-            columns: 2,
-            showIcons: true,
-            compact: false
-          }}
-        />
-      )}
+      {/* Features List and Specifications removed - these should come from Page Content blocks */}
 
       {/* Specifications - Only show for pianos with specifications */}
-      {isPiano && product.specifications && (
+      {false && isPiano && (
         <SpecificationsBlock
           dataSource="manual"
           layout={{

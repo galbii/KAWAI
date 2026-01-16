@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { getOptimizedImageProps } from '@/lib/media/r2-utils'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, createElement } from 'react'
 import { useRouter } from 'next/navigation'
 import { ShoppingCart, Heart, Share2, CheckCircle, Sparkles, Clock, Play, Volume2, ChevronDown, ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -26,7 +26,7 @@ interface ProductHeroBlockProps {
   layout?: {
     imagePosition?: 'left' | 'right' | null
     backgroundColor?: 'pearl' | 'white' | 'black' | null
-    showFinishes?: boolean | null
+    showVariations?: boolean | null
     showPrice?: boolean | null
     showBuyButton?: boolean | null
   }
@@ -48,7 +48,7 @@ export function ProductHeroBlock({
   product,
   shopifyProduct
 }: ProductHeroBlockProps) {
-  const [selectedFinish, setSelectedFinish] = useState(-1) // -1 means no finish selected
+  const [selectedVariation, setSelectedVariation] = useState(-1) // -1 means no variation selected
   const [isFavorited, setIsFavorited] = useState(false)
   const router = useRouter()
 
@@ -59,20 +59,20 @@ export function ProductHeroBlock({
     return words.slice(0, wordLimit).join(' ') + '...'
   }
 
-  // Get selected Shopify variant based on finish selection
+  // Get selected Shopify variant based on variation selection
   const getSelectedVariant = () => {
     if (!shopifyProduct) return null
 
-    // If no finish selected or only one variant, return first variant
-    if (selectedFinish < 0 || shopifyProduct.variants.length === 1) {
+    // If no variation selected or only one variant, return first variant
+    if (selectedVariation < 0 || shopifyProduct.variants.length === 1) {
       return shopifyProduct.variants[0]
     }
 
-    // Try to match finish name with variant title
-    if (product?.finishes && product.finishes[selectedFinish]) {
-      const finishName = product.finishes[selectedFinish]?.name
+    // Try to match variation name with variant title
+    if (product?.variations && product.variations[selectedVariation]) {
+      const variationName = product.variations[selectedVariation]?.name
       const matchedVariant = shopifyProduct.variants.find(
-        (variant) => variant.title.toLowerCase().includes(finishName?.toLowerCase() || '')
+        (variant) => variant.title.toLowerCase().includes(variationName?.toLowerCase() || '')
       )
       if (matchedVariant) return matchedVariant
     }
@@ -86,7 +86,7 @@ export function ProductHeroBlock({
   // Layout options
   const imagePosition = layout.imagePosition || 'left'
   const backgroundColor = layout.backgroundColor || 'pearl'
-  const showFinishes = layout.showFinishes !== false
+  const showVariations = layout.showVariations !== false
   const showPrice = layout.showPrice === true
   const showBuyButton = layout.showBuyButton !== false
   
@@ -115,81 +115,60 @@ export function ProductHeroBlock({
   
   // Extract data from product, with overrides taking precedence
   const displayTitle = overrides.customTitle || product.name
-  const displayDescription = overrides.customDescription || product.description || product.shortDescription
-  
+  const displayDescription = overrides.customDescription || product.description
+
   // CONSOLIDATED: Use the new root-level model field
   const modelDisplay = product.model || product.name
-  
-  // CONSOLIDATED: Direct access to key features from Product
-  const keyFeatures = product.keyFeatures 
-    ? product.keyFeatures.slice(0, 3).map((feature: any) => feature.feature)
-    : [
+
+  // Key features removed from Product schema - should come from Page Content blocks
+  const keyFeatures: string[] = [
         "Millennium III Hybrid Action Technology", 
         "Hand-selected premium soundboard materials",
         "Professional-grade KAWAI precision craftsmanship"
       ]
-  const hasFinishes = product.finishes && product.finishes.length > 0
-  // CONSOLIDATED: Updated price field names (msrp instead of amount)
-  const hasPrice = product.price && (product.price.msrp || product.price.priceText)
+  const hasVariations = product.variations && product.variations.length > 0
+  // CONSOLIDATED: Updated price field names (msrp only, priceText removed)
+  const hasPrice = product.price && product.price.msrp
   
-  // Get display image - priority: custom override > selected finish image > main product image > imageUrl fallback
+  // Get display image - priority: custom override > selected variation image > main product image > imageUrl fallback
   const getDisplayImage = () => {
     if (overrides.customImage) {
       return overrides.customImage
     }
-    
-    // If a finish is selected, check for finish image (Media object or URL)
-    if (selectedFinish >= 0 && product.finishes && product.finishes[selectedFinish]) {
-      const selectedFinishData = product.finishes[selectedFinish]
-      
-      // Check if finish has a valid Media image
-      const isFinishImageValid = selectedFinishData.image && 
-        typeof selectedFinishData.image === 'object' && 
-        selectedFinishData.image.url && 
-        selectedFinishData.image.url.trim() !== ''
-      
-      if (isFinishImageValid) {
-        return selectedFinishData.image
+
+    // If a variation is selected, check for variation image (Media object or URL)
+    if (selectedVariation >= 0 && product.variations && product.variations[selectedVariation]) {
+      const selectedVariationData = product.variations[selectedVariation]
+
+      // Check if variation has a valid Media image
+      const isVariationImageValid = selectedVariationData.image &&
+        typeof selectedVariationData.image === 'object' &&
+        selectedVariationData.image.url &&
+        selectedVariationData.image.url.trim() !== ''
+
+      if (isVariationImageValid) {
+        return selectedVariationData.image
       }
-      
-      // Fallback to finish imageUrl if Media image is not valid
-      if (selectedFinishData.imageUrl && selectedFinishData.imageUrl.trim() !== '') {
-        return selectedFinishData.imageUrl
+
+      // Fallback to variation imageUrl if Media image is not valid
+      if (selectedVariationData.imageUrl && selectedVariationData.imageUrl.trim() !== '') {
+        return selectedVariationData.imageUrl
       }
     }
-    
-    // Check if main product image is properly populated (Media object with url)
-    const isMainImageValid = product.mainImage && 
-      typeof product.mainImage === 'object' && 
-      product.mainImage.url && 
-      product.mainImage.url.trim() !== ''
-    
-    if (isMainImageValid) {
-      return product.mainImage
-    }
-    
-    // Fallback to imageUrl if mainImage is not properly populated
+
+    // Use imageUrl (mainImage field removed from Product schema)
     if (product.imageUrl && product.imageUrl.trim() !== '') {
       return product.imageUrl
     }
-    
+
     // No image available
     return null
   }
   
   const displayImage = getDisplayImage()
   
-  // Fixed buy button logic - show if layout showBuyButton is enabled and product button exists and is not explicitly disabled
-  const shouldShowBuyButton = showBuyButton && product.buyButton && (product.buyButton.showButton !== false)
-     
-  console.log('Debug - Buy button visibility logic:', {
-    layoutShowBuyButton: showBuyButton,
-    hasBuyButton: !!product.buyButton,
-    productShowButton: product.buyButton?.showButton,
-    showButtonNotFalse: product.buyButton?.showButton !== false,
-    shouldShowBuyButton,
-    buyButtonData: product.buyButton
-  })
+  // Buy button logic - buyButton field removed from Product schema, use layout setting only
+  const shouldShowBuyButton = showBuyButton
      
   // Get the buy button text - hardcoded to "Learn More"
   const getBuyButtonText = () => {
@@ -200,43 +179,24 @@ export function ProductHeroBlock({
   const formatPrice = () => {
     if (!product.price) return 'Learn more'
 
-    if (product.price.priceText) {
-      return product.price.priceText
-    }
-
-    // CONSOLIDATED: Updated to use msrp instead of amount
+    // CONSOLIDATED: Updated to use msrp only (priceText removed from schema)
     if (!product.price.msrp) {
       return 'Learn more'
     }
-    
+
     const currency = product.price.currency || 'USD'
     const currencySymbols = { USD: '$', EUR: '€', GBP: '£', CAD: 'C$' }
     const symbol = currencySymbols[currency] || '$'
-    
-    // Calculate price with finish modifier (only if a finish is selected)
+
+    // Use actual variant price if variation is selected, otherwise use base MSRP
     const basePrice = product.price.msrp
-    const finishModifier = hasFinishes && selectedFinish >= 0 && product.finishes![selectedFinish]?.priceModifier || 0
-    const adjustedPrice = basePrice + finishModifier
-    const mainPrice = `${symbol}${adjustedPrice.toLocaleString()}`
-    
-    // CONSOLIDATED: Updated to use salePrice instead of saleAmount
-    if (product.price.salePrice) {
-      const adjustedSalePrice = product.price.salePrice + finishModifier
-      const salePrice = `${symbol}${adjustedSalePrice.toLocaleString()}`
-      const savings = adjustedPrice - adjustedSalePrice
-      return (
-        <div className="space-y-1">
-          <div className="flex items-baseline gap-3">
-            <span className="text-emerald-600 font-bold text-4xl">{salePrice}</span>
-            <span className="text-muted-foreground line-through text-2xl">{mainPrice}</span>
-          </div>
-          <Badge variant="destructive" className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200">
-            Save ${savings.toLocaleString()}
-          </Badge>
-        </div>
-      )
-    }
-    
+    const selectedVariationPrice = hasVariations && selectedVariation >= 0
+      ? product.variations![selectedVariation]?.price
+      : null
+    const displayPrice = selectedVariationPrice || basePrice
+    const mainPrice = `${symbol}${displayPrice.toLocaleString()}`
+
+    // Simplified price display (salePrice removed from schema)
     return <span className="text-4xl font-bold">{mainPrice}</span>
   }
   
@@ -271,21 +231,9 @@ export function ProductHeroBlock({
   const accentColorClass = getAccentColorClasses()
   const containerClass = containerClasses[imagePosition]
   
-  // Status badge configuration
+  // Status badge configuration (simplified - only draft/active/discontinued)
   const getStatusBadge = () => {
     switch (product.status) {
-      case 'limited-edition':
-        return {
-          text: 'Limited Edition',
-          icon: Sparkles,
-          className: 'bg-gradient-to-r from-yellow-400 to-amber-500 text-white'
-        }
-      case 'coming-soon':
-        return {
-          text: 'Coming Soon',
-          icon: Clock,
-          className: 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
-        }
       case 'discontinued':
         return {
           text: 'Discontinued',
@@ -299,30 +247,28 @@ export function ProductHeroBlock({
   
   const statusBadge = getStatusBadge()
   
-  // CONSOLIDATED: Debug log with finish image sizing analysis
+  // CONSOLIDATED: Debug log with variation image sizing analysis
   console.log('ProductHeroBlock - Image sizing debug:', {
-    selectedFinish,
+    selectedVariation,
     displayImage: displayImage,
     displayImageType: typeof displayImage,
     displayImageUrl: typeof displayImage === 'object' ? displayImage?.url : displayImage,
-    isFinishImageSelected: selectedFinish >= 0,
-    finishImageData: selectedFinish >= 0 && product?.finishes ? {
-      finishName: product.finishes[selectedFinish]?.name,
-      hasMediaImage: !!(product.finishes[selectedFinish]?.image),
-      hasImageUrl: !!(product.finishes[selectedFinish]?.imageUrl),
-      mediaImageUrl: typeof product.finishes[selectedFinish]?.image === 'object' ? 
-        product.finishes[selectedFinish]?.image?.url : null,
-      imageUrl: product.finishes[selectedFinish]?.imageUrl,
+    isVariationImageSelected: selectedVariation >= 0,
+    variationImageData: selectedVariation >= 0 && product?.variations ? {
+      variationName: product.variations[selectedVariation]?.name,
+      hasMediaImage: !!(product.variations[selectedVariation]?.image),
+      hasImageUrl: !!(product.variations[selectedVariation]?.imageUrl),
+      mediaImageUrl: typeof product.variations[selectedVariation]?.image === 'object' ?
+        product.variations[selectedVariation]?.image?.url : null,
+      imageUrl: product.variations[selectedVariation]?.imageUrl,
       selectedImageSource: (() => {
-        const finish = product.finishes[selectedFinish]
-        if (finish?.image && typeof finish.image === 'object' && finish.image.url) return 'Media object'
-        if (finish?.imageUrl) return 'imageUrl string'
+        const variation = product.variations[selectedVariation]
+        if (variation?.image && typeof variation.image === 'object' && variation.image.url) return 'Media object'
+        if (variation?.imageUrl) return 'imageUrl string'
         return 'fallback to main'
       })()
     } : null,
     mainImageData: {
-      hasMainImage: !!(product?.mainImage),
-      mainImageUrl: typeof product?.mainImage === 'object' ? product?.mainImage?.url : null,
       hasImageUrl: !!(product?.imageUrl),
       imageUrl: product?.imageUrl
     }
@@ -409,40 +355,40 @@ export function ProductHeroBlock({
               )}
             </div>
 
-            {/* Modern Finish Selection */}
-            {showFinishes && hasFinishes && (
+            {/* Modern Variation Selection */}
+            {showVariations && hasVariations && (
               <div className="space-y-6">
-                <h3 className={cn("text-2xl font-light", textColorClass)}>Available Finishes</h3>
+                <h3 className={cn("text-2xl font-light", textColorClass)}>Available Variations</h3>
                 <div className="grid grid-cols-2 gap-4">
-                  {product.finishes!.map((finish, index) => {
-                    if (!finish.available) return null
-                    
+                  {product.variations!.map((variation, index) => {
+                    if (!variation.available) return null
+
                     return (
                       <div
                         key={index}
                         className={cn(
                           "cursor-pointer p-4 rounded-xl border-2 transition-all duration-300 backdrop-blur-sm",
-                          selectedFinish === index 
+                          selectedVariation === index
                             ? cn(
                                 'border-kawai-red',
                                 backgroundColor === 'black' ? 'bg-kawai-red/20 text-white' : 'bg-kawai-red/10 text-kawai-red'
                               )
                             : cn(
                                 'hover:border-kawai-red/50',
-                                backgroundColor === 'black' 
-                                  ? 'bg-white/5 border-white/20 text-gray-300 hover:bg-white/10' 
+                                backgroundColor === 'black'
+                                  ? 'bg-white/5 border-white/20 text-gray-300 hover:bg-white/10'
                                   : backgroundColor === 'white'
                                     ? 'bg-black/5 border-black/10 text-gray-700 hover:bg-black/10'
                                     : 'bg-white/10 border-white/20 text-gray-600 hover:bg-white/20'
                               )
                         )}
                         onClick={() => {
-                          // Toggle selection: if already selected, deselect; otherwise select this finish
-                          setSelectedFinish(selectedFinish === index ? -1 : index)
+                          // Toggle selection: if already selected, deselect; otherwise select this variation
+                          setSelectedVariation(selectedVariation === index ? -1 : index)
                         }}
                       >
                         <div className="flex items-center">
-                          <span className="font-medium">{finish.name}</span>
+                          <span className="font-medium">{variation.name}</span>
                         </div>
                       </div>
                     )
@@ -478,7 +424,7 @@ export function ProductHeroBlock({
                         backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
                       )}
                     >
-                      <Link href={product.learnMore || product.buyButton?.link || '#'}>
+                      <Link href={`/products/${product.slug}` || '#'}>
                         <span className="relative flex items-center justify-center space-x-2 lg:space-x-3">
                           <span>{getBuyButtonText()}</span>
                           <svg className="w-4 h-4 lg:w-5 lg:h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -494,15 +440,10 @@ export function ProductHeroBlock({
                     asChild
                     className={cn(
                       "group relative overflow-hidden px-8 lg:px-10 py-4 lg:py-6 font-medium rounded-full transition-all duration-500 hover:scale-105 hover:shadow-2xl text-base lg:text-lg flex-1",
-                      product.buyButton?.style === 'outline'
-                        ? cn(
-                            "border-2 border-kawai-red bg-transparent hover:bg-kawai-red",
-                            backgroundColor === 'black' ? 'text-kawai-red hover:text-white' : 'text-kawai-red hover:text-white'
-                          )
-                        : "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/25"
+                      "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/25"
                     )}
                   >
-                    <Link href={product.learnMore || product.buyButton?.link || '#'}>
+                    <Link href={`/products/${product.slug}` || '#'}>
                       <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                       <span className="relative flex items-center justify-center space-x-2 lg:space-x-3">
                         <span>{getBuyButtonText()}</span>
@@ -573,7 +514,7 @@ export function ProductHeroBlock({
                   {/* Status badge */}
                   {statusBadge && (
                     <Badge className={cn("absolute bottom-6 right-6 font-bold text-sm px-4 py-2 rounded-full flex items-center gap-2", statusBadge.className)}>
-                      {statusBadge.icon && <statusBadge.icon className="h-3 w-3" />}
+                      {statusBadge.icon && createElement(statusBadge.icon, { className: "h-3 w-3" })}
                       {statusBadge.text}
                     </Badge>
                   )}

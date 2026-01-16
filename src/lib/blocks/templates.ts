@@ -67,7 +67,7 @@ export function generateDefaultProductBlocks(pianoModelId: string): BlockTemplat
       },
       layout: {
         imagePosition: 'left',
-        showFinishes: true,
+        showVariations: true,
         showPrice: true,
         compact: false
       }
@@ -182,7 +182,7 @@ export function generateMinimalProductBlocks(pianoModelId: string): BlockTemplat
       pianoModel: pianoModelId,
       layout: {
         imagePosition: 'left',
-        showFinishes: true,
+        showVariations: true,
         showPrice: true
       }
     },
@@ -236,7 +236,7 @@ export function generatePremiumProductBlocks(pianoModelId: string): BlockTemplat
       pianoModel: pianoModelId,
       layout: {
         imagePosition: 'left',
-        showFinishes: true,
+        showVariations: true,
         showPrice: true,
         compact: false
       }

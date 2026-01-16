@@ -25,6 +25,7 @@ export const Specifications: Block = {
       name: 'pianoModel',
       type: 'relationship',
       relationTo: 'products',
+      maxDepth: 0, // CRITICAL: Prevent circular relationship infinite loop
       admin: {
         description: 'Select piano model to automatically populate specifications',
         condition: (data, siblingData) => {
@@ -224,6 +225,7 @@ export const Specifications: Block = {
           name: 'downloadFile',
           type: 'upload',
           relationTo: 'media',
+          maxDepth: 0, // Prevent deep media fetching
           admin: {
             description: 'Specifications document to download',
             condition: (data, siblingData) => siblingData?.enableDownload === true

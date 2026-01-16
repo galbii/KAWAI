@@ -36,11 +36,11 @@ export const ProductHero: Block = {
           }
         },
         {
-          name: 'showFinishes',
+          name: 'showVariations',
           type: 'checkbox',
           defaultValue: true,
           admin: {
-            description: 'Show available finishes section'
+            description: 'Show available variations section'
           }
         },
         {
@@ -86,6 +86,7 @@ export const ProductHero: Block = {
           name: 'customImage',
           type: 'upload',
           relationTo: 'media',
+          maxDepth: 0, // Prevent deep media fetching
           admin: {
             description: 'Override the main product image (optional)'
           }

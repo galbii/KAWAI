@@ -223,9 +223,11 @@ export async function getProductsByCategory(category: string) {
 
     if (!response.docs) return []
 
-    // Group products by series for component compatibility
+    // Group products by series (extracted from model field) for component compatibility
     const productsByProductline = response.docs.reduce((acc: any, product: any) => {
-      const seriesName = product.series || 'Unknown Series'
+      // Extract series from model field (e.g., "CA" from "CA99")
+      const seriesPrefix = product.model?.match(/^[A-Z]+/)?.[0] || ''
+      const seriesName = seriesPrefix ? `${seriesPrefix} Series` : 'Piano Series'
 
       if (!acc[seriesName]) {
         acc[seriesName] = {
@@ -254,17 +256,7 @@ function getImageUrl(image: any): string {
 
 // Helper function to get the best available image from product
 function getProductImage(product: any): any {
-  // Check if main product image is properly populated (Media object with url)
-  const isMainImageValid = product.mainImage &&
-    typeof product.mainImage === 'object' &&
-    product.mainImage.url &&
-    product.mainImage.url.trim() !== '';
-
-  if (isMainImageValid) {
-    return product.mainImage;
-  }
-
-  // Fallback to imageUrl if mainImage is not properly populated
+  // Use imageUrl from Shopify sync (read-only field)
   if (product.imageUrl && product.imageUrl.trim() !== '') {
     return product.imageUrl;
   }
@@ -276,19 +268,23 @@ function getProductImage(product: any): any {
 // CONSOLIDATED: Transform Product (piano type) to frontend component format
 // Supports both old nested structure and new consolidated structure
 export function transformProductToComponent(product: any) {
+  // Extract series from model field (e.g., "CA" from "CA99")
+  const seriesPrefix = product.model?.match(/^[A-Z]+/)?.[0] || ''
+  const seriesName = seriesPrefix ? `${seriesPrefix} Series` : 'Piano'
+
   return {
     slug: product.slug,
     name: product.name,
-    // Direct root-level access, FALLBACK: nested productData
-    series: product.series || product.productData?.series || 'Unknown Series',
-    // NEW: Direct root-level access, FALLBACK: nested componentData
-    rating: product.rating || product.componentData?.rating || 4.5,
-    reviews: product.reviews || product.componentData?.reviews || 0,
-    badge: product.badge || product.componentData?.badge,
-    highlight: product.highlight || product.componentData?.highlight,
+    // Extract from model field (series field removed from Product schema)
+    series: seriesName,
+    // Rating/reviews/badge/highlight removed from Product schema - use defaults or Page Content blocks
+    rating: 4.5,
+    reviews: 0,
+    badge: undefined,
+    highlight: undefined,
     image: getProductImage(product), // Use fallback logic: mainImage (Media object) > imageUrl (string) > null
     description: product.description,
-    keyFeatures: (product.keyFeatures || []).map((kf: any) => kf.feature),
+    keyFeatures: [], // keyFeatures field removed from Product schema - should come from Page Content blocks
     // CONSOLIDATED: No longer need pianoModelId - direct product access
   }
 }
@@ -303,15 +299,19 @@ export function transformPianoModelToComponent(pianoModel: Product) {
     .replace(/-+/g, '-')
     .replace(/^-+|-+$/g, '')
 
+  // Extract series from model field (series field removed from Product schema)
+  const seriesPrefix = pianoModel.model?.match(/^[A-Z]+/)?.[0] || ''
+  const seriesName = seriesPrefix ? `${seriesPrefix} Series` : 'Piano Series'
+
   return {
     slug,
     name: pianoModel.name,
-    series: pianoModel.series || 'Unknown Series',
+    series: seriesName,
     rating: 0, // Rating is now handled by Products collection
     reviews: 0, // Reviews are now handled by Products collection
-    image: pianoModel.mainImage, // Use mainImage from Product
+    image: pianoModel.imageUrl, // Use imageUrl from Product (mainImage removed)
     description: pianoModel.description,
-    keyFeatures: (pianoModel.keyFeatures || []).map(kf => kf.feature),
+    keyFeatures: [], // keyFeatures removed from Product schema
     pianoModelId: pianoModel.id // Add the piano model ID for product slug fetching
   }
 }

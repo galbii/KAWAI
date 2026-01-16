@@ -25,6 +25,7 @@ export const ProductShowcase: Block = {
       name: 'pianoModel',
       type: 'relationship',
       relationTo: 'products',
+      maxDepth: 0, // CRITICAL: Prevent circular relationship infinite loop
       admin: {
         description: 'Select piano model to automatically populate product information',
         condition: (data, siblingData) => {
@@ -41,6 +42,7 @@ export const ProductShowcase: Block = {
           name: 'image',
           type: 'upload',
           relationTo: 'media',
+          maxDepth: 0, // Prevent deep media fetching
           admin: {
             description: 'Main product image (leave empty to use Piano Model image)',
             condition: (data) => {
@@ -120,12 +122,12 @@ export const ProductShowcase: Block = {
           }
         },
         {
-          name: 'finishes',
+          name: 'variations',
           type: 'array',
           minRows: 0,
           labels: {
-            singular: 'Finish',
-            plural: 'Available Finishes'
+            singular: 'Variation',
+            plural: 'Available Variations'
           },
           fields: [
             {
@@ -133,27 +135,28 @@ export const ProductShowcase: Block = {
               type: 'text',
               required: true,
               admin: {
-                description: 'Finish name (e.g., "Ebony Polish", "White Satin")'
+                description: 'Variation name (e.g., "Ebony Polish", "White Satin")'
               }
             },
             {
               name: 'image',
               type: 'upload',
               relationTo: 'media',
+              maxDepth: 0, // Prevent deep media fetching in variations array
               admin: {
-                description: 'Finish sample image (optional)'
+                description: 'Variation sample image (optional)'
               }
             },
             {
               name: 'priceModifier',
               type: 'number',
               admin: {
-                description: 'Price difference for this finish (+ or -)'
+                description: 'Price difference for this variation (+ or -)'
               }
             }
           ],
           admin: {
-            description: 'Available finish options (overrides Piano Model finishes when provided)',
+            description: 'Available variation options (overrides Piano Model variations when provided)',
             condition: (data) => {
               const dataSource = data?.dataSource;
               return dataSource === 'manual' || dataSource === 'hybrid';
@@ -245,11 +248,11 @@ export const ProductShowcase: Block = {
           }
         },
         {
-          name: 'showFinishes',
+          name: 'showVariations',
           type: 'checkbox',
           defaultValue: true,
           admin: {
-            description: 'Show available finishes in this block'
+            description: 'Show available variations in this block'
           }
         },
         {

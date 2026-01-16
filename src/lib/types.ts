@@ -31,8 +31,8 @@ export interface Pricing {
   currency?: string
 }
 
-export interface Finish {
-  finish: string
+export interface Variation {
+  variation: string
   image?: string
   description?: string
 }
@@ -52,7 +52,7 @@ export interface Specifications {
     value: string
     unit: string
   }
-  finishes?: Finish[]
+  variations?: Variation[]
   actionType?: string
   soundEngine?: string
 }
@@ -195,7 +195,7 @@ export interface FilterCriteria {
   priceMin?: number
   priceMax?: number
   keys?: number[]
-  finishes?: string[]
+  variations?: string[]
   features?: string[]
   status?: string[]
   isPreOwned?: boolean

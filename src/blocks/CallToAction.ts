@@ -147,6 +147,7 @@ export const CallToAction: Block = {
           name: 'backgroundImage',
           type: 'upload',
           relationTo: 'media',
+          maxDepth: 0, // Prevent deep media fetching
           admin: {
             description: 'Background image for the CTA section',
             condition: (data, siblingData) => siblingData?.type === 'background'
@@ -156,6 +157,7 @@ export const CallToAction: Block = {
           name: 'sideImage',
           type: 'upload',
           relationTo: 'media',
+          maxDepth: 0, // Prevent deep media fetching
           admin: {
             description: 'Side image to display alongside content',
             condition: (data, siblingData) => siblingData?.type === 'side'

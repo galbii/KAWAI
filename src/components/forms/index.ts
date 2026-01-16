@@ -52,6 +52,7 @@ export { RefactoredEmailForm } from './RefactoredEmailForm'
 // ============================================================================
 
 export { SimpleCustomerSignup } from './SimpleCustomerSignup'
+export { SimpleCustomerSignupForm, type SimpleCustomerSignupFormProps } from './SimpleCustomerSignupForm'
 
 // ============================================================================
 // Form Examples (for reference/documentation)

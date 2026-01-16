@@ -976,6 +976,14 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
           {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
             <nav className="hidden xl:flex flex-1 justify-center">
               <div className="flex items-center space-x-1">
+                {/* Home Link - Always goes to global homepage, doesn't preserve dealer context */}
+                <Link
+                  href="/"
+                  className="px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md"
+                >
+                  Home
+                </Link>
+
                 {/* News Mega Menu Item */}
                 <div
                   onMouseEnter={animationComplete ? handleNewsMenuOpen : undefined}
@@ -1194,6 +1202,15 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
             
             <nav className="flex-1 p-6 overflow-y-auto min-h-0">
               <div className="space-y-4 pb-6 min-h-full flex flex-col justify-start">
+                {/* Home Link - Always goes to global homepage, doesn't preserve dealer context */}
+                <Link
+                  href="/"
+                  className="block py-4 px-6 text-gray-800 hover:text-gray-900 hover:bg-gray-50 font-medium text-xl transition-colors rounded-lg"
+                  onClick={closeMobileMenu}
+                >
+                  Home
+                </Link>
+
                 {navigation.map((item) => (
                   <MobileMenuItem
                     key={item.label}

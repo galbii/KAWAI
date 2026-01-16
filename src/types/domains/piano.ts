@@ -14,7 +14,7 @@ export interface PianoProduct extends Omit<Product, 'keyFeatures' | 'specificati
   pricing: PianoPricing
   availability: PianoAvailability
   keyFeatures: PianoFeature[]
-  finishes: PianoFinish[]
+  variations: PianoVariation[]
 }
 
 // Comprehensive piano specifications
@@ -151,8 +151,8 @@ export interface PianoFeature {
   benefits?: string[]
 }
 
-// Piano finish options
-export interface PianoFinish {
+// Piano variation options
+export interface PianoVariation {
   id: string
   name: string
   description?: string

@@ -25,6 +25,7 @@ export const Hero: Block = {
       name: 'pianoModel',
       type: 'relationship',
       relationTo: 'products',
+      maxDepth: 0, // CRITICAL: Prevent circular relationship infinite loop
       admin: {
         description: 'Select piano model to automatically populate hero content',
         condition: (data, siblingData) => {
@@ -172,6 +173,7 @@ export const Hero: Block = {
           name: 'backgroundImage',
           type: 'upload',
           relationTo: 'media',
+          maxDepth: 0, // Prevent deep media fetching
           admin: {
             description: 'Background image (leave empty to use Piano Model main image)',
             condition: (data, siblingData) => {
@@ -185,6 +187,7 @@ export const Hero: Block = {
           name: 'backgroundVideo',
           type: 'upload',
           relationTo: 'media',
+          maxDepth: 0, // Prevent deep media fetching
           admin: {
             description: 'Background video',
             condition: (data, siblingData) => siblingData?.type === 'video'

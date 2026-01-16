@@ -1,13 +1,13 @@
 'use server'
 
 import { z } from 'zod'
-import { upsertCustomer, addCustomerLocation } from '@/lib/shopify/customers'
+import { upsertCustomer } from '@/lib/shopify/customers'
 
 /**
  * Simple Customer Signup Server Action
  *
  * Creates or updates a Shopify customer with minimal information (email, firstName, lastName).
- * Tracks dealer location via metafield (not tags) and applies custom tags from CMS.
+ * Tracks dealer location via tags and applies custom tags from CMS.
  *
  * @example
  * ```tsx
@@ -88,8 +88,11 @@ export async function submitSimpleCustomerSignup(
     }
 
     try {
-      // Build tags array: ONLY custom tags from CMS (no location slug)
+      // Build tags array: location slug + custom tags from CMS
       const tags: string[] = []
+
+      // Add location tag (storefront slug)
+      tags.push(signupData.storefrontSlug)
 
       // Parse and add custom tags if provided
       if (signupData.customTags) {
@@ -106,18 +109,14 @@ export async function submitSimpleCustomerSignup(
         email: signupData.email,
         firstName: signupData.firstName,
         lastName: signupData.lastName,
-        tags, // Only custom tags from CMS (not location)
+        tags, // Location slug + custom tags
       })
-
-      // Track dealer location via metafield (supports multiple locations)
-      // If customer signs up from different dealers, all locations are tracked
-      await addCustomerLocation(customer.id, signupData.storefrontSlug)
 
       console.log(
         `[Simple Signup] Successfully created/updated customer ${signupData.email}`,
         {
-          customTags: tags,
-          dealerLocation: signupData.storefrontSlug
+          tags,
+          storefrontSlug: signupData.storefrontSlug
         }
       )
 

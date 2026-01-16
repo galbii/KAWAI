@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import type { Piano, FilterCriteria, Finish } from './types'
+import type { Piano, FilterCriteria, Variation } from './types'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -121,10 +121,10 @@ export function filterPianosBySpecs(pianos: Piano[], filters: FilterCriteria): P
       if (!piano.specifications?.keys || !filters.keys.includes(piano.specifications.keys)) return false
     }
     
-    // Filter by finishes
-    if (filters.finishes && filters.finishes.length > 0) {
-      const pianoFinishes = piano.specifications?.finishes?.map((f: Finish) => f.finish) || []
-      if (!filters.finishes.some(finish => pianoFinishes.includes(finish))) return false
+    // Filter by variations
+    if (filters.variations && filters.variations.length > 0) {
+      const pianoVariations = piano.specifications?.variations?.map((v: Variation) => v.variation) || []
+      if (!filters.variations.some(variation => pianoVariations.includes(variation))) return false
     }
     
     return true
@@ -235,7 +235,7 @@ export function generatePianoSearchIndex(pianos: Piano[]): Array<{
       piano.category?.name,
       piano.pianoType,
       ...(piano.features || []),
-      ...(piano.specifications?.finishes?.map((f: Finish) => f.finish) || []),
+      ...(piano.specifications?.variations?.map((v: Variation) => v.variation) || []),
       piano.specifications?.actionType,
       piano.specifications?.soundEngine
     ].filter(Boolean).join(' ').toLowerCase()

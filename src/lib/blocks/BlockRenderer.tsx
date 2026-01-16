@@ -96,8 +96,8 @@ export async function BlockRenderer({ block, index, product }: BlockRendererProp
         console.log(`[BlockRenderer] Rendering ProductHero block:`, {
           blockId: block.id,
           productName: product.name,
-          hasMainImage: !!product.mainImage,
-          hasFinishes: !!(product.finishes && product.finishes.length > 0),
+          hasMainImage: !!product.imageUrl,
+          hasVariations: !!(product.variations && product.variations.length > 0),
           hasShopifyProduct: !!shopifyProduct,
           shopifyVariants: shopifyProduct?.variants.length || 0
         })

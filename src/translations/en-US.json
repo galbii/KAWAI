@@ -34,7 +34,7 @@
   "spec.weight": "Weight",
   "spec.action_type": "Action Type",
   "spec.sound_engine": "Sound Engine",
-  "spec.finishes": "Available Finishes",
+  "spec.variations": "Available Variations",
 
   "search.placeholder": "Search for pianos, models, or series...",
   "filter.type": "Piano Type",

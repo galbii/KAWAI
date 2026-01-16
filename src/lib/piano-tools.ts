@@ -1,13 +1,13 @@
 // Piano comparison, filtering, and selection tools
 
-import type { Piano, Finish, RecommendationCriteria } from './types'
+import type { Piano, Variation, RecommendationCriteria } from './types'
 
 export interface PianoFilter {
   type?: string[]
   series?: string[]
   priceRange?: [number, number]
   keys?: number[]
-  finishes?: string[]
+  variations?: string[]
   features?: string[]
   status?: string[]
   isPreOwned?: boolean
@@ -99,10 +99,10 @@ export class PianoFilterEngine {
         if (!piano.specifications?.keys || !this.filters.keys.includes(piano.specifications.keys)) return false
       }
 
-      // Finishes filter
-      if (this.filters.finishes && this.filters.finishes.length > 0) {
-        const pianoFinishes = piano.specifications?.finishes?.map((f: Finish) => f.finish) || []
-        if (!this.filters.finishes.some(finish => pianoFinishes.includes(finish))) return false
+      // Variations filter
+      if (this.filters.variations && this.filters.variations.length > 0) {
+        const pianoVariations = piano.specifications?.variations?.map((v: Variation) => v.variation) || []
+        if (!this.filters.variations.some(variation => pianoVariations.includes(variation))) return false
       }
 
       // Features filter
@@ -167,10 +167,10 @@ export class PianoFilterEngine {
         options: this.generateOptions(this.pianos, 'specifications.keys', filteredPianos)
       },
       {
-        key: 'finishes',
-        label: 'Finishes',
+        key: 'variations',
+        label: 'Variations',
         type: 'checkbox',
-        options: this.generateFinishOptions(filteredPianos)
+        options: this.generateVariationOptions(filteredPianos)
       },
       {
         key: 'status',
@@ -206,29 +206,29 @@ export class PianoFilterEngine {
     })
   }
 
-  private generateFinishOptions(filteredPianos: Piano[]): FilterOption[] {
-    const allFinishes = new Set<string>()
-    const filteredFinishes = new Set<string>()
+  private generateVariationOptions(filteredPianos: Piano[]): FilterOption[] {
+    const allVariations = new Set<string>()
+    const filteredVariations = new Set<string>()
 
     this.pianos.forEach(piano => {
-      piano.specifications?.finishes?.forEach((f: Finish) => {
-        allFinishes.add(f.finish)
+      piano.specifications?.variations?.forEach((v: Variation) => {
+        allVariations.add(v.variation)
       })
     })
 
     filteredPianos.forEach(piano => {
-      piano.specifications?.finishes?.forEach((f: Finish) => {
-        filteredFinishes.add(f.finish)
+      piano.specifications?.variations?.forEach((v: Variation) => {
+        filteredVariations.add(v.variation)
       })
     })
 
-    return Array.from(allFinishes).map(finish => ({
-      label: finish,
-      value: finish,
-      count: filteredPianos.filter(p => 
-        p.specifications?.finishes?.some((f: Finish) => f.finish === finish)
+    return Array.from(allVariations).map(variation => ({
+      label: variation,
+      value: variation,
+      count: filteredPianos.filter(p =>
+        p.specifications?.variations?.some((v: Variation) => v.variation === variation)
       ).length,
-      disabled: !filteredFinishes.has(finish)
+      disabled: !filteredVariations.has(variation)
     }))
   }
 

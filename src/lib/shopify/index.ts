@@ -201,6 +201,18 @@ export {
 export type { ShopifyProductData } from './fetch-product'
 
 // ============================================================================
+// Shopify to Payload Sync Exports
+// ============================================================================
+
+export {
+  syncShopifyDataToProduct,
+  shouldSyncProduct,
+  formatShopifyPrice,
+} from './sync-to-payload'
+
+export type { ShopifyDataUpdate } from './sync-to-payload'
+
+// ============================================================================
 // Cart Utility Exports
 // ============================================================================
 

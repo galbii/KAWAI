@@ -144,15 +144,16 @@ export default async function CategoryPage({ params }: CategoryPageParams) {
       limit: 100
     })
 
-    // Group products by series
+    // Group products by model series (extract from model field)
     const seriesMap = new Map<string, any>()
 
     products.forEach((product: Product) => {
-      const seriesName = product.series || 'Other Series'
+      // Extract series from model field (e.g., "CA" from "CA99", "GX" from "GX-7")
+      const seriesName = product.model?.match(/^[A-Z]+/)?.[0] || categoryConfig.name || 'Other'
 
       if (!seriesMap.has(seriesName)) {
         seriesMap.set(seriesName, {
-          name: seriesName,
+          name: `${seriesName} Series`,
           description: categoryConfig.shortDescription,
           pianos: [],
           slides: []
@@ -163,13 +164,13 @@ export default async function CategoryPage({ params }: CategoryPageParams) {
       seriesMap.get(seriesName)!.pianos.push({
         slug: product.slug,
         name: product.name,
-        series: seriesName,
-        rating: product.rating || 4.5,
-        reviews: product.reviews || 0,
-        badge: product.badge,
-        image: product.mainImage,
+        series: `${seriesName} Series`,
+        rating: 4.5, // Removed from product data, use default
+        reviews: 0,  // Removed from product data, use default
+        badge: undefined, // Removed from product data
+        image: product.imageUrl ? { url: product.imageUrl } : undefined,
         description: product.description,
-        keyFeatures: (product.keyFeatures || []).map((kf: any) => kf.feature)
+        keyFeatures: [] // Removed from product data, should come from Page Content blocks
       })
     })
 

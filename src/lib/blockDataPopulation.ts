@@ -83,7 +83,7 @@ export function populateHeroData(block: HeroBlockData, product: Product) {
       ...block,
       content: {
         title: product.name,
-        subtitle: product.shortDescription || '',
+        subtitle: product.description || '',
         description: product.description,
         // Keep manual CTA buttons
         primaryCta: block.content?.primaryCta,
@@ -91,7 +91,7 @@ export function populateHeroData(block: HeroBlockData, product: Product) {
       },
       media: {
         ...block.media,
-        backgroundImage: product.mainImage, // Use product main image
+        backgroundImage: product.imageUrl, // Use product main image
       }
     }
   }
@@ -102,14 +102,14 @@ export function populateHeroData(block: HeroBlockData, product: Product) {
       ...block,
       content: {
         title: block.content?.title || product.name,
-        subtitle: block.content?.subtitle || product.shortDescription || '',
+        subtitle: block.content?.subtitle || product.description || '',
         description: block.content?.description || product.description,
         primaryCta: block.content?.primaryCta, // Always manual
         secondaryCta: block.content?.secondaryCta // Always manual
       },
       media: {
         ...block.media,
-        backgroundImage: block.media?.backgroundImage || product.mainImage,
+        backgroundImage: block.media?.backgroundImage || product.imageUrl,
       }
     }
   }
@@ -132,10 +132,10 @@ interface ProductShowcaseBlockData {
       saleAmount?: number | null
       priceText?: string | null
     }
-    finishes?: Array<{
+    variations?: Array<{
       name: string
+      price?: number | null
       image?: string | Media | null
-      priceModifier?: number | null
     }> | null
     buyButton?: {
       text?: string | null
@@ -148,7 +148,7 @@ interface ProductShowcaseBlockData {
   }
   layout?: {
     imagePosition?: 'left' | 'right' | 'top' | 'bottom' | null
-    showFinishes?: boolean | null
+    showVariations?: boolean | null
     showPrice?: boolean | null
     compact?: boolean | null
   }
@@ -166,19 +166,19 @@ export function populateProductShowcaseData(block: ProductShowcaseBlockData, pro
     return {
       ...block,
       product: {
-        image: product.mainImage,
+        image: product.imageUrl,
         title: product.name,
         description: product.description,
         price: {
           currency: product.price?.currency,
           amount: product.price?.msrp,
-          saleAmount: product.price?.salePrice,
-          priceText: product.price?.priceText
+          saleAmount: undefined,
+          priceText: undefined
         },
-        finishes: product.finishes?.map(finish => ({
-          name: finish.name || '',
-          image: finish.image,
-          priceModifier: finish.priceModifier
+        variations: product.variations?.map(variation => ({
+          name: variation.name || '',
+          price: variation.price,
+          image: variation.image,
         })),
         // Keep manual buy button
         buyButton: block.product?.buyButton,
@@ -193,19 +193,19 @@ export function populateProductShowcaseData(block: ProductShowcaseBlockData, pro
     return {
       ...block,
       product: {
-        image: block.product?.image || product.mainImage,
+        image: block.product?.image || product.imageUrl,
         title: block.product?.title || product.name,
         description: block.product?.description || product.description,
         price: {
           currency: block.product?.price?.currency || product.price?.currency,
           amount: block.product?.price?.amount || product.price?.msrp,
-          saleAmount: block.product?.price?.saleAmount || product.price?.salePrice,
-          priceText: block.product?.price?.priceText || product.price?.priceText
+          saleAmount: block.product?.price?.saleAmount || undefined,
+          priceText: block.product?.price?.priceText || undefined
         },
-        finishes: block.product?.finishes || product.finishes?.map(finish => ({
-          name: finish.name || '',
-          image: finish.image,
-          priceModifier: finish.priceModifier
+        variations: block.product?.variations || product.variations?.map(variation => ({
+          name: variation.name || '',
+          image: variation.image,
+          price: variation.price
         })),
         buyButton: block.product?.buyButton, // Always manual
         badge: block.product?.badge, // Always manual
@@ -244,7 +244,7 @@ export function populateImageGalleryData(block: ImageGalleryBlockData, product: 
   if (dataSource === 'pianomodel' && product.type === 'piano') {
     // Use product main image for gallery
     const galleryImages = [{
-      image: product.mainImage,
+      image: product.imageUrl,
       caption: `${product.name} main image`,
       alt: `${product.name} main image`
     }]
@@ -262,7 +262,7 @@ export function populateImageGalleryData(block: ImageGalleryBlockData, product: 
     }
 
     const galleryImages = [{
-      image: product.mainImage,
+      image: product.imageUrl,
       caption: `${product.name} main image`,
       alt: `${product.name} main image`
     }]
@@ -300,12 +300,8 @@ export function populateFeaturesListData(block: FeaturesListBlockData, product: 
   }
 
   if (dataSource === 'pianomodel' && product.type === 'piano') {
-    // Use product key features
-    const features = product.keyFeatures?.map(kf => ({
-      icon: 'music', // Default icon
-      title: kf.feature,
-      description: '' // Basic feature, no description
-    })) || []
+    // keyFeatures field removed from Product schema - use Page Content blocks instead
+    const features: any[] = []
 
     return {
       ...block,
@@ -319,11 +315,8 @@ export function populateFeaturesListData(block: FeaturesListBlockData, product: 
       return block // Use manual features
     }
 
-    const features = product.keyFeatures?.map(kf => ({
-      icon: 'music', // Default icon
-      title: kf.feature,
-      description: ''
-    })) || []
+    // keyFeatures field removed from Product schema - use Page Content blocks instead
+    const features: any[] = []
 
     return {
       ...block,
@@ -359,9 +352,10 @@ export function populateSpecificationsData(block: SpecificationsBlockData, produ
     return block
   }
 
-  if (dataSource === 'pianomodel' && product.type === 'piano' && product.specifications) {
+  // specifications field removed from Product schema - use Page Content blocks instead
+  if (false && dataSource === 'pianomodel' && product.type === 'piano') {
     // Transform product specifications into block format
-    const specs = product.specifications
+    const specs = null as any
     const specifications = [
       {
         category: 'General Specifications',

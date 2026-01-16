@@ -27,18 +27,19 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
     }
   }
 
-  const mainImageUrl = resolveMediaUrl(product.mainImage)
+  // Use imageUrl instead of mainImage (field removed from Product schema)
+  const mainImageUrl = product.imageUrl || null
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
 
   return {
     title: product.name,
-    description: product.description,
+    description: product.description || '',
     alternates: {
       canonical: `${siteUrl}/products/${slug}`
     },
     openGraph: {
       title: product.name,
-      description: product.description,
+      description: product.description || '',
       url: `${siteUrl}/products/${slug}`,
       images: mainImageUrl ? [{ url: mainImageUrl }] : [],
       type: 'website'
@@ -46,7 +47,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
     twitter: {
       card: 'summary_large_image',
       title: product.name,
-      description: product.description,
+      description: product.description || '',
       images: mainImageUrl ? [mainImageUrl] : [],
     }
   }
@@ -87,18 +88,9 @@ export async function generateStaticParams() {
     const products = await payload.find({
       collection: 'products',
       where: {
-        and: [
-          {
-            status: {
-              equals: 'active',
-            },
-          },
-          {
-            discontinued: {
-              not_equals: true,
-            },
-          },
-        ],
+        status: {
+          equals: 'active',
+        },
       },
       limit: 500, // Adjust based on product catalog size
       select: {

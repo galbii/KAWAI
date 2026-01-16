@@ -10,6 +10,7 @@ export const Image: Block = {
       name: 'image',
       type: 'upload',
       relationTo: 'media',
+      maxDepth: 0, // Prevent deep media fetching
       required: true,
       admin: {
         description: 'Upload an image',

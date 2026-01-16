@@ -161,18 +161,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const productsResult = await payload.find({
         collection: 'products',
         where: {
-          and: [
-            {
-              status: {
-                equals: 'active',
-              },
-            },
-            {
-              discontinued: {
-                not_equals: true,
-              },
-            },
-          ],
+          status: {
+            equals: 'active',
+          },
         },
         limit: 1000,
         select: {

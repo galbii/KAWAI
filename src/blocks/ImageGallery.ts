@@ -25,6 +25,7 @@ export const ImageGallery: Block = {
       name: 'pianoModel',
       type: 'relationship',
       relationTo: 'products',
+      maxDepth: 0, // CRITICAL: Prevent circular relationship infinite loop
       admin: {
         description: 'Select piano model to automatically populate gallery from model images',
         condition: (data, siblingData) => {
@@ -61,6 +62,7 @@ export const ImageGallery: Block = {
           name: 'image',
           type: 'upload',
           relationTo: 'media',
+          maxDepth: 0, // Prevent deep media fetching in array
           required: true,
           admin: {
             description: 'Gallery image'

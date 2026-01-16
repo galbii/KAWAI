@@ -46,6 +46,7 @@ export {
 export { Badge, badgeVariants, type BadgeProps } from './badge'
 export { Input } from './input'
 export { Label } from './label'
+export { FormField, type FormFieldProps } from './form-field'
 export { Separator } from './separator'
 
 // ============================================================================
@@ -64,6 +65,8 @@ export {
   DialogTitle,
   DialogDescription
 } from './dialog'
+
+export { Modal, type ModalProps } from './modal'
 
 // ============================================================================
 // Dropdown Menu Components

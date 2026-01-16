@@ -66,7 +66,7 @@ export interface ShopifyProductData {
     model?: string
     [key: string]: string | undefined
   }
-  inStock: boolean
+  availableForSale: boolean
   createdAt: string
   updatedAt: string
   publishedAt: string | null
@@ -162,11 +162,11 @@ const PRODUCT_BY_ID_QUERY = `
     }
 
     compareAtPriceRange {
-      minVariantPrice {
+      minVariantCompareAtPrice {
         amount
         currencyCode
       }
-      maxVariantPrice {
+      maxVariantCompareAtPrice {
         amount
         currencyCode
       }
@@ -213,8 +213,6 @@ const PRODUCT_BY_ID_QUERY = `
       title
       description
     }
-
-    inStock
   }
 `
 
@@ -257,11 +255,11 @@ const PRODUCT_BY_HANDLE_QUERY = `
     }
 
     compareAtPriceRange {
-      minVariantPrice {
+      minVariantCompareAtPrice {
         amount
         currencyCode
       }
-      maxVariantPrice {
+      maxVariantCompareAtPrice {
         amount
         currencyCode
       }
@@ -308,31 +306,25 @@ const PRODUCT_BY_HANDLE_QUERY = `
       title
       description
     }
-
-    inStock
   }
 `
 
 /**
- * GraphQL query to fetch product by custom metafield identifier
+ * GraphQL query to fetch product by custom metafield value
  *
- * Uses productByIdentifier with customId to query by metafield value.
- * This is more robust than tag-based search for model lookups.
+ * Uses products query with metafield filtering syntax.
+ * NOTE: The metafield must have 'adminFilterable' capability enabled in Shopify.
  *
- * @see https://shopify.dev/docs/api/admin-graphql/2025-07/queries/productByIdentifier
+ * @see https://shopify.dev/docs/apps/build/custom-data/metafields/query-by-metafield-value
  */
 const PRODUCT_BY_METAFIELD_QUERY = `
-  query GetProductByMetafield($namespace: String!, $key: String!, $value: String!) {
-    productByIdentifier(
-      identifier: {
-        customId: {
-          namespace: $namespace
-          key: $key
-          value: $value
+  query GetProductByMetafield($query: String!) {
+    products(first: 1, query: $query) {
+      edges {
+        node {
+          ...ProductFields
         }
       }
-    ) {
-      ...ProductFields
     }
   }
 
@@ -362,11 +354,11 @@ const PRODUCT_BY_METAFIELD_QUERY = `
     }
 
     compareAtPriceRange {
-      minVariantPrice {
+      minVariantCompareAtPrice {
         amount
         currencyCode
       }
-      maxVariantPrice {
+      maxVariantCompareAtPrice {
         amount
         currencyCode
       }
@@ -420,8 +412,6 @@ const PRODUCT_BY_METAFIELD_QUERY = `
       title
       description
     }
-
-    inStock
   }
 `
 
@@ -453,16 +443,22 @@ export async function fetchShopifyProductByModel(
   console.log(`[Shopify Fetch] Fetching product by model metafield: "${normalizedModel}"`)
 
   try {
-    // Query using custom.model metafield
+    // Build metafield query string: metafields.custom.model:"VALUE"
+    const metafieldQuery = `metafields.custom.model:"${normalizedModel}"`
+
+    // Query using products with metafield filtering
     const data = await shopifyAdminClient.query<{
-      productByIdentifier?: any
+      products: {
+        edges: Array<{
+          node: any
+        }>
+      }
     }>(PRODUCT_BY_METAFIELD_QUERY, {
-      namespace: 'custom',
-      key: 'model',
-      value: normalizedModel
+      query: metafieldQuery
     })
 
-    const product = data.productByIdentifier
+    // Extract first product from edges
+    const product = data.products.edges[0]?.node
 
     if (!product) {
       console.warn(`[Shopify Fetch] No product found with model metafield "${normalizedModel}"`)
@@ -540,8 +536,8 @@ function transformShopifyProduct(shopifyProduct: any): ShopifyProductData {
     },
 
     compareAtPrice: shopifyProduct.compareAtPriceRange ? {
-      min: shopifyProduct.compareAtPriceRange.minVariantPrice.amount,
-      max: shopifyProduct.compareAtPriceRange.maxVariantPrice.amount,
+      min: shopifyProduct.compareAtPriceRange.minVariantCompareAtPrice.amount,
+      max: shopifyProduct.compareAtPriceRange.maxVariantCompareAtPrice.amount,
     } : null,
 
     images: shopifyProduct.images.edges.map((edge: any) => ({
@@ -582,7 +578,8 @@ function transformShopifyProduct(shopifyProduct: any): ShopifyProductData {
       model: shopifyProduct.metafield?.value || undefined,
     },
 
-    inStock: shopifyProduct.inStock,
+    // Calculate availableForSale from variants (Admin API doesn't have it on Product)
+    availableForSale: shopifyProduct.variants.edges.some((edge: any) => edge.node.availableForSale),
     createdAt: shopifyProduct.createdAt,
     updatedAt: shopifyProduct.updatedAt,
     publishedAt: shopifyProduct.publishedAt,

@@ -578,8 +578,7 @@ export async function getActiveProductsDirect(
     const payload = await getPayloadClient()
 
     const whereClause: any = {
-      status: { equals: 'active' },
-      discontinued: { not_equals: true }
+      status: { equals: 'active' }
     }
 
     if (category) {

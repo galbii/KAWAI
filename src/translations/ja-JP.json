@@ -34,7 +34,7 @@
   "spec.weight": "重量",
   "spec.action_type": "アクション",
   "spec.sound_engine": "音源",
-  "spec.finishes": "仕上げ",
+  "spec.variations": "バリエーション",
 
   "search.placeholder": "ピアノ、モデル、シリーズを検索...",
   "filter.type": "ピアノタイプ",

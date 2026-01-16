@@ -102,6 +102,7 @@ export const Testimonials: Block = {
               name: 'avatar',
               type: 'upload',
               relationTo: 'media',
+              maxDepth: 0, // Prevent deep media fetching
               admin: {
                 description: 'Customer photo/avatar (optional)'
               }

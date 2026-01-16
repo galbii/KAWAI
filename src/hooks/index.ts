@@ -26,3 +26,7 @@ export { useScrollAnimation, useStaggeredAnimation, fadeUpClass, slideInClass, s
 export { useScrollDirection } from './useScrollDirection'
 export type { ScrollDirection } from './useScrollDirection'
 export { useIntersectionAnimation } from './useIntersectionAnimation'
+
+// UI State Management
+export { useModal } from './useModal'
+export type { UseModalOptions, UseModalReturn } from './useModal'

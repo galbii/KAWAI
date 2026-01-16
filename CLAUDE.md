@@ -181,6 +181,118 @@ import { useAnimation } from '../_components/hooks/useAnimation'
 
 **Exception:** Hooks with tightly-coupled page dependencies may remain page-local, but this should be rare.
 
+## Form & Modal System
+
+KAWAI includes a reusable form and modal system that eliminates code duplication and provides consistent user experiences across all forms.
+
+### Modal Component
+
+Generic modal wrapper around Radix Dialog with auto-show and variants.
+
+**Usage:**
+```tsx
+import { Modal } from '@/components/ui/modal'
+import { useModal } from '@/hooks'
+
+const { isOpen, close } = useModal({
+  autoShow: { delay: 2000 }
+})
+
+<Modal isOpen={isOpen} onClose={close} size="lg">
+  <h2>Modal Content</h2>
+</Modal>
+```
+
+**Variants:**
+- `size`: sm | md | lg | xl | full
+- `layout`: centered | split (for image + content)
+
+### FormField Component
+
+Reusable form input with label, icon, error, and help text.
+
+**Usage:**
+```tsx
+import { FormField } from '@/components/ui/form-field'
+import { UserIcon } from '@heroicons/react/24/outline'
+
+<FormField
+  name="firstName"
+  label="First Name"
+  placeholder="John"
+  required
+  icon={UserIcon}
+  register={register}
+  error={errors.firstName}
+/>
+```
+
+### FormAlert Component
+
+Consistent feedback for all states.
+
+**Usage:**
+```tsx
+import { FormAlert } from '@/components/ui/form-alert'
+
+<FormAlert
+  variant="success"
+  title="Success!"
+  message="Form submitted successfully."
+/>
+```
+
+**Variants:** success | error | warning | info
+
+### useModal Hook
+
+State management for modals with auto-show and localStorage persistence.
+
+**Usage:**
+```tsx
+import { useModal } from '@/hooks'
+
+const { isOpen, open, close, toggle } = useModal({
+  autoShow: {
+    delay: 1000,
+    storageKey: 'modal-shown' // Optional: don't show again
+  },
+  onOpen: () => console.log('Opened'),
+  onClose: () => console.log('Closed')
+})
+```
+
+### Composing Custom Forms
+
+SimpleCustomerSignup sub-components can be used independently:
+
+```tsx
+import { Modal } from '@/components/ui/modal'
+import { SimpleCustomerSignupForm } from '@/components/forms/SimpleCustomerSignupForm'
+
+<Modal isOpen={isOpen} onClose={close}>
+  <SimpleCustomerSignupForm
+    storefrontSlug="custom-location"
+    onSuccess={() => setIsOpen(false)}
+  />
+</Modal>
+```
+
+### Form Development Guidelines
+
+**DO:**
+- ✅ Use `<FormField>` for all form inputs (eliminates duplication)
+- ✅ Use `<FormAlert>` for all feedback messages
+- ✅ Use `<Modal>` for all modal dialogs
+- ✅ Use `useModal` for modal state management
+- ✅ Compose forms from sub-components
+
+**DON'T:**
+- ❌ Create custom input components (use FormField)
+- ❌ Duplicate modal logic (use Modal + useModal)
+- ❌ Hardcode feedback styling (use FormAlert variants)
+- ❌ Create monolithic form components (extract sub-components)
+
 ### 6. API Route Naming
 
 **Use kebab-case for all API routes:**

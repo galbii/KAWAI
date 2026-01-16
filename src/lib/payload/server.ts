@@ -63,31 +63,25 @@ function transformPianoModelToComponentServer(pianoModel: Product) {
     .replace(/-+/g, '-')
     .replace(/^-+|-+$/g, '')
 
+  // Extract series from model field (series field removed from Product schema)
+  const seriesPrefix = pianoModel.model?.match(/^[A-Z]+/)?.[0] || ''
+  const seriesName = seriesPrefix ? `${seriesPrefix} Series` : 'Piano Series'
+
   return {
     slug,
     name: pianoModel.name,
-    series: pianoModel.series || 'Unknown Series',
+    series: seriesName,
     rating: 0, // Rating is now handled by Products collection
     reviews: 0, // Reviews are now handled by Products collection
-    image: preserveMediaOrFallback(pianoModel.mainImage),
+    image: preserveMediaOrFallback(pianoModel.imageUrl), // Use imageUrl (mainImage removed)
     description: pianoModel.description,
-    keyFeatures: (pianoModel.keyFeatures || []).map(kf => kf.feature)
+    keyFeatures: [] // keyFeatures removed from Product schema
   }
 }
 
 // Helper function to get the best available image from product (server version)
 function getProductImageServer(product: Product): any {
-  // Check if main product image is properly populated (Media object with url)
-  const isMainImageValid = product.mainImage &&
-    typeof product.mainImage === 'object' &&
-    product.mainImage.url &&
-    product.mainImage.url.trim() !== '';
-
-  if (isMainImageValid) {
-    return product.mainImage;
-  }
-
-  // Fallback to imageUrl if mainImage is not properly populated
+  // Use imageUrl from Shopify sync (read-only field)
   if (product.imageUrl && product.imageUrl.trim() !== '') {
     return product.imageUrl;
   }
@@ -98,17 +92,21 @@ function getProductImageServer(product: Product): any {
 
 // Transform Product to component format for server
 function transformProductToComponentServer(product: Product) {
+  // Extract series from model field (e.g., "CA" from "CA99")
+  const seriesPrefix = product.model?.match(/^[A-Z]+/)?.[0] || ''
+  const seriesName = seriesPrefix ? `${seriesPrefix} Series` : 'Piano'
+
   return {
     slug: product.slug,
     name: product.name,
-    series: product.series || 'Unknown Series',
-    rating: product.rating || 4.5,
-    reviews: product.reviews || 0,
-    badge: product.badge,
-    highlight: product.highlight,
+    series: seriesName,
+    rating: 4.5, // Removed from product data, use default
+    reviews: 0,  // Removed from product data, use default
+    badge: undefined, // Removed from product data
+    highlight: undefined, // Removed from product data
     image: getProductImageServer(product), // Use fallback logic: mainImage (Media object) > imageUrl (string) > null
     description: product.description,
-    keyFeatures: (product.keyFeatures || []).map((kf: any) => kf.feature)
+    keyFeatures: [] // Removed from product data, should come from Page Content blocks
   }
 }
 

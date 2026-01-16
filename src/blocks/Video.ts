@@ -24,6 +24,7 @@ export const Video: Block = {
       name: 'videoFile',
       type: 'upload',
       relationTo: 'media',
+      maxDepth: 0, // Prevent deep media fetching
       admin: {
         description: 'Upload a video file',
         condition: (data, siblingData) => siblingData?.source === 'upload',
@@ -42,6 +43,7 @@ export const Video: Block = {
       name: 'posterImage',
       type: 'upload',
       relationTo: 'media',
+      maxDepth: 0, // Prevent deep media fetching
       admin: {
         description: 'Thumbnail image shown before video plays',
         condition: (data, siblingData) => siblingData?.source === 'upload',

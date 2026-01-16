@@ -110,7 +110,7 @@ function transformAdminProductToStorefront(adminProduct: ShopifyProductData): Pr
     type: adminProduct.productType,
     vendor: adminProduct.vendor,
     tags: adminProduct.tags,
-    available: adminProduct.inStock,
+    available: adminProduct.availableForSale,
     createdAt: new Date(adminProduct.createdAt),
     updatedAt: new Date(adminProduct.updatedAt),
     price: {
