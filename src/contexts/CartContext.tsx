@@ -67,6 +67,7 @@ export function CartProvider({ children }: CartProviderProps) {
       if (!cartId) {
         // No cart ID in storage
         setCart(null)
+        clearCartMetadata()
         return
       }
 
@@ -77,6 +78,7 @@ export function CartProvider({ children }: CartProviderProps) {
         // Cart not found or expired
         console.log('[Cart Context] Cart not found or expired, clearing storage')
         clearCartId()
+        clearCartMetadata()
         setCart(null)
         return
       }

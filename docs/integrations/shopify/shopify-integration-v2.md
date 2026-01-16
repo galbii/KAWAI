@@ -466,10 +466,43 @@ The integration implements a **multi-layer caching strategy** optimized for Next
 └────────────────────────────────────────────────────────────────┘
                               ↓
 ┌────────────────────────────────────────────────────────────────┐
-│  Layer 3: Shopify CDN                                          │
+│  Layer 3: Cart Metadata Cache (LocalStorage)                  │
+│  - Cart item count: Cached for quick badge display            │
+│  - Cart total: Stored for UI preview                          │
+│  - CRITICAL: Must sync with cart state (clear when null)      │
+│  - Expiration: Matches cart expiration (7 days)               │
+└────────────────────────────────────────────────────────────────┘
+                              ↓
+┌────────────────────────────────────────────────────────────────┐
+│  Layer 4: Shopify CDN                                          │
 │  - Product images: Cached on Shopify's CDN                    │
 │  - GraphQL responses: Server-side caching                     │
 └────────────────────────────────────────────────────────────────┘
+```
+
+**Cart Metadata Synchronization:**
+```typescript
+// ⚠️ CRITICAL: Cart metadata must be synchronized with cart state
+// Metadata provides performance optimization but requires proper cleanup
+
+// ✅ Correct: Clear metadata when cart becomes null
+if (!cartId || !cartData) {
+  setCart(null)
+  clearCartMetadata()  // Prevents stale item counts
+  return
+}
+
+// ✅ Correct: Update metadata when cart changes
+setCart(cartData)
+saveCartMetadata({
+  lastUpdated: Date.now(),
+  itemCount: cartData.totalQuantity,
+  total: cartData.total,
+  currency: cartData.currency,
+})
+
+// ❌ Wrong: Leaving stale metadata when cart is null
+// This causes getItemCount() to return cached counts from expired carts
 ```
 
 **Cache Configuration Examples:**
@@ -2415,6 +2448,43 @@ const cart = await addToCart({ merchandiseId, quantity })
 // No need to manually check expiration
 ```
 
+✅ **Synchronize cart metadata with cart state:**
+```typescript
+// CRITICAL: Always clear metadata when cart becomes null
+// This prevents stale item counts in cart badges
+const refreshCart = async () => {
+  const cartId = getCartId()
+
+  if (!cartId) {
+    setCart(null)
+    clearCartMetadata()  // ✅ Clear stale metadata
+    return
+  }
+
+  const cartData = await getCart(cartId)
+
+  if (!cartData) {
+    clearCartId()
+    clearCartMetadata()  // ✅ Clear stale metadata
+    setCart(null)
+    return
+  }
+
+  setCart(cartData)
+  saveCartMetadata({    // ✅ Update fresh metadata
+    lastUpdated: Date.now(),
+    itemCount: cartData.totalQuantity,
+    total: cartData.total,
+    currency: cartData.currency,
+  })
+}
+```
+
+**Why this matters:**
+- Cart metadata is used as a performance optimization (show badge count without API call)
+- If metadata isn't cleared when cart is null, `getItemCount()` returns stale counts
+- This causes cart badge to show incorrect item counts after cart expiration
+
 ### 7. Development Workflow
 
 ✅ **Use TypeScript strict mode:**
@@ -2841,6 +2911,79 @@ if (typeof product.metadata.features === 'string') {
   const features = JSON.parse(product.metadata.features)
 }
 ```
+
+#### Issue: Cart Badge Shows Wrong Item Count
+
+**Cause:** Stale cart metadata in localStorage not cleared when cart becomes null/expired.
+
+**Symptoms:**
+- Cart badge shows "1" or other count when cart is actually empty
+- Badge persists after clearing browser cart or after cart expiration
+- Console shows "Cart not found or expired" but badge still displays items
+
+**Root Cause:**
+The cart system uses a metadata fallback pattern for performance:
+```typescript
+// getItemCount() falls back to cached metadata when cart is null
+const getItemCount = (): number => {
+  if (cart) return cart.totalQuantity  // Primary source
+
+  const metadata = getCartMetadata()    // Fallback source
+  return metadata?.itemCount ?? 0       // ⚠️ Can be stale
+}
+```
+
+**Solution:**
+Ensure `clearCartMetadata()` is called whenever the cart becomes null in `CartContext.tsx`:
+
+```typescript
+const refreshCart = useCallback(async () => {
+  try {
+    const cartId = getCartId()
+
+    if (!cartId) {
+      setCart(null)
+      clearCartMetadata()  // ✅ Clear metadata when no cart ID
+      return
+    }
+
+    const cartData = await getCart(cartId)
+
+    if (!cartData) {
+      console.log('[Cart Context] Cart not found or expired, clearing storage')
+      clearCartId()
+      clearCartMetadata()  // ✅ Clear metadata when cart expired
+      setCart(null)
+      return
+    }
+
+    // Update cart and save fresh metadata
+    setCart(cartData)
+    saveCartMetadata({
+      lastUpdated: Date.now(),
+      itemCount: cartData.totalQuantity,
+      total: cartData.total,
+      currency: cartData.currency,
+    })
+  } catch (error) {
+    console.error('[Cart Context] Failed to refresh cart:', error)
+    setCart(null)
+    clearCartMetadata()  // ✅ Clear metadata on error
+  }
+}, [])
+```
+
+**Testing the Fix:**
+1. Add item to cart (badge shows "1")
+2. Open DevTools → Application → LocalStorage
+3. Delete `kawai_shopify_cart_id` key
+4. Refresh page
+5. ✅ Badge should show "0" (and `kawai_shopify_cart_metadata` should be deleted)
+
+**Prevention:**
+- Always clear metadata when calling `setCart(null)`
+- Never rely solely on metadata without checking cart existence first
+- Implement proper synchronization between cart state and localStorage
 
 ---
 
