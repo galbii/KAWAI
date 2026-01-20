@@ -48,7 +48,7 @@ export const organizationSchema = {
 export function generateProductSchema(product: {
   name: string;
   description: string;
-  category: 'Grand Piano' | 'Upright Piano' | 'Digital Piano' | 'Hybrid Piano';
+  type: 'digital' | 'grand' | 'hybrid' | 'upright' | 'accessory' | 'software';
   brand?: string;
   image?: string;
   offers?: {
@@ -57,6 +57,19 @@ export function generateProductSchema(product: {
     availability?: string;
   };
 }) {
+  // Map type slugs to Schema.org category display names
+  const getSchemaCategory = (type: string): string => {
+    const categoryMap: Record<string, string> = {
+      digital: 'Digital Piano',
+      grand: 'Grand Piano',
+      hybrid: 'Hybrid Piano',
+      upright: 'Upright Piano',
+      accessory: 'Piano Accessory',
+      software: 'Music Software'
+    }
+    return categoryMap[type] || 'Musical Instrument'
+  }
+
   return {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -66,7 +79,7 @@ export function generateProductSchema(product: {
       "@type": "Brand",
       "name": product.brand || "Kawai"
     },
-    "category": product.category,
+    "category": getSchemaCategory(product.type),
     ...(product.image && {
       "image": product.image
     }),

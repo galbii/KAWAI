@@ -1,6 +1,88 @@
-import type { CollectionConfig, CollectionAfterChangeHook } from 'payload'
+import type { CollectionConfig, CollectionAfterChangeHook, Endpoint } from 'payload'
 import { fetchShopifyProduct } from '@/lib/shopify/fetch-product'
-import { syncShopifyDataToProduct, shouldSyncProduct } from '@/lib/shopify/sync-to-payload'
+import { syncShopifyDataToProduct, shouldSyncProduct, mapShopifyProductTypeToPayloadType } from '@/lib/shopify/sync-to-payload'
+import { fetchAllShopifyProductsWithModels } from '@/lib/shopify/fetch-all-products'
+import type { ShopifyProductData } from '@/lib/shopify/fetch-product'
+
+/**
+ * Transform Shopify product data to Payload CMS product format
+ *
+ * Maps Shopify fields to Payload fields for bulk import/update operations.
+ */
+function transformShopifyToPayload(shopifyProduct: ShopifyProductData): any {
+  const model = shopifyProduct.metafields?.model || ''
+
+  // Strip HTML from description
+  const stripHtml = (html: string): string => {
+    return html
+      .replace(/<[^>]*>/g, '')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .trim()
+  }
+
+  // Determine if we should create variations array
+  // Shopify always returns at least 1 variant, even for products with no variations
+  // Single-variant products have title "Default Title" - we should skip these
+  const firstVariantTitle = shopifyProduct.variants[0]?.title?.trim() || ''
+  const isDefaultTitle = firstVariantTitle.toLowerCase() === 'default title'
+  const hasMultipleVariants = shopifyProduct.variants.length > 1
+  const shouldCreateVariations = hasMultipleVariants || (shopifyProduct.variants.length === 1 && !isDefaultTitle)
+
+  // Map variants to Payload variations format (only if truly multi-variant)
+  const variations = shouldCreateVariations
+    ? shopifyProduct.variants.map((variant) => ({
+        name: variant.title,
+        shopifyVariantId: variant.id,
+        price: parseFloat(variant.price) || null,
+        compareAtPrice: variant.compareAtPrice ? parseFloat(variant.compareAtPrice) : null,
+        sku: variant.sku || null,
+        barcode: variant.barcode || null,
+        available: variant.available,
+        inventoryQuantity: variant.inventoryQuantity || 0,
+        imageUrl: (variant as any).image?.url || null,
+        options: variant.options.map((opt) => ({
+          name: opt.name,
+          value: opt.value,
+        })),
+      }))
+    : null
+
+  // Map Shopify status to Payload status
+  const statusMap: Record<string, 'draft' | 'active' | 'discontinued'> = {
+    ACTIVE: 'active',
+    DRAFT: 'draft',
+    ARCHIVED: 'discontinued',
+  }
+
+  return {
+    model,
+    name: shopifyProduct.title,
+    slug: shopifyProduct.handle,
+    description: stripHtml(shopifyProduct.description || shopifyProduct.descriptionHtml),
+    brand: shopifyProduct.vendor,
+    status: statusMap[shopifyProduct.status] || 'draft',
+    category: mapShopifyProductTypeToPayloadType(shopifyProduct.productType),
+    imageUrl: shopifyProduct.featuredImage?.url || null,
+    price: {
+      msrp: parseFloat(shopifyProduct.price.min) || null,
+      currency: (shopifyProduct.price.currency as 'USD' | 'EUR' | 'GBP' | 'CAD') || 'USD',
+    },
+    variations, // Already null if no true variations exist
+    shopify: {
+      productId: shopifyProduct.id,
+      handle: shopifyProduct.handle,
+      syncStatus: 'synced' as const,
+      lastSyncedAt: new Date().toISOString(),
+      shopifyStatus: shopifyProduct.status,
+      autoSync: true,
+      syncErrors: [],
+    },
+  }
+}
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -10,9 +92,12 @@ export const Products: CollectionConfig = {
   },
   admin: {
     group: 'Commerce',
-    defaultColumns: ['model', 'name', 'type', 'category', 'status', 'updatedAt'],
+    defaultColumns: ['model', 'name', 'type', 'status', 'updatedAt'],
     useAsTitle: 'model',
     description: 'Unified product management - pianos, accessories, and other products with dynamic page building',
+    components: {
+      beforeList: ['/components/admin/BulkShopifySyncButton#default'],
+    },
   },
   access: {
     read: () => true, // Public read access for frontend
@@ -578,6 +663,142 @@ export const Products: CollectionConfig = {
         },
       ],
     }
+  ],
+
+  endpoints: [
+    {
+      path: '/bulk-sync-from-shopify',
+      method: 'post',
+      handler: async (req) => {
+        // Security: Check authentication and admin role
+        if (!req.user) {
+          return Response.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        if (req.user.role !== 'admin') {
+          return Response.json({ error: 'Forbidden - Admin only' }, { status: 403 })
+        }
+
+        console.log('[Bulk Sync] Starting bulk sync from Shopify...')
+
+        try {
+          // Step 1: Fetch all products with models from Shopify
+          console.log('[Bulk Sync] Fetching all products with custom.model metafield from Shopify...')
+          const shopifyProducts = await fetchAllShopifyProductsWithModels()
+
+          console.log(`[Bulk Sync] Found ${shopifyProducts.length} products in Shopify with models`)
+
+          if (shopifyProducts.length === 0) {
+            return Response.json({
+              success: true,
+              summary: {
+                total: 0,
+                created: 0,
+                updated: 0,
+                skipped: 0,
+                errors: 0,
+              },
+              message: 'No products found in Shopify with custom.model metafield',
+            })
+          }
+
+          // Step 2: Fetch all existing products from Payload (for fast lookup)
+          console.log('[Bulk Sync] Fetching existing products from Payload...')
+          const { docs: existingProducts } = await req.payload.find({
+            collection: 'products',
+            limit: 1000, // Adjust if you have more than 1000 products
+          })
+
+          // Build lookup map: model -> product
+          const productsByModel = new Map(
+            existingProducts.map((p) => [p.model?.toUpperCase().trim(), p])
+          )
+
+          console.log(`[Bulk Sync] Found ${existingProducts.length} existing products in Payload`)
+
+          // Step 3: Process each Shopify product (create or update)
+          const results = {
+            total: shopifyProducts.length,
+            created: 0,
+            updated: 0,
+            skipped: 0,
+            errors: 0,
+          }
+
+          const errors: Array<{ model: string; error: string }> = []
+
+          for (const shopifyProduct of shopifyProducts) {
+            const model = shopifyProduct.metafields?.model
+
+            if (!model) {
+              results.skipped++
+              continue
+            }
+
+            const normalizedModel = model.toUpperCase().trim()
+
+            try {
+              // Check if product exists in Payload
+              const existing = productsByModel.get(normalizedModel)
+
+              // Transform Shopify data to Payload format
+              const productData = transformShopifyToPayload(shopifyProduct)
+
+              if (existing) {
+                // UPDATE existing product
+                console.log(`[Bulk Sync] Updating existing product: ${model}`)
+
+                await req.payload.update({
+                  collection: 'products',
+                  id: existing.id,
+                  data: productData,
+                  context: { skipShopifySync: true }, // Prevent infinite loop
+                  req,
+                })
+
+                results.updated++
+              } else {
+                // CREATE new product
+                console.log(`[Bulk Sync] Creating new product: ${model}`)
+
+                await req.payload.create({
+                  collection: 'products',
+                  data: productData,
+                  context: { skipShopifySync: true }, // Prevent infinite loop
+                  req,
+                })
+
+                results.created++
+              }
+            } catch (error) {
+              console.error(`[Bulk Sync] Error syncing product ${model}:`, error)
+              results.errors++
+              errors.push({
+                model,
+                error: error instanceof Error ? error.message : 'Unknown error',
+              })
+            }
+          }
+
+          console.log('[Bulk Sync] ✅ Bulk sync completed:', results)
+
+          return Response.json({
+            success: true,
+            summary: results,
+            errors: errors.length > 0 ? errors : undefined,
+          })
+        } catch (error) {
+          console.error('[Bulk Sync] ❌ Bulk sync failed:', error)
+          return Response.json(
+            {
+              success: false,
+              message: error instanceof Error ? error.message : 'Bulk sync failed',
+            },
+            { status: 500 }
+          )
+        }
+      },
+    } as Endpoint,
   ],
 
   hooks: {

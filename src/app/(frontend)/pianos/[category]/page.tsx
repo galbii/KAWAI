@@ -134,8 +134,7 @@ export default async function CategoryPage({ params }: CategoryPageParams) {
     const { docs: products } = await payload.find({
       collection: 'products',
       where: {
-        type: { equals: 'piano' },
-        category: { equals: category },
+        type: { equals: category },
         status: { equals: 'active' },
         'visibility.showInCatalog': { equals: true }
       },

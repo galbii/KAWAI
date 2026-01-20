@@ -140,6 +140,7 @@ function transformAdminProductToStorefront(adminProduct: ShopifyProductData): Pr
       available: variant.available,
       price: parseFloat(variant.price),
       compareAtPrice: variant.compareAtPrice ? parseFloat(variant.compareAtPrice) : null,
+      inventoryTracked: variant.inventoryTracked ?? false,
       image: null, // Admin API doesn't include variant images in this query
     })),
     metadata: {
@@ -177,6 +178,8 @@ export function transformProduct(shopifyProduct: ShopifyProduct): Product {
   }))
 
   // Transform variants
+  // Note: Storefront API doesn't expose inventoryItem.tracked field
+  // This is only available in Admin API, so we default to false for Storefront API responses
   const variants = shopifyProduct.variants.edges.map(edge => ({
     id: extractId(edge.node.id),
     title: edge.node.title,
@@ -186,6 +189,7 @@ export function transformProduct(shopifyProduct: ShopifyProduct): Product {
     compareAtPrice: edge.node.compareAtPrice
       ? parseFloat(edge.node.compareAtPrice.amount)
       : null,
+    inventoryTracked: false, // Storefront API doesn't provide this field - defaults to false
     image: edge.node.image
       ? {
           url: edge.node.image.url,

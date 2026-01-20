@@ -162,6 +162,44 @@ export function formatShopifyPrice(price: {
 }
 
 /**
+ * Map Shopify productType to Payload type field
+ *
+ * Converts Shopify's productType (e.g., "Digital Piano") to our unified type field values.
+ * This enables automatic categorization from Shopify sync.
+ *
+ * @param shopifyProductType - Shopify product type field value
+ * @returns Payload type value ('digital' | 'grand' | 'hybrid' | 'upright' | 'accessory' | 'software')
+ *
+ * @example
+ * ```typescript
+ * mapShopifyProductTypeToPayloadType('Digital Piano')  // Returns: 'digital'
+ * mapShopifyProductTypeToPayloadType('Grand Piano')    // Returns: 'grand'
+ * mapShopifyProductTypeToPayloadType('Piano Bench')    // Returns: 'accessory'
+ * ```
+ */
+export function mapShopifyProductTypeToPayloadType(
+  shopifyProductType: string
+): 'digital' | 'grand' | 'hybrid' | 'upright' | 'accessory' | 'software' {
+  const normalized = shopifyProductType.toLowerCase().trim()
+
+  // Piano type mapping
+  if (normalized.includes('digital')) return 'digital'
+  if (normalized.includes('grand')) return 'grand'
+  if (normalized.includes('hybrid') || normalized.includes('novus') || normalized.includes('aures')) return 'hybrid'
+  if (normalized.includes('upright') || normalized.includes('vertical')) return 'upright'
+
+  // Non-piano products
+  if (normalized.includes('accessory') || normalized.includes('bench') || normalized.includes('cover') || normalized.includes('stand')) return 'accessory'
+  if (normalized.includes('software') || normalized.includes('app')) return 'software'
+
+  // Default: if contains "piano" but no specific type, assume digital
+  if (normalized.includes('piano')) return 'digital'
+
+  // Final fallback
+  return 'accessory'
+}
+
+/**
  * Sync Shopify product data to Payload CMS format
  *
  * Fetches product data from Shopify and maps it to the new Products collection structure.
@@ -251,23 +289,40 @@ export async function syncShopifyDataToProduct(
     // Extract model from metafields
     const extractedModel = extractModelFromMetafields(shopifyData)
 
-    // Map Shopify variants to Payload variations array
-    const variations =
-      shopifyData.variants.map((variant) => ({
-        name: variant.title,
-        shopifyVariantId: variant.id,
-        price: parseFloat(variant.price) || null,
-        compareAtPrice: variant.compareAtPrice ? parseFloat(variant.compareAtPrice) : null,
-        sku: variant.sku || null,
-        barcode: variant.barcode || null,
-        available: variant.available,
-        inventoryQuantity: variant.inventoryQuantity || 0,
-        imageUrl: (variant as any).image?.url || null,
-        options: variant.options.map((opt) => ({
-          name: opt.name,
-          value: opt.value,
-        })),
-      })) || []
+    // Determine if we should create variations array
+    // Shopify always returns at least 1 variant, even for products with no variations
+    // Single-variant products have title "Default Title" - we should skip these
+    const firstVariantTitle = shopifyData.variants[0]?.title?.trim() || ''
+    const isDefaultTitle = firstVariantTitle.toLowerCase() === 'default title'
+    const hasMultipleVariants = shopifyData.variants.length > 1
+    const shouldCreateVariations = hasMultipleVariants || (shopifyData.variants.length === 1 && !isDefaultTitle)
+
+    // Debug logging
+    console.log(`[Shopify Sync] Variation detection for "${shopifyData.title}":`, {
+      variantCount: shopifyData.variants.length,
+      firstVariantTitle,
+      isDefaultTitle,
+      shouldCreateVariations,
+    })
+
+    // Map Shopify variants to Payload variations array (only if truly multi-variant)
+    const variations = shouldCreateVariations
+      ? shopifyData.variants.map((variant) => ({
+          name: variant.title,
+          shopifyVariantId: variant.id,
+          price: parseFloat(variant.price) || null,
+          compareAtPrice: variant.compareAtPrice ? parseFloat(variant.compareAtPrice) : null,
+          sku: variant.sku || null,
+          barcode: variant.barcode || null,
+          available: variant.available,
+          inventoryQuantity: variant.inventoryQuantity || 0,
+          imageUrl: (variant as any).image?.url || null,
+          options: variant.options.map((opt) => ({
+            name: opt.name,
+            value: opt.value,
+          })),
+        }))
+      : null
 
     // Return update with both shopify group and main product fields
     return {
@@ -281,7 +336,7 @@ export async function syncShopifyDataToProduct(
         msrp: parseFloat(shopifyData.price.min) || null,
         currency: (shopifyData.price.currency as 'USD' | 'EUR' | 'GBP' | 'CAD') || 'USD',
       },
-      variations: variations.length > 0 ? variations : null,
+      variations, // Already null if no true variations exist
 
       // Update shopify sync group (read-only metadata)
       shopify: {

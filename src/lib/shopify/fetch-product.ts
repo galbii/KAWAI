@@ -53,6 +53,7 @@ export interface ShopifyProductData {
     barcode: string | null
     available: boolean
     inventoryQuantity: number
+    inventoryTracked: boolean
     options: Array<{
       name: string
       value: string
@@ -201,6 +202,9 @@ const PRODUCT_BY_ID_QUERY = `
           barcode
           availableForSale
           inventoryQuantity
+          inventoryItem {
+            tracked
+          }
           selectedOptions {
             name
             value
@@ -294,6 +298,9 @@ const PRODUCT_BY_HANDLE_QUERY = `
           barcode
           availableForSale
           inventoryQuantity
+          inventoryItem {
+            tracked
+          }
           selectedOptions {
             name
             value
@@ -393,6 +400,9 @@ const PRODUCT_BY_METAFIELD_QUERY = `
           barcode
           availableForSale
           inventoryQuantity
+          inventoryItem {
+            tracked
+          }
           selectedOptions {
             name
             value
@@ -563,6 +573,7 @@ function transformShopifyProduct(shopifyProduct: any): ShopifyProductData {
       barcode: edge.node.barcode,
       available: edge.node.availableForSale,
       inventoryQuantity: edge.node.inventoryQuantity || 0,
+      inventoryTracked: edge.node.inventoryItem?.tracked ?? false,
       options: edge.node.selectedOptions.map((opt: any) => ({
         name: opt.name,
         value: opt.value,

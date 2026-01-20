@@ -48,7 +48,12 @@ export function ProductHeroBlock({
   product,
   shopifyProduct
 }: ProductHeroBlockProps) {
-  const [selectedVariation, setSelectedVariation] = useState(-1) // -1 means no variation selected
+  // Filter variations to only include available ones - MUST be declared early
+  const availableVariations = product?.variations?.filter(variation => variation.available) || []
+
+  // Default to first variation (index 0) if variations exist, otherwise -1
+  const defaultVariation = availableVariations.length > 0 ? 0 : -1
+  const [selectedVariation, setSelectedVariation] = useState(defaultVariation)
   const [isFavorited, setIsFavorited] = useState(false)
   const router = useRouter()
 
@@ -127,8 +132,7 @@ export function ProductHeroBlock({
         "Professional-grade KAWAI precision craftsmanship"
       ]
 
-  // Filter variations to only include available ones, following React best practices
-  const availableVariations = product.variations?.filter(variation => variation.available) || []
+  // availableVariations already declared at top of component
   const hasVariations = availableVariations.length > 0
   // CONSOLIDATED: Updated price field names (msrp only, priceText removed)
   const hasPrice = product.price && product.price.msrp
@@ -172,10 +176,27 @@ export function ProductHeroBlock({
   
   // Buy button logic - buyButton field removed from Product schema, use layout setting only
   const shouldShowBuyButton = showBuyButton
-     
+
+  // Check if product tracks inventory
+  // Priority: Shopify variant's inventoryTracked field > CMS trackStock field
+  const tracksInventory = (() => {
+    // If we have Shopify product data and a selected variant, use the variant's inventoryTracked field
+    if (shopifyProduct && selectedVariant) {
+      return selectedVariant.inventoryTracked ?? false
+    }
+
+    // Fallback to CMS field (default to false if not set)
+    return product.inventory?.trackStock ?? false
+  })()
+
   // Get the buy button text - hardcoded to "Learn More"
   const getBuyButtonText = () => {
     return 'Learn More'
+  }
+
+  // Get the find a dealer button text
+  const getFindDealerButtonText = () => {
+    return 'Find a Dealer'
   }
   
   // Enhanced price formatting with animations
@@ -250,9 +271,13 @@ export function ProductHeroBlock({
   
   const statusBadge = getStatusBadge()
   
-  // CONSOLIDATED: Debug log with variation image sizing analysis
-  console.log('ProductHeroBlock - Image sizing debug:', {
+  // CONSOLIDATED: Debug log with variation image sizing and inventory tracking
+  console.log('ProductHeroBlock - Debug:', {
     selectedVariation,
+    tracksInventory,
+    inventorySource: shopifyProduct && selectedVariant ? 'Shopify variant' : 'CMS field',
+    shopifyVariantTracked: selectedVariant?.inventoryTracked,
+    cmsTrackStock: product.inventory?.trackStock,
     displayImage: displayImage,
     displayImageType: typeof displayImage,
     displayImageUrl: typeof displayImage === 'object' ? displayImage?.url : displayImage,
@@ -399,9 +424,9 @@ export function ProductHeroBlock({
             {/* Modern CTA Buttons */}
             {shouldShowBuyButton && (
               <div className="flex flex-col sm:flex-row gap-4 lg:gap-6 pt-4 lg:pt-6">
-                {shopifyProduct && selectedVariant ? (
+                {shopifyProduct && selectedVariant && tracksInventory && selectedVariant.available ? (
                   <>
-                    {/* Left CTA: Add to Cart Button (Shopify) */}
+                    {/* Left CTA: Add to Cart Button - Only shown when inventory is tracked AND in stock */}
                     <AddToCartButton
                       variantId={selectedVariant.id}
                       quantity={1}
@@ -413,6 +438,46 @@ export function ProductHeroBlock({
                     >
                       Add to Cart
                     </AddToCartButton>
+
+                    {/* Right CTA: Learn More Button (White/Outline) */}
+                    <Button
+                      asChild
+                      className={cn(
+                        "group relative overflow-hidden px-8 lg:px-10 py-4 lg:py-6 font-medium rounded-full transition-all duration-500 hover:scale-105 hover:shadow-xl text-base lg:text-lg flex-1",
+                        "border-2 border-gray-300 bg-white hover:bg-gray-50",
+                        backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
+                      )}
+                    >
+                      <Link href={`/products/${product.slug}` || '#'}>
+                        <span className="relative flex items-center justify-center space-x-2 lg:space-x-3">
+                          <span>{getBuyButtonText()}</span>
+                          <svg className="w-4 h-4 lg:w-5 lg:h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        </span>
+                      </Link>
+                    </Button>
+                  </>
+                ) : shopifyProduct && selectedVariant && (!tracksInventory || !selectedVariant.available) ? (
+                  <>
+                    {/* Left CTA: Find a Dealer Button - Shown when inventory is NOT tracked OR out of stock */}
+                    <Button
+                      asChild
+                      className={cn(
+                        "group relative overflow-hidden px-8 lg:px-10 py-4 lg:py-6 font-medium rounded-full transition-all duration-500 hover:scale-105 hover:shadow-2xl text-base lg:text-lg flex-1",
+                        "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/25"
+                      )}
+                    >
+                      <Link href="/find-a-dealer">
+                        <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <span className="relative flex items-center justify-center space-x-2 lg:space-x-3">
+                          <span>{getFindDealerButtonText()}</span>
+                          <svg className="w-4 h-4 lg:w-5 lg:h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        </span>
+                      </Link>
+                    </Button>
 
                     {/* Right CTA: Learn More Button (White/Outline) */}
                     <Button

@@ -242,6 +242,7 @@ export interface Product {
     available: boolean
     price: number
     compareAtPrice: number | null
+    inventoryTracked?: boolean
     image: {
       url: string
       alt: string
