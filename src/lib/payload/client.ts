@@ -292,7 +292,7 @@ export function transformProductToComponent(product: any) {
 // LEGACY: Keep for backward compatibility during transition
 export function transformPianoModelToComponent(pianoModel: Product) {
   // Generate slug from name since slug is no longer in PianoModel
-  const slug = pianoModel.name
+  const slug = (pianoModel.name ?? 'product')
     .toLowerCase()
     .replace(/\s+/g, '-')
     .replace(/[^a-z0-9-]/g, '')

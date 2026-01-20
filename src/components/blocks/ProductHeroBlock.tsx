@@ -69,8 +69,8 @@ export function ProductHeroBlock({
     }
 
     // Try to match variation name with variant title
-    if (product?.variations && product.variations[selectedVariation]) {
-      const variationName = product.variations[selectedVariation]?.name
+    if (availableVariations[selectedVariation]) {
+      const variationName = availableVariations[selectedVariation]?.name
       const matchedVariant = shopifyProduct.variants.find(
         (variant) => variant.title.toLowerCase().includes(variationName?.toLowerCase() || '')
       )
@@ -122,11 +122,14 @@ export function ProductHeroBlock({
 
   // Key features removed from Product schema - should come from Page Content blocks
   const keyFeatures: string[] = [
-        "Millennium III Hybrid Action Technology", 
+        "Millennium III Hybrid Action Technology",
         "Hand-selected premium soundboard materials",
         "Professional-grade KAWAI precision craftsmanship"
       ]
-  const hasVariations = product.variations && product.variations.length > 0
+
+  // Filter variations to only include available ones, following React best practices
+  const availableVariations = product.variations?.filter(variation => variation.available) || []
+  const hasVariations = availableVariations.length > 0
   // CONSOLIDATED: Updated price field names (msrp only, priceText removed)
   const hasPrice = product.price && product.price.msrp
   
@@ -137,8 +140,8 @@ export function ProductHeroBlock({
     }
 
     // If a variation is selected, check for variation image (Media object or URL)
-    if (selectedVariation >= 0 && product.variations && product.variations[selectedVariation]) {
-      const selectedVariationData = product.variations[selectedVariation]
+    if (selectedVariation >= 0 && availableVariations[selectedVariation]) {
+      const selectedVariationData = availableVariations[selectedVariation]
 
       // Check if variation has a valid Media image
       const isVariationImageValid = selectedVariationData.image &&
@@ -191,7 +194,7 @@ export function ProductHeroBlock({
     // Use actual variant price if variation is selected, otherwise use base MSRP
     const basePrice = product.price.msrp
     const selectedVariationPrice = hasVariations && selectedVariation >= 0
-      ? product.variations![selectedVariation]?.price
+      ? availableVariations[selectedVariation]?.price
       : null
     const displayPrice = selectedVariationPrice || basePrice
     const mainPrice = `${symbol}${displayPrice.toLocaleString()}`
@@ -254,15 +257,15 @@ export function ProductHeroBlock({
     displayImageType: typeof displayImage,
     displayImageUrl: typeof displayImage === 'object' ? displayImage?.url : displayImage,
     isVariationImageSelected: selectedVariation >= 0,
-    variationImageData: selectedVariation >= 0 && product?.variations ? {
-      variationName: product.variations[selectedVariation]?.name,
-      hasMediaImage: !!(product.variations[selectedVariation]?.image),
-      hasImageUrl: !!(product.variations[selectedVariation]?.imageUrl),
-      mediaImageUrl: typeof product.variations[selectedVariation]?.image === 'object' ?
-        product.variations[selectedVariation]?.image?.url : null,
-      imageUrl: product.variations[selectedVariation]?.imageUrl,
+    variationImageData: selectedVariation >= 0 && availableVariations[selectedVariation] ? {
+      variationName: availableVariations[selectedVariation]?.name,
+      hasMediaImage: !!(availableVariations[selectedVariation]?.image),
+      hasImageUrl: !!(availableVariations[selectedVariation]?.imageUrl),
+      mediaImageUrl: typeof availableVariations[selectedVariation]?.image === 'object' ?
+        availableVariations[selectedVariation]?.image?.url : null,
+      imageUrl: availableVariations[selectedVariation]?.imageUrl,
       selectedImageSource: (() => {
-        const variation = product.variations[selectedVariation]
+        const variation = availableVariations[selectedVariation]
         if (variation?.image && typeof variation.image === 'object' && variation.image.url) return 'Media object'
         if (variation?.imageUrl) return 'imageUrl string'
         return 'fallback to main'
@@ -360,39 +363,35 @@ export function ProductHeroBlock({
               <div className="space-y-6">
                 <h3 className={cn("text-2xl font-light", textColorClass)}>Available Variations</h3>
                 <div className="grid grid-cols-2 gap-4">
-                  {product.variations!.map((variation, index) => {
-                    if (!variation.available) return null
-
-                    return (
-                      <div
-                        key={index}
-                        className={cn(
-                          "cursor-pointer p-4 rounded-xl border-2 transition-all duration-300 backdrop-blur-sm",
-                          selectedVariation === index
-                            ? cn(
-                                'border-kawai-red',
-                                backgroundColor === 'black' ? 'bg-kawai-red/20 text-white' : 'bg-kawai-red/10 text-kawai-red'
-                              )
-                            : cn(
-                                'hover:border-kawai-red/50',
-                                backgroundColor === 'black'
-                                  ? 'bg-white/5 border-white/20 text-gray-300 hover:bg-white/10'
-                                  : backgroundColor === 'white'
-                                    ? 'bg-black/5 border-black/10 text-gray-700 hover:bg-black/10'
-                                    : 'bg-white/10 border-white/20 text-gray-600 hover:bg-white/20'
-                              )
-                        )}
-                        onClick={() => {
-                          // Toggle selection: if already selected, deselect; otherwise select this variation
-                          setSelectedVariation(selectedVariation === index ? -1 : index)
-                        }}
-                      >
-                        <div className="flex items-center">
-                          <span className="font-medium">{variation.name}</span>
-                        </div>
+                  {availableVariations.map((variation, index) => (
+                    <div
+                      key={index}
+                      className={cn(
+                        "cursor-pointer p-4 rounded-xl border-2 transition-all duration-300 backdrop-blur-sm",
+                        selectedVariation === index
+                          ? cn(
+                              'border-kawai-red',
+                              backgroundColor === 'black' ? 'bg-kawai-red/20 text-white' : 'bg-kawai-red/10 text-kawai-red'
+                            )
+                          : cn(
+                              'hover:border-kawai-red/50',
+                              backgroundColor === 'black'
+                                ? 'bg-white/5 border-white/20 text-gray-300 hover:bg-white/10'
+                                : backgroundColor === 'white'
+                                  ? 'bg-black/5 border-black/10 text-gray-700 hover:bg-black/10'
+                                  : 'bg-white/10 border-white/20 text-gray-600 hover:bg-white/20'
+                            )
+                      )}
+                      onClick={() => {
+                        // Toggle selection: if already selected, deselect; otherwise select this variation
+                        setSelectedVariation(selectedVariation === index ? -1 : index)
+                      }}
+                    >
+                      <div className="flex items-center">
+                        <span className="font-medium">{variation.name}</span>
                       </div>
-                    )
-                  })}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

@@ -56,7 +56,7 @@ function preserveMediaOrFallback(media: any): any {
 // Transform Piano Model to component format for server
 function transformPianoModelToComponentServer(pianoModel: Product) {
   // Generate slug from name since slug is no longer in PianoModel
-  const slug = pianoModel.name
+  const slug = (pianoModel.name ?? 'product')
     .toLowerCase()
     .replace(/\s+/g, '-')
     .replace(/[^a-z0-9-]/g, '')

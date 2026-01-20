@@ -53,8 +53,8 @@ function BasicProductLayout({ product }: { product: Product }) {
       <HeroBlock
         dataSource="manual"
         content={{
-          title: product.name,
-          description: product.description || null,
+          title: product.name ?? null,
+          description: product.description ?? null,
           primaryCta: {
             text: "Learn More",
             link: learnMoreLink,
@@ -82,9 +82,9 @@ function BasicProductLayout({ product }: { product: Product }) {
       <ProductShowcaseBlock
         dataSource="manual"
         product={{
-          name: product.name,
-          description: product.description || null,
-          image: product.imageUrl || null,
+          name: product.name ?? null,
+          description: product.description ?? null,
+          image: product.imageUrl ?? null,
           ...(product.price && {
             price: {
               ...(product.price.currency !== undefined && { currency: product.price.currency }),

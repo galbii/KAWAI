@@ -32,13 +32,13 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
 
   return {
-    title: product.name,
+    title: product.name || 'Piano Product',
     description: product.description || '',
     alternates: {
       canonical: `${siteUrl}/products/${slug}`
     },
     openGraph: {
-      title: product.name,
+      title: product.name || 'Piano Product',
       description: product.description || '',
       url: `${siteUrl}/products/${slug}`,
       images: mainImageUrl ? [{ url: mainImageUrl }] : [],
@@ -46,7 +46,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
-      title: product.name,
+      title: product.name || 'Piano Product',
       description: product.description || '',
       images: mainImageUrl ? [mainImageUrl] : [],
     }

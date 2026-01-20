@@ -272,11 +272,11 @@ export async function syncShopifyDataToProduct(
     // Return update with both shopify group and main product fields
     return {
       // Update main product fields (editable by user)
-      name: shopifyData.title,
-      description: stripHtml(shopifyData.description || shopifyData.descriptionHtml),
-      brand: shopifyData.vendor || null,
-      model: extractedModel || product.model || null,
-      imageUrl: shopifyData.featuredImage?.url || null,
+      name: shopifyData.title ?? null,
+      description: stripHtml(shopifyData.description || shopifyData.descriptionHtml) ?? null,
+      brand: shopifyData.vendor ?? null,
+      model: extractedModel ?? product.model ?? undefined,
+      imageUrl: shopifyData.featuredImage?.url ?? null,
       price: {
         msrp: parseFloat(shopifyData.price.min) || null,
         currency: (shopifyData.price.currency as 'USD' | 'EUR' | 'GBP' | 'CAD') || 'USD',
@@ -287,7 +287,7 @@ export async function syncShopifyDataToProduct(
       shopify: {
         productId: shopifyData.id,
         handle: shopifyData.handle,
-        syncStatus: 'synced',
+        syncStatus: 'synced' as const,
         lastSyncedAt: new Date().toISOString(),
         shopifyStatus: shopifyData.status,
         syncErrors: [], // Clear any previous errors
