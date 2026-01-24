@@ -99,6 +99,8 @@
   --color-es60-sage-900: #2E3529;
 
   /* Shadcn UI Variables */
+  --color-background: #FFFFFF;       /* Modal/card backgrounds */
+  --color-foreground: #1E1B16;       /* Main text color */
   --color-card: #FFFFFF;
   --color-card-foreground: #1E1B16;
   --color-muted: #f5f5f5;
@@ -203,7 +205,9 @@
   bg-kawai-pearl,
   bg-kawai-neutral,
   bg-kawai-gold,
+  bg-background,
   bg-card,
+  text-foreground,
   text-kawai-red,
   text-kawai-black,
   text-kawai-charcoal,

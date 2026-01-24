@@ -34,6 +34,8 @@ interface SimpleCustomerSignupProps {
   imageUrl?: string | null
   /** Optional custom tags from Payload CMS to apply to customers */
   customTags?: Array<{ tag: string }> | null
+  /** Optional localStorage key to prevent showing modal again after first view */
+  storageKey?: string
 }
 
 export function SimpleCustomerSignup({
@@ -45,12 +47,16 @@ export function SimpleCustomerSignup({
   successTitle = 'Thank You for Signing Up!',
   successMessage = "We'll be in touch soon with updates about our piano collection.",
   imageUrl = null,
-  customTags = null
+  customTags = null,
+  storageKey
 }: SimpleCustomerSignupProps) {
   const [isSubmitted, setIsSubmitted] = useState(false)
 
   const { isOpen, close } = useModal({
-    autoShow: { delay: showDelay }
+    autoShow: {
+      delay: showDelay,
+      ...(storageKey && { storageKey })
+    }
   })
 
   const handleSuccess = () => {

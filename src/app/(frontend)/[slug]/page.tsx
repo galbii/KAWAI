@@ -295,6 +295,7 @@ async function StorefrontContent({ slug }: { slug: string }) {
       {isModalEnabled && (
         <SimpleCustomerSignup
           storefrontSlug={slug}
+          storageKey={`signup-modal-${slug}`}
           title={signupModalSettings?.title}
           description={signupModalSettings?.description}
           submitButtonText={signupModalSettings?.submitButtonText}
