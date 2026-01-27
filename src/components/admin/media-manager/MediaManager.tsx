@@ -1,19 +1,19 @@
 'use client'
 
-import { MediaManagerProvider } from './MediaManagerProvider'
 import { MediaManagerButton } from './MediaManagerButton'
-import { MediaManagerModal } from './MediaManagerModal'
 
 /**
- * Complete Media Manager component for the Payload admin panel
+ * Media Manager Dashboard Component
  *
- * This component provides:
- * - A floating button to open the media manager
- * - A modal dialog with a grid view of all media
- * - Drag and drop file upload support
- * - Search functionality
- * - Copy public URL to clipboard
- * - Delete media items
+ * This component provides a floating button to open the media manager modal.
+ * The modal itself is rendered at the root level (in AdminRootProvider) so it's
+ * available on all admin pages, not just the dashboard.
+ *
+ * This component is mounted via afterDashboard and provides quick access to the
+ * media library from the dashboard view.
+ *
+ * NOTE: Both MediaManagerProvider and MediaManagerModal are provided at the root level
+ * via AdminRootProvider, so this component only needs to render the button.
  *
  * Usage in payload.config.ts:
  * ```ts
@@ -25,12 +25,7 @@ import { MediaManagerModal } from './MediaManagerModal'
  * ```
  */
 export function MediaManager() {
-  return (
-    <MediaManagerProvider>
-      <MediaManagerButton />
-      <MediaManagerModal />
-    </MediaManagerProvider>
-  )
+  return <MediaManagerButton />
 }
 
 export default MediaManager

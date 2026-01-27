@@ -18,6 +18,7 @@ interface ExtendedState extends MediaManagerState {
   metadataEditingFile: File | null
   editingMedia: MediaItem | null
   pendingFiles: File[]
+  modalOptions: import('./types').MediaManagerModalOptions | null
 }
 
 const initialState: ExtendedState = {
@@ -36,6 +37,7 @@ const initialState: ExtendedState = {
   metadataEditingFile: null,
   editingMedia: null,
   pendingFiles: [],
+  modalOptions: null,
   // Folder state
   folders: [],
   folderTree: [],
@@ -52,6 +54,7 @@ interface ExtendedContextValue extends MediaManagerContextValue {
   metadataEditingFile: File | null
   editingMedia: MediaItem | null
   pendingFiles: File[]
+  modalOptions: import('./types').MediaManagerModalOptions | null
   setEditingFile: (file: File | null) => void
   setMetadataEditingFile: (file: File | null) => void
   setEditingMedia: (media: MediaItem | null) => void
@@ -678,8 +681,12 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
   }, [showToast, transformMedia])
 
   // Modal controls
-  const openModal = useCallback(() => {
-    setState(prev => ({ ...prev, isOpen: true }))
+  const openModal = useCallback((options?: import('./types').MediaManagerModalOptions) => {
+    console.log('[MediaManagerProvider] openModal called with options:', options)
+    setState(prev => {
+      console.log('[MediaManagerProvider] Setting isOpen to true, previous state:', prev.isOpen)
+      return { ...prev, isOpen: true, modalOptions: options || null }
+    })
   }, [])
 
   const closeModal = useCallback(() => {
@@ -691,6 +698,7 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
       metadataEditingFile: null,
       editingMedia: null,
       pendingFiles: [],
+      modalOptions: null,
     }))
   }, [])
 

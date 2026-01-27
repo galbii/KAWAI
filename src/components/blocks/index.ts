@@ -20,3 +20,9 @@ export { CodeBlock } from './CodeBlock'
 
 // Re-export main ProductPageRenderer
 export { ProductPageRenderer } from '../products/ProductPageRenderer'
+
+// Pages collection block components
+export { ArchiveBlock } from './ArchiveBlock'
+export { ContentBlock } from './ContentBlock'
+export { MediaBlock } from './MediaBlock'
+export { CtaBlock } from './CtaBlock'

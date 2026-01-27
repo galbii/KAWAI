@@ -23,3 +23,9 @@ export { Hello } from './Hello'
 // Rich text content blocks (for blog posts)
 export { Banner } from './Banner/config'
 export { Code } from './Code/config'
+
+// Pages collection blocks (from orca-web template)
+export { Archive } from './Archive'
+export { Content } from './Content'
+export { MediaBlock } from './MediaBlock'
+export { Cta } from './Cta'

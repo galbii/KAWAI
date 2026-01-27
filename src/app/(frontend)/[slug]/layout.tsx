@@ -61,12 +61,38 @@ async function getStorefrontMetadata(slug: string): Promise<StorefrontData | nul
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   try {
     const { slug } = await params;
+
+    // 1. Check if this is a Page from the Pages collection
+    try {
+      const payload = await import('payload').then(m => m.getPayload);
+      const config = await import('@/payload.config').then(m => m.default);
+      const payloadInstance = await payload({ config });
+
+      const pageResult = await payloadInstance.find({
+        collection: 'pages',
+        where: {
+          slug: { equals: slug },
+          _status: { equals: 'published' }
+        },
+        limit: 1,
+        depth: 0
+      });
+
+      // If it's a Page, return empty metadata (page.tsx will handle it)
+      if (pageResult.docs.length > 0) {
+        return {};
+      }
+    } catch (error) {
+      console.error('Error checking for Page in metadata:', error);
+    }
+
+    // 2. If not a Page, handle as Storefront
     const storefrontData = await getStorefrontMetadata(slug);
 
     if (!storefrontData) {
       return {
-        title: 'Storefront Location Not Found',
-        description: 'The requested storefront location could not be found.',
+        title: 'Page Not Found',
+        description: 'The requested page could not be found.',
         robots: { index: false, follow: false }
       };
     }
@@ -136,8 +162,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 }
 
-// Nested layout for storefront pages
-export default async function StorefrontLayout({
+// Nested layout for storefront pages AND pages collection
+export default async function DynamicLayout({
   children,
   params
 }: {
@@ -147,7 +173,31 @@ export default async function StorefrontLayout({
   // Await params to get the slug
   const { slug } = await params;
 
-  // Fetch storefront data for the layout
+  // 1. First check if this is a Page from the Pages collection
+  try {
+    const payload = await import('payload').then(m => m.getPayload);
+    const config = await import('@/payload.config').then(m => m.default);
+    const payloadInstance = await payload({ config });
+
+    const pageResult = await payloadInstance.find({
+      collection: 'pages',
+      where: {
+        slug: { equals: slug },
+        _status: { equals: 'published' }
+      },
+      limit: 1,
+      depth: 0
+    });
+
+    // If it's a Page, just render children without storefront logic
+    if (pageResult.docs.length > 0) {
+      return <>{children}</>;
+    }
+  } catch (error) {
+    console.error('Error checking for Page:', error);
+  }
+
+  // 2. If not a Page, handle as Storefront
   let storefrontData: StorefrontData | null = null;
 
   try {

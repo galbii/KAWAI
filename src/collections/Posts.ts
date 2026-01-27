@@ -16,6 +16,9 @@ import { Code } from '@/blocks/Code/config'
 // Import access control utilities
 import { authenticated, authenticatedOrPublished, adminOnly } from '@/lib/payload/access'
 
+// Import field utilities
+import { imageField } from '@/lib/payload/fields'
+
 // Import hooks
 import { populateAuthors } from './Posts/hooks/populateAuthors'
 
@@ -84,14 +87,11 @@ export const Posts: CollectionConfig = {
                 description: 'Short excerpt for post listings and meta description (max 300 characters)',
               },
             },
-            {
-              name: 'featuredImage',
-              type: 'upload',
-              relationTo: 'media',
+            imageField('featuredImage', {
               admin: {
                 description: 'Featured image for post header and social sharing',
               },
-            },
+            }),
             {
               name: 'content',
               type: 'richText',
@@ -291,14 +291,11 @@ export const Posts: CollectionConfig = {
                     description: 'SEO keywords (comma-separated)',
                   },
                 },
-                {
-                  name: 'ogImage',
-                  type: 'upload',
-                  relationTo: 'media',
+                imageField('ogImage', {
                   admin: {
                     description: 'Open Graph image for social sharing (defaults to featured image)',
                   },
-                },
+                }),
               ],
               admin: {
                 description: 'SEO and social media optimization',

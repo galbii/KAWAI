@@ -15,9 +15,13 @@ const colors = {
 export function MediaManagerButton() {
   const { openModal } = useMediaManager()
 
+  const handleClick = () => {
+    openModal()
+  }
+
   return (
     <button
-      onClick={openModal}
+      onClick={handleClick}
       className="fixed bottom-6 right-6 z-[9998] flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
       style={{
         backgroundColor: colors.slate900,

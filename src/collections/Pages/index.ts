@@ -1,0 +1,185 @@
+import type { CollectionConfig } from 'payload'
+
+import { authenticated } from '@/lib/payload/access'
+import { authenticatedOrPublished } from '@/lib/payload/access'
+import { hero } from '@/lib/payload/fields/hero'
+import { slugField } from 'payload'
+import { populatePublishedAt } from './hooks/populatePublishedAt'
+import { generatePreviewPath } from '@/lib/payload/generatePreviewPath'
+import { revalidateDelete, revalidatePage } from './hooks/revalidatePage'
+
+export const Pages: CollectionConfig<'pages'> = {
+  slug: 'pages',
+  access: {
+    create: authenticated,
+    delete: authenticated,
+    read: authenticatedOrPublished,
+    update: authenticated,
+  },
+  // This config controls what's populated by default when a page is referenced
+  // https://payloadcms.com/docs/queries/select#defaultpopulate-collection-config-property
+  // Type safe if the collection slug generic is passed to `CollectionConfig` - `CollectionConfig<'pages'>
+  defaultPopulate: {
+    title: true,
+    slug: true,
+  },
+  admin: {
+    group: 'Pages',
+    defaultColumns: ['title', 'category', 'tags', 'slug', 'updatedAt'],
+    livePreview: {
+      url: ({ data, req }) =>
+        generatePreviewPath({
+          slug: data?.slug,
+          collection: 'pages',
+          req,
+        }),
+    },
+    preview: (data, { req }) =>
+      generatePreviewPath({
+        slug: data?.slug as string,
+        collection: 'pages',
+        req,
+      }),
+    useAsTitle: 'title',
+    description: 'Create static pages with optional FAQ categorization and tagging',
+  },
+  // Enable query presets to allow users to save custom filters, sorts, and column views
+  enableQueryPresets: true,
+  fields: [
+    {
+      name: 'title',
+      type: 'text',
+      required: true,
+    },
+    {
+      name: 'category',
+      type: 'select',
+      options: [
+        {
+          label: 'General',
+          value: 'general',
+        },
+        {
+          label: 'FAQ',
+          value: 'faq',
+        },
+        {
+          label: 'Legal',
+          value: 'legal',
+        },
+        {
+          label: 'Support',
+          value: 'support',
+        },
+      ],
+      defaultValue: 'general',
+      admin: {
+        position: 'sidebar',
+        description: 'Categorize this page for better organization',
+      },
+    },
+    {
+      name: 'tags',
+      type: 'select',
+      hasMany: true,
+      options: [
+        {
+          label: 'Getting Started',
+          value: 'getting-started',
+        },
+        {
+          label: 'Piano Care',
+          value: 'piano-care',
+        },
+        {
+          label: 'Warranty',
+          value: 'warranty',
+        },
+        {
+          label: 'Financing',
+          value: 'financing',
+        },
+        {
+          label: 'Delivery',
+          value: 'delivery',
+        },
+        {
+          label: 'Tuning',
+          value: 'tuning',
+        },
+        {
+          label: 'Maintenance',
+          value: 'maintenance',
+        },
+        {
+          label: 'Digital Pianos',
+          value: 'digital-pianos',
+        },
+        {
+          label: 'Acoustic Pianos',
+          value: 'acoustic-pianos',
+        },
+        {
+          label: 'Privacy',
+          value: 'privacy',
+        },
+        {
+          label: 'Terms',
+          value: 'terms',
+        },
+      ],
+      admin: {
+        position: 'sidebar',
+        description: 'Add tags to help users find this page',
+        isClearable: true,
+        isSortable: true,
+      },
+    },
+    {
+      type: 'tabs',
+      tabs: [
+        {
+          fields: [hero],
+          label: 'Hero',
+        },
+        {
+          fields: [
+            {
+              name: 'layout',
+              type: 'blocks',
+              blockReferences: ['cta', 'content', 'mediaBlock', 'archive'],
+              blocks: [], // Required to be empty when using blockReferences
+              required: true,
+              admin: {
+                initCollapsed: true,
+              },
+            },
+          ],
+          label: 'Content',
+        },
+      ],
+    },
+    {
+      name: 'publishedAt',
+      type: 'date',
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    slugField(),
+  ],
+  hooks: {
+    afterChange: [revalidatePage],
+    beforeChange: [populatePublishedAt],
+    afterDelete: [revalidateDelete],
+  },
+  versions: {
+    drafts: {
+      autosave: {
+        interval: 100, // We set this interval for optimal live preview
+      },
+      schedulePublish: true,
+    },
+    maxPerDoc: 50,
+  },
+}

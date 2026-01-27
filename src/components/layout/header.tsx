@@ -12,6 +12,7 @@ import { ProductsMegaMenu } from '@/components/navigation/ProductsMegaMenu'
 import { StorefrontsMegaMenu } from '@/components/navigation/StorefrontsMegaMenu'
 import { ResourcesMegaMenu } from '@/components/navigation/ResourcesMegaMenu'
 import { NewsMegaMenu } from '@/components/navigation/NewsMegaMenu'
+import { SearchBar } from '@/components/search/SearchBar'
 import { cn } from '@/lib/utils'
 import { useNavigationContext } from '@/contexts/NavigationContext'
 import { getContextAwareUrl } from '@/lib/navigation-utils'
@@ -944,225 +945,238 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       {/* Kawai Red Top Line */}
       <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#A01829]" />
 
-      {/* Main Header */}
-      <div
-        className="container mx-auto px-4 sm:px-6"
-        onClick={handleHeaderClick}
-      >
-        <div className={cn(
-          "flex items-center transition-all duration-300",
-          isScrolled ? 'h-16' : 'h-20'
-        )}>
-          {/* Logo */}
-          <motion.div
-            animate={{
-              scale: isScrolled ? 0.9 : 1,
-            }}
-            transition={{
-              duration: 0.3,
-              ease: "easeInOut"
-            }}
-            className="flex-shrink-0 z-10"
+      {/* Two-Tier Header Layout */}
+      <div className="container mx-auto px-4 sm:px-6">
+        {/* Top Row - Utility Bar */}
+        <div className="border-b border-gray-100">
+          <div
+            className={cn(
+              "flex items-center justify-between transition-all duration-300",
+              isScrolled ? 'h-14' : 'h-16'
+            )}
+            onClick={handleHeaderClick}
           >
-            <KawaiLogo
-              size={isScrolled ? "sm" : "md"}
-              animated={true}
-              {...(currentLocationData?.locationName && { dealerName: currentLocationData.locationName })}
-              nonClickable={isSignaturePage}
-            />
-          </motion.div>
+            {/* Logo - Left */}
+            <motion.div
+              animate={{
+                scale: isScrolled ? 0.9 : 1,
+              }}
+              transition={{
+                duration: 0.3,
+                ease: "easeInOut"
+              }}
+              className="flex-shrink-0 z-10"
+            >
+              <KawaiLogo
+                size={isScrolled ? "sm" : "md"}
+                animated={true}
+                {...(currentLocationData?.locationName && { dealerName: currentLocationData.locationName })}
+                nonClickable={isSignaturePage}
+              />
+            </motion.div>
 
-          {/* Desktop Navigation - Auto-hide on smaller screens to prevent overlap, hidden on signature page, concert artist page, and university page */}
-          {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
-            <nav className="hidden xl:flex flex-1 justify-center">
-              <div className="flex items-center space-x-1">
-                {/* Home Link - Always goes to global homepage, doesn't preserve dealer context */}
-                <Link
-                  href="/"
-                  className="px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md"
-                >
-                  Home
-                </Link>
-
-                {/* News Mega Menu Item */}
-                <div
-                  onMouseEnter={animationComplete ? handleNewsMenuOpen : undefined}
-                  onMouseLeave={animationComplete ? handleNewsMenuClose : undefined}
-                >
-                  <button
-                    className={cn(
-                      "flex items-center px-4 py-2 text-gray-700 font-medium transition-colors rounded-md",
-                      animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
-                    )}
-                    disabled={!animationComplete}
-                  >
-                    <span>News</span>
-                    <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isNewsMenuOpen && "rotate-180")} />
-                  </button>
-                </div>
-
-                {/* Kawai Official Storefronts Mega Menu Item */}
-                <div
-                  onMouseEnter={storefrontsData && animationComplete ? handleStorefrontsMenuOpen : undefined}
-                  onMouseLeave={storefrontsData && animationComplete ? handleStorefrontsMenuClose : undefined}
-                >
-                  <button
-                    className={cn(
-                      "flex items-center px-4 py-2 text-gray-700 font-medium transition-colors rounded-md",
-                      storefrontsData && animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
-                    )}
-                    disabled={!storefrontsData || !animationComplete}
-                  >
-                    <span>Official Storefronts</span>
-                    <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isStorefrontsMenuOpen && "rotate-180")} />
-                  </button>
-                </div>
-
-                {/* Products Mega Menu Item - Controlled by feature flag */}
-                {isProductsMenuEnabled && (
-                  <div
-                    onMouseEnter={productsNavData && animationComplete ? handleProductsMenuOpen : undefined}
-                    onMouseLeave={productsNavData && animationComplete ? handleProductsMenuClose : undefined}
-                  >
-                    <button
-                      className={cn(
-                        "flex items-center px-4 py-2 text-gray-700 font-medium transition-colors rounded-md",
-                        productsNavData && animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
-                      )}
-                      disabled={!productsNavData || !animationComplete}
-                    >
-                      <span>Products</span>
-                      <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isProductsMenuOpen && "rotate-180")} />
-                    </button>
-                  </div>
-                )}
-
-                {/* Artists Link */}
-                {navigation.filter(item => item.label === 'Artists').map((item) => (
-                  <DesktopMenuItem
-                    key={item.label}
-                    item={item}
-                    isOpen={activeDropdown === item.label}
-                    onOpen={handleDropdownOpen}
-                    onClose={handleDropdownClose}
-                  />
-                ))}
-
-                {/* Resources Mega Menu Item */}
-                <div
-                  onMouseEnter={animationComplete ? handleResourcesMenuOpen : undefined}
-                  onMouseLeave={animationComplete ? handleResourcesMenuClose : undefined}
-                >
-                  <button
-                    className={cn(
-                      "flex items-center px-4 py-2 text-gray-700 font-medium transition-colors rounded-md",
-                      animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
-                    )}
-                    disabled={!animationComplete}
-                  >
-                    <span>Resources</span>
-                    <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isResourcesMenuOpen && "rotate-180")} />
-                  </button>
-                </div>
+            {/* SearchBar - Center (Prominent) */}
+            {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
+              <div className="hidden md:flex items-center flex-1 max-w-2xl mx-8">
+                <SearchBar className="w-full" />
               </div>
-            </nav>
-          )}
+            )}
 
-          {/* Spacer for medium screens where nav is hidden but desktop layout is used */}
-          <div className="flex-1 lg:block xl:hidden" />
+            {/* Right Side - Cart + CTA/Dealer Link + Mobile Menu */}
+            <div className="flex items-center gap-2">
+              {/* Find a Dealer Link - Desktop (non-storefront pages) */}
+              {!isSignaturePage && !isUniversityPage && !currentLocationData && (
+                <motion.div
+                  className="hidden lg:flex items-center"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3, duration: 0.4 }}
+                >
+                  <ContextAwareLink
+                    href="/find-a-dealer"
+                    className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md"
+                  >
+                    Find a Dealer
+                  </ContextAwareLink>
+                </motion.div>
+              )}
 
-          {/* CTA Buttons - Only show Visit Showroom on dealer location pages, hidden on signature page and university page */}
-          {currentLocationData && !isLoadingLocation && !isSignaturePage && !isUniversityPage && (
-            <motion.div
-              className="hidden lg:flex items-center gap-3 flex-shrink-0 ml-4"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3, duration: 0.4 }}
-            >
-              <Button
-                className="bg-kawai-red hover:bg-kawai-red/90 text-white px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
-                asChild
-              >
-                <ContextAwareLink href={`/${currentLocationData.slug}/contact`}>
-                  Visit Showroom
-                </ContextAwareLink>
-              </Button>
-            </motion.div>
-          )}
+              {/* Visit Showroom CTA - Desktop (dealer location pages) */}
+              {currentLocationData && !isLoadingLocation && !isSignaturePage && !isUniversityPage && (
+                <motion.div
+                  className="hidden lg:flex items-center"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3, duration: 0.4 }}
+                >
+                  <Button
+                    className="bg-kawai-red hover:bg-kawai-red/90 text-white px-4 py-2 text-sm shadow-md hover:shadow-lg transition-all duration-300"
+                    asChild
+                  >
+                    <ContextAwareLink href={`/${currentLocationData.slug}/contact`}>
+                      Visit Showroom
+                    </ContextAwareLink>
+                  </Button>
+                </motion.div>
+              )}
 
-          {/* Find a Dealer Nav Link - Show on non-signature, non-university, non-storefront pages */}
-          {!isSignaturePage && !isUniversityPage && !currentLocationData && (
-            <motion.div
-              className="hidden lg:flex items-center gap-3 flex-shrink-0 ml-4"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3, duration: 0.4 }}
-            >
-              <ContextAwareLink
-                href="/find-a-dealer"
-                className="px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md"
-              >
-                Find a Dealer
-              </ContextAwareLink>
-            </motion.div>
-          )}
+              {/* Cart Icon */}
+              {!isSignaturePage && !isUniversityPage && (
+                <motion.div
+                  className="hidden lg:flex items-center"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.35, duration: 0.4 }}
+                >
+                  <CartIcon onOpen={() => setIsCartOpen(true)} />
+                </motion.div>
+              )}
 
-          {/* Cart Icon - Desktop */}
-          {!isSignaturePage && !isUniversityPage && (
-            <motion.div
-              className="hidden lg:flex items-center flex-shrink-0 ml-2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.35, duration: 0.4 }}
-            >
-              <CartIcon onOpen={() => setIsCartOpen(true)} />
-            </motion.div>
-          )}
+              {/* Cart Icon - Mobile */}
+              {!isSignaturePage && !isUniversityPage && (
+                <div className="lg:hidden flex items-center">
+                  <CartIcon onOpen={() => setIsCartOpen(true)} />
+                </div>
+              )}
 
-          {/* Cart Icon - Mobile (shown before menu button) */}
-          {!isSignaturePage && !isUniversityPage && (
-            <div className="lg:hidden flex items-center flex-shrink-0 ml-2">
-              <CartIcon onOpen={() => setIsCartOpen(true)} />
+              {/* Mobile Menu Button */}
+              {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
+                <motion.button
+                  ref={menuButtonRef}
+                  className="lg:hidden p-2 rounded-md transition-colors hover:bg-gray-100/80 focus:outline-none focus:ring-2 focus:ring-kawai-red focus:ring-offset-2"
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ duration: 0.1 }}
+                  aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+                  aria-expanded={isMenuOpen}
+                >
+                  <AnimatePresence mode="wait">
+                    {isMenuOpen ? (
+                      <motion.div
+                        key="close"
+                        initial={{ rotate: -90, opacity: 0 }}
+                        animate={{ rotate: 0, opacity: 1 }}
+                        exit={{ rotate: 90, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <X className="h-6 w-6 text-gray-900" />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="menu"
+                        initial={{ rotate: 90, opacity: 0 }}
+                        animate={{ rotate: 0, opacity: 1 }}
+                        exit={{ rotate: -90, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Menu className="h-6 w-6 text-gray-900" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
+              )}
             </div>
-          )}
-
-          {/* Mobile Menu Button - Hidden on signature page, concert artist page, and university page */}
-          {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
-            <motion.button
-              ref={menuButtonRef}
-              className="xl:hidden p-2 rounded-md transition-colors hover:bg-gray-100/80 focus:outline-none focus:ring-2 focus:ring-kawai-red focus:ring-offset-2 flex-shrink-0 ml-4"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              whileTap={{ scale: 0.95 }}
-              transition={{ duration: 0.1 }}
-              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={isMenuOpen}
-            >
-              <AnimatePresence mode="wait">
-                {isMenuOpen ? (
-                  <motion.div
-                    key="close"
-                    initial={{ rotate: -90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: 90, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <X className="h-6 w-6 text-gray-900" />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="menu"
-                    initial={{ rotate: 90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: -90, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Menu className="h-6 w-6 text-gray-900" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.button>
-          )}
+          </div>
         </div>
+
+        {/* Bottom Row - Main Navigation */}
+        {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
+          <nav className="hidden lg:block">
+            <div className={cn(
+              "flex items-center justify-center gap-8 transition-all duration-300",
+              isScrolled ? 'h-12' : 'h-14'
+            )}>
+              {/* Home Link */}
+              <Link
+                href="/"
+                className="px-3 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md"
+              >
+                Home
+              </Link>
+
+              {/* News Mega Menu */}
+              <div
+                onMouseEnter={animationComplete ? handleNewsMenuOpen : undefined}
+                onMouseLeave={animationComplete ? handleNewsMenuClose : undefined}
+              >
+                <button
+                  className={cn(
+                    "flex items-center px-3 py-2 text-sm text-gray-700 font-medium transition-colors rounded-md",
+                    animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
+                  )}
+                  disabled={!animationComplete}
+                >
+                  <span>News</span>
+                  <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isNewsMenuOpen && "rotate-180")} />
+                </button>
+              </div>
+
+              {/* Official Storefronts Mega Menu */}
+              <div
+                onMouseEnter={storefrontsData && animationComplete ? handleStorefrontsMenuOpen : undefined}
+                onMouseLeave={storefrontsData && animationComplete ? handleStorefrontsMenuClose : undefined}
+              >
+                <button
+                  className={cn(
+                    "flex items-center px-3 py-2 text-sm text-gray-700 font-medium transition-colors rounded-md",
+                    storefrontsData && animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
+                  )}
+                  disabled={!storefrontsData || !animationComplete}
+                >
+                  <span>Official Storefronts</span>
+                  <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isStorefrontsMenuOpen && "rotate-180")} />
+                </button>
+              </div>
+
+              {/* Products Mega Menu - Controlled by feature flag */}
+              {isProductsMenuEnabled && (
+                <div
+                  onMouseEnter={productsNavData && animationComplete ? handleProductsMenuOpen : undefined}
+                  onMouseLeave={productsNavData && animationComplete ? handleProductsMenuClose : undefined}
+                >
+                  <button
+                    className={cn(
+                      "flex items-center px-3 py-2 text-sm text-gray-700 font-medium transition-colors rounded-md",
+                      productsNavData && animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
+                    )}
+                    disabled={!productsNavData || !animationComplete}
+                  >
+                    <span>Products</span>
+                    <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isProductsMenuOpen && "rotate-180")} />
+                  </button>
+                </div>
+              )}
+
+              {/* Artists Link */}
+              {navigation.filter(item => item.label === 'Artists').map((item) => (
+                <ContextAwareLink
+                  key={item.label}
+                  href={item.href || '#'}
+                  className="px-3 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md"
+                >
+                  {item.label}
+                </ContextAwareLink>
+              ))}
+
+              {/* Resources Mega Menu */}
+              <div
+                onMouseEnter={animationComplete ? handleResourcesMenuOpen : undefined}
+                onMouseLeave={animationComplete ? handleResourcesMenuClose : undefined}
+              >
+                <button
+                  className={cn(
+                    "flex items-center px-3 py-2 text-sm text-gray-700 font-medium transition-colors rounded-md",
+                    animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
+                  )}
+                  disabled={!animationComplete}
+                >
+                  <span>Resources</span>
+                  <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isResourcesMenuOpen && "rotate-180")} />
+                </button>
+              </div>
+            </div>
+          </nav>
+        )}
       </div>
 
       {/* Mobile Menu - Hidden on signature page, concert artist page, and university page */}

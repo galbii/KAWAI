@@ -6,6 +6,50 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/**
+ * Simple object check.
+ * @param item
+ * @returns {boolean}
+ */
+export function isObject(item: unknown): item is Record<string, unknown> {
+  return typeof item === 'object' && item !== null && !Array.isArray(item)
+}
+
+/**
+ * Deep merge two objects.
+ * Used for merging Payload field configurations with overrides.
+ * @param target - Base object
+ * @param source - Override object
+ * @returns Merged object
+ */
+export function deepMerge<T extends Record<string, unknown>>(target: T, source: Partial<T>): T {
+  const output = { ...target } as T
+  if (isObject(target) && isObject(source)) {
+    Object.keys(source).forEach((key) => {
+      const sourceValue = source[key]
+      if (isObject(sourceValue)) {
+        if (!(key in target)) {
+          output[key as keyof T] = sourceValue as T[keyof T]
+        } else {
+          const targetValue = target[key]
+          if (isObject(targetValue)) {
+            output[key as keyof T] = deepMerge(
+              targetValue as Record<string, unknown>,
+              sourceValue as Record<string, unknown>
+            ) as T[keyof T]
+          } else {
+            output[key as keyof T] = sourceValue as T[keyof T]
+          }
+        }
+      } else {
+        output[key as keyof T] = sourceValue as T[keyof T]
+      }
+    })
+  }
+
+  return output
+}
+
 export function formatPrice(price: number): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -298,4 +342,21 @@ export function generateSEOKeywords(piano: Piano): string {
     ...(piano.features?.slice(0, 3) || [])
   ]
   return keywords.filter(Boolean).join(', ')
+}
+
+// Extract plain text from Lexical rich text for search indexing
+export function extractTextFromRichText(richText: any): string {
+  if (!richText?.root?.children) return ''
+
+  const extractText = (node: any): string => {
+    if (node.type === 'text') {
+      return node.text || ''
+    }
+    if (node.children) {
+      return node.children.map(extractText).join(' ')
+    }
+    return ''
+  }
+
+  return richText.root.children.map(extractText).join(' ').substring(0, 200)
 }

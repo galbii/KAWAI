@@ -84,10 +84,15 @@ export interface Config {
     hello: HelloBlock;
     banner: BannerBlock;
     code: CodeBlock;
+    archive: ArchiveBlock;
+    content: ContentBlock;
+    mediaBlock: MediaBlock;
+    cta: CtaBlock;
   };
   collections: {
     users: User;
     media: Media;
+    pages: Page;
     'home-page': HomePage;
     'pianos-page': PianosPage;
     'concert-artist-page': ConcertArtistPage;
@@ -99,11 +104,14 @@ export interface Config {
     dealers: Dealer;
     'constant-contact-settings': ConstantContactSetting;
     'constant-contact-custom-fields': ConstantContactCustomField;
+    search: Search;
     'payload-kv': PayloadKv;
+    'payload-jobs': PayloadJob;
     'payload-folders': FolderInterface;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
+    'payload-query-presets': PayloadQueryPreset;
   };
   collectionsJoins: {
     'payload-folders': {
@@ -113,6 +121,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
     'home-page': HomePageSelect<false> | HomePageSelect<true>;
     'pianos-page': PianosPageSelect<false> | PianosPageSelect<true>;
     'concert-artist-page': ConcertArtistPageSelect<false> | ConcertArtistPageSelect<true>;
@@ -124,11 +133,14 @@ export interface Config {
     dealers: DealersSelect<false> | DealersSelect<true>;
     'constant-contact-settings': ConstantContactSettingsSelect<false> | ConstantContactSettingsSelect<true>;
     'constant-contact-custom-fields': ConstantContactCustomFieldsSelect<false> | ConstantContactCustomFieldsSelect<true>;
+    search: SearchSelect<false> | SearchSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
+    'payload-query-presets': PayloadQueryPresetsSelect<false> | PayloadQueryPresetsSelect<true>;
   };
   db: {
     defaultIDType: string;
@@ -141,7 +153,13 @@ export interface Config {
     collection: 'users';
   };
   jobs: {
-    tasks: unknown;
+    tasks: {
+      schedulePublish: TaskSchedulePublish;
+      inline: {
+        input: unknown;
+        output: unknown;
+      };
+    };
     workflows: unknown;
   };
 }
@@ -1857,6 +1875,194 @@ export interface CodeBlock {
   blockType: 'code';
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ArchiveBlock".
+ */
+export interface ArchiveBlock {
+  introContent?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  populateBy?: ('collection' | 'selection') | null;
+  relationTo?: 'posts' | null;
+  categories?: (string | Category)[] | null;
+  limit?: number | null;
+  selectedDocs?:
+    | {
+        relationTo: 'posts';
+        value: string | Post;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'archive';
+}
+/**
+ * Blog post categories for organization and filtering
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: string;
+  /**
+   * Category display name
+   */
+  title: string;
+  /**
+   * URL-friendly version of the category name
+   */
+  slug: string;
+  /**
+   * Brief description of this category
+   */
+  description?: string | null;
+  /**
+   * Optional icon/image for this category
+   */
+  icon?: (string | null) | Media;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Blog posts with rich content, featured images, and flexible page building
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: string;
+  /**
+   * Post title/headline
+   */
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Short excerpt for post listings and meta description (max 300 characters)
+   */
+  excerpt?: string | null;
+  /**
+   * Featured image for post header and social sharing
+   */
+  featuredImage?: (string | null) | Media;
+  /**
+   * Main post content with rich formatting, embedded blocks (Banner, Code), and media
+   */
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Additional content blocks for complex layouts (separate from rich text content)
+   */
+  contentBlocks?: (ImageBlock | TextBlock | VideoBlock | SpacerBlock | DividerBlock | ColumnsBlock)[] | null;
+  /**
+   * Post authors (NEW: supports multiple authors)
+   */
+  authors?: (string | User)[] | null;
+  /**
+   * Auto-populated author data for privacy (hidden field)
+   */
+  populatedAuthors?:
+    | {
+        id?: string | null;
+        name?: string | null;
+      }[]
+    | null;
+  /**
+   * ⚠️ DEPRECATED: Use "authors" field instead. Will be removed after migration.
+   */
+  author?: (string | null) | User;
+  /**
+   * Post categories (NEW: relationship to Categories collection)
+   */
+  categoriesNew?: (string | Category)[] | null;
+  /**
+   * ⚠️ DEPRECATED: Use "categoriesNew" field instead. Will be removed after migration.
+   */
+  categories?:
+    | (
+        | 'education'
+        | 'product-news'
+        | 'artists'
+        | 'maintenance'
+        | 'buying-guides'
+        | 'events'
+        | 'company-news'
+        | 'technology'
+      )[]
+    | null;
+  /**
+   * Related posts (prevents self-reference)
+   */
+  relatedPosts?: (string | Post)[] | null;
+  /**
+   * Comma-separated tags for SEO and filtering
+   */
+  tags?: string | null;
+  /**
+   * Post publication status
+   */
+  status: 'draft' | 'published' | 'scheduled' | 'archived';
+  /**
+   * Published date (auto-set on first publish)
+   */
+  publishedDate?: string | null;
+  /**
+   * Feature this post on homepage and blog landing
+   */
+  featured?: boolean | null;
+  /**
+   * SEO and social media optimization
+   */
+  seo?: {
+    /**
+     * Custom meta title (defaults to post title)
+     */
+    metaTitle?: string | null;
+    /**
+     * Meta description for search engines (max 160 characters, defaults to excerpt)
+     */
+    metaDescription?: string | null;
+    /**
+     * SEO keywords (comma-separated)
+     */
+    keywords?: string | null;
+    /**
+     * Open Graph image for social sharing (defaults to featured image)
+     */
+    ogImage?: (string | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * User accounts and authentication management
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1885,6 +2091,199 @@ export interface User {
       }[]
     | null;
   password?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ContentBlock".
+ */
+export interface ContentBlock {
+  columns?:
+    | {
+        size?: ('oneThird' | 'half' | 'twoThirds' | 'full') | null;
+        richText?: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        enableLink?: boolean | null;
+        link?: {
+          type?: ('reference' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: string | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: string | Post;
+              } | null);
+          url?: string | null;
+          label: string;
+          /**
+           * Choose how the link should be rendered.
+           */
+          appearance?: ('default' | 'outline') | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'content';
+}
+/**
+ * Create static pages with optional FAQ categorization and tagging
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages".
+ */
+export interface Page {
+  id: string;
+  title: string;
+  /**
+   * Categorize this page for better organization
+   */
+  category?: ('general' | 'faq' | 'legal' | 'support') | null;
+  /**
+   * Add tags to help users find this page
+   */
+  tags?:
+    | (
+        | 'getting-started'
+        | 'piano-care'
+        | 'warranty'
+        | 'financing'
+        | 'delivery'
+        | 'tuning'
+        | 'maintenance'
+        | 'digital-pianos'
+        | 'acoustic-pianos'
+        | 'privacy'
+        | 'terms'
+      )[]
+    | null;
+  hero: {
+    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    richText?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    links?:
+      | {
+          link: {
+            type?: ('reference' | 'custom') | null;
+            newTab?: boolean | null;
+            reference?:
+              | ({
+                  relationTo: 'pages';
+                  value: string | Page;
+                } | null)
+              | ({
+                  relationTo: 'posts';
+                  value: string | Post;
+                } | null);
+            url?: string | null;
+            label: string;
+            /**
+             * Choose how the link should be rendered.
+             */
+            appearance?: ('default' | 'outline') | null;
+          };
+          id?: string | null;
+        }[]
+      | null;
+    media?: (string | null) | Media;
+  };
+  layout: (CtaBlock | ContentBlock | MediaBlock | ArchiveBlock)[];
+  publishedAt?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CtaBlock".
+ */
+export interface CtaBlock {
+  richText?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  links?:
+    | {
+        link: {
+          type?: ('reference' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: string | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: string | Post;
+              } | null);
+          url?: string | null;
+          label: string;
+          /**
+           * Choose how the link should be rendered.
+           */
+          appearance?: ('default' | 'outline') | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'cta';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MediaBlock".
+ */
+export interface MediaBlock {
+  media: string | Media;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'mediaBlock';
 }
 /**
  * Manage all content for the homepage including hero, showroom location, piano collection, gallery, news, contact form, and SEO.
@@ -3003,160 +3402,6 @@ export interface Storefront {
   createdAt: string;
 }
 /**
- * Blog posts with rich content, featured images, and flexible page building
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "posts".
- */
-export interface Post {
-  id: string;
-  /**
-   * Post title/headline
-   */
-  title: string;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug: string;
-  /**
-   * Short excerpt for post listings and meta description (max 300 characters)
-   */
-  excerpt?: string | null;
-  /**
-   * Featured image for post header and social sharing
-   */
-  featuredImage?: (string | null) | Media;
-  /**
-   * Main post content with rich formatting, embedded blocks (Banner, Code), and media
-   */
-  content: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
-  /**
-   * Additional content blocks for complex layouts (separate from rich text content)
-   */
-  contentBlocks?: (ImageBlock | TextBlock | VideoBlock | SpacerBlock | DividerBlock | ColumnsBlock)[] | null;
-  /**
-   * Post authors (NEW: supports multiple authors)
-   */
-  authors?: (string | User)[] | null;
-  /**
-   * Auto-populated author data for privacy (hidden field)
-   */
-  populatedAuthors?:
-    | {
-        id?: string | null;
-        name?: string | null;
-      }[]
-    | null;
-  /**
-   * ⚠️ DEPRECATED: Use "authors" field instead. Will be removed after migration.
-   */
-  author?: (string | null) | User;
-  /**
-   * Post categories (NEW: relationship to Categories collection)
-   */
-  categoriesNew?: (string | Category)[] | null;
-  /**
-   * ⚠️ DEPRECATED: Use "categoriesNew" field instead. Will be removed after migration.
-   */
-  categories?:
-    | (
-        | 'education'
-        | 'product-news'
-        | 'artists'
-        | 'maintenance'
-        | 'buying-guides'
-        | 'events'
-        | 'company-news'
-        | 'technology'
-      )[]
-    | null;
-  /**
-   * Related posts (prevents self-reference)
-   */
-  relatedPosts?: (string | Post)[] | null;
-  /**
-   * Comma-separated tags for SEO and filtering
-   */
-  tags?: string | null;
-  /**
-   * Post publication status
-   */
-  status: 'draft' | 'published' | 'scheduled' | 'archived';
-  /**
-   * Published date (auto-set on first publish)
-   */
-  publishedDate?: string | null;
-  /**
-   * Feature this post on homepage and blog landing
-   */
-  featured?: boolean | null;
-  /**
-   * SEO and social media optimization
-   */
-  seo?: {
-    /**
-     * Custom meta title (defaults to post title)
-     */
-    metaTitle?: string | null;
-    /**
-     * Meta description for search engines (max 160 characters, defaults to excerpt)
-     */
-    metaDescription?: string | null;
-    /**
-     * SEO keywords (comma-separated)
-     */
-    keywords?: string | null;
-    /**
-     * Open Graph image for social sharing (defaults to featured image)
-     */
-    ogImage?: (string | null) | Media;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Blog post categories for organization and filtering
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "categories".
- */
-export interface Category {
-  id: string;
-  /**
-   * Category display name
-   */
-  title: string;
-  /**
-   * URL-friendly version of the category name
-   */
-  slug: string;
-  /**
-   * Brief description of this category
-   */
-  description?: string | null;
-  /**
-   * Optional icon/image for this category
-   */
-  icon?: (string | null) | Media;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * Manage KAWAI artists - musicians and performers who play KAWAI pianos
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3591,6 +3836,26 @@ export interface ConstantContactCustomField {
   createdAt: string;
 }
 /**
+ * This is a collection of automatically created search results. These results are used by the global site search and will be updated automatically as documents in the CMS are created or updated.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "search".
+ */
+export interface Search {
+  id: string;
+  title?: string | null;
+  priority?: number | null;
+  doc: {
+    relationTo: 'pages';
+    value: string | Page;
+  };
+  category?: string | null;
+  tags?: string[] | null;
+  excerpt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -3609,6 +3874,98 @@ export interface PayloadKv {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs".
+ */
+export interface PayloadJob {
+  id: string;
+  /**
+   * Input data provided to the job
+   */
+  input?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  taskStatus?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  completedAt?: string | null;
+  totalTried?: number | null;
+  /**
+   * If hasError is true this job will not be retried
+   */
+  hasError?: boolean | null;
+  /**
+   * If hasError is true, this is the error that caused it
+   */
+  error?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Task execution log
+   */
+  log?:
+    | {
+        executedAt: string;
+        completedAt: string;
+        taskSlug: 'inline' | 'schedulePublish';
+        taskID: string;
+        input?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        output?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        state: 'failed' | 'succeeded';
+        error?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  taskSlug?: ('inline' | 'schedulePublish') | null;
+  queue?: string | null;
+  waitUntil?: string | null;
+  processing?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -3621,6 +3978,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: string | Media;
+      } | null)
+    | ({
+        relationTo: 'pages';
+        value: string | Page;
       } | null)
     | ({
         relationTo: 'home-page';
@@ -3667,6 +4028,10 @@ export interface PayloadLockedDocument {
         value: string | ConstantContactCustomField;
       } | null)
     | ({
+        relationTo: 'search';
+        value: string | Search;
+      } | null)
+    | ({
         relationTo: 'payload-folders';
         value: string | FolderInterface;
       } | null);
@@ -3709,6 +4074,55 @@ export interface PayloadMigration {
   id: string;
   name?: string | null;
   batch?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-query-presets".
+ */
+export interface PayloadQueryPreset {
+  id: string;
+  title: string;
+  isShared?: boolean | null;
+  access?: {
+    read?: {
+      constraint?: ('everyone' | 'onlyMe' | 'specificUsers') | null;
+      users?: (string | User)[] | null;
+    };
+    update?: {
+      constraint?: ('everyone' | 'onlyMe' | 'specificUsers') | null;
+      users?: (string | User)[] | null;
+    };
+    delete?: {
+      constraint?: ('everyone' | 'onlyMe' | 'specificUsers') | null;
+      users?: (string | User)[] | null;
+    };
+  };
+  where?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  columns?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  groupBy?: string | null;
+  relatedCollection: 'pages';
+  /**
+   * This is a temporary field used to determine if updating the preset would remove the user's access to it. When `true`, this record will be deleted after running the preset's `validate` function.
+   */
+  isTemp?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3827,6 +4241,44 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages_select".
+ */
+export interface PagesSelect<T extends boolean = true> {
+  title?: T;
+  category?: T;
+  tags?: T;
+  hero?:
+    | T
+    | {
+        type?: T;
+        richText?: T;
+        links?:
+          | T
+          | {
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    url?: T;
+                    label?: T;
+                    appearance?: T;
+                  };
+              id?: T;
+            };
+        media?: T;
+      };
+  layout?: T | {};
+  publishedAt?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4606,11 +5058,56 @@ export interface ConstantContactCustomFieldsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "search_select".
+ */
+export interface SearchSelect<T extends boolean = true> {
+  title?: T;
+  priority?: T;
+  doc?: T;
+  category?: T;
+  tags?: T;
+  excerpt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
   key?: T;
   data?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs_select".
+ */
+export interface PayloadJobsSelect<T extends boolean = true> {
+  input?: T;
+  taskStatus?: T;
+  completedAt?: T;
+  totalTried?: T;
+  hasError?: T;
+  error?: T;
+  log?:
+    | T
+    | {
+        executedAt?: T;
+        completedAt?: T;
+        taskSlug?: T;
+        taskID?: T;
+        input?: T;
+        output?: T;
+        state?: T;
+        error?: T;
+        id?: T;
+      };
+  taskSlug?: T;
+  queue?: T;
+  waitUntil?: T;
+  processing?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4655,6 +5152,60 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-query-presets_select".
+ */
+export interface PayloadQueryPresetsSelect<T extends boolean = true> {
+  title?: T;
+  isShared?: T;
+  access?:
+    | T
+    | {
+        read?:
+          | T
+          | {
+              constraint?: T;
+              users?: T;
+            };
+        update?:
+          | T
+          | {
+              constraint?: T;
+              users?: T;
+            };
+        delete?:
+          | T
+          | {
+              constraint?: T;
+              users?: T;
+            };
+      };
+  where?: T;
+  columns?: T;
+  groupBy?: T;
+  relatedCollection?: T;
+  isTemp?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSchedulePublish".
+ */
+export interface TaskSchedulePublish {
+  input: {
+    type?: ('publish' | 'unpublish') | null;
+    locale?: string | null;
+    doc?: {
+      relationTo: 'pages';
+      value: string | Page;
+    } | null;
+    global?: string | null;
+    user?: (string | null) | User;
+  };
+  output?: unknown;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

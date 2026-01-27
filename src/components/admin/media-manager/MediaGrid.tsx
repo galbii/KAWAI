@@ -5,32 +5,48 @@ import { createPortal } from 'react-dom'
 import { useMediaManager } from './MediaManagerProvider'
 import type { MediaItem, FolderItem } from './types'
 
-// Explicit color constants to avoid Payload theme conflicts
+// Dark theme color palette
 const colors = {
+  // Backgrounds
+  backdrop: 'rgba(0, 0, 0, 0.85)',
+  modalBg: '#0a0e1a',
+  headerBg: '#0f1422',
+  sidebarBg: '#0d1117',
+  contentBg: '#0a0e1a',
+  cardBg: '#151b2b',
+  inputBg: '#1a2234',
+  hoverBg: '#1e2739',
+
+  // Borders
+  border: '#1e2739',
+  borderLight: '#2d3748',
+  borderFocus: '#3b82f6',
+
+  // Text
+  textPrimary: '#f1f5f9',
+  textSecondary: '#94a3b8',
+  textMuted: '#64748b',
+  textAccent: '#60a5fa',
+
+  // Brand colors
+  primary: '#3b82f6',
+  primaryHover: '#2563eb',
+  primaryLight: '#60a5fa',
+  success: '#10b981',
+  successBg: '#064e3b',
+  error: '#ef4444',
+  errorBg: '#7f1d1d',
+  warning: '#f59e0b',
+  warningBg: '#78350f',
+
+  // Accents
+  accent: '#8b5cf6',
+  accentHover: '#7c3aed',
+  gold: '#f59e0b',
+
+  // UI elements
   white: '#ffffff',
   black: '#000000',
-  slate50: '#f8fafc',
-  slate100: '#f1f5f9',
-  slate200: '#e2e8f0',
-  slate300: '#cbd5e1',
-  slate400: '#94a3b8',
-  slate500: '#64748b',
-  slate600: '#475569',
-  slate700: '#334155',
-  slate800: '#1e293b',
-  slate900: '#0f172a',
-  blue50: '#eff6ff',
-  blue100: '#dbeafe',
-  blue500: '#3b82f6',
-  blue600: '#2563eb',
-  blue700: '#1d4ed8',
-  red50: '#fef2f2',
-  red600: '#dc2626',
-  purple100: '#f3e8ff',
-  purple600: '#9333ea',
-  emerald100: '#d1fae5',
-  emerald600: '#059669',
-  amber500: '#f59e0b',
 }
 
 /**
@@ -53,13 +69,13 @@ export function MediaGrid() {
 
   if (isLoading && media.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full" style={{ backgroundColor: colors.white }}>
+      <div className="flex items-center justify-center h-full" style={{ backgroundColor: colors.contentBg }}>
         <div className="text-center">
           <div
             className="animate-spin rounded-full h-12 w-12 border-3 border-t-transparent mx-auto mb-4"
-            style={{ borderColor: colors.blue600, borderTopColor: 'transparent' }}
+            style={{ borderColor: colors.primary, borderTopColor: 'transparent' }}
           />
-          <p className="text-base font-medium" style={{ color: colors.slate600 }}>Loading media...</p>
+          <p className="text-base font-medium" style={{ color: colors.textSecondary }}>Loading media...</p>
         </div>
       </div>
     )
@@ -69,24 +85,24 @@ export function MediaGrid() {
     return (
       <div
         className="flex flex-col items-center justify-center h-full p-12"
-        style={{ backgroundColor: colors.white }}
+        style={{ backgroundColor: colors.contentBg }}
       >
         <div
           className="w-28 h-28 mb-8 rounded-2xl flex items-center justify-center"
-          style={{ backgroundColor: colors.slate100 }}
+          style={{ backgroundColor: colors.cardBg }}
         >
-          <svg className="w-14 h-14" style={{ color: colors.slate300 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-14 h-14" style={{ color: colors.textMuted }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
         </div>
-        <p className="text-xl font-semibold mb-3" style={{ color: colors.slate700 }}>No media found</p>
-        <p className="text-base" style={{ color: colors.slate500 }}>Drag and drop files here or click Upload to add media</p>
+        <p className="text-xl font-semibold mb-3" style={{ color: colors.textPrimary }}>No media found</p>
+        <p className="text-base" style={{ color: colors.textSecondary }}>Drag and drop files here or click Upload to add media</p>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col h-full" style={{ backgroundColor: colors.white }}>
+    <div className="flex flex-col h-full" style={{ backgroundColor: colors.contentBg }}>
       {/* Grid - Larger items with fewer columns */}
       <div className="flex-1 overflow-y-auto p-6">
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
@@ -109,13 +125,13 @@ export function MediaGrid() {
       {totalPages > 1 && (
         <div
           className="flex-shrink-0 flex items-center justify-center gap-4 px-6 py-4 border-t"
-          style={{ backgroundColor: colors.white, borderColor: colors.slate200 }}
+          style={{ backgroundColor: colors.headerBg, borderColor: colors.border }}
         >
           <button
             onClick={() => fetchMedia(currentPage - 1)}
             disabled={currentPage === 1}
-            className="flex items-center gap-2 px-4 py-2 text-base font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ backgroundColor: colors.slate100, color: colors.slate700 }}
+            className="flex items-center gap-2 px-4 py-2 text-base font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-opacity-80"
+            style={{ backgroundColor: colors.cardBg, color: colors.textSecondary }}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -138,10 +154,10 @@ export function MediaGrid() {
                 <button
                   key={pageNum}
                   onClick={() => fetchMedia(pageNum)}
-                  className="w-10 h-10 text-base font-semibold rounded-lg transition-colors"
+                  className="w-10 h-10 text-base font-semibold rounded-lg transition-colors hover:bg-opacity-80"
                   style={{
-                    backgroundColor: currentPage === pageNum ? colors.blue600 : 'transparent',
-                    color: currentPage === pageNum ? colors.white : colors.slate600,
+                    backgroundColor: currentPage === pageNum ? colors.primary : colors.cardBg,
+                    color: currentPage === pageNum ? colors.white : colors.textSecondary,
                   }}
                 >
                   {pageNum}
@@ -152,8 +168,8 @@ export function MediaGrid() {
           <button
             onClick={() => fetchMedia(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="flex items-center gap-2 px-4 py-2 text-base font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ backgroundColor: colors.slate100, color: colors.slate700 }}
+            className="flex items-center gap-2 px-4 py-2 text-base font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-opacity-80"
+            style={{ backgroundColor: colors.cardBg, color: colors.textSecondary }}
           >
             Next
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,12 +225,13 @@ function MediaGridItem({ item, isSelected, onSelect, onCopyUrl, onDelete, folder
       className="relative group rounded-xl cursor-pointer transition-all duration-200"
       style={{
         boxShadow: isSelected
-          ? `0 0 0 3px ${colors.blue500}, 0 4px 12px rgba(59, 130, 246, 0.3)`
+          ? `0 0 0 3px ${colors.primary}, 0 4px 12px rgba(59, 130, 246, 0.3)`
           : isHovered
-            ? `0 4px 20px rgba(0, 0, 0, 0.15)`
-            : `0 2px 8px rgba(0, 0, 0, 0.08)`,
+            ? `0 4px 20px rgba(0, 0, 0, 0.4)`
+            : `0 2px 8px rgba(0, 0, 0, 0.2)`,
         transform: isSelected ? 'scale(1.02)' : isHovered ? 'translateY(-2px)' : undefined,
-        backgroundColor: colors.white,
+        backgroundColor: colors.cardBg,
+        border: `1px solid ${colors.border}`,
       }}
       onClick={onSelect}
       onMouseEnter={() => setIsHovered(true)}
@@ -225,7 +242,7 @@ function MediaGridItem({ item, isSelected, onSelect, onCopyUrl, onDelete, folder
       }}
     >
       {/* Thumbnail - Larger aspect ratio */}
-      <div className="aspect-[4/3] rounded-t-xl overflow-hidden" style={{ backgroundColor: colors.slate100 }}>
+      <div className="aspect-[4/3] rounded-t-xl overflow-hidden" style={{ backgroundColor: colors.inputBg }}>
         {isImage ? (
           <img
             src={thumbnailUrl}
@@ -234,7 +251,7 @@ function MediaGridItem({ item, isSelected, onSelect, onCopyUrl, onDelete, folder
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: colors.slate50 }}>
+          <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: colors.inputBg }}>
             <FileIcon mimeType={item.mimeType} />
           </div>
         )}
@@ -244,20 +261,20 @@ function MediaGridItem({ item, isSelected, onSelect, onCopyUrl, onDelete, folder
       <div
         className="px-3 py-2.5 border-t rounded-b-xl"
         style={{
-          backgroundColor: colors.white,
-          borderColor: colors.slate100,
+          backgroundColor: colors.cardBg,
+          borderColor: colors.border,
         }}
       >
         <p
           className="text-sm font-medium truncate"
-          style={{ color: colors.slate800 }}
+          style={{ color: colors.textPrimary }}
           title={item.filename}
         >
           {item.filename}
         </p>
         {currentFolderName && (
-          <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: colors.slate500 }}>
-            <svg className="w-3 h-3" style={{ color: colors.amber500 }} fill="currentColor" viewBox="0 0 24 24">
+          <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: colors.textMuted }}>
+            <svg className="w-3 h-3" style={{ color: colors.gold }} fill="currentColor" viewBox="0 0 24 24">
               <path d="M3 7V17a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6.586a1 1 0 01-.707-.293L10 5H5a2 2 0 00-2 2z" />
             </svg>
             {currentFolderName}
@@ -283,7 +300,7 @@ function MediaGridItem({ item, isSelected, onSelect, onCopyUrl, onDelete, folder
               onCopyUrl()
             }}
             className="p-2 rounded-lg shadow-md transition-all hover:scale-105"
-            style={{ backgroundColor: colors.white, color: colors.slate700 }}
+            style={{ backgroundColor: colors.cardBg, color: colors.textPrimary, border: `1px solid ${colors.border}` }}
             title="Copy URL"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -298,7 +315,7 @@ function MediaGridItem({ item, isSelected, onSelect, onCopyUrl, onDelete, folder
               setShowFolderMenu(false)
             }}
             className="p-2 rounded-lg shadow-md transition-all hover:scale-105"
-            style={{ backgroundColor: colors.white, color: colors.slate700 }}
+            style={{ backgroundColor: colors.cardBg, color: colors.textPrimary, border: `1px solid ${colors.border}` }}
             title="More actions"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -323,8 +340,8 @@ function MediaGridItem({ item, isSelected, onSelect, onCopyUrl, onDelete, folder
           <div
             className="fixed rounded-xl shadow-2xl border py-2 z-[10001]"
             style={{
-              backgroundColor: colors.white,
-              borderColor: colors.slate200,
+              backgroundColor: colors.cardBg,
+              borderColor: colors.border,
               top: dropdownPosition.top,
               left: dropdownPosition.left,
               minWidth: 200,
@@ -338,11 +355,13 @@ function MediaGridItem({ item, isSelected, onSelect, onCopyUrl, onDelete, folder
                   e.stopPropagation()
                   setShowFolderMenu(!showFolderMenu)
                 }}
-                className="flex items-center justify-between gap-2 px-4 py-2.5 text-sm w-full transition-colors"
-                style={{ color: colors.slate700 }}
+                className="flex items-center justify-between gap-2 px-4 py-2.5 text-sm w-full transition-colors hover:bg-opacity-80"
+                style={{ color: colors.textPrimary, backgroundColor: 'transparent' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.hoverBg}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5" style={{ color: colors.amber500 }} fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" style={{ color: colors.gold }} fill="currentColor" viewBox="0 0 24 24">
                     <path d="M3 7V17a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6.586a1 1 0 01-.707-.293L10 5H5a2 2 0 00-2 2z" />
                   </svg>
                   <span>Move to folder</span>
@@ -356,7 +375,7 @@ function MediaGridItem({ item, isSelected, onSelect, onCopyUrl, onDelete, folder
               {showFolderMenu && (
                 <div
                   className="absolute left-full top-0 ml-1 rounded-xl shadow-2xl border py-2 min-w-[180px]"
-                  style={{ backgroundColor: colors.white, borderColor: colors.slate200 }}
+                  style={{ backgroundColor: colors.cardBg, borderColor: colors.border }}
                 >
                   {/* Root option */}
                   <button
@@ -368,17 +387,19 @@ function MediaGridItem({ item, isSelected, onSelect, onCopyUrl, onDelete, folder
                     }}
                     className="flex items-center gap-3 px-4 py-2.5 text-sm w-full transition-colors"
                     style={{
-                      color: colors.slate700,
-                      backgroundColor: !item.folder ? colors.blue50 : 'transparent',
+                      color: colors.textPrimary,
+                      backgroundColor: !item.folder ? colors.hoverBg : 'transparent',
                     }}
+                    onMouseEnter={(e) => !item.folder ? null : e.currentTarget.style.backgroundColor = colors.hoverBg}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = !item.folder ? colors.hoverBg : 'transparent'}
                   >
-                    <svg className="w-4 h-4" style={{ color: colors.slate400 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" style={{ color: colors.textMuted }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     <span>Root (No folder)</span>
                   </button>
                   {folders.length > 0 && (
-                    <div className="border-t my-1" style={{ borderColor: colors.slate100 }} />
+                    <div className="border-t my-1" style={{ borderColor: colors.border }} />
                   )}
                   {folders.map((folder) => {
                     const isCurrentFolder = typeof item.folder === 'object'
@@ -395,16 +416,18 @@ function MediaGridItem({ item, isSelected, onSelect, onCopyUrl, onDelete, folder
                         }}
                         className="flex items-center gap-3 px-4 py-2.5 text-sm w-full transition-colors"
                         style={{
-                          color: colors.slate700,
-                          backgroundColor: isCurrentFolder ? colors.blue50 : 'transparent',
+                          color: colors.textPrimary,
+                          backgroundColor: isCurrentFolder ? colors.hoverBg : 'transparent',
                         }}
+                        onMouseEnter={(e) => isCurrentFolder ? null : e.currentTarget.style.backgroundColor = colors.hoverBg}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = isCurrentFolder ? colors.hoverBg : 'transparent'}
                       >
-                        <svg className="w-4 h-4" style={{ color: colors.amber500 }} fill="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4" style={{ color: colors.gold }} fill="currentColor" viewBox="0 0 24 24">
                           <path d="M3 7V17a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6.586a1 1 0 01-.707-.293L10 5H5a2 2 0 00-2 2z" />
                         </svg>
                         <span>{folder.name}</span>
                         {isCurrentFolder && (
-                          <svg className="w-4 h-4 ml-auto" style={{ color: colors.blue600 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 ml-auto" style={{ color: colors.primary }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                           </svg>
                         )}
@@ -415,7 +438,7 @@ function MediaGridItem({ item, isSelected, onSelect, onCopyUrl, onDelete, folder
               )}
             </div>
 
-            <div className="border-t my-1" style={{ borderColor: colors.slate100 }} />
+            <div className="border-t my-1" style={{ borderColor: colors.border }} />
 
             <a
               href={item.publicUrl || item.url}
@@ -423,7 +446,9 @@ function MediaGridItem({ item, isSelected, onSelect, onCopyUrl, onDelete, folder
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
               className="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors"
-              style={{ color: colors.slate700 }}
+              style={{ color: colors.textPrimary, backgroundColor: 'transparent' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.hoverBg}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -431,7 +456,7 @@ function MediaGridItem({ item, isSelected, onSelect, onCopyUrl, onDelete, folder
               Open in new tab
             </a>
 
-            <div className="border-t my-1" style={{ borderColor: colors.slate100 }} />
+            <div className="border-t my-1" style={{ borderColor: colors.border }} />
 
             <button
               onClick={(e) => {
@@ -441,7 +466,9 @@ function MediaGridItem({ item, isSelected, onSelect, onCopyUrl, onDelete, folder
                 }
               }}
               className="flex items-center gap-3 px-4 py-2.5 text-sm w-full transition-colors"
-              style={{ color: colors.red600 }}
+              style={{ color: colors.error, backgroundColor: 'transparent' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.errorBg}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -457,7 +484,7 @@ function MediaGridItem({ item, isSelected, onSelect, onCopyUrl, onDelete, folder
       {isSelected && (
         <div
           className="absolute top-3 left-3 w-7 h-7 rounded-full flex items-center justify-center shadow-lg"
-          style={{ backgroundColor: colors.blue500 }}
+          style={{ backgroundColor: colors.primary }}
         >
           <svg className="w-4 h-4" style={{ color: colors.white }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
@@ -476,8 +503,8 @@ function FileIcon({ mimeType }: { mimeType: string }) {
 
   if (mimeType?.startsWith('video/')) {
     return (
-      <div className="p-4 rounded-xl" style={{ backgroundColor: colors.purple100 }}>
-        <svg className={iconClass} style={{ color: colors.purple600 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="p-4 rounded-xl" style={{ backgroundColor: colors.hoverBg }}>
+        <svg className={iconClass} style={{ color: colors.accent }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
         </svg>
       </div>
@@ -486,8 +513,8 @@ function FileIcon({ mimeType }: { mimeType: string }) {
 
   if (mimeType?.startsWith('audio/')) {
     return (
-      <div className="p-4 rounded-xl" style={{ backgroundColor: colors.emerald100 }}>
-        <svg className={iconClass} style={{ color: colors.emerald600 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="p-4 rounded-xl" style={{ backgroundColor: colors.hoverBg }}>
+        <svg className={iconClass} style={{ color: colors.success }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
         </svg>
       </div>
@@ -496,8 +523,8 @@ function FileIcon({ mimeType }: { mimeType: string }) {
 
   if (mimeType === 'application/pdf') {
     return (
-      <div className="p-4 rounded-xl" style={{ backgroundColor: colors.red50 }}>
-        <svg className={iconClass} style={{ color: colors.red600 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="p-4 rounded-xl" style={{ backgroundColor: colors.errorBg }}>
+        <svg className={iconClass} style={{ color: colors.error }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
         </svg>
       </div>
@@ -505,8 +532,8 @@ function FileIcon({ mimeType }: { mimeType: string }) {
   }
 
   return (
-    <div className="p-4 rounded-xl" style={{ backgroundColor: colors.slate100 }}>
-      <svg className={iconClass} style={{ color: colors.slate400 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="p-4 rounded-xl" style={{ backgroundColor: colors.hoverBg }}>
+      <svg className={iconClass} style={{ color: colors.textMuted }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
       </svg>
     </div>

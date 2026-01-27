@@ -36,6 +36,7 @@
     "@payloadcms/next": "^3.52.0",
     "@payloadcms/payload-cloud": "^3.52.0",
     "@payloadcms/plugin-import-export": "^3.52.0",
+    "@payloadcms/plugin-search": "3.71.1",
     "@payloadcms/richtext-lexical": "^3.52.0",
     "@payloadcms/storage-s3": "^3.52.0",
     "@radix-ui/react-accordion": "1.2.12",

@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { imageField, videoField } from '@/lib/payload/fields'
 
 export const Storefronts: CollectionConfig = {
   slug: 'storefronts',
@@ -136,15 +137,12 @@ export const Storefronts: CollectionConfig = {
                 description: 'Secondary call-to-action button configuration'
               }
             },
-            {
-              name: 'backgroundVideo',
-              type: 'upload',
-              relationTo: 'media',
+            videoField('backgroundVideo', {
               required: false,
               admin: {
                 description: 'Background video for the hero section'
               }
-            }
+            })
           ]
         },
 
@@ -612,15 +610,12 @@ export const Storefronts: CollectionConfig = {
                     description: 'News item description'
                   }
                 },
-                {
-                  name: 'image',
-                  type: 'upload',
-                  relationTo: 'media',
+                imageField('image', {
                   required: false,
                   admin: {
                     description: 'News item image'
                   }
-                },
+                }),
                 {
                   name: 'category',
                   type: 'select',
@@ -721,22 +716,16 @@ export const Storefronts: CollectionConfig = {
                     }
                   }
                 },
-                {
-                  name: 'customerPhoto',
-                  type: 'upload',
-                  relationTo: 'media',
+                imageField('customerPhoto', {
                   admin: {
                     description: 'Photo of customer with their piano (optional but powerful for trust)'
                   }
-                },
-                {
-                  name: 'videoTestimonial',
-                  type: 'upload',
-                  relationTo: 'media',
+                }),
+                videoField('videoTestimonial', {
                   admin: {
                     description: 'Video testimonial (converts 10x better than text, optional)'
                   }
-                },
+                }),
                 {
                   name: 'featured',
                   type: 'checkbox',
@@ -1221,14 +1210,11 @@ export const Storefronts: CollectionConfig = {
                     description: 'Open Graph description for social media sharing'
                   }
                 },
-                {
-                  name: 'openGraphImage',
-                  type: 'upload',
-                  relationTo: 'media',
+                imageField('openGraphImage', {
                   admin: {
                     description: 'Open Graph image for social media sharing'
                   }
-                }
+                })
               ],
               admin: {
                 description: 'SEO and metadata configuration'

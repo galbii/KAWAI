@@ -3,6 +3,7 @@ import { fetchShopifyProduct } from '@/lib/shopify/fetch-product'
 import { syncShopifyDataToProduct, shouldSyncProduct, mapShopifyProductTypeToPayloadType } from '@/lib/shopify/sync-to-payload'
 import { fetchAllShopifyProductsWithModels } from '@/lib/shopify/fetch-all-products'
 import type { ShopifyProductData } from '@/lib/shopify/fetch-product'
+import { imageField } from '@/lib/payload/fields'
 
 /**
  * Transform Shopify product data to Payload CMS product format
@@ -311,15 +312,12 @@ export const Products: CollectionConfig = {
                     readOnly: true,
                   },
                 },
-                {
-                  name: 'image',
-                  type: 'upload',
-                  relationTo: 'media',
+                imageField('image', {
                   maxDepth: 0, // Prevent deep media fetching in variations array
                   admin: {
                     description: 'Variation image (optional manual override)'
                   }
-                },
+                }),
                 {
                   name: 'imageUrl',
                   type: 'text',
@@ -442,15 +440,12 @@ export const Products: CollectionConfig = {
                     description: 'SEO keywords (comma-separated)'
                   }
                 },
-                {
-                  name: 'ogImage',
-                  type: 'upload',
-                  relationTo: 'media',
+                imageField('ogImage', {
                   maxDepth: 0, // Prevent deep media fetching
                   admin: {
                     description: 'Open Graph image for social sharing (defaults to main image)'
                   }
-                }
+                })
               ],
               admin: {
                 description: 'SEO and social media optimization'

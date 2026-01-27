@@ -111,15 +111,14 @@ export function NewsMegaMenu({
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.3, ease: 'easeInOut' }}
           className={cn(
-            'fixed left-0 right-0 z-50',
+            'fixed left-0 right-0 z-[60]',
             'bg-white border-t border-b border-gray-200/50 shadow-2xl',
-            'transition-[top] duration-300 ease-in-out',
             className
           )}
           style={{
-            top: isHeaderScrolled ? '64px' : '80px',
+            top: 'var(--header-height, 120px)',
             width: '100vw',
-            maxHeight: isHeaderScrolled ? 'calc(100vh - 64px - 20px)' : 'calc(100vh - 80px - 20px)',
+            maxHeight: 'calc(100vh - var(--header-height, 120px) - 20px)',
             overflowY: 'auto',
           }}
         >

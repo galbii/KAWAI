@@ -84,7 +84,7 @@ export interface MediaManagerState {
 }
 
 export interface MediaManagerActions {
-  openModal: () => void
+  openModal: (options?: MediaManagerModalOptions) => void
   closeModal: () => void
   fetchMedia: (page?: number) => Promise<void>
   uploadFiles: (files: FileList | File[]) => Promise<void>
@@ -100,6 +100,16 @@ export interface MediaManagerActions {
   toggleFolderExpanded: (folderId: string) => void
   moveMediaToFolder: (mediaId: string, folderId: string | null) => Promise<void>
   updateMedia: (id: string, data: Record<string, unknown>) => Promise<MediaItem | null>
+}
+
+/**
+ * Options for opening media manager modal
+ */
+export interface MediaManagerModalOptions {
+  mode?: 'browse' | 'select' // Browse mode = general library, Select mode = field selector
+  onSelect?: (media: MediaItem) => void // Callback when media is selected in select mode
+  allowMultiple?: boolean // Future: allow multi-select
+  filterMimeType?: string // Filter by mime type (e.g., 'image/', 'video/')
 }
 
 export interface MediaManagerContextValue extends MediaManagerState, MediaManagerActions {}

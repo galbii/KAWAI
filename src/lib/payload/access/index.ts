@@ -31,19 +31,22 @@ export const adminOnly: Access = ({ req: { user } }) => {
 
 /**
  * Authenticated users OR published content
- * Use for: Blog posts, products - admins see all, public sees published only
+ * Use for: Blog posts, products, pages - admins see all, public sees published only
  *
  * Returns:
  * - true: if user is authenticated (see all content)
  * - query constraint: if not authenticated (see only published content)
+ *
+ * Note: Uses _status (with underscore) for collections with versions/drafts enabled
  */
 export const authenticatedOrPublished: Access = ({ req: { user } }) => {
   // Authenticated users can see all content
   if (user) return true
 
   // Public users can only see published content
+  // Use _status for collections with versions/drafts enabled
   return {
-    status: {
+    _status: {
       equals: 'published',
     },
   }

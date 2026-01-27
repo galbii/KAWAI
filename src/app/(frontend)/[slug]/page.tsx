@@ -15,6 +15,12 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from 'next';
 import { unstable_cache } from 'next/cache';
+import { getPayload } from 'payload';
+import { draftMode } from 'next/headers';
+import config from '@payload-config';
+import type { Page } from '@/payload-types';
+import { Hero as PageHero } from '@/components/Hero';
+import { RenderBlocks } from '@/components/RenderBlocks';
 
 /**
  * Transform raw Payload storefront data into structured HomePageData format
@@ -213,6 +219,48 @@ function ContactFormSkeleton() {
   );
 }
 
+/**
+ * Page Content Component (for Pages collection)
+ * Renders pages from the Pages collection with Hero and dynamic blocks
+ */
+async function PageContent({ slug }: { slug: string }) {
+  const { isEnabled: isDraftMode } = await draftMode();
+  const payload = await getPayload({ config });
+
+  // Fetch page data with same filters as existence check
+  const page = await payload
+    .find({
+      collection: 'pages',
+      where: {
+        slug: { equals: slug },
+        // Only show published pages in production (unless in draft mode)
+        ...(isDraftMode ? {} : { _status: { equals: 'published' } }),
+      },
+      limit: 1,
+      depth: 2, // Populate relationships
+      draft: isDraftMode,
+      overrideAccess: isDraftMode,
+    })
+    .then(({ docs }) => docs?.[0] as Page);
+
+  // If page doesn't exist or isn't published, this will trigger 404 via StorefrontContent
+  if (!page) {
+    notFound();
+  }
+
+  return (
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      {page.hero && <PageHero hero={page.hero} />}
+
+      {/* Dynamic Block Content */}
+      {page.layout && page.layout.length > 0 && (
+        <RenderBlocks blocks={page.layout} />
+      )}
+    </div>
+  );
+}
+
 // Cached storefront fetcher with proper Next.js cache tags
 // This allows revalidateTag() to work properly
 function getCachedStorefront(slug: string) {
@@ -364,18 +412,33 @@ function extractCityName(storefrontName: string | undefined): string | null {
   return null;
 }
 
-// Enable ISR (Incremental Static Regeneration) for storefront pages
+// Enable ISR (Incremental Static Regeneration) for all dynamic pages
 // Pages are statically generated at build time and revalidated every 1 hour
 export const revalidate = 3600
 
-// Pre-generate all active storefront pages at build time for optimal SEO
-// This ensures Google crawler gets fast, pre-rendered HTML
+// Pre-generate all pages (Pages collection + Storefronts) at build time
+// Pages collection takes priority when there are slug conflicts
 export async function generateStaticParams() {
   try {
     const { getPayloadHMR } = await import('@payloadcms/next/utilities')
     const configPromise = await import('@payload-config')
     const payload = await getPayloadHMR({ config: configPromise.default })
 
+    // Fetch published pages from Pages collection
+    const pages = await payload.find({
+      collection: 'pages',
+      where: {
+        _status: {
+          equals: 'published',
+        },
+      },
+      limit: 100,
+      select: {
+        slug: true,
+      },
+    });
+
+    // Fetch active storefronts
     const storefronts = await payload.find({
       collection: 'storefronts',
       where: {
@@ -383,40 +446,95 @@ export async function generateStaticParams() {
           equals: true
         }
       },
-      limit: 100, // Adjust based on number of dealer locations
+      limit: 100,
       select: {
         slug: true
       }
-    })
+    });
 
-    console.log(`✅ [SEO] Pre-rendering ${storefronts.docs.length} storefront pages for Google indexing`)
+    console.log(`✅ [SEO] Pre-rendering ${pages.docs.length} pages + ${storefronts.docs.length} storefronts for Google indexing`)
 
-    return storefronts.docs.map((storefront: any) => ({
-      slug: storefront.slug
-    }))
+    // Combine both collections, Pages take priority in case of slug conflicts
+    const allSlugs = [
+      ...pages.docs.map((page: any) => ({ slug: page.slug })),
+      ...storefronts.docs.map((storefront: any) => ({ slug: storefront.slug }))
+    ];
+
+    return allSlugs;
   } catch (error) {
-    console.error('❌ [SEO] Error generating static params for storefronts:', error)
-    // Return empty array to allow build to continue with on-demand generation
+    console.error('❌ [SEO] Error generating static params:', error)
     return []
   }
 }
 
 // Generate metadata for SEO - CRITICAL FOR GOOGLE INDEXING
+// Checks Pages collection first, then Storefronts
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
   try {
     const { slug } = await params;
+    const payload = await getPayload({ config });
 
-    // ✅ FIX: Use direct Payload access instead of HTTP fetch
-    // This works during build time when the dev server isn't running
+    // 1. Check Pages collection first (published only)
+    const page = await payload
+      .find({
+        collection: 'pages',
+        where: {
+          slug: { equals: slug },
+          _status: { equals: 'published' },
+        },
+        limit: 1,
+        depth: 0,
+      })
+      .then(({ docs }) => docs?.[0]);
+
+    // If Page found, generate Page metadata
+    if (page) {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com';
+      const defaultTitle = `${page.title} | KAWAI Pianos`;
+      const defaultDescription = `${page.title} - KAWAI Pianos`;
+
+      console.log(`[SEO] Generated metadata for Page "${slug}": ${defaultTitle}`);
+
+      return {
+        title: defaultTitle,
+        description: defaultDescription,
+        alternates: {
+          canonical: `${siteUrl}/${slug}`,
+        },
+        robots: {
+          index: true,
+          follow: true,
+          googleBot: {
+            index: true,
+            follow: true,
+          },
+        },
+        openGraph: {
+          title: defaultTitle,
+          description: defaultDescription,
+          url: `${siteUrl}/${slug}`,
+          siteName: 'KAWAI Pianos',
+          type: 'website',
+          locale: 'en_US',
+        },
+        twitter: {
+          card: 'summary_large_image',
+          title: defaultTitle,
+          description: defaultDescription,
+        },
+      };
+    }
+
+    // 2. Fall back to Storefront
     const rawStorefrontData = await getStorefrontBySlugDirect(slug);
 
     if (!rawStorefrontData) {
-      console.log(`[SEO] Metadata generation: Storefront "${slug}" not found`);
+      console.log(`[SEO] Metadata generation: Neither Page nor Storefront found for "${slug}"`);
       return {
-        title: 'Storefront Location Not Found',
-        description: 'The requested storefront location could not be found.',
+        title: 'Page Not Found',
+        description: 'The requested page could not be found.',
         robots: {
           index: false,
           follow: false,
@@ -509,8 +627,46 @@ export async function generateMetadata(
   }
 }
 
-export default async function StorefrontPage({ params }: { params: Promise<{ slug: string }> }) {
+/**
+ * Unified Dynamic Route - /[slug]
+ *
+ * Renders content from either Pages or Storefronts collections:
+ * 1. Checks Pages collection first (for /about, /contact, etc.)
+ * 2. Falls back to Storefronts collection (for dealer locations)
+ * 3. Returns 404 if neither found
+ *
+ * This provides clean URLs for both content types while avoiding conflicts.
+ */
+export default async function DynamicPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const payload = await getPayload({ config });
+  const { isEnabled: isDraftMode } = await draftMode();
+
+  // 1. Check if Page exists (don't render yet, just check)
+  const pageExists = await payload
+    .find({
+      collection: 'pages',
+      where: {
+        slug: { equals: slug },
+        ...(isDraftMode ? {} : { _status: { equals: 'published' } }),
+      },
+      limit: 1,
+      depth: 0, // Just checking existence, no need for relationships
+      draft: isDraftMode,
+      overrideAccess: isDraftMode,
+    })
+    .then(({ docs }) => docs.length > 0);
+
+  // 2. If Page exists, render PageContent
+  if (pageExists) {
+    return (
+      <Suspense fallback={<PageSkeleton />}>
+        <PageContent slug={slug} />
+      </Suspense>
+    );
+  }
+
+  // 3. Fall back to Storefront
   return (
     <Suspense fallback={
       <div className="min-h-screen">
@@ -525,5 +681,30 @@ export default async function StorefrontPage({ params }: { params: Promise<{ slu
     }>
       <StorefrontContent slug={slug} />
     </Suspense>
+  );
+}
+
+/**
+ * Page Loading Skeleton (for Pages collection)
+ */
+function PageSkeleton() {
+  return (
+    <div className="min-h-screen animate-pulse">
+      <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
+        <div className="container">
+          <div className="max-w-4xl mx-auto">
+            <div className="h-12 bg-gray-200 rounded mb-6 w-3/4 mx-auto"></div>
+            <div className="h-6 bg-gray-200 rounded mb-4 w-1/2 mx-auto"></div>
+            <div className="h-12 bg-gray-200 rounded w-48 mx-auto"></div>
+          </div>
+        </div>
+      </section>
+
+      <div className="container my-16">
+        <div className="h-64 bg-gray-200 rounded mb-8"></div>
+        <div className="h-64 bg-gray-200 rounded mb-8"></div>
+        <div className="h-64 bg-gray-200 rounded"></div>
+      </div>
+    </div>
   );
 }

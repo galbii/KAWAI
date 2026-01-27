@@ -26,7 +26,7 @@ const modalVariants = cva(
       },
       layout: {
         centered: 'grid p-6',
-        split: 'grid grid-cols-1 md:grid-cols-[70%_30%] p-0 overflow-hidden',
+        split: 'grid grid-cols-1 md:grid-cols-[30%_70%] p-0 overflow-hidden',
       },
     },
     defaultVariants: {

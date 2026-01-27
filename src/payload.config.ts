@@ -4,15 +4,18 @@ import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { s3Storage } from '@payloadcms/storage-s3'
 import { importExportPlugin } from '@payloadcms/plugin-import-export'
+import { searchPlugin } from '@payloadcms/plugin-search'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
+import { extractTextFromRichText } from './lib/utils'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 // import { Sites } from './collections/Sites'
 // import { SitePages } from './collections/SitePages'
+import { Pages } from './collections/Pages'
 import { PianosPage } from './collections/PianosPage'
 import { HomePage } from './collections/HomePage'
 import { Storefronts } from './collections/Storefronts'
@@ -42,7 +45,12 @@ import {
   Columns,
   Hello,
   Banner,
-  Code
+  Code,
+  // Pages collection blocks
+  Archive,
+  Content,
+  MediaBlock,
+  Cta,
 } from './blocks'
 import { pianosPageSeedPlugin } from './plugins/pianos-page-seed'
 // import { categoriesSeedPlugin } from './plugins/categories-seed' // Disabled - needs type regeneration
@@ -80,6 +88,8 @@ export default buildConfig({
         Logo: '/components/admin/Logo.tsx#Logo',
         Icon: '/components/admin/Icon.tsx#Icon',
       },
+      // Root provider - wraps entire admin UI with necessary providers
+      providers: ['/components/admin/AdminRootProvider#AdminRootProvider'],
       // Media Manager - floating button on all admin pages
       afterDashboard: ['/components/admin/media-manager/MediaManager.tsx#MediaManager'],
     },
@@ -123,6 +133,7 @@ export default buildConfig({
     Media,
 
     // Pages (Singleton landing pages)
+    Pages,
     HomePage,
     PianosPage,
     ConcertArtistPage,
@@ -165,7 +176,12 @@ export default buildConfig({
     Hello,
     // Rich text content blocks (for inline use in Lexical editor)
     Banner,
-    Code
+    Code,
+    // Pages collection blocks
+    Archive,
+    Content,
+    MediaBlock,
+    Cta,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
@@ -204,6 +220,49 @@ export default buildConfig({
           secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
         },
         forcePathStyle: true, // Required for Cloudflare R2
+      },
+    }),
+    searchPlugin({
+      collections: ['pages'],
+      defaultPriorities: {
+        pages: 10,
+      },
+      beforeSync: ({ originalDoc, searchDoc }) => ({
+        ...searchDoc,
+        excerpt: originalDoc?.hero?.richText
+          ? extractTextFromRichText(originalDoc.hero.richText)
+          : originalDoc?.title || '',
+        category: originalDoc?.category || '',
+        tags: originalDoc?.tags || [],
+      }),
+      searchOverrides: {
+        slug: 'search',
+        fields: ({ defaultFields }) => [
+          ...defaultFields,
+          {
+            name: 'category',
+            type: 'text',
+            admin: {
+              position: 'sidebar',
+            },
+          },
+          {
+            name: 'tags',
+            type: 'select',
+            hasMany: true,
+            options: [],
+            admin: {
+              position: 'sidebar',
+            },
+          },
+          {
+            name: 'excerpt',
+            type: 'textarea',
+            admin: {
+              position: 'sidebar',
+            },
+          },
+        ],
       },
     }),
   ],

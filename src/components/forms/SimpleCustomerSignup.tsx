@@ -86,22 +86,59 @@ export function SimpleCustomerSignup({
       closeOnEscape={true}
       showCloseButton={true}
     >
-      {isSubmitted ? (
-        <SimpleCustomerSignupSuccess
-          title={successTitle}
-          message={successMessage}
-          onClose={handleClose}
-        />
+      {imageUrl ? (
+        <>
+          {/* Form content - left column (70%) */}
+          <div className="p-8 md:p-12 flex items-center justify-center bg-white">
+            {isSubmitted ? (
+              <SimpleCustomerSignupSuccess
+                title={successTitle}
+                message={successMessage}
+                onClose={handleClose}
+              />
+            ) : (
+              <div className="w-full max-w-md">
+                <SimpleCustomerSignupForm
+                  storefrontSlug={storefrontSlug}
+                  title={title}
+                  description={description}
+                  submitButtonText={submitButtonText}
+                  imageUrl={imageUrl}
+                  customTags={customTags}
+                  onSuccess={handleSuccess}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Image - right column (30%), hidden on mobile */}
+          <div className="hidden md:block relative h-full min-h-[500px]">
+            <img
+              src={imageUrl}
+              alt="Piano promotion"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          </div>
+        </>
       ) : (
-        <SimpleCustomerSignupForm
-          storefrontSlug={storefrontSlug}
-          title={title}
-          description={description}
-          submitButtonText={submitButtonText}
-          imageUrl={imageUrl}
-          customTags={customTags}
-          onSuccess={handleSuccess}
-        />
+        // Centered layout (no image)
+        isSubmitted ? (
+          <SimpleCustomerSignupSuccess
+            title={successTitle}
+            message={successMessage}
+            onClose={handleClose}
+          />
+        ) : (
+          <SimpleCustomerSignupForm
+            storefrontSlug={storefrontSlug}
+            title={title}
+            description={description}
+            submitButtonText={submitButtonText}
+            imageUrl={imageUrl}
+            customTags={customTags}
+            onSuccess={handleSuccess}
+          />
+        )
       )}
     </Modal>
   )
