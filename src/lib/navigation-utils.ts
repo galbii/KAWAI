@@ -42,7 +42,7 @@ export function parseNavigationOrigin(
 
   // Parse from pathname
   const pathSegments = pathname.split('/').filter(Boolean)
-  
+
   // If no segments, we're at root
   if (pathSegments.length === 0) {
     return {
@@ -52,6 +52,7 @@ export function parseNavigationOrigin(
   }
 
   const firstSegment = pathSegments[0]
+  const secondSegment = pathSegments[1]
 
   if (!firstSegment) {
     // No first segment, default to main site
@@ -61,7 +62,16 @@ export function parseNavigationOrigin(
     }
   }
 
-  // Check if first segment looks like a dealer location
+  // ✅ NEW: Check if this is a /store/[storeslug] route
+  if (firstSegment === 'store' && secondSegment) {
+    return {
+      basePath: `/store/${secondSegment}`,
+      isDealerLocation: true,
+      dealerSlug: secondSegment
+    }
+  }
+
+  // Check if first segment looks like a dealer location (legacy support)
   // Exclude known non-dealer routes
   const knownRoutes = [
     // Core pages
@@ -69,19 +79,19 @@ export function parseNavigationOrigin(
     // Product-specific pages
     'concert-artist', 'concert-artist-ca', 'es60', 'technology',
     // Content pages
-    'about', 'artists', 'guides', 'showroom',
+    'about', 'artists', 'guides', 'showroom', 'storefronts',
     // Events & special pages
     'namm-2026',
     // System routes
-    'admin', 'api', 'sitemap.xml', 'robots.txt',
+    'admin', 'api', 'sitemap.xml', 'robots.txt', 'store',
     // Static assets
     'images', 'favicon.ico', '_next', 'media',
     // Legacy/resources
-    'innovation', 'heritage', 'resources', 'experience', 'contact'
+    'innovation', 'heritage', 'resources', 'experience', 'contact', 'news', 'blog', 'cart'
   ]
 
   if (!knownRoutes.includes(firstSegment)) {
-    // Likely a dealer location
+    // Likely a legacy dealer location (will be redirected by middleware)
     return {
       basePath: `/${firstSegment}`,
       isDealerLocation: true,

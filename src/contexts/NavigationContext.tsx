@@ -61,16 +61,28 @@ export function NavigationContextProvider({
   // Update origin when pathname or search params change
   useEffect(() => {
     const newOrigin = parseNavigationOrigin(pathname, searchParams)
-    
+
+    // ✅ ALWAYS update if we're on a storefront page directly (not a neutral page)
+    // This ensures fresh detection when navigating directly to /store/[slug]
+    if (newOrigin.isDealerLocation && newOrigin.basePath !== '/') {
+      console.log('[NavigationContext] Direct storefront page detected, using fresh parse:', {
+        newOrigin,
+        pathname
+      })
+      setOrigin(newOrigin)
+      setIsInitialized(true)
+      return
+    }
+
     // PRIORITY 1: URL parameters (especially ?origin=/dealer-slug)
     const originParam = searchParams?.get('origin')
     if (originParam) {
       // URL has explicit origin parameter - always use this
-      console.log('[NavigationContext] Using URL origin parameter:', { 
-        originParam, 
-        newOrigin, 
-        pathname, 
-        searchParams: searchParams?.toString() 
+      console.log('[NavigationContext] Using URL origin parameter:', {
+        originParam,
+        newOrigin,
+        pathname,
+        searchParams: searchParams?.toString()
       })
       setOrigin(newOrigin)
       setIsInitialized(true)
@@ -83,14 +95,45 @@ export function NavigationContextProvider({
         const savedOrigin = sessionStorage.getItem('kawai-navigation-origin')
         if (savedOrigin) {
           const parsedOrigin = JSON.parse(savedOrigin) as NavigationOrigin
-          
+
+          // ✅ MIGRATION: Convert old format to new format
+          // If saved origin has old format (e.g., '/st-louis'), convert to new format ('/store/st-louis')
+          if (parsedOrigin.isDealerLocation && parsedOrigin.basePath && !parsedOrigin.basePath.startsWith('/store/')) {
+            // Check if basePath looks like a storefront (not a known route)
+            const knownRoutes = ['pianos', 'products', 'about', 'artists', 'blog', 'admin', 'api']
+            const firstSegment = parsedOrigin.basePath.split('/')[1]
+
+            if (firstSegment && !knownRoutes.includes(firstSegment)) {
+              // This is an old storefront format - migrate it
+              const migratedOrigin: NavigationOrigin = {
+                ...parsedOrigin,
+                basePath: `/store/${parsedOrigin.dealerSlug}`,
+              }
+
+              console.log('[NavigationContext] Migrating old session storage format:', {
+                old: parsedOrigin,
+                new: migratedOrigin
+              })
+
+              // Save migrated format
+              sessionStorage.setItem('kawai-navigation-origin', JSON.stringify(migratedOrigin))
+
+              // Use migrated origin if we're on a neutral page
+              if (newOrigin.basePath === '/' && migratedOrigin.isDealerLocation) {
+                setOrigin(migratedOrigin)
+                setIsInitialized(true)
+                return
+              }
+            }
+          }
+
           // Only use saved origin if we're on a neutral page (like product pages)
           // and the URL doesn't explicitly indicate a different context
           if (newOrigin.basePath === '/' && parsedOrigin.isDealerLocation) {
-            console.log('[NavigationContext] Using saved origin from session storage:', { 
-              parsedOrigin, 
-              newOrigin, 
-              pathname 
+            console.log('[NavigationContext] Using saved origin from session storage:', {
+              parsedOrigin,
+              newOrigin,
+              pathname
             })
             setOrigin(parsedOrigin)
             setIsInitialized(true)
@@ -99,6 +142,10 @@ export function NavigationContextProvider({
         }
       } catch (error) {
         console.warn('Failed to parse saved navigation origin:', error)
+        // Clear corrupted session storage
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('kawai-navigation-origin')
+        }
       }
     }
     

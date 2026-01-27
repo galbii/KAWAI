@@ -136,8 +136,8 @@ async function SignaturePageContent({ slug }: { slug: string }) {
 // Generate metadata for SEO
 export async function generateMetadata({ params }: SignaturePageProps): Promise<Metadata> {
   try {
-    const { slug } = await params
-    const signatureData = await getSignaturePageData(slug)
+    const { storeslug } = await params
+    const signatureData = await getSignaturePageData(storeslug)
     
     if (!signatureData?.seo) {
       return {
@@ -150,8 +150,8 @@ export async function generateMetadata({ params }: SignaturePageProps): Promise<
     const { seo } = signatureData
     
     return {
-      title: seo.metaTitle || `${slug.charAt(0).toUpperCase() + slug.slice(1)} Signature Collection | Kawai Pianos`,
-      description: seo.metaDescription || `Discover the exclusive ${slug} Signature Collection featuring premium Kawai pianos.`,
+      title: seo.metaTitle || `${storeslug.charAt(0).toUpperCase() + storeslug.slice(1)} Signature Collection | Kawai Pianos`,
+      description: seo.metaDescription || `Discover the exclusive ${storeslug} Signature Collection featuring premium Kawai pianos.`,
       keywords: seo.keywords,
       robots: {
         index: !seo.noIndex,
@@ -191,7 +191,7 @@ export async function generateMetadata({ params }: SignaturePageProps): Promise<
 // This allows for full flexibility in CMS-driven signature page management
 
 export default async function SignaturePage({ params }: SignaturePageProps) {
-  const { slug } = await params
+  const { storeslug } = await params
   
   return (
     <Suspense fallback={
@@ -199,7 +199,7 @@ export default async function SignaturePage({ params }: SignaturePageProps) {
         <HeroSkeleton />
       </div>
     }>
-      <SignaturePageContent slug={slug} />
+      <SignaturePageContent slug={storeslug} />
     </Suspense>
   )
 }

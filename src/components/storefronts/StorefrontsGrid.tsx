@@ -193,7 +193,7 @@ interface StorefrontCardProps {
 function StorefrontCard({ storefront }: StorefrontCardProps) {
   return (
     <Link
-      href={`/${storefront.slug}`}
+      href={`/store/${storefront.slug}`}
       className="group block bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:scale-[1.02] h-full"
     >
       <div className="p-6 md:p-8 flex flex-col h-full">

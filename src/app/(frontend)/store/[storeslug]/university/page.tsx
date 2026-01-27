@@ -24,25 +24,25 @@ export async function generateStaticParams() {
   }
 }
 
-export default async function UniversityPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function UniversityPage({ params }: { params: Promise<{ storeslug: string }> }) {
   // Await params as required by Next.js 15
-  const { slug } = await params;
+  const { storeslug } = await params;
 
   // Validate that the storefront exists and is active using direct database access
   // This works during build time unlike API fetch
   let storefrontExists = false;
 
   try {
-    const storefront = await getStorefrontBySlugDirect(slug);
+    const storefront = await getStorefrontBySlugDirect(storeslug);
     storefrontExists = storefront !== null;
   } catch (error) {
-    console.error(`Error checking storefront ${slug}:`, error);
+    console.error(`Error checking storefront ${storeslug}:`, error);
     // If there's an error fetching, assume it doesn't exist
     storefrontExists = false;
   }
 
   if (!storefrontExists) {
-    console.log(`Storefront ${slug} not found or inactive, showing 404`);
+    console.log(`Storefront ${storeslug} not found or inactive, showing 404`);
     notFound();
   }
 

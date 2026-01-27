@@ -463,6 +463,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isScrollingUp, setIsScrollingUp] = useState(false)
   const [openMobileItems, setOpenMobileItems] = useState<Set<string>>(new Set())
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [isProductsMenuOpen, setIsProductsMenuOpen] = useState(false)
@@ -491,6 +492,8 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const storefrontsMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const newsMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const lastScrollY = useRef(0)
+  const lastScrollTime = useRef(0)
 
   // Use navigation context to detect location changes
   const { origin, isInitialized } = useNavigationContext()
@@ -561,17 +564,24 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     // Initial measurement
     updateHeaderHeight()
 
+    // Immediate update when nav visibility changes (during scroll)
+    // Use requestAnimationFrame to sync with browser paint
+    const rafId = requestAnimationFrame(() => {
+      updateHeaderHeight()
+    })
+
     // Update on resize
     window.addEventListener('resize', updateHeaderHeight)
 
-    // Update when scroll state changes (header height changes)
-    const timer = setTimeout(updateHeaderHeight, 1300) // After 1200ms fade-in animation completes
+    // Also update after animation completes
+    const timer = setTimeout(updateHeaderHeight, 250) // After 200ms nav animation completes
 
     return () => {
       window.removeEventListener('resize', updateHeaderHeight)
       clearTimeout(timer)
+      cancelAnimationFrame(rafId)
     }
-  }, [isScrolled])
+  }, [isScrolled, isScrollingUp, isProductsMenuOpen, isStorefrontsMenuOpen, isResourcesMenuOpen, isNewsMenuOpen])
   
   // Start fade-in animation once after mount
   useEffect(() => {
@@ -729,11 +739,42 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     }
   }, [isMenuOpen, activeDropdown, isProductsMenuOpen, isStorefrontsMenuOpen, isResourcesMenuOpen, isNewsMenuOpen])
   
-  // Scroll detection
+  // ============================================================================
+  // Scroll Detection Logic - Simple & Reliable
+  // ============================================================================
+  // Bottom nav shows when: at top OR scrolling up OR menu open
+  // Uses single 5px threshold to filter micro-jitter while staying responsive
+  // ============================================================================
+
   const { scrollY } = useScroll()
-  
+
   useMotionValueEvent(scrollY, "change", (latest) => {
+    const previous = lastScrollY.current
+
+    // Always update position (critical for accurate tracking)
+    lastScrollY.current = latest
+
+    // Update "scrolled past top" state
     setIsScrolled(latest > 50)
+
+    // Detect scroll direction (only if movement is significant enough)
+    const movement = latest - previous
+
+    if (Math.abs(movement) > 5) {
+      // Update last scroll time for menu prevention
+      lastScrollTime.current = Date.now()
+
+      // Close menus on any scroll
+      if (isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) {
+        setIsProductsMenuOpen(false)
+        setIsStorefrontsMenuOpen(false)
+        setIsResourcesMenuOpen(false)
+        setIsNewsMenuOpen(false)
+      }
+
+      // Update direction: true if scrolling up, false if scrolling down
+      setIsScrollingUp(movement < 0)
+    }
   })
   
   // Mobile menu item toggle handlers
@@ -779,6 +820,9 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     // Don't open menu if header animation hasn't completed yet
     if (!animationComplete) return
 
+    // Don't open if user scrolled in the last 200ms (prevents menu opening during scroll)
+    if (Date.now() - lastScrollTime.current < 200) return
+
     if (productsMenuTimeoutRef.current) {
       clearTimeout(productsMenuTimeoutRef.current)
       productsMenuTimeoutRef.current = null
@@ -800,6 +844,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   // Storefronts menu handlers
   const handleStorefrontsMenuOpen = useCallback(() => {
     if (!animationComplete) return
+    if (Date.now() - lastScrollTime.current < 200) return
 
     if (storefrontsMenuTimeoutRef.current) {
       clearTimeout(storefrontsMenuTimeoutRef.current)
@@ -822,6 +867,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   // Resources menu handlers
   const handleResourcesMenuOpen = useCallback(() => {
     if (!animationComplete) return
+    if (Date.now() - lastScrollTime.current < 200) return
 
     if (resourcesMenuTimeoutRef.current) {
       clearTimeout(resourcesMenuTimeoutRef.current)
@@ -844,6 +890,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   // News menu handlers
   const handleNewsMenuOpen = useCallback(() => {
     if (!animationComplete) return
+    if (Date.now() - lastScrollTime.current < 200) return
 
     if (newsMenuTimeoutRef.current) {
       clearTimeout(newsMenuTimeoutRef.current)
@@ -864,6 +911,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   }, [])
 
 
+  // Header hover handlers for bottom navigation reveal
   // Utility function to check if target is interactive
   const isInteractiveElement = useCallback((target: EventTarget | null): boolean => {
     if (!target || !(target instanceof Element)) return false
@@ -1013,7 +1061,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                     className="bg-kawai-red hover:bg-kawai-red/90 text-white px-4 py-2 text-sm shadow-md hover:shadow-lg transition-all duration-300"
                     asChild
                   >
-                    <ContextAwareLink href={`/${currentLocationData.slug}/contact`}>
+                    <ContextAwareLink href={`/store/${currentLocationData.slug}/contact`}>
                       Visit Showroom
                     </ContextAwareLink>
                   </Button>
@@ -1081,101 +1129,114 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
 
         {/* Bottom Row - Main Navigation */}
         {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
-          <nav className="hidden lg:block">
-            <div className={cn(
-              "flex items-center justify-center gap-8 transition-all duration-300",
-              isScrolled ? 'h-12' : 'h-14'
-            )}>
-              {/* Home Link */}
-              <Link
-                href="/"
-                className="px-3 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md"
-              >
-                Home
-              </Link>
-
-              {/* News Mega Menu */}
-              <div
-                onMouseEnter={animationComplete ? handleNewsMenuOpen : undefined}
-                onMouseLeave={animationComplete ? handleNewsMenuClose : undefined}
-              >
-                <button
-                  className={cn(
-                    "flex items-center px-3 py-2 text-sm text-gray-700 font-medium transition-colors rounded-md",
-                    animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
-                  )}
-                  disabled={!animationComplete}
+          <motion.div
+            className="hidden lg:block overflow-hidden"
+            initial={false}
+            animate={{
+              height: (!isScrolled || isScrollingUp || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) ? 'auto' : 0,
+              opacity: (!isScrolled || isScrollingUp || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) ? 1 : 0,
+            }}
+            transition={{
+              duration: 0.2,
+              ease: [0.4, 0, 0.2, 1],
+            }}
+          >
+            <nav>
+              <div className={cn(
+                "flex items-center justify-center gap-8 transition-all duration-300",
+                isScrolled ? 'h-12' : 'h-14'
+              )}>
+                {/* Home Link */}
+                <Link
+                  href="/"
+                  className="px-3 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md"
                 >
-                  <span>News</span>
-                  <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isNewsMenuOpen && "rotate-180")} />
-                </button>
-              </div>
+                  Home
+                </Link>
 
-              {/* Official Storefronts Mega Menu */}
-              <div
-                onMouseEnter={storefrontsData && animationComplete ? handleStorefrontsMenuOpen : undefined}
-                onMouseLeave={storefrontsData && animationComplete ? handleStorefrontsMenuClose : undefined}
-              >
-                <button
-                  className={cn(
-                    "flex items-center px-3 py-2 text-sm text-gray-700 font-medium transition-colors rounded-md",
-                    storefrontsData && animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
-                  )}
-                  disabled={!storefrontsData || !animationComplete}
-                >
-                  <span>Official Storefronts</span>
-                  <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isStorefrontsMenuOpen && "rotate-180")} />
-                </button>
-              </div>
-
-              {/* Products Mega Menu - Controlled by feature flag */}
-              {isProductsMenuEnabled && (
+                {/* News Mega Menu */}
                 <div
-                  onMouseEnter={productsNavData && animationComplete ? handleProductsMenuOpen : undefined}
-                  onMouseLeave={productsNavData && animationComplete ? handleProductsMenuClose : undefined}
+                  onMouseEnter={animationComplete ? handleNewsMenuOpen : undefined}
+                  onMouseLeave={animationComplete ? handleNewsMenuClose : undefined}
                 >
                   <button
                     className={cn(
                       "flex items-center px-3 py-2 text-sm text-gray-700 font-medium transition-colors rounded-md",
-                      productsNavData && animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
+                      animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
                     )}
-                    disabled={!productsNavData || !animationComplete}
+                    disabled={!animationComplete}
                   >
-                    <span>Products</span>
-                    <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isProductsMenuOpen && "rotate-180")} />
+                    <span>News</span>
+                    <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isNewsMenuOpen && "rotate-180")} />
                   </button>
                 </div>
-              )}
 
-              {/* Artists Link */}
-              {navigation.filter(item => item.label === 'Artists').map((item) => (
-                <ContextAwareLink
-                  key={item.label}
-                  href={item.href || '#'}
-                  className="px-3 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md"
+                {/* Official Storefronts Mega Menu */}
+                <div
+                  onMouseEnter={storefrontsData && animationComplete ? handleStorefrontsMenuOpen : undefined}
+                  onMouseLeave={storefrontsData && animationComplete ? handleStorefrontsMenuClose : undefined}
                 >
-                  {item.label}
-                </ContextAwareLink>
-              ))}
+                  <button
+                    className={cn(
+                      "flex items-center px-3 py-2 text-sm text-gray-700 font-medium transition-colors rounded-md",
+                      storefrontsData && animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
+                    )}
+                    disabled={!storefrontsData || !animationComplete}
+                  >
+                    <span>Official Storefronts</span>
+                    <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isStorefrontsMenuOpen && "rotate-180")} />
+                  </button>
+                </div>
 
-              {/* Resources Mega Menu */}
-              <div
-                onMouseEnter={animationComplete ? handleResourcesMenuOpen : undefined}
-                onMouseLeave={animationComplete ? handleResourcesMenuClose : undefined}
-              >
-                <button
-                  className={cn(
-                    "flex items-center px-3 py-2 text-sm text-gray-700 font-medium transition-colors rounded-md",
-                    animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
-                  )}
-                  disabled={!animationComplete}
+                {/* Products Mega Menu - Controlled by feature flag */}
+                {isProductsMenuEnabled && (
+                  <div
+                    onMouseEnter={productsNavData && animationComplete ? handleProductsMenuOpen : undefined}
+                    onMouseLeave={productsNavData && animationComplete ? handleProductsMenuClose : undefined}
+                  >
+                    <button
+                      className={cn(
+                        "flex items-center px-3 py-2 text-sm text-gray-700 font-medium transition-colors rounded-md",
+                        productsNavData && animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
+                      )}
+                      disabled={!productsNavData || !animationComplete}
+                    >
+                      <span>Products</span>
+                      <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isProductsMenuOpen && "rotate-180")} />
+                    </button>
+                  </div>
+                )}
+
+                {/* Artists Link */}
+                {navigation.filter(item => item.label === 'Artists').map((item) => (
+                  <ContextAwareLink
+                    key={item.label}
+                    href={item.href || '#'}
+                    className="px-3 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md"
+                  >
+                    {item.label}
+                  </ContextAwareLink>
+                ))}
+
+                {/* Resources Mega Menu */}
+                <div
+                  onMouseEnter={animationComplete ? handleResourcesMenuOpen : undefined}
+                  onMouseLeave={animationComplete ? handleResourcesMenuClose : undefined}
                 >
-                  <span>Resources</span>
-                  <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isResourcesMenuOpen && "rotate-180")} />
-                </button>
+                  <button
+                    className={cn(
+                      "flex items-center px-3 py-2 text-sm text-gray-700 font-medium transition-colors rounded-md",
+                      animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
+                    )}
+                    disabled={!animationComplete}
+                  >
+                    <span>Resources</span>
+                    <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isResourcesMenuOpen && "rotate-180")} />
+                  </button>
+                </div>
               </div>
-            </div>
-          </nav>
+            </nav>
+          </motion.div>
         )}
       </div>
 

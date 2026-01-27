@@ -1236,7 +1236,7 @@ export const Storefronts: CollectionConfig = {
 
         // Only revalidate if storefront is active
         if (doc.isActive) {
-          const path = `/${doc.slug}`
+          const path = `/store/${doc.slug}`
           const tag = `storefront-${doc.slug}`
           payload.logger.info(`Revalidating storefront at path: ${path} (tag: ${tag})`)
 
@@ -1259,7 +1259,7 @@ export const Storefronts: CollectionConfig = {
 
         // Revalidate old path if storefront was unpublished
         if (previousDoc?.isActive && !doc.isActive) {
-          const oldPath = `/${previousDoc.slug}`
+          const oldPath = `/store/${previousDoc.slug}`
           const oldTag = `storefront-${previousDoc.slug}`
           payload.logger.info(`Revalidating old storefront path (unpublished): ${oldPath}`)
 

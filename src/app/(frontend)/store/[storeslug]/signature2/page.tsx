@@ -1,13 +1,13 @@
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { HeroSection } from './components/HeroSection'
-import { PremiumHeritage } from './components/PremiumHeritage'
-import { MasterArtisans } from './components/MasterArtisans'
-import { PremiumBentoGallery } from './components/PremiumBentoGallery'
-import { ConversionCTA } from './components/ConversionCTA'
-import { SignatureExperience } from './components/SignatureExperience'
-import { SignatureExperienceProvider } from './components/SignatureExperienceContext'
+import { HeroSection } from '@/components/pages/signature/HeroSection'
+import { PremiumHeritage } from '@/components/pages/signature/PremiumHeritage'
+import { MasterArtisans } from '@/components/pages/signature/MasterArtisans'
+import { PremiumBentoGallery } from '@/components/pages/signature/PremiumBentoGallery'
+import { ConversionCTA } from '@/components/pages/signature/ConversionCTA'
+import { CalendlyEmbedSection } from '@/components/pages/signature/CalendlyEmbedSection'
+import { CalendlyModalProvider } from '@/components/pages/signature/CalendlyModalContext'
 import type { SignaturePageData, SignaturePageProps } from '@/lib/types/signature'
 import type { Media } from '@/payload-types'
 
@@ -34,19 +34,19 @@ async function getSignaturePageData(slug: string): Promise<SignaturePageData | n
   try {
     // Simulate CMS fetch - replace with actual Payload CMS query
     // This would typically query your signature pages collection
-    
+
     // For now, return mock data that matches the luxury signature experience
     const mockData: SignaturePageData = {
       slug,
-      title: `${slug.charAt(0).toUpperCase() + slug.slice(1)} Signature Collection`,
+      title: `${slug.charAt(0).toUpperCase() + slug.slice(1)} Signature2 Collection`,
       isActive: true,
       heroSection: {
         exclusiveText: "",
         titlePrefix: "",
-        titleMain: "Baby Grand Signature Event",
+        titleMain: "Your Personal Concert Hall",
         titleSuffix: "",
-        subtitle: "Own a piece of musical history and refined craftsmanship",
-        description: "Own a piece of musical history and refined craftsmanship. Reserve your appointment today, spots are limited.",
+        subtitle: "Experience the artistry of Kawai Baby Grands",
+        description: "Transform your home into an intimate performance space. Each baby grand is a masterpiece of Japanese craftsmanship, delivering concert-quality sound in perfect proportions. Reserve your private appointment today—limited availability.",
         heroBackgroundImage: null, // Will use fallback
         primaryCta: {
           text: "View Signature",
@@ -61,9 +61,9 @@ async function getSignaturePageData(slug: string): Promise<SignaturePageData | n
         showScrollIndicator: false
       },
       seo: {
-        metaTitle: `${slug.charAt(0).toUpperCase() + slug.slice(1)} Signature Collection | Kawai Pianos`,
-        metaDescription: `Discover the exclusive ${slug} Signature Collection featuring premium Kawai pianos curated for discerning musicians. Private consultation available.`,
-        keywords: `kawai signature, ${slug} pianos, exclusive collection, premium pianos, private consultation`,
+        metaTitle: `Your Personal Concert Hall | Kawai Pianos`,
+        metaDescription: `Transform your home into an intimate performance space with Kawai Baby Grands. Experience concert-quality artistry and Japanese craftsmanship. Exclusive event—reserve your private appointment today.`,
+        keywords: `kawai baby grand, concert hall at home, baby grand sale, exclusive piano event, japanese craftsmanship, premium baby grands`,
         noIndex: false
       },
       settings: {
@@ -72,7 +72,7 @@ async function getSignaturePageData(slug: string): Promise<SignaturePageData | n
         restrictAccess: false
       }
     }
-    
+
     return mockData
   } catch (error) {
     console.error('Error fetching signature page data:', error)
@@ -87,7 +87,7 @@ async function SignaturePageContent({ slug }: { slug: string }) {
 
   try {
     signatureData = await getSignaturePageData(slug)
-    
+
     // If signature page doesn't exist or is inactive, show 404
     if (!signatureData || !signatureData.isActive) {
       notFound()
@@ -95,7 +95,7 @@ async function SignaturePageContent({ slug }: { slug: string }) {
   } catch (err) {
     error = err instanceof Error ? err.message : 'Failed to load signature page data'
     console.error('Signature page data fetch error:', error)
-    
+
     // If there's a fetch error, show 404 as well since we can't determine if page exists
     notFound()
   }
@@ -106,7 +106,7 @@ async function SignaturePageContent({ slug }: { slug: string }) {
   }
 
   return (
-    <SignatureExperienceProvider slug={slug}>
+    <CalendlyModalProvider slug={slug}>
       <div className="min-h-screen bg-kawai-black">
         {/* Hero Section */}
         <HeroSection
@@ -120,8 +120,8 @@ async function SignaturePageContent({ slug }: { slug: string }) {
         {/* Master Artisans Section */}
         <MasterArtisans />
 
-        {/* Main Signature Experience Flow (Assessment) */}
-        <SignatureExperience slug={slug} />
+        {/* Calendly Booking Widget (Replaces SignatureExperience for signature2) */}
+        <CalendlyEmbedSection slug={slug} />
 
         {/* Premium Bento Gallery */}
         <PremiumBentoGallery />
@@ -129,16 +129,16 @@ async function SignaturePageContent({ slug }: { slug: string }) {
         {/* Conversion CTA Section */}
         <ConversionCTA signaturePageSlug={slug} />
       </div>
-    </SignatureExperienceProvider>
+    </CalendlyModalProvider>
   )
 }
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: SignaturePageProps): Promise<Metadata> {
   try {
-    const { slug } = await params
-    const signatureData = await getSignaturePageData(slug)
-    
+    const { storeslug } = await params
+    const signatureData = await getSignaturePageData(storeslug)
+
     if (!signatureData?.seo) {
       return {
         title: 'Signature Collection Not Found',
@@ -148,10 +148,10 @@ export async function generateMetadata({ params }: SignaturePageProps): Promise<
     }
 
     const { seo } = signatureData
-    
+
     return {
-      title: seo.metaTitle || `${slug.charAt(0).toUpperCase() + slug.slice(1)} Signature Collection | Kawai Pianos`,
-      description: seo.metaDescription || `Discover the exclusive ${slug} Signature Collection featuring premium Kawai pianos.`,
+      title: seo.metaTitle || `Your Personal Concert Hall | Kawai Pianos`,
+      description: seo.metaDescription || `Transform your home into an intimate performance space with Kawai Baby Grands. Experience concert-quality artistry and Japanese craftsmanship.`,
       keywords: seo.keywords,
       robots: {
         index: !seo.noIndex,
@@ -164,8 +164,8 @@ export async function generateMetadata({ params }: SignaturePageProps): Promise<
         locale: "en_US",
         images: seo.openGraphImage ? [
           {
-            url: typeof seo.openGraphImage === 'string' 
-              ? seo.openGraphImage 
+            url: typeof seo.openGraphImage === 'string'
+              ? seo.openGraphImage
               : seo.openGraphImage.url || ''
           }
         ] : []
@@ -190,16 +190,16 @@ export async function generateMetadata({ params }: SignaturePageProps): Promise<
 // All signature pages will be dynamically generated at runtime
 // This allows for full flexibility in CMS-driven signature page management
 
-export default async function SignaturePage({ params }: SignaturePageProps) {
-  const { slug } = await params
-  
+export default async function Signature2Page({ params }: SignaturePageProps) {
+  const { storeslug } = await params
+
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-kawai-black">
         <HeroSkeleton />
       </div>
     }>
-      <SignaturePageContent slug={slug} />
+      <SignaturePageContent slug={storeslug} />
     </Suspense>
   )
 }

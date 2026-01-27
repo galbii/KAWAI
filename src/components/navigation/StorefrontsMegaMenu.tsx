@@ -180,7 +180,7 @@ export function StorefrontsMegaMenu({
                         style={{ width: '320px' }}
                       >
                         <Link
-                          href={`/${storefront.slug}`}
+                          href={`/store/${storefront.slug}`}
                           onClick={onClose}
                           className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden hover:scale-105 min-h-[280px] flex flex-col block border border-gray-100"
                         >

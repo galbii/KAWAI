@@ -164,12 +164,12 @@ async function ContactPageContent({ slug }: { slug: string }) {
 }
 
 // Generate metadata for SEO
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({ params }: { params: Promise<{ storeslug: string }> }) {
   try {
-    const { slug } = await params;
+    const { storeslug } = await params;
 
     // Use direct Payload access instead of HTTP fetch
-    const rawStorefrontData = await getStorefrontBySlugDirect(slug);
+    const rawStorefrontData = await getStorefrontBySlugDirect(storeslug);
 
     if (!rawStorefrontData) {
       return {
@@ -223,8 +223,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export const dynamicParams = true; // Allow dynamic rendering for unknown slugs
 
-export default async function ContactPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+export default async function ContactPage({ params }: { params: Promise<{ storeslug: string }> }) {
+  const { storeslug } = await params;
   
   return (
     <Suspense fallback={
@@ -234,7 +234,7 @@ export default async function ContactPage({ params }: { params: Promise<{ slug: 
         <ContactFormSkeleton />
       </div>
     }>
-      <ContactPageContent slug={slug} />
+      <ContactPageContent slug={storeslug} />
     </Suspense>
   );
 }

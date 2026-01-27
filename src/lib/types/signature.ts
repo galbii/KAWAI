@@ -192,7 +192,7 @@ export interface SignaturePageData {
 
 // Additional utility types
 export interface SignaturePageProps {
-  params: Promise<{ slug: string }>
+  params: Promise<{ storeslug: string }>
 }
 
 export interface SignatureCTAButton {

@@ -74,7 +74,7 @@ export function DealerLocations({ className = '', locations = [] }: DealerLocati
               transition={{ duration: 0.6, delay: 0.2 + (index * 0.1) }}
             >
               <Link
-                href={`/${location.slug}`}
+                href={`/store/${location.slug}`}
                 className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden hover:scale-105 touch-manipulation min-h-[280px] flex flex-col block"
               >
               <div className="p-6 sm:p-8 flex-1 flex flex-col">

@@ -88,7 +88,16 @@ export function SimpleCustomerSignup({
     >
       {imageUrl ? (
         <>
-          {/* Form content - left column (70%) */}
+          {/* Image - left column (60%), hidden on mobile */}
+          <div className="hidden md:block relative h-full min-h-[500px]">
+            <img
+              src={imageUrl}
+              alt="Piano promotion"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          </div>
+
+          {/* Form content - right column (40%) */}
           <div className="p-8 md:p-12 flex items-center justify-center bg-white">
             {isSubmitted ? (
               <SimpleCustomerSignupSuccess
@@ -109,15 +118,6 @@ export function SimpleCustomerSignup({
                 />
               </div>
             )}
-          </div>
-
-          {/* Image - right column (30%), hidden on mobile */}
-          <div className="hidden md:block relative h-full min-h-[500px]">
-            <img
-              src={imageUrl}
-              alt="Piano promotion"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
           </div>
         </>
       ) : (
