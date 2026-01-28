@@ -184,7 +184,7 @@ export const Posts: CollectionConfig = {
               ],
             },
             {
-              name: 'categoriesNew',
+              name: 'categories',
               type: 'relationship',
               relationTo: 'categories',
               hasMany: true,
@@ -216,24 +216,6 @@ export const Posts: CollectionConfig = {
                 placeholder: 'digital piano, grand piano, Kawai CA99',
               },
             },
-            // TODO: Remove after data migration - keep commented for reference
-            // {
-            //   name: 'author',
-            //   type: 'relationship',
-            //   relationTo: 'users',
-            //   admin: {
-            //     description: 'DEPRECATED: Single author field (migrated to authors)',
-            //   },
-            // },
-            // {
-            //   name: 'categories',
-            //   type: 'select',
-            //   hasMany: true,
-            //   options: [...],
-            //   admin: {
-            //     description: 'DEPRECATED: Legacy categories (migrated to categoriesNew)',
-            //   },
-            // },
           ],
         },
 
@@ -330,48 +312,17 @@ export const Posts: CollectionConfig = {
 
   hooks: {
     beforeChange: [
-      /**
-       * MIGRATION SYNC HOOK: Syncs data between old and new fields
-       * This ensures backward compatibility during the migration period
-       * TODO: Remove after migration is complete and data is migrated
-       */
       async ({ data, operation, context }) => {
-        console.log(`📝 Posts beforeChange: operation=${operation}, title="${data.title}"`)
-
         // Prevent infinite loops
         if (context.skipSync) {
-          console.log(`[Posts Hook] Skipping sync (context flag set)`)
           return data
-        }
-
-        // === AUTHOR SYNC: author ↔ authors ===
-        // Sync old field → new field (if new field is empty)
-        if (data.author && (!data.authors || data.authors.length === 0)) {
-          data.authors = [data.author]
-          console.log(`🔄 Synced author → authors[0]`)
-        }
-        // Sync new field → old field (if old field is empty)
-        if (data.authors && data.authors.length > 0 && !data.author) {
-          data.author = data.authors[0]
-          console.log(`🔄 Synced authors[0] → author`)
-        }
-
-        // === CATEGORY SYNC: categories ↔ categoriesNew ===
-        // Only sync if both fields exist (Categories collection must be created first)
-        if (data.categoriesNew && data.categoriesNew.length > 0 && !data.categories) {
-          console.log(`🔄 categoriesNew exists but categories is empty (manual mapping needed)`)
-        }
-        if (data.categories && data.categories.length > 0 && !data.categoriesNew) {
-          console.log(`🔄 categories exists but categoriesNew is empty (run migration script to map)`)
         }
 
         // Set publishedDate on first publish
         if (data.status === 'published' && !data.publishedDate) {
           data.publishedDate = new Date().toISOString()
-          console.log(`📅 Set publishedDate: ${data.publishedDate}`)
         }
 
-        console.log(`📝 Posts beforeChange END: returning data`)
         return data
       },
     ],
@@ -458,11 +409,3 @@ export const Posts: CollectionConfig = {
     ],
   },
 }
-
-// === MIGRATION NOTES ===
-// TODO: After migration is complete (estimated 1-2 weeks):
-// 1. Remove deprecated fields: 'author', 'categories'
-// 2. Rename 'categoriesNew' → 'categories'
-// 3. Remove sync logic from beforeChange hook
-// 4. Update frontend to use new field names
-// 5. Run data migration scripts to populate new fields from old fields

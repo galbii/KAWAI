@@ -1,4 +1,5 @@
 import type { CollectionConfig, PayloadHandler } from 'payload'
+import { imageField } from '@/lib/payload/fields/media'
 
 export const PianosPage: CollectionConfig = {
   slug: 'pianos-page',
@@ -41,15 +42,12 @@ export const PianosPage: CollectionConfig = {
                 description: 'Hero description text displayed below the title'
               }
             },
-            {
-              name: 'heroBackgroundImage',
-              type: 'upload',
-              relationTo: 'media',
+            imageField('heroBackgroundImage', {
               required: false,
               admin: {
                 description: 'Background image for the hero section'
               }
-            },
+            }),
             {
               name: 'heroCta',
               type: 'group',
@@ -123,15 +121,12 @@ export const PianosPage: CollectionConfig = {
                     description: 'Category description text'
                   }
                 },
-                {
-                  name: 'image',
-                  type: 'upload',
-                  relationTo: 'media',
+                imageField('image', {
                   required: false,
                   admin: {
                     description: 'Category representative image'
                   }
-                },
+                }),
                 {
                   name: 'priceRange',
                   type: 'text',
@@ -181,42 +176,24 @@ export const PianosPage: CollectionConfig = {
                     description: 'Highlighted feature or series (e.g., "GX BLAK Performance Series")'
                   }
                 },
-                {
-                  name: 'galleryImage1',
-                  type: 'upload',
-                  relationTo: 'media',
+                imageField('galleryImage1', {
                   required: false,
-                  filterOptions: {
-                    mimeType: { contains: 'image' },
-                  },
                   admin: {
                     description: 'First showcase image for this piano category'
                   }
-                },
-                {
-                  name: 'galleryImage2',
-                  type: 'upload',
-                  relationTo: 'media',
+                }),
+                imageField('galleryImage2', {
                   required: false,
-                  filterOptions: {
-                    mimeType: { contains: 'image' },
-                  },
                   admin: {
                     description: 'Second showcase image for this piano category'
                   }
-                },
-                {
-                  name: 'galleryImage3',
-                  type: 'upload',
-                  relationTo: 'media',
+                }),
+                imageField('galleryImage3', {
                   required: false,
-                  filterOptions: {
-                    mimeType: { contains: 'image' },
-                  },
                   admin: {
                     description: 'Third showcase image for this piano category'
                   }
-                }
+                }),
               ]
             }
           ]
@@ -284,15 +261,12 @@ export const PianosPage: CollectionConfig = {
                     description: 'Piano category/series (e.g., "GX BLAK Performance Series")'
                   }
                 },
-                {
-                  name: 'image',
-                  type: 'upload',
-                  relationTo: 'media',
+                imageField('image', {
                   required: false,
                   admin: {
                     description: 'Featured model image for carousel'
                   }
-                },
+                }),
                 {
                   name: 'badge',
                   type: 'text',

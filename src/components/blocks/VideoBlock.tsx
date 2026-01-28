@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import type { VideoBlock as VideoBlockType } from '@/payload-types'
+import type { ContentVideoBlock as VideoBlockType } from '@/payload-types'
 import type { Media } from '@/payload-types'
 import { cn } from '@/lib/utils'
 

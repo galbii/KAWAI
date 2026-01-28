@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Image from 'next/image'
-import type { ImageBlock as ImageBlockType } from '@/payload-types'
+import type { ContentImageBlock as ImageBlockType } from '@/payload-types'
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
 import { cn } from '@/lib/utils'
 

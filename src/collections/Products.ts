@@ -390,15 +390,15 @@ export const Products: CollectionConfig = {
               name: 'pageContent',
               type: 'blocks',
               blockReferences: [
-                'productShowcase',
-                'productHero',
-                'hero',
+                'product-showcase',
+                'product-hero',
+                'marketing-hero',
                 'textContent',
-                'imageGallery',
-                'featuresList',
-                'specifications',
-                'callToAction',
-                'testimonials'
+                'product-gallery',
+                'product-features',
+                'product-specs',
+                'marketing-cta',
+                'marketing-testimonials'
               ],
               blocks: [], // Required to be empty when using blockReferences
               admin: {
@@ -856,7 +856,7 @@ export const Products: CollectionConfig = {
       }
     ],
     afterChange: [
-      async ({ doc, req, context }) => {
+      async ({ doc, req, context, operation }) => {
         // Prevent infinite loop - skip if already syncing
         if (context.skipShopifySync) {
           return doc
@@ -876,7 +876,9 @@ export const Products: CollectionConfig = {
 
         console.log(`[Products Hook] Syncing Shopify data for product: ${doc.name}`)
 
-        // Fire-and-forget pattern - don't block save operation
+        // Fire-and-forget pattern using getPayload for background update
+        // CRITICAL: Don't use `req` in async callbacks - transaction context will be closed
+        // Instead, use getPayload to create a fresh payload instance
         syncShopifyDataToProduct(doc)
           .then(async (syncedData) => {
             if (!syncedData) {
@@ -886,17 +888,23 @@ export const Products: CollectionConfig = {
 
             console.log(`[Products Hook] Updating product ${doc.id} with Shopify data`)
 
-            await req.payload.update({
+            // Import getPayload and config dynamically to avoid circular dependencies
+            const { getPayload } = await import('payload')
+            const config = await import('@payload-config').then(m => m.default)
+            const payload = await getPayload({ config })
+
+            // Use fresh payload instance without transaction context
+            await payload.update({
               collection: 'products',
               id: doc.id as string | number,
               data: syncedData as any,
               context: { skipShopifySync: true },
-              req,
+              // Note: No `req` - this is a background operation outside the original transaction
             })
 
             console.log(`[Products Hook] Successfully synced Shopify data for: ${doc.name}`)
           })
-          .catch((error) => {
+          .catch(async (error) => {
             // Log error gracefully - don't throw (don't block saves)
             console.error('[Products Hook] Shopify sync error:', error)
 
@@ -912,20 +920,26 @@ export const Products: CollectionConfig = {
             // Keep only last 9 errors + new error = 10 total (matching maxRows: 10)
             const updatedErrors = [...existingErrors.slice(-9), newError]
 
-            req.payload.update({
-              collection: 'products',
-              id: doc.id as string | number,
-              data: {
-                shopify: {
-                  syncStatus: 'error',
-                  syncErrors: updatedErrors
-                }
-              } as any, // Type assertion needed until Payload types regenerate
-              context: { skipShopifySync: true },
-              req,
-            }).catch((updateError) => {
+            try {
+              // Import getPayload for error status update
+              const { getPayload } = await import('payload')
+              const config = await import('@payload-config').then(m => m.default)
+              const payload = await getPayload({ config })
+
+              await payload.update({
+                collection: 'products',
+                id: doc.id as string | number,
+                data: {
+                  shopify: {
+                    syncStatus: 'error',
+                    syncErrors: updatedErrors
+                  }
+                } as any,
+                context: { skipShopifySync: true },
+              })
+            } catch (updateError) {
               console.error('[Products Hook] Failed to update error status:', updateError)
-            })
+            }
           })
 
         return doc

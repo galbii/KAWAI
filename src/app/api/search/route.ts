@@ -6,13 +6,13 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const query = searchParams.get('q')
-    const category = searchParams.get('category')
+    const limit = parseInt(searchParams.get('limit') || '10')
 
     // Validate query
     if (!query || query.length < 2) {
       return NextResponse.json(
         {
-          docs: [],
+          results: [],
           totalDocs: 0,
           message: 'Query must be at least 2 characters'
         },
@@ -22,38 +22,47 @@ export async function GET(request: NextRequest) {
 
     const payload = await getPayload({ config })
 
-    // Build where clause with OR for title search
+    // Build comprehensive where clause using Payload query operators
+    // - 'like' operator: matches documents where all words are present
+    // - 'contains' operator: case-insensitive substring matching
     const whereClause: any = {
       or: [
-        { title: { like: query } },
-        { title: { contains: query } },
+        { title: { like: query } },        // Match all words in title
+        { title: { contains: query } },    // Substring match in title
+        { excerpt: { contains: query } },  // Substring match in excerpt
       ],
-    }
-
-    // Optional category filter
-    if (category && category !== 'all') {
-      whereClause.and = [
-        whereClause,
-        { 'doc.value.category': { equals: category } }
-      ]
     }
 
     const results = await payload.find({
       collection: 'search',
       where: whereClause,
-      limit: 10,
-      depth: 1,
-      sort: '-priority',
+      limit,
+      depth: 2, // Include relationship data (doc.value)
+      sort: '-priority', // Higher priority first (products = 20, pages = 10)
     })
 
+    // Transform to match SearchBar expected format
+    const transformedResults = results.docs.map(doc => ({
+      id: doc.id,
+      title: doc.title,
+      doc: doc.doc, // Contains { relationTo: 'products' | 'pages', value: {...} }
+      excerpt: doc.excerpt,
+      category: doc.category,
+      tags: doc.tags,
+    }))
+
     return NextResponse.json({
-      docs: results.docs,
+      results: transformedResults, // Must be 'results' not 'docs'
       totalDocs: results.totalDocs,
     })
   } catch (error) {
     console.error('Search API error:', error)
     return NextResponse.json(
-      { error: 'Search failed' },
+      {
+        results: [],
+        error: 'Search failed',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }

@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { imageField } from '@/lib/payload/fields/media'
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
@@ -42,14 +43,11 @@ export const Categories: CollectionConfig = {
         description: 'Brief description of this category',
       },
     },
-    {
-      name: 'icon',
-      type: 'upload',
-      relationTo: 'media',
+    imageField('icon', {
       admin: {
         description: 'Optional icon/image for this category',
       },
-    },
+    }),
   ],
   hooks: {
     beforeChange: [

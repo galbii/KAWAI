@@ -18,14 +18,22 @@ export type {
   // Block Types
   ProductShowcaseBlock,
   ProductHeroBlock,
-  HeroBlock,
+  MarketingHeroBlock,
   TextContentBlock,
-  ImageGalleryBlock,
-  FeaturesListBlock,
-  SpecificationsBlock,
-  CallToActionBlock,
-  TestimonialsBlock,
+  ProductImageGalleryBlock,
+  ProductFeaturesListBlock,
+  ProductSpecificationsBlock,
+  MarketingCallToActionBlock,
+  MarketingTestimonialsBlock,
   HelloBlock,
+  ContentTextBlock,
+  ContentImageBlock,
+  ContentVideoBlock,
+  ContentCodeBlock,
+  ContentBannerBlock,
+  LayoutColumnsBlock,
+  LayoutSpacerBlock,
+  LayoutDividerBlock,
 } from '@/payload-types'
 
 // Re-export common types

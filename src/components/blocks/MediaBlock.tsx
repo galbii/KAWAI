@@ -1,5 +1,5 @@
 import React from 'react'
-import type { MediaBlock as MediaBlockProps, Media } from '@/payload-types'
+import type { MediaBlock as MediaBlockProps } from '@/payload-types'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 
@@ -12,17 +12,26 @@ type Props = MediaBlockProps & {
 /**
  * MediaBlock Component
  *
- * Renders an image or media file with optional caption.
- * Uses Next.js Image component for optimization.
+ * Renders an image or media file from a URL. The URL can be from the media library
+ * or an external source. Uses Next.js Image component for optimization when possible.
  *
  * Server Component
  */
-export function MediaBlock({ media, className, imgClassName, enableGutter = true }: Props) {
-  if (!media || typeof media !== 'object') {
+export function MediaBlock({
+  mediaUrl,
+  alt,
+  caption,
+  className,
+  imgClassName,
+  enableGutter = true
+}: Props) {
+  if (!mediaUrl || !alt) {
     return null
   }
 
-  const mediaData = media as Media
+  // Determine if this is an external URL (for optimization purposes)
+  const isExternal = mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://')
+  const isInternal = mediaUrl.startsWith('/')
 
   return (
     <div
@@ -34,22 +43,22 @@ export function MediaBlock({ media, className, imgClassName, enableGutter = true
         className
       )}
     >
-      {mediaData.url && (
-        <div className="relative rounded-lg overflow-hidden">
-          <Image
-            src={mediaData.url}
-            alt={mediaData.alt || ''}
-            width={mediaData.width || 1200}
-            height={mediaData.height || 800}
-            className={cn('w-full h-auto', imgClassName)}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
-          />
-        </div>
-      )}
+      <div className="relative rounded-lg overflow-hidden">
+        <Image
+          src={mediaUrl}
+          alt={alt}
+          width={1200}
+          height={800}
+          className={cn('w-full h-auto', imgClassName)}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+          // Use unoptimized for external URLs from different domains
+          unoptimized={isExternal && !mediaUrl.includes(process.env.NEXT_PUBLIC_S3_PUBLIC_URL || '')}
+        />
+      </div>
 
-      {mediaData.caption && (
+      {caption && (
         <p className="mt-4 text-sm text-gray-600 text-center">
-          {mediaData.caption}
+          {caption}
         </p>
       )}
     </div>

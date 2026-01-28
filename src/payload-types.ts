@@ -66,24 +66,24 @@ export interface Config {
     users: UserAuthOperations;
   };
   blocks: {
-    productShowcase: ProductShowcaseBlock;
-    productHero: ProductHeroBlock;
-    hero: HeroBlock;
+    'content-text': ContentTextBlock;
+    'content-image': ContentImageBlock;
+    'content-video': ContentVideoBlock;
+    'content-code': ContentCodeBlock;
+    'content-banner': ContentBannerBlock;
+    'layout-columns': LayoutColumnsBlock;
+    'layout-spacer': LayoutSpacerBlock;
+    'layout-divider': LayoutDividerBlock;
+    'marketing-hero': MarketingHeroBlock;
+    'marketing-cta': MarketingCallToActionBlock;
+    'marketing-testimonials': MarketingTestimonialsBlock;
+    'product-showcase': ProductShowcaseBlock;
+    'product-hero': ProductHeroBlock;
+    'product-gallery': ProductImageGalleryBlock;
+    'product-features': ProductFeaturesListBlock;
+    'product-specs': ProductSpecificationsBlock;
     textContent: TextContentBlock;
-    imageGallery: ImageGalleryBlock;
-    featuresList: FeaturesListBlock;
-    specifications: SpecificationsBlock;
-    callToAction: CallToActionBlock;
-    testimonials: TestimonialsBlock;
-    image: ImageBlock;
-    text: TextBlock;
-    video: VideoBlock;
-    spacer: SpacerBlock;
-    divider: DividerBlock;
-    columns: ColumnsBlock;
     hello: HelloBlock;
-    banner: BannerBlock;
-    code: CodeBlock;
     archive: ArchiveBlock;
     content: ContentBlock;
     mediaBlock: MediaBlock;
@@ -183,382 +183,63 @@ export interface UserAuthOperations {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ProductShowcaseBlock".
+ * via the `definition` "ContentTextBlock".
  */
-export interface ProductShowcaseBlock {
+export interface ContentTextBlock {
   /**
-   * Choose data source for product information
+   * Text content with basic formatting (bold, italic, lists, links)
    */
-  dataSource?: ('manual' | 'pianomodel' | 'hybrid') | null;
-  /**
-   * Select piano model to automatically populate product information
-   */
-  pianoModel?: (string | null) | Product;
-  /**
-   * Product showcase configuration
-   */
-  product: {
-    /**
-     * Main product image (leave empty to use Piano Model image)
-     */
-    image?: (string | null) | Media;
-    /**
-     * Product title/name (leave empty to use Piano Model name)
-     */
-    title?: string | null;
-    /**
-     * Product description (leave empty to use Piano Model description)
-     */
-    description?: string | null;
-    /**
-     * Product pricing information (overrides Piano Model pricing when provided)
-     */
-    price?: {
-      /**
-       * Price currency (leave empty to use Piano Model currency)
-       */
-      currency?: ('USD' | 'EUR' | 'GBP' | 'CAD') | null;
-      /**
-       * Price amount (leave empty to use Piano Model pricing)
-       */
-      amount?: number | null;
-      /**
-       * Sale price (leave empty to use Piano Model sale price)
-       */
-      saleAmount?: number | null;
-      /**
-       * Custom price text (leave empty to use Piano Model price text)
-       */
-      priceText?: string | null;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
     };
-    /**
-     * Available variation options (overrides Piano Model variations when provided)
-     */
-    variations?:
-      | {
-          /**
-           * Variation name (e.g., "Ebony Polish", "White Satin")
-           */
-          name: string;
-          /**
-           * Variation sample image (optional)
-           */
-          image?: (string | null) | Media;
-          /**
-           * Price difference for this variation (+ or -)
-           */
-          priceModifier?: number | null;
-          id?: string | null;
-        }[]
-      | null;
-    /**
-     * Buy button configuration
-     */
-    buyButton: {
-      /**
-       * Button text
-       */
-      text: string;
-      /**
-       * Button link/URL (leave empty to disable button)
-       */
-      link?: string | null;
-      /**
-       * Button style
-       */
-      style?: ('primary' | 'secondary' | 'outline') | null;
-      /**
-       * Open link in new tab
-       */
-      openInNewTab?: boolean | null;
-    };
-    /**
-     * Optional badge text (e.g., "Best Seller", "New", "Limited Edition")
-     */
-    badge?: string | null;
-    /**
-     * Is this product currently in stock?
-     */
-    inStock?: boolean | null;
+    [k: string]: unknown;
   };
   /**
-   * Layout and display options
+   * Text alignment within the content area
    */
-  layout?: {
-    /**
-     * Position of product image relative to content
-     */
-    imagePosition?: ('left' | 'right' | 'top' | 'bottom') | null;
-    /**
-     * Show available variations in this block
-     */
-    showVariations?: boolean | null;
-    /**
-     * Show pricing information in this block
-     */
-    showPrice?: boolean | null;
-    /**
-     * Use compact layout (smaller spacing, condensed content)
-     */
-    compact?: boolean | null;
-  };
+  alignment?: ('left' | 'center' | 'right' | 'justify') | null;
   id?: string | null;
   blockName?: string | null;
-  blockType: 'productShowcase';
+  blockType: 'content-text';
 }
 /**
- * Unified product management - pianos, accessories, and other products with dynamic page building
- *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "products".
+ * via the `definition` "ContentImageBlock".
  */
-export interface Product {
-  id: string;
+export interface ContentImageBlock {
   /**
-   * Product type
+   * Upload or select an image from media library
    */
-  type?: ('piano' | 'accessory' | 'software') | null;
+  image: string | Media;
   /**
-   * Model identifier - matches Shopify custom.model metafield (PRIMARY KEY)
+   * Alt text for accessibility (required for SEO) - describe the image
    */
-  model: string;
+  alt: string;
   /**
-   * Product name (synced from Shopify, or auto-generated from model)
+   * Optional caption displayed below the image
    */
-  name?: string | null;
+  caption?: string | null;
   /**
-   * URL slug (auto-generated from name or model)
+   * Image display size on the page
    */
-  slug?: string | null;
+  size?: ('small' | 'medium' | 'large' | 'full') | null;
   /**
-   * Draft products are hidden from frontend
+   * Image alignment within the content area
    */
-  status?: ('draft' | 'active' | 'discontinued') | null;
-  /**
-   * Piano category
-   */
-  category?: ('digital' | 'grand' | 'hybrid' | 'upright') | null;
-  /**
-   * Product description (synced from Shopify)
-   */
-  description?: string | null;
-  /**
-   * Manufacturer (synced from Shopify vendor)
-   */
-  brand?: string | null;
-  /**
-   * Product pricing information
-   */
-  price?: {
-    /**
-     * MSRP (synced from Shopify)
-     */
-    msrp?: number | null;
-    currency?: ('USD' | 'EUR' | 'GBP' | 'CAD') | null;
-  };
-  /**
-   * Product image URL (synced from Shopify)
-   */
-  imageUrl?: string | null;
-  /**
-   * Product variations from Shopify (variants with pricing, inventory, and options)
-   */
-  variations?:
-    | {
-        /**
-         * Variation name (synced from Shopify variant title)
-         */
-        name: string;
-        /**
-         * Shopify Variant ID (gid://shopify/ProductVariant/...)
-         */
-        shopifyVariantId?: string | null;
-        /**
-         * Variant price (synced from Shopify)
-         */
-        price?: number | null;
-        /**
-         * Compare at price / MSRP (synced from Shopify)
-         */
-        compareAtPrice?: number | null;
-        /**
-         * Stock Keeping Unit (synced from Shopify)
-         */
-        sku?: string | null;
-        /**
-         * Product barcode/UPC (synced from Shopify)
-         */
-        barcode?: string | null;
-        /**
-         * Is this variation available for sale? (synced from Shopify)
-         */
-        available?: boolean | null;
-        /**
-         * Current inventory quantity (synced from Shopify)
-         */
-        inventoryQuantity?: number | null;
-        /**
-         * Variation image (optional manual override)
-         */
-        image?: (string | null) | Media;
-        /**
-         * Variant image URL (synced from Shopify)
-         */
-        imageUrl?: string | null;
-        /**
-         * Variant weight for shipping calculations
-         */
-        weight?: {
-          /**
-           * Weight value
-           */
-          value?: number | null;
-          unit?: ('POUNDS' | 'KILOGRAMS') | null;
-        };
-        /**
-         * What happens when inventory reaches zero
-         */
-        inventoryPolicy?: ('DENY' | 'CONTINUE') | null;
-        /**
-         * Variant options from Shopify (e.g., [{name: "Color", value: "Black"}])
-         */
-        options?:
-          | {
-              [k: string]: unknown;
-            }
-          | unknown[]
-          | string
-          | number
-          | boolean
-          | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Build your product page content using flexible blocks
-   */
-  pageContent?:
-    | (
-        | ProductShowcaseBlock
-        | ProductHeroBlock
-        | HeroBlock
-        | TextContentBlock
-        | ImageGalleryBlock
-        | FeaturesListBlock
-        | SpecificationsBlock
-        | CallToActionBlock
-        | TestimonialsBlock
-      )[]
-    | null;
-  /**
-   * SEO and social media optimization
-   */
-  seo?: {
-    /**
-     * Custom meta title (defaults to product title)
-     */
-    metaTitle?: string | null;
-    /**
-     * Meta description for search engines (max 160 characters)
-     */
-    metaDescription?: string | null;
-    /**
-     * SEO keywords (comma-separated)
-     */
-    keywords?: string | null;
-    /**
-     * Open Graph image for social sharing (defaults to main image)
-     */
-    ogImage?: (string | null) | Media;
-  };
-  /**
-   * Product visibility and display settings
-   */
-  visibility?: {
-    /**
-     * Feature this product prominently
-     */
-    featured?: boolean | null;
-    /**
-     * Show in product catalog/listings
-     */
-    showInCatalog?: boolean | null;
-    /**
-     * Allow customer reviews for this product
-     */
-    allowReviews?: boolean | null;
-    /**
-     * Sort order (lower numbers appear first)
-     */
-    sortOrder?: number | null;
-  };
-  /**
-   * Inventory management settings
-   */
-  inventory?: {
-    /**
-     * Track inventory for this product
-     */
-    trackStock?: boolean | null;
-    /**
-     * Current stock quantity
-     */
-    stockQuantity?: number | null;
-    /**
-     * Alert when stock falls below this number
-     */
-    lowStockThreshold?: number | null;
-    /**
-     * Product is currently in stock
-     */
-    inStock?: boolean | null;
-  };
-  /**
-   * Shopify synchronization and integration data
-   */
-  shopify?: {
-    /**
-     * Shopify Product ID (gid://shopify/Product/...)
-     */
-    productId?: string | null;
-    /**
-     * Shopify handle (auto-synced from slug)
-     */
-    handle?: string | null;
-    /**
-     * Current sync status with Shopify
-     */
-    syncStatus?: ('not_synced' | 'synced' | 'pending' | 'error') | null;
-    /**
-     * Last successful sync timestamp
-     */
-    lastSyncedAt?: string | null;
-    /**
-     * Sync error log (last 10 errors)
-     */
-    syncErrors?:
-      | {
-          timestamp?: string | null;
-          operation?: ('create' | 'update' | 'delete' | 'variant_create' | 'variant_update') | null;
-          errorMessage?: string | null;
-          /**
-           * Comma-separated list of fields that errored
-           */
-          errorFields?: string | null;
-          id?: string | null;
-        }[]
-      | null;
-    /**
-     * Automatically sync changes to Shopify on save
-     */
-    autoSync?: boolean | null;
-    /**
-     * Shopify product status (synced from Shopify)
-     */
-    shopifyStatus?: ('ACTIVE' | 'DRAFT' | 'ARCHIVED') | null;
-  };
-  updatedAt: string;
-  createdAt: string;
+  alignment?: ('left' | 'center' | 'right') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'content-image';
 }
 /**
  * Media library for images, videos, and documents
@@ -731,64 +412,176 @@ export interface FolderInterface {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ProductHeroBlock".
+ * via the `definition` "ContentVideoBlock".
  */
-export interface ProductHeroBlock {
+export interface ContentVideoBlock {
   /**
-   * Layout and display options for the product hero
+   * Choose video source type
    */
-  layout?: {
-    /**
-     * Position of product image relative to content
-     */
-    imagePosition?: ('left' | 'right') | null;
-    /**
-     * Background color for the hero section
-     */
-    backgroundColor?: ('pearl' | 'white' | 'black') | null;
-    /**
-     * Show available variations section
-     */
-    showVariations?: boolean | null;
-    /**
-     * Show pricing information
-     */
-    showPrice?: boolean | null;
-    /**
-     * Show buy/contact button
-     */
-    showBuyButton?: boolean | null;
-  };
+  source: 'upload' | 'youtube' | 'vimeo';
   /**
-   * Optional overrides for product data (leave empty to use product document data)
+   * Upload a video file from your computer
    */
-  overrides?: {
-    /**
-     * Override the product name with a custom title (optional)
-     */
-    customTitle?: string | null;
-    /**
-     * Override the product description with custom text (optional)
-     */
-    customDescription?: string | null;
-    /**
-     * Override the main product image (optional)
-     */
-    customImage?: (string | null) | Media;
-    /**
-     * Optional badge text (e.g., "Best Seller", "New", "Limited Edition")
-     */
-    badge?: string | null;
-  };
+  videoFile?: (string | null) | Media;
+  /**
+   * Paste YouTube or Vimeo video URL
+   */
+  videoUrl?: string | null;
+  /**
+   * Thumbnail image shown before video plays (optional)
+   */
+  posterImage?: (string | null) | Media;
+  /**
+   * Show video player controls (play, pause, volume, etc.)
+   */
+  controls?: boolean | null;
+  /**
+   * Autoplay video on page load (video will be muted)
+   */
+  autoplay?: boolean | null;
+  /**
+   * Loop video playback continuously
+   */
+  loop?: boolean | null;
+  /**
+   * Optional caption displayed below the video
+   */
+  caption?: string | null;
   id?: string | null;
   blockName?: string | null;
-  blockType: 'productHero';
+  blockType: 'content-video';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "HeroBlock".
+ * via the `definition` "ContentCodeBlock".
  */
-export interface HeroBlock {
+export interface ContentCodeBlock {
+  /**
+   * Programming language for syntax highlighting
+   */
+  language: 'typescript' | 'javascript' | 'css' | 'python' | 'bash';
+  /**
+   * Enter your code snippet here
+   */
+  code: string;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'content-code';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ContentBannerBlock".
+ */
+export interface ContentBannerBlock {
+  /**
+   * Banner style determines the color scheme and icon
+   */
+  style: 'info' | 'warning' | 'error' | 'success';
+  /**
+   * Banner message content with rich text formatting
+   */
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'content-banner';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LayoutColumnsBlock".
+ */
+export interface LayoutColumnsBlock {
+  /**
+   * Configure up to 4 columns with customizable widths
+   */
+  columns: {
+    /**
+     * Column width as a percentage of total container width
+     */
+    width: '25' | '33' | '50' | '66' | '75' | '100';
+    /**
+     * Add content blocks to this column (Image, Text, Video, Spacer, Divider)
+     */
+    content: (ContentImageBlock | ContentTextBlock | ContentVideoBlock | LayoutSpacerBlock | LayoutDividerBlock)[];
+    id?: string | null;
+  }[];
+  /**
+   * Layout configuration and styling options
+   */
+  layout?: {
+    /**
+     * Horizontal gap/spacing between columns
+     */
+    gap?: ('small' | 'medium' | 'large') | null;
+    /**
+     * Vertical alignment of content within columns
+     */
+    verticalAlign?: ('top' | 'center' | 'bottom') | null;
+    /**
+     * Background color for the entire columns section
+     */
+    backgroundColor?: ('transparent' | 'white' | 'light' | 'dark') | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'layout-columns';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LayoutSpacerBlock".
+ */
+export interface LayoutSpacerBlock {
+  /**
+   * Amount of vertical spacing to add between content
+   */
+  height: 'xs' | 'small' | 'medium' | 'large' | 'xl';
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'layout-spacer';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LayoutDividerBlock".
+ */
+export interface LayoutDividerBlock {
+  /**
+   * Visual style of the dividing line
+   */
+  style?: ('solid' | 'dashed' | 'dotted') | null;
+  /**
+   * Color of the dividing line
+   */
+  color?: ('default' | 'dark' | 'brand') | null;
+  /**
+   * Width of the dividing line relative to container
+   */
+  width?: ('full' | '75' | '50' | '25') | null;
+  /**
+   * Vertical spacing above and below the divider
+   */
+  spacing?: ('small' | 'medium' | 'large') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'layout-divider';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingHeroBlock".
+ */
+export interface MarketingHeroBlock {
   /**
    * Choose data source for hero content
    */
@@ -825,7 +618,13 @@ export interface HeroBlock {
        * Primary button link/URL
        */
       link?: string | null;
+      /**
+       * Button visual style
+       */
       style?: ('primary' | 'secondary' | 'outline') | null;
+      /**
+       * Open link in new browser tab
+       */
       openInNewTab?: boolean | null;
     };
     /**
@@ -840,12 +639,18 @@ export interface HeroBlock {
        * Secondary button link/URL
        */
       link?: string | null;
+      /**
+       * Button visual style
+       */
       style?: ('primary' | 'secondary' | 'outline') | null;
+      /**
+       * Open link in new browser tab
+       */
       openInNewTab?: boolean | null;
     };
   };
   /**
-   * Background media and overlay settings
+   * Background media and overlay configuration
    */
   media?: {
     /**
@@ -857,20 +662,23 @@ export interface HeroBlock {
      */
     backgroundImage?: (string | null) | Media;
     /**
-     * Background video
+     * Background video file
      */
     backgroundVideo?: (string | null) | Media;
     /**
-     * Background overlay settings
+     * Background overlay settings for better text contrast
      */
     overlay?: {
       /**
-       * Add overlay to improve text readability
+       * Add overlay to improve text readability over images/videos
        */
       enable?: boolean | null;
+      /**
+       * Overlay color
+       */
       color?: ('dark' | 'light' | 'brand') | null;
       /**
-       * Overlay opacity (0 = transparent, 1 = opaque)
+       * Overlay opacity (0 = transparent, 1 = fully opaque)
        */
       opacity?: number | null;
     };
@@ -884,11 +692,11 @@ export interface HeroBlock {
      */
     height?: ('small' | 'medium' | 'large' | 'fullscreen') | null;
     /**
-     * Text content alignment
+     * Horizontal text content alignment
      */
     contentAlignment?: ('left' | 'center' | 'right') | null;
     /**
-     * Vertical content alignment
+     * Vertical content alignment within hero section
      */
     verticalAlignment?: ('top' | 'center' | 'bottom') | null;
     /**
@@ -898,7 +706,441 @@ export interface HeroBlock {
   };
   id?: string | null;
   blockName?: string | null;
-  blockType: 'hero';
+  blockType: 'marketing-hero';
+}
+/**
+ * Unified product management - pianos, accessories, and other products with dynamic page building
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: string;
+  /**
+   * Product type
+   */
+  type?: ('piano' | 'accessory' | 'software') | null;
+  /**
+   * Model identifier - matches Shopify custom.model metafield (PRIMARY KEY)
+   */
+  model: string;
+  /**
+   * Product name (synced from Shopify, or auto-generated from model)
+   */
+  name?: string | null;
+  /**
+   * URL slug (auto-generated from name or model)
+   */
+  slug?: string | null;
+  /**
+   * Draft products are hidden from frontend
+   */
+  status?: ('draft' | 'active' | 'discontinued') | null;
+  /**
+   * Piano category
+   */
+  category?: ('digital' | 'grand' | 'hybrid' | 'upright') | null;
+  /**
+   * Product description (synced from Shopify)
+   */
+  description?: string | null;
+  /**
+   * Manufacturer (synced from Shopify vendor)
+   */
+  brand?: string | null;
+  /**
+   * Product pricing information
+   */
+  price?: {
+    /**
+     * MSRP (synced from Shopify)
+     */
+    msrp?: number | null;
+    currency?: ('USD' | 'EUR' | 'GBP' | 'CAD') | null;
+  };
+  /**
+   * Product image URL (synced from Shopify)
+   */
+  imageUrl?: string | null;
+  /**
+   * Product variations from Shopify (variants with pricing, inventory, and options)
+   */
+  variations?:
+    | {
+        /**
+         * Variation name (synced from Shopify variant title)
+         */
+        name: string;
+        /**
+         * Shopify Variant ID (gid://shopify/ProductVariant/...)
+         */
+        shopifyVariantId?: string | null;
+        /**
+         * Variant price (synced from Shopify)
+         */
+        price?: number | null;
+        /**
+         * Compare at price / MSRP (synced from Shopify)
+         */
+        compareAtPrice?: number | null;
+        /**
+         * Stock Keeping Unit (synced from Shopify)
+         */
+        sku?: string | null;
+        /**
+         * Product barcode/UPC (synced from Shopify)
+         */
+        barcode?: string | null;
+        /**
+         * Is this variation available for sale? (synced from Shopify)
+         */
+        available?: boolean | null;
+        /**
+         * Current inventory quantity (synced from Shopify)
+         */
+        inventoryQuantity?: number | null;
+        /**
+         * Variation image (optional manual override)
+         */
+        image?: (string | null) | Media;
+        /**
+         * Variant image URL (synced from Shopify)
+         */
+        imageUrl?: string | null;
+        /**
+         * Variant weight for shipping calculations
+         */
+        weight?: {
+          /**
+           * Weight value
+           */
+          value?: number | null;
+          unit?: ('POUNDS' | 'KILOGRAMS') | null;
+        };
+        /**
+         * What happens when inventory reaches zero
+         */
+        inventoryPolicy?: ('DENY' | 'CONTINUE') | null;
+        /**
+         * Variant options from Shopify (e.g., [{name: "Color", value: "Black"}])
+         */
+        options?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Build your product page content using flexible blocks
+   */
+  pageContent?:
+    | (
+        | ProductShowcaseBlock
+        | ProductHeroBlock
+        | MarketingHeroBlock
+        | TextContentBlock
+        | ProductImageGalleryBlock
+        | ProductFeaturesListBlock
+        | ProductSpecificationsBlock
+        | MarketingCallToActionBlock
+        | MarketingTestimonialsBlock
+      )[]
+    | null;
+  /**
+   * SEO and social media optimization
+   */
+  seo?: {
+    /**
+     * Custom meta title (defaults to product title)
+     */
+    metaTitle?: string | null;
+    /**
+     * Meta description for search engines (max 160 characters)
+     */
+    metaDescription?: string | null;
+    /**
+     * SEO keywords (comma-separated)
+     */
+    keywords?: string | null;
+    /**
+     * Open Graph image for social sharing (defaults to main image)
+     */
+    ogImage?: (string | null) | Media;
+  };
+  /**
+   * Product visibility and display settings
+   */
+  visibility?: {
+    /**
+     * Feature this product prominently
+     */
+    featured?: boolean | null;
+    /**
+     * Show in product catalog/listings
+     */
+    showInCatalog?: boolean | null;
+    /**
+     * Allow customer reviews for this product
+     */
+    allowReviews?: boolean | null;
+    /**
+     * Sort order (lower numbers appear first)
+     */
+    sortOrder?: number | null;
+  };
+  /**
+   * Inventory management settings
+   */
+  inventory?: {
+    /**
+     * Track inventory for this product
+     */
+    trackStock?: boolean | null;
+    /**
+     * Current stock quantity
+     */
+    stockQuantity?: number | null;
+    /**
+     * Alert when stock falls below this number
+     */
+    lowStockThreshold?: number | null;
+    /**
+     * Product is currently in stock
+     */
+    inStock?: boolean | null;
+  };
+  /**
+   * Shopify synchronization and integration data
+   */
+  shopify?: {
+    /**
+     * Shopify Product ID (gid://shopify/Product/...)
+     */
+    productId?: string | null;
+    /**
+     * Shopify handle (auto-synced from slug)
+     */
+    handle?: string | null;
+    /**
+     * Current sync status with Shopify
+     */
+    syncStatus?: ('not_synced' | 'synced' | 'pending' | 'error') | null;
+    /**
+     * Last successful sync timestamp
+     */
+    lastSyncedAt?: string | null;
+    /**
+     * Sync error log (last 10 errors)
+     */
+    syncErrors?:
+      | {
+          timestamp?: string | null;
+          operation?: ('create' | 'update' | 'delete' | 'variant_create' | 'variant_update') | null;
+          errorMessage?: string | null;
+          /**
+           * Comma-separated list of fields that errored
+           */
+          errorFields?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Automatically sync changes to Shopify on save
+     */
+    autoSync?: boolean | null;
+    /**
+     * Shopify product status (synced from Shopify)
+     */
+    shopifyStatus?: ('ACTIVE' | 'DRAFT' | 'ARCHIVED') | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductShowcaseBlock".
+ */
+export interface ProductShowcaseBlock {
+  /**
+   * Choose data source for product information
+   */
+  dataSource?: ('manual' | 'pianomodel' | 'hybrid') | null;
+  /**
+   * Select piano model to automatically populate product information
+   */
+  pianoModel?: (string | null) | Product;
+  /**
+   * Product showcase configuration
+   */
+  product: {
+    /**
+     * Main product image (leave empty to use Piano Model image)
+     */
+    image?: (string | null) | Media;
+    /**
+     * Product title/name (leave empty to use Piano Model name)
+     */
+    title?: string | null;
+    /**
+     * Product description (leave empty to use Piano Model description)
+     */
+    description?: string | null;
+    /**
+     * Product pricing information (overrides Piano Model pricing when provided)
+     */
+    price?: {
+      /**
+       * Price currency
+       */
+      currency?: ('USD' | 'EUR' | 'GBP' | 'CAD') | null;
+      /**
+       * Regular price amount
+       */
+      amount?: number | null;
+      /**
+       * Sale price (shows original price as strikethrough)
+       */
+      saleAmount?: number | null;
+      /**
+       * Custom price text (e.g., "Starting at $2,999" or "Contact for pricing")
+       */
+      priceText?: string | null;
+    };
+    /**
+     * Available product variations (finishes, colors, etc.)
+     */
+    variations?:
+      | {
+          /**
+           * Variation name (e.g., "Ebony Polish", "White Satin")
+           */
+          name: string;
+          /**
+           * Variation sample image (optional)
+           */
+          image?: (string | null) | Media;
+          /**
+           * Price difference for this variation (+ or -)
+           */
+          priceModifier?: number | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Buy/action button configuration
+     */
+    buyButton: {
+      /**
+       * Button text (e.g., "Buy Now", "View Details", "Contact Us")
+       */
+      text: string;
+      /**
+       * Button link/URL (leave empty to disable button)
+       */
+      link?: string | null;
+      /**
+       * Button visual style
+       */
+      style?: ('primary' | 'secondary' | 'outline') | null;
+      /**
+       * Open link in new browser tab
+       */
+      openInNewTab?: boolean | null;
+    };
+    /**
+     * Optional badge text (e.g., "Best Seller", "New", "Limited Edition")
+     */
+    badge?: string | null;
+    /**
+     * Is this product currently in stock?
+     */
+    inStock?: boolean | null;
+  };
+  /**
+   * Layout and display options
+   */
+  layout?: {
+    /**
+     * Position of product image relative to content
+     */
+    imagePosition?: ('left' | 'right' | 'top' | 'bottom') | null;
+    /**
+     * Show available variations in this showcase
+     */
+    showVariations?: boolean | null;
+    /**
+     * Show pricing information
+     */
+    showPrice?: boolean | null;
+    /**
+     * Use compact layout (smaller spacing, condensed content)
+     */
+    compact?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'product-showcase';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductHeroBlock".
+ */
+export interface ProductHeroBlock {
+  /**
+   * Layout and display options for the product hero
+   */
+  layout?: {
+    /**
+     * Position of product image relative to content
+     */
+    imagePosition?: ('left' | 'right') | null;
+    /**
+     * Background color for the hero section
+     */
+    backgroundColor?: ('pearl' | 'white' | 'black') | null;
+    /**
+     * Show available product variations section
+     */
+    showVariations?: boolean | null;
+    /**
+     * Show pricing information in hero
+     */
+    showPrice?: boolean | null;
+    /**
+     * Show buy/contact button
+     */
+    showBuyButton?: boolean | null;
+  };
+  /**
+   * Optional overrides for product data (leave empty to use product document data)
+   */
+  overrides?: {
+    /**
+     * Override the product name with a custom title (optional)
+     */
+    customTitle?: string | null;
+    /**
+     * Override the product description with custom text (optional)
+     */
+    customDescription?: string | null;
+    /**
+     * Override the main product image (optional)
+     */
+    customImage?: (string | null) | Media;
+    /**
+     * Optional badge text (e.g., "Best Seller", "New", "Limited Edition")
+     */
+    badge?: string | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'product-hero';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -958,9 +1200,9 @@ export interface TextContentBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ImageGalleryBlock".
+ * via the `definition` "ProductImageGalleryBlock".
  */
-export interface ImageGalleryBlock {
+export interface ProductImageGalleryBlock {
   /**
    * Choose data source for gallery images
    */
@@ -1057,13 +1299,13 @@ export interface ImageGalleryBlock {
   showCaptions?: boolean | null;
   id?: string | null;
   blockName?: string | null;
-  blockType: 'imageGallery';
+  blockType: 'product-gallery';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeaturesListBlock".
+ * via the `definition` "ProductFeaturesListBlock".
  */
-export interface FeaturesListBlock {
+export interface ProductFeaturesListBlock {
   /**
    * Choose data source for features list
    */
@@ -1159,13 +1401,13 @@ export interface FeaturesListBlock {
   showNumbers?: boolean | null;
   id?: string | null;
   blockName?: string | null;
-  blockType: 'featuresList';
+  blockType: 'product-features';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "SpecificationsBlock".
+ * via the `definition` "ProductSpecificationsBlock".
  */
-export interface SpecificationsBlock {
+export interface ProductSpecificationsBlock {
   /**
    * Choose data source for specifications
    */
@@ -1277,44 +1519,44 @@ export interface SpecificationsBlock {
   comparisonMode?: boolean | null;
   id?: string | null;
   blockName?: string | null;
-  blockType: 'specifications';
+  blockType: 'product-specs';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CallToActionBlock".
+ * via the `definition` "MarketingCallToActionBlock".
  */
-export interface CallToActionBlock {
+export interface MarketingCallToActionBlock {
   /**
    * Main content for the call-to-action
    */
   content: {
     /**
-     * Main CTA title/headline
+     * Main CTA title/headline - make it compelling and action-oriented
      */
     title: string;
     /**
-     * Optional subtitle or supporting text
+     * Optional subtitle or supporting text to provide context
      */
     subtitle?: string | null;
     /**
-     * CTA description or value proposition
+     * CTA description or value proposition - explain the benefit
      */
     description?: string | null;
   };
   /**
-   * Action buttons for the CTA
+   * Action buttons for the CTA (up to 3 buttons)
    */
   buttons: {
     /**
-     * Button text
+     * Button text - use action verbs (e.g., "Get Started", "Learn More")
      */
     text: string;
     /**
-     * Button link/URL
+     * Button destination URL or path
      */
     link: string;
     /**
-     * Button visual style
+     * Button visual style and prominence
      */
     style?: ('primary' | 'secondary' | 'outline' | 'ghost' | 'link') | null;
     /**
@@ -1326,21 +1568,21 @@ export interface CallToActionBlock {
      */
     icon?: string | null;
     /**
-     * Icon position relative to text
+     * Icon position relative to button text
      */
     iconPosition?: ('left' | 'right') | null;
     /**
-     * Open link in new tab
+     * Open link in new browser tab
      */
     openInNewTab?: boolean | null;
     id?: string | null;
   }[];
   /**
-   * Media and visual elements
+   * Media and visual elements for the CTA
    */
   media?: {
     /**
-     * Type of media to include
+     * Type of media to include in the CTA
      */
     type?: ('none' | 'background' | 'side' | 'icon') | null;
     /**
@@ -1348,7 +1590,7 @@ export interface CallToActionBlock {
      */
     backgroundImage?: (string | null) | Media;
     /**
-     * Side image to display alongside content
+     * Side image to display alongside CTA content
      */
     sideImage?: (string | null) | Media;
     /**
@@ -1360,16 +1602,19 @@ export interface CallToActionBlock {
      */
     imagePosition?: ('left' | 'right') | null;
     /**
-     * Background overlay settings
+     * Background overlay settings for better text contrast
      */
     overlay?: {
       /**
-       * Add overlay to improve text readability
+       * Add overlay to improve text readability over background images
        */
       enable?: boolean | null;
+      /**
+       * Overlay color
+       */
       color?: ('dark' | 'light' | 'brand') | null;
       /**
-       * Overlay opacity
+       * Overlay opacity (0 = transparent, 1 = fully opaque)
        */
       opacity?: number | null;
     };
@@ -1383,7 +1628,7 @@ export interface CallToActionBlock {
      */
     style?: ('banner' | 'card' | 'minimal' | 'split') | null;
     /**
-     * Content alignment
+     * Content alignment within the CTA
      */
     alignment?: ('left' | 'center' | 'right') | null;
     /**
@@ -1400,11 +1645,11 @@ export interface CallToActionBlock {
     buttonLayout?: ('horizontal' | 'vertical') | null;
   };
   /**
-   * Urgency and scarcity elements
+   * Urgency and scarcity elements to boost conversions
    */
   urgency?: {
     /**
-     * Add urgency elements (countdown, limited time, etc.)
+     * Add urgency elements to drive immediate action
      */
     enableUrgency?: boolean | null;
     /**
@@ -1412,7 +1657,7 @@ export interface CallToActionBlock {
      */
     urgencyText?: string | null;
     /**
-     * Show countdown timer
+     * Show countdown timer to deadline
      */
     showCountdown?: boolean | null;
     /**
@@ -1422,23 +1667,23 @@ export interface CallToActionBlock {
   };
   id?: string | null;
   blockName?: string | null;
-  blockType: 'callToAction';
+  blockType: 'marketing-cta';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TestimonialsBlock".
+ * via the `definition` "MarketingTestimonialsBlock".
  */
-export interface TestimonialsBlock {
+export interface MarketingTestimonialsBlock {
   /**
    * Header content for the testimonials section
    */
   header?: {
     /**
-     * Section title
+     * Section title for the testimonials area
      */
     title?: string | null;
     /**
-     * Optional subtitle
+     * Optional subtitle to provide context
      */
     subtitle?: string | null;
     /**
@@ -1447,11 +1692,11 @@ export interface TestimonialsBlock {
     description?: string | null;
   };
   /**
-   * Customer testimonials and reviews
+   * Customer testimonials and reviews - aim for specific, detailed feedback
    */
   testimonials: {
     /**
-     * Customer testimonial/review text
+     * Customer testimonial/review text - keep it authentic and specific
      */
     quote: string;
     /**
@@ -1459,15 +1704,15 @@ export interface TestimonialsBlock {
      */
     rating?: number | null;
     /**
-     * Customer information
+     * Customer information and credentials
      */
     customer: {
       /**
-       * Customer name
+       * Customer full name
        */
       name: string;
       /**
-       * Customer title/position (optional)
+       * Customer title/position (e.g., "Music Teacher", "Professional Pianist")
        */
       title?: string | null;
       /**
@@ -1475,24 +1720,24 @@ export interface TestimonialsBlock {
        */
       company?: string | null;
       /**
-       * Customer location (optional)
+       * Customer location (e.g., "New York, NY")
        */
       location?: string | null;
       /**
-       * Customer photo/avatar (optional)
+       * Customer photo/avatar (builds trust and authenticity)
        */
       avatar?: (string | null) | Media;
     };
     /**
-     * Product being reviewed (optional)
+     * Product being reviewed (e.g., "CA-99 Digital Piano")
      */
     product?: string | null;
     /**
-     * Mark as verified purchase/review
+     * Mark as verified purchase/review for added credibility
      */
     verified?: boolean | null;
     /**
-     * Feature this testimonial prominently
+     * Feature this testimonial prominently in displays
      */
     featured?: boolean | null;
     /**
@@ -1500,7 +1745,7 @@ export interface TestimonialsBlock {
      */
     source?: ('direct' | 'google' | 'facebook' | 'trustpilot' | 'yelp' | 'amazon' | 'other') | null;
     /**
-     * Date of review (optional)
+     * Date of review (shows recency)
      */
     reviewDate?: string | null;
     id?: string | null;
@@ -1518,7 +1763,7 @@ export interface TestimonialsBlock {
      */
     columns?: ('one' | 'two' | 'three' | 'four') | null;
     /**
-     * Display customer avatars/photos
+     * Display customer avatars/photos (increases trust)
      */
     showAvatars?: boolean | null;
     /**
@@ -1539,31 +1784,31 @@ export interface TestimonialsBlock {
     backgroundColor?: ('none' | 'light-gray' | 'dark-gray' | 'brand' | 'white') | null;
   };
   /**
-   * Carousel-specific settings
+   * Carousel-specific settings (only applies when style is "Carousel/Slider")
    */
   carouselSettings?: {
     /**
-     * Auto-advance testimonials
+     * Auto-advance testimonials in carousel
      */
     autoplay?: boolean | null;
     /**
-     * Autoplay speed in milliseconds
+     * Autoplay speed in milliseconds (minimum 2000ms)
      */
     autoplaySpeed?: number | null;
     /**
-     * Show navigation dots
+     * Show navigation dots at bottom of carousel
      */
     showDots?: boolean | null;
     /**
-     * Show navigation arrows
+     * Show navigation arrows for manual control
      */
     showArrows?: boolean | null;
     /**
-     * Number of testimonials to show at once
+     * Number of testimonials to show simultaneously
      */
     slidesToShow?: ('one' | 'two' | 'three') | null;
     /**
-     * Enable infinite loop
+     * Enable infinite loop in carousel
      */
     infinite?: boolean | null;
   };
@@ -1572,15 +1817,15 @@ export interface TestimonialsBlock {
    */
   aggregateRating?: {
     /**
-     * Show overall rating summary
+     * Show overall rating summary at top of section
      */
     showOverallRating?: boolean | null;
     /**
-     * Overall rating score
+     * Overall average rating score
      */
     overallRating?: number | null;
     /**
-     * Total number of reviews
+     * Total number of reviews collected
      */
     totalReviews?: number | null;
     /**
@@ -1590,186 +1835,7 @@ export interface TestimonialsBlock {
   };
   id?: string | null;
   blockName?: string | null;
-  blockType: 'testimonials';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ImageBlock".
- */
-export interface ImageBlock {
-  /**
-   * Upload an image
-   */
-  image: string | Media;
-  /**
-   * Alternative text for accessibility (describe the image)
-   */
-  alt: string;
-  /**
-   * Optional caption displayed below the image
-   */
-  caption?: string | null;
-  /**
-   * Image display size
-   */
-  size?: ('small' | 'medium' | 'large' | 'full') | null;
-  /**
-   * Image alignment
-   */
-  alignment?: ('left' | 'center' | 'right') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'image';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TextBlock".
- */
-export interface TextBlock {
-  /**
-   * Text content with basic formatting (bold, italic, lists, links)
-   */
-  content: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
-  /**
-   * Text alignment
-   */
-  alignment?: ('left' | 'center' | 'right' | 'justify') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'text';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "VideoBlock".
- */
-export interface VideoBlock {
-  /**
-   * Video source type
-   */
-  source: 'upload' | 'youtube' | 'vimeo';
-  /**
-   * Upload a video file
-   */
-  videoFile?: (string | null) | Media;
-  /**
-   * YouTube or Vimeo video URL
-   */
-  videoUrl?: string | null;
-  /**
-   * Thumbnail image shown before video plays
-   */
-  posterImage?: (string | null) | Media;
-  /**
-   * Show video player controls
-   */
-  controls?: boolean | null;
-  /**
-   * Autoplay video on page load (muted)
-   */
-  autoplay?: boolean | null;
-  /**
-   * Loop video playback
-   */
-  loop?: boolean | null;
-  /**
-   * Optional caption displayed below the video
-   */
-  caption?: string | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'video';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "SpacerBlock".
- */
-export interface SpacerBlock {
-  /**
-   * Vertical spacing height
-   */
-  height: 'xs' | 'small' | 'medium' | 'large' | 'xl';
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'spacer';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "DividerBlock".
- */
-export interface DividerBlock {
-  /**
-   * Line style
-   */
-  style?: ('solid' | 'dashed' | 'dotted') | null;
-  /**
-   * Line color
-   */
-  color?: ('default' | 'dark' | 'brand') | null;
-  /**
-   * Line width
-   */
-  width?: ('full' | '75' | '50' | '25') | null;
-  /**
-   * Vertical spacing around divider
-   */
-  spacing?: ('small' | 'medium' | 'large') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'divider';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ColumnsBlock".
- */
-export interface ColumnsBlock {
-  /**
-   * Add and configure columns (up to 4 columns)
-   */
-  columns: {
-    /**
-     * Column width percentage
-     */
-    width: '25' | '33' | '50' | '66' | '75' | '100';
-    /**
-     * Column content - add Image, Text, Video, Spacer, or Divider blocks
-     */
-    content: (ImageBlock | TextBlock | VideoBlock | SpacerBlock | DividerBlock)[];
-    id?: string | null;
-  }[];
-  /**
-   * Layout configuration for columns
-   */
-  layout?: {
-    /**
-     * Gap/spacing between columns
-     */
-    gap?: ('small' | 'medium' | 'large') | null;
-    /**
-     * Vertical alignment of column content
-     */
-    verticalAlign?: ('top' | 'center' | 'bottom') | null;
-    /**
-     * Background color for the columns section
-     */
-    backgroundColor?: ('transparent' | 'white' | 'light' | 'dark') | null;
-  };
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'columns';
+  blockType: 'marketing-testimonials';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1837,42 +1903,6 @@ export interface HelloBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'hello';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "BannerBlock".
- */
-export interface BannerBlock {
-  style: 'info' | 'warning' | 'error' | 'success';
-  content: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'banner';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CodeBlock".
- */
-export interface CodeBlock {
-  language: 'typescript' | 'javascript' | 'css' | 'python' | 'bash';
-  code: string;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'code';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1961,7 +1991,7 @@ export interface Post {
    */
   featuredImage?: (string | null) | Media;
   /**
-   * Main post content with rich formatting, embedded blocks (Banner, Code), and media
+   * Main article content with rich formatting, embedded content blocks, and media
    */
   content: {
     root: {
@@ -1979,11 +2009,15 @@ export interface Post {
     [k: string]: unknown;
   };
   /**
-   * Additional content blocks for complex layouts (separate from rich text content)
+   * Optional: Add promotional content before the article (Hero, Banner)
    */
-  contentBlocks?: (ImageBlock | TextBlock | VideoBlock | SpacerBlock | DividerBlock | ColumnsBlock)[] | null;
+  headerBlocks?: (MarketingHeroBlock | ContentBannerBlock)[] | null;
   /**
-   * Post authors (NEW: supports multiple authors)
+   * Optional: Add calls-to-action or related content after the article (CTA, Testimonials, Columns)
+   */
+  footerBlocks?: (MarketingCallToActionBlock | MarketingTestimonialsBlock | LayoutColumnsBlock)[] | null;
+  /**
+   * Post authors (supports multiple authors)
    */
   authors?: (string | User)[] | null;
   /**
@@ -1996,28 +2030,9 @@ export interface Post {
       }[]
     | null;
   /**
-   * ⚠️ DEPRECATED: Use "authors" field instead. Will be removed after migration.
+   * Post categories from Categories collection
    */
-  author?: (string | null) | User;
-  /**
-   * Post categories (NEW: relationship to Categories collection)
-   */
-  categoriesNew?: (string | Category)[] | null;
-  /**
-   * ⚠️ DEPRECATED: Use "categoriesNew" field instead. Will be removed after migration.
-   */
-  categories?:
-    | (
-        | 'education'
-        | 'product-news'
-        | 'artists'
-        | 'maintenance'
-        | 'buying-guides'
-        | 'events'
-        | 'company-news'
-        | 'technology'
-      )[]
-    | null;
+  categories?: (string | Category)[] | null;
   /**
    * Related posts (prevents self-reference)
    */
@@ -2280,7 +2295,18 @@ export interface CtaBlock {
  * via the `definition` "MediaBlock".
  */
 export interface MediaBlock {
-  media: string | Media;
+  /**
+   * Enter a URL or click "Browse Media Library" to select from your media
+   */
+  mediaUrl: string;
+  /**
+   * Describe the image for accessibility and SEO
+   */
+  alt: string;
+  /**
+   * Optional caption to display below the media
+   */
+  caption?: string | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'mediaBlock';
@@ -3845,13 +3871,29 @@ export interface Search {
   id: string;
   title?: string | null;
   priority?: number | null;
-  doc: {
-    relationTo: 'pages';
-    value: string | Page;
-  };
-  category?: string | null;
-  tags?: string[] | null;
+  doc:
+    | {
+        relationTo: 'products';
+        value: string | Product;
+      }
+    | {
+        relationTo: 'pages';
+        value: string | Page;
+      };
+  /**
+   * Short excerpt displayed in search results
+   */
   excerpt?: string | null;
+  /**
+   * Category/type (product, page, digital, grand, etc.)
+   */
+  category?: string | null;
+  /**
+   * Tags for filtering
+   */
+  tags?:
+    | ('piano' | 'digital' | 'grand' | 'hybrid' | 'upright' | 'accessory' | 'software' | 'page' | 'faq' | 'support')[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -4771,7 +4813,8 @@ export interface PostsSelect<T extends boolean = true> {
   excerpt?: T;
   featuredImage?: T;
   content?: T;
-  contentBlocks?: T | {};
+  headerBlocks?: T | {};
+  footerBlocks?: T | {};
   authors?: T;
   populatedAuthors?:
     | T
@@ -4779,8 +4822,6 @@ export interface PostsSelect<T extends boolean = true> {
         id?: T;
         name?: T;
       };
-  author?: T;
-  categoriesNew?: T;
   categories?: T;
   relatedPosts?: T;
   tags?: T;
@@ -5064,9 +5105,9 @@ export interface SearchSelect<T extends boolean = true> {
   title?: T;
   priority?: T;
   doc?: T;
+  excerpt?: T;
   category?: T;
   tags?: T;
-  excerpt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

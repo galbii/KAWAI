@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { imageField, videoField } from '@/lib/payload/fields/media'
 
 export const HomePage: CollectionConfig = {
   slug: 'home-page',
@@ -131,15 +132,12 @@ export const HomePage: CollectionConfig = {
                 description: 'Secondary call-to-action button configuration'
               }
             },
-            {
-              name: 'backgroundVideo',
-              type: 'upload',
-              relationTo: 'media',
+            videoField('backgroundVideo', {
               required: false,
               admin: {
                 description: 'Background video for the hero section'
               }
-            }
+            })
           ]
         },
 
@@ -519,15 +517,12 @@ export const HomePage: CollectionConfig = {
                     description: 'Category description'
                   }
                 },
-                {
-                  name: 'image',
-                  type: 'upload',
-                  relationTo: 'media',
+                imageField('image', {
                   required: false,
                   admin: {
                     description: 'Category representative image'
                   }
-                },
+                }),
                 {
                   name: 'href',
                   type: 'text',
@@ -609,15 +604,12 @@ export const HomePage: CollectionConfig = {
                     description: 'News item description'
                   }
                 },
-                {
-                  name: 'image',
-                  type: 'upload',
-                  relationTo: 'media',
+                imageField('image', {
                   required: false,
                   admin: {
                     description: 'News item image'
                   }
-                },
+                }),
                 {
                   name: 'category',
                   type: 'select',
@@ -919,14 +911,11 @@ export const HomePage: CollectionConfig = {
                     description: 'Open Graph description for social media sharing'
                   }
                 },
-                {
-                  name: 'openGraphImage',
-                  type: 'upload',
-                  relationTo: 'media',
+                imageField('openGraphImage', {
                   admin: {
                     description: 'Open Graph image for social media sharing'
                   }
-                }
+                })
               ],
               admin: {
                 description: 'SEO and metadata configuration'

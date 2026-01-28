@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { imageField } from '@/lib/payload/fields/media'
 
 export const Dealers: CollectionConfig = {
   slug: 'dealers',
@@ -315,14 +316,11 @@ export const Dealers: CollectionConfig = {
               }
             },
 
-            {
-              name: 'dealerImage',
-              type: 'upload',
-              relationTo: 'media',
+            imageField('dealerImage', {
               admin: {
                 description: 'Showroom or business photo (optional, for enhanced listings)'
               }
-            },
+            }),
 
             {
               name: 'yearEstablished',

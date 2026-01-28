@@ -97,20 +97,25 @@ export function StorefrontsMegaMenu({
         <motion.div
           key="storefronts-mega-menu"
           initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
+          animate={{
+            opacity: 1,
+            y: 0,
+            top: isHeaderScrolled ? 112 : 128,
+          }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.3, ease: 'easeInOut' }}
           className={cn(
             'fixed left-0 right-0 z-[60]',
-            'bg-white border-t border-b border-gray-200 shadow-2xl',
+            'bg-white border-b border-gray-200 shadow-2xl',
             className
           )}
           style={{
-            top: isHeaderScrolled ? '118px' : '126px',
             width: '100vw',
+            maxHeight: 'calc(100vh - 130px)',
+            overflow: 'visible',
           }}
         >
-          <div className="relative py-6 pb-8">
+          <div className="relative pt-10 pb-4">
             {isLoading ? (
               /* Loading State */
               <div className="container mx-auto px-4 sm:px-6">
@@ -127,11 +132,11 @@ export function StorefrontsMegaMenu({
               /* Actual Content */
               <>
                 {/* Header */}
-                <div className="container mx-auto px-4 sm:px-6 mb-6">
+                <div className="container mx-auto px-4 sm:px-6 mb-8">
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 mb-1">
-                        Official Kawai Storefronts
+                        Official Stores
                       </h2>
                       <p className="text-sm text-gray-600">
                         Official Storefront • {storefronts.length} {storefronts.length === 1 ? 'location' : 'locations'}
@@ -163,13 +168,18 @@ export function StorefrontsMegaMenu({
                 {/* Horizontal Scrolling Cards */}
                 <div
                   ref={scrollContainerRef}
-                  className="overflow-x-auto overflow-y-visible scrollbar-hide px-4 sm:px-6"
+                  className="scrollbar-hide px-4 sm:px-6 mt-4"
                   style={{
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
+                    paddingTop: '1.5rem',
+                    paddingBottom: '2rem',
+                    minHeight: '450px',
+                    overflowX: 'auto',
+                    overflowY: 'visible',
                   }}
                 >
-                  <div className="flex space-x-6 pb-4 justify-center" style={{ minWidth: 'max-content' }}>
+                  <div className="flex space-x-6 justify-center items-start" style={{ minWidth: 'max-content' }}>
                     {storefronts.map((storefront, index) => (
                       <motion.div
                         key={storefront.id}
@@ -182,7 +192,7 @@ export function StorefrontsMegaMenu({
                         <Link
                           href={`/store/${storefront.slug}`}
                           onClick={onClose}
-                          className="group bg-gray-100 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden hover:scale-105 min-h-[280px] flex flex-col block border-2 border-kawai-red"
+                          className="group bg-gray-100 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden hover:scale-105 h-auto flex flex-col block border-2 border-kawai-red"
                         >
                           <div className="p-6 flex-1 flex flex-col">
                             {/* Location Header */}

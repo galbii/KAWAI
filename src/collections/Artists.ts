@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { imageField } from '@/lib/payload/fields/media'
 
 export const Artists: CollectionConfig = {
   slug: 'artists',
@@ -70,15 +71,12 @@ export const Artists: CollectionConfig = {
           label: 'Profile',
           description: 'Artist profile information, image, and biography',
           fields: [
-            {
-              name: 'image',
-              type: 'upload',
-              relationTo: 'media',
+            imageField('image', {
               required: false,
               admin: {
                 description: 'Artist profile photo or performance image'
               }
-            },
+            }),
             {
               name: 'imageUrl',
               type: 'text',
@@ -307,14 +305,11 @@ export const Artists: CollectionConfig = {
                     description: 'SEO keywords (comma-separated)'
                   }
                 },
-                {
-                  name: 'ogImage',
-                  type: 'upload',
-                  relationTo: 'media',
+                imageField('ogImage', {
                   admin: {
                     description: 'Open Graph image for social sharing (defaults to artist image)'
                   }
-                }
+                })
               ],
               admin: {
                 description: 'SEO and social media optimization'

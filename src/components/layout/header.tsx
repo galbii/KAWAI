@@ -485,6 +485,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const [isVisible, setIsVisible] = useState(false)
   const [animationComplete, setAnimationComplete] = useState(false)
   const [isAutoHidden, setIsAutoHidden] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
@@ -1075,15 +1076,17 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   return (
     <motion.header
       ref={headerRef}
-      className={cn(
-        "sticky top-0 z-50 w-full transition-all duration-300",
-        isScrolled ? 'shadow-lg' : 'shadow-sm'
-      )}
+      className="sticky top-0 z-50 w-full"
       initial={{ opacity: 0 }}
-      animate={{ opacity: isVisible ? 1 : 0 }}
+      animate={{
+        opacity: isVisible ? 1 : 0,
+        boxShadow: isAutoHidden
+          ? '0 0 0 0 rgb(0 0 0 / 0)'
+          : (isScrolled ? '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)' : '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)')
+      }}
       transition={{
-        duration: 1.2,
-        ease: [0.25, 0.1, 0.25, 1.0]
+        opacity: { duration: 1.2, ease: [0.25, 0.1, 0.25, 1.0] },
+        boxShadow: { duration: 0.2, ease: [0.4, 0, 0.2, 1] }
       }}
       onAnimationComplete={() => {
         if (isVisible) {
@@ -1092,7 +1095,19 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       }}
     >
       {/* Top Row - Utility Bar (Full Width) */}
-      <div className="bg-white border-b border-gray-100 w-full">
+      <motion.div
+        className="border-b border-gray-100 w-full"
+        initial={false}
+        animate={{
+          backgroundColor: isAutoHidden ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 1)',
+          borderBottomColor: isAutoHidden ? 'rgba(229, 231, 235, 0.3)' : 'rgba(229, 231, 235, 1)',
+          backdropFilter: isAutoHidden ? 'blur(12px)' : 'blur(0px)',
+        }}
+        transition={{
+          duration: 0.2,
+          ease: [0.4, 0, 0.2, 1],
+        }}
+      >
         <div className="container mx-auto px-4 sm:px-6">
           <div
             className={cn(
@@ -1123,7 +1138,10 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
             {/* SearchBar - Center (Prominent) */}
             {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
               <div className="hidden md:flex items-center flex-1 max-w-2xl mx-8">
-                <SearchBar className="w-full" />
+                <SearchBar
+                  className="w-full"
+                  onOpenChange={setIsSearchOpen}
+                />
               </div>
             )}
 
@@ -1223,25 +1241,48 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Kawai Red Line - Between Top and Bottom Rows */}
-      <div className="w-full h-1.5 bg-[#A01829]" />
+      <motion.div
+        className="w-full bg-[#A01829]"
+        initial={false}
+        animate={{
+          height: (!isAutoHidden || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) ? 0 : 6,
+        }}
+        transition={{
+          duration: 0.2,
+          ease: [0.4, 0, 0.2, 1],
+        }}
+      />
 
       {/* Bottom Row - Main Navigation (Full Width) - Absolute positioned overlay */}
-      {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
-        <div
+      {!isSignaturePage && !hidePianoLinks && !isUniversityPage && !isSearchOpen && (
+        <motion.div
           className="hidden lg:block w-full absolute left-0 right-0 z-40"
           style={{
-            top: isScrolled ? '58px' : '70px', // Position below top row
+            minHeight: '16px', // Ensure container is always hoverable
+          }}
+          initial={false}
+          animate={{
+            top: (!isAutoHidden || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen)
+              ? (isScrolled ? 57 : 65) // When nav visible or menu open (no red line)
+              : (isScrolled ? 63 : 71), // When nav auto-hidden (with red line)
+          }}
+          transition={{
+            duration: 0.2,
+            ease: [0.4, 0, 0.2, 1],
           }}
           onMouseEnter={handleBottomNavMouseEnter}
           onMouseLeave={handleBottomNavMouseLeave}
         >
           {/* Hover trigger area - always present even when nav is hidden */}
           <div
-            className="absolute top-0 left-0 right-0 h-16 z-10 pointer-events-auto"
-            style={{ pointerEvents: isAutoHidden ? 'auto' : 'none' }}
+            className="absolute top-0 left-0 right-0 h-4 z-10"
+            style={{
+              pointerEvents: isAutoHidden ? 'auto' : 'none',
+              cursor: isAutoHidden ? 'pointer' : 'default'
+            }}
           />
           <motion.div
             className="overflow-hidden w-full bg-white relative z-20"
@@ -1249,12 +1290,17 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
               borderTopStyle: 'solid',
               borderTopColor: 'rgb(229 231 235)',
               borderTopWidth: (!isAutoHidden || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) ? '1px' : '0px',
+              borderBottomStyle: 'solid',
+              borderBottomColor: '#A01829',
+              borderBottomWidth: (!isAutoHidden || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) ? '6px' : '0px',
               transformOrigin: 'top',
               willChange: 'transform, opacity',
             }}
             initial={false}
             animate={{
-              height: (!isAutoHidden || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) ? 56 : 0,
+              height: (!isAutoHidden || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen)
+                ? (isScrolled ? 55 : 63) // 48px or 56px content + 1px top border + 6px bottom border
+                : 0,
               opacity: (!isAutoHidden || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) ? 1 : 0,
             }}
             transition={{
@@ -1360,7 +1406,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
             </nav>
           </div>
         </motion.div>
-        </div>
+        </motion.div>
       )}
 
       {/* Mobile Menu - Hidden on signature page, concert artist page, and university page */}
@@ -1452,7 +1498,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       >
         <StorefrontsMegaMenu
           storefronts={storefrontsData || []}
-          isOpen={isStorefrontsMenuOpen && animationComplete}
+          isOpen={isStorefrontsMenuOpen && animationComplete && !isSearchOpen}
           onClose={() => setIsStorefrontsMenuOpen(false)}
           isLoading={!storefrontsData}
           isHeaderScrolled={isScrolled}
@@ -1467,7 +1513,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         >
           <ProductsMegaMenu
             productTypes={productsNavData?.types || []}
-            isOpen={isProductsMenuOpen && animationComplete}
+            isOpen={isProductsMenuOpen && animationComplete && !isSearchOpen}
             onClose={() => setIsProductsMenuOpen(false)}
             isLoading={!productsNavData}
             isHeaderScrolled={isScrolled}
@@ -1481,7 +1527,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         onMouseLeave={animationComplete ? handleResourcesMenuClose : undefined}
       >
         <ResourcesMegaMenu
-          isOpen={isResourcesMenuOpen && animationComplete}
+          isOpen={isResourcesMenuOpen && animationComplete && !isSearchOpen}
           onClose={() => setIsResourcesMenuOpen(false)}
           isHeaderScrolled={isScrolled}
         />
@@ -1493,7 +1539,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         onMouseLeave={animationComplete ? handleNewsMenuClose : undefined}
       >
         <NewsMegaMenu
-          isOpen={isNewsMenuOpen && animationComplete}
+          isOpen={isNewsMenuOpen && animationComplete && !isSearchOpen}
           onClose={() => setIsNewsMenuOpen(false)}
           isHeaderScrolled={isScrolled}
         />

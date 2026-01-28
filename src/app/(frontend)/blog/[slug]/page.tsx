@@ -164,8 +164,8 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
       : null
 
     // Get author name
-    const authorName = typeof post.author === 'object' && post.author !== null
-      ? (post.author as User).email || 'KAWAI Piano Gallery'
+    const authorName = Array.isArray(post.authors) && post.authors.length > 0 && typeof post.authors[0] === 'object'
+      ? (post.authors[0] as User).email || 'KAWAI Piano Gallery'
       : 'KAWAI Piano Gallery'
 
     // Category labels
@@ -185,7 +185,10 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
     const readTime = Math.ceil(wordCount / 200) || 5 // Default to 5 min
 
     // Get first category for display
-    const primaryCategory = post.categories?.[0] || ''
+    const firstCategory = post.categories?.[0]
+    const primaryCategory = typeof firstCategory === 'object' && firstCategory !== null
+      ? firstCategory.slug || ''
+      : typeof firstCategory === 'string' ? firstCategory : ''
     const categoryLabel = categoryLabels[primaryCategory] || primaryCategory
 
     return (
@@ -224,14 +227,17 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
                 {/* Category badges */}
                 {post.categories && post.categories.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-6">
-                    {post.categories.slice(0, 3).map((category) => (
-                      <span
-                        key={category}
-                        className="inline-block px-3 py-1.5 text-xs font-semibold uppercase tracking-wider bg-kawai-red/90 text-white rounded-full backdrop-blur-sm"
-                      >
-                        {categoryLabels[category] || category}
-                      </span>
-                    ))}
+                    {post.categories.slice(0, 3).map((category) => {
+                      const categorySlug = typeof category === 'object' && category !== null ? category.slug || '' : typeof category === 'string' ? category : ''
+                      return (
+                        <span
+                          key={categorySlug}
+                          className="inline-block px-3 py-1.5 text-xs font-semibold uppercase tracking-wider bg-kawai-red/90 text-white rounded-full backdrop-blur-sm"
+                        >
+                          {categoryLabels[categorySlug] || categorySlug}
+                        </span>
+                      )
+                    })}
                   </div>
                 )}
 
@@ -288,15 +294,14 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
                   </div>
                 )}
 
-                {/* Content Blocks (if any) */}
-                {post.contentBlocks && post.contentBlocks.length > 0 && (
+                {/* Content Blocks - TODO: Phase 2 */}
+                {/* {post.contentBlocks && post.contentBlocks.length > 0 && (
                   <div className="mt-12 space-y-8">
-                    {/* TODO: Render content blocks in Phase 2 */}
                     <p className="text-sm text-gray-500 italic">
                       Content blocks will render here (Image, Video, Spacer, etc.)
                     </p>
                   </div>
-                )}
+                )} */}
 
                 {/* Back to Blog Link */}
                 <div className="mt-16 pt-8 border-t border-gray-200">

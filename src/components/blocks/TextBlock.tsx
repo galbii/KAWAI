@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import type { TextBlock as TextBlockType } from '@/payload-types'
+import type { ContentTextBlock as TextBlockType } from '@/payload-types'
 import { LexicalSerializer } from '@/lib/lexical/LexicalSerializer'
 import { cn } from '@/lib/utils'
 

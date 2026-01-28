@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { imageField } from '@/lib/payload/fields/media'
 
 export const ConcertArtistPage: CollectionConfig = {
   slug: 'concert-artist-page',
@@ -92,18 +93,12 @@ export const ConcertArtistPage: CollectionConfig = {
                     description: 'Brief model description (1-2 sentences)'
                   }
                 },
-                {
-                  name: 'image',
-                  type: 'upload',
-                  relationTo: 'media',
+                imageField('image', {
                   required: false,
-                  filterOptions: {
-                    mimeType: { contains: 'image' },
-                  },
                   admin: {
                     description: 'Model showcase image'
                   }
-                },
+                }),
                 {
                   name: 'link',
                   type: 'text',
@@ -203,18 +198,12 @@ export const ConcertArtistPage: CollectionConfig = {
                     plural: 'Gallery Images',
                   },
                   fields: [
-                    {
-                      name: 'image',
-                      type: 'upload',
-                      relationTo: 'media',
+                    imageField('image', {
                       required: false,
-                      filterOptions: {
-                        mimeType: { contains: 'image' },
-                      },
                       admin: {
                         description: 'Gallery image'
                       }
-                    },
+                    }),
                     {
                       name: 'alt',
                       type: 'text',

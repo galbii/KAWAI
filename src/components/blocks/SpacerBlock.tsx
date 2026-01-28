@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import type { SpacerBlock as SpacerBlockType } from '@/payload-types'
+import type { LayoutSpacerBlock as SpacerBlockType } from '@/payload-types'
 import { cn } from '@/lib/utils'
 
 interface SpacerBlockProps extends SpacerBlockType {}

@@ -232,43 +232,94 @@ export default buildConfig({
       },
     }),
     searchPlugin({
-      collections: ['pages'],
+      collections: ['products', 'pages'],
       defaultPriorities: {
-        pages: 10,
+        products: 20,  // Products appear FIRST
+        pages: 10,     // Pages appear second
       },
-      beforeSync: ({ originalDoc, searchDoc }) => ({
-        ...searchDoc,
-        excerpt: originalDoc?.hero?.richText
-          ? extractTextFromRichText(originalDoc.hero.richText)
-          : originalDoc?.title || '',
-        category: originalDoc?.category || '',
-        tags: originalDoc?.tags || [],
-      }),
+      beforeSync: ({ originalDoc, searchDoc, req }) => {
+        // Extract searchable data based on collection type
+        const collectionSlug = (originalDoc.name && originalDoc.model) ? 'products' : 'pages'
+
+        if (collectionSlug === 'products') {
+          // Valid tag options from the search collection schema
+          const validTags = ['piano', 'digital', 'grand', 'hybrid', 'upright', 'accessory', 'software', 'page', 'faq', 'support']
+
+          // Filter tags to only include valid options
+          const productTags = [
+            originalDoc.type,
+            originalDoc.category,
+          ].filter((tag): tag is string => Boolean(tag) && validTags.includes(tag))
+
+          // Extract product-specific fields
+          return {
+            ...searchDoc,
+            title: originalDoc.name || originalDoc.model || originalDoc.title,
+            excerpt: originalDoc.description?.substring(0, 200) || `${originalDoc.brand || 'Kawai'} ${originalDoc.model || ''}`.trim(),
+            category: originalDoc.category || originalDoc.type || 'product',
+            tags: productTags,
+          }
+        }
+
+        if (collectionSlug === 'pages') {
+          // Extract page-specific fields
+          return {
+            ...searchDoc,
+            excerpt: originalDoc?.hero?.richText
+              ? extractTextFromRichText(originalDoc.hero.richText)?.substring(0, 200)
+              : originalDoc?.title || '',
+            category: originalDoc?.category || 'page',
+            tags: originalDoc?.tags || [],
+          }
+        }
+
+        // Fallback for any other collection
+        return {
+          ...searchDoc,
+          excerpt: originalDoc?.title || '',
+          category: 'other',
+          tags: [],
+        }
+      },
       searchOverrides: {
         slug: 'search',
         fields: ({ defaultFields }) => [
           ...defaultFields,
           {
+            name: 'excerpt',
+            type: 'textarea',
+            admin: {
+              position: 'sidebar',
+              description: 'Short excerpt displayed in search results',
+            },
+          },
+          {
             name: 'category',
             type: 'text',
             admin: {
               position: 'sidebar',
+              description: 'Category/type (product, page, digital, grand, etc.)',
             },
           },
           {
             name: 'tags',
             type: 'select',
             hasMany: true,
-            options: [],
+            options: [
+              { label: 'Piano', value: 'piano' },
+              { label: 'Digital', value: 'digital' },
+              { label: 'Grand', value: 'grand' },
+              { label: 'Hybrid', value: 'hybrid' },
+              { label: 'Upright', value: 'upright' },
+              { label: 'Accessory', value: 'accessory' },
+              { label: 'Software', value: 'software' },
+              { label: 'Page', value: 'page' },
+              { label: 'FAQ', value: 'faq' },
+              { label: 'Support', value: 'support' },
+            ],
             admin: {
               position: 'sidebar',
-            },
-          },
-          {
-            name: 'excerpt',
-            type: 'textarea',
-            admin: {
-              position: 'sidebar',
+              description: 'Tags for filtering',
             },
           },
         ],

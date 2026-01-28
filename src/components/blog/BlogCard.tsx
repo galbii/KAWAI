@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import type { Post, Media } from '@/payload-types'
+import type { Post, Media, Category } from '@/payload-types'
 import { resolveMediaUrl } from '@/lib/payload'
 import { getOptimizedImageProps } from '@/lib/media/r2-utils'
 
@@ -22,7 +22,7 @@ export function BlogCard({ post }: BlogCardProps) {
     excerpt,
     featuredImage,
     publishedDate,
-    categories,
+    categories: rawCategories,
   } = post
 
   // Resolve featured image URL
@@ -38,17 +38,13 @@ export function BlogCard({ post }: BlogCardProps) {
       })
     : null
 
-  // Get category labels
-  const categoryLabels: Record<string, string> = {
-    'education': 'Piano Education',
-    'product-news': 'Product News',
-    'artists': 'Artist Spotlights',
-    'maintenance': 'Maintenance & Care',
-    'buying-guides': 'Buying Guides',
-    'events': 'Events',
-    'company-news': 'Company News',
-    'technology': 'Technology',
-  }
+  // Extract category data (handles both Category objects and string IDs)
+  const categories = rawCategories?.map((cat) => {
+    if (typeof cat === 'string') {
+      return { slug: cat, title: cat }
+    }
+    return { slug: cat.slug, title: cat.title }
+  }) || []
 
   return (
     <Link
@@ -76,10 +72,10 @@ export function BlogCard({ post }: BlogCardProps) {
             <div className="flex flex-wrap gap-2 mb-3">
               {categories.slice(0, 2).map((category) => (
                 <span
-                  key={category}
+                  key={category.slug}
                   className="inline-block px-2 py-1 text-xs font-medium text-kawai-red bg-kawai-red/10 rounded"
                 >
-                  {categoryLabels[category] || category}
+                  {category.title}
                 </span>
               ))}
             </div>

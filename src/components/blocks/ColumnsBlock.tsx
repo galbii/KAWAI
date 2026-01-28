@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import type { ColumnsBlock as ColumnsBlockType } from '@/payload-types'
+import type { LayoutColumnsBlock as ColumnsBlockType } from '@/payload-types'
 import { cn } from '@/lib/utils'
 import { ImageBlock } from './ImageBlock'
 import { TextBlock } from './TextBlock'

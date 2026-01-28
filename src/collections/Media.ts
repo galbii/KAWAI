@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { imageField } from '@/lib/payload/fields/media'
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -73,14 +74,11 @@ export const Media: CollectionConfig = {
             description: 'Video duration in seconds',
           },
         },
-        {
-          name: 'thumbnail',
-          type: 'upload',
-          relationTo: 'media',
+        imageField('thumbnail', {
           admin: {
             description: 'Custom thumbnail for the video',
           },
-        },
+        }),
         {
           name: 'autoplay',
           type: 'checkbox',
@@ -109,38 +107,26 @@ export const Media: CollectionConfig = {
         description: 'Responsive image variants (generated automatically when uploaded)',
       },
       fields: [
-        {
-          name: 'mobile',
-          type: 'upload',
-          relationTo: 'media',
+        imageField('mobile', {
           admin: {
             description: 'Optimized for mobile devices (480px width)',
           },
-        },
-        {
-          name: 'tablet',
-          type: 'upload',
-          relationTo: 'media',
+        }),
+        imageField('tablet', {
           admin: {
             description: 'Optimized for tablets (768px width)',
           },
-        },
-        {
-          name: 'desktop',
-          type: 'upload',
-          relationTo: 'media',
+        }),
+        imageField('desktop', {
           admin: {
             description: 'Optimized for desktop (1200px width)',
           },
-        },
-        {
-          name: 'largeDesktop',
-          type: 'upload',
-          relationTo: 'media',
+        }),
+        imageField('largeDesktop', {
           admin: {
             description: 'Optimized for large screens (1920px width)',
           },
-        },
+        }),
       ],
     },
 

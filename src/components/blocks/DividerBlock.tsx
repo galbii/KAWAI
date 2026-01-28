@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import type { DividerBlock as DividerBlockType } from '@/payload-types'
+import type { LayoutDividerBlock as DividerBlockType } from '@/payload-types'
 import { cn } from '@/lib/utils'
 
 interface DividerBlockProps extends DividerBlockType {}

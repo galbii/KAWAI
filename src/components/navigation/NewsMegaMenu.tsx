@@ -107,18 +107,21 @@ export function NewsMegaMenu({
         <motion.div
           key="news-mega-menu"
           initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
+          animate={{
+            opacity: 1,
+            y: 0,
+            top: isHeaderScrolled ? 112 : 128,
+          }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.3, ease: 'easeInOut' }}
           className={cn(
             'fixed left-0 right-0 z-[60]',
-            'bg-white border-t border-b border-gray-200 shadow-2xl',
+            'bg-white border-b border-gray-200 shadow-2xl',
             className
           )}
           style={{
-            top: isHeaderScrolled ? '118px' : '126px',
             width: '100vw',
-            maxHeight: isHeaderScrolled ? 'calc(100vh - 118px - 20px)' : 'calc(100vh - 126px - 20px)',
+            maxHeight: isHeaderScrolled ? 'calc(100vh - 112px - 20px)' : 'calc(100vh - 128px - 20px)',
             overflowY: 'auto',
           }}
         >
