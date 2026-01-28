@@ -102,11 +102,11 @@ export function StorefrontsMegaMenu({
           transition={{ duration: 0.3, ease: 'easeInOut' }}
           className={cn(
             'fixed left-0 right-0 z-[60]',
-            'bg-white border-t border-b border-gray-200/50 shadow-2xl',
+            'bg-white border-t border-b border-gray-200 shadow-2xl',
             className
           )}
           style={{
-            top: 'var(--header-height, 120px)',
+            top: isHeaderScrolled ? '118px' : '126px',
             width: '100vw',
           }}
         >
@@ -118,7 +118,7 @@ export function StorefrontsMegaMenu({
                   {[1, 2, 3].map((i) => (
                     <div
                       key={i}
-                      className="flex-shrink-0 w-[320px] h-[280px] bg-gray-200 rounded-2xl animate-pulse"
+                      className="flex-shrink-0 w-[320px] h-[280px] bg-gray-100 rounded-2xl animate-pulse border border-gray-200"
                     />
                   ))}
                 </div>
@@ -130,11 +130,11 @@ export function StorefrontsMegaMenu({
                 <div className="container mx-auto px-4 sm:px-6 mb-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-2xl font-bold text-kawai-black mb-1">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-1">
                         Official Kawai Storefronts
                       </h2>
                       <p className="text-sm text-gray-600">
-                        Visit our authorized Kawai Piano Gallery locations • {storefronts.length} {storefronts.length === 1 ? 'location' : 'locations'}
+                        Official Storefront • {storefronts.length} {storefronts.length === 1 ? 'location' : 'locations'}
                       </p>
                     </div>
 
@@ -182,7 +182,7 @@ export function StorefrontsMegaMenu({
                         <Link
                           href={`/store/${storefront.slug}`}
                           onClick={onClose}
-                          className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden hover:scale-105 min-h-[280px] flex flex-col block border border-gray-100"
+                          className="group bg-gray-100 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden hover:scale-105 min-h-[280px] flex flex-col block border-2 border-kawai-red"
                         >
                           <div className="p-6 flex-1 flex flex-col">
                             {/* Location Header */}
@@ -290,7 +290,7 @@ export function StorefrontsMegaMenu({
 
                 {/* Scroll Hint for Mobile */}
                 {storefronts.length > 1 && (
-                  <div className="lg:hidden text-center mt-4 text-xs text-gray-500">
+                  <div className="lg:hidden text-center mt-4 text-xs text-gray-600">
                     ← Scroll to see more locations →
                   </div>
                 )}

@@ -484,6 +484,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const [isLoadingLocation, setIsLoadingLocation] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const [animationComplete, setAnimationComplete] = useState(false)
+  const [isAutoHidden, setIsAutoHidden] = useState(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
@@ -492,6 +493,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const storefrontsMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const newsMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const autoHideTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const lastScrollY = useRef(0)
   const lastScrollTime = useRef(0)
 
@@ -552,36 +554,8 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     loadStorefronts()
   }, [])
 
-  // Track header height for mega menu positioning
-  useEffect(() => {
-    const updateHeaderHeight = () => {
-      if (headerRef.current) {
-        const height = headerRef.current.offsetHeight
-        document.documentElement.style.setProperty('--header-height', `${height}px`)
-      }
-    }
-
-    // Initial measurement
-    updateHeaderHeight()
-
-    // Immediate update when nav visibility changes (during scroll)
-    // Use requestAnimationFrame to sync with browser paint
-    const rafId = requestAnimationFrame(() => {
-      updateHeaderHeight()
-    })
-
-    // Update on resize
-    window.addEventListener('resize', updateHeaderHeight)
-
-    // Also update after animation completes
-    const timer = setTimeout(updateHeaderHeight, 250) // After 200ms nav animation completes
-
-    return () => {
-      window.removeEventListener('resize', updateHeaderHeight)
-      clearTimeout(timer)
-      cancelAnimationFrame(rafId)
-    }
-  }, [isScrolled, isScrollingUp, isProductsMenuOpen, isStorefrontsMenuOpen, isResourcesMenuOpen, isNewsMenuOpen])
+  // REMOVED: CSS variable updates were causing scroll jank
+  // Mega menus now position themselves directly without needing this
   
   // Start fade-in animation once after mount
   useEffect(() => {
@@ -591,6 +565,26 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     }, 100)
 
     return () => clearTimeout(timer)
+  }, [])
+
+  // Initialize scroll state based on initial scroll position
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const initialScrollY = window.scrollY
+      const isAtTop = initialScrollY <= 50
+      setIsScrolled(!isAtTop)
+    }
+
+    // Start auto-hide timer on initial load
+    autoHideTimeoutRef.current = setTimeout(() => {
+      setIsAutoHidden(true)
+    }, 2000)
+
+    return () => {
+      if (autoHideTimeoutRef.current) {
+        clearTimeout(autoHideTimeoutRef.current)
+      }
+    }
   }, [])
   
   // Fetch dealer location data when origin changes - but only after animation completes
@@ -736,6 +730,9 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       if (newsMenuTimeoutRef.current) {
         clearTimeout(newsMenuTimeoutRef.current)
       }
+      if (autoHideTimeoutRef.current) {
+        clearTimeout(autoHideTimeoutRef.current)
+      }
     }
   }, [isMenuOpen, activeDropdown, isProductsMenuOpen, isStorefrontsMenuOpen, isResourcesMenuOpen, isNewsMenuOpen])
   
@@ -755,7 +752,8 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     lastScrollY.current = latest
 
     // Update "scrolled past top" state
-    setIsScrolled(latest > 50)
+    const isAtTop = latest <= 50
+    setIsScrolled(!isAtTop)
 
     // Detect scroll direction (only if movement is significant enough)
     const movement = latest - previous
@@ -763,6 +761,25 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     if (Math.abs(movement) > 5) {
       // Update last scroll time for menu prevention
       lastScrollTime.current = Date.now()
+
+      // Clear any existing auto-hide timer
+      if (autoHideTimeoutRef.current) {
+        clearTimeout(autoHideTimeoutRef.current)
+        autoHideTimeoutRef.current = null
+      }
+
+      // Determine if scrolling up or down
+      const isScrollingUpNow = movement < 0
+
+      // Show nav when scrolling up
+      if (isScrollingUpNow) {
+        setIsAutoHidden(false)
+      }
+
+      // Start 2-second auto-hide timer after any scroll
+      autoHideTimeoutRef.current = setTimeout(() => {
+        setIsAutoHidden(true)
+      }, 2000)
 
       // Close menus on any scroll
       if (isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) {
@@ -773,10 +790,19 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       }
 
       // Update direction: true if scrolling up, false if scrolling down
-      setIsScrollingUp(movement < 0)
+      setIsScrollingUp(isScrollingUpNow)
     }
   })
   
+  // Clean up timers on unmount
+  useEffect(() => {
+    return () => {
+      if (autoHideTimeoutRef.current) {
+        clearTimeout(autoHideTimeoutRef.current)
+      }
+    }
+  }, [])
+
   // Mobile menu item toggle handlers
   const toggleMobileItem = useCallback((itemLabel: string) => {
     setOpenMobileItems(prev => {
@@ -827,6 +853,12 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       clearTimeout(productsMenuTimeoutRef.current)
       productsMenuTimeoutRef.current = null
     }
+    // Clear auto-hide timer and show nav
+    if (autoHideTimeoutRef.current) {
+      clearTimeout(autoHideTimeoutRef.current)
+      autoHideTimeoutRef.current = null
+    }
+    setIsAutoHidden(false)
     setIsProductsMenuOpen(true)
     // Close other menus
     setActiveDropdown(null)
@@ -838,6 +870,13 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const handleProductsMenuClose = useCallback(() => {
     productsMenuTimeoutRef.current = setTimeout(() => {
       setIsProductsMenuOpen(false)
+      // Start auto-hide timer after menu closes
+      if (autoHideTimeoutRef.current) {
+        clearTimeout(autoHideTimeoutRef.current)
+      }
+      autoHideTimeoutRef.current = setTimeout(() => {
+        setIsAutoHidden(true)
+      }, 2000)
     }, 150)
   }, [])
 
@@ -850,6 +889,12 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       clearTimeout(storefrontsMenuTimeoutRef.current)
       storefrontsMenuTimeoutRef.current = null
     }
+    // Clear auto-hide timer and show nav
+    if (autoHideTimeoutRef.current) {
+      clearTimeout(autoHideTimeoutRef.current)
+      autoHideTimeoutRef.current = null
+    }
+    setIsAutoHidden(false)
     setIsStorefrontsMenuOpen(true)
     // Close other menus
     setActiveDropdown(null)
@@ -861,6 +906,13 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const handleStorefrontsMenuClose = useCallback(() => {
     storefrontsMenuTimeoutRef.current = setTimeout(() => {
       setIsStorefrontsMenuOpen(false)
+      // Start auto-hide timer after menu closes
+      if (autoHideTimeoutRef.current) {
+        clearTimeout(autoHideTimeoutRef.current)
+      }
+      autoHideTimeoutRef.current = setTimeout(() => {
+        setIsAutoHidden(true)
+      }, 2000)
     }, 150)
   }, [])
 
@@ -873,6 +925,12 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       clearTimeout(resourcesMenuTimeoutRef.current)
       resourcesMenuTimeoutRef.current = null
     }
+    // Clear auto-hide timer and show nav
+    if (autoHideTimeoutRef.current) {
+      clearTimeout(autoHideTimeoutRef.current)
+      autoHideTimeoutRef.current = null
+    }
+    setIsAutoHidden(false)
     setIsResourcesMenuOpen(true)
     // Close other menus
     setActiveDropdown(null)
@@ -884,6 +942,13 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const handleResourcesMenuClose = useCallback(() => {
     resourcesMenuTimeoutRef.current = setTimeout(() => {
       setIsResourcesMenuOpen(false)
+      // Start auto-hide timer after menu closes
+      if (autoHideTimeoutRef.current) {
+        clearTimeout(autoHideTimeoutRef.current)
+      }
+      autoHideTimeoutRef.current = setTimeout(() => {
+        setIsAutoHidden(true)
+      }, 2000)
     }, 150)
   }, [])
 
@@ -896,6 +961,12 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       clearTimeout(newsMenuTimeoutRef.current)
       newsMenuTimeoutRef.current = null
     }
+    // Clear auto-hide timer and show nav
+    if (autoHideTimeoutRef.current) {
+      clearTimeout(autoHideTimeoutRef.current)
+      autoHideTimeoutRef.current = null
+    }
+    setIsAutoHidden(false)
     setIsNewsMenuOpen(true)
     // Close other menus
     setActiveDropdown(null)
@@ -907,6 +978,13 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const handleNewsMenuClose = useCallback(() => {
     newsMenuTimeoutRef.current = setTimeout(() => {
       setIsNewsMenuOpen(false)
+      // Start auto-hide timer after menu closes
+      if (autoHideTimeoutRef.current) {
+        clearTimeout(autoHideTimeoutRef.current)
+      }
+      autoHideTimeoutRef.current = setTimeout(() => {
+        setIsAutoHidden(true)
+      }, 2000)
     }, 150)
   }, [])
 
@@ -942,6 +1020,29 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     }
   }, [isInteractiveElement, scrollToTop])
 
+  // Bottom nav hover handler - show nav when hovering
+  const handleBottomNavMouseEnter = useCallback(() => {
+    if (autoHideTimeoutRef.current) {
+      clearTimeout(autoHideTimeoutRef.current)
+      autoHideTimeoutRef.current = null
+    }
+    setIsAutoHidden(false)
+  }, [])
+
+  // Bottom nav mouse leave handler - start auto-hide timer
+  const handleBottomNavMouseLeave = useCallback(() => {
+    // Clear any existing timer
+    if (autoHideTimeoutRef.current) {
+      clearTimeout(autoHideTimeoutRef.current)
+      autoHideTimeoutRef.current = null
+    }
+
+    // Start 2-second auto-hide timer
+    autoHideTimeoutRef.current = setTimeout(() => {
+      setIsAutoHidden(true)
+    }, 2000)
+  }, [])
+
   // Animation variants - use a stable key to prevent re-animation
   const headerVariants = {
     initial: { opacity: 0 },
@@ -975,8 +1076,8 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     <motion.header
       ref={headerRef}
       className={cn(
-        "sticky top-0 z-50 w-full border-b border-gray-200/50 transition-shadow duration-300",
-        isScrolled ? 'bg-white shadow-lg' : 'bg-white shadow-sm'
+        "sticky top-0 z-50 w-full transition-all duration-300",
+        isScrolled ? 'shadow-lg' : 'shadow-sm'
       )}
       initial={{ opacity: 0 }}
       animate={{ opacity: isVisible ? 1 : 0 }}
@@ -990,13 +1091,9 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         }
       }}
     >
-      {/* Kawai Red Top Line */}
-      <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#A01829]" />
-
-      {/* Two-Tier Header Layout */}
-      <div className="container mx-auto px-4 sm:px-6">
-        {/* Top Row - Utility Bar */}
-        <div className="border-b border-gray-100">
+      {/* Top Row - Utility Bar (Full Width) */}
+      <div className="bg-white border-b border-gray-100 w-full">
+        <div className="container mx-auto px-4 sm:px-6">
           <div
             className={cn(
               "flex items-center justify-between transition-all duration-300",
@@ -1126,21 +1223,46 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Bottom Row - Main Navigation */}
-        {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
+      {/* Kawai Red Line - Between Top and Bottom Rows */}
+      <div className="w-full h-1.5 bg-[#A01829]" />
+
+      {/* Bottom Row - Main Navigation (Full Width) - Absolute positioned overlay */}
+      {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
+        <div
+          className="hidden lg:block w-full absolute left-0 right-0 z-40"
+          style={{
+            top: isScrolled ? '58px' : '70px', // Position below top row
+          }}
+          onMouseEnter={handleBottomNavMouseEnter}
+          onMouseLeave={handleBottomNavMouseLeave}
+        >
+          {/* Hover trigger area - always present even when nav is hidden */}
+          <div
+            className="absolute top-0 left-0 right-0 h-16 z-10 pointer-events-auto"
+            style={{ pointerEvents: isAutoHidden ? 'auto' : 'none' }}
+          />
           <motion.div
-            className="hidden lg:block overflow-hidden"
+            className="overflow-hidden w-full bg-white relative z-20"
+            style={{
+              borderTopStyle: 'solid',
+              borderTopColor: 'rgb(229 231 235)',
+              borderTopWidth: (!isAutoHidden || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) ? '1px' : '0px',
+              transformOrigin: 'top',
+              willChange: 'transform, opacity',
+            }}
             initial={false}
             animate={{
-              height: (!isScrolled || isScrollingUp || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) ? 'auto' : 0,
-              opacity: (!isScrolled || isScrollingUp || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) ? 1 : 0,
+              height: (!isAutoHidden || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) ? 56 : 0,
+              opacity: (!isAutoHidden || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) ? 1 : 0,
             }}
             transition={{
               duration: 0.2,
               ease: [0.4, 0, 0.2, 1],
             }}
           >
+          <div className="container mx-auto px-4 sm:px-6">
             <nav>
               <div className={cn(
                 "flex items-center justify-center gap-8 transition-all duration-300",
@@ -1149,7 +1271,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                 {/* Home Link */}
                 <Link
                   href="/"
-                  className="px-3 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md"
+                  className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md"
                 >
                   Home
                 </Link>
@@ -1161,8 +1283,8 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                 >
                   <button
                     className={cn(
-                      "flex items-center px-3 py-2 text-sm text-gray-700 font-medium transition-colors rounded-md",
-                      animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
+                      "flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md",
+                      animationComplete ? "cursor-pointer" : "cursor-default opacity-50"
                     )}
                     disabled={!animationComplete}
                   >
@@ -1178,8 +1300,8 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                 >
                   <button
                     className={cn(
-                      "flex items-center px-3 py-2 text-sm text-gray-700 font-medium transition-colors rounded-md",
-                      storefrontsData && animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
+                      "flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md",
+                      storefrontsData && animationComplete ? "cursor-pointer" : "cursor-default opacity-50"
                     )}
                     disabled={!storefrontsData || !animationComplete}
                   >
@@ -1196,8 +1318,8 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                   >
                     <button
                       className={cn(
-                        "flex items-center px-3 py-2 text-sm text-gray-700 font-medium transition-colors rounded-md",
-                        productsNavData && animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
+                        "flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md",
+                        productsNavData && animationComplete ? "cursor-pointer" : "cursor-default opacity-50"
                       )}
                       disabled={!productsNavData || !animationComplete}
                     >
@@ -1212,7 +1334,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                   <ContextAwareLink
                     key={item.label}
                     href={item.href || '#'}
-                    className="px-3 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md"
+                    className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md"
                   >
                     {item.label}
                   </ContextAwareLink>
@@ -1225,8 +1347,8 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                 >
                   <button
                     className={cn(
-                      "flex items-center px-3 py-2 text-sm text-gray-700 font-medium transition-colors rounded-md",
-                      animationComplete ? "hover:text-gray-900 hover:bg-gray-50/50 cursor-pointer" : "cursor-default opacity-50"
+                      "flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md",
+                      animationComplete ? "cursor-pointer" : "cursor-default opacity-50"
                     )}
                     disabled={!animationComplete}
                   >
@@ -1236,9 +1358,10 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                 </div>
               </div>
             </nav>
-          </motion.div>
-        )}
-      </div>
+          </div>
+        </motion.div>
+        </div>
+      )}
 
       {/* Mobile Menu - Hidden on signature page, concert artist page, and university page */}
       <AnimatePresence>

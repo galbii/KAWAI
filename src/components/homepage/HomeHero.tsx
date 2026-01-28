@@ -60,10 +60,13 @@ export function HomeHero() {
   };
 
   return (
-    <section 
+    <section
       ref={heroRef}
       className="section-brand-primary relative min-h-screen flex items-center overflow-hidden"
-      style={{ willChange: 'transform' }}
+      style={{
+        willChange: 'transform',
+        paddingTop: '70px'
+      }}
     >
       {/* Video Background */}
       <video

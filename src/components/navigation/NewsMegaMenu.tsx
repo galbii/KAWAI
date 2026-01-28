@@ -112,20 +112,20 @@ export function NewsMegaMenu({
           transition={{ duration: 0.3, ease: 'easeInOut' }}
           className={cn(
             'fixed left-0 right-0 z-[60]',
-            'bg-white border-t border-b border-gray-200/50 shadow-2xl',
+            'bg-white border-t border-b border-gray-200 shadow-2xl',
             className
           )}
           style={{
-            top: 'var(--header-height, 120px)',
+            top: isHeaderScrolled ? '118px' : '126px',
             width: '100vw',
-            maxHeight: 'calc(100vh - var(--header-height, 120px) - 20px)',
+            maxHeight: isHeaderScrolled ? 'calc(100vh - 118px - 20px)' : 'calc(100vh - 126px - 20px)',
             overflowY: 'auto',
           }}
         >
           <div className="container mx-auto px-4 sm:px-6 py-6 lg:py-8">
             {/* Header */}
             <div className="mb-4 lg:mb-6">
-              <h2 className="text-xl lg:text-2xl font-bold text-kawai-black mb-1">
+              <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-1">
                 Latest News & Updates
               </h2>
               <p className="text-xs lg:text-sm text-gray-600">

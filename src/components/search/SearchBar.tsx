@@ -36,6 +36,16 @@ export function SearchBar({ className }: SearchBarProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
+  // Auto-focus search input on mount
+  useEffect(() => {
+    // Small delay to ensure header animation completes
+    const timer = setTimeout(() => {
+      inputRef.current?.focus()
+    }, 1500)
+
+    return () => clearTimeout(timer)
+  }, [])
+
   // Debounced search effect (300ms)
   useEffect(() => {
     if (query.length < 2) {

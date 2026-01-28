@@ -95,18 +95,18 @@ export function ResourcesMegaMenu({
           transition={{ duration: 0.3, ease: 'easeInOut' }}
           className={cn(
             'fixed left-0 right-0 z-[60]',
-            'bg-white border-t border-b border-gray-200/50 shadow-2xl',
+            'bg-white border-t border-b border-gray-200 shadow-2xl',
             className
           )}
           style={{
-            top: 'var(--header-height, 120px)',
+            top: isHeaderScrolled ? '118px' : '126px',
             width: '100vw',
           }}
         >
           <div className="container mx-auto px-4 sm:px-6 py-8">
             {/* Header */}
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-kawai-black mb-1">
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">
                 Resources & Support
               </h2>
               <p className="text-sm text-gray-600">
@@ -167,7 +167,7 @@ export function ResourcesMegaMenu({
                           {/* Coming Soon Badge */}
                           {resource.comingSoon && (
                             <div className="absolute -top-1 -right-1">
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-yellow-400/90 text-yellow-900 border border-yellow-500/50">
                                 Coming Soon
                               </span>
                             </div>
@@ -180,7 +180,7 @@ export function ResourcesMegaMenu({
                             className={cn(
                               'text-lg font-bold mb-2 transition-colors duration-300',
                               resource.comingSoon
-                                ? 'text-gray-700'
+                                ? 'text-gray-500'
                                 : 'text-gray-900 group-hover:text-kawai-red'
                             )}
                           >
@@ -193,9 +193,9 @@ export function ResourcesMegaMenu({
 
                         {/* Action Indicator */}
                         {!resource.comingSoon && (
-                          <div className="mt-4 pt-4 border-t border-gray-100">
+                          <div className="mt-4 pt-4 border-t border-gray-200">
                             <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-kawai-red group-hover:text-kawai-red/80 transition-colors">
+                              <span className="text-sm font-medium text-gray-700 group-hover:text-kawai-red transition-colors">
                                 Learn More
                               </span>
                               <div className="w-6 h-6 bg-kawai-red/10 group-hover:bg-kawai-red rounded-full flex items-center justify-center transition-colors">
@@ -219,11 +219,11 @@ export function ResourcesMegaMenu({
 
             {/* Footer Note */}
             <div className="mt-8 pt-6 border-t border-gray-200">
-              <p className="text-sm text-gray-500 text-center">
+              <p className="text-sm text-gray-600 text-center">
                 Need immediate assistance? Call us at{' '}
                 <a
                   href="tel:1-800-KAWAI-US"
-                  className="font-medium text-kawai-red hover:text-kawai-red/80 transition-colors"
+                  className="font-medium text-gray-900 hover:text-kawai-red transition-colors"
                 >
                   1-800-KAWAI-US
                 </a>

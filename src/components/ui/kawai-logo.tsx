@@ -119,7 +119,7 @@ export function KawaiLogo({
       return { location: '', suffix: '' }
     }
 
-    return { location: locationName, suffix: 'Instrumental to Life' }
+    return { location: locationName, suffix: 'Official Storefront' }
   }
 
   const { location, suffix } = parseLocationText(dealerName)

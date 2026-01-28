@@ -86,12 +86,12 @@ export function ProductsMegaMenu({
           transition={{ duration: 0.3, ease: 'easeInOut' }}
           className={cn(
             'fixed left-0 right-0 z-[60]',
-            'bg-white border-t border-b border-gray-200/50 shadow-2xl',
+            'bg-white border-t border-b border-gray-200 shadow-2xl',
             'overflow-hidden',
             className
           )}
           style={{
-            top: 'var(--header-height, 120px)',
+            top: isHeaderScrolled ? '118px' : '126px',
             width: '100vw',
           }}
         >
@@ -100,7 +100,7 @@ export function ProductsMegaMenu({
               /* Loading State */
               <div className="grid grid-cols-12 gap-0">
                 {/* Sidebar Skeleton */}
-                <div className="col-span-3 border-r border-gray-200/50 bg-gray-50/50 py-2">
+                <div className="col-span-3 border-r border-gray-200 bg-gray-50 py-2">
                   <div className="pr-4">
                     <div className="h-4 bg-gray-200 rounded w-32 mb-4 px-4 animate-pulse" />
                     <div className="space-y-2">
@@ -124,9 +124,9 @@ export function ProductsMegaMenu({
               /* Actual Content */
               <div className="grid grid-cols-12 gap-0">
                 {/* Sidebar - Product Types */}
-                <div className="col-span-3 border-r border-gray-200/50 bg-gray-50/50 py-2">
+                <div className="col-span-3 border-r border-gray-200 bg-gray-50 py-2">
                   <div className="pr-4">
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4 px-4">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-600 mb-4 px-4">
                       Product Categories
                     </h3>
                     <nav className="space-y-1">
@@ -138,13 +138,16 @@ export function ProductsMegaMenu({
                             'w-full text-left px-4 py-3 rounded-lg transition-all duration-200',
                             'flex items-center justify-between group',
                             selectedType === typeData.type
-                              ? 'bg-white text-kawai-red font-semibold shadow-sm'
-                              : 'text-gray-700 hover:bg-white hover:text-gray-900'
+                              ? 'bg-kawai-red text-white font-semibold shadow-sm'
+                              : 'text-gray-700 hover:bg-gray-100'
                           )}
                         >
                           <div className="flex-1">
                             <div className="font-medium">{typeData.type}</div>
-                            <div className="text-xs text-gray-500 mt-0.5">
+                            <div className={cn(
+                              "text-xs mt-0.5",
+                              selectedType === typeData.type ? "text-white/90" : "text-gray-500"
+                            )}>
                               {typeData.count} {typeData.count === 1 ? 'product' : 'products'}
                             </div>
                           </div>
@@ -152,7 +155,7 @@ export function ProductsMegaMenu({
                             className={cn(
                               'h-4 w-4 transition-transform duration-200',
                               selectedType === typeData.type
-                                ? 'text-kawai-red translate-x-0.5'
+                                ? 'text-white translate-x-0.5'
                                 : 'text-gray-400 group-hover:translate-x-0.5'
                             )}
                           />
@@ -161,11 +164,11 @@ export function ProductsMegaMenu({
                     </nav>
 
                     {/* View All Products Link */}
-                    <div className="mt-6 pt-6 border-t border-gray-200/50">
+                    <div className="mt-6 pt-6 border-t border-gray-200">
                       <Link
                         href="/products"
                         onClick={onClose}
-                        className="block px-4 py-2 text-sm font-medium text-kawai-red hover:text-kawai-red/80 transition-colors"
+                        className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                       >
                         View All Products →
                       </Link>
@@ -201,7 +204,7 @@ export function ProductsMegaMenu({
                               key={product.id}
                               href={`/products/${product.handle}`}
                               onClick={handleProductClick}
-                              className="group block bg-white rounded-lg border border-gray-200/50 overflow-hidden hover:shadow-md hover:border-gray-300 transition-all duration-200"
+                              className="group block bg-white rounded-lg border border-gray-200 overflow-hidden hover:border-kawai-red hover:shadow-lg transition-all duration-200"
                             >
                               {/* Product Image */}
                               <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
@@ -234,7 +237,7 @@ export function ProductsMegaMenu({
                                 <h3 className="font-semibold text-sm text-gray-900 group-hover:text-kawai-red transition-colors line-clamp-2 mb-1">
                                   {product.title}
                                 </h3>
-                                <p className="text-sm font-bold text-kawai-red">
+                                <p className="text-sm font-bold text-gray-700">
                                   {product.price.display}
                                 </p>
                               </div>
@@ -243,11 +246,11 @@ export function ProductsMegaMenu({
                         </div>
 
                         {/* View Category Link */}
-                        <div className="pt-4 border-t border-gray-200/50">
+                        <div className="pt-4 border-t border-gray-200">
                           <Link
                             href={`/products?type=${encodeURIComponent(selectedTypeData.type)}`}
                             onClick={onClose}
-                            className="inline-flex items-center text-sm font-medium text-kawai-red hover:text-kawai-red/80 transition-colors"
+                            className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-kawai-red hover:bg-gray-50 px-3 py-2 rounded-lg transition-colors"
                           >
                             View All {selectedTypeData.type} Products
                             <ChevronRight className="ml-1 h-4 w-4" />

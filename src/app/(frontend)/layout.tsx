@@ -124,7 +124,9 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
       />
       <div className="flex min-h-screen flex-col">
         {!isNAMMPage && <HeaderDynamic />}
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 -mt-[70px]">
+          {children}
+        </main>
         {!isNAMMPage && <FooterDynamic />}
       </div>
     </NavigationContextProvider>
