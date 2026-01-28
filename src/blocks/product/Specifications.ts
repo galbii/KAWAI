@@ -1,10 +1,14 @@
 import type { Block } from 'payload'
 
 export const Specifications: Block = {
-  slug: 'specifications',
+  slug: 'product-specs',
+  labels: {
+    singular: '📋 Specifications',
+    plural: 'Specification Tables',
+  },
   imageURL: 'https://via.placeholder.com/300x200?text=Specifications',
-  imageAltText: 'Specifications block for displaying technical details and product specs',
-  interfaceName: 'SpecificationsBlock',
+  imageAltText: 'Display detailed product specifications in table, card, list, or grid layouts',
+  interfaceName: 'ProductSpecificationsBlock',
   fields: [
     // Data Source Configuration
     {

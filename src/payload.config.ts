@@ -28,25 +28,29 @@ import { ConstantContactSettings } from './collections/ConstantContactSettings'
 import { ConstantContactCustomFields } from './collections/ConstantContactCustomFields'
 import { Dealers } from './collections/Dealers'
 import {
+  // Content blocks
+  Text,
+  Image,
+  Video,
+  Code,
+  Banner,
+  // Layout blocks
+  Columns,
+  Spacer,
+  Divider,
+  // Marketing blocks
+  Hero,
+  CallToAction,
+  Testimonials,
+  // Product blocks
   ProductShowcase,
   ProductHero,
-  Hero,
-  TextContent,
   ImageGallery,
   FeaturesList,
   Specifications,
-  CallToAction,
-  Testimonials,
-  Image,
-  Text,
-  Video,
-  Spacer,
-  Divider,
-  Columns,
+  // Legacy blocks (keep for backward compatibility)
+  TextContent,
   Hello,
-  Banner,
-  Code,
-  // Pages collection blocks
   Archive,
   Content,
   MediaBlock,
@@ -156,28 +160,33 @@ export default buildConfig({
   ],
   // Define blocks at root level for performance optimization using blockReferences
   blocks: [
+    // Content blocks (for blog articles)
+    Text,
+    Image,
+    Video,
+    Code,
+    Banner,
+
+    // Layout blocks
+    Columns,
+    Spacer,
+    Divider,
+
+    // Marketing blocks
+    Hero,
+    CallToAction,
+    Testimonials,
+
+    // Product blocks (for product pages)
     ProductShowcase,
     ProductHero,
-    Hero,
-    TextContent,
     ImageGallery,
     FeaturesList,
     Specifications,
-    CallToAction,
-    Testimonials,
-    // Modular/Atomic blocks for blog content
-    Image,
-    Text,
-    Video,
-    Spacer,
-    Divider,
-    Columns,
-    // Landing page blocks
+
+    // Legacy blocks (keep for backward compatibility)
+    TextContent,
     Hello,
-    // Rich text content blocks (for inline use in Lexical editor)
-    Banner,
-    Code,
-    // Pages collection blocks
     Archive,
     Content,
     MediaBlock,

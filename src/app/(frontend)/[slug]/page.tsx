@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from 'next';
 import { getPayload } from 'payload';
 import { draftMode } from 'next/headers';
@@ -15,6 +15,26 @@ import { RenderBlocks } from '@/components/RenderBlocks';
 async function PageContent({ slug }: { slug: string }) {
   const { isEnabled: isDraftMode } = await draftMode();
   const payload = await getPayload({ config });
+
+  // CRITICAL: Check if this slug belongs to a storefront FIRST
+  // This ensures redirects work even if middleware fails
+  const storefront = await payload
+    .find({
+      collection: 'storefronts',
+      where: {
+        slug: { equals: slug },
+        isActive: { equals: true },
+      },
+      limit: 1,
+      depth: 0,
+    })
+    .then(({ docs }) => docs?.[0]);
+
+  // If this is a storefront, redirect to /store/{slug}
+  // Note: redirect() uses 'replace' by default in Server Components
+  if (storefront) {
+    redirect(`/store/${slug}`);
+  }
 
   // Fetch page data with same filters as existence check
   const page = await payload
@@ -91,6 +111,31 @@ export async function generateMetadata(
   try {
     const { slug } = await params;
     const payload = await getPayload({ config });
+
+    // Check if this is a storefront first (will redirect, so don't generate metadata)
+    const storefront = await payload
+      .find({
+        collection: 'storefronts',
+        where: {
+          slug: { equals: slug },
+          isActive: { equals: true },
+        },
+        limit: 1,
+        depth: 0,
+      })
+      .then(({ docs }) => docs?.[0]);
+
+    // If this is a storefront, return redirect metadata
+    if (storefront) {
+      return {
+        title: 'Redirecting...',
+        description: 'Redirecting to storefront page.',
+        robots: {
+          index: false,
+          follow: true,
+        }
+      };
+    }
 
     // Check Pages collection (published only)
     const page = await payload

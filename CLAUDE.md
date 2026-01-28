@@ -540,6 +540,117 @@ export const Products: CollectionConfig = {
 }
 ```
 
+## Blocks System
+
+### Block Organization
+
+Blocks are organized by purpose into four categories:
+
+```
+src/blocks/
+├── content/           # Editorial content (Text, Image, Video, Code, Banner)
+├── layout/            # Structural (Columns, Spacer, Divider)
+├── marketing/         # Conversion-focused (Hero, CallToAction, Testimonials)
+└── product/           # Product-specific (ProductShowcase, ProductHero, etc.)
+```
+
+**Key principles:**
+1. Blocks are defined once in `payload.config.ts` under the global `blocks` array
+2. Collections reference blocks by slug using `blockReferences`
+3. All blocks use category prefixes: `content-*`, `layout-*`, `marketing-*`, `product-*`
+4. Blocks include emoji labels for visual identification in the admin UI
+
+### Global Block Registration
+
+```typescript
+// payload.config.ts
+import * as contentBlocks from '@/blocks/content'
+import * as layoutBlocks from '@/blocks/layout'
+import * as marketingBlocks from '@/blocks/marketing'
+import * as productBlocks from '@/blocks/product'
+
+export default buildConfig({
+  blocks: [
+    contentBlocks.Text,
+    contentBlocks.Image,
+    // ... all blocks registered once
+  ],
+  collections: [...]
+})
+```
+
+### Using Blocks in Collections
+
+**Method 1: Block field with references**
+```typescript
+{
+  name: 'pageBuilder',
+  type: 'blocks',
+  blockReferences: ['marketing-hero', 'marketing-cta'],  // Reference by slug
+  blocks: []  // Required to be empty for compatibility
+}
+```
+
+**Method 2: Lexical rich text with embedded blocks**
+```typescript
+{
+  name: 'content',
+  type: 'richText',
+  editor: lexicalEditor({
+    features: [
+      BlocksFeature({
+        blocks: ['content-text', 'content-image', 'content-code']
+      })
+    ]
+  })
+}
+```
+
+### Adding New Blocks
+
+1. **Choose category** - Determine if it's content, layout, marketing, or product
+2. **Create file** - Add to `src/blocks/{category}/YourBlock.ts`
+3. **Use naming conventions**:
+   - Slug: `{category}-{name}` (e.g., `content-quote`)
+   - Interface: `{Category}{Name}Block` (e.g., `ContentQuoteBlock`)
+   - Label: Use emoji for visual ID (e.g., `💬 Quote`)
+4. **Update barrel export** - Add to `src/blocks/{category}/index.ts`
+5. **Register globally** - Import and add to `blocks` array in `payload.config.ts`
+6. **Document** - Add to `docs/BLOCKS.md`
+
+### Block Best Practices
+
+**DO:**
+- ✅ Add `imageAltText` to describe block purpose
+- ✅ Include `admin.description` on all fields
+- ✅ Use category prefixes in slugs
+- ✅ Use `maxDepth: 0` on relationships to prevent deep fetching
+- ✅ Keep blocks focused (single responsibility)
+
+**DON'T:**
+- ❌ Import blocks directly into collections (use `blockReferences`)
+- ❌ Create blocks with too many options (split into multiple blocks)
+- ❌ Forget to register in payload.config.ts
+- ❌ Use generic slugs without category prefix
+
+### Posts Collection Block Usage
+
+The Posts collection uses blocks in three places:
+
+1. **Rich text content** - Inline blocks for article body
+   - Available: Text, Image, Video, Code, Banner
+   - These appear within the flow of the article
+
+2. **Header blocks** - Before article content
+   - Available: Hero, Banner
+   - For promotional headers or important notices
+
+3. **Footer blocks** - After article content
+   - Available: CallToAction, Testimonials, Columns
+   - For conversion elements and related content
+
+See `docs/BLOCKS.md` for complete block reference.
+
 ## Hooks
 
 ### Hook Patterns Used in This Project

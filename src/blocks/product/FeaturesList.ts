@@ -1,10 +1,14 @@
 import type { Block } from 'payload'
 
 export const FeaturesList: Block = {
-  slug: 'featuresList',
+  slug: 'product-features',
+  labels: {
+    singular: '✨ Features List',
+    plural: 'Feature Lists',
+  },
   imageURL: 'https://via.placeholder.com/300x200?text=Features+List',
-  imageAltText: 'Features list block for highlighting product benefits and capabilities',
-  interfaceName: 'FeaturesListBlock',
+  imageAltText: 'Highlight product features and benefits with icons, images, or emojis',
+  interfaceName: 'ProductFeaturesListBlock',
   fields: [
     // Data Source Configuration
     {

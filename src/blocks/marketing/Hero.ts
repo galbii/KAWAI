@@ -1,10 +1,14 @@
 import type { Block } from 'payload'
 
 export const Hero: Block = {
-  slug: 'hero',
+  slug: 'marketing-hero',
+  labels: {
+    singular: '🎯 Hero',
+    plural: 'Hero Sections',
+  },
   imageURL: 'https://via.placeholder.com/300x200?text=Hero+Section',
-  imageAltText: 'Hero section block for page headers and banners',
-  interfaceName: 'HeroBlock',
+  imageAltText: 'Create impactful hero sections for page headers with images, videos, and CTAs',
+  interfaceName: 'MarketingHeroBlock',
   fields: [
     // Data Source Configuration
     {
@@ -97,12 +101,18 @@ export const Hero: Block = {
                 { label: 'Primary', value: 'primary' },
                 { label: 'Secondary', value: 'secondary' },
                 { label: 'Outline', value: 'outline' }
-              ]
+              ],
+              admin: {
+                description: 'Button visual style'
+              }
             },
             {
               name: 'openInNewTab',
               type: 'checkbox',
-              defaultValue: false
+              defaultValue: false,
+              admin: {
+                description: 'Open link in new browser tab'
+              }
             }
           ],
           admin: {
@@ -135,12 +145,18 @@ export const Hero: Block = {
                 { label: 'Primary', value: 'primary' },
                 { label: 'Secondary', value: 'secondary' },
                 { label: 'Outline', value: 'outline' }
-              ]
+              ],
+              admin: {
+                description: 'Button visual style'
+              }
             },
             {
               name: 'openInNewTab',
               type: 'checkbox',
-              defaultValue: false
+              defaultValue: false,
+              admin: {
+                description: 'Open link in new browser tab'
+              }
             }
           ],
           admin: {
@@ -189,7 +205,7 @@ export const Hero: Block = {
           relationTo: 'media',
           maxDepth: 0, // Prevent deep media fetching
           admin: {
-            description: 'Background video',
+            description: 'Background video file',
             condition: (data, siblingData) => siblingData?.type === 'video'
           }
         },
@@ -202,7 +218,7 @@ export const Hero: Block = {
               type: 'checkbox',
               defaultValue: true,
               admin: {
-                description: 'Add overlay to improve text readability'
+                description: 'Add overlay to improve text readability over images/videos'
               }
             },
             {
@@ -215,6 +231,7 @@ export const Hero: Block = {
                 { label: 'Brand Color', value: 'brand' }
               ],
               admin: {
+                description: 'Overlay color',
                 condition: (data, siblingData) => siblingData?.enable === true
               }
             },
@@ -226,18 +243,18 @@ export const Hero: Block = {
               max: 1,
               admin: {
                 step: 0.1,
-                description: 'Overlay opacity (0 = transparent, 1 = opaque)',
+                description: 'Overlay opacity (0 = transparent, 1 = fully opaque)',
                 condition: (data, siblingData) => siblingData?.enable === true
               }
             }
           ],
           admin: {
-            description: 'Background overlay settings'
+            description: 'Background overlay settings for better text contrast'
           }
         }
       ],
       admin: {
-        description: 'Background media and overlay settings'
+        description: 'Background media and overlay configuration'
       }
     },
     {
@@ -268,7 +285,7 @@ export const Hero: Block = {
             { label: 'Right', value: 'right' }
           ],
           admin: {
-            description: 'Text content alignment'
+            description: 'Horizontal text content alignment'
           }
         },
         {
@@ -281,7 +298,7 @@ export const Hero: Block = {
             { label: 'Bottom', value: 'bottom' }
           ],
           admin: {
-            description: 'Vertical content alignment'
+            description: 'Vertical content alignment within hero section'
           }
         },
         {

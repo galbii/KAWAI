@@ -1,30 +1,30 @@
-// Export all blocks for use in Payload configuration
-export { ProductShowcase } from './ProductShowcase'
-export { ProductHero } from './ProductHero'
-export { Hero } from './Hero'
-export { TextContent } from './TextContent'
-export { ImageGallery } from './ImageGallery'
-export { FeaturesList } from './FeaturesList'
-export { Specifications } from './Specifications'
-export { CallToAction } from './CallToAction'
-export { Testimonials } from './Testimonials'
+// Content blocks (for blog articles)
+export { Text } from './content/Text'
+export { Image } from './content/Image'
+export { Video } from './content/Video'
+export { Code } from './content/Code'
+export { Banner } from './content/Banner'
 
-// Modular/Atomic blocks for blog content
-export { Image } from './Image'
-export { Text } from './Text'
-export { Video } from './Video'
-export { Spacer } from './Spacer'
-export { Divider } from './Divider'
-export { Columns } from './Columns'
+// Layout blocks (structural)
+export { Columns } from './layout/Columns'
+export { Spacer } from './layout/Spacer'
+export { Divider } from './layout/Divider'
 
-// Landing page specific blocks
+// Marketing blocks (conversion-focused)
+export { Hero } from './marketing/Hero'
+export { CallToAction } from './marketing/CallToAction'
+export { Testimonials } from './marketing/Testimonials'
+
+// Product blocks (product pages)
+export { ProductShowcase } from './product/ProductShowcase'
+export { ProductHero } from './product/ProductHero'
+export { ImageGallery } from './product/ImageGallery'
+export { FeaturesList } from './product/FeaturesList'
+export { Specifications } from './product/Specifications'
+
+// Legacy blocks (keep for backward compatibility - TODO: migrate away from these)
 export { Hello } from './Hello'
-
-// Rich text content blocks (for blog posts)
-export { Banner } from './Banner/config'
-export { Code } from './Code/config'
-
-// Pages collection blocks (from orca-web template)
+export { TextContent } from './TextContent'
 export { Archive } from './Archive'
 export { Content } from './Content'
 export { MediaBlock } from './MediaBlock'

@@ -10,8 +10,8 @@ import {
 import { slugField } from 'payload'
 
 // Import blocks for rich text content
-import { Banner } from '@/blocks/Banner/config'
-import { Code } from '@/blocks/Code/config'
+import { Banner } from '@/blocks/content/Banner'
+import { Code } from '@/blocks/content/Code'
 
 // Import access control utilities
 import { authenticated, authenticatedOrPublished, adminOnly } from '@/lib/payload/access'
@@ -30,8 +30,7 @@ export const Posts: CollectionConfig = {
   },
   admin: {
     group: 'Content',
-    // MIGRATION: Show both old and new fields during transition period
-    defaultColumns: ['title', 'author', 'authors', 'status', 'publishedDate', 'updatedAt'],
+    defaultColumns: ['title', 'authors', 'status', 'publishedDate'],
     useAsTitle: 'title',
     description: 'Blog posts with rich content, featured images, and flexible page building',
     livePreview: {
@@ -74,10 +73,10 @@ export const Posts: CollectionConfig = {
     {
       type: 'tabs',
       tabs: [
-        // Content Tab
+        // Article Content Tab
         {
-          label: 'Content',
-          description: 'Post content, title, and rich text editor',
+          label: 'Article Content',
+          description: 'Main article content with rich text formatting',
           fields: [
             {
               name: 'excerpt',
@@ -100,7 +99,7 @@ export const Posts: CollectionConfig = {
                 features: ({ rootFeatures }) => [
                   ...rootFeatures,
                   HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
-                  // Add Banner and Code blocks to rich text content
+                  // Add content blocks to rich text editor
                   BlocksFeature({ blocks: [Banner, Code] }),
                   FixedToolbarFeature(),
                   InlineToolbarFeature(),
@@ -108,38 +107,65 @@ export const Posts: CollectionConfig = {
                 ],
               }),
               admin: {
-                description: 'Main post content with rich formatting, embedded blocks (Banner, Code), and media',
-              },
-            },
-            {
-              name: 'contentBlocks',
-              type: 'blocks',
-              blockReferences: ['image', 'text', 'video', 'spacer', 'divider', 'columns'],
-              blocks: [], // Use blockReferences for globally defined blocks
-              admin: {
-                description: 'Additional content blocks for complex layouts (separate from rich text content)',
+                description: 'Main article content with rich formatting, embedded content blocks, and media',
               },
             },
           ],
         },
 
-        // Settings Tab
+        // Page Builder Tab
         {
-          label: 'Settings',
-          description: 'Author, categories, tags, and publishing settings',
+          label: 'Page Builder',
+          description: 'Optional promotional content before and after the article',
           fields: [
-            // === NEW FIELD: Multiple Authors ===
+            {
+              name: 'headerBlocks',
+              label: 'Header Content (Before Article)',
+              type: 'blocks',
+              blockReferences: ['marketing-hero', 'content-banner'] as any,
+              blocks: [],
+              admin: {
+                description: 'Optional: Add promotional content before the article (Hero, Banner)',
+              },
+            },
+            {
+              name: 'footerBlocks',
+              label: 'Footer Content (After Article)',
+              type: 'blocks',
+              blockReferences: ['marketing-cta', 'marketing-testimonials', 'layout-columns'] as any,
+              blocks: [],
+              admin: {
+                description: 'Optional: Add calls-to-action or related content after the article (CTA, Testimonials, Columns)',
+              },
+            },
+            // TODO: Remove after data migration - keep commented for reference
+            // {
+            //   name: 'contentBlocks',
+            //   type: 'blocks',
+            //   blockReferences: ['content-image', 'content-text', 'content-video', 'layout-spacer', 'layout-divider', 'layout-columns'],
+            //   blocks: [],
+            //   admin: {
+            //     description: 'DEPRECATED: Legacy field, use headerBlocks or footerBlocks instead',
+            //   },
+            // },
+          ],
+        },
+
+        // Organization Tab
+        {
+          label: 'Organization',
+          description: 'Authors, categories, tags, and related posts',
+          fields: [
             {
               name: 'authors',
               type: 'relationship',
               relationTo: 'users',
               hasMany: true,
               admin: {
-                description: 'Post authors (NEW: supports multiple authors)',
+                description: 'Post authors (supports multiple authors)',
                 position: 'sidebar',
               },
             },
-            // === NEW FIELD: Privacy-conscious author data (hidden, populated by hook) ===
             {
               name: 'populatedAuthors',
               type: 'array',
@@ -157,47 +183,16 @@ export const Posts: CollectionConfig = {
                 { name: 'name', type: 'text' },
               ],
             },
-            // === OLD FIELD: Single Author (DEPRECATED - kept for backward compatibility) ===
-            {
-              name: 'author',
-              type: 'relationship',
-              relationTo: 'users',
-              admin: {
-                description: '⚠️ DEPRECATED: Use "authors" field instead. Will be removed after migration.',
-                position: 'sidebar',
-              },
-            },
-            // === NEW FIELD: Categories relationship (to Categories collection) ===
             {
               name: 'categoriesNew',
               type: 'relationship',
               relationTo: 'categories',
               hasMany: true,
               admin: {
-                description: 'Post categories (NEW: relationship to Categories collection)',
+                description: 'Post categories from Categories collection',
                 position: 'sidebar',
               },
             },
-            // === OLD FIELD: Categories select (DEPRECATED - kept for backward compatibility) ===
-            {
-              name: 'categories',
-              type: 'select',
-              hasMany: true,
-              options: [
-                { label: 'Piano Education', value: 'education' },
-                { label: 'Product News', value: 'product-news' },
-                { label: 'Artist Spotlights', value: 'artists' },
-                { label: 'Maintenance & Care', value: 'maintenance' },
-                { label: 'Buying Guides', value: 'buying-guides' },
-                { label: 'Events', value: 'events' },
-                { label: 'Company News', value: 'company-news' },
-                { label: 'Technology', value: 'technology' },
-              ],
-              admin: {
-                description: '⚠️ DEPRECATED: Use "categoriesNew" field instead. Will be removed after migration.',
-              },
-            },
-            // === NEW FIELD: Related Posts ===
             {
               name: 'relatedPosts',
               type: 'relationship',
@@ -221,6 +216,32 @@ export const Posts: CollectionConfig = {
                 placeholder: 'digital piano, grand piano, Kawai CA99',
               },
             },
+            // TODO: Remove after data migration - keep commented for reference
+            // {
+            //   name: 'author',
+            //   type: 'relationship',
+            //   relationTo: 'users',
+            //   admin: {
+            //     description: 'DEPRECATED: Single author field (migrated to authors)',
+            //   },
+            // },
+            // {
+            //   name: 'categories',
+            //   type: 'select',
+            //   hasMany: true,
+            //   options: [...],
+            //   admin: {
+            //     description: 'DEPRECATED: Legacy categories (migrated to categoriesNew)',
+            //   },
+            // },
+          ],
+        },
+
+        // Publishing Tab
+        {
+          label: 'Publishing',
+          description: 'Publication status, date, and featured flag',
+          fields: [
             {
               name: 'status',
               type: 'select',

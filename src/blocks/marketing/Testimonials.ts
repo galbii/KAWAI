@@ -1,10 +1,14 @@
 import type { Block } from 'payload'
 
 export const Testimonials: Block = {
-  slug: 'testimonials',
+  slug: 'marketing-testimonials',
+  labels: {
+    singular: '⭐ Testimonials',
+    plural: 'Testimonial Sections',
+  },
   imageURL: 'https://via.placeholder.com/300x200?text=Testimonials',
-  imageAltText: 'Testimonials block for displaying customer reviews and feedback',
-  interfaceName: 'TestimonialsBlock',
+  imageAltText: 'Build trust with customer reviews, ratings, and testimonials',
+  interfaceName: 'MarketingTestimonialsBlock',
   fields: [
     {
       name: 'header',
@@ -15,14 +19,14 @@ export const Testimonials: Block = {
           type: 'text',
           defaultValue: 'What Our Customers Say',
           admin: {
-            description: 'Section title'
+            description: 'Section title for the testimonials area'
           }
         },
         {
           name: 'subtitle',
           type: 'text',
           admin: {
-            description: 'Optional subtitle'
+            description: 'Optional subtitle to provide context'
           }
         },
         {
@@ -52,7 +56,7 @@ export const Testimonials: Block = {
           type: 'textarea',
           required: true,
           admin: {
-            description: 'Customer testimonial/review text'
+            description: 'Customer testimonial/review text - keep it authentic and specific'
           }
         },
         {
@@ -74,14 +78,14 @@ export const Testimonials: Block = {
               type: 'text',
               required: true,
               admin: {
-                description: 'Customer name'
+                description: 'Customer full name'
               }
             },
             {
               name: 'title',
               type: 'text',
               admin: {
-                description: 'Customer title/position (optional)'
+                description: 'Customer title/position (e.g., "Music Teacher", "Professional Pianist")'
               }
             },
             {
@@ -95,7 +99,7 @@ export const Testimonials: Block = {
               name: 'location',
               type: 'text',
               admin: {
-                description: 'Customer location (optional)'
+                description: 'Customer location (e.g., "New York, NY")'
               }
             },
             {
@@ -104,19 +108,19 @@ export const Testimonials: Block = {
               relationTo: 'media',
               maxDepth: 0, // Prevent deep media fetching
               admin: {
-                description: 'Customer photo/avatar (optional)'
+                description: 'Customer photo/avatar (builds trust and authenticity)'
               }
             }
           ],
           admin: {
-            description: 'Customer information'
+            description: 'Customer information and credentials'
           }
         },
         {
           name: 'product',
           type: 'text',
           admin: {
-            description: 'Product being reviewed (optional)'
+            description: 'Product being reviewed (e.g., "CA-99 Digital Piano")'
           }
         },
         {
@@ -124,7 +128,7 @@ export const Testimonials: Block = {
           type: 'checkbox',
           defaultValue: false,
           admin: {
-            description: 'Mark as verified purchase/review'
+            description: 'Mark as verified purchase/review for added credibility'
           }
         },
         {
@@ -132,7 +136,7 @@ export const Testimonials: Block = {
           type: 'checkbox',
           defaultValue: false,
           admin: {
-            description: 'Feature this testimonial prominently'
+            description: 'Feature this testimonial prominently in displays'
           }
         },
         {
@@ -155,12 +159,12 @@ export const Testimonials: Block = {
           name: 'reviewDate',
           type: 'date',
           admin: {
-            description: 'Date of review (optional)'
+            description: 'Date of review (shows recency)'
           }
         }
       ],
       admin: {
-        description: 'Customer testimonials and reviews'
+        description: 'Customer testimonials and reviews - aim for specific, detailed feedback'
       }
     },
     {
@@ -202,7 +206,7 @@ export const Testimonials: Block = {
           type: 'checkbox',
           defaultValue: true,
           admin: {
-            description: 'Display customer avatars/photos'
+            description: 'Display customer avatars/photos (increases trust)'
           }
         },
         {
@@ -258,7 +262,7 @@ export const Testimonials: Block = {
           type: 'checkbox',
           defaultValue: true,
           admin: {
-            description: 'Auto-advance testimonials'
+            description: 'Auto-advance testimonials in carousel'
           }
         },
         {
@@ -267,7 +271,7 @@ export const Testimonials: Block = {
           defaultValue: 6000,
           min: 2000,
           admin: {
-            description: 'Autoplay speed in milliseconds',
+            description: 'Autoplay speed in milliseconds (minimum 2000ms)',
             condition: (data, siblingData) => siblingData?.autoplay === true
           }
         },
@@ -276,7 +280,7 @@ export const Testimonials: Block = {
           type: 'checkbox',
           defaultValue: true,
           admin: {
-            description: 'Show navigation dots'
+            description: 'Show navigation dots at bottom of carousel'
           }
         },
         {
@@ -284,7 +288,7 @@ export const Testimonials: Block = {
           type: 'checkbox',
           defaultValue: true,
           admin: {
-            description: 'Show navigation arrows'
+            description: 'Show navigation arrows for manual control'
           }
         },
         {
@@ -297,7 +301,7 @@ export const Testimonials: Block = {
             { label: '3 Testimonials', value: 'three' }
           ],
           admin: {
-            description: 'Number of testimonials to show at once'
+            description: 'Number of testimonials to show simultaneously'
           }
         },
         {
@@ -305,12 +309,12 @@ export const Testimonials: Block = {
           type: 'checkbox',
           defaultValue: true,
           admin: {
-            description: 'Enable infinite loop'
+            description: 'Enable infinite loop in carousel'
           }
         }
       ],
       admin: {
-        description: 'Carousel-specific settings',
+        description: 'Carousel-specific settings (only applies when style is "Carousel/Slider")',
         condition: (data, siblingData) => siblingData?.layout?.style === 'carousel'
       }
     },
@@ -323,7 +327,7 @@ export const Testimonials: Block = {
           type: 'checkbox',
           defaultValue: false,
           admin: {
-            description: 'Show overall rating summary'
+            description: 'Show overall rating summary at top of section'
           }
         },
         {
@@ -332,7 +336,7 @@ export const Testimonials: Block = {
           min: 0,
           max: 5,
           admin: {
-            description: 'Overall rating score',
+            description: 'Overall average rating score',
             step: 0.1,
             condition: (data, siblingData) => siblingData?.showOverallRating === true
           }
@@ -341,7 +345,7 @@ export const Testimonials: Block = {
           name: 'totalReviews',
           type: 'number',
           admin: {
-            description: 'Total number of reviews',
+            description: 'Total number of reviews collected',
             condition: (data, siblingData) => siblingData?.showOverallRating === true
           }
         },

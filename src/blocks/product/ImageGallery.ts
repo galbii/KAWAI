@@ -1,10 +1,14 @@
 import type { Block } from 'payload'
 
 export const ImageGallery: Block = {
-  slug: 'imageGallery',
+  slug: 'product-gallery',
+  labels: {
+    singular: '🖼️ Image Gallery',
+    plural: 'Image Galleries',
+  },
   imageURL: 'https://via.placeholder.com/300x200?text=Image+Gallery',
-  imageAltText: 'Image gallery block for showcasing multiple product images',
-  interfaceName: 'ImageGalleryBlock',
+  imageAltText: 'Showcase multiple product images in grid, masonry, carousel, or lightbox layouts',
+  interfaceName: 'ProductImageGalleryBlock',
   fields: [
     // Data Source Configuration
     {

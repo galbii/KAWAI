@@ -1,9 +1,13 @@
 import type { Block } from 'payload'
 
 export const ProductShowcase: Block = {
-  slug: 'productShowcase',
+  slug: 'product-showcase',
+  labels: {
+    singular: '🎹 Product Showcase',
+    plural: 'Product Showcases',
+  },
   imageURL: 'https://via.placeholder.com/300x200?text=Product+Showcase',
-  imageAltText: 'Product showcase block for displaying product information',
+  imageAltText: 'Showcase products with images, descriptions, pricing, and buy buttons',
   interfaceName: 'ProductShowcaseBlock',
   fields: [
     // Data Source Configuration
@@ -88,28 +92,28 @@ export const ProductShowcase: Block = {
                 { label: 'CAD (C$)', value: 'CAD' }
               ],
               admin: {
-                description: 'Price currency (leave empty to use Piano Model currency)'
+                description: 'Price currency'
               }
             },
             {
               name: 'amount',
               type: 'number',
               admin: {
-                description: 'Price amount (leave empty to use Piano Model pricing)'
+                description: 'Regular price amount'
               }
             },
             {
               name: 'saleAmount',
               type: 'number',
               admin: {
-                description: 'Sale price (leave empty to use Piano Model sale price)'
+                description: 'Sale price (shows original price as strikethrough)'
               }
             },
             {
               name: 'priceText',
               type: 'text',
               admin: {
-                description: 'Custom price text (leave empty to use Piano Model price text)'
+                description: 'Custom price text (e.g., "Starting at $2,999" or "Contact for pricing")'
               }
             }
           ],
@@ -156,7 +160,7 @@ export const ProductShowcase: Block = {
             }
           ],
           admin: {
-            description: 'Available variation options (overrides Piano Model variations when provided)',
+            description: 'Available product variations (finishes, colors, etc.)',
             condition: (data) => {
               const dataSource = data?.dataSource;
               return dataSource === 'manual' || dataSource === 'hybrid';
@@ -173,7 +177,7 @@ export const ProductShowcase: Block = {
               defaultValue: 'Buy Now',
               required: true,
               admin: {
-                description: 'Button text'
+                description: 'Button text (e.g., "Buy Now", "View Details", "Contact Us")'
               }
             },
             {
@@ -193,7 +197,7 @@ export const ProductShowcase: Block = {
                 { label: 'Outline', value: 'outline' }
               ],
               admin: {
-                description: 'Button style'
+                description: 'Button visual style'
               }
             },
             {
@@ -201,12 +205,12 @@ export const ProductShowcase: Block = {
               type: 'checkbox',
               defaultValue: false,
               admin: {
-                description: 'Open link in new tab'
+                description: 'Open link in new browser tab'
               }
             }
           ],
           admin: {
-            description: 'Buy button configuration'
+            description: 'Buy/action button configuration'
           }
         },
         {
@@ -252,7 +256,7 @@ export const ProductShowcase: Block = {
           type: 'checkbox',
           defaultValue: true,
           admin: {
-            description: 'Show available variations in this block'
+            description: 'Show available variations in this showcase'
           }
         },
         {
@@ -260,7 +264,7 @@ export const ProductShowcase: Block = {
           type: 'checkbox',
           defaultValue: true,
           admin: {
-            description: 'Show pricing information in this block'
+            description: 'Show pricing information'
           }
         },
         {

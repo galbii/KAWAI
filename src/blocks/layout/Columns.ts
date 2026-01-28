@@ -1,10 +1,14 @@
 import type { Block } from 'payload'
 
 export const Columns: Block = {
-  slug: 'columns',
+  slug: 'layout-columns',
+  labels: {
+    singular: '📐 Columns',
+    plural: 'Column Layouts',
+  },
   imageURL: 'https://via.placeholder.com/300x200?text=Columns',
-  imageAltText: 'Multi-column layout block for flexible content arrangement',
-  interfaceName: 'ColumnsBlock',
+  imageAltText: 'Create multi-column layouts for flexible content arrangement (up to 4 columns)',
+  interfaceName: 'LayoutColumnsBlock',
   fields: [
     {
       name: 'columns',
@@ -31,22 +35,22 @@ export const Columns: Block = {
             { label: '100% (Full width)', value: '100' },
           ],
           admin: {
-            description: 'Column width percentage',
+            description: 'Column width as a percentage of total container width',
           },
         },
         {
           name: 'content',
           type: 'blocks',
           required: true,
-          blockReferences: ['image', 'text', 'video', 'spacer', 'divider'],
+          blockReferences: ['content-image', 'content-text', 'content-video', 'layout-spacer', 'layout-divider'] as any,
           blocks: [], // Required to be empty when using blockReferences
           admin: {
-            description: 'Column content - add Image, Text, Video, Spacer, or Divider blocks',
+            description: 'Add content blocks to this column (Image, Text, Video, Spacer, Divider)',
           },
         },
       ],
       admin: {
-        description: 'Add and configure columns (up to 4 columns)',
+        description: 'Configure up to 4 columns with customizable widths',
       },
     },
     {
@@ -63,7 +67,7 @@ export const Columns: Block = {
             { label: 'Large (2rem)', value: 'large' },
           ],
           admin: {
-            description: 'Gap/spacing between columns',
+            description: 'Horizontal gap/spacing between columns',
           },
         },
         {
@@ -76,7 +80,7 @@ export const Columns: Block = {
             { label: 'Bottom', value: 'bottom' },
           ],
           admin: {
-            description: 'Vertical alignment of column content',
+            description: 'Vertical alignment of content within columns',
           },
         },
         {
@@ -90,12 +94,12 @@ export const Columns: Block = {
             { label: 'Dark Gray', value: 'dark' },
           ],
           admin: {
-            description: 'Background color for the columns section',
+            description: 'Background color for the entire columns section',
           },
         },
       ],
       admin: {
-        description: 'Layout configuration for columns',
+        description: 'Layout configuration and styling options',
       },
     },
   ],

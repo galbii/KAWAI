@@ -1,10 +1,14 @@
 import type { Block } from 'payload'
 
 export const CallToAction: Block = {
-  slug: 'callToAction',
+  slug: 'marketing-cta',
+  labels: {
+    singular: '📣 Call to Action',
+    plural: 'Call to Action Blocks',
+  },
   imageURL: 'https://via.placeholder.com/300x200?text=Call+to+Action',
-  imageAltText: 'Call-to-action block for driving user engagement and conversions',
-  interfaceName: 'CallToActionBlock',
+  imageAltText: 'Drive conversions with compelling call-to-action sections featuring buttons and urgency elements',
+  interfaceName: 'MarketingCallToActionBlock',
   fields: [
     {
       name: 'content',
@@ -15,21 +19,21 @@ export const CallToAction: Block = {
           type: 'text',
           required: true,
           admin: {
-            description: 'Main CTA title/headline'
+            description: 'Main CTA title/headline - make it compelling and action-oriented'
           }
         },
         {
           name: 'subtitle',
           type: 'text',
           admin: {
-            description: 'Optional subtitle or supporting text'
+            description: 'Optional subtitle or supporting text to provide context'
           }
         },
         {
           name: 'description',
           type: 'textarea',
           admin: {
-            description: 'CTA description or value proposition'
+            description: 'CTA description or value proposition - explain the benefit'
           }
         }
       ],
@@ -53,7 +57,7 @@ export const CallToAction: Block = {
           type: 'text',
           required: true,
           admin: {
-            description: 'Button text'
+            description: 'Button text - use action verbs (e.g., "Get Started", "Learn More")'
           }
         },
         {
@@ -61,7 +65,7 @@ export const CallToAction: Block = {
           type: 'text',
           required: true,
           admin: {
-            description: 'Button link/URL'
+            description: 'Button destination URL or path'
           }
         },
         {
@@ -76,7 +80,7 @@ export const CallToAction: Block = {
             { label: 'Text Link', value: 'link' }
           ],
           admin: {
-            description: 'Button visual style'
+            description: 'Button visual style and prominence'
           }
         },
         {
@@ -108,7 +112,7 @@ export const CallToAction: Block = {
             { label: 'Right', value: 'right' }
           ],
           admin: {
-            description: 'Icon position relative to text',
+            description: 'Icon position relative to button text',
             condition: (data, siblingData) => Boolean(siblingData?.icon)
           }
         },
@@ -117,12 +121,12 @@ export const CallToAction: Block = {
           type: 'checkbox',
           defaultValue: false,
           admin: {
-            description: 'Open link in new tab'
+            description: 'Open link in new browser tab'
           }
         }
       ],
       admin: {
-        description: 'Action buttons for the CTA'
+        description: 'Action buttons for the CTA (up to 3 buttons)'
       }
     },
     {
@@ -140,7 +144,7 @@ export const CallToAction: Block = {
             { label: 'Icon', value: 'icon' }
           ],
           admin: {
-            description: 'Type of media to include'
+            description: 'Type of media to include in the CTA'
           }
         },
         {
@@ -159,7 +163,7 @@ export const CallToAction: Block = {
           relationTo: 'media',
           maxDepth: 0, // Prevent deep media fetching
           admin: {
-            description: 'Side image to display alongside content',
+            description: 'Side image to display alongside CTA content',
             condition: (data, siblingData) => siblingData?.type === 'side'
           }
         },
@@ -193,7 +197,7 @@ export const CallToAction: Block = {
               type: 'checkbox',
               defaultValue: true,
               admin: {
-                description: 'Add overlay to improve text readability'
+                description: 'Add overlay to improve text readability over background images'
               }
             },
             {
@@ -206,6 +210,7 @@ export const CallToAction: Block = {
                 { label: 'Brand Color', value: 'brand' }
               ],
               admin: {
+                description: 'Overlay color',
                 condition: (data, siblingData) => siblingData?.enable === true
               }
             },
@@ -217,19 +222,19 @@ export const CallToAction: Block = {
               max: 1,
               admin: {
                 step: 0.1,
-                description: 'Overlay opacity',
+                description: 'Overlay opacity (0 = transparent, 1 = fully opaque)',
                 condition: (data, siblingData) => siblingData?.enable === true
               }
             }
           ],
           admin: {
-            description: 'Background overlay settings',
+            description: 'Background overlay settings for better text contrast',
             condition: (data, siblingData) => siblingData?.type === 'background'
           }
         }
       ],
       admin: {
-        description: 'Media and visual elements'
+        description: 'Media and visual elements for the CTA'
       }
     },
     {
@@ -260,7 +265,7 @@ export const CallToAction: Block = {
             { label: 'Right', value: 'right' }
           ],
           admin: {
-            description: 'Content alignment'
+            description: 'Content alignment within the CTA'
           }
         },
         {
@@ -318,7 +323,7 @@ export const CallToAction: Block = {
           type: 'checkbox',
           defaultValue: false,
           admin: {
-            description: 'Add urgency elements (countdown, limited time, etc.)'
+            description: 'Add urgency elements to drive immediate action'
           }
         },
         {
@@ -334,7 +339,7 @@ export const CallToAction: Block = {
           type: 'checkbox',
           defaultValue: false,
           admin: {
-            description: 'Show countdown timer',
+            description: 'Show countdown timer to deadline',
             condition: (data, siblingData) => siblingData?.enableUrgency === true
           }
         },
@@ -348,7 +353,7 @@ export const CallToAction: Block = {
         }
       ],
       admin: {
-        description: 'Urgency and scarcity elements'
+        description: 'Urgency and scarcity elements to boost conversions'
       }
     }
   ]

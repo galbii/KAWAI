@@ -1,10 +1,14 @@
 import type { Block } from 'payload'
 
 export const Spacer: Block = {
-  slug: 'spacer',
+  slug: 'layout-spacer',
+  labels: {
+    singular: '↕️ Spacer',
+    plural: 'Spacers',
+  },
   imageURL: 'https://via.placeholder.com/300x200?text=Spacer',
-  imageAltText: 'Spacer block for adding vertical spacing',
-  interfaceName: 'SpacerBlock',
+  imageAltText: 'Add vertical spacing between content blocks',
+  interfaceName: 'LayoutSpacerBlock',
   fields: [
     {
       name: 'height',
@@ -19,7 +23,7 @@ export const Spacer: Block = {
         { label: 'Extra Large (6rem / 96px)', value: 'xl' },
       ],
       admin: {
-        description: 'Vertical spacing height',
+        description: 'Amount of vertical spacing to add between content',
       },
     },
   ],

@@ -1,9 +1,13 @@
 import type { Block } from 'payload'
 
 export const ProductHero: Block = {
-  slug: 'productHero',
+  slug: 'product-hero',
+  labels: {
+    singular: '🏆 Product Hero',
+    plural: 'Product Heroes',
+  },
   imageURL: 'https://via.placeholder.com/300x200?text=Product+Hero',
-  imageAltText: 'Product hero block that uses product document data directly',
+  imageAltText: 'Product hero section that automatically uses product document data',
   interfaceName: 'ProductHeroBlock',
   fields: [
     {
@@ -40,7 +44,7 @@ export const ProductHero: Block = {
           type: 'checkbox',
           defaultValue: true,
           admin: {
-            description: 'Show available variations section'
+            description: 'Show available product variations section'
           }
         },
         {
@@ -48,7 +52,7 @@ export const ProductHero: Block = {
           type: 'checkbox',
           defaultValue: false,
           admin: {
-            description: 'Show pricing information'
+            description: 'Show pricing information in hero'
           }
         },
         {

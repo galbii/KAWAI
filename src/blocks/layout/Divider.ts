@@ -1,10 +1,14 @@
 import type { Block } from 'payload'
 
 export const Divider: Block = {
-  slug: 'divider',
+  slug: 'layout-divider',
+  labels: {
+    singular: '➖ Divider',
+    plural: 'Dividers',
+  },
   imageURL: 'https://via.placeholder.com/300x200?text=Divider',
-  imageAltText: 'Divider block for horizontal rules',
-  interfaceName: 'DividerBlock',
+  imageAltText: 'Add horizontal dividing lines to separate content sections',
+  interfaceName: 'LayoutDividerBlock',
   fields: [
     {
       name: 'style',
@@ -16,7 +20,7 @@ export const Divider: Block = {
         { label: 'Dotted Line', value: 'dotted' },
       ],
       admin: {
-        description: 'Line style',
+        description: 'Visual style of the dividing line',
       },
     },
     {
@@ -29,7 +33,7 @@ export const Divider: Block = {
         { label: 'Brand Color', value: 'brand' },
       ],
       admin: {
-        description: 'Line color',
+        description: 'Color of the dividing line',
       },
     },
     {
@@ -43,7 +47,7 @@ export const Divider: Block = {
         { label: '25% Width', value: '25' },
       ],
       admin: {
-        description: 'Line width',
+        description: 'Width of the dividing line relative to container',
       },
     },
     {
@@ -56,7 +60,7 @@ export const Divider: Block = {
         { label: 'Large (4rem)', value: 'large' },
       ],
       admin: {
-        description: 'Vertical spacing around divider',
+        description: 'Vertical spacing above and below the divider',
       },
     },
   ],
