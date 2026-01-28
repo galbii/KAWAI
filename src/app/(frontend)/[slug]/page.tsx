@@ -16,26 +16,6 @@ async function PageContent({ slug }: { slug: string }) {
   const { isEnabled: isDraftMode } = await draftMode();
   const payload = await getPayload({ config });
 
-  // CRITICAL: Check if this slug belongs to a storefront FIRST
-  // This ensures redirects work even if middleware fails
-  const storefront = await payload
-    .find({
-      collection: 'storefronts',
-      where: {
-        slug: { equals: slug },
-        isActive: { equals: true },
-      },
-      limit: 1,
-      depth: 0,
-    })
-    .then(({ docs }) => docs?.[0]);
-
-  // If this is a storefront, redirect to /store/{slug}
-  // Note: redirect() uses 'replace' by default in Server Components
-  if (storefront) {
-    redirect(`/store/${slug}`);
-  }
-
   // Fetch page data with same filters as existence check
   const page = await payload
     .find({
@@ -112,7 +92,7 @@ export async function generateMetadata(
     const { slug } = await params;
     const payload = await getPayload({ config });
 
-    // Check if this is a storefront first (will redirect, so don't generate metadata)
+    // Check if this is a storefront (redirect will happen in page component)
     const storefront = await payload
       .find({
         collection: 'storefronts',
@@ -125,15 +105,11 @@ export async function generateMetadata(
       })
       .then(({ docs }) => docs?.[0]);
 
-    // If this is a storefront, return redirect metadata
+    // If storefront, return minimal metadata (page component will redirect)
     if (storefront) {
       return {
         title: 'Redirecting...',
-        description: 'Redirecting to storefront page.',
-        robots: {
-          index: false,
-          follow: true,
-        }
+        robots: { index: false, follow: false },
       };
     }
 
@@ -215,6 +191,26 @@ export async function generateMetadata(
  */
 export default async function DynamicPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+
+  // CRITICAL: Check for storefront redirect BEFORE Suspense boundary
+  // This ensures server-side redirect (307) instead of client-side (meta tag)
+  const payload = await getPayload({ config });
+  const storefront = await payload
+    .find({
+      collection: 'storefronts',
+      where: {
+        slug: { equals: slug },
+        isActive: { equals: true },
+      },
+      limit: 1,
+      depth: 0,
+    })
+    .then(({ docs }) => docs?.[0]);
+
+  // If storefront exists, redirect BEFORE any rendering starts
+  if (storefront) {
+    redirect(`/store/${slug}`);
+  }
 
   return (
     <Suspense fallback={<PageSkeleton />}>
