@@ -183,7 +183,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
       if (current && availableCategories.includes(current)) {
         return current // Keep current selection
       }
-      return availableCategories[0] // Default to first category
+      return availableCategories[0] ?? '' // Default to first category or empty string
     })
 
     setSelectedIndex(0)
