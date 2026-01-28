@@ -53,7 +53,7 @@ export interface ShopifyGroup {
 export type ShopifyDataUpdate = Partial<
   Pick<
     Product,
-    'name' | 'description' | 'brand' | 'price' | 'imageUrl' | 'model' | 'variations'
+    'name' | 'description' | 'price' | 'imageUrl' | 'model' | 'variations' | 'type' | 'category' | 'shopifyCollections'
   > & {
     shopify?: Partial<ShopifyGroup>
   }
@@ -168,35 +168,43 @@ export function formatShopifyPrice(price: {
  * This enables automatic categorization from Shopify sync.
  *
  * @param shopifyProductType - Shopify product type field value
- * @returns Payload type value ('digital' | 'grand' | 'hybrid' | 'upright' | 'accessory' | 'software')
+ * @returns Payload type value ('digital' | 'grand' | 'hybrid' | 'upright' | 'accessory' | 'other')
  *
  * @example
  * ```typescript
  * mapShopifyProductTypeToPayloadType('Digital Piano')  // Returns: 'digital'
  * mapShopifyProductTypeToPayloadType('Grand Piano')    // Returns: 'grand'
  * mapShopifyProductTypeToPayloadType('Piano Bench')    // Returns: 'accessory'
+ * mapShopifyProductTypeToPayloadType('Sheet Music')    // Returns: 'other'
  * ```
  */
 export function mapShopifyProductTypeToPayloadType(
   shopifyProductType: string
-): 'digital' | 'grand' | 'hybrid' | 'upright' | 'accessory' | 'software' {
+): 'digital' | 'grand' | 'hybrid' | 'upright' | 'accessory' | 'other' {
   const normalized = shopifyProductType.toLowerCase().trim()
 
-  // Piano type mapping
+  // Piano type mapping (for category field)
   if (normalized.includes('digital')) return 'digital'
   if (normalized.includes('grand')) return 'grand'
   if (normalized.includes('hybrid') || normalized.includes('novus') || normalized.includes('aures')) return 'hybrid'
   if (normalized.includes('upright') || normalized.includes('vertical')) return 'upright'
 
   // Non-piano products
-  if (normalized.includes('accessory') || normalized.includes('bench') || normalized.includes('cover') || normalized.includes('stand')) return 'accessory'
-  if (normalized.includes('software') || normalized.includes('app')) return 'software'
+  if (
+    normalized.includes('accessory') ||
+    normalized.includes('bench') ||
+    normalized.includes('cover') ||
+    normalized.includes('stand') ||
+    normalized.includes('pedal') ||
+    normalized.includes('stool') ||
+    normalized.includes('lamp')
+  ) return 'accessory'
 
   // Default: if contains "piano" but no specific type, assume digital
   if (normalized.includes('piano')) return 'digital'
 
-  // Final fallback
-  return 'accessory'
+  // Final fallback for everything else
+  return 'other'
 }
 
 /**
@@ -316,7 +324,7 @@ export async function syncShopifyDataToProduct(
           barcode: variant.barcode || null,
           available: variant.available,
           inventoryQuantity: variant.inventoryQuantity || 0,
-          imageUrl: (variant as any).image?.url || null,
+          imageUrl: variant.image?.url || null,
           options: variant.options.map((opt) => ({
             name: opt.name,
             value: opt.value,
@@ -324,17 +332,30 @@ export async function syncShopifyDataToProduct(
         }))
       : null
 
+    // Map Shopify collections to Payload format
+    const shopifyCollections = shopifyData.collections?.map((collection) => ({
+      shopifyCollectionId: collection.id,
+      title: collection.title,
+      handle: collection.handle,
+    })) || []
+
     // Return update with both shopify group and main product fields
-    return {
+    return ({
       // Update main product fields (editable by user)
-      name: shopifyData.title ?? null,
-      description: stripHtml(shopifyData.description || shopifyData.descriptionHtml) ?? null,
-      brand: shopifyData.vendor ?? null,
-      model: extractedModel ?? product.model ?? undefined,
-      imageUrl: shopifyData.featuredImage?.url ?? null,
+      name: shopifyData.title ?? undefined,
+      description: stripHtml(shopifyData.description || shopifyData.descriptionHtml) ?? undefined,
+      // Only update model if we have a non-empty value from Shopify, otherwise keep existing
+      model: (extractedModel && extractedModel.trim()) || product.model || undefined,
+      // Type comes from Shopify productType
+      type: shopifyData.productType || undefined,
+      // Category comes from Shopify Standard Product Taxonomy (last part only)
+      category: shopifyData.category?.name || undefined,
+      // Collections from Shopify
+      shopifyCollections,
+      imageUrl: shopifyData.featuredImage?.url ?? undefined,
       price: {
         msrp: parseFloat(shopifyData.price.min) || null,
-        currency: (shopifyData.price.currency as 'USD' | 'EUR' | 'GBP' | 'CAD') || 'USD',
+        currency: (shopifyData.price.currency as 'USD' | 'EUR' | 'GBP' | 'CAD') || null,
       },
       variations, // Already null if no true variations exist
 
@@ -347,7 +368,7 @@ export async function syncShopifyDataToProduct(
         shopifyStatus: shopifyData.status,
         syncErrors: [], // Clear any previous errors
       },
-    }
+    }) as ShopifyDataUpdate
   } catch (error) {
     // Handle API errors gracefully
     const errorMessage =

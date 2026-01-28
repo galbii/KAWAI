@@ -41,15 +41,58 @@ export async function GET(request: NextRequest) {
       sort: '-priority', // Higher priority first (products = 20, pages = 10)
     })
 
+    // Debug: Log raw search result
+    console.log('\n=== SEARCH API DEBUG ===')
+    console.log('Total results:', results.totalDocs)
+
+    const firstResult = results.docs[0]
+    if (firstResult) {
+      console.log('First result structure:', {
+        id: firstResult.id,
+        title: firstResult.title,
+        'doc.relationTo': firstResult.doc?.relationTo,
+        'doc.value type': typeof firstResult.doc?.value,
+        'doc.value is string': typeof firstResult.doc?.value === 'string',
+        'doc.value (preview)': typeof firstResult.doc?.value === 'string'
+          ? firstResult.doc.value
+          : firstResult.doc?.value ? `[Object with keys: ${Object.keys(firstResult.doc.value).join(', ')}]` : 'undefined',
+      })
+    }
+
     // Transform to match SearchBar expected format
-    const transformedResults = results.docs.map(doc => ({
-      id: doc.id,
-      title: doc.title,
-      doc: doc.doc, // Contains { relationTo: 'products' | 'pages', value: {...} }
-      excerpt: doc.excerpt,
-      category: doc.category,
-      tags: doc.tags,
-    }))
+    const transformedResults = results.docs.map(doc => {
+      // Check if doc.value is populated as an object or just an ID string
+      const isPopulated = typeof doc.doc?.value === 'object' && doc.doc?.value !== null
+
+      // Debug: Log product data structure
+      if (doc.doc?.relationTo === 'products') {
+        console.log(`\nProduct result [${doc.id}]:`, {
+          title: doc.title,
+          'productModel (denormalized)': (doc as any).productModel,
+          'productType (denormalized)': (doc as any).productType,
+          'productCategory (denormalized)': (doc as any).productCategory,
+          'productImageUrl (denormalized)': (doc as any).productImageUrl,
+          'productSlug (denormalized)': (doc as any).productSlug,
+        })
+      }
+
+      return {
+        id: doc.id,
+        title: doc.title,
+        doc: doc.doc,
+        excerpt: doc.excerpt,
+        category: doc.category,
+        tags: doc.tags,
+        // Include denormalized product fields
+        productModel: (doc as any).productModel,
+        productImageUrl: (doc as any).productImageUrl,
+        productType: (doc as any).productType,
+        productCategory: (doc as any).productCategory,
+        productSlug: (doc as any).productSlug,
+      }
+    })
+
+    console.log('=== END DEBUG ===\n')
 
     return NextResponse.json({
       results: transformedResults, // Must be 'results' not 'docs'

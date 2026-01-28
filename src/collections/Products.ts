@@ -44,7 +44,7 @@ function transformShopifyToPayload(shopifyProduct: ShopifyProductData): any {
         barcode: variant.barcode || null,
         available: variant.available,
         inventoryQuantity: variant.inventoryQuantity || 0,
-        imageUrl: (variant as any).image?.url || null,
+        imageUrl: variant.image?.url || null,
         options: variant.options.map((opt) => ({
           name: opt.name,
           value: opt.value,
@@ -59,14 +59,25 @@ function transformShopifyToPayload(shopifyProduct: ShopifyProductData): any {
     ARCHIVED: 'discontinued',
   }
 
+  // Map Shopify collections to Payload format
+  const shopifyCollections = shopifyProduct.collections?.map((collection: any) => ({
+    shopifyCollectionId: collection.id,
+    title: collection.title,
+    handle: collection.handle,
+  })) || []
+
   return {
     model,
     name: shopifyProduct.title,
     slug: shopifyProduct.handle,
     description: stripHtml(shopifyProduct.description || shopifyProduct.descriptionHtml),
-    brand: shopifyProduct.vendor,
     status: statusMap[shopifyProduct.status] || 'draft',
-    category: mapShopifyProductTypeToPayloadType(shopifyProduct.productType),
+    // Type comes from Shopify productType
+    type: shopifyProduct.productType || null,
+    // Category comes from Shopify Standard Product Taxonomy (last part only)
+    category: (shopifyProduct as any).category?.name || null,
+    // Collections from Shopify
+    shopifyCollections,
     imageUrl: shopifyProduct.featuredImage?.url || null,
     price: {
       msrp: parseFloat(shopifyProduct.price.min) || null,
@@ -113,18 +124,13 @@ export const Products: CollectionConfig = {
           label: 'Product Details',
           description: 'Core product information synced from Shopify',
           fields: [
-            // Product Type
+            // Product Type (from Shopify productType)
             {
               name: 'type',
-              type: 'select',
-              defaultValue: 'piano',
-              options: [
-                { label: 'Piano', value: 'piano' },
-                { label: 'Accessory', value: 'accessory' },
-                { label: 'Software', value: 'software' }
-              ],
+              type: 'text',
               admin: {
-                description: 'Product type',
+                description: 'Product type (synced from Shopify productType)',
+                readOnly: true,
               }
             },
             // Model - Primary Identifier
@@ -170,15 +176,10 @@ export const Products: CollectionConfig = {
             },
             {
               name: 'category',
-              type: 'select',
-              options: [
-                { label: 'Digital Piano', value: 'digital' },
-                { label: 'Grand Piano', value: 'grand' },
-                { label: 'Hybrid Piano', value: 'hybrid' },
-                { label: 'Upright Piano', value: 'upright' }
-              ],
+              type: 'text',
               admin: {
-                description: 'Piano category'
+                description: 'Product category (synced from Shopify taxonomy, e.g. "Digital Pianos")',
+                readOnly: true,
               }
             },
             {
@@ -188,13 +189,42 @@ export const Products: CollectionConfig = {
                 description: 'Product description (synced from Shopify)'
               }
             },
+
+            // Shopify Collections
             {
-              name: 'brand',
-              type: 'text',
-              defaultValue: 'Kawai',
+              name: 'shopifyCollections',
+              type: 'array',
+              maxRows: 20,
               admin: {
-                description: 'Manufacturer (synced from Shopify vendor)'
-              }
+                description: 'Shopify collections this product belongs to (synced from Shopify)',
+                readOnly: true,
+              },
+              fields: [
+                {
+                  name: 'shopifyCollectionId',
+                  type: 'text',
+                  admin: {
+                    description: 'Shopify Collection ID',
+                    readOnly: true,
+                  },
+                },
+                {
+                  name: 'title',
+                  type: 'text',
+                  admin: {
+                    description: 'Collection title',
+                    readOnly: true,
+                  },
+                },
+                {
+                  name: 'handle',
+                  type: 'text',
+                  admin: {
+                    description: 'Collection handle',
+                    readOnly: true,
+                  },
+                },
+              ],
             },
 
             // Pricing (simplified)
@@ -374,7 +404,7 @@ export const Products: CollectionConfig = {
               ],
               admin: {
                 description: 'Product variations from Shopify (variants with pricing, inventory, and options)',
-                condition: (data) => data.type === 'piano'
+                // Show variations for all products (they come from Shopify)
               }
             }
           ]

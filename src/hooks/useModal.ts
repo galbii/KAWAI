@@ -37,30 +37,43 @@ export function useModal(options?: UseModalOptions): UseModalReturn {
 
   // Auto-show logic
   useEffect(() => {
-    if (!autoShow) return
+    if (!autoShow) {
+      console.log('[useModal] No autoShow config provided')
+      return
+    }
 
     const { delay, storageKey } = autoShow
+    console.log('[useModal] Auto-show configured:', { delay, storageKey })
 
     // Check if modal was already shown (if storageKey provided)
     if (storageKey) {
       try {
         const wasShown = localStorage.getItem(storageKey)
+        console.log(`[useModal] Checking localStorage["${storageKey}"]:`, wasShown)
         if (wasShown === 'true') {
+          console.log('[useModal] ⚠️ Modal already shown (localStorage check), skipping auto-show')
+          console.log('[useModal] 💡 To see modal again, run in console: localStorage.removeItem("' + storageKey + '")')
           return // Don't auto-show if already shown before
         }
+        console.log('[useModal] ✅ Modal not previously shown, will auto-show after delay')
       } catch (error) {
         // localStorage might not be available (SSR, private mode, etc.)
-        console.warn('localStorage not available:', error)
+        console.warn('[useModal] localStorage not available:', error)
       }
     }
 
     // Set timeout to auto-show modal
+    console.log(`[useModal] Setting timer to show modal in ${delay}ms`)
     const timer = setTimeout(() => {
+      console.log('[useModal] Timer fired, opening modal')
       setIsOpen(true)
       onOpen?.()
     }, delay)
 
-    return () => clearTimeout(timer)
+    return () => {
+      console.log('[useModal] Cleaning up timer')
+      clearTimeout(timer)
+    }
   }, [autoShow, onOpen])
 
   const open = useCallback(() => {
@@ -69,15 +82,17 @@ export function useModal(options?: UseModalOptions): UseModalReturn {
   }, [onOpen])
 
   const close = useCallback(() => {
+    console.log('[useModal] Closing modal')
     setIsOpen(false)
     onClose?.()
 
     // Mark as shown in localStorage if storageKey provided
     if (autoShow?.storageKey) {
       try {
+        console.log('[useModal] Saving to localStorage:', autoShow.storageKey)
         localStorage.setItem(autoShow.storageKey, 'true')
       } catch (error) {
-        console.warn('Failed to save to localStorage:', error)
+        console.warn('[useModal] Failed to save to localStorage:', error)
       }
     }
   }, [onClose, autoShow?.storageKey])

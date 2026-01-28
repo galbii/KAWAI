@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { Search, X, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 
 interface SearchResult {
@@ -16,12 +16,21 @@ interface SearchResult {
       slug: string
       imageUrl?: string
       category?: string
+      model?: string
+      name?: string
+      type?: string
     }
     relationTo: 'products' | 'pages'
   }
   excerpt?: string
   category?: string
   tags?: string[]
+  // Denormalized product fields (stored directly in search doc)
+  productModel?: string
+  productImageUrl?: string
+  productType?: string // piano, accessory, software
+  productCategory?: string // digital, grand, upright, hybrid (pianos only)
+  productSlug?: string
 }
 
 interface SearchBarProps {
@@ -38,6 +47,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all')
+  const [selectedProductCategory, setSelectedProductCategory] = useState<string>('')
   const [isMounted, setIsMounted] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
@@ -51,30 +61,59 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     return () => setIsMounted(false)
   }, [])
 
+  // Global keyboard shortcut: Press "L" to focus search
+  useEffect(() => {
+    const handleGlobalKeyPress = (event: KeyboardEvent) => {
+      // Check if user is not already typing in an input/textarea
+      const target = event.target as HTMLElement
+      const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable
+
+      // Press "L" to focus search (only when not typing elsewhere)
+      if (event.key === 'l' && !isTyping && !event.metaKey && !event.ctrlKey && !event.altKey) {
+        event.preventDefault()
+        inputRef.current?.focus()
+        inputRef.current?.select()
+      }
+    }
+
+    document.addEventListener('keydown', handleGlobalKeyPress)
+    return () => document.removeEventListener('keydown', handleGlobalKeyPress)
+  }, [])
+
   // Collection-aware URL routing
   const getResultUrl = (result: SearchResult): string => {
     const collectionSlug = result.doc.relationTo
-    const slug = result.doc.value.slug
 
     if (collectionSlug === 'products') {
+      // Use denormalized productSlug for reliable navigation
+      const slug = result.productSlug || (typeof result.doc.value === 'object' ? result.doc.value.slug : '')
       return `/products/${slug}`
     }
 
     if (collectionSlug === 'pages') {
+      // Pages use doc.value.slug (usually populated)
+      const slug = typeof result.doc.value === 'object' ? result.doc.value.slug : result.doc.value
       return `/${slug}`
     }
 
+    // Fallback
+    const slug = typeof result.doc.value === 'object' ? result.doc.value.slug : result.doc.value
     return `/${slug}`
   }
 
-  // Get visual indicator
+  // Get visual indicator (simple mapping)
   const getResultIcon = (relationTo: string, category?: string): string => {
     if (relationTo === 'products') {
-      if (category === 'digital') return '🎹'
-      if (category === 'grand') return '🎼'
-      if (category === 'hybrid') return '🎛️'
-      if (category === 'upright') return '🎵'
-      return '🎹'
+      // Simple icon mapping based on category name
+      const iconMap: Record<string, string> = {
+        digital: '🎹',
+        grand: '🎼',
+        hybrid: '🎛️',
+        upright: '🎵',
+        accessory: '🔧',
+        software: '💿',
+      }
+      return iconMap[category?.toLowerCase() || ''] || '🎹'
     }
     if (relationTo === 'pages') return '📄'
     return '📋'
@@ -92,6 +131,80 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     if (categoryFilter === 'all') return true
     return result.doc.relationTo === categoryFilter
   })
+
+  // Separate products and pages
+  const productResults = filteredResults.filter(r => r.doc.relationTo === 'products')
+  const pageResults = filteredResults.filter(r => r.doc.relationTo === 'pages')
+
+  // Group products dynamically by their category field (simple and flexible)
+  const productsByCategory = useMemo(() => {
+    const grouped = productResults.reduce((acc, result) => {
+      // Use productCategory as the primary grouping key
+      // Fallback to productType if no category, then 'Other' if neither exists
+      const category = result.productCategory || result.productType || 'Other'
+
+      if (!acc[category]) {
+        acc[category] = []
+      }
+      acc[category].push(result)
+
+      return acc
+    }, {} as Record<string, SearchResult[]>)
+
+    console.log('🗂️ Products grouped by category:', Object.keys(grouped).map(k => `${k} (${grouped[k]?.length ?? 0})`))
+    return grouped
+  }, [productResults])
+
+  // Get available categories dynamically (whatever exists in the data)
+  const availableCategories = useMemo(() => {
+    const categories = Object.keys(productsByCategory)
+    console.log('Available categories:', categories)
+    console.log('Products by category:', categories.map(key => `${key}: ${productsByCategory[key]?.length ?? 0}`))
+    return categories
+  }, [productsByCategory])
+
+  // Auto-generate label from category name (capitalize words)
+  const getCategoryLabel = (category: string): string => {
+    return category
+      .split(/[-_\s]/)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ')
+  }
+
+  // Auto-select first category when results change
+  useEffect(() => {
+    if (availableCategories.length === 0) {
+      setSelectedProductCategory('')
+      return
+    }
+
+    // Keep current selection if it's still valid, otherwise select first category
+    setSelectedProductCategory((current) => {
+      if (current && availableCategories.includes(current)) {
+        return current // Keep current selection
+      }
+      return availableCategories[0] // Default to first category
+    })
+
+    setSelectedIndex(0)
+  }, [availableCategories])
+
+  // Reset selection when category changes
+  useEffect(() => {
+    setSelectedIndex(0)
+  }, [selectedProductCategory])
+
+  // Get products for selected category
+  // Memoize to prevent unnecessary recalculations
+  const displayedProducts = useMemo(() => {
+    // If no category is selected but we have available categories, show the first one's products
+    const categoryToShow = selectedProductCategory || availableCategories[0]
+    const products = categoryToShow ? productsByCategory[categoryToShow] || [] : []
+
+    console.log(`📍 Selected category: "${categoryToShow}" → ${products.length} products`)
+
+    return products
+  }, [selectedProductCategory, productsByCategory, availableCategories])
 
   // Debounced search
   useEffect(() => {
@@ -123,11 +236,17 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     return () => clearTimeout(timeoutId)
   }, [query])
 
-  // Close search when user scrolls
+  // Track if mouse is over the overlay to prevent closing on scroll
+  const [isMouseOverOverlay, setIsMouseOverOverlay] = useState(false)
+
+  // Close search when user scrolls (but not when hovering over results)
   useEffect(() => {
     if (!isOpen) return
 
     const handleScroll = () => {
+      // Don't close if user is hovering over the search results
+      if (isMouseOverOverlay) return
+
       setIsOpen(false)
       setQuery('')
       setResults([])
@@ -139,7 +258,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     return () => {
       window.removeEventListener('scroll', handleScroll)
     }
-  }, [isOpen])
+  }, [isOpen, isMouseOverOverlay])
 
   // Notify parent when search open state changes
   useEffect(() => {
@@ -148,7 +267,13 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
 
   // Navigate to result
   const navigateToResult = useCallback((result: SearchResult) => {
-    router.push(getResultUrl(result))
+    const url = getResultUrl(result)
+    console.log('Navigating to:', url, {
+      title: result.title,
+      relationTo: result.doc.relationTo,
+      productSlug: result.productSlug,
+    })
+    router.push(url)
     clearSearch()
   }, [router])
 
@@ -200,21 +325,25 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
       }
 
       // Handle navigation keys only when NOT typing in input
-      if (!isOpen || filteredResults.length === 0) return
+      if (!isOpen) return
+
+      // Combine displayed products and pages for navigation
+      const allDisplayedResults = [...displayedProducts, ...pageResults]
+      if (allDisplayedResults.length === 0) return
 
       switch (event.key) {
         case 'ArrowDown':
           event.preventDefault()
-          setSelectedIndex((prev) => (prev + 1) % filteredResults.length)
+          setSelectedIndex((prev) => (prev + 1) % allDisplayedResults.length)
           break
         case 'ArrowUp':
           event.preventDefault()
-          setSelectedIndex((prev) => (prev - 1 + filteredResults.length) % filteredResults.length)
+          setSelectedIndex((prev) => (prev - 1 + allDisplayedResults.length) % allDisplayedResults.length)
           break
         case 'Enter':
           event.preventDefault()
-          if (filteredResults[selectedIndex]) {
-            navigateToResult(filteredResults[selectedIndex])
+          if (allDisplayedResults[selectedIndex]) {
+            navigateToResult(allDisplayedResults[selectedIndex])
           }
           break
         case 'Escape':
@@ -227,7 +356,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, filteredResults, selectedIndex, navigateToResult])
+  }, [isOpen, displayedProducts, pageResults, selectedIndex, navigateToResult])
 
   // Scroll selected item into view
   useEffect(() => {
@@ -239,8 +368,8 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
 
   return (
     <>
-      {/* Input Field (stays in header) */}
-      <div ref={containerRef} className={cn('relative', className)}>
+      {/* Input Field (stays in header) - Ensure it's above overlay */}
+      <div ref={containerRef} className={cn('relative z-[10002]', className)}>
         <div className="relative">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
             <Search className="h-5 w-5 text-gray-400" />
@@ -292,194 +421,203 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
         <AnimatePresence>
           {isOpen && query.length >= 2 && (
             <>
-              {/* Backdrop */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[10000] bg-black/20"
+              {/* Backdrop - Dark background overlay */}
+              <div
+                className="fixed inset-0 z-[10000] bg-black/40"
                 onClick={() => setIsOpen(false)}
               />
 
               {/* Overlay Container */}
-              <div className="fixed inset-0 z-[10001] flex items-center justify-center p-8 pointer-events-none">
-                <motion.div
+              <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 md:p-8 pointer-events-none">
+                <div
                   ref={overlayRef}
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-full max-w-5xl pointer-events-auto"
-                  style={{ height: '70vh', maxHeight: '600px' }}
+                  className="w-full max-w-7xl pointer-events-auto"
+                  style={{ height: '85vh', maxHeight: '900px' }}
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseEnter={() => setIsMouseOverOverlay(true)}
+                  onMouseLeave={() => setIsMouseOverOverlay(false)}
                 >
-                {/* Glass Container */}
-                <div className="h-full backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/20 dark:border-white/10 flex flex-col overflow-hidden bg-gradient-to-br from-white/10 via-white/5 to-transparent">
+                  {/* Glass Container - Transparent with blur */}
+                  <div className="h-full backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/20 dark:border-white/10 flex flex-col overflow-hidden bg-gradient-to-br from-white/10 via-white/5 to-transparent dark:from-gray-900/10 dark:via-gray-900/5 dark:to-transparent">
 
-                  {/* Header */}
-                  <div className="flex-shrink-0 p-6 pb-4 border-b border-white/20 dark:border-white/10 bg-white/10 backdrop-blur-sm">
-                    {/* Search Info */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-kawai-red to-red-700 flex items-center justify-center">
-                          <Search className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                            Search Results
-                          </h2>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {query}
+                    {/* Results */}
+                    <div className="flex-1 overflow-y-auto p-6">
+                      {filteredResults.length === 0 && !isLoading ? (
+                        <div className="flex flex-col items-center justify-center h-full">
+                          <div className="w-16 h-16 rounded-full bg-white/20 dark:bg-white/10 backdrop-blur-md flex items-center justify-center mb-4">
+                            <Search className="w-8 h-8 text-gray-400" />
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                            No results found
+                          </h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">
+                            Try adjusting your search or browse our collections
                           </p>
                         </div>
-                      </div>
-                      <button
-                        onClick={() => setIsOpen(false)}
-                        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                      >
-                        <X className="w-5 h-5 text-gray-500" />
-                      </button>
-                    </div>
+                      ) : (
+                        <div className="space-y-6">
+                          {/* Category Switcher - Show if there are categorized products */}
+                          {productResults.length > 0 && (
+                            <div>
+                              {/* Category Tabs */}
+                              <div className="flex items-center gap-2 mb-4 px-2 overflow-x-auto">
+                                {availableCategories.map((categoryKey) => {
+                                  const count = productsByCategory[categoryKey]?.length || 0
+                                  const isSelected = selectedProductCategory === categoryKey
 
-                    {/* Category Filters */}
-                    <div className="flex items-center gap-2">
-                      {(['all', 'products', 'pages'] as CategoryFilter[]).map((category) => (
-                        <button
-                          key={category}
-                          onClick={() => setCategoryFilter(category)}
-                          className={cn(
-                            'px-4 py-2 rounded-lg text-sm font-medium transition-all',
-                            categoryFilter === category
-                              ? 'bg-kawai-red text-white shadow-md'
-                              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
-                          )}
-                        >
-                          {category.charAt(0).toUpperCase() + category.slice(1)}
-                        </button>
-                      ))}
-                      {filteredResults.length > 0 && (
-                        <span className="ml-auto text-sm text-gray-500">
-                          {filteredResults.length} result{filteredResults.length !== 1 ? 's' : ''}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Results */}
-                  <div className="flex-1 overflow-y-auto p-6 flex items-center justify-center">
-                    <div className="w-full">
-                      {filteredResults.length === 0 && !isLoading ? (
-                      <div className="flex flex-col items-center justify-center h-full py-12">
-                        <div className="w-16 h-16 rounded-full bg-white/20 dark:bg-white/10 backdrop-blur-md flex items-center justify-center mb-4">
-                          <Search className="w-8 h-8 text-gray-400" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                          No results found
-                        </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">
-                          Try adjusting your search or browse our collections
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {filteredResults.map((result, index) => (
-                          <motion.button
-                            key={result.id}
-                            id={`search-result-${index}`}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.03 }}
-                            onClick={() => navigateToResult(result)}
-                            className={cn(
-                              'w-full p-5 rounded-xl text-left transition-all',
-                              'border backdrop-blur-md',
-                              index === selectedIndex
-                                ? 'bg-gradient-to-r from-kawai-red/20 to-red-600/20 border-kawai-red/50 shadow-lg scale-[1.02]'
-                                : 'bg-white/80 dark:bg-gray-900/80 border-white/20 dark:border-white/10 hover:bg-white/90 dark:hover:bg-gray-900/90 hover:scale-[1.01]'
-                            )}
-                          >
-                            <div className="flex items-center gap-5">
-                              {/* Image or Icon */}
-                              {result.doc.value.imageUrl ? (
-                                <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
-                                  <Image
-                                    src={result.doc.value.imageUrl}
-                                    alt={result.title}
-                                    width={80}
-                                    height={80}
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
-                              ) : (
-                                <div className="flex-shrink-0 w-20 h-20 rounded-lg bg-white/30 dark:bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
-                                  <span className="text-4xl">
-                                    {getResultIcon(result.doc.relationTo, result.category)}
-                                  </span>
-                                </div>
-                              )}
-
-                              {/* Content */}
-                              <div className="flex-1 min-w-0">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 truncate">
-                                  {result.title}
-                                </h3>
-                                {result.excerpt && (
-                                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
-                                    {result.excerpt}
-                                  </p>
-                                )}
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <span className="inline-flex items-center rounded-full bg-kawai-red/10 px-3 py-1 text-xs font-medium text-kawai-red">
-                                    {getCollectionLabel(result.doc.relationTo)}
-                                  </span>
-                                  {result.category && (
-                                    <span className="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-800 px-3 py-1 text-xs text-gray-600 dark:text-gray-400">
-                                      {result.category}
-                                    </span>
-                                  )}
-                                </div>
+                                  return (
+                                    <button
+                                      key={categoryKey}
+                                      onClick={() => setSelectedProductCategory(categoryKey)}
+                                      className={cn(
+                                        'flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                                        isSelected
+                                          ? 'bg-kawai-red text-white shadow-md'
+                                          : 'bg-white/60 dark:bg-gray-800/60 text-gray-700 dark:text-gray-300 hover:bg-white/80 dark:hover:bg-gray-800/80 border border-white/30'
+                                      )}
+                                    >
+                                      {getCategoryLabel(categoryKey)} ({count})
+                                    </button>
+                                  )
+                                })}
                               </div>
 
-                              {/* Selected Indicator */}
-                              {index === selectedIndex && (
-                                <div className="flex-shrink-0">
-                                  <div className="w-8 h-8 rounded-full bg-kawai-red flex items-center justify-center">
-                                    <span className="text-white text-sm">→</span>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </motion.button>
-                        ))}
-                      </div>
-                    )}
-                    </div>
-                  </div>
+                              {/* Selected Category Products */}
+                              <div>
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                  {displayedProducts.map((result, index) => {
+                                      // Use denormalized fields from search doc (not from relationship)
+                                      // This avoids issues with polymorphic relationship depth not populating
+                                      const model = result.productModel || result.title
+                                      const imageUrl = result.productImageUrl
+                                      const productType = result.productType || 'piano'
+                                      const category = result.productCategory || result.category
+                                      const slug = result.productSlug || (typeof result.doc.value === 'object' ? result.doc.value.slug : '')
 
-                  {/* Footer Hint */}
-                  <div className="flex-shrink-0 px-6 py-4 border-t border-white/20 dark:border-white/10 bg-white/10 backdrop-blur-sm">
-                    <div className="flex items-center justify-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                      <div className="flex items-center gap-1">
-                        <kbd className="px-2 py-1 rounded bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700">↑↓</kbd>
-                        <span>Navigate</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <kbd className="px-2 py-1 rounded bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700">Enter</kbd>
-                        <span>Select</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <kbd className="px-2 py-1 rounded bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700">Esc</kbd>
-                        <span>Close</span>
+                                      return (
+                                        <button
+                                          key={result.id}
+                                          id={`search-result-${index}`}
+                                          onClick={() => navigateToResult(result)}
+                                          className="group rounded-xl overflow-hidden text-left transition-all relative hover:scale-105 duration-300"
+                                        >
+                                          {/* Image Container - Top Section */}
+                                          <div className="relative aspect-square w-full bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border-b border-white/20">
+                                            {imageUrl ? (
+                                              <Image
+                                                src={imageUrl}
+                                                alt={model}
+                                                width={300}
+                                                height={300}
+                                                className="w-full h-full object-cover"
+                                              />
+                                            ) : (
+                                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-white/20 to-white/10 dark:from-gray-700/20 dark:to-gray-800/10">
+                                                <span className="text-6xl opacity-40">
+                                                  {getResultIcon(result.doc.relationTo, category)}
+                                                </span>
+                                              </div>
+                                            )}
+
+                                          </div>
+
+                                          {/* Model Info - Bottom Section */}
+                                          <div className="p-3 bg-white/70 dark:bg-gray-900/70 backdrop-blur-md border border-white/20 dark:border-white/10">
+                                            <h4 className="font-bold text-gray-900 dark:text-white text-sm text-center truncate">
+                                              {model}
+                                            </h4>
+                                          </div>
+                                        </button>
+                                      )
+                                    })}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Separator between Products and Pages */}
+                          {displayedProducts.length > 0 && pageResults.length > 0 && (
+                            <div className="border-t border-white/20 dark:border-white/10 my-6" />
+                          )}
+
+                          {/* Pages Section */}
+                          {pageResults.length > 0 && (
+                            <div>
+                              <div className="flex items-center gap-2 mb-4 px-2">
+                                <div className="h-1 w-8 bg-gray-400 dark:bg-gray-600 rounded-full" />
+                                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">
+                                  Pages ({pageResults.length})
+                                </h3>
+                              </div>
+                              <div className="space-y-2">
+                                {pageResults.map((result, pageIndex) => {
+                                  const resultIndex = productResults.length + pageIndex
+                                  return (
+                                    <button
+                                      key={result.id}
+                                      id={`search-result-${resultIndex}`}
+                                      onClick={() => navigateToResult(result)}
+                                      className="w-full p-4 rounded-xl text-left transition-all border backdrop-blur-md hover:scale-[1.02] bg-white/80 dark:bg-gray-900/80 border-white/20 dark:border-white/10 hover:bg-white/90 dark:hover:bg-gray-900/90"
+                                    >
+                                      <div className="flex items-center gap-4">
+                                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-white/50 dark:bg-white/10 backdrop-blur-md flex items-center justify-center">
+                                          <span className="text-2xl">📄</span>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <h4 className="font-medium text-gray-900 dark:text-white mb-1 truncate">
+                                            {result.title}
+                                          </h4>
+                                          {result.excerpt && (
+                                            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">
+                                              {result.excerpt}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Filters at Bottom */}
+                    <div className="flex-shrink-0 px-6 py-4 border-t border-white/20 dark:border-white/10 bg-white/10 dark:bg-gray-900/10 backdrop-blur-sm">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {(['all', 'products', 'pages'] as CategoryFilter[]).map((category) => (
+                            <button
+                              key={category}
+                              onClick={() => setCategoryFilter(category)}
+                              className={cn(
+                                'px-4 py-2 rounded-lg text-sm font-medium transition-all backdrop-blur-sm',
+                                categoryFilter === category
+                                  ? 'bg-kawai-red text-white shadow-md'
+                                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                              )}
+                            >
+                              {category.charAt(0).toUpperCase() + category.slice(1)}
+                            </button>
+                          ))}
+                        </div>
+                        {filteredResults.length > 0 && (
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            {filteredResults.length} result{filteredResults.length !== 1 ? 's' : ''}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
                 </div>
-              </motion.div>
-            </div>
-          </>
-        )}
-      </AnimatePresence>,
-      document.body
-    )}
+              </div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   )
 }

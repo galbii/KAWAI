@@ -62,7 +62,13 @@ export function Modal({
   closeOnEscape = true,
 }: ModalProps) {
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      // Only call onClose when dialog is closing (open = false)
+      // Don't call it when opening (open = true) to prevent immediate closure
+      if (!open) {
+        onClose()
+      }
+    }}>
       <DialogPortal>
         <DialogPrimitive.Overlay className={overlayVariants()} />
         <DialogPrimitive.Content

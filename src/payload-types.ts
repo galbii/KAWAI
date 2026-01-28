@@ -717,9 +717,9 @@ export interface MarketingHeroBlock {
 export interface Product {
   id: string;
   /**
-   * Product type
+   * Product type (synced from Shopify productType)
    */
-  type?: ('piano' | 'accessory' | 'software') | null;
+  type?: string | null;
   /**
    * Model identifier - matches Shopify custom.model metafield (PRIMARY KEY)
    */
@@ -737,17 +737,33 @@ export interface Product {
    */
   status?: ('draft' | 'active' | 'discontinued') | null;
   /**
-   * Piano category
+   * Product category (synced from Shopify taxonomy, e.g. "Digital Pianos")
    */
-  category?: ('digital' | 'grand' | 'hybrid' | 'upright') | null;
+  category?: string | null;
   /**
    * Product description (synced from Shopify)
    */
   description?: string | null;
   /**
-   * Manufacturer (synced from Shopify vendor)
+   * Shopify collections this product belongs to (synced from Shopify)
    */
-  brand?: string | null;
+  shopifyCollections?:
+    | {
+        /**
+         * Shopify Collection ID
+         */
+        shopifyCollectionId?: string | null;
+        /**
+         * Collection title
+         */
+        title?: string | null;
+        /**
+         * Collection handle
+         */
+        handle?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Product pricing information
    */
@@ -3894,6 +3910,26 @@ export interface Search {
   tags?:
     | ('piano' | 'digital' | 'grand' | 'hybrid' | 'upright' | 'accessory' | 'software' | 'page' | 'faq' | 'support')[]
     | null;
+  /**
+   * Product model (denormalized from Products collection)
+   */
+  productModel?: string | null;
+  /**
+   * Product image URL (denormalized from Products collection)
+   */
+  productImageUrl?: string | null;
+  /**
+   * Product type: piano, accessory, software (denormalized from Products collection)
+   */
+  productType?: string | null;
+  /**
+   * Product category: digital, grand, upright, hybrid (pianos only, denormalized from Products collection)
+   */
+  productCategory?: string | null;
+  /**
+   * Product slug (denormalized from Products collection)
+   */
+  productSlug?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -4911,7 +4947,14 @@ export interface ProductsSelect<T extends boolean = true> {
   status?: T;
   category?: T;
   description?: T;
-  brand?: T;
+  shopifyCollections?:
+    | T
+    | {
+        shopifyCollectionId?: T;
+        title?: T;
+        handle?: T;
+        id?: T;
+      };
   price?:
     | T
     | {
@@ -5108,6 +5151,11 @@ export interface SearchSelect<T extends boolean = true> {
   excerpt?: T;
   category?: T;
   tags?: T;
+  productModel?: T;
+  productImageUrl?: T;
+  productType?: T;
+  productCategory?: T;
+  productSlug?: T;
   updatedAt?: T;
   createdAt?: T;
 }

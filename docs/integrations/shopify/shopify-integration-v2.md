@@ -821,20 +821,51 @@ interface ShopifyProductData {
     currency: string
     display: string
   }
+  compareAtPrice: {
+    min: string
+    max: string
+  } | null
   images: Array<{url: string, alt: string, width: number, height: number}>
   featuredImage: {url: string, alt: string, width: number, height: number} | null
   variants: Array<{
     id: string
     title: string
     price: string
+    compareAtPrice: string | null
     sku: string
+    barcode: string | null
     available: boolean
     inventoryQuantity: number
+    inventoryTracked: boolean
+    image: {
+      url: string
+      alt: string
+      width: number
+      height: number
+    } | null
+    options: Array<{
+      name: string
+      value: string
+    }>
+  }>
+  seo: {
+    title: string
+    description: string
+  }
+  category: {
+    id: string
+    name: string           // Last part of taxonomy (e.g., "Digital Pianos")
+    fullName: string       // Full path (e.g., "Arts & Entertainment > ... > Digital Pianos")
+  } | null
+  collections: Array<{
+    id: string
+    title: string
+    handle: string
   }>
   metafields?: {
     model?: string
   }
-  inStock: boolean
+  availableForSale: boolean
   createdAt: string
   updatedAt: string
   publishedAt: string | null

@@ -252,12 +252,19 @@ export default buildConfig({
           ].filter((tag): tag is string => Boolean(tag) && validTags.includes(tag))
 
           // Extract product-specific fields
+          // IMPORTANT: Store denormalized product data for search results
           return {
             ...searchDoc,
             title: originalDoc.name || originalDoc.model || originalDoc.title,
             excerpt: originalDoc.description?.substring(0, 200) || `${originalDoc.brand || 'Kawai'} ${originalDoc.model || ''}`.trim(),
             category: originalDoc.category || originalDoc.type || 'product',
             tags: productTags,
+            // Denormalized product fields (stored directly in search doc)
+            productModel: originalDoc.model,
+            productImageUrl: originalDoc.imageUrl,
+            productType: originalDoc.type, // piano, accessory, software
+            productCategory: originalDoc.category, // digital, grand, upright, hybrid (for pianos only)
+            productSlug: originalDoc.slug,
           }
         }
 
@@ -320,6 +327,52 @@ export default buildConfig({
             admin: {
               position: 'sidebar',
               description: 'Tags for filtering',
+            },
+          },
+          // Denormalized product fields for fast search results
+          {
+            name: 'productModel',
+            type: 'text',
+            admin: {
+              position: 'sidebar',
+              description: 'Product model (denormalized from Products collection)',
+              readOnly: true,
+            },
+          },
+          {
+            name: 'productImageUrl',
+            type: 'text',
+            admin: {
+              position: 'sidebar',
+              description: 'Product image URL (denormalized from Products collection)',
+              readOnly: true,
+            },
+          },
+          {
+            name: 'productType',
+            type: 'text',
+            admin: {
+              position: 'sidebar',
+              description: 'Product type: piano, accessory, software (denormalized from Products collection)',
+              readOnly: true,
+            },
+          },
+          {
+            name: 'productCategory',
+            type: 'text',
+            admin: {
+              position: 'sidebar',
+              description: 'Product category: digital, grand, upright, hybrid (pianos only, denormalized from Products collection)',
+              readOnly: true,
+            },
+          },
+          {
+            name: 'productSlug',
+            type: 'text',
+            admin: {
+              position: 'sidebar',
+              description: 'Product slug (denormalized from Products collection)',
+              readOnly: true,
             },
           },
         ],

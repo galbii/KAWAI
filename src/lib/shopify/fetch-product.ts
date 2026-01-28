@@ -54,6 +54,12 @@ export interface ShopifyProductData {
     available: boolean
     inventoryQuantity: number
     inventoryTracked: boolean
+    image: {
+      url: string
+      alt: string
+      width: number
+      height: number
+    } | null
     options: Array<{
       name: string
       value: string
@@ -63,6 +69,16 @@ export interface ShopifyProductData {
     title: string
     description: string
   }
+  category: {
+    id: string
+    name: string
+    fullName: string
+  } | null
+  collections: Array<{
+    id: string
+    title: string
+    handle: string
+  }>
   metafields?: {
     model?: string
     [key: string]: string | undefined
@@ -205,6 +221,12 @@ const PRODUCT_BY_ID_QUERY = `
           inventoryItem {
             tracked
           }
+          image {
+            url
+            altText
+            width
+            height
+          }
           selectedOptions {
             name
             value
@@ -216,6 +238,22 @@ const PRODUCT_BY_ID_QUERY = `
     seo {
       title
       description
+    }
+
+    category {
+      id
+      name
+      fullName
+    }
+
+    collections(first: 10) {
+      edges {
+        node {
+          id
+          title
+          handle
+        }
+      }
     }
   }
 `
@@ -301,6 +339,12 @@ const PRODUCT_BY_HANDLE_QUERY = `
           inventoryItem {
             tracked
           }
+          image {
+            url
+            altText
+            width
+            height
+          }
           selectedOptions {
             name
             value
@@ -312,6 +356,22 @@ const PRODUCT_BY_HANDLE_QUERY = `
     seo {
       title
       description
+    }
+
+    category {
+      id
+      name
+      fullName
+    }
+
+    collections(first: 10) {
+      edges {
+        node {
+          id
+          title
+          handle
+        }
+      }
     }
   }
 `
@@ -403,6 +463,12 @@ const PRODUCT_BY_METAFIELD_QUERY = `
           inventoryItem {
             tracked
           }
+          image {
+            url
+            altText
+            width
+            height
+          }
           selectedOptions {
             name
             value
@@ -421,6 +487,22 @@ const PRODUCT_BY_METAFIELD_QUERY = `
     seo {
       title
       description
+    }
+
+    category {
+      id
+      name
+      fullName
+    }
+
+    collections(first: 10) {
+      edges {
+        node {
+          id
+          title
+          handle
+        }
+      }
     }
   }
 `
@@ -574,6 +656,12 @@ function transformShopifyProduct(shopifyProduct: any): ShopifyProductData {
       available: edge.node.availableForSale,
       inventoryQuantity: edge.node.inventoryQuantity || 0,
       inventoryTracked: edge.node.inventoryItem?.tracked ?? false,
+      image: edge.node.image ? {
+        url: edge.node.image.url,
+        alt: edge.node.image.altText || '',
+        width: edge.node.image.width,
+        height: edge.node.image.height,
+      } : null,
       options: edge.node.selectedOptions.map((opt: any) => ({
         name: opt.name,
         value: opt.value,
@@ -584,6 +672,18 @@ function transformShopifyProduct(shopifyProduct: any): ShopifyProductData {
       title: shopifyProduct.seo?.title || shopifyProduct.title,
       description: shopifyProduct.seo?.description || shopifyProduct.description || '',
     },
+
+    category: shopifyProduct.category ? {
+      id: shopifyProduct.category.id,
+      name: shopifyProduct.category.name,
+      fullName: shopifyProduct.category.fullName,
+    } : null,
+
+    collections: shopifyProduct.collections?.edges?.map((edge: any) => ({
+      id: edge.node.id,
+      title: edge.node.title,
+      handle: edge.node.handle,
+    })) || [],
 
     metafields: {
       model: shopifyProduct.metafield?.value || undefined,
