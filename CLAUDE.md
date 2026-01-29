@@ -35,6 +35,156 @@ bun run lint
 bun run build
 ```
 
+## TypeScript Best Practices
+
+### CRITICAL: Null Safety Rules
+
+Always check for null/undefined when working with browser APIs or optional properties:
+
+**❌ WRONG - TypeScript will error:**
+```typescript
+// 'window.visualViewport' is possibly 'null'
+const height = window.visualViewport.height
+
+// 'user.profile' is possibly 'undefined'
+const name = result.user.profile.name
+```
+
+**✅ CORRECT - Proper null checks:**
+```typescript
+// Store in variable after null check
+if (!window.visualViewport) return
+const visualViewport = window.visualViewport
+const height = visualViewport.height
+
+// Optional chaining
+const name = result.user?.profile?.name
+
+// Nullish coalescing with default
+const name = result.user?.profile?.name ?? 'Unknown'
+
+// Type guard with early return
+if (!result.user?.profile) return
+const name = result.user.profile.name
+```
+
+### Common Null Safety Patterns
+
+**1. Browser APIs (always check for null):**
+```typescript
+// window.visualViewport can be null
+if (typeof window === 'undefined' || !window.visualViewport) return
+const viewport = window.visualViewport
+
+// localStorage can be null in some browsers
+const data = typeof window !== 'undefined' && window.localStorage
+  ? localStorage.getItem('key')
+  : null
+
+// IntersectionObserver can be null
+if (!window.IntersectionObserver) return
+const observer = new IntersectionObserver(callback)
+```
+
+**2. Relationship Fields (Media, Products, etc.):**
+```typescript
+// Media can be string (ID) or object
+function isMediaObject(media: Media | string | null): media is Media {
+  return typeof media === 'object' && media !== null && 'url' in media
+}
+
+if (isMediaObject(result.image)) {
+  return <Image src={result.image.url} alt={result.image.alt || ''} />
+}
+
+// Product relationships
+const productName = typeof result.product === 'string'
+  ? result.product
+  : result.product?.name ?? 'Unknown'
+```
+
+**3. Optional DOM References:**
+```typescript
+// useRef can be null
+const inputRef = useRef<HTMLInputElement>(null)
+
+// Always check before using
+inputRef.current?.focus()
+inputRef.current?.scrollIntoView()
+
+// Or with guard
+if (inputRef.current) {
+  inputRef.current.value = ''
+}
+```
+
+**4. Array Operations:**
+```typescript
+// Array access can be undefined
+const firstItem = items[0] // Type: Item | undefined
+
+// Safe access
+const name = items[0]?.name ?? 'Default'
+
+// With type guard
+if (items.length > 0) {
+  const name = items[0].name // Now safe
+}
+```
+
+**5. Event Handlers:**
+```typescript
+// Event target can be null
+const handleClick = (event: MouseEvent) => {
+  const target = event.target as HTMLElement | null
+  if (!target) return
+
+  // Now safe to use target
+  target.classList.add('active')
+}
+```
+
+### TypeScript Configuration
+
+This project uses **strict TypeScript** settings:
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,                      // Enable all strict checks
+    "exactOptionalPropertyTypes": true,  // Distinguish between undefined and missing
+    "noUncheckedIndexedAccess": true     // Array/object access returns T | undefined
+  }
+}
+```
+
+**What this means:**
+- All nullable types must be explicitly handled
+- Array access always returns `T | undefined`
+- Optional properties must use `?:` not `| undefined`
+- No implicit `any` types allowed
+
+### Quick Reference: Null Safety Checklist
+
+Before writing code that accesses properties, ask:
+
+1. ✅ **Is this a browser API?** → Add null check
+2. ✅ **Is this an array access?** → Check length or use optional chaining
+3. ✅ **Is this a relationship field?** → Type guard or optional chaining
+4. ✅ **Is this a ref?** → Use `.current?.` or null check
+5. ✅ **Is this optional in the type?** → Use `?.` or provide default
+
+### Error Prevention Workflow
+
+When you see a TypeScript error:
+
+1. **Read the error carefully** - TypeScript tells you exactly what's wrong
+2. **Identify the nullable type** - Look at the variable's type
+3. **Add appropriate check** - Use patterns above
+4. **Verify with build** - Run `bun run build` to confirm
+
+**Always run `bun run build` before considering code complete.**
+
 ## Project Structure
 
 ```

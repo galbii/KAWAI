@@ -64,6 +64,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   const [isFocused, setIsFocused] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
+  const [keyboardHeight, setKeyboardHeight] = useState(0)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -88,6 +89,34 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
       window.removeEventListener('resize', checkMobile)
     }
   }, [])
+
+  // Detect keyboard on mobile using visualViewport API
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return
+
+    const visualViewport = window.visualViewport
+
+    const handleViewportResize = () => {
+      if (!isMobile || !visualViewport) return
+
+      // Calculate keyboard height (difference between layout and visual viewport)
+      const layoutHeight = window.innerHeight
+      const visualHeight = visualViewport.height
+      const keyboardHeight = layoutHeight - visualHeight
+
+      // Only set keyboard height if it's significant (> 150px) to avoid false positives
+      setKeyboardHeight(keyboardHeight > 150 ? keyboardHeight : 0)
+    }
+
+    // Listen to visualViewport resize (fires when keyboard opens/closes)
+    visualViewport.addEventListener('resize', handleViewportResize)
+    visualViewport.addEventListener('scroll', handleViewportResize)
+
+    return () => {
+      visualViewport.removeEventListener('resize', handleViewportResize)
+      visualViewport.removeEventListener('scroll', handleViewportResize)
+    }
+  }, [isMobile])
 
   // Global keyboard shortcut: Press "L" to focus search
   useEffect(() => {
@@ -301,6 +330,27 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   useEffect(() => {
     onOpenChange?.(isOpen && query.length >= 2)
   }, [isOpen, query, onOpenChange])
+
+  // Prevent body scroll when mobile search is open
+  useEffect(() => {
+    if (!isMobile || !isOpen) return
+
+    // Store original overflow style
+    const originalOverflow = document.body.style.overflow
+    const originalPosition = document.body.style.position
+
+    // Lock scroll
+    document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.width = '100%'
+
+    return () => {
+      // Restore original styles
+      document.body.style.overflow = originalOverflow
+      document.body.style.position = originalPosition
+      document.body.style.width = ''
+    }
+  }, [isMobile, isOpen])
 
   // Navigate to result
   const navigateToResult = useCallback((result: SearchResult) => {
@@ -547,7 +597,10 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                   top: isMobile ? 0 : '70px',
                   left: 0,
                   right: 0,
-                  bottom: 0 // Full screen coverage on mobile
+                  // On mobile, stop backdrop before the input area to prevent click-through
+                  bottom: isMobile && keyboardHeight > 0
+                    ? `${keyboardHeight + 80}px`
+                    : 0
                 }}
                 onClick={() => {
                   setIsOpen(false)
@@ -565,7 +618,15 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                 )}
                 style={
                   isMobile
-                    ? { top: 0, left: 0, right: 0, bottom: 'calc(100px + env(safe-area-inset-bottom))' } // Space for floating input
+                    ? {
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        // Dynamically adjust bottom spacing based on keyboard height
+                        bottom: keyboardHeight > 0
+                          ? `${keyboardHeight + 80}px` // Input height + keyboard height
+                          : 'calc(100px + env(safe-area-inset-bottom))' // Default spacing
+                      }
                     : { top: '70px', left: 0, right: 0, bottom: 0 }
                 }
                 onKeyDown={handleKeyboardNavigation}
@@ -641,10 +702,20 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
 
                     {/* Results */}
                     <div className={cn(
-                      "flex-1 overflow-y-auto",
-                      isMobile ? "p-4 pb-6" : "p-6" // Tighter padding on mobile for floating feel
+                      "flex-1 overflow-y-auto overscroll-contain",
+                      isMobile ? "p-4 pb-6" : "p-6", // Tighter padding on mobile for floating feel
+                      // Add momentum scrolling on iOS for smooth experience
+                      isMobile && "-webkit-overflow-scrolling-touch"
                     )}
-                    style={isMobile ? { paddingTop: isMobile && query.length >= 2 ? '0' : 'calc(1rem + env(safe-area-inset-top))' } : undefined}
+                    style={
+                      isMobile
+                        ? {
+                            paddingTop: isMobile && query.length >= 2 ? '0' : 'calc(1rem + env(safe-area-inset-top))',
+                            // Ensure proper scrolling when keyboard is open
+                            maxHeight: keyboardHeight > 0 ? '100%' : undefined,
+                          }
+                        : undefined
+                    }
                     >
                       {/* Welcome Screen - Show when search is empty */}
                       {query.length < 2 ? (
@@ -833,7 +904,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                               <div className="space-y-1">
                                 {storefrontResults.map((result, index) => {
                                   const slug = result.storefrontSlug || (typeof result.doc.value === 'object' ? result.doc.value.slug : '')
-                                  const displayName = result.storefrontLocationName || slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+                                  const displaySlug = slug.toUpperCase()
 
                                   return (
                                     <button
@@ -845,19 +916,29 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                         selectedIndex === index && "bg-kawai-red/10 border-kawai-red"
                                       )}
                                     >
-                                      <div className="flex items-center justify-between">
-                                        <div>
-                                          <span className="text-kawai-pearl font-light text-base tracking-wide group-hover:text-kawai-red transition-colors">
-                                            {displayName}
-                                          </span>
-                                          {result.storefrontCity && result.storefrontRegion && (
-                                            <p className="text-xs text-kawai-neutral mt-0.5">
-                                              {result.storefrontCity}, {result.storefrontRegion}
-                                            </p>
-                                          )}
+                                      <div className="flex items-center justify-between gap-4">
+                                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                                          {/* KAWAI Logo */}
+                                          <div className="flex-shrink-0 w-16 h-16 flex items-center justify-center bg-white/10 rounded-lg border border-kawai-neutral/20 p-2">
+                                            <KawaiLogo size="sm" animated={false} nonClickable={true} />
+                                          </div>
+
+                                          {/* Text Content */}
+                                          <div className="flex-1 min-w-0">
+                                            <span className="text-kawai-pearl font-medium text-base tracking-wider group-hover:text-kawai-red transition-colors">
+                                              {displaySlug}
+                                            </span>
+                                            {result.storefrontCity && result.storefrontRegion && (
+                                              <p className="text-xs text-kawai-neutral mt-0.5">
+                                                {result.storefrontCity}, {result.storefrontRegion}
+                                              </p>
+                                            )}
+                                          </div>
                                         </div>
+
+                                        {/* Arrow Icon */}
                                         <svg
-                                          className="w-5 h-5 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
+                                          className="w-5 h-5 flex-shrink-0 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
                                           fill="none"
                                           viewBox="0 0 24 24"
                                           stroke="currentColor"
@@ -925,6 +1006,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                   const model = result.productModel || result.title
                                   const category = result.productCategory || result.category
                                   const categoryLabel = category ? getCategoryLabel(category) : null
+                                  const imageUrl = result.productImageUrl
 
                                   return (
                                     <button
@@ -936,19 +1018,41 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                         selectedIndex === index && "bg-kawai-red/10 border-kawai-red"
                                       )}
                                     >
-                                      <div className="flex items-center justify-between">
-                                        <div>
-                                          <span className="text-kawai-pearl font-light text-base tracking-wide group-hover:text-kawai-red transition-colors">
-                                            {model}
-                                          </span>
-                                          {categoryLabel && (
-                                            <p className="text-xs text-kawai-neutral mt-0.5">
-                                              {categoryLabel}
-                                            </p>
-                                          )}
+                                      <div className="flex items-center justify-between gap-4">
+                                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                                          {/* Product Image */}
+                                          <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-white/5 border border-kawai-neutral/20">
+                                            {imageUrl ? (
+                                              <Image
+                                                src={imageUrl}
+                                                alt={model}
+                                                width={64}
+                                                height={64}
+                                                className="w-full h-full object-cover"
+                                              />
+                                            ) : (
+                                              <div className="w-full h-full flex items-center justify-center text-2xl">
+                                                {getResultIcon('products', category)}
+                                              </div>
+                                            )}
+                                          </div>
+
+                                          {/* Text Content */}
+                                          <div className="flex-1 min-w-0">
+                                            <span className="text-kawai-pearl font-light text-base tracking-wide group-hover:text-kawai-red transition-colors">
+                                              {model}
+                                            </span>
+                                            {categoryLabel && (
+                                              <p className="text-xs text-kawai-neutral mt-0.5">
+                                                {categoryLabel}
+                                              </p>
+                                            )}
+                                          </div>
                                         </div>
+
+                                        {/* Arrow Icon */}
                                         <svg
-                                          className="w-5 h-5 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
+                                          className="w-5 h-5 flex-shrink-0 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
                                           fill="none"
                                           viewBox="0 0 24 24"
                                           stroke="currentColor"
@@ -1112,11 +1216,12 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
       {/* Floating Glassmorphic Search Input - Mobile Only - Always Visible - Portaled to body */}
       {isMounted && createPortal(
         <div
-          className="fixed left-0 right-0 z-[10003] md:hidden"
+          className="fixed left-0 right-0 z-[10003] md:hidden transition-all duration-200 ease-out"
           style={{
-            bottom: '0',
+            // Position above keyboard when keyboard is open
+            bottom: keyboardHeight > 0 ? `${keyboardHeight}px` : '0',
             padding: '1rem',
-            paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))',
+            paddingBottom: keyboardHeight > 0 ? '1rem' : 'calc(1rem + env(safe-area-inset-bottom))',
           }}
         >
           <div className="max-w-3xl mx-auto">
