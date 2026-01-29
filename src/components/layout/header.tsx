@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Menu, X, ChevronDown } from 'lucide-react'
+import { Menu, X, ChevronDown, Home } from 'lucide-react'
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { KawaiLogo } from '@/components/ui/kawai-logo'
@@ -441,6 +441,7 @@ interface HeaderProps {
   isSignaturePage?: boolean
   hidePianoLinks?: boolean
   isUniversityPage?: boolean
+  hideLogo?: boolean
 }
 
 // Default fallback navigation - URLs will be made context-aware at runtime
@@ -463,7 +464,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [isScrollingUp, setIsScrollingUp] = useState(false)
   const [openMobileItems, setOpenMobileItems] = useState<Set<string>>(new Set())
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [isProductsMenuOpen, setIsProductsMenuOpen] = useState(false)
@@ -484,7 +484,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const [isLoadingLocation, setIsLoadingLocation] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const [animationComplete, setAnimationComplete] = useState(false)
-  const [isAutoHidden, setIsAutoHidden] = useState(false)
+  const [isAutoHidden, setIsAutoHidden] = useState(true) // Start hidden - only shows on hover or menu open
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
@@ -576,16 +576,9 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       setIsScrolled(!isAtTop)
     }
 
-    // Start auto-hide timer on initial load
-    autoHideTimeoutRef.current = setTimeout(() => {
-      setIsAutoHidden(true)
-    }, 2000)
-
-    return () => {
-      if (autoHideTimeoutRef.current) {
-        clearTimeout(autoHideTimeoutRef.current)
-      }
-    }
+    // Start with nav hidden on initial load
+    // No auto-hide timer needed - nav starts hidden and only shows on hover or menu open
+    setIsAutoHidden(true)
   }, [])
   
   // Fetch dealer location data when origin changes - but only after animation completes
@@ -738,9 +731,10 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   }, [isMenuOpen, activeDropdown, isProductsMenuOpen, isStorefrontsMenuOpen, isResourcesMenuOpen, isNewsMenuOpen])
   
   // ============================================================================
-  // Scroll Detection Logic - Simple & Reliable
+  // Scroll Detection Logic
   // ============================================================================
-  // Bottom nav shows when: at top OR scrolling up OR menu open
+  // Bottom nav shows when: hover OR menu open
+  // Hidden by default with 2-second auto-hide timer
   // Uses single 5px threshold to filter micro-jitter while staying responsive
   // ============================================================================
 
@@ -756,7 +750,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     const isAtTop = latest <= 50
     setIsScrolled(!isAtTop)
 
-    // Detect scroll direction (only if movement is significant enough)
+    // Detect scroll movement (only if movement is significant enough)
     const movement = latest - previous
 
     if (Math.abs(movement) > 5) {
@@ -767,14 +761,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       if (autoHideTimeoutRef.current) {
         clearTimeout(autoHideTimeoutRef.current)
         autoHideTimeoutRef.current = null
-      }
-
-      // Determine if scrolling up or down
-      const isScrollingUpNow = movement < 0
-
-      // Show nav when scrolling up
-      if (isScrollingUpNow) {
-        setIsAutoHidden(false)
       }
 
       // Start 2-second auto-hide timer after any scroll
@@ -789,9 +775,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         setIsResourcesMenuOpen(false)
         setIsNewsMenuOpen(false)
       }
-
-      // Update direction: true if scrolling up, false if scrolling down
-      setIsScrollingUp(isScrollingUpNow)
     }
   })
   
@@ -1133,9 +1116,19 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
               />
             </motion.div>
 
-            {/* SearchBar - Center (Prominent) */}
+            {/* Home Icon + SearchBar - Center */}
             {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
-              <div className="hidden md:flex items-center flex-1 max-w-2xl mx-8">
+              <div className="hidden md:flex items-center flex-1 max-w-2xl mx-8 gap-3">
+                {/* Home Icon */}
+                <ContextAwareLink
+                  href="/"
+                  className="flex-shrink-0 p-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50/80 transition-colors rounded-md"
+                  aria-label="Home"
+                >
+                  <Home className="h-5 w-5" />
+                </ContextAwareLink>
+
+                {/* SearchBar */}
                 <SearchBar
                   className="w-full"
                   onOpenChange={setIsSearchOpen}
@@ -1312,14 +1305,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                 "flex items-center justify-center gap-8 transition-all duration-300",
                 isScrolled ? 'h-12' : 'h-14'
               )}>
-                {/* Home Link */}
-                <Link
-                  href="/"
-                  className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md"
-                >
-                  Home
-                </Link>
-
                 {/* News Mega Menu */}
                 <div
                   onMouseEnter={animationComplete ? handleNewsMenuOpen : undefined}

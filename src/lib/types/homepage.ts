@@ -94,6 +94,11 @@ export interface NewsItem {
   image?: Media | string | null
   category: string
   link?: string
+
+  // Multi-media support
+  images?: (Media | string)[] | null // Multiple images for carousel display
+  videoUrl?: string | null // YouTube URL or direct MP4 URL
+  videoSource?: 'youtube' | 'direct' | null // Type of video embed
 }
 
 export interface NewsCarouselSectionData {

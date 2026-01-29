@@ -80,6 +80,11 @@ export async function HeaderDynamic() {
     // Check if we're on a university event page
     const isUniversityPage = pathname.includes('/university')
 
+    // Check if we're on the homepage or a storefront page (hide logo on these pages)
+    const isHomepage = pathname === '/' || pathname === ''
+    const isStorefrontPage = pathname.includes('/store/')
+    const shouldHideLogo = isHomepage || isStorefrontPage
+
     // Static navigation items (non-piano categories)
     // Note: Piano navigation is now handled by ProductsMegaMenu (Shopify integration),
     // StorefrontsMegaMenu, NewsMegaMenu, and ResourcesMegaMenu - these are rendered separately in header.tsx

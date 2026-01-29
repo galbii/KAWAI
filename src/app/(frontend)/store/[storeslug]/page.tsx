@@ -19,8 +19,9 @@ import { unstable_cache } from 'next/cache';
 /**
  * Transform raw Payload storefront data into structured HomePageData format
  * This ensures compatibility with existing homepage components
+ * Piano collection data now comes from HomePage collection to eliminate duplication
  */
-function transformStorefrontData(rawData: any): HomePageData | null {
+function transformStorefrontData(rawData: any, homePageData: any): HomePageData | null {
   if (!rawData) return null;
 
   return {
@@ -44,11 +45,11 @@ function transformStorefrontData(rawData: any): HomePageData | null {
       trustBanner: rawData.trustBanner
     },
     pianoCollectionSection: {
-      collectionSectionHeader: rawData.collectionSectionHeader,
-      collectionTitle: rawData.collectionTitle,
-      collectionDescription: rawData.collectionDescription,
-      collectionCta: rawData.collectionCta,
-      featuredVideo: rawData.featuredVideo
+      collectionSectionHeader: homePageData?.collectionSectionHeader || 'Featured Models',
+      collectionTitle: homePageData?.collectionTitle || 'Discover Our Collection',
+      collectionDescription: homePageData?.collectionDescription || 'Explore exceptional craftsmanship and innovation',
+      collectionCta: homePageData?.collectionCta || { text: 'Explore Collection', link: '/pianos' },
+      featuredVideo: homePageData?.featuredVideo || null
     },
     pianoGallerySection: {
       galleryTitle: '',
@@ -243,18 +244,19 @@ async function StorefrontContent({ storeslug }: { storeslug: string }) {
       notFound();
     }
 
+    // Fetch HomePage data for piano gallery, piano collection, and fallbacks using direct access
+    const homePageData = await getHomePageDataDirect();
+    pianoGalleryData = homePageData?.pianoGallerySection;
+
     // Debug: Log raw hours data from database
     console.log(`[DEBUG] Raw hours from DB for "${storeslug}":`, JSON.stringify(rawStorefrontData?.hours, null, 2))
 
     // Transform raw Payload data into structured format
-    storefrontData = transformStorefrontData(rawStorefrontData);
+    // Piano collection data now comes from HomePage to eliminate duplication
+    storefrontData = transformStorefrontData(rawStorefrontData, homePageData?.pianoCollectionSection);
 
     // Debug: Log transformed hours data
     console.log(`[DEBUG] Transformed hours for "${storeslug}":`, JSON.stringify(storefrontData?.showroomSection?.hours, null, 2))
-
-    // Fetch HomePage data for piano gallery and fallbacks using direct access
-    const homePageData = await getHomePageDataDirect();
-    pianoGalleryData = homePageData?.pianoGallerySection;
 
     // Merge storefront data with HomePage fallbacks for news carousel
     if (storefrontData && homePageData) {
@@ -431,8 +433,11 @@ export async function generateMetadata(
       };
     }
 
+    // Fetch HomePage data for piano collection
+    const homePageData = await getHomePageDataDirect();
+
     // Transform raw data to structured format
-    const storefrontData = transformStorefrontData(rawStorefrontData);
+    const storefrontData = transformStorefrontData(rawStorefrontData, homePageData?.pianoCollectionSection);
 
     if (!storefrontData) {
       return {

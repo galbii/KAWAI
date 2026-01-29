@@ -44,6 +44,7 @@ export async function GET(
     if (storefront) {
 
       // Transform the storefront data to match HomePageData structure
+      // Note: Piano collection data is now sourced from HomePage collection
       const transformedData = {
         heroSection: {
           locationText: storefront.locationText,
@@ -62,13 +63,6 @@ export async function GET(
           features: storefront.features,
           mapApiKey: storefront.mapApiKey,
           showroomCtas: storefront.showroomCtas
-        },
-        pianoCollectionSection: {
-          collectionSectionHeader: storefront.collectionSectionHeader,
-          collectionTitle: storefront.collectionTitle,
-          collectionDescription: storefront.collectionDescription,
-          collectionCta: storefront.collectionCta,
-          featuredVideo: storefront.featuredVideo
         },
         newsCarouselSection: {
           autoPlayDuration: storefront.autoPlayDuration,

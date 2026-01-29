@@ -238,18 +238,61 @@ export default buildConfig({
       },
     }),
     searchPlugin({
-      collections: ['products', 'pages'],
+      collections: ['storefronts', 'products', 'pages'],
       defaultPriorities: {
-        products: 20,  // Products appear FIRST
-        pages: 10,     // Pages appear second
+        storefronts: 30, // Storefronts appear FIRST
+        products: 20,     // Products appear second
+        pages: 10,        // Pages appear third
       },
       beforeSync: ({ originalDoc, searchDoc, req }) => {
         // Extract searchable data based on collection type
-        const collectionSlug = (originalDoc.name && originalDoc.model) ? 'products' : 'pages'
+        // Detect collection type by unique fields
+        const collectionSlug = (originalDoc.locationName && originalDoc.slug && 'isActive' in originalDoc)
+          ? 'storefronts'
+          : (originalDoc.name && originalDoc.model)
+            ? 'products'
+            : 'pages'
+
+        if (collectionSlug === 'storefronts') {
+          // Only index active storefronts
+          if (!originalDoc.isActive) {
+            return searchDoc // Don't modify the doc if inactive (will be filtered by Payload)
+          }
+
+          // Extract storefront-specific fields for search
+          // Build searchable content from location data and service area
+          const searchableText = [
+            originalDoc.locationName,
+            originalDoc.locationText,
+            originalDoc.establishedText,
+            originalDoc.showroomSection?.showroomInfo?.name,
+            originalDoc.showroomSection?.showroomInfo?.address,
+            originalDoc.serviceAreaCoverage?.primaryCity,
+            originalDoc.serviceAreaCoverage?.stateRegion,
+            originalDoc.serviceAreaCoverage?.coveredCities?.map((city: any) => city.cityName).join(', '),
+          ].filter(Boolean).join(' ')
+
+          return {
+            ...searchDoc,
+            title: originalDoc.locationName,
+            excerpt: originalDoc.locationText || originalDoc.establishedText || '',
+            category: 'storefront',
+            tags: ['storefront', 'location', 'showroom'],
+            // Denormalized storefront fields (stored directly in search doc)
+            storefrontSlug: originalDoc.slug,
+            storefrontLocationName: originalDoc.locationName,
+            storefrontLocationText: originalDoc.locationText,
+            storefrontEstablishedText: originalDoc.establishedText,
+            storefrontAddress: originalDoc.showroomSection?.showroomInfo?.address,
+            storefrontPhone: originalDoc.showroomSection?.showroomInfo?.phone,
+            storefrontCity: originalDoc.serviceAreaCoverage?.primaryCity,
+            storefrontRegion: originalDoc.serviceAreaCoverage?.stateRegion,
+          }
+        }
 
         if (collectionSlug === 'products') {
           // Valid tag options from the search collection schema
-          const validTags = ['piano', 'digital', 'grand', 'hybrid', 'upright', 'accessory', 'software', 'page', 'faq', 'support']
+          const validTags = ['piano', 'digital', 'grand', 'hybrid', 'upright', 'accessory', 'software', 'page', 'faq', 'support', 'storefront', 'location', 'showroom']
 
           // Filter tags to only include valid options
           const productTags = [
@@ -333,6 +376,9 @@ export default buildConfig({
               { label: 'Page', value: 'page' },
               { label: 'FAQ', value: 'faq' },
               { label: 'Support', value: 'support' },
+              { label: 'Storefront', value: 'storefront' },
+              { label: 'Location', value: 'location' },
+              { label: 'Showroom', value: 'showroom' },
             ],
             admin: {
               position: 'sidebar',
@@ -392,6 +438,79 @@ export default buildConfig({
             admin: {
               position: 'sidebar',
               description: 'Page slug (denormalized from Pages collection)',
+              readOnly: true,
+            },
+          },
+          // Denormalized storefront fields for fast search results
+          {
+            name: 'storefrontSlug',
+            type: 'text',
+            admin: {
+              position: 'sidebar',
+              description: 'Storefront slug (denormalized from Storefronts collection)',
+              readOnly: true,
+            },
+          },
+          {
+            name: 'storefrontLocationName',
+            type: 'text',
+            admin: {
+              position: 'sidebar',
+              description: 'Storefront location name (denormalized from Storefronts collection)',
+              readOnly: true,
+            },
+          },
+          {
+            name: 'storefrontLocationText',
+            type: 'text',
+            admin: {
+              position: 'sidebar',
+              description: 'Storefront location text (denormalized from Storefronts collection)',
+              readOnly: true,
+            },
+          },
+          {
+            name: 'storefrontEstablishedText',
+            type: 'text',
+            admin: {
+              position: 'sidebar',
+              description: 'Storefront established text (denormalized from Storefronts collection)',
+              readOnly: true,
+            },
+          },
+          {
+            name: 'storefrontAddress',
+            type: 'text',
+            admin: {
+              position: 'sidebar',
+              description: 'Storefront address (denormalized from Storefronts collection)',
+              readOnly: true,
+            },
+          },
+          {
+            name: 'storefrontPhone',
+            type: 'text',
+            admin: {
+              position: 'sidebar',
+              description: 'Storefront phone (denormalized from Storefronts collection)',
+              readOnly: true,
+            },
+          },
+          {
+            name: 'storefrontCity',
+            type: 'text',
+            admin: {
+              position: 'sidebar',
+              description: 'Storefront city (denormalized from Storefronts collection)',
+              readOnly: true,
+            },
+          },
+          {
+            name: 'storefrontRegion',
+            type: 'text',
+            admin: {
+              position: 'sidebar',
+              description: 'Storefront region (denormalized from Storefronts collection)',
               readOnly: true,
             },
           },

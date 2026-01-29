@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence, useInView } from "framer-motion";
-import { NewsCarouselProps } from '@/lib/types/homepage';
+import { NewsCarouselProps, NewsItem } from '@/lib/types/homepage';
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils';
 import {
   withFallback,
@@ -16,15 +16,20 @@ import {
   createImageErrorHandler
 } from '@/lib/fallbacks/media';
 import { NAMMCarouselSlide } from './NAMMCarouselSlide';
+import { NewsImageCarousel } from './NewsImageCarousel';
+import { NewsVideoBackground } from './NewsVideoBackground';
 
 // Hardcoded NAMM 2026 carousel item (ALWAYS injected as first slide)
-const NAMM_CAROUSEL_ITEM = {
+const NAMM_CAROUSEL_ITEM: NewsItem = {
   title: 'Visit Kawai at NAMM 2026',
   description: 'Experience exclusive piano innovations, live artist performances, and hands-on demonstrations at our booth in Anaheim Convention Center',
   image: '/images/namm/general/TK7_7390.jpg', // Placeholder - uses scrolling background instead
   category: 'namm-event', // Special category triggers custom NAMM slide
-  link: '/namm-2026'
-} as const;
+  link: '/namm-2026',
+  images: null,
+  videoUrl: null,
+  videoSource: null,
+};
 
 export function NewsCarousel({ data }: NewsCarouselProps) {
   // Use comprehensive fallback system
@@ -167,6 +172,36 @@ export function NewsCarousel({ data }: NewsCarouselProps) {
               // Render custom NAMM slide with scrolling background
               if (isNAMMSlide) {
                 return <NAMMCarouselSlide prefersReducedMotion={prefersReducedMotion} />;
+              }
+
+              // Render video background if videoUrl is present
+              if (currentItem.videoUrl) {
+                return (
+                  <NewsVideoBackground
+                    title={currentItem.title}
+                    description={currentItem.description}
+                    videoUrl={currentItem.videoUrl}
+                    videoSource={currentItem.videoSource || 'youtube'}
+                    category={currentItem.category}
+                    link={currentItem.link}
+                    prefersReducedMotion={prefersReducedMotion}
+                  />
+                );
+              }
+
+              // Render image carousel if multiple images are present
+              if (currentItem.images && currentItem.images.length > 0) {
+                return (
+                  <NewsImageCarousel
+                    title={currentItem.title}
+                    description={currentItem.description}
+                    images={currentItem.images}
+                    category={currentItem.category}
+                    link={currentItem.link}
+                    prefersReducedMotion={prefersReducedMotion}
+                    slideDuration={SLIDE_DURATION}
+                  />
+                );
               }
 
               // Regular slide rendering

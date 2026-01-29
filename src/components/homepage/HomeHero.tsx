@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
@@ -107,27 +106,6 @@ export function HomeHero() {
         )}
 
         <div className="w-full mt-16 sm:mt-20 md:mt-24 lg:mt-28">
-          <div className="mb-12 lg:mb-16">
-            <h1 className="heading-brand-luxury text-kawai-pearl mb-8 lg:mb-12 leading-tight tracking-tight text-center">
-              <motion.div
-                className="flex justify-center"
-                variants={wordReveal}
-                custom={0.4}
-                initial="hidden"
-                animate={isInView ? "visible" : "hidden"}
-              >
-                <Image
-                  src="/images/instrumental-to-life-logo.svg"
-                  alt="Instrumental to Life"
-                  width={600}
-                  height={180}
-                  className="w-full max-w-[350px] sm:max-w-[450px] md:max-w-[550px] lg:max-w-[650px] h-auto"
-                  priority
-                />
-              </motion.div>
-            </h1>
-          </div>
-
           <motion.p
             className="text-brand-sophisticated text-kawai-pearl/80 mb-12 lg:mb-16 max-w-2xl text-lg md:text-xl leading-relaxed font-light text-center mx-auto"
             variants={contentReveal}

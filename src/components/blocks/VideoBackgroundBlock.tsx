@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
+import { getYouTubeEmbedUrl } from '@/lib/utils/youtube'
 
 interface VideoBackgroundBlockProps {
   videoSource?: 'youtube' | 'direct' | null
@@ -26,39 +27,6 @@ interface VideoBackgroundBlockProps {
   overlayOpacity?: number | null
 }
 
-/**
- * Extract YouTube video ID from various URL formats
- * Supports:
- * - https://youtube.com/watch?v=VIDEO_ID
- * - https://youtu.be/VIDEO_ID
- * - https://www.youtube.com/embed/VIDEO_ID
- */
-function extractYouTubeId(url: string | null | undefined): string | null {
-  if (!url) return null
-
-  try {
-    const urlObj = new URL(url)
-
-    // youtube.com/watch?v=VIDEO_ID
-    if (urlObj.hostname.includes('youtube.com') && urlObj.searchParams.has('v')) {
-      return urlObj.searchParams.get('v')
-    }
-
-    // youtu.be/VIDEO_ID
-    if (urlObj.hostname === 'youtu.be') {
-      return urlObj.pathname.slice(1) // Remove leading slash
-    }
-
-    // youtube.com/embed/VIDEO_ID
-    if (urlObj.pathname.includes('/embed/')) {
-      return urlObj.pathname.split('/embed/')[1]?.split('?')[0] || null
-    }
-
-    return null
-  } catch {
-    return null
-  }
-}
 
 export function VideoBackgroundBlock({
   videoSource = 'youtube',
@@ -100,18 +68,16 @@ export function VideoBackgroundBlock({
 
   const sidebarOnLeft = sidebarPosition === 'left'
 
-  // Extract YouTube video ID and build embed URL
-  const youtubeVideoId = videoSource === 'youtube' ? extractYouTubeId(youtubeUrl) : null
-  const youtubeEmbedUrl = youtubeVideoId
-    ? `https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&mute=1&loop=1&playlist=${youtubeVideoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&disablekb=1&fs=0&iv_load_policy=3`
-    : null
+  // Build optimized YouTube embed URL using shared utility
+  // See src/lib/utils/youtube.ts for parameter documentation
+  const youtubeEmbedUrl = videoSource === 'youtube' ? getYouTubeEmbedUrl(youtubeUrl) : null
 
   return (
     <section className="relative h-screen w-full overflow-hidden bg-kawai-charcoal">
       {/* Background Video */}
       <div className="absolute inset-0">
         {videoSource === 'youtube' && youtubeEmbedUrl ? (
-          // YouTube Embed with UI blocker
+          // YouTube Embed (minimized UI - title/channel overlay still appears per YouTube policy)
           <div className="relative h-full w-full">
             <iframe
               src={youtubeEmbedUrl}
@@ -124,7 +90,7 @@ export function VideoBackgroundBlock({
               onLoad={handleVideoReady}
               title="Background video"
             />
-            {/* Overlay to block YouTube UI interactions */}
+            {/* Transparent overlay prevents user interaction with video (clicking, pausing, etc.) */}
             <div className="pointer-events-none absolute inset-0 z-10" />
           </div>
         ) : (

@@ -707,6 +707,10 @@ export interface LayoutVideoBackgroundBlock {
    */
   sidebarPosition: 'left' | 'right';
   /**
+   * Sidebar height: centered vertically or spans full screen height
+   */
+  sidebarHeight: 'centered' | 'full';
+  /**
    * Overlay darkness (0 = transparent, 1 = fully dark). Adjust for video brightness/readability.
    */
   overlayOpacity: number;
@@ -3405,48 +3409,6 @@ export interface Storefront {
     zipCodes?: string | null;
   };
   /**
-   * Piano collection section header
-   */
-  collectionSectionHeader: string;
-  /**
-   * Featured collection title
-   */
-  collectionTitle: string;
-  /**
-   * Featured collection description
-   */
-  collectionDescription: string;
-  /**
-   * Call-to-action for the piano collection section
-   */
-  collectionCta: {
-    /**
-     * Collection CTA button text
-     */
-    text: string;
-    /**
-     * Collection CTA button link/URL
-     */
-    link: string;
-  };
-  /**
-   * Featured video configuration for the collection section
-   */
-  featuredVideo?: {
-    /**
-     * YouTube video ID for featured video
-     */
-    youtubeId?: string | null;
-    /**
-     * Video player width
-     */
-    width?: number | null;
-    /**
-     * Video player height
-     */
-    height?: number | null;
-  };
-  /**
    * Auto-play duration in milliseconds (leave empty to use main site default)
    */
   autoPlayDuration?: number | null;
@@ -4157,6 +4119,10 @@ export interface Search {
   priority?: number | null;
   doc:
     | {
+        relationTo: 'storefronts';
+        value: string | Storefront;
+      }
+    | {
         relationTo: 'products';
         value: string | Product;
       }
@@ -4176,7 +4142,21 @@ export interface Search {
    * Tags for filtering
    */
   tags?:
-    | ('piano' | 'digital' | 'grand' | 'hybrid' | 'upright' | 'accessory' | 'software' | 'page' | 'faq' | 'support')[]
+    | (
+        | 'piano'
+        | 'digital'
+        | 'grand'
+        | 'hybrid'
+        | 'upright'
+        | 'accessory'
+        | 'software'
+        | 'page'
+        | 'faq'
+        | 'support'
+        | 'storefront'
+        | 'location'
+        | 'showroom'
+      )[]
     | null;
   /**
    * Product model (denormalized from Products collection)
@@ -4202,6 +4182,38 @@ export interface Search {
    * Page slug (denormalized from Pages collection)
    */
   pageSlug?: string | null;
+  /**
+   * Storefront slug (denormalized from Storefronts collection)
+   */
+  storefrontSlug?: string | null;
+  /**
+   * Storefront location name (denormalized from Storefronts collection)
+   */
+  storefrontLocationName?: string | null;
+  /**
+   * Storefront location text (denormalized from Storefronts collection)
+   */
+  storefrontLocationText?: string | null;
+  /**
+   * Storefront established text (denormalized from Storefronts collection)
+   */
+  storefrontEstablishedText?: string | null;
+  /**
+   * Storefront address (denormalized from Storefronts collection)
+   */
+  storefrontAddress?: string | null;
+  /**
+   * Storefront phone (denormalized from Storefronts collection)
+   */
+  storefrontPhone?: string | null;
+  /**
+   * Storefront city (denormalized from Storefronts collection)
+   */
+  storefrontCity?: string | null;
+  /**
+   * Storefront region (denormalized from Storefronts collection)
+   */
+  storefrontRegion?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -4975,22 +4987,6 @@ export interface StorefrontsSelect<T extends boolean = true> {
         stateRegion?: T;
         zipCodes?: T;
       };
-  collectionSectionHeader?: T;
-  collectionTitle?: T;
-  collectionDescription?: T;
-  collectionCta?:
-    | T
-    | {
-        text?: T;
-        link?: T;
-      };
-  featuredVideo?:
-    | T
-    | {
-        youtubeId?: T;
-        width?: T;
-        height?: T;
-      };
   autoPlayDuration?: T;
   newsItems?:
     | T
@@ -5429,6 +5425,14 @@ export interface SearchSelect<T extends boolean = true> {
   productCategory?: T;
   productSlug?: T;
   pageSlug?: T;
+  storefrontSlug?: T;
+  storefrontLocationName?: T;
+  storefrontLocationText?: T;
+  storefrontEstablishedText?: T;
+  storefrontAddress?: T;
+  storefrontPhone?: T;
+  storefrontCity?: T;
+  storefrontRegion?: T;
   updatedAt?: T;
   createdAt?: T;
 }

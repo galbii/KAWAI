@@ -91,6 +91,15 @@ export async function GET(request: NextRequest) {
         productSlug: (doc as any).productSlug,
         // Include denormalized page fields
         pageSlug: (doc as any).pageSlug,
+        // Include denormalized storefront fields
+        storefrontSlug: (doc as any).storefrontSlug,
+        storefrontLocationName: (doc as any).storefrontLocationName,
+        storefrontLocationText: (doc as any).storefrontLocationText,
+        storefrontEstablishedText: (doc as any).storefrontEstablishedText,
+        storefrontAddress: (doc as any).storefrontAddress,
+        storefrontPhone: (doc as any).storefrontPhone,
+        storefrontCity: (doc as any).storefrontCity,
+        storefrontRegion: (doc as any).storefrontRegion,
       }
     })
 
