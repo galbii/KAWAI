@@ -482,7 +482,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const [isNewsMenuOpen, setIsNewsMenuOpen] = useState(false)
   const [currentLocationData, setCurrentLocationData] = useState<DealerLocationData | null>(locationData || null)
   const [isLoadingLocation, setIsLoadingLocation] = useState(false)
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState(true)
   const [animationComplete, setAnimationComplete] = useState(false)
   const [isAutoHidden, setIsAutoHidden] = useState(true) // Start hidden - only shows on hover or menu open
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -558,14 +558,9 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   // REMOVED: CSS variable updates were causing scroll jank
   // Mega menus now position themselves directly without needing this
   
-  // Start fade-in animation once after mount
+  // Mark animation as complete immediately since header has no animations
   useEffect(() => {
-    // Always set visible to true on mount to ensure header shows
-    const timer = setTimeout(() => {
-      setIsVisible(true)
-    }, 100)
-
-    return () => clearTimeout(timer)
+    setAnimationComplete(true)
   }, [])
 
   // Initialize scroll state based on initial scroll position
@@ -1057,66 +1052,25 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   }
 
   return (
-    <motion.header
+    <header
       ref={headerRef}
-      className="sticky top-0 z-50 w-full"
-      initial={{ opacity: 0 }}
-      animate={{
-        opacity: isVisible ? 1 : 0,
-        boxShadow: isAutoHidden
-          ? '0 0 0 0 rgb(0 0 0 / 0)'
-          : (isScrolled ? '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)' : '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)')
-      }}
-      transition={{
-        opacity: { duration: 1.2, ease: [0.25, 0.1, 0.25, 1.0] },
-        boxShadow: { duration: 0.2, ease: [0.4, 0, 0.2, 1] }
-      }}
-      onAnimationComplete={() => {
-        if (isVisible) {
-          setAnimationComplete(true)
-        }
-      }}
+      className="fixed top-0 left-0 right-0 z-50 w-full bg-white shadow-sm"
     >
       {/* Top Row - Utility Bar (Full Width) */}
-      <motion.div
-        className="border-b border-gray-100 w-full bg-white"
-        initial={false}
-        animate={{
-          borderBottomColor: isAutoHidden ? 'rgba(229, 231, 235, 0.3)' : 'rgba(229, 231, 235, 1)',
-        }}
-        transition={{
-          duration: 0.2,
-          ease: [0.4, 0, 0.2, 1],
-        }}
-      >
+      <div className="border-b border-gray-100 w-full bg-white">
         <div className="container mx-auto px-4 sm:px-6">
-          <div
-            className={cn(
-              "flex items-center justify-between transition-all duration-300",
-              isScrolled ? 'h-14' : 'h-16'
-            )}
-            onClick={handleHeaderClick}
-          >
+          <div className="flex items-center justify-between h-16">
             {/* Logo - Left */}
-            <motion.div
-              animate={{
-                scale: isScrolled ? 0.9 : 1,
-              }}
-              transition={{
-                duration: 0.3,
-                ease: "easeInOut"
-              }}
-              className="flex-shrink-0 z-10"
-            >
+            <div className="flex-shrink-0 z-10">
               <KawaiLogo
-                size={isScrolled ? "sm" : "md"}
+                size="md"
                 animated={true}
                 {...(currentLocationData?.locationName && { dealerName: currentLocationData.locationName })}
                 nonClickable={isSignaturePage}
               />
-            </motion.div>
+            </div>
 
-            {/* Home Icon + SearchBar - Center */}
+            {/* Home Icon + SearchBar - Center (Desktop Only) */}
             {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
               <div className="hidden md:flex items-center flex-1 max-w-2xl mx-8 gap-3">
                 {/* Home Icon */}
@@ -1128,7 +1082,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                   <Home className="h-5 w-5" />
                 </ContextAwareLink>
 
-                {/* SearchBar */}
+                {/* SearchBar - Desktop */}
                 <SearchBar
                   className="w-full"
                   onOpenChange={setIsSearchOpen}
@@ -1232,7 +1186,8 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
+
 
       {/* Kawai Red Line - Between Top and Bottom Rows */}
       <motion.div
@@ -1247,23 +1202,10 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         }}
       />
 
-      {/* Bottom Row - Main Navigation (Full Width) - Absolute positioned overlay */}
+      {/* Bottom Row - Main Navigation (Full Width) - Auto-hide on scroll/hover */}
       {!isSignaturePage && !hidePianoLinks && !isUniversityPage && !isSearchOpen && (
-        <motion.div
-          className="hidden lg:block w-full absolute left-0 right-0 z-40"
-          style={{
-            minHeight: '16px', // Ensure container is always hoverable
-          }}
-          initial={false}
-          animate={{
-            top: (!isAutoHidden || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen)
-              ? (isScrolled ? 57 : 65) // When nav visible or menu open (no red line)
-              : (isScrolled ? 63 : 71), // When nav auto-hidden (with red line)
-          }}
-          transition={{
-            duration: 0.2,
-            ease: [0.4, 0, 0.2, 1],
-          }}
+        <div
+          className="hidden lg:block w-full relative"
           onMouseEnter={handleBottomNavMouseEnter}
           onMouseLeave={handleBottomNavMouseLeave}
         >
@@ -1276,29 +1218,18 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
             }}
           />
           <motion.div
-            className="overflow-hidden w-full bg-white relative z-20"
-            style={{
-              borderTopStyle: 'solid',
-              borderTopColor: 'rgb(229 231 235)',
-              borderTopWidth: (!isAutoHidden || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) ? '1px' : '0px',
-              borderBottomStyle: 'solid',
-              borderBottomColor: '#A01829',
-              borderBottomWidth: (!isAutoHidden || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) ? '6px' : '0px',
-              transformOrigin: 'top',
-              willChange: 'transform, opacity',
-            }}
+            className="w-full bg-white overflow-hidden relative z-20"
             initial={false}
             animate={{
-              height: (!isAutoHidden || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen)
-                ? (isScrolled ? 55 : 63) // 48px or 56px content + 1px top border + 6px bottom border
-                : 0,
+              height: (!isAutoHidden || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) ? 'auto' : 0,
               opacity: (!isAutoHidden || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) ? 1 : 0,
             }}
             transition={{
-              duration: 0.2,
+              duration: 0.3,
               ease: [0.4, 0, 0.2, 1],
             }}
           >
+          <div className="w-full bg-white border-b-[6px] border-[#A01829]">
           <div className="container mx-auto px-4 sm:px-6">
             <nav>
               <div className={cn(
@@ -1388,8 +1319,9 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
               </div>
             </nav>
           </div>
-        </motion.div>
-        </motion.div>
+          </div>
+          </motion.div>
+        </div>
       )}
 
       {/* Mobile Menu - Hidden on signature page, concert artist page, and university page */}
@@ -1527,6 +1459,13 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
           isHeaderScrolled={isScrolled}
         />
       </div>
-    </motion.header>
+
+      {/* SearchBar - Mobile Only (Renders at root level) */}
+      {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
+        <div className="md:hidden">
+          <SearchBar onOpenChange={setIsSearchOpen} />
+        </div>
+      )}
+    </header>
   )
 }

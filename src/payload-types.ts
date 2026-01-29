@@ -80,6 +80,7 @@ export interface Config {
     'marketing-hero': MarketingHeroBlock;
     'marketing-cta': MarketingCallToActionBlock;
     'marketing-testimonials': MarketingTestimonialsBlock;
+    'marketing-i2l': MarketingI2LBlock;
     'product-showcase': ProductShowcaseBlock;
     'product-hero': ProductHeroBlock;
     'product-gallery': ProductImageGalleryBlock;
@@ -2100,6 +2101,119 @@ export interface MarketingTestimonialsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingI2LBlock".
+ */
+export interface MarketingI2LBlock {
+  /**
+   * Main section heading (default: "Instrumental To Life")
+   */
+  heading: string;
+  /**
+   * Subheading or tagline displayed below the logo
+   */
+  subheading?: string | null;
+  /**
+   * Custom Kawai logo image (optional). If not provided, the default Kawai logo will be used. Recommended: SVG or PNG with transparent background, minimum 200px width.
+   */
+  logo?: (string | null) | Media;
+  /**
+   * Add up to 2 call-to-action buttons displayed below the subheading. CTAs appear side-by-side on desktop and stack on mobile.
+   */
+  ctas?:
+    | {
+        /**
+         * Button text (e.g., "Watch Full Performance", "Explore the Collection")
+         */
+        text: string;
+        /**
+         * Button destination URL (e.g., /artists, /pianos/grand, https://youtube.com/...)
+         */
+        url: string;
+        /**
+         * Button style variant
+         */
+        variant: 'default' | 'outline';
+        /**
+         * Open link in a new tab (recommended for external links)
+         */
+        openInNewTab?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Add up to 6 YouTube videos for the carousel. Videos will be displayed in order.
+   */
+  videos: {
+    /**
+     * YouTube video URL (e.g., https://youtube.com/watch?v=dQw4w9WgXcQ or https://youtu.be/dQw4w9WgXcQ)
+     */
+    youtubeUrl: string;
+    /**
+     * Video title displayed in the card
+     */
+    title: string;
+    /**
+     * Short video description (max 200 characters)
+     */
+    description: string;
+    /**
+     * Optional custom thumbnail image. If not provided, YouTube default thumbnail will be used. Recommended: 16:9 aspect ratio, minimum 1280x720px.
+     */
+    thumbnailOverride?: (string | null) | Media;
+    /**
+     * Video category for filtering and organization
+     */
+    category: 'performance' | 'craftsmanship' | 'artist-story' | 'product-demo' | 'behind-scenes' | 'education';
+    /**
+     * Video duration displayed on thumbnail (e.g., "3:45")
+     */
+    duration?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * Carousel behavior and display settings
+   */
+  settings: {
+    /**
+     * Display layout for videos
+     */
+    layout: 'carousel' | 'grid-2' | 'grid-3';
+    /**
+     * Enable automatic scrolling through videos (carousel mode only)
+     */
+    autoScroll?: boolean | null;
+    /**
+     * Auto-scroll duration in milliseconds (3-15 seconds)
+     */
+    autoScrollDuration?: number | null;
+    /**
+     * Enable keyboard navigation (arrow keys) for carousel
+     */
+    enableKeyboardNav?: boolean | null;
+  };
+  /**
+   * Visual styling options
+   */
+  styling: {
+    /**
+     * Color theme for the section
+     */
+    theme: 'dark' | 'light';
+    /**
+     * Display category badges on video cards
+     */
+    showCategoryBadges?: boolean | null;
+    /**
+     * Display video duration on thumbnails
+     */
+    showDuration?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-i2l';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "HelloBlock".
  */
 export interface HelloBlock {
@@ -2510,6 +2624,7 @@ export interface Page {
     | MarketingHeroBlock
     | MarketingCallToActionBlock
     | MarketingTestimonialsBlock
+    | MarketingI2LBlock
     | ProductShowcaseBlock
     | ProductHeroBlock
     | ProductImageGalleryBlock
@@ -2793,6 +2908,10 @@ export interface HomePage {
      */
     height?: number | null;
   };
+  /**
+   * Add Instrumental To Life video carousel section. Configure heading, videos, and styling options.
+   */
+  i2lSection?: MarketingI2LBlock[] | null;
   /**
    * Piano gallery section title
    */
@@ -4717,6 +4836,7 @@ export interface HomePageSelect<T extends boolean = true> {
         width?: T;
         height?: T;
       };
+  i2lSection?: T | {};
   galleryTitle?: T;
   galleryDescription?: T;
   pianoCategories?:

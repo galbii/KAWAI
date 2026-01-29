@@ -32,14 +32,14 @@ export async function generateMetadata(): Promise<Metadata> {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com';
 
       return {
-        title: homePageData.seo.metaTitle || 'KAWAI | Find a storefront near you',
+        title: homePageData.seo.metaTitle || 'KAWAI ™ | Digital and Acoustic Pianos',
         description: homePageData.seo.metaDescription || 'Discover premium KAWAI pianos at authorized dealers nationwide. Explore our collection of grand, upright, and digital pianos. Find a KAWAI storefront near you.',
         keywords: homePageData.seo.keywords,
         alternates: {
           canonical: siteUrl
         },
         openGraph: {
-          title: homePageData.seo.openGraphTitle || homePageData.seo.metaTitle || 'KAWAI | Find a storefront near you',
+          title: homePageData.seo.openGraphTitle || homePageData.seo.metaTitle || 'KAWAI ™ | Digital and Acoustic Pianos',
           description: homePageData.seo.openGraphDescription || homePageData.seo.metaDescription || 'Discover premium KAWAI pianos at authorized dealers nationwide.',
           url: siteUrl,
           siteName: 'KAWAI Pianos',
@@ -62,7 +62,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
     // Fallback metadata if CMS data is unavailable
     return {
-      title: 'KAWAI | Find a storefront near you',
+      title: 'KAWAI ™ | Digital and Acoustic Pianos',
       description: 'Discover premium KAWAI pianos at authorized dealers nationwide. Explore our collection of grand, upright, and digital pianos crafted with 95+ years of Japanese excellence.',
       keywords: ['kawai piano', 'piano dealer', 'grand piano', 'digital piano', 'upright piano', 'piano store', 'kawai authorized dealer'],
       alternates: {
@@ -74,7 +74,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
     // Error fallback
     return {
-      title: 'KAWAI | Find a storefront near you',
+      title: 'KAWAI ™ | Digital and Acoustic Pianos',
       description: 'Discover premium KAWAI pianos at authorized dealers nationwide. Explore our collection of grand, upright, and digital pianos crafted with 95+ years of Japanese excellence.'
     };
   }
@@ -196,22 +196,10 @@ async function HomePageContent() {
     console.error('Homepage data fetch error:', error);
   }
 
-  // Fetch dealer locations
+  // Fetch dealer locations using the proper utility function
   try {
-    const { getPayload } = await import('payload');
-    const config = (await import('@payload-config')).default;
-    const payload = await getPayload({ config });
-    const result = await payload.find({
-      collection: 'storefronts',
-      where: {
-        isActive: {
-          equals: true
-        }
-      },
-      limit: 10,
-      sort: '-updatedAt'
-    });
-    dealerLocations = result.docs;
+    const { getActiveStorefrontsDirect } = await import('@/lib/payload/queries');
+    dealerLocations = await getActiveStorefrontsDirect();
   } catch (err) {
     console.error('Failed to fetch dealer locations:', err);
   }

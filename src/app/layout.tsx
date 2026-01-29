@@ -1,5 +1,5 @@
 import type { Viewport } from "next";
-import { Inter, Crimson_Text } from "next/font/google";
+import { Inter, Crimson_Text, Playfair_Display } from "next/font/google";
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { Suspense } from 'react';
 import { PHProvider } from './providers'
@@ -25,6 +25,15 @@ const crimsonText = Crimson_Text({
   style: ["normal", "italic"],
 });
 
+// Luxury display font for special brand messaging
+const playfairDisplay = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-buena-park",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+});
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -38,7 +47,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={`${inter.variable} ${crimsonText.variable} antialiased bg-kawai-black text-kawai-pearl`}>
+      <body className={`${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} antialiased bg-kawai-black text-kawai-pearl`}>
         <PHProvider>
           <CartProvider>
             <Suspense fallback={null}>

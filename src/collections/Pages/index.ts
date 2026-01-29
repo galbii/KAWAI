@@ -169,6 +169,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 'marketing-hero',
                 'marketing-cta',
                 'marketing-testimonials',
+                'marketing-i2l',
 
                 // Product blocks - Product showcases and details
                 'product-showcase',

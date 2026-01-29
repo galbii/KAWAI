@@ -155,12 +155,31 @@ Conversion-focused promotional blocks designed to drive user actions.
 | 🎯 Hero | `marketing-hero` | Large hero sections with headlines and CTAs | Page headers, landing page banners |
 | 📣 Call to Action | `marketing-cta` | Prominent CTA buttons/sections | Lead generation, conversions |
 | ⭐ Testimonials | `marketing-testimonials` | Customer testimonials and reviews | Building trust, social proof |
+| 🎹 Instrumental To Life | `marketing-i2l` | Premium YouTube video carousel with Kawai branding | Brand storytelling, product showcases, artist features |
+
+**Instrumental To Life Features:**
+- YouTube video carousel with up to 6 videos
+- Custom Kawai logo upload or default logo
+- Three layout modes: carousel, 2-column grid, 3-column grid
+- Auto-scroll functionality with configurable duration
+- Category badges (Performance, Craftsmanship, Artist Story, etc.)
+- Video duration display on thumbnails
+- Full-screen modal lightbox for video viewing
+- Touch/swipe navigation for mobile
+- Keyboard navigation (arrow keys)
+- Light/dark theme options
+- Ken Burns effect on video thumbnails
+- Glassmorphism cards for refined presentation
+- Japanese-inspired minimalist aesthetic
 
 **Where to use:**
 - Landing pages
 - Post header/footer areas (promotional content)
 - Storefronts and dealer pages
 - Any conversion-focused page
+- Brand story pages
+- Artist showcase pages
+- Product demonstration pages
 
 **Example usage in Posts:**
 ```typescript

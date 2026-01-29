@@ -62,16 +62,31 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   const [selectedProductCategory, setSelectedProductCategory] = useState<string>('')
   const [isMounted, setIsMounted] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
+  const mobileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
 
-  // Track mounted state for portal
+  // Track mounted state for portal and detect mobile
   useEffect(() => {
     setIsMounted(true)
-    return () => setIsMounted(false)
+
+    // Detect mobile device
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+
+    return () => {
+      setIsMounted(false)
+      window.removeEventListener('resize', checkMobile)
+    }
   }, [])
 
   // Global keyboard shortcut: Press "L" to focus search
@@ -304,9 +319,23 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     setQuery('')
     setResults([])
     setIsOpen(false)
+    setIsMobileSearchOpen(false)
     setSelectedIndex(0)
+    setCategoryFilter('all')
     inputRef.current?.blur()
-  }, [])
+    mobileInputRef.current?.blur()
+    onOpenChange?.(false)
+  }, [onOpenChange])
+
+  const openMobileSearch = useCallback(() => {
+    setIsMobileSearchOpen(true)
+    setIsOpen(true)
+    onOpenChange?.(true)
+    // Focus input after modal opens
+    setTimeout(() => {
+      mobileInputRef.current?.focus()
+    }, 100)
+  }, [onOpenChange])
 
   // Click outside handler
   useEffect(() => {
@@ -443,8 +472,8 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
 
   return (
     <>
-      {/* Input Field (stays in header) - Ensure it's above overlay */}
-      <div ref={containerRef} className={cn('relative z-[10002]', className)}>
+      {/* Desktop Input Field (stays in header) - Hidden on mobile */}
+      <div ref={containerRef} className={cn('relative z-[10002] hidden md:block', className)}>
         <div className="relative">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
             <Search className="h-5 w-5 text-gray-400" />
@@ -511,51 +540,115 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
         <AnimatePresence>
           {isOpen && (
             <>
-              {/* Backdrop - Dark overlay that starts below header top row + red line */}
+              {/* Backdrop - Dark overlay covering full screen */}
               <div
                 className="fixed z-[10000] bg-black/40"
-                style={{ top: '70px', left: 0, right: 0, bottom: 0 }}
-                onClick={() => setIsOpen(false)}
+                style={{
+                  top: isMobile ? 0 : '70px',
+                  left: 0,
+                  right: 0,
+                  bottom: 0 // Full screen coverage on mobile
+                }}
+                onClick={() => {
+                  setIsOpen(false)
+                  setIsMobileSearchOpen(false)
+                }}
               />
 
-              {/* Overlay Container - Positioned below header top row + red line */}
+              {/* Overlay Container - Floating on mobile, centered on desktop */}
               <div
-                className="fixed z-[10001] flex items-center justify-center p-4 md:p-8 pointer-events-none"
-                style={{ top: '70px', left: 0, right: 0, bottom: 0 }}
+                className={cn(
+                  "fixed z-[10001] pointer-events-none",
+                  isMobile
+                    ? "flex flex-col p-2" // Add padding on mobile for floating effect
+                    : "flex items-center justify-center p-4 md:p-8" // Centered on desktop
+                )}
+                style={
+                  isMobile
+                    ? { top: 0, left: 0, right: 0, bottom: 'calc(100px + env(safe-area-inset-bottom))' } // Space for floating input
+                    : { top: '70px', left: 0, right: 0, bottom: 0 }
+                }
                 onKeyDown={handleKeyboardNavigation}
               >
                 <div
                   ref={overlayRef}
-                  className="w-full max-w-7xl pointer-events-auto"
-                  style={{ height: '85vh', maxHeight: '900px' }}
+                  className={cn(
+                    "pointer-events-auto",
+                    isMobile
+                      ? "w-full h-full flex flex-col" // Full screen on mobile with flex column for bottom input
+                      : "w-full max-w-7xl" // Centered card on desktop
+                  )}
+                  style={isMobile ? undefined : { height: '85vh', maxHeight: '900px' }}
                   onClick={(e) => e.stopPropagation()}
                   onMouseEnter={() => setIsMouseOverOverlay(true)}
                   onMouseLeave={() => setIsMouseOverOverlay(false)}
                 >
-                  {/* Glass Container - Ultra-transparent glassmorphism */}
-                  <div className="h-full backdrop-blur-3xl rounded-2xl shadow-2xl border border-kawai-neutral/20 flex flex-col overflow-hidden bg-kawai-black/30">
+                  {/* Search Results Container */}
+                  <div className={cn(
+                    "rounded-xl overflow-hidden shadow-2xl border border-kawai-neutral/20 flex flex-col",
+                    isMobile ? "flex-1 border-0 rounded-none shadow-none" : "bg-kawai-black/60 backdrop-blur-2xl"
+                  )}
+                  style={isMobile ? undefined : { height: '100%' }}>
+                  {/* Glass Container - Floating glassmorphic design */}
+                  <div className={cn(
+                    "flex flex-col overflow-hidden",
+                    isMobile
+                      ? "h-full mx-4 my-4 rounded-3xl shadow-2xl backdrop-blur-3xl bg-kawai-black/40 border border-kawai-neutral/20" // Floating with margins on mobile
+                      : "h-full rounded-2xl shadow-2xl border border-kawai-neutral/20 backdrop-blur-3xl bg-kawai-black/30"
+                  )}>
 
-                    {/* Header */}
-                    <div className="flex-shrink-0 px-6 py-3 border-b border-kawai-neutral/30 bg-kawai-black/40 backdrop-blur-xl">
-                      <div className="flex items-center justify-between">
-                        <h2 className="text-lg font-semibold text-kawai-pearl">
-                          Search Results
-                        </h2>
-                        <button
-                          onClick={clearSearch}
-                          className="text-kawai-neutral hover:text-kawai-pearl transition-colors"
-                          aria-label="Close search"
-                        >
-                          <X className="h-5 w-5" />
-                        </button>
+                    {/* Header - Desktop only */}
+                    {!isMobile && (
+                      <div className="flex-shrink-0 px-6 py-3 border-b border-kawai-neutral/30 bg-kawai-black/40 backdrop-blur-xl">
+                        <div className="flex items-center justify-between">
+                          <h2 className="text-lg font-semibold text-kawai-pearl">
+                            Search Results
+                          </h2>
+                          <button
+                            onClick={clearSearch}
+                            className="text-kawai-neutral hover:text-kawai-pearl transition-colors"
+                            aria-label="Close search"
+                          >
+                            <X className="h-5 w-5" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {/* Mobile Filter Chips - Horizontal Scroll */}
+                    {isMobile && query.length >= 2 && (
+                      <div className="flex-shrink-0 border-b border-gray-200/50">
+                        <div className="overflow-x-auto scrollbar-hide px-4 py-3">
+                          <div className="flex gap-2 min-w-min">
+                            {(['all', 'storefronts', 'products', 'pages'] as CategoryFilter[]).map((category) => (
+                              <button
+                                key={category}
+                                onClick={() => setCategoryFilter(category)}
+                                className={cn(
+                                  'flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium transition-all whitespace-nowrap',
+                                  categoryFilter === category
+                                    ? 'bg-kawai-red text-white shadow-md'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                )}
+                              >
+                                {category.charAt(0).toUpperCase() + category.slice(1)}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Results */}
-                    <div className="flex-1 overflow-y-auto p-6">
+                    <div className={cn(
+                      "flex-1 overflow-y-auto",
+                      isMobile ? "p-4 pb-6" : "p-6" // Tighter padding on mobile for floating feel
+                    )}
+                    style={isMobile ? { paddingTop: isMobile && query.length >= 2 ? '0' : 'calc(1rem + env(safe-area-inset-top))' } : undefined}
+                    >
                       {/* Welcome Screen - Show when search is empty */}
                       {query.length < 2 ? (
-                        <div className="flex flex-col items-center justify-center h-full gap-8">
+                        <div className="flex flex-col items-center justify-center h-full gap-12">
                           {/* Small KAWAI Logo */}
                           <div className="flex items-center justify-center">
                             <KawaiLogo
@@ -565,35 +658,65 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                             />
                           </div>
 
-                          {/* Greeting Message */}
-                          <div className="text-center">
-                            <h2 className="text-3xl font-bold text-kawai-pearl mb-2">
-                              Welcome to KAWAI
-                            </h2>
-                            <p className="text-kawai-neutral">
-                              Find showrooms, explore pianos, or get started with these quick links
-                            </p>
+                          {/* Sequential Greeting Message with Buena Park font */}
+                          <div className="text-center px-4 relative" style={{ minHeight: isMobile ? '120px' : '180px' }}>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              {/* "Welcome," - Fades in then out */}
+                              <h2
+                                className={cn(
+                                  "text-kawai-pearl absolute",
+                                  isMobile ? "text-3xl" : "text-5xl"
+                                )}
+                                style={{
+                                  fontFamily: 'var(--font-buena-park), serif',
+                                  fontWeight: 400,
+                                  letterSpacing: '0.02em',
+                                  animation: 'fadeInOut 3s ease-in-out forwards'
+                                }}
+                              >
+                                Welcome,
+                              </h2>
+
+                              {/* "Instrumental to Life." - Fades in after Welcome fades out */}
+                              <h3
+                                className={cn(
+                                  "text-kawai-pearl absolute",
+                                  isMobile ? "text-2xl" : "text-4xl"
+                                )}
+                                style={{
+                                  fontFamily: 'var(--font-buena-park), serif',
+                                  fontWeight: 300,
+                                  letterSpacing: '0.03em',
+                                  animation: 'fadeInAfter 3s ease-in-out 2s forwards',
+                                  opacity: 0
+                                }}
+                              >
+                                Instrumental to Life.
+                              </h3>
+                            </div>
                           </div>
 
-                          {/* Quick Links */}
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-3xl">
+                          {/* Quick Links - Clean Line Items */}
+                          <div className="w-full max-w-md space-y-1">
                             <button
                               onClick={() => {
                                 router.push('/instrumental-to-life')
                                 clearSearch()
                               }}
-                              className="group p-6 rounded-xl bg-kawai-black/40 backdrop-blur-xl border border-kawai-neutral/30 hover:border-kawai-red transition-all hover:scale-105 duration-300"
+                              className="group w-full px-6 py-4 text-left transition-all duration-200 hover:bg-kawai-red/5 border-l-2 border-transparent hover:border-kawai-red"
                             >
-                              <div className="flex flex-col items-center gap-3 text-center">
-                                <div className="w-12 h-12 rounded-full bg-kawai-red/20 flex items-center justify-center group-hover:bg-kawai-red/30 transition-colors">
-                                  <span className="text-2xl">🎹</span>
-                                </div>
-                                <h3 className="font-semibold text-kawai-pearl group-hover:text-kawai-red transition-colors">
+                              <div className="flex items-center justify-between">
+                                <span className="text-kawai-pearl font-light text-lg tracking-wide group-hover:text-kawai-red transition-colors">
                                   Instrumental to Life
-                                </h3>
-                                <p className="text-xs text-kawai-neutral">
-                                  Discover our story and mission
-                                </p>
+                                </span>
+                                <svg
+                                  className="w-5 h-5 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                                </svg>
                               </div>
                             </button>
 
@@ -602,18 +725,20 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                 router.push('/find-a-dealer')
                                 clearSearch()
                               }}
-                              className="group p-6 rounded-xl bg-kawai-black/40 backdrop-blur-xl border border-kawai-neutral/30 hover:border-kawai-red transition-all hover:scale-105 duration-300"
+                              className="group w-full px-6 py-4 text-left transition-all duration-200 hover:bg-kawai-red/5 border-l-2 border-transparent hover:border-kawai-red"
                             >
-                              <div className="flex flex-col items-center gap-3 text-center">
-                                <div className="w-12 h-12 rounded-full bg-kawai-red/20 flex items-center justify-center group-hover:bg-kawai-red/30 transition-colors">
-                                  <span className="text-2xl">📍</span>
-                                </div>
-                                <h3 className="font-semibold text-kawai-pearl group-hover:text-kawai-red transition-colors">
+                              <div className="flex items-center justify-between">
+                                <span className="text-kawai-pearl font-light text-lg tracking-wide group-hover:text-kawai-red transition-colors">
                                   Find a Dealer
-                                </h3>
-                                <p className="text-xs text-kawai-neutral">
-                                  Locate a showroom near you
-                                </p>
+                                </span>
+                                <svg
+                                  className="w-5 h-5 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                                </svg>
                               </div>
                             </button>
 
@@ -622,21 +747,64 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                 router.push('/register-my-piano')
                                 clearSearch()
                               }}
-                              className="group p-6 rounded-xl bg-kawai-black/40 backdrop-blur-xl border border-kawai-neutral/30 hover:border-kawai-red transition-all hover:scale-105 duration-300"
+                              className="group w-full px-6 py-4 text-left transition-all duration-200 hover:bg-kawai-red/5 border-l-2 border-transparent hover:border-kawai-red"
                             >
-                              <div className="flex flex-col items-center gap-3 text-center">
-                                <div className="w-12 h-12 rounded-full bg-kawai-red/20 flex items-center justify-center group-hover:bg-kawai-red/30 transition-colors">
-                                  <span className="text-2xl">📝</span>
-                                </div>
-                                <h3 className="font-semibold text-kawai-pearl group-hover:text-kawai-red transition-colors">
+                              <div className="flex items-center justify-between">
+                                <span className="text-kawai-pearl font-light text-lg tracking-wide group-hover:text-kawai-red transition-colors">
                                   Register My Piano
-                                </h3>
-                                <p className="text-xs text-kawai-neutral">
-                                  Register your instrument
-                                </p>
+                                </span>
+                                <svg
+                                  className="w-5 h-5 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                                </svg>
                               </div>
                             </button>
                           </div>
+
+                          {/* CSS for sequential fade animation */}
+                          <style jsx>{`
+                            @keyframes fadeInOut {
+                              0% {
+                                opacity: 0;
+                                transform: translateY(10px);
+                              }
+                              15% {
+                                opacity: 1;
+                                transform: translateY(0);
+                              }
+                              50% {
+                                opacity: 1;
+                                transform: translateY(0);
+                              }
+                              65% {
+                                opacity: 0;
+                                transform: translateY(-10px);
+                              }
+                              100% {
+                                opacity: 0;
+                                transform: translateY(-10px);
+                              }
+                            }
+
+                            @keyframes fadeInAfter {
+                              0% {
+                                opacity: 0;
+                                transform: translateY(10px);
+                              }
+                              20% {
+                                opacity: 1;
+                                transform: translateY(0);
+                              }
+                              100% {
+                                opacity: 1;
+                                transform: translateY(0);
+                              }
+                            }
+                          `}</style>
                         </div>
                       ) : filteredResults.length === 0 && !isLoading ? (
                         <div className="flex flex-col items-center justify-center h-full">
@@ -655,17 +823,17 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                           {/* Storefronts Section - Shown FIRST (highest priority) */}
                           {storefrontResults.length > 0 && (
                             <div>
-                              <div className="flex items-center gap-2 mb-4 px-2">
-                                <div className="h-1 w-8 bg-kawai-red rounded-full" />
-                                <h3 className="text-sm font-bold text-kawai-pearl uppercase tracking-wide">
-                                  Showroom Locations ({storefrontResults.length})
+                              <div className="flex items-center gap-2 mb-3 px-2">
+                                <div className="h-px flex-1 bg-kawai-neutral/20" />
+                                <h3 className="text-xs font-medium text-kawai-neutral uppercase tracking-widest">
+                                  Showrooms
                                 </h3>
+                                <div className="h-px flex-1 bg-kawai-neutral/20" />
                               </div>
-                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                              <div className="space-y-1">
                                 {storefrontResults.map((result, index) => {
                                   const slug = result.storefrontSlug || (typeof result.doc.value === 'object' ? result.doc.value.slug : '')
-                                  // Format slug for display: "st-louis" → "ST LOUIS"
-                                  const displaySlug = slug.toUpperCase().replace(/-/g, ' ')
+                                  const displayName = result.storefrontLocationName || slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 
                                   return (
                                     <button
@@ -673,31 +841,30 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                       id={`search-result-${index}`}
                                       onClick={() => navigateToResult(result)}
                                       className={cn(
-                                        "group aspect-square rounded-xl overflow-hidden transition-all relative hover:scale-105 duration-300 border border-kawai-red/30 hover:border-kawai-red bg-gradient-to-br from-kawai-black/40 via-kawai-black/30 to-kawai-red/10 backdrop-blur-xl",
-                                        selectedIndex === index && "ring-2 ring-kawai-red ring-offset-2 ring-offset-black/80 scale-105"
+                                        "group w-full px-6 py-4 text-left transition-all duration-200 hover:bg-kawai-red/5 border-l-2 border-transparent hover:border-kawai-red",
+                                        selectedIndex === index && "bg-kawai-red/10 border-kawai-red"
                                       )}
                                     >
-                                      {/* Minimal card design: Logo + Slug */}
-                                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 p-6">
-                                        {/* KAWAI Logo */}
-                                        <div className="w-full flex items-center justify-center opacity-90 group-hover:opacity-100 transition-opacity">
-                                          <KawaiLogo
-                                            size="sm"
-                                            animated={false}
-                                            nonClickable={true}
-                                          />
+                                      <div className="flex items-center justify-between">
+                                        <div>
+                                          <span className="text-kawai-pearl font-light text-base tracking-wide group-hover:text-kawai-red transition-colors">
+                                            {displayName}
+                                          </span>
+                                          {result.storefrontCity && result.storefrontRegion && (
+                                            <p className="text-xs text-kawai-neutral mt-0.5">
+                                              {result.storefrontCity}, {result.storefrontRegion}
+                                            </p>
+                                          )}
                                         </div>
-
-                                        {/* Location Slug */}
-                                        <div className="text-center">
-                                          <h4 className="font-bold text-kawai-pearl text-lg tracking-wider group-hover:text-kawai-red transition-colors">
-                                            {displaySlug}
-                                          </h4>
-                                        </div>
+                                        <svg
+                                          className="w-5 h-5 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
+                                          fill="none"
+                                          viewBox="0 0 24 24"
+                                          stroke="currentColor"
+                                        >
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                                        </svg>
                                       </div>
-
-                                      {/* Subtle hover gradient overlay */}
-                                      <div className="absolute inset-0 bg-gradient-to-t from-kawai-red/0 to-kawai-red/0 group-hover:from-kawai-red/10 group-hover:to-transparent transition-all duration-300" />
                                     </button>
                                   )
                                 })}
@@ -705,116 +872,108 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                             </div>
                           )}
 
-                          {/* Separator between Storefronts and Products */}
-                          {storefrontResults.length > 0 && productResults.length > 0 && (
-                            <div className="border-t border-kawai-neutral/20 my-6" />
-                          )}
-
-                          {/* Category Switcher - Show if there are categorized products */}
+                          {/* Category Switcher */}
                           {productResults.length > 0 && (
                             <div>
                               {/* Category Tabs */}
-                              <div className="flex items-center gap-2 mb-4 px-2 overflow-x-auto">
-                                {availableCategories.map((categoryKey) => {
-                                  const count = productsByCategory[categoryKey]?.length || 0
-                                  const isSelected = selectedProductCategory === categoryKey
+                              {availableCategories.length > 1 && (
+                                <div className="flex items-center gap-2 mb-3 px-2">
+                                  <div className="h-px flex-1 bg-kawai-neutral/20" />
+                                  <div className={cn(
+                                    "flex items-center gap-2",
+                                    isMobile && "overflow-x-auto scrollbar-hide"
+                                  )}>
+                                    {availableCategories.map((categoryKey) => {
+                                      const isSelected = selectedProductCategory === categoryKey
+
+                                      return (
+                                        <button
+                                          key={categoryKey}
+                                          onClick={() => setSelectedProductCategory(categoryKey)}
+                                          className={cn(
+                                            'px-3 py-1 text-xs font-medium uppercase tracking-widest transition-all whitespace-nowrap',
+                                            isSelected
+                                              ? 'text-kawai-red'
+                                              : 'text-kawai-neutral hover:text-kawai-pearl'
+                                          )}
+                                        >
+                                          {getCategoryLabel(categoryKey)}
+                                        </button>
+                                      )
+                                    })}
+                                  </div>
+                                  <div className="h-px flex-1 bg-kawai-neutral/20" />
+                                </div>
+                              )}
+
+                              {/* Products as line items */}
+                              {availableCategories.length === 1 && (
+                                <div className="flex items-center gap-2 mb-3 px-2">
+                                  <div className="h-px flex-1 bg-kawai-neutral/20" />
+                                  <h3 className="text-xs font-medium text-kawai-neutral uppercase tracking-widest">
+                                    Products
+                                  </h3>
+                                  <div className="h-px flex-1 bg-kawai-neutral/20" />
+                                </div>
+                              )}
+
+                              <div className="space-y-1">
+                                {displayedProducts.map((result, productIndex) => {
+                                  // Calculate global index (offset by storefronts)
+                                  const index = storefrontResults.length + productIndex
+
+                                  const model = result.productModel || result.title
+                                  const category = result.productCategory || result.category
+                                  const categoryLabel = category ? getCategoryLabel(category) : null
 
                                   return (
                                     <button
-                                      key={categoryKey}
-                                      onClick={() => setSelectedProductCategory(categoryKey)}
+                                      key={result.id}
+                                      id={`search-result-${index}`}
+                                      onClick={() => navigateToResult(result)}
                                       className={cn(
-                                        'flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all backdrop-blur-xl',
-                                        isSelected
-                                          ? 'bg-kawai-red text-white shadow-md'
-                                          : 'bg-kawai-black/40 text-kawai-pearl hover:bg-kawai-black/60 border border-kawai-neutral/40'
+                                        "group w-full px-6 py-4 text-left transition-all duration-200 hover:bg-kawai-red/5 border-l-2 border-transparent hover:border-kawai-red",
+                                        selectedIndex === index && "bg-kawai-red/10 border-kawai-red"
                                       )}
                                     >
-                                      {getCategoryLabel(categoryKey)} ({count})
+                                      <div className="flex items-center justify-between">
+                                        <div>
+                                          <span className="text-kawai-pearl font-light text-base tracking-wide group-hover:text-kawai-red transition-colors">
+                                            {model}
+                                          </span>
+                                          {categoryLabel && (
+                                            <p className="text-xs text-kawai-neutral mt-0.5">
+                                              {categoryLabel}
+                                            </p>
+                                          )}
+                                        </div>
+                                        <svg
+                                          className="w-5 h-5 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
+                                          fill="none"
+                                          viewBox="0 0 24 24"
+                                          stroke="currentColor"
+                                        >
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                                        </svg>
+                                      </div>
                                     </button>
                                   )
                                 })}
                               </div>
-
-                              {/* Selected Category Products */}
-                              <div>
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                                  {displayedProducts.map((result, productIndex) => {
-                                      // Calculate global index (offset by storefronts)
-                                      const index = storefrontResults.length + productIndex
-
-                                      // Use denormalized fields from search doc (not from relationship)
-                                      // This avoids issues with polymorphic relationship depth not populating
-                                      const model = result.productModel || result.title
-                                      const imageUrl = result.productImageUrl
-                                      const productType = result.productType || 'piano'
-                                      const category = result.productCategory || result.category
-                                      const slug = result.productSlug || (typeof result.doc.value === 'object' ? result.doc.value.slug : '')
-
-                                      return (
-                                        <button
-                                          key={result.id}
-                                          id={`search-result-${index}`}
-                                          onClick={() => navigateToResult(result)}
-                                          className={cn(
-                                            "group rounded-xl overflow-hidden text-left transition-all relative hover:scale-105 duration-300 border border-kawai-neutral/30 hover:border-kawai-red/60 bg-kawai-black/20",
-                                            selectedIndex === index && "ring-2 ring-kawai-red ring-offset-2 ring-offset-black/80 scale-105"
-                                          )}
-                                        >
-                                          {/* Image Container - Top Section */}
-                                          <div className="relative aspect-square w-full bg-kawai-black/30 backdrop-blur-xl border-b border-kawai-neutral/30">
-                                            {imageUrl ? (
-                                              <Image
-                                                src={imageUrl}
-                                                alt={model}
-                                                width={300}
-                                                height={300}
-                                                className="w-full h-full object-cover"
-                                              />
-                                            ) : (
-                                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-kawai-black/50 to-kawai-black/30">
-                                                <span className="text-6xl opacity-40">
-                                                  {getResultIcon(result.doc.relationTo, category)}
-                                                </span>
-                                              </div>
-                                            )}
-
-                                          </div>
-
-                                          {/* Model Info - Bottom Section */}
-                                          <div className="p-3 bg-kawai-black/40 backdrop-blur-xl border-t border-kawai-neutral/30">
-                                            <h4 className="font-bold text-kawai-pearl text-sm text-center truncate group-hover:text-kawai-red transition-colors">
-                                              {model}
-                                            </h4>
-                                          </div>
-                                        </button>
-                                      )
-                                    })}
-                                </div>
-                              </div>
                             </div>
-                          )}
-
-                          {/* Separator between Products and Pages */}
-                          {displayedProducts.length > 0 && pageResults.length > 0 && (
-                            <div className="border-t border-kawai-neutral/20 my-6" />
-                          )}
-
-                          {/* Separator between Storefronts and Pages (when no products) */}
-                          {storefrontResults.length > 0 && productResults.length === 0 && pageResults.length > 0 && (
-                            <div className="border-t border-kawai-neutral/20 my-6" />
                           )}
 
                           {/* Pages Section */}
                           {pageResults.length > 0 && (
                             <div>
-                              <div className="flex items-center gap-2 mb-4 px-2">
-                                <div className="h-1 w-8 bg-kawai-red rounded-full" />
-                                <h3 className="text-sm font-bold text-kawai-pearl uppercase tracking-wide">
-                                  Pages ({pageResults.length})
+                              <div className="flex items-center gap-2 mb-3 px-2">
+                                <div className="h-px flex-1 bg-kawai-neutral/20" />
+                                <h3 className="text-xs font-medium text-kawai-neutral uppercase tracking-widest">
+                                  Pages
                                 </h3>
+                                <div className="h-px flex-1 bg-kawai-neutral/20" />
                               </div>
-                              <div className="space-y-2">
+                              <div className="space-y-1">
                                 {pageResults.map((result, pageIndex) => {
                                   // Calculate global index (offset by storefronts and displayed products)
                                   const resultIndex = storefrontResults.length + displayedProducts.length + pageIndex
@@ -824,24 +983,29 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                       id={`search-result-${resultIndex}`}
                                       onClick={() => navigateToResult(result)}
                                       className={cn(
-                                        "w-full p-4 rounded-xl text-left transition-all border backdrop-blur-xl hover:scale-[1.02] bg-kawai-black/40 border-kawai-neutral/30 hover:border-kawai-red/60 hover:bg-kawai-black/60 group",
-                                        selectedIndex === resultIndex && "ring-2 ring-kawai-red ring-offset-2 ring-offset-black/80 scale-[1.02]"
+                                        "group w-full px-6 py-4 text-left transition-all duration-200 hover:bg-kawai-red/5 border-l-2 border-transparent hover:border-kawai-red",
+                                        selectedIndex === resultIndex && "bg-kawai-red/10 border-kawai-red"
                                       )}
                                     >
-                                      <div className="flex items-center gap-4">
-                                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-kawai-red/20 backdrop-blur-xl flex items-center justify-center border border-kawai-neutral/40">
-                                          <span className="text-2xl">📄</span>
-                                        </div>
+                                      <div className="flex items-center justify-between">
                                         <div className="flex-1 min-w-0">
-                                          <h4 className="font-medium text-kawai-pearl mb-1 truncate group-hover:text-kawai-red transition-colors">
+                                          <span className="text-kawai-pearl font-light text-base tracking-wide group-hover:text-kawai-red transition-colors">
                                             {result.title}
-                                          </h4>
+                                          </span>
                                           {result.excerpt && (
-                                            <p className="text-sm text-kawai-neutral line-clamp-1">
+                                            <p className="text-xs text-kawai-neutral mt-0.5 line-clamp-1">
                                               {result.excerpt}
                                             </p>
                                           )}
                                         </div>
+                                        <svg
+                                          className="w-5 h-5 ml-4 flex-shrink-0 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
+                                          fill="none"
+                                          viewBox="0 0 24 24"
+                                          stroke="currentColor"
+                                        >
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                                        </svg>
                                       </div>
                                     </button>
                                   )
@@ -853,92 +1017,166 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                       )}
                     </div>
 
-                    {/* Filters at Bottom */}
-                    <div className="flex-shrink-0 px-6 py-4 border-t border-kawai-neutral/30 bg-kawai-black/40 backdrop-blur-xl">
-                      <div className="flex items-center justify-between">
-                        {/* Only show filters when there are search results */}
-                        {query.length >= 2 && (
-                          <div className="flex items-center gap-2">
-                            {(['all', 'storefronts', 'products', 'pages'] as CategoryFilter[]).map((category) => (
-                              <button
-                                key={category}
-                                onClick={() => setCategoryFilter(category)}
-                                className={cn(
-                                  'px-4 py-2 rounded-lg text-sm font-medium transition-all backdrop-blur-xl',
-                                  categoryFilter === category
-                                    ? 'bg-kawai-red text-white shadow-md'
-                                    : 'bg-kawai-black/60 text-kawai-pearl hover:bg-kawai-black/80 border border-kawai-neutral/40 hover:border-kawai-red/60'
-                                )}
-                              >
-                                {category.charAt(0).toUpperCase() + category.slice(1)}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Welcome message when empty */}
-                        {query.length < 2 && (
-                          <div className="text-sm text-kawai-neutral">
-                            Start typing to search showrooms, pianos, and products
-                          </div>
-                        )}
-                        <div className="flex items-center gap-4">
-                          {/* Show result count only when searching */}
-                          {query.length >= 2 && filteredResults.length > 0 && (
-                            <span className="text-sm text-kawai-neutral">
-                              {filteredResults.length} result{filteredResults.length !== 1 ? 's' : ''}
-                            </span>
-                          )}
-
-                          {/* Show keyboard shortcuts only when there are results to navigate */}
-                          {query.length >= 2 && filteredResults.length > 0 && (
-                            <div className="flex items-center gap-3 text-xs text-kawai-neutral">
-                            <div className="flex items-center gap-1">
-                              <kbd className="px-1.5 py-0.5 bg-kawai-black/60 border border-kawai-neutral/40 rounded text-kawai-pearl font-mono text-[10px]">
-                                ↑↓
-                              </kbd>
-                              <span>Navigate</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <kbd className="px-1.5 py-0.5 bg-kawai-black/60 border border-kawai-neutral/40 rounded text-kawai-pearl font-mono text-[10px]">
-                                Tab
-                              </kbd>
-                              <span>Jump Section</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <kbd className="px-1.5 py-0.5 bg-kawai-black/60 border border-kawai-neutral/40 rounded text-kawai-pearl font-mono text-[10px]">
-                                1-4
-                              </kbd>
-                              <span>Filter</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <kbd className="px-1.5 py-0.5 bg-kawai-black/60 border border-kawai-neutral/40 rounded text-kawai-pearl font-mono text-[10px]">
-                                ↵
-                              </kbd>
-                              <span>Select</span>
-                            </div>
+                    {/* Filters at Bottom - Desktop only */}
+                    {!isMobile && (
+                      <div className="flex-shrink-0 px-6 py-4 border-t border-kawai-neutral/30 bg-kawai-black/40 backdrop-blur-xl">
+                        <div className="flex items-center justify-between">
+                          {/* Only show filters when there are search results */}
+                          {query.length >= 2 && (
+                            <div className="flex items-center gap-2">
+                              {(['all', 'storefronts', 'products', 'pages'] as CategoryFilter[]).map((category) => (
+                                <button
+                                  key={category}
+                                  onClick={() => setCategoryFilter(category)}
+                                  className={cn(
+                                    'px-4 py-2 rounded-lg text-sm font-medium transition-all backdrop-blur-xl',
+                                    categoryFilter === category
+                                      ? 'bg-kawai-red text-white shadow-md'
+                                      : 'bg-kawai-black/60 text-kawai-pearl hover:bg-kawai-black/80 border border-kawai-neutral/40 hover:border-kawai-red/60'
+                                  )}
+                                >
+                                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                                </button>
+                              ))}
                             </div>
                           )}
 
-                          {/* Simple Esc hint when showing welcome screen */}
+                          {/* Welcome message when empty */}
                           {query.length < 2 && (
-                            <div className="flex items-center gap-1.5 text-xs text-kawai-neutral">
-                              <span>Press</span>
-                              <kbd className="px-1.5 py-0.5 bg-kawai-black/60 border border-kawai-neutral/40 rounded text-kawai-pearl font-mono text-[10px]">
-                                Esc
-                              </kbd>
-                              <span>to close</span>
+                            <div className="text-sm text-kawai-neutral">
+                              Start typing to search showrooms, pianos, and products
                             </div>
                           )}
+                          <div className="flex items-center gap-4">
+                            {/* Show result count only when searching */}
+                            {query.length >= 2 && filteredResults.length > 0 && (
+                              <span className="text-sm text-kawai-neutral">
+                                {filteredResults.length} result{filteredResults.length !== 1 ? 's' : ''}
+                              </span>
+                            )}
+
+                            {/* Show keyboard shortcuts only when there are results to navigate */}
+                            {query.length >= 2 && filteredResults.length > 0 && (
+                              <div className="flex items-center gap-3 text-xs text-kawai-neutral">
+                                <div className="flex items-center gap-1">
+                                  <kbd className="px-1.5 py-0.5 bg-kawai-black/60 border border-kawai-neutral/40 rounded text-kawai-pearl font-mono text-[10px]">
+                                    ↑↓
+                                  </kbd>
+                                  <span>Navigate</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <kbd className="px-1.5 py-0.5 bg-kawai-black/60 border border-kawai-neutral/40 rounded text-kawai-pearl font-mono text-[10px]">
+                                    Tab
+                                  </kbd>
+                                  <span>Jump Section</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <kbd className="px-1.5 py-0.5 bg-kawai-black/60 border border-kawai-neutral/40 rounded text-kawai-pearl font-mono text-[10px]">
+                                    1-4
+                                  </kbd>
+                                  <span>Filter</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <kbd className="px-1.5 py-0.5 bg-kawai-black/60 border border-kawai-neutral/40 rounded text-kawai-pearl font-mono text-[10px]">
+                                    ↵
+                                  </kbd>
+                                  <span>Select</span>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Simple Esc hint when showing welcome screen */}
+                            {query.length < 2 && (
+                              <div className="flex items-center gap-1.5 text-xs text-kawai-neutral">
+                                <span>Press</span>
+                                <kbd className="px-1.5 py-0.5 bg-kawai-black/60 border border-kawai-neutral/40 rounded text-kawai-pearl font-mono text-[10px]">
+                                  Esc
+                                </kbd>
+                                <span>to close</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>
+            </div>
             </>
           )}
         </AnimatePresence>,
+        document.body
+      )}
+
+      {/* Floating Glassmorphic Search Input - Mobile Only - Always Visible - Portaled to body */}
+      {isMounted && createPortal(
+        <div
+          className="fixed left-0 right-0 z-[10003] md:hidden"
+          style={{
+            bottom: '0',
+            padding: '1rem',
+            paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))',
+          }}
+        >
+          <div className="max-w-3xl mx-auto">
+            {/* Glassmorphic Input Container */}
+            <div className="relative backdrop-blur-3xl bg-white/70 rounded-2xl shadow-2xl border border-white/40 overflow-hidden transition-all duration-300 hover:shadow-3xl">
+              {/* Inner glow effect for glassmorphism */}
+              <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
+
+              <div className="relative flex items-center gap-3 p-4">
+                {/* Search Icon */}
+                <div className="flex-shrink-0 pointer-events-none">
+                  <Search className="h-6 w-6 text-kawai-red" />
+                </div>
+
+                {/* Input Field */}
+                <input
+                  ref={mobileInputRef}
+                  type="text"
+                  placeholder="Search showrooms, pianos..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onFocus={() => {
+                    setIsOpen(true)
+                    setIsMobileSearchOpen(true)
+                    onOpenChange?.(true)
+                  }}
+                  className="flex-1 bg-transparent text-base text-gray-900 placeholder-gray-500 focus:outline-none font-medium"
+                />
+
+                {/* Loading or Clear Button */}
+                <div className="flex-shrink-0">
+                  {isLoading ? (
+                    <Loader2 className="h-6 w-6 animate-spin text-kawai-red" />
+                  ) : query.length > 0 ? (
+                    <button
+                      onClick={() => setQuery('')}
+                      className="p-2 text-gray-500 hover:text-kawai-red transition-colors rounded-full hover:bg-kawai-red/10 min-w-[40px] min-h-[40px] flex items-center justify-center"
+                      aria-label="Clear search"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  ) : null}
+                </div>
+
+                {/* Close Button - Only show when overlay is open */}
+                {isOpen && (
+                  <div className="flex-shrink-0">
+                    <button
+                      onClick={clearSearch}
+                      className="p-2 text-gray-600 hover:text-kawai-red transition-colors rounded-full hover:bg-kawai-red/10 min-w-[40px] min-h-[40px] flex items-center justify-center"
+                      aria-label="Close search"
+                    >
+                      <X className="h-6 w-6 font-bold" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>,
         document.body
       )}
     </>

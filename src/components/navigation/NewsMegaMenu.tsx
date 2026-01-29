@@ -121,7 +121,6 @@ export function NewsMegaMenu({
             className
           )}
           style={{
-            width: '100vw',
             maxHeight: isHeaderScrolled ? 'calc(100vh - 112px - 20px)' : 'calc(100vh - 128px - 20px)',
             overflowY: 'auto',
             transformOrigin: 'top center',

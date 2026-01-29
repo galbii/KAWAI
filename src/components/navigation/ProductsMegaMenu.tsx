@@ -96,7 +96,6 @@ export function ProductsMegaMenu({
             className
           )}
           style={{
-            width: '100vw',
             transformOrigin: 'top center',
           }}
         >

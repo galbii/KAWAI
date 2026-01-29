@@ -111,7 +111,6 @@ export function StorefrontsMegaMenu({
             className
           )}
           style={{
-            width: '100vw',
             maxHeight: 'calc(100vh - 130px)',
             overflow: 'visible',
             transformOrigin: 'top center',

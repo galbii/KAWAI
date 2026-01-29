@@ -461,6 +461,24 @@ export const HomePage: CollectionConfig = {
           ]
         },
 
+        // Instrumental To Life Tab
+        {
+          label: 'Instrumental To Life',
+          description: 'Premium video carousel section showcasing Kawai brand stories, craftsmanship, and artistry',
+          fields: [
+            {
+              name: 'i2lSection',
+              type: 'blocks',
+              blockReferences: ['marketing-i2l'],
+              blocks: [],
+              maxRows: 1,
+              admin: {
+                description: 'Add Instrumental To Life video carousel section. Configure heading, videos, and styling options.'
+              }
+            }
+          ]
+        },
+
         // Piano Gallery Tab
         {
           label: 'Piano Gallery',
