@@ -1,16 +1,23 @@
 import type { Product } from '@/payload-types'
 
-// Available block types from your block definitions
+// Available block types from your block definitions (using actual block slugs)
 const VALID_BLOCK_TYPES = [
-  'hero',
-  'productShowcase',
-  'productHero',
-  'imageGallery',
-  'featuresList',
-  'specifications',
+  // Marketing blocks
+  'marketing-hero',
+  'marketing-cta',
+  'marketing-testimonials',
+  // Product blocks
+  'product-showcase',
+  'product-hero',
+  'product-gallery',
+  'product-features',
+  'product-specs',
+  // Content blocks
+  'content-text',
+  'content-banner',
+  'content-code',
+  // Legacy blocks
   'textContent',
-  'callToAction',
-  'testimonials'
 ] as const
 
 type ValidBlockType = typeof VALID_BLOCK_TYPES[number]
@@ -74,31 +81,32 @@ export function validateBlock(block: any, index: number): BlockValidationResult 
 
   // Validate specific block types
   switch (result.blockType) {
-    case 'hero':
+    case 'marketing-hero':
       validateHeroBlock(block, result)
       break
-    case 'productShowcase':
+    case 'product-showcase':
       validateProductShowcaseBlock(block, result)
       break
-    case 'productHero':
+    case 'product-hero':
       validateProductHeroBlock(block, result)
       break
-    case 'imageGallery':
+    case 'product-gallery':
       validateImageGalleryBlock(block, result)
       break
-    case 'featuresList':
+    case 'product-features':
       validateFeaturesListBlock(block, result)
       break
-    case 'specifications':
+    case 'product-specs':
       validateSpecificationsBlock(block, result)
       break
-    case 'textContent':
+    case 'content-text':
+    case 'textContent': // Legacy support
       validateTextContentBlock(block, result)
       break
-    case 'callToAction':
+    case 'marketing-cta':
       validateCallToActionBlock(block, result)
       break
-    case 'testimonials':
+    case 'marketing-testimonials':
       validateTestimonialsBlock(block, result)
       break
   }

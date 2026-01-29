@@ -1096,12 +1096,10 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     >
       {/* Top Row - Utility Bar (Full Width) */}
       <motion.div
-        className="border-b border-gray-100 w-full"
+        className="border-b border-gray-100 w-full bg-white"
         initial={false}
         animate={{
-          backgroundColor: isAutoHidden ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 1)',
           borderBottomColor: isAutoHidden ? 'rgba(229, 231, 235, 0.3)' : 'rgba(229, 231, 235, 1)',
-          backdropFilter: isAutoHidden ? 'blur(12px)' : 'blur(0px)',
         }}
         transition={{
           duration: 0.2,

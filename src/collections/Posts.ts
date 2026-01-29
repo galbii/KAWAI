@@ -122,10 +122,10 @@ export const Posts: CollectionConfig = {
               name: 'headerBlocks',
               label: 'Header Content (Before Article)',
               type: 'blocks',
-              blockReferences: ['marketing-hero', 'content-banner'] as any,
+              blockReferences: ['marketing-hero', 'content-banner', 'layout-hero-carousel'] as any,
               blocks: [],
               admin: {
-                description: 'Optional: Add promotional content before the article (Hero, Banner)',
+                description: 'Optional: Add promotional content before the article (Hero, Banner, Hero Carousel)',
               },
             },
             {

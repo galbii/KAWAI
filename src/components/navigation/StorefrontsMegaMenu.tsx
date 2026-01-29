@@ -96,14 +96,15 @@ export function StorefrontsMegaMenu({
       {isOpen && (
         <motion.div
           key="storefronts-mega-menu"
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, scaleY: 0.95, y: -20 }}
           animate={{
             opacity: 1,
+            scaleY: 1,
             y: 0,
             top: isHeaderScrolled ? 112 : 128,
           }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.3, ease: 'easeInOut' }}
+          exit={{ opacity: 0, scaleY: 0.95, y: -20 }}
+          transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
           className={cn(
             'fixed left-0 right-0 z-[60]',
             'bg-white border-b border-gray-200 shadow-2xl',
@@ -113,6 +114,7 @@ export function StorefrontsMegaMenu({
             width: '100vw',
             maxHeight: 'calc(100vh - 130px)',
             overflow: 'visible',
+            transformOrigin: 'top center',
           }}
         >
           <div className="relative pt-10 pb-4">

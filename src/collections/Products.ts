@@ -854,11 +854,11 @@ export const Products: CollectionConfig = {
           console.log(`🔗 Generated slug from "${sourceForSlug}" -> "${data.slug}"`)
         }
 
-        // Add default productHero block for new products if pageContent is empty
-        if (operation === 'create' && (!data.pageContent || data.pageContent.length === 0)) {
+        // Add default product-hero block if pageContent is empty (for all operations)
+        if (!data.pageContent || data.pageContent.length === 0) {
           data.pageContent = [
             {
-              blockType: 'productHero',
+              blockType: 'product-hero',
               layout: {
                 imagePosition: 'left',
                 backgroundColor: 'pearl',
@@ -869,7 +869,7 @@ export const Products: CollectionConfig = {
               overrides: {} // Empty overrides - will use product data
             }
           ]
-          console.log(`🧩 Added default productHero block to new product`)
+          console.log(`🧩 Added default product-hero block (operation: ${operation})`)
         }
 
         // Set sync status to pending if auto-sync is enabled and product should sync

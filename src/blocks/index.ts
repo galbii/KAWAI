@@ -9,6 +9,9 @@ export { Banner } from './content/Banner'
 export { Columns } from './layout/Columns'
 export { Spacer } from './layout/Spacer'
 export { Divider } from './layout/Divider'
+export { HeroCarousel } from './layout/HeroCarousel'
+export { VideoBackground } from './layout/VideoBackground'
+export { BrandIntro } from './layout/BrandIntro'
 
 // Marketing blocks (conversion-focused)
 export { Hero } from './marketing/Hero'

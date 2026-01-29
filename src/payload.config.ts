@@ -38,6 +38,9 @@ import {
   Columns,
   Spacer,
   Divider,
+  HeroCarousel,
+  VideoBackground,
+  BrandIntro,
   // Marketing blocks
   Hero,
   CallToAction,
@@ -171,6 +174,9 @@ export default buildConfig({
     Columns,
     Spacer,
     Divider,
+    HeroCarousel,
+    VideoBackground,
+    BrandIntro,
 
     // Marketing blocks
     Hero,
@@ -270,13 +276,17 @@ export default buildConfig({
 
         if (collectionSlug === 'pages') {
           // Extract page-specific fields
+          // IMPORTANT: Store denormalized page data for reliable navigation
           return {
             ...searchDoc,
+            title: originalDoc.title,
             excerpt: originalDoc?.hero?.richText
               ? extractTextFromRichText(originalDoc.hero.richText)?.substring(0, 200)
               : originalDoc?.title || '',
             category: originalDoc?.category || 'page',
             tags: originalDoc?.tags || [],
+            // Denormalized page fields (stored directly in search doc)
+            pageSlug: originalDoc.slug,
           }
         }
 
@@ -372,6 +382,16 @@ export default buildConfig({
             admin: {
               position: 'sidebar',
               description: 'Product slug (denormalized from Products collection)',
+              readOnly: true,
+            },
+          },
+          // Denormalized page fields for fast search results
+          {
+            name: 'pageSlug',
+            type: 'text',
+            admin: {
+              position: 'sidebar',
+              description: 'Page slug (denormalized from Pages collection)',
               readOnly: true,
             },
           },

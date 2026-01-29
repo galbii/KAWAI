@@ -52,14 +52,38 @@ Structural blocks for organizing content into complex layouts.
 
 | Block | Slug | Purpose | Best For |
 |-------|------|---------|----------|
+| 🎹 Brand Intro | `layout-brand-intro` | Full-screen brand intro overlay with fade animation | Homepage splash, brand moments, elegant page intros |
 | 📐 Columns | `layout-columns` | Multi-column layouts (2-4 columns) | Side-by-side content, comparisons |
 | ↕️ Spacer | `layout-spacer` | Vertical spacing with adjustable height | Add breathing room between sections |
 | ➖ Divider | `layout-divider` | Horizontal visual separators | Section breaks, visual separation |
+| 🎠 Hero Carousel | `layout-hero-carousel` | Full-screen hero carousel with auto-play, touch/keyboard navigation | Hero sections, featured announcements, news rotators |
+| 🎬 Video Background | `layout-video-background` | Full-screen video background with glassmorphism sidebar | Impactful hero sections, immersive brand storytelling |
+
+**Brand Intro Features:**
+- Full-screen overlay with Kawai logo and "Instrumental to Life" tagline
+- Elegant three-phase animation: Fade in → Display → Fade out
+- Configurable timing for each animation phase (200-10000ms)
+- Optional session-based showing (only once per browser session)
+- Click-to-skip functionality for user control
+- Body scroll locking during animation
+- Multiple background colors (black, kawai-black, kawai-charcoal, white)
+- Adjustable logo size (small, medium, large, extra large)
+- Custom logo upload or default Kawai text logo
+- Japanese-inspired minimalist aesthetic
+- **Best Practice**: Should be the FIRST block on a page for optimal effect
 
 **Where to use:**
+- Homepage as an elegant entrance experience
+- Special event or campaign landing pages
+- Product launch pages
+- Brand-focused pages
+- Important announcements
+
+**Other Layout Blocks:**
 - Page builder areas
 - Complex layouts requiring grid structures
 - Footer areas in blog posts (to organize related content)
+- Hero sections for dynamic, rotating content
 
 **Example usage:**
 ```typescript
@@ -69,7 +93,58 @@ Structural blocks for organizing content into complex layouts.
   blockReferences: ['layout-columns', 'layout-spacer', 'layout-divider'],
   blocks: []
 }
+
+// For hero sections with carousel
+{
+  name: 'heroSection',
+  type: 'blocks',
+  blockReferences: ['layout-hero-carousel'],
+  blocks: [],
+  maxRows: 1, // Only one hero carousel per page
+  admin: {
+    description: 'Add a full-screen hero carousel with rotating content'
+  }
+}
+
+// For hero sections with video background
+{
+  name: 'heroSection',
+  type: 'blocks',
+  blockReferences: ['layout-video-background'],
+  blocks: [],
+  maxRows: 1, // Only one video background per page
+  admin: {
+    description: 'Add a full-screen video background with glassmorphism sidebar'
+  }
+}
 ```
+
+**Hero Carousel Features:**
+- Auto-play with configurable duration (2-30 seconds)
+- Touch/swipe navigation for mobile devices
+- Keyboard navigation (arrow keys, spacebar)
+- Navigation dots and play/pause controls
+- Ken Burns effect (subtle zoom animation on images)
+- Multiple overlay styles (glassmorphism, gradient, solid, none)
+- Customizable content positioning (9 positions)
+- Configurable heights (full screen, large, medium, small)
+- Up to 10 slides per carousel
+- Accessibility-friendly with ARIA labels and reduced motion support
+
+**Video Background Features:**
+- **Dual video sources**: YouTube embeds OR direct MP4 files
+- YouTube URL parsing (supports youtube.com/watch, youtu.be, embed URLs)
+- Full-screen video background with auto-play, loop, and mute
+- Refined glassmorphism sidebar with elegant blur and transparency
+- Sidebar positioning (left or right)
+- Customizable overlay opacity for video brightness control
+- Includes: heading (large serif), subheading (uppercase label), description
+- **Dual CTA buttons**: Primary (filled red) + optional Secondary (outline white)
+- Japanese-inspired minimalist aesthetic with purposeful animations
+- Staggered reveal animations for refined presentation
+- Responsive design with mobile optimizations
+- Scroll indicator for UX guidance
+- Uses Kawai brand colors (red, gold) with sophisticated accents
 
 ### Marketing Blocks (`src/blocks/marketing/`)
 

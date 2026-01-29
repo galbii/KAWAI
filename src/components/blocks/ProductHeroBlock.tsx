@@ -310,7 +310,7 @@ export function ProductHeroBlock({
       )}
       
       {/* Back Button - Fixed/Sticky Floating Position (Below Header) */}
-      <div className="fixed top-[110px] left-12 z-40 pointer-events-auto">
+      <div className="fixed top-[110px] lg:top-[160px] left-12 z-40 pointer-events-auto">
         <button
           onClick={() => router.back()}
           className={cn(
@@ -328,7 +328,7 @@ export function ProductHeroBlock({
       </div>
       
       {/* Main Content Container */}
-      <div className="container mx-auto px-6 lg:px-12 xl:px-16 relative z-10 py-12 lg:py-20">
+      <div className="container mx-auto px-6 lg:px-12 xl:px-16 relative z-10 pt-30 pb-12 lg:pt-48 lg:pb-20">
         
         <div className={cn(
           "grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 w-full",

@@ -89,6 +89,8 @@ export async function GET(request: NextRequest) {
         productType: (doc as any).productType,
         productCategory: (doc as any).productCategory,
         productSlug: (doc as any).productSlug,
+        // Include denormalized page fields
+        pageSlug: (doc as any).pageSlug,
       }
     })
 

@@ -17,19 +17,24 @@ import { TestimonialsBlock } from '@/components/blocks/TestimonialsBlock'
 import { BannerBlock } from '@/components/blocks/BannerBlock'
 import { CodeBlock } from '@/components/blocks/CodeBlock'
 
-// Block component mapping
+// Block component mapping (using actual block slugs from block definitions)
 const BLOCK_COMPONENTS = {
-  hero: HeroBlock,
-  productShowcase: ProductShowcaseBlock,
-  productHero: ProductHeroBlock,
-  imageGallery: ImageGalleryBlock,
-  featuresList: FeaturesListBlock,
-  specifications: SpecificationsBlock,
-  textContent: TextContentBlock,
-  callToAction: CallToActionBlock,
-  testimonials: TestimonialsBlock,
-  banner: BannerBlock,
-  code: CodeBlock,
+  // Marketing blocks
+  'marketing-hero': HeroBlock,
+  'marketing-cta': CallToActionBlock,
+  'marketing-testimonials': TestimonialsBlock,
+  // Product blocks
+  'product-showcase': ProductShowcaseBlock,
+  'product-hero': ProductHeroBlock,
+  'product-gallery': ImageGalleryBlock,
+  'product-features': FeaturesListBlock,
+  'product-specs': SpecificationsBlock,
+  // Content blocks
+  'content-text': TextContentBlock,
+  'content-banner': BannerBlock,
+  'content-code': CodeBlock,
+  // Legacy blocks (for backward compatibility)
+  'textContent': TextContentBlock,
 } as const
 
 // Type for valid block types
@@ -63,7 +68,7 @@ export async function BlockRenderer({ block, index, product }: BlockRendererProp
 
   try {
     // For ProductHero blocks, fetch Shopify product and pass both CMS + Shopify data
-    if (blockType === 'productHero') {
+    if (blockType === 'product-hero') {
       // Fetch Shopify product server-side using model field
       let shopifyProduct = null
 

@@ -1,0 +1,278 @@
+{
+  "title": "Block System Test Page",
+  "slug": "test-blocks",
+  "category": "general",
+  "tags": ["getting-started", "digital-pianos"],
+  "_status": "published",
+  "hero": {
+    "type": "mediumImpact",
+    "richText": {
+      "root": {
+        "type": "root",
+        "children": [
+          {
+            "type": "heading",
+            "tag": "h1",
+            "children": [
+              {
+                "type": "text",
+                "text": "Block System Test Page"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "type": "text",
+                "text": "This page demonstrates all available block types in the Pages collection"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "links": [
+      {
+        "link": {
+          "type": "custom",
+          "label": "View All Blocks",
+          "url": "#blocks",
+          "newTab": false
+        }
+      }
+    ]
+  },
+  "layout": [
+    {
+      "blockType": "content-text",
+      "content": {
+        "root": {
+          "type": "root",
+          "children": [
+            {
+              "type": "heading",
+              "tag": "h2",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Content Blocks Section"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "KAWAI has been a leading manufacturer of acoustic and digital pianos since 1927. Our commitment to excellence is reflected in every instrument we create, from entry-level digital pianos to world-class concert grands."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "alignment": "left"
+    },
+    {
+      "blockType": "content-banner",
+      "type": "info",
+      "title": "New Product Launch",
+      "message": "The all-new CA901 is now available at select dealers. Contact us for more information.",
+      "ctaText": "Learn More",
+      "ctaLink": "/products/ca901"
+    },
+    {
+      "blockType": "layout-spacer",
+      "height": "large"
+    },
+    {
+      "blockType": "layout-divider",
+      "style": "solid",
+      "color": "dark"
+    },
+    {
+      "blockType": "layout-spacer",
+      "height": "large"
+    },
+    {
+      "blockType": "layout-columns",
+      "columns": [
+        {
+          "width": "50",
+          "content": [
+            {
+              "blockType": "content-text",
+              "content": {
+                "root": {
+                  "type": "root",
+                  "children": [
+                    {
+                      "type": "heading",
+                      "tag": "h3",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Column 1: About KAWAI"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Founded in 1927 by Koichi Kawai, our company has been at the forefront of piano innovation for nearly a century."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              "alignment": "left"
+            }
+          ]
+        },
+        {
+          "width": "50",
+          "content": [
+            {
+              "blockType": "content-text",
+              "content": {
+                "root": {
+                  "type": "root",
+                  "children": [
+                    {
+                      "type": "heading",
+                      "tag": "h3",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Column 2: Our Innovation"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "We pioneered technologies like the Millennium III action and Grand Feel keyboard systems."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              "alignment": "left"
+            }
+          ]
+        }
+      ],
+      "layout": {
+        "gap": "medium",
+        "verticalAlign": "top",
+        "backgroundColor": "light"
+      }
+    },
+    {
+      "blockType": "layout-spacer",
+      "height": "large"
+    },
+    {
+      "blockType": "marketing-hero",
+      "dataSource": "manual",
+      "content": {
+        "title": "Experience the CA Series",
+        "subtitle": "Digital Pianos Reimagined",
+        "description": "Featuring Grand Feel action and beautiful wooden keys",
+        "primaryCta": {
+          "text": "View Models",
+          "link": "/pianos/digital",
+          "style": "primary",
+          "openInNewTab": false
+        },
+        "secondaryCta": {
+          "text": "Compare Pianos",
+          "link": "/pianos/compare",
+          "style": "outline",
+          "openInNewTab": false
+        }
+      },
+      "media": {
+        "type": "image",
+        "overlay": {
+          "enable": true,
+          "color": "dark",
+          "opacity": 0.5
+        }
+      },
+      "layout": {
+        "height": "medium",
+        "contentAlignment": "center",
+        "verticalAlignment": "center",
+        "maxWidth": "medium"
+      }
+    },
+    {
+      "blockType": "layout-spacer",
+      "height": "large"
+    },
+    {
+      "blockType": "marketing-cta",
+      "headline": "Find Your Perfect Piano",
+      "description": "Our piano experts are ready to help you choose the right instrument for your needs.",
+      "buttonText": "Schedule a Consultation",
+      "buttonLink": "/contact",
+      "backgroundColor": "kawai-red",
+      "textColor": "white"
+    },
+    {
+      "blockType": "layout-spacer",
+      "height": "large"
+    },
+    {
+      "blockType": "marketing-testimonials",
+      "testimonials": [
+        {
+          "quote": "The CA901 is the best digital piano I've ever played. The action feels incredibly realistic.",
+          "author": "Sarah Johnson",
+          "role": "Piano Teacher"
+        },
+        {
+          "quote": "KAWAI's Grand Feel technology is revolutionary. It's like playing a real grand piano.",
+          "author": "Michael Chen",
+          "role": "Concert Pianist"
+        },
+        {
+          "quote": "We chose KAWAI for our music school, and our students love the authentic feel of the keys.",
+          "author": "Emily Rodriguez",
+          "role": "Music Director"
+        }
+      ]
+    },
+    {
+      "blockType": "layout-spacer",
+      "height": "large"
+    },
+    {
+      "blockType": "content-code",
+      "language": "typescript",
+      "code": "// Example: Filtering pianos by category\nconst digitalPianos = pianos.filter(\n  (piano) => piano.category === 'digital'\n)\n\n// Sort by price\ndigitalPianos.sort((a, b) => a.price - b.price)",
+      "showLineNumbers": true,
+      "caption": "Example code for filtering digital pianos"
+    },
+    {
+      "blockType": "layout-spacer",
+      "height": "large"
+    },
+    {
+      "blockType": "content-banner",
+      "type": "success",
+      "title": "Testing Complete",
+      "message": "If you can see all the blocks above, the Pages collection is working correctly!",
+      "ctaText": "View Documentation",
+      "ctaLink": "/docs/PAGES_TESTING_GUIDE.md"
+    }
+  ]
+}

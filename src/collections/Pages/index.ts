@@ -147,11 +147,48 @@ export const Pages: CollectionConfig<'pages'> = {
             {
               name: 'layout',
               type: 'blocks',
-              blockReferences: ['cta', 'content', 'mediaBlock', 'archive'],
+              blockReferences: [
+                // Layout blocks - Special blocks (should be first on page)
+                'layout-brand-intro',
+
+                // Content blocks - Editorial content for articles and pages
+                'content-text',
+                'content-image',
+                'content-video',
+                'content-code',
+                'content-banner',
+
+                // Layout blocks - Structural elements
+                'layout-columns',
+                'layout-spacer',
+                'layout-divider',
+                'layout-hero-carousel',
+                'layout-video-background',
+
+                // Marketing blocks - Conversion-focused elements
+                'marketing-hero',
+                'marketing-cta',
+                'marketing-testimonials',
+
+                // Product blocks - Product showcases and details
+                'product-showcase',
+                'product-hero',
+                'product-gallery',
+                'product-features',
+                'product-specs',
+
+                // Legacy blocks - Kept for backward compatibility
+                'cta',
+                'content',
+                'mediaBlock',
+                'archive',
+              ],
               blocks: [], // Required to be empty when using blockReferences
               required: true,
               admin: {
                 initCollapsed: true,
+                description:
+                  'Build your page using content blocks. Modern blocks (content-*, layout-*, marketing-*, product-*) are recommended for new pages. Legacy blocks are available for backward compatibility.',
               },
             },
           ],

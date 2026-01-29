@@ -31,6 +31,8 @@ interface SearchResult {
   productType?: string // piano, accessory, software
   productCategory?: string // digital, grand, upright, hybrid (pianos only)
   productSlug?: string
+  // Denormalized page fields (stored directly in search doc)
+  pageSlug?: string
 }
 
 interface SearchBarProps {
@@ -91,8 +93,8 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     }
 
     if (collectionSlug === 'pages') {
-      // Pages use doc.value.slug (usually populated)
-      const slug = typeof result.doc.value === 'object' ? result.doc.value.slug : result.doc.value
+      // Use denormalized pageSlug for reliable navigation (with fallback to relationship)
+      const slug = result.pageSlug || (typeof result.doc.value === 'object' ? result.doc.value.slug : result.doc.value)
       return `/${slug}`
     }
 
@@ -437,20 +439,20 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                   onMouseEnter={() => setIsMouseOverOverlay(true)}
                   onMouseLeave={() => setIsMouseOverOverlay(false)}
                 >
-                  {/* Glass Container - Transparent with blur */}
-                  <div className="h-full backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/20 dark:border-white/10 flex flex-col overflow-hidden bg-gradient-to-br from-white/10 via-white/5 to-transparent dark:from-gray-900/10 dark:via-gray-900/5 dark:to-transparent">
+                  {/* Glass Container - Ultra-transparent glassmorphism */}
+                  <div className="h-full backdrop-blur-3xl rounded-2xl shadow-2xl border border-kawai-neutral/30 flex flex-col overflow-hidden bg-kawai-black/70">
 
                     {/* Results */}
                     <div className="flex-1 overflow-y-auto p-6">
                       {filteredResults.length === 0 && !isLoading ? (
                         <div className="flex flex-col items-center justify-center h-full">
-                          <div className="w-16 h-16 rounded-full bg-white/20 dark:bg-white/10 backdrop-blur-md flex items-center justify-center mb-4">
-                            <Search className="w-8 h-8 text-gray-400" />
+                          <div className="w-16 h-16 rounded-full bg-kawai-black/40 backdrop-blur-xl flex items-center justify-center mb-4 border border-kawai-neutral/40">
+                            <Search className="w-8 h-8 text-kawai-red" />
                           </div>
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                          <h3 className="text-lg font-semibold text-kawai-pearl mb-2">
                             No results found
                           </h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">
+                          <p className="text-sm text-kawai-neutral text-center max-w-sm">
                             Try adjusting your search or browse our collections
                           </p>
                         </div>
@@ -470,10 +472,10 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                       key={categoryKey}
                                       onClick={() => setSelectedProductCategory(categoryKey)}
                                       className={cn(
-                                        'flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                                        'flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all backdrop-blur-xl',
                                         isSelected
                                           ? 'bg-kawai-red text-white shadow-md'
-                                          : 'bg-white/60 dark:bg-gray-800/60 text-gray-700 dark:text-gray-300 hover:bg-white/80 dark:hover:bg-gray-800/80 border border-white/30'
+                                          : 'bg-kawai-black/40 text-kawai-pearl hover:bg-kawai-black/60 border border-kawai-neutral/40'
                                       )}
                                     >
                                       {getCategoryLabel(categoryKey)} ({count})
@@ -499,10 +501,10 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                           key={result.id}
                                           id={`search-result-${index}`}
                                           onClick={() => navigateToResult(result)}
-                                          className="group rounded-xl overflow-hidden text-left transition-all relative hover:scale-105 duration-300"
+                                          className="group rounded-xl overflow-hidden text-left transition-all relative hover:scale-105 duration-300 border border-kawai-neutral/30 hover:border-kawai-red/60"
                                         >
                                           {/* Image Container - Top Section */}
-                                          <div className="relative aspect-square w-full bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border-b border-white/20">
+                                          <div className="relative aspect-square w-full bg-kawai-black/30 backdrop-blur-xl border-b border-kawai-neutral/30">
                                             {imageUrl ? (
                                               <Image
                                                 src={imageUrl}
@@ -512,7 +514,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                                 className="w-full h-full object-cover"
                                               />
                                             ) : (
-                                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-white/20 to-white/10 dark:from-gray-700/20 dark:to-gray-800/10">
+                                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-kawai-black/50 to-kawai-black/30">
                                                 <span className="text-6xl opacity-40">
                                                   {getResultIcon(result.doc.relationTo, category)}
                                                 </span>
@@ -522,8 +524,8 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                           </div>
 
                                           {/* Model Info - Bottom Section */}
-                                          <div className="p-3 bg-white/70 dark:bg-gray-900/70 backdrop-blur-md border border-white/20 dark:border-white/10">
-                                            <h4 className="font-bold text-gray-900 dark:text-white text-sm text-center truncate">
+                                          <div className="p-3 bg-kawai-black/50 backdrop-blur-xl border-t border-kawai-neutral/30">
+                                            <h4 className="font-bold text-kawai-pearl text-sm text-center truncate group-hover:text-kawai-red transition-colors">
                                               {model}
                                             </h4>
                                           </div>
@@ -537,15 +539,15 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
 
                           {/* Separator between Products and Pages */}
                           {displayedProducts.length > 0 && pageResults.length > 0 && (
-                            <div className="border-t border-white/20 dark:border-white/10 my-6" />
+                            <div className="border-t border-kawai-neutral/20 my-6" />
                           )}
 
                           {/* Pages Section */}
                           {pageResults.length > 0 && (
                             <div>
                               <div className="flex items-center gap-2 mb-4 px-2">
-                                <div className="h-1 w-8 bg-gray-400 dark:bg-gray-600 rounded-full" />
-                                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">
+                                <div className="h-1 w-8 bg-kawai-red rounded-full" />
+                                <h3 className="text-sm font-bold text-kawai-pearl uppercase tracking-wide">
                                   Pages ({pageResults.length})
                                 </h3>
                               </div>
@@ -557,18 +559,18 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                       key={result.id}
                                       id={`search-result-${resultIndex}`}
                                       onClick={() => navigateToResult(result)}
-                                      className="w-full p-4 rounded-xl text-left transition-all border backdrop-blur-md hover:scale-[1.02] bg-white/80 dark:bg-gray-900/80 border-white/20 dark:border-white/10 hover:bg-white/90 dark:hover:bg-gray-900/90"
+                                      className="w-full p-4 rounded-xl text-left transition-all border backdrop-blur-xl hover:scale-[1.02] bg-kawai-black/40 border-kawai-neutral/30 hover:border-kawai-red/60 hover:bg-kawai-black/60 group"
                                     >
                                       <div className="flex items-center gap-4">
-                                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-white/50 dark:bg-white/10 backdrop-blur-md flex items-center justify-center">
+                                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-kawai-red/20 backdrop-blur-xl flex items-center justify-center border border-kawai-neutral/40">
                                           <span className="text-2xl">📄</span>
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                          <h4 className="font-medium text-gray-900 dark:text-white mb-1 truncate">
+                                          <h4 className="font-medium text-kawai-pearl mb-1 truncate group-hover:text-kawai-red transition-colors">
                                             {result.title}
                                           </h4>
                                           {result.excerpt && (
-                                            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">
+                                            <p className="text-sm text-kawai-neutral line-clamp-1">
                                               {result.excerpt}
                                             </p>
                                           )}
@@ -585,7 +587,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                     </div>
 
                     {/* Filters at Bottom */}
-                    <div className="flex-shrink-0 px-6 py-4 border-t border-white/20 dark:border-white/10 bg-white/10 dark:bg-gray-900/10 backdrop-blur-sm">
+                    <div className="flex-shrink-0 px-6 py-4 border-t border-kawai-neutral/30 bg-kawai-black/40 backdrop-blur-xl">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           {(['all', 'products', 'pages'] as CategoryFilter[]).map((category) => (
@@ -593,10 +595,10 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                               key={category}
                               onClick={() => setCategoryFilter(category)}
                               className={cn(
-                                'px-4 py-2 rounded-lg text-sm font-medium transition-all backdrop-blur-sm',
+                                'px-4 py-2 rounded-lg text-sm font-medium transition-all backdrop-blur-xl',
                                 categoryFilter === category
                                   ? 'bg-kawai-red text-white shadow-md'
-                                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                  : 'bg-kawai-black/60 text-kawai-pearl hover:bg-kawai-black/80 border border-kawai-neutral/40 hover:border-kawai-red/60'
                               )}
                             >
                               {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -604,7 +606,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                           ))}
                         </div>
                         {filteredResults.length > 0 && (
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                          <span className="text-sm text-kawai-neutral">
                             {filteredResults.length} result{filteredResults.length !== 1 ? 's' : ''}
                           </span>
                         )}

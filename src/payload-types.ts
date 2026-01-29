@@ -74,6 +74,9 @@ export interface Config {
     'layout-columns': LayoutColumnsBlock;
     'layout-spacer': LayoutSpacerBlock;
     'layout-divider': LayoutDividerBlock;
+    'layout-hero-carousel': LayoutHeroCarouselBlock;
+    'layout-video-background': LayoutVideoBackgroundBlock;
+    'layout-brand-intro': LayoutBrandIntroBlock;
     'marketing-hero': MarketingHeroBlock;
     'marketing-cta': MarketingCallToActionBlock;
     'marketing-testimonials': MarketingTestimonialsBlock;
@@ -576,6 +579,244 @@ export interface LayoutDividerBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'layout-divider';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LayoutHeroCarouselBlock".
+ */
+export interface LayoutHeroCarouselBlock {
+  /**
+   * Add up to 10 carousel slides with images, titles, and call-to-actions
+   */
+  slides: {
+    /**
+     * Main headline for this slide
+     */
+    title: string;
+    /**
+     * Supporting description text
+     */
+    description: string;
+    /**
+     * Background image for this slide (recommended: 1920x1080px or larger). Click "Browse Media Library" to select from existing images or upload new ones.
+     */
+    backgroundImage?: (string | null) | Media;
+    /**
+     * Category badge displayed on the slide
+     */
+    category: 'news' | 'events' | 'promotions' | 'new-arrivals' | 'education' | 'announcement';
+    /**
+     * Call-to-action button text (leave empty to hide button)
+     */
+    ctaText?: string | null;
+    /**
+     * Call-to-action link URL (internal or external)
+     */
+    ctaLink?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * Carousel behavior and display settings
+   */
+  settings: {
+    /**
+     * Auto-play duration in milliseconds (e.g., 7000 = 7 seconds per slide)
+     */
+    autoPlayDuration: number;
+    /**
+     * Enable automatic slide transitions
+     */
+    enableAutoPlay?: boolean | null;
+    /**
+     * Loop back to first slide after the last slide
+     */
+    enableLoop?: boolean | null;
+    /**
+     * Enable keyboard navigation (arrow keys and spacebar)
+     */
+    enableKeyboardNav?: boolean | null;
+    /**
+     * Enable touch/swipe navigation on mobile devices
+     */
+    enableTouchSwipe?: boolean | null;
+    /**
+     * Show navigation dots at the bottom
+     */
+    showNavigationDots?: boolean | null;
+    /**
+     * Show play/pause button for auto-play control
+     */
+    showPlayPauseButton?: boolean | null;
+    /**
+     * Enable subtle zoom animation on background images (Ken Burns effect)
+     */
+    enableKenBurnsEffect?: boolean | null;
+  };
+  /**
+   * Visual styling and layout options
+   */
+  styling?: {
+    /**
+     * Carousel height
+     */
+    height?: ('screen' | 'large' | 'medium' | 'small') | null;
+    /**
+     * Position of the text content overlay
+     */
+    contentPosition?:
+      | (
+          | 'bottom-left'
+          | 'bottom-center'
+          | 'bottom-right'
+          | 'center-left'
+          | 'center'
+          | 'center-right'
+          | 'top-left'
+          | 'top-center'
+          | 'top-right'
+        )
+      | null;
+    /**
+     * Style of content overlay/background
+     */
+    overlayStyle?: ('glassmorphism' | 'gradient' | 'solid' | 'none') | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'layout-hero-carousel';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LayoutVideoBackgroundBlock".
+ */
+export interface LayoutVideoBackgroundBlock {
+  /**
+   * Choose video source type
+   */
+  videoSource: 'youtube' | 'direct';
+  /**
+   * YouTube video URL (e.g., https://youtube.com/watch?v=dQw4w9WgXcQ or https://youtu.be/dQw4w9WgXcQ)
+   */
+  youtubeUrl?: string | null;
+  /**
+   * Direct URL to MP4 video file (use R2/CDN URL for best performance). Recommended: 1920x1080, H.264 codec, under 10MB.
+   */
+  videoUrl?: string | null;
+  /**
+   * Position of the glassmorphism content sidebar
+   */
+  sidebarPosition: 'left' | 'right';
+  /**
+   * Overlay darkness (0 = transparent, 1 = fully dark). Adjust for video brightness/readability.
+   */
+  overlayOpacity: number;
+  /**
+   * Small uppercase label above main heading (e.g., "Introducing", "Discover")
+   */
+  subheading?: string | null;
+  /**
+   * Main headline - large, prominent serif typography
+   */
+  heading: string;
+  /**
+   * Supporting paragraph text below heading (2-3 sentences recommended)
+   */
+  description?: string | null;
+  /**
+   * Primary call-to-action button (filled style)
+   */
+  primaryCta?: {
+    /**
+     * Primary button text
+     */
+    text?: string | null;
+    /**
+     * Button destination URL
+     */
+    link?: string | null;
+    /**
+     * Open link in a new browser tab
+     */
+    openInNewTab?: boolean | null;
+  };
+  /**
+   * Optional secondary call-to-action button (outline style)
+   */
+  secondaryCta?: {
+    /**
+     * Show secondary CTA button
+     */
+    enabled?: boolean | null;
+    /**
+     * Secondary button text
+     */
+    text?: string | null;
+    /**
+     * Button destination URL
+     */
+    link?: string | null;
+    /**
+     * Open link in a new browser tab
+     */
+    openInNewTab?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'layout-video-background';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LayoutBrandIntroBlock".
+ */
+export interface LayoutBrandIntroBlock {
+  /**
+   * Enable/disable the brand intro animation
+   */
+  enabled?: boolean | null;
+  /**
+   * Kawai logo image (optional - uses default if not provided)
+   */
+  logo?: (string | null) | Media;
+  /**
+   * Brand tagline text
+   */
+  tagline?: string | null;
+  /**
+   * Background color for the intro overlay
+   */
+  backgroundColor?: ('black' | 'kawai-black' | 'kawai-charcoal' | 'white') | null;
+  /**
+   * Size of the logo
+   */
+  logoSize?: ('small' | 'medium' | 'large' | 'xlarge') | null;
+  /**
+   * Animation timing configuration
+   */
+  timing?: {
+    /**
+     * Fade in duration (milliseconds)
+     */
+    fadeInDuration?: number | null;
+    /**
+     * Display duration (milliseconds)
+     */
+    displayDuration?: number | null;
+    /**
+     * Fade out duration (milliseconds)
+     */
+    fadeOutDuration?: number | null;
+  };
+  /**
+   * Only show once per browser session (uses sessionStorage)
+   */
+  showOncePerSession?: boolean | null;
+  /**
+   * Allow users to skip the animation by clicking
+   */
+  allowSkip?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'layout-brand-intro';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2025,9 +2266,9 @@ export interface Post {
     [k: string]: unknown;
   };
   /**
-   * Optional: Add promotional content before the article (Hero, Banner)
+   * Optional: Add promotional content before the article (Hero, Banner, Hero Carousel)
    */
-  headerBlocks?: (MarketingHeroBlock | ContentBannerBlock)[] | null;
+  headerBlocks?: (MarketingHeroBlock | ContentBannerBlock | LayoutHeroCarouselBlock)[] | null;
   /**
    * Optional: Add calls-to-action or related content after the article (CTA, Testimonials, Columns)
    */
@@ -2247,7 +2488,34 @@ export interface Page {
       | null;
     media?: (string | null) | Media;
   };
-  layout: (CtaBlock | ContentBlock | MediaBlock | ArchiveBlock)[];
+  /**
+   * Build your page using content blocks. Modern blocks (content-*, layout-*, marketing-*, product-*) are recommended for new pages. Legacy blocks are available for backward compatibility.
+   */
+  layout: (
+    | LayoutBrandIntroBlock
+    | ContentTextBlock
+    | ContentImageBlock
+    | ContentVideoBlock
+    | ContentCodeBlock
+    | ContentBannerBlock
+    | LayoutColumnsBlock
+    | LayoutSpacerBlock
+    | LayoutDividerBlock
+    | LayoutHeroCarouselBlock
+    | LayoutVideoBackgroundBlock
+    | MarketingHeroBlock
+    | MarketingCallToActionBlock
+    | MarketingTestimonialsBlock
+    | ProductShowcaseBlock
+    | ProductHeroBlock
+    | ProductImageGalleryBlock
+    | ProductFeaturesListBlock
+    | ProductSpecificationsBlock
+    | CtaBlock
+    | ContentBlock
+    | MediaBlock
+    | ArchiveBlock
+  )[];
   publishedAt?: string | null;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
@@ -3930,6 +4198,10 @@ export interface Search {
    * Product slug (denormalized from Products collection)
    */
   productSlug?: string | null;
+  /**
+   * Page slug (denormalized from Pages collection)
+   */
+  pageSlug?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -5156,6 +5428,7 @@ export interface SearchSelect<T extends boolean = true> {
   productType?: T;
   productCategory?: T;
   productSlug?: T;
+  pageSlug?: T;
   updatedAt?: T;
   createdAt?: T;
 }

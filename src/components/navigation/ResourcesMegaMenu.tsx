@@ -89,14 +89,15 @@ export function ResourcesMegaMenu({
       {isOpen && (
         <motion.div
           key="resources-mega-menu"
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, scaleY: 0.95, y: -20 }}
           animate={{
             opacity: 1,
+            scaleY: 1,
             y: 0,
             top: isHeaderScrolled ? 112 : 128,
           }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.3, ease: 'easeInOut' }}
+          exit={{ opacity: 0, scaleY: 0.95, y: -20 }}
+          transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
           className={cn(
             'fixed left-0 right-0 z-[60]',
             'bg-white border-b border-gray-200 shadow-2xl',
@@ -104,6 +105,7 @@ export function ResourcesMegaMenu({
           )}
           style={{
             width: '100vw',
+            transformOrigin: 'top center',
           }}
         >
           <div className="container mx-auto px-4 sm:px-6 py-8">

@@ -1,3 +1,6 @@
 export { Columns } from './Columns'
 export { Spacer } from './Spacer'
 export { Divider } from './Divider'
+export { HeroCarousel } from './HeroCarousel'
+export { VideoBackground } from './VideoBackground'
+export { BrandIntro } from './BrandIntro'
