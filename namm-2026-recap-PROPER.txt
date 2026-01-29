@@ -1,0 +1,264 @@
+[title style="center" text="Kawai at NAMM 2026" tag_name="h1" size="190"]
+
+[row]
+
+[col span="6" span__sm="12"]
+
+[ux_image id="2048590" height="150%"]
+
+[/col]
+
+[col span="6" span__sm="12"]
+
+[ux_text font_size="1.4"]
+
+<p>The Anaheim Convention Center came alive January 22-24 as Kawai Piano presented an unforgettable lineup at NAMM 2026. Our booth showcased the company's iconic grand piano craftsmanship and digital innovation, with performances from breakout stars and world-class pianists that captivated the music trade show audience. From American Idol sensation Abi Carter to viral TikTok influencer David Snyder, the three-day event highlighted why Kawai remains the choice of professional musicians and emerging artists alike.</p>
+
+[/ux_text]
+
+[/col]
+
+[/row]
+
+[title style="center" text="Artist Performances" tag_name="h2" size="190"]
+
+[ux_text font_size="1.4"]
+
+<p>The talented composer Artur Zakiyan brought cinematic depth to the booth with his emotionally rich compositions, while six-year-old prodigy Alec Van Khajadourian—one of the youngest performers ever at Carnegie Hall—closed Saturday with a historic performance that left attendees speechless.</p>
+
+[/ux_text]
+
+[row]
+
+[col span="6" span__sm="12"]
+
+[row_inner]
+
+[col_inner span__sm="12"]
+
+<h3>ARTUR ZAKIYAN</h3>
+
+[/col_inner]
+
+[/row_inner]
+
+[ux_html]
+
+<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/reel/DT6gCCzAdFK/" data-instgrm-version="14" style="background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);"><div style="padding:16px;"> <a href="https://www.instagram.com/reel/DT6gCCzAdFK/" style="background:#FFFFFF; line-height:0; padding:0 0; text-align:center; text-decoration:none; width:100%;" target="_blank">View this post on Instagram</a></div></blockquote>
+
+[/ux_html]
+
+[/col]
+
+[col span="6" span__sm="12"]
+
+[row_inner]
+
+[col_inner span__sm="12"]
+
+<h3>ABI CARTER</h3>
+
+[/col_inner]
+
+[/row_inner]
+
+[ux_html]
+
+<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/reels/DT1dhRQEaTQ/" data-instgrm-version="14" style="background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);"><div style="padding:16px;"> <a href="https://www.instagram.com/reels/DT1dhRQEaTQ/" style="background:#FFFFFF; line-height:0; padding:0 0; text-align:center; text-decoration:none; width:100%;" target="_blank">View this post on Instagram</a></div></blockquote>
+
+[/ux_html]
+
+[/col]
+
+[/row]
+
+[row]
+
+[col span="6" span__sm="12"]
+
+[row_inner]
+
+[col_inner span__sm="12"]
+
+<h3>DAVID SNYDER</h3>
+
+<p>Social media sensation David Snyder brought his unique blend of humor and virtuosity to NAMM, performing classical repertoire with the comedic flair that's earned him 450,000+ followers as an Instagram musician. The Los Angeles pianist and America's Got Talent alum demonstrated breathtaking technique on the CR-45 Crystal Grand, proving that classical piano mastery and entertainment value aren't mutually exclusive.</p>
+
+[/col_inner]
+
+[/row_inner]
+
+[/col]
+
+[col span="6" span__sm="12"]
+
+[ux_html]
+
+<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/reels/DT1BLK2EqUt/" data-instgrm-version="14" style="background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);"><div style="padding:16px;"> <a href="https://www.instagram.com/reels/DT1BLK2EqUt/" style="background:#FFFFFF; line-height:0; padding:0 0; text-align:center; text-decoration:none; width:100%;" target="_blank">View this post on Instagram</a></div></blockquote>
+
+[/ux_html]
+
+[/col]
+
+[/row]
+
+[row]
+
+[col span="6" span__sm="12"]
+
+[ux_html]
+
+<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/reels/DT6WRu8koxF/" data-instgrm-version="14" style="background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);"><div style="padding:16px;"> <a href="https://www.instagram.com/reels/DT6WRu8koxF/" style="background:#FFFFFF; line-height:0; padding:0 0; text-align:center; text-decoration:none; width:100%;" target="_blank">View this post on Instagram</a></div></blockquote>
+
+[/ux_html]
+
+[/col]
+
+[col span="6" span__sm="12"]
+
+[row_inner]
+
+[col_inner span__sm="12"]
+
+<h3>SERGIO DE MIGUEL</h3>
+
+<p>International concert pianist Sergio De Miguel brought classical elegance and virtuosic technique to the Kawai booth, showcasing the expressive capabilities of our grand piano collection through masterful performances of the classical repertoire.</p>
+
+[/col_inner]
+
+[/row_inner]
+
+[/col]
+
+[/row]
+
+[title style="center" text="Special Announcements and Collaborations" tag_name="h2" size="190"]
+
+[ux_text font_size="1.55"]
+
+<h3>HERALBONY COLLABORATION AND MASTER SERIES</h3>
+
+<p>The Heralbony collaboration introduced limited-edition artist-designed piano finishes, merging fine art with musical craftsmanship. We also showcased the expanded Master Series collection and the newly refined Novus hybrid technology, which continues to set the standard for silent piano systems with our exclusive ABS Carbon Fiber action.</p>
+
+[/ux_text]
+
+[row]
+
+[col span="6" span__sm="12"]
+
+[ux_html]
+
+<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/reels/DT31IK0ASsn/" data-instgrm-version="14" style="background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);"><div style="padding:16px;"> <a href="https://www.instagram.com/reels/DT31IK0ASsn/" style="background:#FFFFFF; line-height:0; padding:0 0; text-align:center; text-decoration:none; width:100%;" target="_blank">View this post on Instagram</a></div></blockquote>
+
+[/ux_html]
+
+[/col]
+
+[col span="6" span__sm="12"]
+
+[ux_html]
+
+<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/reels/DT1chGaEZ_m/" data-instgrm-version="14" style="background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);"><div style="padding:16px;"> <a href="https://www.instagram.com/reels/DT1chGaEZ_m/" style="background:#FFFFFF; line-height:0; padding:0 0; text-align:center; text-decoration:none; width:100%;" target="_blank">View this post on Instagram</a></div></blockquote>
+
+[/ux_html]
+
+[/col]
+
+[/row]
+
+[row]
+
+[col span="6" span__sm="12"]
+
+[row_inner]
+
+[col_inner span__sm="12"]
+
+<h3>KAWAI X ROLI</h3>
+
+<p>Beyond performances, NAMM 2026 marked major collaborations for Kawai. Our partnership with ROLI unveiled a collaboration that plans to take piano learning to the next level.</p>
+
+[button text="Read the Full Story" link="https://kawaius.com/news/kawai-x-roli-official-collaboration/" target="_blank"]
+
+[/col_inner]
+
+[/row_inner]
+
+[/col]
+
+[col span="6" span__sm="12"]
+
+[ux_image id="2048478"]
+
+[/col]
+
+[/row]
+
+[ux_text font_size="1.4"]
+
+<p>Whether you're a music education professional, aspiring pianist, or seasoned composer, Kawai's NAMM 2026 presence demonstrated our commitment to innovation and artistry. From digital piano technology that rivals acoustic performance to concert piano instruments played on the world's most prestigious stages, we're proud to support artists across every genre and skill level.</p>
+
+<p>Visit our artist roster and explore the instruments that made NAMM 2026 unforgettable at kawaius.com.</p>
+
+[/ux_text]
+
+[ux_html]
+
+<!-- Instagram Embed Script - Load ONCE at the end -->
+<script src="//www.instagram.com/embed.js"></script>
+
+<script>
+(function() {
+  'use strict';
+
+  // Function to process Instagram embeds
+  function processInstagramEmbeds() {
+    if (typeof window.instgrm !== 'undefined') {
+      window.instgrm.Embeds.process();
+      console.log('Instagram embeds processed');
+    } else {
+      console.log('Instagram script not ready yet, retrying...');
+      setTimeout(processInstagramEmbeds, 500);
+    }
+  }
+
+  // Wait for Instagram script to load
+  function waitForInstagram() {
+    var checkCount = 0;
+    var maxChecks = 20; // 10 seconds max
+
+    var checkInterval = setInterval(function() {
+      checkCount++;
+
+      if (typeof window.instgrm !== 'undefined') {
+        clearInterval(checkInterval);
+        processInstagramEmbeds();
+      } else if (checkCount >= maxChecks) {
+        clearInterval(checkInterval);
+        console.error('Instagram script failed to load');
+      }
+    }, 500);
+  }
+
+  // Start checking when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', waitForInstagram);
+  } else {
+    waitForInstagram();
+  }
+
+  // Also trigger on window load as backup
+  window.addEventListener('load', function() {
+    setTimeout(processInstagramEmbeds, 1000);
+  });
+
+  // For UX Builder / Flatsome dynamic content
+  if (typeof jQuery !== 'undefined') {
+    jQuery(document).ajaxComplete(function() {
+      setTimeout(processInstagramEmbeds, 500);
+    });
+  }
+})();
+</script>
+
+[/ux_html]

@@ -65,6 +65,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   const [isMobile, setIsMobile] = useState(false)
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
   const [keyboardHeight, setKeyboardHeight] = useState(0)
+  const [isInputFocused, setIsInputFocused] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -306,8 +307,9 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   const [isMouseOverOverlay, setIsMouseOverOverlay] = useState(false)
 
   // Close search when user scrolls (but not when hovering over results)
+  // Disabled on mobile to prevent keyboard open/close from triggering unwanted closes
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen || isMobile) return
 
     const handleScroll = () => {
       // Don't close if user is hovering over the search results
@@ -324,7 +326,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     return () => {
       window.removeEventListener('scroll', handleScroll)
     }
-  }, [isOpen, isMouseOverOverlay])
+  }, [isOpen, isMouseOverOverlay, isMobile])
 
   // Notify parent when search open state changes
   useEffect(() => {
@@ -370,6 +372,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     setResults([])
     setIsOpen(false)
     setIsMobileSearchOpen(false)
+    setIsInputFocused(false)
     setSelectedIndex(0)
     setCategoryFilter('all')
     inputRef.current?.blur()
@@ -387,8 +390,10 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     }, 100)
   }, [onOpenChange])
 
-  // Click outside handler
+  // Click outside handler - Disabled on mobile to prevent interference with keyboard/touch events
   useEffect(() => {
+    if (isMobile) return
+
     const handleClickOutside = (event: MouseEvent) => {
       if (
         overlayRef.current &&
@@ -406,7 +411,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     }
 
     return undefined
-  }, [isOpen])
+  }, [isOpen, isMobile])
 
   // Keyboard navigation handler (consolidated into single function for overlay onKeyDown)
   const handleKeyboardNavigation = useCallback((event: React.KeyboardEvent) => {
@@ -588,7 +593,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
       {/* Glassmorphism Results Overlay */}
       {isMounted && createPortal(
         <AnimatePresence>
-          {isOpen && (
+          {(isOpen || (isMobile && isInputFocused)) && (
             <>
               {/* Backdrop - Dark overlay covering full screen */}
               <div
@@ -1244,9 +1249,14 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onFocus={() => {
+                    setIsInputFocused(true)
                     setIsOpen(true)
                     setIsMobileSearchOpen(true)
                     onOpenChange?.(true)
+                  }}
+                  onBlur={() => {
+                    setIsInputFocused(false)
+                    // Don't auto-close - let user explicitly close with X or backdrop
                   }}
                   className="flex-1 bg-transparent text-base text-gray-900 placeholder-gray-500 focus:outline-none font-medium"
                 />
@@ -1266,8 +1276,8 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                   ) : null}
                 </div>
 
-                {/* Close Button - Only show when overlay is open */}
-                {isOpen && (
+                {/* Close Button - Show when overlay is open, has text, or input is focused */}
+                {(isOpen || query.length > 0 || isInputFocused) && (
                   <div className="flex-shrink-0">
                     <button
                       onClick={clearSearch}
