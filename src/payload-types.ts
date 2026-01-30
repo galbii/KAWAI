@@ -81,6 +81,7 @@ export interface Config {
     'marketing-cta': MarketingCallToActionBlock;
     'marketing-testimonials': MarketingTestimonialsBlock;
     'marketing-i2l': MarketingI2LBlock;
+    'marketing-technical-showcase': MarketingTechnicalShowcaseBlock;
     'product-showcase': ProductShowcaseBlock;
     'product-hero': ProductHeroBlock;
     'product-gallery': ProductImageGalleryBlock;
@@ -607,13 +608,17 @@ export interface LayoutHeroCarouselBlock {
      */
     category: 'news' | 'events' | 'promotions' | 'new-arrivals' | 'education' | 'announcement';
     /**
-     * Call-to-action button text (leave empty to hide button)
+     * Call-to-action button text (e.g., "Learn More", "Shop Now", "Explore"). Leave empty to hide button.
      */
     ctaText?: string | null;
     /**
-     * Call-to-action link URL (internal or external)
+     * Call-to-action link URL - Required if CTA text is provided. Use internal paths (/products/ca-901) or external URLs (https://...)
      */
     ctaLink?: string | null;
+    /**
+     * Open CTA link in a new tab (recommended for external links)
+     */
+    ctaOpenInNewTab?: boolean | null;
     id?: string | null;
   }[];
   /**
@@ -2117,31 +2122,7 @@ export interface MarketingI2LBlock {
    */
   logo?: (string | null) | Media;
   /**
-   * Add up to 2 call-to-action buttons displayed below the subheading. CTAs appear side-by-side on desktop and stack on mobile.
-   */
-  ctas?:
-    | {
-        /**
-         * Button text (e.g., "Watch Full Performance", "Explore the Collection")
-         */
-        text: string;
-        /**
-         * Button destination URL (e.g., /artists, /pianos/grand, https://youtube.com/...)
-         */
-        url: string;
-        /**
-         * Button style variant
-         */
-        variant: 'default' | 'outline';
-        /**
-         * Open link in a new tab (recommended for external links)
-         */
-        openInNewTab?: boolean | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Add up to 6 YouTube videos for the carousel. Videos will be displayed in order.
+   * Add up to 6 YouTube videos for the carousel. Each video can have its own call-to-action button.
    */
   videos: {
     /**
@@ -2168,6 +2149,22 @@ export interface MarketingI2LBlock {
      * Video duration displayed on thumbnail (e.g., "3:45")
      */
     duration?: string | null;
+    /**
+     * Optional call-to-action button text (e.g., "Learn More", "Explore This Piano")
+     */
+    ctaText?: string | null;
+    /**
+     * CTA button destination URL (e.g., /products/sk-ex, /pianos/grand). Required if CTA text is provided.
+     */
+    ctaUrl?: string | null;
+    /**
+     * CTA button style variant
+     */
+    ctaVariant?: ('default' | 'outline') | null;
+    /**
+     * Open CTA link in a new tab (recommended for external links)
+     */
+    ctaOpenInNewTab?: boolean | null;
     id?: string | null;
   }[];
   /**
@@ -2211,6 +2208,88 @@ export interface MarketingI2LBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'marketing-i2l';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingTechnicalShowcaseBlock".
+ */
+export interface MarketingTechnicalShowcaseBlock {
+  /**
+   * Main heading (e.g., "Grand Feel III Action Technology")
+   */
+  heading: string;
+  /**
+   * Description about the products being showcased (max 300 characters)
+   */
+  subheading?: string | null;
+  /**
+   * YouTube video URL (e.g., https://youtube.com/watch?v=... or https://youtu.be/...)
+   */
+  youtubeUrl: string;
+  /**
+   * Optional custom video thumbnail. If not provided, YouTube default will be used. Recommended: 16:9 aspect ratio, minimum 1280x720px.
+   */
+  videoThumbnail?: (string | null) | Media;
+  /**
+   * Video duration displayed on thumbnail (e.g., "3:45", "12:30")
+   */
+  videoDuration?: string | null;
+  /**
+   * Add 2-4 products to compare side-by-side below the video
+   */
+  products: {
+    /**
+     * Product name (e.g., "CA-901", "CN-301")
+     */
+    name: string;
+    /**
+     * Product image URL (e.g., https://example.com/image.jpg) - Takes priority over uploaded image
+     */
+    imageUrl?: string | null;
+    /**
+     * Fallback: Upload product image if URL not provided (recommended: square aspect ratio, minimum 600x600px)
+     */
+    image?: (string | null) | Media;
+    /**
+     * Product page URL (e.g., "/products/ca-901")
+     */
+    url?: string | null;
+    /**
+     * Optional badge text (e.g., "Popular", "Best Value", "Premium")
+     */
+    badge?: string | null;
+    /**
+     * Technical specifications and features for this product
+     */
+    features: {
+      /**
+       * Feature description (e.g., "Grand Feel III Wooden-Key Action", "88 weighted keys", "256-note polyphony")
+       */
+      text: string;
+      /**
+       * Highlight this feature with gold accent
+       */
+      highlight?: boolean | null;
+      id?: string | null;
+    }[];
+    id?: string | null;
+  }[];
+  /**
+   * Block settings
+   */
+  settings: {
+    /**
+     * Color theme for the block
+     */
+    theme: 'dark' | 'light';
+    /**
+     * Enable scroll-triggered animations
+     */
+    enableAnimations?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-technical-showcase';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2625,6 +2704,7 @@ export interface Page {
     | MarketingCallToActionBlock
     | MarketingTestimonialsBlock
     | MarketingI2LBlock
+    | MarketingTechnicalShowcaseBlock
     | ProductShowcaseBlock
     | ProductHeroBlock
     | ProductImageGalleryBlock

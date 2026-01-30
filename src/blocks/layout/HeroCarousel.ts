@@ -65,9 +65,9 @@ export const HeroCarousel: Block = {
           name: 'ctaText',
           type: 'text',
           required: false,
-          defaultValue: 'Learn More',
           admin: {
-            description: 'Call-to-action button text (leave empty to hide button)',
+            description: 'Call-to-action button text (e.g., "Learn More", "Shop Now", "Explore"). Leave empty to hide button.',
+            placeholder: 'Learn More',
           },
         },
         {
@@ -75,8 +75,32 @@ export const HeroCarousel: Block = {
           type: 'text',
           required: false,
           admin: {
-            description: 'Call-to-action link URL (internal or external)',
-            condition: (data: any) => Boolean(data.ctaText),
+            description: 'Call-to-action link URL - Required if CTA text is provided. Use internal paths (/products/ca-901) or external URLs (https://...)',
+            placeholder: '/pianos/digital',
+            condition: (data: any, siblingData: any) => {
+              const ctaText = siblingData?.ctaText || data?.ctaText
+              return Boolean(ctaText)
+            },
+          },
+          validate: (value: string | null | undefined, { siblingData }: { siblingData: any }) => {
+            // If ctaText is provided, ctaLink is required
+            if (siblingData?.ctaText && !value) {
+              return 'CTA Link is required when CTA Text is provided'
+            }
+            return true
+          },
+        },
+        {
+          name: 'ctaOpenInNewTab',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description: 'Open CTA link in a new tab (recommended for external links)',
+            condition: (data: any, siblingData: any) => {
+              const ctaText = siblingData?.ctaText || data?.ctaText
+              const ctaLink = siblingData?.ctaLink || data?.ctaLink
+              return Boolean(ctaText && ctaLink)
+            },
           },
         },
       ],

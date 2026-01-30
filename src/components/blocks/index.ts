@@ -29,6 +29,8 @@ export { BrandIntroBlock } from './BrandIntroBlock'
 export { HeroBlock } from './HeroBlock'
 export { CallToActionBlock } from './CallToActionBlock'
 export { TestimonialsBlock } from './TestimonialsBlock'
+export { InstrumentalToLifeBlock } from './InstrumentalToLifeBlock'
+export { TechnicalShowcaseBlock } from './TechnicalShowcaseBlock'
 
 // Product Blocks - Product-specific showcases
 export { ProductShowcaseBlock } from './ProductShowcaseBlock'

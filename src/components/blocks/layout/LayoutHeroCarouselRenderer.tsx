@@ -308,15 +308,17 @@ export function LayoutHeroCarouselRenderer({
                           >
                             <Link
                               href={currentSlide.ctaLink}
-                              className="inline-flex items-center space-x-3 bg-white hover:bg-kawai-red text-kawai-black hover:text-white px-8 py-4 rounded-full font-medium text-sm tracking-wide uppercase transition-all duration-300 shadow-lg hover:shadow-2xl group"
+                              target={currentSlide.ctaOpenInNewTab ? '_blank' : undefined}
+                              rel={currentSlide.ctaOpenInNewTab ? 'noopener noreferrer' : undefined}
+                              className="group relative inline-flex items-center gap-3 overflow-hidden rounded-full bg-kawai-red px-8 py-4 font-sans text-sm font-semibold uppercase tracking-[0.15em] text-white transition-all duration-500 ease-out hover:bg-kawai-red/90 hover:shadow-[0_8px_32px_rgba(196,30,58,0.5)] hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-kawai-red/50 focus:ring-offset-2 focus:ring-offset-transparent"
                             >
-                              <span>{currentSlide.ctaText}</span>
+                              <span className="relative z-10">{currentSlide.ctaText}</span>
                               <svg
-                                className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                                className="relative z-10 h-4 w-4 transition-transform duration-500 ease-out group-hover:translate-x-1"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
-                                strokeWidth={2}
+                                strokeWidth={2.5}
                               >
                                 <path
                                   strokeLinecap="round"
@@ -324,6 +326,8 @@ export function LayoutHeroCarouselRenderer({
                                   d="M17 8l4 4m0 0l-4 4m4-4H3"
                                 />
                               </svg>
+                              {/* Hover shine effect */}
+                              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-[800ms] ease-out group-hover:translate-x-full skew-x-12" />
                             </Link>
                           </motion.div>
                         )}

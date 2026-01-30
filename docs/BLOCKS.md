@@ -129,7 +129,15 @@ Structural blocks for organizing content into complex layouts.
 - Customizable content positioning (9 positions)
 - Configurable heights (full screen, large, medium, small)
 - Up to 10 slides per carousel
+- **CTA buttons per slide** with customizable text, links, and target options
 - Accessibility-friendly with ARIA labels and reduced motion support
+
+**Important: CTA Button Setup**
+- Each slide can have a CTA button
+- In the CMS admin, fill in both "CTA Text" (e.g., "Learn More") and "CTA Link" (e.g., "/products/ca-901")
+- CTA Link is **required** when CTA Text is provided (validation enforced)
+- Use "CTA Open In New Tab" for external links
+- Leave CTA Text empty to hide the button for that slide
 
 **Video Background Features:**
 - **Dual video sources**: YouTube embeds OR direct MP4 files
@@ -156,6 +164,7 @@ Conversion-focused promotional blocks designed to drive user actions.
 | 📣 Call to Action | `marketing-cta` | Prominent CTA buttons/sections | Lead generation, conversions |
 | ⭐ Testimonials | `marketing-testimonials` | Customer testimonials and reviews | Building trust, social proof |
 | 🎹 Instrumental To Life | `marketing-i2l` | Premium YouTube video carousel with Kawai branding | Brand storytelling, product showcases, artist features |
+| 🎬 Technical Showcase | `marketing-technical-showcase` | Alternating video demonstrations and product comparisons | Product launches, technology showcases, detailed feature comparisons |
 
 **Instrumental To Life Features:**
 - YouTube video carousel with up to 6 videos
@@ -172,6 +181,22 @@ Conversion-focused promotional blocks designed to drive user actions.
 - Glassmorphism cards for refined presentation
 - Japanese-inspired minimalist aesthetic
 
+**Technical Showcase Features:**
+- Alternating video demonstrations and product comparison sections
+- Video sections: YouTube embeds with custom thumbnails, duration badges, and CTAs
+- Product comparison sections: Side-by-side comparison tables (2-4 products)
+- Up to 12 feature rows per comparison with highlight categories
+- Feature value icons (checkmark, X, dash) for quick visual scanning
+- Glassmorphism cards with refined Japanese aesthetics
+- Alternating left/right layouts for visual rhythm
+- Light/dark theme options
+- Staggered scroll-triggered animations
+- Mobile-responsive with horizontal scroll for tables
+- Row hover highlighting across all products
+- Individual product badges (Popular, Best Value, Premium)
+- Optional product pricing and links
+- Compact spacing mode for tighter layouts
+
 **Where to use:**
 - Landing pages
 - Post header/footer areas (promotional content)
@@ -180,6 +205,9 @@ Conversion-focused promotional blocks designed to drive user actions.
 - Brand story pages
 - Artist showcase pages
 - Product demonstration pages
+- Product launch pages with video + specs
+- Technology showcase pages (e.g., Grand Feel III Action)
+- Piano series comparison pages
 
 **Example usage in Posts:**
 ```typescript

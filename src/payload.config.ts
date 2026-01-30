@@ -46,6 +46,7 @@ import {
   CallToAction,
   Testimonials,
   InstrumentalToLife,
+  TechnicalShowcase,
   // Product blocks
   ProductShowcase,
   ProductHero,
@@ -184,6 +185,7 @@ export default buildConfig({
     CallToAction,
     Testimonials,
     InstrumentalToLife,
+    TechnicalShowcase,
 
     // Product blocks (for product pages)
     ProductShowcase,

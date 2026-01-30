@@ -18,6 +18,7 @@ export { Hero } from './marketing/Hero'
 export { CallToAction } from './marketing/CallToAction'
 export { Testimonials } from './marketing/Testimonials'
 export { InstrumentalToLife } from './marketing/InstrumentalToLife'
+export { TechnicalShowcase } from './marketing/TechnicalShowcase'
 
 // Product blocks (product pages)
 export { ProductShowcase } from './product/ProductShowcase'

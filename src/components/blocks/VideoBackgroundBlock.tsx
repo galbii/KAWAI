@@ -46,8 +46,8 @@ export function VideoBackgroundBlock({
   const [isVideoReady, setIsVideoReady] = useState(false)
 
   useEffect(() => {
-    // Staggered reveal animation
-    const timer = setTimeout(() => setIsLoaded(true), 100)
+    // Purposeful reveal - like ink settling on paper
+    const timer = setTimeout(() => setIsLoaded(true), 200)
     return () => clearTimeout(timer)
   }, [])
 
@@ -69,7 +69,6 @@ export function VideoBackgroundBlock({
   const sidebarOnLeft = sidebarPosition === 'left'
 
   // Build optimized YouTube embed URL using shared utility
-  // See src/lib/utils/youtube.ts for parameter documentation
   const youtubeEmbedUrl = videoSource === 'youtube' ? getYouTubeEmbedUrl(youtubeUrl) : null
 
   return (
@@ -77,12 +76,11 @@ export function VideoBackgroundBlock({
       {/* Background Video */}
       <div className="absolute inset-0">
         {videoSource === 'youtube' && youtubeEmbedUrl ? (
-          // YouTube Embed (minimized UI - title/channel overlay still appears per YouTube policy)
           <div className="relative h-full w-full">
             <iframe
               src={youtubeEmbedUrl}
               className={cn(
-                'absolute left-1/2 top-1/2 h-[56.25vw] min-h-screen w-[177.77vh] min-w-full -translate-x-1/2 -translate-y-1/2 object-cover transition-opacity duration-1000',
+                'absolute left-1/2 top-1/2 h-[56.25vw] min-h-screen w-[177.77vh] min-w-full -translate-x-1/2 -translate-y-1/2 object-cover transition-opacity duration-[1800ms] ease-out',
                 isVideoReady ? 'opacity-100' : 'opacity-0'
               )}
               allow="autoplay; encrypted-media"
@@ -90,11 +88,10 @@ export function VideoBackgroundBlock({
               onLoad={handleVideoReady}
               title="Background video"
             />
-            {/* Transparent overlay prevents user interaction with video (clicking, pausing, etc.) */}
+            {/* Transparent overlay prevents user interaction with video */}
             <div className="pointer-events-none absolute inset-0 z-10" />
           </div>
         ) : (
-          // Direct MP4 Video
           <video
             ref={videoRef}
             autoPlay
@@ -103,7 +100,7 @@ export function VideoBackgroundBlock({
             playsInline
             onLoadedData={handleVideoReady}
             className={cn(
-              'h-full w-full object-cover transition-opacity duration-1000',
+              'h-full w-full object-cover transition-opacity duration-[1800ms] ease-out',
               isVideoReady ? 'opacity-100' : 'opacity-0'
             )}
           >
@@ -111,216 +108,309 @@ export function VideoBackgroundBlock({
           </video>
         )}
 
-        {/* Overlay with customizable opacity */}
+        {/* Sumi-e inspired gradient overlay - organic, ink-wash aesthetic */}
         <div
-          className="absolute inset-0 bg-gradient-to-br from-kawai-charcoal via-kawai-charcoal/60 to-transparent transition-opacity duration-700"
+          className="absolute inset-0 bg-gradient-to-br from-kawai-charcoal/90 via-kawai-charcoal/50 to-transparent transition-opacity duration-1000"
           style={{ opacity: overlayOpacity ?? 0.4 }}
+        />
+
+        {/* Secondary overlay - adds depth like layered washi paper */}
+        <div
+          className={cn(
+            "absolute inset-0 bg-gradient-to-t from-kawai-charcoal/60 via-transparent to-transparent transition-opacity duration-[2000ms]",
+            isVideoReady ? 'opacity-100' : 'opacity-0'
+          )}
         />
       </div>
 
-      {/* Glassmorphism Sidebar */}
+      {/* Floating Sidebar Container - Proper breathing room */}
       <div
         className={cn(
-          'absolute inset-y-0 z-10 flex',
+          'absolute z-10 flex',
+          // Floating spacing with more space from top
+          'top-16 bottom-8 md:top-24 md:bottom-12 lg:top-28 lg:bottom-16',
           sidebarHeight === 'centered' ? 'items-center' : 'items-stretch',
-          'w-full md:w-[600px] lg:w-[700px]',
-          sidebarOnLeft ? 'left-0' : 'right-0'
+          'w-full md:w-[580px] lg:w-[680px] xl:w-[720px]',
+          // Horizontal breathing room based on position
+          sidebarOnLeft
+            ? 'left-6 md:left-12 lg:left-16'
+            : 'right-6 md:right-12 lg:right-16'
         )}
       >
-        {/* Content Container with Staggered Animation */}
+        {/* Content Container - Entrance animation like ink brush stroke */}
         <div
           className={cn(
-            'relative w-full px-8 md:px-16 lg:px-20',
+            'relative w-full',
             'flex flex-col',
             sidebarHeight === 'centered'
-              ? 'justify-center py-16'
-              : 'justify-between py-12 md:py-16 lg:py-20 h-full',
-            'transition-all duration-1000 ease-out',
-            isLoaded ? 'translate-x-0 opacity-100' : sidebarOnLeft ? '-translate-x-12 opacity-0' : 'translate-x-12 opacity-0'
+              ? 'justify-center'
+              : 'justify-between h-full',
+            // Purposeful, elegant entrance (not bouncy)
+            'transition-all duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
+            isLoaded
+              ? 'translate-x-0 translate-y-0 opacity-100'
+              : sidebarOnLeft
+                ? '-translate-x-8 translate-y-4 opacity-0'
+                : 'translate-x-8 translate-y-4 opacity-0'
           )}
         >
-          {/* Glassmorphism Panel */}
+          {/* Premium Glassmorphism Panel - Shoji screen inspired */}
           <div
             className={cn(
-              'glass-panel',
-              'relative rounded-3xl border border-white/10',
-              'bg-gradient-to-br from-white/5 via-white/[0.02] to-transparent',
-              'p-10 md:p-12 lg:p-14',
-              'shadow-[0_8px_32px_rgba(0,0,0,0.4)]',
-              'backdrop-blur-xl',
-              sidebarHeight === 'full' && 'h-full flex flex-col justify-between'
+              'glass-panel-premium',
+              'group relative',
+              // Refined border treatment - double border like traditional Japanese joinery
+              'rounded-[2rem] border border-white/[0.08]',
+              // Sophisticated glass effect - layered transparency
+              'bg-gradient-to-br from-white/[0.08] via-white/[0.03] to-transparent',
+              // Generous internal spacing with breathing room
+              'p-10 md:p-12 lg:p-14 xl:p-16',
+              // Premium shadow - soft, atmospheric (not harsh drop shadow)
+              'shadow-[0_16px_64px_rgba(0,0,0,0.5),0_0_1px_rgba(255,255,255,0.1)_inset]',
+              // Enhanced blur with saturation boost
+              'backdrop-blur-[32px]',
+              sidebarHeight === 'full' && 'h-full flex flex-col justify-between',
+              // Hover state - subtle glow (premium interaction)
+              'transition-all duration-700'
             )}
             style={{
-              backdropFilter: 'blur(24px) saturate(180%)',
+              backdropFilter: 'blur(32px) saturate(150%)',
+              // Subtle vignette effect inside panel
+              boxShadow: `
+                0 16px 64px rgba(0, 0, 0, 0.5),
+                0 0 1px rgba(255, 255, 255, 0.1) inset,
+                0 1px 2px rgba(255, 255, 255, 0.05) inset
+              `
             }}
           >
-            {/* Decorative Border Accent */}
+            {/* Inner border - double-line technique (Japanese joinery aesthetic) */}
+            <div
+              className="absolute inset-[1px] rounded-[calc(2rem-1px)] border border-white/[0.03] pointer-events-none"
+            />
+
+            {/* Decorative Corner Accent - Asymmetric (wabi-sabi) */}
             <div
               className={cn(
-                'absolute top-0 h-1 w-20 bg-gradient-to-r from-kawai-red via-kawai-gold to-transparent',
-                'transition-all duration-700 delay-300',
-                isLoaded ? 'opacity-100' : 'opacity-0',
-                sidebarOnLeft ? 'left-12' : 'right-12'
+                'absolute h-[1px] bg-gradient-to-r transition-all duration-[1200ms] ease-out delay-300',
+                'from-kawai-gold/80 via-kawai-red/60 to-transparent',
+                isLoaded ? 'w-32 opacity-100' : 'w-0 opacity-0',
+                sidebarOnLeft ? 'left-10 top-10' : 'right-10 top-10'
+              )}
+            />
+            <div
+              className={cn(
+                'absolute w-[1px] bg-gradient-to-b transition-all duration-[1200ms] ease-out delay-500',
+                'from-kawai-gold/80 via-kawai-red/60 to-transparent',
+                isLoaded ? 'h-32 opacity-100' : 'h-0 opacity-0',
+                sidebarOnLeft ? 'left-10 top-10' : 'right-10 top-10'
               )}
             />
 
-            {/* Subheading */}
-            {subheading && (
-              <div
-                className={cn(
-                  'mb-4 font-sans text-xs uppercase tracking-[0.25em] text-kawai-gold/90',
-                  'transition-all duration-700 delay-200',
-                  isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-                )}
-              >
-                {subheading}
-              </div>
-            )}
+            {/* Content Wrapper */}
+            <div className="relative z-10 space-y-6">
+              {/* Subheading - Uppercase label with refined spacing */}
+              {subheading && (
+                <div
+                  className={cn(
+                    'font-sans text-[0.6875rem] uppercase tracking-[0.3em] text-kawai-gold/95',
+                    'transition-all duration-[900ms] ease-out delay-400',
+                    isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
+                  )}
+                  style={{
+                    letterSpacing: '0.3em',
+                    fontWeight: 500,
+                  }}
+                >
+                  {subheading}
+                </div>
+              )}
 
-            {/* Heading */}
-            {heading && (
-              <h2
-                className={cn(
-                  'mb-6 font-serif text-5xl leading-tight text-white md:text-6xl lg:text-7xl',
-                  'transition-all duration-700 delay-300',
-                  isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-                )}
-                style={{ fontFamily: "'Cormorant Garamond', serif" }}
-              >
-                {heading}
-              </h2>
-            )}
+              {/* Heading - Large serif with refined line height */}
+              {heading && (
+                <h2
+                  className={cn(
+                    'font-serif leading-[1.1] text-white',
+                    'text-4xl md:text-5xl lg:text-6xl xl:text-7xl',
+                    'transition-all duration-[900ms] ease-out delay-500',
+                    isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
+                  )}
+                  style={{
+                    fontFamily: "'Cormorant Garamond', serif",
+                    fontWeight: 400,
+                    textShadow: '0 2px 12px rgba(0, 0, 0, 0.3)'
+                  }}
+                >
+                  {heading}
+                </h2>
+              )}
 
-            {/* Description */}
-            {description && (
-              <p
-                className={cn(
-                  'mb-10 max-w-lg font-sans text-lg leading-relaxed text-white/80 md:text-xl',
-                  'transition-all duration-700 delay-500',
-                  isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-                )}
-              >
-                {description}
-              </p>
-            )}
+              {/* Description - Refined readability */}
+              {description && (
+                <p
+                  className={cn(
+                    'max-w-md font-sans leading-[1.75] text-white/85',
+                    'text-base md:text-lg',
+                    'transition-all duration-[900ms] ease-out delay-700',
+                    isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
+                  )}
+                  style={{
+                    textShadow: '0 1px 8px rgba(0, 0, 0, 0.2)'
+                  }}
+                >
+                  {description}
+                </p>
+              )}
 
-            {/* CTA Buttons */}
-            {(primaryCta?.text || secondaryCta?.enabled) && (
-              <div
-                className={cn(
-                  'flex flex-wrap items-center gap-4',
-                  'transition-all duration-700 delay-700',
-                  isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-                )}
-              >
-                {/* Primary CTA */}
-                {primaryCta?.text && primaryCta?.link && (
-                  <a
-                    href={primaryCta.link}
-                    target={primaryCta.openInNewTab ? '_blank' : undefined}
-                    rel={primaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
-                    className={cn(
-                      'group relative inline-flex items-center gap-3',
-                      'overflow-hidden rounded-full',
-                      'bg-kawai-red px-8 py-4 font-sans text-sm font-medium uppercase tracking-wider text-white',
-                      'transition-all duration-300',
-                      'hover:bg-kawai-red/90 hover:shadow-[0_8px_24px_rgba(196,30,58,0.4)]',
-                      'focus:outline-none focus:ring-2 focus:ring-kawai-red focus:ring-offset-2 focus:ring-offset-transparent'
-                    )}
-                  >
-                    <span className="relative z-10">{primaryCta.text}</span>
-
-                    {/* Arrow Icon */}
-                    <svg
-                      className="relative z-10 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 8l4 4m0 0l-4 4m4-4H3"
-                      />
-                    </svg>
-
-                    {/* Hover Shine Effect */}
-                    <div
+              {/* CTA Buttons - Refined interaction design */}
+              {(primaryCta?.text || secondaryCta?.enabled) && (
+                <div
+                  className={cn(
+                    'flex flex-wrap items-center gap-4 pt-2',
+                    'transition-all duration-[900ms] ease-out delay-900',
+                    isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
+                  )}
+                >
+                  {/* Primary CTA - Kawai Red with sophisticated interaction */}
+                  {primaryCta?.text && primaryCta?.link && (
+                    <a
+                      href={primaryCta.link}
+                      target={primaryCta.openInNewTab ? '_blank' : undefined}
+                      rel={primaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
                       className={cn(
-                        'absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent',
-                        'transition-transform duration-700 group-hover:translate-x-full'
+                        'group/cta relative inline-flex items-center gap-2.5',
+                        'overflow-hidden rounded-full',
+                        'bg-kawai-red px-7 py-3.5',
+                        'font-sans text-xs font-semibold uppercase tracking-[0.15em] text-white',
+                        'transition-all duration-500 ease-out',
+                        'hover:bg-kawai-red/90 hover:shadow-[0_8px_32px_rgba(196,30,58,0.5)]',
+                        'hover:scale-[1.02] active:scale-[0.98]',
+                        'focus:outline-none focus:ring-2 focus:ring-kawai-red/50 focus:ring-offset-2 focus:ring-offset-transparent'
                       )}
-                    />
-                  </a>
-                )}
-
-                {/* Secondary CTA */}
-                {secondaryCta?.enabled && secondaryCta?.text && secondaryCta?.link && (
-                  <a
-                    href={secondaryCta.link}
-                    target={secondaryCta.openInNewTab ? '_blank' : undefined}
-                    rel={secondaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
-                    className={cn(
-                      'group relative inline-flex items-center gap-3',
-                      'overflow-hidden rounded-full',
-                      'border-2 border-white/30 bg-transparent px-8 py-4',
-                      'font-sans text-sm font-medium uppercase tracking-wider text-white',
-                      'transition-all duration-300',
-                      'hover:border-white hover:bg-white/10',
-                      'focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-transparent'
-                    )}
-                  >
-                    <span className="relative z-10">{secondaryCta.text}</span>
-
-                    {/* Arrow Icon */}
-                    <svg
-                      className="relative z-10 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 8l4 4m0 0l-4 4m4-4H3"
-                      />
-                    </svg>
-                  </a>
-                )}
-              </div>
-            )}
+                      <span className="relative z-10">{primaryCta.text}</span>
 
-            {/* Decorative Grain Texture Overlay */}
+                      {/* Arrow Icon - Refined animation */}
+                      <svg
+                        className="relative z-10 h-3.5 w-3.5 transition-transform duration-500 ease-out group-hover/cta:translate-x-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2.5}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M17 8l4 4m0 0l-4 4m4-4H3"
+                        />
+                      </svg>
+
+                      {/* Hover shine effect - diagonal sweep */}
+                      <div
+                        className={cn(
+                          'absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent',
+                          'transition-transform duration-[800ms] ease-out group-hover/cta:translate-x-full',
+                          'skew-x-12'
+                        )}
+                      />
+                    </a>
+                  )}
+
+                  {/* Secondary CTA - Outline style with refined border */}
+                  {secondaryCta?.enabled && secondaryCta?.text && secondaryCta?.link && (
+                    <a
+                      href={secondaryCta.link}
+                      target={secondaryCta.openInNewTab ? '_blank' : undefined}
+                      rel={secondaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
+                      className={cn(
+                        'group/cta-secondary relative inline-flex items-center gap-2.5',
+                        'overflow-hidden rounded-full',
+                        'border border-white/40 bg-white/5 px-7 py-3.5',
+                        'font-sans text-xs font-semibold uppercase tracking-[0.15em] text-white',
+                        'backdrop-blur-sm',
+                        'transition-all duration-500 ease-out',
+                        'hover:border-white/70 hover:bg-white/10',
+                        'hover:scale-[1.02] active:scale-[0.98]',
+                        'focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-transparent'
+                      )}
+                    >
+                      <span className="relative z-10">{secondaryCta.text}</span>
+
+                      {/* Arrow Icon */}
+                      <svg
+                        className="relative z-10 h-3.5 w-3.5 transition-transform duration-500 ease-out group-hover/cta-secondary:translate-x-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2.5}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M17 8l4 4m0 0l-4 4m4-4H3"
+                        />
+                      </svg>
+                    </a>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Washi paper texture overlay - subtle organic texture */}
             <div
-              className="pointer-events-none absolute inset-0 rounded-3xl opacity-[0.015]"
+              className="pointer-events-none absolute inset-0 rounded-[2rem] opacity-[0.03] mix-blend-overlay"
               style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+              }}
+            />
+
+            {/* Subtle inner glow - adds premium depth */}
+            <div
+              className="pointer-events-none absolute inset-0 rounded-[2rem] opacity-0 transition-opacity duration-700 group-hover:opacity-100"
+              style={{
+                background: `
+                  radial-gradient(
+                    circle at ${sidebarOnLeft ? '20%' : '80%'} 30%,
+                    rgba(212, 175, 55, 0.03) 0%,
+                    transparent 60%
+                  )
+                `
               }}
             />
           </div>
 
-          {/* Subtle Glow Effect Behind Panel */}
+          {/* Atmospheric glow behind panel - ink diffusion effect */}
           <div
             className={cn(
-              'absolute inset-0 -z-10 opacity-30 blur-3xl transition-opacity duration-1000 delay-500',
-              isLoaded ? 'opacity-20' : 'opacity-0',
+              'absolute inset-0 -z-10 blur-[80px] transition-all duration-[1600ms] ease-out delay-700',
+              isLoaded ? 'opacity-15 scale-100' : 'opacity-0 scale-90',
               sidebarOnLeft ? 'bg-gradient-to-r' : 'bg-gradient-to-l',
-              'from-kawai-red/20 via-transparent to-transparent'
+              'from-kawai-red/30 via-kawai-gold/20 to-transparent',
+              'rounded-[3rem]'
             )}
           />
         </div>
       </div>
 
-      {/* Mobile Gradient Overlay for Readability */}
-      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-kawai-charcoal via-kawai-charcoal/80 to-transparent md:hidden" />
+      {/* Mobile gradient overlay - ensures text readability */}
+      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-kawai-charcoal via-kawai-charcoal/60 to-transparent md:hidden" />
+
+      {/* Scroll indicator - subtle hint for user */}
+      <div
+        className={cn(
+          "absolute bottom-8 left-1/2 -translate-x-1/2 z-20",
+          "flex flex-col items-center gap-2 opacity-0 transition-opacity duration-1000 delay-[2000ms]",
+          isLoaded && "opacity-40 hover:opacity-70"
+        )}
+      >
+        <span className="text-[0.625rem] uppercase tracking-[0.2em] text-white/60 font-sans">Scroll</span>
+        <div className="w-[1px] h-12 bg-gradient-to-b from-white/40 to-transparent animate-pulse" />
+      </div>
 
       {/* Google Fonts Preconnect */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap"
         rel="stylesheet"
       />
     </section>

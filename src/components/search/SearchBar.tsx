@@ -71,7 +71,49 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
   const mobileInputRef = useRef<HTMLInputElement>(null)
+  const measuringKeyboardRef = useRef(false)
   const router = useRouter()
+
+  // Measure keyboard height - returns true if keyboard detected
+  const measureKeyboardHeight = useCallback(() => {
+    if (typeof window === 'undefined' || !window.visualViewport || !isMobile) return false
+
+    const visualViewport = window.visualViewport
+    const layoutHeight = window.innerHeight
+    const visualHeight = visualViewport.height
+    const newHeight = layoutHeight - visualHeight
+
+    if (newHeight > 150) {
+      setKeyboardHeight(newHeight)
+      return true // Keyboard detected
+    }
+
+    return false // No keyboard yet
+  }, [isMobile])
+
+  // Start polling for keyboard with requestAnimationFrame
+  const startKeyboardDetection = useCallback(() => {
+    if (measuringKeyboardRef.current) return // Already polling
+
+    measuringKeyboardRef.current = true
+
+    const poll = () => {
+      if (!measuringKeyboardRef.current) return
+
+      const detected = measureKeyboardHeight()
+
+      if (!detected) {
+        // Keep polling until keyboard detected (checks every frame)
+        requestAnimationFrame(poll)
+      } else {
+        // Stop polling once keyboard is found
+        measuringKeyboardRef.current = false
+      }
+    }
+
+    // Start polling immediately
+    requestAnimationFrame(poll)
+  }, [measureKeyboardHeight])
 
   // Track mounted state for portal and detect mobile
   useEffect(() => {
@@ -92,6 +134,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   }, [])
 
   // Detect keyboard on mobile using visualViewport API
+  // This handles keyboard closing and provides backup detection
   useEffect(() => {
     if (typeof window === 'undefined' || !window.visualViewport) return
 
@@ -103,10 +146,15 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
       // Calculate keyboard height (difference between layout and visual viewport)
       const layoutHeight = window.innerHeight
       const visualHeight = visualViewport.height
-      const keyboardHeight = layoutHeight - visualHeight
+      const newKeyboardHeight = layoutHeight - visualHeight
 
-      // Only set keyboard height if it's significant (> 150px) to avoid false positives
-      setKeyboardHeight(keyboardHeight > 150 ? keyboardHeight : 0)
+      // Update keyboard height (set to 0 when keyboard closes)
+      setKeyboardHeight(newKeyboardHeight > 150 ? newKeyboardHeight : 0)
+
+      // Stop any active polling when resize event provides measurement
+      if (newKeyboardHeight > 150 || newKeyboardHeight < 150) {
+        measuringKeyboardRef.current = false
+      }
     }
 
     // Listen to visualViewport resize (fires when keyboard opens/closes)
@@ -378,6 +426,8 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     inputRef.current?.blur()
     mobileInputRef.current?.blur()
     onOpenChange?.(false)
+    // Stop any active keyboard polling
+    measuringKeyboardRef.current = false
   }, [onOpenChange])
 
   const openMobileSearch = useCallback(() => {
@@ -1253,6 +1303,8 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                     setIsOpen(true)
                     setIsMobileSearchOpen(true)
                     onOpenChange?.(true)
+                    // Start proactive keyboard detection for immediate positioning
+                    startKeyboardDetection()
                   }}
                   onBlur={() => {
                     setIsInputFocused(false)

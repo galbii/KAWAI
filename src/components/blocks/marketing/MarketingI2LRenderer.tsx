@@ -32,7 +32,6 @@ export function MarketingI2LRenderer({
   heading,
   subheading,
   logo,
-  ctas,
   videos,
   settings,
   styling,
@@ -171,7 +170,7 @@ export function MarketingI2LRenderer({
 
   return (
     <section ref={sectionRef} className={cn('py-16 sm:py-24 lg:py-32', currentTheme.bg)}>
-      <div className="container mx-auto px-4 sm:px-6 max-w-7xl">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         {/* Kawai Logo */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -189,41 +188,20 @@ export function MarketingI2LRenderer({
             />
           </div>
           {subheading && (
-            <p className={cn('text-center text-sm sm:text-base lg:text-lg max-w-3xl mb-6', currentTheme.textMuted)}>
+            <p className={cn('text-center text-sm sm:text-base lg:text-lg max-w-3xl', currentTheme.textMuted)}>
               {subheading}
             </p>
-          )}
-          {ctas && ctas.length > 0 && (
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              {ctas.map((cta, index) => (
-                <Button
-                  key={index}
-                  variant={cta.variant as 'default' | 'outline'}
-                  size="lg"
-                  asChild
-                  className="min-w-[180px]"
-                >
-                  <Link
-                    href={cta.url || '#'}
-                    target={cta.openInNewTab ? '_blank' : undefined}
-                    rel={cta.openInNewTab ? 'noopener noreferrer' : undefined}
-                  >
-                    {cta.text}
-                  </Link>
-                </Button>
-              ))}
-            </div>
           )}
         </motion.div>
 
         {/* Main Content Grid - Matches PianoCollection layout exactly */}
-        <div className="grid lg:grid-cols-3 gap-8 lg:gap-16 items-center">
+        <div className="grid lg:grid-cols-3 gap-8 lg:gap-12 items-start">
           {/* Left Column: Current Video Info */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={isVisible ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7 }}
-            className="lg:col-span-1 order-2 lg:order-1"
+            className="lg:col-span-1 order-2 lg:order-1 min-w-0"
           >
             <AnimatePresence mode="wait">
               {currentVideo && (
@@ -250,20 +228,42 @@ export function MarketingI2LRenderer({
                       {currentVideo.description}
                     </p>
                   )}
+
+                  {/* Per-Video CTA Button */}
+                  {currentVideo.ctaText && currentVideo.ctaUrl && (
+                    <div className="mt-8">
+                      <Button
+                        variant={(currentVideo.ctaVariant as 'default' | 'outline') || 'default'}
+                        size="lg"
+                        asChild
+                        className="min-w-[180px]"
+                      >
+                        <Link
+                          href={currentVideo.ctaUrl}
+                          target={currentVideo.ctaOpenInNewTab ? '_blank' : undefined}
+                          rel={currentVideo.ctaOpenInNewTab ? 'noopener noreferrer' : undefined}
+                        >
+                          {currentVideo.ctaText}
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
 
             {/* Thumbnail Carousel in Left Column - Only show if more than 1 video */}
             {videos.length > 1 && (
-              <div className="mt-0">
+              <div
+                className="w-full mt-0 overflow-x-auto scrollbar-hide scroll-smooth"
+                style={{
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                }}
+              >
                 <div
                   ref={thumbnailsRef}
-                  className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide scroll-smooth"
-                  style={{
-                    scrollbarWidth: 'none',
-                    msOverflowStyle: 'none',
-                  }}
+                  className="flex gap-2 p-1"
                 >
                   {videos.map((video, index) => {
                     const thumbYoutubeId = extractYouTubeId(video.youtubeUrl || '')
@@ -324,15 +324,15 @@ export function MarketingI2LRenderer({
             initial={{ opacity: 0, x: 30 }}
             animate={isVisible ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.2 }}
-            className="lg:col-span-2 relative order-1 lg:order-2"
+            className="lg:col-span-2 relative order-1 lg:order-2 min-w-0"
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
           >
             {/* Video Container with Navigation Arrows */}
-            <div className="relative group">
-              {/* YouTube Embed */}
-              <div className="relative w-full overflow-hidden rounded-lg shadow-lg" style={{ paddingBottom: '56.25%' }}>
+            <div className="relative group w-full max-w-full">
+              {/* YouTube Embed - Using aspect-video for proper 16:9 ratio */}
+              <div className="relative w-full max-w-full aspect-video rounded-lg shadow-2xl overflow-hidden bg-kawai-black">
                 <AnimatePresence mode="wait">
                   {youtubeId && (
                     <motion.iframe
@@ -342,10 +342,10 @@ export function MarketingI2LRenderer({
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.4 }}
                       src={`https://www.youtube.com/embed/${youtubeId}?modestbranding=1&rel=0`}
-                      className="absolute top-0 left-0 w-full h-full rounded-lg"
+                      className="absolute inset-0 w-full h-full"
                       allowFullScreen
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      frameBorder="0"
+                      title={currentVideo?.title || 'Video player'}
                     />
                   )}
                 </AnimatePresence>

@@ -2,13 +2,13 @@
  * RenderBlocks - Universal Block Renderer
  *
  * Dynamically renders Payload CMS blocks from the `layout` field.
- * Supports 22 block types across 5 categories.
+ * Supports 23 block types across 5 categories.
  *
  * Block Categories:
  * - Legacy (4): archive, content, mediaBlock, cta
  * - Content (5): content-text, content-image, content-video, content-code, content-banner
  * - Layout (6): layout-columns, layout-spacer, layout-divider, layout-hero-carousel, layout-video-background, layout-brand-intro
- * - Marketing (4): marketing-hero, marketing-cta, marketing-testimonials, marketing-i2l
+ * - Marketing (5): marketing-hero, marketing-cta, marketing-testimonials, marketing-i2l, marketing-technical-showcase
  * - Product (5): product-showcase, product-hero, product-gallery, product-features, product-specs
  *
  * Usage:
@@ -59,6 +59,7 @@ import { HeroBlock } from './blocks/HeroBlock'
 import { CallToActionBlock } from './blocks/CallToActionBlock'
 import { TestimonialsBlock } from './blocks/TestimonialsBlock'
 import { InstrumentalToLifeBlock } from './blocks/InstrumentalToLifeBlock'
+import { TechnicalShowcaseBlock } from './blocks/TechnicalShowcaseBlock'
 
 // Product Blocks - Product-specific showcases
 import { ProductShowcaseBlock } from './blocks/ProductShowcaseBlock'
@@ -100,6 +101,7 @@ const blockComponents = {
   'marketing-cta': CallToActionBlock,
   'marketing-testimonials': TestimonialsBlock,
   'marketing-i2l': InstrumentalToLifeBlock,
+  'marketing-technical-showcase': TechnicalShowcaseBlock,
 
   // Product blocks (product-*)
   'product-showcase': ProductShowcaseBlock,

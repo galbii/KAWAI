@@ -41,61 +41,6 @@ export const InstrumentalToLife: Block = {
       },
     }),
     {
-      name: 'ctas',
-      type: 'array',
-      required: false,
-      minRows: 0,
-      maxRows: 2,
-      labels: {
-        singular: 'Call to Action',
-        plural: 'Call to Actions',
-      },
-      fields: [
-        {
-          name: 'text',
-          type: 'text',
-          required: true,
-          admin: {
-            description: 'Button text (e.g., "Watch Full Performance", "Explore the Collection")',
-            placeholder: 'Watch Full Performance',
-          },
-        },
-        {
-          name: 'url',
-          type: 'text',
-          required: true,
-          admin: {
-            description: 'Button destination URL (e.g., /artists, /pianos/grand, https://youtube.com/...)',
-            placeholder: '/artists',
-          },
-        },
-        {
-          name: 'variant',
-          type: 'select',
-          required: true,
-          defaultValue: 'default',
-          options: [
-            { label: 'Primary (Red background)', value: 'default' },
-            { label: 'Secondary (Outline)', value: 'outline' },
-          ],
-          admin: {
-            description: 'Button style variant',
-          },
-        },
-        {
-          name: 'openInNewTab',
-          type: 'checkbox',
-          defaultValue: false,
-          admin: {
-            description: 'Open link in a new tab (recommended for external links)',
-          },
-        },
-      ],
-      admin: {
-        description: 'Add up to 2 call-to-action buttons displayed below the subheading. CTAs appear side-by-side on desktop and stack on mobile.',
-      },
-    },
-    {
       name: 'videos',
       type: 'array',
       required: true,
@@ -178,9 +123,58 @@ export const InstrumentalToLife: Block = {
             placeholder: '3:45',
           },
         },
+        {
+          name: 'ctaText',
+          type: 'text',
+          required: false,
+          admin: {
+            description: 'Optional call-to-action button text (e.g., "Learn More", "Explore This Piano")',
+            placeholder: 'Learn More',
+          },
+        },
+        {
+          name: 'ctaUrl',
+          type: 'text',
+          required: false,
+          admin: {
+            description: 'CTA button destination URL (e.g., /products/sk-ex, /pianos/grand). Required if CTA text is provided.',
+            placeholder: '/products/sk-ex',
+            condition: (data: any) => Boolean(data?.ctaText),
+          },
+          validate: (value: string | null | undefined, { data }: { data: any }) => {
+            // If CTA text is provided, CTA URL is required
+            if (data?.ctaText && !value) {
+              return 'CTA URL is required when CTA text is provided'
+            }
+            return true
+          },
+        },
+        {
+          name: 'ctaVariant',
+          type: 'select',
+          required: false,
+          defaultValue: 'default',
+          options: [
+            { label: 'Primary (Red background)', value: 'default' },
+            { label: 'Secondary (Outline)', value: 'outline' },
+          ],
+          admin: {
+            description: 'CTA button style variant',
+            condition: (data: any) => Boolean(data?.ctaText),
+          },
+        },
+        {
+          name: 'ctaOpenInNewTab',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description: 'Open CTA link in a new tab (recommended for external links)',
+            condition: (data: any) => Boolean(data?.ctaText),
+          },
+        },
       ],
       admin: {
-        description: 'Add up to 6 YouTube videos for the carousel. Videos will be displayed in order.',
+        description: 'Add up to 6 YouTube videos for the carousel. Each video can have its own call-to-action button.',
       },
     },
     {

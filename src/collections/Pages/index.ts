@@ -170,6 +170,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 'marketing-cta',
                 'marketing-testimonials',
                 'marketing-i2l',
+                'marketing-technical-showcase',
 
                 // Product blocks - Product showcases and details
                 'product-showcase',
