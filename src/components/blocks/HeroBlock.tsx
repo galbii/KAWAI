@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef, useEffect } from 'react'
 import { MediaRenderer } from '@/components/ui/media/MediaRenderer'
 import { Media } from '@/payload-types'
 import { Button } from '@/components/ui/button'
@@ -48,6 +49,31 @@ export function HeroBlock({
   media = {},
   layout = {}
 }: HeroBlockProps) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  // Manage video playback lifecycle
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+
+    // Only proceed if video background is enabled
+    if (media.type !== 'video' || !media.backgroundVideo) return
+
+    // Attempt to play the video when component mounts
+    const playPromise = video.play()
+
+    if (playPromise !== undefined) {
+      playPromise.catch((error) => {
+        console.warn('Video autoplay prevented:', error)
+      })
+    }
+
+    // Cleanup: pause video when component unmounts or navigating away
+    return () => {
+      video.pause()
+    }
+  }, [media.type, media.backgroundVideo])
+
   // Layout classes
   const heightClasses = {
     small: 'min-h-[400px]',
@@ -110,7 +136,7 @@ export function HeroBlock({
       {hasVideo && (
         <div className="absolute inset-0 z-0">
           <video
-            autoPlay
+            ref={videoRef}
             muted
             loop
             playsInline

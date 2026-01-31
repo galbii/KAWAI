@@ -41,12 +41,14 @@ import {
   HeroCarousel,
   VideoBackground,
   BrandIntro,
+  BottomLeftPopup,
   // Marketing blocks
   Hero,
   CallToAction,
   Testimonials,
   InstrumentalToLife,
   TechnicalShowcase,
+  FindADealer,
   // Product blocks
   ProductShowcase,
   ProductHero,
@@ -111,9 +113,13 @@ export default buildConfig({
           return `${baseURL}/blog/${data.slug || 'preview'}`
         }
 
+        if (collectionConfig?.slug === 'pages') {
+          return `${baseURL}/${data.slug || 'preview'}`
+        }
+
         return baseURL
       },
-      collections: ['posts'],
+      collections: ['posts', 'pages'],
       breakpoints: [
         {
           label: 'Mobile',
@@ -179,6 +185,7 @@ export default buildConfig({
     HeroCarousel,
     VideoBackground,
     BrandIntro,
+    BottomLeftPopup,
 
     // Marketing blocks
     Hero,
@@ -186,6 +193,7 @@ export default buildConfig({
     Testimonials,
     InstrumentalToLife,
     TechnicalShowcase,
+    FindADealer,
 
     // Product blocks (for product pages)
     ProductShowcase,

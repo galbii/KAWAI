@@ -221,5 +221,13 @@ export const VideoBackground: Block = {
         description: 'Optional secondary call-to-action button (outline style)',
       },
     },
+    {
+      name: 'showScrollIndicator',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: {
+        description: 'Show scroll indicator at bottom of video (animated chevron)',
+      },
+    },
   ],
 }

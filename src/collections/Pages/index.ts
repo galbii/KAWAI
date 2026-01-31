@@ -5,7 +5,6 @@ import { authenticatedOrPublished } from '@/lib/payload/access'
 import { hero } from '@/lib/payload/fields/hero'
 import { slugField } from 'payload'
 import { populatePublishedAt } from './hooks/populatePublishedAt'
-import { generatePreviewPath } from '@/lib/payload/generatePreviewPath'
 import { revalidateDelete, revalidatePage } from './hooks/revalidatePage'
 
 export const Pages: CollectionConfig<'pages'> = {
@@ -27,19 +26,23 @@ export const Pages: CollectionConfig<'pages'> = {
     group: 'Pages',
     defaultColumns: ['title', 'category', 'tags', 'slug', 'updatedAt'],
     livePreview: {
-      url: ({ data, req }) =>
-        generatePreviewPath({
-          slug: data?.slug,
-          collection: 'pages',
-          req,
-        }),
+      url: ({ data }) => {
+        const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+        const slug = data.slug || 'preview'
+        // Pages render at root level (e.g., /about, /contact)
+        return `${baseURL}/${slug}`
+      },
     },
-    preview: (data, { req }) =>
-      generatePreviewPath({
-        slug: data?.slug as string,
+    preview: (data) => {
+      const params = {
+        slug: (data?.slug as string) || '',
         collection: 'pages',
-        req,
-      }),
+        path: `/${(data?.slug as string) || 'preview'}`,
+        previewSecret: process.env.PREVIEW_SECRET || '',
+      }
+      const encodedParams = new URLSearchParams(params)
+      return `/api/preview?${encodedParams.toString()}`
+    },
     useAsTitle: 'title',
     description: 'Create static pages with optional FAQ categorization and tagging',
   },
@@ -164,6 +167,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 'layout-divider',
                 'layout-hero-carousel',
                 'layout-video-background',
+                'layout-bottom-left-popup',
 
                 // Marketing blocks - Conversion-focused elements
                 'marketing-hero',
@@ -171,6 +175,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 'marketing-testimonials',
                 'marketing-i2l',
                 'marketing-technical-showcase',
+                'marketing-find-a-dealer',
 
                 // Product blocks - Product showcases and details
                 'product-showcase',

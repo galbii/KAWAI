@@ -3,11 +3,32 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 
 export function HomeHero() {
   const heroRef = useRef(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const isInView = useInView(heroRef, { once: true, amount: 0.2 });
+
+  // Manage video playback lifecycle
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Attempt to play the video when component mounts
+    const playPromise = video.play();
+
+    if (playPromise !== undefined) {
+      playPromise.catch((error) => {
+        console.warn('Video autoplay prevented:', error);
+      });
+    }
+
+    // Cleanup: pause video when component unmounts or navigating away
+    return () => {
+      video.pause();
+    };
+  }, []);
 
   // Hardcoded data with your requested changes
   const heroData = {
@@ -69,7 +90,7 @@ export function HomeHero() {
     >
       {/* Video Background */}
       <video
-        autoPlay
+        ref={videoRef}
         muted
         loop
         playsInline

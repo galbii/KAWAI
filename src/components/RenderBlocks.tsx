@@ -2,13 +2,13 @@
  * RenderBlocks - Universal Block Renderer
  *
  * Dynamically renders Payload CMS blocks from the `layout` field.
- * Supports 23 block types across 5 categories.
+ * Supports 25 block types across 5 categories.
  *
  * Block Categories:
  * - Legacy (4): archive, content, mediaBlock, cta
  * - Content (5): content-text, content-image, content-video, content-code, content-banner
- * - Layout (6): layout-columns, layout-spacer, layout-divider, layout-hero-carousel, layout-video-background, layout-brand-intro
- * - Marketing (5): marketing-hero, marketing-cta, marketing-testimonials, marketing-i2l, marketing-technical-showcase
+ * - Layout (7): layout-columns, layout-spacer, layout-divider, layout-hero-carousel, layout-video-background, layout-brand-intro, layout-bottom-left-popup
+ * - Marketing (6): marketing-hero, marketing-cta, marketing-testimonials, marketing-i2l, marketing-technical-showcase, marketing-find-a-dealer
  * - Product (5): product-showcase, product-hero, product-gallery, product-features, product-specs
  *
  * Usage:
@@ -53,6 +53,7 @@ import { DividerBlock } from './blocks/DividerBlock'
 import { HeroCarouselBlock } from './blocks/HeroCarouselBlock'
 import { VideoBackgroundBlock } from './blocks/VideoBackgroundBlock'
 import { BrandIntroBlock } from './blocks/BrandIntroBlock'
+import { BottomLeftPopupBlock } from './blocks/BottomLeftPopupBlock'
 
 // Marketing Blocks - Conversion-focused
 import { HeroBlock } from './blocks/HeroBlock'
@@ -60,6 +61,7 @@ import { CallToActionBlock } from './blocks/CallToActionBlock'
 import { TestimonialsBlock } from './blocks/TestimonialsBlock'
 import { InstrumentalToLifeBlock } from './blocks/InstrumentalToLifeBlock'
 import { TechnicalShowcaseBlock } from './blocks/TechnicalShowcaseBlock'
+import { FindADealerBlock } from './blocks/FindADealerBlock'
 
 // Product Blocks - Product-specific showcases
 import { ProductShowcaseBlock } from './blocks/ProductShowcaseBlock'
@@ -95,6 +97,7 @@ const blockComponents = {
   'layout-hero-carousel': HeroCarouselBlock,
   'layout-video-background': VideoBackgroundBlock,
   'layout-brand-intro': BrandIntroBlock,
+  'layout-bottom-left-popup': BottomLeftPopupBlock,
 
   // Marketing blocks (marketing-*)
   'marketing-hero': HeroBlock,
@@ -102,6 +105,7 @@ const blockComponents = {
   'marketing-testimonials': TestimonialsBlock,
   'marketing-i2l': InstrumentalToLifeBlock,
   'marketing-technical-showcase': TechnicalShowcaseBlock,
+  'marketing-find-a-dealer': FindADealerBlock,
 
   // Product blocks (product-*)
   'product-showcase': ProductShowcaseBlock,

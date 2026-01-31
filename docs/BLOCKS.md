@@ -53,6 +53,7 @@ Structural blocks for organizing content into complex layouts.
 | Block | Slug | Purpose | Best For |
 |-------|------|---------|----------|
 | 🎹 Brand Intro | `layout-brand-intro` | Full-screen brand intro overlay with fade animation | Homepage splash, brand moments, elegant page intros |
+| 💬 Bottom Popup | `layout-bottom-left-popup` | Bottom corner notification popup with Japanese minimalist design | Announcements, promotions, gentle CTAs, newsletter signups |
 | 📐 Columns | `layout-columns` | Multi-column layouts (2-4 columns) | Side-by-side content, comparisons |
 | ↕️ Spacer | `layout-spacer` | Vertical spacing with adjustable height | Add breathing room between sections |
 | ➖ Divider | `layout-divider` | Horizontal visual separators | Section breaks, visual separation |
@@ -71,6 +72,23 @@ Structural blocks for organizing content into complex layouts.
 - Custom logo upload or default Kawai text logo
 - Japanese-inspired minimalist aesthetic
 - **Best Practice**: Should be the FIRST block on a page for optimal effect
+
+**Bottom Popup Features:**
+- Japanese minimalist design inspired by 行灯 (andon) paper lanterns
+- Refined glassmorphism with subtle grain texture and inner glow
+- Customizable content: icon, title, message, CTA button
+- Four visual themes: Light (frosted pearl), Dark (charcoal glass), Red Accent, Gold Accent
+- Position control: bottom-left or bottom-right
+- Three size options: compact (280px), medium (360px), large (420px)
+- Multiple animation styles: slide, fade, bounce (spring physics), scale
+- Auto-show delay (0-30 seconds) and auto-dismiss timer
+- Session-based persistence (show once per session)
+- Dismissible with close button and Escape key support
+- Progress bar indicator for auto-dismiss countdown
+- Noto Serif JP typography for Japanese refinement
+- Accessibility-friendly with ARIA labels and keyboard navigation
+- Custom storage key for tracking multiple popup campaigns
+- Z-index control for stacking order
 
 **Where to use:**
 - Homepage as an elegant entrance experience
@@ -151,7 +169,7 @@ Structural blocks for organizing content into complex layouts.
 - Japanese-inspired minimalist aesthetic with purposeful animations
 - Staggered reveal animations for refined presentation
 - Responsive design with mobile optimizations
-- Scroll indicator for UX guidance
+- **Toggleable scroll indicator** for UX guidance (can be hidden)
 - Uses Kawai brand colors (red, gold) with sophisticated accents
 
 ### Marketing Blocks (`src/blocks/marketing/`)
@@ -165,6 +183,7 @@ Conversion-focused promotional blocks designed to drive user actions.
 | ⭐ Testimonials | `marketing-testimonials` | Customer testimonials and reviews | Building trust, social proof |
 | 🎹 Instrumental To Life | `marketing-i2l` | Premium YouTube video carousel with Kawai branding | Brand storytelling, product showcases, artist features |
 | 🎬 Technical Showcase | `marketing-technical-showcase` | Alternating video demonstrations and product comparisons | Product launches, technology showcases, detailed feature comparisons |
+| 📍 Find a Dealer | `marketing-find-a-dealer` | Simple, elegant dealer locator CTA | Directing users to find authorized dealers, store locator pages |
 
 **Instrumental To Life Features:**
 - YouTube video carousel with up to 6 videos
@@ -196,6 +215,18 @@ Conversion-focused promotional blocks designed to drive user actions.
 - Individual product badges (Popular, Best Value, Premium)
 - Optional product pricing and links
 - Compact spacing mode for tighter layouts
+
+**Find a Dealer Features:**
+- Simple, focused CTA block for dealer locator
+- Customizable heading and supporting message
+- Prominent CTA button with configurable text and link
+- Map pin icon for visual identification
+- Four theme variants: Light, Dark, Red Accent, Gold Accent
+- Three alignment options: Left, Center, Right
+- Optional background image with overlay
+- Clean, minimalist design that doesn't distract from the CTA
+- Mobile-optimized responsive layout
+- Perfect for footer sections or dedicated dealer pages
 
 **Where to use:**
 - Landing pages

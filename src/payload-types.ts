@@ -77,11 +77,13 @@ export interface Config {
     'layout-hero-carousel': LayoutHeroCarouselBlock;
     'layout-video-background': LayoutVideoBackgroundBlock;
     'layout-brand-intro': LayoutBrandIntroBlock;
+    'layout-bottom-left-popup': LayoutBottomLeftPopupBlock;
     'marketing-hero': MarketingHeroBlock;
     'marketing-cta': MarketingCallToActionBlock;
     'marketing-testimonials': MarketingTestimonialsBlock;
     'marketing-i2l': MarketingI2LBlock;
     'marketing-technical-showcase': MarketingTechnicalShowcaseBlock;
+    'marketing-find-a-dealer': MarketingFindADealerBlock;
     'product-showcase': ProductShowcaseBlock;
     'product-hero': ProductHeroBlock;
     'product-gallery': ProductImageGalleryBlock;
@@ -770,6 +772,10 @@ export interface LayoutVideoBackgroundBlock {
      */
     openInNewTab?: boolean | null;
   };
+  /**
+   * Show scroll indicator at bottom of video (animated chevron)
+   */
+  showScrollIndicator?: boolean | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'layout-video-background';
@@ -827,6 +833,83 @@ export interface LayoutBrandIntroBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'layout-brand-intro';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LayoutBottomLeftPopupBlock".
+ */
+export interface LayoutBottomLeftPopupBlock {
+  /**
+   * Enable/disable the popup
+   */
+  enabled?: boolean | null;
+  /**
+   * Optional icon/image (recommended: 48x48px - 64x64px)
+   */
+  icon?: (string | null) | Media;
+  /**
+   * Popup title (keep concise)
+   */
+  title: string;
+  /**
+   * Popup message content
+   */
+  message: string;
+  /**
+   * Call-to-action button text (leave empty to hide button)
+   */
+  ctaText?: string | null;
+  /**
+   * CTA button link/URL
+   */
+  ctaLink?: string | null;
+  /**
+   * Open CTA link in new tab
+   */
+  ctaOpenInNewTab?: boolean | null;
+  /**
+   * Visual theme
+   */
+  theme?: ('light' | 'dark' | 'red' | 'gold') | null;
+  /**
+   * Screen position
+   */
+  position?: ('bottom-left' | 'bottom-right') | null;
+  /**
+   * Popup width
+   */
+  size?: ('compact' | 'medium' | 'large') | null;
+  /**
+   * Auto-show delay (milliseconds, 0 = immediate)
+   */
+  autoShowDelay?: number | null;
+  /**
+   * Auto-dismiss delay (milliseconds, 0 = manual only)
+   */
+  autoDismissDelay?: number | null;
+  /**
+   * Only show once per browser session
+   */
+  showOncePerSession?: boolean | null;
+  /**
+   * Allow users to dismiss manually
+   */
+  dismissible?: boolean | null;
+  /**
+   * Entrance animation
+   */
+  animationStyle?: ('slide' | 'fade' | 'bounce' | 'scale') | null;
+  /**
+   * Custom storage key for session tracking (optional - uses default if empty)
+   */
+  customStorageKey?: string | null;
+  /**
+   * Z-index stacking order
+   */
+  zIndex?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'layout-bottom-left-popup';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2293,6 +2376,47 @@ export interface MarketingTechnicalShowcaseBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingFindADealerBlock".
+ */
+export interface MarketingFindADealerBlock {
+  /**
+   * Main heading text
+   */
+  heading?: string | null;
+  /**
+   * Supporting message text
+   */
+  message?: string | null;
+  /**
+   * Button text
+   */
+  ctaText: string;
+  /**
+   * Button link/URL
+   */
+  ctaLink: string;
+  /**
+   * Open link in new tab
+   */
+  ctaOpenInNewTab?: boolean | null;
+  /**
+   * Visual theme
+   */
+  theme?: ('light' | 'dark' | 'red' | 'gold') | null;
+  /**
+   * Content alignment
+   */
+  alignment?: ('left' | 'center' | 'right') | null;
+  /**
+   * Optional background image (subtle overlay will be applied)
+   */
+  backgroundImage?: (string | null) | Media;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-find-a-dealer';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "HelloBlock".
  */
 export interface HelloBlock {
@@ -2700,11 +2824,13 @@ export interface Page {
     | LayoutDividerBlock
     | LayoutHeroCarouselBlock
     | LayoutVideoBackgroundBlock
+    | LayoutBottomLeftPopupBlock
     | MarketingHeroBlock
     | MarketingCallToActionBlock
     | MarketingTestimonialsBlock
     | MarketingI2LBlock
     | MarketingTechnicalShowcaseBlock
+    | MarketingFindADealerBlock
     | ProductShowcaseBlock
     | ProductHeroBlock
     | ProductImageGalleryBlock

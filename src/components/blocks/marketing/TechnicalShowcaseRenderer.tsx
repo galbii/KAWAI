@@ -109,11 +109,11 @@ export function TechnicalShowcaseRenderer({
     },
   }
 
-  // Asymmetric grid layouts - first product emphasized
+  // Product grid layouts - uniform sizing for comparisons
   const getProductLayout = (index: number, total: number) => {
     if (total === 2) {
-      // 60/40 split
-      return index === 0 ? 'md:col-span-3' : 'md:col-span-2'
+      // Equal 50/50 split for side-by-side comparison
+      return 'md:col-span-1'
     }
     if (total === 3) {
       // Featured, then two equal
@@ -202,13 +202,13 @@ export function TechnicalShowcaseRenderer({
             </div>
           </motion.div>
 
-          {/* Products - Asymmetric Editorial Layout */}
+          {/* Products - Uniform Layout for Comparisons */}
           {products && products.length > 0 && (
             <motion.div
               variants={itemVariants}
               className={cn(
                 'grid gap-8 md:gap-12',
-                products.length === 2 && 'md:grid-cols-5',
+                products.length === 2 && 'md:grid-cols-2',
                 products.length === 3 && 'md:grid-cols-3',
                 products.length === 4 && 'md:grid-cols-3 md:grid-rows-2'
               )}
@@ -242,9 +242,9 @@ export function TechnicalShowcaseRenderer({
                       </div>
                     )}
 
-                    {/* Product Image - Embedded style (no border, subtle shadow) */}
+                    {/* Product Image - Compact aspect ratio for comparison */}
                     <div className="relative w-full mb-8">
-                      <div className="relative w-full" style={{ paddingBottom: isFirst ? '85%' : '100%' }}>
+                      <div className="relative w-full" style={{ paddingBottom: '50%' }}>
                         <Image
                           {...imageProps}
                           alt={product.name}
@@ -253,10 +253,9 @@ export function TechnicalShowcaseRenderer({
                       </div>
                     </div>
 
-                    {/* Product Name - Editorial typography */}
+                    {/* Product Name - Uniform typography for comparison */}
                     <h3 className={cn(
-                      'font-serif leading-tight mb-6',
-                      isFirst ? 'text-3xl md:text-4xl' : 'text-2xl md:text-3xl',
+                      'font-serif leading-tight mb-6 text-2xl md:text-3xl',
                       currentTheme.text
                     )}>
                       {product.name}

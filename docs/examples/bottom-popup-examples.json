@@ -1,0 +1,225 @@
+{
+  "examples": [
+    {
+      "name": "Welcome Announcement",
+      "description": "Simple welcome message for first-time visitors",
+      "config": {
+        "blockType": "layout-bottom-left-popup",
+        "enabled": true,
+        "title": "Welcome to Kawai Piano",
+        "message": "Discover the perfect piano for your musical journey.",
+        "ctaText": "Explore Pianos",
+        "ctaLink": "/pianos",
+        "theme": "light",
+        "position": "bottom-left",
+        "size": "medium",
+        "autoShowDelay": 2000,
+        "showOncePerSession": true,
+        "dismissible": true,
+        "animationStyle": "fade"
+      }
+    },
+    {
+      "name": "Holiday Promotion",
+      "description": "Time-sensitive sale with auto-dismiss",
+      "config": {
+        "blockType": "layout-bottom-left-popup",
+        "enabled": true,
+        "title": "Holiday Sale - 20% Off",
+        "message": "Limited time offer on select digital piano models. Visit our showroom this weekend!",
+        "ctaText": "Shop Sale",
+        "ctaLink": "/pianos/digital",
+        "ctaOpenInNewTab": false,
+        "theme": "red",
+        "position": "bottom-right",
+        "size": "large",
+        "autoShowDelay": 5000,
+        "autoDismissDelay": 15000,
+        "showOncePerSession": true,
+        "dismissible": true,
+        "animationStyle": "bounce",
+        "customStorageKey": "holiday-sale-2026"
+      }
+    },
+    {
+      "name": "Newsletter Signup",
+      "description": "Elegant newsletter capture with delayed appearance",
+      "config": {
+        "blockType": "layout-bottom-left-popup",
+        "enabled": true,
+        "title": "Stay In Touch",
+        "message": "Get exclusive updates on new products, artist events, and piano care tips delivered to your inbox.",
+        "ctaText": "Subscribe Now",
+        "ctaLink": "/newsletter",
+        "theme": "gold",
+        "position": "bottom-left",
+        "size": "medium",
+        "autoShowDelay": 10000,
+        "autoDismissDelay": 0,
+        "showOncePerSession": true,
+        "dismissible": true,
+        "animationStyle": "scale"
+      }
+    },
+    {
+      "name": "Product Launch",
+      "description": "Dark theme for dramatic new product announcement",
+      "config": {
+        "blockType": "layout-bottom-left-popup",
+        "enabled": true,
+        "title": "Introducing GX-7 Grand Piano",
+        "message": "Experience the pinnacle of acoustic excellence with Kawai's latest flagship grand piano.",
+        "ctaText": "Learn More",
+        "ctaLink": "/products/gx-7",
+        "ctaOpenInNewTab": false,
+        "theme": "dark",
+        "position": "bottom-left",
+        "size": "large",
+        "autoShowDelay": 3000,
+        "showOncePerSession": true,
+        "dismissible": true,
+        "animationStyle": "slide"
+      }
+    },
+    {
+      "name": "Quick Tip",
+      "description": "Brief educational content with compact size",
+      "config": {
+        "blockType": "layout-bottom-left-popup",
+        "enabled": true,
+        "title": "Piano Care Tip",
+        "message": "Keep your piano in optimal condition with regular tuning every 6-12 months.",
+        "theme": "light",
+        "position": "bottom-right",
+        "size": "compact",
+        "autoShowDelay": 4000,
+        "autoDismissDelay": 8000,
+        "showOncePerSession": false,
+        "dismissible": true,
+        "animationStyle": "fade"
+      }
+    },
+    {
+      "name": "Showroom Visit",
+      "description": "Encourage local showroom visits with location-specific message",
+      "config": {
+        "blockType": "layout-bottom-left-popup",
+        "enabled": true,
+        "title": "Visit Our St. Louis Showroom",
+        "message": "Experience our full piano collection in person. Private consultations available.",
+        "ctaText": "Schedule Visit",
+        "ctaLink": "/st-louis#contact",
+        "theme": "light",
+        "position": "bottom-left",
+        "size": "medium",
+        "autoShowDelay": 7000,
+        "showOncePerSession": true,
+        "dismissible": true,
+        "animationStyle": "slide",
+        "customStorageKey": "showroom-visit-stl"
+      }
+    },
+    {
+      "name": "Artist Event",
+      "description": "Concert or masterclass promotion with gold accent",
+      "config": {
+        "blockType": "layout-bottom-left-popup",
+        "enabled": true,
+        "title": "Masterclass This Saturday",
+        "message": "Join renowned pianist Sarah Chen for an exclusive performance and Q&A session.",
+        "ctaText": "Reserve Seat",
+        "ctaLink": "/events/sarah-chen-masterclass",
+        "ctaOpenInNewTab": true,
+        "theme": "gold",
+        "position": "bottom-right",
+        "size": "large",
+        "autoShowDelay": 3000,
+        "autoDismissDelay": 20000,
+        "showOncePerSession": true,
+        "dismissible": true,
+        "animationStyle": "bounce",
+        "customStorageKey": "event-masterclass-jan2026"
+      }
+    },
+    {
+      "name": "Minimal Notification",
+      "description": "Simple no-CTA notification for general awareness",
+      "config": {
+        "blockType": "layout-bottom-left-popup",
+        "enabled": true,
+        "title": "New Hours",
+        "message": "We're now open Sundays 12pm-5pm for your convenience.",
+        "theme": "light",
+        "position": "bottom-left",
+        "size": "compact",
+        "autoShowDelay": 2000,
+        "autoDismissDelay": 10000,
+        "showOncePerSession": true,
+        "dismissible": true,
+        "animationStyle": "fade"
+      }
+    }
+  ],
+  "testing": {
+    "checklist": [
+      "Popup appears after configured delay",
+      "Auto-dismiss timer works correctly",
+      "Session storage prevents repeat showing",
+      "Escape key dismisses popup",
+      "Close button works",
+      "CTA link navigates correctly",
+      "Responsive on mobile (320px+)",
+      "All themes render correctly",
+      "Animation is smooth (60fps)",
+      "No layout shift on appearance",
+      "Progress bar syncs with auto-dismiss",
+      "Multiple popups use unique storage keys"
+    ],
+    "devices": [
+      "iPhone SE (320px)",
+      "iPhone 12 Pro (390px)",
+      "iPad (768px)",
+      "Desktop 1080p (1920px)",
+      "Desktop 4K (3840px)"
+    ],
+    "browsers": [
+      "Chrome 120+",
+      "Firefox 120+",
+      "Safari 17+",
+      "Edge 120+"
+    ]
+  },
+  "bestPractices": {
+    "timing": {
+      "autoShowDelay": {
+        "immediate": 0,
+        "quick": "2000-3000",
+        "normal": "5000-8000",
+        "delayed": "10000-15000"
+      },
+      "autoDismissDelay": {
+        "manual": 0,
+        "quick": "5000-8000",
+        "normal": "10000-15000",
+        "extended": "20000-30000"
+      }
+    },
+    "content": {
+      "title": "Keep under 40 characters",
+      "message": "Keep under 120 characters for readability",
+      "cta": "Use action-oriented verbs (Shop, Learn, Subscribe, Visit)"
+    },
+    "themes": {
+      "light": "General announcements, daytime users",
+      "dark": "Night mode, dramatic announcements",
+      "red": "Sales, urgent messages, strong CTAs",
+      "gold": "Premium content, luxury events"
+    },
+    "animations": {
+      "slide": "Professional, default choice",
+      "fade": "Subtle, minimalist pages",
+      "bounce": "Playful, attention-grabbing",
+      "scale": "Elegant, refined announcements"
+    }
+  }
+}

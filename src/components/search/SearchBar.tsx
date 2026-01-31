@@ -889,6 +889,28 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                 </svg>
                               </div>
                             </button>
+
+                            <button
+                              onClick={() => {
+                                router.push('/explore')
+                                clearSearch()
+                              }}
+                              className="group w-full px-6 py-4 text-left transition-all duration-200 hover:bg-kawai-red/5 border-l-2 border-transparent hover:border-kawai-red"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-kawai-pearl font-light text-lg tracking-wide group-hover:text-kawai-red transition-colors">
+                                  Kawai Exclusive Offers
+                                </span>
+                                <svg
+                                  className="w-5 h-5 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                                </svg>
+                              </div>
+                            </button>
                           </div>
 
                           {/* CSS for sequential fade animation */}

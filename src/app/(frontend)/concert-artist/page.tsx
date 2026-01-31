@@ -9,16 +9,21 @@ import ModelImageGallery from './components/ModelImageGallery'
 import StoriesOfTouch from './components/StoriesOfTouch'
 import HeritageMark from './components/HeritageMark'
 import ExperienceInvitation from './components/ExperienceInvitation'
+import { ConcertArtistFAQ } from './components/ConcertArtistFAQ'
 
 // SEO Metadata
 export const metadata: Metadata = {
-  title: 'The Sound of Mastery | Concert Artist Series',
+  title: 'Premium Digital Pianos with Wooden Keys | Kawai Concert Artist Series',
   description:
-    'From First Touch to Final Bow. KAWAI Concert Artist: solid wooden keys, Shigeru Kawai SK-EX concert grand sampling, 97 years of Japanese craftsmanship. CA401, CA501, CA701, CA901 from $3,199.',
+    'Experience authentic acoustic piano feel with real wooden keys. Concert Artist digital pianos for serious and classical pianists. SK-EX concert grand sampling, Grand Feel action. 4.9★ from 575+ reviews. Four models to match your goals.',
   keywords: [
     'KAWAI Concert Artist',
     'digital piano',
     'wooden keys',
+    'wooden key digital piano',
+    'digital piano acoustic feel',
+    'digital piano for classical pianists',
+    'serious pianist digital piano',
     'Shigeru Kawai',
     'SK-EX sampling',
     'SK-EX Rendering',
@@ -50,9 +55,9 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://kawaius.com/concert-artist',
-    title: 'The Sound of Mastery | Concert Artist Series',
+    title: 'Premium Digital Pianos with Wooden Keys | Kawai Concert Artist',
     description:
-      'From First Touch to Final Bow. solid wooden keys, Shigeru Kawai SK-EX concert grand sampling, 97 years of Japanese craftsmanship.',
+      'Experience authentic acoustic piano feel with real wooden keys. Concert Artist digital pianos for serious and classical pianists. SK-EX concert grand sampling, Grand Feel action. 4.9★ from 575+ reviews. Four models to match your goals.',
     siteName: 'KAWAI',
     images: [
       {
@@ -65,9 +70,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'The Sound of Mastery | Concert Artist Series',
+    title: 'Premium Digital Pianos with Wooden Keys | Kawai Concert Artist',
     description:
-      'From First Touch to Final Bow. solid wooden keys, Shigeru Kawai SK-EX concert grand sampling, 97 years of craftsmanship.',
+      'Experience authentic acoustic piano feel with real wooden keys. Concert Artist digital pianos for serious and classical pianists. SK-EX concert grand sampling, Grand Feel action. 4.9★ from 575+ reviews. Four models available.',
     images: ['/images/banners/CA901EP-bench-styling.webp'],
     creator: '@KAWAI',
   },
@@ -331,10 +336,13 @@ export default async function ConcertArtistPage() {
         {/* 6. Model Image Gallery - CMS Managed */}
         <ModelImageGallery data={pageData} />
 
-        {/* 7. Stories of Touch - Real testimonials from owners */}
+        {/* 7. FAQ Section - SEO optimized for wooden keys, acoustic feel, classical pianists */}
+        <ConcertArtistFAQ />
+
+        {/* 8. Stories of Touch - Real testimonials from owners */}
         <StoriesOfTouch />
 
-        {/* 8. Heritage Mark - The seal of authenticity */}
+        {/* 9. Heritage Mark - The seal of authenticity */}
         <HeritageMark />
       </main>
     </>

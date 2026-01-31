@@ -12,6 +12,7 @@ export { Divider } from './layout/Divider'
 export { HeroCarousel } from './layout/HeroCarousel'
 export { VideoBackground } from './layout/VideoBackground'
 export { BrandIntro } from './layout/BrandIntro'
+export { BottomLeftPopup } from './layout/BottomLeftPopup'
 
 // Marketing blocks (conversion-focused)
 export { Hero } from './marketing/Hero'
@@ -19,6 +20,7 @@ export { CallToAction } from './marketing/CallToAction'
 export { Testimonials } from './marketing/Testimonials'
 export { InstrumentalToLife } from './marketing/InstrumentalToLife'
 export { TechnicalShowcase } from './marketing/TechnicalShowcase'
+export { FindADealer } from './marketing/FindADealer'
 
 // Product blocks (product pages)
 export { ProductShowcase } from './product/ProductShowcase'

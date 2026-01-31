@@ -25,6 +25,7 @@ interface VideoBackgroundBlockProps {
   sidebarPosition?: 'left' | 'right' | null
   sidebarHeight?: 'centered' | 'full' | null
   overlayOpacity?: number | null
+  showScrollIndicator?: boolean | null
 }
 
 
@@ -40,6 +41,7 @@ export function VideoBackgroundBlock({
   sidebarPosition = 'left',
   sidebarHeight = 'centered',
   overlayOpacity = 0.4,
+  showScrollIndicator = true,
 }: VideoBackgroundBlockProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isLoaded, setIsLoaded] = useState(false)
@@ -395,16 +397,18 @@ export function VideoBackgroundBlock({
       <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-kawai-charcoal via-kawai-charcoal/60 to-transparent md:hidden" />
 
       {/* Scroll indicator - subtle hint for user */}
-      <div
-        className={cn(
-          "absolute bottom-8 left-1/2 -translate-x-1/2 z-20",
-          "flex flex-col items-center gap-2 opacity-0 transition-opacity duration-1000 delay-[2000ms]",
-          isLoaded && "opacity-40 hover:opacity-70"
-        )}
-      >
-        <span className="text-[0.625rem] uppercase tracking-[0.2em] text-white/60 font-sans">Scroll</span>
-        <div className="w-[1px] h-12 bg-gradient-to-b from-white/40 to-transparent animate-pulse" />
-      </div>
+      {showScrollIndicator && (
+        <div
+          className={cn(
+            "absolute bottom-8 left-1/2 -translate-x-1/2 z-20",
+            "flex flex-col items-center gap-2 opacity-0 transition-opacity duration-1000 delay-[2000ms]",
+            isLoaded && "opacity-40 hover:opacity-70"
+          )}
+        >
+          <span className="text-[0.625rem] uppercase tracking-[0.2em] text-white/60 font-sans">Scroll</span>
+          <div className="w-[1px] h-12 bg-gradient-to-b from-white/40 to-transparent animate-pulse" />
+        </div>
+      )}
 
       {/* Google Fonts Preconnect */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
