@@ -1,5 +1,31 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, CollectionAfterChangeHook } from 'payload'
 import { imageField } from '@/lib/payload/fields/media'
+import { revalidatePath, revalidateTag } from 'next/cache'
+
+const revalidateDealer: CollectionAfterChangeHook = async ({ doc, context }) => {
+  // Prevent infinite loops
+  if (context.skipRevalidation) return doc
+
+  // Only revalidate active dealers
+  if (!doc.isActive) return doc
+
+  try {
+    // Revalidate dealer detail page
+    revalidatePath(`/find-a-dealer/${doc.slug}`)
+
+    // Revalidate cache tags
+    revalidateTag(`dealer-${doc.slug}`)
+
+    // Revalidate main finder page
+    revalidatePath('/find-a-dealer')
+
+    console.log(`✅ Revalidated dealer page: /find-a-dealer/${doc.slug}`)
+  } catch (error) {
+    console.error(`❌ Revalidation failed for dealer ${doc.slug}:`, error)
+  }
+
+  return doc
+}
 
 export const Dealers: CollectionConfig = {
   slug: 'dealers',
@@ -15,6 +41,9 @@ export const Dealers: CollectionConfig = {
   },
   access: {
     read: () => true, // Public read access for dealer finder
+  },
+  hooks: {
+    afterChange: [revalidateDealer]
   },
   fields: [
     // Basic Information

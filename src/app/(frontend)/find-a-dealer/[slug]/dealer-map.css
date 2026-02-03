@@ -1,0 +1,33 @@
+/* Custom MapLibre Popup Styling */
+.maplibregl-popup-content {
+  padding: 0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.maplibregl-popup-close-button {
+  font-size: 20px !important;
+  padding: 8px !important;
+  color: #2C2C2C !important;
+  right: 4px !important;
+  top: 4px !important;
+}
+
+.maplibregl-popup-close-button:hover {
+  background-color: #f3f4f6 !important;
+  border-radius: 4px !important;
+}
+
+.maplibregl-popup-tip {
+  border-top-color: white !important;
+}
+
+/* Map controls styling */
+.maplibregl-ctrl-attrib {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 11px !important;
+}
+
+.maplibregl-ctrl button {
+  border-radius: 4px !important;
+}

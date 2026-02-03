@@ -208,6 +208,7 @@ export { SimpleDivider } from './SimpleDivider'
 
 // Media components (image, video, gallery, lightbox)
 export * from './media'
+export { ImageGalleryLightbox } from './image-gallery-lightbox'
 
 // Animation components (scroll animations, transitions)
 export * from './animations'

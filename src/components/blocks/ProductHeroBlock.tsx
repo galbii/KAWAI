@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { ImageGalleryLightbox } from '@/components/ui/image-gallery-lightbox'
 import type { Product as ShopifyProduct } from '@/lib/shopify/types'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
 
@@ -54,6 +55,7 @@ export function ProductHeroBlock({
   const defaultVariation = availableVariations.length > 0 ? 0 : -1
   const [selectedVariation, setSelectedVariation] = useState(defaultVariation)
   const [isFavorited, setIsFavorited] = useState(false)
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false)
 
   // Helper function to truncate description
   const truncateDescription = (text: string, wordLimit: number = 25) => {
@@ -171,7 +173,36 @@ export function ProductHeroBlock({
   }
   
   const displayImage = getDisplayImage()
-  
+
+  // Extract gallery images from shopifyMedia (images only)
+  const galleryImages = product?.shopifyMedia
+    ?.filter((media) => media.mediaType === 'IMAGE' && media.imageUrl)
+    .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+    .map((media) => ({
+      url: media.imageUrl!,
+      alt: media.alt || product.name || 'Product image',
+      ...(media.imageWidth && { width: media.imageWidth }),
+      ...(media.imageHeight && { height: media.imageHeight }),
+    })) || []
+
+  // Find the current image index in the gallery
+  const getCurrentImageIndex = () => {
+    if (!displayImage || galleryImages.length === 0) return 0
+
+    // Get the URL from displayImage (could be string or Media object)
+    const displayImageUrl = typeof displayImage === 'string'
+      ? displayImage
+      : displayImage?.url
+
+    if (!displayImageUrl) return 0
+
+    // Find matching image in gallery
+    const index = galleryImages.findIndex(img => img.url === displayImageUrl)
+    return index >= 0 ? index : 0
+  }
+
+  const currentImageIndex = getCurrentImageIndex()
+
   // Buy button logic - buyButton field removed from Product schema, use layout setting only
   const shouldShowBuyButton = showBuyButton
 
@@ -309,15 +340,19 @@ export function ProductHeroBlock({
 
       {/* Main Content Container */}
       <div className="container mx-auto px-6 lg:px-12 xl:px-16 relative z-10 pt-30 pb-12 lg:pt-48 lg:pb-20">
-        
+
         <div className={cn(
           "grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 w-full",
           imagePosition === 'right' ? 'lg:grid-flow-col-reverse' : ''
         )}>
-          
-          {/* Content Section - 5 columns on desktop */}
-          <div className="lg:col-span-5 space-y-6 lg:space-y-8 order-1 lg:order-none">
-            
+
+          {/* Left Column Container - Single grid item on desktop, reorders children on mobile */}
+          <div className="contents lg:block lg:col-span-5 lg:col-start-1 lg:space-y-6 lg:row-span-2">
+            <div className="contents lg:block lg:space-y-6">
+
+          {/* Part 1: Brand + Title */}
+          <div className="space-y-6 lg:space-y-8 order-1">
+
             {/* KAWAI Brand Badge */}
             <div className="flex items-center space-x-4 opacity-90">
               <div className={cn(
@@ -331,7 +366,7 @@ export function ProductHeroBlock({
                 Crafted Since 1927
               </span>
             </div>
-            
+
             {/* Hero Headlines with modern typography */}
             <div className="space-y-4 lg:space-y-6">
               {displayTitle && (
@@ -342,26 +377,218 @@ export function ProductHeroBlock({
                   {displayTitle}
                 </h1>
               )}
-              
-              {/* Model Display - Prominent with improved spacing */}
-              {modelDisplay && (
-                <div className="flex items-center space-x-4 mt-6 lg:mt-4">
-                  <div className="w-1 h-12 lg:h-16 bg-gradient-to-b from-kawai-red to-red-600 rounded-full" />
-                  <div>
-                    <p className={cn(
-                      "text-sm tracking-wide uppercase font-medium",
-                      backgroundColor === 'black' ? 'text-kawai-red' : 'text-kawai-red'
-                    )}>Model</p>
-                    <p className={cn(
-                      "text-xl lg:text-2xl xl:text-3xl font-light",
-                      textColorClass
-                    )}>
-                      {modelDisplay}
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
+          </div>
+
+          {/* Image Section - Row 2 on mobile, Right column on desktop */}
+          <div className="order-2 lg:col-span-7 lg:col-start-6 lg:row-start-1 lg:row-span-2 relative space-y-8">
+            {displayImage && (
+              <div className="relative">
+
+                {/* Main piano showcase */}
+                <div
+                  className={cn(
+                    "relative w-full h-[300px] sm:h-[400px] lg:h-[500px] xl:h-[600px] min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] xl:min-h-[600px] overflow-hidden rounded-2xl",
+                    galleryImages.length > 0 && "cursor-pointer group"
+                  )}
+                  onClick={() => galleryImages.length > 0 && setIsGalleryOpen(true)}
+                  role={galleryImages.length > 0 ? "button" : undefined}
+                  tabIndex={galleryImages.length > 0 ? 0 : undefined}
+                  onKeyDown={(e) => {
+                    if (galleryImages.length > 0 && (e.key === 'Enter' || e.key === ' ')) {
+                      e.preventDefault()
+                      setIsGalleryOpen(true)
+                    }
+                  }}
+                  aria-label={galleryImages.length > 0 ? "Open image gallery" : undefined}
+                >
+                  {/* Hover overlay hint for gallery */}
+                  {galleryImages.length > 0 && (
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 z-10 flex items-center justify-center">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full">
+                        <span className="text-sm font-medium text-kawai-charcoal">
+                          View Gallery ({galleryImages.length})
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {(() => {
+                    if (!displayImage) {
+                      return (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className={cn("text-lg font-medium", accentColorClass)}>
+                            Product Image
+                          </span>
+                        </div>
+                      )
+                    }
+
+                    // Get optimized image props using the R2 optimization system
+                    const imageProps = getOptimizedImageProps(displayImage, 'hero')
+
+                    if (!imageProps || !imageProps.src) {
+                      return (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className={cn("text-lg font-medium", accentColorClass)}>
+                            Image Load Error
+                          </span>
+                        </div>
+                      )
+                    }
+
+                    // Use fill layout for responsive container, excluding width/height from spread
+                    const { width, height, ...optimizedProps } = imageProps
+
+                    return (
+                      <Image
+                        {...optimizedProps}
+                        fill
+                        className="object-contain transition-transform duration-300 group-hover:scale-105"
+                        priority={true}
+                        sizes="(max-width: 1024px) 50vw, 40vw"
+                        alt={optimizedProps.alt || displayTitle || 'Product image'}
+                      />
+                    )
+                  })()}
+
+                  {/* Custom badge */}
+                  {overrides.badge && (
+                    <Badge className="absolute top-6 left-6 bg-kawai-red text-white font-bold text-sm px-4 py-2 rounded-full">
+                      {overrides.badge}
+                    </Badge>
+                  )}
+
+                  {/* Status badge */}
+                  {statusBadge && (
+                    <Badge className={cn("absolute bottom-6 right-6 font-bold text-sm px-4 py-2 rounded-full flex items-center gap-2", statusBadge.className)}>
+                      {statusBadge.icon && createElement(statusBadge.icon, { className: "h-3 w-3" })}
+                      {statusBadge.text}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Description directly under the image - only on desktop */}
+            {displayDescription && (
+              <div className="space-y-4 hidden lg:block">
+                <p className={cn(
+                  "text-lg lg:text-xl font-light leading-relaxed",
+                  accentColorClass
+                )}>
+                  {truncateDescription(displayDescription)}
+                </p>
+
+                {displayDescription.split(' ').length > 25 && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <button className={cn(
+                        "inline-flex items-center space-x-2 text-kawai-red hover:text-red-600 transition-colors duration-200 font-medium",
+                        "hover:underline underline-offset-4"
+                      )}>
+                        <span>Read More</span>
+                        <ChevronDown className="w-4 h-4" />
+                      </button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-white">
+                      <DialogHeader>
+                        <DialogTitle className="text-2xl font-bold text-kawai-red">
+                          {displayTitle}
+                        </DialogTitle>
+                      </DialogHeader>
+
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 py-4">
+                        {/* Full Description */}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold text-slate-900">Description</h3>
+                          <p className="text-base leading-relaxed text-slate-700">
+                            {displayDescription}
+                          </p>
+
+                          {/* Model Information */}
+                          {modelDisplay && (
+                            <div className="space-y-2 pt-4 border-t border-gray-200">
+                              <h4 className="font-medium text-slate-900">Model</h4>
+                              <p className="text-slate-600">{modelDisplay}</p>
+                            </div>
+                          )}
+
+                          {/* Key Features */}
+                          {keyFeatures && keyFeatures.length > 0 && (
+                            <div className="space-y-2 pt-4 border-t border-gray-200">
+                              <h4 className="font-medium text-slate-900">Key Features</h4>
+                              <ul className="space-y-1 text-slate-600">
+                                {keyFeatures.map((feature: string, index: number) => (
+                                  <li key={index} className="flex items-start space-x-2">
+                                    <CheckCircle className="w-4 h-4 text-kawai-red mt-0.5 flex-shrink-0" />
+                                    <span>{feature}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Product Image */}
+                        <div className="relative">
+                          {displayImage && (
+                            <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
+                              {(() => {
+                                const imageProps = getOptimizedImageProps(displayImage, 'hero')
+                                if (!imageProps || !imageProps.src) {
+                                  return (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <span className="text-lg font-medium text-slate-600">
+                                        Product Image
+                                      </span>
+                                    </div>
+                                  )
+                                }
+
+                                const { width, height, ...optimizedProps } = imageProps
+
+                                return (
+                                  <Image
+                                    {...optimizedProps}
+                                    fill
+                                    className="object-contain"
+                                    alt={optimizedProps.alt || displayTitle || 'Product image'}
+                                  />
+                                )
+                              })()}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Part 2: Model + Variations + Buttons */}
+          <div className="space-y-6 lg:space-y-8 order-3">
+
+            {/* Model Display */}
+            {modelDisplay && (
+              <div className="flex items-center space-x-4">
+                <div className="w-1 h-12 lg:h-16 bg-gradient-to-b from-kawai-red to-red-600 rounded-full" />
+                <div>
+                  <p className={cn(
+                    "text-sm tracking-wide uppercase font-medium",
+                    backgroundColor === 'black' ? 'text-kawai-red' : 'text-kawai-red'
+                  )}>Model</p>
+                  <p className={cn(
+                    "text-xl lg:text-2xl xl:text-3xl font-light",
+                    textColorClass
+                  )}>
+                    {modelDisplay}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Modern Variation Selection */}
             {showVariations && hasVariations && (
@@ -500,82 +727,17 @@ export function ProductHeroBlock({
                 )}
               </div>
             )}
-          </div>
-          
-          {/* Image Section - Full width on mobile, 7 columns on desktop */}
-          <div className="lg:col-span-7 relative order-2 lg:order-none space-y-8">
-            {displayImage && (
-              <div className="relative">
-                
-                {/* Main piano showcase */}
-                <div className="relative w-full h-[300px] sm:h-[400px] lg:h-[500px] xl:h-[600px] min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] xl:min-h-[600px] overflow-hidden rounded-2xl">
-                  {(() => {
-                    if (!displayImage) {
-                      return (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className={cn("text-lg font-medium", accentColorClass)}>
-                            Product Image
-                          </span>
-                        </div>
-                      )
-                    }
 
-                    // Get optimized image props using the R2 optimization system
-                    const imageProps = getOptimizedImageProps(displayImage, 'hero')
-
-                    if (!imageProps || !imageProps.src) {
-                      return (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className={cn("text-lg font-medium", accentColorClass)}>
-                            Image Load Error
-                          </span>
-                        </div>
-                      )
-                    }
-
-                    // Use fill layout for responsive container, excluding width/height from spread
-                    const { width, height, ...optimizedProps } = imageProps
-                    
-                    return (
-                      <Image
-                        {...optimizedProps}
-                        fill
-                        className="object-contain"
-                        priority={true}
-                        sizes="(max-width: 1024px) 50vw, 40vw"
-                        alt={optimizedProps.alt || displayTitle || 'Product image'}
-                      />
-                    )
-                  })()}
-                  
-                  {/* Custom badge */}
-                  {overrides.badge && (
-                    <Badge className="absolute top-6 left-6 bg-kawai-red text-white font-bold text-sm px-4 py-2 rounded-full">
-                      {overrides.badge}
-                    </Badge>
-                  )}
-                  
-                  {/* Status badge */}
-                  {statusBadge && (
-                    <Badge className={cn("absolute bottom-6 right-6 font-bold text-sm px-4 py-2 rounded-full flex items-center gap-2", statusBadge.className)}>
-                      {statusBadge.icon && createElement(statusBadge.icon, { className: "h-3 w-3" })}
-                      {statusBadge.text}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            )}
-            
-            {/* Description directly under the image */}
+            {/* Description on mobile - Shows after buttons */}
             {displayDescription && (
-              <div className="space-y-4">
+              <div className="space-y-4 lg:hidden">
                 <p className={cn(
-                  "text-lg lg:text-xl font-light leading-relaxed",
+                  "text-lg font-light leading-relaxed",
                   accentColorClass
                 )}>
                   {truncateDescription(displayDescription)}
                 </p>
-                
+
                 {displayDescription.split(' ').length > 25 && (
                   <Dialog>
                     <DialogTrigger asChild>
@@ -593,15 +755,15 @@ export function ProductHeroBlock({
                           {displayTitle}
                         </DialogTitle>
                       </DialogHeader>
-                      
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 py-4">
+
+                      <div className="grid grid-cols-1 gap-8 py-4">
                         {/* Full Description */}
                         <div className="space-y-4">
                           <h3 className="text-lg font-semibold text-slate-900">Description</h3>
                           <p className="text-base leading-relaxed text-slate-700">
                             {displayDescription}
                           </p>
-                          
+
                           {/* Model Information */}
                           {modelDisplay && (
                             <div className="space-y-2 pt-4 border-t border-gray-200">
@@ -609,7 +771,7 @@ export function ProductHeroBlock({
                               <p className="text-slate-600">{modelDisplay}</p>
                             </div>
                           )}
-                          
+
                           {/* Key Features */}
                           {keyFeatures && keyFeatures.length > 0 && (
                             <div className="space-y-2 pt-4 border-t border-gray-200">
@@ -625,37 +787,6 @@ export function ProductHeroBlock({
                             </div>
                           )}
                         </div>
-                        
-                        {/* Product Image */}
-                        <div className="relative">
-                          {displayImage && (
-                            <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
-                              {(() => {
-                                const imageProps = getOptimizedImageProps(displayImage, 'hero')
-                                if (!imageProps || !imageProps.src) {
-                                  return (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                      <span className="text-lg font-medium text-slate-600">
-                                        Product Image
-                                      </span>
-                                    </div>
-                                  )
-                                }
-                                
-                                const { width, height, ...optimizedProps } = imageProps
-                                
-                                return (
-                                  <Image
-                                    {...optimizedProps}
-                                    fill
-                                    className="object-contain"
-                                    alt={optimizedProps.alt || displayTitle || 'Product image'}
-                                  />
-                                )
-                              })()}
-                            </div>
-                          )}
-                        </div>
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -663,9 +794,19 @@ export function ProductHeroBlock({
               </div>
             )}
           </div>
+            </div>
+          </div>
         </div>
-        
+
       </div>
+
+      {/* Image Gallery Lightbox */}
+      <ImageGalleryLightbox
+        images={galleryImages}
+        initialIndex={currentImageIndex}
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+      />
     </section>
   )
 }

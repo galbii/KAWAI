@@ -1,14 +1,14 @@
 'use client'
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
-import { APIProvider } from '@vis.gl/react-google-maps'
 import type { Dealer } from '@/payload-types'
-import { DealerMap } from './components/DealerMap'
+import { DealerMapLibre } from './components/DealerMapLibre'
 import { DealerList } from './components/DealerList'
 import { SearchBar } from './components/SearchBar'
 import { FilterPanel } from './components/FilterPanel'
 import { MobileViewToggle } from './components/MobileViewToggle'
 import { DealerTypeFilter } from './components/DealerTypeFilter'
+import { VideoHero } from './components/VideoHero'
 import { cn } from '@/lib/utils'
 import { MapPin, SlidersHorizontal } from 'lucide-react'
 
@@ -116,27 +116,6 @@ export function DealerFinderClient({ dealers }: Props) {
     setSelectedRadius(radius)
   }, [])
 
-  // Check if we have a valid API key
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-
-  if (!apiKey) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
-        <div className="text-center p-8 max-w-md">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gray-100 flex items-center justify-center">
-            <MapPin className="w-8 h-8 text-gray-400" />
-          </div>
-          <h2 className="text-2xl font-semibold text-kawai-charcoal mb-3">
-            Map Configuration Required
-          </h2>
-          <p className="text-gray-600 leading-relaxed">
-            Google Maps API key is not configured.
-          </p>
-        </div>
-      </div>
-    )
-  }
-
   const activeFilterCount = selectedDealerTypes.length + selectedServices.length + (selectedRadius !== 25 ? 1 : 0)
 
   // Product descriptions for each dealer type
@@ -147,7 +126,7 @@ export function DealerFinderClient({ dealers }: Props) {
   }
 
   return (
-    <APIProvider apiKey={apiKey}>
+    <>
       {/* Google Fonts */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -156,60 +135,25 @@ export function DealerFinderClient({ dealers }: Props) {
         rel="stylesheet"
       />
 
-      <div className="flex flex-col min-h-screen bg-white" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
-        {/* Sticky Header with Search */}
-        <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
-          <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center gap-4 mb-3">
-              <img
-                src="/images/logos/kawai-logo-red-1x.png"
-                alt="KAWAI"
-                className="h-7"
-                srcSet="/images/logos/kawai-logo-red-1x.png 1x, /images/logos/kawai-logo-red-2x.png 2x, /images/logos/kawai-logo-red-3x.png 3x"
-              />
-              <div className="w-px h-5 bg-gray-200" />
-              <span className="text-sm font-semibold text-kawai-charcoal">Find a Dealer</span>
-            </div>
+      {/* Page content */}
+      <div className="min-h-screen bg-white" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
+        {/* Hero Section with Video Background - First */}
+        <VideoHero
+          youtubeVideoId="VrveoooxIno"
+          title="Find Our Authorized Dealers"
+          description="Discover expert KAWAI dealers near you for personalized consultations, showroom visits, and exceptional service."
+        />
+
+        {/* Search Bar Section - After hero */}
+        <div className="bg-white border-b border-gray-200 shadow-sm">
+          <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <SearchBar onLocationSearch={handleLocationSearch} />
           </div>
         </div>
 
-        {/* Hero Section with Video Background */}
-        <div className="relative h-[500px] overflow-hidden">
-          {/* Video Background */}
-          <div className="absolute inset-0">
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-full h-full object-cover"
-            >
-              <source
-                src="https://kawaipianosusa.com/wp-content/uploads/2024/12/Find-a-dealer-video-Short-compressed.mp4"
-                type="video/mp4"
-              />
-            </video>
-            {/* Dark overlay for better text readability */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
-          </div>
-
-          {/* Hero Content */}
-          <div className="relative h-full flex items-center justify-center text-center px-6">
-            <div className="max-w-4xl">
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 tracking-tight leading-tight">
-                Find Our Authorized Dealers
-              </h1>
-              <p className="text-xl md:text-2xl text-white/90 leading-relaxed max-w-3xl mx-auto">
-                Discover expert KAWAI dealers near you for personalized consultations, showroom visits, and exceptional service.
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* Filters Section */}
-        <div className="border-b border-gray-200 bg-white sticky top-[76px] z-40 shadow-sm">
-          <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+        <div className="border-b border-gray-200 bg-white shadow-sm">
+          <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             {/* Mobile View Toggle */}
             {isMobile && (
               <div className="flex justify-end mb-4">
@@ -222,7 +166,7 @@ export function DealerFinderClient({ dealers }: Props) {
             )}
 
             {/* Dealer Type Filter Pills */}
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+            <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
               <DealerTypeFilter
                 selected={dealerTypeFilter}
                 onChange={setDealerTypeFilter}
@@ -251,7 +195,7 @@ export function DealerFinderClient({ dealers }: Props) {
             </div>
 
             {/* Dynamic Description */}
-            <div className="bg-gray-50 rounded-xl px-5 py-4 border border-gray-200">
+            <div className="bg-gray-50 rounded-xl px-5 py-4 border border-gray-200 mb-4">
               <p className="text-sm text-gray-700 leading-relaxed">
                 {dealerTypeDescriptions[dealerTypeFilter]}
               </p>
@@ -259,7 +203,7 @@ export function DealerFinderClient({ dealers }: Props) {
 
             {/* Results Count */}
             {(dealerTypeFilter !== 'all' || activeFilterCount > 0) && (
-              <div className="mt-4 text-sm text-gray-600 text-center">
+              <div className="text-sm text-gray-600 text-center">
                 <span className="font-semibold text-kawai-charcoal">
                   {filteredDealers.length}
                 </span>
@@ -270,11 +214,11 @@ export function DealerFinderClient({ dealers }: Props) {
         </div>
 
         {/* Main Content - Map and List */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex" style={{ height: 'calc(100vh - 64px)' }}>
           {/* Dealer List Panel */}
           <div
             className={cn(
-              "border-r border-gray-200 overflow-y-auto bg-gray-50",
+              "border-r border-gray-200 overflow-y-auto bg-gray-50 h-full",
               isMobile ? (mobileView === 'list' ? 'w-full' : 'hidden') : 'w-2/5'
             )}
           >
@@ -315,11 +259,11 @@ export function DealerFinderClient({ dealers }: Props) {
           {/* Map Panel */}
           <div
             className={cn(
-              "flex-1 relative bg-gray-100",
+              "relative bg-gray-100",
               isMobile ? (mobileView === 'map' ? 'w-full' : 'hidden') : 'w-3/5'
             )}
           >
-            <DealerMap
+            <DealerMapLibre
               dealers={filteredDealers}
               searchCenter={searchLocation}
               searchRadius={selectedRadius}
@@ -340,6 +284,6 @@ export function DealerFinderClient({ dealers }: Props) {
           dealers={dealers}
         />
       </div>
-    </APIProvider>
+    </>
   )
 }

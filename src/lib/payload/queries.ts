@@ -660,3 +660,129 @@ export async function getActiveStorefrontsDirect(): Promise<any[]> {
     return []
   }
 }
+
+/**
+ * Get dealer by slug with full relationship population
+ * Used for dealer detail pages
+ */
+export async function getDealerBySlugDirect(slug: string): Promise<any | null> {
+  try {
+    const payload = await getPayloadClient()
+
+    const result = await payload.find({
+      collection: 'dealers',
+      where: {
+        slug: { equals: slug },
+        isActive: { equals: true }
+      },
+      depth: 2, // Populate dealerImage relationship
+      limit: 1,
+      draft: false
+    })
+
+    return result.docs[0] || null
+  } catch (error) {
+    console.error('Error fetching dealer by slug:', error)
+    return null
+  }
+}
+
+/**
+ * Get all active dealers for generateStaticParams
+ * Only fetches slug field for performance
+ */
+export async function getAllActiveDealersDirect(): Promise<Array<{ slug: string }>> {
+  try {
+    const payload = await getPayloadClient()
+
+    const result = await payload.find({
+      collection: 'dealers',
+      where: {
+        isActive: { equals: true }
+      },
+      limit: 1000,
+      select: { slug: true },
+      draft: false
+    })
+
+    return result.docs.map(d => ({ slug: d.slug }))
+  } catch (error) {
+    console.error('Error fetching active dealers:', error)
+    return []
+  }
+}
+
+/**
+ * Get nearby dealers using Haversine formula
+ * For "Related Dealers" section
+ */
+export async function getNearbyDealersDirect(
+  latitude: number,
+  longitude: number,
+  excludeSlug: string,
+  maxDistance: number = 100,
+  limit: number = 3
+): Promise<any[]> {
+  try {
+    const payload = await getPayloadClient()
+
+    // Fetch all active dealers
+    const result = await payload.find({
+      collection: 'dealers',
+      where: {
+        isActive: { equals: true },
+        slug: { not_equals: excludeSlug }
+      },
+      depth: 1,
+      limit: 100,
+      draft: false
+    })
+
+    // Calculate distances using Haversine formula
+    const dealersWithDistance = result.docs
+      .map((dealer: any) => {
+        if (!dealer.coordinates?.latitude || !dealer.coordinates?.longitude) {
+          return null
+        }
+
+        const distance = calculateDistance(
+          latitude,
+          longitude,
+          dealer.coordinates.latitude,
+          dealer.coordinates.longitude
+        )
+
+        return { ...dealer, distance }
+      })
+      .filter((d): d is NonNullable<typeof d> => d !== null && d.distance <= maxDistance)
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, limit)
+
+    return dealersWithDistance
+  } catch (error) {
+    console.error('Error fetching nearby dealers:', error)
+    return []
+  }
+}
+
+/**
+ * Calculate distance between two coordinates using Haversine formula
+ * Returns distance in miles
+ */
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 3959 // Earth's radius in miles
+  const dLat = toRadians(lat2 - lat1)
+  const dLon = toRadians(lon2 - lon1)
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2)
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return R * c
+}
+
+function toRadians(degrees: number): number {
+  return degrees * (Math.PI / 180)
+}
