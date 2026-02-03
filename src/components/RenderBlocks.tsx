@@ -2,13 +2,13 @@
  * RenderBlocks - Universal Block Renderer
  *
  * Dynamically renders Payload CMS blocks from the `layout` field.
- * Supports 25 block types across 5 categories.
+ * Supports 26 block types across 5 categories.
  *
  * Block Categories:
  * - Legacy (4): archive, content, mediaBlock, cta
  * - Content (5): content-text, content-image, content-video, content-code, content-banner
  * - Layout (7): layout-columns, layout-spacer, layout-divider, layout-hero-carousel, layout-video-background, layout-brand-intro, layout-bottom-left-popup
- * - Marketing (6): marketing-hero, marketing-cta, marketing-testimonials, marketing-i2l, marketing-technical-showcase, marketing-find-a-dealer
+ * - Marketing (7): marketing-hero, marketing-grand-hero, marketing-cta, marketing-testimonials, marketing-i2l, marketing-technical-showcase, marketing-find-a-dealer
  * - Product (5): product-showcase, product-hero, product-gallery, product-features, product-specs
  *
  * Usage:
@@ -57,6 +57,7 @@ import { BottomLeftPopupBlock } from './blocks/BottomLeftPopupBlock'
 
 // Marketing Blocks - Conversion-focused
 import { HeroBlock } from './blocks/HeroBlock'
+import { GrandHeroBlock } from './blocks/GrandHeroBlock'
 import { CallToActionBlock } from './blocks/CallToActionBlock'
 import { TestimonialsBlock } from './blocks/TestimonialsBlock'
 import { InstrumentalToLifeBlock } from './blocks/InstrumentalToLifeBlock'
@@ -101,6 +102,7 @@ const blockComponents = {
 
   // Marketing blocks (marketing-*)
   'marketing-hero': HeroBlock,
+  'marketing-grand-hero': GrandHeroBlock,
   'marketing-cta': CallToActionBlock,
   'marketing-testimonials': TestimonialsBlock,
   'marketing-i2l': InstrumentalToLifeBlock,

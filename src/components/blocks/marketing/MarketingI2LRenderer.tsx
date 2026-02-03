@@ -29,7 +29,7 @@ function extractYouTubeId(url: string): string | null {
 }
 
 export function MarketingI2LRenderer({
-  heading,
+  sectionLabel,
   subheading,
   logo,
   videos,
@@ -214,7 +214,7 @@ export function MarketingI2LRenderer({
                 >
                   {/* Section Label / Category Badge - matches PianoCollection spacing */}
                   <div className={cn('text-xs font-medium tracking-[0.2em] uppercase mb-4 sm:mb-6', currentTheme.sectionLabel)}>
-                    {heading || (currentVideo.category && currentVideo.category.replace(/-/g, ' ')) || 'Instrumental To Life'}
+                    {currentVideo.eyebrowText || sectionLabel || 'Instrumental To Life'}
                   </div>
 
                   {/* Title - matches PianoCollection spacing */}
@@ -231,12 +231,12 @@ export function MarketingI2LRenderer({
 
                   {/* Per-Video CTA Button */}
                   {currentVideo.ctaText && currentVideo.ctaUrl && (
-                    <div className="mt-8">
+                    <div className="mt-8 sm:mt-10">
                       <Button
                         variant={(currentVideo.ctaVariant as 'default' | 'outline') || 'default'}
                         size="lg"
                         asChild
-                        className="min-w-[180px]"
+                        className="min-w-[180px] shadow-lg"
                       >
                         <Link
                           href={currentVideo.ctaUrl}

@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { imageField } from '@/lib/payload/fields/media'
 
 export const VideoBackground: Block = {
   slug: 'layout-video-background',
@@ -17,13 +18,21 @@ export const VideoBackground: Block = {
       required: true,
       defaultValue: 'youtube',
       options: [
-        { label: 'YouTube', value: 'youtube' },
+        { label: 'YouTube Video', value: 'youtube' },
         { label: 'Direct Video File (MP4)', value: 'direct' },
+        { label: 'Image', value: 'image' },
       ],
       admin: {
-        description: 'Choose video source type',
+        description: 'Choose background media type',
       },
     },
+    imageField('backgroundImage', {
+      required: false,
+      admin: {
+        description: 'Background image from media library (recommended: 1920x1080 or higher). Click "Browse Media Library" to select from existing images or upload new ones.',
+        condition: (data: any) => data?.videoSource === 'image',
+      },
+    }),
     {
       name: 'youtubeUrl',
       type: 'text',
@@ -31,11 +40,10 @@ export const VideoBackground: Block = {
         description:
           'YouTube video URL (e.g., https://youtube.com/watch?v=dQw4w9WgXcQ or https://youtu.be/dQw4w9WgXcQ)',
         placeholder: 'https://youtube.com/watch?v=dQw4w9WgXcQ',
-        condition: (data: any) => !data.videoSource || data.videoSource === 'youtube',
+        condition: (data: any) => data?.videoSource === 'youtube',
       },
       validate: (value: string | null | undefined, { data }: { data: any }) => {
-        const isYouTube = !data.videoSource || data.videoSource === 'youtube'
-        if (isYouTube && !value) {
+        if (data.videoSource === 'youtube' && !value) {
           return 'YouTube URL is required when using YouTube as video source'
         }
         return true
@@ -48,13 +56,28 @@ export const VideoBackground: Block = {
         description:
           'Direct URL to MP4 video file (use R2/CDN URL for best performance). Recommended: 1920x1080, H.264 codec, under 10MB.',
         placeholder: 'https://cdn.example.com/videos/piano-craftsmanship.mp4',
-        condition: (data: any) => data.videoSource === 'direct',
+        condition: (data: any) => data?.videoSource === 'direct',
       },
       validate: (value: string | null | undefined, { data }: { data: any }) => {
         if (data.videoSource === 'direct' && !value) {
           return 'Video URL is required when using direct video file'
         }
         return true
+      },
+    },
+    {
+      name: 'videoZoom',
+      type: 'number',
+      min: 100,
+      max: 150,
+      defaultValue: 100,
+      admin: {
+        description: 'Video/Image zoom percentage (100 = no zoom, 110 = 10% zoom, 120 = 20% zoom)',
+        step: 5,
+        condition: (data: any) =>
+          data?.videoSource === 'youtube' ||
+          data?.videoSource === 'direct' ||
+          data?.videoSource === 'image',
       },
     },
     {
@@ -103,6 +126,51 @@ export const VideoBackground: Block = {
               'Overlay darkness (0 = transparent, 1 = fully dark). Adjust for video brightness/readability.',
             step: 0.05,
           },
+        },
+      ],
+    },
+    {
+      type: 'collapsible',
+      label: 'Styling Options',
+      admin: {
+        initCollapsed: true,
+        description: 'Customize colors and decorative elements',
+      },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'subheadingColor',
+              type: 'select',
+              defaultValue: 'gold',
+              options: [
+                { label: 'Kawai Gold', value: 'gold' },
+                { label: 'Kawai Red', value: 'red' },
+                { label: 'White', value: 'white' },
+                { label: 'Pearl (Light Gray)', value: 'pearl' },
+              ],
+              admin: {
+                description: 'Color of the small uppercase subheading text',
+              },
+            },
+            {
+              name: 'accentLineStyle',
+              type: 'select',
+              defaultValue: 'gold-red',
+              options: [
+                { label: 'Gold to Red Gradient', value: 'gold-red' },
+                { label: 'Red to Gold Gradient', value: 'red-gold' },
+                { label: 'Gold Only', value: 'gold' },
+                { label: 'Red Only', value: 'red' },
+                { label: 'White', value: 'white' },
+                { label: 'None (Hide Lines)', value: 'none' },
+              ],
+              admin: {
+                description: 'Style of decorative corner accent lines',
+              },
+            },
+          ],
         },
       ],
     },

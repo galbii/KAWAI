@@ -1,16 +1,27 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { getYouTubeEmbedUrl } from '@/lib/utils/youtube'
+import type { Media } from '@/payload-types'
+
+// Type guard for Media object
+function isMediaObject(media: Media | string | null | undefined): media is Media {
+  return typeof media === 'object' && media !== null && 'url' in media
+}
 
 interface VideoBackgroundBlockProps {
-  videoSource?: 'youtube' | 'direct' | null
+  videoSource?: 'youtube' | 'direct' | 'image' | null
+  backgroundImage?: Media | string | null
   youtubeUrl?: string | null
   videoUrl?: string | null
+  videoZoom?: number | null
   heading?: string | null
   subheading?: string | null
   description?: string | null
+  subheadingColor?: 'gold' | 'red' | 'white' | 'pearl' | null
+  accentLineStyle?: 'gold-red' | 'red-gold' | 'gold' | 'red' | 'white' | 'none' | null
   primaryCta?: {
     text?: string | null
     link?: string | null
@@ -31,11 +42,15 @@ interface VideoBackgroundBlockProps {
 
 export function VideoBackgroundBlock({
   videoSource = 'youtube',
+  backgroundImage,
   youtubeUrl,
   videoUrl,
+  videoZoom = 100,
   heading,
   subheading,
   description,
+  subheadingColor = 'gold',
+  accentLineStyle = 'gold-red',
   primaryCta,
   secondaryCta,
   sidebarPosition = 'left',
@@ -45,7 +60,7 @@ export function VideoBackgroundBlock({
 }: VideoBackgroundBlockProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isLoaded, setIsLoaded] = useState(false)
-  const [isVideoReady, setIsVideoReady] = useState(false)
+  const [isMediaReady, setIsMediaReady] = useState(false)
 
   useEffect(() => {
     // Purposeful reveal - like ink settling on paper
@@ -54,60 +69,127 @@ export function VideoBackgroundBlock({
   }, [])
 
   useEffect(() => {
-    // Fallback: Show video after 2 seconds if load event doesn't fire (common with YouTube embeds)
-    if (videoSource === 'youtube' && !isVideoReady) {
+    // Fallback: Show media after 2 seconds if load event doesn't fire
+    if ((videoSource === 'youtube' || videoSource === 'image') && !isMediaReady) {
       const fallbackTimer = setTimeout(() => {
-        setIsVideoReady(true)
+        setIsMediaReady(true)
       }, 2000)
       return () => clearTimeout(fallbackTimer)
     }
     return undefined
-  }, [videoSource, isVideoReady])
+  }, [videoSource, isMediaReady])
 
-  const handleVideoReady = () => {
-    setIsVideoReady(true)
+  const handleMediaReady = () => {
+    setIsMediaReady(true)
   }
 
   const sidebarOnLeft = sidebarPosition === 'left'
 
+  // Video/Image zoom (default 100 = no zoom) - using Tailwind JIT class like GrandHero
+  const zoom = videoZoom || 100
+  const videoScaleClass = `scale-[${zoom / 100}]`
+
   // Build optimized YouTube embed URL using shared utility
   const youtubeEmbedUrl = videoSource === 'youtube' ? getYouTubeEmbedUrl(youtubeUrl) : null
 
+  // Check if image background
+  const hasImageBackground = videoSource === 'image' && isMediaObject(backgroundImage)
+
+  // Subheading color mapping
+  const subheadingColorMap = {
+    gold: 'text-kawai-gold/95',
+    red: 'text-kawai-red/95',
+    white: 'text-white/95',
+    pearl: 'text-kawai-pearl/95',
+  }
+  const subheadingColorClass = subheadingColorMap[subheadingColor as keyof typeof subheadingColorMap] || subheadingColorMap.gold
+
+  // Accent line gradient mapping
+  const accentLineGradients = {
+    'gold-red': 'from-kawai-gold/80 via-kawai-red/60 to-transparent',
+    'red-gold': 'from-kawai-red/80 via-kawai-gold/60 to-transparent',
+    'gold': 'from-kawai-gold/80 via-kawai-gold/40 to-transparent',
+    'red': 'from-kawai-red/80 via-kawai-red/40 to-transparent',
+    'white': 'from-white/80 via-white/40 to-transparent',
+    'none': '',
+  }
+  const accentGradient = accentLineGradients[accentLineStyle as keyof typeof accentLineGradients] || accentLineGradients['gold-red']
+  const showAccentLines = accentLineStyle !== 'none'
+
   return (
     <section className="relative h-screen w-full overflow-hidden bg-kawai-charcoal">
-      {/* Background Video */}
+      {/* Background Media */}
       <div className="absolute inset-0">
-        {videoSource === 'youtube' && youtubeEmbedUrl ? (
+        {/* Image Background */}
+        {hasImageBackground && backgroundImage.url && (
+          <div
+            className={cn(
+              "absolute inset-0 transition-opacity duration-[1800ms] ease-out origin-center",
+              videoScaleClass
+            )}
+          >
+            <Image
+              src={backgroundImage.url}
+              alt={backgroundImage.alt || ''}
+              fill
+              className={cn(
+                'object-cover',
+                isMediaReady ? 'opacity-100' : 'opacity-0'
+              )}
+              priority
+              quality={90}
+              sizes="100vw"
+              onLoad={handleMediaReady}
+            />
+          </div>
+        )}
+
+        {/* YouTube Video */}
+        {videoSource === 'youtube' && youtubeEmbedUrl && (
           <div className="relative h-full w-full">
             <iframe
               src={youtubeEmbedUrl}
               className={cn(
                 'absolute left-1/2 top-1/2 h-[56.25vw] min-h-screen w-[177.77vh] min-w-full -translate-x-1/2 -translate-y-1/2 object-cover transition-opacity duration-[1800ms] ease-out',
-                isVideoReady ? 'opacity-100' : 'opacity-0'
+                videoScaleClass
               )}
               allow="autoplay; encrypted-media"
               frameBorder="0"
-              onLoad={handleVideoReady}
+              onLoad={handleMediaReady}
               title="Background video"
             />
             {/* Transparent overlay prevents user interaction with video */}
             <div className="pointer-events-none absolute inset-0 z-10" />
           </div>
-        ) : (
-          <video
-            ref={videoRef}
-            autoPlay
-            loop
-            muted
-            playsInline
-            onLoadedData={handleVideoReady}
+        )}
+
+        {/* Direct Video File */}
+        {videoSource === 'direct' && videoUrl && (
+          <div
             className={cn(
-              'h-full w-full object-cover transition-opacity duration-[1800ms] ease-out',
-              isVideoReady ? 'opacity-100' : 'opacity-0'
+              "absolute inset-0 origin-center",
+              videoScaleClass
             )}
           >
-            {videoUrl && <source src={videoUrl} type="video/mp4" />}
-          </video>
+            <video
+              ref={videoRef}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              webkit-playsinline="true"
+              onLoadedData={handleMediaReady}
+              onCanPlay={handleMediaReady}
+              className={cn(
+                'h-full w-full object-cover transition-opacity duration-[1800ms] ease-out',
+                isMediaReady ? 'opacity-100' : 'opacity-0'
+              )}
+            >
+              <source src={videoUrl} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
         )}
 
         {/* Sumi-e inspired gradient overlay - organic, ink-wash aesthetic */}
@@ -120,7 +202,7 @@ export function VideoBackgroundBlock({
         <div
           className={cn(
             "absolute inset-0 bg-gradient-to-t from-kawai-charcoal/60 via-transparent to-transparent transition-opacity duration-[2000ms]",
-            isVideoReady ? 'opacity-100' : 'opacity-0'
+            isMediaReady ? 'opacity-100' : 'opacity-0'
           )}
         />
       </div>
@@ -191,22 +273,26 @@ export function VideoBackgroundBlock({
             />
 
             {/* Decorative Corner Accent - Asymmetric (wabi-sabi) */}
-            <div
-              className={cn(
-                'absolute h-[1px] bg-gradient-to-r transition-all duration-[1200ms] ease-out delay-300',
-                'from-kawai-gold/80 via-kawai-red/60 to-transparent',
-                isLoaded ? 'w-32 opacity-100' : 'w-0 opacity-0',
-                sidebarOnLeft ? 'left-10 top-10' : 'right-10 top-10'
-              )}
-            />
-            <div
-              className={cn(
-                'absolute w-[1px] bg-gradient-to-b transition-all duration-[1200ms] ease-out delay-500',
-                'from-kawai-gold/80 via-kawai-red/60 to-transparent',
-                isLoaded ? 'h-32 opacity-100' : 'h-0 opacity-0',
-                sidebarOnLeft ? 'left-10 top-10' : 'right-10 top-10'
-              )}
-            />
+            {showAccentLines && (
+              <>
+                <div
+                  className={cn(
+                    'absolute h-[1px] bg-gradient-to-r transition-all duration-[1200ms] ease-out delay-300',
+                    accentGradient,
+                    isLoaded ? 'w-32 opacity-100' : 'w-0 opacity-0',
+                    sidebarOnLeft ? 'left-10 top-10' : 'right-10 top-10'
+                  )}
+                />
+                <div
+                  className={cn(
+                    'absolute w-[1px] bg-gradient-to-b transition-all duration-[1200ms] ease-out delay-500',
+                    accentGradient,
+                    isLoaded ? 'h-32 opacity-100' : 'h-0 opacity-0',
+                    sidebarOnLeft ? 'left-10 top-10' : 'right-10 top-10'
+                  )}
+                />
+              </>
+            )}
 
             {/* Content Wrapper */}
             <div className="relative z-10 space-y-6">
@@ -214,7 +300,8 @@ export function VideoBackgroundBlock({
               {subheading && (
                 <div
                   className={cn(
-                    'font-sans text-[0.6875rem] uppercase tracking-[0.3em] text-kawai-gold/95',
+                    'font-sans text-[0.6875rem] uppercase tracking-[0.3em]',
+                    subheadingColorClass,
                     'transition-all duration-[900ms] ease-out delay-400',
                     isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
                   )}

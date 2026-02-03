@@ -423,13 +423,14 @@ export const Products: CollectionConfig = {
                 'product-showcase',
                 'product-hero',
                 'marketing-hero',
+                'marketing-grand-hero',
                 'textContent',
                 'product-gallery',
                 'product-features',
                 'product-specs',
                 'marketing-cta',
                 'marketing-testimonials'
-              ],
+              ] as any,
               blocks: [], // Required to be empty when using blockReferences
               admin: {
                 description: 'Build your product page content using flexible blocks'

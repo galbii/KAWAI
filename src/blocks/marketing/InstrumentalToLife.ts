@@ -16,12 +16,13 @@ export const InstrumentalToLife: Block = {
   },
   fields: [
     {
-      name: 'heading',
+      name: 'sectionLabel',
       type: 'text',
       required: true,
       defaultValue: 'Instrumental To Life',
       admin: {
-        description: 'Main section heading (default: "Instrumental To Life")',
+        description: 'Small uppercase section label displayed above the main content (e.g., "INSTRUMENTAL TO LIFE", "ARTIST STORIES", "PERFORMANCE SERIES")',
+        placeholder: 'Instrumental To Life',
       },
     },
     {
@@ -29,7 +30,7 @@ export const InstrumentalToLife: Block = {
       type: 'text',
       defaultValue: 'Join Kawai artists exploring a modern take on music, performance, and the piano technology.',
       admin: {
-        description: 'Subheading or tagline displayed below the logo',
+        description: 'Subheading or tagline displayed below the Kawai logo',
         placeholder: 'Join Kawai artists exploring a modern take on music, performance, and the piano technology.',
       },
     },
@@ -124,26 +125,38 @@ export const InstrumentalToLife: Block = {
           },
         },
         {
-          name: 'ctaText',
+          name: 'eyebrowText',
           type: 'text',
+          label: 'Eyebrow Label',
           required: false,
           admin: {
-            description: 'Optional call-to-action button text (e.g., "Learn More", "Explore This Piano")',
+            description: 'Small uppercase text displayed above the video title (e.g., "ARTIST SPOTLIGHT", "BEHIND THE SCENES"). Leave empty to use the global section label.',
+            placeholder: 'Artist Spotlight',
+          },
+        },
+        {
+          name: 'ctaText',
+          type: 'text',
+          label: 'CTA Button Text',
+          required: false,
+          admin: {
+            description: 'Optional call-to-action button text displayed below the video description. Leave empty to hide the button for this video.',
             placeholder: 'Learn More',
           },
         },
         {
           name: 'ctaUrl',
           type: 'text',
+          label: 'CTA Link URL',
           required: false,
           admin: {
-            description: 'CTA button destination URL (e.g., /products/sk-ex, /pianos/grand). Required if CTA text is provided.',
+            description: 'Button destination URL - can be internal (/products/sk-ex) or external (https://example.com). Required when CTA text is provided.',
             placeholder: '/products/sk-ex',
-            condition: (data: any) => Boolean(data?.ctaText),
+            condition: (_, siblingData) => Boolean(siblingData?.ctaText),
           },
-          validate: (value: string | null | undefined, { data }: { data: any }) => {
+          validate: (value: string | null | undefined, { siblingData }: any) => {
             // If CTA text is provided, CTA URL is required
-            if (data?.ctaText && !value) {
+            if (siblingData?.ctaText && !value) {
               return 'CTA URL is required when CTA text is provided'
             }
             return true
@@ -152,29 +165,31 @@ export const InstrumentalToLife: Block = {
         {
           name: 'ctaVariant',
           type: 'select',
+          label: 'CTA Button Style',
           required: false,
           defaultValue: 'default',
           options: [
             { label: 'Primary (Red background)', value: 'default' },
-            { label: 'Secondary (Outline)', value: 'outline' },
+            { label: 'Secondary (White outline)', value: 'outline' },
           ],
           admin: {
-            description: 'CTA button style variant',
-            condition: (data: any) => Boolean(data?.ctaText),
+            description: 'Visual style of the CTA button',
+            condition: (_, siblingData) => Boolean(siblingData?.ctaText),
           },
         },
         {
           name: 'ctaOpenInNewTab',
           type: 'checkbox',
+          label: 'Open Link in New Tab',
           defaultValue: false,
           admin: {
-            description: 'Open CTA link in a new tab (recommended for external links)',
-            condition: (data: any) => Boolean(data?.ctaText),
+            description: 'Check this to open the link in a new browser tab. Recommended for external links to keep users on your site.',
+            condition: (_, siblingData) => Boolean(siblingData?.ctaText),
           },
         },
       ],
       admin: {
-        description: 'Add up to 6 YouTube videos for the carousel. Each video can have its own call-to-action button.',
+        description: 'Add up to 6 YouTube videos. Each video displays separately with its own title, description, and optional call-to-action button.',
       },
     },
     {

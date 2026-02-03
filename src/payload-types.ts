@@ -79,6 +79,7 @@ export interface Config {
     'layout-brand-intro': LayoutBrandIntroBlock;
     'layout-bottom-left-popup': LayoutBottomLeftPopupBlock;
     'marketing-hero': MarketingHeroBlock;
+    'marketing-grand-hero': MarketingGrandHeroBlock;
     'marketing-cta': MarketingCallToActionBlock;
     'marketing-testimonials': MarketingTestimonialsBlock;
     'marketing-i2l': MarketingI2LBlock;
@@ -699,9 +700,13 @@ export interface LayoutHeroCarouselBlock {
  */
 export interface LayoutVideoBackgroundBlock {
   /**
-   * Choose video source type
+   * Choose background media type
    */
-  videoSource: 'youtube' | 'direct';
+  videoSource: 'youtube' | 'direct' | 'image';
+  /**
+   * Background image from media library (recommended: 1920x1080 or higher). Click "Browse Media Library" to select from existing images or upload new ones.
+   */
+  backgroundImage?: (string | null) | Media;
   /**
    * YouTube video URL (e.g., https://youtube.com/watch?v=dQw4w9WgXcQ or https://youtu.be/dQw4w9WgXcQ)
    */
@@ -710,6 +715,10 @@ export interface LayoutVideoBackgroundBlock {
    * Direct URL to MP4 video file (use R2/CDN URL for best performance). Recommended: 1920x1080, H.264 codec, under 10MB.
    */
   videoUrl?: string | null;
+  /**
+   * Video/Image zoom percentage (100 = no zoom, 110 = 10% zoom, 120 = 20% zoom)
+   */
+  videoZoom?: number | null;
   /**
    * Position of the glassmorphism content sidebar
    */
@@ -722,6 +731,14 @@ export interface LayoutVideoBackgroundBlock {
    * Overlay darkness (0 = transparent, 1 = fully dark). Adjust for video brightness/readability.
    */
   overlayOpacity: number;
+  /**
+   * Color of the small uppercase subheading text
+   */
+  subheadingColor?: ('gold' | 'red' | 'white' | 'pearl') | null;
+  /**
+   * Style of decorative corner accent lines
+   */
+  accentLineStyle?: ('gold-red' | 'red-gold' | 'gold' | 'red' | 'white' | 'none') | null;
   /**
    * Small uppercase label above main heading (e.g., "Introducing", "Discover")
    */
@@ -1194,6 +1211,7 @@ export interface Product {
         | ProductShowcaseBlock
         | ProductHeroBlock
         | MarketingHeroBlock
+        | MarketingGrandHeroBlock
         | TextContentBlock
         | ProductImageGalleryBlock
         | ProductFeaturesListBlock
@@ -1491,6 +1509,141 @@ export interface ProductHeroBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'product-hero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingGrandHeroBlock".
+ */
+export interface MarketingGrandHeroBlock {
+  /**
+   * Type of background media
+   */
+  mediaType: 'image' | 'video' | 'none';
+  /**
+   * Background image (recommended: 1920x1080 or higher, landscape orientation)
+   */
+  backgroundImage?: (string | null) | Media;
+  /**
+   * Direct video URL (checked first - e.g., CDN link to MP4 file). If provided, this takes priority over uploaded video.
+   */
+  videoUrl?: string | null;
+  /**
+   * Fallback: Upload video file (used if Video URL is empty). Recommended: MP4, 1920x1080, under 10MB.
+   */
+  backgroundVideo?: (string | null) | Media;
+  /**
+   * Solid background color (used when media type is "None")
+   */
+  backgroundColor?: ('charcoal' | 'pearl' | 'black' | 'white') | null;
+  /**
+   * Enable subtle parallax effect on background (slight movement on scroll)
+   */
+  enableParallax?: boolean | null;
+  /**
+   * Video zoom percentage (100 = no zoom, 110 = 10% zoom, 120 = 20% zoom)
+   */
+  videoZoom?: number | null;
+  /**
+   * Overlay color for better text readability
+   */
+  overlayColor?: ('dark' | 'light' | 'red' | 'none') | null;
+  /**
+   * Overlay opacity (0 = transparent, 1 = fully opaque)
+   */
+  overlayOpacity?: number | null;
+  /**
+   * Small uppercase label above main heading (e.g., "Introducing", "New Arrival")
+   */
+  eyebrow?: string | null;
+  /**
+   * Main headline - displayed in large serif typography (Playfair Display)
+   */
+  heading?: string | null;
+  /**
+   * Optional subheading below main headline
+   */
+  subheading?: string | null;
+  /**
+   * Supporting paragraph (2-3 sentences recommended, max 300 characters)
+   */
+  description?: string | null;
+  /**
+   * Primary call-to-action button (filled Kawai Red style)
+   */
+  primaryCta?: {
+    /**
+     * Primary button text (leave empty to hide)
+     */
+    text?: string | null;
+    /**
+     * Button destination URL
+     */
+    link?: string | null;
+    /**
+     * Open link in new browser tab
+     */
+    openInNewTab?: boolean | null;
+  };
+  /**
+   * Secondary call-to-action button (outline style)
+   */
+  secondaryCta?: {
+    /**
+     * Secondary button text (leave empty to hide)
+     */
+    text?: string | null;
+    /**
+     * Button destination URL
+     */
+    link?: string | null;
+    /**
+     * Open link in new browser tab
+     */
+    openInNewTab?: boolean | null;
+  };
+  /**
+   * Hero section height
+   */
+  height: 'viewport' | 'large' | 'medium' | 'compact';
+  /**
+   * Horizontal alignment of content
+   */
+  contentPosition: 'left' | 'center' | 'right';
+  /**
+   * Vertical alignment of content within hero
+   */
+  verticalAlignment: 'top' | 'center' | 'bottom';
+  /**
+   * Maximum width of content container
+   */
+  contentMaxWidth?: ('small' | 'medium' | 'large' | 'xlarge') | null;
+  /**
+   * Enable glassmorphism card around content (frosted glass effect with grain texture)
+   */
+  enableGlassmorphism?: boolean | null;
+  /**
+   * Show animated scroll indicator at bottom of hero
+   */
+  showScrollIndicator?: boolean | null;
+  /**
+   * Text color (auto detects based on overlay darkness)
+   */
+  textColor?: ('auto' | 'white' | 'black' | 'charcoal') | null;
+  /**
+   * Enable subtle floating particle effect (use sparingly for premium feel)
+   */
+  enableParticles?: boolean | null;
+  /**
+   * Content entrance animation style
+   */
+  animationStyle?: ('fade-up' | 'fade' | 'scale' | 'none') | null;
+  /**
+   * Animation speed
+   */
+  animationDuration?: ('fast' | 'medium' | 'slow') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-grand-hero';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2193,11 +2346,11 @@ export interface MarketingTestimonialsBlock {
  */
 export interface MarketingI2LBlock {
   /**
-   * Main section heading (default: "Instrumental To Life")
+   * Small uppercase section label displayed above the main content (e.g., "INSTRUMENTAL TO LIFE", "ARTIST STORIES", "PERFORMANCE SERIES")
    */
-  heading: string;
+  sectionLabel: string;
   /**
-   * Subheading or tagline displayed below the logo
+   * Subheading or tagline displayed below the Kawai logo
    */
   subheading?: string | null;
   /**
@@ -2205,7 +2358,7 @@ export interface MarketingI2LBlock {
    */
   logo?: (string | null) | Media;
   /**
-   * Add up to 6 YouTube videos for the carousel. Each video can have its own call-to-action button.
+   * Add up to 6 YouTube videos. Each video displays separately with its own title, description, and optional call-to-action button.
    */
   videos: {
     /**
@@ -2233,19 +2386,23 @@ export interface MarketingI2LBlock {
      */
     duration?: string | null;
     /**
-     * Optional call-to-action button text (e.g., "Learn More", "Explore This Piano")
+     * Small uppercase text displayed above the video title (e.g., "ARTIST SPOTLIGHT", "BEHIND THE SCENES"). Leave empty to use the global section label.
+     */
+    eyebrowText?: string | null;
+    /**
+     * Optional call-to-action button text displayed below the video description. Leave empty to hide the button for this video.
      */
     ctaText?: string | null;
     /**
-     * CTA button destination URL (e.g., /products/sk-ex, /pianos/grand). Required if CTA text is provided.
+     * Button destination URL - can be internal (/products/sk-ex) or external (https://example.com). Required when CTA text is provided.
      */
     ctaUrl?: string | null;
     /**
-     * CTA button style variant
+     * Visual style of the CTA button
      */
     ctaVariant?: ('default' | 'outline') | null;
     /**
-     * Open CTA link in a new tab (recommended for external links)
+     * Check this to open the link in a new browser tab. Recommended for external links to keep users on your site.
      */
     ctaOpenInNewTab?: boolean | null;
     id?: string | null;
@@ -2589,7 +2746,7 @@ export interface Post {
   /**
    * Optional: Add promotional content before the article (Hero, Banner, Hero Carousel)
    */
-  headerBlocks?: (MarketingHeroBlock | ContentBannerBlock | LayoutHeroCarouselBlock)[] | null;
+  headerBlocks?: (MarketingHeroBlock | MarketingGrandHeroBlock | ContentBannerBlock | LayoutHeroCarouselBlock)[] | null;
   /**
    * Optional: Add calls-to-action or related content after the article (CTA, Testimonials, Columns)
    */
@@ -2826,6 +2983,7 @@ export interface Page {
     | LayoutVideoBackgroundBlock
     | LayoutBottomLeftPopupBlock
     | MarketingHeroBlock
+    | MarketingGrandHeroBlock
     | MarketingCallToActionBlock
     | MarketingTestimonialsBlock
     | MarketingI2LBlock

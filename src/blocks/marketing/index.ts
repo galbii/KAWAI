@@ -1,4 +1,5 @@
 export { Hero } from './Hero'
+export { GrandHero } from './GrandHero'
 export { CallToAction } from './CallToAction'
 export { Testimonials } from './Testimonials'
 export { InstrumentalToLife } from './InstrumentalToLife'

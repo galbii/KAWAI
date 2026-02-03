@@ -44,6 +44,7 @@ import {
   BottomLeftPopup,
   // Marketing blocks
   Hero,
+  GrandHero,
   CallToAction,
   Testimonials,
   InstrumentalToLife,
@@ -189,6 +190,7 @@ export default buildConfig({
 
     // Marketing blocks
     Hero,
+    GrandHero,
     CallToAction,
     Testimonials,
     InstrumentalToLife,

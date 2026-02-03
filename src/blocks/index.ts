@@ -16,6 +16,7 @@ export { BottomLeftPopup } from './layout/BottomLeftPopup'
 
 // Marketing blocks (conversion-focused)
 export { Hero } from './marketing/Hero'
+export { GrandHero } from './marketing/GrandHero'
 export { CallToAction } from './marketing/CallToAction'
 export { Testimonials } from './marketing/Testimonials'
 export { InstrumentalToLife } from './marketing/InstrumentalToLife'

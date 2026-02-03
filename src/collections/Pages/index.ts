@@ -171,6 +171,7 @@ export const Pages: CollectionConfig<'pages'> = {
 
                 // Marketing blocks - Conversion-focused elements
                 'marketing-hero',
+                'marketing-grand-hero',
                 'marketing-cta',
                 'marketing-testimonials',
                 'marketing-i2l',
@@ -189,7 +190,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 'content',
                 'mediaBlock',
                 'archive',
-              ],
+              ] as any,
               blocks: [], // Required to be empty when using blockReferences
               required: true,
               admin: {

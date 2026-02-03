@@ -179,26 +179,70 @@ Conversion-focused promotional blocks designed to drive user actions.
 | Block | Slug | Purpose | Best For |
 |-------|------|---------|----------|
 | 🎯 Hero | `marketing-hero` | Large hero sections with headlines and CTAs | Page headers, landing page banners |
+| ✨ Grand Hero | `marketing-grand-hero` | Cinematic full-viewport hero with media backgrounds | Premium landing pages, product launches, impactful brand moments |
 | 📣 Call to Action | `marketing-cta` | Prominent CTA buttons/sections | Lead generation, conversions |
 | ⭐ Testimonials | `marketing-testimonials` | Customer testimonials and reviews | Building trust, social proof |
 | 🎹 Instrumental To Life | `marketing-i2l` | Premium YouTube video carousel with Kawai branding | Brand storytelling, product showcases, artist features |
 | 🎬 Technical Showcase | `marketing-technical-showcase` | Alternating video demonstrations and product comparisons | Product launches, technology showcases, detailed feature comparisons |
 | 📍 Find a Dealer | `marketing-find-a-dealer` | Simple, elegant dealer locator CTA | Directing users to find authorized dealers, store locator pages |
 
+**Grand Hero Features:**
+- **Full-viewport cinematic design** with configurable heights (100vh, 90vh, 80vh, 70vh)
+- **Dual media support**: Background images OR videos (MP4/YouTube)
+- **Flexible video sources**: YouTube embeds, direct MP4 URLs (priority), or file upload (fallback)
+- **Media upload field** for CMS-managed backgrounds
+- **Configurable overlay** with color options (dark, light, Kawai red, none) and opacity control
+- **Subtle parallax effect** on background (optional, disabled by default)
+- **Glassmorphism content card** with frosted glass effect and grain texture
+- **Content positioning**: Left, center, or right alignment
+- **Vertical alignment**: Top, center, or bottom positioning
+- **Typography hierarchy**: Eyebrow label, large serif headline (Playfair Display), subheading, description
+- **Dual CTA buttons**: Primary (filled Kawai Red) + Secondary (outline style)
+- **Staggered entrance animations**: Fade + slide up, fade, or scale effects with configurable duration
+- **Animated scroll indicator** with chevron icon
+- **Optional floating particles** for premium atmosphere (use sparingly)
+- **Auto text color detection** based on overlay darkness
+- **Japanese-inspired minimalist aesthetic** with refined elegance
+- **Mobile-responsive** with optimized typography scaling
+- **Accessibility**: Proper ARIA labels, keyboard navigation support
+- **Performance optimized**: Next.js Image for images, native HTML5 video with autoplay/loop/mute
+
+**Grand Hero Design Philosophy:**
+The Grand Hero block embodies "Refined Monumentality" – a marriage of Japanese wabi-sabi minimalism and European luxury. It uses generous negative space, subtle material textures (grain overlays, glassmorphism), and purposeful restraint to create an elegant, memorable first impression. Think Muji meets Steinway Hall.
+
+**Grand Hero Best Practices:**
+- Use high-quality background images (1920x1080 or higher)
+- **For videos**: Supports YouTube URLs (auto-detected), direct MP4 URLs, or file upload
+- YouTube videos are automatically optimized (autoplay, mute, loop, no controls)
+- For direct MP4 files: Keep under 10MB, use H.264 codec
+- Enable glassmorphism for better text readability over busy backgrounds
+- Use parallax sparingly – it works best with static landscape photos
+- Choose overlay opacity based on background brightness (lighter backgrounds = darker overlay)
+- Keep headline text concise (5-10 words maximum for impact)
+- Use particles effect only for premium/luxury contexts
+- Test on mobile to ensure text remains readable
+
 **Instrumental To Life Features:**
 - YouTube video carousel with up to 6 videos
+- **Customizable section label** (the "INSTRUMENTAL TO LIFE" heading above videos)
 - Custom Kawai logo upload or default logo
 - Three layout modes: carousel, 2-column grid, 3-column grid
 - Auto-scroll functionality with configurable duration
 - Category badges (Performance, Craftsmanship, Artist Story, etc.)
 - Video duration display on thumbnails
-- Full-screen modal lightbox for video viewing
+- **Per-video CTA buttons** with customizable text, URL, style, and new tab option
 - Touch/swipe navigation for mobile
 - Keyboard navigation (arrow keys)
 - Light/dark theme options
-- Ken Burns effect on video thumbnails
-- Glassmorphism cards for refined presentation
 - Japanese-inspired minimalist aesthetic
+
+**CTA Configuration:**
+Each video can have its own call-to-action button with:
+- Custom button text (e.g., "Learn More", "Explore This Piano")
+- Internal or external link URL
+- Two style variants: Primary (red background) or Secondary (outline)
+- Option to open in new tab (recommended for external links)
+- Leave CTA text empty to hide the button for specific videos
 
 **Technical Showcase Features:**
 - Alternating video demonstrations and product comparison sections
