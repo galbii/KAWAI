@@ -1029,6 +1029,38 @@ export const Products: CollectionConfig = {
           })
 
         return doc
+      },
+
+      // Hook 3: Sync collections from product data
+      async ({ doc, req, context, operation }) => {
+        // Skip if context flag is set
+        if (context.skipCollectionSync) {
+          return doc
+        }
+
+        // Only sync collections for active products with shopifyCollections data
+        if (doc.status !== 'active' || !doc.shopifyCollections || doc.shopifyCollections.length === 0) {
+          return doc
+        }
+
+        console.log(`[Products Hook] Syncing ${doc.shopifyCollections.length} collections for product: ${doc.name}`)
+
+        // Fire-and-forget pattern - sync collections in background
+        setTimeout(async () => {
+          try {
+            const { upsertCollectionsFromProduct } = await import('@/lib/shopify/sync-collections-from-products')
+            const { getPayload } = await import('payload')
+            const config = await import('@payload-config').then(m => m.default)
+            const payload = await getPayload({ config })
+
+            await upsertCollectionsFromProduct(doc.shopifyCollections, payload)
+            console.log(`[Products Hook] ✅ Collections synced for product: ${doc.name}`)
+          } catch (error) {
+            console.error('[Products Hook] ⚠️ Collection sync failed:', error)
+          }
+        }, 1000) // 1 second delay to ensure product operations complete first
+
+        return doc
       }
     ]
   }

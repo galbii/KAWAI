@@ -44,6 +44,17 @@ export function ThreeDViewerRenderer({
 }: ThreeDViewerRendererProps) {
   const searchParams = useSearchParams()
 
+  // Debug logging
+  console.log('🎹 [3D Viewer] Rendering with config:', {
+    modelId,
+    productName,
+    buttonText,
+    buttonPosition,
+    theme,
+    autoOpen,
+    hideOnMobile: layout?.hideOnMobile,
+  })
+
   // Build viewer configuration
   const viewerConfig: Viewer3DConfig = {
     enabled: true,
@@ -60,37 +71,37 @@ export function ThreeDViewerRenderer({
     searchParams,
   })
 
-  // Theme styles for the button
+  // Theme styles for the button (using !important to override defaults)
   const themeStyles = {
     blue: {
-      bg: 'bg-blue-600 hover:bg-blue-700',
-      text: 'text-white',
-      ring: 'focus:ring-blue-500',
+      bg: '!bg-blue-600 hover:!bg-blue-700',
+      text: '!text-white',
+      ring: '!focus:ring-blue-500',
     },
     'kawai-red': {
-      bg: 'bg-kawai-red hover:bg-kawai-red/90',
-      text: 'text-white',
-      ring: 'focus:ring-kawai-red',
+      bg: '!bg-kawai-red hover:!bg-kawai-red/90',
+      text: '!text-white',
+      ring: '!focus:ring-kawai-red',
     },
     black: {
-      bg: 'bg-kawai-charcoal hover:bg-kawai-black',
-      text: 'text-white',
-      ring: 'focus:ring-kawai-charcoal',
+      bg: '!bg-kawai-charcoal hover:!bg-kawai-black',
+      text: '!text-white',
+      ring: '!focus:ring-kawai-charcoal',
     },
     gold: {
-      bg: 'bg-kawai-gold hover:bg-kawai-gold/90',
-      text: 'text-kawai-charcoal',
-      ring: 'focus:ring-kawai-gold',
+      bg: '!bg-kawai-gold hover:!bg-kawai-gold/90',
+      text: '!text-kawai-charcoal',
+      ring: '!focus:ring-kawai-gold',
     },
   }
 
   const currentTheme = themeStyles[theme as keyof typeof themeStyles] || themeStyles.blue
 
-  // Button position classes
+  // Button position classes (using !important to override default positioning)
   const positionClasses = {
-    'bottom-left': 'bottom-5 left-5',
-    'bottom-right': 'bottom-5 right-5',
-    'bottom-center': 'bottom-5 left-1/2 -translate-x-1/2',
+    'bottom-left': '!bottom-5 !left-5 !right-auto !translate-x-0',
+    'bottom-right': '!bottom-5 !right-5 !left-auto !translate-x-0',
+    'bottom-center': '!bottom-5 !left-1/2 !right-auto !-translate-x-1/2',
   }
 
   const currentPosition =
@@ -152,12 +163,13 @@ export function ThreeDViewerRenderer({
         productName={productName || modelId}
         visible={true}
         className={cn(
-          // Remove default positioning, apply custom
-          '!bottom-auto !left-auto',
+          // Override positioning
           currentPosition,
+          // Override theme colors
           currentTheme.bg,
           currentTheme.text,
           currentTheme.ring,
+          // Mobile visibility
           mobileClasses
         )}
       />

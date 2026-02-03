@@ -20,6 +20,7 @@ import { PianosPage } from './collections/PianosPage'
 import { HomePage } from './collections/HomePage'
 import { Storefronts } from './collections/Storefronts'
 import { Products } from './collections/Products'
+import { Collections } from './collections/Collections'
 import { Posts } from './collections/Posts'
 import { Categories } from './collections/Categories'
 import { Artists } from './collections/Artists'
@@ -163,6 +164,7 @@ export default buildConfig({
 
     // Commerce Collections
     Products,
+    Collections,
 
     // Business Collections
     Dealers,

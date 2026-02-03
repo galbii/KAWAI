@@ -213,6 +213,16 @@ export {
 export type { ShopifyDataUpdate } from './sync-to-payload'
 
 // ============================================================================
+// Collections Sync Exports
+// ============================================================================
+
+export {
+  upsertCollectionsFromProduct,
+  updateCollectionProductCounts,
+  recalculateAllCollectionCounts,
+} from './sync-collections-from-products'
+
+// ============================================================================
 // Cart Utility Exports
 // ============================================================================
 

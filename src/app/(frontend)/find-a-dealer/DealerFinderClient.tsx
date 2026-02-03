@@ -9,6 +9,7 @@ import { FilterPanel } from './components/FilterPanel'
 import { MobileViewToggle } from './components/MobileViewToggle'
 import { DealerTypeFilter } from './components/DealerTypeFilter'
 import { VideoHero } from './components/VideoHero'
+import { DealerFinderMobile } from './components/DealerFinderMobile'
 import { cn } from '@/lib/utils'
 import { MapPin, SlidersHorizontal } from 'lucide-react'
 
@@ -135,8 +136,11 @@ export function DealerFinderClient({ dealers }: Props) {
         rel="stylesheet"
       />
 
-      {/* Page content */}
-      <div className="min-h-screen bg-white" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
+      {/* Mobile View - Shows below lg breakpoint */}
+      <DealerFinderMobile dealers={dealers} />
+
+      {/* Desktop View - Shows at lg breakpoint and above */}
+      <div className="hidden lg:block min-h-screen bg-white" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
         {/* Hero Section with Video Background - First */}
         <VideoHero
           youtubeVideoId="VrveoooxIno"

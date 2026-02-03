@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import type { Dealer } from '@/payload-types'
-import { MapPin, Phone, ExternalLink, ChevronDown, Star, Piano, Briefcase, ArrowRight, Info } from 'lucide-react'
+import { MapPin, Phone, ExternalLink, Star, Piano, Briefcase, ArrowRight, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface DealerWithDistance extends Dealer {
@@ -35,7 +35,10 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
           ? "border-kawai-charcoal shadow-lg"
           : "border-gray-200 hover:border-gray-300 hover:shadow-md"
       )}
-      onClick={onSelect}
+      onClick={() => {
+        onSelect()
+        setIsExpanded(!isExpanded)
+      }}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
@@ -118,20 +121,6 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
             <span className="hidden sm:inline">View Details</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
           </Link>
-
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              setIsExpanded(!isExpanded)
-            }}
-            className="flex items-center justify-center w-10 h-10 text-gray-600 hover:text-kawai-charcoal hover:bg-gray-50 rounded-lg transition-colors border border-gray-200"
-            aria-label={isExpanded ? "Show less" : "Show more"}
-          >
-            <ChevronDown
-              className={cn("w-5 h-5 transition-transform duration-200", isExpanded && "rotate-180")}
-              strokeWidth={2}
-            />
-          </button>
         </div>
       </div>
 

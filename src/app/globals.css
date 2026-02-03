@@ -543,3 +543,22 @@ body {
 .animate-scroll-bounce {
   animation: scroll-bounce 2s ease-in-out infinite;
 }
+
+/* ============================================================ */
+/* UTILITY CLASSES */
+/* ============================================================ */
+
+/* Hide scrollbar for horizontal scroll containers */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari, Opera */
+}
+
+/* Safe area inset support for mobile */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
