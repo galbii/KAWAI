@@ -110,6 +110,7 @@ export interface Config {
     categories: Category;
     artists: Artist;
     products: Product;
+    collections: Collection;
     dealers: Dealer;
     'constant-contact-settings': ConstantContactSetting;
     'constant-contact-custom-fields': ConstantContactCustomField;
@@ -139,6 +140,7 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     artists: ArtistsSelect<false> | ArtistsSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
+    collections: CollectionsSelect<false> | CollectionsSelect<true>;
     dealers: DealersSelect<false> | DealersSelect<true>;
     'constant-contact-settings': ConstantContactSettingsSelect<false> | ConstantContactSettingsSelect<true>;
     'constant-contact-custom-fields': ConstantContactCustomFieldsSelect<false> | ConstantContactCustomFieldsSelect<true>;
@@ -4494,6 +4496,58 @@ export interface Artist {
   createdAt: string;
 }
 /**
+ * Product collections automatically synced from Shopify
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections".
+ */
+export interface Collection {
+  id: string;
+  /**
+   * Shopify Collection ID (gid://shopify/Collection/...)
+   */
+  shopifyCollectionId: string;
+  /**
+   * Collection title (synced from Shopify)
+   */
+  title: string;
+  /**
+   * Collection handle/slug (synced from Shopify)
+   */
+  handle: string;
+  /**
+   * Collection description (synced from Shopify)
+   */
+  description?: string | null;
+  /**
+   * Collection image URL (synced from Shopify)
+   */
+  imageUrl?: string | null;
+  /**
+   * Number of active products in this collection (auto-calculated)
+   */
+  productCount?: number | null;
+  /**
+   * Shopify synchronization metadata
+   */
+  shopify?: {
+    /**
+     * Sync status with Shopify
+     */
+    syncStatus?: ('synced' | 'error') | null;
+    /**
+     * Last sync timestamp
+     */
+    lastSyncedAt?: string | null;
+    /**
+     * Collection type in Shopify
+     */
+    collectionType?: ('custom' | 'smart') | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Manage authorized Kawai piano dealers with location, contact information, and service details for the dealer finder map.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -5052,6 +5106,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'products';
         value: string | Product;
+      } | null)
+    | ({
+        relationTo: 'collections';
+        value: string | Collection;
       } | null)
     | ({
         relationTo: 'dealers';
@@ -6004,6 +6062,27 @@ export interface ProductsSelect<T extends boolean = true> {
             };
         autoSync?: T;
         shopifyStatus?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections_select".
+ */
+export interface CollectionsSelect<T extends boolean = true> {
+  shopifyCollectionId?: T;
+  title?: T;
+  handle?: T;
+  description?: T;
+  imageUrl?: T;
+  productCount?: T;
+  shopify?:
+    | T
+    | {
+        syncStatus?: T;
+        lastSyncedAt?: T;
+        collectionType?: T;
       };
   updatedAt?: T;
   createdAt?: T;

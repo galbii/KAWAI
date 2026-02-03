@@ -53,6 +53,9 @@ export function ThreeDViewerRenderer({
     theme,
     autoOpen,
     hideOnMobile: layout?.hideOnMobile,
+    zIndex: 9999,
+    mobileBottomSpacing: '80px (bottom-20)',
+    desktopBottomSpacing: '20px (bottom-5)',
   })
 
   // Build viewer configuration
@@ -97,11 +100,13 @@ export function ThreeDViewerRenderer({
 
   const currentTheme = themeStyles[theme as keyof typeof themeStyles] || themeStyles.blue
 
-  // Button position classes (using !important to override default positioning)
+  // Button position classes with mobile-optimized spacing
+  // On mobile: bottom-20 (80px) to clear browser chrome and mobile search bars
+  // On desktop: bottom-5 (20px) standard spacing
   const positionClasses = {
-    'bottom-left': '!bottom-5 !left-5 !right-auto !translate-x-0',
-    'bottom-right': '!bottom-5 !right-5 !left-auto !translate-x-0',
-    'bottom-center': '!bottom-5 !left-1/2 !right-auto !-translate-x-1/2',
+    'bottom-left': '!bottom-20 md:!bottom-5 !left-5 !right-auto !translate-x-0',
+    'bottom-right': '!bottom-20 md:!bottom-5 !right-5 !left-auto !translate-x-0',
+    'bottom-center': '!bottom-20 md:!bottom-5 !left-1/2 !right-auto !-translate-x-1/2',
   }
 
   const currentPosition =
@@ -109,6 +114,9 @@ export function ThreeDViewerRenderer({
 
   // Hide on mobile if specified
   const mobileClasses = layout?.hideOnMobile ? 'hidden md:block' : ''
+
+  // High z-index to appear above mobile UI elements
+  const zIndexClass = '!z-[9999]'
 
   // Context section alignment
   const contextPositionMap = {
@@ -163,7 +171,9 @@ export function ThreeDViewerRenderer({
         productName={productName || modelId}
         visible={true}
         className={cn(
-          // Override positioning
+          // High z-index for mobile (above browser UI)
+          zIndexClass,
+          // Override positioning (mobile-optimized)
           currentPosition,
           // Override theme colors
           currentTheme.bg,
