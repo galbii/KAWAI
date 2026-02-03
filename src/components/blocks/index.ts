@@ -31,6 +31,8 @@ export { CallToActionBlock } from './CallToActionBlock'
 export { TestimonialsBlock } from './TestimonialsBlock'
 export { InstrumentalToLifeBlock } from './InstrumentalToLifeBlock'
 export { TechnicalShowcaseBlock } from './TechnicalShowcaseBlock'
+export { FindADealerBlock } from './FindADealerBlock'
+export { ThreeDViewerBlock } from './ThreeDViewerBlock'
 
 // Product Blocks - Product-specific showcases
 export { ProductShowcaseBlock } from './ProductShowcaseBlock'

@@ -9,8 +9,7 @@ import { getOptimizedImageProps } from '@/lib/media/r2-utils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect, createElement } from 'react'
-import { useRouter } from 'next/navigation'
-import { ShoppingCart, Heart, Share2, CheckCircle, Sparkles, Clock, Play, Volume2, ChevronDown, ArrowLeft } from 'lucide-react'
+import { ShoppingCart, Heart, Share2, CheckCircle, Sparkles, Clock, Play, Volume2, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   Dialog,
@@ -55,7 +54,6 @@ export function ProductHeroBlock({
   const defaultVariation = availableVariations.length > 0 ? 0 : -1
   const [selectedVariation, setSelectedVariation] = useState(defaultVariation)
   const [isFavorited, setIsFavorited] = useState(false)
-  const router = useRouter()
 
   // Helper function to truncate description
   const truncateDescription = (text: string, wordLimit: number = 25) => {
@@ -308,25 +306,7 @@ export function ProductHeroBlock({
       {backgroundColor !== 'black' && (
         <div className="absolute inset-0 bg-gradient-to-b from-stone-50/30 via-white to-stone-50/30" />
       )}
-      
-      {/* Back Button - Fixed/Sticky Floating Position (Below Header) */}
-      <div className="fixed top-[110px] lg:top-[160px] left-12 z-40 pointer-events-auto">
-        <button
-          onClick={() => router.back()}
-          className={cn(
-            "flex items-center gap-2",
-            "text-kawai-red hover:text-red-600",
-            "underline underline-offset-4 decoration-2",
-            "transition-colors duration-200",
-            "bg-transparent border-0 p-0"
-          )}
-          aria-label="Go back to previous page"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="text-lg font-medium">Back</span>
-        </button>
-      </div>
-      
+
       {/* Main Content Container */}
       <div className="container mx-auto px-6 lg:px-12 xl:px-16 relative z-10 pt-30 pb-12 lg:pt-48 lg:pb-20">
         

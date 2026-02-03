@@ -185,6 +185,7 @@ Conversion-focused promotional blocks designed to drive user actions.
 | 🎹 Instrumental To Life | `marketing-i2l` | Premium YouTube video carousel with Kawai branding | Brand storytelling, product showcases, artist features |
 | 🎬 Technical Showcase | `marketing-technical-showcase` | Alternating video demonstrations and product comparisons | Product launches, technology showcases, detailed feature comparisons |
 | 📍 Find a Dealer | `marketing-find-a-dealer` | Simple, elegant dealer locator CTA | Directing users to find authorized dealers, store locator pages |
+| 🎹 3D Model Viewer | `marketing-3d-viewer` | Interactive 3D piano model viewer with floating button | Product pages, piano showcase pages, immersive product experiences |
 
 **Grand Hero Features:**
 - **Full-viewport cinematic design** with configurable heights (100vh, 90vh, 80vh, 70vh)
@@ -272,6 +273,43 @@ Each video can have its own call-to-action button with:
 - Mobile-optimized responsive layout
 - Perfect for footer sections or dedicated dealer pages
 
+**3D Model Viewer Features:**
+- **Interactive 3D piano models** with server-side proxy for seamless embedding
+- **Floating action button** with customizable position (bottom-left, bottom-right, bottom-center)
+- **Customizable button text** and color themes (Blue, Kawai Red, Black, Gold)
+- **Auto-open capability** via URL parameter (?mode=3d) for direct linking
+- **Optional context section** to provide instructions or description
+- **Multiple display modes**: Above button, below button, or separate section
+- **Mobile control** with option to hide on mobile devices
+- **Scroll indicator** option for top-of-page placement
+- **GTM tracking integration** for analytics on viewer opens/closes
+- **Keyboard shortcuts** (V to toggle, Escape to close)
+- **Full-screen modal experience** with smooth Framer Motion animations
+- **Error handling** with graceful fallback UI
+- **Body scroll lock** during modal viewing
+- **Accessibility-friendly** with ARIA labels and screen reader support
+- **Performance optimized** with aggressive caching (15min HTML, 1yr assets)
+- **Easy model selection** via model ID (ca901, gl-10, gx-7, sk-ex, etc.)
+
+**3D Viewer Configuration:**
+- Model ID: Required field specifying which piano model to display
+- Product Name: Optional display name for analytics tracking
+- Button Text: Customizable call-to-action text (default: "View in 3D")
+- Button Position: Choose from bottom-left, bottom-right, or bottom-center
+- Theme: Four color options (Blue, Kawai Red, Black, Gold)
+- Auto-Open: Enable ?mode=3d URL parameter functionality
+- Context Section: Optional text section with heading and description
+- Hide on Mobile: Option to disable on mobile devices
+- Scroll Indicator: Optional animated chevron for page guidance
+
+**3D Viewer Best Practices:**
+- Use clear, action-oriented button text (e.g., "Explore the CA901 in 3D")
+- Enable auto-open for marketing campaigns with direct links
+- Add context section for first-time users who may not understand the feature
+- Choose button position that doesn't obscure important content
+- Test on mobile devices to ensure good performance
+- Use product name field for better analytics tracking
+
 **Where to use:**
 - Landing pages
 - Post header/footer areas (promotional content)
@@ -283,6 +321,9 @@ Each video can have its own call-to-action button with:
 - Product launch pages with video + specs
 - Technology showcase pages (e.g., Grand Feel III Action)
 - Piano series comparison pages
+- **Product detail pages** (for 3D viewer block)
+- **Piano showcase pages** (for 3D viewer block)
+- **Model-specific landing pages** (for 3D viewer block)
 
 **Example usage in Posts:**
 ```typescript

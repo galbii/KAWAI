@@ -177,6 +177,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 'marketing-i2l',
                 'marketing-technical-showcase',
                 'marketing-find-a-dealer',
+                'marketing-3d-viewer',
 
                 // Product blocks - Product showcases and details
                 'product-showcase',

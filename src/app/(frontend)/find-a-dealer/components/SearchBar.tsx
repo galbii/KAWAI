@@ -1,17 +1,14 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { Search, MapPin, SlidersHorizontal } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Search, MapPin } from 'lucide-react'
 import { useMapsLibrary } from '@vis.gl/react-google-maps'
 
 interface Props {
   onLocationSearch: (location: { lat: number; lng: number }, address: string) => void
-  onFilterToggle: () => void
-  activeFiltersCount: number
 }
 
-export function SearchBar({ onLocationSearch, onFilterToggle, activeFiltersCount }: Props) {
+export function SearchBar({ onLocationSearch }: Props) {
   const [searchInput, setSearchInput] = useState('')
   const [autocompleteService, setAutocompleteService] = useState<google.maps.places.AutocompleteService | null>(null)
   const [geocoder, setGeocoder] = useState<google.maps.Geocoder | null>(null)
@@ -117,52 +114,22 @@ export function SearchBar({ onLocationSearch, onFilterToggle, activeFiltersCount
 
   return (
     <div className="relative">
-      <div className="flex items-center gap-3">
-        {/* Search Input */}
-        <div className="flex-1 relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            value={searchInput}
-            onChange={(e) => handleInputChange(e.target.value)}
-            placeholder="Enter city, state, or ZIP code"
-            className="w-full pl-12 pr-32 py-3 rounded-lg border border-gray-300 focus:border-kawai-red focus:ring-2 focus:ring-kawai-red/20 outline-none transition-colors text-black placeholder:text-gray-400"
-          />
-          <button
-            onClick={handleUseMyLocation}
-            className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 text-sm text-kawai-red hover:bg-kawai-red/10 rounded-md transition-colors flex items-center gap-1"
-          >
-            <MapPin className="w-4 h-4" />
-            <span className="hidden sm:inline">Use My Location</span>
-          </button>
-        </div>
-
-        {/* Filter Toggle Button */}
-        <Button
-          onClick={onFilterToggle}
-          variant="outline"
-          className="hidden md:flex items-center gap-2 px-4 py-3 h-auto border-black text-black hover:bg-gray-100"
-        >
-          <SlidersHorizontal className="w-5 h-5" />
-          Filters
-          {activeFiltersCount > 0 && (
-            <span className="ml-1 px-2 py-0.5 text-xs bg-kawai-red text-white rounded-full">
-              {activeFiltersCount}
-            </span>
-          )}
-        </Button>
-
-        {/* Mobile Filter Button */}
+      {/* Search Input */}
+      <div className="relative">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" strokeWidth={2} />
+        <input
+          type="text"
+          value={searchInput}
+          onChange={(e) => handleInputChange(e.target.value)}
+          placeholder="Enter city, state, or ZIP code"
+          className="w-full pl-12 pr-36 py-3.5 rounded-xl border-2 border-gray-200 focus:border-kawai-charcoal focus:ring-4 focus:ring-kawai-charcoal/5 outline-none transition-all text-gray-900 placeholder:text-gray-400 font-medium"
+        />
         <button
-          onClick={onFilterToggle}
-          className="md:hidden p-3 border border-black rounded-lg hover:bg-gray-100 transition-colors relative"
+          onClick={handleUseMyLocation}
+          className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1.5 text-sm font-medium text-kawai-red hover:bg-kawai-red/5 rounded-lg transition-colors flex items-center gap-1.5"
         >
-          <SlidersHorizontal className="w-5 h-5 text-black" />
-          {activeFiltersCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center text-xs bg-kawai-red text-white rounded-full">
-              {activeFiltersCount}
-            </span>
-          )}
+          <MapPin className="w-4 h-4" strokeWidth={2} />
+          <span className="hidden sm:inline">Use My Location</span>
         </button>
       </div>
 

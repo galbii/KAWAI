@@ -8,3 +8,4 @@ export {
   videoField,
   responsiveImageGroup,
 } from './media'
+export { shopifyMediaField } from './shopify-media-field'

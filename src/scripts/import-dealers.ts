@@ -173,6 +173,7 @@ async function importDealers() {
         const dealerData = {
           dealerName,
           slug: generateSlug(dealerName, csvDealer.City),
+          dealerType: ['acoustic-digital'] as ('professional-products' | 'acoustic-digital')[], // Default dealer type
           isActive: csvDealer.Published === 'Yes',
           isFeatured: false,
 
@@ -222,6 +223,7 @@ async function importDealers() {
           collection: 'dealers',
           data: dealerData,
           overrideAccess: true, // Skip access control for seed script
+          draft: false, // Publish immediately
         })
 
         successCount++

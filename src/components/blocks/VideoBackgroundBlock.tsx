@@ -61,6 +61,14 @@ export function VideoBackgroundBlock({
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isLoaded, setIsLoaded] = useState(false)
   const [isMediaReady, setIsMediaReady] = useState(false)
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
+
+  // Configuration for description truncation
+  const DESCRIPTION_CHAR_LIMIT = 150
+  const shouldTruncateDescription = description && description.length > DESCRIPTION_CHAR_LIMIT
+  const displayedDescription = shouldTruncateDescription && !isDescriptionExpanded
+    ? `${description.slice(0, DESCRIPTION_CHAR_LIMIT)}...`
+    : description
 
   useEffect(() => {
     // Purposeful reveal - like ink settling on paper
@@ -333,21 +341,57 @@ export function VideoBackgroundBlock({
                 </h2>
               )}
 
-              {/* Description - Refined readability */}
+              {/* Description - Refined readability with Read More */}
               {description && (
-                <p
+                <div
                   className={cn(
-                    'max-w-md font-sans leading-[1.75] text-white/85',
-                    'text-base md:text-lg',
+                    'max-w-md space-y-3',
                     'transition-all duration-[900ms] ease-out delay-700',
                     isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
                   )}
-                  style={{
-                    textShadow: '0 1px 8px rgba(0, 0, 0, 0.2)'
-                  }}
                 >
-                  {description}
-                </p>
+                  <p
+                    className="font-sans leading-[1.75] text-white/85 text-base md:text-lg"
+                    style={{
+                      textShadow: '0 1px 8px rgba(0, 0, 0, 0.2)'
+                    }}
+                  >
+                    {displayedDescription}
+                  </p>
+
+                  {/* Read More / Show Less Button */}
+                  {shouldTruncateDescription && (
+                    <button
+                      onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                      className={cn(
+                        'inline-flex items-center gap-1.5',
+                        'text-xs font-medium uppercase tracking-[0.12em]',
+                        'text-kawai-gold/90 hover:text-kawai-gold',
+                        'transition-colors duration-300',
+                        'focus:outline-none focus:ring-2 focus:ring-kawai-gold/30 focus:ring-offset-2 focus:ring-offset-transparent rounded-sm'
+                      )}
+                      aria-expanded={isDescriptionExpanded}
+                    >
+                      <span>{isDescriptionExpanded ? 'Show Less' : 'Read More'}</span>
+                      <svg
+                        className={cn(
+                          'h-3 w-3 transition-transform duration-300',
+                          isDescriptionExpanded && 'rotate-180'
+                        )}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2.5}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               )}
 
               {/* CTA Buttons - Refined interaction design */}

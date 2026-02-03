@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { ProductTypeNav } from '@/lib/shopify'
+import type { ProductTypeNav } from '@/lib/payload/products-navigation'
 
 // ============================================================================
 // Types

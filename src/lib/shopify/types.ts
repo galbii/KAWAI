@@ -985,3 +985,60 @@ export class CartError extends Error {
 export type Result<T, E = ShopifyError> =
   | { success: true; data: T }
   | { success: false; error: E }
+
+// ============================================================================
+// Media Types (Re-exports from media-types.ts)
+// ============================================================================
+
+export type {
+  // Media type enums
+  MediaContentType,
+  MediaStatus,
+  FileStatus,
+  MediaHost,
+
+  // Error types
+  MediaError,
+  MediaWarning,
+  FileError,
+
+  // Common interfaces
+  MediaPreviewImage,
+  BaseMedia,
+
+  // MediaImage types
+  MediaImageOriginalSource,
+  MediaImageData,
+  MediaImage,
+
+  // Video types
+  VideoSource,
+  Video,
+
+  // Model3d types
+  Model3dSource,
+  Model3dBoundingBox,
+  Model3d,
+
+  // ExternalVideo type
+  ExternalVideo,
+
+  // Union type
+  Media,
+
+  // GraphQL response types
+  ProductMediaConnection,
+  ProductWithMedia,
+  ProductMediaQueryVariables,
+  ProductMediaQueryResponse,
+} from './media-types'
+
+export {
+  // Type guard functions
+  isMediaImage,
+  isVideo,
+  isModel3d,
+  isExternalVideo,
+  isMediaReady,
+  hasMediaErrors,
+} from './media-types'

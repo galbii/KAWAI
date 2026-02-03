@@ -85,6 +85,7 @@ export interface Config {
     'marketing-i2l': MarketingI2LBlock;
     'marketing-technical-showcase': MarketingTechnicalShowcaseBlock;
     'marketing-find-a-dealer': MarketingFindADealerBlock;
+    'marketing-3d-viewer': Marketing3DViewerBlock;
     'product-showcase': ProductShowcaseBlock;
     'product-hero': ProductHeroBlock;
     'product-gallery': ProductImageGalleryBlock;
@@ -1129,6 +1130,126 @@ export interface Product {
    * Product image URL (synced from Shopify)
    */
   imageUrl?: string | null;
+  /**
+   * Media items synced from Shopify (images, videos, 3D models, external videos) - Auto-populated from Shopify Admin API
+   */
+  shopifyMedia?:
+    | {
+        /**
+         * Type of media (synced from Shopify)
+         */
+        mediaType: 'IMAGE' | 'VIDEO' | 'MODEL_3D' | 'EXTERNAL_VIDEO';
+        /**
+         * Shopify Media ID (gid://shopify/MediaImage/... or Video/... etc.)
+         */
+        shopifyMediaId: string;
+        /**
+         * Media processing status from Shopify
+         */
+        status?: ('READY' | 'PROCESSING' | 'UPLOADED' | 'FAILED') | null;
+        /**
+         * Display order position (0 = first)
+         */
+        position?: number | null;
+        /**
+         * Alt text for accessibility (synced from Shopify)
+         */
+        alt?: string | null;
+        /**
+         * Shopify CDN image URL
+         */
+        imageUrl?: string | null;
+        /**
+         * Image width in pixels
+         */
+        imageWidth?: number | null;
+        /**
+         * Image height in pixels
+         */
+        imageHeight?: number | null;
+        /**
+         * MIME type (e.g., image/png, image/jpeg)
+         */
+        mimeType?: string | null;
+        /**
+         * Video filename
+         */
+        videoFilename?: string | null;
+        /**
+         * Shopify-hosted video URL
+         */
+        videoUrl?: string | null;
+        /**
+         * Video duration in milliseconds
+         */
+        duration?: number | null;
+        /**
+         * Video format (e.g., mp4)
+         */
+        videoFormat?: string | null;
+        /**
+         * Video MIME type (e.g., video/mp4)
+         */
+        videoMimeType?: string | null;
+        /**
+         * Video width in pixels
+         */
+        videoWidth?: number | null;
+        /**
+         * Video height in pixels
+         */
+        videoHeight?: number | null;
+        /**
+         * Video thumbnail/preview image URL
+         */
+        thumbnailUrl?: string | null;
+        /**
+         * 3D model filename
+         */
+        model3dFilename?: string | null;
+        /**
+         * GLB format URL (for web 3D viewers)
+         */
+        model3dUrlGlb?: string | null;
+        /**
+         * USDZ format URL (for iOS AR)
+         */
+        model3dUrlUsdz?: string | null;
+        /**
+         * 3D model dimensions (bounding box)
+         */
+        model3dBoundingBox?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        /**
+         * Embed URL for YouTube/Vimeo player
+         */
+        embedUrl?: string | null;
+        /**
+         * Original video URL
+         */
+        originUrl?: string | null;
+        /**
+         * Video hosting platform
+         */
+        host?: ('YOUTUBE' | 'VIMEO') | null;
+        /**
+         * When this media was created in Shopify
+         */
+        createdAt?: string | null;
+        /**
+         * When this media was last updated in Shopify
+         */
+        updatedAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Product variations from Shopify (variants with pricing, inventory, and options)
    */
@@ -2574,6 +2695,73 @@ export interface MarketingFindADealerBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "Marketing3DViewerBlock".
+ */
+export interface Marketing3DViewerBlock {
+  /**
+   * Piano model ID for the 3D viewer (e.g., "ca901", "gl-10", "gx-7", "sk-ex"). This identifies which piano model to display.
+   */
+  modelId: string;
+  /**
+   * Optional: Display name for analytics tracking (e.g., "CA901 Digital Piano"). If not provided, the model ID will be used.
+   */
+  productName?: string | null;
+  /**
+   * Text displayed on the floating 3D viewer button
+   */
+  buttonText?: string | null;
+  /**
+   * Position of the floating 3D viewer button on the page
+   */
+  buttonPosition?: ('bottom-left' | 'bottom-right' | 'bottom-center') | null;
+  /**
+   * Button color theme
+   */
+  theme?: ('blue' | 'kawai-red' | 'black' | 'gold') | null;
+  /**
+   * Allow ?mode=3d URL parameter to automatically open the 3D viewer when the page loads
+   */
+  autoOpen?: boolean | null;
+  /**
+   * Optional context section to explain the 3D viewer feature
+   */
+  contextSection?: {
+    /**
+     * Show a text section near the 3D viewer button to provide context or instructions
+     */
+    showContext?: boolean | null;
+    /**
+     * Heading text for the context section
+     */
+    heading?: string | null;
+    /**
+     * Description text explaining the 3D viewer feature
+     */
+    description?: string | null;
+    /**
+     * Where to display the context section relative to the button
+     */
+    contextPosition?: ('above' | 'below' | 'separate') | null;
+  };
+  /**
+   * Layout and display options
+   */
+  layout?: {
+    /**
+     * Hide the 3D viewer button on mobile devices (some 3D models may not perform well on mobile)
+     */
+    hideOnMobile?: boolean | null;
+    /**
+     * Show a subtle scroll indicator if this block is placed at the top of the page
+     */
+    showScrollIndicator?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-3d-viewer';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "HelloBlock".
  */
 export interface HelloBlock {
@@ -2989,6 +3177,7 @@ export interface Page {
     | MarketingI2LBlock
     | MarketingTechnicalShowcaseBlock
     | MarketingFindADealerBlock
+    | Marketing3DViewerBlock
     | ProductShowcaseBlock
     | ProductHeroBlock
     | ProductImageGalleryBlock
@@ -4385,6 +4574,10 @@ export interface Dealer {
     longitude: number;
   };
   /**
+   * Select the type(s) of products this dealer carries. Dealers can carry both types.
+   */
+  dealerType: ('professional-products' | 'acoustic-digital')[];
+  /**
    * Brief description of the dealer (displayed in dealer finder results)
    */
   description?: string | null;
@@ -5714,6 +5907,37 @@ export interface ProductsSelect<T extends boolean = true> {
         currency?: T;
       };
   imageUrl?: T;
+  shopifyMedia?:
+    | T
+    | {
+        mediaType?: T;
+        shopifyMediaId?: T;
+        status?: T;
+        position?: T;
+        alt?: T;
+        imageUrl?: T;
+        imageWidth?: T;
+        imageHeight?: T;
+        mimeType?: T;
+        videoFilename?: T;
+        videoUrl?: T;
+        duration?: T;
+        videoFormat?: T;
+        videoMimeType?: T;
+        videoWidth?: T;
+        videoHeight?: T;
+        thumbnailUrl?: T;
+        model3dFilename?: T;
+        model3dUrlGlb?: T;
+        model3dUrlUsdz?: T;
+        model3dBoundingBox?: T;
+        embedUrl?: T;
+        originUrl?: T;
+        host?: T;
+        createdAt?: T;
+        updatedAt?: T;
+        id?: T;
+      };
   variations?:
     | T
     | {
@@ -5816,6 +6040,7 @@ export interface DealersSelect<T extends boolean = true> {
         latitude?: T;
         longitude?: T;
       };
+  dealerType?: T;
   description?: T;
   hours?:
     | T

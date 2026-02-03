@@ -3,14 +3,15 @@ import { fetchShopifyProduct } from '@/lib/shopify/fetch-product'
 import { syncShopifyDataToProduct, shouldSyncProduct, mapShopifyProductTypeToPayloadType } from '@/lib/shopify/sync-to-payload'
 import { fetchAllShopifyProductsWithModels } from '@/lib/shopify/fetch-all-products'
 import type { ShopifyProductData } from '@/lib/shopify/fetch-product'
-import { imageField } from '@/lib/payload/fields'
+import { imageField, shopifyMediaField } from '@/lib/payload/fields'
+import { getProductMedia, transformMediaToPayload, getPrimaryImageUrl } from '@/lib/shopify'
 
 /**
  * Transform Shopify product data to Payload CMS product format
  *
  * Maps Shopify fields to Payload fields for bulk import/update operations.
  */
-function transformShopifyToPayload(shopifyProduct: ShopifyProductData): any {
+async function transformShopifyToPayload(shopifyProduct: ShopifyProductData): Promise<any> {
   const model = shopifyProduct.metafields?.model || ''
 
   // Strip HTML from description
@@ -66,6 +67,27 @@ function transformShopifyToPayload(shopifyProduct: ShopifyProductData): any {
     handle: collection.handle,
   })) || []
 
+  // Fetch all media from Shopify Admin API
+  let shopifyMedia: any[] = []
+  let primaryImageUrl = shopifyProduct.featuredImage?.url || null
+
+  try {
+    // Type assertion: shopifyProduct.id is already a Shopify GID string
+    const media = await getProductMedia(shopifyProduct.id as `gid://shopify/${string}/${string}`)
+    shopifyMedia = transformMediaToPayload(media)
+
+    // Get primary image from media array (backwards compatibility)
+    const primaryFromMedia = getPrimaryImageUrl(shopifyMedia)
+    if (primaryFromMedia) {
+      primaryImageUrl = primaryFromMedia
+    }
+
+    console.log(`[Sync] Fetched ${shopifyMedia.length} media items for ${shopifyProduct.title}`)
+  } catch (error) {
+    console.error('[Sync] Failed to fetch product media:', error)
+    // Continue with sync even if media fetch fails
+  }
+
   return {
     model,
     name: shopifyProduct.title,
@@ -78,7 +100,8 @@ function transformShopifyToPayload(shopifyProduct: ShopifyProductData): any {
     category: (shopifyProduct as any).category?.name || null,
     // Collections from Shopify
     shopifyCollections,
-    imageUrl: shopifyProduct.featuredImage?.url || null,
+    shopifyMedia, // ✅ New field with all media from Shopify
+    imageUrl: primaryImageUrl, // ✅ Updated to use media array or fallback
     price: {
       msrp: parseFloat(shopifyProduct.price.min) || null,
       currency: (shopifyProduct.price.currency as 'USD' | 'EUR' | 'GBP' | 'CAD') || 'USD',
@@ -266,6 +289,9 @@ export const Products: CollectionConfig = {
                 readOnly: true
               }
             },
+
+            // Shopify Media Array
+            shopifyMediaField(),
 
             // Variations array (Shopify product variants)
             {
@@ -768,7 +794,7 @@ export const Products: CollectionConfig = {
               const existing = productsByModel.get(normalizedModel)
 
               // Transform Shopify data to Payload format
-              const productData = transformShopifyToPayload(shopifyProduct)
+              const productData = await transformShopifyToPayload(shopifyProduct)
 
               if (existing) {
                 // UPDATE existing product
@@ -864,7 +890,7 @@ export const Products: CollectionConfig = {
                 imagePosition: 'left',
                 backgroundColor: 'pearl',
                 showVariations: true,
-                showPrice: true,
+                showPrice: false, // Match ProductHero block defaultValue
                 showBuyButton: true
               },
               overrides: {} // Empty overrides - will use product data
@@ -887,6 +913,35 @@ export const Products: CollectionConfig = {
       }
     ],
     afterChange: [
+      // Hook 1: Revalidate products navigation cache
+      async ({ doc, req, context, operation }) => {
+        // Skip if context flag is set (prevents infinite loops)
+        if (context.skipNavigationRevalidation) {
+          return doc
+        }
+
+        // Only revalidate for active products with type field
+        // This ensures the navigation menu stays up-to-date
+        if (doc.status === 'active' && doc.type) {
+          console.log('[Products Hook] Revalidating products navigation cache for:', doc.model || doc.name)
+
+          try {
+            // Dynamically import revalidateTag to avoid edge runtime issues
+            const { revalidateTag } = await import('next/cache')
+
+            // Revalidate navigation cache tag
+            revalidateTag('products-navigation')
+            console.log('[Products Hook] ✅ Navigation cache revalidated')
+          } catch (error) {
+            // Log error but don't throw - cache revalidation failure shouldn't block saves
+            console.error('[Products Hook] ⚠️ Navigation revalidation failed:', error)
+          }
+        }
+
+        return doc
+      },
+
+      // Hook 2: Shopify sync (existing)
       async ({ doc, req, context, operation }) => {
         // Prevent infinite loop - skip if already syncing
         if (context.skipShopifySync) {

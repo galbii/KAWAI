@@ -289,6 +289,61 @@ export {
 export type { ProductTypeNav, ProductsNavigation } from './navigation'
 
 // ============================================================================
+// Product Media Exports (Admin API)
+// ============================================================================
+
+export {
+  // Main media functions
+  getProductMedia,
+  getProductMediaByType,
+  getProductImages,
+  getProductVideos,
+  getProduct3DModels,
+
+  // Utility functions
+  getProductPrimaryImage,
+  hasProductMediaType,
+  countMediaByType,
+  groupMediaByType,
+  extractMediaUrls,
+
+  // Type guards (re-exported from media.ts for convenience)
+  isMediaImage,
+  isVideo,
+  isModel3d,
+  isExternalVideo,
+  isMediaReady,
+} from './media'
+
+export {
+  // GraphQL queries
+  MEDIA_FRAGMENT,
+  GET_PRODUCT_WITH_MEDIA,
+  GET_PRODUCT_MEDIA_FILTERED,
+  GET_PRODUCT_IMAGES,
+  GET_PRODUCT_VIDEOS,
+  GET_PRODUCT_3D_MODELS,
+} from './media-queries'
+
+// Media types already exported from types.ts (re-exported from media-types.ts)
+// - MediaContentType, MediaStatus, FileStatus, MediaHost
+// - MediaError, MediaWarning, FileError
+// - MediaImage, Video, Model3d, ExternalVideo, Media
+// - Type guard functions (isMediaImage, isVideo, etc.)
+
+// ============================================================================
+// Media to Payload Transformation Exports
+// ============================================================================
+
+export {
+  transformMediaToPayload,
+  getPrimaryImageUrl,
+  filterMediaByType,
+} from './transform-media-to-payload'
+
+export type { PayloadShopifyMedia } from './transform-media-to-payload'
+
+// ============================================================================
 // Re-exports from utils (for convenience)
 // ============================================================================
 

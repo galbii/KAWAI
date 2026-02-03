@@ -1,36 +1,42 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { X } from 'lucide-react'
+import { X, Piano, Briefcase } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { Dealer } from '@/payload-types'
 import { cn } from '@/lib/utils'
 
+type DealerType = 'all' | 'professional-products' | 'acoustic-digital'
+
 interface Props {
   isOpen: boolean
   onClose: () => void
+  selectedDealerTypes: string[]
   selectedServices: string[]
   selectedRadius: number
-  onFilterChange: (services: string[], radius: number) => void
+  onFilterChange: (dealerTypes: string[], services: string[], radius: number) => void
   dealers: Dealer[]
 }
 
 export function FilterPanel({
   isOpen,
   onClose,
+  selectedDealerTypes,
   selectedServices,
   selectedRadius,
   onFilterChange,
   dealers
 }: Props) {
+  const [tempDealerTypes, setTempDealerTypes] = useState<string[]>(selectedDealerTypes)
   const [tempServices, setTempServices] = useState<string[]>(selectedServices)
   const [tempRadius, setTempRadius] = useState(selectedRadius)
 
   // Update temp state when props change
   useEffect(() => {
+    setTempDealerTypes(selectedDealerTypes)
     setTempServices(selectedServices)
     setTempRadius(selectedRadius)
-  }, [selectedServices, selectedRadius])
+  }, [selectedDealerTypes, selectedServices, selectedRadius])
 
   // Get all unique service tags from dealers
   const availableServices = useMemo(() => {
@@ -48,6 +54,14 @@ export function FilterPanel({
       .sort((a, b) => a.service.localeCompare(b.service))
   }, [dealers])
 
+  const handleDealerTypeToggle = (type: string) => {
+    setTempDealerTypes(prev =>
+      prev.includes(type)
+        ? prev.filter(t => t !== type)
+        : [...prev, type]
+    )
+  }
+
   const handleServiceToggle = (service: string) => {
     setTempServices(prev =>
       prev.includes(service)
@@ -57,11 +71,12 @@ export function FilterPanel({
   }
 
   const handleApply = () => {
-    onFilterChange(tempServices, tempRadius)
+    onFilterChange(tempDealerTypes, tempServices, tempRadius)
     onClose()
   }
 
   const handleClearAll = () => {
+    setTempDealerTypes([])
     setTempServices([])
     setTempRadius(25)
   }
@@ -98,6 +113,58 @@ export function FilterPanel({
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            {/* Dealer Type Filter */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">
+                Dealer Type
+              </h3>
+              <div className="space-y-2">
+                <label className="flex items-center gap-3 cursor-pointer group p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={tempDealerTypes.includes('acoustic-digital')}
+                    onChange={() => handleDealerTypeToggle('acoustic-digital')}
+                    className="w-4 h-4 rounded text-kawai-charcoal focus:ring-kawai-charcoal cursor-pointer"
+                  />
+                  <div className="flex items-center gap-2 flex-1">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-kawai-charcoal/10">
+                      <Piano className="w-4 h-4 text-kawai-charcoal" strokeWidth={2.5} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm font-medium text-gray-700 group-hover:text-kawai-charcoal">
+                        Acoustic & Digital Pianos
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Grand, upright & home pianos
+                      </div>
+                    </div>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer group p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={tempDealerTypes.includes('professional-products')}
+                    onChange={() => handleDealerTypeToggle('professional-products')}
+                    className="w-4 h-4 rounded text-kawai-red focus:ring-kawai-red cursor-pointer"
+                  />
+                  <div className="flex items-center gap-2 flex-1">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-kawai-red/10">
+                      <Briefcase className="w-4 h-4 text-kawai-red" strokeWidth={2.5} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm font-medium text-gray-700 group-hover:text-kawai-charcoal">
+                        Professional Products
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Stage pianos, keyboards & pro gear
+                      </div>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
             {/* Search Radius */}
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-3">

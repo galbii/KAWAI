@@ -16,8 +16,8 @@ import { SearchBar } from '@/components/search/SearchBar'
 import { cn } from '@/lib/utils'
 import { useNavigationContext } from '@/contexts/NavigationContext'
 import { getContextAwareUrl } from '@/lib/navigation-utils'
-import { fetchProductsNavigation } from '@/lib/actions/shopify-navigation'
-import type { ProductsNavigation } from '@/lib/shopify'
+import { fetchPayloadProductsNavigation } from '@/lib/actions/payload-products-navigation'
+import type { ProductsNavigation } from '@/lib/payload/products-navigation'
 
 interface NavigationItem {
   label: string
@@ -509,9 +509,9 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   useEffect(() => {
     const loadProductsNav = async () => {
       try {
-        const navData = await fetchProductsNavigation()
+        const navData = await fetchPayloadProductsNavigation()
         setProductsNavData(navData)
-        console.log('[Header] Products navigation loaded:', {
+        console.log('[Header] Products navigation loaded from Payload:', {
           types: navData.types.length,
           totalProducts: navData.totalProducts,
           timestamp: new Date().toISOString()
@@ -524,12 +524,13 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     // Initial load
     loadProductsNav()
 
-    // Refresh every 2 minutes (120000ms) to sync with Shopify changes
-    // This ensures navigation stays fresh even without webhooks
+    // OPTIMIZATION: Reduced refresh interval since we have cache revalidation hooks
+    // Refresh every 10 minutes as a fallback check
+    // The cache is automatically revalidated when products change in Payload
     const refreshInterval = setInterval(() => {
-      console.log('[Header] Refreshing products navigation...')
+      console.log('[Header] Refreshing products navigation (fallback check)...')
       loadProductsNav()
-    }, 2 * 60 * 1000) // 2 minutes
+    }, 10 * 60 * 1000) // 10 minutes
 
     // Cleanup interval on unmount
     return () => {

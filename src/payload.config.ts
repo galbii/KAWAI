@@ -50,6 +50,7 @@ import {
   InstrumentalToLife,
   TechnicalShowcase,
   FindADealer,
+  ThreeDViewer,
   // Product blocks
   ProductShowcase,
   ProductHero,
@@ -196,6 +197,7 @@ export default buildConfig({
     InstrumentalToLife,
     TechnicalShowcase,
     FindADealer,
+    ThreeDViewer,
 
     // Product blocks (for product pages)
     ProductShowcase,

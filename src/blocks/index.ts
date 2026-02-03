@@ -22,6 +22,7 @@ export { Testimonials } from './marketing/Testimonials'
 export { InstrumentalToLife } from './marketing/InstrumentalToLife'
 export { TechnicalShowcase } from './marketing/TechnicalShowcase'
 export { FindADealer } from './marketing/FindADealer'
+export { ThreeDViewer } from './marketing/ThreeDViewer'
 
 // Product blocks (product pages)
 export { ProductShowcase } from './product/ProductShowcase'

@@ -209,6 +209,22 @@ export const Dealers: CollectionConfig = {
           description: 'Operating hours, services, and additional information',
           fields: [
             {
+              name: 'dealerType',
+              type: 'select',
+              hasMany: true,
+              required: true,
+              options: [
+                { label: 'Professional Products', value: 'professional-products' },
+                { label: 'Acoustic and Digital Pianos', value: 'acoustic-digital' },
+              ],
+              defaultValue: ['acoustic-digital'],
+              admin: {
+                description: 'Select the type(s) of products this dealer carries. Dealers can carry both types.',
+                isClearable: false,
+              }
+            },
+
+            {
               name: 'description',
               type: 'textarea',
               admin: {
