@@ -342,16 +342,12 @@ export function ProductHeroBlock({
       <div className="container mx-auto px-6 lg:px-12 xl:px-16 relative z-10 pt-30 pb-12 lg:pt-48 lg:pb-20">
 
         <div className={cn(
-          "grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 w-full",
+          "grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-x-12 lg:gap-y-6 w-full",
           imagePosition === 'right' ? 'lg:grid-flow-col-reverse' : ''
         )}>
 
-          {/* Left Column Container - Single grid item on desktop, reorders children on mobile */}
-          <div className="contents lg:block lg:col-span-5 lg:col-start-1 lg:space-y-6 lg:row-span-2">
-            <div className="contents lg:block lg:space-y-6">
-
           {/* Part 1: Brand + Title */}
-          <div className="space-y-6 lg:space-y-8 order-1">
+          <div className="space-y-6 lg:space-y-8 order-1 lg:col-span-5 lg:col-start-1">
 
             {/* KAWAI Brand Badge */}
             <div className="flex items-center space-x-4 opacity-90">
@@ -381,7 +377,7 @@ export function ProductHeroBlock({
           </div>
 
           {/* Image Section - Row 2 on mobile, Right column on desktop */}
-          <div className="order-2 lg:col-span-7 lg:col-start-6 lg:row-start-1 lg:row-span-2 relative space-y-8">
+          <div className="order-2 lg:order-none lg:col-span-7 lg:col-start-6 lg:row-start-1 lg:row-span-2 relative space-y-8">
             {displayImage && (
               <div className="relative">
 
@@ -569,7 +565,7 @@ export function ProductHeroBlock({
           </div>
 
           {/* Part 2: Model + Variations + Buttons */}
-          <div className="space-y-6 lg:space-y-8 order-3">
+          <div className="space-y-6 lg:space-y-8 order-3 lg:col-span-5 lg:col-start-1">
 
             {/* Model Display */}
             {modelDisplay && (
@@ -793,8 +789,6 @@ export function ProductHeroBlock({
                 )}
               </div>
             )}
-          </div>
-            </div>
           </div>
         </div>
 
