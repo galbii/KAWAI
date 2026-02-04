@@ -53,9 +53,10 @@ export function ThreeDViewerRenderer({
     theme,
     autoOpen,
     hideOnMobile: layout?.hideOnMobile,
-    zIndex: 9999,
+    zIndex: 10004,
     mobileBottomSpacing: '80px (bottom-20)',
     desktopBottomSpacing: '20px (bottom-5)',
+    note: 'z-index above search bar (10003)',
   })
 
   // Build viewer configuration
@@ -115,8 +116,8 @@ export function ThreeDViewerRenderer({
   // Hide on mobile if specified
   const mobileClasses = layout?.hideOnMobile ? 'hidden md:block' : ''
 
-  // High z-index to appear above mobile UI elements
-  const zIndexClass = '!z-[9999]'
+  // High z-index to appear above mobile UI elements and search bar
+  const zIndexClass = '!z-[10004]'
 
   // Context section alignment
   const contextPositionMap = {
