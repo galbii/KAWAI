@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { imageField } from '@/lib/payload/fields/media'
 
 export const BottomLeftPopup: Block = {
   slug: 'layout-bottom-left-popup',
@@ -27,12 +28,29 @@ export const BottomLeftPopup: Block = {
         condition: (data: any) => data.enabled !== false,
       },
       fields: [
-        {
-          name: 'icon',
-          type: 'upload',
-          relationTo: 'media',
+        imageField('icon', {
           admin: {
             description: 'Optional icon/image (recommended: 48x48px - 64x64px)',
+          },
+        }),
+        imageField('featuredImage', {
+          admin: {
+            description: 'Optional featured image (displays prominently in popup)',
+          },
+        }),
+        {
+          name: 'featuredImageHeight',
+          type: 'select',
+          defaultValue: 'medium',
+          options: [
+            { label: 'Small (160px)', value: 'small' },
+            { label: 'Medium (240px)', value: 'medium' },
+            { label: 'Large (320px)', value: 'large' },
+            { label: 'Tall (400px)', value: 'tall' },
+          ],
+          admin: {
+            description: 'Featured image height (only applies if image is selected)',
+            condition: (data: any, siblingData: any) => Boolean(siblingData?.featuredImage),
           },
         },
         {

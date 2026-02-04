@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { RebateModelsScroll } from './RebateModelsScroll'
 
 export function RebateHero() {
   return (
@@ -43,9 +44,12 @@ export function RebateHero() {
             <span className="font-normal text-kawai-red">Event</span>
           </h1>
 
-          <p className="text-xl md:text-2xl text-kawai-charcoal/60 font-light max-w-2xl mx-auto leading-relaxed">
-            Save up to <span className="text-kawai-charcoal font-normal">$2,500</span> on select professional pianos
+          <p className="text-xl md:text-2xl text-kawai-charcoal/60 font-light max-w-2xl mx-auto leading-relaxed mb-8">
+            Save up to <span className="text-kawai-charcoal font-normal">$5,000</span> on select professional pianos
           </p>
+
+          {/* Scrolling Models */}
+          <RebateModelsScroll />
         </motion.div>
 
         {/* Simple divider */}

@@ -29,6 +29,8 @@ function useIsMobile() {
 interface BottomLeftPopupBlockProps {
   enabled?: boolean | null
   icon?: string | Media | null
+  featuredImage?: string | Media | null
+  featuredImageHeight?: 'small' | 'medium' | 'large' | 'tall' | null
   title?: string | null
   message?: string | null
   ctaText?: string | null
@@ -68,6 +70,8 @@ const DEFAULT_STORAGE_KEY = 'kawai-bottom-popup-shown'
 export function BottomLeftPopupBlock({
   enabled = true,
   icon,
+  featuredImage,
+  featuredImageHeight = 'medium',
   title = 'Announcement',
   message = 'Explore our latest collection...',
   ctaText,
@@ -163,6 +167,24 @@ export function BottomLeftPopupBlock({
 
   // Get icon URL
   const iconUrl = typeof icon === 'object' && icon !== null && 'url' in icon ? icon.url : null
+
+  // Get featured image URL and alt text
+  const featuredImageUrl =
+    typeof featuredImage === 'object' && featuredImage !== null && 'url' in featuredImage
+      ? featuredImage.url
+      : null
+  const featuredImageAlt =
+    typeof featuredImage === 'object' && featuredImage !== null && 'alt' in featuredImage
+      ? featuredImage.alt
+      : ''
+
+  // Featured image height classes
+  const imageHeightClasses = {
+    small: 'h-40',    // 160px
+    medium: 'h-60',   // 240px
+    large: 'h-80',    // 320px
+    tall: 'h-[400px]', // 400px
+  }
 
   // Size classes - mobile uses responsive widths, desktop uses fixed
   const sizeClasses = {
@@ -400,14 +422,30 @@ export function BottomLeftPopupBlock({
           {/* Subtle inner glow */}
           <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/5 to-transparent" />
 
+          {/* Featured Image */}
+          {featuredImageUrl && (
+            <div className="relative -mx-5 -mt-5 mb-4 overflow-hidden rounded-t-2xl">
+              <Image
+                src={featuredImageUrl}
+                alt={featuredImageAlt || title || 'Featured image'}
+                width={420}
+                height={400}
+                className={cn('w-full object-cover', imageHeightClasses[featuredImageHeight ?? 'medium'])}
+                priority
+              />
+              {/* Gradient overlay for better text readability */}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+            </div>
+          )}
+
           {/* Dismiss button */}
           {dismissible && (
             <button
               onClick={handleDismiss}
               className={cn(
                 'absolute right-3 top-3 rounded-lg p-1.5 transition-all duration-200',
-                'hover:bg-black/5 focus:outline-none focus:ring-2 focus:ring-neutral-400/50',
-                currentTheme.subtext,
+                'hover:bg-black/5 focus:outline-none focus:ring-2 focus:ring-white/50',
+                'text-white',
                 'hover:rotate-90'
               )}
               aria-label="Dismiss notification"

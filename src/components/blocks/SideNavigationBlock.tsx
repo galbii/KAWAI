@@ -12,6 +12,7 @@ interface NavSection {
 
 interface SectionLabel {
   label: string
+  icon?: 'auto' | 'circle' | 'square' | 'triangle' | 'diamond' | 'piano' | 'sparkles' | 'target' | 'pin' | 'star'
 }
 
 interface SideNavigationBlockProps {
@@ -19,6 +20,7 @@ interface SideNavigationBlockProps {
   sectionLabels?: SectionLabel[] | null
   title?: string | null
   position?: 'left' | 'right' | null
+  zoom?: number | null
   theme?: 'light' | 'dark' | 'red' | 'gold' | null
   mobileStyle?: 'bottom-bar' | 'hamburger' | 'hidden' | null
   mobileLabel?: string | null
@@ -49,6 +51,7 @@ export function SideNavigationBlock({
   sectionLabels = [],
   title = 'Navigation',
   position = 'right',
+  zoom = 100,
   theme = 'light',
   mobileStyle = 'hamburger',
   mobileLabel = 'Menu',
@@ -78,6 +81,8 @@ export function SideNavigationBlock({
           'layout-spacer',
           'layout-divider',
           'layout-bottom-left-popup',
+          'layout-brand-intro',
+          'marketing-3d-viewer',
         ]
 
         if (excludedTypes.includes(block.blockType)) {
@@ -85,10 +90,16 @@ export function SideNavigationBlock({
         }
 
         // Use custom label if provided at this index, otherwise auto-generate
-        const customLabel = sectionLabels?.[navigableBlockIndex]?.label
-        const label = customLabel || extractBlockLabel(block, navigableBlockIndex)
+        const sectionLabel = sectionLabels?.[navigableBlockIndex]
+        const label = sectionLabel?.label || extractBlockLabel(block, navigableBlockIndex)
         const targetId = `block-${block.id}`
-        const icon = getBlockIcon(block.blockType)
+
+        // Use custom icon if provided and not 'auto', otherwise auto-generate
+        const autoIcon = getBlockIcon(block.blockType)
+        const icon: NavSection['icon'] =
+          sectionLabel?.icon && sectionLabel.icon !== 'auto'
+            ? sectionLabel.icon
+            : autoIcon
 
         navigableBlockIndex++
         return { label, targetId, icon } as NavSection
@@ -186,6 +197,7 @@ export function SideNavigationBlock({
 
   const baseClass = themeClasses[theme || 'light']
   const activeClass = activeClasses[theme || 'light']
+  const zoomScale = (zoom || 100) / 100
 
   // Desktop Navigation
   const DesktopNav = (
@@ -201,6 +213,7 @@ export function SideNavigationBlock({
         ${position === 'right' ? 'right-6' : 'left-6'}
         hidden lg:block
       `}
+      style={{ transform: `translateY(-50%) scale(${zoomScale})`, transformOrigin: 'center' }}
       aria-label="Page navigation"
     >
       <div
@@ -308,6 +321,7 @@ export function SideNavigationBlock({
       }}
       transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
       className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 lg:hidden"
+      style={{ transform: `translateX(-50%) scale(${zoomScale})`, transformOrigin: 'center bottom' }}
       aria-label="Mobile page navigation"
     >
       <div
@@ -366,6 +380,7 @@ export function SideNavigationBlock({
           rounded-full p-3
           shadow-lg
         `}
+        style={{ transform: `scale(${zoomScale})`, transformOrigin: 'bottom right' }}
         aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
         aria-expanded={isMobileMenuOpen}
       >

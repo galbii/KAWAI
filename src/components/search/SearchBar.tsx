@@ -270,16 +270,29 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     return 'Result'
   }
 
-  // Filter results by category
-  const filteredResults = results.filter(result => {
-    if (categoryFilter === 'all') return true
-    return result.doc.relationTo === categoryFilter
-  })
+  // Filter results by category - memoized to prevent recalculation on every render
+  const filteredResults = useMemo(() => {
+    return results.filter(result => {
+      if (categoryFilter === 'all') return true
+      return result.doc.relationTo === categoryFilter
+    })
+  }, [results, categoryFilter])
 
-  // Separate storefronts, products, and pages
-  const storefrontResults = filteredResults.filter(r => r.doc.relationTo === 'storefronts')
-  const productResults = filteredResults.filter(r => r.doc.relationTo === 'products')
-  const pageResults = filteredResults.filter(r => r.doc.relationTo === 'pages')
+  // Separate storefronts, products, and pages - memoized
+  const storefrontResults = useMemo(() =>
+    filteredResults.filter(r => r.doc.relationTo === 'storefronts'),
+    [filteredResults]
+  )
+
+  const productResults = useMemo(() =>
+    filteredResults.filter(r => r.doc.relationTo === 'products'),
+    [filteredResults]
+  )
+
+  const pageResults = useMemo(() =>
+    filteredResults.filter(r => r.doc.relationTo === 'pages'),
+    [filteredResults]
+  )
 
   // Group products dynamically by their category field (simple and flexible)
   const productsByCategory = useMemo(() => {
@@ -296,16 +309,12 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
       return acc
     }, {} as Record<string, SearchResult[]>)
 
-    console.log('🗂️ Products grouped by category:', Object.keys(grouped).map(k => `${k} (${grouped[k]?.length ?? 0})`))
     return grouped
   }, [productResults])
 
   // Get available categories dynamically (whatever exists in the data)
   const availableCategories = useMemo(() => {
-    const categories = Object.keys(productsByCategory)
-    console.log('Available categories:', categories)
-    console.log('Products by category:', categories.map(key => `${key}: ${productsByCategory[key]?.length ?? 0}`))
-    return categories
+    return Object.keys(productsByCategory)
   }, [productsByCategory])
 
   // Auto-generate label from category name (capitalize words)
@@ -345,8 +354,6 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     // If no category is selected but we have available categories, show the first one's products
     const categoryToShow = selectedProductCategory || availableCategories[0]
     const products = categoryToShow ? productsByCategory[categoryToShow] || [] : []
-
-    console.log(`📍 Selected category: "${categoryToShow}" → ${products.length} products`)
 
     return products
   }, [selectedProductCategory, productsByCategory, availableCategories])

@@ -42,6 +42,18 @@ export const SideNavigation: Block = {
       },
     },
     {
+      name: 'zoom',
+      type: 'number',
+      defaultValue: 100,
+      min: 50,
+      max: 200,
+      admin: {
+        description: 'Zoom level (50-200%). Default is 100%. Higher values make the navigation larger.',
+        condition: (data: any) => data.enabled !== false,
+        step: 5,
+      },
+    },
+    {
       name: 'theme',
       type: 'select',
       defaultValue: 'light',
@@ -62,7 +74,7 @@ export const SideNavigation: Block = {
       minRows: 0,
       maxRows: 20,
       admin: {
-        description: '✏️ Optional: Custom labels for navigation items. Enter labels in order they appear on the page. Leave empty to use auto-generated names. Example: "Overview", "Features", "Gallery"',
+        description: '✏️ Optional: Custom labels and icons for navigation items. Enter in order they appear on the page. Leave empty to use auto-generated names.',
         condition: (data: any) => data.enabled !== false,
         initCollapsed: true,
       },
@@ -74,6 +86,26 @@ export const SideNavigation: Block = {
           admin: {
             description: 'Navigation label (e.g., "Overview", "Key Features", "Technical Specs")',
             placeholder: 'Section name',
+          },
+        },
+        {
+          name: 'icon',
+          type: 'select',
+          options: [
+            { label: 'Auto (based on block type)', value: 'auto' },
+            { label: '● Circle', value: 'circle' },
+            { label: '■ Square', value: 'square' },
+            { label: '▲ Triangle', value: 'triangle' },
+            { label: '◆ Diamond', value: 'diamond' },
+            { label: '🎹 Piano', value: 'piano' },
+            { label: '✨ Sparkles', value: 'sparkles' },
+            { label: '🎯 Target', value: 'target' },
+            { label: '📍 Pin', value: 'pin' },
+            { label: '⭐ Star', value: 'star' },
+          ],
+          defaultValue: 'auto',
+          admin: {
+            description: 'Optional: Override the auto-assigned icon for this section',
           },
         },
       ],

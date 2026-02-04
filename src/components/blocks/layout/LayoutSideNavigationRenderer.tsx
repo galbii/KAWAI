@@ -6,6 +6,7 @@ import { SideNavigationBlock } from '../SideNavigationBlock'
 // Temporary type until payload-types.ts is regenerated
 interface SectionLabel {
   label: string
+  icon?: 'auto' | 'circle' | 'square' | 'triangle' | 'diamond' | 'piano' | 'sparkles' | 'target' | 'pin' | 'star'
 }
 
 interface LayoutSideNavigationRendererProps {
@@ -13,6 +14,7 @@ interface LayoutSideNavigationRendererProps {
   sectionLabels?: SectionLabel[] | null
   title?: string | null
   position?: 'left' | 'right' | null
+  zoom?: number | null
   theme?: 'light' | 'dark' | 'red' | 'gold' | null
   mobileStyle?: 'bottom-bar' | 'hamburger' | 'hidden' | null
   mobileLabel?: string | null

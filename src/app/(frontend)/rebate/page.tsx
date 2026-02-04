@@ -6,9 +6,9 @@ import { RebateCTA } from './components/RebateCTA'
 
 export const metadata: Metadata = {
   title: 'Instant Rebate Event | Premium Piano Savings | KAWAI',
-  description: 'Save up to $2,500 on select KAWAI piano models. Limited-time instant rebates on professional uprights and grand pianos. Explore premium instruments with exceptional savings.',
+  description: 'Save up to $5,000 on select KAWAI piano models. Limited-time instant rebates on professional uprights and grand pianos. Explore premium instruments with exceptional savings.',
   openGraph: {
-    title: 'Instant Rebate Event | Save Up To $2,500 | KAWAI',
+    title: 'Instant Rebate Event | Save Up To $5,000 | KAWAI',
     description: 'Exclusive savings on KAWAI ATX4, Aures2, and Grand Piano models. Limited-time instant rebates available now.',
   }
 }
@@ -19,7 +19,7 @@ const rebateModels = [
   {
     model: 'K15EP ATX3',
     slug: 'k-15-ep-atx3',
-    rebate: 500,
+    rebate: 1000,
     category: 'Professional Upright',
     description: 'Entry-level professional upright with ATX3 hybrid technology',
     features: ['ATX3 Silent System', 'Millennium III Action', '88-Key Hammer Action']
@@ -27,7 +27,7 @@ const rebateModels = [
   {
     model: 'K200EP ATX4',
     slug: 'k-200-ep-atx4',
-    rebate: 750,
+    rebate: 1500,
     category: 'Professional Upright',
     description: 'Premium upright piano with advanced ATX4 silent system',
     features: ['ATX4 Silent System', 'Extended Soundboard', 'Premium Hammers']
@@ -35,7 +35,7 @@ const rebateModels = [
   {
     model: 'K300EP Aures2',
     slug: 'k-300-ep-aures2',
-    rebate: 1000,
+    rebate: 2000,
     category: 'Professional Upright',
     description: 'Flagship upright with Aures2 hybrid technology',
     features: ['Aures2 Technology', 'Extended Soundboard', 'Ultra-responsive Action']
@@ -43,7 +43,7 @@ const rebateModels = [
   {
     model: 'K500EP Aures2',
     slug: 'k-500-ep-aures2',
-    rebate: 1500,
+    rebate: 3000,
     category: 'Professional Upright',
     description: 'Ultimate professional upright with Aures2 hybrid system',
     features: ['Aures2 Technology', 'Mahogany Rim Construction', 'Concert-grade Performance']
@@ -51,7 +51,7 @@ const rebateModels = [
   {
     model: 'GL10EP ATX4',
     slug: 'gl-10-ep-atx4',
-    rebate: 2000,
+    rebate: 4000,
     category: 'Baby Grand',
     description: 'Compact grand piano with ATX4 silent technology',
     features: ['ATX4 Silent System', "5'0\" Grand Piano", 'Full Concert Sound']
@@ -59,7 +59,7 @@ const rebateModels = [
   {
     model: 'GL30EP Aures2',
     slug: 'gl-30-ep-aures2',
-    rebate: 2500,
+    rebate: 5000,
     category: 'Grand Piano',
     description: 'Professional grand piano with premium Aures2 technology',
     features: ['Aures2 Technology', "5'11\" Grand Piano", 'Premium Soundboard']
@@ -67,7 +67,7 @@ const rebateModels = [
   {
     model: 'GX2EP Aures2',
     slug: 'gx-2-ep-aures2',
-    rebate: 2500,
+    rebate: 5000,
     category: 'Grand Piano',
     description: 'Professional GX Series grand with Aures2 hybrid system',
     features: ['Aures2 Technology', 'GX Series Excellence', 'Professional Performance']

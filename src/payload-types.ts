@@ -869,6 +869,14 @@ export interface LayoutBottomLeftPopupBlock {
    */
   icon?: (string | null) | Media;
   /**
+   * Optional featured image (displays prominently in popup)
+   */
+  featuredImage?: (string | null) | Media;
+  /**
+   * Featured image height (only applies if image is selected)
+   */
+  featuredImageHeight?: ('small' | 'medium' | 'large' | 'tall') | null;
+  /**
    * Popup title (keep concise)
    */
   title: string;
@@ -954,7 +962,7 @@ export interface LayoutSideNavigationBlock {
    */
   theme?: ('light' | 'dark' | 'red' | 'gold') | null;
   /**
-   * ✏️ Optional: Custom labels for navigation items. Enter labels in order they appear on the page. Leave empty to use auto-generated names. Example: "Overview", "Features", "Gallery"
+   * ✏️ Optional: Custom labels and icons for navigation items. Enter in order they appear on the page. Leave empty to use auto-generated names.
    */
   sectionLabels?:
     | {
@@ -962,6 +970,12 @@ export interface LayoutSideNavigationBlock {
          * Navigation label (e.g., "Overview", "Key Features", "Technical Specs")
          */
         label: string;
+        /**
+         * Optional: Override the auto-assigned icon for this section
+         */
+        icon?:
+          | ('auto' | 'circle' | 'square' | 'triangle' | 'diamond' | 'piano' | 'sparkles' | 'target' | 'pin' | 'star')
+          | null;
         id?: string | null;
       }[]
     | null;

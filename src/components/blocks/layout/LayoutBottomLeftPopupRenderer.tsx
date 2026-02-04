@@ -7,6 +7,8 @@ import { BottomLeftPopupBlock } from '../BottomLeftPopupBlock'
 interface LayoutBottomLeftPopupRendererProps {
   enabled?: boolean | null
   icon?: any
+  featuredImage?: any
+  featuredImageHeight?: 'small' | 'medium' | 'large' | 'tall' | null
   title?: string | null
   message?: string | null
   ctaText?: string | null

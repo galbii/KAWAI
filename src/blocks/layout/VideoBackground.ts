@@ -30,7 +30,7 @@ export const VideoBackground: Block = {
       required: false,
       admin: {
         description: 'Background image from media library (recommended: 1920x1080 or higher). Click "Browse Media Library" to select from existing images or upload new ones.',
-        condition: (data: any) => data?.videoSource === 'image',
+        condition: (_, siblingData) => siblingData?.videoSource === 'image',
       },
     }),
     {
@@ -40,10 +40,10 @@ export const VideoBackground: Block = {
         description:
           'YouTube video URL (e.g., https://youtube.com/watch?v=dQw4w9WgXcQ or https://youtu.be/dQw4w9WgXcQ)',
         placeholder: 'https://youtube.com/watch?v=dQw4w9WgXcQ',
-        condition: (data: any) => data?.videoSource === 'youtube',
+        condition: (_, siblingData) => siblingData?.videoSource === 'youtube',
       },
-      validate: (value: string | null | undefined, { data }: { data: any }) => {
-        if (data.videoSource === 'youtube' && !value) {
+      validate: (value: string | null | undefined, { siblingData }: { siblingData: any }) => {
+        if (siblingData?.videoSource === 'youtube' && !value) {
           return 'YouTube URL is required when using YouTube as video source'
         }
         return true
@@ -56,10 +56,10 @@ export const VideoBackground: Block = {
         description:
           'Direct URL to MP4 video file (use R2/CDN URL for best performance). Recommended: 1920x1080, H.264 codec, under 10MB.',
         placeholder: 'https://cdn.example.com/videos/piano-craftsmanship.mp4',
-        condition: (data: any) => data?.videoSource === 'direct',
+        condition: (_, siblingData) => siblingData?.videoSource === 'direct',
       },
-      validate: (value: string | null | undefined, { data }: { data: any }) => {
-        if (data.videoSource === 'direct' && !value) {
+      validate: (value: string | null | undefined, { siblingData }: { siblingData: any }) => {
+        if (siblingData?.videoSource === 'direct' && !value) {
           return 'Video URL is required when using direct video file'
         }
         return true
@@ -74,10 +74,10 @@ export const VideoBackground: Block = {
       admin: {
         description: 'Video/Image zoom percentage (100 = no zoom, 110 = 10% zoom, 120 = 20% zoom)',
         step: 5,
-        condition: (data: any) =>
-          data?.videoSource === 'youtube' ||
-          data?.videoSource === 'direct' ||
-          data?.videoSource === 'image',
+        condition: (_, siblingData) =>
+          siblingData?.videoSource === 'youtube' ||
+          siblingData?.videoSource === 'direct' ||
+          siblingData?.videoSource === 'image',
       },
     },
     {
