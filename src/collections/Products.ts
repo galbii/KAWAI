@@ -446,20 +446,11 @@ export const Products: CollectionConfig = {
               name: 'pageContent',
               type: 'blocks',
               blockReferences: [
-                'product-showcase',
-                'product-hero',
-                'marketing-hero',
-                'marketing-grand-hero',
-                'textContent',
-                'product-gallery',
-                'product-features',
-                'product-specs',
-                'marketing-cta',
-                'marketing-testimonials'
+                'product-hero',  // Product Hero - Only allowed block for product pages
               ] as any,
               blocks: [], // Required to be empty when using blockReferences
               admin: {
-                description: 'Build your product page content using flexible blocks'
+                description: 'Product page hero section (single block layout)'
               }
             }
           ]

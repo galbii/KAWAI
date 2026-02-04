@@ -151,53 +151,25 @@ export const Pages: CollectionConfig<'pages'> = {
               name: 'layout',
               type: 'blocks',
               blockReferences: [
-                // Layout blocks - Special blocks (should be first on page)
-                'layout-brand-intro',
+                // Marketing blocks - Hero and showcase elements
+                'marketing-i2l',                    // Instrumental to Life
+                'marketing-technical-showcase',     // Technical Showcase
+                'marketing-grand-hero',             // Grand Hero
+                'marketing-find-a-dealer',          // Find a Dealer
+                'marketing-3d-viewer',              // 3D Model Viewer
 
-                // Content blocks - Editorial content for articles and pages
-                'content-text',
-                'content-image',
-                'content-video',
-                'content-code',
-                'content-banner',
-
-                // Layout blocks - Structural elements
-                'layout-columns',
-                'layout-spacer',
-                'layout-divider',
-                'layout-hero-carousel',
-                'layout-video-background',
-                'layout-bottom-left-popup',
-
-                // Marketing blocks - Conversion-focused elements
-                'marketing-hero',
-                'marketing-grand-hero',
-                'marketing-cta',
-                'marketing-testimonials',
-                'marketing-i2l',
-                'marketing-technical-showcase',
-                'marketing-find-a-dealer',
-                'marketing-3d-viewer',
-
-                // Product blocks - Product showcases and details
-                'product-showcase',
-                'product-hero',
-                'product-gallery',
-                'product-features',
-                'product-specs',
-
-                // Legacy blocks - Kept for backward compatibility
-                'cta',
-                'content',
-                'mediaBlock',
-                'archive',
+                // Layout blocks - Structural and special elements
+                'layout-brand-intro',               // Brand Intro
+                'layout-hero-carousel',             // Hero Carousel
+                'layout-video-background',          // Video Background
+                'layout-bottom-left-popup',         // Bottom Popup
               ] as any,
               blocks: [], // Required to be empty when using blockReferences
               required: true,
               admin: {
                 initCollapsed: true,
                 description:
-                  'Build your page using content blocks. Modern blocks (content-*, layout-*, marketing-*, product-*) are recommended for new pages. Legacy blocks are available for backward compatibility.',
+                  'Build your page using specialized layout blocks for dynamic pages.',
               },
             },
           ],

@@ -1327,22 +1327,9 @@ export interface Product {
       }[]
     | null;
   /**
-   * Build your product page content using flexible blocks
+   * Product page hero section (single block layout)
    */
-  pageContent?:
-    | (
-        | ProductShowcaseBlock
-        | ProductHeroBlock
-        | MarketingHeroBlock
-        | MarketingGrandHeroBlock
-        | TextContentBlock
-        | ProductImageGalleryBlock
-        | ProductFeaturesListBlock
-        | ProductSpecificationsBlock
-        | MarketingCallToActionBlock
-        | MarketingTestimonialsBlock
-      )[]
-    | null;
+  pageContent?: ProductHeroBlock[] | null;
   /**
    * SEO and social media optimization
    */
@@ -1452,131 +1439,6 @@ export interface Product {
   };
   updatedAt: string;
   createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ProductShowcaseBlock".
- */
-export interface ProductShowcaseBlock {
-  /**
-   * Choose data source for product information
-   */
-  dataSource?: ('manual' | 'pianomodel' | 'hybrid') | null;
-  /**
-   * Select piano model to automatically populate product information
-   */
-  pianoModel?: (string | null) | Product;
-  /**
-   * Product showcase configuration
-   */
-  product: {
-    /**
-     * Main product image (leave empty to use Piano Model image)
-     */
-    image?: (string | null) | Media;
-    /**
-     * Product title/name (leave empty to use Piano Model name)
-     */
-    title?: string | null;
-    /**
-     * Product description (leave empty to use Piano Model description)
-     */
-    description?: string | null;
-    /**
-     * Product pricing information (overrides Piano Model pricing when provided)
-     */
-    price?: {
-      /**
-       * Price currency
-       */
-      currency?: ('USD' | 'EUR' | 'GBP' | 'CAD') | null;
-      /**
-       * Regular price amount
-       */
-      amount?: number | null;
-      /**
-       * Sale price (shows original price as strikethrough)
-       */
-      saleAmount?: number | null;
-      /**
-       * Custom price text (e.g., "Starting at $2,999" or "Contact for pricing")
-       */
-      priceText?: string | null;
-    };
-    /**
-     * Available product variations (finishes, colors, etc.)
-     */
-    variations?:
-      | {
-          /**
-           * Variation name (e.g., "Ebony Polish", "White Satin")
-           */
-          name: string;
-          /**
-           * Variation sample image (optional)
-           */
-          image?: (string | null) | Media;
-          /**
-           * Price difference for this variation (+ or -)
-           */
-          priceModifier?: number | null;
-          id?: string | null;
-        }[]
-      | null;
-    /**
-     * Buy/action button configuration
-     */
-    buyButton: {
-      /**
-       * Button text (e.g., "Buy Now", "View Details", "Contact Us")
-       */
-      text: string;
-      /**
-       * Button link/URL (leave empty to disable button)
-       */
-      link?: string | null;
-      /**
-       * Button visual style
-       */
-      style?: ('primary' | 'secondary' | 'outline') | null;
-      /**
-       * Open link in new browser tab
-       */
-      openInNewTab?: boolean | null;
-    };
-    /**
-     * Optional badge text (e.g., "Best Seller", "New", "Limited Edition")
-     */
-    badge?: string | null;
-    /**
-     * Is this product currently in stock?
-     */
-    inStock?: boolean | null;
-  };
-  /**
-   * Layout and display options
-   */
-  layout?: {
-    /**
-     * Position of product image relative to content
-     */
-    imagePosition?: ('left' | 'right' | 'top' | 'bottom') | null;
-    /**
-     * Show available variations in this showcase
-     */
-    showVariations?: boolean | null;
-    /**
-     * Show pricing information
-     */
-    showPrice?: boolean | null;
-    /**
-     * Use compact layout (smaller spacing, condensed content)
-     */
-    compact?: boolean | null;
-  };
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'product-showcase';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1767,385 +1629,6 @@ export interface MarketingGrandHeroBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'marketing-grand-hero';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TextContentBlock".
- */
-export interface TextContentBlock {
-  /**
-   * Rich text content with full formatting capabilities
-   */
-  content: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
-  /**
-   * Layout and styling options
-   */
-  layout?: {
-    /**
-     * Maximum width of text content
-     */
-    maxWidth?: ('small' | 'medium' | 'large' | 'full') | null;
-    /**
-     * Text alignment
-     */
-    textAlign?: ('left' | 'center' | 'right' | 'justify') | null;
-    /**
-     * Background color for the content area
-     */
-    backgroundColor?: ('none' | 'light-gray' | 'dark-gray' | 'brand' | 'accent') | null;
-    /**
-     * Padding around the content
-     */
-    padding?: ('none' | 'small' | 'medium' | 'large') | null;
-    /**
-     * Number of columns for text layout
-     */
-    columns?: ('one' | 'two' | 'three') | null;
-  };
-  /**
-   * Enable drop cap (large first letter) for the first paragraph
-   */
-  enableDropCap?: boolean | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'textContent';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ProductImageGalleryBlock".
- */
-export interface ProductImageGalleryBlock {
-  /**
-   * Choose data source for gallery images
-   */
-  dataSource?: ('manual' | 'pianomodel' | 'hybrid') | null;
-  /**
-   * Select piano model to automatically populate gallery from model images
-   */
-  pianoModel?: (string | null) | Product;
-  /**
-   * Optional gallery title
-   */
-  title?: string | null;
-  /**
-   * Optional gallery description
-   */
-  description?: string | null;
-  /**
-   * Images to display in the gallery (additional images when using Piano Model data source)
-   */
-  images?:
-    | {
-        /**
-         * Gallery image
-         */
-        image: string | Media;
-        /**
-         * Image caption (optional)
-         */
-        caption?: string | null;
-        /**
-         * Alt text for accessibility (optional, will use image alt if not provided)
-         */
-        alt?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Gallery layout and display options
-   */
-  layout?: {
-    /**
-     * Gallery display style
-     */
-    style?: ('grid' | 'masonry' | 'carousel' | 'lightbox') | null;
-    /**
-     * Number of columns for grid layouts
-     */
-    columns?: ('two' | 'three' | 'four' | 'five') | null;
-    /**
-     * Spacing between images
-     */
-    spacing?: ('none' | 'small' | 'medium' | 'large') | null;
-    /**
-     * Aspect ratio for images in grid layouts
-     */
-    aspectRatio?: ('original' | 'square' | 'landscape' | 'portrait') | null;
-  };
-  /**
-   * Carousel-specific settings
-   */
-  carouselSettings?: {
-    /**
-     * Auto-advance slides
-     */
-    autoplay?: boolean | null;
-    /**
-     * Autoplay speed in milliseconds
-     */
-    autoplaySpeed?: number | null;
-    /**
-     * Show navigation dots
-     */
-    showDots?: boolean | null;
-    /**
-     * Show navigation arrows
-     */
-    showArrows?: boolean | null;
-    /**
-     * Number of slides to show at once
-     */
-    slidesToShow?: ('one' | 'two' | 'three' | 'four') | null;
-    /**
-     * Enable infinite loop
-     */
-    infinite?: boolean | null;
-  };
-  /**
-   * Enable image zoom on hover/click
-   */
-  enableZoom?: boolean | null;
-  /**
-   * Display image captions
-   */
-  showCaptions?: boolean | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'product-gallery';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ProductFeaturesListBlock".
- */
-export interface ProductFeaturesListBlock {
-  /**
-   * Choose data source for features list
-   */
-  dataSource?: ('manual' | 'pianomodel' | 'hybrid') | null;
-  /**
-   * Select piano model to automatically populate key features
-   */
-  pianoModel?: (string | null) | Product;
-  /**
-   * Optional header content for the features section
-   */
-  header?: {
-    /**
-     * Section title (optional)
-     */
-    title?: string | null;
-    /**
-     * Section subtitle (optional)
-     */
-    subtitle?: string | null;
-    /**
-     * Section description (optional)
-     */
-    description?: string | null;
-  };
-  /**
-   * List of features to display
-   */
-  features: {
-    /**
-     * Icon configuration for this feature
-     */
-    icon?: {
-      /**
-       * Type of icon to display
-       */
-      type?: ('none' | 'image' | 'icon' | 'emoji') | null;
-      /**
-       * Custom icon image
-       */
-      image?: (string | null) | Media;
-      /**
-       * Icon name (e.g., "check", "star", "music")
-       */
-      iconName?: string | null;
-      /**
-       * Emoji character (e.g., "🎹", "✨", "🎵")
-       */
-      emoji?: string | null;
-    };
-    /**
-     * Feature title/name
-     */
-    title: string;
-    /**
-     * Feature description (optional)
-     */
-    description?: string | null;
-    /**
-     * Highlight this feature with special styling
-     */
-    highlight?: boolean | null;
-    id?: string | null;
-  }[];
-  /**
-   * Layout and styling options
-   */
-  layout?: {
-    /**
-     * Display style for features
-     */
-    style?: ('grid' | 'list' | 'cards' | 'minimal') | null;
-    /**
-     * Number of columns for grid/cards layouts
-     */
-    columns?: ('one' | 'two' | 'three' | 'four') | null;
-    /**
-     * Position of icons relative to text
-     */
-    iconPosition?: ('left' | 'top' | 'right') | null;
-    /**
-     * Spacing between features
-     */
-    spacing?: ('compact' | 'medium' | 'spacious') | null;
-    /**
-     * Background color for the features section
-     */
-    backgroundColor?: ('none' | 'light-gray' | 'dark-gray' | 'brand' | 'accent') | null;
-  };
-  /**
-   * Show numbered list (1, 2, 3...) instead of icons
-   */
-  showNumbers?: boolean | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'product-features';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ProductSpecificationsBlock".
- */
-export interface ProductSpecificationsBlock {
-  /**
-   * Choose data source for specifications
-   */
-  dataSource?: ('manual' | 'pianomodel' | 'hybrid') | null;
-  /**
-   * Select piano model to automatically populate specifications
-   */
-  pianoModel?: (string | null) | Product;
-  /**
-   * Header content for the specifications section
-   */
-  header?: {
-    /**
-     * Section title
-     */
-    title?: string | null;
-    /**
-     * Optional description above specifications
-     */
-    description?: string | null;
-  };
-  /**
-   * Additional specification categories (leave empty to use Piano Model specifications only)
-   */
-  categories?:
-    | {
-        /**
-         * Category name (e.g., "Dimensions", "Sound", "Features")
-         */
-        categoryName: string;
-        /**
-         * Individual specifications within this category
-         */
-        specifications: {
-          /**
-           * Specification label (e.g., "Width", "Polyphony", "Weight")
-           */
-          label: string;
-          /**
-           * Specification value (e.g., "145cm", "256 notes", "68kg")
-           */
-          value: string;
-          /**
-           * Highlight this specification as important
-           */
-          highlight?: boolean | null;
-          /**
-           * Additional note or context (optional)
-           */
-          note?: string | null;
-          id?: string | null;
-        }[];
-        /**
-         * Make this category collapsible/expandable
-         */
-        collapsible?: boolean | null;
-        /**
-         * Start expanded (only applies if collapsible is enabled)
-         */
-        defaultExpanded?: boolean | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Layout and styling options
-   */
-  layout?: {
-    /**
-     * Display style for specifications
-     */
-    style?: ('table' | 'cards' | 'list' | 'grid') | null;
-    /**
-     * Number of columns for categories
-     */
-    columns?: ('one' | 'two' | 'three') | null;
-    /**
-     * Show icons next to category names
-     */
-    showCategoryIcons?: boolean | null;
-    /**
-     * Alternate row colors for better readability
-     */
-    alternateRows?: boolean | null;
-    /**
-     * Use compact spacing for dense information display
-     */
-    compactMode?: boolean | null;
-  };
-  /**
-   * Options for downloading detailed specifications
-   */
-  downloadOptions?: {
-    /**
-     * Allow users to download specifications as PDF/document
-     */
-    enableDownload?: boolean | null;
-    /**
-     * Specifications document to download
-     */
-    downloadFile?: (string | null) | Media;
-    /**
-     * Download button text
-     */
-    downloadButtonText?: string | null;
-  };
-  /**
-   * Enable comparison view (useful for product comparison pages)
-   */
-  comparisonMode?: boolean | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'product-specs';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2764,6 +2247,510 @@ export interface Marketing3DViewerBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductShowcaseBlock".
+ */
+export interface ProductShowcaseBlock {
+  /**
+   * Choose data source for product information
+   */
+  dataSource?: ('manual' | 'pianomodel' | 'hybrid') | null;
+  /**
+   * Select piano model to automatically populate product information
+   */
+  pianoModel?: (string | null) | Product;
+  /**
+   * Product showcase configuration
+   */
+  product: {
+    /**
+     * Main product image (leave empty to use Piano Model image)
+     */
+    image?: (string | null) | Media;
+    /**
+     * Product title/name (leave empty to use Piano Model name)
+     */
+    title?: string | null;
+    /**
+     * Product description (leave empty to use Piano Model description)
+     */
+    description?: string | null;
+    /**
+     * Product pricing information (overrides Piano Model pricing when provided)
+     */
+    price?: {
+      /**
+       * Price currency
+       */
+      currency?: ('USD' | 'EUR' | 'GBP' | 'CAD') | null;
+      /**
+       * Regular price amount
+       */
+      amount?: number | null;
+      /**
+       * Sale price (shows original price as strikethrough)
+       */
+      saleAmount?: number | null;
+      /**
+       * Custom price text (e.g., "Starting at $2,999" or "Contact for pricing")
+       */
+      priceText?: string | null;
+    };
+    /**
+     * Available product variations (finishes, colors, etc.)
+     */
+    variations?:
+      | {
+          /**
+           * Variation name (e.g., "Ebony Polish", "White Satin")
+           */
+          name: string;
+          /**
+           * Variation sample image (optional)
+           */
+          image?: (string | null) | Media;
+          /**
+           * Price difference for this variation (+ or -)
+           */
+          priceModifier?: number | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Buy/action button configuration
+     */
+    buyButton: {
+      /**
+       * Button text (e.g., "Buy Now", "View Details", "Contact Us")
+       */
+      text: string;
+      /**
+       * Button link/URL (leave empty to disable button)
+       */
+      link?: string | null;
+      /**
+       * Button visual style
+       */
+      style?: ('primary' | 'secondary' | 'outline') | null;
+      /**
+       * Open link in new browser tab
+       */
+      openInNewTab?: boolean | null;
+    };
+    /**
+     * Optional badge text (e.g., "Best Seller", "New", "Limited Edition")
+     */
+    badge?: string | null;
+    /**
+     * Is this product currently in stock?
+     */
+    inStock?: boolean | null;
+  };
+  /**
+   * Layout and display options
+   */
+  layout?: {
+    /**
+     * Position of product image relative to content
+     */
+    imagePosition?: ('left' | 'right' | 'top' | 'bottom') | null;
+    /**
+     * Show available variations in this showcase
+     */
+    showVariations?: boolean | null;
+    /**
+     * Show pricing information
+     */
+    showPrice?: boolean | null;
+    /**
+     * Use compact layout (smaller spacing, condensed content)
+     */
+    compact?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'product-showcase';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductImageGalleryBlock".
+ */
+export interface ProductImageGalleryBlock {
+  /**
+   * Choose data source for gallery images
+   */
+  dataSource?: ('manual' | 'pianomodel' | 'hybrid') | null;
+  /**
+   * Select piano model to automatically populate gallery from model images
+   */
+  pianoModel?: (string | null) | Product;
+  /**
+   * Optional gallery title
+   */
+  title?: string | null;
+  /**
+   * Optional gallery description
+   */
+  description?: string | null;
+  /**
+   * Images to display in the gallery (additional images when using Piano Model data source)
+   */
+  images?:
+    | {
+        /**
+         * Gallery image
+         */
+        image: string | Media;
+        /**
+         * Image caption (optional)
+         */
+        caption?: string | null;
+        /**
+         * Alt text for accessibility (optional, will use image alt if not provided)
+         */
+        alt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Gallery layout and display options
+   */
+  layout?: {
+    /**
+     * Gallery display style
+     */
+    style?: ('grid' | 'masonry' | 'carousel' | 'lightbox') | null;
+    /**
+     * Number of columns for grid layouts
+     */
+    columns?: ('two' | 'three' | 'four' | 'five') | null;
+    /**
+     * Spacing between images
+     */
+    spacing?: ('none' | 'small' | 'medium' | 'large') | null;
+    /**
+     * Aspect ratio for images in grid layouts
+     */
+    aspectRatio?: ('original' | 'square' | 'landscape' | 'portrait') | null;
+  };
+  /**
+   * Carousel-specific settings
+   */
+  carouselSettings?: {
+    /**
+     * Auto-advance slides
+     */
+    autoplay?: boolean | null;
+    /**
+     * Autoplay speed in milliseconds
+     */
+    autoplaySpeed?: number | null;
+    /**
+     * Show navigation dots
+     */
+    showDots?: boolean | null;
+    /**
+     * Show navigation arrows
+     */
+    showArrows?: boolean | null;
+    /**
+     * Number of slides to show at once
+     */
+    slidesToShow?: ('one' | 'two' | 'three' | 'four') | null;
+    /**
+     * Enable infinite loop
+     */
+    infinite?: boolean | null;
+  };
+  /**
+   * Enable image zoom on hover/click
+   */
+  enableZoom?: boolean | null;
+  /**
+   * Display image captions
+   */
+  showCaptions?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'product-gallery';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductFeaturesListBlock".
+ */
+export interface ProductFeaturesListBlock {
+  /**
+   * Choose data source for features list
+   */
+  dataSource?: ('manual' | 'pianomodel' | 'hybrid') | null;
+  /**
+   * Select piano model to automatically populate key features
+   */
+  pianoModel?: (string | null) | Product;
+  /**
+   * Optional header content for the features section
+   */
+  header?: {
+    /**
+     * Section title (optional)
+     */
+    title?: string | null;
+    /**
+     * Section subtitle (optional)
+     */
+    subtitle?: string | null;
+    /**
+     * Section description (optional)
+     */
+    description?: string | null;
+  };
+  /**
+   * List of features to display
+   */
+  features: {
+    /**
+     * Icon configuration for this feature
+     */
+    icon?: {
+      /**
+       * Type of icon to display
+       */
+      type?: ('none' | 'image' | 'icon' | 'emoji') | null;
+      /**
+       * Custom icon image
+       */
+      image?: (string | null) | Media;
+      /**
+       * Icon name (e.g., "check", "star", "music")
+       */
+      iconName?: string | null;
+      /**
+       * Emoji character (e.g., "🎹", "✨", "🎵")
+       */
+      emoji?: string | null;
+    };
+    /**
+     * Feature title/name
+     */
+    title: string;
+    /**
+     * Feature description (optional)
+     */
+    description?: string | null;
+    /**
+     * Highlight this feature with special styling
+     */
+    highlight?: boolean | null;
+    id?: string | null;
+  }[];
+  /**
+   * Layout and styling options
+   */
+  layout?: {
+    /**
+     * Display style for features
+     */
+    style?: ('grid' | 'list' | 'cards' | 'minimal') | null;
+    /**
+     * Number of columns for grid/cards layouts
+     */
+    columns?: ('one' | 'two' | 'three' | 'four') | null;
+    /**
+     * Position of icons relative to text
+     */
+    iconPosition?: ('left' | 'top' | 'right') | null;
+    /**
+     * Spacing between features
+     */
+    spacing?: ('compact' | 'medium' | 'spacious') | null;
+    /**
+     * Background color for the features section
+     */
+    backgroundColor?: ('none' | 'light-gray' | 'dark-gray' | 'brand' | 'accent') | null;
+  };
+  /**
+   * Show numbered list (1, 2, 3...) instead of icons
+   */
+  showNumbers?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'product-features';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductSpecificationsBlock".
+ */
+export interface ProductSpecificationsBlock {
+  /**
+   * Choose data source for specifications
+   */
+  dataSource?: ('manual' | 'pianomodel' | 'hybrid') | null;
+  /**
+   * Select piano model to automatically populate specifications
+   */
+  pianoModel?: (string | null) | Product;
+  /**
+   * Header content for the specifications section
+   */
+  header?: {
+    /**
+     * Section title
+     */
+    title?: string | null;
+    /**
+     * Optional description above specifications
+     */
+    description?: string | null;
+  };
+  /**
+   * Additional specification categories (leave empty to use Piano Model specifications only)
+   */
+  categories?:
+    | {
+        /**
+         * Category name (e.g., "Dimensions", "Sound", "Features")
+         */
+        categoryName: string;
+        /**
+         * Individual specifications within this category
+         */
+        specifications: {
+          /**
+           * Specification label (e.g., "Width", "Polyphony", "Weight")
+           */
+          label: string;
+          /**
+           * Specification value (e.g., "145cm", "256 notes", "68kg")
+           */
+          value: string;
+          /**
+           * Highlight this specification as important
+           */
+          highlight?: boolean | null;
+          /**
+           * Additional note or context (optional)
+           */
+          note?: string | null;
+          id?: string | null;
+        }[];
+        /**
+         * Make this category collapsible/expandable
+         */
+        collapsible?: boolean | null;
+        /**
+         * Start expanded (only applies if collapsible is enabled)
+         */
+        defaultExpanded?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Layout and styling options
+   */
+  layout?: {
+    /**
+     * Display style for specifications
+     */
+    style?: ('table' | 'cards' | 'list' | 'grid') | null;
+    /**
+     * Number of columns for categories
+     */
+    columns?: ('one' | 'two' | 'three') | null;
+    /**
+     * Show icons next to category names
+     */
+    showCategoryIcons?: boolean | null;
+    /**
+     * Alternate row colors for better readability
+     */
+    alternateRows?: boolean | null;
+    /**
+     * Use compact spacing for dense information display
+     */
+    compactMode?: boolean | null;
+  };
+  /**
+   * Options for downloading detailed specifications
+   */
+  downloadOptions?: {
+    /**
+     * Allow users to download specifications as PDF/document
+     */
+    enableDownload?: boolean | null;
+    /**
+     * Specifications document to download
+     */
+    downloadFile?: (string | null) | Media;
+    /**
+     * Download button text
+     */
+    downloadButtonText?: string | null;
+  };
+  /**
+   * Enable comparison view (useful for product comparison pages)
+   */
+  comparisonMode?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'product-specs';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TextContentBlock".
+ */
+export interface TextContentBlock {
+  /**
+   * Rich text content with full formatting capabilities
+   */
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Layout and styling options
+   */
+  layout?: {
+    /**
+     * Maximum width of text content
+     */
+    maxWidth?: ('small' | 'medium' | 'large' | 'full') | null;
+    /**
+     * Text alignment
+     */
+    textAlign?: ('left' | 'center' | 'right' | 'justify') | null;
+    /**
+     * Background color for the content area
+     */
+    backgroundColor?: ('none' | 'light-gray' | 'dark-gray' | 'brand' | 'accent') | null;
+    /**
+     * Padding around the content
+     */
+    padding?: ('none' | 'small' | 'medium' | 'large') | null;
+    /**
+     * Number of columns for text layout
+     */
+    columns?: ('one' | 'two' | 'three') | null;
+  };
+  /**
+   * Enable drop cap (large first letter) for the first paragraph
+   */
+  enableDropCap?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'textContent';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "HelloBlock".
  */
 export interface HelloBlock {
@@ -3157,38 +3144,18 @@ export interface Page {
     media?: (string | null) | Media;
   };
   /**
-   * Build your page using content blocks. Modern blocks (content-*, layout-*, marketing-*, product-*) are recommended for new pages. Legacy blocks are available for backward compatibility.
+   * Build your page using specialized layout blocks for dynamic pages.
    */
   layout: (
+    | MarketingI2LBlock
+    | MarketingTechnicalShowcaseBlock
+    | MarketingGrandHeroBlock
+    | MarketingFindADealerBlock
+    | Marketing3DViewerBlock
     | LayoutBrandIntroBlock
-    | ContentTextBlock
-    | ContentImageBlock
-    | ContentVideoBlock
-    | ContentCodeBlock
-    | ContentBannerBlock
-    | LayoutColumnsBlock
-    | LayoutSpacerBlock
-    | LayoutDividerBlock
     | LayoutHeroCarouselBlock
     | LayoutVideoBackgroundBlock
     | LayoutBottomLeftPopupBlock
-    | MarketingHeroBlock
-    | MarketingGrandHeroBlock
-    | MarketingCallToActionBlock
-    | MarketingTestimonialsBlock
-    | MarketingI2LBlock
-    | MarketingTechnicalShowcaseBlock
-    | MarketingFindADealerBlock
-    | Marketing3DViewerBlock
-    | ProductShowcaseBlock
-    | ProductHeroBlock
-    | ProductImageGalleryBlock
-    | ProductFeaturesListBlock
-    | ProductSpecificationsBlock
-    | CtaBlock
-    | ContentBlock
-    | MediaBlock
-    | ArchiveBlock
   )[];
   publishedAt?: string | null;
   /**
@@ -3199,6 +3166,27 @@ export interface Page {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MediaBlock".
+ */
+export interface MediaBlock {
+  /**
+   * Enter a URL or click "Browse Media Library" to select from your media
+   */
+  mediaUrl: string;
+  /**
+   * Describe the image for accessibility and SEO
+   */
+  alt: string;
+  /**
+   * Optional caption to display below the media
+   */
+  caption?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'mediaBlock';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3247,27 +3235,6 @@ export interface CtaBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'cta';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "MediaBlock".
- */
-export interface MediaBlock {
-  /**
-   * Enter a URL or click "Browse Media Library" to select from your media
-   */
-  mediaUrl: string;
-  /**
-   * Describe the image for accessibility and SEO
-   */
-  alt: string;
-  /**
-   * Optional caption to display below the media
-   */
-  caption?: string | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'mediaBlock';
 }
 /**
  * Manage all content for the homepage including hero, showroom location, piano collection, gallery, news, contact form, and SEO.
