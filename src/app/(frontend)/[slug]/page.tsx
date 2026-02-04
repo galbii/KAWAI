@@ -124,9 +124,9 @@ async function PageContent({ slug }: { slug: string }) {
       {page.hero && <PageHero hero={page.hero} />}
 
       {/* Dynamic Block Content */}
-      {page.layout && page.layout.length > 0 && (
+      {page.layout?.length ? (
         <RenderBlocks blocks={page.layout} />
-      )}
+      ) : null}
     </>
   );
 }

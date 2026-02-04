@@ -10,6 +10,7 @@ import { MobileViewToggle } from './components/MobileViewToggle'
 import { DealerTypeFilter } from './components/DealerTypeFilter'
 import { VideoHero } from './components/VideoHero'
 import { DealerFinderMobile } from './components/DealerFinderMobile'
+import { ProductCategoryDisplay } from './components/ProductCategoryDisplay'
 import { cn } from '@/lib/utils'
 import { MapPin, SlidersHorizontal } from 'lucide-react'
 
@@ -119,13 +120,6 @@ export function DealerFinderClient({ dealers }: Props) {
 
   const activeFilterCount = selectedDealerTypes.length + selectedServices.length + (selectedRadius !== 25 ? 1 : 0)
 
-  // Product descriptions for each dealer type
-  const dealerTypeDescriptions = {
-    'all': 'Kawai acoustic and digital pianos are available through a network of respected retail dealers across North America. To search for an Authorized Kawai Dealer, select a product from the list below:',
-    'professional-products': 'MP11SE and MP7SE Professional Stage Pianos • VPC1 Virtual Piano Controller • CA/CN/DG/KDP Series Digital Pianos • ES Series Portable Digital Pianos • Digital Piano Accessories',
-    'acoustic-digital': 'GX BLAK Series Grand Pianos • GL Series Grand Pianos • K Series Professional Upright Pianos • NOVUS Series Hybrids Pianos • AURES and ATX Hybrid Pianos • CA/CN/KDP/ES Series Digital Pianos • Institutional Uprights • Designer Studio and Console Pianos',
-  }
-
   return (
     <>
       {/* Google Fonts */}
@@ -149,14 +143,14 @@ export function DealerFinderClient({ dealers }: Props) {
         />
 
         {/* Search Bar Section - After hero */}
-        <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="bg-white border-b border-gray-100 shadow-sm">
           <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <SearchBar onLocationSearch={handleLocationSearch} />
           </div>
         </div>
 
         {/* Filters Section */}
-        <div className="border-b border-gray-200 bg-white shadow-sm">
+        <div className="bg-gray-50 border-b border-gray-100">
           <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             {/* Mobile View Toggle */}
             {isMobile && (
@@ -168,6 +162,11 @@ export function DealerFinderClient({ dealers }: Props) {
                 />
               </div>
             )}
+
+            {/* Product Category Display */}
+            <div className="mb-5">
+              <ProductCategoryDisplay dealerTypeFilter={dealerTypeFilter} />
+            </div>
 
             {/* Dealer Type Filter Pills */}
             <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
@@ -196,13 +195,6 @@ export function DealerFinderClient({ dealers }: Props) {
                   </span>
                 )}
               </button>
-            </div>
-
-            {/* Dynamic Description */}
-            <div className="bg-gray-50 rounded-xl px-5 py-4 border border-gray-200 mb-4">
-              <p className="text-sm text-gray-700 leading-relaxed">
-                {dealerTypeDescriptions[dealerTypeFilter]}
-              </p>
             </div>
 
             {/* Results Count */}

@@ -32,6 +32,7 @@
 import React, { Fragment } from 'react'
 import type { Page } from '@/payload-types'
 import { cn } from '@/lib/utils'
+import { PageLayoutProvider } from '@/lib/contexts/PageLayoutContext'
 
 // Legacy Blocks (backward compatibility)
 import { ArchiveBlock } from './blocks/ArchiveBlock'
@@ -165,8 +166,9 @@ export function RenderBlocks({ blocks }: { blocks: Page['layout'] }) {
   console.log('🎨 [RenderBlocks] Block types:', blocks.map(b => b.blockType).join(', '))
 
   return (
-    <Fragment>
-      {blocks.map((block, index) => {
+    <PageLayoutProvider blocks={blocks}>
+      <Fragment>
+        {blocks.map((block, index) => {
         const { blockType } = block
 
         console.log(`🎨 [RenderBlocks] Rendering block ${index}:`, blockType)
@@ -198,6 +200,7 @@ export function RenderBlocks({ blocks }: { blocks: Page['layout'] }) {
         return (
           <div
             key={index}
+            id={`block-${block.id}`}
             className={cn(
               'block-container',
               // Remove ALL margin from first block to sit directly under header
@@ -210,5 +213,6 @@ export function RenderBlocks({ blocks }: { blocks: Page['layout'] }) {
         )
       })}
     </Fragment>
+    </PageLayoutProvider>
   )
 }

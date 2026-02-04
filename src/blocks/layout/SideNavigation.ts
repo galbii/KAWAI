@@ -16,7 +16,7 @@ export const SideNavigation: Block = {
       type: 'checkbox',
       defaultValue: true,
       admin: {
-        description: 'Enable/disable the side navigation',
+        description: 'Enable/disable the side navigation. Navigation items are automatically generated from page blocks.',
       },
     },
     {
@@ -57,12 +57,12 @@ export const SideNavigation: Block = {
       },
     },
     {
-      name: 'sections',
+      name: 'sectionLabels',
       type: 'array',
-      minRows: 1,
-      maxRows: 12,
+      minRows: 0,
+      maxRows: 20,
       admin: {
-        description: 'Define navigation sections that will scroll to page blocks',
+        description: '✏️ Optional: Custom labels for navigation items. Enter labels in order they appear on the page. Leave empty to use auto-generated names. Example: "Overview", "Features", "Gallery"',
         condition: (data: any) => data.enabled !== false,
         initCollapsed: true,
       },
@@ -72,37 +72,8 @@ export const SideNavigation: Block = {
           type: 'text',
           required: true,
           admin: {
-            description: 'Display label for this section (e.g., "Overview", "Features", "Specifications")',
-            placeholder: 'Section Name',
-          },
-        },
-        {
-          name: 'targetId',
-          type: 'text',
-          required: true,
-          admin: {
-            description: 'CSS ID of the target block (without #). This should match the block\'s HTML id attribute.',
-            placeholder: 'section-overview',
-          },
-        },
-        {
-          name: 'icon',
-          type: 'select',
-          options: [
-            { label: 'None', value: 'none' },
-            { label: '● Circle', value: 'circle' },
-            { label: '■ Square', value: 'square' },
-            { label: '▲ Triangle', value: 'triangle' },
-            { label: '◆ Diamond', value: 'diamond' },
-            { label: '🎹 Piano', value: 'piano' },
-            { label: '✨ Sparkles', value: 'sparkles' },
-            { label: '🎯 Target', value: 'target' },
-            { label: '📍 Pin', value: 'pin' },
-            { label: '⭐ Star', value: 'star' },
-          ],
-          defaultValue: 'circle',
-          admin: {
-            description: 'Optional icon for this navigation item',
+            description: 'Navigation label (e.g., "Overview", "Key Features", "Technical Specs")',
+            placeholder: 'Section name',
           },
         },
       ],
@@ -117,10 +88,10 @@ export const SideNavigation: Block = {
         {
           name: 'mobileStyle',
           type: 'select',
-          defaultValue: 'bottom-bar',
+          defaultValue: 'hamburger',
           options: [
+            { label: 'Hamburger Menu (Bottom Right)', value: 'hamburger' },
             { label: 'Floating Bottom Bar (Andon Style)', value: 'bottom-bar' },
-            { label: 'Hamburger Menu (Top Right)', value: 'hamburger' },
             { label: 'Hidden on Mobile', value: 'hidden' },
           ],
           admin: {

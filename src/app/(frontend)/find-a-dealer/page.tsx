@@ -28,7 +28,7 @@ export default async function FindADealerPage() {
   const dealers = dealersResponse.docs as Dealer[]
 
   return (
-    <main className="min-h-screen bg-kawai-pearl">
+    <main className="min-h-screen bg-white">
       <DealerFinderClient dealers={dealers} />
     </main>
   )

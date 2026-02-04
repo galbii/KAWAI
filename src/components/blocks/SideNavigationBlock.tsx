@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion'
+import { usePageLayout } from '@/lib/contexts/PageLayoutContext'
 
 interface NavSection {
   label: string
@@ -9,12 +10,16 @@ interface NavSection {
   icon?: 'none' | 'circle' | 'square' | 'triangle' | 'diamond' | 'piano' | 'sparkles' | 'target' | 'pin' | 'star'
 }
 
+interface SectionLabel {
+  label: string
+}
+
 interface SideNavigationBlockProps {
   enabled?: boolean | null
+  sectionLabels?: SectionLabel[] | null
   title?: string | null
   position?: 'left' | 'right' | null
   theme?: 'light' | 'dark' | 'red' | 'gold' | null
-  sections?: NavSection[] | null
   mobileStyle?: 'bottom-bar' | 'hamburger' | 'hidden' | null
   mobileLabel?: string | null
   smoothScroll?: boolean | null
@@ -41,11 +46,11 @@ const iconMap = {
 
 export function SideNavigationBlock({
   enabled = true,
+  sectionLabels = [],
   title = 'Navigation',
   position = 'right',
   theme = 'light',
-  sections = [],
-  mobileStyle = 'bottom-bar',
+  mobileStyle = 'hamburger',
   mobileLabel = 'Menu',
   smoothScroll = true,
   scrollOffset = 80,
@@ -55,6 +60,42 @@ export function SideNavigationBlock({
   showBorder = true,
   compactMode = false,
 }: SideNavigationBlockProps) {
+  const pageLayout = usePageLayout()
+
+  // Auto-generate navigation sections from page blocks
+  const finalSections = useMemo(() => {
+    if (!pageLayout || pageLayout.length === 0) {
+      return []
+    }
+
+    // Auto-generate from page blocks
+    let navigableBlockIndex = 0
+    return pageLayout
+      .map((block) => {
+        // Exclude non-navigable blocks
+        const excludedTypes = [
+          'layout-side-navigation',
+          'layout-spacer',
+          'layout-divider',
+          'layout-bottom-left-popup',
+        ]
+
+        if (excludedTypes.includes(block.blockType)) {
+          return null
+        }
+
+        // Use custom label if provided at this index, otherwise auto-generate
+        const customLabel = sectionLabels?.[navigableBlockIndex]?.label
+        const label = customLabel || extractBlockLabel(block, navigableBlockIndex)
+        const targetId = `block-${block.id}`
+        const icon = getBlockIcon(block.blockType)
+
+        navigableBlockIndex++
+        return { label, targetId, icon } as NavSection
+      })
+      .filter((section): section is NavSection => section !== null)
+  }, [sectionLabels, pageLayout])
+
   const [activeSection, setActiveSection] = useState<string | null>(null)
   const [isVisible, setIsVisible] = useState(true)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -76,7 +117,7 @@ export function SideNavigationBlock({
 
   // Intersection Observer for active section detection
   useEffect(() => {
-    if (!enabled || !sections || sections.length === 0) return
+    if (!enabled || !finalSections || finalSections.length === 0) return
 
     const observerOptions = {
       rootMargin: `-${scrollOffset}px 0px -50% 0px`,
@@ -93,7 +134,7 @@ export function SideNavigationBlock({
 
     const observer = new IntersectionObserver(observerCallback, observerOptions)
 
-    sections.forEach((section) => {
+    finalSections.forEach((section) => {
       const element = document.getElementById(section.targetId)
       if (element) {
         observer.observe(element)
@@ -101,7 +142,7 @@ export function SideNavigationBlock({
     })
 
     return () => observer.disconnect()
-  }, [enabled, sections, scrollOffset])
+  }, [enabled, finalSections, scrollOffset])
 
   const handleNavClick = useCallback(
     (targetId: string) => {
@@ -124,7 +165,9 @@ export function SideNavigationBlock({
     [smoothScroll, scrollOffset]
   )
 
-  if (!enabled || !sections || sections.length === 0) return null
+  if (!enabled || !finalSections || finalSections.length === 0) {
+    return null
+  }
 
   // Theme classes
   const themeClasses = {
@@ -194,7 +237,7 @@ export function SideNavigationBlock({
 
         {/* Navigation Items */}
         <ul className={`space-y-${compactMode ? '3' : '4'} relative`}>
-          {sections.map((section, index) => {
+          {finalSections.map((section, index) => {
             const isActive = activeSection === section.targetId
             const icon = section.icon && section.icon !== 'none' ? iconMap[section.icon] : null
 
@@ -280,7 +323,7 @@ export function SideNavigationBlock({
           scrollbar-hide
         `}
       >
-        {sections.map((section) => {
+        {finalSections.map((section) => {
           const isActive = activeSection === section.targetId
           const icon = section.icon && section.icon !== 'none' ? iconMap[section.icon] : '●'
 
@@ -316,7 +359,7 @@ export function SideNavigationBlock({
         animate={{ opacity: 1, scale: 1 }}
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         className={`
-          fixed top-6 right-6 z-50 lg:hidden
+          fixed bottom-6 right-6 z-50 lg:hidden
           ${baseClass}
           ${glassmorphism ? 'backdrop-blur-md' : ''}
           ${showBorder ? 'border' : ''}
@@ -381,7 +424,7 @@ export function SideNavigationBlock({
                 )}
 
                 <ul className="space-y-4">
-                  {sections.map((section, index) => {
+                  {finalSections.map((section, index) => {
                     const isActive = activeSection === section.targetId
                     const icon = section.icon && section.icon !== 'none' ? iconMap[section.icon] : null
 
@@ -435,4 +478,63 @@ export function SideNavigationBlock({
       {mobileStyle === 'hamburger' && MobileHamburgerMenu}
     </>
   )
+}
+
+/**
+ * Helper: Extract meaningful label from block data
+ */
+function extractBlockLabel(block: any, index: number): string {
+  // Try common title fields across different block types
+  const label =
+    block.title ||
+    block.heading ||
+    block.header ||
+    block.label ||
+    block.name ||
+    block.productName ||
+    block.sectionTitle ||
+    block.headline ||
+    `Section ${index + 1}`
+
+  // Convert to string and limit length
+  return String(label).slice(0, 50)
+}
+
+/**
+ * Helper: Get appropriate icon for block type
+ */
+function getBlockIcon(blockType: string): NavSection['icon'] {
+  const iconMap: Record<string, NavSection['icon']> = {
+    // Marketing blocks
+    'marketing-hero': 'star',
+    'marketing-grand-hero': 'star',
+    'marketing-cta': 'target',
+    'marketing-testimonials': 'sparkles',
+    'marketing-i2l': 'piano',
+    'marketing-technical-showcase': 'target',
+    'marketing-find-a-dealer': 'pin',
+    'marketing-3d-viewer': 'circle',
+
+    // Product blocks
+    'product-showcase': 'piano',
+    'product-hero': 'piano',
+    'product-gallery': 'square',
+    'product-features': 'sparkles',
+    'product-specs': 'square',
+
+    // Content blocks
+    'content-text': 'circle',
+    'content-image': 'square',
+    'content-video': 'circle',
+    'content-code': 'square',
+    'content-banner': 'diamond',
+
+    // Layout blocks
+    'layout-columns': 'square',
+    'layout-hero-carousel': 'circle',
+    'layout-video-background': 'circle',
+    'layout-brand-intro': 'star',
+  }
+
+  return iconMap[blockType] || 'circle'
 }

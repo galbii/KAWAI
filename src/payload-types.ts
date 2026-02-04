@@ -938,7 +938,7 @@ export interface LayoutBottomLeftPopupBlock {
  */
 export interface LayoutSideNavigationBlock {
   /**
-   * Enable/disable the side navigation
+   * Enable/disable the side navigation. Navigation items are automatically generated from page blocks.
    */
   enabled?: boolean | null;
   /**
@@ -954,31 +954,21 @@ export interface LayoutSideNavigationBlock {
    */
   theme?: ('light' | 'dark' | 'red' | 'gold') | null;
   /**
-   * Define navigation sections that will scroll to page blocks
+   * ✏️ Optional: Custom labels for navigation items. Enter labels in order they appear on the page. Leave empty to use auto-generated names. Example: "Overview", "Features", "Gallery"
    */
-  sections?:
+  sectionLabels?:
     | {
         /**
-         * Display label for this section (e.g., "Overview", "Features", "Specifications")
+         * Navigation label (e.g., "Overview", "Key Features", "Technical Specs")
          */
         label: string;
-        /**
-         * CSS ID of the target block (without #). This should match the block's HTML id attribute.
-         */
-        targetId: string;
-        /**
-         * Optional icon for this navigation item
-         */
-        icon?:
-          | ('none' | 'circle' | 'square' | 'triangle' | 'diamond' | 'piano' | 'sparkles' | 'target' | 'pin' | 'star')
-          | null;
         id?: string | null;
       }[]
     | null;
   /**
    * How navigation appears on mobile devices
    */
-  mobileStyle?: ('bottom-bar' | 'hamburger' | 'hidden') | null;
+  mobileStyle?: ('hamburger' | 'bottom-bar' | 'hidden') | null;
   /**
    * Label for mobile navigation toggle
    */
