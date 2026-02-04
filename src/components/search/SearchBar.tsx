@@ -50,6 +50,11 @@ interface SearchBarProps {
   onOpenChange?: (isOpen: boolean) => void
 }
 
+interface QuickLink {
+  label: string
+  url: string
+}
+
 type CategoryFilter = 'all' | 'storefronts' | 'products' | 'pages'
 
 export function SearchBar({ className, onOpenChange }: SearchBarProps) {
@@ -66,6 +71,12 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
   const [keyboardHeight, setKeyboardHeight] = useState(0)
   const [isInputFocused, setIsInputFocused] = useState(false)
+  const [quickLinks, setQuickLinks] = useState<QuickLink[]>([
+    { label: 'Instrumental to Life', url: '/instrumental-to-life' },
+    { label: 'Find a Dealer', url: '/find-a-dealer' },
+    { label: 'Register My Piano', url: '/register-my-piano' },
+    { label: 'Kawai Exclusive Offers', url: '/explore' },
+  ])
 
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -131,6 +142,25 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
       setIsMounted(false)
       window.removeEventListener('resize', checkMobile)
     }
+  }, [])
+
+  // Fetch quick links from HomePage collection
+  useEffect(() => {
+    const fetchQuickLinks = async () => {
+      try {
+        const response = await fetch('/api/search-quick-links')
+        const result = await response.json()
+
+        if (result.success && result.data) {
+          setQuickLinks(result.data)
+        }
+      } catch (error) {
+        console.error('Failed to fetch quick links:', error)
+        // Keep using default links on error
+      }
+    }
+
+    fetchQuickLinks()
   }, [])
 
   // Detect keyboard on mobile using visualViewport API
@@ -774,143 +804,81 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                     >
                       {/* Welcome Screen - Show when search is empty */}
                       {query.length < 2 ? (
-                        <div className="flex flex-col items-center justify-center h-full gap-12">
-                          {/* Small KAWAI Logo */}
-                          <div className="flex items-center justify-center">
-                            <KawaiLogo
-                              size="sm"
-                              animated={false}
-                              nonClickable={true}
-                            />
-                          </div>
-
-                          {/* Sequential Greeting Message with Buena Park font */}
-                          <div className="text-center px-4 relative" style={{ minHeight: isMobile ? '120px' : '180px' }}>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              {/* "Welcome," - Fades in then out */}
-                              <h2
-                                className={cn(
-                                  "text-kawai-pearl absolute",
-                                  isMobile ? "text-3xl" : "text-5xl"
-                                )}
-                                style={{
-                                  fontFamily: 'var(--font-buena-park), serif',
-                                  fontWeight: 400,
-                                  letterSpacing: '0.02em',
-                                  animation: 'fadeInOut 3s ease-in-out forwards'
-                                }}
-                              >
-                                Welcome,
-                              </h2>
-
-                              {/* "Instrumental to Life." - Fades in after Welcome fades out */}
-                              <h3
-                                className={cn(
-                                  "text-kawai-pearl absolute",
-                                  isMobile ? "text-2xl" : "text-4xl"
-                                )}
-                                style={{
-                                  fontFamily: 'var(--font-buena-park), serif',
-                                  fontWeight: 300,
-                                  letterSpacing: '0.03em',
-                                  animation: 'fadeInAfter 3s ease-in-out 2s forwards',
-                                  opacity: 0
-                                }}
-                              >
-                                Instrumental to Life.
-                              </h3>
+                        <div className={cn(
+                          "flex flex-col items-center h-full",
+                          isMobile ? "justify-start pt-8" : "justify-center gap-12"
+                        )}>
+                          {/* Small KAWAI Logo - Desktop only */}
+                          {!isMobile && (
+                            <div className="flex items-center justify-center">
+                              <KawaiLogo
+                                size="sm"
+                                animated={false}
+                                nonClickable={true}
+                              />
                             </div>
-                          </div>
+                          )}
+
+                          {/* Sequential Greeting Message with Buena Park font - Desktop only */}
+                          {!isMobile && (
+                            <div className="text-center px-4 relative" style={{ minHeight: '180px' }}>
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                {/* "Welcome," - Fades in then out */}
+                                <h2
+                                  className="text-kawai-pearl absolute text-5xl"
+                                  style={{
+                                    fontFamily: 'var(--font-buena-park), serif',
+                                    fontWeight: 400,
+                                    letterSpacing: '0.02em',
+                                    animation: 'fadeInOut 3s ease-in-out forwards'
+                                  }}
+                                >
+                                  Welcome,
+                                </h2>
+
+                                {/* "Instrumental to Life." - Fades in after Welcome fades out */}
+                                <h3
+                                  className="text-kawai-pearl absolute text-4xl"
+                                  style={{
+                                    fontFamily: 'var(--font-buena-park), serif',
+                                    fontWeight: 300,
+                                    letterSpacing: '0.03em',
+                                    animation: 'fadeInAfter 3s ease-in-out 2s forwards',
+                                    opacity: 0
+                                  }}
+                                >
+                                  Instrumental to Life.
+                                </h3>
+                              </div>
+                            </div>
+                          )}
 
                           {/* Quick Links - Clean Line Items */}
                           <div className="w-full max-w-md space-y-1">
-                            <button
-                              onClick={() => {
-                                router.push('/instrumental-to-life')
-                                clearSearch()
-                              }}
-                              className="group w-full px-6 py-4 text-left transition-all duration-200 hover:bg-kawai-red/5 border-l-2 border-transparent hover:border-kawai-red"
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="text-kawai-pearl font-light text-lg tracking-wide group-hover:text-kawai-red transition-colors">
-                                  Instrumental to Life
-                                </span>
-                                <svg
-                                  className="w-5 h-5 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-                                </svg>
-                              </div>
-                            </button>
-
-                            <button
-                              onClick={() => {
-                                router.push('/find-a-dealer')
-                                clearSearch()
-                              }}
-                              className="group w-full px-6 py-4 text-left transition-all duration-200 hover:bg-kawai-red/5 border-l-2 border-transparent hover:border-kawai-red"
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="text-kawai-pearl font-light text-lg tracking-wide group-hover:text-kawai-red transition-colors">
-                                  Find a Dealer
-                                </span>
-                                <svg
-                                  className="w-5 h-5 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-                                </svg>
-                              </div>
-                            </button>
-
-                            <button
-                              onClick={() => {
-                                router.push('/register-my-piano')
-                                clearSearch()
-                              }}
-                              className="group w-full px-6 py-4 text-left transition-all duration-200 hover:bg-kawai-red/5 border-l-2 border-transparent hover:border-kawai-red"
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="text-kawai-pearl font-light text-lg tracking-wide group-hover:text-kawai-red transition-colors">
-                                  Register My Piano
-                                </span>
-                                <svg
-                                  className="w-5 h-5 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-                                </svg>
-                              </div>
-                            </button>
-
-                            <button
-                              onClick={() => {
-                                router.push('/explore')
-                                clearSearch()
-                              }}
-                              className="group w-full px-6 py-4 text-left transition-all duration-200 hover:bg-kawai-red/5 border-l-2 border-transparent hover:border-kawai-red"
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="text-kawai-pearl font-light text-lg tracking-wide group-hover:text-kawai-red transition-colors">
-                                  Kawai Exclusive Offers
-                                </span>
-                                <svg
-                                  className="w-5 h-5 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-                                </svg>
-                              </div>
-                            </button>
+                            {quickLinks.map((link, index) => (
+                              <button
+                                key={index}
+                                onClick={() => {
+                                  router.push(link.url)
+                                  clearSearch()
+                                }}
+                                className="group w-full px-6 py-4 text-left transition-all duration-200 hover:bg-kawai-red/5 border-l-2 border-transparent hover:border-kawai-red"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="text-kawai-pearl font-light text-lg tracking-wide group-hover:text-kawai-red transition-colors">
+                                    {link.label}
+                                  </span>
+                                  <svg
+                                    className="w-5 h-5 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                                  </svg>
+                                </div>
+                              </button>
+                            ))}
                           </div>
 
                           {/* CSS for sequential fade animation */}

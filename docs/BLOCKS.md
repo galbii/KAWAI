@@ -54,6 +54,7 @@ Structural blocks for organizing content into complex layouts.
 |-------|------|---------|----------|
 | 🎹 Brand Intro | `layout-brand-intro` | Full-screen brand intro overlay with fade animation | Homepage splash, brand moments, elegant page intros |
 | 💬 Bottom Popup | `layout-bottom-left-popup` | Bottom corner notification popup with Japanese minimalist design | Announcements, promotions, gentle CTAs, newsletter signups |
+| 🧭 Side Navigation | `layout-side-navigation` | Scroll-spy side navigation with section jumping | Long-form pages, documentation, multi-section pages |
 | 📐 Columns | `layout-columns` | Multi-column layouts (2-4 columns) | Side-by-side content, comparisons |
 | ↕️ Spacer | `layout-spacer` | Vertical spacing with adjustable height | Add breathing room between sections |
 | ➖ Divider | `layout-divider` | Horizontal visual separators | Section breaks, visual separation |
@@ -90,12 +91,47 @@ Structural blocks for organizing content into complex layouts.
 - Custom storage key for tracking multiple popup campaigns
 - Z-index control for stacking order
 
-**Where to use:**
-- Homepage as an elegant entrance experience
-- Special event or campaign landing pages
-- Product launch pages
-- Brand-focused pages
-- Important announcements
+**Side Navigation Features:**
+- **Scroll-spy functionality**: Automatically highlights the active section based on scroll position
+- **Japanese-inspired design**: Shoji screen aesthetic with refined glassmorphism
+- **Smooth scroll behavior**: Elegant scrolling to sections with configurable offset
+- **Progress indicator**: Vertical line connecting navigation items (optional)
+- **Desktop positioning**: Choose left or right side placement
+- **Mobile transformations**:
+  - Bottom Bar: Floating pill-style navigation inspired by andon lanterns
+  - Hamburger Menu: Slide-out panel with full navigation
+  - Hidden: Completely hide on mobile devices
+- **Four visual themes**: Light (frosted pearl), Dark (charcoal glass), Red Accent, Gold Accent
+- **Customizable sections**: Up to 12 navigation items with labels and target IDs
+- **Icon options**: Choose from 10 icon styles (circle, square, piano, sparkles, etc.)
+- **Auto-hide behavior**: Optional auto-hide on scroll down, show on scroll up
+- **Compact mode**: Tighter spacing for more navigation items
+- **Intersection Observer**: Efficient scroll position detection
+- **Keyboard navigation**: Full accessibility support with ARIA labels
+- **Framer Motion animations**: Smooth, refined transitions and micro-interactions
+- **Active indicator**: Ink brush stroke effect on active section
+- **Configurable scroll offset**: Adjust for fixed headers (default: 80px)
+- **Inter + Playfair Display typography**: Matches Kawai brand aesthetic
+
+**Where to use Side Navigation:**
+- Long-form content pages (guides, documentation, FAQs)
+- Multi-section landing pages
+- Product pages with multiple feature sections
+- About pages with team/history/values sections
+- Educational content with multiple topics
+- Any page with 3+ distinct content sections
+
+**Side Navigation Best Practices:**
+- Assign unique HTML IDs to each content section (e.g., `id="overview"`, `id="features"`)
+- Keep section labels concise (1-3 words for optimal display)
+- Use 3-8 navigation items for best UX (avoid overwhelming users)
+- Place the Side Navigation block at the TOP of the page content for proper rendering
+- Enable smooth scroll for better user experience
+- Set scroll offset to match your fixed header height
+- Choose mobile style based on page complexity:
+  - Bottom Bar: Best for 3-5 sections, quick navigation
+  - Hamburger: Best for 6+ sections, cleaner UI
+  - Hidden: For simple pages where mobile nav isn't needed
 
 **Other Layout Blocks:**
 - Page builder areas
@@ -110,6 +146,17 @@ Structural blocks for organizing content into complex layouts.
   type: 'blocks',
   blockReferences: ['layout-columns', 'layout-spacer', 'layout-divider'],
   blocks: []
+}
+
+// Side Navigation example in Pages collection
+{
+  name: 'layout',
+  type: 'blocks',
+  blockReferences: ['layout-side-navigation'],
+  blocks: [],
+  admin: {
+    description: 'Add side navigation for multi-section pages'
+  }
 }
 
 // For hero sections with carousel

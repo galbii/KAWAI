@@ -16,6 +16,43 @@ export const HomePage: CollectionConfig = {
     read: () => true, // Public read access for frontend
   },
   fields: [
+    // Sidebar Fields
+    {
+      name: 'searchQuickLinks',
+      type: 'array',
+      labels: {
+        singular: 'Quick Link',
+        plural: 'Search Quick Links',
+      },
+      admin: {
+        position: 'sidebar',
+        description: 'Quick navigation links displayed in the search overlay welcome screen',
+      },
+      fields: [
+        {
+          name: 'label',
+          type: 'text',
+          required: true,
+          admin: {
+            description: 'Link text displayed to users',
+          },
+        },
+        {
+          name: 'url',
+          type: 'text',
+          required: true,
+          admin: {
+            description: 'Link URL/path (e.g., /pianos, /find-a-dealer)',
+          },
+        },
+      ],
+      defaultValue: [
+        { label: 'Instrumental to Life', url: '/instrumental-to-life' },
+        { label: 'Find a Dealer', url: '/find-a-dealer' },
+        { label: 'Register My Piano', url: '/register-my-piano' },
+        { label: 'Kawai Exclusive Offers', url: '/explore' },
+      ],
+    },
     {
       type: 'tabs',
       tabs: [

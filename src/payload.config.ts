@@ -43,6 +43,7 @@ import {
   VideoBackground,
   BrandIntro,
   BottomLeftPopup,
+  SideNavigation,
   // Marketing blocks
   Hero,
   GrandHero,
@@ -190,6 +191,7 @@ export default buildConfig({
     VideoBackground,
     BrandIntro,
     BottomLeftPopup,
+    SideNavigation,
 
     // Marketing blocks
     Hero,

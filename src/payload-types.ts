@@ -78,6 +78,7 @@ export interface Config {
     'layout-video-background': LayoutVideoBackgroundBlock;
     'layout-brand-intro': LayoutBrandIntroBlock;
     'layout-bottom-left-popup': LayoutBottomLeftPopupBlock;
+    'layout-side-navigation': LayoutSideNavigationBlock;
     'marketing-hero': MarketingHeroBlock;
     'marketing-grand-hero': MarketingGrandHeroBlock;
     'marketing-cta': MarketingCallToActionBlock;
@@ -930,6 +931,89 @@ export interface LayoutBottomLeftPopupBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'layout-bottom-left-popup';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LayoutSideNavigationBlock".
+ */
+export interface LayoutSideNavigationBlock {
+  /**
+   * Enable/disable the side navigation
+   */
+  enabled?: boolean | null;
+  /**
+   * Optional title displayed above navigation items
+   */
+  title?: string | null;
+  /**
+   * Position of the side navigation (desktop only)
+   */
+  position?: ('left' | 'right') | null;
+  /**
+   * Visual theme for the navigation
+   */
+  theme?: ('light' | 'dark' | 'red' | 'gold') | null;
+  /**
+   * Define navigation sections that will scroll to page blocks
+   */
+  sections?:
+    | {
+        /**
+         * Display label for this section (e.g., "Overview", "Features", "Specifications")
+         */
+        label: string;
+        /**
+         * CSS ID of the target block (without #). This should match the block's HTML id attribute.
+         */
+        targetId: string;
+        /**
+         * Optional icon for this navigation item
+         */
+        icon?:
+          | ('none' | 'circle' | 'square' | 'triangle' | 'diamond' | 'piano' | 'sparkles' | 'target' | 'pin' | 'star')
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * How navigation appears on mobile devices
+   */
+  mobileStyle?: ('bottom-bar' | 'hamburger' | 'hidden') | null;
+  /**
+   * Label for mobile navigation toggle
+   */
+  mobileLabel?: string | null;
+  /**
+   * Enable smooth scroll animation when clicking navigation items
+   */
+  smoothScroll?: boolean | null;
+  /**
+   * Pixel offset from top when scrolling to sections (accounts for fixed headers)
+   */
+  scrollOffset?: number | null;
+  /**
+   * Automatically hide navigation when scrolling down, show when scrolling up
+   */
+  autoHide?: boolean | null;
+  /**
+   * Show a vertical progress indicator line connecting navigation items
+   */
+  showProgress?: boolean | null;
+  /**
+   * Enable glassmorphism backdrop blur effect
+   */
+  glassmorphism?: boolean | null;
+  /**
+   * Show subtle border around navigation container
+   */
+  showBorder?: boolean | null;
+  /**
+   * Use compact spacing for more navigation items
+   */
+  compactMode?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'layout-side-navigation';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3156,6 +3240,7 @@ export interface Page {
     | LayoutHeroCarouselBlock
     | LayoutVideoBackgroundBlock
     | LayoutBottomLeftPopupBlock
+    | LayoutSideNavigationBlock
   )[];
   publishedAt?: string | null;
   /**
@@ -3244,6 +3329,22 @@ export interface CtaBlock {
  */
 export interface HomePage {
   id: string;
+  /**
+   * Quick navigation links displayed in the search overlay welcome screen
+   */
+  searchQuickLinks?:
+    | {
+        /**
+         * Link text displayed to users
+         */
+        label: string;
+        /**
+         * Link URL/path (e.g., /pianos, /find-a-dealer)
+         */
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Location/Piano Gallery status text displayed at the top
    */
@@ -5348,6 +5449,13 @@ export interface PagesSelect<T extends boolean = true> {
  * via the `definition` "home-page_select".
  */
 export interface HomePageSelect<T extends boolean = true> {
+  searchQuickLinks?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
   locationText?: T;
   establishedText?: T;
   titlePrefix?: T;

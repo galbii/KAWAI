@@ -13,6 +13,7 @@ export { HeroCarousel } from './layout/HeroCarousel'
 export { VideoBackground } from './layout/VideoBackground'
 export { BrandIntro } from './layout/BrandIntro'
 export { BottomLeftPopup } from './layout/BottomLeftPopup'
+export { SideNavigation } from './layout/SideNavigation'
 
 // Marketing blocks (conversion-focused)
 export { Hero } from './marketing/Hero'

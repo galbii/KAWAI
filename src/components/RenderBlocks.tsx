@@ -7,7 +7,7 @@
  * Block Categories:
  * - Legacy (4): archive, content, mediaBlock, cta
  * - Content (5): content-text, content-image, content-video, content-code, content-banner
- * - Layout (7): layout-columns, layout-spacer, layout-divider, layout-hero-carousel, layout-video-background, layout-brand-intro, layout-bottom-left-popup
+ * - Layout (8): layout-columns, layout-spacer, layout-divider, layout-hero-carousel, layout-video-background, layout-brand-intro, layout-bottom-left-popup, layout-side-navigation
  * - Marketing (8): marketing-hero, marketing-grand-hero, marketing-cta, marketing-testimonials, marketing-i2l, marketing-technical-showcase, marketing-find-a-dealer, marketing-3d-viewer
  * - Product (5): product-showcase, product-hero, product-gallery, product-features, product-specs
  *
@@ -54,6 +54,7 @@ import { HeroCarouselBlock } from './blocks/HeroCarouselBlock'
 import { VideoBackgroundBlock } from './blocks/VideoBackgroundBlock'
 import { BrandIntroBlock } from './blocks/BrandIntroBlock'
 import { BottomLeftPopupBlock } from './blocks/BottomLeftPopupBlock'
+import { SideNavigationBlock } from './blocks/SideNavigationBlock'
 
 // Marketing Blocks - Conversion-focused
 import { HeroBlock } from './blocks/HeroBlock'
@@ -100,6 +101,7 @@ const blockComponents = {
   'layout-video-background': VideoBackgroundBlock,
   'layout-brand-intro': BrandIntroBlock,
   'layout-bottom-left-popup': BottomLeftPopupBlock,
+  'layout-side-navigation': SideNavigationBlock,
 
   // Marketing blocks (marketing-*)
   'marketing-hero': HeroBlock,

@@ -24,6 +24,7 @@ export { SpacerBlock } from './SpacerBlock'
 export { DividerBlock } from './DividerBlock'
 export { VideoBackgroundBlock } from './VideoBackgroundBlock'
 export { BrandIntroBlock } from './BrandIntroBlock'
+export { SideNavigationBlock } from './SideNavigationBlock'
 
 // Marketing Blocks - Conversion-focused
 export { HeroBlock } from './HeroBlock'

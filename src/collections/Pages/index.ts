@@ -163,6 +163,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 'layout-hero-carousel',             // Hero Carousel
                 'layout-video-background',          // Video Background
                 'layout-bottom-left-popup',         // Bottom Popup
+                'layout-side-navigation',           // Side Navigation
               ] as any,
               blocks: [], // Required to be empty when using blockReferences
               required: true,
