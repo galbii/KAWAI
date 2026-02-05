@@ -34,6 +34,8 @@ export { InstrumentalToLifeBlock } from './InstrumentalToLifeBlock'
 export { TechnicalShowcaseBlock } from './TechnicalShowcaseBlock'
 export { FindADealerBlock } from './FindADealerBlock'
 export { ThreeDViewerBlock } from './ThreeDViewerBlock'
+export { InstagramCarouselBlock } from './InstagramCarouselBlock'
+export { ArtistCarouselBlock } from './ArtistCarouselBlock'
 
 // Product Blocks - Product-specific showcases
 export { ProductShowcaseBlock } from './ProductShowcaseBlock'

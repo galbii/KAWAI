@@ -54,6 +54,7 @@ import {
   FindADealer,
   ThreeDViewer,
   InstagramCarousel,
+  ArtistCarousel,
   // Product blocks
   ProductShowcase,
   ProductHero,
@@ -204,6 +205,7 @@ export default buildConfig({
     FindADealer,
     ThreeDViewer,
     InstagramCarousel,
+    ArtistCarousel,
 
     // Product blocks (for product pages)
     ProductShowcase,

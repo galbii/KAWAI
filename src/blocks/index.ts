@@ -25,6 +25,7 @@ export { TechnicalShowcase } from './marketing/TechnicalShowcase'
 export { FindADealer } from './marketing/FindADealer'
 export { ThreeDViewer } from './marketing/ThreeDViewer'
 export { InstagramCarousel } from './marketing/InstagramCarousel'
+export { ArtistCarousel } from './marketing/ArtistCarousel'
 
 // Product blocks (product pages)
 export { ProductShowcase } from './product/ProductShowcase'

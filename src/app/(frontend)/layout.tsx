@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { HeaderDynamic } from "@/components/layout/header-dynamic";
 import { FooterDynamic } from "@/components/layout/footer-dynamic";
+import { AnnouncementBarWrapper } from "@/components/layout/AnnouncementBarWrapper";
+import { LayoutSpacer } from "@/components/layout/LayoutSpacer";
 import { NavigationContextProvider } from "@/contexts/NavigationContext";
 import { parseNavigationOrigin } from "@/lib/navigation-utils";
 import { headers } from 'next/headers';
@@ -123,7 +125,9 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
         }}
       />
       <div className="flex min-h-screen flex-col m-0 p-0">
+        {!isNAMMPage && <AnnouncementBarWrapper />}
         {!isNAMMPage && <HeaderDynamic />}
+        {!isNAMMPage && <LayoutSpacer />}
         <main className="flex-1 m-0 p-0">
           {children}
         </main>

@@ -52,6 +52,14 @@ export { HeaderDynamic } from './header-dynamic'
 export { FooterDynamic } from './footer-dynamic'
 
 // ============================================================================
+// Announcement Bar Components
+// ============================================================================
+
+export { AnnouncementBar } from './AnnouncementBar'
+export { AnnouncementBarWrapper } from './AnnouncementBarWrapper'
+export { LayoutSpacer } from './LayoutSpacer'
+
+// ============================================================================
 // Navigation Components
 // ============================================================================
 

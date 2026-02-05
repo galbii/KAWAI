@@ -158,6 +158,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 'marketing-find-a-dealer',          // Find a Dealer
                 'marketing-3d-viewer',              // 3D Model Viewer
                 'marketing-instagram-carousel',     // Instagram Carousel
+                'marketing-artist-carousel',        // Artist Carousel
 
                 // Layout blocks - Structural and special elements
                 'layout-brand-intro',               // Brand Intro

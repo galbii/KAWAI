@@ -270,6 +270,90 @@ export const Artists: CollectionConfig = {
               admin: {
                 description: 'Notable awards, performances, or career highlights'
               }
+            },
+            {
+              name: 'recentWork',
+              type: 'array',
+              labels: {
+                singular: 'Recent Work',
+                plural: 'Recent Work',
+              },
+              maxRows: 5,
+              fields: [
+                {
+                  name: 'title',
+                  type: 'text',
+                  required: true,
+                  admin: {
+                    description: 'Title of the work (e.g., "Carnegie Hall Performance", "Album Recording Session")',
+                    placeholder: 'Carnegie Hall Performance with KAWAI SK-EX'
+                  }
+                },
+                {
+                  name: 'description',
+                  type: 'textarea',
+                  maxLength: 200,
+                  admin: {
+                    description: 'Brief description of the work (max 200 characters)',
+                    placeholder: 'A stunning performance of Chopin\'s Piano Concerto No. 1'
+                  }
+                },
+                {
+                  name: 'date',
+                  type: 'date',
+                  admin: {
+                    description: 'Date of the performance/work',
+                  }
+                },
+                {
+                  name: 'platform',
+                  type: 'select',
+                  options: [
+                    { label: 'Instagram', value: 'instagram' },
+                    { label: 'YouTube', value: 'youtube' },
+                    { label: 'TikTok', value: 'tiktok' },
+                    { label: 'Facebook', value: 'facebook' },
+                    { label: 'Twitter/X', value: 'twitter' },
+                    { label: 'Spotify', value: 'spotify' },
+                    { label: 'Apple Music', value: 'apple-music' },
+                    { label: 'SoundCloud', value: 'soundcloud' },
+                    { label: 'Website', value: 'website' },
+                    { label: 'Other', value: 'other' }
+                  ],
+                  defaultValue: 'instagram',
+                  admin: {
+                    description: 'Social media platform or link type'
+                  }
+                },
+                {
+                  name: 'link',
+                  type: 'text',
+                  admin: {
+                    description: 'Optional link to video, recording, or article about the work',
+                    placeholder: 'https://www.youtube.com/watch?v=...'
+                  },
+                  validate: (val: string | null | undefined) => {
+                    if (!val) return true
+                    try {
+                      new URL(val)
+                      return true
+                    } catch {
+                      return 'Please enter a valid URL (must start with http:// or https://)'
+                    }
+                  }
+                },
+                {
+                  name: 'featured',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Feature this work prominently (e.g., in carousels)'
+                  }
+                }
+              ],
+              admin: {
+                description: 'Recent performances, recordings, or projects with KAWAI pianos (up to 5)'
+              }
             }
           ]
         },

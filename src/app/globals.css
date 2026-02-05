@@ -112,6 +112,10 @@
   --font-brand-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-brand-music: var(--font-inter), sans-serif;
 
+  /* Japanese-Inspired Typography for Artist Carousel */
+  --font-family-cormorant: var(--font-cormorant), "Playfair Display", Georgia, serif;
+  --font-family-noto: var(--font-noto), -apple-system, BlinkMacSystemFont, sans-serif;
+
   /* Japanese Ma Spacing Scale - Auto-generates spacing utilities */
   --spacing-brand-xs: 0.25rem;       /* 4px */
   --spacing-brand-sm: 0.5rem;        /* 8px */

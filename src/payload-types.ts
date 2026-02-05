@@ -88,6 +88,7 @@ export interface Config {
     'marketing-find-a-dealer': MarketingFindADealerBlock;
     'marketing-3d-viewer': Marketing3DViewerBlock;
     'marketing-instagram-carousel': MarketingInstagramCarouselBlock;
+    'marketing-artist-carousel': MarketingArtistCarouselBlock;
     'product-showcase': ProductShowcaseBlock;
     'product-hero': ProductHeroBlock;
     'product-gallery': ProductImageGalleryBlock;
@@ -2450,6 +2451,329 @@ export interface Marketing3DViewerBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingArtistCarouselBlock".
+ */
+export interface MarketingArtistCarouselBlock {
+  /**
+   * Small text above the heading (e.g., "Instrumental to Life")
+   */
+  eyebrow?: string | null;
+  /**
+   * Main heading (e.g., "Featured Artists", "World-Class Performers")
+   */
+  heading?: string | null;
+  /**
+   * Supporting text below the heading
+   */
+  subheading?: string | null;
+  /**
+   * Select artists to feature in the carousel (up to 12). Artists will display in the order selected.
+   */
+  artists: (string | Artist)[];
+  /**
+   * How artist information should be displayed
+   */
+  displayMode?: ('card' | 'featured' | 'minimal') | null;
+  /**
+   * Which biography field to display
+   */
+  showBio?: ('short' | 'full' | 'none') | null;
+  /**
+   * Display artist social media links
+   */
+  showSocialLinks?: boolean | null;
+  /**
+   * Display artist genre badge
+   */
+  showGenre?: boolean | null;
+  /**
+   * Display artist instrument type
+   */
+  showInstrument?: boolean | null;
+  /**
+   * Display recent work/performances section (subtle CTA)
+   */
+  showRecentWork?: boolean | null;
+  /**
+   * Maximum number of recent work items to display per artist
+   */
+  maxRecentWorkItems?: number | null;
+  /**
+   * Carousel behavior and interaction settings
+   */
+  settings?: {
+    /**
+     * Automatically advance to next artist after a delay
+     */
+    autoPlay?: boolean | null;
+    /**
+     * Auto-play duration in milliseconds (3-30 seconds)
+     */
+    autoPlayDuration?: number | null;
+    /**
+     * Loop back to first artist after the last one
+     */
+    enableLoop?: boolean | null;
+    /**
+     * Show previous/next arrow buttons
+     */
+    showNavigationArrows?: boolean | null;
+    /**
+     * Show progress dots or counter below carousel
+     */
+    showProgressIndicator?: boolean | null;
+    /**
+     * Enable arrow key navigation
+     */
+    enableKeyboardNav?: boolean | null;
+    /**
+     * Enable touch/swipe navigation on mobile
+     */
+    enableTouchSwipe?: boolean | null;
+  };
+  /**
+   * Visual styling options
+   */
+  styling?: {
+    /**
+     * Choose a color scheme for the heading and carousel styling. Each scheme has unique eyebrow, heading gradient, and accent colors.
+     */
+    colorScheme?:
+      | ('kawai-red' | 'gold-luxury' | 'ocean-blue' | 'sunset-warmth' | 'sage-serenity' | 'cherry-blossom')
+      | null;
+    /**
+     * Background theme for the carousel section
+     */
+    theme?: ('light' | 'dark' | 'transparent') | null;
+    /**
+     * Layout style for the carousel
+     */
+    layout?: ('centered' | 'side-preview' | 'full-width') | null;
+    /**
+     * Vertical spacing around the carousel
+     */
+    spacing?: ('compact' | 'comfortable' | 'spacious') | null;
+  };
+  /**
+   * Optional call-to-action button
+   */
+  ctaButton?: {
+    /**
+     * Show a call-to-action button below the carousel
+     */
+    enabled?: boolean | null;
+    /**
+     * CTA button text
+     */
+    text?: string | null;
+    /**
+     * CTA button link URL
+     */
+    url?: string | null;
+    /**
+     * Open link in new tab
+     */
+    openInNewTab?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-artist-carousel';
+}
+/**
+ * Manage KAWAI artists - musicians and performers who play KAWAI pianos
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "artists".
+ */
+export interface Artist {
+  id: string;
+  /**
+   * Artist full name (e.g., "John Smith", "Maria García")
+   */
+  name: string;
+  /**
+   * URL-friendly identifier for this artist (auto-generated from name)
+   */
+  slug: string;
+  /**
+   * Feature this artist prominently on the artists page
+   */
+  featured?: boolean | null;
+  /**
+   * Controls whether this artist is visible on the frontend
+   */
+  isActive?: boolean | null;
+  /**
+   * Artist profile photo or performance image
+   */
+  image?: (string | null) | Media;
+  /**
+   * Direct image URL (fallback if media upload is not available)
+   */
+  imageUrl?: string | null;
+  /**
+   * Optional high-resolution image URL for hero carousel (used when this artist is featured). If empty, will use the regular image.
+   */
+  heroImageUrl?: string | null;
+  /**
+   * Short bio for artist cards and listings (max 280 characters, like a tweet)
+   */
+  shortBio?: string | null;
+  /**
+   * Artist biography - tell their story, achievements, and connection to KAWAI pianos
+   */
+  bio: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Primary musical genre
+   */
+  genre?: ('classical' | 'jazz' | 'contemporary' | 'pop' | 'rock' | 'blues' | 'world' | 'film' | 'other') | null;
+  /**
+   * Primary KAWAI instrument type
+   */
+  instrument?: ('grand' | 'upright' | 'digital' | 'hybrid' | 'multiple') | null;
+  /**
+   * KAWAI piano model used by this artist (links to product page)
+   */
+  kawaiModel?: (string | null) | Product;
+  /**
+   * Add social media profiles, streaming platforms, and website links
+   */
+  socialLinks?:
+    | {
+        /**
+         * Social media platform or link type
+         */
+        platform:
+          | 'website'
+          | 'instagram'
+          | 'youtube'
+          | 'spotify'
+          | 'apple-music'
+          | 'soundcloud'
+          | 'facebook'
+          | 'twitter'
+          | 'tiktok'
+          | 'linkedin'
+          | 'bandcamp'
+          | 'other';
+        /**
+         * Full URL to artist profile or page
+         */
+        url: string;
+        /**
+         * Optional custom label (defaults to platform name)
+         */
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Featured performance video (optional)
+   */
+  featuredVideo?: {
+    /**
+     * YouTube video ID (e.g., "dQw4w9WgXcQ" from https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+     */
+    youtubeId?: string | null;
+    /**
+     * Video title or description
+     */
+    title?: string | null;
+  };
+  /**
+   * Notable awards, performances, or career highlights
+   */
+  achievements?:
+    | {
+        achievement: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Recent performances, recordings, or projects with KAWAI pianos (up to 5)
+   */
+  recentWork?:
+    | {
+        /**
+         * Title of the work (e.g., "Carnegie Hall Performance", "Album Recording Session")
+         */
+        title: string;
+        /**
+         * Brief description of the work (max 200 characters)
+         */
+        description?: string | null;
+        /**
+         * Date of the performance/work
+         */
+        date?: string | null;
+        /**
+         * Social media platform or link type
+         */
+        platform?:
+          | (
+              | 'instagram'
+              | 'youtube'
+              | 'tiktok'
+              | 'facebook'
+              | 'twitter'
+              | 'spotify'
+              | 'apple-music'
+              | 'soundcloud'
+              | 'website'
+              | 'other'
+            )
+          | null;
+        /**
+         * Optional link to video, recording, or article about the work
+         */
+        link?: string | null;
+        /**
+         * Feature this work prominently (e.g., in carousels)
+         */
+        featured?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * SEO and social media optimization
+   */
+  seo?: {
+    /**
+     * Custom meta title (defaults to artist name + "| KAWAI Artist")
+     */
+    metaTitle?: string | null;
+    /**
+     * Meta description for search engines (max 160 characters, auto-generated from short bio if empty)
+     */
+    metaDescription?: string | null;
+    /**
+     * SEO keywords (comma-separated)
+     */
+    keywords?: string | null;
+    /**
+     * Open Graph image for social sharing (defaults to artist image)
+     */
+    ogImage?: (string | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ProductShowcaseBlock".
  */
 export interface ProductShowcaseBlock {
@@ -3124,13 +3448,23 @@ export interface Post {
     [k: string]: unknown;
   };
   /**
-   * Optional: Add promotional content before the article (Hero, Banner, Hero Carousel)
+   * Optional: Add promotional content before the article (Hero, Banner, Hero Carousel, Artist Carousel)
    */
-  headerBlocks?: (MarketingHeroBlock | MarketingGrandHeroBlock | ContentBannerBlock | LayoutHeroCarouselBlock)[] | null;
+  headerBlocks?:
+    | (
+        | MarketingHeroBlock
+        | MarketingGrandHeroBlock
+        | ContentBannerBlock
+        | LayoutHeroCarouselBlock
+        | MarketingArtistCarouselBlock
+      )[]
+    | null;
   /**
-   * Optional: Add calls-to-action or related content after the article (CTA, Testimonials, Columns)
+   * Optional: Add calls-to-action or related content after the article (CTA, Testimonials, Columns, Artist Carousel)
    */
-  footerBlocks?: (MarketingCallToActionBlock | MarketingTestimonialsBlock | LayoutColumnsBlock)[] | null;
+  footerBlocks?:
+    | (MarketingCallToActionBlock | MarketingTestimonialsBlock | LayoutColumnsBlock | MarketingArtistCarouselBlock)[]
+    | null;
   /**
    * Post authors (supports multiple authors)
    */
@@ -3356,6 +3690,7 @@ export interface Page {
     | MarketingFindADealerBlock
     | Marketing3DViewerBlock
     | MarketingInstagramCarouselBlock
+    | MarketingArtistCarouselBlock
     | LayoutBrandIntroBlock
     | LayoutHeroCarouselBlock
     | LayoutVideoBackgroundBlock
@@ -3465,6 +3800,47 @@ export interface HomePage {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Configure the site-wide announcement bar that appears above the header
+   */
+  announcementBar?: {
+    /**
+     * Toggle to show/hide the announcement bar site-wide
+     */
+    enabled?: boolean | null;
+    /**
+     * Messages that will scroll continuously. They will be concatenated with the selected divider.
+     */
+    messages?:
+      | {
+          /**
+           * Message text to display (use • for separators)
+           */
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Character used to separate messages
+     */
+    divider?: ('bullet' | 'pipe' | 'slash' | 'dash' | 'star' | 'diamond' | 'spaces') | null;
+    /**
+     * Optional: URL to navigate to when users click the announcement bar (e.g., /rebate, /promotions)
+     */
+    link?: string | null;
+    /**
+     * Visual style of the announcement bar
+     */
+    style?: ('gradient' | 'red' | 'black' | 'white' | 'red-gradient') | null;
+    /**
+     * Text size of the announcement bar
+     */
+    size?: ('small' | 'medium' | 'large') | null;
+    /**
+     * Animation speed in seconds (lower is faster, default: 40)
+     */
+    speed?: number | null;
+  };
   /**
    * Location/Piano Gallery status text displayed at the top
    */
@@ -4536,154 +4912,6 @@ export interface Storefront {
   createdAt: string;
 }
 /**
- * Manage KAWAI artists - musicians and performers who play KAWAI pianos
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "artists".
- */
-export interface Artist {
-  id: string;
-  /**
-   * Artist full name (e.g., "John Smith", "Maria García")
-   */
-  name: string;
-  /**
-   * URL-friendly identifier for this artist (auto-generated from name)
-   */
-  slug: string;
-  /**
-   * Feature this artist prominently on the artists page
-   */
-  featured?: boolean | null;
-  /**
-   * Controls whether this artist is visible on the frontend
-   */
-  isActive?: boolean | null;
-  /**
-   * Artist profile photo or performance image
-   */
-  image?: (string | null) | Media;
-  /**
-   * Direct image URL (fallback if media upload is not available)
-   */
-  imageUrl?: string | null;
-  /**
-   * Optional high-resolution image URL for hero carousel (used when this artist is featured). If empty, will use the regular image.
-   */
-  heroImageUrl?: string | null;
-  /**
-   * Short bio for artist cards and listings (max 280 characters, like a tweet)
-   */
-  shortBio?: string | null;
-  /**
-   * Artist biography - tell their story, achievements, and connection to KAWAI pianos
-   */
-  bio: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
-  /**
-   * Primary musical genre
-   */
-  genre?: ('classical' | 'jazz' | 'contemporary' | 'pop' | 'rock' | 'blues' | 'world' | 'film' | 'other') | null;
-  /**
-   * Primary KAWAI instrument type
-   */
-  instrument?: ('grand' | 'upright' | 'digital' | 'hybrid' | 'multiple') | null;
-  /**
-   * KAWAI piano model used by this artist (links to product page)
-   */
-  kawaiModel?: (string | null) | Product;
-  /**
-   * Add social media profiles, streaming platforms, and website links
-   */
-  socialLinks?:
-    | {
-        /**
-         * Social media platform or link type
-         */
-        platform:
-          | 'website'
-          | 'instagram'
-          | 'youtube'
-          | 'spotify'
-          | 'apple-music'
-          | 'soundcloud'
-          | 'facebook'
-          | 'twitter'
-          | 'tiktok'
-          | 'linkedin'
-          | 'bandcamp'
-          | 'other';
-        /**
-         * Full URL to artist profile or page
-         */
-        url: string;
-        /**
-         * Optional custom label (defaults to platform name)
-         */
-        label?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Featured performance video (optional)
-   */
-  featuredVideo?: {
-    /**
-     * YouTube video ID (e.g., "dQw4w9WgXcQ" from https://www.youtube.com/watch?v=dQw4w9WgXcQ)
-     */
-    youtubeId?: string | null;
-    /**
-     * Video title or description
-     */
-    title?: string | null;
-  };
-  /**
-   * Notable awards, performances, or career highlights
-   */
-  achievements?:
-    | {
-        achievement: string;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * SEO and social media optimization
-   */
-  seo?: {
-    /**
-     * Custom meta title (defaults to artist name + "| KAWAI Artist")
-     */
-    metaTitle?: string | null;
-    /**
-     * Meta description for search engines (max 160 characters, auto-generated from short bio if empty)
-     */
-    metaDescription?: string | null;
-    /**
-     * SEO keywords (comma-separated)
-     */
-    keywords?: string | null;
-    /**
-     * Open Graph image for social sharing (defaults to artist image)
-     */
-    ogImage?: (string | null) | Media;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * Product collections automatically synced from Shopify
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -5576,6 +5804,22 @@ export interface HomePageSelect<T extends boolean = true> {
         url?: T;
         id?: T;
       };
+  announcementBar?:
+    | T
+    | {
+        enabled?: T;
+        messages?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        divider?: T;
+        link?: T;
+        style?: T;
+        size?: T;
+        speed?: T;
+      };
   locationText?: T;
   establishedText?: T;
   titlePrefix?: T;
@@ -6120,6 +6364,17 @@ export interface ArtistsSelect<T extends boolean = true> {
     | T
     | {
         achievement?: T;
+        id?: T;
+      };
+  recentWork?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        date?: T;
+        platform?: T;
+        link?: T;
+        featured?: T;
         id?: T;
       };
   seo?:

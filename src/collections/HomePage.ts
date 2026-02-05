@@ -56,6 +56,133 @@ export const HomePage: CollectionConfig = {
     {
       type: 'tabs',
       tabs: [
+        // Announcement Bar Tab
+        {
+          label: 'Announcement Bar',
+          description: 'Site-wide scrolling announcement bar displayed above the header',
+          fields: [
+            {
+              name: 'announcementBar',
+              type: 'group',
+              fields: [
+                {
+                  name: 'enabled',
+                  type: 'checkbox',
+                  label: 'Enable Announcement Bar',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Toggle to show/hide the announcement bar site-wide'
+                  }
+                },
+                {
+                  name: 'messages',
+                  type: 'array',
+                  required: true,
+                  minRows: 1,
+                  labels: {
+                    singular: 'Message',
+                    plural: 'Messages',
+                  },
+                  fields: [
+                    {
+                      name: 'text',
+                      type: 'text',
+                      required: true,
+                      admin: {
+                        description: 'Message text to display (use • for separators)'
+                      }
+                    }
+                  ],
+                  defaultValue: [
+                    { text: 'SPECIAL OFFER  •  SAVE UP TO $5,000  •  ' },
+                    { text: 'LIMITED TIME ONLY  •  ' },
+                    { text: 'VISIT OUR SHOWROOM TODAY  •  ' }
+                  ],
+                  admin: {
+                    description: 'Messages that will scroll continuously. They will be concatenated with the selected divider.',
+                    condition: (data) => data.announcementBar?.enabled === true
+                  }
+                },
+                {
+                  name: 'divider',
+                  type: 'select',
+                  required: true,
+                  defaultValue: 'bullet',
+                  options: [
+                    { label: '• Bullet', value: 'bullet' },
+                    { label: '| Pipe', value: 'pipe' },
+                    { label: '/ Slash', value: 'slash' },
+                    { label: '- Dash', value: 'dash' },
+                    { label: '★ Star', value: 'star' },
+                    { label: '◆ Diamond', value: 'diamond' },
+                    { label: 'Spaces Only', value: 'spaces' }
+                  ],
+                  admin: {
+                    description: 'Character used to separate messages',
+                    condition: (data) => data.announcementBar?.enabled === true
+                  }
+                },
+                {
+                  name: 'link',
+                  type: 'text',
+                  admin: {
+                    description: 'Optional: URL to navigate to when users click the announcement bar (e.g., /rebate, /promotions)',
+                    placeholder: '/rebate',
+                    condition: (data) => data.announcementBar?.enabled === true
+                  }
+                },
+                {
+                  name: 'style',
+                  type: 'select',
+                  required: true,
+                  defaultValue: 'gradient',
+                  options: [
+                    { label: 'Gradient (Gray)', value: 'gradient' },
+                    { label: 'Solid Red', value: 'red' },
+                    { label: 'Solid Black', value: 'black' },
+                    { label: 'Solid White', value: 'white' },
+                    { label: 'Red Gradient', value: 'red-gradient' }
+                  ],
+                  admin: {
+                    description: 'Visual style of the announcement bar',
+                    condition: (data) => data.announcementBar?.enabled === true
+                  }
+                },
+                {
+                  name: 'size',
+                  type: 'select',
+                  required: true,
+                  defaultValue: 'medium',
+                  options: [
+                    { label: 'Small', value: 'small' },
+                    { label: 'Medium', value: 'medium' },
+                    { label: 'Large', value: 'large' }
+                  ],
+                  admin: {
+                    description: 'Text size of the announcement bar',
+                    condition: (data) => data.announcementBar?.enabled === true
+                  }
+                },
+                {
+                  name: 'speed',
+                  type: 'number',
+                  required: true,
+                  defaultValue: 40,
+                  min: 10,
+                  max: 100,
+                  admin: {
+                    description: 'Animation speed in seconds (lower is faster, default: 40)',
+                    condition: (data) => data.announcementBar?.enabled === true
+                  }
+                }
+              ],
+              admin: {
+                description: 'Configure the site-wide announcement bar that appears above the header'
+              }
+            }
+          ]
+        },
+
         // Hero Section Tab
         {
           label: 'Hero Section',

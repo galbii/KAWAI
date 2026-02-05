@@ -1055,7 +1055,10 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   return (
     <header
       ref={headerRef}
-      className="fixed top-0 left-0 right-0 z-50 w-full bg-white shadow-sm"
+      className="fixed left-0 right-0 z-50 w-full bg-white shadow-sm"
+      style={{
+        top: 'var(--announcement-bar-height, 0)'
+      }}
     >
       {/* Top Row - Utility Bar (Full Width) */}
       <div className="border-b border-gray-100 w-full bg-white">

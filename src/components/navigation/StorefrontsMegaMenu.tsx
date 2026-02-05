@@ -101,7 +101,9 @@ export function StorefrontsMegaMenu({
             opacity: 1,
             scaleY: 1,
             y: 0,
-            top: isHeaderScrolled ? 112 : 128,
+            top: isHeaderScrolled
+              ? 'calc(112px + var(--announcement-bar-height, 0px))'
+              : 'calc(128px + var(--announcement-bar-height, 0px))',
           }}
           exit={{ opacity: 0, scaleY: 0.95, y: -20 }}
           transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
@@ -193,11 +195,11 @@ export function StorefrontsMegaMenu({
                         <Link
                           href={`/store/${storefront.slug}`}
                           onClick={onClose}
-                          className="group bg-gray-100 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden hover:scale-105 h-auto flex flex-col block border-2 border-kawai-red"
+                          className="group bg-gray-100 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden hover:scale-105 h-[420px] flex flex-col block border-2 border-kawai-red"
                         >
-                          <div className="p-6 flex-1 flex flex-col">
+                          <div className="p-6 flex flex-col h-full">
                             {/* Location Header */}
-                            <div className="mb-4">
+                            <div className="mb-4 flex-shrink-0">
                               <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-3">
                                 {storefront.locationText || 'Kawai Showroom'}
                               </div>
@@ -218,7 +220,7 @@ export function StorefrontsMegaMenu({
                             </div>
 
                             {/* Location Details */}
-                            <div className="space-y-3 mb-4 flex-1">
+                            <div className="space-y-3 mb-4 h-[120px] flex-shrink-0">
                               {storefront.showroomInfo?.address && (
                                 <div className="flex items-start space-x-3">
                                   <div className="w-5 h-5 bg-kawai-red/10 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
@@ -226,7 +228,7 @@ export function StorefrontsMegaMenu({
                                       <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                                     </svg>
                                   </div>
-                                  <p className="text-xs text-kawai-black/70 leading-relaxed">
+                                  <p className="text-xs text-kawai-black/70 leading-relaxed line-clamp-2">
                                     {storefront.showroomInfo.address}
                                   </p>
                                 </div>
@@ -249,19 +251,19 @@ export function StorefrontsMegaMenu({
                                 <div className="flex items-center space-x-3">
                                   <div className="w-5 h-5 bg-kawai-red/10 rounded-full flex items-center justify-center flex-shrink-0">
                                     <svg className="w-2.5 h-2.5 text-kawai-red" fill="currentColor" viewBox="0 0 24 24">
-                                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                                     </svg>
                                   </div>
                                   <p className="text-xs text-kawai-black/70">
-                                    {storefront.establishedText}
+                                    {storefront.establishedText.replace(/^Est\.\s*\d{4}\s*•\s*/, '')}
                                   </p>
                                 </div>
                               )}
                             </div>
 
                             {/* Key Features */}
-                            {storefront.features && storefront.features.length > 0 && (
-                              <div className="mb-4">
+                            <div className="mb-4 h-[72px] flex-shrink-0 overflow-hidden">
+                              {storefront.features && storefront.features.length > 0 && (
                                 <div className="flex flex-wrap gap-2">
                                   {storefront.features.map((feature, idx) => (
                                     <span
@@ -272,11 +274,11 @@ export function StorefrontsMegaMenu({
                                     </span>
                                   ))}
                                 </div>
-                              </div>
-                            )}
+                              )}
+                            </div>
 
                             {/* Visit Button */}
-                            <div className="pt-3 border-t border-kawai-pearl mt-auto">
+                            <div className="pt-3 border-t border-kawai-pearl mt-auto flex-shrink-0">
                               <div className="flex items-center justify-between">
                                 <span className="text-sm font-medium text-kawai-black group-hover:text-kawai-red transition-colors">
                                   Visit Showroom

@@ -85,7 +85,9 @@ export function ProductsMegaMenu({
             opacity: 1,
             scaleY: 1,
             y: 0,
-            top: isHeaderScrolled ? 112 : 128,
+            top: isHeaderScrolled
+              ? 'calc(112px + var(--announcement-bar-height, 0px))'
+              : 'calc(128px + var(--announcement-bar-height, 0px))',
           }}
           exit={{ opacity: 0, scaleY: 0.95, y: -20 }}
           transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}

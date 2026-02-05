@@ -122,20 +122,20 @@ export const Posts: CollectionConfig = {
               name: 'headerBlocks',
               label: 'Header Content (Before Article)',
               type: 'blocks',
-              blockReferences: ['marketing-hero', 'marketing-grand-hero', 'content-banner', 'layout-hero-carousel'] as any,
+              blockReferences: ['marketing-hero', 'marketing-grand-hero', 'content-banner', 'layout-hero-carousel', 'marketing-artist-carousel'] as any,
               blocks: [],
               admin: {
-                description: 'Optional: Add promotional content before the article (Hero, Banner, Hero Carousel)',
+                description: 'Optional: Add promotional content before the article (Hero, Banner, Hero Carousel, Artist Carousel)',
               },
             },
             {
               name: 'footerBlocks',
               label: 'Footer Content (After Article)',
               type: 'blocks',
-              blockReferences: ['marketing-cta', 'marketing-testimonials', 'layout-columns'] as any,
+              blockReferences: ['marketing-cta', 'marketing-testimonials', 'layout-columns', 'marketing-artist-carousel'] as any,
               blocks: [],
               admin: {
-                description: 'Optional: Add calls-to-action or related content after the article (CTA, Testimonials, Columns)',
+                description: 'Optional: Add calls-to-action or related content after the article (CTA, Testimonials, Columns, Artist Carousel)',
               },
             },
             // TODO: Remove after data migration - keep commented for reference

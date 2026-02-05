@@ -1,5 +1,5 @@
 import type { Viewport } from "next";
-import { Inter, Crimson_Text, Playfair_Display } from "next/font/google";
+import { Inter, Crimson_Text, Playfair_Display, Cormorant_Garamond, Noto_Sans } from "next/font/google";
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { Suspense } from 'react';
 import { PHProvider } from './providers'
@@ -34,6 +34,23 @@ const playfairDisplay = Playfair_Display({
   style: ["normal", "italic"],
 });
 
+// Refined serif for artist carousel headings - Japanese-inspired elegance
+const cormorantGaramond = Cormorant_Garamond({
+  subsets: ["latin"],
+  variable: "--font-cormorant",
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700"],
+  style: ["normal", "italic"],
+});
+
+// Clean sans-serif for artist carousel subheadings
+const notoSans = Noto_Sans({
+  subsets: ["latin"],
+  variable: "--font-noto",
+  display: "swap",
+  weight: ["300", "400", "500", "600"],
+});
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -47,7 +64,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={`${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} antialiased bg-kawai-black text-kawai-pearl`}>
+      <body className={`${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${notoSans.variable} antialiased bg-kawai-black text-kawai-pearl`}>
         <PHProvider>
           <CartProvider>
             <Suspense fallback={null}>
