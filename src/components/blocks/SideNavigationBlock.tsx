@@ -111,10 +111,12 @@ export function SideNavigationBlock({
   const [isVisible, setIsVisible] = useState(true)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isMobileSidebarExpanded, setIsMobileSidebarExpanded] = useState(false)
+  const [isDesktopExpanded, setIsDesktopExpanded] = useState(false)
   const [scrollDirection, setScrollDirection] = useState<'up' | 'down'>('up')
   const { scrollY } = useScroll()
   const lastScrollY = useRef(0)
   const collapseTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const desktopCollapseTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   // Hide/show based on scroll direction
   useMotionValueEvent(scrollY, 'change', (latest) => {
@@ -178,6 +180,55 @@ export function SideNavigationBlock({
     [smoothScroll, scrollOffset]
   )
 
+  // Handle mobile sidebar expansion
+  const handleMobileSidebarToggle = useCallback(() => {
+    setIsMobileSidebarExpanded(true)
+
+    // Clear existing timer
+    if (collapseTimerRef.current) {
+      clearTimeout(collapseTimerRef.current)
+    }
+
+    // Auto-collapse after 2 seconds
+    collapseTimerRef.current = setTimeout(() => {
+      setIsMobileSidebarExpanded(false)
+    }, 2000)
+  }, [])
+
+  // Handle desktop navigation expansion on hover
+  const handleDesktopMouseEnter = useCallback(() => {
+    setIsDesktopExpanded(true)
+
+    // Clear existing timer
+    if (desktopCollapseTimerRef.current) {
+      clearTimeout(desktopCollapseTimerRef.current)
+    }
+  }, [])
+
+  const handleDesktopMouseLeave = useCallback(() => {
+    // Clear existing timer
+    if (desktopCollapseTimerRef.current) {
+      clearTimeout(desktopCollapseTimerRef.current)
+    }
+
+    // Auto-collapse after 2 seconds
+    desktopCollapseTimerRef.current = setTimeout(() => {
+      setIsDesktopExpanded(false)
+    }, 2000)
+  }, [])
+
+  // Clean up timers on unmount
+  useEffect(() => {
+    return () => {
+      if (collapseTimerRef.current) {
+        clearTimeout(collapseTimerRef.current)
+      }
+      if (desktopCollapseTimerRef.current) {
+        clearTimeout(desktopCollapseTimerRef.current)
+      }
+    }
+  }, [])
+
   if (!enabled || !finalSections || finalSections.length === 0) {
     return null
   }
@@ -201,116 +252,153 @@ export function SideNavigationBlock({
   const activeClass = activeClasses[theme || 'light']
   const zoomScale = (zoom || 100) / 100
 
-  // Desktop Navigation
+  // Desktop Navigation (Hover-based slim design)
   const DesktopNav = (
-    <motion.nav
-      initial={{ opacity: 0, x: position === 'right' ? 50 : -50 }}
+    <motion.div
+      initial={{ opacity: 0, x: position === 'right' ? 20 : -20 }}
       animate={{
         opacity: isVisible ? 1 : 0,
-        x: isVisible ? 0 : position === 'right' ? 50 : -50,
+        x: isVisible ? 0 : position === 'right' ? 20 : -20,
       }}
-      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
       className={`
         fixed top-1/2 -translate-y-1/2 z-40
         ${position === 'right' ? 'right-6' : 'left-6'}
         hidden lg:block
       `}
-      style={{ transform: `translateY(-50%) scale(${zoomScale})`, transformOrigin: 'center' }}
-      aria-label="Page navigation"
+      style={{
+        transform: `translateY(-50%) scale(${zoomScale})`,
+        transformOrigin: position === 'right' ? 'right center' : 'left center',
+      }}
+      onMouseEnter={handleDesktopMouseEnter}
+      onMouseLeave={handleDesktopMouseLeave}
     >
-      <div
+      <motion.nav
+        animate={{
+          width: isDesktopExpanded ? 'auto' : '40px',
+          paddingLeft: isDesktopExpanded ? '12px' : '8px',
+          paddingRight: isDesktopExpanded ? '12px' : '8px',
+        }}
+        transition={{ duration: 0.2, ease: 'easeInOut' }}
         className={`
+          relative rounded-2xl
           ${baseClass}
-          ${glassmorphism ? 'backdrop-blur-md' : ''}
-          ${showBorder ? 'border' : ''}
-          rounded-2xl px-6 py-8
-          shadow-lg
-          min-w-[200px]
-          relative
-          transition-all duration-300
+          ${glassmorphism ? 'backdrop-blur-xl' : ''}
+          ${showBorder ? 'border-2' : ''}
+          shadow-2xl
+          overflow-hidden
         `}
         style={{
-          backgroundImage: glassmorphism
-            ? 'radial-gradient(circle at top right, rgba(212, 175, 55, 0.05), transparent)'
+          background: glassmorphism
+            ? theme === 'dark'
+              ? 'rgba(44, 44, 44, 0.6)'
+              : 'rgba(248, 248, 248, 0.6)'
             : undefined,
+          borderColor: theme === 'dark'
+            ? 'rgba(248, 248, 248, 0.1)'
+            : 'rgba(44, 44, 44, 0.1)',
         }}
+        aria-label="Page navigation"
       >
-        {/* Title */}
-        {title && (
-          <h3
-            className="font-serif text-sm uppercase tracking-[0.2em] mb-6 opacity-60"
-            style={{ fontFamily: 'Playfair Display, serif' }}
-          >
-            {title}
-          </h3>
-        )}
+        {/* Glassmorphic overlay gradient */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: theme === 'red'
+              ? 'linear-gradient(135deg, rgba(196, 30, 58, 0.08) 0%, transparent 100%)'
+              : theme === 'gold'
+              ? 'linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, transparent 100%)'
+              : 'linear-gradient(135deg, rgba(212, 175, 55, 0.03) 0%, transparent 100%)',
+          }}
+        />
 
-        {/* Progress Line */}
-        {showProgress && (
-          <div className="absolute left-4 top-20 bottom-8 w-px bg-current opacity-10" />
-        )}
-
-        {/* Navigation Items */}
-        <ul className={`space-y-${compactMode ? '3' : '4'} relative`}>
+        <div className="relative flex flex-col items-stretch gap-1.5 py-3">
           {finalSections.map((section, index) => {
             const isActive = activeSection === section.targetId
-            const icon = section.icon && section.icon !== 'none' ? iconMap[section.icon] : null
+            const icon = section.icon && section.icon !== 'none'
+              ? iconMap[section.icon]
+              : null
 
             return (
-              <motion.li
+              <motion.button
                 key={section.targetId}
-                initial={{ opacity: 0, x: position === 'right' ? 20 : -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05, duration: 0.4 }}
+                onClick={() => handleNavClick(section.targetId)}
+                className={`
+                  relative flex items-center gap-3
+                  rounded-lg transition-all duration-200
+                  ${isActive
+                    ? `${activeClass} shadow-md`
+                    : 'opacity-60 hover:opacity-100 hover:bg-current/5'
+                  }
+                `}
+                initial={{ opacity: 0, x: position === 'right' ? 10 : -10 }}
+                animate={{
+                  opacity: 1,
+                  x: 0,
+                  paddingLeft: isDesktopExpanded ? '12px' : '0px',
+                  paddingRight: isDesktopExpanded ? '12px' : '0px',
+                  paddingTop: isDesktopExpanded ? '10px' : '6px',
+                  paddingBottom: isDesktopExpanded ? '10px' : '6px',
+                }}
+                transition={{ delay: index * 0.02, duration: 0.2, ease: 'easeOut' }}
+                whileTap={{ scale: 0.95 }}
+                aria-label={`Navigate to ${section.label}`}
+                aria-current={isActive ? 'true' : 'false'}
+                style={{
+                  minWidth: isDesktopExpanded ? 'auto' : '24px',
+                  justifyContent: isDesktopExpanded ? 'flex-start' : 'center',
+                }}
               >
-                <button
-                  onClick={() => handleNavClick(section.targetId)}
-                  className={`
-                    group relative flex items-center gap-3 w-full text-left
-                    transition-all duration-300
-                    ${isActive ? activeClass : 'hover:translate-x-1'}
-                  `}
-                  aria-label={`Navigate to ${section.label}`}
-                  aria-current={isActive ? 'true' : 'false'}
-                >
-                  {/* Icon or Dot */}
-                  <span
-                    className={`
-                      flex-shrink-0 transition-all duration-300
-                      ${isActive ? 'scale-125' : 'scale-100 opacity-50 group-hover:opacity-100'}
-                      ${compactMode ? 'text-xs' : 'text-sm'}
-                    `}
-                  >
-                    {icon || '●'}
-                  </span>
+                {/* Icon/Dot */}
+                <span className={`
+                  flex-shrink-0 transition-all duration-200
+                  ${isActive ? 'scale-110' : 'scale-100'}
+                  ${isDesktopExpanded ? 'text-sm' : 'text-xs'}
+                `}>
+                  {icon || '●'}
+                </span>
 
-                  {/* Label */}
-                  <span
-                    className={`
-                      font-sans transition-all duration-300
-                      ${isActive ? 'font-semibold' : 'font-normal opacity-70 group-hover:opacity-100'}
-                      ${compactMode ? 'text-xs' : 'text-sm'}
-                    `}
-                    style={{ fontFamily: 'Inter, sans-serif' }}
-                  >
-                    {section.label}
-                  </span>
-
-                  {/* Active Indicator - Ink Brush Stroke */}
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeIndicator"
-                      className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-full rounded-full bg-current"
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                    />
+                {/* Label (visible when expanded) */}
+                <AnimatePresence>
+                  {isDesktopExpanded && (
+                    <motion.span
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: 'auto' }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.15, ease: 'easeOut' }}
+                      className={`
+                        overflow-hidden whitespace-nowrap text-xs font-medium
+                        ${isActive ? 'font-semibold' : 'font-normal'}
+                      `}
+                      style={{ fontFamily: 'Inter, sans-serif' }}
+                    >
+                      {section.label}
+                    </motion.span>
                   )}
-                </button>
-              </motion.li>
+                </AnimatePresence>
+
+                {/* Active indicator */}
+                {isActive && (
+                  <motion.div
+                    layoutId="desktopActiveIndicator"
+                    className={`
+                      absolute top-1/2 -translate-y-1/2 w-1 h-8 rounded-full bg-current
+                      ${position === 'right' ? 'left-0 rounded-r-full' : 'right-0 rounded-l-full'}
+                    `}
+                    transition={{ duration: 0.2, ease: 'easeInOut' }}
+                  />
+                )}
+              </motion.button>
             )
           })}
-        </ul>
-      </div>
-    </motion.nav>
+        </div>
+
+        {/* Vertical progress indicator (minimized state) */}
+        {!isDesktopExpanded && showProgress && (
+          <div className="absolute left-1.5 top-4 bottom-4 w-[1.5px] bg-current opacity-10 rounded-full" />
+        )}
+      </motion.nav>
+    </motion.div>
   )
 
   // Mobile Bottom Bar (Andon Style)
@@ -485,30 +573,6 @@ export function SideNavigationBlock({
     </>
   )
 
-  // Handle mobile sidebar expansion
-  const handleMobileSidebarToggle = useCallback(() => {
-    setIsMobileSidebarExpanded(true)
-
-    // Clear existing timer
-    if (collapseTimerRef.current) {
-      clearTimeout(collapseTimerRef.current)
-    }
-
-    // Auto-collapse after 2 seconds
-    collapseTimerRef.current = setTimeout(() => {
-      setIsMobileSidebarExpanded(false)
-    }, 2000)
-  }, [])
-
-  // Clean up timer on unmount
-  useEffect(() => {
-    return () => {
-      if (collapseTimerRef.current) {
-        clearTimeout(collapseTimerRef.current)
-      }
-    }
-  }, [])
-
   // Mobile Slim Sidebar (Floating Glassmorphic)
   const MobileSlimSidebar = (
     <motion.div
@@ -517,7 +581,7 @@ export function SideNavigationBlock({
         opacity: isVisible ? 1 : 0,
         x: isVisible ? 0 : 20,
       }}
-      transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
       className="fixed right-4 top-1/2 -translate-y-1/2 z-[100] lg:hidden"
       style={{
         transform: `translateY(-50%) scale(${zoomScale})`,
@@ -527,9 +591,11 @@ export function SideNavigationBlock({
     >
       <motion.nav
         animate={{
-          width: isMobileSidebarExpanded ? 'auto' : '48px',
+          width: isMobileSidebarExpanded ? 'auto' : '40px',
+          paddingLeft: isMobileSidebarExpanded ? '12px' : '8px',
+          paddingRight: isMobileSidebarExpanded ? '12px' : '8px',
         }}
-        transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+        transition={{ duration: 0.2, ease: 'easeInOut' }}
         className={`
           relative rounded-2xl
           ${baseClass}
@@ -562,7 +628,7 @@ export function SideNavigationBlock({
           }}
         />
 
-        <div className="relative flex flex-col items-stretch gap-2 p-3">
+        <div className="relative flex flex-col items-stretch gap-1.5 py-3">
           {finalSections.map((section, index) => {
             const isActive = activeSection === section.targetId
             const icon = section.icon && section.icon !== 'none'
@@ -578,28 +644,35 @@ export function SideNavigationBlock({
                 }}
                 className={`
                   relative flex items-center gap-3
-                  rounded-xl px-3 py-2.5
-                  transition-all duration-300
+                  rounded-lg transition-all duration-200
                   ${isActive
                     ? `${activeClass} shadow-md`
                     : 'opacity-60 hover:opacity-100 hover:bg-current/5'
                   }
                 `}
                 initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.04, duration: 0.3 }}
+                animate={{
+                  opacity: 1,
+                  x: 0,
+                  paddingLeft: isMobileSidebarExpanded ? '12px' : '0px',
+                  paddingRight: isMobileSidebarExpanded ? '12px' : '0px',
+                  paddingTop: isMobileSidebarExpanded ? '10px' : '6px',
+                  paddingBottom: isMobileSidebarExpanded ? '10px' : '6px',
+                }}
+                transition={{ delay: index * 0.02, duration: 0.2, ease: 'easeOut' }}
                 whileTap={{ scale: 0.95 }}
                 aria-label={`Navigate to ${section.label}`}
                 aria-current={isActive ? 'true' : 'false'}
                 style={{
-                  minWidth: '42px',
+                  minWidth: isMobileSidebarExpanded ? 'auto' : '24px',
                   justifyContent: isMobileSidebarExpanded ? 'flex-start' : 'center',
                 }}
               >
                 {/* Icon/Dot */}
                 <span className={`
-                  flex-shrink-0 transition-all duration-300
-                  ${isActive ? 'scale-110 text-base' : 'scale-100 text-sm'}
+                  flex-shrink-0 transition-all duration-200
+                  ${isActive ? 'scale-110' : 'scale-100'}
+                  ${isMobileSidebarExpanded ? 'text-sm' : 'text-xs'}
                 `}>
                   {icon || '●'}
                 </span>
@@ -611,7 +684,7 @@ export function SideNavigationBlock({
                       initial={{ opacity: 0, width: 0 }}
                       animate={{ opacity: 1, width: 'auto' }}
                       exit={{ opacity: 0, width: 0 }}
-                      transition={{ duration: 0.25 }}
+                      transition={{ duration: 0.15, ease: 'easeOut' }}
                       className={`
                         overflow-hidden whitespace-nowrap text-xs font-medium
                         ${isActive ? 'font-semibold' : 'font-normal'}
@@ -628,7 +701,7 @@ export function SideNavigationBlock({
                   <motion.div
                     layoutId="mobileFloatingActiveIndicator"
                     className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-current"
-                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    transition={{ duration: 0.2, ease: 'easeInOut' }}
                   />
                 )}
               </motion.button>
@@ -638,7 +711,7 @@ export function SideNavigationBlock({
 
         {/* Vertical progress indicator (minimized state) */}
         {!isMobileSidebarExpanded && showProgress && (
-          <div className="absolute left-2 top-6 bottom-6 w-[2px] bg-current opacity-10 rounded-full" />
+          <div className="absolute left-1.5 top-4 bottom-4 w-[1.5px] bg-current opacity-10 rounded-full" />
         )}
       </motion.nav>
     </motion.div>

@@ -87,6 +87,7 @@ export interface Config {
     'marketing-technical-showcase': MarketingTechnicalShowcaseBlock;
     'marketing-find-a-dealer': MarketingFindADealerBlock;
     'marketing-3d-viewer': Marketing3DViewerBlock;
+    'marketing-instagram-carousel': MarketingInstagramCarouselBlock;
     'product-showcase': ProductShowcaseBlock;
     'product-hero': ProductHeroBlock;
     'product-gallery': ProductImageGalleryBlock;
@@ -1421,7 +1422,7 @@ export interface Product {
   /**
    * Product page hero section (single block layout)
    */
-  pageContent?: ProductHeroBlock[] | null;
+  pageContent?: (ProductHeroBlock | MarketingInstagramCarouselBlock)[] | null;
   /**
    * SEO and social media optimization
    */
@@ -1586,6 +1587,116 @@ export interface ProductHeroBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'product-hero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingInstagramCarouselBlock".
+ */
+export interface MarketingInstagramCarouselBlock {
+  /**
+   * Optional heading above the carousel (e.g., "Follow Our Journey", "Artist Spotlights")
+   */
+  heading?: string | null;
+  /**
+   * Optional supporting text below the heading
+   */
+  subheading?: string | null;
+  /**
+   * Optional Instagram handle to display (e.g., "@kawaipiano")
+   */
+  instagramHandle?: string | null;
+  /**
+   * Add Instagram posts (up to 12). Posts will display in the order added.
+   */
+  posts: {
+    /**
+     * Instagram post or reel URL (e.g., https://www.instagram.com/p/ABC123/ or https://www.instagram.com/reels/ABC123/)
+     */
+    instagramUrl: string;
+    /**
+     * Optional caption or context for this post
+     */
+    caption?: string | null;
+    /**
+     * Optional category badge for this post
+     */
+    category?: ('performance' | 'artist' | 'education' | 'craftsmanship' | 'community' | 'event') | null;
+    id?: string | null;
+  }[];
+  /**
+   * Carousel behavior and interaction settings
+   */
+  settings?: {
+    /**
+     * Automatically advance to next post after a delay
+     */
+    autoPlay?: boolean | null;
+    /**
+     * Auto-play duration in milliseconds (3-30 seconds)
+     */
+    autoPlayDuration?: number | null;
+    /**
+     * Loop back to first post after the last one
+     */
+    enableLoop?: boolean | null;
+    /**
+     * Show previous/next arrow buttons
+     */
+    showNavigationArrows?: boolean | null;
+    /**
+     * Show progress dots or counter below carousel
+     */
+    showProgressIndicator?: boolean | null;
+    /**
+     * Enable arrow key navigation
+     */
+    enableKeyboardNav?: boolean | null;
+    /**
+     * Enable touch/swipe navigation on mobile
+     */
+    enableTouchSwipe?: boolean | null;
+  };
+  /**
+   * Visual styling options
+   */
+  styling?: {
+    /**
+     * Color theme for the carousel section
+     */
+    theme?: ('light' | 'dark' | 'red' | 'transparent') | null;
+    /**
+     * Layout style for the carousel
+     */
+    layout?: ('centered' | 'side-preview' | 'full-width') | null;
+    /**
+     * Vertical spacing around the carousel
+     */
+    spacing?: ('compact' | 'comfortable' | 'spacious') | null;
+  };
+  /**
+   * Optional call-to-action button
+   */
+  ctaButton?: {
+    /**
+     * Show a call-to-action button below the carousel
+     */
+    enabled?: boolean | null;
+    /**
+     * CTA button text
+     */
+    text?: string | null;
+    /**
+     * CTA button link URL
+     */
+    url?: string | null;
+    /**
+     * Open link in new tab
+     */
+    openInNewTab?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-instagram-carousel';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3244,6 +3355,7 @@ export interface Page {
     | MarketingGrandHeroBlock
     | MarketingFindADealerBlock
     | Marketing3DViewerBlock
+    | MarketingInstagramCarouselBlock
     | LayoutBrandIntroBlock
     | LayoutHeroCarouselBlock
     | LayoutVideoBackgroundBlock

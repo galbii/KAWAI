@@ -233,6 +233,7 @@ Conversion-focused promotional blocks designed to drive user actions.
 | 🎬 Technical Showcase | `marketing-technical-showcase` | Alternating video demonstrations and product comparisons | Product launches, technology showcases, detailed feature comparisons |
 | 📍 Find a Dealer | `marketing-find-a-dealer` | Simple, elegant dealer locator CTA | Directing users to find authorized dealers, store locator pages |
 | 🎹 3D Model Viewer | `marketing-3d-viewer` | Interactive 3D piano model viewer with floating button | Product pages, piano showcase pages, immersive product experiences |
+| 📷 Instagram Carousel | `marketing-instagram-carousel` | Elegant Instagram post/video carousel with keyboard navigation | Social proof, community engagement, artist highlights, event coverage |
 
 **Grand Hero Features:**
 - **Full-viewport cinematic design** with configurable heights (100vh, 90vh, 80vh, 70vh)
@@ -356,6 +357,53 @@ Each video can have its own call-to-action button with:
 - Choose button position that doesn't obscure important content
 - Test on mobile devices to ensure good performance
 - Use product name field for better analytics tracking
+
+**Instagram Carousel Features:**
+- **Instagram embed integration** using Instagram's official embed.js
+- **Arrow key navigation** for desktop users (left/right arrows)
+- **Touch/swipe support** with configurable swipe distance threshold
+- **Auto-play functionality** with pause on hover/interaction
+- **Multiple theme options**: Light (pearl), Dark (charcoal), Red Accent, Transparent
+- **Three layout styles**: Centered Focus, Side Preview, Full Width
+- **Progress indicators**: Minimalist dots with current/total counter
+- **Category badges** for each post (Performance, Artist, Education, etc.)
+- **Optional captions** with refined typography
+- **Japanese-inspired design** with shoji screen aesthetic elements
+- **Elegant animations** via Framer Motion with reduced motion support
+- **Loading states** with animated spinners
+- **Configurable spacing**: Compact, Comfortable, Spacious vertical padding
+- **Optional heading/subheading** with Instagram handle display
+- **CTA button** with customizable text, URL, and new tab options
+- **Mobile-optimized** with responsive breakpoints and touch gestures
+- **Accessibility-friendly** with ARIA labels and keyboard hints
+- **Up to 12 posts** per carousel with validation
+
+**Instagram Carousel Configuration:**
+- **Heading**: Optional section title (e.g., "Follow Our Journey")
+- **Subheading**: Supporting descriptive text
+- **Instagram Handle**: Display username with Instagram icon
+- **Posts Array**: Add 1-12 Instagram post URLs with optional captions and categories
+- **Auto-Play**: Optional automatic advancement with configurable duration (3-30 seconds)
+- **Loop**: Choose to loop back to first post or stop at last
+- **Navigation Arrows**: Show/hide previous/next buttons
+- **Progress Indicator**: Display dots and counter
+- **Keyboard Nav**: Enable/disable arrow key controls
+- **Touch Swipe**: Enable/disable mobile swipe gestures
+- **Theme**: Light, Dark, Red Accent, or Transparent background
+- **Layout**: Centered Focus (default), Side Preview, or Full Width
+- **Spacing**: Vertical padding options for page composition
+
+**Instagram Carousel Best Practices:**
+- Use valid Instagram post URLs (https://www.instagram.com/p/ABC123/)
+- Supports posts, reels, and IGTV (/p/, /reels/, /reel/, /tv/ formats)
+- Keep carousel to 6-8 posts for optimal user experience
+- Add captions to provide context beyond the Instagram post
+- Use category badges to organize content themes
+- Choose theme based on surrounding page design
+- Enable auto-play for homepage hero sections, disable for content sections
+- Test on mobile devices to ensure Instagram embeds load correctly
+- Use CTA button to drive traffic to your Instagram profile
+- Combine with other marketing blocks for storytelling (e.g., after Hero section)
 
 **Where to use:**
 - Landing pages

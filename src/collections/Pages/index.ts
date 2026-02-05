@@ -157,6 +157,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 'marketing-grand-hero',             // Grand Hero
                 'marketing-find-a-dealer',          // Find a Dealer
                 'marketing-3d-viewer',              // 3D Model Viewer
+                'marketing-instagram-carousel',     // Instagram Carousel
 
                 // Layout blocks - Structural and special elements
                 'layout-brand-intro',               // Brand Intro

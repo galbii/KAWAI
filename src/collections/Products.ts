@@ -446,7 +446,8 @@ export const Products: CollectionConfig = {
               name: 'pageContent',
               type: 'blocks',
               blockReferences: [
-                'product-hero',  // Product Hero - Only allowed block for product pages
+                'product-hero',                   // Product Hero - Only allowed block for product pages
+                'marketing-instagram-carousel',   // Instagram Carousel - Social proof
               ] as any,
               blocks: [], // Required to be empty when using blockReferences
               admin: {

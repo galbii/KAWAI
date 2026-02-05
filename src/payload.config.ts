@@ -53,6 +53,7 @@ import {
   TechnicalShowcase,
   FindADealer,
   ThreeDViewer,
+  InstagramCarousel,
   // Product blocks
   ProductShowcase,
   ProductHero,
@@ -202,6 +203,7 @@ export default buildConfig({
     TechnicalShowcase,
     FindADealer,
     ThreeDViewer,
+    InstagramCarousel,
 
     // Product blocks (for product pages)
     ProductShowcase,

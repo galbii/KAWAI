@@ -2,13 +2,13 @@
  * RenderBlocks - Universal Block Renderer
  *
  * Dynamically renders Payload CMS blocks from the `layout` field.
- * Supports 27 block types across 5 categories.
+ * Supports 28 block types across 5 categories.
  *
  * Block Categories:
  * - Legacy (4): archive, content, mediaBlock, cta
  * - Content (5): content-text, content-image, content-video, content-code, content-banner
  * - Layout (8): layout-columns, layout-spacer, layout-divider, layout-hero-carousel, layout-video-background, layout-brand-intro, layout-bottom-left-popup, layout-side-navigation
- * - Marketing (8): marketing-hero, marketing-grand-hero, marketing-cta, marketing-testimonials, marketing-i2l, marketing-technical-showcase, marketing-find-a-dealer, marketing-3d-viewer
+ * - Marketing (9): marketing-hero, marketing-grand-hero, marketing-cta, marketing-testimonials, marketing-i2l, marketing-technical-showcase, marketing-find-a-dealer, marketing-3d-viewer, marketing-instagram-carousel
  * - Product (5): product-showcase, product-hero, product-gallery, product-features, product-specs
  *
  * Usage:
@@ -66,6 +66,7 @@ import { InstrumentalToLifeBlock } from './blocks/InstrumentalToLifeBlock'
 import { TechnicalShowcaseBlock } from './blocks/TechnicalShowcaseBlock'
 import { FindADealerBlock } from './blocks/FindADealerBlock'
 import { ThreeDViewerBlock } from './blocks/ThreeDViewerBlock'
+import { InstagramCarouselBlock } from './blocks/InstagramCarouselBlock'
 
 // Product Blocks - Product-specific showcases
 import { ProductShowcaseBlock } from './blocks/ProductShowcaseBlock'
@@ -113,6 +114,7 @@ const blockComponents = {
   'marketing-technical-showcase': TechnicalShowcaseBlock,
   'marketing-find-a-dealer': FindADealerBlock,
   'marketing-3d-viewer': ThreeDViewerBlock,
+  'marketing-instagram-carousel': InstagramCarouselBlock,
 
   // Product blocks (product-*)
   'product-showcase': ProductShowcaseBlock,
