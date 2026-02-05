@@ -2,7 +2,6 @@
 
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
-import Link from 'next/link'
 
 type RebateModel = {
   model: string
@@ -68,63 +67,44 @@ export function RebateGrid({ models }: RebateGridProps) {
 
 function PianoCard({ piano }: { piano: RebateModel }) {
   return (
-    <Link
-      href={`/products/${piano.slug}`}
-      className="group block h-full"
-    >
-      <article className="h-full bg-white border border-kawai-charcoal/10 hover:border-kawai-red/30 transition-all duration-500">
-        {/* Clean header with rebate */}
-        <div className="p-8 border-b border-kawai-charcoal/5">
-          <div className="flex items-start justify-between mb-6">
-            <span className="text-xs tracking-[0.2em] uppercase text-kawai-charcoal/40 font-medium">
-              {piano.category}
-            </span>
-            <span className="text-2xl font-light text-kawai-red" style={{ fontFamily: 'var(--font-crimson), Georgia, serif' }}>
-              ${piano.rebate.toLocaleString()}
-            </span>
-          </div>
-
-          <h3
-            className="text-3xl font-light text-kawai-charcoal group-hover:text-kawai-red transition-colors duration-300 mb-3"
-            style={{
-              fontFamily: 'var(--font-crimson), Georgia, serif',
-              letterSpacing: '-0.01em'
-            }}
-          >
-            {piano.model}
-          </h3>
-
-          <p className="text-sm text-kawai-charcoal/60 leading-relaxed font-light">
-            {piano.description}
-          </p>
+    <article className="h-full bg-white border border-kawai-charcoal/10">
+      {/* Clean header with rebate */}
+      <div className="p-8 border-b border-kawai-charcoal/5">
+        <div className="flex items-start justify-between mb-6">
+          <span className="text-xs tracking-[0.2em] uppercase text-kawai-charcoal/40 font-medium">
+            {piano.category}
+          </span>
+          <span className="text-2xl font-light text-kawai-red" style={{ fontFamily: 'var(--font-crimson), Georgia, serif' }}>
+            ${piano.rebate.toLocaleString()}
+          </span>
         </div>
 
-        {/* Clean features */}
-        <div className="p-8">
-          <ul className="space-y-3 mb-8">
-            {piano.features.map((feature) => (
-              <li key={feature} className="flex items-start gap-3 text-sm text-kawai-charcoal/70 font-light">
-                <span className="w-1 h-1 rounded-full bg-kawai-red mt-2 flex-shrink-0" />
-                <span>{feature}</span>
-              </li>
-            ))}
-          </ul>
+        <h3
+          className="text-3xl font-light text-kawai-charcoal mb-3"
+          style={{
+            fontFamily: 'var(--font-crimson), Georgia, serif',
+            letterSpacing: '-0.01em'
+          }}
+        >
+          {piano.model}
+        </h3>
 
-          {/* Minimal CTA */}
-          <div className="inline-flex items-center gap-2 text-kawai-charcoal group-hover:gap-3 transition-all duration-300">
-            <span className="text-sm tracking-wide">View Details</span>
-            <svg
-              className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </div>
-        </div>
-      </article>
-    </Link>
+        <p className="text-sm text-kawai-charcoal/60 leading-relaxed font-light">
+          {piano.description}
+        </p>
+      </div>
+
+      {/* Clean features */}
+      <div className="p-8">
+        <ul className="space-y-3">
+          {piano.features.map((feature) => (
+            <li key={feature} className="flex items-start gap-3 text-sm text-kawai-charcoal/70 font-light">
+              <span className="w-1 h-1 rounded-full bg-kawai-red mt-2 flex-shrink-0" />
+              <span>{feature}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </article>
   )
 }

@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 
 export function RebateModelsScroll() {
-  const text = 'K15EP ATX3  •  K200EP ATX4  •  K300EP AURES2  •  K500EP AURES2  •  GL10EP ATX4  •  GL30EP AURES2  •  GX2EP AURES2  •  SAVE UP TO $1,250  •  '
+  const text = 'K15EP ATX3  •  K200EP ATX4  •  K300EP AURES2  •  K500EP AURES2  •  GL10EP ATX4  •  GL30EP AURES2  •  GX2EP AURES2  •  SAVE UP TO $5,000  •  '
 
   return (
     <div className="relative overflow-hidden py-6 bg-gradient-to-r from-gray-50 via-white to-gray-50 rounded-lg">
