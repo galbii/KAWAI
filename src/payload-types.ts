@@ -958,6 +958,10 @@ export interface LayoutSideNavigationBlock {
    */
   position?: ('left' | 'right') | null;
   /**
+   * Zoom level (50-200%). Default is 100%. Higher values make the navigation larger.
+   */
+  zoom?: number | null;
+  /**
    * Visual theme for the navigation
    */
   theme?: ('light' | 'dark' | 'red' | 'gold') | null;
@@ -971,18 +975,18 @@ export interface LayoutSideNavigationBlock {
          */
         label: string;
         /**
-         * Optional: Override the auto-assigned icon for this section
+         * Icon for this navigation item. Defaults to circle.
          */
         icon?:
-          | ('auto' | 'circle' | 'square' | 'triangle' | 'diamond' | 'piano' | 'sparkles' | 'target' | 'pin' | 'star')
+          | ('circle' | 'auto' | 'square' | 'triangle' | 'diamond' | 'piano' | 'sparkles' | 'target' | 'pin' | 'star')
           | null;
         id?: string | null;
       }[]
     | null;
   /**
-   * How navigation appears on mobile devices
+   * How navigation appears on mobile devices. Slim Sidebar is recommended for elegant, space-efficient navigation.
    */
-  mobileStyle?: ('hamburger' | 'bottom-bar' | 'hidden') | null;
+  mobileStyle?: ('slim-sidebar' | 'hamburger' | 'bottom-bar' | 'hidden') | null;
   /**
    * Label for mobile navigation toggle
    */

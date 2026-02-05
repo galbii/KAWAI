@@ -16,7 +16,7 @@ interface LayoutSideNavigationRendererProps {
   position?: 'left' | 'right' | null
   zoom?: number | null
   theme?: 'light' | 'dark' | 'red' | 'gold' | null
-  mobileStyle?: 'bottom-bar' | 'hamburger' | 'hidden' | null
+  mobileStyle?: 'slim-sidebar' | 'bottom-bar' | 'hamburger' | 'hidden' | null
   mobileLabel?: string | null
   smoothScroll?: boolean | null
   scrollOffset?: number | null

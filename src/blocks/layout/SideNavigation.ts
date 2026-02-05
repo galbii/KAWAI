@@ -92,8 +92,8 @@ export const SideNavigation: Block = {
           name: 'icon',
           type: 'select',
           options: [
-            { label: 'Auto (based on block type)', value: 'auto' },
             { label: '● Circle', value: 'circle' },
+            { label: 'Auto (based on block type)', value: 'auto' },
             { label: '■ Square', value: 'square' },
             { label: '▲ Triangle', value: 'triangle' },
             { label: '◆ Diamond', value: 'diamond' },
@@ -103,9 +103,9 @@ export const SideNavigation: Block = {
             { label: '📍 Pin', value: 'pin' },
             { label: '⭐ Star', value: 'star' },
           ],
-          defaultValue: 'auto',
+          defaultValue: 'circle',
           admin: {
-            description: 'Optional: Override the auto-assigned icon for this section',
+            description: 'Icon for this navigation item. Defaults to circle.',
           },
         },
       ],
@@ -120,14 +120,15 @@ export const SideNavigation: Block = {
         {
           name: 'mobileStyle',
           type: 'select',
-          defaultValue: 'hamburger',
+          defaultValue: 'slim-sidebar',
           options: [
+            { label: 'Slim Sidebar (Japanese Minimalist)', value: 'slim-sidebar' },
             { label: 'Hamburger Menu (Bottom Right)', value: 'hamburger' },
             { label: 'Floating Bottom Bar (Andon Style)', value: 'bottom-bar' },
             { label: 'Hidden on Mobile', value: 'hidden' },
           ],
           admin: {
-            description: 'How navigation appears on mobile devices',
+            description: 'How navigation appears on mobile devices. Slim Sidebar is recommended for elegant, space-efficient navigation.',
           },
         },
         {

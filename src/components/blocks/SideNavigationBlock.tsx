@@ -22,7 +22,7 @@ interface SideNavigationBlockProps {
   position?: 'left' | 'right' | null
   zoom?: number | null
   theme?: 'light' | 'dark' | 'red' | 'gold' | null
-  mobileStyle?: 'bottom-bar' | 'hamburger' | 'hidden' | null
+  mobileStyle?: 'slim-sidebar' | 'bottom-bar' | 'hamburger' | 'hidden' | null
   mobileLabel?: string | null
   smoothScroll?: boolean | null
   scrollOffset?: number | null
@@ -53,7 +53,7 @@ export function SideNavigationBlock({
   position = 'right',
   zoom = 100,
   theme = 'light',
-  mobileStyle = 'hamburger',
+  mobileStyle = 'slim-sidebar',
   mobileLabel = 'Menu',
   smoothScroll = true,
   scrollOffset = 80,
@@ -110,9 +110,11 @@ export function SideNavigationBlock({
   const [activeSection, setActiveSection] = useState<string | null>(null)
   const [isVisible, setIsVisible] = useState(true)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isMobileSidebarExpanded, setIsMobileSidebarExpanded] = useState(false)
   const [scrollDirection, setScrollDirection] = useState<'up' | 'down'>('up')
   const { scrollY } = useScroll()
   const lastScrollY = useRef(0)
+  const collapseTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   // Hide/show based on scroll direction
   useMotionValueEvent(scrollY, 'change', (latest) => {
@@ -483,12 +485,172 @@ export function SideNavigationBlock({
     </>
   )
 
+  // Handle mobile sidebar expansion
+  const handleMobileSidebarToggle = useCallback(() => {
+    setIsMobileSidebarExpanded(true)
+
+    // Clear existing timer
+    if (collapseTimerRef.current) {
+      clearTimeout(collapseTimerRef.current)
+    }
+
+    // Auto-collapse after 2 seconds
+    collapseTimerRef.current = setTimeout(() => {
+      setIsMobileSidebarExpanded(false)
+    }, 2000)
+  }, [])
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (collapseTimerRef.current) {
+        clearTimeout(collapseTimerRef.current)
+      }
+    }
+  }, [])
+
+  // Mobile Slim Sidebar (Floating Glassmorphic)
+  const MobileSlimSidebar = (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{
+        opacity: isVisible ? 1 : 0,
+        x: isVisible ? 0 : 20,
+      }}
+      transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+      className="fixed right-4 top-1/2 -translate-y-1/2 z-[100] lg:hidden"
+      style={{
+        transform: `translateY(-50%) scale(${zoomScale})`,
+        transformOrigin: 'right center',
+      }}
+      onClick={handleMobileSidebarToggle}
+    >
+      <motion.nav
+        animate={{
+          width: isMobileSidebarExpanded ? 'auto' : '48px',
+        }}
+        transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+        className={`
+          relative rounded-2xl
+          ${baseClass}
+          ${glassmorphism ? 'backdrop-blur-xl' : ''}
+          ${showBorder ? 'border-2' : ''}
+          shadow-2xl
+          overflow-hidden
+        `}
+        style={{
+          background: glassmorphism
+            ? theme === 'dark'
+              ? 'rgba(44, 44, 44, 0.6)'
+              : 'rgba(248, 248, 248, 0.6)'
+            : undefined,
+          borderColor: theme === 'dark'
+            ? 'rgba(248, 248, 248, 0.1)'
+            : 'rgba(44, 44, 44, 0.1)',
+        }}
+        aria-label="Mobile page navigation"
+      >
+        {/* Glassmorphic overlay gradient */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: theme === 'red'
+              ? 'linear-gradient(135deg, rgba(196, 30, 58, 0.08) 0%, transparent 100%)'
+              : theme === 'gold'
+              ? 'linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, transparent 100%)'
+              : 'linear-gradient(135deg, rgba(212, 175, 55, 0.03) 0%, transparent 100%)',
+          }}
+        />
+
+        <div className="relative flex flex-col items-stretch gap-2 p-3">
+          {finalSections.map((section, index) => {
+            const isActive = activeSection === section.targetId
+            const icon = section.icon && section.icon !== 'none'
+              ? iconMap[section.icon]
+              : null
+
+            return (
+              <motion.button
+                key={section.targetId}
+                onClick={(e) => {
+                  handleMobileSidebarToggle()
+                  handleNavClick(section.targetId)
+                }}
+                className={`
+                  relative flex items-center gap-3
+                  rounded-xl px-3 py-2.5
+                  transition-all duration-300
+                  ${isActive
+                    ? `${activeClass} shadow-md`
+                    : 'opacity-60 hover:opacity-100 hover:bg-current/5'
+                  }
+                `}
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.04, duration: 0.3 }}
+                whileTap={{ scale: 0.95 }}
+                aria-label={`Navigate to ${section.label}`}
+                aria-current={isActive ? 'true' : 'false'}
+                style={{
+                  minWidth: '42px',
+                  justifyContent: isMobileSidebarExpanded ? 'flex-start' : 'center',
+                }}
+              >
+                {/* Icon/Dot */}
+                <span className={`
+                  flex-shrink-0 transition-all duration-300
+                  ${isActive ? 'scale-110 text-base' : 'scale-100 text-sm'}
+                `}>
+                  {icon || '●'}
+                </span>
+
+                {/* Label (visible when expanded) */}
+                <AnimatePresence>
+                  {isMobileSidebarExpanded && (
+                    <motion.span
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: 'auto' }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.25 }}
+                      className={`
+                        overflow-hidden whitespace-nowrap text-xs font-medium
+                        ${isActive ? 'font-semibold' : 'font-normal'}
+                      `}
+                      style={{ fontFamily: 'Inter, sans-serif' }}
+                    >
+                      {section.label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+
+                {/* Active indicator */}
+                {isActive && (
+                  <motion.div
+                    layoutId="mobileFloatingActiveIndicator"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-current"
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
+              </motion.button>
+            )
+          })}
+        </div>
+
+        {/* Vertical progress indicator (minimized state) */}
+        {!isMobileSidebarExpanded && showProgress && (
+          <div className="absolute left-2 top-6 bottom-6 w-[2px] bg-current opacity-10 rounded-full" />
+        )}
+      </motion.nav>
+    </motion.div>
+  )
+
   return (
     <>
       {/* Desktop Navigation */}
       {DesktopNav}
 
       {/* Mobile Navigation */}
+      {mobileStyle === 'slim-sidebar' && MobileSlimSidebar}
       {mobileStyle === 'bottom-bar' && MobileBottomBar}
       {mobileStyle === 'hamburger' && MobileHamburgerMenu}
     </>
