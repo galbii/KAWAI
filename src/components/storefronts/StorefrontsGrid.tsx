@@ -194,11 +194,11 @@ function StorefrontCard({ storefront }: StorefrontCardProps) {
   return (
     <Link
       href={`/store/${storefront.slug}`}
-      className="group block bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:scale-[1.02] h-full"
+      className="group block bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:scale-[1.02] h-[420px]"
     >
       <div className="p-6 md:p-8 flex flex-col h-full">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-6 flex-shrink-0">
           <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-3">
             {storefront.locationText || 'Kawai Showroom'}
           </div>
@@ -224,14 +224,14 @@ function StorefrontCard({ storefront }: StorefrontCardProps) {
         </div>
 
         {/* Location Details */}
-        <div className="space-y-3 mb-6 flex-1">
+        <div className="space-y-3 mb-6 h-[120px] flex-shrink-0">
           {/* Address */}
           {storefront.showroomInfo?.address && (
             <div className="flex items-start space-x-3">
               <div className="w-6 h-6 bg-kawai-red/10 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
                 <MapPin className="w-3 h-3 text-kawai-red" />
               </div>
-              <p className="text-sm text-kawai-black/70 leading-relaxed">
+              <p className="text-sm text-kawai-black/70 leading-relaxed line-clamp-2">
                 {storefront.showroomInfo.address}
               </p>
             </div>
@@ -249,22 +249,22 @@ function StorefrontCard({ storefront }: StorefrontCardProps) {
             </div>
           )}
 
-          {/* Established */}
+          {/* City and State */}
           {storefront.establishedText && (
             <div className="flex items-center space-x-3">
               <div className="w-6 h-6 bg-kawai-red/10 rounded-full flex items-center justify-center flex-shrink-0">
-                <Star className="w-3 h-3 text-kawai-red" />
+                <MapPin className="w-3 h-3 text-kawai-red" />
               </div>
               <p className="text-sm text-kawai-black/70">
-                {storefront.establishedText}
+                {storefront.establishedText.replace(/^Est\.\s*\d{4}\s*•\s*/, '')}
               </p>
             </div>
           )}
         </div>
 
         {/* Features */}
-        {storefront.features && storefront.features.length > 0 && (
-          <div className="mb-6">
+        <div className="mb-6 h-[72px] flex-shrink-0 overflow-hidden">
+          {storefront.features && storefront.features.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {storefront.features.map((feature, idx) => (
                 <span
@@ -275,11 +275,11 @@ function StorefrontCard({ storefront }: StorefrontCardProps) {
                 </span>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* CTA Button */}
-        <div className="pt-4 border-t border-kawai-pearl mt-auto">
+        <div className="pt-4 border-t border-kawai-pearl mt-auto flex-shrink-0">
           <div className="flex items-center justify-between">
             <span className="text-sm font-semibold text-kawai-black group-hover:text-kawai-red transition-colors">
               Visit Showroom
