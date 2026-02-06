@@ -36,6 +36,13 @@ export { FindADealerBlock } from './FindADealerBlock'
 export { ThreeDViewerBlock } from './ThreeDViewerBlock'
 export { InstagramCarouselBlock } from './InstagramCarouselBlock'
 export { ArtistCarouselBlock } from './ArtistCarouselBlock'
+export { HomePageHeroBlock } from './HomePageHeroBlock'
+export { ShowroomBlock } from './ShowroomBlock'
+export { PianoCollectionBlock } from './PianoCollectionBlock'
+export { PianoGalleryBlock } from './PianoGalleryBlock'
+export { NewsCarouselBlock } from './NewsCarouselBlock'
+export { ContactFormBlock } from './ContactFormBlock'
+export { StorefrontLocationsBlock } from './StorefrontLocationsBlock'
 
 // Product Blocks - Product-specific showcases
 export { ProductShowcaseBlock } from './ProductShowcaseBlock'
@@ -43,6 +50,8 @@ export { ProductHeroBlock } from './ProductHeroBlock'
 export { ImageGalleryBlock } from './ImageGalleryBlock'
 export { FeaturesListBlock } from './FeaturesListBlock'
 export { SpecificationsBlock } from './SpecificationsBlock'
+export { CollectionShowcaseBlock } from './CollectionShowcaseBlock'
+export { FloatingAddToCartBlock } from './FloatingAddToCartBlock'
 
 // Special Purpose Blocks
 export { HelloBlock } from './HelloBlock'

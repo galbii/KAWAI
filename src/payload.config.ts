@@ -55,12 +55,21 @@ import {
   ThreeDViewer,
   InstagramCarousel,
   ArtistCarousel,
+  HomePageHero,
+  Showroom,
+  PianoCollection,
+  PianoGallery,
+  NewsCarousel,
+  ContactForm,
+  StorefrontLocations,
   // Product blocks
   ProductShowcase,
   ProductHero,
   ImageGallery,
   FeaturesList,
   Specifications,
+  CollectionShowcase,
+  FloatingAddToCart,
   // Legacy blocks (keep for backward compatibility)
   TextContent,
   Hello,
@@ -206,6 +215,13 @@ export default buildConfig({
     ThreeDViewer,
     InstagramCarousel,
     ArtistCarousel,
+    HomePageHero,
+    Showroom,
+    PianoCollection,
+    PianoGallery,
+    NewsCarousel,
+    ContactForm,
+    StorefrontLocations,
 
     // Product blocks (for product pages)
     ProductShowcase,
@@ -213,6 +229,8 @@ export default buildConfig({
     ImageGallery,
     FeaturesList,
     Specifications,
+    CollectionShowcase,
+    FloatingAddToCart,
 
     // Legacy blocks (keep for backward compatibility)
     TextContent,

@@ -149,6 +149,7 @@ export interface SEOData {
 }
 
 export interface HomePageData {
+  content?: any[] // NEW: Blocks-based content
   heroSection: HeroSectionData
   showroomSection: ShowroomSectionData
   pianoCollectionSection: PianoCollectionSectionData

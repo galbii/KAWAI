@@ -6,12 +6,27 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { Storefront } from '@/payload-types';
 
+interface DealerLocationsData {
+  sectionLabel?: string
+  sectionDescription?: string
+  ctaSubheading?: string
+  ctaButtonText?: string
+  ctaButtonLink?: string
+}
+
 interface DealerLocationsProps {
   className?: string;
   locations?: Storefront[];
+  data?: DealerLocationsData; // NEW: Accept CMS data
 }
 
-export function DealerLocations({ className = '', locations = [] }: DealerLocationsProps) {
+export function DealerLocations({ className = '', locations = [], data }: DealerLocationsProps) {
+  // Use CMS data if provided, fallback to hardcoded
+  const sectionLabel = data?.sectionLabel || 'Our Locations'
+  const sectionDescription = data?.sectionDescription || 'Visit our Kawai Showrooms and experience our complete collection of acoustic and digital pianos with expert consultation.'
+  const ctaSubheading = data?.ctaSubheading || "Can't find a location near you?"
+  const ctaButtonText = data?.ctaButtonText || 'Find Your Perfect Piano'
+  const ctaButtonLink = data?.ctaButtonLink || '/piano-finder'
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -57,10 +72,10 @@ export function DealerLocations({ className = '', locations = [] }: DealerLocati
             />
           </div>
           <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-6 sm:mb-8">
-            Our Locations
+            {sectionLabel}
           </div>
           <p className="text-lg sm:text-xl text-kawai-black/70 max-w-3xl mx-auto leading-relaxed px-4 sm:px-0">
-            Visit our Kawai Showrooms and experience our complete collection of acoustic and digital pianos with expert consultation.
+            {sectionDescription}
           </p>
         </motion.div>
 
@@ -75,7 +90,7 @@ export function DealerLocations({ className = '', locations = [] }: DealerLocati
             >
               <Link
                 href={`/store/${location.slug}`}
-                className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden hover:scale-105 touch-manipulation h-[420px] flex flex-col block"
+                className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden hover:scale-105 touch-manipulation h-[480px] flex flex-col block"
               >
               <div className="p-6 sm:p-8 flex flex-col h-full">
                 {/* Location Header */}
@@ -188,13 +203,13 @@ export function DealerLocations({ className = '', locations = [] }: DealerLocati
           className="text-center mt-12 sm:mt-16 px-4 sm:px-0"
         >
           <p className="text-kawai-black/70 mb-6 text-base sm:text-lg">
-            Can't find a location near you?
+            {ctaSubheading}
           </p>
           <Link
-            href="/piano-finder"
+            href={ctaButtonLink}
             className="inline-flex items-center space-x-2 bg-kawai-red hover:bg-kawai-black text-white px-6 sm:px-8 py-3 sm:py-4 font-medium transition-colors text-sm tracking-wide uppercase rounded-lg min-h-[44px] touch-manipulation"
           >
-            <span>Find Your Perfect Piano</span>
+            <span>{ctaButtonText}</span>
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
             </svg>

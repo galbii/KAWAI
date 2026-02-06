@@ -446,12 +446,14 @@ export const Products: CollectionConfig = {
               name: 'pageContent',
               type: 'blocks',
               blockReferences: [
-                'product-hero',                   // Product Hero - Only allowed block for product pages
-                'marketing-instagram-carousel',   // Instagram Carousel - Social proof
+                'product-hero',                      // Product Hero - Only allowed block for product pages
+                'product-collection-showcase',       // Collection Showcase - Display collection content
+                'product-floating-add-to-cart',      // Floating Add to Cart - Sticky cart button
+                'marketing-instagram-carousel',      // Instagram Carousel - Social proof
               ] as any,
               blocks: [], // Required to be empty when using blockReferences
               admin: {
-                description: 'Product page hero section (single block layout)'
+                description: 'Product page content blocks'
               }
             }
           ]
@@ -873,22 +875,84 @@ export const Products: CollectionConfig = {
           console.log(`🔗 Generated slug from "${sourceForSlug}" -> "${data.slug}"`)
         }
 
-        // Add default product-hero block if pageContent is empty (for all operations)
+        // Add default blocks if pageContent is empty (for all operations)
         if (!data.pageContent || data.pageContent.length === 0) {
-          data.pageContent = [
-            {
-              blockType: 'product-hero',
-              layout: {
-                imagePosition: 'left',
-                backgroundColor: 'pearl',
-                showVariations: true,
-                showPrice: false, // Match ProductHero block defaultValue
-                showBuyButton: true
-              },
-              overrides: {} // Empty overrides - will use product data
+          const defaultBlocks: any[] = []
+
+          // 1. Add collection-showcase block FIRST (if product has shopifyCollections)
+          if (data.shopifyCollections && Array.isArray(data.shopifyCollections) && data.shopifyCollections.length > 0) {
+            const firstShopifyCollection = data.shopifyCollections[0]
+
+            // Try to find matching collection in Collections collection
+            let collectionId: string | number | null = null
+
+            try {
+              if (firstShopifyCollection?.shopifyCollectionId || firstShopifyCollection?.handle) {
+                const whereQuery: any = {}
+
+                if (firstShopifyCollection.shopifyCollectionId) {
+                  whereQuery.shopifyCollectionId = { equals: firstShopifyCollection.shopifyCollectionId }
+                } else if (firstShopifyCollection.handle) {
+                  whereQuery.handle = { equals: firstShopifyCollection.handle }
+                }
+
+                const { docs: matchingCollections } = await req.payload.find({
+                  collection: 'collections',
+                  where: whereQuery,
+                  limit: 1,
+                  depth: 0,
+                  req,
+                })
+
+                if (matchingCollections.length > 0 && matchingCollections[0]) {
+                  collectionId = matchingCollections[0].id
+                  console.log(`🎯 Found matching collection: ${matchingCollections[0].title} (ID: ${collectionId})`)
+                }
+              }
+            } catch (error) {
+              console.error('⚠️ Error finding collection for default block:', error)
             }
-          ]
-          console.log(`🧩 Added default product-hero block (operation: ${operation})`)
+
+            // Add collection-showcase block with collection pre-populated
+            defaultBlocks.push({
+              blockType: 'product-collection-showcase',
+              enabled: true,
+              collection: collectionId, // Will be null if not found, field hook will handle it
+              customSubheading: null,
+            })
+
+            console.log(`🎯 Added default collection-showcase block with collection: ${collectionId}`)
+          }
+
+          // 2. Add product-hero block SECOND
+          defaultBlocks.push({
+            blockType: 'product-hero',
+            layout: {
+              imagePosition: 'left',
+              backgroundColor: 'pearl',
+              showVariations: true,
+              showPrice: false,
+              showBuyButton: true,
+            },
+            overrides: {},
+          })
+
+          console.log(`🧩 Added default product-hero block`)
+
+          // 3. Add floating-add-to-cart block THIRD
+          defaultBlocks.push({
+            blockType: 'product-floating-add-to-cart',
+            enabled: true,
+            buttonText: 'Add to Cart',
+            position: 'bottom-right',
+            showOnScroll: true,
+            scrollThreshold: 300,
+          })
+
+          console.log(`🛒 Added default floating-add-to-cart block`)
+
+          data.pageContent = defaultBlocks
+          console.log(`✅ Added ${defaultBlocks.length} default blocks (operation: ${operation})`)
         }
 
         // Set sync status to pending if auto-sync is enabled and product should sync

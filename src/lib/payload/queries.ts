@@ -251,6 +251,7 @@ export async function getPianosPageDataDirect(): Promise<{
  * Get homepage data using direct Payload access
  */
 export async function getHomePageDataDirect(): Promise<{
+  content?: any[] // NEW: Blocks-based content from Page Builder tab
   heroSection: any
   showroomSection: any
   pianoCollectionSection: any
@@ -272,6 +273,7 @@ export async function getHomePageDataDirect(): Promise<{
     const homePageData = homePageResult?.docs?.[0]
     if (homePageData) {
       return {
+        content: homePageData.content || [], // NEW: Include blocks from Page Builder tab
         heroSection: {
           locationText: homePageData.locationText,
           establishedText: homePageData.establishedText,
@@ -327,6 +329,7 @@ export async function getHomePageDataDirect(): Promise<{
 
   // Return fallback structure
   return {
+    content: [], // NEW: Empty blocks array for fallback
     heroSection: {
       locationText: "St. Louis's Premier Kawai Piano Dealer",
       establishedText: "Est. 1927 - Lake St. Louis, Missouri",

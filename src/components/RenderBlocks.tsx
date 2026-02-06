@@ -9,7 +9,7 @@
  * - Content (5): content-text, content-image, content-video, content-code, content-banner
  * - Layout (8): layout-columns, layout-spacer, layout-divider, layout-hero-carousel, layout-video-background, layout-brand-intro, layout-bottom-left-popup, layout-side-navigation
  * - Marketing (10): marketing-hero, marketing-grand-hero, marketing-cta, marketing-testimonials, marketing-i2l, marketing-technical-showcase, marketing-find-a-dealer, marketing-3d-viewer, marketing-instagram-carousel, marketing-artist-carousel
- * - Product (5): product-showcase, product-hero, product-gallery, product-features, product-specs
+ * - Product (6): product-showcase, product-hero, product-gallery, product-features, product-specs, product-collection-showcase
  *
  * Usage:
  * ```tsx
@@ -68,6 +68,13 @@ import { FindADealerBlock } from './blocks/FindADealerBlock'
 import { ThreeDViewerBlock } from './blocks/ThreeDViewerBlock'
 import { InstagramCarouselBlock } from './blocks/InstagramCarouselBlock'
 import { ArtistCarouselBlock } from './blocks/ArtistCarouselBlock'
+import { HomePageHeroBlock } from './blocks/HomePageHeroBlock'
+import { ShowroomBlock } from './blocks/ShowroomBlock'
+import { PianoCollectionBlock } from './blocks/PianoCollectionBlock'
+import { PianoGalleryBlock } from './blocks/PianoGalleryBlock'
+import { NewsCarouselBlock } from './blocks/NewsCarouselBlock'
+import { ContactFormBlock } from './blocks/ContactFormBlock'
+import { StorefrontLocationsBlock } from './blocks/StorefrontLocationsBlock'
 
 // Product Blocks - Product-specific showcases
 import { ProductShowcaseBlock } from './blocks/ProductShowcaseBlock'
@@ -75,6 +82,8 @@ import { ProductHeroBlock } from './blocks/ProductHeroBlock'
 import { ImageGalleryBlock } from './blocks/ImageGalleryBlock'
 import { FeaturesListBlock } from './blocks/FeaturesListBlock'
 import { SpecificationsBlock } from './blocks/SpecificationsBlock'
+import { CollectionShowcaseBlock } from './blocks/CollectionShowcaseBlock'
+import { FloatingAddToCartBlock } from './blocks/FloatingAddToCartBlock'
 
 /**
  * Block Components Mapping
@@ -117,6 +126,13 @@ const blockComponents = {
   'marketing-3d-viewer': ThreeDViewerBlock,
   'marketing-instagram-carousel': InstagramCarouselBlock,
   'marketing-artist-carousel': ArtistCarouselBlock,
+  'marketing-homepage-hero': HomePageHeroBlock,
+  'marketing-showroom': ShowroomBlock,
+  'marketing-piano-collection': PianoCollectionBlock,
+  'marketing-piano-gallery': PianoGalleryBlock,
+  'marketing-news-carousel': NewsCarouselBlock,
+  'marketing-contact-form': ContactFormBlock,
+  'marketing-storefront-locations': StorefrontLocationsBlock,
 
   // Product blocks (product-*)
   'product-showcase': ProductShowcaseBlock,
@@ -124,6 +140,8 @@ const blockComponents = {
   'product-gallery': ImageGalleryBlock,
   'product-features': FeaturesListBlock,
   'product-specs': SpecificationsBlock,
+  'product-collection-showcase': CollectionShowcaseBlock,
+  'product-floating-add-to-cart': FloatingAddToCartBlock,
 } as const
 
 type BlockComponents = typeof blockComponents

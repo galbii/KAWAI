@@ -15,6 +15,7 @@ import { getHomePageDataDirect } from "@/lib/payload/queries";
 import type { HomePageData } from "@/lib/types/homepage";
 import { Suspense } from "react";
 import type { Metadata } from 'next';
+import { RenderBlocks } from '@/components/RenderBlocks';
 
 // Enable Incremental Static Regeneration (ISR)
 // Revalidate the homepage every 5 minutes (300 seconds)
@@ -209,6 +210,21 @@ async function HomePageContent() {
     console.warn(`Homepage CMS data unavailable: ${error}. Using fallback content.`);
   }
 
+  // NEW: Check if using blocks system
+  const hasBlocks = homePageData?.content &&
+                    Array.isArray(homePageData.content) &&
+                    homePageData.content.length > 0
+
+  if (hasBlocks && homePageData) {
+    // Blocks mode: Render using RenderBlocks
+    return (
+      <div className="min-h-screen">
+        <RenderBlocks blocks={homePageData.content as any} />
+      </div>
+    )
+  }
+
+  // LEGACY: Fallback to existing section components
   return (
     <div className="min-h-screen">
       {/* Hero Section */}

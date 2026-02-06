@@ -23,60 +23,199 @@ export const Collections: CollectionConfig = {
     read: () => true, // Public read access for frontend
   },
   fields: [
-    // Basic Collection Information
     {
-      name: 'shopifyCollectionId',
-      type: 'text',
-      required: true,
-      unique: true,
-      index: true,
-      admin: {
-        description: 'Shopify Collection ID (gid://shopify/Collection/...)',
-        readOnly: true,
-      },
-    },
-    {
-      name: 'title',
-      type: 'text',
-      required: true,
-      admin: {
-        description: 'Collection title (synced from Shopify)',
-      },
-    },
-    {
-      name: 'handle',
-      type: 'text',
-      required: true,
-      unique: true,
-      index: true,
-      admin: {
-        description: 'Collection handle/slug (synced from Shopify)',
-        readOnly: true,
-      },
-    },
-    {
-      name: 'description',
-      type: 'textarea',
-      admin: {
-        description: 'Collection description (synced from Shopify)',
-      },
-    },
-    {
-      name: 'imageUrl',
-      type: 'text',
-      admin: {
-        description: 'Collection image URL (synced from Shopify)',
-        readOnly: true,
-      },
-    },
-    {
-      name: 'productCount',
-      type: 'number',
-      defaultValue: 0,
-      admin: {
-        description: 'Number of active products in this collection (auto-calculated)',
-        readOnly: true,
-      },
+      type: 'tabs',
+      tabs: [
+        // Collection Details Tab
+        {
+          label: 'Collection Details',
+          description: 'Basic collection information synced from Shopify',
+          fields: [
+            {
+              name: 'shopifyCollectionId',
+              type: 'text',
+              required: true,
+              unique: true,
+              index: true,
+              admin: {
+                description: 'Shopify Collection ID (gid://shopify/Collection/...)',
+                readOnly: true,
+              },
+            },
+            {
+              name: 'title',
+              type: 'text',
+              required: true,
+              admin: {
+                description: 'Collection title (synced from Shopify)',
+              },
+            },
+            {
+              name: 'handle',
+              type: 'text',
+              required: true,
+              unique: true,
+              index: true,
+              admin: {
+                description: 'Collection handle/slug (synced from Shopify)',
+                readOnly: true,
+              },
+            },
+            {
+              name: 'description',
+              type: 'textarea',
+              admin: {
+                description: 'Collection description (synced from Shopify)',
+              },
+            },
+            {
+              name: 'imageUrl',
+              type: 'text',
+              admin: {
+                description: 'Collection image URL (synced from Shopify)',
+                readOnly: true,
+              },
+            },
+            {
+              name: 'productCount',
+              type: 'number',
+              defaultValue: 0,
+              admin: {
+                description: 'Number of active products in this collection (auto-calculated)',
+                readOnly: true,
+              },
+            },
+          ],
+        },
+
+        // Content Tab - New for Collection Showcase Block
+        {
+          label: 'Content',
+          description: 'Showcase content used in product collection showcase blocks',
+          fields: [
+            {
+              name: 'youtubeUrl',
+              type: 'text',
+              admin: {
+                description: 'YouTube video URL for banner background (supports youtube.com/watch, youtu.be, embed formats)',
+                placeholder: 'https://www.youtube.com/watch?v=...',
+              },
+            },
+            {
+              name: 'media',
+              type: 'upload',
+              relationTo: 'media',
+              maxDepth: 0,
+              admin: {
+                description: 'Fallback image if no YouTube URL (optional)',
+              },
+            },
+            {
+              name: 'mediaUrl',
+              type: 'text',
+              admin: {
+                description: 'Fallback image URL if no media item is selected (optional)',
+                placeholder: 'https://example.com/image.jpg',
+              },
+            },
+            {
+              name: 'heading',
+              type: 'text',
+              admin: {
+                description: 'Main heading text for collection banner',
+                placeholder: 'Discover the CA Series',
+              },
+            },
+            {
+              name: 'subheading',
+              type: 'textarea',
+              admin: {
+                description: 'Subheading or description text for collection banner',
+                placeholder: 'Experience the perfect blend of innovation and artistry...',
+              },
+            },
+            {
+              name: 'bannerSize',
+              type: 'select',
+              defaultValue: 'xs',
+              options: [
+                { label: 'Extra Extra Small (150px)', value: 'xxs' },
+                { label: 'Extra Small (250px)', value: 'xs' },
+                { label: 'Small (400px)', value: 'small' },
+                { label: 'Medium (600px)', value: 'medium' },
+                { label: 'Large (800px)', value: 'large' },
+                { label: 'Full Screen (100vh)', value: 'fullscreen' },
+              ],
+              admin: {
+                description: 'Banner height',
+              },
+            },
+            {
+              name: 'textAlignment',
+              type: 'select',
+              defaultValue: 'center',
+              options: [
+                { label: 'Left', value: 'left' },
+                { label: 'Center', value: 'center' },
+                { label: 'Right', value: 'right' },
+              ],
+              admin: {
+                description: 'Text alignment within the banner',
+              },
+            },
+            {
+              name: 'textColor',
+              type: 'select',
+              defaultValue: 'white',
+              options: [
+                { label: 'White', value: 'white' },
+                { label: 'Black', value: 'black' },
+                { label: 'Kawai Red', value: 'kawai-red' },
+                { label: 'Kawai Gold', value: 'kawai-gold' },
+              ],
+              admin: {
+                description: 'Text color for heading and subheading',
+              },
+            },
+            {
+              name: 'overlayOpacity',
+              type: 'number',
+              min: 0,
+              max: 100,
+              defaultValue: 50,
+              admin: {
+                description: 'Dark overlay opacity (0-100%) for better text readability',
+              },
+            },
+            {
+              name: 'headingSize',
+              type: 'select',
+              defaultValue: 'large',
+              options: [
+                { label: 'Small (2xl)', value: 'small' },
+                { label: 'Medium (3xl)', value: 'medium' },
+                { label: 'Large (4xl)', value: 'large' },
+                { label: 'Extra Large (5xl)', value: 'xl' },
+              ],
+              admin: {
+                description: 'Heading text size',
+              },
+            },
+            {
+              name: 'fontFamily',
+              type: 'select',
+              defaultValue: 'serif',
+              options: [
+                { label: 'Serif (Playfair Display)', value: 'serif' },
+                { label: 'Sans (Inter)', value: 'sans' },
+              ],
+              admin: {
+                description: 'Font family for heading',
+              },
+            },
+          ],
+        },
+      ],
     },
 
     // Shopify Integration Group - Sidebar

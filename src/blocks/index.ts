@@ -26,6 +26,13 @@ export { FindADealer } from './marketing/FindADealer'
 export { ThreeDViewer } from './marketing/ThreeDViewer'
 export { InstagramCarousel } from './marketing/InstagramCarousel'
 export { ArtistCarousel } from './marketing/ArtistCarousel'
+export { HomePageHero } from './marketing/HomePageHero'
+export { Showroom } from './marketing/Showroom'
+export { PianoCollection } from './marketing/PianoCollection'
+export { PianoGallery } from './marketing/PianoGallery'
+export { NewsCarousel } from './marketing/NewsCarousel'
+export { ContactForm } from './marketing/ContactForm'
+export { StorefrontLocations } from './marketing/StorefrontLocations'
 
 // Product blocks (product pages)
 export { ProductShowcase } from './product/ProductShowcase'
@@ -33,6 +40,8 @@ export { ProductHero } from './product/ProductHero'
 export { ImageGallery } from './product/ImageGallery'
 export { FeaturesList } from './product/FeaturesList'
 export { Specifications } from './product/Specifications'
+export { CollectionShowcase } from './product/CollectionShowcase'
+export { FloatingAddToCart } from './product/FloatingAddToCart'
 
 // Legacy blocks (keep for backward compatibility - TODO: migrate away from these)
 export { Hello } from './Hello'

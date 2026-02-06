@@ -4,8 +4,13 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion, useInView } from "framer-motion";
 import { useRef, useEffect } from "react";
+import type { HeroSectionData } from '@/lib/types/homepage'
 
-export function HomeHero() {
+interface HomeHeroProps {
+  data?: HeroSectionData  // NEW: Accept CMS data
+}
+
+export function HomeHero({ data }: HomeHeroProps = {}) {
   const heroRef = useRef(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const isInView = useInView(heroRef, { once: true, amount: 0.2 });
@@ -30,8 +35,8 @@ export function HomeHero() {
     };
   }, []);
 
-  // Hardcoded data with your requested changes
-  const heroData = {
+  // Use CMS data if provided, fallback to hardcoded
+  const heroData = data || {
     locationText: "",
     establishedText: "Est. 1927",
     description: "Every musician harbors a vision. Every performance seeks perfection. Since 1927, we've been crafting the instruments that transform inspiration into reality.",

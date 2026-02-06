@@ -234,6 +234,13 @@ Conversion-focused promotional blocks designed to drive user actions.
 | 📍 Find a Dealer | `marketing-find-a-dealer` | Simple, elegant dealer locator CTA | Directing users to find authorized dealers, store locator pages |
 | 🎹 3D Model Viewer | `marketing-3d-viewer` | Interactive 3D piano model viewer with floating button | Product pages, piano showcase pages, immersive product experiences |
 | 📷 Instagram Carousel | `marketing-instagram-carousel` | Elegant Instagram post/video carousel with keyboard navigation | Social proof, community engagement, artist highlights, event coverage |
+| 🏠 HomePage Hero | `marketing-homepage-hero` | Full-screen hero with video background, dual CTAs | HomePage full-screen hero section |
+| 🏢 Showroom | `marketing-showroom` | Showroom location with map, hours, features | HomePage showroom info section |
+| 🎹 Piano Collection | `marketing-piano-collection` | Featured piano models with video showcase | HomePage featured models section |
+| 🎨 Piano Gallery | `marketing-piano-gallery` | Piano category grid with images and links | HomePage category navigation |
+| 📰 News Carousel | `marketing-news-carousel` | Rotating news and announcements carousel | HomePage news/updates section |
+| 📝 Contact Form | `marketing-contact-form` | Multi-step contact and assessment form | HomePage lead capture section |
+| 📍 Storefront Locations | `marketing-storefront-locations` | Auto-fetched storefront grid with customizable text | HomePage dealer locations section |
 
 **Grand Hero Features:**
 - **Full-viewport cinematic design** with configurable heights (100vh, 90vh, 80vh, 70vh)
@@ -404,6 +411,76 @@ Each video can have its own call-to-action button with:
 - Test on mobile devices to ensure Instagram embeds load correctly
 - Use CTA button to drive traffic to your Instagram profile
 - Combine with other marketing blocks for storytelling (e.g., after Hero section)
+
+**HomePage Blocks:**
+
+Six specialized marketing blocks for building dynamic homepages using the Page Builder system:
+
+1. **🏠 HomePage Hero** (`marketing-homepage-hero`)
+   - Full-screen hero with video background, location text, title split, and dual CTAs
+   - Accepts optional data prop from CMS or uses hardcoded fallback
+   - Perfect for impactful homepage first impressions
+
+2. **🏢 Showroom** (`marketing-showroom`)
+   - Showroom location with Google Maps embed, hours, features, and CTAs
+   - Displays contact info, operating hours, and showroom amenities
+   - Ideal for physical location showcase
+
+3. **🎹 Piano Collection** (`marketing-piano-collection`)
+   - Featured piano models section with YouTube video showcase
+   - Configurable section header, title, description, and CTA
+   - Best for highlighting flagship products
+
+4. **🎨 Piano Gallery** (`marketing-piano-gallery`)
+   - Piano category grid with images, descriptions, and links
+   - Displays up to 4 default categories (Digital, Grand, Upright, Hybrid)
+   - Perfect for category navigation from homepage
+
+5. **📰 News Carousel** (`marketing-news-carousel`)
+   - Rotating news and announcements carousel with auto-play
+   - Category badges (News, Events, Promotions, New Arrivals, Education)
+   - Great for keeping visitors informed of latest updates
+
+6. **📝 Contact Form** (`marketing-contact-form`)
+   - Multi-step contact and piano assessment form
+   - Customizable experience levels, piano types, budget ranges, and primary uses
+   - Ideal for lead generation and customer qualification
+
+7. **📍 Storefront Locations** (`marketing-storefront-locations`)
+   - Automatically fetches and displays all active storefronts from the Storefront collection
+   - Customizable section label, description, CTA subheading, and CTA button
+   - Displays storefront cards in a responsive grid with location details, features, and links
+   - Perfect for showcasing physical store locations with automatic updates
+
+**Storefront Locations Features:**
+- **Auto-fetch storefronts**: Automatically queries and displays all active storefronts from the database
+- **Customizable text**: Update section heading, description, CTA text, and button without code changes
+- **Responsive grid**: 1 column (mobile), 2 columns (tablet), 3 columns (desktop)
+- **Storefront cards**: Display location name, address, phone, established date, and key features
+- **Animated on scroll**: Cards fade in with staggered delay as user scrolls
+- **Hover effects**: Cards scale up and change shadow on hover for better UX
+- **Direct links**: Each card links to the storefront's detail page (`/store/[slug]`)
+- **No manual updates needed**: Add/edit storefronts in CMS, block automatically reflects changes
+
+**HomePage Dual-Mode Rendering:**
+
+The HomePage collection supports two rendering modes:
+
+- **Page Builder Mode (Recommended)**: Add blocks to the 🎨 Page Builder tab to build a custom homepage layout
+- **Legacy Mode (Fallback)**: Leave Page Builder empty to use traditional tab-based sections
+
+The frontend automatically detects which mode to use:
+```typescript
+// Checks if blocks exist and renders accordingly
+const hasBlocks = homePageData?.content &&
+                  Array.isArray(homePageData.content) &&
+                  homePageData.content.length > 0
+
+if (hasBlocks) {
+  return <RenderBlocks blocks={homePageData.content} />
+}
+// Otherwise renders legacy sections
+```
 
 **Where to use:**
 - Landing pages

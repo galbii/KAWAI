@@ -89,11 +89,20 @@ export interface Config {
     'marketing-3d-viewer': Marketing3DViewerBlock;
     'marketing-instagram-carousel': MarketingInstagramCarouselBlock;
     'marketing-artist-carousel': MarketingArtistCarouselBlock;
+    'marketing-homepage-hero': MarketingHomePageHeroBlock;
+    'marketing-showroom': MarketingShowroomBlock;
+    'marketing-piano-collection': MarketingPianoCollectionBlock;
+    'marketing-piano-gallery': MarketingPianoGalleryBlock;
+    'marketing-news-carousel': MarketingNewsCarouselBlock;
+    'marketing-contact-form': MarketingContactFormBlock;
+    'marketing-storefront-locations': MarketingStorefrontLocationsBlock;
     'product-showcase': ProductShowcaseBlock;
     'product-hero': ProductHeroBlock;
     'product-gallery': ProductImageGalleryBlock;
     'product-features': ProductFeaturesListBlock;
     'product-specs': ProductSpecificationsBlock;
+    'product-collection-showcase': ProductCollectionShowcaseBlock;
+    'product-floating-add-to-cart': ProductFloatingAddToCartBlock;
     textContent: TextContentBlock;
     hello: HelloBlock;
     archive: ArchiveBlock;
@@ -1421,9 +1430,16 @@ export interface Product {
       }[]
     | null;
   /**
-   * Product page hero section (single block layout)
+   * Product page content blocks
    */
-  pageContent?: (ProductHeroBlock | MarketingInstagramCarouselBlock)[] | null;
+  pageContent?:
+    | (
+        | ProductHeroBlock
+        | ProductCollectionShowcaseBlock
+        | ProductFloatingAddToCartBlock
+        | MarketingInstagramCarouselBlock
+      )[]
+    | null;
   /**
    * SEO and social media optimization
    */
@@ -1588,6 +1604,156 @@ export interface ProductHeroBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'product-hero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductCollectionShowcaseBlock".
+ */
+export interface ProductCollectionShowcaseBlock {
+  /**
+   * Toggle to show or hide this collection showcase
+   */
+  enabled?: boolean | null;
+  /**
+   * Collection to showcase (auto-populated from product collections, can be manually changed)
+   */
+  collection: string | Collection;
+  /**
+   * Optional: Override banner height (uses collection default if not set)
+   */
+  bannerSize?: ('xxs' | 'xs' | 'small' | 'medium' | 'large' | 'fullscreen') | null;
+  /**
+   * Optional: Override the collection subheading with product-specific text
+   */
+  customSubheading?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'product-collection-showcase';
+}
+/**
+ * Product collections automatically synced from Shopify
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections".
+ */
+export interface Collection {
+  id: string;
+  /**
+   * Shopify Collection ID (gid://shopify/Collection/...)
+   */
+  shopifyCollectionId: string;
+  /**
+   * Collection title (synced from Shopify)
+   */
+  title: string;
+  /**
+   * Collection handle/slug (synced from Shopify)
+   */
+  handle: string;
+  /**
+   * Collection description (synced from Shopify)
+   */
+  description?: string | null;
+  /**
+   * Collection image URL (synced from Shopify)
+   */
+  imageUrl?: string | null;
+  /**
+   * Number of active products in this collection (auto-calculated)
+   */
+  productCount?: number | null;
+  /**
+   * YouTube video URL for banner background (supports youtube.com/watch, youtu.be, embed formats)
+   */
+  youtubeUrl?: string | null;
+  /**
+   * Fallback image if no YouTube URL (optional)
+   */
+  media?: (string | null) | Media;
+  /**
+   * Fallback image URL if no media item is selected (optional)
+   */
+  mediaUrl?: string | null;
+  /**
+   * Main heading text for collection banner
+   */
+  heading?: string | null;
+  /**
+   * Subheading or description text for collection banner
+   */
+  subheading?: string | null;
+  /**
+   * Banner height
+   */
+  bannerSize?: ('xxs' | 'xs' | 'small' | 'medium' | 'large' | 'fullscreen') | null;
+  /**
+   * Text alignment within the banner
+   */
+  textAlignment?: ('left' | 'center' | 'right') | null;
+  /**
+   * Text color for heading and subheading
+   */
+  textColor?: ('white' | 'black' | 'kawai-red' | 'kawai-gold') | null;
+  /**
+   * Dark overlay opacity (0-100%) for better text readability
+   */
+  overlayOpacity?: number | null;
+  /**
+   * Heading text size
+   */
+  headingSize?: ('small' | 'medium' | 'large' | 'xl') | null;
+  /**
+   * Font family for heading
+   */
+  fontFamily?: ('serif' | 'sans') | null;
+  /**
+   * Shopify synchronization metadata
+   */
+  shopify?: {
+    /**
+     * Sync status with Shopify
+     */
+    syncStatus?: ('synced' | 'error') | null;
+    /**
+     * Last sync timestamp
+     */
+    lastSyncedAt?: string | null;
+    /**
+     * Collection type in Shopify
+     */
+    collectionType?: ('custom' | 'smart') | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductFloatingAddToCartBlock".
+ */
+export interface ProductFloatingAddToCartBlock {
+  /**
+   * Toggle to show or hide the floating add to cart button
+   */
+  enabled?: boolean | null;
+  /**
+   * Custom text for the add to cart button
+   */
+  buttonText?: string | null;
+  /**
+   * Position of the floating button on the screen
+   */
+  position?: ('bottom-right' | 'bottom-left' | 'bottom-center') | null;
+  /**
+   * Only show button after user scrolls down (hides initially)
+   */
+  showOnScroll?: boolean | null;
+  /**
+   * Pixels to scroll before showing button (only if "Show on Scroll" is enabled)
+   */
+  scrollThreshold?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'product-floating-add-to-cart';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2774,6 +2940,318 @@ export interface Artist {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingHomePageHeroBlock".
+ */
+export interface MarketingHomePageHeroBlock {
+  /**
+   * Location/Piano Gallery status text (optional - leave empty to hide)
+   */
+  locationText?: string | null;
+  /**
+   * Establishment year and location
+   */
+  establishedText?: string | null;
+  /**
+   * First part of the title (e.g., "The")
+   */
+  titlePrefix?: string | null;
+  /**
+   * Main emphasized part of the title
+   */
+  titleMain?: string | null;
+  /**
+   * Final part of the title
+   */
+  titleSuffix?: string | null;
+  /**
+   * Hero description text
+   */
+  description?: string | null;
+  /**
+   * Primary call-to-action button
+   */
+  primaryCta?: {
+    text?: string | null;
+    link?: string | null;
+  };
+  /**
+   * Secondary call-to-action button
+   */
+  secondaryCta?: {
+    text?: string | null;
+    link?: string | null;
+  };
+  backgroundVideo?: (string | null) | Media;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-homepage-hero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingShowroomBlock".
+ */
+export interface MarketingShowroomBlock {
+  /**
+   * Section header text
+   */
+  sectionHeader: string;
+  /**
+   * Main showroom title
+   */
+  showroomTitle: string;
+  /**
+   * Showroom description text
+   */
+  showroomDescription: string;
+  /**
+   * Showroom contact and location details
+   */
+  showroomInfo: {
+    name: string;
+    address: string;
+    phone: string;
+    serviceArea: string;
+  };
+  /**
+   * Showroom operating hours
+   */
+  hours: {
+    day: string;
+    time: string;
+    id?: string | null;
+  }[];
+  /**
+   * Showroom features and amenities
+   */
+  features: {
+    icon: 'piano' | 'music' | 'award' | 'users' | 'clock' | 'shield' | 'headphones' | 'car';
+    title: string;
+    description: string;
+    id?: string | null;
+  }[];
+  /**
+   * Call-to-action buttons
+   */
+  showroomCtas?: {
+    directionsText?: string | null;
+    directionsLink?: string | null;
+    scheduleText?: string | null;
+    scheduleLink?: string | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-showroom';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingPianoCollectionBlock".
+ */
+export interface MarketingPianoCollectionBlock {
+  /**
+   * Section header text
+   */
+  collectionSectionHeader?: string | null;
+  /**
+   * Main title for the collection (use \n for line breaks)
+   */
+  collectionTitle?: string | null;
+  /**
+   * Collection description text
+   */
+  collectionDescription?: string | null;
+  /**
+   * Call-to-action button
+   */
+  collectionCta?: {
+    text?: string | null;
+    link?: string | null;
+  };
+  /**
+   * YouTube video showcase (extract ID from URL: youtube.com/watch?v=VIDEO_ID)
+   */
+  featuredVideo?: {
+    /**
+     * YouTube video ID (e.g., dQw4w9WgXcQ)
+     */
+    youtubeId?: string | null;
+    width?: number | null;
+    height?: number | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-piano-collection';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingPianoGalleryBlock".
+ */
+export interface MarketingPianoGalleryBlock {
+  /**
+   * Gallery section title
+   */
+  galleryTitle?: string | null;
+  /**
+   * Gallery section description
+   */
+  galleryDescription?: string | null;
+  /**
+   * Piano category cards
+   */
+  pianoCategories: {
+    /**
+     * Category model/type (e.g., "Digital Piano")
+     */
+    model: string;
+    /**
+     * Category title
+     */
+    title: string;
+    /**
+     * Category description
+     */
+    description: string;
+    image?: (string | null) | Media;
+    /**
+     * Link to category page
+     */
+    href: string;
+    id?: string | null;
+  }[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-piano-gallery';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingNewsCarouselBlock".
+ */
+export interface MarketingNewsCarouselBlock {
+  /**
+   * Auto-play duration in milliseconds (7000 = 7 seconds)
+   */
+  autoPlayDuration?: number | null;
+  /**
+   * Carousel news items
+   */
+  newsItems: {
+    title: string;
+    description: string;
+    image?: (string | null) | Media;
+    category: 'news' | 'events' | 'promotions' | 'new-arrivals' | 'education';
+    /**
+     * Optional link for this news item
+     */
+    link?: string | null;
+    id?: string | null;
+  }[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-news-carousel';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingContactFormBlock".
+ */
+export interface MarketingContactFormBlock {
+  /**
+   * First part of the title
+   */
+  contactTitle?: string | null;
+  /**
+   * Highlighted part of the title
+   */
+  contactTitleHighlight?: string | null;
+  /**
+   * Form introduction text
+   */
+  contactDescription?: string | null;
+  /**
+   * Step titles for the multi-step form
+   */
+  stepTitles?:
+    | {
+        step: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Trust/privacy message below form
+   */
+  trustMessage?: string | null;
+  /**
+   * Benefits/features list
+   */
+  benefits?:
+    | {
+        icon: 'shield-check' | 'clock' | 'users' | 'award' | 'music' | 'heart';
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Form dropdown and selection options
+   */
+  formOptions?: {
+    experienceLevels?:
+      | {
+          level: string;
+          id?: string | null;
+        }[]
+      | null;
+    pianoTypes?:
+      | {
+          type: string;
+          id?: string | null;
+        }[]
+      | null;
+    budgetRanges?:
+      | {
+          range: string;
+          id?: string | null;
+        }[]
+      | null;
+    primaryUses?:
+      | {
+          use: string;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-contact-form';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingStorefrontLocationsBlock".
+ */
+export interface MarketingStorefrontLocationsBlock {
+  /**
+   * Small label text above the description (e.g., "Our Locations")
+   */
+  sectionLabel?: string | null;
+  /**
+   * Description text below the section label
+   */
+  sectionDescription?: string | null;
+  /**
+   * Text above the CTA button
+   */
+  ctaSubheading?: string | null;
+  /**
+   * CTA button text
+   */
+  ctaButtonText: string;
+  /**
+   * CTA button destination URL
+   */
+  ctaButtonLink: string;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-storefront-locations';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ProductShowcaseBlock".
  */
 export interface ProductShowcaseBlock {
@@ -3799,6 +4277,21 @@ export interface HomePage {
         url: string;
         id?: string | null;
       }[]
+    | null;
+  /**
+   * Add and arrange blocks to build your homepage. Leave empty to use legacy tab-based content below.
+   */
+  content?:
+    | (
+        | MarketingHomePageHeroBlock
+        | MarketingShowroomBlock
+        | MarketingPianoCollectionBlock
+        | MarketingI2LBlock
+        | MarketingPianoGalleryBlock
+        | MarketingNewsCarouselBlock
+        | MarketingContactFormBlock
+        | MarketingStorefrontLocationsBlock
+      )[]
     | null;
   /**
    * Configure the site-wide announcement bar that appears above the header
@@ -4912,58 +5405,6 @@ export interface Storefront {
   createdAt: string;
 }
 /**
- * Product collections automatically synced from Shopify
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "collections".
- */
-export interface Collection {
-  id: string;
-  /**
-   * Shopify Collection ID (gid://shopify/Collection/...)
-   */
-  shopifyCollectionId: string;
-  /**
-   * Collection title (synced from Shopify)
-   */
-  title: string;
-  /**
-   * Collection handle/slug (synced from Shopify)
-   */
-  handle: string;
-  /**
-   * Collection description (synced from Shopify)
-   */
-  description?: string | null;
-  /**
-   * Collection image URL (synced from Shopify)
-   */
-  imageUrl?: string | null;
-  /**
-   * Number of active products in this collection (auto-calculated)
-   */
-  productCount?: number | null;
-  /**
-   * Shopify synchronization metadata
-   */
-  shopify?: {
-    /**
-     * Sync status with Shopify
-     */
-    syncStatus?: ('synced' | 'error') | null;
-    /**
-     * Last sync timestamp
-     */
-    lastSyncedAt?: string | null;
-    /**
-     * Collection type in Shopify
-     */
-    collectionType?: ('custom' | 'smart') | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * Manage authorized Kawai piano dealers with location, contact information, and service details for the dealer finder map.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -5804,6 +6245,7 @@ export interface HomePageSelect<T extends boolean = true> {
         url?: T;
         id?: T;
       };
+  content?: T | {};
   announcementBar?:
     | T
     | {
@@ -6527,6 +6969,17 @@ export interface CollectionsSelect<T extends boolean = true> {
   description?: T;
   imageUrl?: T;
   productCount?: T;
+  youtubeUrl?: T;
+  media?: T;
+  mediaUrl?: T;
+  heading?: T;
+  subheading?: T;
+  bannerSize?: T;
+  textAlignment?: T;
+  textColor?: T;
+  overlayOpacity?: T;
+  headingSize?: T;
+  fontFamily?: T;
   shopify?:
     | T
     | {

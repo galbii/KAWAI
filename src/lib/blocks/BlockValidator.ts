@@ -12,6 +12,8 @@ const VALID_BLOCK_TYPES = [
   'product-gallery',
   'product-features',
   'product-specs',
+  'product-collection-showcase',
+  'product-floating-add-to-cart',
   // Content blocks
   'content-text',
   'content-banner',

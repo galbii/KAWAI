@@ -206,7 +206,7 @@ export function BottomLeftPopupBlock({
       border: 'border-neutral-200/40',
       text: 'text-neutral-900',
       subtext: 'text-neutral-600',
-      shadow: 'shadow-xl shadow-neutral-900/10',
+      shadow: 'shadow-[0_8px_30px_rgb(0,0,0,0.08),0_2px_8px_rgb(0,0,0,0.04)]',
       backdrop: 'backdrop-blur-xl',
       accent: 'bg-kawai-red hover:bg-kawai-red/90',
       accentText: 'text-white',
@@ -216,7 +216,7 @@ export function BottomLeftPopupBlock({
       border: 'border-neutral-700/40',
       text: 'text-white',
       subtext: 'text-neutral-300',
-      shadow: 'shadow-2xl shadow-black/40',
+      shadow: 'shadow-[0_8px_40px_rgb(0,0,0,0.35),0_2px_12px_rgb(0,0,0,0.2)]',
       backdrop: 'backdrop-blur-xl',
       accent: 'bg-white hover:bg-neutral-100',
       accentText: 'text-neutral-900',
@@ -226,7 +226,7 @@ export function BottomLeftPopupBlock({
       border: 'border-red-200/50',
       text: 'text-neutral-900',
       subtext: 'text-red-900/70',
-      shadow: 'shadow-2xl shadow-red-900/20',
+      shadow: 'shadow-[0_8px_30px_rgb(127,29,29,0.15),0_2px_8px_rgb(127,29,29,0.08)]',
       backdrop: 'backdrop-blur-xl',
       accent: 'bg-kawai-red hover:bg-kawai-red/90',
       accentText: 'text-white',
@@ -236,7 +236,7 @@ export function BottomLeftPopupBlock({
       border: 'border-amber-200/50',
       text: 'text-neutral-900',
       subtext: 'text-amber-900/70',
-      shadow: 'shadow-2xl shadow-amber-900/20',
+      shadow: 'shadow-[0_8px_30px_rgb(120,53,15,0.15),0_2px_8px_rgb(120,53,15,0.08)]',
       backdrop: 'backdrop-blur-xl',
       accent: 'bg-kawai-gold hover:bg-kawai-gold/90',
       accentText: 'text-neutral-900',
@@ -416,7 +416,9 @@ export function BottomLeftPopupBlock({
             currentTheme.bg,
             currentTheme.border,
             currentTheme.shadow,
-            currentTheme.backdrop
+            currentTheme.backdrop,
+            // Subtle inner shadow for depth
+            'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]'
           )}
         >
           {/* Subtle inner glow */}
@@ -527,7 +529,7 @@ export function BottomLeftPopupBlock({
           </div>
 
           {/* Progress bar for auto-dismiss */}
-          {autoDismissDelay && autoDismissDelay > 0 && state === 'visible' && (
+          {(autoDismissDelay ?? 0) > 0 && state === 'visible' && (
             <div className="absolute bottom-0 left-0 right-0 h-0.5 overflow-hidden rounded-b-2xl bg-black/5">
               <div
                 className={cn('h-full', currentTheme.accent)}

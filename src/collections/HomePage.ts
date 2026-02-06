@@ -56,6 +56,33 @@ export const HomePage: CollectionConfig = {
     {
       type: 'tabs',
       tabs: [
+        // Page Builder Tab (NEW - RECOMMENDED)
+        {
+          label: '🎨 Page Builder',
+          description: '✅ RECOMMENDED: Build your homepage using blocks. Drag and drop to customize layout and content.',
+          fields: [
+            {
+              name: 'content',
+              type: 'blocks',
+              blockReferences: [
+                'marketing-homepage-hero',
+                'marketing-showroom',
+                'marketing-piano-collection',
+                'marketing-i2l', // Already exists
+                'marketing-piano-gallery',
+                'marketing-news-carousel',
+                'marketing-contact-form',
+                'marketing-storefront-locations',
+              ] as any,
+              blocks: [], // Required to be empty for compatibility
+              admin: {
+                description:
+                  'Add and arrange blocks to build your homepage. Leave empty to use legacy tab-based content below.',
+                initCollapsed: false,
+              },
+            },
+          ],
+        },
         // Announcement Bar Tab
         {
           label: 'Announcement Bar',

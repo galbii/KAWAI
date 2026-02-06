@@ -16,6 +16,8 @@ import { CallToActionBlock } from '@/components/blocks/CallToActionBlock'
 import { TestimonialsBlock } from '@/components/blocks/TestimonialsBlock'
 import { BannerBlock } from '@/components/blocks/BannerBlock'
 import { CodeBlock } from '@/components/blocks/CodeBlock'
+import { CollectionShowcaseBlock } from '@/components/blocks/CollectionShowcaseBlock'
+import { FloatingAddToCartBlock } from '@/components/blocks/FloatingAddToCartBlock'
 
 // Block component mapping (using actual block slugs from block definitions)
 const BLOCK_COMPONENTS = {
@@ -29,6 +31,8 @@ const BLOCK_COMPONENTS = {
   'product-gallery': ImageGalleryBlock,
   'product-features': FeaturesListBlock,
   'product-specs': SpecificationsBlock,
+  'product-collection-showcase': CollectionShowcaseBlock,
+  'product-floating-add-to-cart': FloatingAddToCartBlock,
   // Content blocks
   'content-text': TextContentBlock,
   'content-banner': BannerBlock,
@@ -67,8 +71,8 @@ export async function BlockRenderer({ block, index, product }: BlockRendererProp
   const BlockComponent = BLOCK_COMPONENTS[blockType]
 
   try {
-    // For ProductHero blocks, fetch Shopify product and pass both CMS + Shopify data
-    if (blockType === 'product-hero') {
+    // For ProductHero and FloatingAddToCart blocks, fetch Shopify product and pass both CMS + Shopify data
+    if (blockType === 'product-hero' || blockType === 'product-floating-add-to-cart') {
       // Fetch Shopify product server-side using model field
       let shopifyProduct = null
 
@@ -96,9 +100,9 @@ export async function BlockRenderer({ block, index, product }: BlockRendererProp
         shopifyProduct: shopifyProduct
       }
 
-      // Log ProductHero rendering in development
+      // Log block rendering in development
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[BlockRenderer] Rendering ProductHero block:`, {
+        console.log(`[BlockRenderer] Rendering ${blockType} block:`, {
           blockId: block.id,
           productName: product.name,
           hasMainImage: !!product.imageUrl,
@@ -108,7 +112,7 @@ export async function BlockRenderer({ block, index, product }: BlockRendererProp
         })
       }
 
-      // Render the ProductHero component with product data
+      // Render the component with product data
       return (
         <BlockComponent
           key={block.id || `${blockType}-${index}`}

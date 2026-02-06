@@ -126,7 +126,7 @@ export function StorefrontsMegaMenu({
                   {[1, 2, 3].map((i) => (
                     <div
                       key={i}
-                      className="flex-shrink-0 w-[320px] h-[280px] bg-gray-100 rounded-2xl animate-pulse border border-gray-200"
+                      className="flex-shrink-0 w-[320px] h-[480px] bg-gray-100 rounded-2xl animate-pulse border border-gray-200"
                     />
                   ))}
                 </div>
@@ -135,14 +135,22 @@ export function StorefrontsMegaMenu({
               /* Actual Content */
               <>
                 {/* Header */}
-                <div className="container mx-auto px-4 sm:px-6 mb-8">
+                <div className="container mx-auto px-4 sm:px-6 mb-10">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-1">
-                        Official Stores
-                      </h2>
-                      <p className="text-sm text-gray-600">
-                        Official Storefront • {storefronts.length} {storefronts.length === 1 ? 'location' : 'locations'}
+                      <div className="flex items-center gap-3 mb-3">
+                        <h2 className="text-4xl font-bold text-kawai-black tracking-tight">
+                          Official Stores
+                        </h2>
+                        <div className="flex items-center gap-2 px-3 py-1 bg-kawai-red/10 rounded-full">
+                          <div className="w-2 h-2 bg-kawai-red rounded-full animate-pulse"></div>
+                          <span className="text-xs font-semibold text-kawai-red uppercase tracking-wide">
+                            {storefronts.length} {storefronts.length === 1 ? 'Location' : 'Locations'}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-base text-gray-600 font-medium">
+                        Check out Kawai's Official Storefront to view the full range of products in person.
                       </p>
                     </div>
 
@@ -177,7 +185,7 @@ export function StorefrontsMegaMenu({
                     msOverflowStyle: 'none',
                     paddingTop: '1.5rem',
                     paddingBottom: '2rem',
-                    minHeight: '450px',
+                    minHeight: '520px',
                     overflowX: 'auto',
                     overflowY: 'visible',
                   }}
@@ -195,7 +203,7 @@ export function StorefrontsMegaMenu({
                         <Link
                           href={`/store/${storefront.slug}`}
                           onClick={onClose}
-                          className="group bg-gray-100 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden hover:scale-105 h-[420px] flex flex-col block border-2 border-kawai-red"
+                          className="group bg-gray-100 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden hover:scale-105 h-[480px] flex flex-col block border-2 border-kawai-red"
                         >
                           <div className="p-6 flex flex-col h-full">
                             {/* Location Header */}
@@ -277,11 +285,11 @@ export function StorefrontsMegaMenu({
                               )}
                             </div>
 
-                            {/* Visit Button */}
+                            {/* Visit Store Site Button */}
                             <div className="pt-3 border-t border-kawai-pearl mt-auto flex-shrink-0">
                               <div className="flex items-center justify-between">
                                 <span className="text-sm font-medium text-kawai-black group-hover:text-kawai-red transition-colors">
-                                  Visit Showroom
+                                  Visit Store Site
                                 </span>
                                 <div className="w-6 h-6 bg-kawai-red/10 group-hover:bg-kawai-red rounded-full flex items-center justify-center transition-colors">
                                   <svg

@@ -339,7 +339,7 @@ export function ProductHeroBlock({
       )}
 
       {/* Main Content Container */}
-      <div className="container mx-auto px-6 lg:px-12 xl:px-16 relative z-10 pt-30 pb-12 lg:pt-48 lg:pb-20">
+      <div className="container mx-auto px-6 lg:px-12 xl:px-16 relative z-10 pt-12 pb-12 lg:pt-16 lg:pb-20">
 
         <div className={cn(
           "grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-x-12 lg:gap-y-6 w-full",
@@ -348,20 +348,6 @@ export function ProductHeroBlock({
 
           {/* Part 1: Brand + Title */}
           <div className="space-y-6 lg:space-y-8 order-1 lg:col-span-5 lg:col-start-1">
-
-            {/* KAWAI Brand Badge */}
-            <div className="flex items-center space-x-4 opacity-90">
-              <div className={cn(
-                "w-12 h-[1px] bg-gradient-to-r to-transparent",
-                backgroundColor === 'black' ? 'from-kawai-red' : 'from-kawai-red'
-              )} />
-              <span className={cn(
-                "text-sm tracking-[0.3em] uppercase font-medium",
-                backgroundColor === 'black' ? 'text-kawai-red' : 'text-kawai-red'
-              )}>
-                Crafted Since 1927
-              </span>
-            </div>
 
             {/* Hero Headlines with modern typography */}
             <div className="space-y-4 lg:space-y-6">
@@ -374,6 +360,25 @@ export function ProductHeroBlock({
                 </h1>
               )}
             </div>
+
+            {/* Model Display - Right under title */}
+            {modelDisplay && (
+              <div className="flex items-center space-x-4">
+                <div className="w-1 h-12 lg:h-16 bg-gradient-to-b from-kawai-red to-red-600 rounded-full" />
+                <div>
+                  <p className={cn(
+                    "text-sm tracking-wide uppercase font-medium",
+                    backgroundColor === 'black' ? 'text-kawai-red' : 'text-kawai-red'
+                  )}>Model</p>
+                  <p className={cn(
+                    "text-xl lg:text-2xl xl:text-3xl font-light",
+                    textColorClass
+                  )}>
+                    {modelDisplay}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Image Section - Row 2 on mobile, Right column on desktop */}
@@ -564,27 +569,8 @@ export function ProductHeroBlock({
             )}
           </div>
 
-          {/* Part 2: Model + Variations + Buttons */}
+          {/* Part 2: Variations + Buttons */}
           <div className="space-y-6 lg:space-y-8 order-3 lg:col-span-5 lg:col-start-1">
-
-            {/* Model Display */}
-            {modelDisplay && (
-              <div className="flex items-center space-x-4">
-                <div className="w-1 h-12 lg:h-16 bg-gradient-to-b from-kawai-red to-red-600 rounded-full" />
-                <div>
-                  <p className={cn(
-                    "text-sm tracking-wide uppercase font-medium",
-                    backgroundColor === 'black' ? 'text-kawai-red' : 'text-kawai-red'
-                  )}>Model</p>
-                  <p className={cn(
-                    "text-xl lg:text-2xl xl:text-3xl font-light",
-                    textColorClass
-                  )}>
-                    {modelDisplay}
-                  </p>
-                </div>
-              </div>
-            )}
 
             {/* Modern Variation Selection */}
             {showVariations && hasVariations && (
