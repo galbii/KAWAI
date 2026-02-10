@@ -16,6 +16,7 @@ export function HomePageHeroRenderer(props: MarketingHomePageHeroBlock) {
       link: props.secondaryCta?.link || '/contact',
     },
     backgroundVideo: props.backgroundVideo || null,
+    tracking: props.tracking, // Pass tracking config to HomeHero
   }
 
   return <HomeHero data={heroData} />

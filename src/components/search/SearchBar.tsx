@@ -71,6 +71,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
   const [keyboardHeight, setKeyboardHeight] = useState(0)
   const [isInputFocused, setIsInputFocused] = useState(false)
+  const [announcementBarHeight, setAnnouncementBarHeight] = useState(0)
   const [quickLinks, setQuickLinks] = useState<QuickLink[]>([
     { label: 'Instrumental to Life', url: '/instrumental-to-life' },
     { label: 'Find a Dealer', url: '/find-a-dealer' },
@@ -142,6 +143,28 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
       setIsMounted(false)
       window.removeEventListener('resize', checkMobile)
     }
+  }, [])
+
+  // Read announcement bar height from CSS variable
+  useEffect(() => {
+    const updateAnnouncementBarHeight = () => {
+      const height = getComputedStyle(document.documentElement)
+        .getPropertyValue('--announcement-bar-height')
+      const heightValue = parseInt(height) || 0
+      setAnnouncementBarHeight(heightValue)
+    }
+
+    // Initial read
+    updateAnnouncementBarHeight()
+
+    // Watch for changes to the CSS variable
+    const observer = new MutationObserver(updateAnnouncementBarHeight)
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['style']
+    })
+
+    return () => observer.disconnect()
   }, [])
 
   // Fetch quick links from HomePage collection
@@ -686,7 +709,8 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
               <div
                 className="fixed z-[10000] bg-black/40"
                 style={{
-                  top: isMobile ? 0 : '70px',
+                  // 120px = 64px (top bar) + 56px (bottom nav at top), plus dynamic announcement bar height
+                  top: isMobile ? 0 : `${120 + announcementBarHeight}px`,
                   left: 0,
                   right: 0,
                   // On mobile, stop backdrop before the input area to prevent click-through
@@ -719,7 +743,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                           ? `${keyboardHeight + 80}px` // Input height + keyboard height
                           : 'calc(100px + env(safe-area-inset-bottom))' // Default spacing
                       }
-                    : { top: '70px', left: 0, right: 0, bottom: 0 }
+                    : { top: `${120 + announcementBarHeight}px`, left: 0, right: 0, bottom: 0 } // 64px (top bar) + 56px (bottom nav) + announcement bar
                 }
                 onKeyDown={handleKeyboardNavigation}
               >
@@ -792,6 +816,46 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                       </div>
                     )}
 
+                    {/* Quick Links - Sticky at top on mobile, hidden on desktop */}
+                    {isMobile && query.length < 2 && (
+                      <div className="flex-shrink-0 border-b border-gray-200/50">
+                        <div className="p-4 space-y-1">
+                          {/* Quick Links Header */}
+                          <div className="flex items-center gap-2 mb-4 px-2">
+                            <div className="h-px flex-1 bg-kawai-neutral/20" />
+                            <h3 className="text-xs font-medium text-kawai-neutral uppercase tracking-widest">
+                              Quick Links
+                            </h3>
+                            <div className="h-px flex-1 bg-kawai-neutral/20" />
+                          </div>
+                          {quickLinks.map((link, index) => (
+                            <button
+                              key={index}
+                              onClick={() => {
+                                router.push(link.url)
+                                clearSearch()
+                              }}
+                              className="group w-full px-6 py-4 text-left transition-all duration-200 hover:bg-kawai-red/5 border-l-2 border-transparent hover:border-kawai-red rounded-lg"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-kawai-pearl font-light text-lg tracking-wide group-hover:text-kawai-red transition-colors">
+                                  {link.label}
+                                </span>
+                                <svg
+                                  className="w-5 h-5 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                                </svg>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Results */}
                     <div className={cn(
                       "flex-1 overflow-y-auto overscroll-contain",
@@ -809,8 +873,8 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                         : undefined
                     }
                     >
-                      {/* Welcome Screen - Show when search is empty */}
-                      {query.length < 2 ? (
+                      {/* Welcome Screen - Show when search is empty (desktop only now) */}
+                      {query.length < 2 && !isMobile ? (
                         <div className={cn(
                           "flex flex-col items-center h-full",
                           isMobile ? "justify-start pt-8" : "justify-center gap-12"
@@ -860,33 +924,43 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                             </div>
                           )}
 
-                          {/* Quick Links - Clean Line Items */}
-                          <div className="w-full max-w-md space-y-1">
-                            {quickLinks.map((link, index) => (
-                              <button
-                                key={index}
-                                onClick={() => {
-                                  router.push(link.url)
-                                  clearSearch()
-                                }}
-                                className="group w-full px-6 py-4 text-left transition-all duration-200 hover:bg-kawai-red/5 border-l-2 border-transparent hover:border-kawai-red"
-                              >
-                                <div className="flex items-center justify-between">
-                                  <span className="text-kawai-pearl font-light text-lg tracking-wide group-hover:text-kawai-red transition-colors">
-                                    {link.label}
-                                  </span>
-                                  <svg
-                                    className="w-5 h-5 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                  >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-                                  </svg>
-                                </div>
-                              </button>
-                            ))}
-                          </div>
+                          {/* Quick Links - Desktop only (mobile has sticky version at top) */}
+                          {!isMobile && (
+                            <div className="w-full max-w-md space-y-1">
+                              {/* Quick Links Header */}
+                              <div className="flex items-center gap-2 mb-4 px-2">
+                                <div className="h-px flex-1 bg-kawai-neutral/20" />
+                                <h3 className="text-xs font-medium text-kawai-neutral uppercase tracking-widest">
+                                  Quick Links
+                                </h3>
+                                <div className="h-px flex-1 bg-kawai-neutral/20" />
+                              </div>
+                              {quickLinks.map((link, index) => (
+                                <button
+                                  key={index}
+                                  onClick={() => {
+                                    router.push(link.url)
+                                    clearSearch()
+                                  }}
+                                  className="group w-full px-6 py-4 text-left transition-all duration-200 hover:bg-kawai-red/5 border-l-2 border-transparent hover:border-kawai-red"
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-kawai-pearl font-light text-lg tracking-wide group-hover:text-kawai-red transition-colors">
+                                      {link.label}
+                                    </span>
+                                    <svg
+                                      className="w-5 h-5 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
 
                           {/* CSS for sequential fade animation */}
                           <style jsx>{`
@@ -1300,7 +1374,13 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                     setIsOpen(true)
                     setIsMobileSearchOpen(true)
                     onOpenChange?.(true)
-                    // Start proactive keyboard detection for immediate positioning
+                    // Immediately set estimated keyboard height for instant UI adjustment
+                    // This prevents the UI from being cut off before detection completes
+                    // Default mobile keyboard is typically 260-350px, we use 300px as estimate
+                    if (isMobile) {
+                      setKeyboardHeight(300)
+                    }
+                    // Start proactive keyboard detection for precise adjustment
                     startKeyboardDetection()
                   }}
                   onBlur={() => {

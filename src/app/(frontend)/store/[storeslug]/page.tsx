@@ -73,56 +73,37 @@ function transformStorefrontData(rawData: any, homePageData: any): HomePageData 
   };
 }
 
-// Helper function to check if news carousel data is meaningful/populated
-function isNewsCarouselDataEmpty(newsCarouselSection: any): boolean {
-  if (!newsCarouselSection) return true;
-
-  // Check if newsItems array exists and has meaningful content
-  if (!newsCarouselSection.newsItems || !Array.isArray(newsCarouselSection.newsItems)) {
-    return true;
-  }
-
-  // Check if array is empty
-  if (newsCarouselSection.newsItems.length === 0) {
-    return true;
-  }
-
-  // Check if all items in the array are empty/meaningless
-  const hasValidItems = newsCarouselSection.newsItems.some((item: any) => {
-    return item &&
-           item.title &&
-           item.title.trim().length > 0 &&
-           item.description &&
-           item.description.trim().length > 0 &&
-           item.category &&
-           item.category.trim().length > 0;
-  });
-
-  return !hasValidItems;
-}
-
 // Helper function to merge news carousel data with fallback values
+// ALWAYS ADDITIVE: Combines homepage news + storefront news (never replaces)
 function mergeNewsCarouselWithFallback(dealerData: any, homePageData: any): any {
   if (!dealerData || !homePageData?.newsCarouselSection) return dealerData;
 
   const merged = { ...dealerData };
 
-  // If dealer's autoPlayDuration is missing/empty, use HomePage value
-  if (!merged.newsCarouselSection?.autoPlayDuration && homePageData.newsCarouselSection?.autoPlayDuration) {
-    merged.newsCarouselSection = merged.newsCarouselSection || {};
-    merged.newsCarouselSection.autoPlayDuration = homePageData.newsCarouselSection.autoPlayDuration;
+  // Always start with homepage news items
+  let newsItems = homePageData.newsCarouselSection?.newsItems ?? [];
+
+  // Append storefront news items if they exist (always additive)
+  if (
+    merged.newsCarouselSection?.newsItems &&
+    Array.isArray(merged.newsCarouselSection.newsItems) &&
+    merged.newsCarouselSection.newsItems.length > 0
+  ) {
+    newsItems = [...newsItems, ...merged.newsCarouselSection.newsItems];
   }
 
-  // If dealer's newsItems are empty, use HomePage newsItems
-  if (isNewsCarouselDataEmpty(merged.newsCarouselSection)) {
-    merged.newsCarouselSection = merged.newsCarouselSection || {};
-    merged.newsCarouselSection.newsItems = homePageData.newsCarouselSection.newsItems;
+  // Use storefront autoPlayDuration if set, otherwise use homepage value, otherwise default to 7000
+  const autoPlayDuration =
+    merged.newsCarouselSection?.autoPlayDuration ??
+    homePageData.newsCarouselSection?.autoPlayDuration ??
+    7000;
 
-    // Also ensure autoPlayDuration is set if it wasn't already
-    if (!merged.newsCarouselSection.autoPlayDuration) {
-      merged.newsCarouselSection.autoPlayDuration = homePageData.newsCarouselSection.autoPlayDuration;
-    }
-  }
+  // Update merged data with combined news items
+  merged.newsCarouselSection = {
+    ...merged.newsCarouselSection,
+    autoPlayDuration,
+    newsItems,
+  };
 
   return merged;
 }
@@ -258,19 +239,26 @@ async function StorefrontContent({ storeslug }: { storeslug: string }) {
     // Debug: Log transformed hours data
     console.log(`[DEBUG] Transformed hours for "${storeslug}":`, JSON.stringify(storefrontData?.showroomSection?.hours, null, 2))
 
-    // Merge storefront data with HomePage fallbacks for news carousel
+    // Merge storefront data with HomePage for news carousel (always additive)
     if (storefrontData && homePageData) {
-      const originalCarouselEmpty = isNewsCarouselDataEmpty(storefrontData.newsCarouselSection);
+      const originalStorefrontItemCount = storefrontData.newsCarouselSection?.newsItems?.length ?? 0;
       const originalDurationMissing = !storefrontData.newsCarouselSection?.autoPlayDuration;
 
       storefrontData = mergeNewsCarouselWithFallback(storefrontData, homePageData);
 
-      // Log what fallbacks were applied for debugging
-      if (originalCarouselEmpty || originalDurationMissing) {
-        const fallbacks = [];
-        if (originalCarouselEmpty) fallbacks.push('news items');
-        if (originalDurationMissing) fallbacks.push('auto-play duration');
-        console.log(`[SEO] Storefront "${storeslug}" using HomePage fallback for: ${fallbacks.join(', ')}`);
+      // Null check after merge (merge can return null)
+      if (!storefrontData) return;
+
+      // Log combined news items and fallbacks for debugging
+      const homePageItemCount = homePageData.newsCarouselSection?.newsItems?.length ?? 0;
+      const totalItemCount = storefrontData.newsCarouselSection?.newsItems?.length ?? 0;
+
+      console.log(
+        `[SEO] Storefront "${storeslug}" news carousel: ${homePageItemCount} homepage items + ${originalStorefrontItemCount} storefront items = ${totalItemCount} total`
+      );
+
+      if (originalDurationMissing) {
+        console.log(`[SEO] Storefront "${storeslug}" using HomePage auto-play duration`);
       }
     }
 

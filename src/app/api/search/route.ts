@@ -22,15 +22,37 @@ export async function GET(request: NextRequest) {
 
     const payload = await getPayload({ config })
 
+    // Synonym expansion for better search results
+    // Map user search terms to database-friendly terms
+    const synonymMap: Record<string, string[]> = {
+      'dealer': ['dealer', 'showroom', 'storefront', 'store', 'location'],
+      'dealers': ['dealer', 'showroom', 'storefront', 'store', 'location'],
+      'store': ['dealer', 'showroom', 'storefront', 'store', 'location'],
+      'stores': ['dealer', 'showroom', 'storefront', 'store', 'location'],
+      'showroom': ['dealer', 'showroom', 'storefront', 'store', 'location'],
+      'showrooms': ['dealer', 'showroom', 'storefront', 'store', 'location'],
+      'location': ['dealer', 'showroom', 'storefront', 'store', 'location'],
+      'locations': ['dealer', 'showroom', 'storefront', 'store', 'location'],
+    }
+
+    // Check if query matches any synonym and expand search terms
+    const expandedTerms: string[] = [query] // Always include original query
+    const queryLower = query.toLowerCase().trim()
+
+    // Add synonyms if matched
+    if (synonymMap[queryLower]) {
+      expandedTerms.push(...synonymMap[queryLower])
+    }
+
     // Build comprehensive where clause using Payload query operators
     // - 'like' operator: matches documents where all words are present
     // - 'contains' operator: case-insensitive substring matching
     const whereClause: any = {
-      or: [
-        { title: { like: query } },        // Match all words in title
-        { title: { contains: query } },    // Substring match in title
-        { excerpt: { contains: query } },  // Substring match in excerpt
-      ],
+      or: expandedTerms.flatMap(term => [
+        { title: { like: term } },        // Match all words in title
+        { title: { contains: term } },    // Substring match in title
+        { excerpt: { contains: term } },  // Substring match in excerpt
+      ]),
     }
 
     const results = await payload.find({

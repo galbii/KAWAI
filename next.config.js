@@ -19,6 +19,13 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
     remotePatterns: [
+      // Current R2 CDN (from NEXT_PUBLIC_S3_PUBLIC_URL)
+      {
+        protocol: 'https',
+        hostname: 'pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev',
+        pathname: '/**',
+      },
+      // Legacy R2 CDN hostnames
       {
         protocol: 'https',
         hostname: 'pub-8cc11ba1a6ef43369715136333c4b35a.r2.dev',

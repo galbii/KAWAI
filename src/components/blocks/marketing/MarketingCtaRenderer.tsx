@@ -5,6 +5,7 @@ import type { MarketingCallToActionBlock } from '@/payload-types'
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { trackCTAClick } from '@/lib/analytics/unified-tracking'
 
 interface MarketingCtaRendererProps extends MarketingCallToActionBlock {}
 
@@ -51,6 +52,23 @@ export function MarketingCtaRenderer({
   const hasBackgroundImage = media?.type === 'background' && media?.backgroundImage
   const overlayEnabled = media?.overlay?.enable ?? true
   const overlayOpacity = media?.overlay?.opacity || 0.7
+
+  // Track button click
+  const handleButtonClick = (button: any, index: number) => {
+    trackCTAClick({
+      blockType: 'marketing-cta',
+      blockData: { ctaTracking: button.ctaTracking },
+      ctaText: button.text || '',
+      destination: button.link || '#',
+      position: index,
+      additionalProps: {
+        button_style: button.style,
+        button_size: button.size,
+        has_icon: Boolean(button.icon),
+        layout_style: layout?.style,
+      },
+    })
+  }
 
   return (
     <section className={cn(
@@ -144,6 +162,7 @@ export function MarketingCtaRenderer({
                 href={button.link || '#'}
                 target={button.openInNewTab ? '_blank' : undefined}
                 rel={button.openInNewTab ? 'noopener noreferrer' : undefined}
+                onClick={() => handleButtonClick(button, index)}
               >
                 {button.text}
               </Link>

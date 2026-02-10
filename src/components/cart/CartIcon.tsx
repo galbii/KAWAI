@@ -12,6 +12,7 @@
 
 'use client'
 
+import { useState, useEffect } from 'react'
 import { ShoppingBag } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/contexts/CartContext'
@@ -36,7 +37,14 @@ interface CartIconProps {
 
 export function CartIcon({ onOpen, className, iconOnly = false }: CartIconProps) {
   const { getItemCount } = useCart()
-  const itemCount = getItemCount()
+  const [mounted, setMounted] = useState(false)
+
+  // Only show cart count after client-side hydration
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const itemCount = mounted ? getItemCount() : 0
   const hasItems = itemCount > 0
 
   return (
@@ -55,8 +63,8 @@ export function CartIcon({ onOpen, className, iconOnly = false }: CartIconProps)
       {/* Shopping Bag Icon */}
       <ShoppingBag className="h-6 w-6 text-gray-700" strokeWidth={2} />
 
-      {/* Item Count Badge */}
-      {!iconOnly && (
+      {/* Item Count Badge - Only render after hydration */}
+      {!iconOnly && mounted && (
         <AnimatePresence>
           {hasItems && (
             <motion.div

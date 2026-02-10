@@ -1194,6 +1194,10 @@ export interface Product {
    */
   status?: ('draft' | 'active' | 'discontinued') | null;
   /**
+   * Mark this product as featured to display in homepage piano collection block
+   */
+  featured?: boolean | null;
+  /**
    * Product category (synced from Shopify taxonomy, e.g. "Digital Pianos")
    */
   category?: string | null;
@@ -2054,6 +2058,35 @@ export interface MarketingCallToActionBlock {
      * Open link in new browser tab
      */
     openInNewTab?: boolean | null;
+    /**
+     * Track clicks and conversions for this call-to-action
+     */
+    ctaTracking?: {
+      /**
+       * Track interactions with this block (CTAs, impressions, etc.)
+       */
+      enabled?: boolean | null;
+      /**
+       * Override default event name (leave empty for auto-generated)
+       */
+      eventName?: string | null;
+      /**
+       * Category for organizing analytics reports
+       */
+      category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+      /**
+       * Estimated dollar value of this conversion (for ROI tracking)
+       */
+      conversionValue?: number | null;
+      /**
+       * Send conversion event to Meta Pixel and Google Analytics
+       */
+      trackAsConversion?: boolean | null;
+      /**
+       * Map to Meta Pixel standard event
+       */
+      metaEventType?: ('Lead' | 'Schedule' | 'FindLocation' | 'ViewContent' | 'Custom') | null;
+    };
     id?: string | null;
   }[];
   /**
@@ -2544,6 +2577,27 @@ export interface MarketingFindADealerBlock {
    * Optional background image (subtle overlay will be applied)
    */
   backgroundImage?: (string | null) | Media;
+  /**
+   * Configure event tracking for this block
+   */
+  tracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation') | null;
+    /**
+     * Estimated dollar value of dealer locator click
+     */
+    conversionValue?: number | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'marketing-find-a-dealer';
@@ -2982,6 +3036,27 @@ export interface MarketingHomePageHeroBlock {
     link?: string | null;
   };
   backgroundVideo?: (string | null) | Media;
+  /**
+   * Configure event tracking for this block
+   */
+  tracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'marketing-homepage-hero';
@@ -3048,26 +3123,26 @@ export interface MarketingShowroomBlock {
  */
 export interface MarketingPianoCollectionBlock {
   /**
-   * Section header text
+   * Section header text (leave empty to use Homepage tab data)
    */
   collectionSectionHeader?: string | null;
   /**
-   * Main title for the collection (use \n for line breaks)
+   * Main title for the collection (use \n for line breaks, leave empty to use Homepage tab data)
    */
   collectionTitle?: string | null;
   /**
-   * Collection description text
+   * Collection description text (leave empty to use Homepage tab data)
    */
   collectionDescription?: string | null;
   /**
-   * Call-to-action button
+   * Call-to-action button (leave empty to use Homepage tab data)
    */
   collectionCta?: {
     text?: string | null;
     link?: string | null;
   };
   /**
-   * YouTube video showcase (extract ID from URL: youtube.com/watch?v=VIDEO_ID)
+   * YouTube video showcase (extract ID from URL: youtube.com/watch?v=VIDEO_ID, leave empty to use Homepage tab data)
    */
   featuredVideo?: {
     /**
@@ -3087,36 +3162,38 @@ export interface MarketingPianoCollectionBlock {
  */
 export interface MarketingPianoGalleryBlock {
   /**
-   * Gallery section title
+   * Gallery section title (leave empty to use Homepage tab data)
    */
   galleryTitle?: string | null;
   /**
-   * Gallery section description
+   * Gallery section description (leave empty to use Homepage tab data)
    */
   galleryDescription?: string | null;
   /**
-   * Piano category cards
+   * Piano category cards (leave empty to use Homepage tab data)
    */
-  pianoCategories: {
-    /**
-     * Category model/type (e.g., "Digital Piano")
-     */
-    model: string;
-    /**
-     * Category title
-     */
-    title: string;
-    /**
-     * Category description
-     */
-    description: string;
-    image?: (string | null) | Media;
-    /**
-     * Link to category page
-     */
-    href: string;
-    id?: string | null;
-  }[];
+  pianoCategories?:
+    | {
+        /**
+         * Category model/type (e.g., "Digital Piano")
+         */
+        model: string;
+        /**
+         * Category title
+         */
+        title: string;
+        /**
+         * Category description
+         */
+        description: string;
+        image?: (string | null) | Media;
+        /**
+         * Link to category page
+         */
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'marketing-piano-gallery';
@@ -3127,23 +3204,25 @@ export interface MarketingPianoGalleryBlock {
  */
 export interface MarketingNewsCarouselBlock {
   /**
-   * Auto-play duration in milliseconds (7000 = 7 seconds)
+   * Auto-play duration in milliseconds (leave empty to use Homepage tab setting, default: 7000ms)
    */
   autoPlayDuration?: number | null;
   /**
-   * Carousel news items
+   * Additional news items (will be added to Homepage news items automatically)
    */
-  newsItems: {
-    title: string;
-    description: string;
-    image?: (string | null) | Media;
-    category: 'news' | 'events' | 'promotions' | 'new-arrivals' | 'education';
-    /**
-     * Optional link for this news item
-     */
-    link?: string | null;
-    id?: string | null;
-  }[];
+  newsItems?:
+    | {
+        title: string;
+        description: string;
+        image?: (string | null) | Media;
+        category: 'news' | 'events' | 'promotions' | 'new-arrivals' | 'education';
+        /**
+         * Optional link for this news item
+         */
+        link?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'marketing-news-carousel';
@@ -3216,6 +3295,27 @@ export interface MarketingContactFormBlock {
           id?: string | null;
         }[]
       | null;
+  };
+  /**
+   * Configure event tracking for this block
+   */
+  tracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead') | null;
+    /**
+     * Estimated dollar value of form submission
+     */
+    conversionValue?: number | null;
   };
   id?: string | null;
   blockName?: string | null;
@@ -4286,7 +4386,6 @@ export interface HomePage {
         | MarketingHomePageHeroBlock
         | MarketingShowroomBlock
         | MarketingPianoCollectionBlock
-        | MarketingI2LBlock
         | MarketingPianoGalleryBlock
         | MarketingNewsCarouselBlock
         | MarketingContactFormBlock
@@ -4520,10 +4619,6 @@ export interface HomePage {
      */
     height?: number | null;
   };
-  /**
-   * Add Instrumental To Life video carousel section. Configure heading, videos, and styling options.
-   */
-  i2lSection?: MarketingI2LBlock[] | null;
   /**
    * Piano gallery section title
    */
@@ -6332,7 +6427,6 @@ export interface HomePageSelect<T extends boolean = true> {
         width?: T;
         height?: T;
       };
-  i2lSection?: T | {};
   galleryTitle?: T;
   galleryDescription?: T;
   pianoCategories?:
@@ -6840,6 +6934,7 @@ export interface ProductsSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
   status?: T;
+  featured?: T;
   category?: T;
   description?: T;
   shopifyCollections?:

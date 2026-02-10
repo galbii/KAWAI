@@ -13,43 +13,43 @@ export const PianoCollection: Block = {
     {
       name: 'collectionSectionHeader',
       type: 'text',
-      defaultValue: 'Featured Models',
-      admin: { description: 'Section header text' },
+      admin: {
+        description: 'Section header text (leave empty to use Homepage tab data)',
+      },
     },
     {
       name: 'collectionTitle',
       type: 'text',
-      defaultValue: 'Kawai K-500 &\nGX2 Limited Edition',
       admin: {
-        description: 'Main title for the collection (use \\n for line breaks)',
+        description: 'Main title for the collection (use \\n for line breaks, leave empty to use Homepage tab data)',
       },
     },
     {
       name: 'collectionDescription',
       type: 'textarea',
-      defaultValue:
-        'Discover the perfect blend of traditional craftsmanship and modern innovation. Our featured collection showcases the finest Kawai pianos, meticulously selected for their exceptional tone, touch, and beauty.',
-      admin: { description: 'Collection description text' },
+      admin: {
+        description: 'Collection description text (leave empty to use Homepage tab data)',
+      },
     },
     {
       name: 'collectionCta',
       type: 'group',
-      admin: { description: 'Call-to-action button' },
+      admin: {
+        description: 'Call-to-action button (leave empty to use Homepage tab data)',
+      },
       fields: [
         {
           name: 'text',
           type: 'text',
-          defaultValue: 'Explore Collection',
         },
-        { name: 'link', type: 'text', defaultValue: '/pianos' },
+        { name: 'link', type: 'text' },
       ],
     },
     {
       name: 'featuredVideo',
       type: 'group',
       admin: {
-        description:
-          'YouTube video showcase (extract ID from URL: youtube.com/watch?v=VIDEO_ID)',
+        description: 'YouTube video showcase (extract ID from URL: youtube.com/watch?v=VIDEO_ID, leave empty to use Homepage tab data)',
       },
       fields: [
         {
@@ -57,8 +57,8 @@ export const PianoCollection: Block = {
           type: 'text',
           admin: { description: 'YouTube video ID (e.g., dQw4w9WgXcQ)' },
         },
-        { name: 'width', type: 'number', defaultValue: 560 },
-        { name: 'height', type: 'number', defaultValue: 315 },
+        { name: 'width', type: 'number' },
+        { name: 'height', type: 'number' },
       ],
     },
   ],

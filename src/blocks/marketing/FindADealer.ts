@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { trackingField } from '@/lib/payload/fields/tracking'
 
 export const FindADealer: Block = {
   slug: 'marketing-find-a-dealer',
@@ -102,5 +103,34 @@ export const FindADealer: Block = {
         description: 'Optional background image (subtle overlay will be applied)',
       },
     },
+
+    // Analytics & Tracking
+    trackingField({
+      defaultEnabled: true,
+      showAdvanced: false,
+      overrides: {
+        fields: [
+          {
+            name: 'category',
+            type: 'select',
+            defaultValue: 'lead',
+            options: [
+              { label: 'Engagement', value: 'engagement' },
+              { label: 'Conversion', value: 'conversion' },
+              { label: 'Lead Generation', value: 'lead' },
+              { label: 'Navigation', value: 'navigation' },
+            ],
+          },
+          {
+            name: 'conversionValue',
+            type: 'number',
+            defaultValue: 25,
+            admin: {
+              description: 'Estimated dollar value of dealer locator click',
+            },
+          },
+        ],
+      },
+    }),
   ],
 }

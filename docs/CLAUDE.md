@@ -438,4 +438,477 @@ From `@theme` configuration, you automatically get:
 - **Typography**: `font-brand-serif`, `font-brand-sans`
 - **Shadows**: `shadow-brand-medium`, `shadow-brand-premium`
 
+## Block Development & Analytics Tracking
+
+### Overview
+
+KAWAI uses a **reusable field factory pattern** for adding analytics tracking to Payload CMS blocks. This system allows marketers to configure tracking per block instance while developers maintain type-safe, consistent implementations.
+
+**Key Components:**
+- `src/lib/payload/fields/tracking.ts` - Reusable tracking field factories
+- `src/lib/analytics/unified-tracking.ts` - Centralized tracking utility
+- Block renderers use `trackWithConfig()` to respect CMS settings
+
+### Tracking Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Payload CMS Admin                                      │
+│  ┌───────────────────────────────────────────────────┐  │
+│  │ Marketing Block Instance                          │  │
+│  │  - Heading, CTA Text, etc.                        │  │
+│  │  - 📊 Analytics & Tracking                        │  │
+│  │    ✅ Enable tracking                             │  │
+│  │    Category: Lead Generation                      │  │
+│  │    Conversion Value: $25                          │  │
+│  └───────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────┐
+│  Frontend Renderer                                      │
+│  import { trackCTAClick } from '@/lib/analytics'        │
+│                                                         │
+│  trackCTAClick({                                        │
+│    blockType: 'marketing-find-a-dealer',                │
+│    blockData: { tracking },  ← Reads CMS config        │
+│    ctaText: 'Find a Dealer',                            │
+│    destination: '/find-a-dealer',                       │
+│  })                                                     │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────┐
+│  Unified Tracking Utility                               │
+│  - Checks if tracking.enabled === true                  │
+│  - Auto-includes UTM attribution from session           │
+│  - Fires to PostHog, GA4, Meta Pixel                    │
+│  - Respects category & conversion value from CMS        │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Adding Tracking to a New Block
+
+**Step 1: Import tracking field factory**
+
+```typescript
+// src/blocks/marketing/MyNewBlock.ts
+import type { Block } from 'payload'
+import { trackingField } from '@/lib/payload/fields/tracking'
+
+export const MyNewBlock: Block = {
+  slug: 'marketing-my-new-block',
+  interfaceName: 'MarketingMyNewBlockBlock',
+  fields: [
+    {
+      name: 'heading',
+      type: 'text',
+      required: true,
+    },
+    {
+      name: 'ctaText',
+      type: 'text',
+      required: true,
+    },
+    {
+      name: 'ctaLink',
+      type: 'text',
+      required: true,
+    },
+
+    // ✅ ADD TRACKING FIELD
+    trackingField({
+      defaultEnabled: true,
+      showAdvanced: false,
+      overrides: {
+        fields: [
+          {
+            name: 'category',
+            type: 'select',
+            defaultValue: 'conversion',
+            options: [
+              { label: 'Engagement', value: 'engagement' },
+              { label: 'Conversion', value: 'conversion' },
+              { label: 'Lead Generation', value: 'lead' },
+            ],
+          },
+          {
+            name: 'conversionValue',
+            type: 'number',
+            defaultValue: 50,
+            admin: {
+              description: 'Estimated lead value in USD',
+            },
+          },
+        ],
+      },
+    }),
+  ],
+}
+```
+
+**Step 2: Update block renderer**
+
+```tsx
+// src/components/blocks/marketing/MyNewBlockRenderer.tsx
+import type { MarketingMyNewBlockBlock } from '@/payload-types'
+import { trackCTAClick } from '@/lib/analytics/unified-tracking'
+
+export function MyNewBlockRenderer({
+  heading,
+  ctaText,
+  ctaLink,
+  tracking, // ← Tracking config from CMS
+}: MarketingMyNewBlockBlock) {
+
+  const handleCTAClick = () => {
+    trackCTAClick({
+      blockType: 'marketing-my-new-block',
+      blockData: { tracking },
+      ctaText: ctaText || '',
+      destination: ctaLink || '',
+      additionalProps: {
+        heading,
+      },
+    })
+  }
+
+  return (
+    <section>
+      <h2>{heading}</h2>
+      <Link href={ctaLink} onClick={handleCTAClick}>
+        {ctaText}
+      </Link>
+    </section>
+  )
+}
+```
+
+### Available Tracking Field Factories
+
+#### `trackingField(options)`
+General-purpose tracking for any block.
+
+```typescript
+trackingField({
+  name: 'tracking',              // Field name (default: 'tracking')
+  defaultEnabled: true,          // Enable by default
+  showAdvanced: false,           // Show JSON custom properties field
+  overrides: {                   // Deep merge custom fields
+    fields: [
+      // Custom fields specific to this block
+    ]
+  }
+})
+```
+
+**Generated Fields:**
+- `enabled` (checkbox) - Enable/disable tracking
+- `eventName` (text) - Custom event name override
+- `category` (select) - Event category (engagement/conversion/lead/navigation/media)
+- `conversionValue` (number) - Dollar value for ROI tracking
+- `customProperties` (json) - Advanced custom properties (if `showAdvanced: true`)
+
+#### `ctaTrackingField()`
+Specialized tracking for call-to-action buttons with Meta Pixel integration.
+
+```typescript
+ctaTrackingField()
+```
+
+**Additional Fields:**
+- `trackAsConversion` (checkbox) - Send conversion event to Meta/GA
+- `metaEventType` (select) - Map to Meta Pixel standard events (Lead, Schedule, FindLocation, ViewContent)
+
+**Use in array fields:**
+```typescript
+{
+  name: 'buttons',
+  type: 'array',
+  fields: [
+    { name: 'text', type: 'text' },
+    { name: 'link', type: 'text' },
+    ctaTrackingField(), // ← Track each button individually
+  ]
+}
+```
+
+#### `videoTrackingField()`
+Track video engagement metrics.
+
+```typescript
+videoTrackingField()
+```
+
+**Additional Fields:**
+- `trackPlayPause` (checkbox) - Track play/pause events
+- `trackProgress` (checkbox) - Track 25%, 50%, 75%, 100% milestones
+
+#### `trackImpressionField(options)`
+Track block visibility/impressions.
+
+```typescript
+trackImpressionField({
+  trackViewport: true,
+  viewportThreshold: 0.5,
+})
+```
+
+**Additional Fields:**
+- `trackViewport` (checkbox) - Only track when visible
+- `viewportThreshold` (number) - Percentage visible required (0-1)
+
+### Unified Tracking Functions
+
+All tracking functions respect CMS configuration and auto-include UTM attribution.
+
+#### `trackWithConfig(context, options?)`
+Core tracking function. Use for custom tracking scenarios.
+
+```typescript
+import { trackWithConfig } from '@/lib/analytics/unified-tracking'
+
+trackWithConfig({
+  blockType: 'marketing-hero',
+  blockData: { tracking },
+  action: 'impression',
+  label: 'Homepage Hero',
+  position: 0,
+  additionalProps: {
+    theme: 'dark',
+    has_video: true,
+  },
+})
+```
+
+**Actions:**
+- `cta_click` - CTA/button clicks
+- `impression` - Block visibility
+- `video_play`, `video_pause`, `video_progress`, `video_complete` - Video events
+- `form_start`, `form_submit` - Form interactions
+- `engagement` - General interactions
+- `navigation` - Navigation clicks
+
+#### `trackCTAClick(params)`
+Convenience function for CTA tracking.
+
+```typescript
+trackCTAClick({
+  blockType: 'marketing-find-a-dealer',
+  blockData: { tracking },
+  ctaText: 'Find a Dealer',
+  destination: '/find-a-dealer',
+  position: 0,
+  additionalProps: { theme: 'red' },
+})
+```
+
+#### `trackBlockImpression(params)`
+Track block impressions (visibility).
+
+```typescript
+trackBlockImpression({
+  blockType: 'marketing-hero',
+  blockData: { impressionTracking },
+  position: 0,
+})
+```
+
+#### `trackVideoInteraction(params)`
+Track video engagement.
+
+```typescript
+trackVideoInteraction({
+  blockType: 'marketing-i2l',
+  blockData: { videoTracking },
+  action: 'video_play',
+  videoId: 'dQw4w9WgXcQ',
+  videoTitle: 'Artist Performance',
+  progress: 0.5, // For video_progress events
+})
+```
+
+#### `trackFormInteraction(params)`
+Track form interactions.
+
+```typescript
+trackFormInteraction({
+  blockType: 'marketing-contact-form',
+  blockData: { tracking },
+  action: 'form_submit',
+  formName: 'Contact Us',
+})
+```
+
+### Event Data Structure
+
+All tracking events include:
+
+**Core Properties:**
+- `block_type` - Block slug
+- `action` - Event action type
+- `label` - Human-readable label
+- `category` - Event category from CMS
+- `value` - Conversion value from CMS
+- `position` - Block position on page
+
+**Page Context:**
+- `page_path` - Current pathname
+- `page_url` - Full URL
+- `referrer` - Referrer URL or 'direct'
+- `timestamp` - ISO timestamp
+
+**UTM Attribution** (auto-included from session):
+- `utm_source`
+- `utm_medium`
+- `utm_campaign`
+- `utm_content`
+- `utm_term`
+
+**Custom Properties:**
+- CMS `customProperties` (if configured)
+- Runtime `additionalProps` (from renderer)
+
+---
+
+**📚 For complete tracking system documentation, see [docs/TRACKING.md](./TRACKING.md)**
+
+This section provides a quick reference. For comprehensive guides on:
+- Architecture deep-dive
+- Field factory internals (`deepMerge` algorithm)
+- Advanced customization patterns
+- Complete troubleshooting guide
+- Maintenance and testing procedures
+
+**→ See the full [Tracking System Documentation](./TRACKING.md)**
+
+---
+
+### Analytics Platform Integration
+
+Events are automatically sent to all configured platforms:
+
+#### PostHog
+```typescript
+window.posthog.capture(eventName, eventData)
+```
+
+#### Google Analytics 4
+Maps to GA4 recommended events:
+- `cta_click` → `select_promotion` or `find_location` or `generate_lead`
+- `form_submit` → `generate_lead`
+- `video_play` → `video_start`
+- `impression` → `view_promotion`
+
+```typescript
+window.gtag('event', ga4EventName, {
+  event_category: category,
+  event_label: label,
+  value,
+  ...eventData,
+})
+```
+
+#### Meta Pixel
+Maps to Meta standard events:
+- `cta_click` → `Lead`, `FindLocation`, or custom
+- `form_submit` → `Lead`
+- `video_play` → `VideoView`
+
+```typescript
+window.fbq('trackCustom', metaEventName, eventData)
+```
+
+### Tracking Best Practices
+
+**DO:**
+- ✅ Use `trackingField()` for all marketing blocks
+- ✅ Always pass `blockData: { tracking }` from renderer
+- ✅ Set appropriate default `conversionValue` per block type
+- ✅ Use `ctaTrackingField()` for buttons in arrays
+- ✅ Test tracking in development (events logged to console)
+- ✅ Use descriptive labels (button text, form name, etc.)
+
+**DON'T:**
+- ❌ Hardcode tracking without CMS configuration
+- ❌ Skip UTM attribution (automatic via unified tracking)
+- ❌ Use generic event names (be specific)
+- ❌ Track personal/sensitive data in custom properties
+- ❌ Call tracking functions directly on SSR (check `typeof window`)
+
+### Debugging Tracking
+
+**Development Mode:**
+All tracking events are logged to console:
+
+```
+📊 [Unified Tracking] Event: find-a-dealer_cta_click
+{
+  block_type: 'marketing-find-a-dealer',
+  action: 'cta_click',
+  label: 'Find a Dealer',
+  category: 'lead',
+  value: 25,
+  utm_source: 'facebook',
+  utm_campaign: 'spring-sale',
+  ...
+}
+✅ [PostHog] Tracked: find-a-dealer_cta_click
+✅ [GA4] Tracked: find_location
+✅ [Meta Pixel] Tracked: FindLocation
+```
+
+**Testing Checklist:**
+1. Open browser DevTools console
+2. Interact with block (click CTA, play video, etc.)
+3. Verify tracking logs appear
+4. Check PostHog debugger (click icon in bottom-right)
+5. Check GA4 DebugView (if `debug_mode=true` in URL)
+6. Check Meta Pixel Helper Chrome extension
+
+### Migration Guide
+
+To add tracking to existing blocks:
+
+1. **Update block definition** - Add `trackingField()`
+2. **Update renderer** - Import tracking function, add onClick handler
+3. **Rebuild types** - Run `bun run build` to regenerate Payload types
+4. **Test in CMS** - Create test block, configure tracking, verify events
+5. **Update documentation** - Note which blocks have tracking in BLOCKS.md
+
+**Example Migration:**
+
+```diff
+// Block definition
+import type { Block } from 'payload'
++ import { trackingField } from '@/lib/payload/fields/tracking'
+
+export const ExistingBlock: Block = {
+  slug: 'marketing-existing',
+  fields: [
+    { name: 'heading', type: 'text' },
+    { name: 'ctaLink', type: 'text' },
++   trackingField({ defaultEnabled: true }),
+  ]
+}
+
+// Renderer
++ import { trackCTAClick } from '@/lib/analytics/unified-tracking'
+
+- export function ExistingBlockRenderer({ heading, ctaLink }: Props) {
++ export function ExistingBlockRenderer({ heading, ctaLink, tracking }: Props) {
++   const handleClick = () => {
++     trackCTAClick({
++       blockType: 'marketing-existing',
++       blockData: { tracking },
++       ctaText: heading,
++       destination: ctaLink,
++     })
++   }
+
+    return (
+-     <Link href={ctaLink}>{heading}</Link>
++     <Link href={ctaLink} onClick={handleClick}>{heading}</Link>
+    )
+  }
+```
+
 This website emphasizes **Japanese craftsmanship**, **musical heritage**, and **innovative technology** in its content and design approach.

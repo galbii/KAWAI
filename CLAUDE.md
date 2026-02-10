@@ -605,6 +605,14 @@ export const authenticatedOrPublished: Access = ({ req: { user } }) => {
 
 ## Collections
 
+**IMPORTANT: Always use media field factories from `@/lib/payload/fields` for upload fields:**
+- `imageField()` - Image uploads with integrated media library selector
+- `videoField()` - Video uploads
+- `mediaField()` - Any media type
+- `mediaArrayField()` - Image galleries
+
+Never manually create `type: 'upload'` fields - use the factories to ensure consistent media manager integration.
+
 ### Current Collections (14 total)
 
 **System**:
@@ -637,6 +645,7 @@ export const authenticatedOrPublished: Access = ({ req: { user } }) => {
 
 ```typescript
 import type { CollectionConfig } from 'payload'
+import { imageField } from '@/lib/payload/fields'
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -666,6 +675,10 @@ export const Products: CollectionConfig = {
             { name: 'slug', type: 'text', unique: true, index: true },
             { name: 'category', type: 'select', options: ['digital', 'grand', 'hybrid', 'upright'] },
             { name: 'status', type: 'select', options: ['active', 'draft', 'discontinued'] },
+            imageField('featuredImage', {  // ✅ Use media field factory
+              required: true,
+              admin: { description: 'Product image' }
+            }),
             {
               name: 'productline',
               type: 'relationship',
@@ -768,6 +781,24 @@ export default buildConfig({
 5. **Register globally** - Import and add to `blocks` array in `payload.config.ts`
 6. **Document** - Add to `docs/BLOCKS.md`
 
+**Example block with media field:**
+```typescript
+import type { Block } from 'payload'
+import { imageField } from '@/lib/payload/fields'
+
+export const HeroBlock: Block = {
+  slug: 'marketing-hero',
+  interfaceName: 'MarketingHeroBlock',
+  fields: [
+    { name: 'heading', type: 'text', required: true },
+    imageField('backgroundImage', {  // ✅ Use field factory
+      required: true,
+      admin: { description: 'Hero background (1920x1080px)' }
+    }),
+  ],
+}
+```
+
 ### Block Best Practices
 
 **DO:**
@@ -776,12 +807,14 @@ export default buildConfig({
 - ✅ Use category prefixes in slugs
 - ✅ Use `maxDepth: 0` on relationships to prevent deep fetching
 - ✅ Keep blocks focused (single responsibility)
+- ✅ **Use media field factories** (`imageField()`, `videoField()`, `mediaField()`) for all upload fields
 
 **DON'T:**
 - ❌ Import blocks directly into collections (use `blockReferences`)
 - ❌ Create blocks with too many options (split into multiple blocks)
 - ❌ Forget to register in payload.config.ts
 - ❌ Use generic slugs without category prefix
+- ❌ **Manually create upload fields** - always use `imageField()` from `@/lib/payload/fields`
 
 ### Posts Collection Block Usage
 

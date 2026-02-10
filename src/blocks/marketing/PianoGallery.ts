@@ -14,21 +14,23 @@ export const PianoGallery: Block = {
     {
       name: 'galleryTitle',
       type: 'text',
-      defaultValue: 'Explore Our Piano Categories',
-      admin: { description: 'Gallery section title' },
+      admin: {
+        description: 'Gallery section title (leave empty to use Homepage tab data)',
+      },
     },
     {
       name: 'galleryDescription',
       type: 'textarea',
-      defaultValue:
-        'From classic grand pianos to cutting-edge digital instruments, explore our comprehensive collection of Kawai pianos. Each category offers unique features tailored to different playing styles and preferences.',
-      admin: { description: 'Gallery section description' },
+      admin: {
+        description: 'Gallery section description (leave empty to use Homepage tab data)',
+      },
     },
     {
       name: 'pianoCategories',
       type: 'array',
-      required: true,
-      admin: { description: 'Piano category cards' },
+      admin: {
+        description: 'Piano category cards (leave empty to use Homepage tab data)',
+      },
       fields: [
         {
           name: 'model',
@@ -54,36 +56,6 @@ export const PianoGallery: Block = {
           type: 'text',
           required: true,
           admin: { description: 'Link to category page' },
-        },
-      ],
-      defaultValue: [
-        {
-          model: 'Digital Piano',
-          title: 'Digital Excellence',
-          description:
-            'Experience authentic piano sound and touch with advanced digital technology.',
-          href: '/pianos/digital',
-        },
-        {
-          model: 'Grand Piano',
-          title: 'Grand Tradition',
-          description:
-            'The pinnacle of piano craftsmanship, offering unparalleled tone and resonance.',
-          href: '/pianos/grand',
-        },
-        {
-          model: 'Upright Piano',
-          title: 'Upright Innovation',
-          description:
-            'Space-saving design with full-size performance capabilities.',
-          href: '/pianos/upright',
-        },
-        {
-          model: 'Hybrid Piano',
-          title: 'Hybrid Technology',
-          description:
-            'The perfect fusion of acoustic piano touch with digital versatility.',
-          href: '/pianos/hybrid',
         },
       ],
     },

@@ -198,6 +198,15 @@ export const Products: CollectionConfig = {
               }
             },
             {
+              name: 'featured',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                description: 'Mark this product as featured to display in homepage piano collection block',
+                position: 'sidebar',
+              }
+            },
+            {
               name: 'category',
               type: 'text',
               admin: {

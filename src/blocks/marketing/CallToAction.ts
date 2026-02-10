@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { ctaTrackingField } from '@/lib/payload/fields/tracking'
 
 export const CallToAction: Block = {
   slug: 'marketing-cta',
@@ -123,7 +124,10 @@ export const CallToAction: Block = {
           admin: {
             description: 'Open link in new browser tab'
           }
-        }
+        },
+
+        // Analytics & Tracking
+        ctaTrackingField(),
       ],
       admin: {
         description: 'Action buttons for the CTA (up to 3 buttons)'

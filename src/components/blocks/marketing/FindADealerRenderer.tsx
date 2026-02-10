@@ -1,9 +1,12 @@
+'use client'
+
 import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { MarketingFindADealerBlock, Media } from '@/payload-types'
 import { cn } from '@/lib/utils'
 import { MapPin } from 'lucide-react'
+import { trackCTAClick } from '@/lib/analytics/unified-tracking'
 
 interface FindADealerRendererProps extends MarketingFindADealerBlock {}
 
@@ -16,12 +19,28 @@ export function FindADealerRenderer({
   theme = 'light',
   alignment = 'center',
   backgroundImage,
+  tracking,
 }: FindADealerRendererProps) {
   // Get background image URL
   const bgImage =
     backgroundImage && typeof backgroundImage === 'object' && 'url' in backgroundImage
       ? backgroundImage.url
       : null
+
+  // Track CTA click
+  const handleCTAClick = () => {
+    trackCTAClick({
+      blockType: 'marketing-find-a-dealer',
+      blockData: { tracking },
+      ctaText: ctaText || 'Find a Dealer',
+      destination: ctaLink || '/find-a-dealer',
+      additionalProps: {
+        theme,
+        alignment,
+        has_background: Boolean(bgImage),
+      },
+    })
+  }
 
   // Theme styles
   const themeStyles = {
@@ -129,6 +148,7 @@ export function FindADealerRenderer({
               href={ctaLink}
               target={ctaOpenInNewTab ? '_blank' : undefined}
               rel={ctaOpenInNewTab ? 'noopener noreferrer' : undefined}
+              onClick={handleCTAClick}
               className={cn(
                 'group inline-flex items-center gap-3 px-8 py-4 rounded-md',
                 'font-medium text-base tracking-wide transition-all duration-200',

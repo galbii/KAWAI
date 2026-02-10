@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 import { videoField } from '@/lib/payload/fields/media'
+import { trackingField } from '@/lib/payload/fields/tracking'
 
 export const HomePageHero: Block = {
   slug: 'marketing-homepage-hero',
@@ -75,5 +76,25 @@ export const HomePageHero: Block = {
       ],
     },
     videoField('backgroundVideo', { required: false }),
+
+    // Analytics & Tracking
+    trackingField({
+      defaultEnabled: true,
+      showAdvanced: false,
+      overrides: {
+        fields: [
+          {
+            name: 'category',
+            type: 'select',
+            defaultValue: 'engagement',
+            options: [
+              { label: 'Engagement', value: 'engagement' },
+              { label: 'Conversion', value: 'conversion' },
+              { label: 'Lead Generation', value: 'lead' },
+            ],
+          },
+        ],
+      },
+    }),
   ],
 }

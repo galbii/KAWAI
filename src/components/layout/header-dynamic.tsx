@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { parseNavigationOrigin, getContextAwareUrl, type NavigationOrigin } from '@/lib/navigation-utils'
+import type { Media } from '@/payload-types'
 
 interface NavigationItem {
   label: string
@@ -17,6 +18,14 @@ interface NavigationItem {
 interface DealerLocationData {
   locationName: string
   slug: string
+}
+
+interface NewsItem {
+  title: string
+  description: string
+  image?: Media | string | null
+  category: string
+  link?: string
 }
 
 async function getDealerLocationBySlug(slug: string): Promise<DealerLocationData | null> {
@@ -59,6 +68,35 @@ async function getDealerLocationBySlug(slug: string): Promise<DealerLocationData
   } catch (error) {
     console.error('Error fetching storefront location:', error)
     return null
+  }
+}
+
+async function getHomePageNewsItems(): Promise<NewsItem[]> {
+  try {
+    const payload = await getPayload({ config })
+
+    const result = await payload.find({
+      collection: 'home-page',
+      limit: 1,
+      depth: 2, // Populate media relationships
+    })
+
+    const homePageData = result.docs[0]
+
+    if (homePageData?.newsItems && Array.isArray(homePageData.newsItems)) {
+      return homePageData.newsItems.map((item: any) => ({
+        title: item.title,
+        description: item.description,
+        image: item.image ?? null,
+        category: item.category,
+        ...(item.link && { link: item.link }),
+      }))
+    }
+
+    return []
+  } catch (error) {
+    console.error('Error fetching HomePage news items:', error)
+    return []
   }
 }
 
@@ -106,6 +144,9 @@ export async function HeaderDynamic() {
       locationData = await getDealerLocationBySlug(origin.dealerSlug)
     }
 
+    // Fetch news items from HomePage collection for news mega menu
+    const newsItems = await getHomePageNewsItems()
+
     return (
       <Header
         navigation={staticNavigation}
@@ -113,6 +154,7 @@ export async function HeaderDynamic() {
         isSignaturePage={isSignaturePage}
         hidePianoLinks={isConcertArtistPage}
         isUniversityPage={isUniversityPage}
+        newsItems={newsItems}
       />
     )
   } catch (error) {
@@ -141,6 +183,6 @@ export async function HeaderDynamic() {
       // Resources has been moved to ResourcesMegaMenu - see header.tsx
     ]
 
-    return <Header navigation={fallbackNavigation} isSignaturePage={isSignaturePage} hidePianoLinks={isConcertArtistPage} isUniversityPage={isUniversityPage} />
+    return <Header navigation={fallbackNavigation} isSignaturePage={isSignaturePage} hidePianoLinks={isConcertArtistPage} isUniversityPage={isUniversityPage} newsItems={[]} />
   }
 }

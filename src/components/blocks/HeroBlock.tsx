@@ -120,121 +120,126 @@ export function HeroBlock({
   const hasVideo = media.type === 'video' && media.backgroundVideo
 
   return (
-    <section className={`relative ${heightClass} flex ${verticalAlignment} overflow-hidden`}>
-      {/* Background Media */}
-      {hasBackground && (
-        <div className="absolute inset-0 z-0">
-          <MediaRenderer 
-            media={media.backgroundImage!}
-            preset="hero"
-            priority={true}
-            className="w-full h-full object-cover"
+    <>
+      <section className={`relative ${heightClass} flex ${verticalAlignment} overflow-hidden`}>
+        {/* Background Media */}
+        {hasBackground && (
+          <div className="absolute inset-0 z-0">
+            <MediaRenderer
+              media={media.backgroundImage!}
+              preset="hero"
+              priority={true}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+
+        {hasVideo && (
+          <div className="absolute inset-0 z-0">
+            <video
+              ref={videoRef}
+              muted
+              loop
+              playsInline
+              className="w-full h-full object-cover"
+            >
+              <source src={typeof media.backgroundVideo === 'string' ? media.backgroundVideo : media.backgroundVideo?.url || ''} type="video/mp4" />
+            </video>
+          </div>
+        )}
+
+        {/* Overlay */}
+        {media.overlay?.enable && (
+          <div
+            className={`absolute inset-0 z-10 ${overlayColor}`}
+            style={{ opacity: overlayOpacity }}
           />
-        </div>
-      )}
+        )}
 
-      {hasVideo && (
-        <div className="absolute inset-0 z-0">
-          <video
-            ref={videoRef}
-            muted
-            loop
-            playsInline
-            className="w-full h-full object-cover"
-          >
-            <source src={typeof media.backgroundVideo === 'string' ? media.backgroundVideo : media.backgroundVideo?.url || ''} type="video/mp4" />
-          </video>
-        </div>
-      )}
+        {/* Content */}
+        <div className={`relative z-20 w-full px-6 ${contentAlignment}`}>
+          <div className={`mx-auto ${maxWidth}`}>
+            <div className="space-y-6">
+              {/* Subtitle */}
+              {content.subtitle && (
+                <div className="inline-block bg-kawai-red text-white px-4 py-2 rounded-full text-sm font-medium">
+                  {content.subtitle}
+                </div>
+              )}
 
-      {/* Overlay */}
-      {media.overlay?.enable && (
-        <div 
-          className={`absolute inset-0 z-10 ${overlayColor}`}
-          style={{ opacity: overlayOpacity }}
-        />
-      )}
+              {/* Title */}
+              {content.title && (
+                <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight text-white mb-6">
+                  {content.title}
+                </h1>
+              )}
 
-      {/* Content */}
-      <div className={`relative z-20 w-full px-6 ${contentAlignment}`}>
-        <div className={`mx-auto ${maxWidth}`}>
-          <div className="space-y-6">
-            {/* Subtitle */}
-            {content.subtitle && (
-              <div className="inline-block bg-kawai-red text-white px-4 py-2 rounded-full text-sm font-medium">
-                {content.subtitle}
-              </div>
-            )}
+              {/* Description */}
+              {content.description && (
+                <p className="text-xl md:text-2xl leading-relaxed text-white/90 mb-8 max-w-3xl">
+                  {content.description}
+                </p>
+              )}
 
-            {/* Title */}
-            {content.title && (
-              <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight text-white mb-6">
-                {content.title}
-              </h1>
-            )}
-
-            {/* Description */}
-            {content.description && (
-              <p className="text-xl md:text-2xl leading-relaxed text-white/90 mb-8 max-w-3xl">
-                {content.description}
-              </p>
-            )}
-
-            {/* CTA Buttons */}
-            {(content.primaryCta?.text || content.secondaryCta?.text) && (
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                {content.primaryCta?.text && content.primaryCta.link && (
-                  <Button
-                    asChild
-                    size="lg"
-                    variant={content.primaryCta.style === 'outline' ? 'outline' : 'default'}
-                    className={`
-                      px-8 py-4 font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg
-                      ${content.primaryCta.style === 'primary' ? 'bg-kawai-red hover:bg-kawai-red/80 text-white' : ''}
-                      ${content.primaryCta.style === 'secondary' ? 'bg-white hover:bg-gray-100 text-kawai-black' : ''}
-                      ${content.primaryCta.style === 'outline' ? 'border-2 border-white text-white hover:bg-white hover:text-kawai-black' : ''}
-                    `}
-                  >
-                    <Link 
-                      href={content.primaryCta.link}
-                      target={content.primaryCta.openInNewTab ? '_blank' : undefined}
-                      rel={content.primaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
-                      className="inline-flex items-center"
+              {/* CTA Buttons */}
+              {(content.primaryCta?.text || content.secondaryCta?.text) && (
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  {content.primaryCta?.text && content.primaryCta.link && (
+                    <Button
+                      asChild
+                      size="lg"
+                      variant={content.primaryCta.style === 'outline' ? 'outline' : 'default'}
+                      className={`
+                        px-8 py-4 font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg
+                        ${content.primaryCta.style === 'primary' ? 'bg-kawai-red hover:bg-kawai-red/80 text-white' : ''}
+                        ${content.primaryCta.style === 'secondary' ? 'bg-white hover:bg-gray-100 text-kawai-black' : ''}
+                        ${content.primaryCta.style === 'outline' ? 'border-2 border-white text-white hover:bg-white hover:text-kawai-black' : ''}
+                      `}
                     >
-                      <span>{content.primaryCta.text}</span>
-                      <svg className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    </Link>
-                  </Button>
-                )}
+                      <Link
+                        href={content.primaryCta.link}
+                        target={content.primaryCta.openInNewTab ? '_blank' : undefined}
+                        rel={content.primaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
+                        className="inline-flex items-center"
+                      >
+                        <span>{content.primaryCta.text}</span>
+                        <svg className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </Link>
+                    </Button>
+                  )}
 
-                {content.secondaryCta?.text && content.secondaryCta.link && (
-                  <Button
-                    asChild
-                    size="lg"
-                    variant={content.secondaryCta.style === 'outline' ? 'outline' : 'secondary'}
-                    className={`
-                      px-8 py-4 font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg
-                      ${content.secondaryCta.style === 'primary' ? 'bg-kawai-red hover:bg-kawai-red/80 text-white' : ''}
-                      ${content.secondaryCta.style === 'secondary' ? 'bg-white hover:bg-gray-100 text-kawai-black' : ''}
-                      ${content.secondaryCta.style === 'outline' ? 'border-2 border-white text-white hover:bg-white hover:text-kawai-black' : ''}
-                    `}
-                  >
-                    <Link 
-                      href={content.secondaryCta.link}
-                      target={content.secondaryCta.openInNewTab ? '_blank' : undefined}
-                      rel={content.secondaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
+                  {content.secondaryCta?.text && content.secondaryCta.link && (
+                    <Button
+                      asChild
+                      size="lg"
+                      variant={content.secondaryCta.style === 'outline' ? 'outline' : 'secondary'}
+                      className={`
+                        px-8 py-4 font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg
+                        ${content.secondaryCta.style === 'primary' ? 'bg-kawai-red hover:bg-kawai-red/80 text-white' : ''}
+                        ${content.secondaryCta.style === 'secondary' ? 'bg-white hover:bg-gray-100 text-kawai-black' : ''}
+                        ${content.secondaryCta.style === 'outline' ? 'border-2 border-white text-white hover:bg-white hover:text-kawai-black' : ''}
+                      `}
                     >
-                      {content.secondaryCta.text}
-                    </Link>
-                  </Button>
-                )}
-              </div>
-            )}
+                      <Link
+                        href={content.secondaryCta.link}
+                        target={content.secondaryCta.openInNewTab ? '_blank' : undefined}
+                        rel={content.secondaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
+                      >
+                        {content.secondaryCta.text}
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* KAWAI Brand Red Divider */}
+      <div className="w-full h-4 bg-[#A01829]" />
+    </>
   )
 }

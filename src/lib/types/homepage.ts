@@ -1,4 +1,5 @@
 import type { Media } from '@/payload-types'
+import type { BlockTrackingConfig } from '@/lib/analytics/unified-tracking'
 
 // HomePage Data Types
 export interface HeroSectionData {
@@ -14,6 +15,7 @@ export interface HeroSectionData {
     link: string
   }
   backgroundVideo?: Media | string | null
+  tracking?: BlockTrackingConfig | undefined
 }
 
 export interface ShowroomFeature {

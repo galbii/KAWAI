@@ -14,14 +14,16 @@ export const NewsCarousel: Block = {
     {
       name: 'autoPlayDuration',
       type: 'number',
-      defaultValue: 7000,
-      admin: { description: 'Auto-play duration in milliseconds (7000 = 7 seconds)' },
+      admin: {
+        description: 'Auto-play duration in milliseconds (leave empty to use Homepage tab setting, default: 7000ms)',
+      },
     },
     {
       name: 'newsItems',
       type: 'array',
-      required: true,
-      admin: { description: 'Carousel news items' },
+      admin: {
+        description: 'Additional news items (will be added to Homepage news items automatically)',
+      },
       fields: [
         { name: 'title', type: 'text', required: true },
         { name: 'description', type: 'textarea', required: true },
@@ -43,29 +45,6 @@ export const NewsCarousel: Block = {
           name: 'link',
           type: 'text',
           admin: { description: 'Optional link for this news item' },
-        },
-      ],
-      defaultValue: [
-        {
-          title: 'New CA901 Digital Piano Now Available',
-          description:
-            'Experience the latest in digital piano technology with our newest arrival.',
-          category: 'new-arrivals',
-          link: '/products/ca901',
-        },
-        {
-          title: 'Spring Piano Sale - Save Up To 20%',
-          description:
-            'Limited time offer on select Kawai piano models. Visit our showroom today!',
-          category: 'promotions',
-          link: '/contact',
-        },
-        {
-          title: 'Piano Lessons Starting This Month',
-          description:
-            'Professional instruction available for all skill levels. Enroll now!',
-          category: 'education',
-          link: '/contact',
         },
       ],
     },

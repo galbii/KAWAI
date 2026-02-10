@@ -435,6 +435,14 @@ interface DealerLocationData {
   slug: string
 }
 
+interface NewsItem {
+  title: string
+  description: string
+  image?: any
+  category: string
+  link?: string
+}
+
 interface HeaderProps {
   navigation?: NavigationItem[]
   locationData?: DealerLocationData | null
@@ -442,6 +450,7 @@ interface HeaderProps {
   hidePianoLinks?: boolean
   isUniversityPage?: boolean
   hideLogo?: boolean
+  newsItems?: NewsItem[]
 }
 
 // Default fallback navigation - URLs will be made context-aware at runtime
@@ -460,7 +469,7 @@ const defaultNavigation: NavigationItem[] = [
   // Resources has been moved to ResourcesMegaMenu - rendered separately below
 ]
 
-export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isUniversityPage = false }: HeaderProps) {
+export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isUniversityPage = false, newsItems = [] }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
@@ -1470,6 +1479,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
           isOpen={isNewsMenuOpen && animationComplete && !isSearchOpen}
           onClose={() => setIsNewsMenuOpen(false)}
           isHeaderScrolled={isScrolled}
+          newsItems={newsItems}
         />
       </div>
 

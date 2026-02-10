@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { trackingField } from '@/lib/payload/fields/tracking'
 
 export const ContactForm: Block = {
   slug: 'marketing-contact-form',
@@ -130,5 +131,33 @@ export const ContactForm: Block = {
         },
       ],
     },
+
+    // Analytics & Tracking
+    trackingField({
+      defaultEnabled: true,
+      showAdvanced: false,
+      overrides: {
+        fields: [
+          {
+            name: 'category',
+            type: 'select',
+            defaultValue: 'lead',
+            options: [
+              { label: 'Engagement', value: 'engagement' },
+              { label: 'Conversion', value: 'conversion' },
+              { label: 'Lead Generation', value: 'lead' },
+            ],
+          },
+          {
+            name: 'conversionValue',
+            type: 'number',
+            defaultValue: 100,
+            admin: {
+              description: 'Estimated dollar value of form submission',
+            },
+          },
+        ],
+      },
+    }),
   ],
 }
