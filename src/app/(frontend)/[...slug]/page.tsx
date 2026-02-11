@@ -12,12 +12,16 @@ import { RenderBlocks } from '@/components/RenderBlocks';
  * Page Content Component (for Pages collection)
  * Renders pages from the Pages collection with Hero and dynamic blocks
  */
-async function PageContent({ slug }: { slug: string }) {
+async function PageContent({ slug }: { slug: string[] }) {
   const { isEnabled: isDraftMode } = await draftMode();
   const payload = await getPayload({ config });
 
+  // Join slug array into path string (e.g., ["store", "houston", "shsu"] → "store/houston/shsu")
+  const slugPath = slug.join('/')
+
   console.log('🔍 [PAGE DEBUG] ==================== START ====================')
-  console.log('🔍 [PAGE DEBUG] Slug:', slug)
+  console.log('🔍 [PAGE DEBUG] Slug array:', slug)
+  console.log('🔍 [PAGE DEBUG] Slug path:', slugPath)
   console.log('🔍 [PAGE DEBUG] Draft mode:', isDraftMode)
 
   // First, let's see what's in the database without ANY filters
@@ -25,7 +29,7 @@ async function PageContent({ slug }: { slug: string }) {
   const allPages = await payload.find({
     collection: 'pages',
     where: {
-      slug: { equals: slug },
+      slug: { equals: slugPath },
     },
     limit: 1,
     depth: 0,
@@ -44,15 +48,15 @@ async function PageContent({ slug }: { slug: string }) {
       })
     }
   } else {
-    console.log('🔍 [PAGE DEBUG] No page found with slug:', slug)
+    console.log('🔍 [PAGE DEBUG] No page found with slug:', slugPath)
   }
 
-  // Now check for storefronts with same slug
+  // Now check for storefronts with same slug (only check first segment for storefronts)
   console.log('🔍 [PAGE DEBUG] Step 2: Checking for storefront conflicts...')
   const storefrontCheck = await payload.find({
     collection: 'storefronts',
     where: {
-      slug: { equals: slug },
+      slug: { equals: slug[0] || slugPath },
     },
     limit: 1,
     depth: 0,
@@ -71,7 +75,7 @@ async function PageContent({ slug }: { slug: string }) {
     .find({
       collection: 'pages',
       where: {
-        slug: { equals: slug },
+        slug: { equals: slugPath },
         // Only show published pages in production (unless in draft mode)
         ...(isDraftMode ? {} : { _status: { equals: 'published' } }),
       },
@@ -158,7 +162,10 @@ export async function generateStaticParams() {
 
     console.log(`✅ [SEO] Pre-rendering ${pages.docs.length} pages for Google indexing`)
 
-    return pages.docs.map((page: any) => ({ slug: page.slug }));
+    // Convert slug strings to arrays (e.g., "store/houston/shsu" → ["store", "houston", "shsu"])
+    return pages.docs.map((page: any) => ({
+      slug: page.slug ? page.slug.split('/') : []
+    }));
   } catch (error) {
     console.error('❌ [SEO] Error generating static params:', error)
     return []
@@ -167,18 +174,21 @@ export async function generateStaticParams() {
 
 // Generate metadata for SEO - CRITICAL FOR GOOGLE INDEXING
 export async function generateMetadata(
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ slug: string[] }> }
 ): Promise<Metadata> {
   try {
     const { slug } = await params;
+    // Convert slug array to path string
+    const slugPath = slug.join('/')
     const payload = await getPayload({ config });
 
     // Check if this is a storefront (redirect will happen in page component)
+    // Only check first segment for storefront match
     const storefront = await payload
       .find({
         collection: 'storefronts',
         where: {
-          slug: { equals: slug },
+          slug: { equals: slug[0] || slugPath },
           isActive: { equals: true },
         },
         limit: 1,
@@ -195,13 +205,13 @@ export async function generateMetadata(
     }
 
     // Check Pages collection (published only)
-    console.log('🔍 [METADATA DEBUG] Checking for page with slug:', slug)
+    console.log('🔍 [METADATA DEBUG] Checking for page with slug:', slugPath)
 
     // First check without _status filter
     const pageNoFilter = await payload.find({
       collection: 'pages',
       where: {
-        slug: { equals: slug },
+        slug: { equals: slugPath },
       },
       limit: 1,
       depth: 0,
@@ -215,7 +225,7 @@ export async function generateMetadata(
       .find({
         collection: 'pages',
         where: {
-          slug: { equals: slug },
+          slug: { equals: slugPath },
           _status: { equals: 'published' },
         },
         limit: 1,
@@ -227,7 +237,7 @@ export async function generateMetadata(
 
     // If Page not found, return 404 metadata
     if (!page) {
-      console.log(`[SEO] Page "${slug}" not found`);
+      console.log(`[SEO] Page "${slugPath}" not found`);
       return {
         title: 'Page Not Found',
         description: 'The requested page could not be found.',
@@ -242,13 +252,13 @@ export async function generateMetadata(
     const defaultTitle = `${page.title} | KAWAI Pianos`;
     const defaultDescription = `${page.title} - KAWAI Pianos`;
 
-    console.log(`[SEO] Generated metadata for Page "${slug}": ${defaultTitle}`);
+    console.log(`[SEO] Generated metadata for Page "${slugPath}": ${defaultTitle}`);
 
     return {
       title: defaultTitle,
       description: defaultDescription,
       alternates: {
-        canonical: `${siteUrl}/${slug}`,
+        canonical: `${siteUrl}/${slugPath}`,
       },
       robots: {
         index: true,
@@ -261,7 +271,7 @@ export async function generateMetadata(
       openGraph: {
         title: defaultTitle,
         description: defaultDescription,
-        url: `${siteUrl}/${slug}`,
+        url: `${siteUrl}/${slugPath}`,
         siteName: 'KAWAI Pianos',
         type: 'website',
         locale: 'en_US',
@@ -282,23 +292,26 @@ export async function generateMetadata(
 }
 
 /**
- * Dynamic Route - /[slug]
+ * Dynamic Catch-All Route - /[...slug]
  *
- * Renders content from Pages collection only
- * Storefronts are now at /store/[storeslug]
+ * Renders content from Pages collection for nested paths
+ * Supports multi-segment slugs like "store/houston/shsu" or single segments like "about"
+ * Storefronts are at /store/[storeslug]
  * Returns 404 if page not found
  */
-export default async function DynamicPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function DynamicPage({ params }: { params: Promise<{ slug: string[] }> }) {
   const { slug } = await params;
+  const slugPath = slug.join('/')
 
   // CRITICAL: Check for storefront redirect BEFORE Suspense boundary
   // This ensures server-side redirect (307) instead of client-side (meta tag)
+  // Only check first segment for storefront match
   const payload = await getPayload({ config });
   const storefront = await payload
     .find({
       collection: 'storefronts',
       where: {
-        slug: { equals: slug },
+        slug: { equals: slug[0] || slugPath },
         isActive: { equals: true },
       },
       limit: 1,
@@ -308,7 +321,7 @@ export default async function DynamicPage({ params }: { params: Promise<{ slug: 
 
   // If storefront exists, redirect BEFORE any rendering starts
   if (storefront) {
-    redirect(`/store/${slug}`);
+    redirect(`/store/${slug[0]}`);
   }
 
   return (

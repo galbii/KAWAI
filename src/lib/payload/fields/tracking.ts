@@ -220,19 +220,87 @@ export const ctaTrackingField = (): GroupField => {
         },
       },
       {
+        name: 'ga4EventType',
+        type: 'select',
+        label: 'Google Analytics 4 Event',
+        defaultValue: 'generate_lead',
+        options: [
+          // E-commerce Events
+          { label: 'Add Payment Info', value: 'add_payment_info' },
+          { label: 'Add Shipping Info', value: 'add_shipping_info' },
+          { label: 'Add to Cart', value: 'add_to_cart' },
+          { label: 'Add to Wishlist', value: 'add_to_wishlist' },
+          { label: 'Begin Checkout', value: 'begin_checkout' },
+          { label: 'Purchase', value: 'purchase' },
+          { label: 'Refund', value: 'refund' },
+          { label: 'Remove from Cart', value: 'remove_from_cart' },
+
+          // Lead Generation Events
+          { label: 'Generate Lead (Recommended)', value: 'generate_lead' },
+          { label: 'Qualify Lead', value: 'qualify_lead' },
+          { label: 'Disqualify Lead', value: 'disqualify_lead' },
+          { label: 'Close Convert Lead', value: 'close_convert_lead' },
+          { label: 'Close Unconvert Lead', value: 'close_unconvert_lead' },
+
+          // Engagement Events
+          { label: 'Select Content', value: 'select_content' },
+          { label: 'Select Item', value: 'select_item' },
+          { label: 'Select Promotion', value: 'select_promotion' },
+          { label: 'Search', value: 'search' },
+          { label: 'Login', value: 'login' },
+          { label: 'Join Group', value: 'join_group' },
+
+          // Gaming Events
+          { label: 'Earn Virtual Currency', value: 'earn_virtual_currency' },
+          { label: 'Level Start', value: 'level_start' },
+          { label: 'Level End', value: 'level_end' },
+          { label: 'Level Up', value: 'level_up' },
+          { label: 'Post Score', value: 'post_score' },
+        ],
+        admin: {
+          description: 'Map to GA4 recommended event (see developers.google.com/analytics)',
+          condition: (data: any, siblingData: any) =>
+            siblingData?.enabled === true && siblingData?.trackAsConversion === true,
+        },
+      },
+      {
         name: 'metaEventType',
         type: 'select',
         label: 'Meta Pixel Event',
         defaultValue: 'Lead',
         options: [
-          { label: 'Lead', value: 'Lead' },
-          { label: 'Schedule', value: 'Schedule' },
-          { label: 'Find Location', value: 'FindLocation' },
+          // Lead & Registration Events
+          { label: 'Lead (Recommended)', value: 'Lead' },
+          { label: 'Complete Registration', value: 'CompleteRegistration' },
+          { label: 'Submit Application', value: 'SubmitApplication' },
+          { label: 'Start Trial', value: 'StartTrial' },
+          { label: 'Subscribe', value: 'Subscribe' },
+
+          // E-commerce Events
+          { label: 'Add Payment Info', value: 'AddPaymentInfo' },
+          { label: 'Add to Cart', value: 'AddToCart' },
+          { label: 'Add to Wishlist', value: 'AddToWishlist' },
+          { label: 'Initiate Checkout', value: 'InitiateCheckout' },
+          { label: 'Purchase', value: 'Purchase' },
+
+          // Engagement Events
           { label: 'View Content', value: 'ViewContent' },
+          { label: 'Search', value: 'Search' },
+          { label: 'Contact', value: 'Contact' },
+
+          // Location & Services
+          { label: 'Find Location', value: 'FindLocation' },
+          { label: 'Schedule', value: 'Schedule' },
+
+          // Other
+          { label: 'Customize Product', value: 'CustomizeProduct' },
+          { label: 'Donate', value: 'Donate' },
+
+          // Fallback
           { label: 'Custom Event', value: 'Custom' },
         ],
         admin: {
-          description: 'Map to Meta Pixel standard event',
+          description: 'Map to Meta Pixel standard event (see developers.facebook.com/docs/meta-pixel)',
           condition: (data: any, siblingData: any) =>
             siblingData?.enabled === true && siblingData?.trackAsConversion === true,
         },

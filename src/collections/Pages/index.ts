@@ -63,16 +63,32 @@ export const Pages: CollectionConfig<'pages'> = {
           value: 'general',
         },
         {
+          label: 'Getting Started',
+          value: 'getting-started',
+        },
+        {
+          label: 'News',
+          value: 'news',
+        },
+        {
+          label: 'Events',
+          value: 'events',
+        },
+        {
+          label: 'Resources',
+          value: 'resources',
+        },
+        {
           label: 'FAQ',
           value: 'faq',
         },
         {
-          label: 'Legal',
-          value: 'legal',
-        },
-        {
           label: 'Support',
           value: 'support',
+        },
+        {
+          label: 'Legal',
+          value: 'legal',
         },
       ],
       defaultValue: 'general',
@@ -83,59 +99,27 @@ export const Pages: CollectionConfig<'pages'> = {
     },
     {
       name: 'tags',
-      type: 'select',
-      hasMany: true,
-      options: [
+      type: 'array',
+      maxRows: 15,
+      fields: [
         {
-          label: 'Getting Started',
-          value: 'getting-started',
-        },
-        {
-          label: 'Piano Care',
-          value: 'piano-care',
-        },
-        {
-          label: 'Warranty',
-          value: 'warranty',
-        },
-        {
-          label: 'Financing',
-          value: 'financing',
-        },
-        {
-          label: 'Delivery',
-          value: 'delivery',
-        },
-        {
-          label: 'Tuning',
-          value: 'tuning',
-        },
-        {
-          label: 'Maintenance',
-          value: 'maintenance',
-        },
-        {
-          label: 'Digital Pianos',
-          value: 'digital-pianos',
-        },
-        {
-          label: 'Acoustic Pianos',
-          value: 'acoustic-pianos',
-        },
-        {
-          label: 'Privacy',
-          value: 'privacy',
-        },
-        {
-          label: 'Terms',
-          value: 'terms',
+          name: 'tag',
+          type: 'text',
+          required: true,
+          admin: {
+            placeholder: 'e.g., piano-care, warranty, financing',
+          },
         },
       ],
       admin: {
         position: 'sidebar',
-        description: 'Add tags to help users find this page',
-        isClearable: true,
-        isSortable: true,
+        description: 'Add custom tags to help users find this page. Enter any text value.',
+        initCollapsed: false,
+        components: {
+          RowLabel: ({ data }: { data?: { tag?: string } }) => {
+            return data?.tag || 'New tag'
+          },
+        } as any,
       },
     },
     {
@@ -160,12 +144,18 @@ export const Pages: CollectionConfig<'pages'> = {
                 'marketing-instagram-carousel',     // Instagram Carousel
                 'marketing-artist-carousel',        // Artist Carousel
 
+                // Events blocks - Event-specific content
+                'events-university-hero',           // University Hero
+                'events-event-overview',            // Event Overview
+
                 // Layout blocks - Structural and special elements
                 'layout-brand-intro',               // Brand Intro
                 'layout-hero-carousel',             // Hero Carousel
                 'layout-video-background',          // Video Background
                 'layout-bottom-left-popup',         // Bottom Popup
                 'layout-side-navigation',           // Side Navigation
+                'layout-calendly-embed',            // Calendly Embed
+                'layout-booking-modal',             // Booking Modal
               ] as any,
               blocks: [], // Required to be empty when using blockReferences
               required: true,

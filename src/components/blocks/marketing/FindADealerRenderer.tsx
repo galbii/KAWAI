@@ -19,7 +19,7 @@ export function FindADealerRenderer({
   theme = 'light',
   alignment = 'center',
   backgroundImage,
-  tracking,
+  ctaTracking,
 }: FindADealerRendererProps) {
   // Get background image URL
   const bgImage =
@@ -31,7 +31,7 @@ export function FindADealerRenderer({
   const handleCTAClick = () => {
     trackCTAClick({
       blockType: 'marketing-find-a-dealer',
-      blockData: { tracking },
+      blockData: { ctaTracking },
       ctaText: ctaText || 'Find a Dealer',
       destination: ctaLink || '/find-a-dealer',
       additionalProps: {

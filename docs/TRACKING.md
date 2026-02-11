@@ -487,13 +487,23 @@ trackingField({
 
 ### `ctaTrackingField()`
 
-Specialized tracking for CTA buttons with Meta Pixel integration.
+Specialized tracking for CTA buttons with **complete GA4 and Meta Pixel standard event integration**.
 
 **Parameters:** None (uses defaults from `trackingField`)
 
 **Additional Fields:**
 - `trackAsConversion` (checkbox) - Send conversion event to Meta/GA
-- `metaEventType` (select) - Map to Meta Pixel events (Lead, Schedule, FindLocation, ViewContent)
+- `ga4EventType` (select) - **NEW!** Map to GA4 recommended events (24 options)
+  - E-commerce: add_to_cart, begin_checkout, purchase, refund, etc.
+  - Lead Generation: generate_lead, qualify_lead, close_convert_lead, etc.
+  - Engagement: select_content, select_promotion, search, login, etc.
+  - Gaming: earn_virtual_currency, level_up, post_score, etc.
+- `metaEventType` (select) - **EXPANDED!** Map to Meta Pixel standard events (17 options)
+  - Lead & Registration: Lead, CompleteRegistration, StartTrial, Subscribe, etc.
+  - E-commerce: AddToCart, InitiateCheckout, Purchase, etc.
+  - Engagement: ViewContent, Search, Contact, etc.
+  - Location & Services: FindLocation, Schedule, etc.
+  - Other: CustomizeProduct, Donate, Custom, etc.
 
 **Use in array fields:**
 ```typescript
@@ -503,10 +513,15 @@ Specialized tracking for CTA buttons with Meta Pixel integration.
   fields: [
     { name: 'text', type: 'text' },
     { name: 'link', type: 'text' },
-    ctaTrackingField(), // ← Track each button individually
+    ctaTrackingField(), // ← Track each button individually with full event control
   ]
 }
 ```
+
+**CMS Configuration Example:**
+Editors can now choose specific events for each platform:
+- GA4: "Generate Lead" for lead forms, "Purchase" for checkout buttons
+- Meta: "Lead" for contact forms, "Schedule" for appointment booking
 
 ---
 
@@ -776,10 +791,56 @@ All events include:
 
 #### Google Analytics 4
 
-Maps to GA4 recommended events:
+**Priority System:**
+1. **CMS Configuration First** - If editor sets `ga4EventType` in CMS, that event is used
+2. **Smart Fallback** - Otherwise, intelligent mapping based on context
+3. **Generic Default** - Falls back to generic event if no match
 
-| Action | GA4 Event | Notes |
-|--------|-----------|-------|
+**Available GA4 Standard Events (24 total):**
+
+**E-commerce Events** (8 events)
+| Event | Use Case |
+|-------|----------|
+| `add_payment_info` | User adds payment details during checkout |
+| `add_shipping_info` | User provides shipping information |
+| `add_to_cart` | Item added to shopping cart |
+| `add_to_wishlist` | Item added to wishlist |
+| `begin_checkout` | Checkout process initiated |
+| `purchase` | Transaction completed |
+| `refund` | Items refunded |
+| `remove_from_cart` | Item removed from cart |
+
+**Lead Generation Events** (5 events)
+| Event | Use Case |
+|-------|----------|
+| `generate_lead` | **Recommended for CTAs** - Lead form submitted |
+| `qualify_lead` | User meets lead qualification criteria |
+| `disqualify_lead` | User marked as unqualified lead |
+| `close_convert_lead` | Lead converts to customer |
+| `close_unconvert_lead` | Lead marked as not converted |
+
+**Engagement Events** (6 events)
+| Event | Use Case |
+|-------|----------|
+| `select_content` | User selects specific content |
+| `select_item` | Item selected from list |
+| `select_promotion` | Promotional offer selected |
+| `search` | Search query performed |
+| `login` | User authentication |
+| `join_group` | User joins group/team |
+
+**Gaming Events** (5 events)
+| Event | Use Case |
+|-------|----------|
+| `earn_virtual_currency` | Virtual currency earned |
+| `level_start` | Game level begins |
+| `level_end` | Game level ends |
+| `level_up` | Player advances level |
+| `post_score` | Game score submitted |
+
+**Auto-Mapping (Fallback):**
+| Action | Default GA4 Event | Context |
+|--------|-------------------|---------|
 | `cta_click` (find-a-dealer) | `find_location` | Location-related CTAs |
 | `cta_click` (lead/contact) | `generate_lead` | Lead generation CTAs |
 | `cta_click` (other) | `select_promotion` | General CTAs |
@@ -789,27 +850,67 @@ Maps to GA4 recommended events:
 | `video_complete` | `video_complete` | Video completion |
 | `impression` | `view_promotion` | Block visibility |
 
+📚 **Reference:** [Google Analytics 4 Recommended Events](https://developers.google.com/analytics/devguides/collection/ga4/reference/events)
+
+---
+
 #### Meta Pixel
 
-Maps to Meta standard events:
+**Priority System:**
+1. **CMS Configuration First** - If editor sets `metaEventType` in CMS, that event is used
+2. **Smart Fallback** - Otherwise, intelligent mapping based on context
+3. **Custom Default** - Falls back to custom event if no match
 
-| Action | Meta Event | Notes |
-|--------|------------|-------|
+**Available Meta Standard Events (17 total):**
+
+**Lead & Registration Events** (5 events)
+| Event | Use Case |
+|-------|----------|
+| `Lead` | **Recommended for CTAs** - Lead form submission |
+| `CompleteRegistration` | User signs up for service/newsletter |
+| `SubmitApplication` | Application submitted |
+| `StartTrial` | Free trial initiated |
+| `Subscribe` | Subscription started |
+
+**E-commerce Events** (5 events)
+| Event | Use Case |
+|-------|----------|
+| `AddPaymentInfo` | Payment details added during checkout |
+| `AddToCart` | Item added to cart |
+| `AddToWishlist` | Item added to wishlist |
+| `InitiateCheckout` | Checkout process begins |
+| `Purchase` | Transaction completed |
+
+**Engagement Events** (3 events)
+| Event | Use Case |
+|-------|----------|
+| `ViewContent` | Content viewing/page view |
+| `Search` | Search performed |
+| `Contact` | Customer reaches out to business |
+
+**Location & Services Events** (2 events)
+| Event | Use Case |
+|-------|----------|
+| `FindLocation` | Dealer/store locator used |
+| `Schedule` | Appointment/demo scheduled |
+
+**Other Events** (2 events)
+| Event | Use Case |
+|-------|----------|
+| `CustomizeProduct` | Product customized with configurator |
+| `Donate` | Donation made |
+
+**Auto-Mapping (Fallback):**
+| Action | Default Meta Event | Context |
+|--------|-------------------|---------|
 | `cta_click` (find-a-dealer) | `FindLocation` | Dealer locator |
 | `cta_click` (lead/contact) | `Lead` | Lead generation |
 | `cta_click` (conversion) | `Lead` | Conversion events |
-| `cta_click` (custom) | Uses `metaEventType` from CMS | Configurable |
 | `form_submit` | `Lead` | Form submissions |
 | `form_start` | `InitiateCheckout` | Form initiation |
 | `video_play` | `VideoView` | Video engagement |
 
-**Custom Meta Events:**
-Use `metaEventType` field in CMS to map to specific Meta Pixel events:
-- `Lead` - Lead generation
-- `Schedule` - Appointment scheduling
-- `FindLocation` - Dealer locator
-- `ViewContent` - Content viewing
-- `Custom` - Falls back to `Block_{action}`
+📚 **Reference:** [Meta Pixel Standard Events](https://madgicx.com/blog/facebook-pixel-events)
 
 ---
 
@@ -1117,6 +1218,37 @@ describe('Tracking System', () => {
 ---
 
 ## Changelog
+
+### 2026-02-10 - v1.1.0 - Complete Standard Events Integration
+
+**Added:**
+- **GA4 Event Type Selector** - `ctaTrackingField()` now includes `ga4EventType` with 24 GA4 recommended events
+  - E-commerce events (8): add_to_cart, begin_checkout, purchase, refund, etc.
+  - Lead generation events (5): generate_lead, qualify_lead, close_convert_lead, etc.
+  - Engagement events (6): select_content, select_promotion, search, login, etc.
+  - Gaming events (5): earn_virtual_currency, level_up, post_score, etc.
+- **Expanded Meta Pixel Events** - `metaEventType` expanded from 5 to 17 standard events
+  - Lead & Registration (5): Lead, CompleteRegistration, StartTrial, Subscribe, etc.
+  - E-commerce (5): AddToCart, InitiateCheckout, Purchase, etc.
+  - Engagement (3): ViewContent, Search, Contact
+  - Location & Services (2): FindLocation, Schedule
+  - Other (2): CustomizeProduct, Donate
+- **Priority System** - Tracking now checks CMS config first, then falls back to intelligent auto-mapping
+- **Enhanced Documentation** - Complete event reference tables with use cases
+
+**Updated:**
+- `CTATrackingConfig` interface to include `ga4EventType` field
+- `mapToGA4Event()` function to check for CMS-configured event type before auto-mapping
+- Documentation with comprehensive event tables organized by category
+- References to official Google and Meta documentation
+
+**Impact:**
+- Editors can now choose specific standard events per CTA without code changes
+- Better conversion tracking for ads optimization
+- Platform-specific event mapping for improved reporting
+- Maintains backward compatibility with smart fallbacks
+
+---
 
 ### 2026-02-09 - v1.0.0
 

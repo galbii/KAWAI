@@ -98,13 +98,21 @@ export async function GET(request: NextRequest) {
         })
       }
 
+      // Transform tags from array format [{tag: string}] to string[]
+      let transformedTags: string[] = []
+      if (Array.isArray(doc.tags)) {
+        transformedTags = doc.tags
+          .map((t: any) => typeof t === 'string' ? t : t?.tag)
+          .filter((t: any): t is string => typeof t === 'string')
+      }
+
       return {
         id: doc.id,
         title: doc.title,
         doc: doc.doc,
         excerpt: doc.excerpt,
         category: doc.category,
-        tags: doc.tags,
+        tags: transformedTags,
         // Include denormalized product fields
         productModel: (doc as any).productModel,
         productImageUrl: (doc as any).productImageUrl,

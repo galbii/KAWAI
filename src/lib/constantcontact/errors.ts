@@ -104,3 +104,11 @@ export class CredentialsNotFoundError extends Error {
     }
   }
 }
+
+/**
+ * Type guard to check if an error is a ReauthRequiredError
+ * Standalone function export for convenience
+ */
+export function isReauthRequired(error: unknown): error is ReauthRequiredError {
+  return error instanceof ReauthRequiredError;
+}

@@ -14,6 +14,8 @@ export { VideoBackground } from './layout/VideoBackground'
 export { BrandIntro } from './layout/BrandIntro'
 export { BottomLeftPopup } from './layout/BottomLeftPopup'
 export { SideNavigation } from './layout/SideNavigation'
+export { CalendlyEmbed } from './layout/CalendlyEmbed'
+export { BookingModal } from './layout/BookingModal'
 
 // Marketing blocks (conversion-focused)
 export { Hero } from './marketing/Hero'
@@ -33,6 +35,10 @@ export { PianoGallery } from './marketing/PianoGallery'
 export { NewsCarousel } from './marketing/NewsCarousel'
 export { ContactForm } from './marketing/ContactForm'
 export { StorefrontLocations } from './marketing/StorefrontLocations'
+
+// Events blocks (event-specific content)
+export { UniversityHero } from './events/UniversityHero'
+export { EventOverview } from './events/EventOverview'
 
 // Product blocks (product pages)
 export { ProductShowcase } from './product/ProductShowcase'

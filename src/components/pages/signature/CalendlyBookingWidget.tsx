@@ -9,12 +9,34 @@ import { cn } from '@/lib/utils'
 import useConstantContactIntegration, { type ConstantContactSubmissionData } from '@/hooks/useConstantContactIntegration'
 
 // Interfaces
-interface CalendlyPrefillData {
+
+// Input data structure (what we receive from BookingPreForm)
+interface PrefillInputData {
   email?: string
   firstName?: string
   lastName?: string
   name?: string
   phone?: string
+}
+
+// Calendly prefill structure (what InlineWidget expects)
+interface CalendlyPrefillData {
+  email?: string
+  firstName?: string
+  lastName?: string
+  name?: string
+  customAnswers?: {
+    a1?: string  // Phone number (Calendly uses custom answers for phone)
+    a2?: string
+    a3?: string
+    a4?: string
+    a5?: string
+    a6?: string
+    a7?: string
+    a8?: string
+    a9?: string
+    a10?: string
+  }
 }
 
 interface CalendlyBookingWidgetProps {
@@ -25,7 +47,9 @@ interface CalendlyBookingWidgetProps {
   displayMode?: 'modal' | 'inline'
   className?: string
   prefillEmail?: string
-  prefillData?: CalendlyPrefillData
+  prefillData?: PrefillInputData  // Accept input data with phone field
+  modalTitle?: string // CMS-configurable modal title
+  modalSubtitle?: string // CMS-configurable modal subtitle
   onEventScheduled?: (eventData: any) => void
   onDateTimeSelected?: (eventData: any) => void
   onProfilePageViewed?: (eventData: any) => void
@@ -53,7 +77,7 @@ function CalendlyWidgetContent({
   calendlyUrl: string
   signaturePageSlug?: string
   prefillEmail?: string
-  prefillData?: CalendlyPrefillData
+  prefillData?: PrefillInputData  // Accept input data with phone field
   onEventScheduled?: (eventData: any) => void
   onDateTimeSelected?: (eventData: any) => void
   onProfilePageViewed?: (eventData: any) => void
@@ -244,7 +268,7 @@ function CalendlyWidgetContent({
         email: contactData.email ? '[PRESENT]' : '[MISSING]',
         firstName: contactData.firstName ? '[PRESENT]' : '[MISSING]',
         lastName: contactData.lastName ? '[PRESENT]' : '[MISSING]',
-        phone: contactData.phone ? '[PRESENT]' : '[MISSING]',
+        phone: contactData.phone ? `[PRESENT: ${contactData.phone}]` : '[MISSING]',
         signaturePageSlug,
         posthogAvailable: !!posthog
       })
@@ -301,7 +325,8 @@ function CalendlyWidgetContent({
     }
 
     console.log('🔗 Built Calendly URL with tracking:', url.toString())
-    console.log('📧 Prefill data being used:', prefillData || { email: prefillEmail })
+    console.log('📧 Prefill data input:', prefillData || { email: prefillEmail })
+    console.log('📋 Prefill object being passed to InlineWidget:', buildPrefillObject())
     return url.toString()
   }
 
@@ -314,7 +339,15 @@ function CalendlyWidgetContent({
       if (prefillData.email) prefill.email = prefillData.email
       if (prefillData.firstName) prefill.firstName = prefillData.firstName
       if (prefillData.lastName) prefill.lastName = prefillData.lastName
-      if (prefillData.phone) prefill.phone = prefillData.phone
+
+      // IMPORTANT: Calendly doesn't support a direct 'phone' field in prefill
+      // Phone numbers must be passed via customAnswers (a1-a10)
+      // This assumes the Calendly event has a phone number custom question at position 1 (a1)
+      if (prefillData.phone) {
+        prefill.customAnswers = {
+          a1: prefillData.phone  // Phone number as first custom answer
+        }
+      }
 
       // Build full name if we have firstName and lastName
       if (prefillData.firstName && prefillData.lastName) {
@@ -322,6 +355,8 @@ function CalendlyWidgetContent({
       } else if (prefillData.firstName) {
         prefill.name = prefillData.firstName
       }
+
+      console.log('🔧 Built prefill object for Calendly:', JSON.stringify(prefill, null, 2))
 
       return Object.keys(prefill).length > 0 ? prefill : undefined
     } else if (prefillEmail) {
@@ -463,10 +498,15 @@ export function CalendlyBookingWidget({
   className = '',
   prefillEmail,
   prefillData,
+  modalTitle,
+  modalSubtitle,
   onEventScheduled,
   onDateTimeSelected,
   onProfilePageViewed
 }: CalendlyBookingWidgetProps) {
+  // Apply defaults for modal text if not provided
+  const actualModalTitle = modalTitle || 'Schedule Your Consultation'
+  const actualModalSubtitle = modalSubtitle || 'Choose a time that works best for your private piano experience'
 
   // Handle successful booking
   const handleEventScheduled = (eventData: any) => {
@@ -496,57 +536,180 @@ export function CalendlyBookingWidget({
     onProfilePageViewed?.(eventData)
   }
 
-  // Modal version
+  // Modal version - Piano Showroom Luxury
   if (displayMode === 'modal') {
     return (
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6">
-            {/* Backdrop */}
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 md:p-6">
+            {/* Refined backdrop - Very light, airy luxury retail feel */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={onClose}
-              className="absolute inset-0 bg-kawai-black/90 backdrop-blur-md"
+              className="absolute inset-0"
+              style={{
+                background: 'rgba(44, 44, 44, 0.15)', // Very light charcoal tint
+                backdropFilter: 'blur(32px) saturate(150%) brightness(0.98)',
+                WebkitBackdropFilter: 'blur(32px) saturate(150%) brightness(0.98)',
+              }}
             />
 
-            {/* Modal */}
+            {/* Modal - Pure White Piano Showroom */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{
+                type: 'spring',
+                damping: 25,
+                stiffness: 300,
+                mass: 0.8,
+              }}
               className={cn(
-                'relative bg-gradient-to-br from-gray-900 to-kawai-black rounded-2xl shadow-2xl',
-                'w-full max-w-5xl h-[95vh] flex flex-col border border-kawai-gold/20',
+                'relative flex flex-col',
+                'w-full max-w-5xl h-[95vh]',
                 className
               )}
+              style={{
+                background: '#FFFFFF', // Pure white
+                borderRadius: '16px',
+                boxShadow: `
+                  0 8px 16px rgba(0, 0, 0, 0.04),
+                  0 16px 32px rgba(0, 0, 0, 0.06),
+                  0 32px 64px rgba(0, 0, 0, 0.08),
+                  0 0 0 1px rgba(44, 44, 44, 0.06),
+                  inset 0 1px 0 rgba(255, 255, 255, 1)
+                `,
+              }}
             >
-              {/* Header - Fixed */}
-              <div className="flex items-center justify-between p-4 md:p-6 border-b border-kawai-gold/20 flex-shrink-0">
-                <div>
-                  <h2 className="text-xl md:text-2xl font-light text-kawai-pearl">
-                    Claim Your <span className="text-kawai-red">Invite</span>
+              {/* Very subtle grain texture overlay */}
+              <div
+                className="absolute inset-0 pointer-events-none rounded-xl"
+                style={{
+                  opacity: 0.02,
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+                }}
+              />
+
+              {/* Header - Clean White Background with Legible Typography */}
+              <div className="relative flex items-center justify-between p-6 md:p-8 flex-shrink-0 bg-white rounded-t-xl">
+                <div className="flex-1 pr-4">
+                  <h2
+                    className="text-2xl md:text-3xl lg:text-4xl leading-tight"
+                    style={{
+                      fontFamily: "'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif",
+                      fontWeight: 600, // Semibold for legibility
+                      color: '#2C2C2C', // Charcoal for strong contrast on white
+                      letterSpacing: '-0.02em', // Tight tracking for modern look
+                    }}
+                  >
+                    {actualModalTitle}
                   </h2>
-                  <p className="text-kawai-pearl/70 text-sm mt-1">
-                    Schedule your exclusive piano viewing • Houston Baby Grand Sale
-                  </p>
+                  {actualModalSubtitle && (
+                    <p
+                      className="text-sm md:text-base mt-3 leading-relaxed"
+                      style={{
+                        fontFamily: "'Montserrat', sans-serif",
+                        fontWeight: 400, // Regular weight for readability
+                        color: 'rgba(44, 44, 44, 0.70)', // Softer charcoal for hierarchy
+                      }}
+                    >
+                      {actualModalSubtitle}
+                    </p>
+                  )}
                 </div>
+
+                {/* Piano key-inspired close button - elegant on white */}
                 <button
                   onClick={onClose}
-                  className="text-kawai-pearl/60 hover:text-kawai-pearl transition-colors duration-300 p-2 flex-shrink-0"
+                  className="flex-shrink-0 ml-4 group relative"
+                  aria-label="Close booking modal"
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #F8F8F8 0%, #EFEFEF 100%)',
+                    border: '1px solid rgba(44, 44, 44, 0.08)',
+                    boxShadow: `
+                      0 2px 4px rgba(0, 0, 0, 0.06),
+                      0 4px 8px rgba(0, 0, 0, 0.04),
+                      inset 0 1px 0 rgba(255, 255, 255, 0.9)
+                    `,
+                    transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.08)'
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #FFFFFF 0%, #F8F8F8 100%)'
+                    e.currentTarget.style.boxShadow = `
+                      0 4px 8px rgba(0, 0, 0, 0.08),
+                      0 8px 16px rgba(0, 0, 0, 0.06),
+                      inset 0 1px 0 rgba(255, 255, 255, 1),
+                      0 0 0 2px rgba(212, 175, 55, 0.4)
+                    `
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)'
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #F8F8F8 0%, #EFEFEF 100%)'
+                    e.currentTarget.style.boxShadow = `
+                      0 2px 4px rgba(0, 0, 0, 0.06),
+                      0 4px 8px rgba(0, 0, 0, 0.04),
+                      inset 0 1px 0 rgba(255, 255, 255, 0.9)
+                    `
+                  }}
+                  onMouseDown={(e) => {
+                    e.currentTarget.style.transform = 'scale(0.92)'
+                    e.currentTarget.style.boxShadow = `
+                      0 1px 2px rgba(0, 0, 0, 0.08),
+                      inset 0 2px 4px rgba(0, 0, 0, 0.08)
+                    `
+                  }}
+                  onMouseUp={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.08)'
+                  }}
                 >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="group-hover:text-[#C41E3A] transition-colors duration-300"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: '20px',
+                      height: '20px',
+                      color: '#2C2C2C',
+                    }}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
 
-              {/* Calendly Widget - Scrollable */}
-              <div className="flex-1 overflow-hidden relative">
-                <div className="h-full overflow-y-auto custom-scrollbar">
-                  <div className="p-4 md:p-6">
+              {/* Refined gold hardware divider - subtle on white */}
+              <div
+                className="relative w-full flex-shrink-0"
+                style={{
+                  height: '1px',
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.25) 50%, transparent 100%)',
+                  boxShadow: '0 1px 3px rgba(212, 175, 55, 0.15)',
+                }}
+              />
+
+              {/* Calendly Widget - Scrollable Content on Pure White */}
+              <div className="flex-1 overflow-hidden relative bg-white rounded-b-xl">
+                <div
+                  className="h-full overflow-y-auto"
+                  style={{
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: 'rgba(212, 175, 55, 0.3) rgba(248, 248, 248, 0.5)',
+                  }}
+                >
+                  <div className="p-6 md:p-8">
                     <CalendlyWidgetContent
                       calendlyUrl={calendlyUrl}
                       {...(signaturePageSlug && { signaturePageSlug })}
@@ -559,6 +722,16 @@ export function CalendlyBookingWidget({
                   </div>
                 </div>
               </div>
+
+              {/* Bottom gold hardware accent - very subtle on white */}
+              <div
+                className="absolute bottom-2 left-1/2 -translate-x-1/2 w-24 rounded-full pointer-events-none"
+                style={{
+                  height: '2px',
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.35) 50%, transparent 100%)',
+                  boxShadow: '0 0 6px rgba(212, 175, 55, 0.15)',
+                }}
+              />
             </motion.div>
           </div>
         )}

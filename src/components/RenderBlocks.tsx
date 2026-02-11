@@ -2,13 +2,14 @@
  * RenderBlocks - Universal Block Renderer
  *
  * Dynamically renders Payload CMS blocks from the `layout` field.
- * Supports 29 block types across 5 categories.
+ * Supports 31 block types across 6 categories.
  *
  * Block Categories:
  * - Legacy (4): archive, content, mediaBlock, cta
  * - Content (5): content-text, content-image, content-video, content-code, content-banner
- * - Layout (8): layout-columns, layout-spacer, layout-divider, layout-hero-carousel, layout-video-background, layout-brand-intro, layout-bottom-left-popup, layout-side-navigation
+ * - Layout (10): layout-columns, layout-spacer, layout-divider, layout-hero-carousel, layout-video-background, layout-brand-intro, layout-bottom-left-popup, layout-side-navigation, layout-calendly-embed, layout-booking-modal
  * - Marketing (10): marketing-hero, marketing-grand-hero, marketing-cta, marketing-testimonials, marketing-i2l, marketing-technical-showcase, marketing-find-a-dealer, marketing-3d-viewer, marketing-instagram-carousel, marketing-artist-carousel
+ * - Events (2): events-university-hero, events-event-overview
  * - Product (6): product-showcase, product-hero, product-gallery, product-features, product-specs, product-collection-showcase
  *
  * Usage:
@@ -56,10 +57,14 @@ import { VideoBackgroundBlock } from './blocks/VideoBackgroundBlock'
 import { BrandIntroBlock } from './blocks/BrandIntroBlock'
 import { BottomLeftPopupBlock } from './blocks/BottomLeftPopupBlock'
 import { SideNavigationBlock } from './blocks/SideNavigationBlock'
+import { CalendlyEmbedBlock } from './blocks/CalendlyEmbedBlock'
+import { BookingModalBlock } from './blocks/BookingModalBlock'
 
 // Marketing Blocks - Conversion-focused
 import { HeroBlock } from './blocks/HeroBlock'
 import { GrandHeroBlock } from './blocks/GrandHeroBlock'
+import { UniversityHeroBlock } from './blocks/UniversityHeroBlock'
+import { EventOverviewBlock } from './blocks/EventOverviewBlock'
 import { CallToActionBlock } from './blocks/CallToActionBlock'
 import { TestimonialsBlock } from './blocks/TestimonialsBlock'
 import { InstrumentalToLifeBlock } from './blocks/InstrumentalToLifeBlock'
@@ -114,6 +119,8 @@ const blockComponents = {
   'layout-brand-intro': BrandIntroBlock,
   'layout-bottom-left-popup': BottomLeftPopupBlock,
   'layout-side-navigation': SideNavigationBlock,
+  'layout-calendly-embed': CalendlyEmbedBlock,
+  'layout-booking-modal': BookingModalBlock,
 
   // Marketing blocks (marketing-*)
   'marketing-hero': HeroBlock,
@@ -133,6 +140,10 @@ const blockComponents = {
   'marketing-news-carousel': NewsCarouselBlock,
   'marketing-contact-form': ContactFormBlock,
   'marketing-storefront-locations': StorefrontLocationsBlock,
+
+  // Events blocks (events-*)
+  'events-university-hero': UniversityHeroBlock,
+  'events-event-overview': EventOverviewBlock,
 
   // Product blocks (product-*)
   'product-showcase': ProductShowcaseBlock,

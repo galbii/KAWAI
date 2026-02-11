@@ -337,19 +337,28 @@ export async function ensureShowroomKawaiList(
       body: JSON.stringify({ name: SHOWROOM_KAWAI_LIST_NAME })
     })
 
-    if (apiSearchResult.ok) {
+    // Check if we got a valid response
+    const contentType = apiSearchResult.headers.get('content-type')
+    if (contentType && contentType.includes('application/json')) {
       const searchData = await apiSearchResult.json()
-      if (searchData.success && searchData.data) {
+
+      if (apiSearchResult.ok && searchData.success && searchData.data) {
         console.log('ensureShowroomKawaiList: Found via API search with ID:', searchData.data.list_id)
         // Refresh local cache if callback provided
         if (onListsUpdate) {
           await onListsUpdate()
         }
         return { listId: searchData.data.list_id }
+      } else if (apiSearchResult.status === 404) {
+        console.log('ensureShowroomKawaiList: List not found via API search (404), will attempt creation')
+      } else {
+        console.warn('ensureShowroomKawaiList: API search returned non-success:', searchData)
       }
+    } else {
+      console.warn('ensureShowroomKawaiList: API search returned non-JSON response')
     }
   } catch (apiError) {
-    console.warn('ensureShowroomKawaiList: API search failed, continuing with creation attempt')
+    console.warn('ensureShowroomKawaiList: API search failed:', apiError instanceof Error ? apiError.message : 'Unknown error')
   }
 
   // Step 3: If API search fails, try to create the list
@@ -499,19 +508,28 @@ export async function ensureListExists(
       body: JSON.stringify({ name: listName })
     })
 
-    if (apiSearchResult.ok) {
+    // Check if we got a valid response
+    const contentType = apiSearchResult.headers.get('content-type')
+    if (contentType && contentType.includes('application/json')) {
       const searchData = await apiSearchResult.json()
-      if (searchData.success && searchData.data) {
+
+      if (apiSearchResult.ok && searchData.success && searchData.data) {
         console.log('ensureListExists: Found via API search with ID:', searchData.data.list_id)
         // Refresh local cache if callback provided
         if (onListsUpdate) {
           await onListsUpdate()
         }
         return { listId: searchData.data.list_id }
+      } else if (apiSearchResult.status === 404) {
+        console.log('ensureListExists: List not found via API search (404), will attempt creation')
+      } else {
+        console.warn('ensureListExists: API search returned non-success:', searchData)
       }
+    } else {
+      console.warn('ensureListExists: API search returned non-JSON response')
     }
   } catch (apiError) {
-    console.warn('ensureListExists: API search failed, continuing with creation attempt')
+    console.warn('ensureListExists: API search failed:', apiError instanceof Error ? apiError.message : 'Unknown error')
   }
 
   // Step 3: If API search fails, try to create the list
@@ -525,6 +543,17 @@ export async function ensureListExists(
         description: listDescription
       })
     })
+
+    // Check if we got a valid JSON response
+    const createContentType = createResponse.headers.get('content-type')
+    if (!createContentType || !createContentType.includes('application/json')) {
+      const errorText = await createResponse.text()
+      console.error('ensureListExists: Error during list creation - non-JSON response:', errorText)
+      return {
+        listId: null,
+        error: `List creation failed: Received non-JSON response (${createResponse.status})`
+      }
+    }
 
     const createResult = await createResponse.json()
 

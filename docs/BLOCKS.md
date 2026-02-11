@@ -278,6 +278,34 @@ The Grand Hero block embodies "Refined Monumentality" – a marriage of Japanese
 - Use particles effect only for premium/luxury contexts
 - Test on mobile to ensure text remains readable
 
+**University Hero Features:**
+- **Dual logo display**: Left and right logos with customizable "X", "×", "+", or "&" separator
+- **Flexible logo sizing**: Small (80px), Medium (120px), Large (160px), Extra Large (200px)
+- **Adjustable logo spacing**: Tight, Medium, or Loose gap between logos
+- **Optional heading**: Small uppercase label above logos (e.g., "Partnership Announcement")
+- **Subheading text**: Required descriptive text (max 200 characters)
+- **Dual CTA buttons**: Primary (filled red) and Secondary (outline) with customizable text and links
+- **Background image support**: Optional background with overlay controls
+- **Overlay customization**: Dark, Light, Kawai Red, or None with adjustable opacity
+- **Height options**: Compact (60vh), Medium (70vh), Large (80vh), Full Viewport (100vh)
+- **Content alignment**: Left, Center, or Right horizontal alignment
+- **Vertical positioning**: Top, Center, or Bottom placement
+- **Text color control**: White, Black, or Kawai Charcoal options
+- **Optional glassmorphism**: Frosted glass card wrapper around content
+- **Entrance animations**: Fade + Slide Up, Fade In, Scale + Fade, or None
+- **Mobile-responsive**: Logos stack vertically on small screens
+
+**University Hero Best Practices:**
+- Use transparent PNG logos for best results (recommended square or horizontal orientation)
+- Ensure logos have similar visual weight for balanced composition
+- Keep subheading concise (1-2 sentences) for maximum impact
+- Use background images with good contrast for text readability
+- Adjust overlay opacity based on background brightness
+- Test on mobile to ensure logos remain legible when stacked
+- Choose separator style that matches your brand aesthetic
+- Use glassmorphism when background image is busy or has low contrast
+- Primary CTA should be your main action (e.g., "Learn More"), Secondary for alternative path (e.g., "Contact Us")
+
 **Instrumental To Life Features:**
 - YouTube video carousel with up to 6 videos
 - **Customizable section label** (the "INSTRUMENTAL TO LIFE" heading above videos)
@@ -1015,3 +1043,61 @@ bun run build  # Regenerates payload-types.ts
 - **BlocksFeature**: https://payloadcms.com/docs/lexical/features/blocks
 - **Project Structure**: See `CLAUDE.md` for full project organization
 - **Component Renderers**: See `src/components/blocks/` for frontend block renderers
+
+### Events Blocks (`src/blocks/events/`)
+
+Event-specific blocks for showcasing conferences, trade shows, partnerships, and special events.
+
+| Block | Slug | Purpose | Best For |
+|-------|------|---------|----------|
+| 🎓 University Hero | `events-university-hero` | Partnership hero with dual logos, subheading, and dual CTAs | University partnerships, institutional collaborations, educational programs |
+| 📅 Event Overview | `events-event-overview` | Two-column layout with event details and embedded PDF viewer | Trade shows, conferences, concerts, special events with brochures/schedules |
+
+**University Hero Features:**
+- **Dual logo display**: Left and right logos with customizable separators (X, ×, +, &)
+- **Flexible logo sizing**: Small (80px), Medium (120px), Large (160px), Extra Large (200px)
+- **YouTube video background**: Optional video background with auto-play, loop, muted
+- **Background image fallback**: Used if no YouTube URL is provided
+- **Optional heading**: Small uppercase label above logos
+- **Subheading text**: Required descriptive text (max 200 characters)
+- **Dual CTA buttons**: Primary and Secondary with tracking integration
+- **CTA Analytics**: Full tracking support with Meta Pixel events
+- **4 overlay options**: Dark, Light, Kawai Red, or None with adjustable opacity
+- **Height options**: Compact (60vh), Medium (70vh), Large (80vh), Full Viewport (100vh)
+- **Content alignment**: Left, Center, or Right
+- **Optional glassmorphism**: Frosted glass card wrapper
+- **Entrance animations**: Fade + Slide Up, Fade, Scale, or None
+
+**Event Overview Features:**
+- **Event Information Section**: Eyebrow, title, subtitle, description, highlights with icons
+- **Event Details**: Date, time, location, booth number
+- **PDF Document Viewer**: Embedded PDF with clean UI (8.5:11 aspect ratio)
+- **Download Button**: Optional PDF download link (enabled by default)
+- **Optional CTA**: Register button or custom action
+- **4 Theme Options**: Light, Dark, White, or Transparent backgrounds
+- **Layout Direction**: Content left/PDF right, or PDF left/content right
+- **Spacing Options**: Compact, Comfortable, or Spacious
+- **Highlight Icons**: Checkmark, Star, Music Note, Calendar, Location Pin, Piano, Bullet
+- **Mobile Responsive**: Stacks vertically on mobile devices
+
+**Where to use Events blocks:**
+- University partnership announcements
+- Trade show and conference pages
+- Concert and recital event pages
+- Special event landing pages
+- Educational program showcases
+- Institutional collaboration announcements
+- Event brochure/schedule displays
+
+**Example usage in Pages:**
+```typescript
+{
+  name: 'layout',
+  type: 'blocks',
+  blockReferences: [
+    'events-university-hero',     // Partnership announcement hero
+    'events-event-overview',       // Event details with PDF
+  ],
+  blocks: []
+}
+```

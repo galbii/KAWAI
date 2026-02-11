@@ -83,6 +83,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
   const mobileInputRef = useRef<HTMLInputElement>(null)
+  const resultsContainerRef = useRef<HTMLDivElement>(null)
   const measuringKeyboardRef = useRef(false)
   const router = useRouter()
 
@@ -634,6 +635,13 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     }
   }, [selectedIndex])
 
+  // Reset scroll position when modal opens or query changes
+  useEffect(() => {
+    if (isOpen && resultsContainerRef.current) {
+      resultsContainerRef.current.scrollTop = 0
+    }
+  }, [isOpen, query])
+
 
   return (
     <>
@@ -857,21 +865,23 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                     )}
 
                     {/* Results */}
-                    <div className={cn(
-                      "flex-1 overflow-y-auto overscroll-contain",
-                      isMobile ? "p-4 pb-6" : "p-6", // Tighter padding on mobile for floating feel
-                      // Add momentum scrolling on iOS for smooth experience
-                      isMobile && "-webkit-overflow-scrolling-touch"
-                    )}
-                    style={
-                      isMobile
-                        ? {
-                            paddingTop: isMobile && query.length >= 2 ? '0' : 'calc(1rem + env(safe-area-inset-top))',
-                            // Ensure proper scrolling when keyboard is open
-                            maxHeight: keyboardHeight > 0 ? '100%' : undefined,
-                          }
-                        : undefined
-                    }
+                    <div
+                      ref={resultsContainerRef}
+                      className={cn(
+                        "flex-1 overflow-y-auto overscroll-contain",
+                        isMobile ? "p-4 pb-6" : "p-6", // Tighter padding on mobile for floating feel
+                        // Add momentum scrolling on iOS for smooth experience
+                        isMobile && "-webkit-overflow-scrolling-touch"
+                      )}
+                      style={
+                        isMobile
+                          ? {
+                              paddingTop: isMobile && query.length >= 2 ? '0' : 'calc(1rem + env(safe-area-inset-top))',
+                              // Ensure proper scrolling when keyboard is open
+                              maxHeight: keyboardHeight > 0 ? '100%' : undefined,
+                            }
+                          : undefined
+                      }
                     >
                       {/* Welcome Screen - Show when search is empty (desktop only now) */}
                       {query.length < 2 && !isMobile ? (
@@ -1003,7 +1013,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                             }
                           `}</style>
                         </div>
-                      ) : filteredResults.length === 0 && !isLoading ? (
+                      ) : query.length >= 2 && filteredResults.length === 0 && !isLoading ? (
                         <div className="flex flex-col items-center justify-center h-full">
                           <div className="w-16 h-16 rounded-full bg-kawai-black/40 backdrop-blur-xl flex items-center justify-center mb-4 border border-kawai-neutral/40">
                             <Search className="w-8 h-8 text-kawai-red" />
@@ -1390,33 +1400,27 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                   className="flex-1 bg-transparent text-base text-gray-900 placeholder-gray-500 focus:outline-none font-medium"
                 />
 
-                {/* Loading or Clear Button */}
+                {/* Loading, Clear, or Close Button */}
                 <div className="flex-shrink-0">
                   {isLoading ? (
                     <Loader2 className="h-6 w-6 animate-spin text-kawai-red" />
-                  ) : query.length > 0 ? (
+                  ) : (isOpen || query.length > 0 || isInputFocused) ? (
                     <button
-                      onClick={() => setQuery('')}
-                      className="p-2 text-gray-500 hover:text-kawai-red transition-colors rounded-full hover:bg-kawai-red/10 min-w-[40px] min-h-[40px] flex items-center justify-center"
-                      aria-label="Clear search"
+                      onClick={() => {
+                        // If there's text, clear it; if empty, close search
+                        if (query.length > 0) {
+                          setQuery('')
+                        } else {
+                          clearSearch()
+                        }
+                      }}
+                      className="p-2 text-gray-600 hover:text-kawai-red transition-colors rounded-full hover:bg-kawai-red/10 min-w-[40px] min-h-[40px] flex items-center justify-center"
+                      aria-label={query.length > 0 ? "Clear search" : "Close search"}
                     >
-                      <X className="h-5 w-5" />
+                      <X className="h-6 w-6" />
                     </button>
                   ) : null}
                 </div>
-
-                {/* Close Button - Show when overlay is open, has text, or input is focused */}
-                {(isOpen || query.length > 0 || isInputFocused) && (
-                  <div className="flex-shrink-0">
-                    <button
-                      onClick={clearSearch}
-                      className="p-2 text-gray-600 hover:text-kawai-red transition-colors rounded-full hover:bg-kawai-red/10 min-w-[40px] min-h-[40px] flex items-center justify-center"
-                      aria-label="Close search"
-                    >
-                      <X className="h-6 w-6 font-bold" />
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
           </div>

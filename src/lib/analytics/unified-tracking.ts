@@ -51,7 +51,8 @@ export interface BlockTrackingConfig {
  */
 export interface CTATrackingConfig extends BlockTrackingConfig {
   trackAsConversion?: boolean | null
-  metaEventType?: 'Lead' | 'Schedule' | 'FindLocation' | 'ViewContent' | 'Custom' | null
+  ga4EventType?: string | null
+  metaEventType?: string | null
 }
 
 /**
@@ -230,7 +231,7 @@ export function trackWithConfig(
   // Track to Google Analytics 4
   if (!options.skipGA && window.gtag) {
     try {
-      const ga4EventName = mapToGA4Event(action, category, blockType)
+      const ga4EventName = mapToGA4Event(action, category, blockType, trackingConfig)
       window.gtag('event', ga4EventName, {
         event_category: category,
         event_label: label,
@@ -265,14 +266,22 @@ export function trackWithConfig(
 
 /**
  * Map action and category to GA4 recommended events
+ * Checks for CTA-specific GA4 event type first, then falls back to intelligent mapping
  * @see https://developers.google.com/analytics/devguides/collection/ga4/reference/events
  */
 function mapToGA4Event(
   action: TrackingAction,
   category: string,
-  blockType: string
+  blockType: string,
+  trackingConfig?: BlockTrackingConfig
 ): string {
-  // Use GA4 recommended events when applicable
+  // Check for CTA-specific GA4 event type (from CMS configuration)
+  const ctaConfig = trackingConfig as CTATrackingConfig | undefined
+  if (ctaConfig?.ga4EventType && ctaConfig.ga4EventType !== 'Custom') {
+    return ctaConfig.ga4EventType
+  }
+
+  // Fall back to intelligent mapping based on action and context
   if (action === 'cta_click') {
     if (blockType.includes('find-a-dealer')) return 'find_location'
     if (blockType.includes('contact') || category === 'lead') return 'generate_lead'

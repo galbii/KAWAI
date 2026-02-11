@@ -79,6 +79,8 @@ export interface Config {
     'layout-brand-intro': LayoutBrandIntroBlock;
     'layout-bottom-left-popup': LayoutBottomLeftPopupBlock;
     'layout-side-navigation': LayoutSideNavigationBlock;
+    'layout-calendly-embed': LayoutCalendlyEmbedBlock;
+    'layout-booking-modal': LayoutBookingModalBlock;
     'marketing-hero': MarketingHeroBlock;
     'marketing-grand-hero': MarketingGrandHeroBlock;
     'marketing-cta': MarketingCallToActionBlock;
@@ -96,6 +98,8 @@ export interface Config {
     'marketing-news-carousel': MarketingNewsCarouselBlock;
     'marketing-contact-form': MarketingContactFormBlock;
     'marketing-storefront-locations': MarketingStorefrontLocationsBlock;
+    'events-university-hero': EventsUniversityHeroBlock;
+    'events-event-overview': EventsEventOverviewBlock;
     'product-showcase': ProductShowcaseBlock;
     'product-hero': ProductHeroBlock;
     'product-gallery': ProductImageGalleryBlock;
@@ -1033,6 +1037,273 @@ export interface LayoutSideNavigationBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'layout-side-navigation';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LayoutCalendlyEmbedBlock".
+ */
+export interface LayoutCalendlyEmbedBlock {
+  /**
+   * Main heading above the widget (optional)
+   */
+  heading?: string | null;
+  /**
+   * Supporting text below the heading (optional)
+   */
+  subheading?: string | null;
+  /**
+   * Full Calendly event URL (e.g., https://calendly.com/your-org/event-name)
+   */
+  calendlyUrl: string;
+  /**
+   * Height of the embedded widget
+   */
+  widgetHeight?: ('600' | '700' | '800' | 'custom') | null;
+  /**
+   * Custom height in pixels
+   */
+  customHeight?: number | null;
+  /**
+   * Background color for the entire block section
+   */
+  backgroundColor?: ('transparent' | 'white' | 'light-gray' | 'dark-gray' | 'brand-red') | null;
+  /**
+   * Vertical spacing around the block
+   */
+  padding?: ('none' | 'small' | 'medium' | 'large') | null;
+  /**
+   * Alignment for heading and subheading
+   */
+  textAlignment?: ('left' | 'center' | 'right') | null;
+  /**
+   * Configure event tracking for this block
+   */
+  tracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+  };
+  /**
+   * Automatically capture leads to Constant Contact when bookings are completed
+   */
+  constantContact?: {
+    /**
+     * Send contact data to Constant Contact after successful booking
+     */
+    enabled?: boolean | null;
+    /**
+     * Constant Contact list name to add contacts to
+     */
+    targetList?: string | null;
+    /**
+     * Automatically create the list if it doesn't exist in your CC account
+     */
+    createListIfMissing?: boolean | null;
+    /**
+     * Description used when creating a new list
+     */
+    listDescription?: string | null;
+    /**
+     * Mark contacts as having opted into marketing communications
+     */
+    optInMarketing?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'layout-calendly-embed';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LayoutBookingModalBlock".
+ */
+export interface LayoutBookingModalBlock {
+  /**
+   * Text displayed on the button
+   */
+  buttonText: string;
+  /**
+   * Visual style of the button
+   */
+  buttonStyle?: ('primary' | 'secondary' | 'outline' | 'ghost') | null;
+  /**
+   * Size of the button
+   */
+  buttonSize?: ('sm' | 'default' | 'lg') | null;
+  /**
+   * Optional icon displayed on the button (recommended: 24x24px)
+   */
+  buttonIcon?: (string | null) | Media;
+  /**
+   * Horizontal alignment of the button
+   */
+  buttonAlignment?: ('left' | 'center' | 'right') | null;
+  /**
+   * Title displayed in the modal header
+   */
+  modalTitle?: string | null;
+  /**
+   * Subtitle displayed below the title (optional)
+   */
+  modalSubtitle?: string | null;
+  /**
+   * Full Calendly event URL (e.g., https://calendly.com/your-org/event-name)
+   */
+  calendlyUrl: string;
+  /**
+   * How the button is positioned on the page
+   */
+  displayMode?: ('inline' | 'floating') | null;
+  /**
+   * Background color for the block section (inline mode only)
+   */
+  backgroundColor?: ('transparent' | 'white' | 'light-gray' | 'dark-gray') | null;
+  /**
+   * Vertical spacing around the block (inline mode only)
+   */
+  padding?: ('none' | 'small' | 'medium' | 'large') | null;
+  /**
+   * Track clicks and conversions for this call-to-action
+   */
+  ctaTracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+    /**
+     * Send conversion event to Meta Pixel and Google Analytics
+     */
+    trackAsConversion?: boolean | null;
+    /**
+     * Map to GA4 recommended event (see developers.google.com/analytics)
+     */
+    ga4EventType?:
+      | (
+          | 'add_payment_info'
+          | 'add_shipping_info'
+          | 'add_to_cart'
+          | 'add_to_wishlist'
+          | 'begin_checkout'
+          | 'purchase'
+          | 'refund'
+          | 'remove_from_cart'
+          | 'generate_lead'
+          | 'qualify_lead'
+          | 'disqualify_lead'
+          | 'close_convert_lead'
+          | 'close_unconvert_lead'
+          | 'select_content'
+          | 'select_item'
+          | 'select_promotion'
+          | 'search'
+          | 'login'
+          | 'join_group'
+          | 'earn_virtual_currency'
+          | 'level_start'
+          | 'level_end'
+          | 'level_up'
+          | 'post_score'
+        )
+      | null;
+    /**
+     * Map to Meta Pixel standard event (see developers.facebook.com/docs/meta-pixel)
+     */
+    metaEventType?:
+      | (
+          | 'Lead'
+          | 'CompleteRegistration'
+          | 'SubmitApplication'
+          | 'StartTrial'
+          | 'Subscribe'
+          | 'AddPaymentInfo'
+          | 'AddToCart'
+          | 'AddToWishlist'
+          | 'InitiateCheckout'
+          | 'Purchase'
+          | 'ViewContent'
+          | 'Search'
+          | 'Contact'
+          | 'FindLocation'
+          | 'Schedule'
+          | 'CustomizeProduct'
+          | 'Donate'
+          | 'Custom'
+        )
+      | null;
+  };
+  /**
+   * Configure event tracking for this block
+   */
+  bookingTracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+  };
+  /**
+   * Automatically capture leads to Constant Contact when bookings are completed
+   */
+  constantContact?: {
+    /**
+     * Send contact data to Constant Contact after successful booking
+     */
+    enabled?: boolean | null;
+    /**
+     * Constant Contact list name to add contacts to
+     */
+    targetList?: string | null;
+    /**
+     * Automatically create the list if it doesn't exist in your CC account
+     */
+    createListIfMissing?: boolean | null;
+    /**
+     * Description used when creating a new list
+     */
+    listDescription?: string | null;
+    /**
+     * Mark contacts as having opted into marketing communications
+     */
+    optInMarketing?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'layout-booking-modal';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2083,9 +2354,61 @@ export interface MarketingCallToActionBlock {
        */
       trackAsConversion?: boolean | null;
       /**
-       * Map to Meta Pixel standard event
+       * Map to GA4 recommended event (see developers.google.com/analytics)
        */
-      metaEventType?: ('Lead' | 'Schedule' | 'FindLocation' | 'ViewContent' | 'Custom') | null;
+      ga4EventType?:
+        | (
+            | 'add_payment_info'
+            | 'add_shipping_info'
+            | 'add_to_cart'
+            | 'add_to_wishlist'
+            | 'begin_checkout'
+            | 'purchase'
+            | 'refund'
+            | 'remove_from_cart'
+            | 'generate_lead'
+            | 'qualify_lead'
+            | 'disqualify_lead'
+            | 'close_convert_lead'
+            | 'close_unconvert_lead'
+            | 'select_content'
+            | 'select_item'
+            | 'select_promotion'
+            | 'search'
+            | 'login'
+            | 'join_group'
+            | 'earn_virtual_currency'
+            | 'level_start'
+            | 'level_end'
+            | 'level_up'
+            | 'post_score'
+          )
+        | null;
+      /**
+       * Map to Meta Pixel standard event (see developers.facebook.com/docs/meta-pixel)
+       */
+      metaEventType?:
+        | (
+            | 'Lead'
+            | 'CompleteRegistration'
+            | 'SubmitApplication'
+            | 'StartTrial'
+            | 'Subscribe'
+            | 'AddPaymentInfo'
+            | 'AddToCart'
+            | 'AddToWishlist'
+            | 'InitiateCheckout'
+            | 'Purchase'
+            | 'ViewContent'
+            | 'Search'
+            | 'Contact'
+            | 'FindLocation'
+            | 'Schedule'
+            | 'CustomizeProduct'
+            | 'Donate'
+            | 'Custom'
+          )
+        | null;
     };
     id?: string | null;
   }[];
@@ -2578,9 +2901,9 @@ export interface MarketingFindADealerBlock {
    */
   backgroundImage?: (string | null) | Media;
   /**
-   * Configure event tracking for this block
+   * Track clicks and conversions for this call-to-action
    */
-  tracking?: {
+  ctaTracking?: {
     /**
      * Track interactions with this block (CTAs, impressions, etc.)
      */
@@ -2592,11 +2915,71 @@ export interface MarketingFindADealerBlock {
     /**
      * Category for organizing analytics reports
      */
-    category?: ('engagement' | 'conversion' | 'lead' | 'navigation') | null;
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
     /**
-     * Estimated dollar value of dealer locator click
+     * Estimated dollar value of this conversion (for ROI tracking)
      */
     conversionValue?: number | null;
+    /**
+     * Send conversion event to Meta Pixel and Google Analytics
+     */
+    trackAsConversion?: boolean | null;
+    /**
+     * Map to GA4 recommended event (see developers.google.com/analytics)
+     */
+    ga4EventType?:
+      | (
+          | 'add_payment_info'
+          | 'add_shipping_info'
+          | 'add_to_cart'
+          | 'add_to_wishlist'
+          | 'begin_checkout'
+          | 'purchase'
+          | 'refund'
+          | 'remove_from_cart'
+          | 'generate_lead'
+          | 'qualify_lead'
+          | 'disqualify_lead'
+          | 'close_convert_lead'
+          | 'close_unconvert_lead'
+          | 'select_content'
+          | 'select_item'
+          | 'select_promotion'
+          | 'search'
+          | 'login'
+          | 'join_group'
+          | 'earn_virtual_currency'
+          | 'level_start'
+          | 'level_end'
+          | 'level_up'
+          | 'post_score'
+        )
+      | null;
+    /**
+     * Map to Meta Pixel standard event (see developers.facebook.com/docs/meta-pixel)
+     */
+    metaEventType?:
+      | (
+          | 'Lead'
+          | 'CompleteRegistration'
+          | 'SubmitApplication'
+          | 'StartTrial'
+          | 'Subscribe'
+          | 'AddPaymentInfo'
+          | 'AddToCart'
+          | 'AddToWishlist'
+          | 'InitiateCheckout'
+          | 'Purchase'
+          | 'ViewContent'
+          | 'Search'
+          | 'Contact'
+          | 'FindLocation'
+          | 'Schedule'
+          | 'CustomizeProduct'
+          | 'Donate'
+          | 'Custom'
+        )
+      | null;
   };
   id?: string | null;
   blockName?: string | null;
@@ -3349,6 +3732,400 @@ export interface MarketingStorefrontLocationsBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'marketing-storefront-locations';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "EventsUniversityHeroBlock".
+ */
+export interface EventsUniversityHeroBlock {
+  /**
+   * Primary logo (e.g., Kawai logo) - recommended: square or horizontal, transparent PNG
+   */
+  leftLogo: string | Media;
+  /**
+   * Secondary logo (e.g., University logo) - leave empty for single centered logo layout
+   */
+  rightLogo?: (string | null) | Media;
+  /**
+   * Text to display below logo when using single-logo mode (1-2 sentences)
+   */
+  singleLogoText?: string | null;
+  /**
+   * Logo height (both logos will be this size)
+   */
+  logoSize?: ('small' | 'medium' | 'large' | 'xlarge') | null;
+  /**
+   * Spacing between logos and the "X" separator
+   */
+  logoSpacing?: ('tight' | 'medium' | 'loose') | null;
+  /**
+   * Show separator between logos (only applies to dual-logo mode)
+   */
+  showSeparator?: boolean | null;
+  /**
+   * Separator character between logos
+   */
+  separatorStyle?: ('x' | 'times' | 'plus' | 'ampersand') | null;
+  /**
+   * Optional main heading above logos (e.g., "Partnership Announcement")
+   */
+  heading?: string | null;
+  /**
+   * Main subheading text below logos (1-2 sentences, max 200 characters)
+   */
+  subheading: string;
+  /**
+   * Primary call-to-action button
+   */
+  primaryCta?: {
+    /**
+     * Primary button text (leave empty to hide)
+     */
+    text?: string | null;
+    /**
+     * Button destination URL
+     */
+    link?: string | null;
+    /**
+     * Open link in new browser tab
+     */
+    openInNewTab?: boolean | null;
+    /**
+     * Button style
+     */
+    style?: ('primary' | 'outline') | null;
+    /**
+     * Track clicks and conversions for this call-to-action
+     */
+    ctaTracking?: {
+      /**
+       * Track interactions with this block (CTAs, impressions, etc.)
+       */
+      enabled?: boolean | null;
+      /**
+       * Override default event name (leave empty for auto-generated)
+       */
+      eventName?: string | null;
+      /**
+       * Category for organizing analytics reports
+       */
+      category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+      /**
+       * Estimated dollar value of this conversion (for ROI tracking)
+       */
+      conversionValue?: number | null;
+      /**
+       * Send conversion event to Meta Pixel and Google Analytics
+       */
+      trackAsConversion?: boolean | null;
+      /**
+       * Map to GA4 recommended event (see developers.google.com/analytics)
+       */
+      ga4EventType?:
+        | (
+            | 'add_payment_info'
+            | 'add_shipping_info'
+            | 'add_to_cart'
+            | 'add_to_wishlist'
+            | 'begin_checkout'
+            | 'purchase'
+            | 'refund'
+            | 'remove_from_cart'
+            | 'generate_lead'
+            | 'qualify_lead'
+            | 'disqualify_lead'
+            | 'close_convert_lead'
+            | 'close_unconvert_lead'
+            | 'select_content'
+            | 'select_item'
+            | 'select_promotion'
+            | 'search'
+            | 'login'
+            | 'join_group'
+            | 'earn_virtual_currency'
+            | 'level_start'
+            | 'level_end'
+            | 'level_up'
+            | 'post_score'
+          )
+        | null;
+      /**
+       * Map to Meta Pixel standard event (see developers.facebook.com/docs/meta-pixel)
+       */
+      metaEventType?:
+        | (
+            | 'Lead'
+            | 'CompleteRegistration'
+            | 'SubmitApplication'
+            | 'StartTrial'
+            | 'Subscribe'
+            | 'AddPaymentInfo'
+            | 'AddToCart'
+            | 'AddToWishlist'
+            | 'InitiateCheckout'
+            | 'Purchase'
+            | 'ViewContent'
+            | 'Search'
+            | 'Contact'
+            | 'FindLocation'
+            | 'Schedule'
+            | 'CustomizeProduct'
+            | 'Donate'
+            | 'Custom'
+          )
+        | null;
+    };
+  };
+  /**
+   * Secondary call-to-action button (optional)
+   */
+  secondaryCta?: {
+    /**
+     * Secondary button text (leave empty to hide)
+     */
+    text?: string | null;
+    /**
+     * Button destination URL
+     */
+    link?: string | null;
+    /**
+     * Open link in new browser tab
+     */
+    openInNewTab?: boolean | null;
+    /**
+     * Button style
+     */
+    style?: ('primary' | 'outline') | null;
+    /**
+     * Track clicks and conversions for this call-to-action
+     */
+    ctaTracking?: {
+      /**
+       * Track interactions with this block (CTAs, impressions, etc.)
+       */
+      enabled?: boolean | null;
+      /**
+       * Override default event name (leave empty for auto-generated)
+       */
+      eventName?: string | null;
+      /**
+       * Category for organizing analytics reports
+       */
+      category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+      /**
+       * Estimated dollar value of this conversion (for ROI tracking)
+       */
+      conversionValue?: number | null;
+      /**
+       * Send conversion event to Meta Pixel and Google Analytics
+       */
+      trackAsConversion?: boolean | null;
+      /**
+       * Map to GA4 recommended event (see developers.google.com/analytics)
+       */
+      ga4EventType?:
+        | (
+            | 'add_payment_info'
+            | 'add_shipping_info'
+            | 'add_to_cart'
+            | 'add_to_wishlist'
+            | 'begin_checkout'
+            | 'purchase'
+            | 'refund'
+            | 'remove_from_cart'
+            | 'generate_lead'
+            | 'qualify_lead'
+            | 'disqualify_lead'
+            | 'close_convert_lead'
+            | 'close_unconvert_lead'
+            | 'select_content'
+            | 'select_item'
+            | 'select_promotion'
+            | 'search'
+            | 'login'
+            | 'join_group'
+            | 'earn_virtual_currency'
+            | 'level_start'
+            | 'level_end'
+            | 'level_up'
+            | 'post_score'
+          )
+        | null;
+      /**
+       * Map to Meta Pixel standard event (see developers.facebook.com/docs/meta-pixel)
+       */
+      metaEventType?:
+        | (
+            | 'Lead'
+            | 'CompleteRegistration'
+            | 'SubmitApplication'
+            | 'StartTrial'
+            | 'Subscribe'
+            | 'AddPaymentInfo'
+            | 'AddToCart'
+            | 'AddToWishlist'
+            | 'InitiateCheckout'
+            | 'Purchase'
+            | 'ViewContent'
+            | 'Search'
+            | 'Contact'
+            | 'FindLocation'
+            | 'Schedule'
+            | 'CustomizeProduct'
+            | 'Donate'
+            | 'Custom'
+          )
+        | null;
+    };
+  };
+  /**
+   * YouTube video URL for background (takes priority over image if filled). Supports youtube.com/watch, youtu.be, embed formats.
+   */
+  youtubeUrl?: string | null;
+  /**
+   * Video zoom level (1 = normal, 1.5 = 150%, 2 = 200%). Use to crop/fill viewport.
+   */
+  videoZoom?: number | null;
+  /**
+   * Background image - used if no YouTube URL is provided (recommended: 1920x1080 or higher, landscape orientation)
+   */
+  backgroundImage?: (string | null) | Media;
+  /**
+   * Overlay color for better text readability
+   */
+  overlayColor?: ('dark' | 'light' | 'red' | 'none') | null;
+  /**
+   * Overlay opacity (0 = transparent, 1 = fully opaque)
+   */
+  overlayOpacity?: number | null;
+  /**
+   * Hero section height
+   */
+  height: 'compact' | 'medium' | 'large' | 'viewport';
+  /**
+   * Horizontal alignment of content
+   */
+  contentAlignment: 'left' | 'center' | 'right';
+  /**
+   * Vertical alignment of content within hero
+   */
+  verticalAlignment: 'top' | 'center' | 'bottom';
+  /**
+   * Text color
+   */
+  textColor?: ('white' | 'black' | 'charcoal') | null;
+  /**
+   * Wrap content in frosted glass card (glassmorphism effect)
+   */
+  enableGlassmorphism?: boolean | null;
+  /**
+   * Content entrance animation style
+   */
+  animationStyle?: ('fade-up' | 'fade' | 'scale' | 'none') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'events-university-hero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "EventsEventOverviewBlock".
+ */
+export interface EventsEventOverviewBlock {
+  /**
+   * Small label above title (e.g., "Special Event", "Annual Conference")
+   */
+  eyebrow?: string | null;
+  /**
+   * Event title/name
+   */
+  title: string;
+  /**
+   * Event subtitle or tagline
+   */
+  subtitle?: string | null;
+  /**
+   * Event description (2-4 sentences)
+   */
+  description: string;
+  /**
+   * Key event highlights or features (up to 6)
+   */
+  highlights?:
+    | {
+        /**
+         * Key highlight or feature (keep concise)
+         */
+        text: string;
+        /**
+         * Icon to display before the highlight
+         */
+        icon?: ('check' | 'star' | 'music' | 'calendar' | 'location' | 'piano' | 'bullet') | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Event date (formatted as you want to display)
+   */
+  date?: string | null;
+  /**
+   * Event time (if applicable)
+   */
+  time?: string | null;
+  /**
+   * Event location/venue
+   */
+  location?: string | null;
+  /**
+   * Booth number or location within venue (if applicable)
+   */
+  booth?: string | null;
+  /**
+   * First event image (recommended: 1200x1600px or portrait orientation)
+   */
+  eventImage1?: (string | null) | Media;
+  /**
+   * Second event image (optional) - will auto-transition from first image after 2 seconds on scroll
+   */
+  eventImage2?: (string | null) | Media;
+  /**
+   * Display map with location
+   */
+  showMap?: boolean | null;
+  /**
+   * Full address for map geocoding (used for map display)
+   */
+  mapAddress?: string | null;
+  /**
+   * CTA button text (leave empty to hide)
+   */
+  ctaText?: string | null;
+  /**
+   * CTA button link
+   */
+  ctaLink?: string | null;
+  /**
+   * Button style
+   */
+  ctaStyle?: ('primary' | 'outline') | null;
+  /**
+   * Open link in new tab
+   */
+  ctaOpenInNewTab?: boolean | null;
+  /**
+   * Background theme
+   */
+  theme?: ('light' | 'dark' | 'white' | 'none') | null;
+  /**
+   * Layout direction
+   */
+  contentAlignment?: ('left' | 'right') | null;
+  /**
+   * Vertical spacing/padding
+   */
+  spacing?: ('compact' | 'comfortable' | 'spacious') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'events-event-overview';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4196,24 +4973,15 @@ export interface Page {
   /**
    * Categorize this page for better organization
    */
-  category?: ('general' | 'faq' | 'legal' | 'support') | null;
+  category?: ('general' | 'getting-started' | 'news' | 'events' | 'resources' | 'faq' | 'support' | 'legal') | null;
   /**
-   * Add tags to help users find this page
+   * Add custom tags to help users find this page. Enter any text value.
    */
   tags?:
-    | (
-        | 'getting-started'
-        | 'piano-care'
-        | 'warranty'
-        | 'financing'
-        | 'delivery'
-        | 'tuning'
-        | 'maintenance'
-        | 'digital-pianos'
-        | 'acoustic-pianos'
-        | 'privacy'
-        | 'terms'
-      )[]
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
     | null;
   hero: {
     type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
@@ -4269,11 +5037,15 @@ export interface Page {
     | Marketing3DViewerBlock
     | MarketingInstagramCarouselBlock
     | MarketingArtistCarouselBlock
+    | EventsUniversityHeroBlock
+    | EventsEventOverviewBlock
     | LayoutBrandIntroBlock
     | LayoutHeroCarouselBlock
     | LayoutVideoBackgroundBlock
     | LayoutBottomLeftPopupBlock
     | LayoutSideNavigationBlock
+    | LayoutCalendlyEmbedBlock
+    | LayoutBookingModalBlock
   )[];
   publishedAt?: string | null;
   /**
@@ -5821,24 +6593,13 @@ export interface Search {
    */
   category?: string | null;
   /**
-   * Tags for filtering
+   * Tags for filtering (denormalized from source collections)
    */
   tags?:
-    | (
-        | 'piano'
-        | 'digital'
-        | 'grand'
-        | 'hybrid'
-        | 'upright'
-        | 'accessory'
-        | 'software'
-        | 'page'
-        | 'faq'
-        | 'support'
-        | 'storefront'
-        | 'location'
-        | 'showroom'
-      )[]
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
     | null;
   /**
    * Product model (denormalized from Products collection)
@@ -6297,7 +7058,12 @@ export interface MediaSelect<T extends boolean = true> {
 export interface PagesSelect<T extends boolean = true> {
   title?: T;
   category?: T;
-  tags?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
   hero?:
     | T
     | {
@@ -7204,7 +7970,12 @@ export interface SearchSelect<T extends boolean = true> {
   doc?: T;
   excerpt?: T;
   category?: T;
-  tags?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
   productModel?: T;
   productImageUrl?: T;
   productType?: T;

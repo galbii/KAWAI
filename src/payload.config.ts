@@ -44,6 +44,8 @@ import {
   BrandIntro,
   BottomLeftPopup,
   SideNavigation,
+  CalendlyEmbed,
+  BookingModal,
   // Marketing blocks
   Hero,
   GrandHero,
@@ -62,6 +64,9 @@ import {
   NewsCarousel,
   ContactForm,
   StorefrontLocations,
+  // Events blocks
+  UniversityHero,
+  EventOverview,
   // Product blocks
   ProductShowcase,
   ProductHero,
@@ -203,6 +208,8 @@ export default buildConfig({
     BrandIntro,
     BottomLeftPopup,
     SideNavigation,
+    CalendlyEmbed,
+    BookingModal,
 
     // Marketing blocks
     Hero,
@@ -222,6 +229,10 @@ export default buildConfig({
     NewsCarousel,
     ContactForm,
     StorefrontLocations,
+
+    // Events blocks
+    UniversityHero,
+    EventOverview,
 
     // Product blocks (for product pages)
     ProductShowcase,
@@ -319,7 +330,7 @@ export default buildConfig({
             title: originalDoc.locationName,
             excerpt: originalDoc.locationText || originalDoc.establishedText || '',
             category: 'storefront',
-            tags: ['storefront', 'location', 'showroom'],
+            tags: ['storefront', 'location', 'showroom'].map(tag => ({ tag })),
             // Denormalized storefront fields (stored directly in search doc)
             storefrontSlug: originalDoc.slug,
             storefrontLocationName: originalDoc.locationName,
@@ -333,14 +344,12 @@ export default buildConfig({
         }
 
         if (collectionSlug === 'products') {
-          // Valid tag options from the search collection schema
-          const validTags = ['piano', 'digital', 'grand', 'hybrid', 'upright', 'accessory', 'software', 'page', 'faq', 'support', 'storefront', 'location', 'showroom']
-
-          // Filter tags to only include valid options
+          // Extract product tags from type and category
           const productTags = [
             originalDoc.type,
             originalDoc.category,
-          ].filter((tag): tag is string => Boolean(tag) && validTags.includes(tag))
+          ].filter((tag): tag is string => Boolean(tag))
+            .map(tag => ({ tag }))
 
           // Extract product-specific fields
           // IMPORTANT: Store denormalized product data for search results
@@ -362,6 +371,25 @@ export default buildConfig({
         if (collectionSlug === 'pages') {
           // Extract page-specific fields
           // IMPORTANT: Store denormalized page data for reliable navigation
+
+          // Handle tags: support both old format (string[]) and new format ([{tag: string}])
+          let pageTags: Array<{ tag: string }> = []
+          if (Array.isArray(originalDoc?.tags)) {
+            pageTags = originalDoc.tags
+              .map((t: any) => {
+                // Handle old format (string)
+                if (typeof t === 'string') {
+                  return { tag: t }
+                }
+                // Handle new format ({tag: string})
+                if (typeof t === 'object' && t?.tag && typeof t.tag === 'string') {
+                  return { tag: t.tag }
+                }
+                return null
+              })
+              .filter((t: any): t is { tag: string } => t !== null && t.tag.length > 0)
+          }
+
           return {
             ...searchDoc,
             title: originalDoc.title,
@@ -369,7 +397,7 @@ export default buildConfig({
               ? extractTextFromRichText(originalDoc.hero.richText)?.substring(0, 200)
               : originalDoc?.title || '',
             category: originalDoc?.category || 'page',
-            tags: originalDoc?.tags || [],
+            tags: pageTags,
             // Denormalized page fields (stored directly in search doc)
             pageSlug: originalDoc.slug,
           }
@@ -405,26 +433,24 @@ export default buildConfig({
           },
           {
             name: 'tags',
-            type: 'select',
-            hasMany: true,
-            options: [
-              { label: 'Piano', value: 'piano' },
-              { label: 'Digital', value: 'digital' },
-              { label: 'Grand', value: 'grand' },
-              { label: 'Hybrid', value: 'hybrid' },
-              { label: 'Upright', value: 'upright' },
-              { label: 'Accessory', value: 'accessory' },
-              { label: 'Software', value: 'software' },
-              { label: 'Page', value: 'page' },
-              { label: 'FAQ', value: 'faq' },
-              { label: 'Support', value: 'support' },
-              { label: 'Storefront', value: 'storefront' },
-              { label: 'Location', value: 'location' },
-              { label: 'Showroom', value: 'showroom' },
+            type: 'array',
+            maxRows: 20,
+            fields: [
+              {
+                name: 'tag',
+                type: 'text',
+                required: true,
+              },
             ],
             admin: {
               position: 'sidebar',
-              description: 'Tags for filtering',
+              description: 'Tags for filtering (denormalized from source collections)',
+              readOnly: true,
+              components: {
+                RowLabel: ({ data }: { data?: { tag?: string } }) => {
+                  return data?.tag || 'Tag'
+                },
+              } as any,
             },
           },
           // Denormalized product fields for fast search results
