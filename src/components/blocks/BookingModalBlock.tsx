@@ -90,7 +90,7 @@ export function BookingModalBlock({
   const actualButtonStyle = buttonStyle || 'primary'
   const actualButtonSize = buttonSize || 'default'
   const actualButtonAlignment = buttonAlignment || 'center'
-  const actualModalTitle = modalTitle || 'Schedule Your Consultation'
+  const actualModalTitle = modalTitle || 'Book your appointment'
   const actualModalSubtitle = modalSubtitle ?? undefined // Convert null to undefined for strict types
   const actualDisplayMode = displayMode || 'inline'
   const actualBackgroundColor = backgroundColor || 'transparent'

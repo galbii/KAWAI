@@ -11,6 +11,7 @@ import {
   MapPinIcon,
   ClockIcon,
   MagnifyingGlassIcon,
+  PhoneIcon,
 } from '@heroicons/react/24/outline'
 import { EventImageModal } from './EventImageModal'
 
@@ -317,7 +318,10 @@ export const EventOverviewRenderer: React.FC<EventOverviewRendererProps> = ({ bl
 
               {/* Contact - Below highlights, clickable */}
               {block.contact && (
-                <div className="pt-4">
+                <div className="pt-4 space-y-2">
+                  <p className="text-sm uppercase tracking-widest font-semibold">
+                    Speak with a Representative:
+                  </p>
                   <a
                     href={
                       block.contact.includes('@')
@@ -325,13 +329,14 @@ export const EventOverviewRenderer: React.FC<EventOverviewRendererProps> = ({ bl
                         : `tel:${block.contact.replace(/\D/g, '')}`
                     }
                     className={cn(
-                      'inline-flex items-center gap-2',
+                      'inline-flex items-center gap-3',
                       'text-[#C41E3A] hover:text-[#A01828]',
                       'font-semibold transition-colors duration-200',
-                      'underline underline-offset-4'
+                      'group'
                     )}
                   >
-                    {block.contact}
+                    <PhoneIcon className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform duration-200" />
+                    <span className="underline underline-offset-4">{block.contact}</span>
                   </a>
                 </div>
               )}

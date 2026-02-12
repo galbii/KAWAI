@@ -352,16 +352,32 @@ export const UniversityHero: Block = {
           },
         },
         {
-          name: 'videoZoom',
-          type: 'number',
-          min: 1,
-          max: 2,
-          defaultValue: 1,
-          admin: {
-            step: 0.05,
-            description: 'Video zoom level (1 = normal, 1.5 = 150%, 2 = 200%). Use to crop/fill viewport.',
-            condition: (data: any, siblingData: any) => !!siblingData?.youtubeUrl,
-          },
+          type: 'row',
+          fields: [
+            {
+              name: 'videoStartTime',
+              type: 'number',
+              min: 0,
+              defaultValue: 0,
+              admin: {
+                description: 'Start time in seconds (e.g., 30 = start at 0:30, 90 = start at 1:30)',
+                placeholder: '0',
+                condition: (data: any, siblingData: any) => !!siblingData?.youtubeUrl,
+              },
+            },
+            {
+              name: 'videoZoom',
+              type: 'number',
+              min: 1,
+              max: 2,
+              defaultValue: 1,
+              admin: {
+                step: 0.05,
+                description: 'Video zoom level (1 = normal, 1.5 = 150%, 2 = 200%). Use to crop/fill viewport.',
+                condition: (data: any, siblingData: any) => !!siblingData?.youtubeUrl,
+              },
+            },
+          ],
         },
         imageField('backgroundImage', {
           admin: {

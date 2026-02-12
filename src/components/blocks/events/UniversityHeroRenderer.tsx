@@ -210,7 +210,7 @@ export const UniversityHeroRenderer: React.FC<UniversityHeroRendererProps> = ({ 
             }}
           >
             <iframe
-              src={`${youtubeEmbedUrl}&autoplay=1&mute=1&loop=1&playlist=${youtubeEmbedUrl.split('/embed/')[1]?.split('?')[0]}&controls=0&showinfo=0&rel=0&modestbranding=1`}
+              src={`${youtubeEmbedUrl}&autoplay=1&mute=1&loop=1&playlist=${youtubeEmbedUrl.split('/embed/')[1]?.split('?')[0]}&controls=0&showinfo=0&rel=0&modestbranding=1${block.videoStartTime ? `&start=${block.videoStartTime}` : ''}`}
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none border-0"
               style={{
                 width: '177.77777778vh', // 16:9 aspect ratio width based on height
