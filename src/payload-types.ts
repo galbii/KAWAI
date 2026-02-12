@@ -2400,9 +2400,13 @@ export interface MarketingFeaturedModelsBlock {
          */
         customTitle?: string | null;
         /**
-         * 📷 Optional content image (displays under the title) - Recommended: 600x400px or 800x600px
+         * 📷 Optional content image (displays under the title on mobile) - Recommended: 600x400px or 800x600px
          */
         contentImage?: (string | null) | Media;
+        /**
+         * Control how the product image is displayed
+         */
+        imageZoom?: ('cover' | 'contain' | 'zoom-in' | 'zoom-out') | null;
         /**
          * Product description or tagline (2-3 sentences, max 300 characters)
          */

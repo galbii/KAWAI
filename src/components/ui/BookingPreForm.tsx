@@ -63,7 +63,7 @@ export function BookingPreForm({ onSubmit, onCancel, modalTitle }: BookingPreFor
     mode: 'onBlur',
   })
 
-  const actualModalTitle = modalTitle || 'Schedule Your Consultation'
+  const actualModalTitle = modalTitle || 'Choose a time that works for you'
 
   // Handle step 1 completion
   const handleStep1Next = async () => {

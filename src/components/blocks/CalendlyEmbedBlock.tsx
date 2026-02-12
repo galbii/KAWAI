@@ -203,7 +203,6 @@ export function CalendlyEmbedBlock({
           <div className="flex justify-center items-start">
             <BookingPreForm
               onSubmit={handlePreFormSubmit}
-              modalTitle={heading || 'Schedule Your Consultation'}
             />
           </div>
         ) : (

@@ -169,113 +169,35 @@ export const EventOverviewRenderer: React.FC<EventOverviewRendererProps> = ({ bl
         {/* Two Column Layout - Content and Image */}
         <div
           className={cn(
-            'grid lg:grid-cols-2 gap-12 lg:gap-16',
+            'flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-16',
             'transition-opacity duration-700 mb-16',
             isVisible ? 'opacity-100' : 'opacity-0'
           )}
         >
-          {/* Left Column - Content */}
-          <div className="space-y-8">
-            {/* Heading Section - Shows first on mobile */}
-            <div className="space-y-6 lg:order-none order-1">
-              {/* Eyebrow */}
-              {block.eyebrow && (
-                <p className="text-sm uppercase tracking-widest text-[#C41E3A] font-semibold">
-                  {block.eyebrow}
-                </p>
-              )}
-
-              {/* Title */}
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold leading-tight">
-                {block.title}
-              </h2>
-
-              {/* Subtitle */}
-              {block.subtitle && (
-                <p className="text-xl md:text-2xl font-light leading-relaxed">
-                  {block.subtitle}
-                </p>
-              )}
-            </div>
-
-            {/* Rest of Content - Shows third on mobile, after image */}
-            <div className="space-y-8 lg:order-none order-3">
-              {/* Description */}
-              <p className={cn('text-lg leading-relaxed', mutedColor)}>
-                {block.description}
+          {/* Heading Section - Shows first on all screens */}
+          <div className="space-y-6 lg:row-span-2">
+            {/* Eyebrow */}
+            {block.eyebrow && (
+              <p className="text-sm uppercase tracking-widest text-[#C41E3A] font-semibold">
+                {block.eyebrow}
               </p>
+            )}
 
-              {/* Event Details */}
-              <div className="space-y-4 pt-4">
-                {block.date && (
-                  <div className="flex items-start gap-3">
-                    <CalendarIcon className="w-5 h-5 text-[#C41E3A] mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">{block.date}</p>
-                      {block.time && (
-                        <p className={cn('text-sm', mutedColor)}>{block.time}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
+            {/* Title */}
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold leading-tight">
+              {block.title}
+            </h2>
 
-                {block.location && (
-                  <div className="flex items-start gap-3">
-                    <MapPinIcon className="w-5 h-5 text-[#C41E3A] mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">{block.location}</p>
-                      {block.contact && (
-                        <p className={cn('text-sm', mutedColor)}>{block.contact}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Highlights */}
-              {block.highlights && block.highlights.length > 0 && (
-                <div className="space-y-3 pt-4">
-                  <h3 className="text-sm uppercase tracking-widest font-semibold mb-4">
-                    Highlights
-                  </h3>
-                  {block.highlights.map((highlight: any, index: number) => (
-                    <div key={index} className="flex items-start gap-3">
-                      <CheckIcon className="w-5 h-5 text-[#D4AF37] mt-0.5 flex-shrink-0" />
-                      <p className="text-base leading-relaxed">{highlight.text}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* CTA Buttons */}
-              {(block.ctaText || block.cta2Text) && (
-                <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                  {/* Primary CTA */}
-                  {block.ctaText && block.ctaLink && (
-                    <CTAButton
-                      text={block.ctaText}
-                      link={block.ctaLink}
-                      style={block.ctaStyle || 'primary'}
-                      openInNewTab={block.ctaOpenInNewTab}
-                    />
-                  )}
-
-                  {/* Secondary CTA */}
-                  {block.cta2Text && block.cta2Link && (
-                    <CTAButton
-                      text={block.cta2Text}
-                      link={block.cta2Link}
-                      style={block.cta2Style || 'secondary'}
-                      openInNewTab={block.cta2OpenInNewTab}
-                    />
-                  )}
-                </div>
-              )}
-            </div>
+            {/* Subtitle */}
+            {block.subtitle && (
+              <p className="text-xl md:text-2xl font-light leading-relaxed">
+                {block.subtitle}
+              </p>
+            )}
           </div>
 
-          {/* Right Column - Image(s) - Shows second on mobile */}
-          <div className="relative lg:order-none order-2">
+          {/* Image - Shows second on mobile (after heading), right column on desktop */}
+          <div className="relative lg:row-span-3">
             {imageUrl1 ? (
               <div
                 className={cn(
@@ -345,6 +267,99 @@ export const EventOverviewRenderer: React.FC<EventOverviewRendererProps> = ({ bl
                 <p className="text-sm">No image available</p>
               </div>
             )}
+          </div>
+
+          {/* Rest of Content - Shows third on mobile (after image), continues left column on desktop */}
+          <div className="space-y-8">
+              {/* Description */}
+              <p className={cn('text-lg leading-relaxed', mutedColor)}>
+                {block.description}
+              </p>
+
+              {/* Event Details */}
+              <div className="space-y-4 pt-4">
+                {block.date && (
+                  <div className="flex items-start gap-3">
+                    <CalendarIcon className="w-5 h-5 text-[#C41E3A] mt-1 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium">{block.date}</p>
+                      {block.time && (
+                        <p className={cn('text-sm', mutedColor)}>{block.time}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {block.location && (
+                  <div className="flex items-start gap-3">
+                    <MapPinIcon className="w-5 h-5 text-[#C41E3A] mt-1 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium">{block.location}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Highlights */}
+              {block.highlights && block.highlights.length > 0 && (
+                <div className="space-y-3 pt-4">
+                  <h3 className="text-sm uppercase tracking-widest font-semibold mb-4">
+                    Highlights
+                  </h3>
+                  {block.highlights.map((highlight: any, index: number) => (
+                    <div key={index} className="flex items-start gap-3">
+                      <CheckIcon className="w-5 h-5 text-[#D4AF37] mt-0.5 flex-shrink-0" />
+                      <p className="text-base leading-relaxed">{highlight.text}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Contact - Below highlights, clickable */}
+              {block.contact && (
+                <div className="pt-4">
+                  <a
+                    href={
+                      block.contact.includes('@')
+                        ? `mailto:${block.contact}`
+                        : `tel:${block.contact.replace(/\D/g, '')}`
+                    }
+                    className={cn(
+                      'inline-flex items-center gap-2',
+                      'text-[#C41E3A] hover:text-[#A01828]',
+                      'font-semibold transition-colors duration-200',
+                      'underline underline-offset-4'
+                    )}
+                  >
+                    {block.contact}
+                  </a>
+                </div>
+              )}
+
+              {/* CTA Buttons */}
+              {(block.ctaText || block.cta2Text) && (
+                <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                  {/* Primary CTA */}
+                  {block.ctaText && block.ctaLink && (
+                    <CTAButton
+                      text={block.ctaText}
+                      link={block.ctaLink}
+                      style={block.ctaStyle || 'primary'}
+                      openInNewTab={block.ctaOpenInNewTab}
+                    />
+                  )}
+
+                  {/* Secondary CTA */}
+                  {block.cta2Text && block.cta2Link && (
+                    <CTAButton
+                      text={block.cta2Text}
+                      link={block.cta2Link}
+                      style={block.cta2Style || 'secondary'}
+                      openInNewTab={block.cta2OpenInNewTab}
+                    />
+                  )}
+                </div>
+              )}
           </div>
         </div>
 
