@@ -37,7 +37,7 @@ export const CalendlyEmbed: Block = {
       label: 'Heading',
       admin: {
         description: 'Main heading above the widget (optional)',
-        placeholder: 'Schedule Your Consultation',
+        placeholder: 'Book your appointment',
       },
     },
     {

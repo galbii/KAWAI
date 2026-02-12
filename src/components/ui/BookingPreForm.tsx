@@ -136,9 +136,6 @@ export function BookingPreForm({ onSubmit, onCancel, modalTitle }: BookingPreFor
         <h2 className="text-2xl md:text-3xl font-semibold text-[#2C2C2C] mb-2 tracking-tight">
           {actualModalTitle}
         </h2>
-        <p className="text-sm text-[#2C2C2C]/60">
-          Please enter your information to continue
-        </p>
       </motion.div>
 
       {/* Form Container */}

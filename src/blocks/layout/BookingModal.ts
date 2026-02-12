@@ -99,7 +99,7 @@ export const BookingModal: Block = {
       name: 'modalTitle',
       type: 'text',
       label: 'Modal Title',
-      defaultValue: 'Schedule Your Consultation',
+      defaultValue: 'Book your appointment',
       admin: {
         description: 'Title displayed in the modal header',
         placeholder: 'Book Your Appointment',

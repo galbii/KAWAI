@@ -458,7 +458,7 @@ export function CalendlyBookingWidget({
   onProfilePageViewed
 }: CalendlyBookingWidgetProps) {
   // Apply defaults for modal text if not provided
-  const actualModalTitle = modalTitle || 'Schedule Your Consultation'
+  const actualModalTitle = modalTitle || 'Book your appointment'
   const actualModalSubtitle = modalSubtitle || 'Choose a time that works best for your private piano experience'
 
   // Handle successful booking
