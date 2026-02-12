@@ -95,6 +95,43 @@ export const UniversityHeroRenderer: React.FC<UniversityHeroRendererProps> = ({ 
     none: '',
   }
 
+  // Subheading font family
+  const subheadingFontMap: Record<string, string> = {
+    inherit: '',
+    inter: 'font-sans',
+    playfair: 'font-serif',
+    crimson: 'font-[\'Crimson_Text\',serif]',
+  }
+
+  // Subheading size
+  const subheadingSizeMap: Record<string, string> = {
+    small: 'text-base md:text-lg',
+    default: 'text-lg md:text-xl',
+    large: 'text-xl md:text-2xl',
+    xlarge: 'text-2xl md:text-3xl',
+    huge: 'text-3xl md:text-4xl',
+  }
+
+  // Subheading color
+  const subheadingColorMap: Record<string, string> = {
+    inherit: '',
+    white: 'text-white',
+    black: 'text-gray-900',
+    charcoal: 'text-[#2C2C2C]',
+    red: 'text-[#C41E3A]',
+    gold: 'text-[#D4AF37]',
+    orange: 'text-orange-500',
+  }
+
+  // Text weight (applies to heading and text)
+  const textWeightMap: Record<string, string> = {
+    normal: 'font-normal',
+    medium: 'font-medium',
+    semibold: 'font-semibold',
+    bold: 'font-bold',
+    extrabold: 'font-extrabold',
+  }
+
   // Get background media (YouTube takes priority over image)
   const youtubeEmbedUrl = block.youtubeUrl ? getYouTubeEmbedUrl(block.youtubeUrl) : null
   const backgroundImage = isMediaObject(block.backgroundImage)
@@ -164,30 +201,22 @@ export const UniversityHeroRenderer: React.FC<UniversityHeroRendererProps> = ({ 
     >
       {/* Background Media - YouTube Video or Image */}
       {youtubeEmbedUrl ? (
-        <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 w-full h-full overflow-hidden">
           <div
-            className="absolute inset-0"
+            className="absolute inset-0 w-full h-full"
             style={{
               transform: `scale(${block.videoZoom || 1})`,
               transformOrigin: 'center center',
-              width: '100%',
-              height: '100%'
             }}
           >
             <iframe
               src={`${youtubeEmbedUrl}&autoplay=1&mute=1&loop=1&playlist=${youtubeEmbedUrl.split('/embed/')[1]?.split('?')[0]}&controls=0&showinfo=0&rel=0&modestbranding=1`}
-              className="absolute pointer-events-none"
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none border-0"
               style={{
-                border: 'none',
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                width: '100vw',
-                height: '100vh',
+                width: '177.77777778vh', // 16:9 aspect ratio width based on height
                 minWidth: '100%',
+                height: '56.25vw', // 16:9 aspect ratio height based on width
                 minHeight: '100%',
-                transform: 'translate(-50%, -50%)',
-                objectFit: 'cover'
               }}
               allow="autoplay; encrypted-media"
               title="Background video"
@@ -247,7 +276,14 @@ export const UniversityHeroRenderer: React.FC<UniversityHeroRendererProps> = ({ 
             <div className="space-y-2">
               <p
                 className={cn(
-                  'text-sm md:text-base uppercase tracking-wider font-medium',
+                  'text-sm md:text-base uppercase tracking-wider',
+                  // Apply custom color and weight
+                  block.subheadingColor && block.subheadingColor !== 'inherit'
+                    ? subheadingColorMap[block.subheadingColor]
+                    : '',
+                  block.textWeight
+                    ? textWeightMap[block.textWeight]
+                    : 'font-medium',
                   'opacity-90'
                 )}
               >
@@ -281,7 +317,20 @@ export const UniversityHeroRenderer: React.FC<UniversityHeroRendererProps> = ({ 
               {block.singleLogoText && (
                 <p
                   className={cn(
-                    'text-lg md:text-xl lg:text-2xl leading-relaxed',
+                    'leading-relaxed',
+                    // Apply custom styling or defaults
+                    block.subheadingSize
+                      ? subheadingSizeMap[block.subheadingSize]
+                      : 'text-lg md:text-xl lg:text-2xl',
+                    block.subheadingFont && block.subheadingFont !== 'inherit'
+                      ? subheadingFontMap[block.subheadingFont]
+                      : '',
+                    block.subheadingColor && block.subheadingColor !== 'inherit'
+                      ? subheadingColorMap[block.subheadingColor]
+                      : '',
+                    block.textWeight
+                      ? textWeightMap[block.textWeight]
+                      : 'font-normal',
                     'max-w-2xl text-center',
                     'opacity-95'
                   )}
@@ -342,21 +391,6 @@ export const UniversityHeroRenderer: React.FC<UniversityHeroRendererProps> = ({ 
                 </div>
               )}
             </div>
-          )}
-
-          {/* Subheading (only shown in dual-logo mode) */}
-          {!isSingleLogoMode && block.subheading && (
-            <p
-              className={cn(
-                'text-lg md:text-xl lg:text-2xl leading-relaxed',
-                'max-w-3xl mx-auto',
-                block.contentAlignment === 'center' ? 'text-center' : '',
-                block.contentAlignment === 'left' ? 'text-left mr-auto ml-0' : '',
-                block.contentAlignment === 'right' ? 'text-right ml-auto mr-0' : ''
-              )}
-            >
-              {block.subheading}
-            </p>
           )}
 
           {/* CTA Buttons */}

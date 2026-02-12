@@ -241,6 +241,37 @@ Conversion-focused promotional blocks designed to drive user actions.
 | 📰 News Carousel | `marketing-news-carousel` | Rotating news and announcements carousel | HomePage news/updates section |
 | 📝 Contact Form | `marketing-contact-form` | Multi-step contact and assessment form | HomePage lead capture section |
 | 📍 Storefront Locations | `marketing-storefront-locations` | Auto-fetched storefront grid with customizable text | HomePage dealer locations section |
+| 🎹 Featured Models | `marketing-featured-models` | Alternating layout showcase for piano models with rich media | Product series pages, model showcases, premium landing pages |
+
+**Featured Models Features:**
+- **Alternating layouts**: Left/right media placement creates visual rhythm
+- **Dual media support**: YouTube video embeds OR background images per model
+- **Product integration**: Relationship to Products collection with auto-populated data
+- **Custom overrides**: Override product names with custom titles
+- **Feature highlights**: Up to 6 features per model with icon selection (checkmark, star, music note, piano, sparkles, trophy, diamond, sakura)
+- **Glassmorphism cards**: Premium frosted glass effect on content side
+- **Three content card styles**: Glassmorphism (frosted glass), Solid (white with shadow), Minimal (no card)
+- **CTA buttons**: Configurable per model with three style variants (primary, secondary, tertiary)
+- **Section header**: Eyebrow label, heading, and subheading for context
+- **Scroll animations**: Staggered reveal animations with Intersection Observer
+- **Theme options**: Light (pearl), Dark (charcoal), or Transparent backgrounds
+- **Spacing control**: Compact, Comfortable, or Spacious vertical spacing
+- **Mobile layouts**: Stack (media top), Stack-reverse (content top), or Overlay modes
+- **Japanese aesthetic**: Grain texture overlays and refined minimalist design
+- **Performance**: Optimized with Next.js Image, lazy loading, and efficient animations
+- **Accessibility**: Keyboard navigation, ARIA labels, reduced motion support
+
+**Featured Models Best Practices:**
+- Use high-quality images (recommended 1200x1600px portrait or 1600x900px landscape)
+- Alternate layout directions for visual interest (left, right, left, right pattern)
+- Keep feature lists concise (3-5 features per model for best readability)
+- Use glassmorphism sparingly on busy backgrounds for better text contrast
+- Choose appropriate overlay opacity based on background brightness (0.2-0.5 range)
+- Limit to 4-6 featured models per section for optimal user experience
+- Use custom titles to add marketing flair while maintaining product relationship
+- Test on mobile - overlay mode works best for dramatic impact on small screens
+- Enable animations for premium feel, disable for accessibility-focused pages
+- Pair with Grand Hero above for impactful product landing pages
 
 **Grand Hero Features:**
 - **Full-viewport cinematic design** with configurable heights (100vh, 90vh, 80vh, 70vh)
@@ -1209,15 +1240,46 @@ Event-specific blocks for showcasing conferences, trade shows, partnerships, and
 
 **Event Overview Features:**
 - **Event Information Section**: Eyebrow, title, subtitle, description, highlights with icons
-- **Event Details**: Date, time, location, booth number
-- **PDF Document Viewer**: Embedded PDF with clean UI (8.5:11 aspect ratio)
-- **Download Button**: Optional PDF download link (enabled by default)
-- **Optional CTA**: Register button or custom action
+- **Event Details**: Date, time, location, contact information
+- **Event Images**: 1-2 featured images with automatic crossfade transition (2 seconds after scroll)
+- **Image Lightbox**: Click images to view full-screen with elegant modal overlay
+  - Full-screen dark overlay with glassmorphism
+  - Keyboard navigation (ESC to close, arrow keys for multiple images)
+  - Image indicators and counter (e.g., "1 of 2")
+  - Click-outside-to-close functionality
+  - Body scroll lock during viewing
+  - Smooth animations with zoom icon on hover
+- **Google Maps Integration**: Embedded map with customizable address below images
+  - Full-width map display (500px height)
+  - Address card with formatted location details
+  - Toggle map on/off via CMS
+- **Dual CTA Buttons**: Up to two configurable call-to-action buttons
+  - Three style variants: Primary (Filled Red), Secondary (Outline Red), Tertiary (Text Link)
+  - Independent configuration per CTA
+  - Side-by-side on desktop, stacked on mobile
+  - New tab options for each button
 - **4 Theme Options**: Light, Dark, White, or Transparent backgrounds
-- **Layout Direction**: Content left/PDF right, or PDF left/content right
+- **Layout Direction**: Content left/images right, or images left/content right
 - **Spacing Options**: Compact, Comfortable, or Spacious
 - **Highlight Icons**: Checkmark, Star, Music Note, Calendar, Location Pin, Piano, Bullet
-- **Mobile Responsive**: Stacks vertically on mobile devices
+- **Mobile Responsive**: Stacks vertically on mobile devices with touch-optimized interactions
+
+**Event Overview Best Practices:**
+- **Images**: Use high-quality portrait images (recommended 1200x1600px or 8.5:11 aspect ratio)
+- **Two Images**: If using two images, ensure they're thematically related (before/after, venue/closeup)
+- **Map Address**: Format address clearly with line breaks for better readability
+  ```
+  Venue Name
+  123 Street Address
+  City, State ZIP
+  Country (if international)
+  ```
+- **Dual CTAs**: Use complementary actions (e.g., "Register Now" + "View Schedule")
+  - Primary CTA: Main conversion action (filled style)
+  - Secondary CTA: Alternative action (outline or tertiary style)
+- **Click Affordance**: Images automatically show zoom icon on hover to indicate clickability
+- **Accessibility**: Modal supports keyboard navigation and screen readers
+- **Mobile**: Test image modal on mobile devices (swipe hint appears automatically)
 
 **Where to use Events blocks:**
 - University partnership announcements

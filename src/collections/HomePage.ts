@@ -72,6 +72,7 @@ export const HomePage: CollectionConfig = {
                 'marketing-news-carousel',
                 'marketing-contact-form',
                 'marketing-storefront-locations',
+                'marketing-featured-models',
               ] as any,
               blocks: [], // Required to be empty for compatibility
               admin: {

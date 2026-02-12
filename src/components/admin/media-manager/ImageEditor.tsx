@@ -323,18 +323,37 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
         0, 0, finalCrop.width, finalCrop.height
       )
 
-      // Convert to blob
+      // Preserve original format
+      const originalMimeType = file.type || 'image/jpeg'
+      const supportedFormats = ['image/png', 'image/jpeg', 'image/webp']
+      const outputMimeType = supportedFormats.includes(originalMimeType) ? originalMimeType : 'image/jpeg'
+
+      // Quality parameter only applies to JPEG and WebP
+      const qualityParam = (outputMimeType === 'image/jpeg' || outputMimeType === 'image/webp')
+        ? quality / 100
+        : undefined
+
+      // Convert to blob (preserving format)
       const blob = await new Promise<Blob>((resolve, reject) => {
         outputCanvas.toBlob(
           (b) => b ? resolve(b) : reject(new Error('Failed to create blob')),
-          'image/jpeg',
-          quality / 100
+          outputMimeType,
+          qualityParam
         )
       })
 
-      // Create new file
-      const editedFile = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), {
-        type: 'image/jpeg',
+      // Preserve original file extension
+      const extensionMap: Record<string, string> = {
+        'image/png': '.png',
+        'image/jpeg': '.jpg',
+        'image/webp': '.webp',
+      }
+      const extension = extensionMap[outputMimeType] || '.jpg'
+      const fileName = file.name.replace(/\.[^.]+$/, extension)
+
+      // Create new file (preserving format)
+      const editedFile = new File([blob], fileName, {
+        type: outputMimeType,
         lastModified: Date.now(),
       })
 

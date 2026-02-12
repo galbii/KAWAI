@@ -143,6 +143,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 'marketing-3d-viewer',              // 3D Model Viewer
                 'marketing-instagram-carousel',     // Instagram Carousel
                 'marketing-artist-carousel',        // Artist Carousel
+                'marketing-featured-models',        // Featured Models
 
                 // Events blocks - Event-specific content
                 'events-university-hero',           // University Hero

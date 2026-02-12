@@ -87,7 +87,10 @@ export function CalendlyEmbedBlock({
   const trackingConfig = React.useMemo(() => ({
     eventName: tracking?.eventName || 'Calendly Embed Booking',
     posthogEventName: 'calendly_embed_booking',
+    widgetId: 'calendly-embed',  // Unique identifier for this widget instance
     enabled: trackingEnabled && !showPreForm, // Only track when widget is visible
+    // Conditionally include calendlyUrl (exactOptionalPropertyTypes: true)
+    ...(calendlyUrl && { calendlyUrl }),
     metaPixel: {
       content_name: 'Calendly Booking',
       content_category: tracking?.category || 'lead',
@@ -112,6 +115,7 @@ export function CalendlyEmbedBlock({
     tracking?.conversionValue,
     trackingEnabled,
     showPreForm,
+    calendlyUrl,  // Added for widget ownership tracking
     constantContact?.enabled,
     constantContact?.targetList,
     constantContact?.createListIfMissing,
@@ -143,9 +147,18 @@ export function CalendlyEmbedBlock({
     }
 
     // CRITICAL: Phone must be in customAnswers, not as direct field
+    // NOTE: Phone is the 2nd custom question in Calendly (a2), not the 1st (a1)
+    // a1 = "What type of piano are you most interested in?" (dropdown)
+    // a2 = "Phone Number" (phone input)
     if (prefillData.phone) {
+      // Add US country code (+1) if not already present
+      let formattedPhone = prefillData.phone.replace(/\D/g, '') // Remove non-digits
+      if (!formattedPhone.startsWith('1') && formattedPhone.length === 10) {
+        formattedPhone = '1' + formattedPhone // Add country code
+      }
+
       prefill.customAnswers = {
-        a1: prefillData.phone,
+        a2: formattedPhone,  // e.g., "17143268063"
       }
     }
 

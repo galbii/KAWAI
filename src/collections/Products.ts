@@ -571,6 +571,7 @@ export const Products: CollectionConfig = {
                 'product-collection-showcase',       // Collection Showcase - Display collection content
                 'product-floating-add-to-cart',      // Floating Add to Cart - Sticky cart button
                 'marketing-instagram-carousel',      // Instagram Carousel - Social proof
+                'marketing-featured-models',         // Featured Models - Showcase related models
               ] as any,
               blocks: [], // Required to be empty when using blockReferences
               admin: {

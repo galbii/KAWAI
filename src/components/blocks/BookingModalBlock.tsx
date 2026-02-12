@@ -41,11 +41,24 @@ export function BookingModalBlock({
   const [mounted, setMounted] = useState(false)
   const [showPreForm, setShowPreForm] = useState(true)
   const [prefillData, setPrefillData] = useState<BookingPreFormData | undefined>(undefined)
+  const [isMobile, setIsMobile] = useState(false)
 
-  // Client-side mounting check
+  // Client-side mounting check + mobile detection
   useEffect(() => {
     setMounted(true)
-    return () => setMounted(false)
+
+    // Detect mobile viewport
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768) // md breakpoint
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+
+    return () => {
+      setMounted(false)
+      window.removeEventListener('resize', checkMobile)
+    }
   }, [])
 
   // Floating button visibility control (scroll-based with delay)
@@ -109,7 +122,10 @@ export function BookingModalBlock({
     {
       eventName: bookingTracking?.eventName || 'Booking Modal Completion',
       posthogEventName: 'booking_modal_completion',
+      widgetId: 'booking-modal',  // Unique identifier for this widget instance
       enabled: bookingTrackingEnabled && isModalOpen && !showPreForm,
+      // Conditionally include calendlyUrl (exactOptionalPropertyTypes: true)
+      ...(calendlyUrl && { calendlyUrl }),
       metaPixel: {
         content_name: 'Booking Modal',
         content_category: bookingTracking?.category || 'lead',
@@ -333,17 +349,23 @@ export function BookingModalBlock({
 
   // Render floating button (NO PORTAL - direct fixed positioning works perfectly)
   if (actualDisplayMode === 'floating' && mounted) {
+    // Calculate bottom position to avoid mobile search bar
+    // Mobile search bar height: ~66px (16px padding + 34px input + 16px padding)
+    // Add 16px gap for visual separation = 82px total
+    const bottomPosition = isMobile ? '82px' : '2rem'
+
     return (
       <>
         {/* Floating Button - Piano Key with Damper Lift Animation */}
         <div
-          className="fixed bottom-8 right-8"
+          className="fixed right-8"
           style={{
+            bottom: bottomPosition, // Dynamic positioning for mobile search bar
             zIndex: 99999, // Extremely high to ensure it's on top
-            transition: 'opacity 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
-            opacity: isFloatingVisible ? 1 : 0,
-            transform: isFloatingVisible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)',
-            pointerEvents: isFloatingVisible ? 'auto' : 'none',
+            transition: 'opacity 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), bottom 0.3s ease',
+            opacity: isFloatingVisible && !isModalOpen ? 1 : 0,  // Hide when modal is open
+            transform: isFloatingVisible && !isModalOpen ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)',
+            pointerEvents: isFloatingVisible && !isModalOpen ? 'auto' : 'none',  // Disable clicks when hidden
           }}
         >
           {/* Grain texture overlay (piano wood cabinet feel) */}

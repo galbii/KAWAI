@@ -138,11 +138,11 @@ export const EventOverview: Block = {
           },
         },
         {
-          name: 'booth',
+          name: 'contact',
           type: 'text',
           admin: {
-            description: 'Booth number or location within venue (if applicable)',
-            placeholder: 'Booth #4567',
+            description: 'Contact information (phone, email, or name)',
+            placeholder: '(555) 123-4567 or contact@example.com',
           },
         },
       ],
@@ -193,8 +193,8 @@ export const EventOverview: Block = {
           name: 'mapAddress',
           type: 'textarea',
           admin: {
-            description: 'Full address for map geocoding (used for map display)',
-            placeholder: 'Anaheim Convention Center, 800 W Katella Ave, Anaheim, CA 92802',
+            description: 'Full address for Google Maps (used for map pin location)',
+            placeholder: 'Venue Name\n123 Street Address\nCity, State ZIP\nCountry (if international)',
             condition: (data: any, siblingData: any) => siblingData?.showMap === true,
           },
         },
@@ -206,10 +206,11 @@ export const EventOverview: Block = {
       type: 'collapsible',
       label: 'Call to Action',
       admin: {
-        description: 'Optional CTA button (e.g., Register, Learn More, Get Tickets)',
+        description: 'Up to two CTA buttons (e.g., Register Now + Learn More)',
         initCollapsed: true,
       },
       fields: [
+        // Primary CTA
         {
           type: 'row',
           fields: [
@@ -217,7 +218,7 @@ export const EventOverview: Block = {
               name: 'ctaText',
               type: 'text',
               admin: {
-                description: 'CTA button text (leave empty to hide)',
+                description: 'Primary CTA button text (leave empty to hide)',
                 placeholder: 'Register Now',
               },
             },
@@ -225,7 +226,7 @@ export const EventOverview: Block = {
               name: 'ctaLink',
               type: 'text',
               admin: {
-                description: 'CTA button link',
+                description: 'Primary CTA button link',
                 placeholder: '/events/register',
                 condition: (data: any, siblingData: any) => !!siblingData?.ctaText,
               },
@@ -241,10 +242,11 @@ export const EventOverview: Block = {
               defaultValue: 'primary',
               options: [
                 { label: 'Primary (Filled Red)', value: 'primary' },
-                { label: 'Outline', value: 'outline' },
+                { label: 'Secondary (Outline Red)', value: 'secondary' },
+                { label: 'Tertiary (Text Link)', value: 'tertiary' },
               ],
               admin: {
-                description: 'Button style',
+                description: 'Primary button style',
                 condition: (data: any, siblingData: any) => !!siblingData?.ctaText,
               },
             },
@@ -255,6 +257,57 @@ export const EventOverview: Block = {
               admin: {
                 description: 'Open link in new tab',
                 condition: (data: any, siblingData: any) => !!siblingData?.ctaText,
+              },
+            },
+          ],
+        },
+        // Secondary CTA
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'cta2Text',
+              type: 'text',
+              admin: {
+                description: 'Secondary CTA button text (optional)',
+                placeholder: 'Learn More',
+              },
+            },
+            {
+              name: 'cta2Link',
+              type: 'text',
+              admin: {
+                description: 'Secondary CTA button link',
+                placeholder: '/about',
+                condition: (data: any, siblingData: any) => !!siblingData?.cta2Text,
+              },
+            },
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'cta2Style',
+              type: 'select',
+              defaultValue: 'secondary',
+              options: [
+                { label: 'Primary (Filled Red)', value: 'primary' },
+                { label: 'Secondary (Outline Red)', value: 'secondary' },
+                { label: 'Tertiary (Text Link)', value: 'tertiary' },
+              ],
+              admin: {
+                description: 'Secondary button style',
+                condition: (data: any, siblingData: any) => !!siblingData?.cta2Text,
+              },
+            },
+            {
+              name: 'cta2OpenInNewTab',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                description: 'Open link in new tab',
+                condition: (data: any, siblingData: any) => !!siblingData?.cta2Text,
               },
             },
           ],

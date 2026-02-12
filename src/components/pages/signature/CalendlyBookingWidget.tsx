@@ -6,7 +6,7 @@ import { InlineWidget, useCalendlyEventListener } from 'react-calendly'
 import { usePostHog } from 'posthog-js/react'
 import { trackSubmitApplication } from '@/components/MetaPixel'
 import { cn } from '@/lib/utils'
-import useConstantContactIntegration, { type ConstantContactSubmissionData } from '@/hooks/useConstantContactIntegration'
+// NOTE: Constant Contact integration removed - handled by parent components via useCalendlyTracking hook
 
 // Interfaces
 
@@ -89,17 +89,9 @@ function CalendlyWidgetContent({
   // PostHog hook for proper event tracking
   const posthog = usePostHog()
 
-  // Constant Contact integration for booking events
-  const {
-    submitToConstantContact,
-    isSubmitting: isSubmittingToCC,
-    submitSuccess,
-    submitError
-  } = useConstantContactIntegration({
-    targetList: 'SHOWROOM KAWAI',
-    createListIfMissing: true,
-    showAuthPrompts: false
-  })
+  // NOTE: Constant Contact integration removed from this component
+  // It's now handled by parent components (BookingModalBlock, CalendlyEmbedBlock)
+  // via the useCalendlyTracking hook, which respects CMS configuration
 
   // Build UTM parameters for tracking
   const buildUtmParams = () => {
@@ -126,52 +118,9 @@ function CalendlyWidgetContent({
     setLoadError('Failed to load booking calendar. Please try refreshing the page.')
   }
 
-  // Submit contact to SHOWROOM KAWAI list when booking COMPLETES successfully (NON-BLOCKING)
-  const handleSuccessfulBookingSubmission = async (eventData: any) => {
-    console.log('🎯 Calendly onEventScheduled fired: ' + (+new Date()))
-    console.log('📋 Calendly event data:', eventData?.data?.payload)
-
-    // Implement timeout protection to prevent hanging
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Constant Contact submission timeout')), 10000)
-    )
-
-    try {
-      // Get email from prefillData or fallback to prefillEmail
-      const email = prefillData?.email || prefillEmail
-      if (!email) {
-        console.warn('⚠️ No email available for successful booking submission (non-blocking)')
-        return
-      }
-
-      // Create contact data with available information for SHOWROOM KAWAI list
-      const contactData: ConstantContactSubmissionData = {
-        email,
-        ...(prefillData?.firstName && { firstName: prefillData.firstName }),
-        ...(prefillData?.lastName && { lastName: prefillData.lastName }),
-        ...(prefillData?.phone && { phone: prefillData.phone }),
-        optInMarketing: true // Default to opted in for consultation bookings
-      }
-
-      console.log('🎉 Booking COMPLETED successfully! Adding to SHOWROOM KAWAI list:', contactData)
-
-      // Submit to SHOWROOM KAWAI list (non-blocking)
-      const success = await Promise.race([
-        submitToConstantContact(contactData), // This should target SHOWROOM KAWAI list
-        timeoutPromise
-      ])
-
-      if (success) {
-        console.log('📧 Constant Contact SHOWROOM KAWAI submission: ' + (+new Date()))
-        console.log('✅ Contact successfully added to SHOWROOM KAWAI list')
-      } else {
-        console.warn('⚠️ Failed to add contact to SHOWROOM KAWAI list, but booking still succeeded')
-      }
-    } catch (error) {
-      console.error('❌ Error adding successful booking to SHOWROOM KAWAI list (non-blocking):', error)
-      // This is non-blocking - booking completion is not affected
-    }
-  }
+  // NOTE: Constant Contact submission removed from this component
+  // Parent components (BookingModalBlock, CalendlyEmbedBlock) handle CC submission
+  // via useCalendlyTracking hook with CMS-configured list names
 
   // Fire Meta Pixel AFTER Calendly booking completion using the proper utility function
   const fireMetaPixelTracking = (eventData: any, contactData: any) => {
@@ -282,8 +231,9 @@ function CalendlyWidgetContent({
         })
       }
 
-      // Execute tracking sequence: Calendly → Meta Pixel → PostHog → Constant Contact
+      // Execute tracking sequence: Calendly → Meta Pixel → PostHog
       // All tracking is non-blocking and won't affect booking completion
+      // NOTE: Constant Contact submission is handled by parent components via useCalendlyTracking
       setTimeout(() => {
         console.log('🚀 Starting tracking sequence...')
 
@@ -295,12 +245,7 @@ function CalendlyWidgetContent({
           firePostHogTracking(event, contactData)
         }, 100)
 
-        // Step 3: Submit to SHOWROOM KAWAI list (fire and forget, largest delay)
-        setTimeout(() => {
-          handleSuccessfulBookingSubmission(event).catch(error => {
-            console.error('⚠️ SHOWROOM KAWAI list submission failed (non-blocking):', error)
-          })
-        }, 200)
+        // NOTE: Constant Contact submission removed - handled by parent via useCalendlyTracking
       }, 50) // Small initial delay to ensure Calendly has fully processed
     },
     onPageHeightResize: (event) => {
@@ -342,10 +287,18 @@ function CalendlyWidgetContent({
 
       // IMPORTANT: Calendly doesn't support a direct 'phone' field in prefill
       // Phone numbers must be passed via customAnswers (a1-a10)
-      // This assumes the Calendly event has a phone number custom question at position 1 (a1)
+      // NOTE: Phone is the 2nd custom question in Calendly (a2), not the 1st (a1)
+      // a1 = "What type of piano are you most interested in?" (dropdown)
+      // a2 = "Phone Number" (phone input)
       if (prefillData.phone) {
+        // Add US country code (+1) if not already present
+        let formattedPhone = prefillData.phone.replace(/\D/g, '') // Remove non-digits
+        if (!formattedPhone.startsWith('1') && formattedPhone.length === 10) {
+          formattedPhone = '1' + formattedPhone // Add country code
+        }
+
         prefill.customAnswers = {
-          a1: prefillData.phone  // Phone number as first custom answer
+          a2: formattedPhone  // e.g., "17143268063"
         }
       }
 

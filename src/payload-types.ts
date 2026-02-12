@@ -98,6 +98,7 @@ export interface Config {
     'marketing-news-carousel': MarketingNewsCarouselBlock;
     'marketing-contact-form': MarketingContactFormBlock;
     'marketing-storefront-locations': MarketingStorefrontLocationsBlock;
+    'marketing-featured-models': MarketingFeaturedModelsBlock;
     'events-university-hero': EventsUniversityHeroBlock;
     'events-event-overview': EventsEventOverviewBlock;
     'product-showcase': ProductShowcaseBlock;
@@ -1819,6 +1820,7 @@ export interface Product {
         | ProductCollectionShowcaseBlock
         | ProductFloatingAddToCartBlock
         | MarketingInstagramCarouselBlock
+        | MarketingFeaturedModelsBlock
       )[]
     | null;
   /**
@@ -2350,6 +2352,127 @@ export interface MarketingInstagramCarouselBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'marketing-instagram-carousel';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingFeaturedModelsBlock".
+ */
+export interface MarketingFeaturedModelsBlock {
+  /**
+   * Small uppercase label above heading (e.g., "Our Collection", "Flagship Series")
+   */
+  eyebrow?: string | null;
+  /**
+   * Main section heading - large serif typography
+   */
+  heading: string;
+  /**
+   * Supporting text below heading (2-3 sentences, max 200 characters)
+   */
+  subheading?: string | null;
+  /**
+   * Add up to 8 featured piano models with alternating layouts
+   */
+  models?:
+    | {
+        /**
+         * Which side shows the media background
+         */
+        layoutDirection: 'left' | 'right';
+        /**
+         * 🎥 YouTube video URL for background (if filled, this takes priority over image below)
+         */
+        backgroundVideoUrl?: string | null;
+        /**
+         * 📷 Background image (used if YouTube URL above is empty) - Recommended: 1200x1600px portrait or 1600x900px landscape
+         */
+        backgroundImage?: (string | null) | Media;
+        /**
+         * Dark overlay opacity on media (0 = transparent, 1 = fully dark)
+         */
+        overlayOpacity?: number | null;
+        /**
+         * Select piano model to embed (pulls product data automatically)
+         */
+        product?: (string | null) | Product;
+        /**
+         * Optional: Override product name with custom title (leave empty to use product name)
+         */
+        customTitle?: string | null;
+        /**
+         * 📷 Optional content image (displays under the title) - Recommended: 600x400px or 800x600px
+         */
+        contentImage?: (string | null) | Media;
+        /**
+         * Product description or tagline (2-3 sentences, max 300 characters)
+         */
+        description?: string | null;
+        /**
+         * Show play button to open video in popup modal
+         */
+        enableVideoPopup?: boolean | null;
+        /**
+         * YouTube video URL for popup (opens in modal when play button is clicked)
+         */
+        popupVideoUrl?: string | null;
+        /**
+         * Highlight key features with icons (up to 6 features)
+         */
+        features?:
+          | {
+              /**
+               * Icon style for this feature
+               */
+              icon: 'check' | 'star' | 'music' | 'piano' | 'sparkles' | 'trophy' | 'diamond' | 'sakura';
+              /**
+               * Feature text (concise, 5-10 words)
+               */
+              text: string;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Button text (leave empty to hide button)
+         */
+        ctaText?: string | null;
+        /**
+         * Button destination URL
+         */
+        ctaLink?: string | null;
+        /**
+         * Button visual style
+         */
+        ctaStyle?: ('primary' | 'secondary' | 'tertiary') | null;
+        /**
+         * Open link in new browser tab
+         */
+        ctaOpenInNewTab?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Overall section theme
+   */
+  theme?: ('light' | 'dark' | 'transparent') | null;
+  /**
+   * Content side card style
+   */
+  contentCardStyle?: ('glassmorphism' | 'solid' | 'minimal') | null;
+  /**
+   * Vertical spacing between featured models
+   */
+  spacing?: ('compact' | 'comfortable' | 'spacious') | null;
+  /**
+   * Enable scroll-triggered staggered reveal animations
+   */
+  enableAnimations?: boolean | null;
+  /**
+   * How to display on mobile devices
+   */
+  mobileLayout?: ('stack' | 'stack-reverse' | 'overlay') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-featured-models';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3018,45 +3141,47 @@ export interface MarketingTechnicalShowcaseBlock {
    */
   videoDuration?: string | null;
   /**
-   * Add 2-4 products to compare side-by-side below the video
+   * Add 0-4 products below the video. Leave empty for video-only showcase, add 1 for feature highlight, or add 2-4 for side-by-side comparison.
    */
-  products: {
-    /**
-     * Product name (e.g., "CA-901", "CN-301")
-     */
-    name: string;
-    /**
-     * Product image URL (e.g., https://example.com/image.jpg) - Takes priority over uploaded image
-     */
-    imageUrl?: string | null;
-    /**
-     * Fallback: Upload product image if URL not provided (recommended: square aspect ratio, minimum 600x600px)
-     */
-    image?: (string | null) | Media;
-    /**
-     * Product page URL (e.g., "/products/ca-901")
-     */
-    url?: string | null;
-    /**
-     * Optional badge text (e.g., "Popular", "Best Value", "Premium")
-     */
-    badge?: string | null;
-    /**
-     * Technical specifications and features for this product
-     */
-    features: {
-      /**
-       * Feature description (e.g., "Grand Feel III Wooden-Key Action", "88 weighted keys", "256-note polyphony")
-       */
-      text: string;
-      /**
-       * Highlight this feature with gold accent
-       */
-      highlight?: boolean | null;
-      id?: string | null;
-    }[];
-    id?: string | null;
-  }[];
+  products?:
+    | {
+        /**
+         * Product name (e.g., "CA-901", "CN-301")
+         */
+        name: string;
+        /**
+         * Product image URL (e.g., https://example.com/image.jpg) - Takes priority over uploaded image
+         */
+        imageUrl?: string | null;
+        /**
+         * Fallback: Upload product image if URL not provided (recommended: square aspect ratio, minimum 600x600px)
+         */
+        image?: (string | null) | Media;
+        /**
+         * Product page URL (e.g., "/products/ca-901")
+         */
+        url?: string | null;
+        /**
+         * Optional badge text (e.g., "Popular", "Best Value", "Premium")
+         */
+        badge?: string | null;
+        /**
+         * Technical specifications and features for this product
+         */
+        features: {
+          /**
+           * Feature description (e.g., "Grand Feel III Wooden-Key Action", "88 weighted keys", "256-note polyphony")
+           */
+          text: string;
+          /**
+           * Highlight this feature with gold accent
+           */
+          highlight?: boolean | null;
+          id?: string | null;
+        }[];
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Block settings
    */
@@ -3982,9 +4107,21 @@ export interface EventsUniversityHeroBlock {
    */
   heading?: string | null;
   /**
-   * Main subheading text below logos (1-2 sentences, max 200 characters)
+   * Font family for heading and text
    */
-  subheading: string;
+  subheadingFont?: ('inherit' | 'inter' | 'playfair' | 'crimson') | null;
+  /**
+   * Font size for text (mobile/desktop)
+   */
+  subheadingSize?: ('small' | 'default' | 'large' | 'xlarge' | 'huge') | null;
+  /**
+   * Text color (applies to heading and text, overrides global)
+   */
+  subheadingColor?: ('inherit' | 'white' | 'black' | 'charcoal' | 'red' | 'gold' | 'orange') | null;
+  /**
+   * Font weight for heading and text
+   */
+  textWeight?: ('normal' | 'medium' | 'semibold' | 'bold' | 'extrabold') | null;
   /**
    * Primary call-to-action button
    */
@@ -4287,9 +4424,9 @@ export interface EventsEventOverviewBlock {
    */
   location?: string | null;
   /**
-   * Booth number or location within venue (if applicable)
+   * Contact information (phone, email, or name)
    */
-  booth?: string | null;
+  contact?: string | null;
   /**
    * First event image (recommended: 1200x1600px or portrait orientation)
    */
@@ -4303,25 +4440,41 @@ export interface EventsEventOverviewBlock {
    */
   showMap?: boolean | null;
   /**
-   * Full address for map geocoding (used for map display)
+   * Full address for Google Maps (used for map pin location)
    */
   mapAddress?: string | null;
   /**
-   * CTA button text (leave empty to hide)
+   * Primary CTA button text (leave empty to hide)
    */
   ctaText?: string | null;
   /**
-   * CTA button link
+   * Primary CTA button link
    */
   ctaLink?: string | null;
   /**
-   * Button style
+   * Primary button style
    */
-  ctaStyle?: ('primary' | 'outline') | null;
+  ctaStyle?: ('primary' | 'secondary' | 'tertiary') | null;
   /**
    * Open link in new tab
    */
   ctaOpenInNewTab?: boolean | null;
+  /**
+   * Secondary CTA button text (optional)
+   */
+  cta2Text?: string | null;
+  /**
+   * Secondary CTA button link
+   */
+  cta2Link?: string | null;
+  /**
+   * Secondary button style
+   */
+  cta2Style?: ('primary' | 'secondary' | 'tertiary') | null;
+  /**
+   * Open link in new tab
+   */
+  cta2OpenInNewTab?: boolean | null;
   /**
    * Background theme
    */
@@ -5014,7 +5167,7 @@ export interface Post {
     [k: string]: unknown;
   };
   /**
-   * Optional: Add promotional content before the article (Hero, Banner, Hero Carousel, Artist Carousel)
+   * Optional: Add promotional content before the article (Hero, Banner, Hero Carousel, Artist Carousel, Featured Models)
    */
   headerBlocks?:
     | (
@@ -5023,13 +5176,20 @@ export interface Post {
         | ContentBannerBlock
         | LayoutHeroCarouselBlock
         | MarketingArtistCarouselBlock
+        | MarketingFeaturedModelsBlock
       )[]
     | null;
   /**
-   * Optional: Add calls-to-action or related content after the article (CTA, Testimonials, Columns, Artist Carousel)
+   * Optional: Add calls-to-action or related content after the article (CTA, Testimonials, Columns, Artist Carousel, Featured Models)
    */
   footerBlocks?:
-    | (MarketingCallToActionBlock | MarketingTestimonialsBlock | LayoutColumnsBlock | MarketingArtistCarouselBlock)[]
+    | (
+        | MarketingCallToActionBlock
+        | MarketingTestimonialsBlock
+        | LayoutColumnsBlock
+        | MarketingArtistCarouselBlock
+        | MarketingFeaturedModelsBlock
+      )[]
     | null;
   /**
    * Post authors (supports multiple authors)
@@ -5248,6 +5408,7 @@ export interface Page {
     | Marketing3DViewerBlock
     | MarketingInstagramCarouselBlock
     | MarketingArtistCarouselBlock
+    | MarketingFeaturedModelsBlock
     | EventsUniversityHeroBlock
     | EventsEventOverviewBlock
     | LayoutBrandIntroBlock
@@ -5373,6 +5534,7 @@ export interface HomePage {
         | MarketingNewsCarouselBlock
         | MarketingContactFormBlock
         | MarketingStorefrontLocationsBlock
+        | MarketingFeaturedModelsBlock
       )[]
     | null;
   /**

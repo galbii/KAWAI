@@ -111,6 +111,10 @@ export function TechnicalShowcaseRenderer({
 
   // Product grid layouts - uniform sizing for comparisons
   const getProductLayout = (index: number, total: number) => {
+    if (total === 1) {
+      // Single product: full width (centered in container)
+      return 'md:col-span-1'
+    }
     if (total === 2) {
       // Equal 50/50 split for side-by-side comparison
       return 'md:col-span-1'
@@ -208,6 +212,7 @@ export function TechnicalShowcaseRenderer({
               variants={itemVariants}
               className={cn(
                 'grid gap-8 md:gap-12',
+                products.length === 1 && 'md:grid-cols-1 max-w-2xl mx-auto',
                 products.length === 2 && 'md:grid-cols-2',
                 products.length === 3 && 'md:grid-cols-3',
                 products.length === 4 && 'md:grid-cols-3 md:grid-rows-2'

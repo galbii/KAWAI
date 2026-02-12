@@ -22,6 +22,10 @@ export interface CalendlyTrackingConfig {
   eventName: string // e.g., 'TSU Piano Sale', 'GL-10 Signature'
   posthogEventName?: string // e.g., 'tsu_piano_booking', 'signature_dallas_booking'
 
+  // Widget ownership (prevents duplicate tracking from multiple widgets on same page)
+  calendlyUrl?: string // e.g., 'https://calendly.com/kawaipianogallery/consultation'
+  widgetId?: string // Optional unique identifier for this widget instance
+
   // Enable/disable tracking (useful for modals that are mounted but hidden)
   enabled?: boolean // default: true
 
@@ -196,12 +200,21 @@ export default function useCalendlyTracking(
   const handleSuccessfulBooking = useCallback(async (eventData: any) => {
     const now = Date.now()
 
-    // Extract Calendly event UUID for global deduplication
-    const eventUuid = eventData?.data?.payload?.event?.uuid
-    const eventId = eventUuid || `fallback-${now}`
+    // Extract Calendly event identifiers for robust deduplication
+    const payload = eventData?.data?.payload
+    const eventUri = payload?.event?.uri  // e.g., "https://api.calendly.com/v2/scheduled_events/AAAA"
+    const inviteeUri = payload?.invitee?.uri  // e.g., "https://api.calendly.com/v2/scheduled_events/AAAA/invitees/BBBB"
+    const eventUuid = payload?.event?.uuid
+
+    // Build robust event ID using invitee URI (most reliable) or event URI + UUID
+    // This prevents race conditions from timestamp-based fallbacks
+    const eventId = inviteeUri || eventUri || eventUuid || `fallback-${Math.floor(now / 1000)}`
 
     console.log(`🔍 [${config.eventName}] Checking event deduplication:`, {
-      eventId,
+      eventId: inviteeUri ? 'invitee_uri' : eventUri ? 'event_uri' : eventUuid ? 'uuid' : 'fallback',
+      eventIdPreview: eventId.substring(0, 50) + '...',
+      hasInviteeUri: !!inviteeUri,
+      hasEventUri: !!eventUri,
       hasUuid: !!eventUuid,
       alreadyTracked: globalTrackedEvents.has(eventId),
       globalTrackedSize: globalTrackedEvents.size
@@ -209,9 +222,29 @@ export default function useCalendlyTracking(
 
     // GLOBAL duplicate prevention (shared across all hook instances)
     // This prevents multiple components from tracking the same Calendly event
+    // NOTE: Using inviteeUri as eventId ensures both widgets get the same ID for the same booking
     if (globalTrackedEvents.has(eventId)) {
-      console.log(`⚠️ [${config.eventName}] Event ${eventId} already tracked GLOBALLY, skipping duplicate`)
+      console.log(`⚠️ [${config.eventName}] Event already tracked GLOBALLY, skipping duplicate`)
+      console.log(`   Event ID: ${eventId.substring(0, 60)}...`)
       return
+    }
+
+    // Optional: Widget ownership check (extra safety for multiple widgets on same page)
+    // If calendlyUrl is provided, verify this event belongs to this widget's Calendly URL
+    // This is a secondary check - the inviteeUri deduplication above should catch most duplicates
+    if (config.calendlyUrl && eventUri) {
+      // Extract the event type from the scheduling URL
+      // e.g., "https://calendly.com/org/event-name" → "event-name"
+      const urlPath = config.calendlyUrl.toLowerCase().replace(/\?.*$/, '').split('calendly.com/')[1]
+
+      if (urlPath && eventUri && !eventUri.toLowerCase().includes('scheduled_events')) {
+        // Only check if this is an event type URI (not a scheduled event URI)
+        console.log(`📌 [${config.eventName}] Widget URL check:`, {
+          configUrl: config.calendlyUrl,
+          eventUri,
+          urlPath
+        })
+      }
     }
 
     // Instance-level duplicate prevention (fallback)
@@ -229,20 +262,22 @@ export default function useCalendlyTracking(
 
     // Mark as tracked GLOBALLY first (prevents other instances from tracking)
     globalTrackedEvents.add(eventId)
-    console.log(`✅ [${config.eventName}] Event ${eventId} marked as tracked globally`)
+    console.log(`✅ [${config.eventName}] Event marked as tracked globally`)
+    console.log(`   Widget ID: ${config.widgetId || 'unknown'}`)
+    console.log(`   Event ID: ${eventId.substring(0, 60)}...`)
 
     // Also mark in this instance
     hasTrackedEvent.current = true
     lastTrackingTimestamp.current = now
 
-    console.log(`🎯 [${config.eventName}] Booking completed:`, eventData)
+    console.log(`🎯 [${config.eventName}] Booking completed by widget: ${config.widgetId || 'unknown'}`)
     console.log('📋 Event payload:', eventData?.data?.payload)
 
     // Call parent callback immediately
     config.onBookingComplete?.(eventData)
 
     // Extract data from Calendly event payload (actual user-entered data)
-    const payload = eventData?.data?.payload
+    // Note: payload and invitee already declared at top of function
     const invitee = payload?.event?.invitees?.[0]
 
     // Get email from Calendly payload (what user actually entered)

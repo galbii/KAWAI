@@ -128,16 +128,85 @@ export const UniversityHero: Block = {
           },
         },
         {
-          name: 'subheading',
-          type: 'textarea',
-          required: true,
-          maxLength: 200,
+          type: 'collapsible',
+          label: 'Text Styling',
           admin: {
-            description:
-              'Main subheading text below logos (1-2 sentences, max 200 characters)',
-            placeholder:
-              'Kawai Piano Gallery proudly partners with Sam Houston State University to bring world-class instruments to students and faculty.',
+            description: 'Customize the appearance of heading and text below logos (applies to both)',
+            initCollapsed: true,
           },
+          fields: [
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'subheadingFont',
+                  type: 'select',
+                  defaultValue: 'inherit',
+                  options: [
+                    { label: 'Inherit (Use Global Text Color)', value: 'inherit' },
+                    { label: 'Inter (Sans Serif)', value: 'inter' },
+                    { label: 'Playfair Display (Serif)', value: 'playfair' },
+                    { label: 'Crimson Text (Serif)', value: 'crimson' },
+                  ],
+                  admin: {
+                    description: 'Font family for heading and text',
+                  },
+                },
+                {
+                  name: 'subheadingSize',
+                  type: 'select',
+                  defaultValue: 'default',
+                  options: [
+                    { label: 'Small (16px/18px)', value: 'small' },
+                    { label: 'Default (18px/20px)', value: 'default' },
+                    { label: 'Large (20px/24px)', value: 'large' },
+                    { label: 'Extra Large (24px/28px)', value: 'xlarge' },
+                    { label: 'Huge (28px/32px)', value: 'huge' },
+                  ],
+                  admin: {
+                    description: 'Font size for text (mobile/desktop)',
+                  },
+                },
+              ],
+            },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'subheadingColor',
+                  type: 'select',
+                  defaultValue: 'inherit',
+                  options: [
+                    { label: 'Inherit (Use Global Text Color)', value: 'inherit' },
+                    { label: 'White', value: 'white' },
+                    { label: 'Black', value: 'black' },
+                    { label: 'Kawai Charcoal', value: 'charcoal' },
+                    { label: 'Kawai Red', value: 'red' },
+                    { label: 'Kawai Gold', value: 'gold' },
+                    { label: 'Orange', value: 'orange' },
+                  ],
+                  admin: {
+                    description: 'Text color (applies to heading and text, overrides global)',
+                  },
+                },
+                {
+                  name: 'textWeight',
+                  type: 'select',
+                  defaultValue: 'normal',
+                  options: [
+                    { label: 'Normal (400)', value: 'normal' },
+                    { label: 'Medium (500)', value: 'medium' },
+                    { label: 'Semibold (600)', value: 'semibold' },
+                    { label: 'Bold (700)', value: 'bold' },
+                    { label: 'Extra Bold (800)', value: 'extrabold' },
+                  ],
+                  admin: {
+                    description: 'Font weight for heading and text',
+                  },
+                },
+              ],
+            },
+          ],
         },
         {
           name: 'primaryCta',

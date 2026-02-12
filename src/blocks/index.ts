@@ -35,6 +35,7 @@ export { PianoGallery } from './marketing/PianoGallery'
 export { NewsCarousel } from './marketing/NewsCarousel'
 export { ContactForm } from './marketing/ContactForm'
 export { StorefrontLocations } from './marketing/StorefrontLocations'
+export { FeaturedModels } from './marketing/FeaturedModels'
 
 // Events blocks (event-specific content)
 export { UniversityHero } from './events/UniversityHero'

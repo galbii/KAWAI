@@ -74,15 +74,15 @@ export const TechnicalShowcase: Block = {
     {
       name: 'products',
       type: 'array',
-      required: true,
-      minRows: 2,
+      required: false,
+      minRows: 0,
       maxRows: 4,
       labels: {
         singular: 'Product',
         plural: 'Products',
       },
       admin: {
-        description: 'Add 2-4 products to compare side-by-side below the video',
+        description: 'Add 0-4 products below the video. Leave empty for video-only showcase, add 1 for feature highlight, or add 2-4 for side-by-side comparison.',
       },
       fields: [
         {

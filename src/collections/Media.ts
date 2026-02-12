@@ -192,6 +192,9 @@ export const Media: CollectionConfig = {
   upload: {
     // NOTE: disableLocalStorage is automatically set by the S3 storage plugin
     // Do NOT set it manually here - let the plugin handle it
+
+    // ✅ Format preservation: By not specifying formatOptions, Sharp preserves the original format
+    // This maintains PNG transparency, WebP compression, and JPEG quality
     imageSizes: [
       {
         name: 'thumbnail',

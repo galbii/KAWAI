@@ -64,6 +64,7 @@ import {
   NewsCarousel,
   ContactForm,
   StorefrontLocations,
+  FeaturedModels,
   // Events blocks
   UniversityHero,
   EventOverview,
@@ -230,6 +231,7 @@ export default buildConfig({
     NewsCarousel,
     ContactForm,
     StorefrontLocations,
+    FeaturedModels,
 
     // Events blocks
     UniversityHero,
