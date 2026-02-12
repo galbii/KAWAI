@@ -9,8 +9,8 @@ import { getOptimizedImageProps } from '@/lib/media/r2-utils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect, createElement } from 'react'
-import { ShoppingCart, Heart, Share2, CheckCircle, Sparkles, Clock, Play, Volume2, ChevronDown } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { ShoppingCart, Heart, Share2, CheckCircle, Sparkles, Clock, Play, Volume2 } from 'lucide-react'
+import { cn, formatPrice } from '@/lib/utils'
 import {
   Dialog,
   DialogContent,
@@ -21,6 +21,7 @@ import {
 import { ImageGalleryLightbox } from '@/components/ui/image-gallery-lightbox'
 import type { Product as ShopifyProduct } from '@/lib/shopify/types'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
+import { FloatingAddToCartIntegrated } from '@/components/blocks/FloatingAddToCartIntegrated'
 
 interface ProductHeroBlockProps {
   layout?: {
@@ -29,6 +30,14 @@ interface ProductHeroBlockProps {
     showVariations?: boolean | null
     showPrice?: boolean | null
     showBuyButton?: boolean | null
+  }
+  // NEW: Floating cart configuration (integrated with variation selection)
+  floatingCart?: {
+    enabled?: boolean | null
+    position?: 'bottom-right' | 'bottom-left' | 'bottom-center' | null
+    showOnScroll?: boolean | null
+    scrollThreshold?: number | null
+    showVariantName?: boolean | null
   }
   overrides?: {
     customTitle?: string | null
@@ -44,6 +53,7 @@ interface ProductHeroBlockProps {
 
 export function ProductHeroBlock({
   layout = {},
+  floatingCart = {}, // NEW: Floating cart configuration
   overrides = {},
   product,
   shopifyProduct
@@ -57,12 +67,21 @@ export function ProductHeroBlock({
   const [isFavorited, setIsFavorited] = useState(false)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
 
-  // Helper function to truncate description
-  const truncateDescription = (text: string, wordLimit: number = 25) => {
-    const words = text.split(' ')
-    if (words.length <= wordLimit) return text
-    return words.slice(0, wordLimit).join(' ') + '...'
-  }
+  // CRITICAL: Sync selectedVariation when availableVariations changes (handles async product loading)
+  useEffect(() => {
+    // If variations exist but nothing selected, select first one
+    if (availableVariations.length > 0 && selectedVariation < 0) {
+      setSelectedVariation(0)
+    }
+    // If no variations exist but something is selected, deselect
+    else if (availableVariations.length === 0 && selectedVariation >= 0) {
+      setSelectedVariation(-1)
+    }
+    // If selected index is out of bounds, reset to first
+    else if (selectedVariation >= availableVariations.length) {
+      setSelectedVariation(0)
+    }
+  }, [availableVariations.length, selectedVariation])
 
   // Get selected Shopify variant based on variation selection
   const getSelectedVariant = () => {
@@ -94,7 +113,14 @@ export function ProductHeroBlock({
   const showVariations = layout.showVariations !== false
   const showPrice = layout.showPrice === true
   const showBuyButton = layout.showBuyButton !== false
-  
+
+  // NEW: Floating cart options (integrated with variation selection)
+  const floatingEnabled = floatingCart.enabled === true
+  const floatingPosition = floatingCart.position || 'bottom-right'
+  const floatingShowOnScroll = floatingCart.showOnScroll !== false
+  const floatingScrollThreshold = floatingCart.scrollThreshold || 300
+  const floatingShowVariantName = floatingCart.showVariantName !== false
+
   // If no product data is available, show a placeholder
   if (!product) {
     return (
@@ -120,7 +146,6 @@ export function ProductHeroBlock({
   
   // Extract data from product, with overrides taking precedence
   const displayTitle = overrides.customTitle || product.name
-  const displayDescription = overrides.customDescription || product.description
 
   // CONSOLIDATED: Use the new root-level model field
   const modelDisplay = product.model || product.name
@@ -218,6 +243,23 @@ export function ProductHeroBlock({
     return product.inventory?.trackStock ?? false
   })()
 
+  // NEW: Unified rendering condition for Add to Cart functionality
+  // CRITICAL: This condition is used by BOTH the hero button AND the floating button
+  // to ensure consistent behavior across the page
+  const shouldShowAddToCart = () => {
+    // Must have Shopify product data
+    if (!shopifyProduct) return false
+
+    // Must have a selected variant
+    if (!selectedVariant) return false
+
+    // Must track inventory AND variant must be available
+    // (If inventory not tracked, show "Find a Dealer" instead)
+    return tracksInventory && selectedVariant.available
+  }
+
+  const canAddToCart = shouldShowAddToCart()
+
   // Get the buy button text - hardcoded to "Learn More"
   const getBuyButtonText = () => {
     return 'Learn More'
@@ -228,8 +270,103 @@ export function ProductHeroBlock({
     return 'Find a Dealer'
   }
   
+  // Helper to get Shopify variant price for a CMS variation
+  const getVariationPrice = (variationName: string) => {
+    if (!shopifyProduct) return null
+
+    // Match CMS variation to Shopify variant using same logic as getSelectedVariant
+    const matchedVariant = shopifyProduct.variants.find(
+      (variant) => variant.title.toLowerCase().includes(variationName.toLowerCase())
+    )
+
+    return matchedVariant ? {
+      price: matchedVariant.price,
+      compareAtPrice: matchedVariant.compareAtPrice,
+      onSale: matchedVariant.compareAtPrice !== null && matchedVariant.compareAtPrice > matchedVariant.price
+    } : null
+  }
+
+  // Get display price for variations section
+  const getVariationsDisplayPrice = () => {
+    if (!shopifyProduct) return null
+
+    // If product has variations, handle variation-based pricing
+    if (hasVariations) {
+      // If a variation is selected, show that variation's price
+      if (selectedVariation >= 0 && availableVariations[selectedVariation]) {
+        const variationPrice = getVariationPrice(availableVariations[selectedVariation]?.name || '')
+        if (variationPrice) {
+          return {
+            type: 'single' as const,
+            price: variationPrice.price,
+            compareAtPrice: variationPrice.compareAtPrice,
+            onSale: variationPrice.onSale
+          }
+        }
+      }
+
+      // No variation selected or only one variation - show range
+      const prices = availableVariations
+        .map(v => getVariationPrice(v.name || ''))
+        .filter((p): p is NonNullable<typeof p> => p !== null)
+        .map(p => p.price)
+
+      if (prices.length === 0) return null
+
+      const minPrice = Math.min(...prices)
+      const maxPrice = Math.max(...prices)
+
+      // If only one unique price or one variation, show single price
+      if (minPrice === maxPrice || availableVariations.length === 1) {
+        return {
+          type: 'single' as const,
+          price: minPrice
+        }
+      }
+
+      // Show range
+      return {
+        type: 'range' as const,
+        minPrice,
+        maxPrice
+      }
+    }
+
+    // No variations - use Shopify product price directly
+    // Even products without CMS variations have at least one Shopify variant
+    const firstVariant = shopifyProduct.variants[0]
+    const minPrice = shopifyProduct.price.min
+    const maxPrice = shopifyProduct.price.max
+
+    // If min and max are the same, show single price
+    if (minPrice === maxPrice && firstVariant) {
+      // Check first variant for sale pricing
+      const compareAtPrice = firstVariant.compareAtPrice
+      const onSale = compareAtPrice !== null &&
+                     compareAtPrice !== undefined &&
+                     compareAtPrice > minPrice
+
+      return {
+        type: 'single' as const,
+        price: minPrice,
+        compareAtPrice: onSale ? compareAtPrice : undefined,
+        onSale
+      }
+    }
+
+    // Show range (for products with multiple untracked variants)
+    // Keep it simple: just show regular price range, no sale complexity
+    return {
+      type: 'range' as const,
+      minPrice,
+      maxPrice
+    }
+  }
+
+  const variationsDisplayPrice = getVariationsDisplayPrice()
+
   // Enhanced price formatting with animations
-  const formatPrice = () => {
+  const formatMainPrice = () => {
     if (!product.price) return 'Learn more'
 
     // CONSOLIDATED: Updated to use msrp only (priceText removed from schema)
@@ -332,28 +469,28 @@ export function ProductHeroBlock({
   })
   
   return (
-    <section className={`relative min-h-[70vh] lg:min-h-[90vh] overflow-visible ${backgroundClass}`}>
+    <section className={`relative overflow-visible ${backgroundClass}`}>
       {/* Subtle gradient overlay for better image blending */}
       {backgroundColor !== 'black' && (
         <div className="absolute inset-0 bg-gradient-to-b from-stone-50/30 via-white to-stone-50/30" />
       )}
 
-      {/* Main Content Container */}
-      <div className="container mx-auto px-6 lg:px-12 xl:px-16 relative z-10 pt-12 pb-12 lg:pt-16 lg:pb-20">
+      {/* Main Content Container - Significantly reduced padding */}
+      <div className="container mx-auto px-6 lg:px-12 xl:px-16 relative z-10 py-6 lg:py-10">
 
         <div className={cn(
-          "grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-x-12 lg:gap-y-6 w-full",
+          "grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 w-full items-start",
           imagePosition === 'right' ? 'lg:grid-flow-col-reverse' : ''
         )}>
 
-          {/* Part 1: Brand + Title */}
-          <div className="space-y-6 lg:space-y-8 order-1 lg:col-span-5 lg:col-start-1">
+          {/* Part 1: Brand + Title + Model + MSRP + Variations + CTAs - All in left column */}
+          <div className="space-y-4 lg:space-y-5 order-1 lg:col-span-5 lg:col-start-1">
 
-            {/* Hero Headlines with modern typography */}
-            <div className="space-y-4 lg:space-y-6">
+            {/* Compact Hero Headlines */}
+            <div className="space-y-2">
               {displayTitle && (
                 <h1 className={cn(
-                  "text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight leading-[1.1]",
+                  "text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold tracking-tight leading-[1.15]",
                   textColorClass
                 )}>
                   {displayTitle}
@@ -361,17 +498,17 @@ export function ProductHeroBlock({
               )}
             </div>
 
-            {/* Model Display - Right under title */}
+            {/* Compact Model Display - Inline style */}
             {modelDisplay && (
-              <div className="flex items-center space-x-4">
-                <div className="w-1 h-12 lg:h-16 bg-gradient-to-b from-kawai-red to-red-600 rounded-full" />
+              <div className="flex items-center space-x-3">
+                <div className="w-0.5 h-8 lg:h-10 bg-gradient-to-b from-kawai-red to-red-600" />
                 <div>
                   <p className={cn(
-                    "text-sm tracking-wide uppercase font-medium",
+                    "text-xs tracking-wider uppercase font-semibold",
                     backgroundColor === 'black' ? 'text-kawai-red' : 'text-kawai-red'
                   )}>Model</p>
                   <p className={cn(
-                    "text-xl lg:text-2xl xl:text-3xl font-light",
+                    "text-base lg:text-lg xl:text-xl font-light",
                     textColorClass
                   )}>
                     {modelDisplay}
@@ -379,17 +516,209 @@ export function ProductHeroBlock({
                 </div>
               </div>
             )}
+
+            {/* Dynamic Price Display - Only show when inventory is tracked */}
+            {variationsDisplayPrice && tracksInventory && (
+              <div className={cn("flex items-baseline gap-3", textColorClass)}>
+                <span className="text-3xl font-bold tracking-wide text-kawai-red">MSRP:</span>
+                {variationsDisplayPrice.type === 'single' ? (
+                  <div className="flex items-baseline gap-3">
+                    {variationsDisplayPrice.onSale ? (
+                      <>
+                        {/* Sale Price - Fade in with scale */}
+                        <span className="text-3xl font-bold text-kawai-red animate-in fade-in slide-in-from-bottom-2 duration-500">
+                          {formatPrice(variationsDisplayPrice.price)}
+                        </span>
+                        {/* Original Price - Crossout with fade */}
+                        <span className="text-xl line-through opacity-60 animate-in fade-in duration-700 delay-200">
+                          {formatPrice(variationsDisplayPrice.compareAtPrice!)}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-3xl font-bold transition-all duration-300">
+                        {formatPrice(variationsDisplayPrice.price)}
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-3xl font-bold transition-all duration-300">
+                    {formatPrice(variationsDisplayPrice.minPrice)} - {formatPrice(variationsDisplayPrice.maxPrice)}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Compact Variation Selection */}
+            {showVariations && hasVariations && (
+              <div className="space-y-3">
+                <h3 className={cn("text-base lg:text-lg font-medium", textColorClass)}>Available Variations</h3>
+                {(() => {
+                  console.log('[ProductHeroBlock] Rendering variations:', {
+                    showVariations,
+                    hasVariations,
+                    availableVariationsCount: availableVariations.length,
+                    selectedVariation,
+                    variations: availableVariations.map((v, i) => ({
+                      index: i,
+                      name: v.name,
+                      selected: selectedVariation === i
+                    }))
+                  })
+                  return null
+                })()}
+                <div className="grid grid-cols-2 gap-2">
+                  {availableVariations.map((variation, index) => (
+                    <div
+                      key={index}
+                      className={cn(
+                        "cursor-pointer p-2.5 lg:p-3 rounded-lg border-2 transition-all duration-300 backdrop-blur-sm",
+                        selectedVariation === index
+                          ? cn(
+                              'border-kawai-red',
+                              backgroundColor === 'black' ? 'bg-kawai-red/20 text-white' : 'bg-kawai-red/10 text-kawai-red'
+                            )
+                          : cn(
+                              'hover:border-kawai-red/50',
+                              backgroundColor === 'black'
+                                ? 'bg-white/5 border-white/20 text-gray-300 hover:bg-white/10'
+                                : backgroundColor === 'white'
+                                  ? 'bg-black/5 border-black/10 text-gray-700 hover:bg-black/10'
+                                  : 'bg-white/10 border-white/20 text-gray-600 hover:bg-white/20'
+                            )
+                      )}
+                      onClick={() => {
+                        console.log('[ProductHeroBlock] Variation clicked:', {
+                          index,
+                          variationName: variation.name,
+                          currentSelection: selectedVariation,
+                          willSelect: selectedVariation === index ? -1 : index
+                        })
+                        // Toggle selection: if already selected, deselect; otherwise select this variation
+                        setSelectedVariation(selectedVariation === index ? -1 : index)
+                      }}
+                    >
+                      {/* Variation name */}
+                      <div className="flex items-center">
+                        <span className="text-sm font-medium">{variation.name}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Compact CTA Buttons */}
+            {shouldShowBuyButton && (
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                {/* NEW: Use unified rendering condition */}
+                {canAddToCart && selectedVariant ? (
+                  <>
+                    {/* Left CTA: Add to Cart Button - Compact version */}
+                    <AddToCartButton
+                      variantId={selectedVariant.id}
+                      quantity={1}
+                      available={selectedVariant.available}
+                      className={cn(
+                        "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
+                        "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/20"
+                      )}
+                    >
+                      Add to Cart
+                    </AddToCartButton>
+
+                    {/* Right CTA: Learn More Button - Compact */}
+                    <Button
+                      asChild
+                      className={cn(
+                        "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
+                        "border-2 border-gray-300 bg-white hover:bg-gray-50",
+                        backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
+                      )}
+                    >
+                      <Link href={`/products/${product.slug}` || '#'}>
+                        <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
+                          <span>{getBuyButtonText()}</span>
+                          <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        </span>
+                      </Link>
+                    </Button>
+                  </>
+                ) : shopifyProduct && selectedVariant && !canAddToCart ? (
+                  <>
+                    {/* Product doesn't track inventory OR variant not available */}
+                    {/* Left CTA: Find a Dealer Button - Compact */}
+                    <Button
+                      asChild
+                      className={cn(
+                        "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
+                        "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/20"
+                      )}
+                    >
+                      <Link href="/find-a-dealer">
+                        <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
+                          <span>{getFindDealerButtonText()}</span>
+                          <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        </span>
+                      </Link>
+                    </Button>
+
+                    {/* Right CTA: Learn More Button - Compact */}
+                    <Button
+                      asChild
+                      className={cn(
+                        "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
+                        "border-2 border-gray-300 bg-white hover:bg-gray-50",
+                        backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
+                      )}
+                    >
+                      <Link href={`/products/${product.slug}` || '#'}>
+                        <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
+                          <span>{getBuyButtonText()}</span>
+                          <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        </span>
+                      </Link>
+                    </Button>
+                  </>
+                ) : (
+                  /* Fallback: No Shopify product or variant - Learn More button only */
+                  <Button
+                    asChild
+                    className={cn(
+                      "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
+                      "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/20"
+                    )}
+                  >
+                    <Link href={`/products/${product.slug}` || '#'}>
+                      <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
+                        <span>{getBuyButtonText()}</span>
+                        <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        </span>
+                      </Link>
+                    </Button>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Image Section - Row 2 on mobile, Right column on desktop */}
-          <div className="order-2 lg:order-none lg:col-span-7 lg:col-start-6 lg:row-start-1 lg:row-span-2 relative space-y-8">
+          {/* Image Section - Compact, right column */}
+          <div className="order-2 lg:order-none lg:col-span-7 lg:col-start-6 lg:row-start-1 relative">
             {displayImage && (
               <div className="relative">
 
-                {/* Main piano showcase */}
+                {/* Compact piano showcase */}
                 <div
                   className={cn(
-                    "relative w-full h-[300px] sm:h-[400px] lg:h-[500px] xl:h-[600px] min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] xl:min-h-[600px] overflow-hidden rounded-2xl",
+                    "relative w-full h-[240px] sm:h-[280px] lg:h-[320px] xl:h-[380px] overflow-hidden rounded-xl",
                     galleryImages.length > 0 && "cursor-pointer group"
                   )}
                   onClick={() => galleryImages.length > 0 && setIsGalleryOpen(true)}
@@ -403,11 +732,11 @@ export function ProductHeroBlock({
                   }}
                   aria-label={galleryImages.length > 0 ? "Open image gallery" : undefined}
                 >
-                  {/* Hover overlay hint for gallery */}
+                  {/* Compact hover overlay hint for gallery */}
                   {galleryImages.length > 0 && (
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 z-10 flex items-center justify-center">
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full">
-                        <span className="text-sm font-medium text-kawai-charcoal">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                        <span className="text-xs font-medium text-kawai-charcoal">
                           View Gallery ({galleryImages.length})
                         </span>
                       </div>
@@ -453,16 +782,16 @@ export function ProductHeroBlock({
                     )
                   })()}
 
-                  {/* Custom badge */}
+                  {/* Compact custom badge */}
                   {overrides.badge && (
-                    <Badge className="absolute top-6 left-6 bg-kawai-red text-white font-bold text-sm px-4 py-2 rounded-full">
+                    <Badge className="absolute top-3 left-3 bg-kawai-red text-white font-bold text-xs px-3 py-1 rounded-full">
                       {overrides.badge}
                     </Badge>
                   )}
 
-                  {/* Status badge */}
+                  {/* Compact status badge */}
                   {statusBadge && (
-                    <Badge className={cn("absolute bottom-6 right-6 font-bold text-sm px-4 py-2 rounded-full flex items-center gap-2", statusBadge.className)}>
+                    <Badge className={cn("absolute bottom-3 right-3 font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1.5", statusBadge.className)}>
                       {statusBadge.icon && createElement(statusBadge.icon, { className: "h-3 w-3" })}
                       {statusBadge.text}
                     </Badge>
@@ -470,312 +799,8 @@ export function ProductHeroBlock({
                 </div>
               </div>
             )}
-
-            {/* Description directly under the image - only on desktop */}
-            {displayDescription && (
-              <div className="space-y-4 hidden lg:block">
-                <p className={cn(
-                  "text-lg lg:text-xl font-light leading-relaxed",
-                  accentColorClass
-                )}>
-                  {truncateDescription(displayDescription)}
-                </p>
-
-                {displayDescription.split(' ').length > 25 && (
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <button className={cn(
-                        "inline-flex items-center space-x-2 text-kawai-red hover:text-red-600 transition-colors duration-200 font-medium",
-                        "hover:underline underline-offset-4"
-                      )}>
-                        <span>Read More</span>
-                        <ChevronDown className="w-4 h-4" />
-                      </button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-white">
-                      <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold text-kawai-red">
-                          {displayTitle}
-                        </DialogTitle>
-                      </DialogHeader>
-
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 py-4">
-                        {/* Full Description */}
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-slate-900">Description</h3>
-                          <p className="text-base leading-relaxed text-slate-700">
-                            {displayDescription}
-                          </p>
-
-                          {/* Model Information */}
-                          {modelDisplay && (
-                            <div className="space-y-2 pt-4 border-t border-gray-200">
-                              <h4 className="font-medium text-slate-900">Model</h4>
-                              <p className="text-slate-600">{modelDisplay}</p>
-                            </div>
-                          )}
-
-                          {/* Key Features */}
-                          {keyFeatures && keyFeatures.length > 0 && (
-                            <div className="space-y-2 pt-4 border-t border-gray-200">
-                              <h4 className="font-medium text-slate-900">Key Features</h4>
-                              <ul className="space-y-1 text-slate-600">
-                                {keyFeatures.map((feature: string, index: number) => (
-                                  <li key={index} className="flex items-start space-x-2">
-                                    <CheckCircle className="w-4 h-4 text-kawai-red mt-0.5 flex-shrink-0" />
-                                    <span>{feature}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Product Image */}
-                        <div className="relative">
-                          {displayImage && (
-                            <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
-                              {(() => {
-                                const imageProps = getOptimizedImageProps(displayImage, 'hero')
-                                if (!imageProps || !imageProps.src) {
-                                  return (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                      <span className="text-lg font-medium text-slate-600">
-                                        Product Image
-                                      </span>
-                                    </div>
-                                  )
-                                }
-
-                                const { width, height, ...optimizedProps } = imageProps
-
-                                return (
-                                  <Image
-                                    {...optimizedProps}
-                                    fill
-                                    className="object-contain"
-                                    alt={optimizedProps.alt || displayTitle || 'Product image'}
-                                  />
-                                )
-                              })()}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                )}
-              </div>
-            )}
           </div>
 
-          {/* Part 2: Variations + Buttons */}
-          <div className="space-y-6 lg:space-y-8 order-3 lg:col-span-5 lg:col-start-1">
-
-            {/* Modern Variation Selection */}
-            {showVariations && hasVariations && (
-              <div className="space-y-6">
-                <h3 className={cn("text-2xl font-light", textColorClass)}>Available Variations</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {availableVariations.map((variation, index) => (
-                    <div
-                      key={index}
-                      className={cn(
-                        "cursor-pointer p-4 rounded-xl border-2 transition-all duration-300 backdrop-blur-sm",
-                        selectedVariation === index
-                          ? cn(
-                              'border-kawai-red',
-                              backgroundColor === 'black' ? 'bg-kawai-red/20 text-white' : 'bg-kawai-red/10 text-kawai-red'
-                            )
-                          : cn(
-                              'hover:border-kawai-red/50',
-                              backgroundColor === 'black'
-                                ? 'bg-white/5 border-white/20 text-gray-300 hover:bg-white/10'
-                                : backgroundColor === 'white'
-                                  ? 'bg-black/5 border-black/10 text-gray-700 hover:bg-black/10'
-                                  : 'bg-white/10 border-white/20 text-gray-600 hover:bg-white/20'
-                            )
-                      )}
-                      onClick={() => {
-                        // Toggle selection: if already selected, deselect; otherwise select this variation
-                        setSelectedVariation(selectedVariation === index ? -1 : index)
-                      }}
-                    >
-                      <div className="flex items-center">
-                        <span className="font-medium">{variation.name}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* Modern CTA Buttons */}
-            {shouldShowBuyButton && (
-              <div className="flex flex-col sm:flex-row gap-4 lg:gap-6 pt-4 lg:pt-6">
-                {shopifyProduct && selectedVariant && tracksInventory && selectedVariant.available ? (
-                  <>
-                    {/* Left CTA: Add to Cart Button - Only shown when inventory is tracked AND in stock */}
-                    <AddToCartButton
-                      variantId={selectedVariant.id}
-                      quantity={1}
-                      available={selectedVariant.available}
-                      className={cn(
-                        "group relative overflow-hidden px-8 lg:px-10 py-4 lg:py-6 font-medium rounded-full transition-all duration-500 hover:scale-105 hover:shadow-2xl text-base lg:text-lg flex-1",
-                        "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/25"
-                      )}
-                    >
-                      Add to Cart
-                    </AddToCartButton>
-
-                    {/* Right CTA: Learn More Button (White/Outline) */}
-                    <Button
-                      asChild
-                      className={cn(
-                        "group relative overflow-hidden px-8 lg:px-10 py-4 lg:py-6 font-medium rounded-full transition-all duration-500 hover:scale-105 hover:shadow-xl text-base lg:text-lg flex-1",
-                        "border-2 border-gray-300 bg-white hover:bg-gray-50",
-                        backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
-                      )}
-                    >
-                      <Link href={`/products/${product.slug}` || '#'}>
-                        <span className="relative flex items-center justify-center space-x-2 lg:space-x-3">
-                          <span>{getBuyButtonText()}</span>
-                          <svg className="w-4 h-4 lg:w-5 lg:h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                          </svg>
-                        </span>
-                      </Link>
-                    </Button>
-                  </>
-                ) : shopifyProduct && selectedVariant && (!tracksInventory || !selectedVariant.available) ? (
-                  <>
-                    {/* Left CTA: Find a Dealer Button - Shown when inventory is NOT tracked OR out of stock */}
-                    <Button
-                      asChild
-                      className={cn(
-                        "group relative overflow-hidden px-8 lg:px-10 py-4 lg:py-6 font-medium rounded-full transition-all duration-500 hover:scale-105 hover:shadow-2xl text-base lg:text-lg flex-1",
-                        "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/25"
-                      )}
-                    >
-                      <Link href="/find-a-dealer">
-                        <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        <span className="relative flex items-center justify-center space-x-2 lg:space-x-3">
-                          <span>{getFindDealerButtonText()}</span>
-                          <svg className="w-4 h-4 lg:w-5 lg:h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                          </svg>
-                        </span>
-                      </Link>
-                    </Button>
-
-                    {/* Right CTA: Learn More Button (White/Outline) */}
-                    <Button
-                      asChild
-                      className={cn(
-                        "group relative overflow-hidden px-8 lg:px-10 py-4 lg:py-6 font-medium rounded-full transition-all duration-500 hover:scale-105 hover:shadow-xl text-base lg:text-lg flex-1",
-                        "border-2 border-gray-300 bg-white hover:bg-gray-50",
-                        backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
-                      )}
-                    >
-                      <Link href={`/products/${product.slug}` || '#'}>
-                        <span className="relative flex items-center justify-center space-x-2 lg:space-x-3">
-                          <span>{getBuyButtonText()}</span>
-                          <svg className="w-4 h-4 lg:w-5 lg:h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                          </svg>
-                        </span>
-                      </Link>
-                    </Button>
-                  </>
-                ) : (
-                  /* Fallback: Learn More button only (no Shopify integration) */
-                  <Button
-                    asChild
-                    className={cn(
-                      "group relative overflow-hidden px-8 lg:px-10 py-4 lg:py-6 font-medium rounded-full transition-all duration-500 hover:scale-105 hover:shadow-2xl text-base lg:text-lg flex-1",
-                      "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/25"
-                    )}
-                  >
-                    <Link href={`/products/${product.slug}` || '#'}>
-                      <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                      <span className="relative flex items-center justify-center space-x-2 lg:space-x-3">
-                        <span>{getBuyButtonText()}</span>
-                        <svg className="w-4 h-4 lg:w-5 lg:h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
-                      </span>
-                    </Link>
-                  </Button>
-                )}
-              </div>
-            )}
-
-            {/* Description on mobile - Shows after buttons */}
-            {displayDescription && (
-              <div className="space-y-4 lg:hidden">
-                <p className={cn(
-                  "text-lg font-light leading-relaxed",
-                  accentColorClass
-                )}>
-                  {truncateDescription(displayDescription)}
-                </p>
-
-                {displayDescription.split(' ').length > 25 && (
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <button className={cn(
-                        "inline-flex items-center space-x-2 text-kawai-red hover:text-red-600 transition-colors duration-200 font-medium",
-                        "hover:underline underline-offset-4"
-                      )}>
-                        <span>Read More</span>
-                        <ChevronDown className="w-4 h-4" />
-                      </button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-white">
-                      <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold text-kawai-red">
-                          {displayTitle}
-                        </DialogTitle>
-                      </DialogHeader>
-
-                      <div className="grid grid-cols-1 gap-8 py-4">
-                        {/* Full Description */}
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-slate-900">Description</h3>
-                          <p className="text-base leading-relaxed text-slate-700">
-                            {displayDescription}
-                          </p>
-
-                          {/* Model Information */}
-                          {modelDisplay && (
-                            <div className="space-y-2 pt-4 border-t border-gray-200">
-                              <h4 className="font-medium text-slate-900">Model</h4>
-                              <p className="text-slate-600">{modelDisplay}</p>
-                            </div>
-                          )}
-
-                          {/* Key Features */}
-                          {keyFeatures && keyFeatures.length > 0 && (
-                            <div className="space-y-2 pt-4 border-t border-gray-200">
-                              <h4 className="font-medium text-slate-900">Key Features</h4>
-                              <ul className="space-y-1 text-slate-600">
-                                {keyFeatures.map((feature: string, index: number) => (
-                                  <li key={index} className="flex items-start space-x-2">
-                                    <CheckCircle className="w-4 h-4 text-kawai-red mt-0.5 flex-shrink-0" />
-                                    <span>{feature}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                )}
-              </div>
-            )}
-          </div>
         </div>
 
       </div>
@@ -787,6 +812,51 @@ export function ProductHeroBlock({
         isOpen={isGalleryOpen}
         onClose={() => setIsGalleryOpen(false)}
       />
+
+      {/* NEW: Integrated Floating Add to Cart Button */}
+      {/* CRITICAL: This button receives variant selection from parent state */}
+      {/* User selects variation → Both hero AND floating button add same variant */}
+      {floatingEnabled && canAddToCart && selectedVariant && (() => {
+        // Debug: Log what we're passing to floating button
+        console.log('[ProductHeroBlock] Rendering FloatingAddToCart:', {
+          floatingEnabled,
+          canAddToCart,
+          hasSelectedVariant: !!selectedVariant,
+          variantName: floatingShowVariantName && selectedVariation >= 0 && availableVariations[selectedVariation]
+            ? availableVariations[selectedVariation]?.name
+            : null,
+          availableVariationsCount: availableVariations.length,
+          selectedVariation,
+          availableVariations: availableVariations.map(v => ({ name: v.name, available: v.available }))
+        })
+
+        return (
+          <FloatingAddToCartIntegrated
+            variantId={selectedVariant.id}
+            variantName={
+              // Show variant name if enabled AND a variation is selected
+              floatingShowVariantName && selectedVariation >= 0 && availableVariations[selectedVariation]
+                ? availableVariations[selectedVariation]?.name
+                : null
+            }
+            productName={product?.name || null}
+            position={floatingPosition}
+            showOnScroll={floatingShowOnScroll}
+            scrollThreshold={floatingScrollThreshold}
+            available={selectedVariant.available}
+            availableVariations={availableVariations.map(v => ({
+              ...v,
+              available: v.available ?? false
+            }))}
+            selectedVariationIndex={selectedVariation}
+            onVariationChange={(index) => {
+              // Update parent state when variation is changed from floating button
+              console.log('[ProductHeroBlock] Variation changed to index:', index)
+              setSelectedVariation(index)
+            }}
+          />
+        )
+      })()}
     </section>
   )
 }

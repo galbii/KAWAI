@@ -8,6 +8,7 @@ import { getProductByModel } from '@/lib/shopify'
 import { HeroBlock } from '@/components/blocks/HeroBlock'
 import { ProductShowcaseBlock } from '@/components/blocks/ProductShowcaseBlock'
 import { ProductHeroBlock } from '@/components/blocks/ProductHeroBlock'
+import { ProductDescriptionRenderer } from '@/components/blocks/product/ProductDescriptionRenderer'
 import { ImageGalleryBlock } from '@/components/blocks/ImageGalleryBlock'
 import { FeaturesListBlock } from '@/components/blocks/FeaturesListBlock'
 import { SpecificationsBlock } from '@/components/blocks/SpecificationsBlock'
@@ -28,6 +29,7 @@ const BLOCK_COMPONENTS = {
   // Product blocks
   'product-showcase': ProductShowcaseBlock,
   'product-hero': ProductHeroBlock,
+  'product-description': ProductDescriptionRenderer,
   'product-gallery': ImageGalleryBlock,
   'product-features': FeaturesListBlock,
   'product-specs': SpecificationsBlock,
@@ -71,8 +73,8 @@ export async function BlockRenderer({ block, index, product }: BlockRendererProp
   const BlockComponent = BLOCK_COMPONENTS[blockType]
 
   try {
-    // For ProductHero and FloatingAddToCart blocks, fetch Shopify product and pass both CMS + Shopify data
-    if (blockType === 'product-hero' || blockType === 'product-floating-add-to-cart') {
+    // For ProductHero, ProductDescription, and FloatingAddToCart blocks, fetch Shopify product and pass both CMS + Shopify data
+    if (blockType === 'product-hero' || blockType === 'product-description' || blockType === 'product-floating-add-to-cart') {
       // Fetch Shopify product server-side using model field
       let shopifyProduct = null
 

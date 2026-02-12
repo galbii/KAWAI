@@ -1,5 +1,5 @@
 import type { Block } from 'payload'
-import { ctaTrackingField } from '@/lib/payload/fields/tracking'
+import { trackingField } from '@/lib/payload/fields/tracking'
 
 /**
  * Calendly Embed Block
@@ -141,7 +141,37 @@ export const CalendlyEmbed: Block = {
     // ========================================================================
     // Analytics & Tracking (Booking Completion)
     // ========================================================================
-    ctaTrackingField(),
+    trackingField({
+      defaultEnabled: true,
+      showAdvanced: false,
+      overrides: {
+        label: '📊 Booking Analytics',
+        admin: {
+          description: 'Track Calendly booking completions for analytics and ROI measurement',
+        },
+        fields: [
+          {
+            name: 'category',
+            type: 'select',
+            defaultValue: 'lead',
+            options: [
+              { label: 'Lead Generation', value: 'lead' },
+              { label: 'Conversion', value: 'conversion' },
+              { label: 'Engagement', value: 'engagement' },
+            ],
+          },
+          {
+            name: 'conversionValue',
+            type: 'number',
+            defaultValue: 100,
+            admin: {
+              description: 'Estimated value of a Calendly booking (USD)',
+              placeholder: '100',
+            },
+          },
+        ],
+      },
+    }),
 
     // ========================================================================
     // Constant Contact Integration

@@ -9,7 +9,7 @@
  */
 
 import { shopifyAdminClient } from './admin-client'
-import type { ShopifyProductData } from './fetch-product'
+import type { ShopifyProductData, ShopifySpecification } from './fetch-product'
 
 /**
  * GraphQL query to fetch products with custom.model metafield
@@ -103,10 +103,48 @@ const PRODUCTS_WITH_MODEL_QUERY = `
             }
           }
 
-          metafield(namespace: "custom", key: "model") {
+          # Custom metafields
+          metafield_model: metafield(namespace: "custom", key: "model") {
             key
             value
             type
+          }
+
+          metafield_blueprint: metafield(namespace: "custom", key: "blueprint") {
+            key
+            value
+            type
+            reference {
+              ... on MediaImage {
+                id
+                image {
+                  url
+                  altText
+                  width
+                  height
+                }
+              }
+            }
+          }
+
+          metafield_specifications: metafield(namespace: "custom", key: "specifications") {
+            key
+            value
+            type
+            references(first: 50) {
+              edges {
+                node {
+                  ... on Metaobject {
+                    id
+                    type
+                    fields {
+                      key
+                      value
+                    }
+                  }
+                }
+              }
+            }
           }
 
           seo {
@@ -198,15 +236,39 @@ export async function fetchAllShopifyProductsWithModels(): Promise<ShopifyProduc
       // Extract products from edges
       const products = data.products.edges
         .map((edge) => edge.node)
-        .filter((node) => node.metafield?.value) // Ensure product has model metafield
+        .filter((node) => node.metafield_model?.value) // Ensure product has model metafield
 
-      // Transform each product
-      const transformedProducts = products.map((product) => transformShopifyProduct(product))
+      console.log(`[Shopify Fetch All] Page ${pageCount}: Raw products count: ${products.length}`)
+
+      // Transform each product with detailed logging
+      const transformedProducts = products.map((product, index) => {
+        console.log(`\n[Shopify Fetch All] Transforming product ${index + 1}/${products.length}: ${product.title}`)
+        console.log(`[Shopify Fetch All] - Model: ${product.metafield_model?.value}`)
+        console.log(`[Shopify Fetch All] - Blueprint metafield exists: ${!!product.metafield_blueprint}`)
+        console.log(`[Shopify Fetch All] - Specifications metafield exists: ${!!product.metafield_specifications}`)
+
+        if (product.metafield_blueprint) {
+          console.log(`[Shopify Fetch All] - Blueprint details:`, JSON.stringify({
+            hasReference: !!product.metafield_blueprint.reference,
+            hasImage: !!product.metafield_blueprint.reference?.image,
+            imageUrl: product.metafield_blueprint.reference?.image?.url,
+          }, null, 2))
+        }
+
+        if (product.metafield_specifications) {
+          console.log(`[Shopify Fetch All] - Specifications details:`, JSON.stringify({
+            hasReferences: !!product.metafield_specifications.references,
+            edgesCount: product.metafield_specifications.references?.edges?.length || 0,
+          }, null, 2))
+        }
+
+        return transformShopifyProduct(product)
+      })
 
       allProducts.push(...transformedProducts)
 
       console.log(
-        `[Shopify Fetch All] Page ${pageCount}: fetched ${products.length} products (total: ${allProducts.length})`
+        `[Shopify Fetch All] Page ${pageCount}: fetched ${products.length} products (total: ${allProducts.length})\n`
       )
 
       // Check pagination
@@ -338,7 +400,105 @@ function transformShopifyProduct(shopifyProduct: any): ShopifyProductData {
     })) || [],
 
     metafields: {
-      model: shopifyProduct.metafield?.value || undefined,
+      model: shopifyProduct.metafield_model?.value || undefined,
+
+      // Parse blueprint file reference
+      blueprint: (() => {
+        console.log(`[Transform] Blueprint metafield raw for ${shopifyProduct.title}:`, JSON.stringify(shopifyProduct.metafield_blueprint, null, 2))
+
+        if (!shopifyProduct.metafield_blueprint) {
+          console.log(`[Transform] No blueprint metafield found for ${shopifyProduct.title}`)
+          return null
+        }
+
+        if (!shopifyProduct.metafield_blueprint.reference) {
+          console.log(`[Transform] Blueprint metafield exists but no reference for ${shopifyProduct.title}:`, shopifyProduct.metafield_blueprint)
+          return null
+        }
+
+        const imageRef = shopifyProduct.metafield_blueprint.reference.image
+        if (!imageRef) {
+          console.log(`[Transform] Blueprint reference exists but no image for ${shopifyProduct.title}:`, shopifyProduct.metafield_blueprint.reference)
+          return null
+        }
+
+        console.log(`[Transform] ✅ Blueprint image found for ${shopifyProduct.title}: ${imageRef.url}`)
+
+        return {
+          url: imageRef.url,
+          alt: imageRef.altText || null,
+          width: imageRef.width || null,
+          height: imageRef.height || null,
+        }
+      })(),
+
+      // Parse specifications metaobject list
+      specifications: (() => {
+        console.log(`[Transform] Specifications metafield raw for ${shopifyProduct.title}:`, JSON.stringify(shopifyProduct.metafield_specifications, null, 2))
+
+        if (!shopifyProduct.metafield_specifications) {
+          console.log(`[Transform] No specifications metafield found for ${shopifyProduct.title}`)
+          return []
+        }
+
+        // Check if references were resolved by GraphQL query
+        if (!shopifyProduct.metafield_specifications.references) {
+          console.log(`[Transform] ⚠️ Specifications metafield exists but references is null for ${shopifyProduct.title}`)
+          console.log(`[Transform] This usually means:`)
+          console.log(`[Transform]   1. Missing 'read_metaobjects' access scope in Shopify app`)
+          console.log(`[Transform]   2. Metaobjects are in draft state (not published)`)
+          console.log(`[Transform]   3. Metaobjects were deleted`)
+          console.log(`[Transform] Raw value: ${shopifyProduct.metafield_specifications.value}`)
+
+          // Try to parse the value field to at least get the IDs
+          try {
+            const metaobjectIds = JSON.parse(shopifyProduct.metafield_specifications.value || '[]')
+            console.log(`[Transform] Found ${metaobjectIds.length} metaobject IDs in value field:`, metaobjectIds)
+
+            if (metaobjectIds.length > 0) {
+              console.log(`[Transform] ⚠️ Metaobject data not available - will need to be fetched separately`)
+              console.log(`[Transform] Add 'read_metaobjects' scope to your Shopify app to auto-resolve`)
+            }
+          } catch (e) {
+            console.log(`[Transform] Failed to parse metaobject IDs from value field:`, e)
+          }
+
+          return []
+        }
+
+        // References is not null, but might have empty edges
+        if (!shopifyProduct.metafield_specifications.references.edges ||
+            shopifyProduct.metafield_specifications.references.edges.length === 0) {
+          console.log(`[Transform] Specifications references exists but edges array is empty for ${shopifyProduct.title}`)
+          return []
+        }
+
+        const specs = shopifyProduct.metafield_specifications.references.edges.map((edge: any) => {
+          const fields = edge.node?.fields || []
+
+          console.log(`[Transform] Processing specification metaobject for ${shopifyProduct.title}:`, {
+            id: edge.node?.id,
+            fields: fields.map((f: any) => ({ key: f.key, value: f.value }))
+          })
+
+          // Extract field values from metaobject fields array
+          const getFieldValue = (key: string): string => {
+            const field = fields.find((f: any) => f.key === key)
+            return field?.value || ''
+          }
+
+          return {
+            id: edge.node?.id || '',
+            spec: getFieldValue('spec'),
+            type: getFieldValue('type'),
+            details: getFieldValue('details'),
+          }
+        })
+
+        console.log(`[Transform] ✅ Processed ${specs.length} specifications for ${shopifyProduct.title}`)
+
+        return specs
+      })(),
     },
 
     // Calculate availableForSale from variants (Admin API doesn't have it on Product)

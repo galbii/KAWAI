@@ -582,8 +582,22 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     }
 
     // Start with nav hidden on initial load
-    // No auto-hide timer needed - nav starts hidden and only shows on hover or menu open
     setIsAutoHidden(true)
+
+    // CRITICAL: Start auto-hide timer on initialization when at top of page
+    // This ensures nav auto-hides after 2 seconds even without scroll movement
+    // Works at ALL scroll positions (including scrollY = 0)
+    autoHideTimeoutRef.current = setTimeout(() => {
+      setIsAutoHidden(true)
+    }, 2000)
+
+    // Cleanup timer on unmount
+    return () => {
+      if (autoHideTimeoutRef.current) {
+        clearTimeout(autoHideTimeoutRef.current)
+        autoHideTimeoutRef.current = null
+      }
+    }
   }, [])
   
   // Fetch dealer location data when origin changes - but only after animation completes
@@ -1350,16 +1364,16 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       <AnimatePresence>
         {isMenuOpen && !isSignaturePage && !hidePianoLinks && !isUniversityPage && (
           <>
-            <motion.div 
-              className="fixed inset-0 z-[190] bg-black/20 xl:hidden"
+            <motion.div
+              className="fixed inset-0 z-[9500] bg-black/20 xl:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closeMobileMenu}
             />
-            <motion.div 
+            <motion.div
               ref={mobileMenuRef}
-              className="fixed right-0 top-0 bottom-0 z-[200] w-[min(90vw,28rem)] xl:hidden bg-white border-l border-gray-200/50 shadow-2xl flex flex-col h-screen"
+              className="fixed right-0 top-0 bottom-0 z-[9501] w-[min(90vw,28rem)] xl:hidden bg-white border-l border-gray-200/50 shadow-2xl flex flex-col h-screen"
               style={{
                 height: '100vh',
                 minHeight: '100vh'

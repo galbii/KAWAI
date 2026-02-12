@@ -3,7 +3,7 @@
 import { Collection, Media } from '@/payload-types'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
 
 interface CollectionShowcaseBlockProps {
@@ -46,15 +46,6 @@ export function CollectionShowcaseBlock({
   customSubheading,
 }: CollectionShowcaseBlockProps) {
   const [isVideoLoaded, setIsVideoLoaded] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-
-  // Detect mobile on mount
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
 
   // Don't render if disabled
   if (!enabled) return null
@@ -171,8 +162,8 @@ export function CollectionShowcaseBlock({
         heightClasses[safeBannerSize as keyof typeof heightClasses] || heightClasses.xs
       )}
     >
-      {/* YouTube Video Background (desktop only) */}
-      {videoId && !isMobile && (
+      {/* YouTube Video Background - Now works on mobile and desktop */}
+      {videoId && (
         <div className="absolute inset-0 z-0">
           <iframe
             src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1`}
@@ -188,8 +179,8 @@ export function CollectionShowcaseBlock({
         </div>
       )}
 
-      {/* Fallback Image (mobile or no video) */}
-      {(isMobile || !videoId) && fallbackImage && (
+      {/* Fallback Image - Only shows if no video ID provided */}
+      {!videoId && fallbackImage && (
         <div className="absolute inset-0 z-0">
           <Image
             src={fallbackImage}

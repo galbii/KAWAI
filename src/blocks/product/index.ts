@@ -1,5 +1,6 @@
 export { ProductShowcase } from './ProductShowcase'
 export { ProductHero } from './ProductHero'
+export { ProductDescription } from './ProductDescription'
 export { ImageGallery } from './ImageGallery'
 export { FeaturesList } from './FeaturesList'
 export { Specifications } from './Specifications'

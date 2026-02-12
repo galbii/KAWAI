@@ -88,7 +88,8 @@ async function transformShopifyToPayload(shopifyProduct: ShopifyProductData): Pr
     // Continue with sync even if media fetch fails
   }
 
-  return {
+  // Build the base product data
+  const baseData = {
     model,
     name: shopifyProduct.title,
     slug: shopifyProduct.handle,
@@ -117,6 +118,19 @@ async function transformShopifyToPayload(shopifyProduct: ShopifyProductData): Pr
       syncErrors: [],
     },
   }
+
+  // Conditionally add blueprint if it exists (group fields can't be null)
+  const blueprintData = shopifyProduct.metafields?.blueprint
+  if (blueprintData?.url) {
+    Object.assign(baseData, { blueprint: blueprintData })
+  }
+
+  // Add specifications array (empty array is fine, but ensure it's always an array)
+  Object.assign(baseData, {
+    specifications: shopifyProduct.metafields?.specifications || []
+  })
+
+  return baseData
 }
 
 export const Products: CollectionConfig = {
@@ -302,6 +316,103 @@ export const Products: CollectionConfig = {
             // Shopify Media Array
             shopifyMediaField(),
 
+            // Blueprint - Custom metafield from Shopify
+            {
+              name: 'blueprint',
+              type: 'group',
+              admin: {
+                description: 'Product blueprint image (synced from Shopify custom.blueprint metafield). Only populated if the product has a blueprint uploaded in Shopify.',
+                condition: (data) => Boolean(data?.blueprint?.url), // Only show if blueprint exists
+              },
+              fields: [
+                {
+                  name: 'url',
+                  type: 'text',
+                  required: false, // Make optional
+                  admin: {
+                    description: 'Blueprint image URL',
+                    readOnly: true,
+                  },
+                },
+                {
+                  name: 'alt',
+                  type: 'text',
+                  required: false, // Make optional
+                  admin: {
+                    description: 'Alt text for blueprint image',
+                    readOnly: true,
+                  },
+                },
+                {
+                  name: 'width',
+                  type: 'number',
+                  required: false, // Make optional
+                  admin: {
+                    description: 'Image width',
+                    readOnly: true,
+                  },
+                },
+                {
+                  name: 'height',
+                  type: 'number',
+                  required: false, // Make optional
+                  admin: {
+                    description: 'Image height',
+                    readOnly: true,
+                  },
+                },
+              ],
+            },
+
+            // Specifications - Custom metaobject list from Shopify
+            {
+              name: 'specifications',
+              type: 'array',
+              maxRows: 50,
+              labels: {
+                singular: 'Specification',
+                plural: 'Product Specifications',
+              },
+              admin: {
+                description: 'Product specifications (synced from Shopify custom.specifications metaobject)',
+                readOnly: true,
+              },
+              fields: [
+                {
+                  name: 'id',
+                  type: 'text',
+                  admin: {
+                    description: 'Shopify Metaobject ID',
+                    readOnly: true,
+                  },
+                },
+                {
+                  name: 'spec',
+                  type: 'text',
+                  admin: {
+                    description: 'Specification name',
+                    readOnly: true,
+                  },
+                },
+                {
+                  name: 'type',
+                  type: 'textarea',
+                  admin: {
+                    description: 'Specification type',
+                    readOnly: true,
+                  },
+                },
+                {
+                  name: 'details',
+                  type: 'textarea',
+                  admin: {
+                    description: 'Specification details',
+                    readOnly: true,
+                  },
+                },
+              ],
+            },
+
             // Variations array (Shopify product variants)
             {
               name: 'variations',
@@ -456,6 +567,7 @@ export const Products: CollectionConfig = {
               type: 'blocks',
               blockReferences: [
                 'product-hero',                      // Product Hero - Only allowed block for product pages
+                'product-description',               // Product Description - Rich descriptions with image/video backgrounds
                 'product-collection-showcase',       // Collection Showcase - Display collection content
                 'product-floating-add-to-cart',      // Floating Add to Cart - Sticky cart button
                 'marketing-instagram-carousel',      // Instagram Carousel - Social proof

@@ -34,6 +34,19 @@ export function FloatingAddToCartBlock({
 }: FloatingAddToCartBlockProps) {
   const [isVisible, setIsVisible] = useState(!showOnScroll)
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Handle scroll visibility
   useEffect(() => {
@@ -78,11 +91,17 @@ export function FloatingAddToCartBlock({
   const selectedVariant = shopifyProduct.variants.find(v => v.id === selectedVariantId)
   const isAvailable = selectedVariant?.available ?? false
 
-  // Position classes
+  // Position classes - Mobile: higher to avoid SearchBar overlap
   const positionClasses = {
-    'bottom-right': 'bottom-8 right-8 md:bottom-10 md:right-10',
-    'bottom-left': 'bottom-8 left-8 md:bottom-10 md:left-10',
-    'bottom-center': 'bottom-8 left-1/2 -translate-x-1/2 md:bottom-10',
+    'bottom-right': isMobile
+      ? 'bottom-24 right-8' // Mobile: 96px from bottom (clears SearchBar which is ~80px tall with padding)
+      : 'bottom-10 right-10', // Desktop: standard position
+    'bottom-left': isMobile
+      ? 'bottom-24 left-8'
+      : 'bottom-10 left-10',
+    'bottom-center': isMobile
+      ? 'bottom-24 left-1/2 -translate-x-1/2'
+      : 'bottom-10 left-1/2 -translate-x-1/2',
   }
 
   return (
@@ -102,24 +121,25 @@ export function FloatingAddToCartBlock({
           'transition-all duration-300',
         )}
         style={{
-          // Vibrant red glass effect
-          background: 'linear-gradient(135deg, rgba(248, 113, 113, 0.5) 0%, rgba(239, 68, 68, 0.4) 100%)',
+          // Vibrant Kawai red glass effect (#C41E3A with opacity variations)
+          // Using RGB: rgb(196, 30, 58)
+          background: 'linear-gradient(135deg, rgba(196, 30, 58, 0.85) 0%, rgba(160, 24, 41, 0.75) 100%)',
           backdropFilter: 'blur(20px) saturate(200%)',
           WebkitBackdropFilter: 'blur(20px) saturate(200%)',
-          // Layered shadows for depth
+          // Layered shadows for depth - using Kawai red tones
           boxShadow: `
-            0 4px 6px -1px rgba(220, 38, 38, 0.3),
-            0 10px 15px -3px rgba(185, 28, 28, 0.3),
-            0 20px 25px -5px rgba(153, 27, 27, 0.2),
-            0 0 0 1px rgba(248, 113, 113, 0.1)
+            0 4px 6px -1px rgba(196, 30, 58, 0.4),
+            0 10px 15px -3px rgba(160, 24, 41, 0.4),
+            0 20px 25px -5px rgba(140, 20, 36, 0.3),
+            0 0 0 1px rgba(196, 30, 58, 0.2)
           `,
         }}
       >
-        {/* Bright Border */}
+        {/* Bright Border - Enhanced with Kawai red */}
         <div
-          className="absolute inset-0 rounded-xl border border-red-300/50 transition-all duration-300 hover:border-red-200/70"
+          className="absolute inset-0 rounded-xl border border-red-200/60 transition-all duration-300 hover:border-red-100/80"
           style={{
-            boxShadow: 'inset 0 1px 0 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 0 rgba(220, 38, 38, 0.2)',
+            boxShadow: 'inset 0 1px 0 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 0 rgba(196, 30, 58, 0.3)',
           }}
         />
 

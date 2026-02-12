@@ -546,6 +546,7 @@ Product-specific showcase blocks that automatically pull data from the product d
 |-------|------|---------|----------|
 | 🎹 Product Showcase | `product-showcase` | Compact product highlights with image | Product cards, featured products |
 | 🏆 Product Hero | `product-hero` | Full-width product hero with auto-data | Product landing pages (auto-added to new products) |
+| 📝 Product Description | `product-description` | Rich product descriptions with image/video backgrounds | Product storytelling, detailed features |
 | 🖼️ Image Gallery | `product-gallery` | Product photo galleries | Multiple product images, 360° views |
 | ✨ Features List | `product-features` | Feature highlights with icons | Product benefits, key features |
 | 📋 Specifications | `product-specs` | Technical specifications table | Detailed product specifications |
@@ -568,6 +569,7 @@ Product-specific showcase blocks that automatically pull data from the product d
   blockReferences: [
     'product-showcase',
     'product-hero',
+    'product-description',
     'product-gallery',
     'product-features',
     'product-specs'
@@ -575,6 +577,143 @@ Product-specific showcase blocks that automatically pull data from the product d
   blocks: []
 }
 ```
+
+---
+
+### 📝 Product Description Block
+
+**Slug:** `product-description`
+
+Display rich product descriptions with customizable image or video backgrounds. Automatically pulls descriptions from Shopify-synced products or allows custom override text.
+
+#### Features
+
+**Background Options:**
+- **Image Background** - Upload a background image (recommended 1920x1080px)
+- **YouTube Video Background** - Embed looping YouTube video (supports all URL formats)
+- **Overlay Control** - Adjust overlay color (dark, light, KAWAI red, none) and opacity (0-100%)
+
+**Product Data Integration:**
+- **Product Relationship** - Select from Products collection
+- **Auto Description** - Automatically displays product description from Shopify sync
+- **Custom Override** - Optional custom description text override
+- **Product Name Display** - Toggle product name as heading above description
+
+**Layout & Styling:**
+- **Content Alignment** - Left, Center, or Right
+- **Vertical Alignment** - Top, Center, or Bottom
+- **Text Color** - White, Black, or Charcoal (choose based on background)
+- **Text Size** - Normal, Large, or Extra Large
+- **Glassmorphism Effect** - Optional frosted glass wrapper around content
+- **Minimum Height** - Small (400px), Medium (600px), Large (800px), or Full Screen (100vh)
+
+#### Configuration Fields
+
+```typescript
+// Background Group
+{
+  background: {
+    mediaType: 'image' | 'youtube',      // Background type
+    backgroundImage: Media | null,        // Image upload (if mediaType === 'image')
+    youtubeUrl: string | null,            // YouTube URL (if mediaType === 'youtube')
+    overlayColor: 'dark' | 'light' | 'kawai-red' | 'none',
+    overlayOpacity: number,               // 0-100 (default: 50)
+  }
+}
+
+// Product Data Group
+{
+  productData: {
+    product: Product | string | null,     // Product relationship
+    showProductName: boolean,             // Display product name as heading (default: true)
+    customDescription: string | null,     // Override product description
+  }
+}
+
+// Layout Group
+{
+  layout: {
+    contentAlignment: 'left' | 'center' | 'right',
+    verticalAlignment: 'top' | 'center' | 'bottom',
+    textColor: 'white' | 'black' | 'charcoal',
+    textSize: 'normal' | 'large' | 'xlarge',
+    useGlassmorphism: boolean,            // Frosted glass effect (default: false)
+    minHeight: 'small' | 'medium' | 'large' | 'fullscreen',
+  }
+}
+```
+
+#### Usage Example
+
+**Scenario 1: Piano Description with Image Background**
+```
+Background: Kawai grand piano in concert hall (dark overlay, 60% opacity)
+Product: Shigeru Kawai SK-EX
+Description: Auto-pulled from Shopify product
+Text: White, Large
+Alignment: Center/Center
+Glassmorphism: Enabled
+```
+
+**Scenario 2: Feature Story with Video Background**
+```
+Background: YouTube video of piano manufacturing process
+Product: CA Series Digital Piano
+Description: Custom override text highlighting craftsmanship
+Text: White, Extra Large
+Alignment: Left/Center
+Glassmorphism: Disabled (clean overlay instead)
+```
+
+**Scenario 3: Product Benefits Section**
+```
+Background: High-res product image with subtle dark overlay
+Product: Novus NV5 Hybrid Piano
+Description: Custom text focusing on unique selling points
+Text: White, Normal
+Alignment: Right/Bottom
+Glassmorphism: Enabled for premium feel
+```
+
+#### Best Practices
+
+**DO:**
+- ✅ Use high-quality background images (1920x1080px or larger)
+- ✅ Adjust overlay opacity for text readability (usually 40-70%)
+- ✅ Choose text color that contrasts with your background
+- ✅ Use glassmorphism sparingly for premium products
+- ✅ Keep descriptions concise (2-4 paragraphs maximum)
+- ✅ Test on mobile devices (text size scales responsively)
+
+**DON'T:**
+- ❌ Use busy background images that compete with text
+- ❌ Set overlay opacity too low (text becomes unreadable)
+- ❌ Mix glassmorphism with light overlay colors (looks washed out)
+- ❌ Write overly long descriptions (use separate content blocks instead)
+- ❌ Use white text on light backgrounds or vice versa
+
+#### Technical Notes
+
+- **YouTube URLs**: Supports all formats (youtube.com/watch, youtu.be, embed URLs)
+- **Video Settings**: Auto-play, muted, looped, no controls (optimal for backgrounds)
+- **Image Optimization**: Uses R2 image optimization with responsive presets
+- **Null Safety**: Handles missing products, descriptions, and media gracefully
+- **Type Safety**: Fully typed with Payload CMS generated types
+- **Server Component**: Renderer is async server component (can query Payload directly)
+
+#### Renderer Component
+
+**File:** `src/components/blocks/product/ProductDescriptionRenderer.tsx`
+
+**Key Features:**
+- Async server component (queries Payload for product data if needed)
+- Handles product relationship as string (ID) or full Product object
+- YouTube URL parsing and embed URL generation
+- Null-safe rendering (returns null if no description)
+- Responsive design with Tailwind utilities
+- Overlay opacity applied via inline styles
+
+---
 
 ## Usage Patterns in Collections
 

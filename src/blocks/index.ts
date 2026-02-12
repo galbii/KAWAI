@@ -43,6 +43,7 @@ export { EventOverview } from './events/EventOverview'
 // Product blocks (product pages)
 export { ProductShowcase } from './product/ProductShowcase'
 export { ProductHero } from './product/ProductHero'
+export { ProductDescription } from './product/ProductDescription'
 export { ImageGallery } from './product/ImageGallery'
 export { FeaturesList } from './product/FeaturesList'
 export { Specifications } from './product/Specifications'

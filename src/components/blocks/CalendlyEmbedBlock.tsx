@@ -82,32 +82,43 @@ export function CalendlyEmbedBlock({
 
   // Set up tracking with useCalendlyTracking hook (only after pre-form is submitted)
   const trackingEnabled = tracking?.enabled ?? true
-  useCalendlyTracking(
-    {
-      eventName: tracking?.eventName || 'Calendly Embed Booking',
-      posthogEventName: 'calendly_embed_booking',
-      enabled: trackingEnabled && !showPreForm, // Only track when widget is visible
-      metaPixel: {
-        content_name: 'Calendly Booking',
-        content_category: tracking?.category || 'lead',
-        value: tracking?.conversionValue || 100,
-        currency: 'USD',
-        status: 'completed',
-      },
-      constantContact: constantContact?.enabled
-        ? {
-            enabled: true,
-            targetList: constantContact.targetList || 'SHOWROOM KAWAI',
-            createListIfMissing: constantContact.createListIfMissing ?? true,
-            showAuthPrompts: false,
-            ...(constantContact.listDescription && {
-              listDescription: constantContact.listDescription,
-            }),
-          }
-        : { enabled: false, targetList: '' },
+
+  // Memoize tracking config to prevent unnecessary re-renders and duplicate listeners
+  const trackingConfig = React.useMemo(() => ({
+    eventName: tracking?.eventName || 'Calendly Embed Booking',
+    posthogEventName: 'calendly_embed_booking',
+    enabled: trackingEnabled && !showPreForm, // Only track when widget is visible
+    metaPixel: {
+      content_name: 'Calendly Booking',
+      content_category: tracking?.category || 'lead',
+      value: tracking?.conversionValue || 100,
+      currency: 'USD',
+      status: 'completed',
     },
-    prefillData // Pass collected data to tracking hook
-  )
+    constantContact: constantContact?.enabled
+      ? {
+          enabled: true,
+          targetList: constantContact.targetList || 'SHOWROOM KAWAI',
+          createListIfMissing: constantContact.createListIfMissing ?? true,
+          showAuthPrompts: false,
+          ...(constantContact.listDescription && {
+            listDescription: constantContact.listDescription,
+          }),
+        }
+      : { enabled: false, targetList: '' },
+  }), [
+    tracking?.eventName,
+    tracking?.category,
+    tracking?.conversionValue,
+    trackingEnabled,
+    showPreForm,
+    constantContact?.enabled,
+    constantContact?.targetList,
+    constantContact?.createListIfMissing,
+    constantContact?.listDescription,
+  ])
+
+  useCalendlyTracking(trackingConfig, prefillData)
 
   // Text alignment class mapping
   const textAlignClasses = {

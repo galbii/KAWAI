@@ -646,7 +646,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   return (
     <>
       {/* Desktop Input Field (stays in header) - Hidden on mobile */}
-      <div ref={containerRef} className={cn('relative z-[10002] hidden md:block', className)}>
+      <div ref={containerRef} className={cn('relative z-[9002] hidden md:block', className)}>
         <div className="relative">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
             <Search className="h-5 w-5 text-gray-400" />
@@ -715,7 +715,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
             <>
               {/* Backdrop - Dark overlay covering full screen */}
               <div
-                className="fixed z-[10000] bg-black/40"
+                className="fixed z-[9000] bg-black/40"
                 style={{
                   // 120px = 64px (top bar) + 56px (bottom nav at top), plus dynamic announcement bar height
                   top: isMobile ? 0 : `${120 + announcementBarHeight}px`,
@@ -735,7 +735,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
               {/* Overlay Container - Floating on mobile, centered on desktop */}
               <div
                 className={cn(
-                  "fixed z-[10001] pointer-events-none",
+                  "fixed z-[9001] pointer-events-none",
                   isMobile
                     ? "flex flex-col p-2" // Add padding on mobile for floating effect
                     : "flex items-center justify-center p-4 md:p-8" // Centered on desktop
@@ -1352,7 +1352,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
       {/* Floating Glassmorphic Search Input - Mobile Only - Always Visible - Portaled to body */}
       {isMounted && createPortal(
         <div
-          className="fixed left-0 right-0 z-[10003] md:hidden transition-all duration-200 ease-out"
+          className="fixed left-0 right-0 z-[9003] md:hidden transition-all duration-200 ease-out"
           style={{
             // Position above keyboard when keyboard is open
             bottom: keyboardHeight > 0 ? `${keyboardHeight}px` : '0',

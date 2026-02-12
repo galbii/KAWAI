@@ -9,6 +9,7 @@ const VALID_BLOCK_TYPES = [
   // Product blocks
   'product-showcase',
   'product-hero',
+  'product-description',
   'product-gallery',
   'product-features',
   'product-specs',

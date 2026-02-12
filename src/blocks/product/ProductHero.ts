@@ -106,6 +106,66 @@ export const ProductHero: Block = {
       admin: {
         description: 'Optional overrides for product data (leave empty to use product document data)'
       }
+    },
+    {
+      name: 'floatingCart',
+      type: 'group',
+      fields: [
+        {
+          name: 'enabled',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description: 'Show floating add to cart button that follows as user scrolls (syncs with variation selection)'
+          }
+        },
+        {
+          name: 'position',
+          type: 'select',
+          defaultValue: 'bottom-right',
+          options: [
+            { label: 'Bottom Right', value: 'bottom-right' },
+            { label: 'Bottom Left', value: 'bottom-left' },
+            { label: 'Bottom Center', value: 'bottom-center' },
+          ],
+          admin: {
+            description: 'Position of the floating button on screen',
+            condition: (data) => data.floatingCart?.enabled === true
+          }
+        },
+        {
+          name: 'showOnScroll',
+          type: 'checkbox',
+          defaultValue: true,
+          admin: {
+            description: 'Only show button after user scrolls down (hides at top of page)',
+            condition: (data) => data.floatingCart?.enabled === true
+          }
+        },
+        {
+          name: 'scrollThreshold',
+          type: 'number',
+          defaultValue: 300,
+          min: 0,
+          max: 2000,
+          admin: {
+            description: 'Pixels to scroll before showing button (only applies if "Show on Scroll" is enabled)',
+            condition: (data) => data.floatingCart?.enabled === true && data.floatingCart?.showOnScroll === true
+          }
+        },
+        {
+          name: 'showVariantName',
+          type: 'checkbox',
+          defaultValue: true,
+          admin: {
+            description: 'Display selected variation name above Add to Cart button (e.g., "Ebony Polish")',
+            condition: (data) => data.floatingCart?.enabled === true
+          }
+        }
+      ],
+      admin: {
+        description: '🛒 Configure floating add to cart button - syncs with variation selection in hero section'
+      }
     }
   ]
 }

@@ -131,7 +131,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         <>
           {/* Backdrop Overlay */}
           <motion.div
-            className="fixed inset-0 z-[190] bg-black/20 backdrop-blur-sm"
+            className="fixed inset-0 z-[9500] bg-black/20 backdrop-blur-sm"
             variants={overlayVariants}
             initial="closed"
             animate="open"
@@ -143,7 +143,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           <motion.div
             ref={drawerRef}
             className={cn(
-              'fixed right-0 top-0 bottom-0 z-[200]',
+              'fixed right-0 top-0 bottom-0 z-[9501]',
               'w-full max-w-md',
               'bg-white shadow-2xl',
               'flex flex-col',

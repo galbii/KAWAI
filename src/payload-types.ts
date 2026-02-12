@@ -102,6 +102,7 @@ export interface Config {
     'events-event-overview': EventsEventOverviewBlock;
     'product-showcase': ProductShowcaseBlock;
     'product-hero': ProductHeroBlock;
+    'product-description': ProductDescriptionBlock;
     'product-gallery': ProductImageGalleryBlock;
     'product-features': ProductFeaturesListBlock;
     'product-specs': ProductSpecificationsBlock;
@@ -1076,7 +1077,7 @@ export interface LayoutCalendlyEmbedBlock {
    */
   textAlignment?: ('left' | 'center' | 'right') | null;
   /**
-   * Configure event tracking for this block
+   * Track Calendly booking completions for analytics and ROI measurement
    */
   tracking?: {
     /**
@@ -1090,9 +1091,9 @@ export interface LayoutCalendlyEmbedBlock {
     /**
      * Category for organizing analytics reports
      */
-    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    category?: ('lead' | 'conversion' | 'engagement') | null;
     /**
-     * Estimated dollar value of this conversion (for ROI tracking)
+     * Estimated value of a Calendly booking (USD)
      */
     conversionValue?: number | null;
   };
@@ -1256,7 +1257,7 @@ export interface LayoutBookingModalBlock {
       | null;
   };
   /**
-   * Configure event tracking for this block
+   * Track successful Calendly bookings (fires after user completes scheduling)
    */
   bookingTracking?: {
     /**
@@ -1275,6 +1276,66 @@ export interface LayoutBookingModalBlock {
      * Estimated dollar value of this conversion (for ROI tracking)
      */
     conversionValue?: number | null;
+    /**
+     * Send conversion event to Meta Pixel and Google Analytics
+     */
+    trackAsConversion?: boolean | null;
+    /**
+     * Map to GA4 recommended event (see developers.google.com/analytics)
+     */
+    ga4EventType?:
+      | (
+          | 'add_payment_info'
+          | 'add_shipping_info'
+          | 'add_to_cart'
+          | 'add_to_wishlist'
+          | 'begin_checkout'
+          | 'purchase'
+          | 'refund'
+          | 'remove_from_cart'
+          | 'generate_lead'
+          | 'qualify_lead'
+          | 'disqualify_lead'
+          | 'close_convert_lead'
+          | 'close_unconvert_lead'
+          | 'select_content'
+          | 'select_item'
+          | 'select_promotion'
+          | 'search'
+          | 'login'
+          | 'join_group'
+          | 'earn_virtual_currency'
+          | 'level_start'
+          | 'level_end'
+          | 'level_up'
+          | 'post_score'
+        )
+      | null;
+    /**
+     * Map to Meta Pixel standard event (see developers.facebook.com/docs/meta-pixel)
+     */
+    metaEventType?:
+      | (
+          | 'Lead'
+          | 'CompleteRegistration'
+          | 'SubmitApplication'
+          | 'StartTrial'
+          | 'Subscribe'
+          | 'AddPaymentInfo'
+          | 'AddToCart'
+          | 'AddToWishlist'
+          | 'InitiateCheckout'
+          | 'Purchase'
+          | 'ViewContent'
+          | 'Search'
+          | 'Contact'
+          | 'FindLocation'
+          | 'Schedule'
+          | 'CustomizeProduct'
+          | 'Donate'
+          | 'Custom'
+        )
+      | null;
   };
   /**
    * Automatically capture leads to Constant Contact when bookings are completed
@@ -1631,6 +1692,50 @@ export interface Product {
       }[]
     | null;
   /**
+   * Product blueprint image (synced from Shopify custom.blueprint metafield). Only populated if the product has a blueprint uploaded in Shopify.
+   */
+  blueprint?: {
+    /**
+     * Blueprint image URL
+     */
+    url?: string | null;
+    /**
+     * Alt text for blueprint image
+     */
+    alt?: string | null;
+    /**
+     * Image width
+     */
+    width?: number | null;
+    /**
+     * Image height
+     */
+    height?: number | null;
+  };
+  /**
+   * Product specifications (synced from Shopify custom.specifications metaobject)
+   */
+  specifications?:
+    | {
+        /**
+         * Shopify Metaobject ID
+         */
+        id?: string | null;
+        /**
+         * Specification name
+         */
+        spec?: string | null;
+        /**
+         * Specification type
+         */
+        type?: string | null;
+        /**
+         * Specification details
+         */
+        details?: string | null;
+      }[]
+    | null;
+  /**
    * Product variations from Shopify (variants with pricing, inventory, and options)
    */
   variations?:
@@ -1710,6 +1815,7 @@ export interface Product {
   pageContent?:
     | (
         | ProductHeroBlock
+        | ProductDescriptionBlock
         | ProductCollectionShowcaseBlock
         | ProductFloatingAddToCartBlock
         | MarketingInstagramCarouselBlock
@@ -1876,9 +1982,114 @@ export interface ProductHeroBlock {
      */
     badge?: string | null;
   };
+  /**
+   * 🛒 Configure floating add to cart button - syncs with variation selection in hero section
+   */
+  floatingCart?: {
+    /**
+     * Show floating add to cart button that follows as user scrolls (syncs with variation selection)
+     */
+    enabled?: boolean | null;
+    /**
+     * Position of the floating button on screen
+     */
+    position?: ('bottom-right' | 'bottom-left' | 'bottom-center') | null;
+    /**
+     * Only show button after user scrolls down (hides at top of page)
+     */
+    showOnScroll?: boolean | null;
+    /**
+     * Pixels to scroll before showing button (only applies if "Show on Scroll" is enabled)
+     */
+    scrollThreshold?: number | null;
+    /**
+     * Display selected variation name above Add to Cart button (e.g., "Ebony Polish")
+     */
+    showVariantName?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'product-hero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductDescriptionBlock".
+ */
+export interface ProductDescriptionBlock {
+  /**
+   * Background media configuration (image or video)
+   */
+  background: {
+    /**
+     * Choose background type for the description section
+     */
+    mediaType: 'image' | 'youtube';
+    /**
+     * Background image (recommended: 1920x1080px)
+     */
+    backgroundImage?: (string | null) | Media;
+    /**
+     * YouTube video URL (supports youtube.com/watch, youtu.be, embed URLs)
+     */
+    youtubeUrl?: string | null;
+    /**
+     * Overlay color to improve text readability
+     */
+    overlayColor?: ('dark' | 'light' | 'kawai-red' | 'none') | null;
+    /**
+     * Overlay opacity (0-100%). Higher values make text more readable.
+     */
+    overlayOpacity?: number | null;
+  };
+  /**
+   * Automatically uses the description from the current product. Enable custom override if needed.
+   */
+  content?: {
+    /**
+     * Display the product name as heading above description
+     */
+    showProductName?: boolean | null;
+    /**
+     * Enable to override the product description with custom text
+     */
+    useCustomDescription?: boolean | null;
+    /**
+     * Custom description text (only used when "Use Custom Description" is enabled)
+     */
+    customDescription?: string | null;
+  };
+  /**
+   * Layout and styling options
+   */
+  layout?: {
+    /**
+     * Horizontal alignment of text content
+     */
+    contentAlignment?: ('left' | 'center' | 'right') | null;
+    /**
+     * Vertical alignment of content
+     */
+    verticalAlignment?: ('top' | 'center' | 'bottom') | null;
+    /**
+     * Text color (choose based on background)
+     */
+    textColor?: ('white' | 'black' | 'charcoal') | null;
+    /**
+     * Text size for description content
+     */
+    textSize?: ('normal' | 'large' | 'xlarge') | null;
+    /**
+     * Wrap content in a glassmorphism effect (frosted glass background)
+     */
+    useGlassmorphism?: boolean | null;
+    /**
+     * Minimum height of the description section
+     */
+    minHeight?: ('small' | 'medium' | 'large' | 'fullscreen') | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'product-description';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -7748,6 +7959,22 @@ export interface ProductsSelect<T extends boolean = true> {
         createdAt?: T;
         updatedAt?: T;
         id?: T;
+      };
+  blueprint?:
+    | T
+    | {
+        url?: T;
+        alt?: T;
+        width?: T;
+        height?: T;
+      };
+  specifications?:
+    | T
+    | {
+        id?: T;
+        spec?: T;
+        type?: T;
+        details?: T;
       };
   variations?:
     | T

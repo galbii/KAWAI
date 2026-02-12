@@ -1,5 +1,6 @@
 export { ProductShowcaseRenderer } from './ProductShowcaseRenderer'
 export { ProductHeroRenderer } from './ProductHeroRenderer'
+export { ProductDescriptionRenderer } from './ProductDescriptionRenderer'
 export { ProductGalleryRenderer } from './ProductGalleryRenderer'
 export { ProductFeaturesRenderer } from './ProductFeaturesRenderer'
 export { ProductSpecsRenderer } from './ProductSpecsRenderer'

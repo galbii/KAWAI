@@ -12,6 +12,16 @@ import { shopifyAdminClient } from './admin-client'
 /**
  * Shopify product data structure (simplified)
  */
+/**
+ * Specification metaobject structure from Shopify
+ */
+export interface ShopifySpecification {
+  id: string
+  spec: string
+  type: string
+  details: string
+}
+
 export interface ShopifyProductData {
   id: string
   title: string
@@ -81,7 +91,14 @@ export interface ShopifyProductData {
   }>
   metafields?: {
     model?: string
-    [key: string]: string | undefined
+    blueprint?: {
+      url: string
+      alt: string | null
+      width: number | null
+      height: number | null
+    } | null
+    specifications?: ShopifySpecification[]
+    [key: string]: string | ShopifySpecification[] | { url: string; alt: string | null; width: number | null; height: number | null } | null | undefined
   }
   availableForSale: boolean
   createdAt: string
@@ -252,6 +269,50 @@ const PRODUCT_BY_ID_QUERY = `
           id
           title
           handle
+        }
+      }
+    }
+
+    # Include custom metafields
+    metafield_model: metafield(namespace: "custom", key: "model") {
+      key
+      value
+      type
+    }
+
+    metafield_blueprint: metafield(namespace: "custom", key: "blueprint") {
+      key
+      value
+      type
+      reference {
+        ... on MediaImage {
+          id
+          image {
+            url
+            altText
+            width
+            height
+          }
+        }
+      }
+    }
+
+    metafield_specifications: metafield(namespace: "custom", key: "specifications") {
+      key
+      value
+      type
+      references(first: 50) {
+        edges {
+          node {
+            ... on Metaobject {
+              id
+              type
+              fields {
+                key
+                value
+              }
+            }
+          }
         }
       }
     }
@@ -477,11 +538,48 @@ const PRODUCT_BY_METAFIELD_QUERY = `
       }
     }
 
-    # Include the model metafield in response for validation
-    metafield(namespace: "custom", key: "model") {
+    # Include custom metafields
+    metafield_model: metafield(namespace: "custom", key: "model") {
       key
       value
       type
+    }
+
+    metafield_blueprint: metafield(namespace: "custom", key: "blueprint") {
+      key
+      value
+      type
+      reference {
+        ... on MediaImage {
+          id
+          image {
+            url
+            altText
+            width
+            height
+          }
+        }
+      }
+    }
+
+    metafield_specifications: metafield(namespace: "custom", key: "specifications") {
+      key
+      value
+      type
+      references(first: 50) {
+        edges {
+          node {
+            ... on Metaobject {
+              id
+              type
+              fields {
+                key
+                value
+              }
+            }
+          }
+        }
+      }
     }
 
     seo {
@@ -686,7 +784,105 @@ function transformShopifyProduct(shopifyProduct: any): ShopifyProductData {
     })) || [],
 
     metafields: {
-      model: shopifyProduct.metafield?.value || undefined,
+      model: shopifyProduct.metafield_model?.value || undefined,
+
+      // Parse blueprint file reference
+      blueprint: (() => {
+        console.log('[transformShopifyProduct] Blueprint metafield raw:', JSON.stringify(shopifyProduct.metafield_blueprint, null, 2))
+
+        if (!shopifyProduct.metafield_blueprint) {
+          console.log('[transformShopifyProduct] No blueprint metafield found')
+          return null
+        }
+
+        if (!shopifyProduct.metafield_blueprint.reference) {
+          console.log('[transformShopifyProduct] Blueprint metafield exists but no reference:', shopifyProduct.metafield_blueprint)
+          return null
+        }
+
+        const imageRef = shopifyProduct.metafield_blueprint.reference.image
+        if (!imageRef) {
+          console.log('[transformShopifyProduct] Blueprint reference exists but no image:', shopifyProduct.metafield_blueprint.reference)
+          return null
+        }
+
+        console.log('[transformShopifyProduct] Blueprint image found:', imageRef.url)
+
+        return {
+          url: imageRef.url,
+          alt: imageRef.altText || null,
+          width: imageRef.width || null,
+          height: imageRef.height || null,
+        }
+      })(),
+
+      // Parse specifications metaobject list
+      specifications: (() => {
+        console.log('[transformShopifyProduct] Specifications metafield raw:', JSON.stringify(shopifyProduct.metafield_specifications, null, 2))
+
+        if (!shopifyProduct.metafield_specifications) {
+          console.log('[transformShopifyProduct] No specifications metafield found')
+          return []
+        }
+
+        // Check if references were resolved by GraphQL query
+        if (!shopifyProduct.metafield_specifications.references) {
+          console.log('[transformShopifyProduct] ⚠️ Specifications metafield exists but references is null')
+          console.log('[transformShopifyProduct] This usually means:')
+          console.log('[transformShopifyProduct]   1. Missing "read_metaobjects" access scope in Shopify app')
+          console.log('[transformShopifyProduct]   2. Metaobjects are in draft state (not published)')
+          console.log('[transformShopifyProduct]   3. Metaobjects were deleted')
+          console.log('[transformShopifyProduct] Raw value:', shopifyProduct.metafield_specifications.value)
+
+          // Try to parse the value field to at least get the IDs
+          try {
+            const metaobjectIds = JSON.parse(shopifyProduct.metafield_specifications.value || '[]')
+            console.log('[transformShopifyProduct] Found metaobject IDs in value field:', metaobjectIds)
+
+            if (metaobjectIds.length > 0) {
+              console.log('[transformShopifyProduct] ⚠️ Metaobject data not available - will need to be fetched separately')
+              console.log('[transformShopifyProduct] ACTION REQUIRED: Add "read_metaobjects" scope to your Shopify app')
+            }
+          } catch (e) {
+            console.log('[transformShopifyProduct] Failed to parse metaobject IDs from value field:', e)
+          }
+
+          return []
+        }
+
+        // References is not null, but might have empty edges
+        if (!shopifyProduct.metafield_specifications.references.edges ||
+            shopifyProduct.metafield_specifications.references.edges.length === 0) {
+          console.log('[transformShopifyProduct] Specifications references exists but edges array is empty')
+          return []
+        }
+
+        const specs = shopifyProduct.metafield_specifications.references.edges.map((edge: any) => {
+          const fields = edge.node?.fields || []
+
+          console.log('[transformShopifyProduct] Processing specification metaobject:', {
+            id: edge.node?.id,
+            fields: fields.map((f: any) => ({ key: f.key, value: f.value }))
+          })
+
+          // Extract field values from metaobject fields array
+          const getFieldValue = (key: string): string => {
+            const field = fields.find((f: any) => f.key === key)
+            return field?.value || ''
+          }
+
+          return {
+            id: edge.node?.id || '',
+            spec: getFieldValue('spec'),
+            type: getFieldValue('type'),
+            details: getFieldValue('details'),
+          } as ShopifySpecification
+        })
+
+        console.log('[transformShopifyProduct] Processed specifications count:', specs.length)
+
+        return specs
+      })(),
     },
 
     // Calculate availableForSale from variants (Admin API doesn't have it on Product)

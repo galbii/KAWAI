@@ -70,6 +70,7 @@ import {
   // Product blocks
   ProductShowcase,
   ProductHero,
+  ProductDescription,
   ImageGallery,
   FeaturesList,
   Specifications,
@@ -237,6 +238,7 @@ export default buildConfig({
     // Product blocks (for product pages)
     ProductShowcase,
     ProductHero,
+    ProductDescription,
     ImageGallery,
     FeaturesList,
     Specifications,

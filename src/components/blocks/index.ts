@@ -51,7 +51,8 @@ export { ImageGalleryBlock } from './ImageGalleryBlock'
 export { FeaturesListBlock } from './FeaturesListBlock'
 export { SpecificationsBlock } from './SpecificationsBlock'
 export { CollectionShowcaseBlock } from './CollectionShowcaseBlock'
-export { FloatingAddToCartBlock } from './FloatingAddToCartBlock'
+export { FloatingAddToCartBlock } from './FloatingAddToCartBlock' // Legacy: Use ProductHero's integrated floating cart instead
+export { FloatingAddToCartIntegrated } from './FloatingAddToCartIntegrated' // NEW: Integrated with ProductHeroBlock
 
 // Special Purpose Blocks
 export { HelloBlock } from './HelloBlock'
