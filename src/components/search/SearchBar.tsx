@@ -1349,15 +1349,18 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
         document.body
       )}
 
-      {/* Floating Glassmorphic Search Input - Mobile Only - Always Visible - Portaled to body */}
+      {/* Floating Glassmorphic Search Input - Mobile Only - Always visible but hides when keyboard opens for other inputs - Portaled to body */}
       {isMounted && createPortal(
         <div
           className="fixed left-0 right-0 z-[9003] md:hidden transition-all duration-200 ease-out"
           style={{
-            // Position above keyboard when keyboard is open
-            bottom: keyboardHeight > 0 ? `${keyboardHeight}px` : '0',
+            // Hide when keyboard is open but search input is not focused (user is typing in another form)
+            opacity: (keyboardHeight > 0 && !isInputFocused) ? 0 : 1,
+            pointerEvents: (keyboardHeight > 0 && !isInputFocused) ? 'none' : 'auto',
+            // Position above keyboard when keyboard is open AND search is focused
+            bottom: (isInputFocused && keyboardHeight > 0) ? `${keyboardHeight}px` : '0',
             padding: '1rem',
-            paddingBottom: keyboardHeight > 0 ? '1rem' : 'calc(1rem + env(safe-area-inset-bottom))',
+            paddingBottom: (isInputFocused && keyboardHeight > 0) ? '1rem' : 'calc(1rem + env(safe-area-inset-bottom))',
           }}
         >
           <div className="max-w-3xl mx-auto">

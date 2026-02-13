@@ -4335,6 +4335,10 @@ export interface EventsUniversityHeroBlock {
    */
   youtubeUrl?: string | null;
   /**
+   * Start time in seconds (e.g., 30 = start at 0:30, 90 = start at 1:30)
+   */
+  videoStartTime?: number | null;
+  /**
    * Video zoom level (1 = normal, 1.5 = 150%, 2 = 200%). Use to crop/fill viewport.
    */
   videoZoom?: number | null;
