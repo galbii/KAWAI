@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { getOptimizedImageProps } from '@/lib/media/r2-utils'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState, useEffect, createElement } from 'react'
+import { useState, useEffect, createElement, useRef } from 'react'
 import { ShoppingCart, Heart, Share2, CheckCircle, Sparkles, Clock, Play, Volume2, Images } from 'lucide-react'
 import { cn, formatPrice } from '@/lib/utils'
 import {
@@ -45,6 +45,11 @@ interface ProductHeroBlockProps {
     customImage?: string | Media | null
     badge?: string | null
   }
+  // Additional CMS images to append to gallery after Shopify media
+  additionalImages?: Array<{
+    image?: Media | string | null
+    alt?: string | null
+  }> | null
   // The product data will be passed from the context (current product document)
   product?: Product | null
   // Shopify product data fetched server-side
@@ -56,7 +61,8 @@ export function ProductHeroBlock({
   floatingCart = {}, // NEW: Floating cart configuration
   overrides = {},
   product,
-  shopifyProduct
+  shopifyProduct,
+  additionalImages,
 }: ProductHeroBlockProps) {
   // Filter variations to only include available ones - MUST be declared early
   const availableVariations = product?.variations?.filter(variation => variation.available) || []
@@ -66,6 +72,9 @@ export function ProductHeroBlock({
   const [selectedVariation, setSelectedVariation] = useState(defaultVariation)
   const [isFavorited, setIsFavorited] = useState(false)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
+
+  const sectionRef = useRef<HTMLElement>(null)
+  const galleryRef = useRef<HTMLDivElement>(null)
 
   // CRITICAL: Sync selectedVariation when availableVariations changes (handles async product loading)
   useEffect(() => {
@@ -82,6 +91,53 @@ export function ProductHeroBlock({
       setSelectedVariation(0)
     }
   }, [availableVariations.length, selectedVariation])
+
+  // Scroll trap: gallery scrolls first with smooth lerp animation; page resumes at gallery bottom
+  useEffect(() => {
+    const section = sectionRef.current
+    const gallery = galleryRef.current
+    if (!section || !gallery) return
+
+    let targetScrollTop = gallery.scrollTop
+    let rafId: number | null = null
+
+    const animateScroll = () => {
+      const current = gallery.scrollTop
+      const diff = targetScrollTop - current
+
+      if (Math.abs(diff) < 0.5) {
+        gallery.scrollTop = targetScrollTop
+        rafId = null
+        return
+      }
+
+      gallery.scrollTop = current + diff * 0.14
+      rafId = requestAnimationFrame(animateScroll)
+    }
+
+    const handleWheel = (e: WheelEvent) => {
+      const { scrollHeight, clientHeight } = gallery
+      const maxScroll = scrollHeight - clientHeight
+      const atBottom = targetScrollTop >= maxScroll - 2
+      const atTop = targetScrollTop <= 0
+
+      if (e.deltaY > 0 && !atBottom) {
+        e.preventDefault()
+        targetScrollTop = Math.min(targetScrollTop + e.deltaY, maxScroll)
+        if (!rafId) rafId = requestAnimationFrame(animateScroll)
+      } else if (e.deltaY < 0 && !atTop) {
+        e.preventDefault()
+        targetScrollTop = Math.max(targetScrollTop + e.deltaY, 0)
+        if (!rafId) rafId = requestAnimationFrame(animateScroll)
+      }
+    }
+
+    section.addEventListener('wheel', handleWheel, { passive: false })
+    return () => {
+      section.removeEventListener('wheel', handleWheel)
+      if (rafId) cancelAnimationFrame(rafId)
+    }
+  }, [])
 
   // Get selected Shopify variant based on variation selection
   const getSelectedVariant = () => {
@@ -210,9 +266,24 @@ export function ProductHeroBlock({
       ...(media.imageHeight && { height: media.imageHeight }),
     })) || []
 
+  // Merge shopify gallery images with additional CMS images appended at end
+  const allGalleryImages = [
+    ...galleryImages,
+    ...(additionalImages || []).flatMap((item) => {
+      const img = item.image
+      if (!img) return []
+      const url = typeof img === 'string' ? img : (img as Media).url
+      if (!url) return []
+      return [{
+        url,
+        alt: item.alt || product.name || 'Product image',
+      }]
+    })
+  ]
+
   // Find the current image index in the gallery
   const getCurrentImageIndex = () => {
-    if (!displayImage || galleryImages.length === 0) return 0
+    if (!displayImage || allGalleryImages.length === 0) return 0
 
     // Get the URL from displayImage (could be string or Media object)
     const displayImageUrl = typeof displayImage === 'string'
@@ -222,7 +293,7 @@ export function ProductHeroBlock({
     if (!displayImageUrl) return 0
 
     // Find matching image in gallery
-    const index = galleryImages.findIndex(img => img.url === displayImageUrl)
+    const index = allGalleryImages.findIndex(img => img.url === displayImageUrl)
     return index >= 0 ? index : 0
   }
 
@@ -471,7 +542,7 @@ export function ProductHeroBlock({
   })
   
   return (
-    <section className={`relative overflow-visible ${backgroundClass}`}>
+    <section ref={sectionRef} className={`relative overflow-visible ${backgroundClass}`}>
       {/* Subtle gradient overlay for better image blending */}
       {backgroundColor !== 'black' && (
         <div className="absolute inset-0 bg-gradient-to-b from-stone-50/30 via-white to-stone-50/30" />
@@ -480,13 +551,15 @@ export function ProductHeroBlock({
       {/* Main Content Container - Significantly reduced padding */}
       <div className="container mx-auto px-6 lg:px-12 xl:px-16 relative z-10 py-6 lg:py-10">
 
-        <div className={cn(
-          "grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 w-full items-start",
-          imagePosition === 'right' ? 'lg:grid-flow-col-reverse' : ''
-        )}>
+        <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-x-8 w-full items-start">
 
-          {/* Part 1: Brand + Title + Model + MSRP + Variations + CTAs - All in left column */}
-          <div className="space-y-4 lg:space-y-5 order-1 lg:col-span-5 lg:col-start-1">
+          {/* Part 1: Brand + Title + Model + MSRP + Variations + CTAs - Floating card sidebar */}
+          <div className={cn(
+            "space-y-4 lg:space-y-5 order-1 lg:col-span-5 lg:col-start-1 lg:sticky lg:top-8 lg:self-start",
+            "lg:bg-white lg:rounded-2xl lg:px-8 lg:py-8",
+            "lg:shadow-[0_8px_32px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.04)]",
+            "lg:border lg:border-gray-100/80"
+          )}>
 
             {/* Compact Hero Headlines */}
             <div className="space-y-2">
@@ -505,18 +578,18 @@ export function ProductHeroBlock({
               <div
                 className={cn(
                   "lg:hidden relative w-full h-[320px] sm:h-[400px] overflow-hidden rounded-xl",
-                  galleryImages.length > 0 && "cursor-pointer"
+                  allGalleryImages.length > 0 && "cursor-pointer"
                 )}
-                onClick={() => galleryImages.length > 0 && setIsGalleryOpen(true)}
-                role={galleryImages.length > 0 ? "button" : undefined}
-                tabIndex={galleryImages.length > 0 ? 0 : undefined}
+                onClick={() => allGalleryImages.length > 0 && setIsGalleryOpen(true)}
+                role={allGalleryImages.length > 0 ? "button" : undefined}
+                tabIndex={allGalleryImages.length > 0 ? 0 : undefined}
                 onKeyDown={(e) => {
-                  if (galleryImages.length > 0 && (e.key === 'Enter' || e.key === ' ')) {
+                  if (allGalleryImages.length > 0 && (e.key === 'Enter' || e.key === ' ')) {
                     e.preventDefault()
                     setIsGalleryOpen(true)
                   }
                 }}
-                aria-label={galleryImages.length > 0 ? `Open image gallery (${galleryImages.length} photos)` : undefined}
+                aria-label={allGalleryImages.length > 0 ? `Open image gallery (${allGalleryImages.length} photos)` : undefined}
               >
                 {(() => {
                   const imageProps = getOptimizedImageProps(displayImage, 'hero')
@@ -535,10 +608,10 @@ export function ProductHeroBlock({
                 })()}
 
                 {/* Persistent gallery indicator for mobile (no hover on touch devices) */}
-                {galleryImages.length > 0 && (
+                {allGalleryImages.length > 0 && (
                   <div className="absolute bottom-2.5 right-2.5 z-10 flex items-center gap-1.5 bg-white/80 backdrop-blur-sm px-2.5 py-1.5 rounded-full shadow-sm">
                     <Images className="w-3.5 h-3.5 text-kawai-charcoal" />
-                    <span className="text-xs font-medium text-kawai-charcoal">{galleryImages.length}</span>
+                    <span className="text-xs font-medium text-kawai-charcoal">{allGalleryImages.length}</span>
                   </div>
                 )}
               </div>
@@ -754,95 +827,111 @@ export function ProductHeroBlock({
             )}
           </div>
 
-          {/* Image Section - Desktop only (mobile image is inline above model) */}
-          <div className="hidden lg:block lg:col-span-7 lg:col-start-6 lg:row-start-1 relative">
-            {displayImage && (
-              <div className="relative">
+          {/* Image Section - Desktop only (scrollable within fixed height) */}
+          <div
+            ref={galleryRef}
+            className="hidden lg:flex lg:flex-col lg:col-span-7 lg:col-start-6 lg:row-start-1 overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden"
+            style={{ height: '560px', scrollbarWidth: 'none' }}
+          >
 
-                {/* Compact piano showcase */}
-                <div
-                  className={cn(
-                    "relative w-full h-[240px] sm:h-[280px] lg:h-[320px] xl:h-[380px] overflow-hidden rounded-xl",
-                    galleryImages.length > 0 && "cursor-pointer group"
-                  )}
-                  onClick={() => galleryImages.length > 0 && setIsGalleryOpen(true)}
-                  role={galleryImages.length > 0 ? "button" : undefined}
-                  tabIndex={galleryImages.length > 0 ? 0 : undefined}
-                  onKeyDown={(e) => {
-                    if (galleryImages.length > 0 && (e.key === 'Enter' || e.key === ' ')) {
-                      e.preventDefault()
-                      setIsGalleryOpen(true)
-                    }
-                  }}
-                  aria-label={galleryImages.length > 0 ? "Open image gallery" : undefined}
-                >
-                  {/* Compact hover overlay hint for gallery */}
-                  {galleryImages.length > 0 && (
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 z-10 flex items-center justify-center">
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full">
-                        <span className="text-xs font-medium text-kawai-charcoal">
-                          View Gallery ({galleryImages.length})
-                        </span>
-                      </div>
+            {/* Hero image — full width, fills the visible container height */}
+            <div
+              className={cn(
+                "relative w-full overflow-hidden flex-shrink-0",
+                allGalleryImages.length > 0 && "cursor-pointer group"
+              )}
+              style={{ height: '560px' }}
+              onClick={() => allGalleryImages.length > 0 && setIsGalleryOpen(true)}
+              role={allGalleryImages.length > 0 ? "button" : undefined}
+              tabIndex={allGalleryImages.length > 0 ? 0 : undefined}
+              onKeyDown={(e) => {
+                if (allGalleryImages.length > 0 && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault()
+                  setIsGalleryOpen(true)
+                }
+              }}
+              aria-label={allGalleryImages.length > 0 ? "Open image gallery" : undefined}
+            >
+              {/* Subtle hover tint */}
+              {allGalleryImages.length > 0 && (
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 z-10" />
+              )}
+
+              {(() => {
+                if (!displayImage) {
+                  return (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-50">
+                      <span className={cn("text-lg font-medium", accentColorClass)}>Product Image</span>
                     </div>
-                  )}
+                  )
+                }
+                const imageProps = getOptimizedImageProps(displayImage, 'hero')
+                if (!imageProps?.src) {
+                  return (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-50">
+                      <span className={cn("text-lg font-medium", accentColorClass)}>Image Load Error</span>
+                    </div>
+                  )
+                }
+                const { width, height, ...optimizedProps } = imageProps
+                return (
+                  <Image
+                    {...optimizedProps}
+                    fill
+                    className="object-contain transition-transform duration-500 group-hover:scale-[1.02]"
+                    priority={true}
+                    sizes="(max-width: 1280px) 58vw, 840px"
+                    alt={optimizedProps.alt || displayTitle || 'Product image'}
+                  />
+                )
+              })()}
 
-                  {(() => {
-                    if (!displayImage) {
-                      return (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className={cn("text-lg font-medium", accentColorClass)}>
-                            Product Image
-                          </span>
-                        </div>
-                      )
-                    }
+              {/* Badges sit on hero image only */}
+              {overrides.badge && (
+                <Badge className="absolute top-3 left-3 bg-kawai-red text-white font-bold text-xs px-3 py-1 rounded-full z-20">
+                  {overrides.badge}
+                </Badge>
+              )}
+              {statusBadge && (
+                <Badge className={cn("absolute bottom-3 right-3 font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1.5 z-20", statusBadge.className)}>
+                  {statusBadge.icon && createElement(statusBadge.icon, { className: "h-3 w-3" })}
+                  {statusBadge.text}
+                </Badge>
+              )}
+            </div>
 
-                    // Get optimized image props using the R2 optimization system
-                    const imageProps = getOptimizedImageProps(displayImage, 'hero')
-
-                    if (!imageProps || !imageProps.src) {
-                      return (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className={cn("text-lg font-medium", accentColorClass)}>
-                            Image Load Error
-                          </span>
-                        </div>
-                      )
-                    }
-
-                    // Use fill layout for responsive container, excluding width/height from spread
-                    const { width, height, ...optimizedProps } = imageProps
-
-                    return (
-                      <Image
-                        {...optimizedProps}
-                        fill
-                        className="object-contain transition-transform duration-300 group-hover:scale-105"
-                        priority={true}
-                        sizes="(max-width: 1024px) 50vw, 40vw"
-                        alt={optimizedProps.alt || displayTitle || 'Product image'}
-                      />
-                    )
-                  })()}
-
-                  {/* Compact custom badge */}
-                  {overrides.badge && (
-                    <Badge className="absolute top-3 left-3 bg-kawai-red text-white font-bold text-xs px-3 py-1 rounded-full">
-                      {overrides.badge}
-                    </Badge>
-                  )}
-
-                  {/* Compact status badge */}
-                  {statusBadge && (
-                    <Badge className={cn("absolute bottom-3 right-3 font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1.5", statusBadge.className)}>
-                      {statusBadge.icon && createElement(statusBadge.icon, { className: "h-3 w-3" })}
-                      {statusBadge.text}
-                    </Badge>
-                  )}
-                </div>
+            {/* 2-column grid of remaining images (shopify + additional CMS) */}
+            {allGalleryImages.length > 1 && (
+              <div className="grid grid-cols-2">
+                {allGalleryImages.slice(1).map((img, idx) => (
+                  <div
+                    key={idx}
+                    className="relative overflow-hidden cursor-pointer group"
+                    style={{ height: '280px' }}
+                    onClick={() => setIsGalleryOpen(true)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        setIsGalleryOpen(true)
+                      }
+                    }}
+                    aria-label={`View image ${idx + 2} of ${allGalleryImages.length}`}
+                  >
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 z-10" />
+                    <Image
+                      src={img.url}
+                      alt={img.alt}
+                      fill
+                      className="object-contain transition-transform duration-500 group-hover:scale-[1.02]"
+                      sizes="(max-width: 1280px) 29vw, 420px"
+                    />
+                  </div>
+                ))}
               </div>
             )}
+
           </div>
 
         </div>
@@ -851,7 +940,7 @@ export function ProductHeroBlock({
 
       {/* Image Gallery Lightbox */}
       <ImageGalleryLightbox
-        images={galleryImages}
+        images={allGalleryImages}
         initialIndex={currentImageIndex}
         isOpen={isGalleryOpen}
         onClose={() => setIsGalleryOpen(false)}

@@ -137,7 +137,7 @@ export function FloatingAddToCartIntegrated({
   return (
     <div
       className={cn(
-        'fixed z-[10100] transition-all duration-500 ease-out',
+        'fixed z-[9000] transition-all duration-500 ease-out',
         positionClasses[position],
         isVisible
           ? 'opacity-100 translate-y-0 pointer-events-auto'

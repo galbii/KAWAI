@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Menu, X, ChevronDown, Home } from 'lucide-react'
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion'
@@ -471,6 +472,8 @@ const defaultNavigation: NavigationItem[] = [
 ]
 
 export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isUniversityPage = false, isFindADealerPage = false, newsItems = [] }: HeaderProps) {
+  const pathname = usePathname()
+  const isOnFindADealerPage = isFindADealerPage || pathname.startsWith('/find-a-dealer')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
@@ -1499,7 +1502,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       </div>
 
       {/* SearchBar - Mobile Only (Renders at root level) */}
-      {!isSignaturePage && !hidePianoLinks && !isUniversityPage && !isFindADealerPage && (
+      {!isSignaturePage && !hidePianoLinks && !isUniversityPage && !isOnFindADealerPage && (
         <div className="md:hidden">
           <SearchBar onOpenChange={setIsSearchOpen} />
         </div>

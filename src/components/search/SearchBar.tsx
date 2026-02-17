@@ -730,8 +730,8 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
               <div
                 className="fixed z-[9000] bg-black/40"
                 style={{
-                  // 120px = 64px (top bar) + 56px (bottom nav at top), plus dynamic announcement bar height
-                  top: isMobile ? 0 : `${120 + announcementBarHeight}px`,
+                  // 64px (top bar only) - bottom nav is hidden when search opens, overlay covers that area
+                  top: isMobile ? 0 : `${64 + announcementBarHeight}px`,
                   left: 0,
                   right: 0,
                   // On mobile, use visual viewport height to match overlay container
@@ -768,7 +768,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                           ? `${visualViewportHeight - 96}px` // 96px = 80px input + 16px padding
                           : 'calc(100vh - 100px - env(safe-area-inset-bottom))' // Default spacing
                       }
-                    : { top: `${120 + announcementBarHeight}px`, left: 0, right: 0, bottom: 0 } // 64px (top bar) + 56px (bottom nav) + announcement bar
+                    : { top: `${64 + announcementBarHeight}px`, left: 0, right: 0, bottom: 0 } // 64px (top bar only) - bottom nav hidden when search opens
                 }
                 onKeyDown={handleKeyboardNavigation}
               >

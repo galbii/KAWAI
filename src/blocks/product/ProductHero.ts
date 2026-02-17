@@ -29,7 +29,7 @@ export const ProductHero: Block = {
         {
           name: 'backgroundColor',
           type: 'select',
-          defaultValue: 'pearl',
+          defaultValue: 'white',
           options: [
             { label: 'Pearl (Light)', value: 'pearl' },
             { label: 'White', value: 'white' },
@@ -106,6 +106,30 @@ export const ProductHero: Block = {
       admin: {
         description: 'Optional overrides for product data (leave empty to use product document data)'
       }
+    },
+    {
+      name: 'additionalImages',
+      type: 'array',
+      label: '📸 Additional Gallery Images',
+      admin: {
+        description: 'Extra images appended to the product gallery after Shopify media',
+        initCollapsed: true,
+      },
+      fields: [
+        {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+          required: true,
+          maxDepth: 1,
+          admin: { description: 'Gallery image' }
+        },
+        {
+          name: 'alt',
+          type: 'text',
+          admin: { description: 'Alt text (optional — falls back to product name)' }
+        }
+      ]
     },
     {
       name: 'floatingCart',

@@ -2018,6 +2018,22 @@ export interface ProductHeroBlock {
     badge?: string | null;
   };
   /**
+   * Extra images appended to the product gallery after Shopify media
+   */
+  additionalImages?:
+    | {
+        /**
+         * Gallery image
+         */
+        image: string | Media;
+        /**
+         * Alt text (optional — falls back to product name)
+         */
+        alt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * 🛒 Configure floating add to cart button - syncs with variation selection in hero section
    */
   floatingCart?: {

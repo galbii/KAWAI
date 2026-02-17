@@ -1053,7 +1053,7 @@ export const Products: CollectionConfig = {
             blockType: 'product-hero',
             layout: {
               imagePosition: 'left',
-              backgroundColor: 'pearl',
+              backgroundColor: 'white',
               showVariations: true,
               showPrice: false,
               showBuyButton: true,
