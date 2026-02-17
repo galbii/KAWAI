@@ -118,6 +118,9 @@ export async function HeaderDynamic() {
     // Check if we're on a university event page
     const isUniversityPage = pathname.includes('/university')
 
+    // Check if we're on the find-a-dealer page (hide search on this page)
+    const isFindADealerPage = pathname.startsWith('/find-a-dealer')
+
     // Check if we're on the homepage or a storefront page (hide logo on these pages)
     const isHomepage = pathname === '/' || pathname === ''
     const isStorefrontPage = pathname.includes('/store/')
@@ -154,6 +157,7 @@ export async function HeaderDynamic() {
         isSignaturePage={isSignaturePage}
         hidePianoLinks={isConcertArtistPage}
         isUniversityPage={isUniversityPage}
+        isFindADealerPage={isFindADealerPage}
         newsItems={newsItems}
       />
     )
@@ -169,6 +173,7 @@ export async function HeaderDynamic() {
                             pathname.endsWith('/gl-10-signature') || pathname.endsWith('/gl-10-signature/')
     const isConcertArtistPage = pathname === '/concert-artist' || pathname === '/concert-artist/'
     const isUniversityPage = pathname.includes('/university')
+    const isFindADealerPage = pathname.startsWith('/find-a-dealer')
 
     // Minimal fallback navigation (piano navigation handled by ProductsMegaMenu)
     // News moved to NewsMegaMenu - see header.tsx
@@ -183,6 +188,6 @@ export async function HeaderDynamic() {
       // Resources has been moved to ResourcesMegaMenu - see header.tsx
     ]
 
-    return <Header navigation={fallbackNavigation} isSignaturePage={isSignaturePage} hidePianoLinks={isConcertArtistPage} isUniversityPage={isUniversityPage} newsItems={[]} />
+    return <Header navigation={fallbackNavigation} isSignaturePage={isSignaturePage} hidePianoLinks={isConcertArtistPage} isUniversityPage={isUniversityPage} isFindADealerPage={isFindADealerPage} newsItems={[]} />
   }
 }

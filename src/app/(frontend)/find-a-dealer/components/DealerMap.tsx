@@ -3,13 +3,10 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Map, AdvancedMarker, InfoWindow, Pin } from '@vis.gl/react-google-maps'
 import type { Dealer } from '@/payload-types'
+import type { DealerWithDistance } from '../types'
 import { Button } from '@/components/ui/button'
 import { Phone, Navigation, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-interface DealerWithDistance extends Dealer {
-  distance?: number
-}
 
 interface Props {
   dealers: DealerWithDistance[]

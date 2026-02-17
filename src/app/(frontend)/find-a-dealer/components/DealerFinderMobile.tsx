@@ -2,18 +2,15 @@
 
 import { useState, useCallback, useMemo } from 'react'
 import type { Dealer } from '@/payload-types'
+import type { DealerWithDistance } from '../types'
 import { DealerMapLibre } from './DealerMapLibre'
 import { SearchBar } from './SearchBar'
 import { FilterPanel } from './FilterPanel'
 import { cn } from '@/lib/utils'
 import { MapPin, SlidersHorizontal, Map, List, Piano, Briefcase, X } from 'lucide-react'
 
-interface DealerWithDistance extends Dealer {
-  distance?: number
-}
-
 interface Props {
-  dealers: Dealer[]
+  dealers: DealerWithDistance[]
 }
 
 type DealerTypeFilter = 'all' | 'professional-products' | 'acoustic-digital'
@@ -93,6 +90,14 @@ export function DealerFinderMobile({ dealers }: Props) {
     setSearchAddress(address)
   }, [])
 
+  const handleDealerSearch = useCallback((results: Dealer[], location?: { lat: number; lng: number }) => {
+    // Update filtered dealers based on search results
+    if (location) {
+      setSearchLocation(location)
+    }
+    // The filtering is handled by the filteredDealers memo
+  }, [])
+
   const handleDealerSelect = useCallback((dealerId: string | null) => {
     setSelectedDealer(dealerId)
     if (dealerId && viewMode === 'list') {
@@ -117,11 +122,6 @@ export function DealerFinderMobile({ dealers }: Props) {
     <div className="lg:hidden relative h-screen flex flex-col bg-gray-50 overflow-hidden" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
       {/* Fixed Header - Compact and Elegant */}
       <div className="relative z-30 bg-white border-b border-gray-200/80 shadow-sm">
-        {/* Search Section */}
-        <div className="px-4 pt-4 pb-3">
-          <SearchBar onLocationSearch={handleLocationSearch} />
-        </div>
-
         {/* Dealer Type Pills - Horizontal Scroll */}
         <div className="px-4 pb-3 overflow-x-auto scrollbar-hide">
           <div className="flex gap-2 min-w-max">
@@ -249,6 +249,17 @@ export function DealerFinderMobile({ dealers }: Props) {
               </div>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Floating Search Bar - Above Bottom Navigation */}
+      <div className="fixed bottom-24 left-0 right-0 z-40 px-4">
+        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50">
+          <SearchBar
+            dealers={dealers}
+            onSearch={handleDealerSearch}
+            onLocationSearch={handleLocationSearch}
+          />
         </div>
       </div>
 

@@ -13,8 +13,10 @@ const VALID_BLOCK_TYPES = [
   'product-gallery',
   'product-features',
   'product-specs',
+  'product-technical-specs',
   'product-collection-showcase',
   'product-floating-add-to-cart',
+  'product-feature-slides',
   // Content blocks
   'content-text',
   'content-banner',
@@ -99,6 +101,9 @@ export function validateBlock(block: any, index: number): BlockValidationResult 
     case 'product-features':
       validateFeaturesListBlock(block, result)
       break
+    case 'product-feature-slides':
+      validateProductFeatureSlidesBlock(block, result)
+      break
     case 'product-specs':
       validateSpecificationsBlock(block, result)
       break
@@ -181,6 +186,38 @@ function validateImageGalleryBlock(block: any, result: BlockValidationResult): v
       result.warnings.push('ImageGallery block has no images and no pianoModel fallback')
     }
   }
+}
+
+/**
+ * Validates ProductFeatureSlides block specific requirements
+ */
+function validateProductFeatureSlidesBlock(block: any, result: BlockValidationResult): void {
+  if (!block.features || !Array.isArray(block.features) || block.features.length === 0) {
+    result.warnings.push('ProductFeatureSlides block has no features — at least one slide is required')
+    return
+  }
+
+  block.features.forEach((feature: any, i: number) => {
+    if (!feature.title) {
+      result.warnings.push(`ProductFeatureSlides: slide ${i + 1} is missing a title`)
+    }
+
+    const hasImage   = feature.mediaType === 'image'   && feature.image
+    const hasYoutube = feature.mediaType === 'youtube'  && feature.youtubeUrl
+    const hasVideo   = feature.mediaType === 'video'   && feature.video
+
+    if (!hasImage && !hasYoutube && !hasVideo) {
+      result.warnings.push(
+        `ProductFeatureSlides: slide ${i + 1} ("${feature.title ?? 'untitled'}") has no media — add an image or video for best results`,
+      )
+    }
+
+    if (feature.cta?.text && !feature.cta?.link) {
+      result.warnings.push(
+        `ProductFeatureSlides: slide ${i + 1} has CTA text but no link URL`,
+      )
+    }
+  })
 }
 
 /**

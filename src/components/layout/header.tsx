@@ -449,6 +449,7 @@ interface HeaderProps {
   isSignaturePage?: boolean
   hidePianoLinks?: boolean
   isUniversityPage?: boolean
+  isFindADealerPage?: boolean
   hideLogo?: boolean
   newsItems?: NewsItem[]
 }
@@ -469,7 +470,7 @@ const defaultNavigation: NavigationItem[] = [
   // Resources has been moved to ResourcesMegaMenu - rendered separately below
 ]
 
-export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isUniversityPage = false, newsItems = [] }: HeaderProps) {
+export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isUniversityPage = false, isFindADealerPage = false, newsItems = [] }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
@@ -1498,7 +1499,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       </div>
 
       {/* SearchBar - Mobile Only (Renders at root level) */}
-      {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
+      {!isSignaturePage && !hidePianoLinks && !isUniversityPage && !isFindADealerPage && (
         <div className="md:hidden">
           <SearchBar onOpenChange={setIsSearchOpen} />
         </div>

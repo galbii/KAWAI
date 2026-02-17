@@ -107,8 +107,10 @@ export interface Config {
     'product-gallery': ProductImageGalleryBlock;
     'product-features': ProductFeaturesListBlock;
     'product-specs': ProductSpecificationsBlock;
+    'product-technical-specs': ProductTechnicalSpecsBlock;
     'product-collection-showcase': ProductCollectionShowcaseBlock;
     'product-floating-add-to-cart': ProductFloatingAddToCartBlock;
+    'product-feature-slides': ProductFeatureSlidesBlock;
     textContent: TextContentBlock;
     hello: HelloBlock;
     archive: ArchiveBlock;
@@ -1123,6 +1125,35 @@ export interface LayoutCalendlyEmbedBlock {
      */
     optInMarketing?: boolean | null;
   };
+  /**
+   * Optional floating button (bottom-right) that opens the Calendly widget in a modal
+   */
+  floatingButton?: {
+    /**
+     * Show a floating button that opens the booking modal
+     */
+    enabled?: boolean | null;
+    /**
+     * Text displayed on the floating button
+     */
+    buttonText?: string | null;
+    /**
+     * Visual style of the floating button
+     */
+    buttonStyle?: ('primary' | 'secondary' | 'outline' | 'ghost') | null;
+    /**
+     * Size of the floating button
+     */
+    buttonSize?: ('sm' | 'default' | 'lg') | null;
+    /**
+     * Title displayed in the booking modal header
+     */
+    modalTitle?: string | null;
+    /**
+     * Optional subtitle below the modal title
+     */
+    modalSubtitle?: string | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'layout-calendly-embed';
@@ -1817,8 +1848,10 @@ export interface Product {
     | (
         | ProductHeroBlock
         | ProductDescriptionBlock
+        | ProductTechnicalSpecsBlock
         | ProductCollectionShowcaseBlock
         | ProductFloatingAddToCartBlock
+        | ProductFeatureSlidesBlock
         | MarketingInstagramCarouselBlock
         | MarketingFeaturedModelsBlock
       )[]
@@ -2019,11 +2052,52 @@ export interface ProductHeroBlock {
  */
 export interface ProductDescriptionBlock {
   /**
-   * Background media configuration (image or video)
+   * Additional media items displayed in a carousel or grid below the description. Supports YouTube videos and images.
+   */
+  mediaItems?:
+    | {
+        /**
+         * Type of media for this item
+         */
+        type: 'youtube' | 'image';
+        /**
+         * YouTube video URL
+         */
+        youtubeUrl?: string | null;
+        /**
+         * Image for this media item
+         */
+        image?: (string | null) | Media;
+        /**
+         * Optional title displayed alongside this media item
+         */
+        title?: string | null;
+        /**
+         * Optional caption or description for this media item
+         */
+        caption?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Settings for the media items gallery (applies when Media Items are added)
+   */
+  mediaGallerySettings?: {
+    /**
+     * Display layout for the media items gallery
+     */
+    layout?: ('carousel' | 'grid-2' | 'grid-3') | null;
+    /**
+     * Color theme for the media gallery section
+     */
+    theme?: ('dark' | 'light') | null;
+  };
+  /**
+   * Background media configuration — only used when no Featured Media is set above.
    */
   background: {
     /**
-     * Choose background type for the description section
+     * Choose background type for the description section (used when no Featured Media is set)
      */
     mediaType: 'image' | 'youtube';
     /**
@@ -2065,11 +2139,11 @@ export interface ProductDescriptionBlock {
    */
   layout?: {
     /**
-     * Horizontal alignment of text content
+     * Horizontal alignment of text content (classic background layout only)
      */
     contentAlignment?: ('left' | 'center' | 'right') | null;
     /**
-     * Vertical alignment of content
+     * Vertical alignment of content (classic background layout only)
      */
     verticalAlignment?: ('top' | 'center' | 'bottom') | null;
     /**
@@ -2085,13 +2159,125 @@ export interface ProductDescriptionBlock {
      */
     useGlassmorphism?: boolean | null;
     /**
-     * Minimum height of the description section
+     * Minimum height of the description section (classic background layout only)
      */
     minHeight?: ('small' | 'medium' | 'large' | 'fullscreen') | null;
   };
   id?: string | null;
   blockName?: string | null;
   blockType: 'product-description';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductTechnicalSpecsBlock".
+ */
+export interface ProductTechnicalSpecsBlock {
+  /**
+   * Product: automatically pulls specifications and blueprint from the linked product. Manual: enter specs by hand. Hybrid: product specs + manual additions.
+   */
+  dataSource?: ('product' | 'manual' | 'hybrid') | null;
+  /**
+   * Select the product to pull specifications and blueprint from. Leave empty on a product page to use the page product automatically.
+   */
+  product?: (string | null) | Product;
+  header?: {
+    /**
+     * Section heading
+     */
+    title?: string | null;
+    /**
+     * Optional subtitle shown below the heading
+     */
+    subtitle?: string | null;
+    /**
+     * Display the product model number as a label above the title
+     */
+    showModelNumber?: boolean | null;
+  };
+  /**
+   * Technical blueprint diagram (used in Manual and Hybrid modes). In Product mode the blueprint is pulled automatically from the product.
+   */
+  blueprintImage?: (string | null) | Media;
+  /**
+   * Caption displayed below the blueprint image
+   */
+  blueprintCaption?: string | null;
+  /**
+   * Overlay a subtle engineering grid pattern on the blueprint image
+   */
+  showGridOverlay?: boolean | null;
+  /**
+   * Specification categories for manual entry
+   */
+  categories?:
+    | {
+        /**
+         * Category name (e.g., Sound, Keyboard, Dimensions)
+         */
+        categoryName: string;
+        specifications?:
+          | {
+              /**
+               * Specification name (e.g., Polyphony, Keys)
+               */
+              label: string;
+              /**
+               * Specification value (e.g., 256, 88)
+               */
+              value: string;
+              /**
+               * Unit of measurement (optional, e.g., kg, cm, W)
+               */
+              unit?: string | null;
+              /**
+               * Additional note or clarification
+               */
+              note?: string | null;
+              /**
+               * Highlight this row (draws attention to key specs)
+               */
+              highlight?: boolean | null;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Allow this category to be collapsed and expanded by the user
+         */
+        collapsible?: boolean | null;
+        /**
+         * Start expanded (only applies when Collapsible is enabled)
+         */
+        defaultExpanded?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Visual theme for the specifications section
+   */
+  theme?: ('blueprint' | 'light' | 'charcoal') | null;
+  /**
+   * Number of columns for specification categories
+   */
+  gridColumns?: ('1' | '2' | '3') | null;
+  /**
+   * Show a subtle engineering grid pattern in the section background
+   */
+  showGridBackground?: boolean | null;
+  /**
+   * Show corner registration marks (engineering drawing aesthetic)
+   */
+  showRegistrationMarks?: boolean | null;
+  /**
+   * Show a download button for specifications
+   */
+  enableDownload?: boolean | null;
+  /**
+   * Label for the download button
+   */
+  downloadButtonText?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'product-technical-specs';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2242,6 +2428,103 @@ export interface ProductFloatingAddToCartBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'product-floating-add-to-cart';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductFeatureSlidesBlock".
+ */
+export interface ProductFeatureSlidesBlock {
+  /**
+   * Optional section label shown above the slides
+   */
+  sectionHeader?: {
+    /**
+     * Small uppercase label above the heading (e.g. "Key Features")
+     */
+    eyebrow?: string | null;
+    /**
+     * Main section heading
+     */
+    heading?: string | null;
+    /**
+     * Optional supporting subheading
+     */
+    subheading?: string | null;
+  };
+  /**
+   * Each feature becomes one fullscreen scroll-driven slide. Lead with media.
+   */
+  features: {
+    /**
+     * Small badge label (e.g. "Innovation", "Craftsmanship", "Sound")
+     */
+    tag?: string | null;
+    /**
+     * Feature headline shown on the slide
+     */
+    title: string;
+    /**
+     * Optional supporting line below the title
+     */
+    subtitle?: string | null;
+    /**
+     * Feature description — keep to 2–3 sentences for best readability
+     */
+    description?: string | null;
+    /**
+     * Choose the media type for this slide — image or video fills the background
+     */
+    mediaType?: ('image' | 'youtube' | 'video') | null;
+    /**
+     * Feature background image (recommended 1920×1080px or larger)
+     */
+    image?: (string | null) | Media;
+    /**
+     * YouTube URL (auto-plays muted in the background)
+     */
+    youtubeUrl?: string | null;
+    /**
+     * Video file upload — MP4 recommended, keep under 20MB
+     */
+    video?: (string | null) | Media;
+    /**
+     * Overlay darkness (0–80). Increase for better text contrast.
+     */
+    overlayOpacity?: number | null;
+    /**
+     * Where the title/description appears on the slide
+     */
+    contentPosition?: ('bottom-left' | 'bottom-right' | 'bottom-center' | 'center-left' | 'center-right') | null;
+    /**
+     * Optional call-to-action link for this slide
+     */
+    cta?: {
+      /**
+       * Button label (leave empty to hide)
+       */
+      text?: string | null;
+      /**
+       * Destination URL
+       */
+      link?: string | null;
+      /**
+       * Open link in a new tab
+       */
+      openInNewTab?: boolean | null;
+    };
+    id?: string | null;
+  }[];
+  /**
+   * Text colour theme — applied across all slides
+   */
+  theme?: ('dark' | 'light') | null;
+  /**
+   * Progress indicator style shown on the side of the slides
+   */
+  progressIndicator?: ('dots' | 'lines' | 'numbers' | 'none') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'product-feature-slides';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -6676,6 +6959,10 @@ export interface Dealer {
    * Feature this dealer prominently in search results
    */
   isFeatured?: boolean | null;
+  /**
+   * Mark as official KAWAI-owned store (vs. authorized dealer)
+   */
+  isOfficialStore?: boolean | null;
   contactInfo?: {
     /**
      * Primary phone number (e.g., "636-265-2866" or "(636) 265-2866")
@@ -8257,6 +8544,7 @@ export interface DealersSelect<T extends boolean = true> {
   slug?: T;
   isActive?: T;
   isFeatured?: T;
+  isOfficialStore?: T;
   contactInfo?:
     | T
     | {

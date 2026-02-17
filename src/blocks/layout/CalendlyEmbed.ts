@@ -237,5 +237,91 @@ export const CalendlyEmbed: Block = {
         },
       ],
     },
+
+    // ========================================================================
+    // Floating Button (Optional)
+    // ========================================================================
+    {
+      name: 'floatingButton',
+      type: 'group',
+      label: '🔲 Floating Button',
+      admin: {
+        description: 'Optional floating button (bottom-right) that opens the Calendly widget in a modal',
+      },
+      fields: [
+        {
+          name: 'enabled',
+          type: 'checkbox',
+          label: 'Enable floating button',
+          defaultValue: false,
+          admin: {
+            description: 'Show a floating button that opens the booking modal',
+          },
+        },
+        {
+          name: 'buttonText',
+          type: 'text',
+          label: 'Button Text',
+          defaultValue: 'Book Now',
+          admin: {
+            description: 'Text displayed on the floating button',
+            placeholder: 'Book Now',
+            condition: (data, siblingData) => siblingData?.enabled === true,
+          },
+        },
+        {
+          name: 'buttonStyle',
+          type: 'select',
+          label: 'Button Style',
+          defaultValue: 'primary',
+          options: [
+            { label: 'Primary (Red)', value: 'primary' },
+            { label: 'Secondary (Gold)', value: 'secondary' },
+            { label: 'Outline', value: 'outline' },
+            { label: 'Ghost', value: 'ghost' },
+          ],
+          admin: {
+            description: 'Visual style of the floating button',
+            condition: (data, siblingData) => siblingData?.enabled === true,
+          },
+        },
+        {
+          name: 'buttonSize',
+          type: 'select',
+          label: 'Button Size',
+          defaultValue: 'default',
+          options: [
+            { label: 'Small', value: 'sm' },
+            { label: 'Default', value: 'default' },
+            { label: 'Large', value: 'lg' },
+          ],
+          admin: {
+            description: 'Size of the floating button',
+            condition: (data, siblingData) => siblingData?.enabled === true,
+          },
+        },
+        {
+          name: 'modalTitle',
+          type: 'text',
+          label: 'Modal Title',
+          defaultValue: 'Book your appointment',
+          admin: {
+            description: 'Title displayed in the booking modal header',
+            placeholder: 'Book Your Appointment',
+            condition: (data, siblingData) => siblingData?.enabled === true,
+          },
+        },
+        {
+          name: 'modalSubtitle',
+          type: 'text',
+          label: 'Modal Subtitle',
+          admin: {
+            description: 'Optional subtitle below the modal title',
+            placeholder: 'Choose a time that works best for you',
+            condition: (data, siblingData) => siblingData?.enabled === true,
+          },
+        },
+      ],
+    },
   ],
 }

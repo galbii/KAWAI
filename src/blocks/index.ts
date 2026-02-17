@@ -48,8 +48,10 @@ export { ProductDescription } from './product/ProductDescription'
 export { ImageGallery } from './product/ImageGallery'
 export { FeaturesList } from './product/FeaturesList'
 export { Specifications } from './product/Specifications'
+export { TechnicalSpecifications } from './product/TechnicalSpecifications'
 export { CollectionShowcase } from './product/CollectionShowcase'
 export { FloatingAddToCart } from './product/FloatingAddToCart'
+export { ProductFeatureSlides } from './product/ProductFeatureSlides'
 
 // Legacy blocks (keep for backward compatibility - TODO: migrate away from these)
 export { Hello } from './Hello'

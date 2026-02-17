@@ -75,7 +75,7 @@ export function AnnouncementBar({
   const content = (
     <div
       className={cn(
-        'fixed top-0 left-0 right-0 z-[60] w-full overflow-hidden',
+        'fixed top-0 left-0 right-0 z-40 w-full overflow-hidden',
         styleClasses[style],
         sizeClasses[size]
       )}

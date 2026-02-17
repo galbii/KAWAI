@@ -72,6 +72,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   const [keyboardHeight, setKeyboardHeight] = useState(0)
   const [isInputFocused, setIsInputFocused] = useState(false)
   const [announcementBarHeight, setAnnouncementBarHeight] = useState(0)
+  const [visualViewportHeight, setVisualViewportHeight] = useState(0)
   const [quickLinks, setQuickLinks] = useState<QuickLink[]>([
     { label: 'Instrumental to Life', url: '/instrumental-to-life' },
     { label: 'Find a Dealer', url: '/find-a-dealer' },
@@ -132,9 +133,15 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   useEffect(() => {
     setIsMounted(true)
 
-    // Detect mobile device
+    // Detect mobile device and initialize visual viewport height
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
+      const isMobileDevice = window.innerWidth < 768
+      setIsMobile(isMobileDevice)
+
+      // Initialize visual viewport height on mobile
+      if (isMobileDevice && window.visualViewport) {
+        setVisualViewportHeight(window.visualViewport.height)
+      }
     }
 
     checkMobile()
@@ -202,6 +209,9 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
       const visualHeight = visualViewport.height
       const newKeyboardHeight = layoutHeight - visualHeight
 
+      // Update visual viewport height for results container sizing
+      setVisualViewportHeight(visualHeight)
+
       // Update keyboard height (set to 0 when keyboard closes)
       setKeyboardHeight(newKeyboardHeight > 150 ? newKeyboardHeight : 0)
 
@@ -210,6 +220,9 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
         measuringKeyboardRef.current = false
       }
     }
+
+    // Initial measurement
+    handleViewportResize()
 
     // Listen to visualViewport resize (fires when keyboard opens/closes)
     visualViewport.addEventListener('resize', handleViewportResize)
@@ -721,9 +734,12 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                   top: isMobile ? 0 : `${120 + announcementBarHeight}px`,
                   left: 0,
                   right: 0,
-                  // On mobile, stop backdrop before the input area to prevent click-through
-                  bottom: isMobile && keyboardHeight > 0
-                    ? `${keyboardHeight + 80}px`
+                  // On mobile, use visual viewport height to match overlay container
+                  height: isMobile && keyboardHeight > 0 && visualViewportHeight > 0
+                    ? `${visualViewportHeight - 96}px` // Match overlay container height
+                    : undefined,
+                  bottom: isMobile && keyboardHeight > 0 && visualViewportHeight > 0
+                    ? undefined // Use height instead of bottom when keyboard is open
                     : 0
                 }}
                 onClick={() => {
@@ -746,10 +762,11 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                         top: 0,
                         left: 0,
                         right: 0,
-                        // Dynamically adjust bottom spacing based on keyboard height
-                        bottom: keyboardHeight > 0
-                          ? `${keyboardHeight + 80}px` // Input height + keyboard height
-                          : 'calc(100px + env(safe-area-inset-bottom))' // Default spacing
+                        // Use visual viewport height to ensure results stay within visible area
+                        // Subtract search input height (80px) and padding (16px for p-2 top/bottom)
+                        height: keyboardHeight > 0 && visualViewportHeight > 0
+                          ? `${visualViewportHeight - 96}px` // 96px = 80px input + 16px padding
+                          : 'calc(100vh - 100px - env(safe-area-inset-bottom))' // Default spacing
                       }
                     : { top: `${120 + announcementBarHeight}px`, left: 0, right: 0, bottom: 0 } // 64px (top bar) + 56px (bottom nav) + announcement bar
                 }
@@ -877,8 +894,10 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                         isMobile
                           ? {
                               paddingTop: isMobile && query.length >= 2 ? '0' : 'calc(1rem + env(safe-area-inset-top))',
-                              // Ensure proper scrolling when keyboard is open
-                              maxHeight: keyboardHeight > 0 ? '100%' : undefined,
+                              // Use 100% height on mobile - parent container is already constrained to visual viewport
+                              // This ensures results fill available space without getting cut off
+                              height: '100%',
+                              maxHeight: '100%',
                             }
                           : undefined
                       }

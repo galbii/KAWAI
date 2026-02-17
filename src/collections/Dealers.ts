@@ -89,6 +89,15 @@ export const Dealers: CollectionConfig = {
         position: 'sidebar'
       }
     },
+    {
+      name: 'isOfficialStore',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Mark as official KAWAI-owned store (vs. authorized dealer)',
+        position: 'sidebar'
+      }
+    },
 
     // Tabbed Content
     {

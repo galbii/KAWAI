@@ -210,7 +210,6 @@ export function FloatingAddToCartIntegrated({
             <button
               onClick={(e) => {
                 e.stopPropagation()
-                console.log('[FloatingAddToCartIntegrated] Variation button clicked, toggling selector')
                 setShowVariationSelector(!showVariationSelector)
               }}
               className="mt-2 text-xs text-white/90 text-center font-medium tracking-wide hover:text-white transition-colors flex items-center justify-center gap-1 w-full"
@@ -223,65 +222,64 @@ export function FloatingAddToCartIntegrated({
             </button>
           )}
 
-          {/* Debug: Show if variation button should be visible */}
           {variantName && availableVariations.length <= 1 && (
             <div className="mt-2 text-xs text-white/90 text-center font-medium tracking-wide">
               <span>{variantName}</span>
             </div>
           )}
         </div>
-
-        {/* Variation Selector Dropdown */}
-        <AnimatePresence>
-          {showVariationSelector && availableVariations.length > 1 && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="absolute bottom-full mb-2 left-0 right-0 bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
-                <span className="text-sm font-semibold text-gray-900">Select Variation</span>
-                <button
-                  onClick={() => setShowVariationSelector(false)}
-                  className="p-1 hover:bg-gray-200 rounded transition-colors"
-                >
-                  <X className="w-4 h-4 text-gray-600" />
-                </button>
-              </div>
-
-              {/* Variations List */}
-              <div className="max-h-[300px] overflow-y-auto">
-                {availableVariations.map((variation, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      onVariationChange?.(index)
-                      setShowVariationSelector(false)
-                    }}
-                    className={cn(
-                      "w-full px-4 py-3 text-left transition-colors",
-                      "hover:bg-gray-50",
-                      selectedVariationIndex === index
-                        ? "bg-kawai-red/10 text-kawai-red font-medium"
-                        : "text-gray-700"
-                    )}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">{variation.name}</span>
-                      {selectedVariationIndex === index && (
-                        <span className="text-xs text-kawai-red">✓ Selected</span>
-                      )}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
+
+      {/* Variation Selector Dropdown - outside overflow-hidden container so it isn't clipped */}
+      <AnimatePresence>
+        {showVariationSelector && availableVariations.length > 1 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.2 }}
+            className="absolute bottom-full mb-2 left-0 right-0 bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+              <span className="text-sm font-semibold text-gray-900">Select Variation</span>
+              <button
+                onClick={() => setShowVariationSelector(false)}
+                className="p-1 hover:bg-gray-200 rounded transition-colors"
+              >
+                <X className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+
+            {/* Variations List */}
+            <div className="max-h-[300px] overflow-y-auto">
+              {availableVariations.map((variation, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    onVariationChange?.(index)
+                    setShowVariationSelector(false)
+                  }}
+                  className={cn(
+                    "w-full px-4 py-3 text-left transition-colors",
+                    "hover:bg-gray-50",
+                    selectedVariationIndex === index
+                      ? "bg-kawai-red/10 text-kawai-red font-medium"
+                      : "text-gray-700"
+                  )}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">{variation.name}</span>
+                    {selectedVariationIndex === index && (
+                      <span className="text-xs text-kawai-red">✓ Selected</span>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

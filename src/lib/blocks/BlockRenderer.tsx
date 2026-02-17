@@ -9,6 +9,8 @@ import { HeroBlock } from '@/components/blocks/HeroBlock'
 import { ProductShowcaseBlock } from '@/components/blocks/ProductShowcaseBlock'
 import { ProductHeroBlock } from '@/components/blocks/ProductHeroBlock'
 import { ProductDescriptionRenderer } from '@/components/blocks/product/ProductDescriptionRenderer'
+import { ProductTechnicalSpecsRenderer } from '@/components/blocks/product/ProductTechnicalSpecsRenderer'
+import { ProductFeatureSlidesRenderer } from '@/components/blocks/product/ProductFeatureSlidesRenderer'
 import { ImageGalleryBlock } from '@/components/blocks/ImageGalleryBlock'
 import { FeaturesListBlock } from '@/components/blocks/FeaturesListBlock'
 import { SpecificationsBlock } from '@/components/blocks/SpecificationsBlock'
@@ -33,6 +35,8 @@ const BLOCK_COMPONENTS = {
   'product-gallery': ImageGalleryBlock,
   'product-features': FeaturesListBlock,
   'product-specs': SpecificationsBlock,
+  'product-technical-specs': ProductTechnicalSpecsRenderer,
+  'product-feature-slides': ProductFeatureSlidesRenderer,
   'product-collection-showcase': CollectionShowcaseBlock,
   'product-floating-add-to-cart': FloatingAddToCartBlock,
   // Content blocks

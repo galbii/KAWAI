@@ -75,8 +75,10 @@ import {
   ImageGallery,
   FeaturesList,
   Specifications,
+  TechnicalSpecifications,
   CollectionShowcase,
   FloatingAddToCart,
+  ProductFeatureSlides,
   // Legacy blocks (keep for backward compatibility)
   TextContent,
   Hello,
@@ -244,8 +246,10 @@ export default buildConfig({
     ImageGallery,
     FeaturesList,
     Specifications,
+    TechnicalSpecifications,
     CollectionShowcase,
     FloatingAddToCart,
+    ProductFeatureSlides,
 
     // Legacy blocks (keep for backward compatibility)
     TextContent,

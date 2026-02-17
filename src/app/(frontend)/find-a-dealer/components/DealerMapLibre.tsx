@@ -5,12 +5,9 @@ import { Map, Marker, Popup } from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import './dealer-map.css'
 import type { Dealer } from '@/payload-types'
+import type { DealerWithDistance } from '../types'
 import { Phone, Navigation, Piano, Briefcase, Star, Globe, MapPin, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
-
-interface DealerWithDistance extends Dealer {
-  distance?: number
-}
 
 interface Props {
   dealers: DealerWithDistance[]
@@ -121,6 +118,7 @@ export function DealerMapLibre({
               {/* Selection Ring/Glow */}
               {isSelected && (
                 <div
+                  className="selected-marker-pulse"
                   style={{
                     position: 'absolute',
                     top: '50%',
@@ -131,7 +129,6 @@ export function DealerMapLibre({
                     borderRadius: '50%',
                     backgroundColor: 'rgba(212, 175, 55, 0.2)',
                     border: '3px solid #D4AF37',
-                    animation: 'pulse 2s infinite',
                     zIndex: -1,
                   }}
                 />
@@ -143,7 +140,7 @@ export function DealerMapLibre({
                   width: isSelected ? 48 : isFeatured ? 40 : 32,
                   height: isSelected ? 48 : isFeatured ? 40 : 32,
                   cursor: 'pointer',
-                  transition: 'all 0.2s ease',
+                  transition: 'all 200ms cubic-bezier(0.4, 0.0, 0.2, 1)',
                   filter: isSelected
                     ? 'drop-shadow(0 4px 8px rgba(212, 175, 55, 0.8)) brightness(1.1)'
                     : 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',

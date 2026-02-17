@@ -568,8 +568,10 @@ export const Products: CollectionConfig = {
               blockReferences: [
                 'product-hero',                      // Product Hero - Only allowed block for product pages
                 'product-description',               // Product Description - Rich descriptions with image/video backgrounds
+                'product-technical-specs',           // Technical Specifications - Blueprint-style specifications with dynamic data
                 'product-collection-showcase',       // Collection Showcase - Display collection content
                 'product-floating-add-to-cart',      // Floating Add to Cart - Sticky cart button
+                'product-feature-slides',            // Feature Slides - Scroll-driven fullscreen feature showcase
                 'marketing-instagram-carousel',      // Instagram Carousel - Social proof
                 'marketing-featured-models',         // Featured Models - Showcase related models
               ] as any,
@@ -1061,17 +1063,26 @@ export const Products: CollectionConfig = {
 
           console.log(`🧩 Added default product-hero block`)
 
-          // 3. Add floating-add-to-cart block THIRD
+          // 3. Add product-description block THIRD
           defaultBlocks.push({
-            blockType: 'product-floating-add-to-cart',
-            enabled: true,
-            buttonText: 'Add to Cart',
-            position: 'bottom-right',
-            showOnScroll: true,
-            scrollThreshold: 300,
+            blockType: 'product-description',
           })
 
-          console.log(`🛒 Added default floating-add-to-cart block`)
+          console.log(`📝 Added default product-description block`)
+
+          // 4. Add product-feature-slides block FOURTH
+          defaultBlocks.push({
+            blockType: 'product-feature-slides',
+          })
+
+          console.log(`🎞 Added default product-feature-slides block`)
+
+          // 5. Add product-technical-specs block FIFTH
+          defaultBlocks.push({
+            blockType: 'product-technical-specs',
+          })
+
+          console.log(`📐 Added default product-technical-specs block`)
 
           data.pageContent = defaultBlocks
           console.log(`✅ Added ${defaultBlocks.length} default blocks (operation: ${operation})`)

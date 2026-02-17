@@ -405,6 +405,18 @@ export function populateSpecificationsData(block: SpecificationsBlockData, produ
 
 // Master block population function
 export function populateBlockData(block: any, blockType: string, product: Product) {
+  // Debug logging for product-technical-specs
+  if (blockType === 'product-technical-specs') {
+    console.group('[populateBlockData] product-technical-specs')
+    console.log('Product name:', product.name)
+    console.log('Product model:', product.model)
+    console.log('Product has specifications?', !!product.specifications)
+    console.log('Product specifications length:', product.specifications?.length || 0)
+    console.log('Product has blueprint?', !!product.blueprint)
+    console.log('Product blueprint.url:', product.blueprint?.url)
+    console.groupEnd()
+  }
+
   switch (blockType) {
     case 'hero':
       return populateHeroData(block, product)
@@ -416,8 +428,34 @@ export function populateBlockData(block: any, blockType: string, product: Produc
       return populateFeaturesListData(block, product)
     case 'specifications':
       return populateSpecificationsData(block, product)
+    case 'product-technical-specs': {
+      // If the block has its own product relationship populated (object, not just an ID string),
+      // use it directly so editors can target a different product than the page product.
+      // Fall back to the page-level product when the relationship is empty or unresolved.
+      const blockProduct =
+        block.product && typeof block.product === 'object' ? block.product : product
+      return {
+        ...block,
+        product: blockProduct,
+      }
+    }
     default:
-      // For blocks that don't have pianoModel integration (textContent, callToAction, testimonials)
-      return block
+      // For all other blocks, always include product prop
+      // This allows blocks to access product data even without specific population logic
+      const populatedBlock = {
+        ...block,
+        product: product
+      }
+
+      // Debug logging for product-technical-specs in default case
+      if (blockType === 'product-technical-specs') {
+        console.log('[populateBlockData] Returning block with product:', {
+          blockKeys: Object.keys(populatedBlock),
+          hasProduct: !!populatedBlock.product,
+          productName: populatedBlock.product?.name
+        })
+      }
+
+      return populatedBlock
   }
 }

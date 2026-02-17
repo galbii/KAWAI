@@ -9,7 +9,7 @@ import { getOptimizedImageProps } from '@/lib/media/r2-utils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect, createElement } from 'react'
-import { ShoppingCart, Heart, Share2, CheckCircle, Sparkles, Clock, Play, Volume2 } from 'lucide-react'
+import { ShoppingCart, Heart, Share2, CheckCircle, Sparkles, Clock, Play, Volume2, Images } from 'lucide-react'
 import { cn, formatPrice } from '@/lib/utils'
 import {
   Dialog,
@@ -282,7 +282,9 @@ export function ProductHeroBlock({
     return matchedVariant ? {
       price: matchedVariant.price,
       compareAtPrice: matchedVariant.compareAtPrice,
-      onSale: matchedVariant.compareAtPrice !== null && matchedVariant.compareAtPrice > matchedVariant.price
+      onSale: matchedVariant.compareAtPrice !== null &&
+              matchedVariant.compareAtPrice !== undefined &&
+              matchedVariant.compareAtPrice > matchedVariant.price
     } : null
   }
 
@@ -498,6 +500,50 @@ export function ProductHeroBlock({
               )}
             </div>
 
+            {/* Mobile-only image - between title and model */}
+            {displayImage && (
+              <div
+                className={cn(
+                  "lg:hidden relative w-full h-[320px] sm:h-[400px] overflow-hidden rounded-xl",
+                  galleryImages.length > 0 && "cursor-pointer"
+                )}
+                onClick={() => galleryImages.length > 0 && setIsGalleryOpen(true)}
+                role={galleryImages.length > 0 ? "button" : undefined}
+                tabIndex={galleryImages.length > 0 ? 0 : undefined}
+                onKeyDown={(e) => {
+                  if (galleryImages.length > 0 && (e.key === 'Enter' || e.key === ' ')) {
+                    e.preventDefault()
+                    setIsGalleryOpen(true)
+                  }
+                }}
+                aria-label={galleryImages.length > 0 ? `Open image gallery (${galleryImages.length} photos)` : undefined}
+              >
+                {(() => {
+                  const imageProps = getOptimizedImageProps(displayImage, 'hero')
+                  if (!imageProps?.src) return null
+                  const { width, height, ...optimizedProps } = imageProps
+                  return (
+                    <Image
+                      {...optimizedProps}
+                      fill
+                      className="object-contain"
+                      priority={true}
+                      sizes="100vw"
+                      alt={optimizedProps.alt || displayTitle || 'Product image'}
+                    />
+                  )
+                })()}
+
+                {/* Persistent gallery indicator for mobile (no hover on touch devices) */}
+                {galleryImages.length > 0 && (
+                  <div className="absolute bottom-2.5 right-2.5 z-10 flex items-center gap-1.5 bg-white/80 backdrop-blur-sm px-2.5 py-1.5 rounded-full shadow-sm">
+                    <Images className="w-3.5 h-3.5 text-kawai-charcoal" />
+                    <span className="text-xs font-medium text-kawai-charcoal">{galleryImages.length}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Compact Model Display - Inline style */}
             {modelDisplay && (
               <div className="flex items-center space-x-3">
@@ -522,24 +568,22 @@ export function ProductHeroBlock({
               <div className={cn("flex items-baseline gap-3", textColorClass)}>
                 <span className="text-3xl font-bold tracking-wide text-kawai-red">MSRP:</span>
                 {variationsDisplayPrice.type === 'single' ? (
-                  <div className="flex items-baseline gap-3">
-                    {variationsDisplayPrice.onSale ? (
-                      <>
-                        {/* Sale Price - Fade in with scale */}
-                        <span className="text-3xl font-bold text-kawai-red animate-in fade-in slide-in-from-bottom-2 duration-500">
-                          {formatPrice(variationsDisplayPrice.price)}
-                        </span>
-                        {/* Original Price - Crossout with fade */}
-                        <span className="text-xl line-through opacity-60 animate-in fade-in duration-700 delay-200">
-                          {formatPrice(variationsDisplayPrice.compareAtPrice!)}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-3xl font-bold transition-all duration-300">
+                  variationsDisplayPrice.onSale ? (
+                    <>
+                      {/* compareAtPrice (MSRP) crossed out */}
+                      <span className="text-3xl font-bold line-through opacity-60 animate-in fade-in duration-500">
+                        {formatPrice(variationsDisplayPrice.compareAtPrice!)}
+                      </span>
+                      {/* Sale price - to the right, prominent */}
+                      <span className="text-3xl font-bold text-kawai-red animate-in fade-in slide-in-from-bottom-2 duration-500">
                         {formatPrice(variationsDisplayPrice.price)}
                       </span>
-                    )}
-                  </div>
+                    </>
+                  ) : (
+                    <span className="text-3xl font-bold transition-all duration-300">
+                      {formatPrice(variationsDisplayPrice.price)}
+                    </span>
+                  )
                 ) : (
                   <span className="text-3xl font-bold transition-all duration-300">
                     {formatPrice(variationsDisplayPrice.minPrice)} - {formatPrice(variationsDisplayPrice.maxPrice)}
@@ -710,8 +754,8 @@ export function ProductHeroBlock({
             )}
           </div>
 
-          {/* Image Section - Compact, right column */}
-          <div className="order-2 lg:order-none lg:col-span-7 lg:col-start-6 lg:row-start-1 relative">
+          {/* Image Section - Desktop only (mobile image is inline above model) */}
+          <div className="hidden lg:block lg:col-span-7 lg:col-start-6 lg:row-start-1 relative">
             {displayImage && (
               <div className="relative">
 

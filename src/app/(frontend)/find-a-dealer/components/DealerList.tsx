@@ -1,11 +1,7 @@
 'use client'
 
-import type { Dealer } from '@/payload-types'
+import type { DealerWithDistance } from '../types'
 import { DealerCard } from './DealerCard'
-
-interface DealerWithDistance extends Dealer {
-  distance?: number
-}
 
 interface Props {
   dealers: DealerWithDistance[]
@@ -52,13 +48,18 @@ export function DealerList({ dealers, selectedDealer, onDealerSelect }: Props) {
 
   return (
     <div className="p-4 space-y-4">
-      {dealers.map(dealer => (
-        <DealerCard
+      {dealers.map((dealer, index) => (
+        <div
           key={dealer.id}
-          dealer={dealer}
-          isSelected={selectedDealer === dealer.id}
-          onSelect={() => onDealerSelect(dealer.id as string)}
-        />
+          className="dealer-card-animate"
+          style={{ animationDelay: `${80 * index}ms` }}
+        >
+          <DealerCard
+            dealer={dealer}
+            isSelected={selectedDealer === dealer.id}
+            onSelect={() => onDealerSelect(dealer.id as string)}
+          />
+        </div>
       ))}
     </div>
   )

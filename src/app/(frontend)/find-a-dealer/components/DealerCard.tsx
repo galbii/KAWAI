@@ -3,12 +3,9 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import type { Dealer } from '@/payload-types'
+import type { DealerWithDistance } from '../types'
 import { MapPin, Phone, ExternalLink, Star, Piano, Briefcase, ArrowRight, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-interface DealerWithDistance extends Dealer {
-  distance?: number
-}
 
 interface Props {
   dealer: DealerWithDistance
@@ -33,7 +30,12 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
         "group bg-white border cursor-pointer transition-all duration-200 relative overflow-hidden",
         isSelected
           ? "border-kawai-charcoal shadow-lg"
-          : "border-gray-200 hover:border-gray-300 hover:shadow-md"
+          : "border-gray-200 hover:border-gray-300 hover:shadow-md",
+        // Official store styling
+        dealer.isOfficialStore && [
+          "border-l-4 border-l-kawai-gold",
+          !isSelected && "hover:shadow-[0_12px_24px_rgba(212,175,55,0.2),0_0_0_2px_rgba(212,175,55,0.3)]"
+        ]
       )}
       onClick={() => {
         onSelect()
@@ -63,6 +65,12 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
 
             {/* Dealer Type Badges */}
             <div className="flex flex-wrap gap-2">
+              {dealer.isOfficialStore && (
+                <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-kawai-gold/10 text-kawai-gold text-xs font-semibold rounded-md border border-kawai-gold/20">
+                  <Star className="w-3 h-3" fill="currentColor" strokeWidth={0} />
+                  <span>Official KAWAI Store</span>
+                </div>
+              )}
               {hasAcousticDigital && (
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-md">
                   <Piano className="w-3.5 h-3.5" strokeWidth={2} />

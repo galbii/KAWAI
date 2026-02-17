@@ -11,7 +11,103 @@ export const ProductDescription: Block = {
   imageURL: 'https://via.placeholder.com/300x200?text=Product+Description',
   imageAltText: 'Display product descriptions with image or video backgrounds',
   fields: [
-    // Media Background Group
+    // Media Items Array (multiple videos/images like the I2L block)
+    {
+      name: 'mediaItems',
+      type: 'array',
+      maxRows: 8,
+      labels: {
+        singular: 'Media Item',
+        plural: 'Media Items',
+      },
+      fields: [
+        {
+          name: 'type',
+          type: 'select',
+          required: true,
+          defaultValue: 'youtube',
+          options: [
+            { label: 'YouTube Video', value: 'youtube' },
+            { label: 'Image', value: 'image' },
+          ],
+          admin: {
+            description: 'Type of media for this item',
+          },
+        },
+        {
+          name: 'youtubeUrl',
+          type: 'text',
+          admin: {
+            description: 'YouTube video URL',
+            placeholder: 'https://youtube.com/watch?v=...',
+            condition: (_, siblingData) => siblingData?.type === 'youtube',
+          },
+        },
+        imageField('image', {
+          admin: {
+            description: 'Image for this media item',
+            condition: (_, siblingData) => siblingData?.type === 'image',
+          },
+        }),
+        {
+          name: 'title',
+          type: 'text',
+          admin: {
+            description: 'Optional title displayed alongside this media item',
+            placeholder: 'Media title',
+          },
+        },
+        {
+          name: 'caption',
+          type: 'textarea',
+          admin: {
+            description: 'Optional caption or description for this media item',
+          },
+        },
+      ],
+      admin: {
+        description:
+          'Additional media items displayed in a carousel or grid below the description. Supports YouTube videos and images.',
+      },
+    },
+
+    // Media Gallery Settings
+    {
+      name: 'mediaGallerySettings',
+      type: 'group',
+      fields: [
+        {
+          name: 'layout',
+          type: 'select',
+          defaultValue: 'carousel',
+          options: [
+            { label: 'Carousel (Side-scroll)', value: 'carousel' },
+            { label: 'Grid (2 columns)', value: 'grid-2' },
+            { label: 'Grid (3 columns)', value: 'grid-3' },
+          ],
+          admin: {
+            description: 'Display layout for the media items gallery',
+          },
+        },
+        {
+          name: 'theme',
+          type: 'select',
+          defaultValue: 'dark',
+          options: [
+            { label: 'Dark Theme', value: 'dark' },
+            { label: 'Light Theme', value: 'light' },
+          ],
+          admin: {
+            description: 'Color theme for the media gallery section',
+          },
+        },
+      ],
+      admin: {
+        description: 'Settings for the media items gallery (applies when Media Items are added)',
+      },
+    },
+
+    // Background Media Group
     {
       name: 'background',
       type: 'group',
@@ -26,7 +122,7 @@ export const ProductDescription: Block = {
             { label: 'YouTube Video', value: 'youtube' },
           ],
           admin: {
-            description: 'Choose background type for the description section',
+            description: 'Choose background type for the description section (used when no Featured Media is set)',
           },
         },
         imageField('backgroundImage', {
@@ -69,7 +165,7 @@ export const ProductDescription: Block = {
         },
       ],
       admin: {
-        description: 'Background media configuration (image or video)',
+        description: 'Background media configuration — only used when no Featured Media is set above.',
       },
     },
 
@@ -104,7 +200,8 @@ export const ProductDescription: Block = {
         },
       ],
       admin: {
-        description: 'Automatically uses the description from the current product. Enable custom override if needed.',
+        description:
+          'Automatically uses the description from the current product. Enable custom override if needed.',
       },
     },
 
@@ -123,7 +220,7 @@ export const ProductDescription: Block = {
             { label: 'Right', value: 'right' },
           ],
           admin: {
-            description: 'Horizontal alignment of text content',
+            description: 'Horizontal alignment of text content (classic background layout only)',
           },
         },
         {
@@ -136,7 +233,7 @@ export const ProductDescription: Block = {
             { label: 'Bottom', value: 'bottom' },
           ],
           admin: {
-            description: 'Vertical alignment of content',
+            description: 'Vertical alignment of content (classic background layout only)',
           },
         },
         {
@@ -184,7 +281,7 @@ export const ProductDescription: Block = {
             { label: 'Full Screen (100vh)', value: 'fullscreen' },
           ],
           admin: {
-            description: 'Minimum height of the description section',
+            description: 'Minimum height of the description section (classic background layout only)',
           },
         },
       ],
