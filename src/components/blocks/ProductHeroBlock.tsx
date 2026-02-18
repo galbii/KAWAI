@@ -45,11 +45,6 @@ interface ProductHeroBlockProps {
     customImage?: string | Media | null
     badge?: string | null
   }
-  // Additional CMS images to append to gallery after Shopify media
-  additionalImages?: Array<{
-    image?: Media | string | null
-    alt?: string | null
-  }> | null
   // The product data will be passed from the context (current product document)
   product?: Product | null
   // Shopify product data fetched server-side
@@ -62,13 +57,14 @@ export function ProductHeroBlock({
   overrides = {},
   product,
   shopifyProduct,
-  additionalImages,
 }: ProductHeroBlockProps) {
-  // Filter variations to only include available ones - MUST be declared early
-  const availableVariations = product?.variations?.filter(variation => variation.available) || []
+  // All variations for display (including unavailable — user can still browse)
+  const allVariations = product?.variations || []
+  // Available-only subset used for cart operations and floating cart
+  const availableVariations = allVariations.filter(variation => variation.available)
 
-  // Default to first variation (index 0) if variations exist, otherwise -1
-  const defaultVariation = availableVariations.length > 0 ? 0 : -1
+  // Default to first variation if any exist
+  const defaultVariation = allVariations.length > 0 ? 0 : -1
   const [selectedVariation, setSelectedVariation] = useState(defaultVariation)
   const [isFavorited, setIsFavorited] = useState(false)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
@@ -76,21 +72,21 @@ export function ProductHeroBlock({
   const sectionRef = useRef<HTMLElement>(null)
   const galleryRef = useRef<HTMLDivElement>(null)
 
-  // CRITICAL: Sync selectedVariation when availableVariations changes (handles async product loading)
+  // Sync selectedVariation when variations change (handles async product loading)
   useEffect(() => {
     // If variations exist but nothing selected, select first one
-    if (availableVariations.length > 0 && selectedVariation < 0) {
+    if (allVariations.length > 0 && selectedVariation < 0) {
       setSelectedVariation(0)
     }
-    // If no variations exist but something is selected, deselect
-    else if (availableVariations.length === 0 && selectedVariation >= 0) {
+    // If no variations exist, deselect
+    else if (allVariations.length === 0 && selectedVariation >= 0) {
       setSelectedVariation(-1)
     }
     // If selected index is out of bounds, reset to first
-    else if (selectedVariation >= availableVariations.length) {
+    else if (selectedVariation >= allVariations.length) {
       setSelectedVariation(0)
     }
-  }, [availableVariations.length, selectedVariation])
+  }, [allVariations.length, selectedVariation])
 
   // Scroll trap: gallery scrolls first with smooth lerp animation; page resumes at gallery bottom
   useEffect(() => {
@@ -149,8 +145,8 @@ export function ProductHeroBlock({
     }
 
     // Try to match variation name with variant title
-    if (availableVariations[selectedVariation]) {
-      const variationName = availableVariations[selectedVariation]?.name
+    if (allVariations[selectedVariation]) {
+      const variationName = allVariations[selectedVariation]?.name
       const matchedVariant = shopifyProduct.variants.find(
         (variant) => variant.title.toLowerCase().includes(variationName?.toLowerCase() || '')
       )
@@ -213,8 +209,7 @@ export function ProductHeroBlock({
         "Professional-grade KAWAI precision craftsmanship"
       ]
 
-  // availableVariations already declared at top of component
-  const hasVariations = availableVariations.length > 0
+  const hasVariations = allVariations.length > 0
   // CONSOLIDATED: Updated price field names (msrp only, priceText removed)
   const hasPrice = product.price && product.price.msrp
   
@@ -225,8 +220,8 @@ export function ProductHeroBlock({
     }
 
     // If a variation is selected, check for variation image (Media object or URL)
-    if (selectedVariation >= 0 && availableVariations[selectedVariation]) {
-      const selectedVariationData = availableVariations[selectedVariation]
+    if (selectedVariation >= 0 && allVariations[selectedVariation]) {
+      const selectedVariationData = allVariations[selectedVariation]
 
       // Check if variation has a valid Media image
       const isVariationImageValid = selectedVariationData.image &&
@@ -266,19 +261,27 @@ export function ProductHeroBlock({
       ...(media.imageHeight && { height: media.imageHeight }),
     })) || []
 
-  // Merge shopify gallery images with additional CMS images appended at end
+  // Product-level custom media — only 'media' type goes into the image gallery (youtube is for ProductDescription)
+  type CustomMediaItem = {
+    mediaType?: 'media' | 'youtube' | null
+    image?: Media | string | null
+    youtubeUrl?: string | null
+    alt?: string | null
+  }
+  const productCustomMedia = ((product as any).customMedia as CustomMediaItem[] | null | undefined) || []
+
+  // Merge: Shopify images → product custom media (images only, no youtube)
   const allGalleryImages = [
     ...galleryImages,
-    ...(additionalImages || []).flatMap((item) => {
-      const img = item.image
-      if (!img) return []
-      const url = typeof img === 'string' ? img : (img as Media).url
-      if (!url) return []
-      return [{
-        url,
-        alt: item.alt || product.name || 'Product image',
-      }]
-    })
+    ...productCustomMedia
+      .filter((item) => !item.mediaType || item.mediaType === 'media')
+      .flatMap((item) => {
+        const img = item.image
+        if (!img) return []
+        const url = typeof img === 'string' ? img : (img as Media).url
+        if (!url) return []
+        return [{ url, alt: item.alt || product.name || 'Product image' }]
+      }),
   ]
 
   // Find the current image index in the gallery
@@ -366,8 +369,8 @@ export function ProductHeroBlock({
     // If product has variations, handle variation-based pricing
     if (hasVariations) {
       // If a variation is selected, show that variation's price
-      if (selectedVariation >= 0 && availableVariations[selectedVariation]) {
-        const variationPrice = getVariationPrice(availableVariations[selectedVariation]?.name || '')
+      if (selectedVariation >= 0 && allVariations[selectedVariation]) {
+        const variationPrice = getVariationPrice(allVariations[selectedVariation]?.name || '')
         if (variationPrice) {
           return {
             type: 'single' as const,
@@ -379,7 +382,7 @@ export function ProductHeroBlock({
       }
 
       // No variation selected or only one variation - show range
-      const prices = availableVariations
+      const prices = allVariations
         .map(v => getVariationPrice(v.name || ''))
         .filter((p): p is NonNullable<typeof p> => p !== null)
         .map(p => p.price)
@@ -390,7 +393,7 @@ export function ProductHeroBlock({
       const maxPrice = Math.max(...prices)
 
       // If only one unique price or one variation, show single price
-      if (minPrice === maxPrice || availableVariations.length === 1) {
+      if (minPrice === maxPrice || allVariations.length === 1) {
         return {
           type: 'single' as const,
           price: minPrice
@@ -454,7 +457,7 @@ export function ProductHeroBlock({
     // Use actual variant price if variation is selected, otherwise use base MSRP
     const basePrice = product.price.msrp
     const selectedVariationPrice = hasVariations && selectedVariation >= 0
-      ? availableVariations[selectedVariation]?.price
+      ? allVariations[selectedVariation]?.price
       : null
     const displayPrice = selectedVariationPrice || basePrice
     const mainPrice = `${symbol}${displayPrice.toLocaleString()}`
@@ -521,15 +524,15 @@ export function ProductHeroBlock({
     displayImageType: typeof displayImage,
     displayImageUrl: typeof displayImage === 'object' ? displayImage?.url : displayImage,
     isVariationImageSelected: selectedVariation >= 0,
-    variationImageData: selectedVariation >= 0 && availableVariations[selectedVariation] ? {
-      variationName: availableVariations[selectedVariation]?.name,
-      hasMediaImage: !!(availableVariations[selectedVariation]?.image),
-      hasImageUrl: !!(availableVariations[selectedVariation]?.imageUrl),
-      mediaImageUrl: typeof availableVariations[selectedVariation]?.image === 'object' ?
-        availableVariations[selectedVariation]?.image?.url : null,
-      imageUrl: availableVariations[selectedVariation]?.imageUrl,
+    variationImageData: selectedVariation >= 0 && allVariations[selectedVariation] ? {
+      variationName: allVariations[selectedVariation]?.name,
+      hasMediaImage: !!(allVariations[selectedVariation]?.image),
+      hasImageUrl: !!(allVariations[selectedVariation]?.imageUrl),
+      mediaImageUrl: typeof allVariations[selectedVariation]?.image === 'object' ?
+        allVariations[selectedVariation]?.image?.url : null,
+      imageUrl: allVariations[selectedVariation]?.imageUrl,
       selectedImageSource: (() => {
-        const variation = availableVariations[selectedVariation]
+        const variation = allVariations[selectedVariation]
         if (variation?.image && typeof variation.image === 'object' && variation.image.url) return 'Media object'
         if (variation?.imageUrl) return 'imageUrl string'
         return 'fallback to main'
@@ -668,58 +671,39 @@ export function ProductHeroBlock({
             {/* Compact Variation Selection */}
             {showVariations && hasVariations && (
               <div className="space-y-3">
-                <h3 className={cn("text-base lg:text-lg font-medium", textColorClass)}>Available Variations</h3>
-                {(() => {
-                  console.log('[ProductHeroBlock] Rendering variations:', {
-                    showVariations,
-                    hasVariations,
-                    availableVariationsCount: availableVariations.length,
-                    selectedVariation,
-                    variations: availableVariations.map((v, i) => ({
-                      index: i,
-                      name: v.name,
-                      selected: selectedVariation === i
-                    }))
-                  })
-                  return null
-                })()}
+                <h3 className={cn("text-base lg:text-lg font-medium", textColorClass)}>Variations</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  {availableVariations.map((variation, index) => (
-                    <div
-                      key={index}
-                      className={cn(
-                        "cursor-pointer p-2.5 lg:p-3 rounded-lg border-2 transition-all duration-300 backdrop-blur-sm",
-                        selectedVariation === index
-                          ? cn(
-                              'border-kawai-red',
-                              backgroundColor === 'black' ? 'bg-kawai-red/20 text-white' : 'bg-kawai-red/10 text-kawai-red'
-                            )
-                          : cn(
-                              'hover:border-kawai-red/50',
-                              backgroundColor === 'black'
-                                ? 'bg-white/5 border-white/20 text-gray-300 hover:bg-white/10'
-                                : backgroundColor === 'white'
-                                  ? 'bg-black/5 border-black/10 text-gray-700 hover:bg-black/10'
-                                  : 'bg-white/10 border-white/20 text-gray-600 hover:bg-white/20'
-                            )
-                      )}
-                      onClick={() => {
-                        console.log('[ProductHeroBlock] Variation clicked:', {
-                          index,
-                          variationName: variation.name,
-                          currentSelection: selectedVariation,
-                          willSelect: selectedVariation === index ? -1 : index
-                        })
-                        // Toggle selection: if already selected, deselect; otherwise select this variation
-                        setSelectedVariation(selectedVariation === index ? -1 : index)
-                      }}
-                    >
-                      {/* Variation name */}
-                      <div className="flex items-center">
-                        <span className="text-sm font-medium">{variation.name}</span>
+                  {allVariations.map((variation, index) => {
+                    const isSelected = selectedVariation === index
+                    return (
+                      <div
+                        key={index}
+                        className={cn(
+                          "cursor-pointer p-2.5 lg:p-3 rounded-lg border-2 transition-all duration-300 backdrop-blur-sm",
+                          isSelected
+                            ? cn(
+                                'border-kawai-red',
+                                backgroundColor === 'black' ? 'bg-white/10 text-white' : 'bg-black/5 text-gray-900'
+                              )
+                            : cn(
+                                'hover:border-kawai-red/50',
+                                backgroundColor === 'black'
+                                  ? 'bg-white/5 border-white/20 text-gray-300 hover:bg-white/10'
+                                  : backgroundColor === 'white'
+                                    ? 'bg-black/5 border-black/10 text-gray-700 hover:bg-black/10'
+                                    : 'bg-white/10 border-white/20 text-gray-600 hover:bg-white/20'
+                              )
+                        )}
+                        onClick={() => setSelectedVariation(selectedVariation === index ? -1 : index)}
+                      >
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="text-sm font-medium">
+                            {variation.name}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             )}
@@ -831,7 +815,7 @@ export function ProductHeroBlock({
           <div
             ref={galleryRef}
             className="hidden lg:flex lg:flex-col lg:col-span-7 lg:col-start-6 lg:row-start-1 overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden"
-            style={{ height: '560px', scrollbarWidth: 'none' }}
+            style={{ height: '720px', scrollbarWidth: 'none' }}
           >
 
             {/* Hero image — full width, fills the visible container height */}
@@ -840,7 +824,7 @@ export function ProductHeroBlock({
                 "relative w-full overflow-hidden flex-shrink-0",
                 allGalleryImages.length > 0 && "cursor-pointer group"
               )}
-              style={{ height: '560px' }}
+              style={{ height: '720px' }}
               onClick={() => allGalleryImages.length > 0 && setIsGalleryOpen(true)}
               role={allGalleryImages.length > 0 ? "button" : undefined}
               tabIndex={allGalleryImages.length > 0 ? 0 : undefined}
@@ -907,7 +891,7 @@ export function ProductHeroBlock({
                   <div
                     key={idx}
                     className="relative overflow-hidden cursor-pointer group"
-                    style={{ height: '280px' }}
+                    style={{ height: '360px' }}
                     onClick={() => setIsGalleryOpen(true)}
                     role="button"
                     tabIndex={0}
@@ -967,9 +951,8 @@ export function ProductHeroBlock({
           <FloatingAddToCartIntegrated
             variantId={selectedVariant.id}
             variantName={
-              // Show variant name if enabled AND a variation is selected
-              floatingShowVariantName && selectedVariation >= 0 && availableVariations[selectedVariation]
-                ? availableVariations[selectedVariation]?.name
+              floatingShowVariantName && selectedVariation >= 0 && allVariations[selectedVariation]
+                ? allVariations[selectedVariation]?.name ?? null
                 : null
             }
             productName={product?.name || null}

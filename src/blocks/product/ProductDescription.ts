@@ -11,66 +11,6 @@ export const ProductDescription: Block = {
   imageURL: 'https://via.placeholder.com/300x200?text=Product+Description',
   imageAltText: 'Display product descriptions with image or video backgrounds',
   fields: [
-    // Media Items Array (multiple videos/images like the I2L block)
-    {
-      name: 'mediaItems',
-      type: 'array',
-      maxRows: 8,
-      labels: {
-        singular: 'Media Item',
-        plural: 'Media Items',
-      },
-      fields: [
-        {
-          name: 'type',
-          type: 'select',
-          required: true,
-          defaultValue: 'youtube',
-          options: [
-            { label: 'YouTube Video', value: 'youtube' },
-            { label: 'Image', value: 'image' },
-          ],
-          admin: {
-            description: 'Type of media for this item',
-          },
-        },
-        {
-          name: 'youtubeUrl',
-          type: 'text',
-          admin: {
-            description: 'YouTube video URL',
-            placeholder: 'https://youtube.com/watch?v=...',
-            condition: (_, siblingData) => siblingData?.type === 'youtube',
-          },
-        },
-        imageField('image', {
-          admin: {
-            description: 'Image for this media item',
-            condition: (_, siblingData) => siblingData?.type === 'image',
-          },
-        }),
-        {
-          name: 'title',
-          type: 'text',
-          admin: {
-            description: 'Optional title displayed alongside this media item',
-            placeholder: 'Media title',
-          },
-        },
-        {
-          name: 'caption',
-          type: 'textarea',
-          admin: {
-            description: 'Optional caption or description for this media item',
-          },
-        },
-      ],
-      admin: {
-        description:
-          'Additional media items displayed in a carousel or grid below the description. Supports YouTube videos and images.',
-      },
-    },
-
     // Media Gallery Settings
     {
       name: 'mediaGallerySettings',
@@ -92,7 +32,7 @@ export const ProductDescription: Block = {
         {
           name: 'theme',
           type: 'select',
-          defaultValue: 'dark',
+          defaultValue: 'light',
           options: [
             { label: 'Dark Theme', value: 'dark' },
             { label: 'Light Theme', value: 'light' },
@@ -115,7 +55,6 @@ export const ProductDescription: Block = {
         {
           name: 'mediaType',
           type: 'select',
-          required: true,
           defaultValue: 'image',
           options: [
             { label: 'Image', value: 'image' },

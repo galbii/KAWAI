@@ -1,6 +1,6 @@
 'use client'
 
-import { Collection, Media } from '@/payload-types'
+import { Collection, Media, Product } from '@/payload-types'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
@@ -11,6 +11,7 @@ interface CollectionShowcaseBlockProps {
   collection?: string | Collection | null
   bannerSize?: 'xxs' | 'xs' | 'small' | 'medium' | 'large' | 'fullscreen' | null
   customSubheading?: string | null
+  product?: Product | null
 }
 
 /**
@@ -44,8 +45,10 @@ export function CollectionShowcaseBlock({
   collection,
   bannerSize: blockBannerSize,
   customSubheading,
+  product,
 }: CollectionShowcaseBlockProps) {
   const [isVideoLoaded, setIsVideoLoaded] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(0)
 
   // Don't render if disabled
   if (!enabled) return null
@@ -153,6 +156,101 @@ export function CollectionShowcaseBlock({
         ease: [0.22, 1, 0.36, 1] as const, // Custom cubic-bezier for Japanese elegance
       },
     },
+  }
+
+  // Highlights mode: tab-navigation UI over the same video background
+  const highlights = (product?.highlights ?? []) as Array<{ id: string; highlight: string; description: string }>
+  const hasHighlights = highlights.length > 0
+
+  if (hasHighlights) {
+    const active = highlights[activeIndex] ?? highlights[0]
+    return (
+      <section className="relative w-full overflow-hidden bg-black text-white" style={{ minHeight: '420px' }}>
+        {/* Same video background as normal mode */}
+        {videoId && (
+          <div className="absolute inset-0 z-0">
+            <iframe
+              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1`}
+              className={cn(
+                'absolute top-1/2 left-1/2 w-[177.77777778vh] min-w-full h-[56.25vw] min-h-full -translate-x-1/2 -translate-y-1/2 pointer-events-none',
+                'transition-opacity duration-1000',
+                isVideoLoaded ? 'opacity-100' : 'opacity-0'
+              )}
+              allow="autoplay; encrypted-media"
+              onLoad={() => setIsVideoLoaded(true)}
+              title="Collection showcase video"
+            />
+          </div>
+        )}
+
+        {/* Fallback image if no video */}
+        {!videoId && fallbackImage && (
+          <div className="absolute inset-0 z-0">
+            <Image
+              src={fallbackImage}
+              alt={heading || 'Collection showcase'}
+              fill
+              className="object-cover"
+              sizes="100vw"
+              priority
+            />
+          </div>
+        )}
+
+        {/* Dark overlay */}
+        <div className="absolute inset-0 z-10 bg-black/60" />
+
+        {/* Tab Navigation */}
+        <div className="relative z-20 border-b border-white/20">
+          <div className="container mx-auto px-6 md:px-12 flex gap-8 overflow-x-auto">
+            {highlights.map((h, i) => (
+              <button
+                key={h.id || i}
+                onClick={() => setActiveIndex(i)}
+                className={cn(
+                  'py-5 text-xs tracking-[0.2em] uppercase whitespace-nowrap transition-colors',
+                  i === activeIndex
+                    ? 'text-white border-b-2 border-white'
+                    : 'text-white/40 hover:text-white/70 border-b-2 border-transparent'
+                )}
+              >
+                {h.highlight}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Content */}
+        <div
+          key={activeIndex}
+          className="relative z-20 container mx-auto px-6 md:px-12 py-20 md:py-28 animate-fade-in"
+        >
+          <h2 className="text-5xl md:text-7xl font-light tracking-widest uppercase mb-8 max-w-4xl">
+            {active?.highlight}
+          </h2>
+          {active?.description && (() => {
+            const lines = active.description.split('\n').filter(l => l.trim())
+            if (lines.length <= 1) {
+              return (
+                <p className="text-base leading-relaxed text-white/70 max-w-lg">
+                  {active.description}
+                </p>
+              )
+            }
+            return (
+              <ul className="space-y-2 max-w-lg">
+                {lines.map((line, i) => (
+                  <li key={i} className="flex items-start gap-3 text-base leading-relaxed text-white/70">
+                    <span className="mt-2 w-1 h-1 rounded-full bg-white/50 flex-shrink-0" />
+                    {line.trim()}
+                  </li>
+                ))}
+              </ul>
+            )
+          })()}
+        </div>
+      </section>
+    )
   }
 
   return (

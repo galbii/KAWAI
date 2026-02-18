@@ -147,6 +147,26 @@ const PRODUCTS_WITH_MODEL_QUERY = `
             }
           }
 
+          metafield_highlights: metafield(namespace: "custom", key: "highlights") {
+            key
+            value
+            type
+            references(first: 20) {
+              edges {
+                node {
+                  ... on Metaobject {
+                    id
+                    type
+                    fields {
+                      key
+                      value
+                    }
+                  }
+                }
+              }
+            }
+          }
+
           seo {
             title
             description
@@ -246,6 +266,8 @@ export async function fetchAllShopifyProductsWithModels(): Promise<ShopifyProduc
         console.log(`[Shopify Fetch All] - Model: ${product.metafield_model?.value}`)
         console.log(`[Shopify Fetch All] - Blueprint metafield exists: ${!!product.metafield_blueprint}`)
         console.log(`[Shopify Fetch All] - Specifications metafield exists: ${!!product.metafield_specifications}`)
+        console.log(`[Shopify Fetch All] - Highlights metafield exists: ${!!product.metafield_highlights}`)
+        console.log(`[Shopify Fetch All] - Highlights edges count: ${product.metafield_highlights?.references?.edges?.length ?? 0}`)
 
         if (product.metafield_blueprint) {
           console.log(`[Shopify Fetch All] - Blueprint details:`, JSON.stringify({
@@ -498,6 +520,24 @@ function transformShopifyProduct(shopifyProduct: any): ShopifyProductData {
         console.log(`[Transform] ✅ Processed ${specs.length} specifications for ${shopifyProduct.title}`)
 
         return specs
+      })(),
+
+      // Parse highlights metaobject list
+      highlights: (() => {
+        if (!shopifyProduct.metafield_highlights) return []
+        if (!shopifyProduct.metafield_highlights.references?.edges?.length) return []
+        return shopifyProduct.metafield_highlights.references.edges.map((edge: any) => {
+          const fields = edge.node?.fields || []
+          const getFieldValue = (key: string): string => {
+            const field = fields.find((f: any) => f.key === key)
+            return field?.value || ''
+          }
+          return {
+            id: edge.node?.id || '',
+            highlight: getFieldValue('highlight'),
+            description: getFieldValue('description'),
+          }
+        })
       })(),
     },
 

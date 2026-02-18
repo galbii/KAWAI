@@ -48,8 +48,6 @@ export const ProductFeatureSlides: Block = {
     {
       name: 'features',
       type: 'array',
-      required: true,
-      minRows: 1,
       maxRows: 10,
       labels: {
         singular: 'Feature Slide',

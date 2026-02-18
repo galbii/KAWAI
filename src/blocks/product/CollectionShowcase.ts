@@ -75,7 +75,7 @@ const autoPopulateCollection: FieldHook = async ({
       req, // Pass req for transaction context
     })
 
-    // Return the matched collection ID
+    // Return the matched collection ID, or create the collection if it doesn't exist
     if (matchingCollections.length > 0) {
       const collection = matchingCollections[0]
       if (!collection) {
@@ -85,9 +85,21 @@ const autoPopulateCollection: FieldHook = async ({
       console.log(`[CollectionShowcase] ✅ Auto-populated collection: ${collection.title || collection.id} (ID: ${collection.id})`)
       return collection.id
     } else {
-      console.log(
-        `[CollectionShowcase] ⚠️ No matching collection found for: ${firstShopifyCollection.title || firstShopifyCollection.handle}`
-      )
+      // Collection doesn't exist — create it now so the relationship field resolves.
+      // No `req` passed so it runs in its own transaction and commits immediately.
+      console.log(`[CollectionShowcase] 🆕 Collection not found, creating: ${firstShopifyCollection.title}`)
+      const newCollection = await req.payload.create({
+        collection: 'collections',
+        data: {
+          shopifyCollectionId: firstShopifyCollection.shopifyCollectionId,
+          title: firstShopifyCollection.title,
+          handle: firstShopifyCollection.handle,
+          productCount: 0,
+        },
+        context: { skipCollectionCleanup: true },
+      })
+      console.log(`[CollectionShowcase] ✅ Created collection: ${firstShopifyCollection.title} (ID: ${newCollection.id})`)
+      return newCollection.id
     }
   } catch (error) {
     console.error('[CollectionShowcase] ❌ Error auto-populating collection:', error)

@@ -108,30 +108,6 @@ export const ProductHero: Block = {
       }
     },
     {
-      name: 'additionalImages',
-      type: 'array',
-      label: '📸 Additional Gallery Images',
-      admin: {
-        description: 'Extra images appended to the product gallery after Shopify media',
-        initCollapsed: true,
-      },
-      fields: [
-        {
-          name: 'image',
-          type: 'upload',
-          relationTo: 'media',
-          required: true,
-          maxDepth: 1,
-          admin: { description: 'Gallery image' }
-        },
-        {
-          name: 'alt',
-          type: 'text',
-          admin: { description: 'Alt text (optional — falls back to product name)' }
-        }
-      ]
-    },
-    {
       name: 'floatingCart',
       type: 'group',
       fields: [

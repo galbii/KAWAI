@@ -10,29 +10,19 @@ import { cn } from '@/lib/utils'
 import { extractYouTubeId, buildYouTubeEmbedUrl } from '@/lib/utils/youtube'
 
 // -------------------------------------------------------------------
-// Local types for new fields (populated after next `bun run build`)
+// Local types (product.customMedia populated after next `bun run build`)
 // -------------------------------------------------------------------
-interface MediaGalleryItem {
-  id?: string | null
-  type?: 'youtube' | 'image' | null
-  youtubeUrl?: string | null
+interface CustomMediaItem {
+  mediaType?: 'media' | 'youtube' | null
   image?: unknown
-  title?: string | null
-  caption?: string | null
+  youtubeUrl?: string | null
+  alt?: string | null
 }
 
-interface MediaGallerySettings {
-  layout?: 'carousel' | 'grid-2' | 'grid-3' | null
-  theme?: 'dark' | 'light' | null
-}
-
-type ExtendedProductDescriptionBlock = ProductDescriptionBlock & {
-  mediaItems?: MediaGalleryItem[]
-  mediaGallerySettings?: MediaGallerySettings
-}
-
-interface ProductDescriptionRendererProps extends ExtendedProductDescriptionBlock {
-  product?: Product
+interface ProductDescriptionRendererProps extends ProductDescriptionBlock {
+  product?: Product & {
+    customMedia?: CustomMediaItem[] | null
+  }
 }
 
 // -------------------------------------------------------------------
@@ -67,7 +57,7 @@ function extractYouTubeIdFromEmbed(embedUrl: string): string | null {
 // Component
 // -------------------------------------------------------------------
 export function ProductDescriptionRenderer(props: ProductDescriptionRendererProps) {
-  const { background, mediaItems, mediaGallerySettings, content, layout, product } = props
+  const { background, mediaGallerySettings, content, layout, product } = props
 
   const [isExpanded, setIsExpanded] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -115,23 +105,29 @@ export function ProductDescriptionRenderer(props: ProductDescriptionRendererProp
 
   // ----------------------------------------------------------------
   // Build unified carousel items:
-  // CMS mediaItems first, then Shopify product media appended
+  // Order: customMedia YouTube → customMedia images → Shopify media
   // ----------------------------------------------------------------
+  const customMedia = (product?.customMedia as CustomMediaItem[] | null | undefined) ?? []
 
-  // 1. CMS-authored items
-  const cmsItems: UnifiedMediaItem[] = (mediaItems ?? []).flatMap((item): UnifiedMediaItem[] => {
-    if (item.type === 'youtube' && item.youtubeUrl) {
-      const youtubeId = extractYouTubeId(item.youtubeUrl)
+  // 1a. YouTube items from customMedia (shown first)
+  const customYoutubeItems: UnifiedMediaItem[] = customMedia
+    .filter((item) => item.mediaType === 'youtube' && item.youtubeUrl)
+    .flatMap((item): UnifiedMediaItem[] => {
+      const youtubeId = extractYouTubeId(item.youtubeUrl!)
       if (!youtubeId) return []
       return [{
         type: 'youtube',
         youtubeEmbedUrl: `https://www.youtube.com/embed/${youtubeId}?modestbranding=1&rel=0`,
         youtubeId,
-        title: item.title ?? undefined,
-        caption: item.caption ?? undefined,
+        caption: item.alt ?? undefined,
       }]
-    }
-    if (item.type === 'image' && item.image) {
+    })
+
+  // 1b. Image items from customMedia (shown after YouTube)
+  const customImageItems: UnifiedMediaItem[] = customMedia
+    .filter((item) => !item.mediaType || item.mediaType === 'media')
+    .flatMap((item): UnifiedMediaItem[] => {
+      if (!item.image) return []
       const imageProps = getImagePropsWithFallback(
         item.image as Parameters<typeof getImagePropsWithFallback>[0],
         '/images/defaults/product-description-bg.jpg',
@@ -140,15 +136,12 @@ export function ProductDescriptionRenderer(props: ProductDescriptionRendererProp
       return [{
         type: 'image',
         imageUrl: imageProps.src,
-        imageAlt: item.title ?? '',
-        title: item.title ?? undefined,
-        caption: item.caption ?? undefined,
+        imageAlt: item.alt ?? '',
+        caption: item.alt ?? undefined,
       }]
-    }
-    return []
-  })
+    })
 
-  // 2. Shopify product media — images + external YouTube videos + hosted videos
+  // 2. Shopify product media — appended last
   const shopifyItems: UnifiedMediaItem[] = (product?.shopifyMedia ?? [])
     .filter((m) => m.status !== 'FAILED' && m.status !== 'PROCESSING')
     .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
@@ -182,8 +175,8 @@ export function ProductDescriptionRenderer(props: ProductDescriptionRendererProp
       return []
     })
 
-  // Combined: CMS items first, Shopify media appended
-  const allItems: UnifiedMediaItem[] = [...cmsItems, ...shopifyItems]
+  // Combined: customMedia YouTube → customMedia images → Shopify media
+  const allItems: UnifiedMediaItem[] = [...customYoutubeItems, ...customImageItems, ...shopifyItems]
   const currentItem = allItems[currentIndex] ?? null
 
   // ----------------------------------------------------------------

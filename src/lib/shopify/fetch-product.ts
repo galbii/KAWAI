@@ -22,6 +22,12 @@ export interface ShopifySpecification {
   details: string
 }
 
+export interface ShopifyHighlight {
+  id: string
+  highlight: string
+  description: string
+}
+
 export interface ShopifyProductData {
   id: string
   title: string
@@ -98,7 +104,8 @@ export interface ShopifyProductData {
       height: number | null
     } | null
     specifications?: ShopifySpecification[]
-    [key: string]: string | ShopifySpecification[] | { url: string; alt: string | null; width: number | null; height: number | null } | null | undefined
+    highlights?: ShopifyHighlight[]
+    [key: string]: string | ShopifySpecification[] | ShopifyHighlight[] | { url: string; alt: string | null; width: number | null; height: number | null } | null | undefined
   }
   availableForSale: boolean
   createdAt: string
@@ -302,6 +309,26 @@ const PRODUCT_BY_ID_QUERY = `
       value
       type
       references(first: 50) {
+        edges {
+          node {
+            ... on Metaobject {
+              id
+              type
+              fields {
+                key
+                value
+              }
+            }
+          }
+        }
+      }
+    }
+
+    metafield_highlights: metafield(namespace: "custom", key: "highlights") {
+      key
+      value
+      type
+      references(first: 20) {
         edges {
           node {
             ... on Metaobject {
@@ -567,6 +594,26 @@ const PRODUCT_BY_METAFIELD_QUERY = `
       value
       type
       references(first: 50) {
+        edges {
+          node {
+            ... on Metaobject {
+              id
+              type
+              fields {
+                key
+                value
+              }
+            }
+          }
+        }
+      }
+    }
+
+    metafield_highlights: metafield(namespace: "custom", key: "highlights") {
+      key
+      value
+      type
+      references(first: 20) {
         edges {
           node {
             ... on Metaobject {
@@ -882,6 +929,24 @@ function transformShopifyProduct(shopifyProduct: any): ShopifyProductData {
         console.log('[transformShopifyProduct] Processed specifications count:', specs.length)
 
         return specs
+      })(),
+
+      // Parse highlights metaobject list
+      highlights: (() => {
+        if (!shopifyProduct.metafield_highlights) return []
+        if (!shopifyProduct.metafield_highlights.references?.edges?.length) return []
+        return shopifyProduct.metafield_highlights.references.edges.map((edge: any) => {
+          const fields = edge.node?.fields || []
+          const getFieldValue = (key: string): string => {
+            const field = fields.find((f: any) => f.key === key)
+            return field?.value || ''
+          }
+          return {
+            id: edge.node?.id || '',
+            highlight: getFieldValue('highlight'),
+            description: getFieldValue('description'),
+          } as ShopifyHighlight
+        })
       })(),
     },
 

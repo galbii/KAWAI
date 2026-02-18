@@ -1724,6 +1724,30 @@ export interface Product {
       }[]
     | null;
   /**
+   * Editor-curated images and YouTube videos. Images are appended to the hero gallery; YouTube videos + images appear in the product description carousel (YouTube first, then images, then Shopify media).
+   */
+  customMedia?:
+    | {
+        /**
+         * Select whether this item is an uploaded image or a YouTube video
+         */
+        mediaType?: ('media' | 'youtube') | null;
+        /**
+         * Upload or select an image from the media library
+         */
+        image?: (string | null) | Media;
+        /**
+         * YouTube video URL (e.g. https://youtube.com/watch?v=...)
+         */
+        youtubeUrl?: string | null;
+        /**
+         * Alt text or caption (optional)
+         */
+        alt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * Product blueprint image (synced from Shopify custom.blueprint metafield). Only populated if the product has a blueprint uploaded in Shopify.
    */
   blueprint?: {
@@ -1765,6 +1789,22 @@ export interface Product {
          * Specification details
          */
         details?: string | null;
+      }[]
+    | null;
+  /**
+   * Product highlights (synced from Shopify custom.highlights metaobject)
+   */
+  highlights?:
+    | {
+        id?: string | null;
+        /**
+         * Tab label and large heading
+         */
+        highlight?: string | null;
+        /**
+         * Body paragraph
+         */
+        description?: string | null;
       }[]
     | null;
   /**
@@ -2018,22 +2058,6 @@ export interface ProductHeroBlock {
     badge?: string | null;
   };
   /**
-   * Extra images appended to the product gallery after Shopify media
-   */
-  additionalImages?:
-    | {
-        /**
-         * Gallery image
-         */
-        image: string | Media;
-        /**
-         * Alt text (optional — falls back to product name)
-         */
-        alt?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
    * 🛒 Configure floating add to cart button - syncs with variation selection in hero section
    */
   floatingCart?: {
@@ -2068,34 +2092,6 @@ export interface ProductHeroBlock {
  */
 export interface ProductDescriptionBlock {
   /**
-   * Additional media items displayed in a carousel or grid below the description. Supports YouTube videos and images.
-   */
-  mediaItems?:
-    | {
-        /**
-         * Type of media for this item
-         */
-        type: 'youtube' | 'image';
-        /**
-         * YouTube video URL
-         */
-        youtubeUrl?: string | null;
-        /**
-         * Image for this media item
-         */
-        image?: (string | null) | Media;
-        /**
-         * Optional title displayed alongside this media item
-         */
-        title?: string | null;
-        /**
-         * Optional caption or description for this media item
-         */
-        caption?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
    * Settings for the media items gallery (applies when Media Items are added)
    */
   mediaGallerySettings?: {
@@ -2111,11 +2107,11 @@ export interface ProductDescriptionBlock {
   /**
    * Background media configuration — only used when no Featured Media is set above.
    */
-  background: {
+  background?: {
     /**
      * Choose background type for the description section (used when no Featured Media is set)
      */
-    mediaType: 'image' | 'youtube';
+    mediaType?: ('image' | 'youtube') | null;
     /**
      * Background image (recommended: 1920x1080px)
      */
@@ -2470,66 +2466,68 @@ export interface ProductFeatureSlidesBlock {
   /**
    * Each feature becomes one fullscreen scroll-driven slide. Lead with media.
    */
-  features: {
-    /**
-     * Small badge label (e.g. "Innovation", "Craftsmanship", "Sound")
-     */
-    tag?: string | null;
-    /**
-     * Feature headline shown on the slide
-     */
-    title: string;
-    /**
-     * Optional supporting line below the title
-     */
-    subtitle?: string | null;
-    /**
-     * Feature description — keep to 2–3 sentences for best readability
-     */
-    description?: string | null;
-    /**
-     * Choose the media type for this slide — image or video fills the background
-     */
-    mediaType?: ('image' | 'youtube' | 'video') | null;
-    /**
-     * Feature background image (recommended 1920×1080px or larger)
-     */
-    image?: (string | null) | Media;
-    /**
-     * YouTube URL (auto-plays muted in the background)
-     */
-    youtubeUrl?: string | null;
-    /**
-     * Video file upload — MP4 recommended, keep under 20MB
-     */
-    video?: (string | null) | Media;
-    /**
-     * Overlay darkness (0–80). Increase for better text contrast.
-     */
-    overlayOpacity?: number | null;
-    /**
-     * Where the title/description appears on the slide
-     */
-    contentPosition?: ('bottom-left' | 'bottom-right' | 'bottom-center' | 'center-left' | 'center-right') | null;
-    /**
-     * Optional call-to-action link for this slide
-     */
-    cta?: {
-      /**
-       * Button label (leave empty to hide)
-       */
-      text?: string | null;
-      /**
-       * Destination URL
-       */
-      link?: string | null;
-      /**
-       * Open link in a new tab
-       */
-      openInNewTab?: boolean | null;
-    };
-    id?: string | null;
-  }[];
+  features?:
+    | {
+        /**
+         * Small badge label (e.g. "Innovation", "Craftsmanship", "Sound")
+         */
+        tag?: string | null;
+        /**
+         * Feature headline shown on the slide
+         */
+        title: string;
+        /**
+         * Optional supporting line below the title
+         */
+        subtitle?: string | null;
+        /**
+         * Feature description — keep to 2–3 sentences for best readability
+         */
+        description?: string | null;
+        /**
+         * Choose the media type for this slide — image or video fills the background
+         */
+        mediaType?: ('image' | 'youtube' | 'video') | null;
+        /**
+         * Feature background image (recommended 1920×1080px or larger)
+         */
+        image?: (string | null) | Media;
+        /**
+         * YouTube URL (auto-plays muted in the background)
+         */
+        youtubeUrl?: string | null;
+        /**
+         * Video file upload — MP4 recommended, keep under 20MB
+         */
+        video?: (string | null) | Media;
+        /**
+         * Overlay darkness (0–80). Increase for better text contrast.
+         */
+        overlayOpacity?: number | null;
+        /**
+         * Where the title/description appears on the slide
+         */
+        contentPosition?: ('bottom-left' | 'bottom-right' | 'bottom-center' | 'center-left' | 'center-right') | null;
+        /**
+         * Optional call-to-action link for this slide
+         */
+        cta?: {
+          /**
+           * Button label (leave empty to hide)
+           */
+          text?: string | null;
+          /**
+           * Destination URL
+           */
+          link?: string | null;
+          /**
+           * Open link in a new tab
+           */
+          openInNewTab?: boolean | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Text colour theme — applied across all slides
    */
@@ -8433,6 +8431,15 @@ export interface ProductsSelect<T extends boolean = true> {
         updatedAt?: T;
         id?: T;
       };
+  customMedia?:
+    | T
+    | {
+        mediaType?: T;
+        image?: T;
+        youtubeUrl?: T;
+        alt?: T;
+        id?: T;
+      };
   blueprint?:
     | T
     | {
@@ -8448,6 +8455,13 @@ export interface ProductsSelect<T extends boolean = true> {
         spec?: T;
         type?: T;
         details?: T;
+      };
+  highlights?:
+    | T
+    | {
+        id?: T;
+        highlight?: T;
+        description?: T;
       };
   variations?:
     | T

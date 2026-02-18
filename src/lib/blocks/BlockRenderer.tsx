@@ -127,6 +127,12 @@ export async function BlockRenderer({ block, index, product }: BlockRendererProp
       )
     }
     
+    // For product-collection-showcase, pass the Payload product (highlights already synced)
+    if (blockType === 'product-collection-showcase') {
+      const populatedBlock = { ...block, product }
+      return <BlockComponent key={block.id || `${blockType}-${index}`} {...populatedBlock} />
+    }
+
     // For other blocks, populate block data with pianoModel integration
     const populatedBlock = populateBlockData(block, blockType, product)
     

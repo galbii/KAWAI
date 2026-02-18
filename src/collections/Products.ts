@@ -130,6 +130,11 @@ async function transformShopifyToPayload(shopifyProduct: ShopifyProductData): Pr
     specifications: shopifyProduct.metafields?.specifications || []
   })
 
+  // Add highlights array (synced from Shopify custom.highlights metaobject)
+  Object.assign(baseData, {
+    highlights: shopifyProduct.metafields?.highlights || []
+  })
+
   return baseData
 }
 
@@ -316,6 +321,53 @@ export const Products: CollectionConfig = {
             // Shopify Media Array
             shopifyMediaField(),
 
+            // Custom Media — editor-curated media appended to galleries
+            {
+              name: 'customMedia',
+              type: 'array',
+              label: '📸 Custom Media',
+              maxRows: 20,
+              admin: {
+                description: 'Editor-curated images and YouTube videos. Images are appended to the hero gallery; YouTube videos + images appear in the product description carousel (YouTube first, then images, then Shopify media).',
+                initCollapsed: true,
+              },
+              fields: [
+                {
+                  name: 'mediaType',
+                  type: 'select',
+                  defaultValue: 'media',
+                  options: [
+                    { label: '🖼 Image / Media', value: 'media' },
+                    { label: '▶ YouTube Video', value: 'youtube' },
+                  ],
+                  admin: {
+                    description: 'Select whether this item is an uploaded image or a YouTube video',
+                  },
+                },
+                imageField('image', {
+                  admin: {
+                    description: 'Upload or select an image from the media library',
+                    condition: (_, siblingData) =>
+                      !siblingData?.mediaType || siblingData?.mediaType === 'media',
+                  },
+                }),
+                {
+                  name: 'youtubeUrl',
+                  type: 'text',
+                  admin: {
+                    description: 'YouTube video URL (e.g. https://youtube.com/watch?v=...)',
+                    placeholder: 'https://youtube.com/watch?v=...',
+                    condition: (_, siblingData) => siblingData?.mediaType === 'youtube',
+                  },
+                },
+                {
+                  name: 'alt',
+                  type: 'text',
+                  admin: { description: 'Alt text or caption (optional)' },
+                },
+              ],
+            },
+
             // Blueprint - Custom metafield from Shopify
             {
               name: 'blueprint',
@@ -409,6 +461,38 @@ export const Products: CollectionConfig = {
                     description: 'Specification details',
                     readOnly: true,
                   },
+                },
+              ],
+            },
+
+            // Highlights - Custom metaobject list from Shopify
+            {
+              name: 'highlights',
+              type: 'array',
+              maxRows: 20,
+              labels: {
+                singular: 'Highlight',
+                plural: 'Product Highlights',
+              },
+              admin: {
+                description: 'Product highlights (synced from Shopify custom.highlights metaobject)',
+                readOnly: true,
+              },
+              fields: [
+                {
+                  name: 'id',
+                  type: 'text',
+                  admin: { readOnly: true },
+                },
+                {
+                  name: 'highlight',
+                  type: 'text',
+                  admin: { readOnly: true, description: 'Tab label and large heading' },
+                },
+                {
+                  name: 'description',
+                  type: 'textarea',
+                  admin: { readOnly: true, description: 'Body paragraph' },
                 },
               ],
             },
@@ -1003,11 +1087,10 @@ export const Products: CollectionConfig = {
         if (!data.pageContent || data.pageContent.length === 0) {
           const defaultBlocks: any[] = []
 
-          // 1. Add collection-showcase block FIRST (if product has shopifyCollections)
+          // Resolve collection ID upfront (needed for block 3)
+          let collectionShowcaseBlock: any = null
           if (data.shopifyCollections && Array.isArray(data.shopifyCollections) && data.shopifyCollections.length > 0) {
             const firstShopifyCollection = data.shopifyCollections[0]
-
-            // Try to find matching collection in Collections collection
             let collectionId: string | number | null = null
 
             try {
@@ -1031,24 +1114,39 @@ export const Products: CollectionConfig = {
                 if (matchingCollections.length > 0 && matchingCollections[0]) {
                   collectionId = matchingCollections[0].id
                   console.log(`🎯 Found matching collection: ${matchingCollections[0].title} (ID: ${collectionId})`)
+                } else {
+                  // Collection doesn't exist yet — create it now, outside the product transaction,
+                  // so it commits immediately and the relationship validation can resolve it.
+                  console.log(`🆕 Collection not found, creating: ${firstShopifyCollection.title}`)
+                  const newCollection = await req.payload.create({
+                    collection: 'collections',
+                    data: {
+                      shopifyCollectionId: firstShopifyCollection.shopifyCollectionId,
+                      title: firstShopifyCollection.title,
+                      handle: firstShopifyCollection.handle,
+                      productCount: 0,
+                    },
+                    context: { skipCollectionCleanup: true },
+                    // Intentionally no `req` — runs in its own transaction so it commits
+                    // before Payload validates the product's collection relationship field
+                  })
+                  collectionId = newCollection.id
+                  console.log(`✅ Created new collection: ${firstShopifyCollection.title} (ID: ${collectionId})`)
                 }
               }
             } catch (error) {
-              console.error('⚠️ Error finding collection for default block:', error)
+              console.error('⚠️ Error finding/creating collection for default block:', error)
             }
 
-            // Add collection-showcase block with collection pre-populated
-            defaultBlocks.push({
+            collectionShowcaseBlock = {
               blockType: 'product-collection-showcase',
               enabled: true,
-              collection: collectionId, // Will be null if not found, field hook will handle it
+              collection: collectionId,
               customSubheading: null,
-            })
-
-            console.log(`🎯 Added default collection-showcase block with collection: ${collectionId}`)
+            }
           }
 
-          // 2. Add product-hero block SECOND
+          // 1. Product Hero
           defaultBlocks.push({
             blockType: 'product-hero',
             layout: {
@@ -1063,21 +1161,51 @@ export const Products: CollectionConfig = {
 
           console.log(`🧩 Added default product-hero block`)
 
-          // 3. Add product-description block THIRD
+          // 2. Product Description
           defaultBlocks.push({
             blockType: 'product-description',
+            background: {
+              mediaType: 'image',
+              overlayColor: 'dark',
+              overlayOpacity: 50,
+            },
+            content: {
+              showProductName: true,
+              useCustomDescription: false,
+            },
+            layout: {
+              contentAlignment: 'center',
+              verticalAlignment: 'center',
+              textColor: 'white',
+              textSize: 'normal',
+              useGlassmorphism: false,
+              minHeight: 'medium',
+            },
+            mediaGallerySettings: {
+              layout: 'carousel',
+              theme: 'light',
+            },
           })
 
           console.log(`📝 Added default product-description block`)
 
-          // 4. Add product-feature-slides block FOURTH
+          // 3. Collection Showcase (after Product Description)
+          if (collectionShowcaseBlock) {
+            defaultBlocks.push(collectionShowcaseBlock)
+            console.log(`🎯 Added default collection-showcase block with collection: ${collectionShowcaseBlock.collection}`)
+          }
+
+          // 4. Feature Slides
           defaultBlocks.push({
             blockType: 'product-feature-slides',
+            features: [],
+            theme: 'dark',
+            progressIndicator: 'dots',
           })
 
           console.log(`🎞 Added default product-feature-slides block`)
 
-          // 5. Add product-technical-specs block FIFTH
+          // 5. Technical Specs
           defaultBlocks.push({
             blockType: 'product-technical-specs',
           })
