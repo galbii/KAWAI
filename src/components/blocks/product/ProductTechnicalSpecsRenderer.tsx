@@ -139,16 +139,35 @@ function SpecificationRow({ spec }: { spec: SpecRow }) {
 
       {/* Details */}
       <div className="flex flex-col gap-1.5">
-        <div className="flex items-baseline gap-2 flex-wrap">
-          <span className="font-mono text-sm text-kawai-charcoal font-semibold leading-relaxed">
-            {spec.value || '—'}
-          </span>
-          {spec.unit && (
-            <span className="font-mono text-xs text-kawai-charcoal/50 uppercase tracking-wider font-medium">
-              {spec.unit}
-            </span>
-          )}
-        </div>
+        {(() => {
+          const lines = (spec.value || '').split('\n').filter(l => l.trim())
+          if (lines.length <= 1) {
+            return (
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <span className="font-mono text-sm text-kawai-charcoal font-semibold leading-relaxed">
+                  {spec.value || '—'}
+                </span>
+                {spec.unit && (
+                  <span className="font-mono text-xs text-kawai-charcoal/50 uppercase tracking-wider font-medium">
+                    {spec.unit}
+                  </span>
+                )}
+              </div>
+            )
+          }
+          return (
+            <ul className="space-y-1">
+              {lines.map((line, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="mt-2 w-1 h-1 rounded-full bg-kawai-charcoal/40 flex-shrink-0" />
+                  <span className="font-mono text-sm text-kawai-charcoal font-semibold leading-relaxed">
+                    {line.trim()}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )
+        })()}
         {spec.note && (
           <span className="text-xs text-kawai-charcoal/60 italic leading-relaxed">{spec.note}</span>
         )}
@@ -386,8 +405,8 @@ export function ProductTechnicalSpecsRenderer({
 
           {/* Right column: blueprint — sticky on desktop, on top on mobile */}
           {hasBlueprintToShow && (
-            <div className="flex-none lg:sticky lg:top-0 w-full lg:w-[420px] xl:w-[480px]">
-              <div className="relative overflow-hidden rounded-lg shadow-lg w-full max-w-xs mx-auto lg:max-w-none lg:mx-0">
+            <div className="flex-none lg:sticky lg:top-0 w-full lg:w-[560px] xl:w-[680px]">
+              <div className="relative overflow-hidden rounded-lg shadow-lg w-full max-w-sm mx-auto lg:max-w-none lg:mx-0">
                 {productBlueprintUrl && (
                   <Image
                     src={productBlueprintUrl}

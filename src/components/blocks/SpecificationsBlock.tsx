@@ -80,9 +80,22 @@ export function SpecificationsBlock({
                     <span className="font-medium text-kawai-black/80">
                       {spec.label}
                     </span>
-                    <span className="text-kawai-black font-semibold">
-                      {spec.value}
-                    </span>
+                    {(() => {
+                      const lines = (spec.value || '').split('\n').filter(l => l.trim())
+                      if (lines.length <= 1) {
+                        return <span className="text-kawai-black font-semibold">{spec.value}</span>
+                      }
+                      return (
+                        <ul className="space-y-1 text-right">
+                          {lines.map((line, i) => (
+                            <li key={i} className="flex items-start justify-end gap-2">
+                              <span className="text-kawai-black font-semibold">{line.trim()}</span>
+                              <span className="mt-2 w-1 h-1 rounded-full bg-kawai-black/30 flex-shrink-0" />
+                            </li>
+                          ))}
+                        </ul>
+                      )
+                    })()}
                   </div>
                 ))}
               </div>
