@@ -732,17 +732,10 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
               <div
                 className="fixed z-[9000] bg-black/40"
                 style={{
-                  // 64px (top bar only) - bottom nav is hidden when search opens, overlay covers that area
                   top: isMobile ? 0 : `${64 + announcementBarHeight}px`,
                   left: 0,
                   right: 0,
-                  // On mobile, use visual viewport height to match overlay container
-                  height: isMobile && keyboardHeight > 0 && visualViewportHeight > 0
-                    ? `${visualViewportHeight - 96}px` // Match overlay container height
-                    : undefined,
-                  bottom: isMobile && keyboardHeight > 0 && visualViewportHeight > 0
-                    ? undefined // Use height instead of bottom when keyboard is open
-                    : 0
+                  bottom: 0,
                 }}
                 onClick={() => {
                   setIsOpen(false)
@@ -755,22 +748,24 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                 className={cn(
                   "fixed z-[9001] pointer-events-none",
                   isMobile
-                    ? "flex flex-col p-2" // Add padding on mobile for floating effect
+                    ? "px-4 pb-4" // Padding around the glass card
                     : "flex items-center justify-center p-4 md:p-8" // Centered on desktop
                 )}
                 style={
                   isMobile
                     ? {
-                        top: 0,
+                        // Anchor to bottom, just above the floating search input (~88px tall)
+                        bottom: keyboardHeight > 0
+                          ? `${keyboardHeight + 88}px`
+                          : 'calc(88px + env(safe-area-inset-bottom))',
                         left: 0,
                         right: 0,
-                        // Use visual viewport height to ensure results stay within visible area
-                        // Subtract search input height (80px) and padding (16px for p-2 top/bottom)
-                        height: keyboardHeight > 0 && visualViewportHeight > 0
-                          ? `${visualViewportHeight - 96}px` // 96px = 80px input + 16px padding
-                          : 'calc(100vh - 100px - env(safe-area-inset-bottom))' // Default spacing
+                        // Cap height so it never fills more than ~65% of screen
+                        maxHeight: keyboardHeight > 0 && visualViewportHeight > 0
+                          ? `${visualViewportHeight - keyboardHeight - 104}px`
+                          : 'calc(65vh - env(safe-area-inset-bottom))',
                       }
-                    : { top: `${64 + announcementBarHeight}px`, left: 0, right: 0, bottom: 0 } // 64px (top bar only) - bottom nav hidden when search opens
+                    : { top: `${64 + announcementBarHeight}px`, left: 0, right: 0, bottom: 0 }
                 }
                 onKeyDown={handleKeyboardNavigation}
               >
@@ -779,7 +774,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                   className={cn(
                     "pointer-events-auto",
                     isMobile
-                      ? "w-full h-full flex flex-col" // Full screen on mobile with flex column for bottom input
+                      ? "w-full flex flex-col" // No h-full — grows from bottom up
                       : "w-full max-w-7xl" // Centered card on desktop
                   )}
                   style={isMobile ? undefined : { height: '85vh', maxHeight: '900px' }}
@@ -790,14 +785,14 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                   {/* Search Results Container */}
                   <div className={cn(
                     "rounded-xl overflow-hidden shadow-2xl border border-kawai-neutral/20 flex flex-col",
-                    isMobile ? "flex-1 border-0 rounded-none shadow-none" : "bg-kawai-black/60 backdrop-blur-2xl"
+                    isMobile ? "border-0 rounded-none shadow-none" : "bg-kawai-black/60 backdrop-blur-2xl"
                   )}
                   style={isMobile ? undefined : { height: '100%' }}>
                   {/* Glass Container - Floating glassmorphic design */}
                   <div className={cn(
                     "flex flex-col overflow-hidden",
                     isMobile
-                      ? "h-full mx-4 my-4 rounded-3xl shadow-2xl backdrop-blur-3xl bg-kawai-black/40 border border-kawai-neutral/20" // Floating with margins on mobile
+                      ? "rounded-3xl shadow-2xl backdrop-blur-3xl bg-kawai-black/40 border border-kawai-neutral/20" // No h-full — auto height, grows up from bottom
                       : "h-full rounded-2xl shadow-2xl border border-kawai-neutral/20 backdrop-blur-3xl bg-kawai-black/30"
                   )}>
 
@@ -887,19 +882,14 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                     <div
                       ref={resultsContainerRef}
                       className={cn(
-                        "flex-1 overflow-y-auto overscroll-contain",
-                        isMobile ? "p-4 pb-6" : "p-6", // Tighter padding on mobile for floating feel
-                        // Add momentum scrolling on iOS for smooth experience
+                        "flex-1 overflow-y-auto overscroll-contain min-h-0",
+                        isMobile ? "p-4 pb-6" : "p-6",
                         isMobile && "-webkit-overflow-scrolling-touch"
                       )}
                       style={
                         isMobile
                           ? {
-                              paddingTop: isMobile && query.length >= 2 ? '0' : 'calc(1rem + env(safe-area-inset-top))',
-                              // Use 100% height on mobile - parent container is already constrained to visual viewport
-                              // This ensures results fill available space without getting cut off
-                              height: '100%',
-                              maxHeight: '100%',
+                              paddingTop: query.length >= 2 ? '0' : '1rem',
                             }
                           : undefined
                       }
