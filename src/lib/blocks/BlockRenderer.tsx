@@ -248,12 +248,13 @@ export function BlocksList({ blocks, product }: BlocksListProps) {
         }
         
         return (
-          <BlockRenderer
-            key={block.id || `block-${index}`}
-            block={block}
-            index={index}
-            product={product}
-          />
+          <div id={`block-${index}`} key={block.id || `block-${index}`}>
+            <BlockRenderer
+              block={block}
+              index={index}
+              product={product}
+            />
+          </div>
         )
       })}
     </>

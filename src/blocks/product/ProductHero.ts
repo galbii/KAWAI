@@ -108,6 +108,53 @@ export const ProductHero: Block = {
       }
     },
     {
+      name: 'secondaryCta',
+      type: 'group',
+      fields: [
+        {
+          name: 'text',
+          type: 'text',
+          defaultValue: 'Learn More',
+          admin: {
+            description: 'Button label (e.g., "Learn More", "Explore Features", "See Specs")'
+          }
+        },
+        {
+          name: 'action',
+          type: 'select',
+          defaultValue: 'url',
+          options: [
+            { label: '🔗 Navigate to URL', value: 'url' },
+            { label: '⬇️ Scroll to Block', value: 'scroll-to-block' },
+          ],
+          admin: {
+            description: 'What happens when the button is clicked'
+          }
+        },
+        {
+          name: 'url',
+          type: 'text',
+          admin: {
+            description: 'URL to navigate to (e.g., "/find-a-dealer", "/contact"). Leave blank to link to this product page.',
+            condition: (data) => data.secondaryCta?.action !== 'scroll-to-block'
+          }
+        },
+        {
+          name: 'scrollToBlockIndex',
+          type: 'number',
+          min: 0,
+          defaultValue: 2,
+          admin: {
+            description: 'Block index to scroll to. 0 = Product Hero (this block), 1 = Product Description, 2 = next block, etc. Matches the order of blocks in the Page Content tab.',
+            condition: (data) => data.secondaryCta?.action === 'scroll-to-block'
+          }
+        }
+      ],
+      admin: {
+        description: 'Configure the secondary CTA button shown alongside the primary Add to Cart or Find a Dealer button'
+      }
+    },
+    {
       name: 'floatingCart',
       type: 'group',
       fields: [

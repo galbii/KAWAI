@@ -2058,6 +2058,27 @@ export interface ProductHeroBlock {
     badge?: string | null;
   };
   /**
+   * Configure the secondary CTA button shown alongside the primary Add to Cart or Find a Dealer button
+   */
+  secondaryCta?: {
+    /**
+     * Button label (e.g., "Learn More", "Explore Features", "See Specs")
+     */
+    text?: string | null;
+    /**
+     * What happens when the button is clicked
+     */
+    action?: ('url' | 'scroll-to-block') | null;
+    /**
+     * URL to navigate to (e.g., "/find-a-dealer", "/contact"). Leave blank to link to this product page.
+     */
+    url?: string | null;
+    /**
+     * Block index to scroll to. 0 = Product Hero (this block), 1 = Product Description, 2 = next block, etc. Matches the order of blocks in the Page Content tab.
+     */
+    scrollToBlockIndex?: number | null;
+  };
+  /**
    * 🛒 Configure floating add to cart button - syncs with variation selection in hero section
    */
   floatingCart?: {

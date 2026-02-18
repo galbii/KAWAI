@@ -11,9 +11,13 @@
  *   The incoming card slides up; the outgoing one stays beneath it.
  * • Content (tag/title/subtitle/description/CTA) is rendered ONCE for the
  *   active card only, keyed on activeIndex. React re-mounts it on every card
- *   change, which re-plays the staggered CSS entrance animation.
- * • Card transition: 1.3 s ease-out — deliberately unhurried and weighty.
- * • Content entrance: blur → clear + drift up, staggered per element.
+ *   change, replaying the staggered CSS entrance animation.
+ * • Card transition: 1.35 s ease-out — deliberately unhurried and weighty.
+ * • Content entrance: opacity + subtle rise, staggered per element.
+ *
+ * Mobile: touchstart and touchmove are registered as non-passive so we can call
+ * preventDefault() when the component is docked, preventing the browser from
+ * scrolling the page during card navigation gestures.
  */
 
 import React, { useRef, useState, useEffect, useCallback } from 'react'
@@ -73,8 +77,6 @@ function parseYouTubeUrl(url: string): string {
   return url
 }
 
-// Content panel position classes.
-// Default is center-left — vertically centred on the left half of the card.
 const POS: Record<string, string> = {
   'center-left':   'top-1/2 -translate-y-1/2 left-8 md:left-20 max-w-lg',
   'center-right':  'top-1/2 -translate-y-1/2 right-8 md:right-20 max-w-lg',
@@ -83,14 +85,11 @@ const POS: Record<string, string> = {
   'bottom-center': 'bottom-16 left-1/2 -translate-x-1/2 max-w-2xl text-center',
 }
 
-// ─── Easing shared across card transition + animations ────────────────────────
-// A smooth, unhurried deceleration — deliberate and refined.
 const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)'
 
 // ─── Export wrapper ───────────────────────────────────────────────────────────
 
 export function ProductFeatureSlidesRenderer(props: ProductFeatureSlidesBlock) {
-  // Filter out any null/undefined items and slides without a title
   const validFeatures = (props.features ?? []).filter(
     (f): f is FeatureSlide => f != null && typeof f.title === 'string' && f.title.trim() !== ''
   )
@@ -115,34 +114,30 @@ function Inner(props: ProductFeatureSlidesBlock) {
   const { sectionHeader, features, theme = 'dark', progressIndicator = 'dots' } = props
 
   const n = Math.min(features!.length, 10)
-  // Apply per-slide defaults for all optional fields
   const safeFeatures = features!.slice(0, n).map(f => ({
     contentPosition: 'center-left' as const,
     overlayOpacity:  40,
     mediaType:       'image' as const,
     ...f,
   } satisfies FeatureSlide))
-  const isDark       = theme !== 'light'
+  const isDark = theme !== 'light'
 
   const containerRef        = useRef<HTMLDivElement>(null)
   const cardRefs            = useRef<(HTMLDivElement | null)[]>([])
   const activeRef           = useRef(0)
   const transitioning       = useRef(false)
   const touchStartY         = useRef(0)
-  // Timestamp (ms) of when we last landed on the first or last card.
-  // The user must wait 1 s at a boundary before their scroll escapes to the page.
-  const arrivedAtBoundaryAt = useRef<number>(Date.now()) // card 0 is boundary on mount
+  // Timestamp of when we last landed on the first or last card.
+  // User must wait 500 ms at a boundary before their scroll escapes.
+  const arrivedAtBoundaryAt = useRef<number>(Date.now())
 
   const [activeIndex, setActiveIndex] = useState(0)
 
-  // goTo advances the deck; the transitioning lock prevents scroll-skipping.
-  // 1350 ms matches the CSS card transition so the next gesture can't fire mid-slide.
   const goTo = useCallback((next: number) => {
     if (transitioning.current || next < 0 || next >= n) return
     transitioning.current = true
     activeRef.current     = next
     setActiveIndex(next)
-    // Record arrival time whenever we land on a boundary card
     if (next === 0 || next === n - 1) {
       arrivedAtBoundaryAt.current = Date.now()
     }
@@ -153,25 +148,27 @@ function Inner(props: ProductFeatureSlidesBlock) {
     const el = containerRef.current
     if (!el) return
 
-    // True when the component's top edge has reached the fixed header's bottom.
-    // Both lower bound (top ≥ 0) and upper bound (top ≤ headerBottom) are
-    // required so we never capture scrolls when scrolled past the component.
+    // Docked = component top is near the header's bottom edge.
+    // 40 px tolerance handles mobile URL-bar shifts and minor scroll offsets.
     const isDockedAtHeader = () => {
-      const header      = document.querySelector('header')
+      const header       = document.querySelector('header')
       const headerBottom = header ? header.getBoundingClientRect().bottom : 0
-      const top          = el.getBoundingClientRect().top
-      return top >= 0 && top <= headerBottom + 2
+      const { top, bottom } = el.getBoundingClientRect()
+      return (
+        top >= headerBottom - 40 &&
+        top <= headerBottom + 40 &&
+        bottom > 0  // component still has viewport presence
+      )
     }
 
-    // True when the user is at a boundary card (first or last) and hasn't yet
-    // waited the required 1 second — so the escape scroll should be blocked.
+    // At a boundary card and within the 500 ms pause window.
     const isBoundaryHeld = () =>
       (activeRef.current === 0 || activeRef.current === n - 1) &&
-      Date.now() - arrivedAtBoundaryAt.current < 1000
+      Date.now() - arrivedAtBoundaryAt.current < 500
 
+    // ── Wheel (desktop) ───────────────────────────────────────────────────────
     const onWheel = (e: WheelEvent) => {
       if (!isDockedAtHeader()) return
-
       if (transitioning.current) { e.preventDefault(); return }
 
       const escaping =
@@ -179,35 +176,50 @@ function Inner(props: ProductFeatureSlidesBlock) {
         (e.deltaY < 0 && activeRef.current === 0)
 
       if (e.deltaY > 0 && activeRef.current < n - 1) {
-        // Advance to next card
         e.preventDefault()
         goTo(activeRef.current + 1)
       } else if (e.deltaY < 0 && activeRef.current > 0) {
-        // Go back to previous card
         e.preventDefault()
         goTo(activeRef.current - 1)
       } else if (escaping && isBoundaryHeld()) {
-        // At first/last card, trying to scroll away — hold for 1 s
+        // Hold at boundary — let the user feel the "lock" before escaping
         e.preventDefault()
       }
-      // else: boundary hold expired → event propagates naturally to page scroll
     }
 
+    // ── Touch (mobile) ────────────────────────────────────────────────────────
+    //
+    // Both touchstart and touchmove are registered with { passive: false }.
+    // This is the key fix for mobile: calling e.preventDefault() in a passive
+    // listener is a no-op. By making them non-passive we can prevent the
+    // browser from scrolling the page while the user is swiping through cards.
+    //
     const onTouchStart = (e: TouchEvent) => {
       touchStartY.current = e.touches[0]?.clientY ?? 0
+      // Lock page scroll for this gesture if we're in the docked position
+      if (isDockedAtHeader()) {
+        e.preventDefault()
+      }
+    }
+
+    const onTouchMove = (e: TouchEvent) => {
+      // Continue holding the lock for the full duration of the swipe
+      if (isDockedAtHeader()) {
+        e.preventDefault()
+      }
     }
 
     const onTouchEnd = (e: TouchEvent) => {
       if (transitioning.current || !isDockedAtHeader()) return
       const dy = touchStartY.current - (e.changedTouches[0]?.clientY ?? 0)
-      if      (dy >  50 && activeRef.current < n - 1) goTo(activeRef.current + 1)
-      else if (dy < -50 && activeRef.current > 0)     goTo(activeRef.current - 1)
+      // 40 px threshold — responsive but not hair-trigger
+      if      (dy >  40 && activeRef.current < n - 1) goTo(activeRef.current + 1)
+      else if (dy < -40 && activeRef.current > 0)     goTo(activeRef.current - 1)
     }
 
-    // ── Auto-snap (page scroll listener) ─────────────────────────────────────
-    // When the component's top is within 50 px of the header's bottom edge
-    // while the user is scrolling down, smoothly complete the alignment so the
-    // component always docks cleanly rather than stopping mid-gap.
+    // ── Auto-snap (page scroll) ───────────────────────────────────────────────
+    // When approaching the docked position while scrolling down, snap into
+    // alignment cleanly. Zone widened to 80 px to catch mobile momentum scroll.
     let lastScrollY = window.scrollY
     let isSnapping  = false
 
@@ -216,7 +228,6 @@ function Inner(props: ProductFeatureSlidesBlock) {
       const scrollingDown  = currentScrollY > lastScrollY
       lastScrollY = currentScrollY
 
-      // Only snap when approaching from below; never interfere with upward scroll
       if (!scrollingDown || isSnapping) return
 
       const header       = document.querySelector('header')
@@ -224,13 +235,10 @@ function Inner(props: ProductFeatureSlidesBlock) {
       const containerTop = el.getBoundingClientRect().top
       const gap          = containerTop - headerBottom
 
-      // Within 50 px below the docking point → snap to it
-      if (gap > 0 && gap <= 50) {
+      if (gap > 0 && gap <= 80) {
         isSnapping = true
         window.scrollTo({ top: window.scrollY + gap, behavior: 'smooth' })
-        // Release lock AND reset boundary timer once snap settles.
-        // The 1-second boundary hold begins from when the component is docked,
-        // not from when the user started scrolling toward it.
+        // 500 ms boundary hold begins once the snap settles
         setTimeout(() => {
           isSnapping = false
           arrivedAtBoundaryAt.current = Date.now()
@@ -239,13 +247,15 @@ function Inner(props: ProductFeatureSlidesBlock) {
     }
 
     el.addEventListener('wheel',      onWheel,      { passive: false })
-    el.addEventListener('touchstart', onTouchStart, { passive: true  })
+    el.addEventListener('touchstart', onTouchStart, { passive: false }) // non-passive: key mobile fix
+    el.addEventListener('touchmove',  onTouchMove,  { passive: false }) // non-passive: keeps lock active
     el.addEventListener('touchend',   onTouchEnd,   { passive: true  })
     window.addEventListener('scroll', onPageScroll, { passive: true  })
 
     return () => {
       el.removeEventListener('wheel',      onWheel)
       el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove',  onTouchMove)
       el.removeEventListener('touchend',   onTouchEnd)
       window.removeEventListener('scroll', onPageScroll)
     }
@@ -253,17 +263,22 @@ function Inner(props: ProductFeatureSlidesBlock) {
 
   const current      = safeFeatures[activeIndex]
   const pos          = current?.contentPosition ?? 'center-left'
-  const posClass     = POS[pos] ?? POS['center-left']
+  const posClass     = POS[pos] ?? (POS['center-left'] as string)
   const isRight      = pos === 'center-right' || pos === 'bottom-right'
   const isCenter     = pos === 'bottom-center'
   const textColor    = isDark ? 'text-white'    : 'text-zinc-900'
-  const mutedColor   = isDark ? 'text-white/60' : 'text-zinc-500'
-  const counterMuted = isDark ? 'text-white/40' : 'text-zinc-400'
+  const mutedColor   = isDark ? 'text-white/80' : 'text-zinc-600'
+  const counterMuted = isDark ? 'text-white/45' : 'text-zinc-400'
+
+  // Strong text shadow — media backgrounds demand real contrast
+  const TEXT_SHADOW = isDark
+    ? '0 2px 24px rgba(0,0,0,0.95), 0 1px 5px rgba(0,0,0,0.8)'
+    : '0 1px 8px rgba(0,0,0,0.18)'
 
   return (
     <section className="w-full">
 
-      {/* ── Optional section header — normal page flow, above the card area ── */}
+      {/* ── Optional section header — normal page flow, above the cards ── */}
       {sectionHeader?.heading && (
         <div className="px-8 md:px-16 py-20 max-w-4xl">
           {sectionHeader.eyebrow && (
@@ -282,7 +297,7 @@ function Inner(props: ProductFeatureSlidesBlock) {
         </div>
       )}
 
-      {/* ── Card stack ──────────────────────────────────────────────────────── */}
+      {/* ── Card stack — one viewport height, stays in normal page flow ── */}
       <div
         ref={containerRef}
         className="relative overflow-hidden w-full"
@@ -291,12 +306,8 @@ function Inner(props: ProductFeatureSlidesBlock) {
 
         {/*
           Layer 1 — Card backgrounds.
-          All N cards are in the DOM. Only their position changes: cards at or
-          below activeIndex are translateY(0) (in place); those above are
-          translateY(100%) (queued below the viewport).
-
-          Transition: 1.3 s with a smooth deceleration — slow enough to feel
-          deliberate, fast enough to never feel sluggish.
+          All N cards in the DOM; cards at or below activeIndex are at
+          translateY(0); those above are queued at translateY(100%).
         */}
         {safeFeatures.map((feature, i) => (
           <div
@@ -306,35 +317,48 @@ function Inner(props: ProductFeatureSlidesBlock) {
             style={{
               zIndex:     i + 1,
               transform:  i <= activeIndex ? 'translateY(0%)' : 'translateY(100%)',
-              transition: `transform 1.3s ${EASE}`,
+              transition: `transform 1.35s ${EASE}`,
             }}
           >
             <SlideMedia feature={feature} />
 
-            {/* Gradient — soft vignette, stronger where text sits */}
+            {/*
+              Base overlay — always-on flat layer.
+              Ensures text is legible even on bright/white media.
+              Opacity is clamped at 55 % so media still reads as the hero visual.
+            */}
+            <div
+              aria-hidden
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundColor: `rgba(0,0,0,${Math.min(0.55, (feature.overlayOpacity ?? 40) / 100)})`,
+              }}
+            />
+
+            {/* Directional gradient — depth and vignette */}
             <div
               aria-hidden
               className="absolute inset-0 pointer-events-none"
               style={{
                 background: [
-                  // Bottom vignette for bottom-positioned content
-                  `linear-gradient(to top, rgba(0,0,0,${Math.min(0.82, ((feature.overlayOpacity ?? 40) / 100) + 0.28)}) 0%, rgba(0,0,0,0.06) 55%, transparent 75%)`,
-                  // Top vignette (subtle, for counter readability)
-                  `linear-gradient(to bottom, rgba(0,0,0,0.14) 0%, transparent 18%)`,
-                  // Side vignette — left or right based on content position
+                  // Bottom vignette — anchors text reading area
+                  `linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.08) 52%, transparent 72%)`,
+                  // Top edge — subtle, keeps counter readable
+                  `linear-gradient(to bottom, rgba(0,0,0,0.22) 0%, transparent 16%)`,
+                  // Side vignette — pulls eye toward content panel
                   (pos === 'center-left' || pos === 'bottom-left')
-                    ? `linear-gradient(to right, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.08) 50%, transparent 72%)`
+                    ? `linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.12) 48%, transparent 70%)`
                     : (pos === 'center-right' || pos === 'bottom-right')
-                      ? `linear-gradient(to left, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.08) 50%, transparent 72%)`
-                      : `linear-gradient(to top, rgba(0,0,0,0.20) 0%, transparent 40%)`,
+                      ? `linear-gradient(to left, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.12) 48%, transparent 70%)`
+                      : `linear-gradient(to top, rgba(0,0,0,0.28) 0%, transparent 42%)`,
                 ].join(', '),
               }}
             />
 
-            {/* Film grain */}
+            {/* Film grain — subtle texture */}
             <div
               aria-hidden
-              className="absolute inset-0 pointer-events-none opacity-[0.04]"
+              className="absolute inset-0 pointer-events-none opacity-[0.035]"
               style={{
                 backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
                 backgroundSize: '180px',
@@ -345,10 +369,8 @@ function Inner(props: ProductFeatureSlidesBlock) {
 
         {/*
           Layer 2 — Active card content.
-          Keyed on activeIndex so React re-mounts it on every card change,
-          which replays the CSS entrance animation from scratch.
-          Each element drifts up and unblurs with a staggered delay,
-          giving the impression the content materialises as the card settles.
+          Keyed on activeIndex so React re-mounts on every card change,
+          replaying the staggered entrance animations from scratch.
         */}
         <div
           key={activeIndex}
@@ -358,10 +380,13 @@ function Inner(props: ProductFeatureSlidesBlock) {
           {current?.tag && (
             <div
               className={`flex items-center gap-3 mb-5 ${isRight ? 'justify-end flex-row-reverse' : isCenter ? 'justify-center' : ''}`}
-              style={{ animation: `kw-in 0.9s ${EASE} 0.35s both` }}
+              style={{ animation: `kw-in 0.65s ${EASE} 0.1s both` }}
             >
               <span className="block w-7 h-px bg-[#e21d30] flex-shrink-0" />
-              <span className="text-[9px] tracking-[0.38em] uppercase font-mono text-[#e21d30]">
+              <span
+                className="text-[9px] tracking-[0.38em] uppercase font-mono text-[#e21d30]"
+                style={{ textShadow: '0 1px 8px rgba(0,0,0,0.7)' }}
+              >
                 {current.tag}
               </span>
             </div>
@@ -369,10 +394,10 @@ function Inner(props: ProductFeatureSlidesBlock) {
 
           {current?.title && (
             <h3
-              className="font-serif text-4xl sm:text-5xl lg:text-6xl leading-[1.07] font-bold mb-4"
+              className="font-serif text-4xl sm:text-5xl lg:text-6xl leading-[1.07] font-black mb-4"
               style={{
-                textShadow: isDark ? '0 2px 28px rgba(0,0,0,0.5)' : 'none',
-                animation: `kw-in 1.1s ${EASE} 0.5s both`,
+                textShadow: TEXT_SHADOW,
+                animation: `kw-in 0.85s ${EASE} 0.22s both`,
               }}
             >
               {current.title}
@@ -381,8 +406,11 @@ function Inner(props: ProductFeatureSlidesBlock) {
 
           {current?.subtitle && (
             <p
-              className={`text-base md:text-lg font-light tracking-wide mb-3 ${mutedColor}`}
-              style={{ animation: `kw-in 1.1s ${EASE} 0.66s both` }}
+              className={`text-base md:text-lg font-semibold tracking-wide mb-3 ${mutedColor}`}
+              style={{
+                textShadow: TEXT_SHADOW,
+                animation: `kw-in 0.8s ${EASE} 0.38s both`,
+              }}
             >
               {current.subtitle}
             </p>
@@ -390,25 +418,28 @@ function Inner(props: ProductFeatureSlidesBlock) {
 
           {current?.description && (
             <p
-              className={`text-sm md:text-[15px] leading-relaxed max-w-sm ${mutedColor}`}
-              style={{ animation: `kw-in 1.1s ${EASE} 0.8s both` }}
+              className={`text-sm md:text-[15px] leading-relaxed max-w-sm font-medium ${mutedColor}`}
+              style={{
+                textShadow: TEXT_SHADOW,
+                animation: `kw-in 0.8s ${EASE} 0.5s both`,
+              }}
             >
               {current.description}
             </p>
           )}
 
           {current?.cta?.text && (
-            <div style={{ animation: `kw-in 1s ${EASE} 0.96s both` }} className="mt-9">
+            <div style={{ animation: `kw-in 0.7s ${EASE} 0.62s both` }} className="mt-9">
               <Link
                 href={current.cta.link ?? '#'}
                 target={current.cta.openInNewTab ? '_blank' : '_self'}
                 rel={current.cta.openInNewTab ? 'noopener noreferrer' : undefined}
                 className={[
                   'group inline-flex items-center gap-4 px-7 py-3',
-                  'border text-[9px] tracking-[0.36em] uppercase font-mono',
+                  'border text-[9px] tracking-[0.36em] uppercase font-mono font-semibold',
                   'transition-all duration-500',
                   isDark
-                    ? 'border-white/30 text-white hover:bg-[#e21d30] hover:border-[#e21d30]'
+                    ? 'border-white/40 text-white hover:bg-[#e21d30] hover:border-[#e21d30]'
                     : 'border-zinc-800/30 text-zinc-900 hover:bg-[#e21d30] hover:border-[#e21d30] hover:text-white',
                 ].join(' ')}
               >
@@ -434,7 +465,7 @@ function Inner(props: ProductFeatureSlidesBlock) {
                     key={i}
                     style={{
                       width: 1.5, borderRadius: 1,
-                      backgroundColor: on ? '#e21d30' : isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.12)',
+                      backgroundColor: on ? '#e21d30' : isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.14)',
                       height:   on ? 44 : 14,
                       transition: `height 0.6s ${EASE}, background-color 0.4s ease`,
                     }}
@@ -448,8 +479,8 @@ function Inner(props: ProductFeatureSlidesBlock) {
                     key={i}
                     className="font-mono text-[9px] tracking-widest select-none tabular-nums"
                     style={{
-                      color:      on ? '#e21d30' : isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)',
-                      fontWeight: on ? 500 : 400,
+                      color:      on ? '#e21d30' : isDark ? 'rgba(255,255,255,0.38)' : 'rgba(0,0,0,0.28)',
+                      fontWeight: on ? 600 : 400,
                       transition: 'color 0.4s ease',
                     }}
                   >
@@ -464,7 +495,7 @@ function Inner(props: ProductFeatureSlidesBlock) {
                   key={i}
                   style={{
                     borderRadius: '50%',
-                    backgroundColor: on ? '#e21d30' : isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.12)',
+                    backgroundColor: on ? '#e21d30' : isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.14)',
                     width:  on ? 8 : 4,
                     height: on ? 8 : 4,
                     transition: `width 0.5s ${EASE}, height 0.5s ${EASE}, background-color 0.4s ease`,
@@ -497,7 +528,7 @@ function Inner(props: ProductFeatureSlidesBlock) {
         {activeIndex === 0 && n > 1 && (
           <div
             className={`absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none ${counterMuted}`}
-            style={{ zIndex: n + 5, animation: 'kw-fade 1s ease 2s both' }}
+            style={{ zIndex: n + 5, animation: 'kw-fade 1s ease 2.5s both' }}
           >
             <span className="text-[8px] tracking-[0.42em] uppercase font-mono">Scroll</span>
             <div className="w-px h-7 bg-current origin-top" style={{ animation: 'kw-pulse 2.4s ease-in-out infinite' }} />
@@ -507,20 +538,22 @@ function Inner(props: ProductFeatureSlidesBlock) {
 
       {/* ── Keyframe definitions ─────────────────────────────────────────────── */}
       <style>{`
-        /* Content element entrance: drift up + unblur */
+        /*
+          Content entrance: pure opacity + subtle rise.
+          No blur filter — cleaner and more refined than the previous version.
+          Each element staggered by ~120 ms for an elegant sequential reveal.
+        */
         @keyframes kw-in {
-          from { opacity: 0; transform: translateY(22px); filter: blur(10px); }
-          to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+          from { opacity: 0; transform: translateY(18px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
-        /* Scroll cue fade-in */
         @keyframes kw-fade {
           from { opacity: 0; }
           to   { opacity: 1; }
         }
-        /* Scroll cue pulse */
         @keyframes kw-pulse {
           0%, 100% { opacity: 0.25; transform: scaleY(1);   }
-          50%       { opacity: 0.8;  transform: scaleY(1.7); }
+          50%       { opacity: 0.85; transform: scaleY(1.7); }
         }
       `}</style>
     </section>

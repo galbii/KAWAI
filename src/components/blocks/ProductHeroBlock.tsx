@@ -31,6 +31,12 @@ interface ProductHeroBlockProps {
     showPrice?: boolean | null
     showBuyButton?: boolean | null
   }
+  secondaryCta?: {
+    text?: string | null
+    action?: 'url' | 'scroll-to-block' | null
+    url?: string | null
+    scrollToBlockIndex?: number | null
+  } | null
   // NEW: Floating cart configuration (integrated with variation selection)
   floatingCart?: {
     enabled?: boolean | null
@@ -53,6 +59,7 @@ interface ProductHeroBlockProps {
 
 export function ProductHeroBlock({
   layout = {},
+  secondaryCta = {},
   floatingCart = {}, // NEW: Floating cart configuration
   overrides = {},
   product,
@@ -165,6 +172,20 @@ export function ProductHeroBlock({
   const showVariations = layout.showVariations !== false
   const showPrice = layout.showPrice === true
   const showBuyButton = layout.showBuyButton !== false
+
+  // Secondary CTA config
+  const secondaryText = secondaryCta?.text || 'Learn More'
+  const secondaryAction = secondaryCta?.action || 'url'
+  const secondaryUrl = secondaryCta?.url || `/products/${product?.slug || ''}`
+  const secondaryBlockIndex = secondaryCta?.scrollToBlockIndex ?? null
+
+  const handleSecondaryScroll = () => {
+    if (secondaryBlockIndex === null || secondaryBlockIndex === undefined) return
+    const targetEl = document.getElementById(`block-${secondaryBlockIndex}`)
+    if (targetEl) {
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
 
   // NEW: Floating cart options (integrated with variation selection)
   const floatingEnabled = floatingCart.enabled === true
@@ -727,24 +748,42 @@ export function ProductHeroBlock({
                       Add to Cart
                     </AddToCartButton>
 
-                    {/* Right CTA: Learn More Button - Compact */}
-                    <Button
-                      asChild
-                      className={cn(
-                        "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
-                        "border-2 border-gray-300 bg-white hover:bg-gray-50",
-                        backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
-                      )}
-                    >
-                      <Link href={`/products/${product.slug}` || '#'}>
+                    {/* Right CTA: Secondary Button - Compact */}
+                    {secondaryAction === 'scroll-to-block' ? (
+                      <Button
+                        onClick={handleSecondaryScroll}
+                        className={cn(
+                          "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
+                          "border-2 border-gray-300 bg-white hover:bg-gray-50",
+                          backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
+                        )}
+                      >
                         <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
-                          <span>{getBuyButtonText()}</span>
-                          <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          <span>{secondaryText}</span>
+                          <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-y-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                           </svg>
                         </span>
-                      </Link>
-                    </Button>
+                      </Button>
+                    ) : (
+                      <Button
+                        asChild
+                        className={cn(
+                          "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
+                          "border-2 border-gray-300 bg-white hover:bg-gray-50",
+                          backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
+                        )}
+                      >
+                        <Link href={secondaryUrl || '#'}>
+                          <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
+                            <span>{secondaryText}</span>
+                            <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                            </svg>
+                          </span>
+                        </Link>
+                      </Button>
+                    )}
                   </>
                 ) : shopifyProduct && selectedVariant && !canAddToCart ? (
                   <>
@@ -768,24 +807,42 @@ export function ProductHeroBlock({
                       </Link>
                     </Button>
 
-                    {/* Right CTA: Learn More Button - Compact */}
-                    <Button
-                      asChild
-                      className={cn(
-                        "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
-                        "border-2 border-gray-300 bg-white hover:bg-gray-50",
-                        backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
-                      )}
-                    >
-                      <Link href={`/products/${product.slug}` || '#'}>
+                    {/* Right CTA: Secondary Button - Compact */}
+                    {secondaryAction === 'scroll-to-block' ? (
+                      <Button
+                        onClick={handleSecondaryScroll}
+                        className={cn(
+                          "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
+                          "border-2 border-gray-300 bg-white hover:bg-gray-50",
+                          backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
+                        )}
+                      >
                         <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
-                          <span>{getBuyButtonText()}</span>
-                          <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          <span>{secondaryText}</span>
+                          <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-y-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                           </svg>
                         </span>
-                      </Link>
-                    </Button>
+                      </Button>
+                    ) : (
+                      <Button
+                        asChild
+                        className={cn(
+                          "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
+                          "border-2 border-gray-300 bg-white hover:bg-gray-50",
+                          backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
+                        )}
+                      >
+                        <Link href={secondaryUrl || '#'}>
+                          <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
+                            <span>{secondaryText}</span>
+                            <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                            </svg>
+                          </span>
+                        </Link>
+                      </Button>
+                    )}
                   </>
                 ) : (
                   /* Fallback: No Shopify product or variant - Learn More button only */

@@ -999,13 +999,17 @@ export const Products: CollectionConfig = {
               const productData = await transformShopifyToPayload(shopifyProduct)
 
               if (existing) {
-                // UPDATE existing product
+                // UPDATE existing product — only sync Shopify-owned fields.
+                // Exclude `slug` (CMS URL, should never change after creation) and
+                // `status` (CMS workflow status, should not be overridden by Shopify).
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { slug: _slug, status: _status, ...shopifySyncData } = productData
                 console.log(`[Bulk Sync] Updating existing product: ${model}`)
 
                 await req.payload.update({
                   collection: 'products',
                   id: existing.id,
-                  data: productData,
+                  data: shopifySyncData,
                   context: { skipShopifySync: true }, // Prevent infinite loop
                   req,
                 })
@@ -1083,8 +1087,10 @@ export const Products: CollectionConfig = {
           console.log(`🔗 Generated slug from "${sourceForSlug}" -> "${data.slug}"`)
         }
 
-        // Add default blocks if pageContent is empty (for all operations)
-        if (!data.pageContent || data.pageContent.length === 0) {
+        // Add default blocks only when creating a new product.
+        // On updates, pageContent is not included in partial update data (it's undefined, not empty),
+        // so this check would falsely trigger and wipe out existing page builder content.
+        if (operation === 'create' && (!data.pageContent || data.pageContent.length === 0)) {
           const defaultBlocks: any[] = []
 
           // Resolve collection ID upfront (needed for block 3)

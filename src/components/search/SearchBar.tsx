@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { Search, X, Loader2 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
@@ -58,6 +58,8 @@ interface QuickLink {
 type CategoryFilter = 'all' | 'storefronts' | 'products' | 'pages'
 
 export function SearchBar({ className, onOpenChange }: SearchBarProps) {
+  const pathname = usePathname()
+  const isOnFindADealerPage = pathname.startsWith('/find-a-dealer')
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [isOpen, setIsOpen] = useState(false)
@@ -1369,7 +1371,8 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
       )}
 
       {/* Floating Glassmorphic Search Input - Mobile Only - Always visible but hides when keyboard opens for other inputs - Portaled to body */}
-      {isMounted && createPortal(
+      {/* Hidden on find-a-dealer page since that page has its own dedicated search bar */}
+      {isMounted && !isOnFindADealerPage && createPortal(
         <div
           className="fixed left-0 right-0 z-[9003] md:hidden transition-all duration-200 ease-out"
           style={{
