@@ -78,7 +78,7 @@ export const HomePage: CollectionConfig = {
               admin: {
                 description:
                   'Add and arrange blocks to build your homepage. Leave empty to use legacy tab-based content below.',
-                initCollapsed: false,
+                initCollapsed: true,
               },
             },
           ],

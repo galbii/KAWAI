@@ -1089,6 +1089,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   }
 
   return (
+    <>
     <header
       ref={headerRef}
       className="fixed left-0 right-0 z-50 w-full bg-white shadow-sm"
@@ -1443,9 +1444,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         )}
       </AnimatePresence>
 
-      {/* Cart Drawer */}
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
-
       {/* Storefronts Mega Menu - Rendered at root level for proper positioning */}
       <div
         onMouseEnter={storefrontsData && animationComplete ? handleStorefrontsMenuOpen : undefined}
@@ -1508,5 +1506,11 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         </div>
       )}
     </header>
+
+    {/* Cart Drawer - rendered outside <header> so its z-[9500] is in the root stacking context,
+        above the floating add-to-cart button's z-[9000] which is also in root stacking context.
+        (Inside <header z-50>, child z-indexes are capped at that stacking context level.) */}
+    <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+    </>
   )
 }

@@ -45,6 +45,7 @@ export const Columns: Block = {
           blockReferences: ['content-image', 'content-text', 'content-video', 'layout-spacer', 'layout-divider'] as any,
           blocks: [], // Required to be empty when using blockReferences
           admin: {
+            initCollapsed: true,
             description: 'Add content blocks to this column (Image, Text, Video, Spacer, Divider)',
           },
         },

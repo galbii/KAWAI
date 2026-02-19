@@ -161,7 +161,7 @@ export const ProductHero: Block = {
         {
           name: 'enabled',
           type: 'checkbox',
-          defaultValue: false,
+          defaultValue: true,
           admin: {
             description: 'Show floating add to cart button that follows as user scrolls (syncs with variation selection)'
           }

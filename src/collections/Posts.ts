@@ -125,6 +125,7 @@ export const Posts: CollectionConfig = {
               blockReferences: ['marketing-hero', 'marketing-grand-hero', 'content-banner', 'layout-hero-carousel', 'marketing-artist-carousel', 'marketing-featured-models'] as any,
               blocks: [],
               admin: {
+                initCollapsed: true,
                 description: 'Optional: Add promotional content before the article (Hero, Banner, Hero Carousel, Artist Carousel, Featured Models)',
               },
             },
@@ -135,6 +136,7 @@ export const Posts: CollectionConfig = {
               blockReferences: ['marketing-cta', 'marketing-testimonials', 'layout-columns', 'marketing-artist-carousel', 'marketing-featured-models'] as any,
               blocks: [],
               admin: {
+                initCollapsed: true,
                 description: 'Optional: Add calls-to-action or related content after the article (CTA, Testimonials, Columns, Artist Carousel, Featured Models)',
               },
             },

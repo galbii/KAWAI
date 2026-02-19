@@ -122,14 +122,13 @@ function Inner(props: ProductFeatureSlidesBlock) {
   } satisfies FeatureSlide))
   const isDark = theme !== 'light'
 
-  const containerRef        = useRef<HTMLDivElement>(null)
-  const cardRefs            = useRef<(HTMLDivElement | null)[]>([])
-  const activeRef           = useRef(0)
-  const transitioning       = useRef(false)
-  const touchStartY         = useRef(0)
-  // Timestamp of when we last landed on the first or last card.
-  // User must wait 500 ms at a boundary before their scroll escapes.
-  const arrivedAtBoundaryAt = useRef<number>(Date.now())
+  const containerRef  = useRef<HTMLDivElement>(null)
+  const cardRefs      = useRef<(HTMLDivElement | null)[]>([])
+  const activeRef     = useRef(0)
+  const transitioning = useRef(false)
+  const touchStartY   = useRef(0)
+  // null = undecided, true = slide-nav locked, false = page-scroll escape
+  const touchLocked   = useRef<boolean | null>(null)
 
   const [activeIndex, setActiveIndex] = useState(0)
 
@@ -138,9 +137,6 @@ function Inner(props: ProductFeatureSlidesBlock) {
     transitioning.current = true
     activeRef.current     = next
     setActiveIndex(next)
-    if (next === 0 || next === n - 1) {
-      arrivedAtBoundaryAt.current = Date.now()
-    }
     setTimeout(() => { transitioning.current = false }, 1350)
   }, [n])
 
@@ -148,7 +144,7 @@ function Inner(props: ProductFeatureSlidesBlock) {
     const el = containerRef.current
     if (!el) return
 
-    // Docked = component top is near the header's bottom edge.
+    // Docked = component top is aligned with the header's bottom edge.
     // 40 px tolerance handles mobile URL-bar shifts and minor scroll offsets.
     const isDockedAtHeader = () => {
       const header       = document.querySelector('header')
@@ -157,23 +153,16 @@ function Inner(props: ProductFeatureSlidesBlock) {
       return (
         top >= headerBottom - 40 &&
         top <= headerBottom + 40 &&
-        bottom > 0  // component still has viewport presence
+        bottom > 0
       )
     }
 
-    // At a boundary card and within the 500 ms pause window.
-    const isBoundaryHeld = () =>
-      (activeRef.current === 0 || activeRef.current === n - 1) &&
-      Date.now() - arrivedAtBoundaryAt.current < 500
-
-    // ── Wheel (desktop) ───────────────────────────────────────────────────────
+    // ── Wheel (desktop / trackpad) ────────────────────────────────────────────
+    // At a boundary in the escape direction, we simply don't preventDefault —
+    // the browser's native scroll takes over immediately. No artificial hold.
     const onWheel = (e: WheelEvent) => {
       if (!isDockedAtHeader()) return
       if (transitioning.current) { e.preventDefault(); return }
-
-      const escaping =
-        (e.deltaY > 0 && activeRef.current === n - 1) ||
-        (e.deltaY < 0 && activeRef.current === 0)
 
       if (e.deltaY > 0 && activeRef.current < n - 1) {
         e.preventDefault()
@@ -181,36 +170,55 @@ function Inner(props: ProductFeatureSlidesBlock) {
       } else if (e.deltaY < 0 && activeRef.current > 0) {
         e.preventDefault()
         goTo(activeRef.current - 1)
-      } else if (escaping && isBoundaryHeld()) {
-        // Hold at boundary — let the user feel the "lock" before escaping
-        e.preventDefault()
       }
+      // At boundary in escape direction → fall through without preventDefault
+      // so the page scrolls naturally.
     }
 
     // ── Touch (mobile) ────────────────────────────────────────────────────────
     //
-    // Both touchstart and touchmove are registered with { passive: false }.
-    // This is the key fix for mobile: calling e.preventDefault() in a passive
-    // listener is a no-op. By making them non-passive we can prevent the
-    // browser from scrolling the page while the user is swiping through cards.
+    // Direction-aware locking: we commit on the first significant movement
+    // whether this gesture navigates slides (locked) or scrolls the page (free).
+    //
+    // At a boundary in the escape direction (last slide + swipe down, first
+    // slide + swipe up) we stay free so the page scrolls naturally.
+    //
+    // touchstart and touchmove are non-passive so we CAN call preventDefault;
+    // we only actually call it when we've decided to lock.
     //
     const onTouchStart = (e: TouchEvent) => {
       touchStartY.current = e.touches[0]?.clientY ?? 0
-      // Lock page scroll for this gesture if we're in the docked position
-      if (isDockedAtHeader()) {
-        e.preventDefault()
-      }
+      touchLocked.current = null // reset decision for each new gesture
+      // Don't preventDefault here — direction decides locking in onTouchMove
     }
 
     const onTouchMove = (e: TouchEvent) => {
-      // Continue holding the lock for the full duration of the swipe
-      if (isDockedAtHeader()) {
-        e.preventDefault()
-      }
+      if (!isDockedAtHeader()) return
+
+      // If the decision for this gesture is already made, act on it.
+      if (touchLocked.current === true)  { e.preventDefault(); return }
+      if (touchLocked.current === false) { return } // escape mode — let page scroll
+
+      // Undecided — evaluate swipe direction on first significant movement.
+      const currentY  = e.touches[0]?.clientY ?? touchStartY.current
+      const dy        = touchStartY.current - currentY // positive = finger up = scroll down
+      if (Math.abs(dy) < 6) return // too small — wait for clearer intent
+
+      const swipingDown = dy > 0 // intent: advance / scroll page down
+      const swipingUp   = dy < 0 // intent: go back / scroll page up
+
+      // Escape: at boundary in the natural escape direction → stay free
+      if (swipingDown && activeRef.current === n - 1) { touchLocked.current = false; return }
+      if (swipingUp   && activeRef.current === 0)     { touchLocked.current = false; return }
+
+      // Interior slide navigation → lock and prevent page scroll
+      touchLocked.current = true
+      e.preventDefault()
     }
 
     const onTouchEnd = (e: TouchEvent) => {
-      if (transitioning.current || !isDockedAtHeader()) return
+      // Only process if we were in locked (slide-nav) mode
+      if (touchLocked.current !== true || transitioning.current || !isDockedAtHeader()) return
       const dy = touchStartY.current - (e.changedTouches[0]?.clientY ?? 0)
       // 40 px threshold — responsive but not hair-trigger
       if      (dy >  40 && activeRef.current < n - 1) goTo(activeRef.current + 1)
@@ -218,37 +226,41 @@ function Inner(props: ProductFeatureSlidesBlock) {
     }
 
     // ── Auto-snap (page scroll) ───────────────────────────────────────────────
-    // When approaching the docked position while scrolling down, snap into
-    // alignment cleanly. Zone widened to 80 px to catch mobile momentum scroll.
+    // When the component top drifts within 80 px of the header — in either
+    // direction — snap it flush so the viewport fits the component cleanly
+    // and slide tracking begins immediately.
     let lastScrollY = window.scrollY
     let isSnapping  = false
+
+    const snap = (gap: number) => {
+      isSnapping = true
+      window.scrollTo({ top: window.scrollY + gap, behavior: 'smooth' })
+      setTimeout(() => { isSnapping = false }, 600)
+    }
 
     const onPageScroll = () => {
       const currentScrollY = window.scrollY
       const scrollingDown  = currentScrollY > lastScrollY
       lastScrollY = currentScrollY
 
-      if (!scrollingDown || isSnapping) return
+      if (isSnapping) return
 
       const header       = document.querySelector('header')
       const headerBottom = header ? header.getBoundingClientRect().bottom : 0
       const containerTop = el.getBoundingClientRect().top
+      // positive gap = component below header, negative = component above header
       const gap          = containerTop - headerBottom
 
-      if (gap > 0 && gap <= 80) {
-        isSnapping = true
-        window.scrollTo({ top: window.scrollY + gap, behavior: 'smooth' })
-        // 500 ms boundary hold begins once the snap settles
-        setTimeout(() => {
-          isSnapping = false
-          arrivedAtBoundaryAt.current = Date.now()
-        }, 600)
-      }
+      // Approaching from above (scrolling down into component)
+      if (scrollingDown && gap > 0 && gap <= 80) { snap(gap); return }
+
+      // Approaching from below (scrolling up back into component)
+      if (!scrollingDown && gap < 0 && gap >= -80) { snap(gap) }
     }
 
     el.addEventListener('wheel',      onWheel,      { passive: false })
-    el.addEventListener('touchstart', onTouchStart, { passive: false }) // non-passive: key mobile fix
-    el.addEventListener('touchmove',  onTouchMove,  { passive: false }) // non-passive: keeps lock active
+    el.addEventListener('touchstart', onTouchStart, { passive: false })
+    el.addEventListener('touchmove',  onTouchMove,  { passive: false })
     el.addEventListener('touchend',   onTouchEnd,   { passive: true  })
     window.addEventListener('scroll', onPageScroll, { passive: true  })
 

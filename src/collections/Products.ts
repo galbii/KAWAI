@@ -661,6 +661,7 @@ export const Products: CollectionConfig = {
               ] as any,
               blocks: [], // Required to be empty when using blockReferences
               admin: {
+                initCollapsed: true,
                 description: 'Product page content blocks'
               }
             }

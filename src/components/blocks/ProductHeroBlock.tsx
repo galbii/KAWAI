@@ -355,6 +355,9 @@ export function ProductHeroBlock({
 
   const canAddToCart = shouldShowAddToCart()
 
+  // True when inventory is tracked but the selected variant is specifically unavailable (not just untracked)
+  const isOutOfStock = tracksInventory && !!selectedVariant && !selectedVariant.available
+
   // Get the buy button text - hardcoded to "Learn More"
   const getBuyButtonText = () => {
     return 'Learn More'
@@ -786,64 +789,72 @@ export function ProductHeroBlock({
                     )}
                   </>
                 ) : shopifyProduct && selectedVariant && !canAddToCart ? (
-                  <>
+                  <div className="w-full flex flex-col gap-2">
+                    {/* Out of stock notice - only when inventory is tracked but variant is unavailable */}
+                    {isOutOfStock && (
+                      <p className="text-xs text-gray-400 text-center tracking-wide">
+                        Out of stock. Contact an Authorized Dealer.
+                      </p>
+                    )}
                     {/* Product doesn't track inventory OR variant not available */}
-                    {/* Left CTA: Find a Dealer Button - Compact */}
-                    <Button
-                      asChild
-                      className={cn(
-                        "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
-                        "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/20"
-                      )}
-                    >
-                      <Link href="/find-a-dealer">
-                        <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
-                          <span>{getFindDealerButtonText()}</span>
-                          <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                          </svg>
-                        </span>
-                      </Link>
-                    </Button>
-
-                    {/* Right CTA: Secondary Button - Compact */}
-                    {secondaryAction === 'scroll-to-block' ? (
-                      <Button
-                        onClick={handleSecondaryScroll}
-                        className={cn(
-                          "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
-                          "border-2 border-gray-300 bg-white hover:bg-gray-50",
-                          backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
-                        )}
-                      >
-                        <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
-                          <span>{secondaryText}</span>
-                          <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-y-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </span>
-                      </Button>
-                    ) : (
+                    <div className="flex flex-col sm:flex-row gap-3 w-full">
+                      {/* Left CTA: Find a Dealer Button - Compact */}
                       <Button
                         asChild
                         className={cn(
                           "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
-                          "border-2 border-gray-300 bg-white hover:bg-gray-50",
-                          backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
+                          "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/20"
                         )}
                       >
-                        <Link href={secondaryUrl || '#'}>
+                        <Link href="/find-a-dealer">
+                          <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                           <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
-                            <span>{secondaryText}</span>
+                            <span>{getFindDealerButtonText()}</span>
                             <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                             </svg>
                           </span>
                         </Link>
                       </Button>
-                    )}
-                  </>
+
+                      {/* Right CTA: Secondary Button - Compact */}
+                      {secondaryAction === 'scroll-to-block' ? (
+                        <Button
+                          onClick={handleSecondaryScroll}
+                          className={cn(
+                            "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
+                            "border-2 border-gray-300 bg-white hover:bg-gray-50",
+                            backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
+                          )}
+                        >
+                          <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
+                            <span>{secondaryText}</span>
+                            <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-y-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </span>
+                        </Button>
+                      ) : (
+                        <Button
+                          asChild
+                          className={cn(
+                            "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
+                            "border-2 border-gray-300 bg-white hover:bg-gray-50",
+                            backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
+                          )}
+                        >
+                          <Link href={secondaryUrl || '#'}>
+                            <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
+                              <span>{secondaryText}</span>
+                              <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                              </svg>
+                            </span>
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 ) : (
                   /* Fallback: No Shopify product or variant - Learn More button only */
                   <Button
