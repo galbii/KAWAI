@@ -276,15 +276,9 @@ async function StorefrontContent({ storeslug }: { storeslug: string }) {
   const signupModalSettings = rawStorefrontData?.signupModal;
   const isModalEnabled = signupModalSettings?.enabled !== false; // Default to true if not set
 
-  // Debug: Log signup modal configuration
-  console.log('[StorefrontContent] Signup modal config for', storeslug, {
-    hasSignupModalSettings: !!signupModalSettings,
-    isModalEnabled,
-    enabled: signupModalSettings?.enabled,
-    showDelay: signupModalSettings?.showDelay,
-    title: signupModalSettings?.title,
-    storageKey: `signup-modal-${storeslug}`
-  });
+  // Debug: Log full raw signupModal from DB to diagnose missing imageUrl
+  console.log(`[StorefrontContent] RAW signupModal from DB for "${storeslug}":`, JSON.stringify(rawStorefrontData?.signupModal, null, 2))
+  console.log(`[StorefrontContent] imageUrl value: "${signupModalSettings?.imageUrl ?? '(null/undefined — NOT SET IN DB)'}"`);
 
   return (
     <>

@@ -54,14 +54,19 @@ export function SimpleCustomerSignup({
 
   // Debug: Log component mount and props
   useEffect(() => {
+    const lsKey = storageKey ?? null
+    const lsValue = lsKey ? localStorage.getItem(lsKey) : null
     console.log('[SimpleCustomerSignup] Component mounted with props:', {
       storefrontSlug,
       showDelay,
       storageKey,
       title,
       description,
-      hasImageUrl: !!imageUrl,
-      customTagsCount: customTags?.length || 0
+      imageUrl: imageUrl ?? '(null/undefined — modal will render centered, no image)',
+      customTagsCount: customTags?.length || 0,
+      localStorage_blocked: lsValue === 'true'
+        ? `⚠️ YES — modal blocked by localStorage["${lsKey}"]. Run: localStorage.removeItem("${lsKey}") to reset.`
+        : '✅ No'
     })
   }, [])
 
@@ -112,11 +117,11 @@ export function SimpleCustomerSignup({
       {imageUrl ? (
         <>
           {/* Image - left column (60%), hidden on mobile */}
-          <div className="hidden md:block relative h-full min-h-[500px]">
+          <div className="hidden md:block relative self-stretch min-h-[500px] bg-black overflow-hidden">
             <img
               src={imageUrl}
               alt="Piano promotion"
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-contain"
             />
           </div>
 

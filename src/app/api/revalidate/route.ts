@@ -1,4 +1,4 @@
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       // Construct path based on type and slug
       switch (type) {
         case 'storefront':
-          pathToRevalidate = `/${slug}`
+          pathToRevalidate = `/store/${slug}`
           break
         case 'product':
           pathToRevalidate = `/products/${slug}`
@@ -100,6 +100,11 @@ export async function POST(request: NextRequest) {
       const cacheKey = type === 'storefront' ? `storefront-${slug}` : slug
       ;(global as any).payloadCache.delete(cacheKey)
       console.log(`[Revalidation] Cleared application cache for key: ${cacheKey}`)
+    }
+
+    // Revalidate by tag first (clears unstable_cache entries)
+    if (slug && type === 'storefront') {
+      revalidateTag(`storefront-${slug}`)
     }
 
     // Revalidate the path using Next.js on-demand revalidation

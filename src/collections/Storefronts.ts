@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { revalidateTag, revalidatePath } from 'next/cache'
 import { imageField, videoField } from '@/lib/payload/fields'
 
 export const Storefronts: CollectionConfig = {
@@ -875,7 +876,7 @@ export const Storefronts: CollectionConfig = {
                   defaultValue: 'Stay Connected',
                   admin: {
                     description: 'Modal headline text',
-                    condition: (data: any) => data?.signupModal?.enabled === true
+                    condition: (_data: any, siblingData: any) => siblingData?.enabled === true
                   }
                 },
                 {
@@ -884,7 +885,7 @@ export const Storefronts: CollectionConfig = {
                   defaultValue: 'Sign up to receive updates about our piano collection and exclusive offers.',
                   admin: {
                     description: 'Modal subheading/description text',
-                    condition: (data: any) => data?.signupModal?.enabled === true
+                    condition: (_data: any, siblingData: any) => siblingData?.enabled === true
                   }
                 },
                 {
@@ -893,7 +894,7 @@ export const Storefronts: CollectionConfig = {
                   defaultValue: 'Sign Up',
                   admin: {
                     description: 'Submit button text',
-                    condition: (data: any) => data?.signupModal?.enabled === true
+                    condition: (_data: any, siblingData: any) => siblingData?.enabled === true
                   }
                 },
                 {
@@ -905,7 +906,7 @@ export const Storefronts: CollectionConfig = {
                   admin: {
                     description: 'Delay in milliseconds before showing the modal (0 = instant, 1000 = 1 second, 3000 = 3 seconds)',
                     step: 100,
-                    condition: (data: any) => data?.signupModal?.enabled === true
+                    condition: (_data: any, siblingData: any) => siblingData?.enabled === true
                   }
                 },
                 {
@@ -914,7 +915,7 @@ export const Storefronts: CollectionConfig = {
                   defaultValue: 'Thank You for Signing Up!',
                   admin: {
                     description: 'Success message headline shown after form submission',
-                    condition: (data: any) => data?.signupModal?.enabled === true
+                    condition: (_data: any, siblingData: any) => siblingData?.enabled === true
                   }
                 },
                 {
@@ -923,7 +924,7 @@ export const Storefronts: CollectionConfig = {
                   defaultValue: "We'll be in touch soon with updates about our piano collection.",
                   admin: {
                     description: 'Success message description shown after form submission',
-                    condition: (data: any) => data?.signupModal?.enabled === true
+                    condition: (_data: any, siblingData: any) => siblingData?.enabled === true
                   }
                 },
                 {
@@ -932,7 +933,7 @@ export const Storefronts: CollectionConfig = {
                   required: false,
                   admin: {
                     description: 'Optional image URL to display on the left side of the modal (desktop only). Enter a full URL (e.g., https://example.com/image.jpg). Leave empty for centered form layout.',
-                    condition: (data: any) => data?.signupModal?.enabled === true,
+                    condition: (_data: any, siblingData: any) => siblingData?.enabled === true,
                     placeholder: 'https://example.com/piano-image.jpg'
                   }
                 },
@@ -940,9 +941,13 @@ export const Storefronts: CollectionConfig = {
                   name: 'customTags',
                   type: 'array',
                   required: false,
+                  labels: {
+                    singular: 'Tag',
+                    plural: 'Tags',
+                  },
                   admin: {
                     description: 'Additional Shopify customer tags to apply when someone signs up (e.g., "free-delivery-promo", "2025-campaign"). The storefront slug is always added automatically.',
-                    condition: (data: any) => data?.signupModal?.enabled === true
+                    condition: (_data: any, siblingData: any) => siblingData?.enabled === true
                   },
                   fields: [
                     {
@@ -1131,6 +1136,70 @@ export const Storefronts: CollectionConfig = {
 
   hooks: {
     afterChange: [
+      // ─── Custom Search Index Sync ──────────────────────────────────────────────
+      // Bypasses @payloadcms/plugin-search's auto-sync for storefronts because
+      // Payload 3.71.1 has a bug in db-mongodb/queries/parseParams.js:68 where
+      // querying polymorphic relationship fields with dotted-path notation
+      // (doc.value + doc.relationTo simultaneously) throws:
+      //   TypeError: Cannot delete property '0' of [object String]
+      // We query by storefrontSlug (a scalar custom field) instead.
+      async ({ doc, operation, req: { payload } }) => {
+        try {
+          const searchData = {
+            doc: { relationTo: 'storefronts' as const, value: doc.id },
+            title: doc.locationName,
+            category: 'storefront',
+            tags: ['storefront', 'location', 'showroom'].map(tag => ({ tag })),
+            storefrontSlug: doc.slug,
+            storefrontLocationName: doc.locationName,
+            storefrontLocationText: doc.locationText,
+            storefrontEstablishedText: doc.establishedText,
+            storefrontAddress: doc.showroomInfo?.address,
+            storefrontPhone: doc.showroomInfo?.phone,
+            storefrontCity: doc.serviceAreaCoverage?.primaryCity,
+            storefrontRegion: doc.serviceAreaCoverage?.stateRegion,
+            excerpt: doc.locationText || doc.establishedText || '',
+          }
+
+          if (operation === 'create') {
+            if (doc.isActive) {
+              await payload.create({ collection: 'search', data: { ...searchData, priority: 30 }, depth: 0 })
+            }
+          } else {
+            // Query by storefrontSlug — avoids the broken polymorphic dotted-path query
+            const existing = await payload.find({
+              collection: 'search',
+              where: { storefrontSlug: { equals: doc.slug } },
+              depth: 0,
+              limit: 1,
+            })
+
+            const existingDoc = existing.docs[0]
+
+            if (!doc.isActive) {
+              // Remove from search index when deactivated
+              if (existingDoc) {
+                await payload.delete({ collection: 'search', id: existingDoc.id, depth: 0 })
+              }
+            } else if (existingDoc) {
+              await payload.update({
+                collection: 'search',
+                id: existingDoc.id,
+                data: { ...searchData, priority: (existingDoc as any).priority ?? 30 },
+                depth: 0,
+              })
+            } else {
+              await payload.create({ collection: 'search', data: { ...searchData, priority: 30 }, depth: 0 })
+            }
+          }
+        } catch (error) {
+          payload.logger.error(`Failed to sync storefront ${doc.slug} to search index: ${error}`)
+        }
+
+        return doc
+      },
+
+      // ─── Cache Revalidation ────────────────────────────────────────────────────
       ({ doc, previousDoc, req: { payload, context } }) => {
         // Prevent infinite loops using Payload's standard context flag
         if (context.disableRevalidate) {
@@ -1144,9 +1213,6 @@ export const Storefronts: CollectionConfig = {
           payload.logger.info(`Revalidating storefront at path: ${path} (tag: ${tag})`)
 
           try {
-            // Use Next.js revalidateTag to clear cache (works better with unstable_cache)
-            const { revalidateTag, revalidatePath } = require('next/cache')
-
             // Revalidate by tag (clears unstable_cache)
             revalidateTag(tag)
 
@@ -1167,7 +1233,6 @@ export const Storefronts: CollectionConfig = {
           payload.logger.info(`Revalidating old storefront path (unpublished): ${oldPath}`)
 
           try {
-            const { revalidateTag, revalidatePath } = require('next/cache')
             revalidateTag(oldTag)
             revalidatePath(oldPath, 'page')
             revalidatePath(`${oldPath}/contact`, 'page')
@@ -1177,7 +1242,7 @@ export const Storefronts: CollectionConfig = {
         }
 
         return doc
-      }
+      },
     ]
   }
 }

@@ -301,37 +301,23 @@ export default buildConfig({
     searchPlugin({
       collections: ['storefronts', 'products', 'pages'],
       defaultPriorities: {
-        storefronts: 30, // Storefronts appear FIRST
-        products: 20,     // Products appear second
-        pages: 10,        // Pages appear third
+        storefronts: 30,
+        products: 20,
+        pages: 10,
       },
+      // Storefronts have a custom afterChange hook in Storefronts.ts that handles their
+      // search sync manually. This bypasses a Payload 3.71.1 bug in the db-mongodb query
+      // builder (parseParams.js:68) where querying polymorphic relationship fields using
+      // dotted-path notation (doc.value + doc.relationTo simultaneously) causes:
+      // TypeError: Cannot delete property '0' of [object String]
+      skipSync: async ({ collectionSlug }) => collectionSlug === 'storefronts',
       beforeSync: ({ originalDoc, searchDoc, req }) => {
         // Extract searchable data based on collection type
-        // Detect collection type by unique fields
-        const collectionSlug = (originalDoc.locationName && originalDoc.slug && 'isActive' in originalDoc)
-          ? 'storefronts'
-          : (originalDoc.name && originalDoc.model)
-            ? 'products'
-            : 'pages'
+        const isStorefront = originalDoc.locationName && 'isActive' in originalDoc
+        const isProduct = !isStorefront && originalDoc.name && originalDoc.model
 
-        if (collectionSlug === 'storefronts') {
-          // Only index active storefronts
-          if (!originalDoc.isActive) {
-            return searchDoc // Don't modify the doc if inactive (will be filtered by Payload)
-          }
-
-          // Extract storefront-specific fields for search
-          // Build searchable content from location data and service area
-          const searchableText = [
-            originalDoc.locationName,
-            originalDoc.locationText,
-            originalDoc.establishedText,
-            originalDoc.showroomSection?.showroomInfo?.name,
-            originalDoc.showroomSection?.showroomInfo?.address,
-            originalDoc.serviceAreaCoverage?.primaryCity,
-            originalDoc.serviceAreaCoverage?.stateRegion,
-            originalDoc.serviceAreaCoverage?.coveredCities?.map((city: any) => city.cityName).join(', '),
-          ].filter(Boolean).join(' ')
+        if (isStorefront) {
+          if (!originalDoc.isActive) return searchDoc
 
           return {
             ...searchDoc,
@@ -339,19 +325,18 @@ export default buildConfig({
             excerpt: originalDoc.locationText || originalDoc.establishedText || '',
             category: 'storefront',
             tags: ['storefront', 'location', 'showroom'].map(tag => ({ tag })),
-            // Denormalized storefront fields (stored directly in search doc)
             storefrontSlug: originalDoc.slug,
             storefrontLocationName: originalDoc.locationName,
             storefrontLocationText: originalDoc.locationText,
             storefrontEstablishedText: originalDoc.establishedText,
-            storefrontAddress: originalDoc.showroomSection?.showroomInfo?.address,
-            storefrontPhone: originalDoc.showroomSection?.showroomInfo?.phone,
+            storefrontAddress: originalDoc.showroomInfo?.address,
+            storefrontPhone: originalDoc.showroomInfo?.phone,
             storefrontCity: originalDoc.serviceAreaCoverage?.primaryCity,
             storefrontRegion: originalDoc.serviceAreaCoverage?.stateRegion,
           }
         }
 
-        if (collectionSlug === 'products') {
+        if (isProduct) {
           // Extract product tags from type and category
           const productTags = [
             originalDoc.type,
@@ -376,7 +361,7 @@ export default buildConfig({
           }
         }
 
-        if (collectionSlug === 'pages') {
+        if (originalDoc.title !== undefined) {
           // Extract page-specific fields
           // IMPORTANT: Store denormalized page data for reliable navigation
 
@@ -518,78 +503,14 @@ export default buildConfig({
             },
           },
           // Denormalized storefront fields for fast search results
-          {
-            name: 'storefrontSlug',
-            type: 'text',
-            admin: {
-              position: 'sidebar',
-              description: 'Storefront slug (denormalized from Storefronts collection)',
-              readOnly: true,
-            },
-          },
-          {
-            name: 'storefrontLocationName',
-            type: 'text',
-            admin: {
-              position: 'sidebar',
-              description: 'Storefront location name (denormalized from Storefronts collection)',
-              readOnly: true,
-            },
-          },
-          {
-            name: 'storefrontLocationText',
-            type: 'text',
-            admin: {
-              position: 'sidebar',
-              description: 'Storefront location text (denormalized from Storefronts collection)',
-              readOnly: true,
-            },
-          },
-          {
-            name: 'storefrontEstablishedText',
-            type: 'text',
-            admin: {
-              position: 'sidebar',
-              description: 'Storefront established text (denormalized from Storefronts collection)',
-              readOnly: true,
-            },
-          },
-          {
-            name: 'storefrontAddress',
-            type: 'text',
-            admin: {
-              position: 'sidebar',
-              description: 'Storefront address (denormalized from Storefronts collection)',
-              readOnly: true,
-            },
-          },
-          {
-            name: 'storefrontPhone',
-            type: 'text',
-            admin: {
-              position: 'sidebar',
-              description: 'Storefront phone (denormalized from Storefronts collection)',
-              readOnly: true,
-            },
-          },
-          {
-            name: 'storefrontCity',
-            type: 'text',
-            admin: {
-              position: 'sidebar',
-              description: 'Storefront city (denormalized from Storefronts collection)',
-              readOnly: true,
-            },
-          },
-          {
-            name: 'storefrontRegion',
-            type: 'text',
-            admin: {
-              position: 'sidebar',
-              description: 'Storefront region (denormalized from Storefronts collection)',
-              readOnly: true,
-            },
-          },
+          { name: 'storefrontSlug', type: 'text', admin: { position: 'sidebar', readOnly: true } },
+          { name: 'storefrontLocationName', type: 'text', admin: { position: 'sidebar', readOnly: true } },
+          { name: 'storefrontLocationText', type: 'text', admin: { position: 'sidebar', readOnly: true } },
+          { name: 'storefrontEstablishedText', type: 'text', admin: { position: 'sidebar', readOnly: true } },
+          { name: 'storefrontAddress', type: 'text', admin: { position: 'sidebar', readOnly: true } },
+          { name: 'storefrontPhone', type: 'text', admin: { position: 'sidebar', readOnly: true } },
+          { name: 'storefrontCity', type: 'text', admin: { position: 'sidebar', readOnly: true } },
+          { name: 'storefrontRegion', type: 'text', admin: { position: 'sidebar', readOnly: true } },
         ],
       },
     }),
