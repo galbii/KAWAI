@@ -116,10 +116,8 @@ export const Pages: CollectionConfig<'pages'> = {
         description: 'Add custom tags to help users find this page. Enter any text value.',
         initCollapsed: false,
         components: {
-          RowLabel: ({ data }: { data?: { tag?: string } }) => {
-            return data?.tag || 'New tag'
-          },
-        } as any,
+          RowLabel: '/components/admin/TagRowLabel#TagRowLabel',
+        },
       },
     },
     {

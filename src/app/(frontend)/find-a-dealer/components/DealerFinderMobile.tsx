@@ -27,6 +27,20 @@ export function DealerFinderMobile({ dealers }: Props) {
   const [viewMode, setViewMode] = useState<ViewMode>('map')
   const [dealerTypeFilter, setDealerTypeFilter] = useState<DealerTypeFilter>('all')
   const [dealerSheetOpen, setDealerSheetOpen] = useState(false)
+  const [searchResults, setSearchResults] = useState<DealerWithDistance[]>([])
+
+  const toRad = (value: number): number => (value * Math.PI) / 180
+
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 3959
+    const dLat = toRad(lat2 - lat1)
+    const dLng = toRad(lng2 - lng1)
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2)
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  }
 
   // Calculate dealer type counts
   const dealerCounts = useMemo(() => {
@@ -50,7 +64,10 @@ export function DealerFinderMobile({ dealers }: Props) {
 
   // Filter and sort dealers
   const filteredDealers: DealerWithDistance[] = useMemo(() => {
-    let result = dealers.map(dealer => ({ ...dealer }))
+    // Start with search results if available, otherwise all dealers
+    let result = searchResults.length > 0
+      ? searchResults.map(dealer => ({ ...dealer }))
+      : dealers.map(dealer => ({ ...dealer }))
 
     // Filter by dealer type
     if (dealerTypeFilter !== 'all') {
@@ -68,13 +85,6 @@ export function DealerFinderMobile({ dealers }: Props) {
       )
     }
 
-    // Sort featured first, then alphabetically
-    result.sort((a, b) => {
-      if (a.isFeatured && !b.isFeatured) return -1
-      if (!a.isFeatured && b.isFeatured) return 1
-      return (a.dealerName || '').localeCompare(b.dealerName || '')
-    })
-
     // Filter by services
     if (selectedServices.length > 0) {
       result = result.filter(dealer =>
@@ -82,20 +92,62 @@ export function DealerFinderMobile({ dealers }: Props) {
       )
     }
 
+    // Calculate distances and sort when a search location is set
+    if (searchLocation) {
+      result = result.map(dealer => {
+        if (!dealer.coordinates?.latitude || !dealer.coordinates?.longitude) return dealer
+        return {
+          ...dealer,
+          distance: calculateDistance(
+            searchLocation.lat,
+            searchLocation.lng,
+            dealer.coordinates.latitude,
+            dealer.coordinates.longitude
+          ),
+        } as DealerWithDistance
+      })
+
+      result.sort((a, b) => {
+        if (a.distance !== undefined && b.distance !== undefined) return a.distance - b.distance
+        if (a.distance !== undefined) return -1
+        if (b.distance !== undefined) return 1
+        return 0
+      })
+    } else {
+      // Sort featured first, then alphabetically
+      result.sort((a, b) => {
+        if (a.isFeatured && !b.isFeatured) return -1
+        if (!a.isFeatured && b.isFeatured) return 1
+        return (a.dealerName || '').localeCompare(b.dealerName || '')
+      })
+    }
+
     return result
-  }, [dealers, dealerTypeFilter, selectedDealerTypes, selectedServices])
+  }, [dealers, searchResults, searchLocation, dealerTypeFilter, selectedDealerTypes, selectedServices])
 
   const handleLocationSearch = useCallback((location: { lat: number; lng: number }, address: string) => {
     setSearchLocation(location)
     setSearchAddress(address)
+    // Switch to map so the user sees the result
+    setViewMode('map')
   }, [])
 
   const handleDealerSearch = useCallback((results: Dealer[], location?: { lat: number; lng: number }) => {
-    // Update filtered dealers based on search results
+    setSearchResults(results as DealerWithDistance[])
     if (location) {
       setSearchLocation(location)
     }
-    // The filtering is handled by the filteredDealers memo
+
+    // Auto-select first result and jump to map
+    if (results.length > 0) {
+      const first = results[0]
+      if (first?.id) {
+        setSelectedDealer(first.id as string)
+        setViewMode('map')
+      }
+    } else {
+      setSelectedDealer(null)
+    }
   }, [])
 
   const handleDealerSelect = useCallback((dealerId: string | null) => {
@@ -241,6 +293,8 @@ export function DealerFinderMobile({ dealers }: Props) {
                     setSelectedDealerTypes([])
                     setSelectedServices([])
                     setSelectedRadius(25)
+                    setSearchResults([])
+                    setSearchLocation(null)
                   }}
                   className="px-6 py-3 rounded-full bg-kawai-charcoal text-white text-sm font-medium active:scale-95 transition-transform"
                 >

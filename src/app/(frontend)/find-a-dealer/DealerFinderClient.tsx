@@ -66,6 +66,21 @@ export function DealerFinderClient({ dealers }: Props) {
     return counts
   }, [dealers])
 
+  // Calculate distance between two coordinates (Haversine formula)
+  const toRad = (value: number): number => (value * Math.PI) / 180
+
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 3959 // Earth's radius in miles
+    const dLat = toRad(lat2 - lat1)
+    const dLng = toRad(lng2 - lng1)
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    return R * c
+  }
+
   // Filter and sort dealers
   const filteredDealers: DealerWithDistance[] = useMemo(() => {
     // Start with search results if available, otherwise all dealers
@@ -136,23 +151,6 @@ export function DealerFinderClient({ dealers }: Props) {
 
     return result
   }, [dealers, searchResults, dealerTypeFilter, selectedDealerTypes, selectedServices, showOfficialOnly, searchLocation])
-
-  // Calculate distance between two coordinates (Haversine formula)
-  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-    const R = 3959 // Earth's radius in miles
-    const dLat = toRad(lat2 - lat1)
-    const dLng = toRad(lng2 - lng1)
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-      Math.sin(dLng / 2) * Math.sin(dLng / 2)
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-    return R * c
-  }
-
-  const toRad = (value: number): number => {
-    return (value * Math.PI) / 180
-  }
 
   const handleLocationSearch = useCallback((location: { lat: number; lng: number }, address: string) => {
     setSearchLocation(location)

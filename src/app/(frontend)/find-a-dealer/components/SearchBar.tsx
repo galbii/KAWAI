@@ -279,7 +279,6 @@ export function SearchBar({ dealers, onSearch, onLocationSearch }: Props) {
   }, [dealers, onSearch, onLocationSearch, geocoder, searchInput])
 
   const handleUseMyLocation = useCallback(() => {
-    if (!geocoder) return
     if (!navigator.geolocation) {
       alert('Geolocation is not supported by your browser.')
       return
@@ -292,25 +291,60 @@ export function SearchBar({ dealers, onSearch, onLocationSearch }: Props) {
         const coords = { lat: latitude, lng: longitude }
         setCurrentLocation(coords)
 
-        geocoder.geocode({ location: coords }, (results, status) => {
+        const finishWithAddress = (address: string) => {
+          setSearchInput(address)
+          onLocationSearch(coords, address)
+
+          // Sort all dealers by distance from current location and pass to onSearch
+          const dealersWithDistance = dealers
+            .map(dealer => {
+              if (!dealer.coordinates?.latitude || !dealer.coordinates?.longitude) return dealer
+              return {
+                ...dealer,
+                distance: calculateDistance(
+                  latitude,
+                  longitude,
+                  dealer.coordinates.latitude,
+                  dealer.coordinates.longitude
+                ),
+              } as DealerWithDistance
+            })
+            .filter(d => d.coordinates?.latitude && d.coordinates?.longitude)
+            .sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity))
+
+          onSearch(dealersWithDistance, coords)
+        }
+
+        if (geocoder) {
+          geocoder.geocode({ location: coords }, (results, status) => {
+            setIsLocating(false)
+            if (status === 'OK' && results?.[0]) {
+              const components = results[0].address_components
+              const city = components?.find(c => c.types.includes('locality'))?.long_name
+              const state = components?.find(c => c.types.includes('administrative_area_level_1'))?.short_name
+              const address = city && state ? `${city}, ${state}` : results[0].formatted_address
+              finishWithAddress(address)
+            } else {
+              finishWithAddress(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
+            }
+          })
+        } else {
           setIsLocating(false)
-          if (status === 'OK' && results?.[0]) {
-            const components = results[0].address_components
-            const city = components.find(c => c.types.includes('locality'))?.long_name
-            const state = components.find(c => c.types.includes('administrative_area_level_1'))?.short_name
-            const address = city && state ? `${city}, ${state}` : results[0].formatted_address
-            setSearchInput(address)
-            onLocationSearch(coords, address)
-          }
-        })
+          finishWithAddress(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
+        }
       },
       error => {
         setIsLocating(false)
         console.error('Geolocation error:', error)
-        alert('Unable to access your location. Please enter it manually.')
-      }
+        if (error.code === error.PERMISSION_DENIED) {
+          alert('Location access was denied. Please allow location access or enter your location manually.')
+        } else {
+          alert('Unable to access your location. Please enter it manually.')
+        }
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
     )
-  }, [geocoder, onLocationSearch])
+  }, [geocoder, dealers, onLocationSearch, onSearch])
 
   const handleClear = useCallback(() => {
     setSearchInput('')

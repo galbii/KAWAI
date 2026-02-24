@@ -7042,17 +7042,17 @@ export interface Dealer {
     country?: string | null;
   };
   /**
-   * Exact GPS coordinates for accurate map marker placement. REQUIRED for dealer finder map.
+   * 📍 Coordinates are automatically geocoded from the address whenever street, city, state, or ZIP changes. Manually enter only to fine-tune an inaccurate pin.
    */
-  coordinates: {
+  coordinates?: {
     /**
-     * Latitude (e.g., 38.627003). Find at https://www.latlong.net/
+     * Auto-filled from the address above. Override only if the geocoded pin is inaccurate.
      */
-    latitude: number;
+    latitude?: number | null;
     /**
-     * Longitude (e.g., -90.199402)
+     * Auto-filled from the address above. Override only if the geocoded pin is inaccurate.
      */
-    longitude: number;
+    longitude?: number | null;
   };
   /**
    * Select the type(s) of products this dealer carries. Dealers can carry both types.
@@ -7328,37 +7328,13 @@ export interface Search {
    * Page slug (denormalized from Pages collection)
    */
   pageSlug?: string | null;
-  /**
-   * Storefront slug (denormalized from Storefronts collection)
-   */
   storefrontSlug?: string | null;
-  /**
-   * Storefront location name (denormalized from Storefronts collection)
-   */
   storefrontLocationName?: string | null;
-  /**
-   * Storefront location text (denormalized from Storefronts collection)
-   */
   storefrontLocationText?: string | null;
-  /**
-   * Storefront established text (denormalized from Storefronts collection)
-   */
   storefrontEstablishedText?: string | null;
-  /**
-   * Storefront address (denormalized from Storefronts collection)
-   */
   storefrontAddress?: string | null;
-  /**
-   * Storefront phone (denormalized from Storefronts collection)
-   */
   storefrontPhone?: string | null;
-  /**
-   * Storefront city (denormalized from Storefronts collection)
-   */
   storefrontCity?: string | null;
-  /**
-   * Storefront region (denormalized from Storefronts collection)
-   */
   storefrontRegion?: string | null;
   updatedAt: string;
   createdAt: string;

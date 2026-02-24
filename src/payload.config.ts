@@ -311,30 +311,10 @@ export default buildConfig({
       // dotted-path notation (doc.value + doc.relationTo simultaneously) causes:
       // TypeError: Cannot delete property '0' of [object String]
       skipSync: async ({ collectionSlug }) => collectionSlug === 'storefronts',
+      // Note: storefronts are excluded from beforeSync via skipSync above.
+      // Their search index is maintained by the manual afterChange hook in Storefronts.ts.
       beforeSync: ({ originalDoc, searchDoc, req }) => {
-        // Extract searchable data based on collection type
-        const isStorefront = originalDoc.locationName && 'isActive' in originalDoc
-        const isProduct = !isStorefront && originalDoc.name && originalDoc.model
-
-        if (isStorefront) {
-          if (!originalDoc.isActive) return searchDoc
-
-          return {
-            ...searchDoc,
-            title: originalDoc.locationName,
-            excerpt: originalDoc.locationText || originalDoc.establishedText || '',
-            category: 'storefront',
-            tags: ['storefront', 'location', 'showroom'].map(tag => ({ tag })),
-            storefrontSlug: originalDoc.slug,
-            storefrontLocationName: originalDoc.locationName,
-            storefrontLocationText: originalDoc.locationText,
-            storefrontEstablishedText: originalDoc.establishedText,
-            storefrontAddress: originalDoc.showroomInfo?.address,
-            storefrontPhone: originalDoc.showroomInfo?.phone,
-            storefrontCity: originalDoc.serviceAreaCoverage?.primaryCity,
-            storefrontRegion: originalDoc.serviceAreaCoverage?.stateRegion,
-          }
-        }
+        const isProduct = originalDoc.name && originalDoc.model
 
         if (isProduct) {
           // Extract product tags from type and category
@@ -440,10 +420,8 @@ export default buildConfig({
               description: 'Tags for filtering (denormalized from source collections)',
               readOnly: true,
               components: {
-                RowLabel: ({ data }: { data?: { tag?: string } }) => {
-                  return data?.tag || 'Tag'
-                },
-              } as any,
+                RowLabel: '/components/admin/TagRowLabel#TagRowLabel',
+              },
             },
           },
           // Denormalized product fields for fast search results

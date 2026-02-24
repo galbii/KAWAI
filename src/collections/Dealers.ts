@@ -1,6 +1,99 @@
-import type { CollectionConfig, CollectionAfterChangeHook } from 'payload'
+import type { CollectionConfig, CollectionAfterChangeHook, CollectionBeforeValidateHook } from 'payload'
 import { imageField } from '@/lib/payload/fields/media'
 import { revalidatePath, revalidateTag } from 'next/cache'
+
+// Nominatim (OpenStreetMap) returns lat/lon as strings
+type NominatimResult = {
+  lat: string
+  lon: string
+  display_name: string
+}
+
+/**
+ * Auto-geocodes the dealer address using Nominatim (OpenStreetMap) before validation.
+ * Free, no API key required. Respects the 1 req/sec usage policy.
+ *
+ * Triggers when:
+ *   - Creating a new dealer without coordinates
+ *   - Updating a dealer whose address (street/city/state/zipCode) changed
+ *
+ * Skips when:
+ *   - Address didn't change (coords stay as-is, safe to manually fine-tune)
+ *   - Address is incomplete (no street, city, or state)
+ *   - On create: the admin manually entered coordinates
+ */
+const geocodeDealerAddress: CollectionBeforeValidateHook = async ({ data, originalDoc, operation }) => {
+  // Merge partial incoming address with existing so we always have a full address
+  const address = {
+    ...(originalDoc?.address ?? {}),
+    ...(data.address ?? {}),
+  }
+  const prev = originalDoc?.address
+
+  // Detect if any address field changed
+  const addressChanged =
+    address.street !== prev?.street ||
+    address.city !== prev?.city ||
+    address.state !== prev?.state ||
+    address.zipCode !== prev?.zipCode
+
+  // Create: geocode if no coords were manually provided
+  // Update: geocode whenever the address changes (overwrites existing coords)
+  const shouldGeocode =
+    (operation === 'create' && !data.coordinates?.latitude) ||
+    (operation === 'update' && addressChanged)
+
+  if (!shouldGeocode) return data
+
+  // Need at minimum street + city + state for an accurate result
+  if (!address.street || !address.city || !address.state) return data
+
+  const params = new URLSearchParams({
+    street: address.street,
+    city: address.city,
+    state: address.state,
+    country: address.country || 'US',
+    format: 'json',
+    limit: '1',
+  })
+  if (address.zipCode) params.set('postalcode', address.zipCode)
+
+  const displayAddress = [address.street, address.city, address.state, address.zipCode]
+    .filter(Boolean)
+    .join(', ')
+
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?${params.toString()}`,
+      {
+        headers: {
+          // Nominatim usage policy requires a descriptive User-Agent
+          'User-Agent': 'KawaiPianoRetailPlatform/1.0 (admin dealer geocoding)',
+          Accept: 'application/json',
+        },
+      },
+    )
+
+    const results = (await res.json()) as NominatimResult[]
+
+    if (results.length > 0 && results[0]) {
+      const lat = parseFloat(results[0].lat)
+      const lng = parseFloat(results[0].lon)
+
+      if (!isNaN(lat) && !isNaN(lng)) {
+        data.coordinates = { latitude: lat, longitude: lng }
+        console.log(`✅ [Dealers] Geocoded "${displayAddress}" → ${lat}, ${lng}`)
+      }
+    } else {
+      console.warn(`⚠️ [Dealers] Nominatim returned no results for: ${displayAddress}`)
+    }
+  } catch (err) {
+    // Never block the save — geocoding failure is non-fatal
+    console.error('[Dealers] Nominatim geocoding error:', err)
+  }
+
+  return data
+}
 
 const revalidateDealer: CollectionAfterChangeHook = async ({ doc, context }) => {
   // Prevent infinite loops
@@ -43,7 +136,8 @@ export const Dealers: CollectionConfig = {
     read: () => true, // Public read access for dealer finder
   },
   hooks: {
-    afterChange: [revalidateDealer]
+    beforeValidate: [geocodeDealerAddress],
+    afterChange: [revalidateDealer],
   },
   fields: [
     // Basic Information
@@ -218,24 +312,22 @@ export const Dealers: CollectionConfig = {
                 {
                   name: 'latitude',
                   type: 'number',
-                  required: true,
                   admin: {
                     step: 0.000001,
-                    description: 'Latitude (e.g., 38.627003). Find at https://www.latlong.net/'
+                    description: 'Auto-filled from the address above. Override only if the geocoded pin is inaccurate.'
                   }
                 },
                 {
                   name: 'longitude',
                   type: 'number',
-                  required: true,
                   admin: {
                     step: 0.000001,
-                    description: 'Longitude (e.g., -90.199402)'
+                    description: 'Auto-filled from the address above. Override only if the geocoded pin is inaccurate.'
                   }
                 }
               ],
               admin: {
-                description: 'Exact GPS coordinates for accurate map marker placement. REQUIRED for dealer finder map.'
+                description: '📍 Coordinates are automatically geocoded from the address whenever street, city, state, or ZIP changes. Manually enter only to fine-tune an inaccurate pin.'
               }
             }
           ]

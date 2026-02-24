@@ -49,9 +49,14 @@ export async function GET(request: NextRequest) {
     // - 'contains' operator: case-insensitive substring matching
     const whereClause: any = {
       or: expandedTerms.flatMap(term => [
-        { title: { like: term } },        // Match all words in title
-        { title: { contains: term } },    // Substring match in title
-        { excerpt: { contains: term } },  // Substring match in excerpt
+        { title: { like: term } },                          // Match all words in title
+        { title: { contains: term } },                      // Substring match in title
+        { excerpt: { contains: term } },                    // Substring match in excerpt
+        // Storefront-specific fields (not included in title/excerpt)
+        { storefrontLocationName: { contains: term } },     // Match location name
+        { storefrontCity: { contains: term } },             // Match city (e.g. "Chicago")
+        { storefrontAddress: { contains: term } },          // Match address
+        { storefrontSlug: { contains: term } },             // Match slug (e.g. "st-louis")
       ]),
     }
 

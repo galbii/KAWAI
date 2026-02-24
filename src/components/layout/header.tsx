@@ -1499,12 +1499,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         />
       </div>
 
-      {/* SearchBar - Mobile Only (Renders at root level) */}
-      {!isSignaturePage && !hidePianoLinks && !isUniversityPage && !isOnFindADealerPage && (
-        <div className="md:hidden">
-          <SearchBar onOpenChange={setIsSearchOpen} />
-        </div>
-      )}
     </header>
 
     {/* Cart Drawer - rendered outside <header> so its z-[9500] is in the root stacking context,

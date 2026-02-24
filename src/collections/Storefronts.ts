@@ -1143,7 +1143,8 @@ export const Storefronts: CollectionConfig = {
       // (doc.value + doc.relationTo simultaneously) throws:
       //   TypeError: Cannot delete property '0' of [object String]
       // We query by storefrontSlug (a scalar custom field) instead.
-      async ({ doc, operation, req: { payload } }) => {
+      async ({ doc, operation, req }) => {
+        const { payload } = req
         try {
           const searchData = {
             doc: { relationTo: 'storefronts' as const, value: doc.id },
@@ -1163,7 +1164,7 @@ export const Storefronts: CollectionConfig = {
 
           if (operation === 'create') {
             if (doc.isActive) {
-              await payload.create({ collection: 'search', data: { ...searchData, priority: 30 }, depth: 0 })
+              await payload.create({ collection: 'search', data: { ...searchData, priority: 30 }, depth: 0, req, overrideAccess: true })
             }
           } else {
             // Query by storefrontSlug — avoids the broken polymorphic dotted-path query
@@ -1172,6 +1173,7 @@ export const Storefronts: CollectionConfig = {
               where: { storefrontSlug: { equals: doc.slug } },
               depth: 0,
               limit: 1,
+              req,
             })
 
             const existingDoc = existing.docs[0]
@@ -1179,7 +1181,7 @@ export const Storefronts: CollectionConfig = {
             if (!doc.isActive) {
               // Remove from search index when deactivated
               if (existingDoc) {
-                await payload.delete({ collection: 'search', id: existingDoc.id, depth: 0 })
+                await payload.delete({ collection: 'search', id: existingDoc.id, depth: 0, req, overrideAccess: true })
               }
             } else if (existingDoc) {
               await payload.update({
@@ -1187,9 +1189,11 @@ export const Storefronts: CollectionConfig = {
                 id: existingDoc.id,
                 data: { ...searchData, priority: (existingDoc as any).priority ?? 30 },
                 depth: 0,
+                req,
+                overrideAccess: true,
               })
             } else {
-              await payload.create({ collection: 'search', data: { ...searchData, priority: 30 }, depth: 0 })
+              await payload.create({ collection: 'search', data: { ...searchData, priority: 30 }, depth: 0, req, overrideAccess: true })
             }
           }
         } catch (error) {
