@@ -127,11 +127,9 @@ export default buildConfig({
       // relying on afterNavLinks (which runs inside the sidebar and breaks position:fixed).
       providers: ['/components/admin/AdminRootProvider#AdminRootProvider'],
       beforeDashboard: [
+        '/components/admin/HideDashboardCollections#HideDashboardCollections',
         '/components/admin/DashboardStats#DashboardStats',
         '/components/admin/DashboardQuickActions#DashboardQuickActions',
-      ],
-      afterDashboard: [
-        '/components/admin/DashboardCollectionsButton#DashboardCollectionsButton',
       ],
       actions: [
         '/components/admin/ViewSiteButton#ViewSiteButton',

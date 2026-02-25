@@ -46,6 +46,11 @@ export const NewsCarousel: Block = {
           type: 'text',
           admin: { description: 'Optional link for this news item' },
         },
+        {
+          name: 'ctaText',
+          type: 'text',
+          admin: { description: 'Button label (default: "Read Full Story")' },
+        },
       ],
     },
   ],

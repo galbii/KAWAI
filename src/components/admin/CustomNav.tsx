@@ -25,7 +25,7 @@ const t = {
 }
 
 const COLLAPSED_W = 68
-const EXPANDED_W  = 272
+const EXPANDED_W  = 320
 
 // ── SVG Icon primitives ────────────────────────────────────────────────────
 type IP = { size?: number | undefined }
@@ -476,7 +476,8 @@ function KBadge({ size = 36 }: { size?: number | undefined }) {
 
 // ── Main Nav ───────────────────────────────────────────────────────────────
 export function CustomNav() {
-  const [collapsed, setCollapsed] = useState(true)   // minimized by default
+  const [collapsed, setCollapsed] = useState(true)   // user-persisted state
+  const [hovExpanded, setHovExpanded] = useState(false) // temporary hover state
   const [modalOpen, setModalOpen] = useState(false)
   const [recent, setRecent] = useState<string[]>([])
   const [allBtnHov, setAllBtnHov] = useState(false)
@@ -484,6 +485,9 @@ export function CustomNav() {
   const pathname = usePathname()
   const { config } = useConfig()
   const siteURL = config.serverURL || 'http://localhost:3000'
+
+  // isExpanded = user pinned open OR hovered while collapsed
+  const isExpanded = !collapsed || hovExpanded
 
   // ── Restore persisted state ────────────────────────────────────────────
   useEffect(() => {
@@ -509,12 +513,12 @@ export function CustomNav() {
 
   // ── Width management via CSS class on <html> ──────────────────────────
   // custom.scss reads:  :root { --nav-width: 68px }
-  //                    html.kawai-expanded { --nav-width: 272px }
-  // Payload's .nav CSS uses width: var(--nav-width) and the grid template
-  // uses grid-template-columns: var(--nav-width) auto — both respond instantly.
+  //                    html.kawai-expanded { --nav-width: 320px }
+  // Both Payload's .nav width and the grid-template-columns respond instantly.
+  // isExpanded = user pinned || hover-over-while-collapsed
   useEffect(() => {
-    document.documentElement.classList.toggle('kawai-expanded', !collapsed)
-  }, [collapsed])
+    document.documentElement.classList.toggle('kawai-expanded', isExpanded)
+  }, [isExpanded])
 
   const toggle = useCallback(() => {
     setCollapsed(p => {
@@ -538,36 +542,40 @@ export function CustomNav() {
        * (.nav__scroll > .nav__wrap > HERE). The .nav element's width is controlled
        * by --nav-width via custom.scss, so we just fill 100% height.
        */}
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        background: t.navBg,
-        userSelect: 'none',
-      }}>
+      <div
+        onMouseEnter={() => { if (collapsed) setHovExpanded(true) }}
+        onMouseLeave={() => setHovExpanded(false)}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          background: t.navBg,
+          userSelect: 'none',
+        }}
+      >
 
         {/* ── Header — click to collapse/expand ───────────────────────── */}
         <button
           onClick={toggle}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          title={collapsed ? 'Pin sidebar open' : 'Collapse sidebar'}
           style={{
             display: 'flex', alignItems: 'center',
             height: 60, padding: '0 12px', gap: 10,
             borderBottom: `1px solid ${t.line}`, flexShrink: 0,
             background: 'none', border: 'none', cursor: 'pointer',
             width: '100%', textAlign: 'left',
-            justifyContent: collapsed ? 'center' : 'flex-start',
+            justifyContent: !isExpanded ? 'center' : 'flex-start',
           }}
         >
           <KBadge size={34} />
-          {!collapsed && (
+          {isExpanded && (
             <div style={{ minWidth: 0, overflow: 'hidden', flex: 1 }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: t.high, letterSpacing: '0.05em', lineHeight: 1.2 }}>KAWAI</div>
               <div style={{ fontSize: 10, color: t.lo, letterSpacing: '0.1em', lineHeight: 1.2 }}>ADMIN PANEL</div>
             </div>
           )}
-          {!collapsed && (
-            <span style={{ color: t.lo, flexShrink: 0, display: 'flex' }}>
+          {isExpanded && (
+            <span style={{ color: collapsed ? t.violet : t.lo, flexShrink: 0, display: 'flex' }} title={collapsed ? 'Click to pin open' : 'Click to collapse'}>
               <IcoChevL size={13} />
             </span>
           )}
@@ -576,7 +584,7 @@ export function CustomNav() {
         {/* ── Primary Nav ─────────────────────────────────────────────── */}
         <nav style={{ flex: 1, overflowY: 'auto', overflowX: 'visible', padding: '10px 0' }}>
           {PRIMARY.map(item => (
-            <NavRow key={item.slug} item={item} active={isActive(item)} collapsed={collapsed} />
+            <NavRow key={item.slug} item={item} active={isActive(item)} collapsed={!isExpanded} />
           ))}
         </nav>
 
@@ -599,18 +607,18 @@ export function CustomNav() {
                 color: t.high, cursor: 'pointer', fontFamily: 'inherit',
                 fontSize: 14, fontWeight: 600,
                 transition: 'background 0.12s, border-color 0.12s',
-                justifyContent: collapsed ? 'center' : 'flex-start',
+                justifyContent: !isExpanded ? 'center' : 'flex-start',
                 boxSizing: 'border-box',
               }}
             >
               <IcoGrid size={19} />
-              {!collapsed && <span style={{ whiteSpace: 'nowrap' }}>All Collections</span>}
+              {isExpanded && <span style={{ whiteSpace: 'nowrap' }}>All Collections</span>}
             </button>
-            <NavTip label="All Collections" show={collapsed && allBtnHov} anchorRef={allBtnRef} />
+            <NavTip label="All Collections" show={!isExpanded && allBtnHov} anchorRef={allBtnRef} />
           </div>
 
-          <BotAction label="View Live Site"  Ic={IcoExt}  collapsed={collapsed} href={siteURL}                    external />
-          <BotAction label="Shopify Admin"   Ic={IcoShop} collapsed={collapsed} href="https://admin.shopify.com" external />
+          <BotAction label="View Live Site"  Ic={IcoExt}  collapsed={!isExpanded} href={siteURL}                    external />
+          <BotAction label="Shopify Admin"   Ic={IcoShop} collapsed={!isExpanded} href="https://admin.shopify.com" external />
         </div>
       </div>
     </>

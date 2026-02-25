@@ -4281,6 +4281,10 @@ export interface MarketingNewsCarouselBlock {
          * Optional link for this news item
          */
         link?: string | null;
+        /**
+         * Button label (default: "Read Full Story")
+         */
+        ctaText?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -6172,6 +6176,10 @@ export interface HomePage {
      * Link to full article or page (optional)
      */
     link?: string | null;
+    /**
+     * Button label (default: "Read Full Story")
+     */
+    ctaText?: string | null;
     id?: string | null;
   }[];
   /**
@@ -7936,6 +7944,7 @@ export interface HomePageSelect<T extends boolean = true> {
         image?: T;
         category?: T;
         link?: T;
+        ctaText?: T;
         id?: T;
       };
   contactTitle?: T;

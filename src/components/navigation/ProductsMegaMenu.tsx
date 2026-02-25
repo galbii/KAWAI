@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, ArrowRight, Play } from 'lucide-react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ProductTypeNav, NavProduct, NavCollection } from '@/lib/payload/products-navigation'
 
@@ -100,16 +100,27 @@ function CollectionCarouselCard({
   collection,
   onClose,
   onCategorySelect,
+  index = 0,
 }: {
   collection: NavCollection
   onClose: () => void
   onCategorySelect: (key: SidebarKey) => void
+  index?: number
 }) {
-  const thumbnail = collection.youtubeUrl ? getYouTubeThumbnail(collection.youtubeUrl) : null
+  const videoId = collection.youtubeUrl ? extractYouTubeId(collection.youtubeUrl) : null
+  const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null
   const imageUrl = thumbnail ?? collection.imageUrl ?? collection.mediaUrl ?? null
-  const hasMedia = Boolean(imageUrl)
+  const hasMedia = Boolean(imageUrl || videoId)
   const displayTitle = collection.heading || collection.title
   const sidebarKey = getSidebarKeyForCollection(collection)
+
+  // Stagger autoplay: card 0 starts immediately, each subsequent card after 600ms extra
+  const [isPlaying, setIsPlaying] = useState(false)
+  useEffect(() => {
+    if (!videoId) return
+    const timer = setTimeout(() => setIsPlaying(true), index * 600)
+    return () => clearTimeout(timer)
+  }, [videoId, index])
 
   const handleClick = useCallback(() => {
     if (sidebarKey) {
@@ -125,31 +136,50 @@ function CollectionCarouselCard({
       className="group relative w-full text-left block"
       aria-label={`Browse ${displayTitle} collection`}
     >
-      {/* Media — natural aspect ratio, no flex trickery needed */}
+      {/* Media — aspect-video for YouTube, 4:3 for images */}
       <div
         className={cn(
           'relative w-full overflow-hidden rounded-2xl bg-[#EAE6E0]',
-          thumbnail ? 'aspect-video' : 'aspect-[4/3]'
+          videoId ? 'aspect-video' : 'aspect-[4/3]'
         )}
       >
-        {imageUrl ? (
-          <>
+        {/* Thumbnail / fallback image — fades out once iframe is playing */}
+        {imageUrl && (
+          <motion.div
+            animate={{ opacity: isPlaying && videoId ? 0 : 1 }}
+            transition={{ duration: 0.6 }}
+            className="absolute inset-0"
+          >
             <Image
               src={imageUrl}
               alt={displayTitle}
               fill
               sizes="(max-width: 1280px) 33vw, 500px"
-              className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+              className="object-cover"
             />
-            {thumbnail && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-16 h-16 rounded-full bg-[#FAF9F7]/90 backdrop-blur-sm flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-200">
-                  <Play className="h-7 w-7 text-[#A01829] ml-0.5" fill="#A01829" />
-                </div>
-              </div>
-            )}
-          </>
-        ) : (
+          </motion.div>
+        )}
+
+        {/* YouTube iframe — fades in when stagger timer fires */}
+        {videoId && isPlaying && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+            className="absolute inset-0"
+          >
+            <iframe
+              src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1&playsinline=1`}
+              allow="autoplay; encrypted-media"
+              className="absolute inset-0 w-full h-full pointer-events-none scale-[1.05]"
+              style={{ border: 'none' }}
+              title={displayTitle}
+            />
+          </motion.div>
+        )}
+
+        {/* No media fallback */}
+        {!hasMedia && (
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="text-xs tracking-widest uppercase text-[#B8AFA6]">
               {displayTitle}
@@ -157,12 +187,13 @@ function CollectionCarouselCard({
           </div>
         )}
 
+        {/* Gradient overlay */}
         {hasMedia && (
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent pointer-events-none rounded-2xl" />
         )}
 
-        {/* Text overlay at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 p-5">
+        {/* Text overlay */}
+        <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
           <p className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/55 mb-1.5">
             {collection.productCount > 0 ? `${collection.productCount} Models` : 'Collection'}
           </p>
@@ -266,12 +297,13 @@ function CollectionCarousel({
             exit={{ opacity: 0, x: -28 }}
             transition={{ duration: 0.26, ease: [0.4, 0, 0.2, 1] }}
           >
-            {visible.map((collection) => (
+            {visible.map((collection, i) => (
               <CollectionCarouselCard
                 key={collection.id}
                 collection={collection}
                 onClose={onClose}
                 onCategorySelect={onCategorySelect}
+                index={i}
               />
             ))}
             {Array.from({ length: Math.max(0, CARDS_PER_VIEW - visible.length) }).map((_, i) => (
@@ -445,11 +477,17 @@ function Sidebar({
   selectedKey,
   onSelect,
   onClose,
+  productTypes,
 }: {
   selectedKey: SidebarKey | null
   onSelect: (key: SidebarKey | null) => void
   onClose: () => void
+  productTypes: ProductTypeNav[]
 }) {
+  const availableCategories = SIDEBAR_CATEGORIES.filter(
+    (cat) => getProductsForSidebarKey(productTypes, cat.terms).length > 0
+  )
+
   return (
     <div className="w-80 flex-shrink-0 border-r border-[#E8E4DF] py-10 px-8 flex flex-col self-stretch">
       <p className="text-xs font-bold tracking-[0.25em] uppercase text-[#B8AFA6] mb-6">
@@ -457,7 +495,7 @@ function Sidebar({
       </p>
 
       <nav className="flex-1 space-y-2">
-        {SIDEBAR_CATEGORIES.map((cat) => {
+        {availableCategories.map((cat) => {
           const isSelected = selectedKey === cat.key
           return (
             <button
@@ -571,6 +609,7 @@ export function ProductsMegaMenu({
                   selectedKey={selectedKey}
                   onSelect={handleSidebarSelect}
                   onClose={onClose}
+                  productTypes={productTypes}
                 />
 
                 <div className="flex-1 min-w-0 px-12 py-10">

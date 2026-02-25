@@ -825,6 +825,13 @@ export const HomePage: CollectionConfig = {
                   admin: {
                     description: 'Link to full article or page (optional)'
                   }
+                },
+                {
+                  name: 'ctaText',
+                  type: 'text',
+                  admin: {
+                    description: 'Button label (default: "Read Full Story")'
+                  }
                 }
               ],
               defaultValue: [

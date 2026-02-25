@@ -118,7 +118,7 @@ export function NewsCarousel({ data }: NewsCarouselProps) {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full h-screen min-h-[600px] max-h-[900px] overflow-hidden"
+      className="relative w-full h-[85vh] min-h-[600px] overflow-hidden"
     >
       {/* Carousel Container */}
       <div
@@ -296,7 +296,7 @@ export function NewsCarousel({ data }: NewsCarouselProps) {
                             href={currentItem.link || '#'}
                             className="inline-flex items-center space-x-3 bg-white hover:bg-kawai-red text-kawai-black hover:text-white px-8 py-4 rounded-full font-medium text-sm tracking-wide uppercase transition-all duration-300 shadow-lg hover:shadow-2xl group"
                           >
-                            <span>Read Full Story</span>
+                            <span>{currentItem.ctaText || 'Read Full Story'}</span>
                             <svg
                               className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
                               fill="none"

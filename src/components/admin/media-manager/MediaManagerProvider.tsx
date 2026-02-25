@@ -471,9 +471,13 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
   const handleFilesSelected = useCallback((files: FileList | File[]) => {
     const fileArray = Array.from(files)
 
-    // Filter to get image files for editing
-    const imageFiles = fileArray.filter(f => f.type.startsWith('image/'))
-    const otherFiles = fileArray.filter(f => !f.type.startsWith('image/'))
+    // TIFF files can't be decoded by the browser canvas — bypass the editor.
+    // The server-side convertImagesToWebp hook converts them to WebP automatically.
+    const isTiff = (f: File) => f.type === 'image/tiff' || /\.tiff?$/i.test(f.name)
+
+    // Filter to get image files for editing (TIFF excluded — not browser-renderable)
+    const imageFiles = fileArray.filter(f => f.type.startsWith('image/') && !isTiff(f))
+    const otherFiles = fileArray.filter(f => !f.type.startsWith('image/') || isTiff(f))
 
     // If there are non-image files, upload them directly
     if (otherFiles.length > 0) {

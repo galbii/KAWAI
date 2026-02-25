@@ -96,6 +96,7 @@ export interface NewsItem {
   image?: Media | string | null
   category: string
   link?: string
+  ctaText?: string
 
   // Multi-media support
   images?: (Media | string)[] | null // Multiple images for carousel display

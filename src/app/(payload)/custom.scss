@@ -16,9 +16,9 @@
   --kawai-nav-trans: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* JS toggles this class on <html> to expand */
+/* JS toggles this class on <html> — also applied on hover via CustomNav */
 html.kawai-expanded {
-  --nav-width: 272px;
+  --nav-width: 320px;
 }
 
 /* ── 2. Always-visible inline nav (override Payload mobile overlay) ────── */
@@ -97,11 +97,20 @@ button[class*="mobile-nav"] {
 /* ── 6b. Hide Payload's default dashboard collection cards ───────────── */
 /*
  * Payload renders collection groups between beforeDashboard and afterDashboard.
- * We replace these with the DashboardCollectionsButton modal in afterDashboard.
+ * Collections are accessed via the FloatingActionBar modal instead.
+ *
+ * Payload 3.x uses CSS Modules (hashed class names) — we target multiple
+ * selector patterns to maximize the chance of a match.
  */
 .dashboard__groups,
 .dashboard__group,
-[class*="dashboard__group"] {
+[class*="dashboard__group"],
+[class*="Dashboard_groups"],
+[class*="dashboard_groups"],
+[class*="_groups__"],
+[class*="cardGrid"],
+[class*="card-grid"],
+[class*="collectionCardList"] {
   display: none !important;
 }
 

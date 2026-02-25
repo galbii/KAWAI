@@ -45,7 +45,7 @@ import { CustomNav as CustomNav_6de4d01e9d2fdd107175007ae639960b } from '../../.
 import { Icon as Icon_22ecfa0add6ea3a2202bd7524740e10d } from '../../../components/admin/Icon.tsx'
 import { Logo as Logo_f6725385e1c85d4569908fa222b1f780 } from '../../../components/admin/Logo.tsx'
 import { ViewSiteButton as ViewSiteButton_01c1d258c47fa7ac125bc6d559ad892b } from '../../../components/admin/ViewSiteButton'
-import { DashboardCollectionsButton as DashboardCollectionsButton_8f41e83e5c41176668c618e3399504bb } from '../../../components/admin/DashboardCollectionsButton'
+import { HideDashboardCollections as HideDashboardCollections_947410579b80780ea551149ab9136c48 } from '../../../components/admin/HideDashboardCollections'
 import { DashboardStats as DashboardStats_123c62f476ef106d93ca9259c1aa40c9 } from '../../../components/admin/DashboardStats'
 import { DashboardQuickActions as DashboardQuickActions_381daeb6e8c5bc252c48a4ffd141b524 } from '../../../components/admin/DashboardQuickActions'
 import { AdminRootProvider as AdminRootProvider_90270e1a289c41a7c07e2a0de98e46c1 } from '../../../components/admin/AdminRootProvider'
@@ -100,7 +100,7 @@ export const importMap = {
   "/components/admin/Icon.tsx#Icon": Icon_22ecfa0add6ea3a2202bd7524740e10d,
   "/components/admin/Logo.tsx#Logo": Logo_f6725385e1c85d4569908fa222b1f780,
   "/components/admin/ViewSiteButton#ViewSiteButton": ViewSiteButton_01c1d258c47fa7ac125bc6d559ad892b,
-  "/components/admin/DashboardCollectionsButton#DashboardCollectionsButton": DashboardCollectionsButton_8f41e83e5c41176668c618e3399504bb,
+  "/components/admin/HideDashboardCollections#HideDashboardCollections": HideDashboardCollections_947410579b80780ea551149ab9136c48,
   "/components/admin/DashboardStats#DashboardStats": DashboardStats_123c62f476ef106d93ca9259c1aa40c9,
   "/components/admin/DashboardQuickActions#DashboardQuickActions": DashboardQuickActions_381daeb6e8c5bc252c48a4ffd141b524,
   "/components/admin/AdminRootProvider#AdminRootProvider": AdminRootProvider_90270e1a289c41a7c07e2a0de98e46c1,

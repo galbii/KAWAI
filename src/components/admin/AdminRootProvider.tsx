@@ -1,27 +1,9 @@
-/**
- * Admin Root Provider
- *
- * Wraps the entire Payload admin UI with necessary providers.
- * This ensures all admin components have access to shared context.
- *
- * IMPORTANT: This provider also renders the MediaManagerModal globally,
- * ensuring it's available on all admin pages (dashboard, edit views, list views, etc.)
- *
- * Usage in payload.config.ts:
- * ```typescript
- * admin: {
- *   components: {
- *     providers: ['/components/admin/AdminRootProvider#AdminRootProvider'],
- *   }
- * }
- * ```
- */
 'use client'
 
 import React from 'react'
 import { MediaManagerProvider } from './media-manager/MediaManagerProvider'
 import { MediaManagerModal } from './media-manager/MediaManagerModal'
-import { MediaManagerButton } from './media-manager/MediaManagerButton'
+import { FloatingActionBar } from './FloatingActionBar'
 
 interface AdminRootProviderProps {
   children: React.ReactNode
@@ -31,11 +13,18 @@ export const AdminRootProvider: React.FC<AdminRootProviderProps> = ({ children }
   return (
     <MediaManagerProvider>
       {children}
-      {/* Modal + Button rendered here so they're available on ALL admin pages.
-          Placing here (not afterNavLinks) avoids CSS transform issues in the sidebar
-          that would break position:fixed child elements. */}
+      {/*
+       * MediaManagerModal + FloatingActionBar rendered here (root level) so they're
+       * available on ALL admin pages. Placing here (not afterNavLinks/sidebar) avoids
+       * CSS transform stacking context issues that break position:fixed children.
+       *
+       * FloatingActionBar renders three clean white pill buttons on the right edge:
+       *   Dashboard → /admin
+       *   Collections → opens collections browse modal
+       *   Media → opens MediaManagerModal
+       */}
       <MediaManagerModal />
-      <MediaManagerButton />
+      <FloatingActionBar />
     </MediaManagerProvider>
   )
 }
