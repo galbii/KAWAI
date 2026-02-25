@@ -6,11 +6,15 @@ import { ChevronDownIcon, ChevronUpIcon, ArrowDownTrayIcon } from '@heroicons/re
 import { motion, AnimatePresence } from 'framer-motion'
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
 import type { Media, Product } from '@/payload-types'
+import { parseSpecificationJson, type ParsedSpecRow } from '@/lib/utils/parse-specification-json'
+import { Modal } from '@/components/ui/modal'
+
+const INITIAL_VISIBLE = 6
 
 // Re-exported interface — types will be regenerated on next build
 interface ProductTechnicalSpecsRendererProps {
   product?: Product | null
-  dataSource?: 'product' | 'manual' | 'hybrid' | null
+  dataSource?: 'product' | 'manual' | 'hybrid' | 'json' | null
   header?: {
     title?: string | null
     subtitle?: string | null
@@ -110,6 +114,99 @@ function normaliseManualCategories(cats: ManualCategory[]): SpecCategory[] {
 // Sub-components
 // ---------------------------------------------------------------------------
 
+function ViewAllButton({ totalCount, onClick }: { totalCount: number; onClick: () => void }) {
+  return (
+    <div className="mt-4 pt-3 border-t border-kawai-charcoal/10">
+      <button
+        onClick={onClick}
+        className="flex items-center gap-2 font-mono text-xs text-kawai-red uppercase tracking-[0.15em] hover:text-kawai-red/70 transition-colors duration-150"
+      >
+        <span className="w-3 h-px bg-current" />
+        View full spec sheet — {totalCount} specifications
+        <svg
+          className="w-3 h-3"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2.5}
+          aria-hidden="true"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+  )
+}
+
+const SPECS_COL_HEADERS = (
+  <div className="grid grid-cols-[2fr_1fr_3fr] gap-4 md:gap-8 pb-2 border-b-2 border-kawai-red mb-1 shrink-0">
+    <span className="font-mono text-xs text-kawai-red uppercase tracking-[0.15em] font-semibold pl-5">
+      Specification
+    </span>
+    <span className="font-mono text-xs text-kawai-red uppercase tracking-[0.15em] font-semibold">
+      Type
+    </span>
+    <span className="font-mono text-xs text-kawai-red uppercase tracking-[0.15em] font-semibold">
+      Details
+    </span>
+  </div>
+)
+
+function SpecsModal({
+  isOpen,
+  onClose,
+  title,
+  children,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} size="full">
+      <div className="flex flex-col gap-4 max-h-[75vh] overflow-hidden">
+        <h3 className="font-serif text-2xl font-bold text-kawai-charcoal shrink-0 pr-8">{title}</h3>
+        <div className="shrink-0">{SPECS_COL_HEADERS}</div>
+        <div className="overflow-y-auto flex-1 min-h-0 -mr-2 pr-2">
+          {children}
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
+function ProductRowsSection({ rows }: { rows: SpecRow[] }) {
+  const [modalOpen, setModalOpen] = useState(false)
+  const needsModal = rows.length > INITIAL_VISIBLE
+  const visibleRows = needsModal ? rows.slice(0, INITIAL_VISIBLE) : rows
+
+  return (
+    <div>
+      {SPECS_COL_HEADERS}
+      <div className="space-y-0">
+        {visibleRows.map((row, idx) => (
+          <SpecificationRow key={row.id || idx} spec={row} />
+        ))}
+      </div>
+      {needsModal && (
+        <ViewAllButton totalCount={rows.length} onClick={() => setModalOpen(true)} />
+      )}
+      <SpecsModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Technical Specifications"
+      >
+        <div className="space-y-0">
+          {rows.map((row, idx) => (
+            <SpecificationRow key={row.id || idx} spec={row} />
+          ))}
+        </div>
+      </SpecsModal>
+    </div>
+  )
+}
+
 function SpecificationRow({ spec }: { spec: SpecRow }) {
   return (
     <motion.div
@@ -184,6 +281,11 @@ function SpecificationRow({ spec }: { spec: SpecRow }) {
 
 function SpecificationCategory({ category }: { category: SpecCategory }) {
   const [isExpanded, setIsExpanded] = useState(category.defaultExpanded !== false)
+  const [modalOpen, setModalOpen] = useState(false)
+
+  const specs = category.specifications
+  const needsModal = specs.length > INITIAL_VISIBLE
+  const visibleSpecs = needsModal ? specs.slice(0, INITIAL_VISIBLE) : specs
 
   return (
     <div className="spec-category mb-10">
@@ -246,13 +348,126 @@ function SpecificationCategory({ category }: { category: SpecCategory }) {
             </div>
 
             <div className="space-y-0">
-              {category.specifications.map((spec, idx) => (
+              {visibleSpecs.map((spec, idx) => (
                 <SpecificationRow key={spec.id || idx} spec={spec} />
               ))}
             </div>
+
+            {needsModal && (
+              <ViewAllButton totalCount={specs.length} onClick={() => setModalOpen(true)} />
+            )}
           </motion.div>
         )}
       </AnimatePresence>
+
+      <SpecsModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={category.categoryName}
+      >
+        <div className="space-y-0">
+          {specs.map((spec, idx) => (
+            <SpecificationRow key={spec.id || idx} spec={spec} />
+          ))}
+        </div>
+      </SpecsModal>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// JSON spec section (dataSource === 'json')
+// ---------------------------------------------------------------------------
+
+function JsonSpecRow({ row }: { row: ParsedSpecRow }) {
+  return (
+    <div
+      className="
+        spec-row group relative
+        grid grid-cols-[2fr_1fr_3fr] gap-4 md:gap-8
+        py-4 border-b border-kawai-charcoal/10
+        hover:bg-kawai-red/5 transition-all duration-200
+      "
+    >
+      {/* Specification label */}
+      <div className="flex items-start gap-2">
+        <span className="text-xs text-kawai-red opacity-60 font-mono mt-1 select-none">›</span>
+        <span className="font-mono text-sm text-kawai-charcoal/90 font-medium tracking-tight leading-relaxed">
+          {row.label}
+        </span>
+      </div>
+
+      {/* Type / name (middle column) */}
+      <span className="font-mono text-sm text-kawai-charcoal font-semibold leading-relaxed">
+        {row.type ?? '—'}
+      </span>
+
+      {/* Details: value + sub-items */}
+      <div className="flex flex-col gap-1.5">
+        <span className="font-mono text-sm text-kawai-charcoal/80 leading-relaxed">
+          {row.value}
+        </span>
+        {row.subItems && row.subItems.length > 0 && (
+          <ul className="space-y-1">
+            {row.subItems.map((item, i) => (
+              <li key={i} className="flex items-start gap-2">
+                <span className="mt-2 w-1 h-1 rounded-full bg-kawai-charcoal/40 flex-shrink-0" />
+                <span className="font-mono text-xs text-kawai-charcoal/60 leading-relaxed">
+                  {item}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Hover accent bar */}
+      <div
+        className="absolute left-0 top-0 h-full w-0.5 bg-kawai-red
+                   opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+      />
+    </div>
+  )
+}
+
+function JsonSpecsSection({ rows }: { rows: ParsedSpecRow[] }) {
+  const [modalOpen, setModalOpen] = useState(false)
+  const needsModal = rows.length > INITIAL_VISIBLE
+  const visibleRows = needsModal ? rows.slice(0, INITIAL_VISIBLE) : rows
+
+  if (rows.length === 0) {
+    return (
+      <div className="text-center py-12 opacity-50">
+        <p className="font-mono text-sm">No specification data available.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      {SPECS_COL_HEADERS}
+
+      <div className="space-y-0">
+        {visibleRows.map((row, idx) => (
+          <JsonSpecRow key={idx} row={row} />
+        ))}
+      </div>
+
+      {needsModal && (
+        <ViewAllButton totalCount={rows.length} onClick={() => setModalOpen(true)} />
+      )}
+
+      <SpecsModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Technical Specifications"
+      >
+        <div className="space-y-0">
+          {rows.map((row, idx) => (
+            <JsonSpecRow key={idx} row={row} />
+          ))}
+        </div>
+      </SpecsModal>
     </div>
   )
 }
@@ -284,13 +499,19 @@ export function ProductTechnicalSpecsRenderer({
       ? normaliseManualCategories(categories || [])
       : []
 
-  const hasSpecs = productRows.length > 0 || manualCategories.length > 0
+  // --- Resolve JSON spec rows ---
+  const jsonRows: ParsedSpecRow[] =
+    dataSource === 'json' && product?.specificationJson
+      ? parseSpecificationJson(product.specificationJson as Record<string, unknown>)
+      : []
+
+  const hasSpecs = productRows.length > 0 || manualCategories.length > 0 || jsonRows.length > 0
 
   // --- Resolve blueprint image ---
   // Product mode: use the Shopify-synced blueprint URL from the product
   // Manual / hybrid: use the CMS-uploaded blueprintImage field
   const productBlueprintUrl =
-    (dataSource === 'product' || dataSource === 'hybrid') && product?.blueprint?.url
+    (dataSource === 'product' || dataSource === 'hybrid' || dataSource === 'json') && product?.blueprint?.url
       ? product.blueprint.url
       : null
 
@@ -324,71 +545,69 @@ export function ProductTechnicalSpecsRenderer({
 
       <div className="container mx-auto px-4 md:px-8 max-w-7xl relative z-10">
 
-        {/* Outer layout: [header + specs] left, blueprint right on desktop.
-            flex-col-reverse on mobile puts blueprint above header+specs. */}
-        <div className="flex flex-col-reverse lg:flex-row gap-12 lg:gap-16 lg:items-start">
+        {/* Outer layout: specs left, [heading + blueprint] right on desktop.
+            Mobile: heading → blueprint → specs stacked. */}
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 lg:items-start">
 
-          {/* Left column: header + specs */}
+          {/* Left column: specs only (desktop) / heading + blueprint + specs (mobile) */}
           <div className="min-w-0 flex-1">
 
-            {/* Header */}
-            <div className="mb-12 md:mb-16">
-              <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-                <div className="space-y-3">
-                  {header?.showModelNumber && product?.model && (
-                    <div className="font-mono text-xs text-kawai-red uppercase tracking-[0.2em] font-semibold">
-                      Model: {product.model}
-                    </div>
-                  )}
-                  <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-                    {header?.title || 'Technical Specifications'}
-                  </h2>
-                  {header?.subtitle && (
-                    <p className="text-lg md:text-xl opacity-70 font-light tracking-wide max-w-2xl">
-                      {header.subtitle}
-                    </p>
-                  )}
-                </div>
-                {enableDownload && (
-                  <button
-                    className="
-                      inline-flex items-center gap-2.5 px-6 py-3.5
-                      bg-kawai-red hover:bg-kawai-red/90
-                      text-white font-mono text-sm uppercase tracking-wider font-medium
-                      transition-all duration-200
-                      border-2 border-kawai-red hover:border-kawai-red/70
-                      shadow-lg hover:shadow-xl hover:scale-[1.02]
-                    "
-                    onClick={() => console.log('Download specifications')}
-                    aria-label="Download technical specifications"
-                  >
-                    <ArrowDownTrayIcon className="w-4 h-4" />
-                    {downloadButtonText || 'Download Technical Specs'}
-                  </button>
+            {/* Header — mobile only */}
+            <div className="lg:hidden mb-8">
+              <div className="space-y-3">
+                {header?.showModelNumber && product?.model && (
+                  <div className="font-mono text-xs text-kawai-red uppercase tracking-[0.2em] font-semibold">
+                    Model: {product.model}
+                  </div>
+                )}
+                <h2 className="font-serif text-4xl md:text-5xl font-bold leading-tight">
+                  {header?.title || 'Technical Specifications'}
+                </h2>
+                {header?.subtitle && (
+                  <p className="text-lg md:text-xl opacity-70 font-light tracking-wide max-w-2xl">
+                    {header.subtitle}
+                  </p>
                 )}
               </div>
             </div>
 
+            {/* Blueprint — mobile only (between header and specs) */}
+            {hasBlueprintToShow && (
+              <div className="lg:hidden mb-10">
+                <div className="relative overflow-hidden rounded-lg shadow-lg w-full">
+                  {productBlueprintUrl && (
+                    <Image
+                      src={productBlueprintUrl}
+                      alt={productBlueprintAlt}
+                      width={product?.blueprint?.width || 1200}
+                      height={product?.blueprint?.height || 800}
+                      className="w-full h-auto"
+                    />
+                  )}
+                  {!productBlueprintUrl && cmsBlueprint && (
+                    <Image
+                      {...cmsBlueprint}
+                      alt={blueprintCaption || 'Technical blueprint diagram'}
+                      className="w-full h-auto"
+                    />
+                  )}
+                </div>
+                {blueprintCaption && (
+                  <p className="mt-3 font-mono text-xs uppercase tracking-wider opacity-60 text-center">
+                    {blueprintCaption}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Specifications */}
             {hasSpecs ? (
               <>
-                {productRows.length > 0 && (
-                  <div>
-                    <div className="grid grid-cols-[2fr_1fr_3fr] gap-4 md:gap-8 pb-2 border-b-2 border-kawai-red mb-1">
-                      <span className="font-mono text-xs text-kawai-red uppercase tracking-[0.15em] font-semibold pl-5">
-                        Specification
-                      </span>
-                      <span className="font-mono text-xs text-kawai-red uppercase tracking-[0.15em] font-semibold">
-                        Type
-                      </span>
-                      <span className="font-mono text-xs text-kawai-red uppercase tracking-[0.15em] font-semibold">
-                        Details
-                      </span>
-                    </div>
-                    {productRows.map((row, idx) => (
-                      <SpecificationRow key={row.id || idx} spec={row} />
-                    ))}
-                  </div>
+                {dataSource === 'json' && jsonRows.length > 0 && (
+                  <JsonSpecsSection rows={jsonRows} />
+                )}
+                {productRows.length > 0 && dataSource !== 'json' && (
+                  <ProductRowsSection rows={productRows} />
                 )}
                 {manualCategories.map((category, idx) => (
                   <SpecificationCategory key={idx} category={category} />
@@ -403,34 +622,72 @@ export function ProductTechnicalSpecsRenderer({
             )}
           </div>
 
-          {/* Right column: blueprint — sticky on desktop, on top on mobile */}
-          {hasBlueprintToShow && (
-            <div className="flex-none lg:sticky lg:top-0 w-full lg:w-[560px] xl:w-[680px]">
-              <div className="relative overflow-hidden rounded-lg shadow-lg w-full max-w-sm mx-auto lg:max-w-none lg:mx-0">
-                {productBlueprintUrl && (
-                  <Image
-                    src={productBlueprintUrl}
-                    alt={productBlueprintAlt}
-                    width={product?.blueprint?.width || 1200}
-                    height={product?.blueprint?.height || 800}
-                    className="w-full h-auto"
-                  />
-                )}
-                {!productBlueprintUrl && cmsBlueprint && (
-                  <Image
-                    {...cmsBlueprint}
-                    alt={blueprintCaption || 'Technical blueprint diagram'}
-                    className="w-full h-auto"
-                  />
-                )}
-              </div>
-              {blueprintCaption && (
-                <p className="mt-3 font-mono text-xs uppercase tracking-wider opacity-60 text-center">
-                  {blueprintCaption}
+          {/* Right column: heading + blueprint — desktop only, sticky */}
+          <div className="hidden lg:flex flex-col flex-none lg:sticky lg:top-0 lg:w-[480px] xl:w-[580px] gap-8">
+
+            {/* Header — desktop */}
+            <div className="space-y-3">
+              {header?.showModelNumber && product?.model && (
+                <div className="font-mono text-xs text-kawai-red uppercase tracking-[0.2em] font-semibold">
+                  Model: {product.model}
+                </div>
+              )}
+              <h2 className="font-serif text-4xl xl:text-5xl font-bold leading-tight">
+                {header?.title || 'Technical Specifications'}
+              </h2>
+              {header?.subtitle && (
+                <p className="text-lg opacity-70 font-light tracking-wide">
+                  {header.subtitle}
                 </p>
               )}
+              {enableDownload && (
+                <button
+                  className="
+                    inline-flex items-center gap-2.5 px-6 py-3.5 mt-2
+                    bg-kawai-red hover:bg-kawai-red/90
+                    text-white font-mono text-sm uppercase tracking-wider font-medium
+                    transition-all duration-200
+                    border-2 border-kawai-red hover:border-kawai-red/70
+                    shadow-lg hover:shadow-xl hover:scale-[1.02]
+                  "
+                  onClick={() => console.log('Download specifications')}
+                  aria-label="Download technical specifications"
+                >
+                  <ArrowDownTrayIcon className="w-4 h-4" />
+                  {downloadButtonText || 'Download Technical Specs'}
+                </button>
+              )}
             </div>
-          )}
+
+            {/* Blueprint */}
+            {hasBlueprintToShow && (
+              <div>
+                <div className="relative overflow-hidden rounded-lg shadow-lg w-full">
+                  {productBlueprintUrl && (
+                    <Image
+                      src={productBlueprintUrl}
+                      alt={productBlueprintAlt}
+                      width={product?.blueprint?.width || 1200}
+                      height={product?.blueprint?.height || 800}
+                      className="w-full h-auto"
+                    />
+                  )}
+                  {!productBlueprintUrl && cmsBlueprint && (
+                    <Image
+                      {...cmsBlueprint}
+                      alt={blueprintCaption || 'Technical blueprint diagram'}
+                      className="w-full h-auto"
+                    />
+                  )}
+                </div>
+                {blueprintCaption && (
+                  <p className="mt-3 font-mono text-xs uppercase tracking-wider opacity-60 text-center">
+                    {blueprintCaption}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Footer note */}

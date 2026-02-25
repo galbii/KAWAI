@@ -367,6 +367,10 @@ export interface Media {
    * Tags for organization and search (e.g., "grand-piano", "black-finish")
    */
   tags?: string[] | null;
+  /**
+   * Convert PNG and TIFF images to WebP on upload (smaller file size, better web performance). Has no effect on JPEG, WebP, or non-image files.
+   */
+  convertToWebp?: boolean | null;
   prefix?: string | null;
   folder?: (string | null) | FolderInterface;
   updatedAt: string;
@@ -1792,6 +1796,18 @@ export interface Product {
       }[]
     | null;
   /**
+   * Full specification sheet as JSON (synced from Shopify custom.specification-json metafield). Used by the Technical Specifications block with "JSON" data source.
+   */
+  specificationJson?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
    * Product highlights (synced from Shopify custom.highlights metaobject)
    */
   highlights?:
@@ -2206,9 +2222,9 @@ export interface ProductDescriptionBlock {
  */
 export interface ProductTechnicalSpecsBlock {
   /**
-   * Product: automatically pulls specifications and blueprint from the linked product. Manual: enter specs by hand. Hybrid: product specs + manual additions.
+   * Product: automatically pulls specifications and blueprint from the linked product. JSON: renders from the custom.specification-json Shopify metafield. Manual: enter specs by hand. Hybrid: product specs + manual additions.
    */
-  dataSource?: ('product' | 'manual' | 'hybrid') | null;
+  dataSource?: ('product' | 'json' | 'manual' | 'hybrid') | null;
   /**
    * Select the product to pull specifications and blueprint from. Leave empty on a product page to use the page product automatically.
    */
@@ -6607,6 +6623,28 @@ export interface Storefront {
     serviceArea: string;
   };
   /**
+   * 📍 Used for the dealer finder map. Auto-geocodes coordinates when saved. Keep showroomInfo.address for display text on the storefront page.
+   */
+  address?: {
+    /**
+     * Street address (e.g. "21 Meadows Circle Drive, Suite 312")
+     */
+    street?: string | null;
+    /**
+     * City name
+     */
+    city?: string | null;
+    /**
+     * 2-letter state abbreviation (e.g. MO)
+     */
+    state?: string | null;
+    /**
+     * ZIP code
+     */
+    zipCode?: string | null;
+    country?: string | null;
+  };
+  /**
    * Showroom operating hours for each day of the week
    */
   hours: {
@@ -6906,17 +6944,17 @@ export interface Storefront {
      */
     priceRange: '$' | '$$' | '$$$' | '$$$$';
     /**
-     * Exact GPS coordinates for map placement and local search. Find coordinates at https://www.latlong.net/
+     * 📍 Coordinates are automatically geocoded from the Map Address (Showroom Location tab) whenever street, city, state, or ZIP changes.
      */
-    geoCoordinates: {
+    geoCoordinates?: {
       /**
-       * Latitude coordinate (e.g., 38.627003)
+       * Auto-filled from the Map Address above. Override only if the geocoded pin is inaccurate.
        */
-      latitude: number;
+      latitude?: number | null;
       /**
-       * Longitude coordinate (e.g., -90.199402)
+       * Auto-filled from the Map Address above. Override only if the geocoded pin is inaccurate.
        */
-      longitude: number;
+      longitude?: number | null;
     };
     /**
      * Payment methods accepted at this location (used in schema markup)
@@ -7672,6 +7710,7 @@ export interface MediaSelect<T extends boolean = true> {
       };
   featured?: T;
   tags?: T;
+  convertToWebp?: T;
   prefix?: T;
   folder?: T;
   updatedAt?: T;
@@ -8098,6 +8137,15 @@ export interface StorefrontsSelect<T extends boolean = true> {
         phone?: T;
         serviceArea?: T;
       };
+  address?:
+    | T
+    | {
+        street?: T;
+        city?: T;
+        state?: T;
+        zipCode?: T;
+        country?: T;
+      };
   hours?:
     | T
     | {
@@ -8453,6 +8501,7 @@ export interface ProductsSelect<T extends boolean = true> {
         type?: T;
         details?: T;
       };
+  specificationJson?: T;
   highlights?:
     | T
     | {

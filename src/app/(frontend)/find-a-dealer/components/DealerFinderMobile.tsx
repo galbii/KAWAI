@@ -7,6 +7,7 @@ import { DealerMapLibre } from './DealerMapLibre'
 import { SearchBar } from './SearchBar'
 import { FilterPanel } from './FilterPanel'
 import { cn } from '@/lib/utils'
+import { calculateDistance } from '@/lib/utils/dealer-search'
 import { MapPin, SlidersHorizontal, Map, List, Piano, Briefcase, X } from 'lucide-react'
 
 interface Props {
@@ -28,19 +29,6 @@ export function DealerFinderMobile({ dealers }: Props) {
   const [dealerTypeFilter, setDealerTypeFilter] = useState<DealerTypeFilter>('all')
   const [dealerSheetOpen, setDealerSheetOpen] = useState(false)
   const [searchResults, setSearchResults] = useState<DealerWithDistance[]>([])
-
-  const toRad = (value: number): number => (value * Math.PI) / 180
-
-  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-    const R = 3959
-    const dLat = toRad(lat2 - lat1)
-    const dLng = toRad(lng2 - lng1)
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-      Math.sin(dLng / 2) * Math.sin(dLng / 2)
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  }
 
   // Calculate dealer type counts
   const dealerCounts = useMemo(() => {

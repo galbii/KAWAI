@@ -105,7 +105,8 @@ export interface ShopifyProductData {
     } | null
     specifications?: ShopifySpecification[]
     highlights?: ShopifyHighlight[]
-    [key: string]: string | ShopifySpecification[] | ShopifyHighlight[] | { url: string; alt: string | null; width: number | null; height: number | null } | null | undefined
+    specificationJson?: Record<string, unknown> | null
+    [key: string]: string | ShopifySpecification[] | ShopifyHighlight[] | Record<string, unknown> | { url: string; alt: string | null; width: number | null; height: number | null } | null | undefined
   }
   availableForSale: boolean
   createdAt: string
@@ -343,6 +344,12 @@ const PRODUCT_BY_ID_QUERY = `
         }
       }
     }
+
+    metafield_specification_json: metafield(namespace: "custom", key: "specification_json") {
+      key
+      value
+      type
+    }
   }
 `
 
@@ -460,6 +467,12 @@ const PRODUCT_BY_HANDLE_QUERY = `
           handle
         }
       }
+    }
+
+    metafield_specification_json: metafield(namespace: "custom", key: "specification_json") {
+      key
+      value
+      type
     }
   }
 `
@@ -627,6 +640,12 @@ const PRODUCT_BY_METAFIELD_QUERY = `
           }
         }
       }
+    }
+
+    metafield_specification_json: metafield(namespace: "custom", key: "specification_json") {
+      key
+      value
+      type
     }
 
     seo {
@@ -947,6 +966,24 @@ function transformShopifyProduct(shopifyProduct: any): ShopifyProductData {
             description: getFieldValue('description'),
           } as ShopifyHighlight
         })
+      })(),
+
+      // Parse specification-json metafield (raw JSON string)
+      specificationJson: (() => {
+        console.log('[transformShopifyProduct] specification-json metafield raw:', JSON.stringify(shopifyProduct.metafield_specification_json, null, 2))
+        const raw = shopifyProduct.metafield_specification_json?.value
+        if (!raw) {
+          console.log('[transformShopifyProduct] specification-json: metafield not found or empty on this product')
+          return null
+        }
+        try {
+          const parsed = JSON.parse(raw) as Record<string, unknown>
+          console.log('[transformShopifyProduct] specification-json: parsed successfully, top-level keys:', Object.keys(parsed))
+          return parsed
+        } catch {
+          console.warn('[transformShopifyProduct] Failed to parse specification-json metafield:', raw)
+          return null
+        }
       })(),
     },
 

@@ -553,6 +553,8 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
       if (metadata.tags && metadata.tags.length > 0) payload.tags = metadata.tags
       if (metadata.videoMeta) payload.videoMeta = metadata.videoMeta
       if (metadata.seoMeta) payload.seoMeta = metadata.seoMeta
+      // Signal the server hook to skip conversion if user opted out
+      if (metadata.convertToWebp === false) payload.convertToWebp = false
 
       // Include folder if uploading to a specific folder
       if (state.currentFolder) {

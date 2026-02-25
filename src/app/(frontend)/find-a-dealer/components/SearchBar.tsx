@@ -2,10 +2,24 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { Search, MapPin, Building2, X, Navigation } from 'lucide-react'
-import { useMapsLibrary } from '@vis.gl/react-google-maps'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { DealerWithDistance } from '../types'
+import { calculateDistance } from '@/lib/utils/dealer-search'
 import { cn } from '@/lib/utils'
+
+type NominatimResult = {
+  place_id: number
+  lat: string
+  lon: string
+  display_name: string
+  address: {
+    city?: string
+    town?: string
+    village?: string
+    state?: string
+    postcode?: string
+  }
+}
 
 interface SearchResult {
   id: string
@@ -16,7 +30,6 @@ interface SearchResult {
   type: 'dealer' | 'storefront'
   distance?: number
   coordinates?: { lat: number; lng: number }
-  matchedText?: string
 }
 
 interface Props {
@@ -27,19 +40,13 @@ interface Props {
 
 export function SearchBar({ dealers, onSearch, onLocationSearch }: Props) {
   const [searchInput, setSearchInput] = useState('')
-  const [autocompleteService, setAutocompleteService] = useState<google.maps.places.AutocompleteService | null>(null)
-  const [geocoder, setGeocoder] = useState<google.maps.Geocoder | null>(null)
-  const [locationPredictions, setLocationPredictions] = useState<google.maps.places.AutocompletePrediction[]>([])
+  const [locationPredictions, setLocationPredictions] = useState<NominatimResult[]>([])
   const [dealerResults, setDealerResults] = useState<SearchResult[]>([])
   const [showDropdown, setShowDropdown] = useState(false)
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null)
-  const [mounted, setMounted] = useState(false)
   const [isLocating, setIsLocating] = useState(false)
   const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const inputRef = useRef<HTMLInputElement>(null)
-
-  const placesLibrary = useMapsLibrary('places')
-  const geocodingLibrary = useMapsLibrary('geocoding')
 
   const US_STATES: Record<string, string> = {
     'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California',
@@ -54,26 +61,8 @@ export function SearchBar({ dealers, onSearch, onLocationSearch }: Props) {
     'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming'
   }
 
-  useEffect(() => { setMounted(true) }, [])
-
-  useEffect(() => {
-    if (placesLibrary) setAutocompleteService(new placesLibrary.AutocompleteService())
-  }, [placesLibrary])
-
-  useEffect(() => {
-    if (geocodingLibrary) setGeocoder(new geocodingLibrary.Geocoder())
-  }, [geocodingLibrary])
-
-  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-    const R = 3959
-    const dLat = ((lat2 - lat1) * Math.PI) / 180
-    const dLng = ((lng2 - lng1) * Math.PI) / 180
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) * Math.sin(dLng / 2)
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  }
+  // Suppress unused state warning — currentLocation used for future radius filtering
+  void currentLocation
 
   const toDealerResult = useCallback((dealer: DealerWithDistance): SearchResult => {
     const result: SearchResult = {
@@ -114,7 +103,7 @@ export function SearchBar({ dealers, onSearch, onLocationSearch }: Props) {
       return
     }
 
-    debounceRef.current = setTimeout(() => {
+    debounceRef.current = setTimeout(async () => {
       const lowerQuery = value.toLowerCase()
       const searchType = detectSearchType(value)
 
@@ -144,52 +133,38 @@ export function SearchBar({ dealers, onSearch, onLocationSearch }: Props) {
         setLocationPredictions([])
         setShowDropdown(sorted.length > 0)
 
-      } else if (searchType === 'zip' && geocoder) {
-        geocoder.geocode(
-          { address: value, componentRestrictions: { country: 'us', postalCode: value } },
-          (results, status) => {
-            if (status === 'OK' && results?.[0]) {
-              const location = results[0].geometry.location
-              const lat = location.lat()
-              const lng = location.lng()
+      } else if (searchType === 'zip') {
+        // Geocode ZIP via Nominatim proxy
+        try {
+          const res = await fetch(`/api/search/nominatim?postalcode=${encodeURIComponent(value)}&country=US&limit=1`)
+          const results = (await res.json()) as NominatimResult[]
 
-              const dealersWithDistance = dealers
-                .map(dealer => {
-                  if (!dealer.coordinates?.latitude || !dealer.coordinates?.longitude) return dealer
-                  return {
-                    ...dealer,
-                    distance: calculateDistance(lat, lng, dealer.coordinates.latitude, dealer.coordinates.longitude)
-                  } as DealerWithDistance
-                })
-                .filter(d => d.coordinates?.latitude && d.coordinates?.longitude)
+          if (results.length > 0 && results[0]) {
+            const lat = parseFloat(results[0].lat)
+            const lng = parseFloat(results[0].lon)
 
-              const sorted = sortDealers(dealersWithDistance, true)
-              onSearch(sorted, { lat, lng })
+            const dealersWithDistance = dealers
+              .map(dealer => {
+                if (!dealer.coordinates?.latitude || !dealer.coordinates?.longitude) return dealer
+                return {
+                  ...dealer,
+                  distance: calculateDistance(lat, lng, dealer.coordinates.latitude, dealer.coordinates.longitude)
+                } as DealerWithDistance
+              })
+              .filter(d => d.coordinates?.latitude && d.coordinates?.longitude)
 
-              // Show closest dealers in popup
-              setDealerResults(sorted.slice(0, 6).map(toDealerResult))
-
-              // Also show the geocoded location as a "sort by distance" option
-              const zipPrediction: google.maps.places.AutocompletePrediction = {
-                description: results[0].formatted_address,
-                place_id: results[0].place_id,
-                structured_formatting: {
-                  main_text: value,
-                  secondary_text: results[0].formatted_address,
-                  main_text_matched_substrings: []
-                },
-                matched_substrings: [],
-                terms: [],
-                types: ['postal_code']
-              }
-              setLocationPredictions([zipPrediction])
-              setShowDropdown(true)
-            }
+            const sorted = sortDealers(dealersWithDistance, true)
+            onSearch(sorted, { lat, lng })
+            setDealerResults(sorted.slice(0, 6).map(toDealerResult))
+            setLocationPredictions([results[0]])
+            setShowDropdown(true)
           }
-        )
+        } catch (err) {
+          console.error('[SearchBar] ZIP geocoding error:', err)
+        }
 
       } else {
-        // CITY / NAME search
+        // CITY / NAME search — local filter
         const cityMatches = dealers.filter(dealer => {
           const city = dealer.address?.city?.toLowerCase() || ''
           const name = dealer.dealerName?.toLowerCase() || ''
@@ -205,23 +180,25 @@ export function SearchBar({ dealers, onSearch, onLocationSearch }: Props) {
         setDealerResults(nameMatches.map(toDealerResult))
         if (nameMatches.length > 0) setShowDropdown(true)
 
-        // Also fetch Google Places city autocomplete for distance sorting
-        if (autocompleteService && value.length >= 3) {
-          autocompleteService.getPlacePredictions(
-            { input: value, componentRestrictions: { country: 'us' }, types: ['(cities)'] },
-            (predictions, status) => {
-              if (status === 'OK' && predictions) {
-                setLocationPredictions(predictions)
-                setShowDropdown(true)
-              } else {
-                setLocationPredictions([])
-              }
+        // Fetch Nominatim city autocomplete for distance sorting
+        if (value.length >= 3) {
+          try {
+            const res = await fetch(`/api/search/nominatim?q=${encodeURIComponent(value)}&limit=5`)
+            const results = (await res.json()) as NominatimResult[]
+            if (results.length > 0) {
+              setLocationPredictions(results)
+              setShowDropdown(true)
+            } else {
+              setLocationPredictions([])
             }
-          )
+          } catch (err) {
+            console.error('[SearchBar] City autocomplete error:', err)
+            setLocationPredictions([])
+          }
         }
       }
     }, 300)
-  }, [autocompleteService, dealers, onSearch, detectSearchType, geocoder, US_STATES, toDealerResult])
+  }, [dealers, onSearch, detectSearchType, US_STATES, toDealerResult])
 
   const handleDealerResultSelect = useCallback((result: SearchResult) => {
     setSearchInput(result.name)
@@ -240,43 +217,37 @@ export function SearchBar({ dealers, onSearch, onLocationSearch }: Props) {
     setTimeout(() => inputRef.current?.focus(), 0)
   }, [dealers, onSearch, onLocationSearch])
 
-  const handleLocationSelect = useCallback((prediction: google.maps.places.AutocompletePrediction) => {
-    if (!geocoder) return
+  const handleLocationSelect = useCallback((prediction: NominatimResult) => {
+    // Nominatim already includes lat/lon — no second geocode request needed
+    const lat = parseFloat(prediction.lat)
+    const lng = parseFloat(prediction.lon)
+    const lowerQuery = searchInput.toLowerCase()
 
-    geocoder.geocode({ placeId: prediction.place_id }, (results, status) => {
-      if (status === 'OK' && results?.[0]) {
-        const location = results[0].geometry.location
-        const lat = location.lat()
-        const lng = location.lng()
-        const lowerQuery = searchInput.toLowerCase()
+    setSearchInput(prediction.display_name)
+    setShowDropdown(false)
+    setDealerResults([])
 
-        setSearchInput(prediction.description)
-        setShowDropdown(false)
-        setDealerResults([])
-
-        const dealersWithDistance = dealers.map(dealer => {
-          if (!dealer.coordinates?.latitude || !dealer.coordinates?.longitude) return dealer
-          return {
-            ...dealer,
-            distance: calculateDistance(lat, lng, dealer.coordinates.latitude, dealer.coordinates.longitude)
-          }
-        })
-
-        const sorted = dealersWithDistance.sort((a, b) => {
-          const aMatch = a.dealerName?.toLowerCase().includes(lowerQuery) || false
-          const bMatch = b.dealerName?.toLowerCase().includes(lowerQuery) || false
-          if (aMatch && !bMatch) return -1
-          if (!aMatch && bMatch) return 1
-          if (a.distance !== undefined && b.distance !== undefined) return a.distance - b.distance
-          return 0
-        })
-
-        onSearch(sorted, { lat, lng })
-        onLocationSearch({ lat, lng }, prediction.description)
-        setTimeout(() => inputRef.current?.focus(), 0)
+    const dealersWithDistance = dealers.map(dealer => {
+      if (!dealer.coordinates?.latitude || !dealer.coordinates?.longitude) return dealer
+      return {
+        ...dealer,
+        distance: calculateDistance(lat, lng, dealer.coordinates.latitude, dealer.coordinates.longitude)
       }
     })
-  }, [dealers, onSearch, onLocationSearch, geocoder, searchInput])
+
+    const sorted = dealersWithDistance.sort((a, b) => {
+      const aMatch = a.dealerName?.toLowerCase().includes(lowerQuery) || false
+      const bMatch = b.dealerName?.toLowerCase().includes(lowerQuery) || false
+      if (aMatch && !bMatch) return -1
+      if (!aMatch && bMatch) return 1
+      if (a.distance !== undefined && b.distance !== undefined) return a.distance - b.distance
+      return 0
+    })
+
+    onSearch(sorted, { lat, lng })
+    onLocationSearch({ lat, lng }, prediction.display_name)
+    setTimeout(() => inputRef.current?.focus(), 0)
+  }, [dealers, onSearch, onLocationSearch, searchInput])
 
   const handleUseMyLocation = useCallback(() => {
     if (!navigator.geolocation) {
@@ -286,7 +257,7 @@ export function SearchBar({ dealers, onSearch, onLocationSearch }: Props) {
 
     setIsLocating(true)
     navigator.geolocation.getCurrentPosition(
-      position => {
+      async position => {
         const { latitude, longitude } = position.coords
         const coords = { lat: latitude, lng: longitude }
         setCurrentLocation(coords)
@@ -295,7 +266,6 @@ export function SearchBar({ dealers, onSearch, onLocationSearch }: Props) {
           setSearchInput(address)
           onLocationSearch(coords, address)
 
-          // Sort all dealers by distance from current location and pass to onSearch
           const dealersWithDistance = dealers
             .map(dealer => {
               if (!dealer.coordinates?.latitude || !dealer.coordinates?.longitude) return dealer
@@ -315,20 +285,16 @@ export function SearchBar({ dealers, onSearch, onLocationSearch }: Props) {
           onSearch(dealersWithDistance, coords)
         }
 
-        if (geocoder) {
-          geocoder.geocode({ location: coords }, (results, status) => {
-            setIsLocating(false)
-            if (status === 'OK' && results?.[0]) {
-              const components = results[0].address_components
-              const city = components?.find(c => c.types.includes('locality'))?.long_name
-              const state = components?.find(c => c.types.includes('administrative_area_level_1'))?.short_name
-              const address = city && state ? `${city}, ${state}` : results[0].formatted_address
-              finishWithAddress(address)
-            } else {
-              finishWithAddress(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
-            }
-          })
-        } else {
+        try {
+          const res = await fetch(`/api/search/nominatim/reverse?lat=${latitude}&lon=${longitude}`)
+          const result = (await res.json()) as NominatimResult
+          setIsLocating(false)
+
+          const city = result.address?.city ?? result.address?.town ?? result.address?.village
+          const state = result.address?.state
+          const address = city && state ? `${city}, ${state}` : result.display_name
+          finishWithAddress(address || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
+        } catch {
           setIsLocating(false)
           finishWithAddress(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
         }
@@ -344,7 +310,7 @@ export function SearchBar({ dealers, onSearch, onLocationSearch }: Props) {
       },
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
     )
-  }, [geocoder, dealers, onLocationSearch, onSearch])
+  }, [dealers, onLocationSearch, onSearch])
 
   const handleClear = useCallback(() => {
     setSearchInput('')
@@ -355,10 +321,17 @@ export function SearchBar({ dealers, onSearch, onLocationSearch }: Props) {
     onSearch(dealers)
   }, [dealers, onSearch])
 
+  // Clean up debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [])
+
   const hasResults = dealerResults.length > 0 || locationPredictions.length > 0
 
   return (
-    <div className={cn('relative', mounted && 'search-bar-animate')}>
+    <div className="relative">
       {/* Search Input */}
       <div
         className="relative rounded-2xl shadow-lg border border-white/20"
@@ -489,7 +462,7 @@ export function SearchBar({ dealers, onSearch, onLocationSearch }: Props) {
                           <MapPin className="w-4 h-4 text-gray-400 group-hover:text-kawai-red transition-colors" strokeWidth={2} />
                         </div>
                         <span className="text-sm text-gray-800 font-medium leading-snug">
-                          {prediction.description}
+                          {prediction.display_name}
                         </span>
                       </div>
                     </motion.button>

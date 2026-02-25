@@ -56,6 +56,7 @@ export type ShopifyDataUpdate = Partial<
     'name' | 'description' | 'price' | 'imageUrl' | 'model' | 'variations' | 'type' | 'category' | 'shopifyCollections'
   > & {
     shopify?: Partial<ShopifyGroup>
+    specificationJson?: Record<string, unknown> | null
   }
 >
 
@@ -358,6 +359,7 @@ export async function syncShopifyDataToProduct(
         currency: (shopifyData.price.currency as 'USD' | 'EUR' | 'GBP' | 'CAD') || null,
       },
       variations, // Already null if no true variations exist
+      specificationJson: shopifyData.metafields?.specificationJson ?? null,
 
       // Update shopify sync group (read-only metadata)
       shopify: {

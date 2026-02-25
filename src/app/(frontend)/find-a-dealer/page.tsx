@@ -33,11 +33,11 @@ function storefrontToDealer(storefront: Storefront): UnifiedDealer {
       phone: storefront.showroomInfo.phone,
     } : {},
     address: {
-      street: storefront.showroomInfo?.address ?? '',
-      city: storefront.showroomInfo?.address?.split(',')[1]?.trim() ?? '',
-      state: storefront.showroomInfo?.address?.split(',')[2]?.split(' ')[1] ?? '',
-      zipCode: storefront.showroomInfo?.address?.split(',')[2]?.split(' ')[2] ?? '',
-      country: 'USA',
+      street: storefront.address?.street ?? '',
+      city: storefront.address?.city ?? '',
+      state: storefront.address?.state ?? '',
+      zipCode: storefront.address?.zipCode ?? '',
+      country: storefront.address?.country ?? 'USA',
     },
     coordinates: {
       latitude: latitude ?? 0,
@@ -83,9 +83,8 @@ export default async function FindADealerPage() {
   // Transform storefronts to dealer structure
   const transformedStorefronts = storefronts
     .filter(sf => {
-      // Only include storefronts with valid coordinates
-      return sf.schemaData?.geoCoordinates?.latitude &&
-             sf.schemaData?.geoCoordinates?.longitude
+      // Include storefronts with a city (coordinates auto-geocoded from address)
+      return sf.address?.city || (sf.schemaData?.geoCoordinates?.latitude && sf.schemaData?.geoCoordinates?.longitude)
     })
     .map(storefrontToDealer)
 

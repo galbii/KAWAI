@@ -167,6 +167,12 @@ const PRODUCTS_WITH_MODEL_QUERY = `
             }
           }
 
+          metafield_specification_json: metafield(namespace: "custom", key: "specification_json") {
+            key
+            value
+            type
+          }
+
           seo {
             title
             description
@@ -538,6 +544,20 @@ function transformShopifyProduct(shopifyProduct: any): ShopifyProductData {
             description: getFieldValue('description'),
           }
         })
+      })(),
+
+      // Parse specification_json metafield (raw JSON string)
+      specificationJson: (() => {
+        const raw = shopifyProduct.metafield_specification_json?.value
+        if (!raw) return null
+        try {
+          const parsed = JSON.parse(raw) as Record<string, unknown>
+          console.log(`[Transform] ✅ specification_json parsed for ${shopifyProduct.title}, keys: ${Object.keys(parsed).length}`)
+          return parsed
+        } catch {
+          console.warn(`[Transform] ⚠️ Failed to parse specification_json for ${shopifyProduct.title}`)
+          return null
+        }
       })(),
     },
 

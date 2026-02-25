@@ -1,5 +1,9 @@
 'use client'
 
+import { useState } from 'react'
+
+const INITIAL_VISIBLE = 6
+
 interface SpecificationsBlockProps {
   dataSource?: 'manual' | 'pianomodel' | 'hybrid' | null
   pianoModel?: any
@@ -17,107 +21,152 @@ interface SpecificationsBlockProps {
   }
 }
 
+function SpecCategorySection({
+  category,
+  showCategories,
+  compact,
+}: {
+  category: { category?: string | null; specs: Array<{ label: string; value: string }> }
+  showCategories: boolean
+  compact: boolean
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const specs = category.specs
+  const needsToggle = specs.length > INITIAL_VISIBLE
+  const visibleSpecs = needsToggle && !expanded ? specs.slice(0, INITIAL_VISIBLE) : specs
+  const hiddenCount = specs.length - INITIAL_VISIBLE
+
+  return (
+    <div>
+      {showCategories && category.category && (
+        <div className="mb-5">
+          <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-kawai-red font-semibold mb-2.5">
+            {category.category}
+          </h3>
+          <div className="h-px bg-kawai-charcoal/12" />
+        </div>
+      )}
+
+      <div>
+        {visibleSpecs.map((spec, i) => {
+          const lines = (spec.value || '').split('\n').filter(l => l.trim())
+          return (
+            <div
+              key={i}
+              className={[
+                'flex justify-between items-start gap-8',
+                compact ? 'py-2.5' : 'py-3.5',
+                i > 0 ? 'border-t border-kawai-charcoal/8' : '',
+              ].join(' ')}
+            >
+              <span className="text-sm text-kawai-charcoal/60 font-medium flex-1 min-w-0 leading-relaxed">
+                {spec.label}
+              </span>
+              {lines.length <= 1 ? (
+                <span className="font-mono text-sm text-kawai-charcoal font-semibold text-right flex-shrink-0 leading-relaxed">
+                  {spec.value || '—'}
+                </span>
+              ) : (
+                <ul className="text-right flex-shrink-0 space-y-0.5">
+                  {lines.map((line, j) => (
+                    <li key={j} className="font-mono text-sm text-kawai-charcoal font-semibold leading-relaxed">
+                      {line.trim()}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {needsToggle && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="mt-4 group flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.15em] text-kawai-red hover:text-kawai-red/70 transition-colors duration-150"
+        >
+          <span className="w-3 h-px bg-current" />
+          {expanded ? 'Show less' : `Show ${hiddenCount} more`}
+          <svg
+            className={`w-3 h-3 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2.5}
+            aria-hidden="true"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      )}
+    </div>
+  )
+}
+
 export function SpecificationsBlock({
   specifications = [],
-  layout = {}
+  layout = {},
 }: SpecificationsBlockProps) {
-  if (!specifications || specifications.length === 0) {
-    return null
-  }
-  
+  if (!specifications || specifications.length === 0) return null
+
   const columns = layout.columns || 2
   const showCategories = layout.showCategories !== false
   const compact = layout.compact || false
-  
-  // Column classes for responsive grid
-  const columnClasses = {
-    1: 'grid-cols-1',
+
+  const columnClasses: Record<number, string> = {
+    1: 'grid-cols-1 max-w-2xl',
     2: 'grid-cols-1 lg:grid-cols-2',
-    3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+    3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
   }
-  
-  const gridClass = columnClasses[Math.min(columns, 3) as keyof typeof columnClasses] || columnClasses[2]
+  const gridClass = columnClasses[Math.min(columns, 3)] ?? columnClasses[2]
   const spacingClass = compact ? 'py-12' : 'py-16 lg:py-24'
-  
-  // Filter out empty categories
-  const validSpecifications = specifications.filter(category => 
-    category.specs && category.specs.length > 0
-  )
-  
-  if (validSpecifications.length === 0) {
-    return null
-  }
-  
+
+  const validSpecifications = specifications.filter(c => c.specs && c.specs.length > 0)
+  if (validSpecifications.length === 0) return null
+
   return (
     <section className={`${spacingClass} bg-white`}>
       <div className="max-w-7xl mx-auto px-6">
-        {/* Section Title */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-kawai-black mb-4">
+
+        {/* Section header */}
+        <div className="mb-14">
+          <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-kawai-red font-semibold mb-4">
+            Specifications
+          </p>
+          <h2 className="font-serif text-3xl md:text-4xl font-bold text-kawai-charcoal leading-tight">
             Technical Specifications
           </h2>
-          <div className="w-24 h-1 bg-kawai-red mx-auto rounded"></div>
+          <div className="mt-5 w-10 h-0.5 bg-kawai-red" />
         </div>
-        
-        {/* Specifications Grid */}
-        <div className={`grid ${gridClass} gap-8`}>
-          {validSpecifications.map((category, categoryIndex) => (
-            <div key={categoryIndex} className="space-y-6">
-              {/* Category Title */}
-              {showCategories && category.category && (
-                <h3 className="text-xl font-bold text-kawai-red border-b-2 border-kawai-red/20 pb-2">
-                  {category.category}
-                </h3>
-              )}
-              
-              {/* Specifications Table */}
-              <div className="space-y-3">
-                {category.specs!.map((spec, specIndex) => (
-                  <div 
-                    key={specIndex}
-                    className="flex justify-between items-center py-2 border-b border-kawai-neutral/10 last:border-b-0"
-                  >
-                    <span className="font-medium text-kawai-black/80">
-                      {spec.label}
-                    </span>
-                    {(() => {
-                      const lines = (spec.value || '').split('\n').filter(l => l.trim())
-                      if (lines.length <= 1) {
-                        return <span className="text-kawai-black font-semibold">{spec.value}</span>
-                      }
-                      return (
-                        <ul className="space-y-1 text-right">
-                          {lines.map((line, i) => (
-                            <li key={i} className="flex items-start justify-end gap-2">
-                              <span className="text-kawai-black font-semibold">{line.trim()}</span>
-                              <span className="mt-2 w-1 h-1 rounded-full bg-kawai-black/30 flex-shrink-0" />
-                            </li>
-                          ))}
-                        </ul>
-                      )
-                    })()}
-                  </div>
-                ))}
-              </div>
-            </div>
+
+        {/* Specifications grid */}
+        <div className={`grid ${gridClass} gap-12 lg:gap-16 xl:gap-20`}>
+          {validSpecifications.map((category, i) => (
+            <SpecCategorySection
+              key={i}
+              category={category as { category?: string | null; specs: Array<{ label: string; value: string }> }}
+              showCategories={showCategories}
+              compact={compact}
+            />
           ))}
         </div>
-        
-        {/* Call to Action */}
-        <div className="text-center mt-12 pt-8 border-t border-kawai-neutral/20">
-          <p className="text-kawai-black/70 mb-4">
-            Need more detailed specifications or have questions?
+
+        {/* Footer */}
+        <div className="mt-16 pt-8 border-t border-kawai-charcoal/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-kawai-charcoal/35">
+            Specifications subject to change without notice.
           </p>
           <a
             href="/contact"
-            className="inline-flex items-center px-6 py-3 bg-kawai-red hover:bg-kawai-red/80 text-white font-medium rounded-md transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-kawai-charcoal hover:bg-kawai-red text-white font-mono text-[11px] uppercase tracking-[0.15em] font-medium transition-colors duration-200"
           >
             Contact Our Experts
-            <svg className="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
           </a>
         </div>
+
       </div>
     </section>
   )

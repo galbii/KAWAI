@@ -31,7 +31,7 @@ interface CropArea {
 
 interface ImageEditorProps {
   file: File
-  onSave: (editedFile: File) => void
+  onSave: (editedFile: File, convertToWebp: boolean) => void
   onCancel: () => void
 }
 
@@ -50,6 +50,9 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
 
   const [rotation, setRotation] = useState(0)
   const [quality, setQuality] = useState(85)
+  const [convertToWebp, setConvertToWebp] = useState(file.type === 'image/png')
+
+  const isPng = file.type === 'image/png'
 
   // Crop state (in display coordinates)
   const [crop, setCrop] = useState<CropArea | null>(null)
@@ -323,17 +326,18 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
         0, 0, finalCrop.width, finalCrop.height
       )
 
-      // Preserve original format
+      // Determine output format — convert PNG to WebP if toggled on
       const originalMimeType = file.type || 'image/jpeg'
       const supportedFormats = ['image/png', 'image/jpeg', 'image/webp']
-      const outputMimeType = supportedFormats.includes(originalMimeType) ? originalMimeType : 'image/jpeg'
+      const baseMimeType = supportedFormats.includes(originalMimeType) ? originalMimeType : 'image/jpeg'
+      const outputMimeType = (convertToWebp && baseMimeType === 'image/png') ? 'image/webp' : baseMimeType
 
-      // Quality parameter only applies to JPEG and WebP
+      // Quality parameter applies to JPEG and WebP
       const qualityParam = (outputMimeType === 'image/jpeg' || outputMimeType === 'image/webp')
         ? quality / 100
         : undefined
 
-      // Convert to blob (preserving format)
+      // Convert to blob
       const blob = await new Promise<Blob>((resolve, reject) => {
         outputCanvas.toBlob(
           (b) => b ? resolve(b) : reject(new Error('Failed to create blob')),
@@ -342,22 +346,20 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
         )
       })
 
-      // Preserve original file extension
       const extensionMap: Record<string, string> = {
         'image/png': '.png',
         'image/jpeg': '.jpg',
         'image/webp': '.webp',
       }
-      const extension = extensionMap[outputMimeType] || '.jpg'
+      const extension = extensionMap[outputMimeType] ?? '.jpg'
       const fileName = file.name.replace(/\.[^.]+$/, extension)
 
-      // Create new file (preserving format)
       const editedFile = new File([blob], fileName, {
         type: outputMimeType,
         lastModified: Date.now(),
       })
 
-      onSave(editedFile)
+      onSave(editedFile, convertToWebp)
     } catch (error) {
       console.error('Error processing image:', error)
       alert('Failed to process image. Please try again.')
@@ -595,6 +597,27 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
               >
                 Reset Crop
               </button>
+
+              {/* Convert to WebP toggle — PNG only */}
+              {isPng && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium" style={{ color: colors.slate700 }}>Convert to WebP:</span>
+                  <button
+                    onClick={() => setConvertToWebp(v => !v)}
+                    className="relative w-10 h-6 rounded-full transition-colors flex-shrink-0"
+                    style={{ backgroundColor: convertToWebp ? colors.indigo600 : colors.slate200 }}
+                    title={convertToWebp ? 'Will convert PNG → WebP on upload' : 'Will keep original PNG format'}
+                  >
+                    <span
+                      className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform"
+                      style={{
+                        backgroundColor: colors.white,
+                        transform: convertToWebp ? 'translateX(16px)' : 'translateX(0)',
+                      }}
+                    />
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Output info */}

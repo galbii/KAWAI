@@ -45,15 +45,15 @@ export function calculateDistance(
  * @param degrees - Angle in degrees
  * @returns Angle in radians
  */
-function toRadians(degrees: number): number {
+export function toRadians(degrees: number): number {
   return degrees * (Math.PI / 180)
 }
 
 /**
- * Geocodes a ZIP code to latitude and longitude coordinates using Google Geocoding API.
- * Requires NEXT_PUBLIC_GOOGLE_MAPS_API_KEY environment variable.
+ * Geocodes a ZIP code to latitude and longitude coordinates using the Nominatim proxy.
+ * Calls the internal /api/search/nominatim route (no API key required).
  *
- * @param zipCode - ZIP code to geocode (e.g., "63026" or "63026-1234")
+ * @param zipCode - ZIP code to geocode (e.g., "63026")
  * @returns Promise resolving to coordinates object with lat and lng, or null if geocoding fails
  *
  * @example
@@ -67,36 +67,25 @@ function toRadians(degrees: number): number {
 export async function geocodeZipCode(
   zipCode: string,
 ): Promise<{ lat: number; lng: number } | null> {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-
-  if (!apiKey) {
-    console.error('Google Maps API key not found')
-    return null
-  }
-
   try {
+    const baseUrl = typeof window !== 'undefined'
+      ? ''
+      : (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000')
+
     const response = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(zipCode)}&key=${apiKey}`,
+      `${baseUrl}/api/search/nominatim?postalcode=${encodeURIComponent(zipCode)}&country=US&limit=1`,
     )
 
-    if (!response.ok) {
-      console.error(`Geocoding API error: ${response.status} ${response.statusText}`)
-      return null
+    if (!response.ok) return null
+
+    const results = await response.json() as Array<{ lat: string; lon: string }>
+
+    if (results.length > 0 && results[0]) {
+      const lat = parseFloat(results[0].lat)
+      const lng = parseFloat(results[0].lon)
+      if (!isNaN(lat) && !isNaN(lng)) return { lat, lng }
     }
 
-    const data = await response.json()
-
-    if (data.status === 'OK' && data.results.length > 0) {
-      const location = data.results[0]?.geometry?.location
-      if (!location) return null
-
-      return {
-        lat: location.lat,
-        lng: location.lng,
-      }
-    }
-
-    console.error(`Geocoding failed: ${data.status}`)
     return null
   } catch (error) {
     console.error('Error geocoding ZIP code:', error)
@@ -221,8 +210,8 @@ export function searchDealers(
       const distance = calculateDistance(
         options.fromCoordinates.lat,
         options.fromCoordinates.lng,
-        dealer.coordinates.latitude,
-        dealer.coordinates.longitude,
+        dealer.coordinates?.latitude ?? 0,
+        dealer.coordinates?.longitude ?? 0,
       )
       return { dealer, distance }
     }

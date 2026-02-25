@@ -1,6 +1,54 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, CollectionBeforeValidateHook } from 'payload'
 import { revalidateTag, revalidatePath } from 'next/cache'
 import { imageField, videoField } from '@/lib/payload/fields'
+import { nominatimGeocode } from '@/lib/payload/geocode'
+
+/**
+ * Auto-geocodes the storefront address using Nominatim before validation.
+ * Writes result to schemaData.geoCoordinates so the dealer finder map works.
+ */
+const geocodeStorefrontAddress: CollectionBeforeValidateHook = async ({ data, originalDoc, operation }) => {
+  if (!data) return data
+
+  const address = {
+    ...(originalDoc?.address ?? {}),
+    ...(data.address ?? {}),
+  }
+  const prev = originalDoc?.address
+
+  const addressChanged =
+    address.street !== prev?.street ||
+    address.city !== prev?.city ||
+    address.state !== prev?.state ||
+    address.zipCode !== prev?.zipCode
+
+  const shouldGeocode =
+    (operation === 'create' && !data.schemaData?.geoCoordinates?.latitude) ||
+    (operation === 'update' && addressChanged)
+
+  if (!shouldGeocode) return data
+
+  const displayAddress = [address.street, address.city, address.state, address.zipCode]
+    .filter(Boolean)
+    .join(', ')
+
+  const coords = await nominatimGeocode(
+    address,
+    'KawaiPianoRetailPlatform/1.0 (storefront geocoding)',
+  )
+
+  if (coords) {
+    data.schemaData = {
+      ...(data.schemaData ?? {}),
+      geoCoordinates: { latitude: coords.latitude, longitude: coords.longitude },
+    }
+    console.log(`✅ [Storefronts] Geocoded "${displayAddress}" → ${coords.latitude}, ${coords.longitude}`)
+  } else {
+    console.warn(`⚠️ [Storefronts] Nominatim returned no results for: ${displayAddress}`)
+  }
+
+  return data
+}
 
 export const Storefronts: CollectionConfig = {
   slug: 'storefronts',
@@ -223,6 +271,41 @@ export const Storefronts: CollectionConfig = {
               admin: {
                 description: 'Basic showroom contact and location information'
               }
+            },
+            {
+              name: 'address',
+              type: 'group',
+              label: 'Map Address',
+              admin: {
+                description: '📍 Used for the dealer finder map. Auto-geocodes coordinates when saved. Keep showroomInfo.address for display text on the storefront page.'
+              },
+              fields: [
+                {
+                  name: 'street',
+                  type: 'text',
+                  admin: { description: 'Street address (e.g. "21 Meadows Circle Drive, Suite 312")' }
+                },
+                {
+                  name: 'city',
+                  type: 'text',
+                  admin: { description: 'City name' }
+                },
+                {
+                  name: 'state',
+                  type: 'text',
+                  admin: { description: '2-letter state abbreviation (e.g. MO)' }
+                },
+                {
+                  name: 'zipCode',
+                  type: 'text',
+                  admin: { description: 'ZIP code' }
+                },
+                {
+                  name: 'country',
+                  type: 'text',
+                  defaultValue: 'USA',
+                },
+              ]
             },
             {
               name: 'hours',
@@ -1002,24 +1085,22 @@ export const Storefronts: CollectionConfig = {
                     {
                       name: 'latitude',
                       type: 'number',
-                      required: true,
                       admin: {
                         step: 0.000001,
-                        description: 'Latitude coordinate (e.g., 38.627003)'
+                        description: 'Auto-filled from the Map Address above. Override only if the geocoded pin is inaccurate.'
                       }
                     },
                     {
                       name: 'longitude',
                       type: 'number',
-                      required: true,
                       admin: {
                         step: 0.000001,
-                        description: 'Longitude coordinate (e.g., -90.199402)'
+                        description: 'Auto-filled from the Map Address above. Override only if the geocoded pin is inaccurate.'
                       }
                     }
                   ],
                   admin: {
-                    description: 'Exact GPS coordinates for map placement and local search. Find coordinates at https://www.latlong.net/'
+                    description: '📍 Coordinates are automatically geocoded from the Map Address (Showroom Location tab) whenever street, city, state, or ZIP changes.'
                   }
                 },
                 {
@@ -1135,6 +1216,7 @@ export const Storefronts: CollectionConfig = {
   ],
 
   hooks: {
+    beforeValidate: [geocodeStorefrontAddress],
     afterChange: [
       // ─── Custom Search Index Sync ──────────────────────────────────────────────
       // Bypasses @payloadcms/plugin-search's auto-sync for storefronts because

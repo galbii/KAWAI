@@ -13,6 +13,7 @@ import { VideoHero } from './components/VideoHero'
 import { DealerFinderMobile } from './components/DealerFinderMobile'
 import { ProductCategoryDisplay } from './components/ProductCategoryDisplay'
 import { cn } from '@/lib/utils'
+import { calculateDistance } from '@/lib/utils/dealer-search'
 import { MapPin, SlidersHorizontal, Star } from 'lucide-react'
 import './components/animations.css'
 
@@ -66,21 +67,6 @@ export function DealerFinderClient({ dealers }: Props) {
     return counts
   }, [dealers])
 
-  // Calculate distance between two coordinates (Haversine formula)
-  const toRad = (value: number): number => (value * Math.PI) / 180
-
-  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-    const R = 3959 // Earth's radius in miles
-    const dLat = toRad(lat2 - lat1)
-    const dLng = toRad(lng2 - lng1)
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-      Math.sin(dLng / 2) * Math.sin(dLng / 2)
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-    return R * c
-  }
-
   // Filter and sort dealers
   const filteredDealers: DealerWithDistance[] = useMemo(() => {
     // Start with search results if available, otherwise all dealers
@@ -90,7 +76,7 @@ export function DealerFinderClient({ dealers }: Props) {
 
     // Filter by official stores only if enabled
     if (showOfficialOnly) {
-      result = result.filter(dealer => (dealer as any).isOfficialStore === true)
+      result = result.filter(dealer => dealer.isOfficialStore === true)
     }
 
     // Filter by dealer type

@@ -91,6 +91,8 @@ export function MediaManagerModal() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const dragCounterRef = useRef(0)
+  // Carries the user's Convert-to-WebP choice from ImageEditor to MetadataForm
+  const pendingConvertToWebpRef = useRef(true)
 
   // Handle keyboard escape
   useEffect(() => {
@@ -766,7 +768,10 @@ export function MediaManagerModal() {
       {editingFile && (
         <ImageEditor
           file={editingFile}
-          onSave={moveToMetadataEditing}
+          onSave={(editedFile, convertToWebp) => {
+            pendingConvertToWebpRef.current = convertToWebp
+            moveToMetadataEditing(editedFile)
+          }}
           onCancel={() => {
             if (pendingFiles.length > 1) {
               skipEditing()
@@ -781,6 +786,7 @@ export function MediaManagerModal() {
       {metadataEditingFile && (
         <MediaUploadMetadataForm
           file={metadataEditingFile}
+          initialConvertToWebp={pendingConvertToWebpRef.current}
           onUpload={(metadata) => uploadWithMetadata(metadataEditingFile, metadata)}
           onCancel={() => {
             if (pendingFiles.length > 1) {

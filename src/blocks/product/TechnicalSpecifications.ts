@@ -16,15 +16,16 @@ export const TechnicalSpecifications: Block = {
     {
       name: 'dataSource',
       type: 'select',
-      defaultValue: 'product',
+      defaultValue: 'json',
       options: [
         { label: '📦 Product Collection (auto)', value: 'product' },
+        { label: '📋 Specification JSON (custom.specification-json)', value: 'json' },
         { label: '✏️ Manual Entry', value: 'manual' },
         { label: '🔀 Hybrid (Product + Manual)', value: 'hybrid' },
       ],
       admin: {
         description:
-          'Product: automatically pulls specifications and blueprint from the linked product. Manual: enter specs by hand. Hybrid: product specs + manual additions.',
+          'Product: automatically pulls specifications and blueprint from the linked product. JSON: renders from the custom.specification-json Shopify metafield. Manual: enter specs by hand. Hybrid: product specs + manual additions.',
       },
     },
 
@@ -37,7 +38,7 @@ export const TechnicalSpecifications: Block = {
       admin: {
         description:
           'Select the product to pull specifications and blueprint from. Leave empty on a product page to use the page product automatically.',
-        condition: (data) => data.dataSource === 'product' || data.dataSource === 'hybrid',
+        condition: (data) => data.dataSource === 'product' || data.dataSource === 'hybrid' || data.dataSource === 'json',
       },
     },
 

@@ -65,10 +65,10 @@ export async function findProfessionalProductDealers(dealers: Dealer[]) {
 // --------------------------------------------------
 export function getDistanceBetweenDealers(dealer1: Dealer, dealer2: Dealer): number {
   return calculateDistance(
-    dealer1.coordinates.latitude,
-    dealer1.coordinates.longitude,
-    dealer2.coordinates.latitude,
-    dealer2.coordinates.longitude,
+    dealer1.coordinates?.latitude ?? 0,
+    dealer1.coordinates?.longitude ?? 0,
+    dealer2.coordinates?.latitude ?? 0,
+    dealer2.coordinates?.longitude ?? 0,
   )
 }
 
@@ -155,7 +155,7 @@ export async function getDealersForRoute(
     .map((dealer) => {
       // Calculate distance to nearest waypoint
       const distances = waypoints.map((waypoint) =>
-        calculateDistance(waypoint.lat, waypoint.lng, dealer.coordinates.latitude, dealer.coordinates.longitude),
+        calculateDistance(waypoint.lat, waypoint.lng, dealer.coordinates?.latitude ?? 0, dealer.coordinates?.longitude ?? 0),
       )
 
       const minDistance = Math.min(...distances)

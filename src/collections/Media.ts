@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { imageField } from '@/lib/payload/fields/media'
+import { convertImagesToWebp } from './hooks/convertImagesToWebp'
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -15,6 +16,9 @@ export const Media: CollectionConfig = {
     create: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => Boolean(user),
     delete: ({ req: { user } }) => Boolean(user),
+  },
+  hooks: {
+    beforeOperation: [convertImagesToWebp],
   },
   fields: [
     // Basic Media Information
@@ -188,13 +192,26 @@ export const Media: CollectionConfig = {
         position: 'sidebar',
       },
     },
+
+    // Image Processing
+    {
+      name: 'convertToWebp',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: {
+        description: 'Convert PNG and TIFF images to WebP on upload (smaller file size, better web performance). Has no effect on JPEG, WebP, or non-image files.',
+        position: 'sidebar',
+        condition: (data) => data.mediaType === 'image' || !data.mediaType,
+      },
+    },
   ],
   upload: {
     // NOTE: disableLocalStorage is automatically set by the S3 storage plugin
     // Do NOT set it manually here - let the plugin handle it
 
-    // ✅ Format preservation: By not specifying formatOptions, Sharp preserves the original format
-    // This maintains PNG transparency, WebP compression, and JPEG quality
+    // ✅ No global formatOptions — format is decided per-upload by the convertImagesToWebp hook.
+    // PNG and TIFF are converted to WebP when convertToWebp is checked (default: true).
+    // JPEG, WebP, SVG, and other formats are always preserved as-is.
     imageSizes: [
       {
         name: 'thumbnail',

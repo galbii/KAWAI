@@ -26,6 +26,8 @@ interface MediaUploadMetadataFormProps {
   file: File
   onUpload: (metadata: MediaMetadata) => void
   onCancel: () => void
+  /** Pre-fill from ImageEditor choice. Defaults to true for PNG files. */
+  initialConvertToWebp?: boolean
 }
 
 export interface MediaMetadata {
@@ -35,6 +37,7 @@ export interface MediaMetadata {
   mediaType: 'image' | 'video' | 'audio' | 'document'
   tags?: string[]
   featured?: boolean
+  convertToWebp?: boolean
   videoMeta?: {
     duration?: number
     autoplay?: boolean
@@ -51,7 +54,7 @@ export interface MediaMetadata {
 /**
  * Form for editing media metadata before upload
  */
-export function MediaUploadMetadataForm({ file, onUpload, onCancel }: MediaUploadMetadataFormProps) {
+export function MediaUploadMetadataForm({ file, onUpload, onCancel, initialConvertToWebp }: MediaUploadMetadataFormProps) {
   // Generate smart default alt text from filename
   const defaultAlt = file.name
     .replace(/\.[^/.]+$/, '')
@@ -65,6 +68,12 @@ export function MediaUploadMetadataForm({ file, onUpload, onCancel }: MediaUploa
     if (file.type.startsWith('audio/')) return 'audio'
     return 'document'
   }
+
+  // Show the WebP conversion toggle for PNG files that haven't already been converted
+  const isConvertibleFormat = file.type === 'image/png' || file.type === 'image/tiff'
+  const [convertToWebp, setConvertToWebp] = useState(
+    initialConvertToWebp ?? isConvertibleFormat
+  )
 
   // Form state
   const [alt, setAlt] = useState(defaultAlt)
@@ -118,6 +127,9 @@ export function MediaUploadMetadataForm({ file, onUpload, onCancel }: MediaUploa
       alt,
       mediaType,
       featured,
+      // Only include when false — server hook's default is to convert, so we only need to
+      // override when the user explicitly opts out
+      ...(isConvertibleFormat && !convertToWebp ? { convertToWebp: false } : {}),
     }
 
     if (caption) metadata.caption = caption
@@ -365,6 +377,33 @@ export function MediaUploadMetadataForm({ file, onUpload, onCancel }: MediaUploa
               />
             </button>
           </div>
+
+          {/* Convert to WebP (PNG and TIFF only) */}
+          {isConvertibleFormat && (
+            <div className="flex items-center justify-between py-2">
+              <div>
+                <label className="text-sm font-medium" style={{ color: colors.slate700 }}>
+                  Convert to WebP
+                </label>
+                <p className="text-xs mt-0.5" style={{ color: colors.slate400 }}>
+                  Smaller file size, better web performance
+                </p>
+              </div>
+              <button
+                onClick={() => setConvertToWebp(!convertToWebp)}
+                className="relative w-11 h-6 rounded-full transition-colors"
+                style={{ backgroundColor: convertToWebp ? colors.blue500 : colors.slate200 }}
+              >
+                <span
+                  className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform"
+                  style={{
+                    backgroundColor: colors.white,
+                    transform: convertToWebp ? 'translateX(20px)' : 'translateX(0)',
+                  }}
+                />
+              </button>
+            </div>
+          )}
 
           {/* Video Settings (conditional) */}
           {mediaType === 'video' && (

@@ -135,6 +135,13 @@ async function transformShopifyToPayload(shopifyProduct: ShopifyProductData): Pr
     highlights: shopifyProduct.metafields?.highlights || []
   })
 
+  // Add specification JSON (synced from Shopify custom.specification_json metafield)
+  if (shopifyProduct.metafields?.specificationJson) {
+    Object.assign(baseData, {
+      specificationJson: shopifyProduct.metafields.specificationJson
+    })
+  }
+
   return baseData
 }
 
@@ -463,6 +470,16 @@ export const Products: CollectionConfig = {
                   },
                 },
               ],
+            },
+
+            // Specification JSON - custom.specification-json metafield from Shopify
+            {
+              name: 'specificationJson',
+              type: 'json',
+              admin: {
+                description: 'Full specification sheet as JSON (synced from Shopify custom.specification-json metafield). Used by the Technical Specifications block with "JSON" data source.',
+                readOnly: true,
+              },
             },
 
             // Highlights - Custom metaobject list from Shopify

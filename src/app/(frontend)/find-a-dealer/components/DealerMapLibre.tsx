@@ -52,11 +52,13 @@ export function DealerMapLibre({
     if (selectedDealer) {
       const dealer = dealers.find(d => d.id === selectedDealer)
       if (dealer?.coordinates?.latitude && dealer?.coordinates?.longitude) {
+        const lat = dealer.coordinates.latitude
+        const lng = dealer.coordinates.longitude
         // Center map on selected dealer
         setViewState(prev => ({
           ...prev,
-          longitude: dealer.coordinates.longitude,
-          latitude: dealer.coordinates.latitude,
+          longitude: lng,
+          latitude: lat,
           zoom: 14 // Zoom in closer for individual dealer
         }))
         // Show popup for selected dealer

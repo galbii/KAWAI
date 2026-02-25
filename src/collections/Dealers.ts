@@ -1,13 +1,7 @@
 import type { CollectionConfig, CollectionAfterChangeHook, CollectionBeforeValidateHook } from 'payload'
 import { imageField } from '@/lib/payload/fields/media'
 import { revalidatePath, revalidateTag } from 'next/cache'
-
-// Nominatim (OpenStreetMap) returns lat/lon as strings
-type NominatimResult = {
-  lat: string
-  lon: string
-  display_name: string
-}
+import { nominatimGeocode } from '@/lib/payload/geocode'
 
 /**
  * Auto-geocodes the dealer address using Nominatim (OpenStreetMap) before validation.
@@ -23,6 +17,8 @@ type NominatimResult = {
  *   - On create: the admin manually entered coordinates
  */
 const geocodeDealerAddress: CollectionBeforeValidateHook = async ({ data, originalDoc, operation }) => {
+  if (!data) return data
+
   // Merge partial incoming address with existing so we always have a full address
   const address = {
     ...(originalDoc?.address ?? {}),
@@ -45,51 +41,20 @@ const geocodeDealerAddress: CollectionBeforeValidateHook = async ({ data, origin
 
   if (!shouldGeocode) return data
 
-  // Need at minimum street + city + state for an accurate result
-  if (!address.street || !address.city || !address.state) return data
-
-  const params = new URLSearchParams({
-    street: address.street,
-    city: address.city,
-    state: address.state,
-    country: address.country || 'US',
-    format: 'json',
-    limit: '1',
-  })
-  if (address.zipCode) params.set('postalcode', address.zipCode)
-
   const displayAddress = [address.street, address.city, address.state, address.zipCode]
     .filter(Boolean)
     .join(', ')
 
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?${params.toString()}`,
-      {
-        headers: {
-          // Nominatim usage policy requires a descriptive User-Agent
-          'User-Agent': 'KawaiPianoRetailPlatform/1.0 (admin dealer geocoding)',
-          Accept: 'application/json',
-        },
-      },
-    )
+  const coords = await nominatimGeocode(
+    address,
+    'KawaiPianoRetailPlatform/1.0 (admin dealer geocoding)',
+  )
 
-    const results = (await res.json()) as NominatimResult[]
-
-    if (results.length > 0 && results[0]) {
-      const lat = parseFloat(results[0].lat)
-      const lng = parseFloat(results[0].lon)
-
-      if (!isNaN(lat) && !isNaN(lng)) {
-        data.coordinates = { latitude: lat, longitude: lng }
-        console.log(`✅ [Dealers] Geocoded "${displayAddress}" → ${lat}, ${lng}`)
-      }
-    } else {
-      console.warn(`⚠️ [Dealers] Nominatim returned no results for: ${displayAddress}`)
-    }
-  } catch (err) {
-    // Never block the save — geocoding failure is non-fatal
-    console.error('[Dealers] Nominatim geocoding error:', err)
+  if (coords) {
+    data.coordinates = coords
+    console.log(`✅ [Dealers] Geocoded "${displayAddress}" → ${coords.latitude}, ${coords.longitude}`)
+  } else {
+    console.warn(`⚠️ [Dealers] Nominatim returned no results for: ${displayAddress}`)
   }
 
   return data
