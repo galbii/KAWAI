@@ -229,15 +229,9 @@ async function StorefrontContent({ storeslug }: { storeslug: string }) {
     const homePageData = await getHomePageDataDirect();
     pianoGalleryData = homePageData?.pianoGallerySection;
 
-    // Debug: Log raw hours data from database
-    console.log(`[DEBUG] Raw hours from DB for "${storeslug}":`, JSON.stringify(rawStorefrontData?.hours, null, 2))
-
     // Transform raw Payload data into structured format
     // Piano collection data now comes from HomePage to eliminate duplication
     storefrontData = transformStorefrontData(rawStorefrontData, homePageData?.pianoCollectionSection);
-
-    // Debug: Log transformed hours data
-    console.log(`[DEBUG] Transformed hours for "${storeslug}":`, JSON.stringify(storefrontData?.showroomSection?.hours, null, 2))
 
     // Merge storefront data with HomePage for news carousel (always additive)
     if (storefrontData && homePageData) {
@@ -275,10 +269,6 @@ async function StorefrontContent({ storeslug }: { storeslug: string }) {
   // Extract signup modal settings from CMS
   const signupModalSettings = rawStorefrontData?.signupModal;
   const isModalEnabled = signupModalSettings?.enabled !== false; // Default to true if not set
-
-  // Debug: Log full raw signupModal from DB to diagnose missing imageUrl
-  console.log(`[StorefrontContent] RAW signupModal from DB for "${storeslug}":`, JSON.stringify(rawStorefrontData?.signupModal, null, 2))
-  console.log(`[StorefrontContent] imageUrl value: "${signupModalSettings?.imageUrl ?? '(null/undefined — NOT SET IN DB)'}"`);
 
   return (
     <>

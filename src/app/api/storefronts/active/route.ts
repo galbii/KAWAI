@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 
-export const dynamic = 'force-dynamic'
 export const revalidate = 300 // 5 minutes
 
 /**

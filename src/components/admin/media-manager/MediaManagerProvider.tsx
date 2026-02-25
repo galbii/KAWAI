@@ -44,6 +44,7 @@ const initialState: ExtendedState = {
   currentFolder: null,
   isFoldersLoading: false,
   expandedFolders: new Set<string>(),
+  subFolders: [],
 }
 
 interface ExtendedContextValue extends MediaManagerContextValue {
@@ -62,6 +63,8 @@ interface ExtendedContextValue extends MediaManagerContextValue {
   moveToMetadataEditing: (file: File) => void
   uploadWithMetadata: (file: File, metadata: any) => void
   skipEditing: () => void
+  renameFolder: (id: string, name: string) => Promise<void>
+  moveFolderToFolder: (folderId: string, newParentId: string | null) => Promise<void>
 }
 
 const MediaManagerContext = createContext<ExtendedContextValue | null>(null)
@@ -122,6 +125,28 @@ function buildFolderTree(folders: FolderItem[]): FolderTreeNode[] {
   sortFolders(rootFolders)
 
   return rootFolders
+}
+
+/**
+ * Get direct child folders of a given folder (or root folders when currentFolderId is null)
+ */
+function getSubFolders(folderTree: FolderTreeNode[], currentFolderId: string | null): FolderItem[] {
+  if (currentFolderId === null) {
+    // Root level: return all top-level folders
+    return folderTree.map(({ children: _c, ...f }) => f as FolderItem)
+  }
+  // Find the folder node and return its direct children
+  function findChildren(nodes: FolderTreeNode[]): FolderItem[] | null {
+    for (const node of nodes) {
+      if (node.id === currentFolderId) {
+        return node.children.map(({ children: _c, ...f }) => f as FolderItem)
+      }
+      const found = findChildren(node.children)
+      if (found !== null) return found
+    }
+    return null
+  }
+  return findChildren(folderTree) ?? []
 }
 
 /**
@@ -190,6 +215,7 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
         ...prev,
         folders: data.docs,
         folderTree,
+        subFolders: getSubFolders(folderTree, prev.currentFolder?.id ?? null),
         isFoldersLoading: false,
       }))
     } catch (error) {
@@ -255,9 +281,48 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
     }
   }, [fetchFolders, showToast])
 
+  // Rename folder
+  const renameFolder = useCallback(async (id: string, name: string) => {
+    try {
+      const response = await fetch(`/api/payload-folders/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      })
+      if (!response.ok) throw new Error('Failed to rename folder')
+      await fetchFolders()
+      showToast('success', `Renamed to "${name}"`)
+    } catch (error) {
+      console.error('Failed to rename folder:', error)
+      showToast('error', 'Failed to rename folder')
+    }
+  }, [fetchFolders, showToast])
+
+  // Move a folder into another folder (or to root)
+  const moveFolderToFolder = useCallback(async (folderId: string, newParentId: string | null) => {
+    try {
+      const response = await fetch(`/api/payload-folders/${folderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ folder: newParentId }),
+      })
+      if (!response.ok) throw new Error('Failed to move folder')
+      await fetchFolders()
+      showToast('success', 'Folder moved')
+    } catch (error) {
+      console.error('Failed to move folder:', error)
+      showToast('error', 'Failed to move folder')
+    }
+  }, [fetchFolders, showToast])
+
   // Set current folder
   const setCurrentFolder = useCallback((folder: FolderItem | null) => {
-    setState(prev => ({ ...prev, currentFolder: folder, currentPage: 1 }))
+    setState(prev => ({
+      ...prev,
+      currentFolder: folder,
+      currentPage: 1,
+      subFolders: getSubFolders(prev.folderTree, folder?.id ?? null),
+    }))
   }, [])
 
   // Toggle folder expanded
@@ -774,6 +839,8 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
     fetchFolders,
     createFolder,
     deleteFolder,
+    renameFolder,
+    moveFolderToFolder,
     setCurrentFolder,
     toggleFolderExpanded,
     moveMediaToFolder,

@@ -4,46 +4,39 @@ import { useState, useCallback } from 'react'
 import { useMediaManager } from './MediaManagerProvider'
 import type { FolderItem, FolderTreeNode } from './types'
 
-// Dark theme color palette matching MediaGrid and Modal
 const colors = {
-  // Backgrounds
-  backdrop: 'rgba(0, 0, 0, 0.85)',
-  modalBg: '#0a0e1a',
-  headerBg: '#0f1422',
-  sidebarBg: '#0d1117',
-  contentBg: '#0a0e1a',
-  cardBg: '#151b2b',
-  inputBg: '#1a2234',
-  hoverBg: '#1e2739',
+  backdrop: 'rgba(4,4,8,0.82)',
+  modalBg: '#0C0C0F',
+  headerBg: '#16161E',
+  sidebarBg: '#111116',
+  contentBg: '#0C0C0F',
+  cardBg: '#1C1C26',
+  inputBg: '#12121A',
+  hoverBg: '#1E1E2A',
 
-  // Borders
-  border: '#1e2739',
-  borderLight: '#2d3748',
-  borderFocus: '#3b82f6',
+  border: '#252535',
+  borderLight: '#2E2E40',
+  borderFocus: '#6366F1',
 
-  // Text
-  textPrimary: '#f1f5f9',
-  textSecondary: '#94a3b8',
-  textMuted: '#64748b',
-  textAccent: '#60a5fa',
+  textPrimary: '#ECECF2',
+  textSecondary: '#8484A0',
+  textMuted: '#4C4C68',
+  textAccent: '#818CF8',
 
-  // Brand colors
-  primary: '#3b82f6',
-  primaryHover: '#2563eb',
-  primaryLight: '#60a5fa',
-  success: '#10b981',
-  successBg: '#064e3b',
-  error: '#ef4444',
-  errorBg: '#7f1d1d',
-  warning: '#f59e0b',
-  warningBg: '#78350f',
+  primary: '#6366F1',
+  primaryHover: '#5558E0',
+  primaryLight: '#818CF8',
+  success: '#2EC4A0',
+  successBg: 'rgba(46,196,160,0.08)',
+  error: '#F16C6C',
+  errorBg: 'rgba(241,108,108,0.08)',
+  warning: '#E8A84E',
+  warningBg: 'rgba(232,168,78,0.10)',
 
-  // Accents
-  accent: '#8b5cf6',
-  accentHover: '#7c3aed',
-  gold: '#f59e0b',
+  accent: '#6366F1',
+  accentHover: '#5558E0',
+  gold: '#E8A84E',
 
-  // UI elements
   white: '#ffffff',
   black: '#000000',
 }
@@ -70,22 +63,72 @@ function FolderTreeItem({
   expandedFolders,
 }: FolderTreeItemProps) {
   const [showActions, setShowActions] = useState(false)
+  const [isRenaming, setIsRenaming] = useState(false)
+  const [renameValue, setRenameValue] = useState(folder.name)
+  const [isDragOver, setIsDragOver] = useState(false)
+
+  const { renameFolder, moveMediaToFolder, moveFolderToFolder } = useMediaManager()
+
   const hasChildren = folder.children.length > 0
   const isExpanded = expandedFolders.has(folder.id)
   const isSelected = selectedFolderId === folder.id
 
+  const handleRenameSave = useCallback(async () => {
+    const trimmed = renameValue.trim()
+    if (trimmed && trimmed !== folder.name) {
+      await renameFolder(folder.id, trimmed)
+    } else {
+      setRenameValue(folder.name)
+    }
+    setIsRenaming(false)
+  }, [renameValue, folder.id, folder.name, renameFolder])
+
   return (
     <div>
       <div
-        className="group flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-150 mb-1"
+        className="group flex items-center gap-3 px-4 py-3.5 rounded-xl cursor-pointer transition-all duration-150 mb-1"
         style={{
           marginLeft: `${depth * 20}px`,
-          backgroundColor: isSelected ? colors.hoverBg : 'transparent',
-          borderLeft: isSelected ? `3px solid ${colors.primary}` : '3px solid transparent',
+          backgroundColor: isDragOver ? colors.primary + '22' : isSelected ? colors.hoverBg : 'transparent',
+          borderLeft: isDragOver
+            ? `3px solid ${colors.primary}`
+            : isSelected ? `3px solid ${colors.primary}` : '3px solid transparent',
+          outline: isDragOver ? `1px solid ${colors.primary}33` : undefined,
+          transition: 'background 0.1s, outline 0.1s',
         }}
-        onClick={() => onSelect(folder)}
+        onClick={() => {
+          if (!isRenaming) onSelect(folder)
+        }}
         onMouseEnter={() => setShowActions(true)}
         onMouseLeave={() => setShowActions(false)}
+        draggable
+        onDragStart={(e) => {
+          e.stopPropagation()
+          e.dataTransfer.setData('folderId', folder.id)
+          e.dataTransfer.setData('folderName', folder.name)
+          e.dataTransfer.effectAllowed = 'move'
+        }}
+        onDragOver={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          setIsDragOver(true)
+        }}
+        onDragLeave={(e) => {
+          e.stopPropagation()
+          setIsDragOver(false)
+        }}
+        onDrop={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          setIsDragOver(false)
+          const mediaId = e.dataTransfer.getData('mediaId')
+          const folderId = e.dataTransfer.getData('folderId')
+          if (mediaId) {
+            moveMediaToFolder(mediaId, folder.id)
+          } else if (folderId && folderId !== folder.id) {
+            moveFolderToFolder(folderId, folder.id)
+          }
+        }}
       >
         {/* Expand/collapse button */}
         <button
@@ -114,7 +157,7 @@ function FolderTreeItem({
 
         {/* Folder icon */}
         <div
-          className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+          className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: isSelected ? colors.cardBg : colors.inputBg }}
         >
           <svg
@@ -131,17 +174,58 @@ function FolderTreeItem({
           </svg>
         </div>
 
-        {/* Folder name */}
-        <span
-          className="flex-1 text-base font-medium truncate"
-          style={{ color: isSelected ? colors.textAccent : colors.textPrimary }}
-        >
-          {folder.name}
-        </span>
+        {/* Folder name or rename input */}
+        {isRenaming ? (
+          <input
+            autoFocus
+            value={renameValue}
+            onChange={(e) => setRenameValue(e.target.value)}
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                handleRenameSave()
+              } else if (e.key === 'Escape') {
+                setRenameValue(folder.name)
+                setIsRenaming(false)
+              }
+            }}
+            onBlur={handleRenameSave}
+            className="flex-1 text-base font-medium bg-transparent border-0 border-b outline-none min-w-0"
+            style={{
+              color: colors.textAccent,
+              borderColor: colors.borderFocus,
+              padding: '0 2px',
+            }}
+          />
+        ) : (
+          <span
+            className="flex-1 text-base font-medium truncate"
+            style={{ color: isSelected ? colors.textAccent : colors.textPrimary }}
+          >
+            {folder.name}
+          </span>
+        )}
 
         {/* Actions */}
-        {showActions && (
+        {showActions && !isRenaming && (
           <div className="flex items-center gap-1">
+            {/* Rename button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setRenameValue(folder.name)
+                setIsRenaming(true)
+              }}
+              className="p-2 rounded-lg transition-colors hover:bg-opacity-80"
+              style={{ backgroundColor: colors.cardBg, color: colors.textSecondary }}
+              title="Rename folder"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+            {/* Create subfolder button */}
             <button
               onClick={(e) => {
                 e.stopPropagation()
@@ -299,11 +383,13 @@ export function FolderTree() {
     createFolder,
     deleteFolder,
     showToast,
+    moveMediaToFolder,
   } = useMediaManager()
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [createParentId, setCreateParentId] = useState<string | null>(null)
   const [createParentName, setCreateParentName] = useState<string | undefined>()
+  const [isDragOverRoot, setIsDragOverRoot] = useState(false)
 
   const handleCreateFolder = useCallback(async (name: string, parentId?: string) => {
     const folder = await createFolder(name, parentId)
@@ -342,7 +428,7 @@ export function FolderTree() {
         style={{ borderColor: colors.border }}
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold" style={{ color: colors.textPrimary }}>Folders</h3>
+          <h3 className="text-xl font-semibold" style={{ color: colors.textPrimary }}>Folders</h3>
           <button
             onClick={() => openCreateDialog()}
             className="p-2.5 rounded-xl transition-colors hover:bg-opacity-80"
@@ -360,15 +446,39 @@ export function FolderTree() {
       <div className="flex-1 overflow-y-auto p-4">
         {/* All Media (Root) */}
         <div
-          className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-150 mb-2"
+          className="flex items-center gap-3 px-4 py-3.5 rounded-xl cursor-pointer transition-all duration-150 mb-2"
           style={{
-            backgroundColor: currentFolder === null ? colors.hoverBg : 'transparent',
-            borderLeft: currentFolder === null ? `3px solid ${colors.primary}` : '3px solid transparent',
+            backgroundColor: isDragOverRoot
+              ? colors.primary + '22'
+              : currentFolder === null ? colors.hoverBg : 'transparent',
+            borderLeft: isDragOverRoot
+              ? `3px solid ${colors.primary}`
+              : currentFolder === null ? `3px solid ${colors.primary}` : '3px solid transparent',
+            outline: isDragOverRoot ? `1px solid ${colors.primary}33` : undefined,
+            transition: 'background 0.1s, outline 0.1s',
           }}
           onClick={() => setCurrentFolder(null)}
+          onDragOver={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setIsDragOverRoot(true)
+          }}
+          onDragLeave={(e) => {
+            e.stopPropagation()
+            setIsDragOverRoot(false)
+          }}
+          onDrop={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setIsDragOverRoot(false)
+            const mediaId = e.dataTransfer.getData('mediaId')
+            if (mediaId) {
+              moveMediaToFolder(mediaId, null)
+            }
+          }}
         >
           <div
-            className="w-9 h-9 rounded-lg flex items-center justify-center"
+            className="w-10 h-10 rounded-lg flex items-center justify-center"
             style={{ backgroundColor: currentFolder === null ? colors.cardBg : colors.inputBg }}
           >
             <svg
@@ -416,7 +526,7 @@ export function FolderTree() {
             </button>
           </div>
         ) : (
-          folderTree.map((folder) => (
+          folderTree.map((folder: FolderTreeNode) => (
             <FolderTreeItem
               key={folder.id}
               folder={folder}

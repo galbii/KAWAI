@@ -29,6 +29,7 @@ import { HorizontalRuleFeatureClient as HorizontalRuleFeatureClient_e70f5e05f09f
 import { SlugField as SlugField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { BlocksFeatureClient as BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { default as default_316a46c3fa81e188b71905bec9cf54a2 } from '../../../components/admin/BulkShopifySyncButton'
+import { ProductsListHeader as ProductsListHeader_875e15b0728087b3a068289f8f5cdb5e } from '../../../components/admin/ProductsListHeader'
 import { LinkToDoc as LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { FolderTypeField as FolderTypeField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
@@ -42,7 +43,10 @@ import { QueryPresetsGroupByField as QueryPresetsGroupByField_3817bf644402e67bfe
 import { MediaUrlSelectorButton as MediaUrlSelectorButton_e2f4d5213ba57541f34398ce21c16f6e } from '../../../components/admin/MediaUrlSelectorButton'
 import { Icon as Icon_22ecfa0add6ea3a2202bd7524740e10d } from '../../../components/admin/Icon.tsx'
 import { Logo as Logo_f6725385e1c85d4569908fa222b1f780 } from '../../../components/admin/Logo.tsx'
-import { MediaManager as MediaManager_aaf938c205dc7448b41a804ed475e46c } from '../../../components/admin/media-manager/MediaManager.tsx'
+import { ViewSiteButton as ViewSiteButton_01c1d258c47fa7ac125bc6d559ad892b } from '../../../components/admin/ViewSiteButton'
+import { NavLinks as NavLinks_c025f118f75d1c67ec1517e1fc784abd } from '../../../components/admin/NavLinks'
+import { DashboardStats as DashboardStats_123c62f476ef106d93ca9259c1aa40c9 } from '../../../components/admin/DashboardStats'
+import { DashboardQuickActions as DashboardQuickActions_381daeb6e8c5bc252c48a4ffd141b524 } from '../../../components/admin/DashboardQuickActions'
 import { AdminRootProvider as AdminRootProvider_90270e1a289c41a7c07e2a0de98e46c1 } from '../../../components/admin/AdminRootProvider'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { CollectionCards as CollectionCards_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
@@ -79,6 +83,7 @@ export const importMap = {
   "@payloadcms/ui#SlugField": SlugField_3817bf644402e67bfe6577f60ef982de,
   "@payloadcms/richtext-lexical/client#BlocksFeatureClient": BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "/components/admin/BulkShopifySyncButton#default": default_316a46c3fa81e188b71905bec9cf54a2,
+  "/components/admin/ProductsListHeader#ProductsListHeader": ProductsListHeader_875e15b0728087b3a068289f8f5cdb5e,
   "@payloadcms/plugin-search/client#LinkToDoc": LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/plugin-search/client#ReindexButton": ReindexButton_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/ui#FolderTypeField": FolderTypeField_3817bf644402e67bfe6577f60ef982de,
@@ -92,7 +97,10 @@ export const importMap = {
   "/components/admin/MediaUrlSelectorButton#MediaUrlSelectorButton": MediaUrlSelectorButton_e2f4d5213ba57541f34398ce21c16f6e,
   "/components/admin/Icon.tsx#Icon": Icon_22ecfa0add6ea3a2202bd7524740e10d,
   "/components/admin/Logo.tsx#Logo": Logo_f6725385e1c85d4569908fa222b1f780,
-  "/components/admin/media-manager/MediaManager.tsx#MediaManager": MediaManager_aaf938c205dc7448b41a804ed475e46c,
+  "/components/admin/ViewSiteButton#ViewSiteButton": ViewSiteButton_01c1d258c47fa7ac125bc6d559ad892b,
+  "/components/admin/NavLinks#NavLinks": NavLinks_c025f118f75d1c67ec1517e1fc784abd,
+  "/components/admin/DashboardStats#DashboardStats": DashboardStats_123c62f476ef106d93ca9259c1aa40c9,
+  "/components/admin/DashboardQuickActions#DashboardQuickActions": DashboardQuickActions_381daeb6e8c5bc252c48a4ffd141b524,
   "/components/admin/AdminRootProvider#AdminRootProvider": AdminRootProvider_90270e1a289c41a7c07e2a0de98e46c1,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "@payloadcms/ui/rsc#CollectionCards": CollectionCards_ab83ff7e88da8d3530831f296ec4756a

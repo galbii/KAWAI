@@ -2,6 +2,9 @@ import { withPayload } from '@payloadcms/next/withPayload'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    optimizePackageImports: ['framer-motion', 'lucide-react', '@heroicons/react'],
+  },
   webpack: (config, { isServer }) => {
     // Suppress Payload CMS dynamic import warning
     // This is intentional by Payload for loading migrations at runtime
@@ -17,7 +20,7 @@ const nextConfig = {
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 60,
+    minimumCacheTTL: 2592000,
     remotePatterns: [
       // Current R2 CDN (from NEXT_PUBLIC_S3_PUBLIC_URL)
       {

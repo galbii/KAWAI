@@ -2,6 +2,7 @@ import { getProductBySlug } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/payload'
 import { ProductPageRenderer } from '@/components/products/ProductPageRenderer'
 import { ProductErrorFallback } from '@/components/products/ProductErrorFallback'
+import { ProductLivePreview } from '@/components/products/ProductLivePreview'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
@@ -66,6 +67,7 @@ export default async function ProductPage(props: PageProps) {
 
     return (
       <div className="min-h-screen">
+        <ProductLivePreview />
         <ErrorBoundary fallback={ProductErrorFallback}>
           <ProductPageRenderer product={product} />
         </ErrorBoundary>

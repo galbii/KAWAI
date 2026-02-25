@@ -1,1218 +1,572 @@
 # KAWAI Piano - Payload CMS Development Guide
 
-You are an expert Payload CMS developer working on KAWAI, a production-grade piano retail platform. Follow these rules when developing.
+You are an expert Payload CMS developer working on KAWAI, a production-grade piano retail platform built on Next.js 15 + Payload CMS 3.x + MongoDB Atlas + Cloudflare R2.
 
 ## Environment
 
-- **Runtime**: Bun (mandatory - never use npm)
-- **Package Manager**: Bun (use `bun` instead of npm/yarn/pnpm)
-- **Database**: MongoDB Atlas (via mongoose adapter)
-- **Storage**: Cloudflare R2 (S3-compatible)
-- **Common Commands**:
-  - `bun run dev` - Start development server
-  - `bun run build` - Production build + type generation
-  - `bun run start` - Production server
-  - `bun run lint` - ESLint + TypeScript checks
-  - `bun run seed` - Seed database (with PAYLOAD_SEED=true)
+- **Runtime**: Bun (mandatory — never use npm/yarn/pnpm)
+- **Framework**: Next.js 15.4 with App Router + Turbopack (`next dev --turbo`)
+- **CMS**: Payload CMS 3.52 (co-located in the same Next.js app)
+- **Database**: MongoDB Atlas (mongoose adapter, IPv4 forced, minPoolSize: 1)
+- **Storage**: Cloudflare R2 (S3-compatible, `forcePathStyle: true`)
 
-## Core Principles
+### Commands
 
-1. **TypeScript-First**: Always use TypeScript with proper types from Payload
-2. **Security-Critical**: Follow all security patterns, especially access control
-3. **Type Generation**: Types auto-generate on build; import from `@/payload-types`
-4. **Transaction Safety**: Always pass `req` to nested operations in hooks
-5. **Access Control**: Understand Local API bypasses access control by default
-6. **Context Flags**: Use context flags to prevent infinite hook loops
-7. **Server-First**: All components are Server Components by default
+| Command | Purpose |
+|---------|---------|
+| `bun run dev` | Dev server (Turbopack) |
+| `bun run build` | Production build + type generation |
+| `bun run start` | Production server |
+| `bun run lint` | ESLint + TypeScript |
+| `bun run payload generate:importmap` | Regenerate admin import map after adding/moving admin components |
+| `bun run seed` | Seed database (`PAYLOAD_SEED=true`) |
 
-### Code Validation
+**Always run `bun run build` before considering code complete.**
+
+---
+
+## Project Architecture
+
+### Route Structure
+
+```
+src/app/
+├── (frontend)/                      # Public website (Next.js routes)
+│   ├── page.tsx                     # Homepage (/)
+│   ├── pianos/                      # Piano catalog (/pianos, /pianos/[category])
+│   ├── products/[slug]/             # Product pages (ISR, revalidate: 3600)
+│   ├── store/[storeslug]/           # Dealer storefronts (/store/st-louis)
+│   │   ├── page.tsx                 # Main storefront page
+│   │   ├── signature/, signature2/  # Premium experience pages
+│   │   ├── university/              # University event pages
+│   │   ├── gl-10-signature/         # GL-10 product experience
+│   │   └── sk-experience/           # SK experience page
+│   ├── blog/[slug]/                 # Blog posts
+│   ├── artists/[slug]/              # Artist pages
+│   ├── find-a-dealer/[slug]/        # Dealer detail pages
+│   ├── concert-artist/              # Concert Artist CA page
+│   ├── namm-2026/                   # NAMM event pages
+│   └── [...slug]/                   # Catch-all (Pages collection)
+└── (payload)/                       # Payload Admin + REST + GraphQL APIs
+    └── admin/, api/
+```
+
+### Collections (15 total, in `src/collections/`)
+
+**System**: `Users`, `Media`
+
+**Pages**: `Pages` (general CMS pages, catch-all route), `HomePage` (singleton), `PianosPage` (singleton), `ConcertArtistPage` (singleton)
+
+**Content**: `Storefronts` (dealer location pages), `Posts` (blog), `Categories` (post categories), `Artists`
+
+**Commerce**: `Products` (piano models + accessories), `Collections` (Shopify-synced product collections)
+
+**Business**: `Dealers` (dealer directory for `/find-a-dealer`)
+
+**Integrations**: `ConstantContactSettings`, `ConstantContactCustomFields`
+
+**Search**: `search` (auto-created by `@payloadcms/plugin-search`, indexes storefronts + products + pages)
+
+### Plugins Active
+
+- `@payloadcms/plugin-search` — indexes storefronts, products, pages with denormalized fields
+- `@payloadcms/plugin-import-export` — bulk import/export
+- `@payloadcms/storage-s3` — Cloudflare R2 for Media collection
+- `pianosPageSeedPlugin` — seeds PianosPage initial data
+- `payloadCloudPlugin` — **currently disabled** (S3 plugin conflict)
+
+### Block Categories (`src/blocks/`)
+
+Blocks are registered globally in `payload.config.ts` and referenced by slug in collections.
+
+| Category | Prefix | Examples |
+|----------|--------|---------|
+| `content/` | `content-*` | Text, Image, Video, Code, Banner |
+| `layout/` | `layout-*` | Columns, Spacer, Divider, HeroCarousel, VideoBackground, BrandIntro, BottomLeftPopup, SideNavigation, CalendlyEmbed, BookingModal |
+| `marketing/` | `marketing-*` | Hero, GrandHero, CallToAction, Testimonials, InstrumentalToLife, TechnicalShowcase, FindADealer, ThreeDViewer, InstagramCarousel, ArtistCarousel, HomePageHero, Showroom, PianoCollection, PianoGallery, NewsCarousel, ContactForm, StorefrontLocations, FeaturedModels |
+| `events/` | `events-*` | UniversityHero, EventOverview |
+| `product/` | `product-*` | ProductShowcase, ProductHero, ProductDescription, ImageGallery, FeaturesList, Specifications, TechnicalSpecifications, CollectionShowcase, FloatingAddToCart, ProductFeatureSlides |
+| Legacy (root) | — | TextContent, Hello, Archive, Content, MediaBlock, Cta (keep for backward compat) |
+
+---
+
+## Performance Patterns
+
+### 1. globalThis Payload Singleton (HMR-safe)
+
+Module-level caches are destroyed on every hot reload in dev, forcing a new Atlas TLS handshake (~2–4s). Anchor the instance to `globalThis` to survive HMR.
+
+**Canonical pattern** (`src/lib/payload/queries.ts`):
+
+```typescript
+import 'server-only'
+import { getPayload } from 'payload'
+import type { Payload } from 'payload'
+import config from '@/payload.config'
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __payloadInstance: Promise<Payload> | undefined
+}
+
+async function getPayloadClient(): Promise<Payload> {
+  if (process.env.NODE_ENV === 'development') {
+    if (!globalThis.__payloadInstance) {
+      globalThis.__payloadInstance = getPayload({ config })
+    }
+    return globalThis.__payloadInstance
+  }
+  return getPayload({ config }) // Production: internal module cache is sufficient
+}
+```
+
+**Use this function** for all server-side queries in `src/lib/payload/queries.ts`. Do not call `getPayload({ config })` directly in page files.
+
+### 2. `unstable_cache` for Server Component Queries
+
+Wrap Payload queries in `unstable_cache` to cache across requests and enable tag-based on-demand revalidation.
+
+**Per-call pattern** (when cache key depends on arguments):
+
+```typescript
+// src/components/layout/header-dynamic.tsx
+function getDealerLocationBySlug(slug: string) {
+  return unstable_cache(
+    async () => {
+      const payload = await getPayload({ config })
+      const result = await payload.find({
+        collection: 'storefronts',
+        where: { slug: { equals: slug }, isActive: { equals: true } },
+        limit: 1,
+        select: { locationName: true, slug: true },  // Always select only needed fields
+      })
+      return result.docs[0] ?? null
+    },
+    [`header-storefront-${slug}`],                         // Unique key array
+    { tags: [`storefront-${slug}`, 'storefronts'], revalidate: 3600 }
+  )()
+}
+```
+
+**Module-level pattern** (for queries with no dynamic args):
+
+```typescript
+const getHomePageNewsItems = unstable_cache(
+  async () => { /* ... */ },
+  ['header-news-items'],
+  { tags: ['home-page'], revalidate: 300 }
+)
+```
+
+### 3. Cache Tag Naming Convention
+
+| Data | Tag(s) |
+|------|--------|
+| Homepage | `home-page` |
+| Piano catalog page | `pianos-page` |
+| All storefronts | `storefronts` |
+| One storefront | `storefront-{slug}` |
+| All products | `products` |
+| One product | `product-{slug}` |
+| Blog posts | `posts` |
+| Artists | `artists` |
+| Dealers | `dealers` |
+
+Tag keys must be **globally unique** — collisions cause unrelated caches to invalidate together.
+
+### 4. Depth Rules
+
+| Situation | `depth` | Reason |
+|-----------|---------|--------|
+| `generateStaticParams` / slug lists | `0` | Only IDs needed, no population |
+| List queries (cards, grids) | `1` | Populate one level (e.g. featured image) |
+| Detail pages with nested media | `2` | Max for most cases |
+| Storefronts (complex nested data) | `3` | Explicitly justified in `queries.ts` |
+
+**Never use `depth: 3` or higher without justification** — each level multiplies MongoDB lookups recursively.
+
+### 5. Always `select` on Bulk Queries
+
+```typescript
+// ❌ Fetches entire document including all block content
+await payload.find({ collection: 'dealers', limit: 1000 })
+
+// ✅ Only fetch fields you use
+await payload.find({
+  collection: 'dealers',
+  where: { isActive: { equals: true } },
+  select: { dealerName: true, slug: true, coordinates: true, contactInfo: true },
+  depth: 0,
+  limit: 1000,
+})
+```
+
+### 6. ISR Pattern for Dynamic Pages
+
+For pages with `generateStaticParams`, use `revalidate` + on-demand `revalidateTag` (via `/api/revalidate`):
+
+```typescript
+// src/app/(frontend)/products/[slug]/page.tsx
+export const revalidate = 3600  // Fallback: rebuild every hour
+
+export async function generateStaticParams() {
+  const payload = await getPayloadClient()
+  const result = await payload.find({
+    collection: 'products',
+    select: { slug: true },  // Only slug needed
+    depth: 0,
+    limit: 1000,
+  })
+  return result.docs.map(d => ({ slug: d.slug }))
+}
+```
+
+### 7. CRITICAL: `force-dynamic` Cancels `revalidate`
+
+```typescript
+// ❌ WRONG — force-dynamic disables all caching, revalidate is ignored
+export const dynamic = 'force-dynamic'
+export const revalidate = 3600  // This does nothing
+
+// ✅ CORRECT — use one or the other
+export const revalidate = 3600  // ISR (preferred for most pages)
+// OR
+export const dynamic = 'force-dynamic'  // Only for truly real-time pages (e.g. /admin)
+```
+
+### 8. Import Map
+
+The admin import map (`autoGenerate: false` in `payload.config.ts`) must be regenerated manually after adding or moving admin components:
 
 ```bash
-# Validate TypeScript
-bun run lint
-
-# Build with type checking
-bun run build
+bun run payload generate:importmap
 ```
+
+---
 
 ## TypeScript Best Practices
 
-### CRITICAL: Null Safety Rules
+### Strict Settings
 
-Always check for null/undefined when working with browser APIs or optional properties:
-
-**❌ WRONG - TypeScript will error:**
-```typescript
-// 'window.visualViewport' is possibly 'null'
-const height = window.visualViewport.height
-
-// 'user.profile' is possibly 'undefined'
-const name = result.user.profile.name
+```json
+{
+  "strict": true,
+  "exactOptionalPropertyTypes": true,
+  "noUncheckedIndexedAccess": true
+}
 ```
 
-**✅ CORRECT - Proper null checks:**
+- Array access always returns `T | undefined`
+- All nullable types must be explicitly handled
+- No implicit `any`
+
+### Null Safety Patterns
+
 ```typescript
-// Store in variable after null check
+// Browser APIs
 if (!window.visualViewport) return
-const visualViewport = window.visualViewport
-const height = visualViewport.height
-
-// Optional chaining
-const name = result.user?.profile?.name
-
-// Nullish coalescing with default
-const name = result.user?.profile?.name ?? 'Unknown'
-
-// Type guard with early return
-if (!result.user?.profile) return
-const name = result.user.profile.name
-```
-
-### Common Null Safety Patterns
-
-**1. Browser APIs (always check for null):**
-```typescript
-// window.visualViewport can be null
-if (typeof window === 'undefined' || !window.visualViewport) return
 const viewport = window.visualViewport
+const height = viewport.height
 
-// localStorage can be null in some browsers
-const data = typeof window !== 'undefined' && window.localStorage
-  ? localStorage.getItem('key')
-  : null
-
-// IntersectionObserver can be null
-if (!window.IntersectionObserver) return
-const observer = new IntersectionObserver(callback)
-```
-
-**2. Relationship Fields (Media, Products, etc.):**
-```typescript
-// Media can be string (ID) or object
+// Relationship fields (Media | string | null)
 function isMediaObject(media: Media | string | null): media is Media {
   return typeof media === 'object' && media !== null && 'url' in media
 }
 
-if (isMediaObject(result.image)) {
-  return <Image src={result.image.url} alt={result.image.alt || ''} />
-}
-
-// Product relationships
-const productName = typeof result.product === 'string'
-  ? result.product
-  : result.product?.name ?? 'Unknown'
-```
-
-**3. Optional DOM References:**
-```typescript
-// useRef can be null
-const inputRef = useRef<HTMLInputElement>(null)
-
-// Always check before using
-inputRef.current?.focus()
-inputRef.current?.scrollIntoView()
-
-// Or with guard
-if (inputRef.current) {
-  inputRef.current.value = ''
-}
-```
-
-**4. Array Operations:**
-```typescript
-// Array access can be undefined
-const firstItem = items[0] // Type: Item | undefined
-
-// Safe access
+// Array access
 const name = items[0]?.name ?? 'Default'
 
-// With type guard
-if (items.length > 0) {
-  const name = items[0].name // Now safe
-}
+// Optional refs
+inputRef.current?.focus()
 ```
 
-**5. Event Handlers:**
-```typescript
-// Event target can be null
-const handleClick = (event: MouseEvent) => {
-  const target = event.target as HTMLElement | null
-  if (!target) return
-
-  // Now safe to use target
-  target.classList.add('active')
-}
-```
-
-### TypeScript Configuration
-
-This project uses **strict TypeScript** settings:
-
-```json
-{
-  "compilerOptions": {
-    "strict": true,                      // Enable all strict checks
-    "exactOptionalPropertyTypes": true,  // Distinguish between undefined and missing
-    "noUncheckedIndexedAccess": true     // Array/object access returns T | undefined
-  }
-}
-```
-
-**What this means:**
-- All nullable types must be explicitly handled
-- Array access always returns `T | undefined`
-- Optional properties must use `?:` not `| undefined`
-- No implicit `any` types allowed
-
-### Quick Reference: Null Safety Checklist
-
-Before writing code that accesses properties, ask:
-
-1. ✅ **Is this a browser API?** → Add null check
-2. ✅ **Is this an array access?** → Check length or use optional chaining
-3. ✅ **Is this a relationship field?** → Type guard or optional chaining
-4. ✅ **Is this a ref?** → Use `.current?.` or null check
-5. ✅ **Is this optional in the type?** → Use `?.` or provide default
-
-### Error Prevention Workflow
-
-When you see a TypeScript error:
-
-1. **Read the error carefully** - TypeScript tells you exactly what's wrong
-2. **Identify the nullable type** - Look at the variable's type
-3. **Add appropriate check** - Use patterns above
-4. **Verify with build** - Run `bun run build` to confirm
-
-**Always run `bun run build` before considering code complete.**
-
-## Project Structure
-
-```
-src/
-├── app/
-│   ├── (frontend)/              # Public website routes
-│   │   ├── page.tsx             # Homepage (/)
-│   │   ├── pianos/              # Piano catalog (/pianos)
-│   │   │   └── [category]/      # Category pages (digital, grand, etc.)
-│   │   ├── products/            # Product pages (/products)
-│   │   │   └── [slug]/          # Individual product
-│   │   ├── [slug]/              # Dynamic dealer pages (/st-louis)
-│   │   ├── artists/             # Artist directory
-│   │   ├── blog/                # Blog posts
-│   │   ├── find-a-dealer/       # Dealer locator with map
-│   │   └── api/                 # Frontend API routes
-│   │       └── revalidate/      # On-demand ISR revalidation
-│   └── (payload)/               # CMS & API routes
-│       ├── admin/               # Payload admin UI (/admin)
-│       └── api/                 # Payload REST/GraphQL APIs
-├── collections/                 # Payload CMS collections (14 total)
-├── blocks/                      # Content block definitions
-├── components/                  # React components (organized by domain)
-│   ├── ui/                      # Shared reusable UI (button, card, dialog, etc.)
-│   │   ├── media/               # Media optimization components
-│   │   ├── animations/          # Animation components
-│   │   └── 3d-viewer/           # 3D piano viewer
-│   ├── layout/                  # Header, footer, navigation
-│   ├── forms/                   # Contact forms (React Hook Form + Zod)
-│   ├── piano/                   # Piano-specific components
-│   ├── blocks/                  # Block renderers
-│   ├── namm/                    # NAMM event components
-│   └── admin/                   # Custom admin components
-├── lib/                         # Utilities and integrations
-│   ├── payload/                 # Payload CMS utilities
-│   │   ├── client.ts            # Payload instance
-│   │   ├── queries.ts           # Direct database queries
-│   │   └── server.ts            # Server-side utilities
-│   ├── data/                    # Static data and seed utilities
-│   │   ├── categories.ts        # Piano category definitions
-│   │   ├── fallback-data.ts     # Fallback data for SSR
-│   │   └── default-productlines.ts
-│   ├── shopify/                 # Shopify integration (well-organized)
-│   ├── constantcontact/         # Constant Contact CRM integration
-│   ├── media/                   # R2 image optimization
-│   ├── seo/                     # SEO utilities and schemas
-│   ├── actions/                 # Server Actions
-│   └── utils.ts                 # General utilities (cn, formatPrice, etc.)
-├── hooks/                       # Custom React hooks (consolidated)
-├── types/                       # TypeScript type definitions
-│   ├── common/                  # Shared utility types
-│   ├── domains/                 # Business domain types (piano, dealer, etc.)
-│   └── integrations/            # Third-party integration types
-├── plugins/                     # Payload plugins
-└── payload.config.ts            # Main Payload configuration
-```
-
-## Code Organization Principles
-
-### 1. Component Organization
-
-**CRITICAL: Never duplicate UI components in page-specific folders**
+### Path Aliases
 
 ```typescript
-// ❌ WRONG: Duplicating shared components in page folders
-src/app/(frontend)/[slug]/some-page/_components/ui/button.tsx  // DON'T DO THIS
-src/app/(frontend)/[slug]/some-page/_components/ui/card.tsx    // DON'T DO THIS
-
-// ✅ CORRECT: Use shared components from @/components/ui
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-```
-
-**Component hierarchy:**
-1. `@/components/ui/` - Shared, reusable UI primitives (Button, Card, Dialog, Input)
-2. `@/components/{domain}/` - Domain-specific components (piano/, forms/, layout/)
-3. `page/_components/` - ONLY for truly page-specific, non-reusable components
-
-### 2. Import Patterns
-
-**Always use path aliases:**
-
-```typescript
-// ✅ Preferred imports
-import { Button, Card, Dialog } from '@/components/ui'
-import { useScrollAnimation, useAudioPlayer } from '@/hooks'
-import { getProducts, transformProduct } from '@/lib/shopify'
+import type { Product, Media } from '@/payload-types'   // Generated types
 import { cn, formatPrice } from '@/lib/utils'
-import type { Product, Media } from '@/payload-types'
-
-// ❌ Avoid relative imports across directories
-import Button from '../../../components/ui/button'
+import { imageField } from '@/lib/payload/fields'
+import { anyone, authenticated, adminOnly } from '@/lib/payload/access'
 ```
 
-### 3. Barrel Exports
+---
 
-**Every directory should have an index.ts barrel export:**
+## Security Patterns
+
+### 1. Local API Access Control
 
 ```typescript
-// src/components/ui/index.ts
-export { Button } from './button'
-export { Card, CardHeader, CardContent } from './card'
-export { Dialog, DialogContent, DialogTitle } from './dialog'
-// ... etc
+// ❌ SECURITY BUG — user param is ignored, runs as admin
+await payload.find({ collection: 'products', user: someUser })
+
+// ✅ Enforces user permissions
+await payload.find({ collection: 'products', user: someUser, overrideAccess: false })
+
+// ✅ Intentional admin bypass (no user)
+await payload.find({ collection: 'products' })
 ```
 
-**Benefits:**
-- Cleaner imports: `import { Button, Card } from '@/components/ui'`
-- Easier refactoring
-- Clear public API for each module
-
-### 4. Integration Organization
-
-**Each integration should be self-contained in its own folder:**
-
-```
-lib/shopify/           # ✅ Good: Well-organized integration
-├── index.ts           # Barrel export with documentation
-├── client.ts          # API client
-├── types.ts           # Type definitions
-├── queries.ts         # GraphQL queries
-├── products.ts        # Product operations
-├── cart.ts            # Cart operations
-└── customers.ts       # Customer operations
-```
-
-**Rules for integrations:**
-- Single folder per integration (`lib/shopify/`, `lib/constantcontact/`)
-- Single API route prefix (`/api/constant-contact/`, not multiple)
-- Types co-located with implementation
-- Comprehensive barrel export
-
-### 5. Hooks Organization
-
-**All hooks live in `src/hooks/`:**
-
-```typescript
-// ✅ Correct: Import from centralized hooks
-import { useScrollAnimation, useAudioPlayer } from '@/hooks'
-
-// ❌ Wrong: Page-specific hooks folder
-import { useAnimation } from '../_components/hooks/useAnimation'
-```
-
-**Exception:** Hooks with tightly-coupled page dependencies may remain page-local, but this should be rare.
-
-## Form & Modal System
-
-KAWAI includes a reusable form and modal system that eliminates code duplication and provides consistent user experiences across all forms.
-
-### Modal Component
-
-Generic modal wrapper around Radix Dialog with auto-show and variants.
-
-**Usage:**
-```tsx
-import { Modal } from '@/components/ui/modal'
-import { useModal } from '@/hooks'
-
-const { isOpen, close } = useModal({
-  autoShow: { delay: 2000 }
-})
-
-<Modal isOpen={isOpen} onClose={close} size="lg">
-  <h2>Modal Content</h2>
-</Modal>
-```
-
-**Variants:**
-- `size`: sm | md | lg | xl | full
-- `layout`: centered | split (for image + content)
-
-### FormField Component
-
-Reusable form input with label, icon, error, and help text.
-
-**Usage:**
-```tsx
-import { FormField } from '@/components/ui/form-field'
-import { UserIcon } from '@heroicons/react/24/outline'
-
-<FormField
-  name="firstName"
-  label="First Name"
-  placeholder="John"
-  required
-  icon={UserIcon}
-  register={register}
-  error={errors.firstName}
-/>
-```
-
-### FormAlert Component
-
-Consistent feedback for all states.
-
-**Usage:**
-```tsx
-import { FormAlert } from '@/components/ui/form-alert'
-
-<FormAlert
-  variant="success"
-  title="Success!"
-  message="Form submitted successfully."
-/>
-```
-
-**Variants:** success | error | warning | info
-
-### useModal Hook
-
-State management for modals with auto-show and localStorage persistence.
-
-**Usage:**
-```tsx
-import { useModal } from '@/hooks'
-
-const { isOpen, open, close, toggle } = useModal({
-  autoShow: {
-    delay: 1000,
-    storageKey: 'modal-shown' // Optional: don't show again
-  },
-  onOpen: () => console.log('Opened'),
-  onClose: () => console.log('Closed')
-})
-```
-
-### Composing Custom Forms
-
-SimpleCustomerSignup sub-components can be used independently:
-
-```tsx
-import { Modal } from '@/components/ui/modal'
-import { SimpleCustomerSignupForm } from '@/components/forms/SimpleCustomerSignupForm'
-
-<Modal isOpen={isOpen} onClose={close}>
-  <SimpleCustomerSignupForm
-    storefrontSlug="custom-location"
-    onSuccess={() => setIsOpen(false)}
-  />
-</Modal>
-```
-
-### Form Development Guidelines
-
-**DO:**
-- ✅ Use `<FormField>` for all form inputs (eliminates duplication)
-- ✅ Use `<FormAlert>` for all feedback messages
-- ✅ Use `<Modal>` for all modal dialogs
-- ✅ Use `useModal` for modal state management
-- ✅ Compose forms from sub-components
-
-**DON'T:**
-- ❌ Create custom input components (use FormField)
-- ❌ Duplicate modal logic (use Modal + useModal)
-- ❌ Hardcode feedback styling (use FormAlert variants)
-- ❌ Create monolithic form components (extract sub-components)
-
-### 6. API Route Naming
-
-**Use kebab-case for all API routes:**
-
-```
-/api/constant-contact/    ✅ Correct
-/api/constantcontact/     ❌ Wrong (camelCase)
-/api/ConstantContact/     ❌ Wrong (PascalCase)
-```
-
-## CRITICAL SECURITY PATTERNS
-
-### 1. Local API Access Control (MOST IMPORTANT)
-
-```typescript
-// ❌ SECURITY BUG: Access control bypassed
-await payload.find({
-  collection: 'products',
-  user: someUser, // Ignored! Operation runs with ADMIN privileges
-})
-
-// ✅ SECURE: Enforces user permissions
-await payload.find({
-  collection: 'products',
-  user: someUser,
-  overrideAccess: false, // REQUIRED when passing user
-})
-
-// ✅ Administrative operation (intentional bypass)
-await payload.find({
-  collection: 'products',
-  // No user, overrideAccess defaults to true - use for admin tasks
-})
-```
-
-**Rule**: When passing `user` to Local API, ALWAYS set `overrideAccess: false`
+**Rule**: Always set `overrideAccess: false` when passing `user` to Local API.
 
 ### 2. Transaction Safety in Hooks
 
 ```typescript
-// ❌ DATA CORRUPTION RISK: Separate transaction
-hooks: {
-  afterChange: [
-    async ({ doc, req }) => {
-      await req.payload.update({
-        collection: 'productlines',
-        id: doc.productline,
-        data: { lastUpdated: new Date() },
-        // Missing req - runs in separate transaction!
-      })
-    },
-  ],
+// ❌ Missing req — runs in a separate transaction
+async ({ doc, req }) => {
+  await req.payload.update({ collection: 'productlines', id: doc.productline, data: { lastUpdated: new Date() } })
 }
 
-// ✅ ATOMIC: Same transaction
-hooks: {
-  afterChange: [
-    async ({ doc, req }) => {
-      await req.payload.update({
-        collection: 'productlines',
-        id: doc.productline,
-        data: { lastUpdated: new Date() },
-        req, // Maintains atomicity
-      })
-    },
-  ],
+// ✅ Pass req to maintain atomicity
+async ({ doc, req }) => {
+  await req.payload.update({ collection: 'productlines', id: doc.productline, data: { lastUpdated: new Date() }, req })
 }
 ```
-
-**Rule**: ALWAYS pass `req` to nested operations in hooks
 
 ### 3. Prevent Infinite Hook Loops
 
 ```typescript
-// ❌ INFINITE LOOP
-hooks: {
-  afterChange: [
-    async ({ doc, req }) => {
-      await req.payload.update({
-        collection: 'products',
-        id: doc.id,
-        data: { viewCount: doc.viewCount + 1 },
-        req,
-      }) // Triggers afterChange again!
-    },
-  ],
-}
-
-// ✅ SAFE: Use context flag
-hooks: {
-  afterChange: [
-    async ({ doc, req, context }) => {
-      if (context.skipRevalidation) return doc
-
-      await req.payload.update({
-        collection: 'products',
-        id: doc.id,
-        data: { viewCount: doc.viewCount + 1 },
-        context: { skipRevalidation: true },
-        req,
-      })
-    },
-  ],
+// ✅ Use context flag to guard self-triggering updates
+async ({ doc, req, context }) => {
+  if (context.skipHook) return doc
+  await req.payload.update({
+    collection: 'products', id: doc.id,
+    data: { updatedAt: new Date() },
+    context: { skipHook: true }, req,
+  })
 }
 ```
 
-## Access Control Patterns
+### 4. Access Control Functions
 
-### Reusable Access Functions
-
-Create these in `src/lib/payload/access/` for consistency:
+Located in `src/lib/payload/access/index.ts`:
 
 ```typescript
-import type { Access } from 'payload'
-
-// Anyone (public)
 export const anyone: Access = () => true
-
-// Authenticated only
 export const authenticated: Access = ({ req: { user } }) => Boolean(user)
-
-// Admin only
-export const adminOnly: Access = ({ req: { user } }) => {
-  return user?.role === 'admin'
-}
-
-// Authenticated or published content
+export const adminOnly: Access = ({ req: { user } }) => user?.role === 'admin'
 export const authenticatedOrPublished: Access = ({ req: { user } }) => {
   if (user) return true
-  return { status: { equals: 'published' } }
+  return { _status: { equals: 'published' } }  // Note: _status (with underscore) for versioned collections
 }
 ```
 
-### Current Collection Access Patterns
+### Collection Access Matrix
 
 | Collection | Create | Read | Update | Delete |
 |------------|--------|------|--------|--------|
-| **Users** | admin | authenticated | admin | admin |
-| **Media** | authenticated | anyone | authenticated | authenticated |
-| **Products** | authenticated | anyone | authenticated | admin |
-| **Productlines** | authenticated | anyone | authenticated | admin |
-| **Storefronts** | authenticated | anyone | authenticated | admin |
-| **Posts** | authenticated | authenticatedOrPublished | authenticated | admin |
-| **Artists** | authenticated | anyone | authenticated | admin |
-| **Dealers** | authenticated | anyone | authenticated | admin |
+| Users | adminOnly | authenticated | adminOnly | adminOnly |
+| Media | authenticated | anyone | authenticated | authenticated |
+| Products | authenticated | anyone | authenticated | adminOnly |
+| Storefronts | authenticated | anyone | authenticated | adminOnly |
+| Posts | authenticated | authenticatedOrPublished | authenticated | adminOnly |
+| Artists | authenticated | anyone | authenticated | adminOnly |
+| Dealers | authenticated | anyone | authenticated | adminOnly |
 
-### Field-Level Access
+---
+
+## Collection Patterns
+
+### Media Field Factories (`src/lib/payload/fields/`)
+
+**Never manually create `type: 'upload'` fields.** Always use these factories — they wire in the custom MediaSelectorButton admin component:
 
 ```typescript
-// Field access ONLY returns boolean (no query constraints)
-{
-  name: 'internalNotes',
-  type: 'textarea',
-  access: {
-    read: ({ req: { user } }) => user?.role === 'admin',
-    update: ({ req: { user } }) => user?.role === 'admin',
-  },
-}
+import { imageField, videoField, mediaField, mediaArrayField } from '@/lib/payload/fields'
+
+imageField('featuredImage', { required: true, admin: { description: 'Hero image (1920x1080px)' } })
+videoField('demoVideo')
+mediaField('attachment')
+mediaArrayField('gallery', { maxRows: 12 })
 ```
 
-## Collections
-
-**IMPORTANT: Always use media field factories from `@/lib/payload/fields` for upload fields:**
-- `imageField()` - Image uploads with integrated media library selector
-- `videoField()` - Video uploads
-- `mediaField()` - Any media type
-- `mediaArrayField()` - Image galleries
-
-Never manually create `type: 'upload'` fields - use the factories to ensure consistent media manager integration.
-
-### Current Collections (14 total)
-
-**System**:
-1. **Users** - Admin users with role-based access
-2. **Media** - Cloudflare R2 storage with image optimization
-
-**Commerce**:
-3. **Products** - Piano models & all products (tabbed interface)
-4. **Productlines** - Piano series/lines (CA, GX, SK, etc.)
-
-**Content**:
-5. **HomePage** - Global singleton for homepage
-6. **PianosPage** - Global singleton for piano catalog
-7. **Storefronts** - Dynamic dealer location pages
-8. **Posts** - Blog articles with live preview
-9. **Artists** - Endorsed artists & performers
-10. **ConcertArtistPage** - Artist landing pages
-
-**Business**:
-11. **Dealers** - Dealer directory for locator map
-
-**Integrations**:
-12. **ConstantContactSettings** - CRM config (legacy)
-13. **ConstantContactCustomFields** - CRM field mapping
-
-**Campaigns**:
-14. **KPM_Christmas2k25** - Campaign-specific leads
-
-### Collection Pattern
+### Collection Template
 
 ```typescript
 import type { CollectionConfig } from 'payload'
 import { imageField } from '@/lib/payload/fields'
+import { anyone, authenticated, adminOnly } from '@/lib/payload/access'
 
-export const Products: CollectionConfig = {
-  slug: 'products',
-  admin: {
-    useAsTitle: 'name',
-    group: 'Commerce',
-    defaultColumns: ['name', 'type', 'category', 'status'],
-  },
-  access: {
-    create: authenticated,
-    read: anyone,
-    update: authenticated,
-    delete: adminOnly,
-  },
-  hooks: {
-    afterChange: [revalidateProductPage],
-  },
+export const MyCollection: CollectionConfig = {
+  slug: 'my-collection',
+  admin: { useAsTitle: 'name', group: 'Content', defaultColumns: ['name', 'status', 'updatedAt'] },
+  access: { create: authenticated, read: anyone, update: authenticated, delete: adminOnly },
+  hooks: { afterChange: [revalidateMyPage] },
   fields: [
-    {
-      type: 'tabs',
-      tabs: [
-        {
-          label: 'Product Details',
-          fields: [
-            { name: 'type', type: 'select', options: ['piano', 'accessory', 'software'] },
-            { name: 'name', type: 'text', required: true },
-            { name: 'slug', type: 'text', unique: true, index: true },
-            { name: 'category', type: 'select', options: ['digital', 'grand', 'hybrid', 'upright'] },
-            { name: 'status', type: 'select', options: ['active', 'draft', 'discontinued'] },
-            imageField('featuredImage', {  // ✅ Use media field factory
-              required: true,
-              admin: { description: 'Product image' }
-            }),
-            {
-              name: 'productline',
-              type: 'relationship',
-              relationTo: 'productlines',
-              admin: { condition: (data) => data.type === 'piano' },
-            },
-          ],
-        },
-        {
-          label: 'Page Content',
-          fields: [
-            {
-              name: 'pageContent',
-              type: 'blocks',
-              blocks: [ProductShowcase, Hero, ImageGallery, Specifications],
-            },
-          ],
-        },
-      ],
-    },
+    { name: 'name', type: 'text', required: true },
+    { name: 'slug', type: 'text', unique: true, index: true },  // Always index slug
+    { name: 'status', type: 'select', options: ['active', 'draft'], index: true },
+    imageField('featuredImage', { required: true }),
   ],
-}
-```
-
-## Blocks System
-
-### Block Organization
-
-Blocks are organized by purpose into four categories:
-
-```
-src/blocks/
-├── content/           # Editorial content (Text, Image, Video, Code, Banner)
-├── layout/            # Structural (Columns, Spacer, Divider)
-├── marketing/         # Conversion-focused (Hero, CallToAction, Testimonials)
-└── product/           # Product-specific (ProductShowcase, ProductHero, etc.)
-```
-
-**Key principles:**
-1. Blocks are defined once in `payload.config.ts` under the global `blocks` array
-2. Collections reference blocks by slug using `blockReferences`
-3. All blocks use category prefixes: `content-*`, `layout-*`, `marketing-*`, `product-*`
-4. Blocks include emoji labels for visual identification in the admin UI
-
-### Global Block Registration
-
-```typescript
-// payload.config.ts
-import * as contentBlocks from '@/blocks/content'
-import * as layoutBlocks from '@/blocks/layout'
-import * as marketingBlocks from '@/blocks/marketing'
-import * as productBlocks from '@/blocks/product'
-
-export default buildConfig({
-  blocks: [
-    contentBlocks.Text,
-    contentBlocks.Image,
-    // ... all blocks registered once
-  ],
-  collections: [...]
-})
-```
-
-### Using Blocks in Collections
-
-**Method 1: Block field with references**
-```typescript
-{
-  name: 'pageBuilder',
-  type: 'blocks',
-  blockReferences: ['marketing-hero', 'marketing-cta'],  // Reference by slug
-  blocks: []  // Required to be empty for compatibility
-}
-```
-
-**Method 2: Lexical rich text with embedded blocks**
-```typescript
-{
-  name: 'content',
-  type: 'richText',
-  editor: lexicalEditor({
-    features: [
-      BlocksFeature({
-        blocks: ['content-text', 'content-image', 'content-code']
-      })
-    ]
-  })
 }
 ```
 
 ### Adding New Blocks
 
-1. **Choose category** - Determine if it's content, layout, marketing, or product
-2. **Create file** - Add to `src/blocks/{category}/YourBlock.ts`
-3. **Use naming conventions**:
-   - Slug: `{category}-{name}` (e.g., `content-quote`)
-   - Interface: `{Category}{Name}Block` (e.g., `ContentQuoteBlock`)
-   - Label: Use emoji for visual ID (e.g., `💬 Quote`)
-4. **Update barrel export** - Add to `src/blocks/{category}/index.ts`
-5. **Register globally** - Import and add to `blocks` array in `payload.config.ts`
-6. **Document** - Add to `docs/BLOCKS.md`
+1. Create `src/blocks/{category}/YourBlock.ts`
+2. Use slug `{category}-{name}`, interfaceName `{Category}{Name}Block`
+3. Update barrel export `src/blocks/{category}/index.ts`
+4. Import and add to `blocks` array in `src/payload.config.ts`
+5. Reference in collections via `blockReferences: ['category-name']`
 
-**Example block with media field:**
-```typescript
-import type { Block } from 'payload'
-import { imageField } from '@/lib/payload/fields'
+---
 
-export const HeroBlock: Block = {
-  slug: 'marketing-hero',
-  interfaceName: 'MarketingHeroBlock',
-  fields: [
-    { name: 'heading', type: 'text', required: true },
-    imageField('backgroundImage', {  // ✅ Use field factory
-      required: true,
-      admin: { description: 'Hero background (1920x1080px)' }
-    }),
-  ],
-}
-```
-
-### Block Best Practices
-
-**DO:**
-- ✅ Add `imageAltText` to describe block purpose
-- ✅ Include `admin.description` on all fields
-- ✅ Use category prefixes in slugs
-- ✅ Use `maxDepth: 0` on relationships to prevent deep fetching
-- ✅ Keep blocks focused (single responsibility)
-- ✅ **Use media field factories** (`imageField()`, `videoField()`, `mediaField()`) for all upload fields
-
-**DON'T:**
-- ❌ Import blocks directly into collections (use `blockReferences`)
-- ❌ Create blocks with too many options (split into multiple blocks)
-- ❌ Forget to register in payload.config.ts
-- ❌ Use generic slugs without category prefix
-- ❌ **Manually create upload fields** - always use `imageField()` from `@/lib/payload/fields`
-
-### Posts Collection Block Usage
-
-The Posts collection uses blocks in three places:
-
-1. **Rich text content** - Inline blocks for article body
-   - Available: Text, Image, Video, Code, Banner
-   - These appear within the flow of the article
-
-2. **Header blocks** - Before article content
-   - Available: Hero, Banner
-   - For promotional headers or important notices
-
-3. **Footer blocks** - After article content
-   - Available: CallToAction, Testimonials, Columns
-   - For conversion elements and related content
-
-See `docs/BLOCKS.md` for complete block reference.
-
-## Hooks
-
-### Hook Patterns Used in This Project
-
-#### On-Demand Revalidation Hook
+## Hooks: On-Demand Revalidation
 
 ```typescript
-// Pattern: Trigger Next.js ISR revalidation on content change
-export const revalidateStorefront: CollectionAfterChangeHook = async ({
-  doc,
-  req,
-  context,
-}) => {
-  // Prevent infinite loops
+import type { CollectionAfterChangeHook } from 'payload'
+
+export const revalidateStorefront: CollectionAfterChangeHook = async ({ doc, context }) => {
   if (context.skipRevalidation) return doc
-
-  // Only revalidate active storefronts
   if (!doc.isActive) return doc
 
   const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
-  // Fire-and-forget pattern (don't block CMS save)
+  // Fire-and-forget — never await, never block the CMS save
   fetch(`${baseURL}/api/revalidate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       secret: process.env.REVALIDATION_SECRET,
-      slug: doc.slug,
-      type: 'storefront',
+      tag: `storefront-${doc.slug}`,
     }),
-  })
-    .then((res) => res.ok && console.log(`Revalidated /${doc.slug}`))
-    .catch((err) => console.error('Revalidation error:', err))
+  }).catch((err) => console.error('Revalidation error:', err))
 
   return doc
 }
 ```
 
-#### Multi-Path Revalidation
+Hook rules:
+1. Always pass `req` to nested Payload operations
+2. Use context flags to prevent infinite loops
+3. Fire-and-forget for revalidation (never await)
+4. Never throw — log and return doc
 
-```typescript
-// Pattern: Revalidate multiple pages when content changes
-export const revalidateProduct: CollectionAfterChangeHook = async ({ doc }) => {
-  const pathsToRevalidate = [
-    `/products/${doc.slug}`,      // Product detail
-    `/pianos/${doc.category}`,    // Category page
-    '/',                          // Homepage (if featured)
-  ]
+---
 
-  for (const path of pathsToRevalidate) {
-    fetch(`${baseURL}/api/revalidate`, {
-      method: 'POST',
-      body: JSON.stringify({ secret, path }),
-    }).catch((err) => console.error(`Failed to revalidate ${path}:`, err))
-  }
+## Component Organization
 
-  return doc
-}
+### Hierarchy
+
+1. `src/components/ui/` — Shared UI primitives (Button, Card, Dialog, FormField, FormAlert, Modal)
+2. `src/components/{domain}/` — Domain components (piano/, forms/, layout/, homepage/, namm/, etc.)
+3. `page/_components/` — Only for truly page-specific, non-reusable components
+
+**Never duplicate components into page-local folders.** Always import from `@/components/ui`.
+
+### Forms & Modals
+
+```tsx
+import { Modal } from '@/components/ui/modal'
+import { FormField } from '@/components/ui/form-field'
+import { FormAlert } from '@/components/ui/form-alert'
+import { useModal } from '@/hooks'
+
+const { isOpen, open, close } = useModal({ autoShow: { delay: 2000 } })
+
+<Modal isOpen={isOpen} onClose={close} size="lg">
+  <FormField name="email" label="Email" register={register} error={errors.email} />
+  <FormAlert variant="success" title="Sent!" message="We'll be in touch." />
+</Modal>
 ```
-
-### Hook Best Practices
-
-1. **Always pass `req`** to nested Payload operations
-2. **Use context flags** to prevent infinite loops
-3. **Fire-and-forget** for revalidation (don't await)
-4. **Log errors gracefully** - don't throw, don't block saves
-5. **Keep hooks focused** - one responsibility per hook
-
-## Components
 
 ### Server vs Client Components
 
-**All components are Server Components by default** (can use Local API directly):
-
-```tsx
-// Server Component (default) - src/app/(frontend)/pianos/page.tsx
-import { getPayload } from 'payload'
-import config from '@payload-config'
-
-export default async function PianosPage() {
-  const payload = await getPayload({ config })
-  const { docs: products } = await payload.find({
-    collection: 'products',
-    where: { type: { equals: 'piano' } },
-    depth: 2,
-  })
-
-  return <ProductGrid products={products} />
-}
-```
-
-**Client Components** need the `'use client'` directive:
-
-```tsx
-// Client Component - src/components/piano/PianoInteractive.tsx
-'use client'
-import { useState } from 'react'
-
-export function PianoKeys({ onPlay }: { onPlay: () => void }) {
-  const [activeKeys, setActiveKeys] = useState<number[]>([])
-
-  return (
-    <div onClick={() => onPlay()}>
-      {/* Interactive piano keys */}
-    </div>
-  )
-}
-```
-
-### Use Client Components ONLY For
-
-- User interactions (forms, buttons, clicks)
+All components are Server Components by default. Add `'use client'` only for:
+- `useState`, `useEffect`, `useRef`
 - Browser APIs (localStorage, geolocation)
-- State management (useState, useEffect)
-- Third-party widgets (Calendly, Google Maps, analytics)
+- Third-party widgets (Calendly, Google Maps)
+
+```tsx
+// ✅ Server Component — can call Payload directly
+import { getPayloadClient } from '@/lib/payload/queries'
+
+export default async function ProductsPage() {
+  const payload = await getPayloadClient()
+  const { docs } = await payload.find({
+    collection: 'products',
+    where: { status: { equals: 'active' } },
+    select: { name: true, slug: true, imageUrl: true },
+    depth: 1,
+    limit: 50,
+  })
+  return <ProductGrid products={docs} />
+}
+```
+
+---
 
 ## Media System (Cloudflare R2)
 
-### Configuration
+### Usage
 
 ```typescript
-// payload.config.ts
-s3Storage({
-  collections: {
-    'media': {
-      prefix: 'media',
-      disablePayloadAccessControl: true,  // Use direct R2 URLs
-      generateFileURL: ({ filename, prefix }) => {
-        return `${NEXT_PUBLIC_S3_PUBLIC_URL}/${prefix}/${filename}`
-      },
-    },
-  },
-  bucket: process.env.S3_BUCKET,
-  config: {
-    endpoint: process.env.S3_ENDPOINT,  // Cloudflare R2
-    region: 'auto',
-    credentials: {
-      accessKeyId: process.env.S3_ACCESS_KEY_ID,
-      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
-    },
-    forcePathStyle: true,  // Required for R2
-  },
-})
-```
-
-### Image Optimization
-
-```typescript
-// src/lib/media/r2-utils.ts
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
 
-// Usage in components
 const imageProps = getImagePropsWithFallback(
   cmsImage,                              // Media | string | null
   '/images/defaults/piano-fallback.jpg', // Fallback
-  'hero',                                // Preset
-  {
-    priority: true,
-    sizes: '(max-width: 768px) 100vw, 50vw',
-  }
+  'hero',                                // Preset: hero | gallery | thumbnail | card
+  { priority: true, sizes: '(max-width: 768px) 100vw, 50vw' }
 )
-
 return <Image {...imageProps} alt={piano.name} />
 ```
 
-### Responsive Presets
+### R2 Config Notes
 
-```typescript
-export const PIANO_RESPONSIVE_PRESETS = {
-  hero: [
-    { breakpoint: 320, width: 320, quality: 75, format: 'webp' },
-    { breakpoint: 768, width: 768, quality: 80, format: 'webp' },
-    { breakpoint: 1440, width: 1440, quality: 90, format: 'webp' },
-    { breakpoint: 1920, width: 1920, quality: 90, format: 'avif' },
-  ],
-  gallery: [
-    { breakpoint: 300, width: 300, quality: 80 },
-    { breakpoint: 600, width: 600, quality: 85 },
-    { breakpoint: 1200, width: 1200, quality: 90 },
-  ],
-  thumbnail: [150, 200, 250],
-  card: [280, 350, 420, 500],
-} as const
-```
+- `forcePathStyle: true` — required for Cloudflare R2
+- `disablePayloadAccessControl: true` — serves files directly from R2 CDN
+- `generateFileURL` constructs `${NEXT_PUBLIC_S3_PUBLIC_URL}/media/{filename}`
+
+---
 
 ## Integrations
 
-### Shopify Integration
+### Shopify (`src/lib/shopify/`)
 
-**Purpose**: Product catalog, navigation, customer management (CRM)
+**Purpose**: Product catalog sync, customer CRM, cart, navigation mega-menu.
 
-**Files**: `src/lib/shopify/`
-- `client.ts` - Storefront API (public)
-- `admin-client.ts` - Admin API (OAuth, server-side)
-- `customers.ts` - Customer upsert for CRM
-- `navigation.ts` - Mega menu data extraction
-
-```typescript
-// Server action - src/lib/actions/contact-form.ts
-'use server'
-
-import { upsertCustomer } from '@/lib/shopify/customers'
-
-export async function submitContactForm(formData: FormData) {
-  // Validate with Zod
-  // Upsert customer to Shopify
-  await upsertCustomer({
-    email: formData.get('email') as string,
-    firstName: formData.get('firstName') as string,
-    tags: ['inquiry', 'piano-interest'],
-  })
-}
-```
-
-### Google Maps Integration
-
-**Purpose**: Dealer locator map on `/find-a-dealer`
-
-```typescript
-// Uses @googlemaps/js-api-loader + @vis.gl/react-google-maps
-// API Key: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-// Displays dealers from Dealers collection with lat/lng coordinates
-```
+| File | Purpose |
+|------|---------|
+| `client.ts` | Storefront API (public) |
+| `admin-client.ts` | Admin API (server-side) |
+| `customers.ts` | Customer upsert (lead capture) |
+| `navigation.ts` | Mega menu extraction |
+| `sync-to-payload.ts` | Product sync to CMS |
 
 ### Analytics
 
-- **PostHog**: Product analytics (`posthog-js`)
-- **Google Analytics**: Pageviews, conversions (`NEXT_PUBLIC_GA_ID`)
-- **Meta Pixel**: Facebook ads tracking (`NEXT_PUBLIC_META_PIXEL_ID`)
+- **PostHog**: `posthog-js` — proxied via `/ingest/*` rewrites in `next.config.js`
+- **Google Analytics**: `NEXT_PUBLIC_GA_ID`
+- **Meta Pixel**: `NEXT_PUBLIC_META_PIXEL_ID` (isolated via `src/lib/integrations/facebook-pixel-isolation.ts`)
 
-## Common Gotchas
+### Google Maps
 
-1. **Local API Default**: Access control bypassed unless `overrideAccess: false`
-2. **Transaction Safety**: Missing `req` in nested operations breaks atomicity
-3. **Hook Loops**: Operations in hooks can trigger the same hooks
-4. **Field Access**: Cannot use query constraints, only boolean
-5. **Relationship Depth**: Default depth is 2, set to 0 for IDs only
-6. **Type Generation**: Types auto-generate on build, not during dev
-7. **MongoDB Transactions**: Require replica set configuration
-8. **R2 URLs**: Must use `forcePathStyle: true` for Cloudflare R2
-9. **Revalidation**: Don't await fetch - use fire-and-forget pattern
-10. **Bun Only**: npm causes dependency conflicts - always use bun
+Dealer locator at `/find-a-dealer`. Uses `@vis.gl/react-google-maps` + `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`. Dealer coordinates stored in `Dealers` collection.
 
-## TypeScript Configuration
-
-### Path Aliases
-
-```json
-{
-  "compilerOptions": {
-    "strict": true,
-    "exactOptionalPropertyTypes": true,
-    "noUncheckedIndexedAccess": true,
-    "paths": {
-      "@/*": ["./src/*"],
-      "@/domains/*": ["./src/types/domains/*"],
-      "@/integrations/*": ["./src/types/integrations/*"]
-    }
-  }
-}
-```
-
-### Import Best Practices
-
-```typescript
-// ✅ Preferred - Use TypeScript path aliases
-import type { Product, Media } from '@/payload-types'
-import { getOptimizedImageProps } from '@/lib/media/r2-utils'
-import { cn } from '@/lib/utils'
-
-// ✅ Type guards for runtime safety
-function isMediaObject(media: Media | string | null): media is Media {
-  return typeof media === 'object' && media !== null && 'url' in media
-}
-
-// ❌ Avoid relative imports across directories
-import Product from '../../../collections/Products'
-```
-
-## Styling
-
-### Tailwind CSS 4.1+
-
-```typescript
-// tailwind.config.ts
-{
-  theme: {
-    extend: {
-      colors: {
-        kawai: {
-          red: '#C41E3A',
-          gold: '#D4AF37',
-          charcoal: '#2C2C2C',
-          pearl: '#F8F8F8',
-        },
-      },
-      fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        serif: ['Playfair Display', 'serif'],
-      },
-    },
-  },
-}
-```
-
-### Component Variants Pattern
-
-```tsx
-import { cva } from 'class-variance-authority'
-
-const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-md font-medium transition-colors",
-  {
-    variants: {
-      variant: {
-        default: "bg-kawai-red text-white hover:bg-kawai-red/90",
-        outline: "border border-kawai-red text-kawai-red hover:bg-kawai-red/10",
-      },
-      size: {
-        default: "h-10 px-4 py-2",
-        lg: "h-11 px-8",
-      },
-    },
-    defaultVariants: { variant: "default", size: "default" },
-  }
-)
-```
+---
 
 ## API Routes
 
-### Revalidation API
+### On-Demand Revalidation
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/revalidate` | POST | On-demand ISR revalidation |
-
-```typescript
-// Request body
-{
-  "secret": "REVALIDATION_SECRET",
-  "slug": "st-louis",
-  "type": "storefront"
-}
-// OR
-{
-  "secret": "REVALIDATION_SECRET",
-  "path": "/products/gx-7"
-}
+```
+POST /api/revalidate
+Body: { "secret": "...", "tag": "storefront-st-louis" }
+  OR: { "secret": "...", "path": "/products/gx-7" }
 ```
 
 ### Frontend Data APIs
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/home-page` | GET | Homepage data |
-| `/api/pianos-page` | GET | Piano catalog data |
-| `/api/piano-categories` | GET | Categories for filter |
-| `/api/featured-models` | GET | Featured pianos |
+```
+GET /api/home-page        → Homepage CMS data
+GET /api/pianos-page      → Piano catalog data
+GET /api/piano-categories → Category filter data
+GET /api/featured-models  → Featured pianos
+```
+
+---
 
 ## Development Workflow
-
-### Starting Development
-
-```bash
-# Install dependencies
-bun install
-
-# Configure environment
-cp .env.example .env.local
-# Edit .env.local with your values
-
-# Start development
-bun run dev
-
-# Access points
-# App: http://localhost:3000
-# Admin: http://localhost:3000/admin
-# GraphQL: http://localhost:3000/api/graphql-playground
-```
 
 ### Environment Variables
 
@@ -1220,59 +574,76 @@ bun run dev
 # Database
 DATABASE_URI=mongodb+srv://...
 
-# Payload CMS
+# Payload
 PAYLOAD_SECRET=your-secret-32-chars-minimum
 
 # Cloudflare R2
-S3_ACCESS_KEY_ID=your-r2-key
-S3_SECRET_ACCESS_KEY=your-r2-secret
+S3_ACCESS_KEY_ID=...
+S3_SECRET_ACCESS_KEY=...
 S3_ENDPOINT=https://{account}.r2.cloudflarestorage.com
 S3_BUCKET=kawaicms
+S3_REGION=auto
 NEXT_PUBLIC_S3_PUBLIC_URL=https://pub-{account}.r2.dev
 
 # Revalidation
-REVALIDATION_SECRET=your-revalidation-secret-32-chars
+REVALIDATION_SECRET=...
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
-# Shopify (if using)
+# Shopify
 SHOPIFY_STORE_DOMAIN=your-store.myshopify.com
 SHOPIFY_APP_CLIENT_SECRET=shpss_...
 
 # Analytics
 NEXT_PUBLIC_GA_ID=G-xxxxxxxxxx
-NEXT_PUBLIC_META_PIXEL_ID=your-pixel-id
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-maps-key
+NEXT_PUBLIC_META_PIXEL_ID=...
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=...
 ```
+
+Access:
+- App: `http://localhost:3000`
+- Admin: `http://localhost:3000/admin`
+- GraphQL: `http://localhost:3000/api/graphql-playground`
+
+---
+
+## Common Gotchas
+
+| Gotcha | Detail |
+|--------|--------|
+| **`force-dynamic` cancels `revalidate`** | Use one or the other — never both on the same page |
+| **`depth: 3+` causes recursive MongoDB lookups** | Always use the lowest depth that satisfies the query |
+| **Local API bypasses access control** | Set `overrideAccess: false` whenever passing `user` |
+| **Missing `req` in hook operations** | Breaks transaction atomicity — always pass `req` |
+| **Hook infinite loops** | Guard with context flags (`context.skipHook`) |
+| **`_status` vs `status`** | Versioned collections use `_status` (with underscore) |
+| **Import map not regenerated** | Run `bun run payload generate:importmap` after adding admin components |
+| **`unstable_cache` key collisions** | Keys are global — always namespace them (e.g. `header-storefront-{slug}`) |
+| **npm instead of bun** | Always use `bun` — npm causes dependency conflicts |
+| **Top-level `console.log` in payload.config.ts** | Runs on every worker spawn — use sparingly |
+| **`searchPlugin` + `storefronts`** | Storefronts use `skipSync: true` and a manual afterChange hook due to a Payload 3.71.1 bug in polymorphic query parsing |
+
+---
 
 ## Business Context
 
-### KAWAI Piano Platform
+**KAWAI** is a unified platform for Kawai Piano Corporation — piano retail, dealer management, lead generation, and content marketing.
 
-KAWAI is a unified business platform for Kawai Piano Corporation:
+### Product Lines
 
-- **Piano Retail**: Product catalog, finder, comparison tools
-- **Dealer Management**: Dynamic dealer pages with location customization
-- **Lead Generation**: Assessment flows, CRM integration (Shopify)
-- **Content Marketing**: Blog, artist showcases, educational content
-
-### Piano Product Lines
-
-- **Digital**: CA Series, CN Series, ES Series, KDP Series ($999-$6,399)
-- **Hybrid**: Novus Series, AnyTime Silent ($9,500-$14,500)
-- **Grand**: Shigeru Kawai SK, GX Series, GL Series ($18,900-$200K+)
-- **Upright**: K Series Professional, ND Series
+- **Digital**: CA, CN, ES, KDP Series ($999–$6,399)
+- **Hybrid**: Novus, AnyTime Series ($9,500–$14,500)
+- **Grand**: Shigeru Kawai SK, GX BLAK, GL Series ($18,900–$200K+)
+- **Upright**: K Series, ND Series
 
 ### Key Data Flows
 
-1. **Product Discovery**: Homepage → /pianos → /pianos/[category] → /products/[slug]
-2. **Dealer Locator**: /find-a-dealer → Google Maps → Dealer detail
-3. **Lead Capture**: Contact form → Shopify customer → CRM
-4. **Content Updates**: CMS edit → afterChange hook → ISR revalidation
+1. **Product Discovery**: `/` → `/pianos` → `/pianos/[category]` → `/products/[slug]`
+2. **Dealer Storefronts**: `/store/[storeslug]` — fully CMS-driven, ISR
+3. **Lead Capture**: Contact form → Shopify customer upsert → CRM
+4. **Content Updates**: CMS save → `afterChange` hook → POST `/api/revalidate` → `revalidateTag`
 
-## Resources
+### Resources
 
-- **Payload Docs**: https://payloadcms.com/docs
-- **Payload LLM Context**: https://payloadcms.com/llms-full.txt
-- **Project Admin**: http://localhost:3000/admin
-- **GraphQL Playground**: http://localhost:3000/api/graphql-playground
-- **Project Docs**: `/docs/` directory (Shopify, Constant Contact, etc.)
+- Payload Docs: https://payloadcms.com/docs
+- Payload LLM Context: https://payloadcms.com/llms-full.txt
+- Project Admin: http://localhost:3000/admin

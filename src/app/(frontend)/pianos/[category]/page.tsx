@@ -17,6 +17,8 @@ import {
 } from '@/lib/data'
 import type { Product } from '@/payload-types'
 
+export const revalidate = 3600
+
 // Route parameters interface
 interface CategoryPageParams {
   params: Promise<{

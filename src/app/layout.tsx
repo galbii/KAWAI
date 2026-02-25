@@ -23,6 +23,7 @@ const crimsonText = Crimson_Text({
   display: "swap",
   weight: ["400", "600"],
   style: ["normal", "italic"],
+  preload: false,
 });
 
 // Luxury display font for special brand messaging
@@ -32,6 +33,7 @@ const playfairDisplay = Playfair_Display({
   display: "swap",
   weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
+  preload: false,
 });
 
 // Refined serif for artist carousel headings - Japanese-inspired elegance
@@ -41,6 +43,7 @@ const cormorantGaramond = Cormorant_Garamond({
   display: "swap",
   weight: ["300", "400", "500", "600", "700"],
   style: ["normal", "italic"],
+  preload: false,
 });
 
 // Clean sans-serif for artist carousel subheadings
@@ -49,6 +52,7 @@ const notoSans = Noto_Sans({
   variable: "--font-noto",
   display: "swap",
   weight: ["300", "400", "500", "600"],
+  preload: false,
 });
 
 export const viewport: Viewport = {

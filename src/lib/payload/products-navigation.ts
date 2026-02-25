@@ -2,43 +2,71 @@ import 'server-only'
 
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import type { Product } from '@/payload-types'
+import type { Product, Collection } from '@/payload-types'
 
 // ============================================================================
 // Types (compatible with existing ProductsMegaMenu)
 // ============================================================================
 
-export interface ProductTypeNav {
-  /** Product type name (e.g., "Digital Piano", "Grand Piano", "Accessory") */
+export interface NavProduct {
+  id: string
+  title: string
+  handle: string
+  /** Shopify productType */
   type: string
-  /** Number of products in this type */
+  /** Shopify taxonomy category (e.g., "Digital Pianos", "Grand Pianos") */
+  category: string | null
+  model: string | null
+  available: boolean
+  /** True if this product is marked featured — shown in the nav carousel */
+  isFeatured: boolean
+  /** First YouTube URL from customMedia, if any — used for collection carousel cards */
+  youtubeUrl: string | null
+  price: {
+    min: number
+    max: number
+    currency: string
+    display: string
+  }
+  image: {
+    url: string
+    alt: string
+    width: number
+    height: number
+  } | null
+}
+
+export interface ProductTypeNav {
+  /**
+   * Category name used for sidebar display
+   * (e.g., "Digital Pianos", "Grand Pianos", "Accessories")
+   * Previously represented Shopify productType; now represents taxonomy category.
+   */
+  type: string
+  /** Number of products in this category */
   count: number
-  /** Sample products for preview (limited to first 6) */
-  products: Array<{
-    id: string
-    title: string
-    handle: string
-    type: string
-    model: string | null
-    available: boolean
-    price: {
-      min: number
-      max: number
-      currency: string
-      display: string
-    }
-    image: {
-      url: string
-      alt: string
-      width: number
-      height: number
-    } | null
-  }>
+  /** Sample products for preview */
+  products: NavProduct[]
+}
+
+export interface NavCollection {
+  id: string
+  title: string
+  handle: string
+  description: string | null
+  imageUrl: string | null
+  youtubeUrl: string | null
+  mediaUrl: string | null
+  heading: string | null
+  subheading: string | null
+  productCount: number
 }
 
 export interface ProductsNavigation {
-  /** All product types with their products */
+  /** Products grouped by category for sidebar navigation */
   types: ProductTypeNav[]
+  /** Shopify collections for featured carousel */
+  collections?: NavCollection[]
   /** Total number of active products */
   totalProducts: number
   /** Last updated timestamp */
@@ -65,22 +93,35 @@ function formatPrice(price: number | null | undefined, currency: string = 'USD')
 }
 
 /**
- * Normalize product type for consistent grouping
+ * Normalize a category name for consistent grouping
  * Handles variations in naming (Digital Piano vs Digital Pianos)
  */
-function normalizeProductType(type: string | null | undefined): string {
-  if (!type) return 'Other'
+function normalizeCategory(category: string | null | undefined): string {
+  if (!category) return 'Other'
 
-  // Trim whitespace
-  let normalized = type.trim()
+  let normalized = category.trim()
 
-  // Capitalize properly
+  // Title-case each word
   normalized = normalized
     .split(' ')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ')
 
   return normalized
+}
+
+/**
+ * Convert a category display name to a URL-safe slug.
+ * "Digital Pianos" → "digital"  (matches /pianos/[category] routes)
+ * Strips trailing "pianos" / "piano" to match existing route conventions.
+ */
+export function getCategorySlug(category: string): string {
+  return category
+    .toLowerCase()
+    .replace(/\s+pianos?$/, '') // "Digital Pianos" → "digital"
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
 }
 
 /**
@@ -192,7 +233,6 @@ export async function getProductTypesWithProducts(options?: {
       collection: 'products',
       where: {
         status: { equals: 'active' }, // Only active products
-        type: { exists: true, not_equals: '' } // Must have type for grouping
       },
       select: {
         // Core identification
@@ -201,9 +241,19 @@ export async function getProductTypesWithProducts(options?: {
         name: true,
         slug: true,
         type: true,
+        category: true, // Shopify taxonomy category — used for grouping
+
+        // Featured flags
+        featured: true,   // top-level "featured" checkbox (Product Details tab)
 
         // Visual content
         imageUrl: true,
+
+        // Editor-curated media: used to extract YouTube URLs for carousel
+        customMedia: {
+          mediaType: true,
+          youtubeUrl: true,
+        },
 
         // Pricing information
         price: {
@@ -225,10 +275,11 @@ export async function getProductTypesWithProducts(options?: {
         // Sorting
         visibility: {
           sortOrder: true,
-          featured: true
+          featured: true // Settings tab featured flag
         }
       },
-      sort: 'visibility.sortOrder,visibility.featured,-updatedAt,name',
+      // Featured products first, then by sort order, then name
+      sort: '-featured,visibility.sortOrder,-updatedAt,name',
       limit,
       depth: 0, // OPTIMIZATION 2: Don't populate relationships
       pagination: false, // OPTIMIZATION 3: Disable pagination for faster query
@@ -241,55 +292,82 @@ export async function getProductTypesWithProducts(options?: {
 
     console.log(`[Payload Products Navigation] Query completed in ${queryTime}ms - Found ${products.length} products`)
 
-    // OPTIMIZATION 4: Group products in-memory (single query instead of N queries)
-    const typeMap = new Map<string, Product[]>()
+    // OPTIMIZATION 4: Group products in-memory by CATEGORY (single query instead of N queries)
+    const categoryMap = new Map<string, Product[]>()
 
     products.forEach((product) => {
-      const normalizedType = normalizeProductType(product.type)
+      // Group by taxonomy category; fall back to type, then "Other"
+      const categoryName = normalizeCategory(product.category) ||
+        normalizeCategory(product.type) ||
+        'Other'
 
-      if (!typeMap.has(normalizedType)) {
-        typeMap.set(normalizedType, [])
+      if (!categoryMap.has(categoryName)) {
+        categoryMap.set(categoryName, [])
       }
 
-      typeMap.get(normalizedType)?.push(product)
+      categoryMap.get(categoryName)?.push(product)
     })
 
-    console.log(`[Payload Products Navigation] Grouped into ${typeMap.size} product types`)
+    console.log(`[Payload Products Navigation] Grouped into ${categoryMap.size} categories`)
+
+    /**
+     * Convert a Product to a NavProduct shape shared by both the
+     * per-category lists and the featured carousel.
+     */
+    const toNavProduct = (product: Product): NavProduct => {
+      const priceInfo = getProductPrice(product)
+      const image = getProductImageUrl(product)
+
+      // Extract first YouTube URL from editor-curated media
+      const youtubeUrl =
+        Array.isArray(product.customMedia)
+          ? (product.customMedia.find((m) => m.mediaType === 'youtube')?.youtubeUrl ?? null)
+          : null
+
+      return {
+        id: String(product.id),
+        title: product.name || product.model || 'Untitled Product',
+        handle: product.slug || String(product.id),
+        type: product.type || 'Other',
+        category: product.category ?? null,
+        model: product.model || null,
+        available: product.inventory?.inStock !== false,
+        isFeatured: product.featured === true || product.visibility?.featured === true,
+        youtubeUrl,
+        price: priceInfo,
+        image,
+      }
+    }
 
     // Transform to navigation structure
-    const types: ProductTypeNav[] = Array.from(typeMap.entries())
-      .map(([type, typeProducts]) => {
-        // OPTIMIZATION 5: Limit sample products per type
-        const sampleProducts = typeProducts.slice(0, samplesPerType).map((product) => {
-          const priceInfo = getProductPrice(product)
-          const image = getProductImageUrl(product)
-
-          return {
-            id: String(product.id),
-            title: product.name || product.model || 'Untitled Product',
-            handle: product.slug || String(product.id),
-            type: product.type || 'Other',
-            model: product.model || null,
-            available: product.inventory?.inStock !== false,
-            price: priceInfo,
-            image
-          }
-        })
+    const types: ProductTypeNav[] = Array.from(categoryMap.entries())
+      .map(([category, categoryProducts]) => {
+        // OPTIMIZATION 5: Limit sample products per category
+        // Featured products appear first (already sorted in the DB query)
+        const sampleProducts = categoryProducts.slice(0, samplesPerType).map(toNavProduct)
 
         return {
-          type,
-          count: typeProducts.length,
+          type: category,
+          count: categoryProducts.length,
           products: sampleProducts
         }
       })
-      // Sort types alphabetically for consistent display
-      .sort((a, b) => a.type.localeCompare(b.type))
+      // Piano categories first (Digital, Grand, Hybrid, Upright), then Other
+      .sort((a, b) => {
+        const pianoOrder = ['Digital Pianos', 'Grand Pianos', 'Hybrid Pianos', 'Upright Pianos']
+        const aIdx = pianoOrder.indexOf(a.type)
+        const bIdx = pianoOrder.indexOf(b.type)
+        if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx
+        if (aIdx !== -1) return -1
+        if (bIdx !== -1) return 1
+        return a.type.localeCompare(b.type)
+      })
 
     console.log('[Payload Products Navigation] ✅ Navigation data prepared:', {
-      types: types.length,
+      categories: types.length,
       totalProducts: products.length,
       queryTimeMs: queryTime,
-      avgProductsPerType: Math.round(products.length / types.length)
+      avgProductsPerCategory: types.length > 0 ? Math.round(products.length / types.length) : 0,
     })
 
     return {
@@ -310,27 +388,27 @@ export async function getProductTypesWithProducts(options?: {
 }
 
 /**
- * Get products by type for navigation display or category pages
+ * Get products by category for navigation display or category pages
  * Uses same optimization patterns as main query
  *
- * @param productType - Product type to fetch
+ * @param category - Category name to fetch (e.g., "Digital Pianos")
  * @param limit - Maximum number of products to return (default: 24)
- * @returns Array of products for the specified type
+ * @returns Array of products for the specified category
  */
 export async function getProductsByTypeForNav(
-  productType: string,
+  category: string,
   limit: number = 24
-): Promise<ProductTypeNav['products']> {
+): Promise<NavProduct[]> {
   try {
     const payload = await getPayload({ config })
 
-    const normalizedType = normalizeProductType(productType)
+    const normalizedCategory = normalizeCategory(category)
 
     const result = await payload.find({
       collection: 'products',
       where: {
         status: { equals: 'active' },
-        type: { equals: normalizedType }
+        category: { equals: normalizedCategory }
       },
       select: {
         id: true,
@@ -338,7 +416,13 @@ export async function getProductsByTypeForNav(
         name: true,
         slug: true,
         type: true,
+        category: true,
+        featured: true,
         imageUrl: true,
+        customMedia: {
+          mediaType: true,
+          youtubeUrl: true,
+        },
         price: {
           msrp: true,
           currency: true
@@ -355,7 +439,7 @@ export async function getProductsByTypeForNav(
           featured: true
         }
       },
-      sort: 'visibility.sortOrder,visibility.featured,-updatedAt,name',
+      sort: '-featured,visibility.sortOrder,-updatedAt,name',
       limit,
       depth: 0,
       pagination: false
@@ -365,38 +449,95 @@ export async function getProductsByTypeForNav(
       const priceInfo = getProductPrice(product)
       const image = getProductImageUrl(product)
 
+      const youtubeUrl =
+        Array.isArray(product.customMedia)
+          ? (product.customMedia.find((m) => m.mediaType === 'youtube')?.youtubeUrl ?? null)
+          : null
+
       return {
         id: String(product.id),
         title: product.name || product.model || 'Untitled Product',
         handle: product.slug || String(product.id),
         type: product.type || 'Other',
+        category: product.category ?? null,
         model: product.model || null,
         available: product.inventory?.inStock !== false,
+        isFeatured: product.featured === true || product.visibility?.featured === true,
+        youtubeUrl,
         price: priceInfo,
-        image
+        image,
       }
     })
   } catch (error) {
-    console.error(`[Payload Products Navigation] Failed to fetch type "${productType}":`, error)
+    console.error(`[Payload Products Navigation] Failed to fetch category "${category}":`, error)
     return []
   }
 }
 
 /**
- * Format product type name for display
+ * Format category name for display
  * Ensures consistent capitalization and formatting
  */
 export function formatProductType(type: string): string {
-  return normalizeProductType(type)
+  return normalizeCategory(type)
 }
 
 /**
- * Get URL-friendly slug for product type
- * Converts "Digital Piano" to "digital-piano"
+ * Get URL-friendly slug for a product type / category name
+ * "Digital Pianos" → "digital"
  */
 export function getProductTypeSlug(type: string): string {
-  return type
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+  return getCategorySlug(type)
+}
+
+/**
+ * Get Shopify collections for the featured carousel in the mega menu.
+ * Each collection may have a youtubeUrl, imageUrl, heading, and subheading
+ * configured in the Content tab of the Collections collection.
+ *
+ * @param limit - Maximum number of collections to return (default: 20)
+ */
+export async function getNavCollections(limit: number = 20): Promise<NavCollection[]> {
+  try {
+    const payload = await getPayload({ config })
+
+    const result = await payload.find({
+      collection: 'collections',
+      where: {
+        productCount: { greater_than: 0 },
+      },
+      select: {
+        id: true,
+        title: true,
+        handle: true,
+        description: true,
+        imageUrl: true,
+        productCount: true,
+        youtubeUrl: true,
+        mediaUrl: true,
+        heading: true,
+        subheading: true,
+      } as Partial<Record<keyof Collection, true>>,
+      sort: '-productCount',
+      limit,
+      depth: 0,
+      pagination: false,
+    })
+
+    return result.docs.map((col) => ({
+      id: String(col.id),
+      title: col.title,
+      handle: col.handle,
+      description: col.description ?? null,
+      imageUrl: col.imageUrl ?? null,
+      youtubeUrl: col.youtubeUrl ?? null,
+      mediaUrl: col.mediaUrl ?? null,
+      heading: col.heading ?? null,
+      subheading: col.subheading ?? null,
+      productCount: col.productCount ?? 0,
+    }))
+  } catch (error) {
+    console.error('[Payload Collections Navigation] Failed to fetch collections:', error)
+    return []
+  }
 }

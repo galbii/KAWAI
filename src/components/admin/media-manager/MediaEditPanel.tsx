@@ -4,46 +4,39 @@ import { useState, useEffect, useCallback } from 'react'
 import { useMediaManager } from './MediaManagerProvider'
 import type { MediaItem } from './types'
 
-// Dark theme color palette matching MediaGrid, Modal, and FolderTree
 const colors = {
-  // Backgrounds
-  backdrop: 'rgba(0, 0, 0, 0.85)',
-  modalBg: '#0a0e1a',
-  headerBg: '#0f1422',
-  sidebarBg: '#0d1117',
-  contentBg: '#0a0e1a',
-  cardBg: '#151b2b',
-  inputBg: '#1a2234',
-  hoverBg: '#1e2739',
+  backdrop: 'rgba(4,4,8,0.82)',
+  modalBg: '#0C0C0F',
+  headerBg: '#16161E',
+  sidebarBg: '#111116',
+  contentBg: '#0C0C0F',
+  cardBg: '#1C1C26',
+  inputBg: '#12121A',
+  hoverBg: '#1E1E2A',
 
-  // Borders
-  border: '#1e2739',
-  borderLight: '#2d3748',
-  borderFocus: '#3b82f6',
+  border: '#252535',
+  borderLight: '#2E2E40',
+  borderFocus: '#6366F1',
 
-  // Text
-  textPrimary: '#f1f5f9',
-  textSecondary: '#94a3b8',
-  textMuted: '#64748b',
-  textAccent: '#60a5fa',
+  textPrimary: '#ECECF2',
+  textSecondary: '#8484A0',
+  textMuted: '#4C4C68',
+  textAccent: '#818CF8',
 
-  // Brand colors
-  primary: '#3b82f6',
-  primaryHover: '#2563eb',
-  primaryLight: '#60a5fa',
-  success: '#10b981',
-  successBg: '#064e3b',
-  error: '#ef4444',
-  errorBg: '#7f1d1d',
-  warning: '#f59e0b',
-  warningBg: '#78350f',
+  primary: '#6366F1',
+  primaryHover: '#5558E0',
+  primaryLight: '#818CF8',
+  success: '#2EC4A0',
+  successBg: 'rgba(46,196,160,0.08)',
+  error: '#F16C6C',
+  errorBg: 'rgba(241,108,108,0.08)',
+  warning: '#E8A84E',
+  warningBg: 'rgba(232,168,78,0.10)',
 
-  // Accents
-  accent: '#8b5cf6',
-  accentHover: '#7c3aed',
-  gold: '#f59e0b',
+  accent: '#6366F1',
+  accentHover: '#5558E0',
+  gold: '#E8A84E',
 
-  // UI elements
   white: '#ffffff',
   black: '#000000',
 }

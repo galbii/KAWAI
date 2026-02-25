@@ -1,7 +1,7 @@
 'use server'
 
 import { unstable_cache } from 'next/cache'
-import { getProductTypesWithProducts } from '@/lib/payload/products-navigation'
+import { getProductTypesWithProducts, getNavCollections } from '@/lib/payload/products-navigation'
 import type { ProductsNavigation } from '@/lib/payload/products-navigation'
 
 /**

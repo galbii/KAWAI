@@ -157,7 +157,22 @@ export const Products: CollectionConfig = {
     useAsTitle: 'model',
     description: 'Unified product management - pianos, accessories, and other products with dynamic page building',
     components: {
-      beforeList: ['/components/admin/BulkShopifySyncButton#default'],
+      beforeList: [
+        '/components/admin/BulkShopifySyncButton#default',
+        '/components/admin/ProductsListHeader#ProductsListHeader',
+      ],
+    },
+    livePreview: {
+      url: ({ data }) => {
+        const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+        const slug = (data.slug as string) || 'preview'
+        return `${baseURL}/products/${slug}`
+      },
+    },
+    preview: (data) => {
+      const slug = (data.slug as string) || ''
+      const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+      return `${baseURL}/products/${slug}`
     },
   },
   access: {

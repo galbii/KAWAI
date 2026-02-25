@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 
+export const revalidate = 300
+
 export async function GET(request: NextRequest) {
   try {
     const payload = await getPayload({ config })
@@ -14,7 +16,9 @@ export async function GET(request: NextRequest) {
     })
     
     if (result.docs.length > 0) {
-      return NextResponse.json(result.docs[0])
+      return NextResponse.json(result.docs[0], {
+        headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' }
+      })
     } else {
       return NextResponse.json(
         { error: 'Home page not found' }, 

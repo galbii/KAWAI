@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
 import Script from 'next/script'
 
 interface MetaPixelProps {
@@ -8,14 +7,6 @@ interface MetaPixelProps {
 }
 
 export default function MetaPixel({ pixelId }: MetaPixelProps) {
-  useEffect(() => {
-    // Initialize Meta Pixel when component mounts
-    if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('init', pixelId)
-      window.fbq('track', 'PageView')
-    }
-  }, [pixelId])
-
   return (
     <>
       <Script

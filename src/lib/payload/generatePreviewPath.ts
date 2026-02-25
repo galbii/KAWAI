@@ -9,6 +9,7 @@ import { PayloadRequest, CollectionSlug } from 'payload'
 const collectionPrefixMap: Partial<Record<CollectionSlug, string>> = {
   posts: '/blog',
   pages: '', // Pages render at root level /[slug]
+  products: '/products',
 }
 
 type Props = {

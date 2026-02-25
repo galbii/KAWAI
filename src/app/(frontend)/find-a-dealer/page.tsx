@@ -62,6 +62,19 @@ export default async function FindADealerPage() {
           equals: true
         }
       },
+      depth: 0,
+      select: {
+        dealerName: true,
+        slug: true,
+        address: true,
+        coordinates: true,
+        contactInfo: true,
+        dealerType: true,
+        isFeatured: true,
+        tags: true,
+        isOfficialStore: true,
+        isActive: true,
+      },
       limit: 1000,
       sort: 'dealerName'
     }),
@@ -71,6 +84,14 @@ export default async function FindADealerPage() {
         isActive: {
           equals: true
         }
+      },
+      depth: 0,
+      select: {
+        locationName: true,
+        slug: true,
+        address: true,
+        showroomInfo: true,
+        isActive: true,
       },
       limit: 1000,
       sort: 'locationName'

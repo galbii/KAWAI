@@ -2,47 +2,82 @@
 
 import { useMediaManager } from './MediaManagerProvider'
 
-// Explicit color constants
-const colors = {
-  white: '#ffffff',
-  slate800: '#1e293b',
-  slate900: '#0f172a',
-}
-
-/**
- * Minimal floating button to open the media manager
- */
 export function MediaManagerButton() {
   const { openModal } = useMediaManager()
 
-  const handleClick = () => {
-    openModal()
-  }
-
   return (
     <button
-      onClick={handleClick}
-      className="fixed bottom-6 right-6 z-[9998] flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
+      onClick={() => openModal()}
+      title="Media Library"
       style={{
-        backgroundColor: colors.slate900,
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        position: 'fixed',
+        bottom: 20,
+        right: 20,
+        zIndex: 9998,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        height: 56,
+        padding: '0 22px 0 18px',
+        borderRadius: 28,
+        background: 'linear-gradient(180deg, #1E1E2A 0%, #17171F 100%)',
+        border: '1px solid #2C2C3E',
+        boxShadow: '0 6px 20px rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
+        cursor: 'pointer',
+        userSelect: 'none' as const,
+        outline: 'none',
+        transition: 'border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease',
       }}
-      title="Open Media Library"
+      onMouseEnter={(e) => {
+        const el = e.currentTarget
+        el.style.borderColor = 'rgba(99,102,241,0.6)'
+        el.style.boxShadow = '0 6px 20px rgba(0,0,0,0.6), 0 0 0 3px rgba(99,102,241,0.12), inset 0 1px 0 rgba(255,255,255,0.05)'
+      }}
+      onMouseLeave={(e) => {
+        const el = e.currentTarget
+        el.style.borderColor = '#2C2C3E'
+        el.style.boxShadow = '0 6px 20px rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)'
+        el.style.transform = 'scale(1)'
+      }}
+      onMouseDown={(e) => { e.currentTarget.style.transform = 'scale(0.96)' }}
+      onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)' }}
     >
+      {/* Image icon */}
       <svg
-        className="w-5 h-5"
-        style={{ color: colors.white }}
-        fill="none"
-        stroke="currentColor"
+        width="22" height="22"
         viewBox="0 0 24 24"
+        fill="none"
+        stroke="#6E6E8E"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{ flexShrink: 0 }}
       >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={1.5}
-          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-        />
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+        <circle cx="8.5" cy="8.5" r="1.5" />
+        <polyline points="21 15 16 10 5 21" />
       </svg>
+
+      <span style={{
+        fontSize: 15,
+        fontWeight: 500,
+        color: '#7A7A9E',
+        letterSpacing: '0.01em',
+        lineHeight: 1,
+      }}>
+        Media
+      </span>
+
+      {/* Subtle dot indicator */}
+      <span style={{
+        width: 7,
+        height: 7,
+        borderRadius: '50%',
+        background: '#6366F1',
+        opacity: 0.7,
+        flexShrink: 0,
+        marginLeft: 1,
+      }} />
     </button>
   )
 }

@@ -53,19 +53,48 @@ function ToastItem({ toast, onDismiss }: ToastProps) {
     info: toastColors.blue500,
   }
 
+  const bgMap = {
+    success: 'rgba(46,196,160,0.12)',
+    error: 'rgba(241,108,108,0.12)',
+    info: 'rgba(99,102,241,0.12)',
+  }
+  const borderMap = {
+    success: 'rgba(46,196,160,0.3)',
+    error: 'rgba(241,108,108,0.3)',
+    info: 'rgba(99,102,241,0.3)',
+  }
+
   return (
     <div
-      className="flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg animate-in slide-in-from-right-full duration-300"
-      style={{ backgroundColor: colorMap[toast.type], color: toastColors.white }}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 9,
+        padding: '8px 12px 8px 10px',
+        borderRadius: 8,
+        background: bgMap[toast.type],
+        border: `1px solid ${borderMap[toast.type]}`,
+        boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+        backdropFilter: 'blur(8px)',
+        color: colorMap[toast.type],
+        minWidth: 220,
+        maxWidth: 340,
+      }}
     >
       {icons[toast.type]}
-      <span className="text-sm font-medium">{toast.message}</span>
+      <span style={{ fontSize: 12.5, fontWeight: 500, flex: 1, color: '#ECECF2' }}>{toast.message}</span>
       <button
         onClick={() => onDismiss(toast.id)}
-        className="ml-2 p-1 rounded-full hover:bg-white/20 transition-colors"
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: 18, height: 18, borderRadius: 4,
+          background: 'transparent', border: 'none',
+          color: '#4C4C68', cursor: 'pointer', outline: 'none', padding: 0,
+          flexShrink: 0,
+        }}
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       </button>
     </div>
@@ -81,7 +110,7 @@ export function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
   if (toasts.length === 0) return null
 
   return (
-    <div className="fixed bottom-6 right-6 z-[10001] flex flex-col gap-2">
+    <div className="fixed bottom-16 right-5 z-[10001] flex flex-col gap-2">
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onDismiss={onDismiss} />
       ))}

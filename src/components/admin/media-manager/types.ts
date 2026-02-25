@@ -81,6 +81,7 @@ export interface MediaManagerState {
   currentFolder: FolderItem | null // null = root/all media
   isFoldersLoading: boolean
   expandedFolders: Set<string>
+  subFolders: FolderItem[] // Child folders of currentFolder (or root folders when null)
 }
 
 export interface MediaManagerActions {
@@ -99,6 +100,8 @@ export interface MediaManagerActions {
   setCurrentFolder: (folder: FolderItem | null) => void
   toggleFolderExpanded: (folderId: string) => void
   moveMediaToFolder: (mediaId: string, folderId: string | null) => Promise<void>
+  renameFolder: (id: string, name: string) => Promise<void>
+  moveFolderToFolder: (folderId: string, newParentId: string | null) => Promise<void>
   updateMedia: (id: string, data: Record<string, unknown>) => Promise<MediaItem | null>
 }
 

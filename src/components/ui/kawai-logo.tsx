@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { useNavigationContext } from '@/contexts/NavigationContext'
@@ -43,6 +44,13 @@ export function KawaiLogo({
   const { origin, isInitialized } = useNavigationContext()
   const contextAwareHomeUrl = homeUrl || (isInitialized ? origin.basePath : '/')
   const contextAwareAriaLabel = ariaLabel || getContextAwareAriaLabel('Kawai Piano - Home', origin)
+
+  // mounted guards dealer-location-dependent rendering against hydration mismatch.
+  // sessionStorage can make origin.isDealerLocation=true on the client while the
+  // server always renders with isDealerLocation=false — causing React error #418.
+  // Both server and initial client render use the no-dealer layout; after mount it switches.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   // Handle logo click - scroll to top if already on home page
   const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -122,7 +130,7 @@ export function KawaiLogo({
     return { location: locationName, suffix: 'Official Storefront' }
   }
 
-  const { location, suffix } = parseLocationText(dealerName)
+  const { location, suffix } = mounted ? parseLocationText(dealerName) : { location: '', suffix: '' }
 
   const LogoContent = () => (
     <>

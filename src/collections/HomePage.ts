@@ -11,6 +11,9 @@ export const HomePage: CollectionConfig = {
     group: 'Pages',
     useAsTitle: 'titleMain',
     description: 'Manage all content for the homepage including hero, showroom location, piano collection, gallery, news, contact form, and SEO.',
+    livePreview: {
+      url: () => process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    },
   },
   access: {
     read: () => true, // Public read access for frontend

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 
+export const revalidate = 3600
+
 export async function GET(
   request: NextRequest, 
   { params }: { params: Promise<{ slug: string }> }

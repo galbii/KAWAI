@@ -94,14 +94,6 @@ import { pianosPageSeedPlugin } from './plugins/pianos-page-seed'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-// Verify S3 configuration at startup
-console.log('🔧 [S3 CONFIG] Verifying environment variables...')
-console.log('  S3_BUCKET:', process.env.S3_BUCKET ? '✅ Set' : '❌ Missing')
-console.log('  S3_ENDPOINT:', process.env.S3_ENDPOINT ? '✅ Set' : '❌ Missing')
-console.log('  S3_REGION:', process.env.S3_REGION || 'auto')
-console.log('  S3_ACCESS_KEY_ID:', process.env.S3_ACCESS_KEY_ID ? '✅ Set' : '❌ Missing')
-console.log('  S3_SECRET_ACCESS_KEY:', process.env.S3_SECRET_ACCESS_KEY ? '✅ Set' : '❌ Missing')
-console.log('  NEXT_PUBLIC_S3_PUBLIC_URL:', process.env.NEXT_PUBLIC_S3_PUBLIC_URL || '❌ Missing')
 
 export default buildConfig({
   // Enable folders for media organization
@@ -114,6 +106,9 @@ export default buildConfig({
     user: Users.slug,
     importMap: {
       baseDir: path.resolve(dirname),
+      // Disable automatic regeneration on every HMR event.
+      // Run `bun run payload generate:importmap` after adding/moving admin components.
+      autoGenerate: false,
     },
     meta: {
       // Payload meta configuration for HTML metadata
@@ -123,10 +118,21 @@ export default buildConfig({
         Logo: '/components/admin/Logo.tsx#Logo',
         Icon: '/components/admin/Icon.tsx#Icon',
       },
-      // Root provider - wraps entire admin UI with necessary providers
+      // Root provider - wraps entire admin UI with necessary providers.
+      // MediaManagerProvider, MediaManagerModal, and MediaManagerButton are all rendered
+      // inside AdminRootProvider so they're available on every admin page without
+      // relying on afterNavLinks (which runs inside the sidebar and breaks position:fixed).
       providers: ['/components/admin/AdminRootProvider#AdminRootProvider'],
-      // Media Manager - floating button on all admin pages
-      afterDashboard: ['/components/admin/media-manager/MediaManager.tsx#MediaManager'],
+      beforeDashboard: [
+        '/components/admin/DashboardStats#DashboardStats',
+        '/components/admin/DashboardQuickActions#DashboardQuickActions',
+      ],
+      afterNavLinks: [
+        '/components/admin/NavLinks#NavLinks',
+      ],
+      actions: [
+        '/components/admin/ViewSiteButton#ViewSiteButton',
+      ],
     },
     livePreview: {
       url: ({ data, collectionConfig }) => {
@@ -141,9 +147,13 @@ export default buildConfig({
           return `${baseURL}/${data.slug || 'preview'}`
         }
 
+        if (collectionConfig?.slug === 'home-page') {
+          return baseURL
+        }
+
         return baseURL
       },
-      collections: ['posts', 'pages'],
+      collections: ['posts', 'pages', 'home-page'],
       breakpoints: [
         {
           label: 'Mobile',
@@ -266,6 +276,18 @@ export default buildConfig({
   },
   db: mongooseAdapter({
     url: process.env.DATABASE_URI || '',
+    connectOptions: {
+      // Force IPv4 — skips IPv6 DNS timeout, saves ~300–800ms on first connect to Atlas
+      family: 4,
+      // Keep one warm connection alive at all times — eliminates cold pool reconnect cost
+      minPoolSize: 1,
+      maxPoolSize: 10,
+      // More frequent heartbeats keep the TCP connection alive through NAT / Atlas idle-closer
+      heartbeatFrequencyMS: 5000,
+      // Fail fast in dev if Atlas is unreachable rather than hanging for 30s
+      serverSelectionTimeoutMS: process.env.NODE_ENV === 'development' ? 8000 : 30000,
+      connectTimeoutMS: 10000,
+    },
   }),
   sharp,
   plugins: [

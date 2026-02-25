@@ -1,23 +1,41 @@
 import 'server-only'
 
 import { getPayload } from 'payload'
+import type { Payload } from 'payload'
 import config from '@/payload.config'
 import type {
   Product,
   PianosPage,
   HomePage,
-  Media
+  Media,
 } from '@/payload-types'
 
 // Direct Payload client access - bypasses HTTP and works during build time
 // This is the preferred approach for server-side data fetching
 
+declare global {
+  // eslint-disable-next-line no-var
+  var __payloadInstance: Promise<Payload> | undefined
+}
+
 /**
- * Initialize Payload client for direct database access
- * Works during build time without HTTP API calls
+ * Returns a cached Payload instance anchored to globalThis.
+ *
+ * In dev (HMR): module-level caches are cleared on every file save, which
+ * forces a new Atlas TLS handshake costing ~2–4s. Anchoring to globalThis
+ * (which persists for the Node.js process lifetime) reuses the existing
+ * Mongoose connection pool across hot reloads.
+ *
+ * In production: getPayload's internal module-level cache is sufficient.
  */
-async function getPayloadClient() {
-  return await getPayload({ config })
+export async function getPayloadClient(): Promise<Payload> {
+  if (process.env.NODE_ENV === 'development') {
+    if (!globalThis.__payloadInstance) {
+      globalThis.__payloadInstance = getPayload({ config })
+    }
+    return globalThis.__payloadInstance
+  }
+  return getPayload({ config })
 }
 
 /**
@@ -529,7 +547,7 @@ export async function getProductsDirect(category?: string): Promise<Product[]> {
       where: whereClause,
       sort: 'name',
       limit: 100,
-      depth: 3
+      depth: 2
     })
 
     return result.docs
@@ -554,7 +572,7 @@ export async function getProductBySlugDirect(slug: string): Promise<Product | nu
         slug: { equals: slug },
         status: { not_equals: 'draft' }
       },
-      depth: 3,
+      depth: 2,
       limit: 1
     })
 
@@ -595,12 +613,23 @@ export async function getActiveProductsDirect(
     const result = await payload.find({
       collection: 'products',
       where: whereClause,
+      select: {
+        name: true,
+        slug: true,
+        status: true,
+        category: true,
+        type: true,
+        description: true,
+        imageUrl: true,
+        model: true,
+        visibility: true,
+      },
       sort: 'visibility.sortOrder,name',
       limit: options?.limit || 100,
-      depth: 3
+      depth: 2
     })
 
-    return result.docs
+    return result.docs as unknown as Product[]
   } catch (error) {
     console.error('Error fetching active products with direct Payload access:', error)
     return []
@@ -629,8 +658,6 @@ export async function getStorefrontBySlugDirect(slug: string): Promise<any | nul
       overrideAccess: false,
       draft: false
     })
-
-    console.log(`[Payload Direct] Fetching storefront "${slug}" - Hours from DB:`, result.docs[0]?.hours?.slice(0, 2))
 
     return result.docs[0] || null
   } catch (error) {
@@ -736,7 +763,16 @@ export async function getNearbyDealersDirect(
         isActive: { equals: true },
         slug: { not_equals: excludeSlug }
       },
-      depth: 1,
+      select: {
+        dealerName: true,
+        slug: true,
+        address: true,
+        coordinates: true,
+        contactInfo: true,
+        dealerType: true,
+        isFeatured: true,
+      },
+      depth: 0,
       limit: 100,
       draft: false
     })

@@ -1,5 +1,6 @@
 import { Header } from './header'
 import { headers } from 'next/headers'
+import { unstable_cache } from 'next/cache'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { parseNavigationOrigin, getContextAwareUrl, type NavigationOrigin } from '@/lib/navigation-utils'
@@ -28,77 +29,90 @@ interface NewsItem {
   link?: string
 }
 
-async function getDealerLocationBySlug(slug: string): Promise<DealerLocationData | null> {
-  try {
-    const payload = await getPayload({ config })
+function getDealerLocationBySlug(slug: string): Promise<DealerLocationData | null> {
+  return unstable_cache(
+    async () => {
+      try {
+        const payload = await getPayload({ config })
 
-    const result = await payload.find({
-      collection: 'storefronts',
-      where: {
-        and: [
-          {
-            slug: {
-              equals: slug
-            }
+        const result = await payload.find({
+          collection: 'storefronts',
+          where: {
+            and: [
+              {
+                slug: {
+                  equals: slug
+                }
+              },
+              {
+                isActive: {
+                  equals: true
+                }
+              }
+            ]
           },
-          {
-            isActive: {
-              equals: true
-            }
+          limit: 1,
+          select: {
+            locationName: true,
+            slug: true
           }
-        ]
-      },
-      limit: 1,
-      select: {
-        locationName: true,
-        slug: true
+        })
+
+        const location = result.docs[0]
+
+        if (location) {
+          return {
+            locationName: location.locationName,
+            slug: location.slug
+          }
+        }
+
+        return null
+      } catch (error) {
+        console.error('Error fetching storefront location:', error)
+        return null
       }
-    })
-
-    const location = result.docs[0]
-
-    if (location) {
-      return {
-        locationName: location.locationName,
-        slug: location.slug
-      }
-    }
-
-    return null
-  } catch (error) {
-    console.error('Error fetching storefront location:', error)
-    return null
-  }
+    },
+    [`header-storefront-${slug}`],
+    { tags: [`storefront-${slug}`, 'storefronts'], revalidate: 3600 }
+  )()
 }
 
-async function getHomePageNewsItems(): Promise<NewsItem[]> {
-  try {
-    const payload = await getPayload({ config })
+const getHomePageNewsItems = unstable_cache(
+  async (): Promise<NewsItem[]> => {
+    try {
+      const payload = await getPayload({ config })
 
-    const result = await payload.find({
-      collection: 'home-page',
-      limit: 1,
-      depth: 2, // Populate media relationships
-    })
+      const result = await payload.find({
+        collection: 'home-page',
+        limit: 1,
+        depth: 1, // Populate media relationships
+        select: {
+          newsItems: true,
+        },
+      })
 
-    const homePageData = result.docs[0]
+      const homePageData = result.docs[0]
 
-    if (homePageData?.newsItems && Array.isArray(homePageData.newsItems)) {
-      return homePageData.newsItems.map((item: any) => ({
-        title: item.title,
-        description: item.description,
-        image: item.image ?? null,
-        category: item.category,
-        ...(item.link && { link: item.link }),
-      }))
+      if (homePageData?.newsItems && Array.isArray(homePageData.newsItems)) {
+        return homePageData.newsItems.map((item: any) => ({
+          title: item.title,
+          description: item.description,
+          image: item.image ?? null,
+          category: item.category,
+          ...(item.link && { link: item.link }),
+        }))
+      }
+
+      return []
+    } catch (error) {
+      console.error('Error fetching HomePage news items:', error)
+      return []
     }
-
-    return []
-  } catch (error) {
-    console.error('Error fetching HomePage news items:', error)
-    return []
-  }
-}
+  },
+  ['header-news-items'],
+  { tags: ['home-page'], revalidate: 300 }
+)
 
 export async function HeaderDynamic() {
   try {

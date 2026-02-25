@@ -16,6 +16,7 @@ import type { HomePageData } from "@/lib/types/homepage";
 import { Suspense } from "react";
 import type { Metadata } from 'next';
 import { RenderBlocks } from '@/components/RenderBlocks';
+import { HomePageLivePreview } from '@/components/homepage/HomePageLivePreview';
 
 // Enable Incremental Static Regeneration (ISR)
 // Revalidate the homepage every 5 minutes (300 seconds)
@@ -219,6 +220,7 @@ async function HomePageContent() {
     // Blocks mode: Render using RenderBlocks
     return (
       <div className="min-h-screen">
+        <HomePageLivePreview />
         <RenderBlocks blocks={homePageData.content as any} />
       </div>
     )
@@ -227,6 +229,7 @@ async function HomePageContent() {
   // LEGACY: Fallback to existing section components
   return (
     <div className="min-h-screen">
+      <HomePageLivePreview />
       {/* Hero Section */}
       <HomeHero />
 

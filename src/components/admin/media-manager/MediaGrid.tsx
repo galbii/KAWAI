@@ -5,53 +5,58 @@ import { createPortal } from 'react-dom'
 import { useMediaManager } from './MediaManagerProvider'
 import type { MediaItem, FolderItem } from './types'
 
-// Dark theme color palette
-const colors = {
-  // Backgrounds
-  backdrop: 'rgba(0, 0, 0, 0.85)',
-  modalBg: '#0a0e1a',
-  headerBg: '#0f1422',
-  sidebarBg: '#0d1117',
-  contentBg: '#0a0e1a',
-  cardBg: '#151b2b',
-  inputBg: '#1a2234',
-  hoverBg: '#1e2739',
+// ─── Design tokens ──────────────────────────────────────────────────────────
+const c = {
+  bg:      '#0C0C0F',
+  panel:   '#111116',
+  surface: '#16161E',
+  card:    '#1C1C26',
+  input:   '#12121A',
+  hover:   '#1E1E2A',
 
-  // Borders
-  border: '#1e2739',
-  borderLight: '#2d3748',
-  borderFocus: '#3b82f6',
+  line:    '#252535',
+  lineSub: '#1C1C28',
 
-  // Text
-  textPrimary: '#f1f5f9',
-  textSecondary: '#94a3b8',
-  textMuted: '#64748b',
-  textAccent: '#60a5fa',
+  high:  '#ECECF2',
+  mid:   '#8484A0',
+  lo:    '#4C4C68',
 
-  // Brand colors
-  primary: '#3b82f6',
-  primaryHover: '#2563eb',
-  primaryLight: '#60a5fa',
-  success: '#10b981',
-  successBg: '#064e3b',
-  error: '#ef4444',
-  errorBg: '#7f1d1d',
-  warning: '#f59e0b',
-  warningBg: '#78350f',
+  violet:    '#6366F1',
+  violetRing:'rgba(99,102,241,0.35)',
+  violetGlow:'rgba(99,102,241,0.08)',
 
-  // Accents
-  accent: '#8b5cf6',
-  accentHover: '#7c3aed',
-  gold: '#f59e0b',
+  jade:     '#2EC4A0',
+  rose:     '#F16C6C',
+  roseFill: 'rgba(241,108,108,0.08)',
+  gold:     '#E8A84E',
 
-  // UI elements
   white: '#ffffff',
   black: '#000000',
 }
 
-/**
- * Grid display of media items with selection and actions
- */
+// ─── MIME type → short badge label ───────────────────────────────────────────
+function mimeLabel(mimeType: string): string {
+  const map: Record<string, string> = {
+    'image/jpeg': 'JPG', 'image/jpg': 'JPG', 'image/png': 'PNG',
+    'image/webp': 'WEBP', 'image/gif': 'GIF', 'image/svg+xml': 'SVG',
+    'image/avif': 'AVIF', 'image/tiff': 'TIFF',
+    'video/mp4': 'MP4', 'video/webm': 'WEBM', 'video/quicktime': 'MOV',
+    'audio/mpeg': 'MP3', 'audio/wav': 'WAV', 'audio/ogg': 'OGG',
+    'application/pdf': 'PDF',
+  }
+  return map[mimeType] ?? mimeType?.split('/')[1]?.toUpperCase().slice(0, 5) ?? 'FILE'
+}
+
+// ─── Badge color by type ──────────────────────────────────────────────────────
+function badgeColor(mimeType: string): string {
+  if (mimeType?.startsWith('image/')) return 'rgba(99,102,241,0.75)'
+  if (mimeType?.startsWith('video/')) return 'rgba(232,168,78,0.75)'
+  if (mimeType?.startsWith('audio/')) return 'rgba(46,196,160,0.75)'
+  if (mimeType === 'application/pdf') return 'rgba(241,108,108,0.75)'
+  return 'rgba(132,132,160,0.75)'
+}
+
+// ─── MediaGrid ───────────────────────────────────────────────────────────────
 export function MediaGrid() {
   const {
     media,
@@ -65,47 +70,75 @@ export function MediaGrid() {
     fetchMedia,
     folders,
     moveMediaToFolder,
+    subFolders,
+    setCurrentFolder,
+    moveFolderToFolder,
   } = useMediaManager()
 
   if (isLoading && media.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full" style={{ backgroundColor: colors.contentBg }}>
-        <div className="text-center">
-          <div
-            className="animate-spin rounded-full h-12 w-12 border-3 border-t-transparent mx-auto mb-4"
-            style={{ borderColor: colors.primary, borderTopColor: 'transparent' }}
-          />
-          <p className="text-base font-medium" style={{ color: colors.textSecondary }}>Loading media...</p>
-        </div>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        height: '100%', background: c.bg,
+        flexDirection: 'column', gap: 10,
+      }}>
+        <div style={{
+          width: 28, height: 28,
+          border: `2px solid ${c.line}`,
+          borderTopColor: c.violet,
+          borderRadius: '50%',
+          animation: 'spin 0.7s linear infinite',
+        }} />
+        <span style={{ fontSize: 14, color: c.lo }}>Loading…</span>
       </div>
     )
   }
 
-  if (media.length === 0) {
+  if (subFolders.length === 0 && media.length === 0) {
     return (
-      <div
-        className="flex flex-col items-center justify-center h-full p-12"
-        style={{ backgroundColor: colors.contentBg }}
-      >
-        <div
-          className="w-28 h-28 mb-8 rounded-2xl flex items-center justify-center"
-          style={{ backgroundColor: colors.cardBg }}
-        >
-          <svg className="w-14 h-14" style={{ color: colors.textMuted }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        height: '100%', background: c.bg, padding: 40,
+      }}>
+        <div style={{
+          width: 70, height: 70, borderRadius: 16,
+          background: c.card, border: `1px solid ${c.line}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          marginBottom: 18,
+        }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={c.lo} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <polyline points="21 15 16 10 5 21" />
           </svg>
         </div>
-        <p className="text-xl font-semibold mb-3" style={{ color: colors.textPrimary }}>No media found</p>
-        <p className="text-base" style={{ color: colors.textSecondary }}>Drag and drop files here or click Upload to add media</p>
+        <p style={{ fontSize: 15, fontWeight: 500, color: c.mid, margin: 0, marginBottom: 5 }}>No files here</p>
+        <p style={{ fontSize: 13, color: c.lo, margin: 0 }}>Drop files or click Upload to add media</p>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col h-full" style={{ backgroundColor: colors.contentBg }}>
-      {/* Grid - Larger items with fewer columns */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: c.bg }}>
+      {/* Grid */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: 26 }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+          gap: 14,
+        }}>
+          {/* Sub-folder tiles first */}
+          {subFolders.map((folder) => (
+            <FolderTile
+              key={folder.id}
+              folder={folder}
+              onNavigate={() => setCurrentFolder(folder)}
+              onDrop={(mediaId) => moveMediaToFolder(mediaId, folder.id)}
+              onFolderDrop={(draggedFolderId) => moveFolderToFolder(draggedFolderId, folder.id)}
+            />
+          ))}
+
+          {/* Media file tiles */}
           {media.map((item) => (
             <MediaGridItem
               key={item.id}
@@ -121,67 +154,172 @@ export function MediaGrid() {
         </div>
       </div>
 
-      {/* Pagination - Larger */}
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div
-          className="flex-shrink-0 flex items-center justify-center gap-4 px-6 py-4 border-t"
-          style={{ backgroundColor: colors.headerBg, borderColor: colors.border }}
-        >
-          <button
-            onClick={() => fetchMedia(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="flex items-center gap-2 px-4 py-2 text-base font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-opacity-80"
-            style={{ backgroundColor: colors.cardBg, color: colors.textSecondary }}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        <div style={{
+          flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+          padding: '10px 16px',
+          borderTop: `1px solid ${c.line}`,
+          background: c.panel,
+        }}>
+          <PagBtn onClick={() => fetchMedia(currentPage - 1)} disabled={currentPage === 1}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <polyline points="15 18 9 12 15 6" />
             </svg>
-            Previous
-          </button>
-          <div className="flex items-center gap-2">
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNum
-              if (totalPages <= 5) {
-                pageNum = i + 1
-              } else if (currentPage <= 3) {
-                pageNum = i + 1
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i
-              } else {
-                pageNum = currentPage - 2 + i
-              }
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => fetchMedia(pageNum)}
-                  className="w-10 h-10 text-base font-semibold rounded-lg transition-colors hover:bg-opacity-80"
-                  style={{
-                    backgroundColor: currentPage === pageNum ? colors.primary : colors.cardBg,
-                    color: currentPage === pageNum ? colors.white : colors.textSecondary,
-                  }}
-                >
-                  {pageNum}
-                </button>
-              )
-            })}
-          </div>
-          <button
-            onClick={() => fetchMedia(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="flex items-center gap-2 px-4 py-2 text-base font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-opacity-80"
-            style={{ backgroundColor: colors.cardBg, color: colors.textSecondary }}
-          >
-            Next
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </PagBtn>
+
+          {Array.from({ length: Math.min(7, totalPages) }, (_, i) => {
+            let p: number
+            if (totalPages <= 7) p = i + 1
+            else if (currentPage <= 4) p = i + 1
+            else if (currentPage >= totalPages - 3) p = totalPages - 6 + i
+            else p = currentPage - 3 + i
+            return (
+              <PagBtn key={p} onClick={() => fetchMedia(p)} active={currentPage === p}>
+                {p}
+              </PagBtn>
+            )
+          })}
+
+          <PagBtn onClick={() => fetchMedia(currentPage + 1)} disabled={currentPage === totalPages}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <polyline points="9 18 15 12 9 6" />
             </svg>
-          </button>
+          </PagBtn>
         </div>
       )}
     </div>
   )
 }
 
+function PagBtn({ children, onClick, disabled, active }: {
+  children: React.ReactNode; onClick: () => void; disabled?: boolean; active?: boolean
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        minWidth: 38, height: 38,
+        padding: '0 8px',
+        borderRadius: 6,
+        border: `1px solid ${active ? c.violet : c.line}`,
+        background: active ? c.violet : c.card,
+        color: active ? c.white : c.mid,
+        fontSize: 13, fontWeight: 500,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.35 : 1,
+        outline: 'none',
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
+// ─── Folder tile ─────────────────────────────────────────────────────────────
+interface FolderTileProps {
+  folder: FolderItem
+  onNavigate: () => void
+  onDrop: (mediaId: string) => void
+  onFolderDrop: (draggedFolderId: string) => void
+}
+
+function FolderTile({ folder, onNavigate, onDrop, onFolderDrop }: FolderTileProps) {
+  const [isDragOver, setIsDragOver] = useState(false)
+
+  return (
+    <div
+      onClick={onNavigate}
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData('folderId', folder.id)
+        e.dataTransfer.setData('folderName', folder.name)
+        e.dataTransfer.effectAllowed = 'move'
+      }}
+      onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(true) }}
+      onDragLeave={() => setIsDragOver(false)}
+      onDrop={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setIsDragOver(false)
+        const mediaId = e.dataTransfer.getData('mediaId')
+        const folderId = e.dataTransfer.getData('folderId')
+        if (mediaId) onDrop(mediaId)
+        else if (folderId && folderId !== folder.id) onFolderDrop(folderId)
+      }}
+      style={{
+        position: 'relative',
+        borderRadius: 8,
+        cursor: 'pointer',
+        background: isDragOver ? 'rgba(99,102,241,0.12)' : c.card,
+        border: isDragOver ? `2px solid ${c.violet}` : `1px solid ${c.line}`,
+        boxShadow: isDragOver ? `0 0 0 3px rgba(99,102,241,0.15)` : '0 1px 4px rgba(0,0,0,0.2)',
+        overflow: 'hidden',
+        transition: 'border-color 0.12s, box-shadow 0.12s, background 0.12s',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {/* Folder thumbnail area — matches aspect ratio of media tiles */}
+      <div style={{
+        aspectRatio: '1 / 1',
+        background: isDragOver ? 'rgba(99,102,241,0.08)' : c.input,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+      }}>
+        {/* Big folder icon */}
+        <svg width="44" height="44" viewBox="0 0 24 24" fill={isDragOver ? c.violet : c.gold} stroke="none">
+          <path d="M3 7V17a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6.586a1 1 0 01-.707-.293L10 5H5a2 2 0 00-2 2z" />
+        </svg>
+        {/* "DIR" badge top-right */}
+        <span style={{
+          position: 'absolute', top: 5, right: 5,
+          fontSize: 11, fontWeight: 700, letterSpacing: '0.05em',
+          background: 'rgba(232,168,78,0.75)',
+          backdropFilter: 'blur(4px)',
+          color: c.white,
+          padding: '3px 6px',
+          borderRadius: 4,
+          lineHeight: 1.4,
+        }}>
+          DIR
+        </span>
+        {/* Drop hint overlay */}
+        {isDragOver && (
+          <div style={{
+            position: 'absolute', inset: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(99,102,241,0.18)',
+          }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={c.violet} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="16 16 12 12 8 16" />
+              <line x1="12" y1="12" x2="12" y2="21" />
+              <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3" />
+            </svg>
+          </div>
+        )}
+      </div>
+
+      {/* Folder name strip */}
+      <div style={{ padding: '8px 10px 9px', borderTop: `1px solid ${c.line}` }}>
+        <p style={{
+          margin: 0, fontSize: 13, fontWeight: 500, color: c.high,
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          lineHeight: 1.3,
+        }} title={folder.name}>
+          {folder.name}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// ─── Grid item ───────────────────────────────────────────────────────────────
 interface MediaGridItemProps {
   item: MediaItem
   isSelected: boolean
@@ -192,350 +330,344 @@ interface MediaGridItemProps {
   onMoveToFolder: (folderId: string | null) => void
 }
 
-/**
- * Individual media item in the grid
- */
 function MediaGridItem({ item, isSelected, onSelect, onCopyUrl, onDelete, folders, onMoveToFolder }: MediaGridItemProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [showActions, setShowActions] = useState(false)
   const [showFolderMenu, setShowFolderMenu] = useState(false)
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 })
-  const moreButtonRef = useRef<HTMLButtonElement>(null)
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 })
+  const moreRef = useRef<HTMLButtonElement>(null)
+
   const isImage = item.mimeType?.startsWith('image/')
-  const thumbnailUrl = item.sizes?.thumbnail?.url || item.publicUrl || item.url
+  const thumbUrl = item.sizes?.thumbnail?.url || item.publicUrl || item.url
+  const badge = mimeLabel(item.mimeType)
+  const bColor = badgeColor(item.mimeType)
 
-  // Get current folder name if item is in a folder
-  const currentFolderName = typeof item.folder === 'object' && item.folder
-    ? item.folder.name
-    : null
-
-  // Calculate dropdown position when showing actions
   useEffect(() => {
-    if (showActions && moreButtonRef.current) {
-      const rect = moreButtonRef.current.getBoundingClientRect()
-      setDropdownPosition({
-        top: rect.bottom + 8,
-        left: Math.min(rect.right - 200, window.innerWidth - 220),
+    if (showActions && moreRef.current) {
+      const r = moreRef.current.getBoundingClientRect()
+      setDropdownPos({
+        top: r.bottom + 6,
+        left: Math.min(r.right - 180, window.innerWidth - 196),
       })
     }
   }, [showActions])
 
   return (
     <div
-      className="relative group rounded-xl cursor-pointer transition-all duration-200"
-      style={{
-        boxShadow: isSelected
-          ? `0 0 0 3px ${colors.primary}, 0 4px 12px rgba(59, 130, 246, 0.3)`
-          : isHovered
-            ? `0 4px 20px rgba(0, 0, 0, 0.4)`
-            : `0 2px 8px rgba(0, 0, 0, 0.2)`,
-        transform: isSelected ? 'scale(1.02)' : isHovered ? 'translateY(-2px)' : undefined,
-        backgroundColor: colors.cardBg,
-        border: `1px solid ${colors.border}`,
-      }}
       onClick={onSelect}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => {
-        setIsHovered(false)
-        setShowActions(false)
-        setShowFolderMenu(false)
+      onMouseLeave={() => { setIsHovered(false); setShowActions(false); setShowFolderMenu(false) }}
+      draggable
+      onDragStart={(e) => {
+        e.stopPropagation()
+        e.dataTransfer.setData('mediaId', item.id)
+        e.dataTransfer.setData('mediaFilename', item.filename)
+        e.dataTransfer.effectAllowed = 'move'
+      }}
+      style={{
+        position: 'relative',
+        borderRadius: 8,
+        cursor: 'pointer',
+        background: c.card,
+        border: isSelected
+          ? `2px solid ${c.violet}`
+          : `1px solid ${isHovered ? '#2E2E40' : c.line}`,
+        boxShadow: isSelected
+          ? `0 0 0 3px ${c.violetGlow}`
+          : isHovered ? '0 4px 16px rgba(0,0,0,0.4)' : '0 1px 4px rgba(0,0,0,0.2)',
+        overflow: 'hidden',
+        transition: 'border-color 0.12s, box-shadow 0.12s',
+        transform: isSelected ? 'scale(1.015)' : undefined,
       }}
     >
-      {/* Thumbnail - Larger aspect ratio */}
-      <div className="aspect-[4/3] rounded-t-xl overflow-hidden" style={{ backgroundColor: colors.inputBg }}>
+      {/* Square thumbnail */}
+      <div style={{
+        aspectRatio: '1 / 1',
+        background: c.input,
+        overflow: 'hidden',
+        position: 'relative',
+      }}>
         {isImage ? (
           <img
-            src={thumbnailUrl}
+            src={thumbUrl}
             alt={item.alt || item.filename}
-            className="w-full h-full object-cover"
             loading="lazy"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: colors.inputBg }}>
-            <FileIcon mimeType={item.mimeType} />
+          <div style={{
+            width: '100%', height: '100%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <FileTypeIcon mimeType={item.mimeType} />
           </div>
         )}
-      </div>
 
-      {/* Filename bar - Always visible, solid background */}
-      <div
-        className="px-3 py-2.5 border-t rounded-b-xl"
-        style={{
-          backgroundColor: colors.cardBg,
-          borderColor: colors.border,
-        }}
-      >
-        <p
-          className="text-sm font-medium truncate"
-          style={{ color: colors.textPrimary }}
-          title={item.filename}
-        >
-          {item.filename}
-        </p>
-        {currentFolderName && (
-          <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: colors.textMuted }}>
-            <svg className="w-3 h-3" style={{ color: colors.gold }} fill="currentColor" viewBox="0 0 24 24">
-              <path d="M3 7V17a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6.586a1 1 0 01-.707-.293L10 5H5a2 2 0 00-2 2z" />
+        {/* Hover overlay (very subtle) */}
+        {isHovered && (
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(180deg, rgba(0,0,0,0.5) 0%, transparent 45%)',
+            pointerEvents: 'none',
+          }} />
+        )}
+
+        {/* File type badge — always visible top-right */}
+        <span style={{
+          position: 'absolute', top: 5, right: 5,
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: '0.05em',
+          background: bColor,
+          backdropFilter: 'blur(4px)',
+          color: c.white,
+          padding: '3px 6px',
+          borderRadius: 4,
+          lineHeight: 1.4,
+        }}>
+          {badge}
+        </span>
+
+        {/* Selection check — top-left */}
+        {isSelected && (
+          <div style={{
+            position: 'absolute', top: 5, left: 5,
+            width: 22, height: 22, borderRadius: '50%',
+            background: c.violet,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
+          }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
             </svg>
-            {currentFolderName}
-          </p>
+          </div>
+        )}
+
+        {/* ⋯ menu button — appears on hover */}
+        {isHovered && (
+          <button
+            ref={moreRef}
+            onClick={(e) => { e.stopPropagation(); setShowActions(!showActions); setShowFolderMenu(false) }}
+            style={{
+              position: 'absolute', top: isSelected ? 32 : 6, left: 6,
+              width: 26, height: 26, borderRadius: 5,
+              background: 'rgba(28,28,38,0.88)',
+              border: `1px solid ${c.line}`,
+              color: c.mid,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', outline: 'none',
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <circle cx="12" cy="5" r="1" fill="currentColor" /><circle cx="12" cy="12" r="1" fill="currentColor" /><circle cx="12" cy="19" r="1" fill="currentColor" />
+            </svg>
+          </button>
         )}
       </div>
 
-      {/* Hover overlay for actions */}
-      <div
-        className="absolute inset-0 transition-opacity duration-200 pointer-events-none"
-        style={{
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0.4), transparent 50%)',
-          opacity: isHovered ? 1 : 0,
-        }}
-      />
+      {/* Filename strip */}
+      <div style={{
+        padding: '8px 10px 9px',
+        borderTop: `1px solid ${c.line}`,
+      }}>
+        <p style={{
+          margin: 0,
+          fontSize: 13,
+          fontWeight: 400,
+          color: c.mid,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          lineHeight: 1.3,
+        }} title={item.filename}>
+          {item.filename}
+        </p>
+      </div>
 
-      {/* Action buttons - Top right */}
-      {isHovered && (
-        <div className="absolute top-3 right-3 flex gap-2">
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onCopyUrl()
-            }}
-            className="p-2 rounded-lg shadow-md transition-all hover:scale-105"
-            style={{ backgroundColor: colors.cardBg, color: colors.textPrimary, border: `1px solid ${colors.border}` }}
-            title="Copy URL"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-          </button>
-          <button
-            ref={moreButtonRef}
-            onClick={(e) => {
-              e.stopPropagation()
-              setShowActions(!showActions)
-              setShowFolderMenu(false)
-            }}
-            className="p-2 rounded-lg shadow-md transition-all hover:scale-105"
-            style={{ backgroundColor: colors.cardBg, color: colors.textPrimary, border: `1px solid ${colors.border}` }}
-            title="More actions"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-            </svg>
-          </button>
-        </div>
-      )}
-
-      {/* Dropdown menu - rendered in portal for proper positioning */}
+      {/* ─ Dropdown portal ─────────────────────────────────────────────── */}
       {showActions && typeof document !== 'undefined' && createPortal(
         <>
-          {/* Backdrop to close dropdown */}
+          <div style={{ position: 'fixed', inset: 0, zIndex: 10000 }} onClick={(e) => { e.stopPropagation(); setShowActions(false); setShowFolderMenu(false) }} />
           <div
-            className="fixed inset-0 z-[10000]"
-            onClick={(e) => {
-              e.stopPropagation()
-              setShowActions(false)
-              setShowFolderMenu(false)
-            }}
-          />
-          <div
-            className="fixed rounded-xl shadow-2xl border py-2 z-[10001]"
             style={{
-              backgroundColor: colors.cardBg,
-              borderColor: colors.border,
-              top: dropdownPosition.top,
-              left: dropdownPosition.left,
-              minWidth: 200,
+              position: 'fixed',
+              top: dropdownPos.top,
+              left: dropdownPos.left,
+              width: 180,
+              background: c.card,
+              border: `1px solid ${c.line}`,
+              borderRadius: 8,
+              boxShadow: '0 10px 32px rgba(0,0,0,0.7)',
+              zIndex: 10001,
+              overflow: 'hidden',
+              paddingTop: 4,
+              paddingBottom: 4,
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Move to folder option */}
-            <div className="relative">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setShowFolderMenu(!showFolderMenu)
-                }}
-                className="flex items-center justify-between gap-2 px-4 py-2.5 text-sm w-full transition-colors hover:bg-opacity-80"
-                style={{ color: colors.textPrimary, backgroundColor: 'transparent' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.hoverBg}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-              >
-                <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5" style={{ color: colors.gold }} fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M3 7V17a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6.586a1 1 0 01-.707-.293L10 5H5a2 2 0 00-2 2z" />
+            {/* Move to folder */}
+            <div style={{ position: 'relative' }}>
+              <DropItem
+                onClick={(e) => { e.stopPropagation(); setShowFolderMenu(!showFolderMenu) }}
+                label="Move to folder"
+                suffix={
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="9 18 15 12 9 6" />
                   </svg>
-                  <span>Move to folder</span>
-                </div>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                }
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill={c.gold} stroke="none">
+                  <path d="M3 7V17a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6.586a1 1 0 01-.707-.293L10 5H5a2 2 0 00-2 2z" />
                 </svg>
-              </button>
+              </DropItem>
 
-              {/* Folder submenu */}
               {showFolderMenu && (
-                <div
-                  className="absolute left-full top-0 ml-1 rounded-xl shadow-2xl border py-2 min-w-[180px]"
-                  style={{ backgroundColor: colors.cardBg, borderColor: colors.border }}
-                >
-                  {/* Root option */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onMoveToFolder(null)
-                      setShowActions(false)
-                      setShowFolderMenu(false)
-                    }}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm w-full transition-colors"
-                    style={{
-                      color: colors.textPrimary,
-                      backgroundColor: !item.folder ? colors.hoverBg : 'transparent',
-                    }}
-                    onMouseEnter={(e) => !item.folder ? null : e.currentTarget.style.backgroundColor = colors.hoverBg}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = !item.folder ? colors.hoverBg : 'transparent'}
+                <div style={{
+                  position: 'absolute', left: '100%', top: 0, marginLeft: 4,
+                  width: 180,
+                  background: c.card, border: `1px solid ${c.line}`, borderRadius: 8,
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+                  paddingTop: 4, paddingBottom: 4, overflow: 'hidden',
+                }}>
+                  <DropItem
+                    onClick={(e) => { e.stopPropagation(); onMoveToFolder(null); setShowActions(false); setShowFolderMenu(false) }}
+                    label="Root (no folder)"
+                    active={!item.folder}
                   >
-                    <svg className="w-4 h-4" style={{ color: colors.textMuted }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c.lo} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" />
                     </svg>
-                    <span>Root (No folder)</span>
-                  </button>
-                  {folders.length > 0 && (
-                    <div className="border-t my-1" style={{ borderColor: colors.border }} />
-                  )}
-                  {folders.map((folder) => {
-                    const isCurrentFolder = typeof item.folder === 'object'
-                      ? item.folder?.id === folder.id
-                      : item.folder === folder.id
+                  </DropItem>
+                  {folders.length > 0 && <div style={{ height: 1, background: c.line, margin: '4px 0' }} />}
+                  {folders.map((f) => {
+                    const cur = typeof item.folder === 'object' ? item.folder?.id === f.id : item.folder === f.id
                     return (
-                      <button
-                        key={folder.id}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onMoveToFolder(folder.id)
-                          setShowActions(false)
-                          setShowFolderMenu(false)
-                        }}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm w-full transition-colors"
-                        style={{
-                          color: colors.textPrimary,
-                          backgroundColor: isCurrentFolder ? colors.hoverBg : 'transparent',
-                        }}
-                        onMouseEnter={(e) => isCurrentFolder ? null : e.currentTarget.style.backgroundColor = colors.hoverBg}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = isCurrentFolder ? colors.hoverBg : 'transparent'}
+                      <DropItem
+                        key={f.id}
+                        onClick={(e) => { e.stopPropagation(); onMoveToFolder(f.id); setShowActions(false); setShowFolderMenu(false) }}
+                        label={f.name}
+                        active={cur}
                       >
-                        <svg className="w-4 h-4" style={{ color: colors.gold }} fill="currentColor" viewBox="0 0 24 24">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill={c.gold} stroke="none">
                           <path d="M3 7V17a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6.586a1 1 0 01-.707-.293L10 5H5a2 2 0 00-2 2z" />
                         </svg>
-                        <span>{folder.name}</span>
-                        {isCurrentFolder && (
-                          <svg className="w-4 h-4 ml-auto" style={{ color: colors.primary }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                          </svg>
-                        )}
-                      </button>
+                      </DropItem>
                     )
                   })}
                 </div>
               )}
             </div>
 
-            <div className="border-t my-1" style={{ borderColor: colors.border }} />
+            <div style={{ height: 1, background: c.line, margin: '4px 0' }} />
 
+            {/* Open in new tab */}
             <a
               href={item.publicUrl || item.url}
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors"
-              style={{ color: colors.textPrimary, backgroundColor: 'transparent' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.hoverBg}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              style={{ display: 'block', textDecoration: 'none' }}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-              Open in new tab
+              <DropItem onClick={() => {}} label="Open in new tab">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c.mid} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
+                </svg>
+              </DropItem>
             </a>
 
-            <div className="border-t my-1" style={{ borderColor: colors.border }} />
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                if (confirm('Delete this media item?')) {
-                  onDelete()
-                }
-              }}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm w-full transition-colors"
-              style={{ color: colors.error, backgroundColor: 'transparent' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.errorBg}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            {/* Copy URL */}
+            <DropItem onClick={(e) => { e.stopPropagation(); onCopyUrl(); setShowActions(false) }} label="Copy URL">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c.mid} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
               </svg>
-              Delete
-            </button>
+            </DropItem>
+
+            <div style={{ height: 1, background: c.line, margin: '4px 0' }} />
+
+            {/* Delete */}
+            <DropItem
+              onClick={(e) => { e.stopPropagation(); if (confirm('Delete this file?')) { onDelete() }; setShowActions(false) }}
+              label="Delete"
+              danger
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4h6v2" />
+              </svg>
+            </DropItem>
           </div>
         </>,
         document.body
-      )}
-
-      {/* Selection indicator */}
-      {isSelected && (
-        <div
-          className="absolute top-3 left-3 w-7 h-7 rounded-full flex items-center justify-center shadow-lg"
-          style={{ backgroundColor: colors.primary }}
-        >
-          <svg className="w-4 h-4" style={{ color: colors.white }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
       )}
     </div>
   )
 }
 
-/**
- * File type icon for non-image files
- */
-function FileIcon({ mimeType }: { mimeType: string }) {
-  const iconClass = "w-12 h-12"
-
-  if (mimeType?.startsWith('video/')) {
-    return (
-      <div className="p-4 rounded-xl" style={{ backgroundColor: colors.hoverBg }}>
-        <svg className={iconClass} style={{ color: colors.accent }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-        </svg>
-      </div>
-    )
-  }
-
-  if (mimeType?.startsWith('audio/')) {
-    return (
-      <div className="p-4 rounded-xl" style={{ backgroundColor: colors.hoverBg }}>
-        <svg className={iconClass} style={{ color: colors.success }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-        </svg>
-      </div>
-    )
-  }
-
-  if (mimeType === 'application/pdf') {
-    return (
-      <div className="p-4 rounded-xl" style={{ backgroundColor: colors.errorBg }}>
-        <svg className={iconClass} style={{ color: colors.error }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-        </svg>
-      </div>
-    )
-  }
-
+// ─── Dropdown item ────────────────────────────────────────────────────────────
+function DropItem({ children, label, onClick, suffix, active, danger }: {
+  children: React.ReactNode
+  label: string
+  onClick: (e: React.MouseEvent) => void
+  suffix?: React.ReactNode
+  active?: boolean
+  danger?: boolean
+}) {
   return (
-    <div className="p-4 rounded-xl" style={{ backgroundColor: colors.hoverBg }}>
-      <svg className={iconClass} style={{ color: colors.textMuted }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-      </svg>
-    </div>
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 9,
+        width: '100%', padding: '7px 12px',
+        background: active ? c.hover : 'transparent',
+        border: 'none',
+        color: danger ? c.rose : active ? c.high : c.mid,
+        fontSize: 13, cursor: 'pointer', outline: 'none',
+        transition: 'background 0.1s, color 0.1s',
+        textAlign: 'left' as const,
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = danger ? 'rgba(241,108,108,0.08)' : c.hover
+        e.currentTarget.style.color = danger ? c.rose : c.high
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = active ? c.hover : 'transparent'
+        e.currentTarget.style.color = danger ? c.rose : active ? c.high : c.mid
+      }}
+    >
+      {children}
+      <span style={{ flex: 1 }}>{label}</span>
+      {suffix && <span style={{ color: c.lo, marginLeft: 'auto' }}>{suffix}</span>}
+      {active && !suffix && (
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={c.violet} strokeWidth="3">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      )}
+    </button>
+  )
+}
+
+// ─── File type icon ───────────────────────────────────────────────────────────
+function FileTypeIcon({ mimeType }: { mimeType: string }) {
+  const sz = 36
+  if (mimeType?.startsWith('video/')) return (
+    <svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke={c.gold} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+    </svg>
+  )
+  if (mimeType?.startsWith('audio/')) return (
+    <svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke={c.jade} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" />
+    </svg>
+  )
+  if (mimeType === 'application/pdf') return (
+    <svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke={c.rose} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" />
+    </svg>
+  )
+  return (
+    <svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke={c.lo} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" />
+    </svg>
   )
 }

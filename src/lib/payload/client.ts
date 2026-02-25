@@ -368,25 +368,19 @@ export async function getPianoPage(): Promise<any | null> {
       apiUrl = `${baseURL}/api/pianos-page`
     }
 
-    console.log('[DEBUG] Fetching pianos page data from', apiUrl)
-
     // Use the Next.js API route that proxies to the singleton endpoint
     const response = await fetch(apiUrl)
-
-    console.log('[DEBUG] Response status:', response.status)
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
     const result = await response.json()
-    console.log('[DEBUG] API response result:', { success: result.success, hasData: !!result.data })
 
     if (!result.success) {
       throw new Error(result.error || 'Failed to fetch pianos page data')
     }
 
-    console.log('[DEBUG] Successfully fetched pianos page data')
     return result.data
   } catch (error) {
     // Handle null/undefined errors the same way as payloadFetch
@@ -608,29 +602,23 @@ export async function getHomePage(): Promise<any | null> {
       apiUrl = `${baseURL}/api/home-page/singleton`
     }
 
-    console.log('[DEBUG] Fetching home page data from', apiUrl)
-
     // Use the custom singleton endpoint
     const response = await fetch(apiUrl, {
       cache: 'force-cache',
       next: { revalidate: 300 } // Revalidate every 5 minutes
     })
 
-    console.log('[DEBUG] Response status:', response.status)
-
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
     const data = await response.json()
-    console.log('[DEBUG] API response data:', { hasData: !!data, hasNewsItems: !!data?.newsItems })
 
     // The singleton endpoint returns the document directly, not wrapped in success/data
     if (!data) {
       throw new Error('No home page data found')
     }
 
-    console.log('[DEBUG] Successfully fetched home page data')
     return data
   } catch (error) {
     // Handle null/undefined errors the same way as payloadFetch
@@ -730,7 +718,6 @@ export async function getHomePageData(): Promise<{
         seo: rawData.seo
       }
 
-      console.log('[DEBUG] Transformed homepage data structure with news items:', cmsData.newsCarouselSection?.newsItems?.length || 0)
     }
   } catch (error) {
     console.warn('Error fetching homepage data from CMS, using fallbacks:', error)
@@ -792,19 +779,14 @@ export async function getStorefront(slug: string): Promise<any | null> {
       apiUrl = `${baseURL}/api/storefronts/by-slug/${slug}`
     }
 
-    console.log('[DEBUG] Fetching storefront data from', apiUrl)
-
     // Use the Next.js API route
     const response = await fetch(apiUrl, {
       cache: 'force-cache',
       next: { revalidate: 300 } // Revalidate every 5 minutes
     })
 
-    console.log('[DEBUG] Response status:', response.status)
-
     if (response.status === 404) {
       // Location not found or inactive
-      console.log('[DEBUG] Storefront not found or inactive')
       return null
     }
 
@@ -813,7 +795,6 @@ export async function getStorefront(slug: string): Promise<any | null> {
     }
 
     const result = await response.json()
-    console.log('[DEBUG] API response result:', { success: result.success, hasData: !!result.data })
 
     if (!result.success) {
       if (result.error === 'Storefront not found or inactive') {
@@ -822,7 +803,6 @@ export async function getStorefront(slug: string): Promise<any | null> {
       throw new Error(result.error || 'Failed to fetch storefront data')
     }
 
-    console.log('[DEBUG] Successfully fetched storefront data')
     return result.data
   } catch (error) {
     // Handle null/undefined errors the same way as payloadFetch

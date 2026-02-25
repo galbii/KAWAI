@@ -38,3 +38,7 @@ export type {
 } from './types'
 
 export type { ToastMessage } from './Toast'
+
+// Design tokens & utilities
+export { mm } from './tokens'
+export * from './utils'

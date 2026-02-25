@@ -19,58 +19,6 @@ async function PageContent({ slug }: { slug: string[] }) {
   // Join slug array into path string (e.g., ["store", "houston", "shsu"] → "store/houston/shsu")
   const slugPath = slug.join('/')
 
-  console.log('🔍 [PAGE DEBUG] ==================== START ====================')
-  console.log('🔍 [PAGE DEBUG] Slug array:', slug)
-  console.log('🔍 [PAGE DEBUG] Slug path:', slugPath)
-  console.log('🔍 [PAGE DEBUG] Draft mode:', isDraftMode)
-
-  // First, let's see what's in the database without ANY filters
-  console.log('🔍 [PAGE DEBUG] Step 1: Checking if page exists at all (no filters)...')
-  const allPages = await payload.find({
-    collection: 'pages',
-    where: {
-      slug: { equals: slugPath },
-    },
-    limit: 1,
-    depth: 0,
-  })
-  console.log('🔍 [PAGE DEBUG] Pages found (no filters):', allPages.totalDocs)
-  if (allPages.docs.length > 0) {
-    const foundPage = allPages.docs[0]
-    if (foundPage) {
-      console.log('🔍 [PAGE DEBUG] Page found:', {
-        id: foundPage.id,
-        title: foundPage.title,
-        slug: foundPage.slug,
-        _status: foundPage._status,
-        category: foundPage.category,
-        publishedAt: foundPage.publishedAt,
-      })
-    }
-  } else {
-    console.log('🔍 [PAGE DEBUG] No page found with slug:', slugPath)
-  }
-
-  // Now check for storefronts with same slug (only check first segment for storefronts)
-  console.log('🔍 [PAGE DEBUG] Step 2: Checking for storefront conflicts...')
-  const storefrontCheck = await payload.find({
-    collection: 'storefronts',
-    where: {
-      slug: { equals: slug[0] || slugPath },
-    },
-    limit: 1,
-    depth: 0,
-  })
-  console.log('🔍 [PAGE DEBUG] Storefronts found:', storefrontCheck.totalDocs)
-  if (storefrontCheck.docs.length > 0) {
-    const foundStorefront = storefrontCheck.docs[0]
-    if (foundStorefront) {
-      console.log('🔍 [PAGE DEBUG] ⚠️ CONFLICT: Storefront exists with same slug:', foundStorefront.slug)
-    }
-  }
-
-  // Fetch page data with same filters as existence check
-  console.log('🔍 [PAGE DEBUG] Step 3: Fetching page with published filter...')
   const page = await payload
     .find({
       collection: 'pages',
@@ -87,35 +35,6 @@ async function PageContent({ slug }: { slug: string[] }) {
       overrideAccess: isDraftMode,
     })
     .then(({ docs }) => docs?.[0] as Page);
-
-  console.log('🔍 [PAGE DEBUG] Page with published filter found:', page ? 'YES' : 'NO')
-  if (page) {
-    console.log('🔍 [PAGE DEBUG] Page details:', {
-      id: page.id,
-      title: page.title,
-      slug: page.slug,
-      _status: page._status,
-      hasHero: !!page.hero,
-      layoutBlocks: page.layout?.length || 0,
-    })
-
-    // CRITICAL: Log block structure to debug rendering
-    if (page.layout && page.layout.length > 0) {
-      console.log('🔍 [PAGE DEBUG] Block Structure Analysis:')
-      console.log('  Total blocks:', page.layout.length)
-      page.layout.forEach((block, index) => {
-        console.log(`  Block ${index}:`, {
-          blockType: block.blockType,
-          id: block.id,
-          hasContent: Object.keys(block).length > 2, // More than blockType + id
-          keys: Object.keys(block),
-        })
-      })
-    } else {
-      console.log('🔍 [PAGE DEBUG] ⚠️ No blocks in layout array!')
-    }
-  }
-  console.log('🔍 [PAGE DEBUG] ==================== END ====================')
 
   // If page doesn't exist or isn't published, return 404
   if (!page) {
@@ -160,8 +79,6 @@ export async function generateStaticParams() {
       },
     });
 
-    console.log(`✅ [SEO] Pre-rendering ${pages.docs.length} pages for Google indexing`)
-
     // Convert slug strings to arrays (e.g., "store/houston/shsu" → ["store", "houston", "shsu"])
     return pages.docs.map((page: any) => ({
       slug: page.slug ? page.slug.split('/') : []
@@ -205,22 +122,6 @@ export async function generateMetadata(
     }
 
     // Check Pages collection (published only)
-    console.log('🔍 [METADATA DEBUG] Checking for page with slug:', slugPath)
-
-    // First check without _status filter
-    const pageNoFilter = await payload.find({
-      collection: 'pages',
-      where: {
-        slug: { equals: slugPath },
-      },
-      limit: 1,
-      depth: 0,
-    })
-    console.log('🔍 [METADATA DEBUG] Page found (no filter):', pageNoFilter.totalDocs)
-    if (pageNoFilter.docs.length > 0 && pageNoFilter.docs[0]) {
-      console.log('🔍 [METADATA DEBUG] Page _status:', pageNoFilter.docs[0]._status)
-    }
-
     const page = await payload
       .find({
         collection: 'pages',
@@ -233,11 +134,8 @@ export async function generateMetadata(
       })
       .then(({ docs }) => docs?.[0]);
 
-    console.log('🔍 [METADATA DEBUG] Page found (with published filter):', page ? 'YES' : 'NO')
-
     // If Page not found, return 404 metadata
     if (!page) {
-      console.log(`[SEO] Page "${slugPath}" not found`);
       return {
         title: 'Page Not Found',
         description: 'The requested page could not be found.',
@@ -251,8 +149,6 @@ export async function generateMetadata(
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com';
     const defaultTitle = `${page.title} | KAWAI Pianos`;
     const defaultDescription = `${page.title} - KAWAI Pianos`;
-
-    console.log(`[SEO] Generated metadata for Page "${slugPath}": ${defaultTitle}`);
 
     return {
       title: defaultTitle,
