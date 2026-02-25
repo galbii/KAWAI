@@ -12,6 +12,7 @@ import { CartDrawer } from '@/components/cart/CartDrawer'
 import { ProductsMegaMenu } from '@/components/navigation/ProductsMegaMenu'
 import { StorefrontsMegaMenu } from '@/components/navigation/StorefrontsMegaMenu'
 import { ResourcesMegaMenu } from '@/components/navigation/ResourcesMegaMenu'
+import { RegisterPianoModal } from '@/components/navigation/RegisterPianoModal'
 import { NewsMegaMenu } from '@/components/navigation/NewsMegaMenu'
 import { SearchBar } from '@/components/search/SearchBar'
 import { cn } from '@/lib/utils'
@@ -444,6 +445,15 @@ interface NewsItem {
   link?: string
 }
 
+interface RegisterConfig {
+  bannerImageUrl?: string | null
+  bannerTitle?: string | null
+  bannerDescription?: string | null
+  hubspotEmbedUrl?: string | null
+  hubspotFormId?: string | null
+  hubspotPortalId?: string | null
+}
+
 interface HeaderProps {
   navigation?: NavigationItem[]
   locationData?: DealerLocationData | null
@@ -453,6 +463,7 @@ interface HeaderProps {
   isFindADealerPage?: boolean
   hideLogo?: boolean
   newsItems?: NewsItem[]
+  registerConfig?: RegisterConfig
 }
 
 // Default fallback navigation - URLs will be made context-aware at runtime
@@ -471,7 +482,7 @@ const defaultNavigation: NavigationItem[] = [
   // Resources has been moved to ResourcesMegaMenu - rendered separately below
 ]
 
-export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isUniversityPage = false, isFindADealerPage = false, newsItems = [] }: HeaderProps) {
+export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isUniversityPage = false, isFindADealerPage = false, newsItems = [], registerConfig }: HeaderProps) {
   const pathname = usePathname()
   const isOnFindADealerPage = isFindADealerPage || pathname.startsWith('/find-a-dealer')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -493,6 +504,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   }> | null>(null)
   const [isResourcesMenuOpen, setIsResourcesMenuOpen] = useState(false)
   const [isNewsMenuOpen, setIsNewsMenuOpen] = useState(false)
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
   const [currentLocationData, setCurrentLocationData] = useState<DealerLocationData | null>(locationData || null)
   const [isLoadingLocation, setIsLoadingLocation] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
@@ -1188,6 +1200,16 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                 </div>
               )}
 
+              {/* Register Your Piano — mobile visible button */}
+              {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
+                <button
+                  onClick={() => setIsRegisterModalOpen(true)}
+                  className="lg:hidden rounded-md bg-kawai-black px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-kawai-charcoal"
+                >
+                  Register
+                </button>
+              )}
+
               {/* Mobile Menu Button */}
               {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
                 <motion.button
@@ -1274,87 +1296,103 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
           <div className="container mx-auto px-4 sm:px-6">
             <nav>
               <div className={cn(
-                "flex items-center justify-center gap-8 transition-all duration-300",
+                "flex items-center transition-all duration-300",
                 isScrolled ? 'h-12' : 'h-14'
               )}>
-                {/* News Mega Menu */}
-                <div
-                  onMouseEnter={animationComplete ? handleNewsMenuOpen : undefined}
-                  onMouseLeave={animationComplete ? handleNewsMenuClose : undefined}
-                >
-                  <button
-                    className={cn(
-                      "flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md",
-                      animationComplete ? "cursor-pointer" : "cursor-default opacity-50"
-                    )}
-                    disabled={!animationComplete}
-                  >
-                    <span>News</span>
-                    <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isNewsMenuOpen && "rotate-180")} />
-                  </button>
-                </div>
+                {/* Left spacer — mirrors the Register button on the right */}
+                <div className="flex-1" />
 
-                {/* Official Storefronts Mega Menu */}
-                <div
-                  onMouseEnter={storefrontsData && animationComplete ? handleStorefrontsMenuOpen : undefined}
-                  onMouseLeave={storefrontsData && animationComplete ? handleStorefrontsMenuClose : undefined}
-                >
-                  <button
-                    className={cn(
-                      "flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md",
-                      storefrontsData && animationComplete ? "cursor-pointer" : "cursor-default opacity-50"
-                    )}
-                    disabled={!storefrontsData || !animationComplete}
-                  >
-                    <span>Official Storefronts</span>
-                    <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isStorefrontsMenuOpen && "rotate-180")} />
-                  </button>
-                </div>
-
-                {/* Products Mega Menu - Controlled by feature flag */}
-                {isProductsMenuEnabled && (
+                {/* Centered nav items */}
+                <div className="flex items-center gap-8">
+                  {/* News Mega Menu */}
                   <div
-                    onMouseEnter={productsNavData && animationComplete ? handleProductsMenuOpen : undefined}
-                    onMouseLeave={productsNavData && animationComplete ? handleProductsMenuClose : undefined}
+                    onMouseEnter={animationComplete ? handleNewsMenuOpen : undefined}
+                    onMouseLeave={animationComplete ? handleNewsMenuClose : undefined}
                   >
                     <button
                       className={cn(
                         "flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md",
-                        productsNavData && animationComplete ? "cursor-pointer" : "cursor-default opacity-50"
+                        animationComplete ? "cursor-pointer" : "cursor-default opacity-50"
                       )}
-                      disabled={!productsNavData || !animationComplete}
+                      disabled={!animationComplete}
                     >
-                      <span>Products</span>
-                      <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isProductsMenuOpen && "rotate-180")} />
+                      <span>News</span>
+                      <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isNewsMenuOpen && "rotate-180")} />
                     </button>
                   </div>
-                )}
 
-                {/* Artists Link */}
-                {navigation.filter(item => item.label === 'Artists').map((item) => (
-                  <ContextAwareLink
-                    key={item.label}
-                    href={item.href || '#'}
-                    className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md"
+                  {/* Official Storefronts Mega Menu */}
+                  <div
+                    onMouseEnter={storefrontsData && animationComplete ? handleStorefrontsMenuOpen : undefined}
+                    onMouseLeave={storefrontsData && animationComplete ? handleStorefrontsMenuClose : undefined}
                   >
-                    {item.label}
-                  </ContextAwareLink>
-                ))}
+                    <button
+                      className={cn(
+                        "flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md",
+                        storefrontsData && animationComplete ? "cursor-pointer" : "cursor-default opacity-50"
+                      )}
+                      disabled={!storefrontsData || !animationComplete}
+                    >
+                      <span>Official Storefronts</span>
+                      <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isStorefrontsMenuOpen && "rotate-180")} />
+                    </button>
+                  </div>
 
-                {/* Resources Mega Menu */}
-                <div
-                  onMouseEnter={animationComplete ? handleResourcesMenuOpen : undefined}
-                  onMouseLeave={animationComplete ? handleResourcesMenuClose : undefined}
-                >
+                  {/* Products Mega Menu - Controlled by feature flag */}
+                  {isProductsMenuEnabled && (
+                    <div
+                      onMouseEnter={productsNavData && animationComplete ? handleProductsMenuOpen : undefined}
+                      onMouseLeave={productsNavData && animationComplete ? handleProductsMenuClose : undefined}
+                    >
+                      <button
+                        className={cn(
+                          "flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md",
+                          productsNavData && animationComplete ? "cursor-pointer" : "cursor-default opacity-50"
+                        )}
+                        disabled={!productsNavData || !animationComplete}
+                      >
+                        <span>Products</span>
+                        <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isProductsMenuOpen && "rotate-180")} />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Artists Link */}
+                  {navigation.filter(item => item.label === 'Artists').map((item) => (
+                    <ContextAwareLink
+                      key={item.label}
+                      href={item.href || '#'}
+                      className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md"
+                    >
+                      {item.label}
+                    </ContextAwareLink>
+                  ))}
+
+                  {/* Resources Mega Menu */}
+                  <div
+                    onMouseEnter={animationComplete ? handleResourcesMenuOpen : undefined}
+                    onMouseLeave={animationComplete ? handleResourcesMenuClose : undefined}
+                  >
+                    <button
+                      className={cn(
+                        "flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md",
+                        animationComplete ? "cursor-pointer" : "cursor-default opacity-50"
+                      )}
+                      disabled={!animationComplete}
+                    >
+                      <span>Resources</span>
+                      <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isResourcesMenuOpen && "rotate-180")} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Right column — Register button */}
+                <div className="flex-1 flex justify-end">
                   <button
-                    className={cn(
-                      "flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md",
-                      animationComplete ? "cursor-pointer" : "cursor-default opacity-50"
-                    )}
-                    disabled={!animationComplete}
+                    onClick={() => setIsRegisterModalOpen(true)}
+                    className="rounded-md bg-kawai-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-kawai-charcoal"
                   >
-                    <span>Resources</span>
-                    <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isResourcesMenuOpen && "rotate-180")} />
+                    Register Your Piano
                   </button>
                 </div>
               </div>
@@ -1434,10 +1472,17 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
               </div>
             </nav>
             
-            <div className="mt-auto bg-white border-t border-gray-200/50 p-6 flex-shrink-0">
-              <div className="text-center text-sm text-gray-500">
-                Browse our complete piano collection by category
-              </div>
+            {/* Register Your Piano — sidebar bottom */}
+            <div className="mt-auto border-t border-gray-200/50 bg-white px-5 py-5 flex-shrink-0">
+              <button
+                onClick={() => {
+                  closeMobileMenu()
+                  setIsRegisterModalOpen(true)
+                }}
+                className="w-full rounded-lg bg-kawai-black px-5 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-kawai-charcoal active:scale-[0.98]"
+              >
+                Register Your Piano
+              </button>
             </div>
           </motion.div>
           </>
@@ -1483,6 +1528,10 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         <ResourcesMegaMenu
           isOpen={isResourcesMenuOpen && animationComplete && !isSearchOpen}
           onClose={() => setIsResourcesMenuOpen(false)}
+          onRegisterClick={() => setIsRegisterModalOpen(true)}
+          bannerImageUrl={registerConfig?.bannerImageUrl ?? null}
+          bannerTitle={registerConfig?.bannerTitle ?? null}
+          bannerDescription={registerConfig?.bannerDescription ?? null}
           isHeaderScrolled={isScrolled}
         />
       </div>
@@ -1506,6 +1555,16 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         above the floating add-to-cart button's z-[9000] which is also in root stacking context.
         (Inside <header z-50>, child z-indexes are capped at that stacking context level.) */}
     <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+    <RegisterPianoModal
+      isOpen={isRegisterModalOpen}
+      onClose={() => setIsRegisterModalOpen(false)}
+      bannerImageUrl={registerConfig?.bannerImageUrl ?? null}
+      bannerTitle={registerConfig?.bannerTitle ?? null}
+      bannerDescription={registerConfig?.bannerDescription ?? null}
+      hubspotEmbedUrl={registerConfig?.hubspotEmbedUrl ?? null}
+      hubspotFormId={registerConfig?.hubspotFormId ?? null}
+      hubspotPortalId={registerConfig?.hubspotPortalId ?? null}
+    />
     </>
   )
 }

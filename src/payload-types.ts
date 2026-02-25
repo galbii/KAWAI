@@ -6252,6 +6252,32 @@ export interface HomePage {
       id?: string | null;
     }[];
   };
+  registerMyPiano?: {
+    /**
+     * Banner image displayed in the registration modal and dropdown (recommended: 1200×400px)
+     */
+    bannerImage?: (string | null) | Media;
+    /**
+     * Title overlaid on the left/centre of the banner image (e.g., "Register Your Piano")
+     */
+    bannerTitle?: string | null;
+    /**
+     * Short description overlaid on the banner image
+     */
+    bannerDescription?: string | null;
+    /**
+     * The src URL from the HubSpot <script> tag (e.g., https://js.hsforms.net/forms/embed/21987263.js)
+     */
+    hubspotEmbedUrl?: string | null;
+    /**
+     * The data-form-id attribute from the HubSpot embed div (e.g., 2d83f40a-44fe-421e-a4a5-3b4efcd80100)
+     */
+    hubspotFormId?: string | null;
+    /**
+     * The data-portal-id attribute from the HubSpot embed div (e.g., 21987263)
+     */
+    hubspotPortalId?: string | null;
+  };
   /**
    * SEO and metadata configuration
    */
@@ -7991,6 +8017,16 @@ export interface HomePageSelect<T extends boolean = true> {
               use?: T;
               id?: T;
             };
+      };
+  registerMyPiano?:
+    | T
+    | {
+        bannerImage?: T;
+        bannerTitle?: T;
+        bannerDescription?: T;
+        hubspotEmbedUrl?: T;
+        hubspotFormId?: T;
+        hubspotPortalId?: T;
       };
   seo?:
     | T

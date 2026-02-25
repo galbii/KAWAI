@@ -1064,6 +1064,79 @@ export const HomePage: CollectionConfig = {
           ]
         },
 
+        // Register My Piano Tab
+        {
+          label: 'Register My Piano',
+          description: 'Configure the piano registration modal shown in the site navigation',
+          fields: [
+            {
+              name: 'registerMyPiano',
+              type: 'group',
+              fields: [
+                {
+                  name: 'enabled',
+                  type: 'checkbox',
+                  label: 'Enable Register My Piano',
+                  defaultValue: true,
+                  admin: {
+                    description: 'Toggle all "Register Your Piano" buttons and sections on or off site-wide',
+                  },
+                },
+                imageField('bannerImage', {
+                  required: false,
+                  admin: {
+                    description: 'Banner image displayed in the registration modal and dropdown (recommended: 1200×400px)',
+                  },
+                }),
+                {
+                  name: 'bannerTitle',
+                  type: 'text',
+                  label: 'Banner Title',
+                  admin: {
+                    description: 'Title overlaid on the left/centre of the banner image (e.g., "Register Your Piano")',
+                  },
+                },
+                {
+                  name: 'bannerDescription',
+                  type: 'text',
+                  label: 'Banner Description',
+                  admin: {
+                    description: 'Short description overlaid on the banner image',
+                  },
+                },
+                {
+                  name: 'hubspotEmbedUrl',
+                  type: 'text',
+                  label: 'HubSpot Embed Script URL',
+                  admin: {
+                    description:
+                      'The src URL from the HubSpot <script> tag (e.g., https://js.hsforms.net/forms/embed/21987263.js)',
+                    placeholder: 'https://js.hsforms.net/forms/embed/21987263.js',
+                  },
+                },
+                {
+                  name: 'hubspotFormId',
+                  type: 'text',
+                  label: 'HubSpot Form ID',
+                  admin: {
+                    description:
+                      'The data-form-id attribute from the HubSpot embed div (e.g., 2d83f40a-44fe-421e-a4a5-3b4efcd80100)',
+                  },
+                },
+                {
+                  name: 'hubspotPortalId',
+                  type: 'text',
+                  label: 'HubSpot Portal ID',
+                  admin: {
+                    description:
+                      'The data-portal-id attribute from the HubSpot embed div (e.g., 21987263)',
+                  },
+                },
+              ],
+            },
+          ],
+        },
+
         // SEO & Meta Tab
         {
           label: 'SEO & Meta',

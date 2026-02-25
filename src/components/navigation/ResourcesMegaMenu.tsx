@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Headphones, Mail, FileText } from 'lucide-react'
+import { Headphones, Mail } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 // ============================================================================
@@ -22,6 +22,14 @@ interface ResourcesMegaMenuProps {
   isOpen: boolean
   /** Callback when menu should close */
   onClose: () => void
+  /** Called when the user clicks "Register Now" — parent handles the modal */
+  onRegisterClick: () => void
+  /** Banner image URL from CMS (shown in the bottom row) */
+  bannerImageUrl?: string | null
+  /** Overlay title on the banner */
+  bannerTitle?: string | null
+  /** Overlay description on the banner */
+  bannerDescription?: string | null
   /** Optional CSS class */
   className?: string
   /** Whether the header is in scrolled (compact) state */
@@ -47,14 +55,8 @@ const resourceItems: ResourceItem[] = [
     icon: Mail,
     comingSoon: true,
   },
-  {
-    title: 'Register My Piano',
-    description: 'Register your Kawai piano for warranty coverage and exclusive benefits',
-    href: '/resources/register-piano',
-    icon: FileText,
-    comingSoon: true,
-  },
 ]
+
 
 // ============================================================================
 // Component
@@ -81,9 +83,18 @@ const resourceItems: ResourceItem[] = [
 export function ResourcesMegaMenu({
   isOpen,
   onClose,
+  onRegisterClick,
+  bannerImageUrl,
+  bannerTitle,
+  bannerDescription,
   className,
   isHeaderScrolled = false,
 }: ResourcesMegaMenuProps) {
+  const handleRegister = () => {
+    onClose()
+    onRegisterClick()
+  }
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -121,7 +132,7 @@ export function ResourcesMegaMenu({
             </div>
 
             {/* Resources Grid */}
-            <div className="grid md:grid-cols-3 gap-6 max-w-5xl">
+            <div className="grid md:grid-cols-2 gap-6 max-w-3xl">
               {resourceItems.map((resource, index) => {
                 const Icon = resource.icon
 
@@ -196,26 +207,6 @@ export function ResourcesMegaMenu({
                             {resource.description}
                           </p>
                         </div>
-
-                        {/* Action Indicator */}
-                        {!resource.comingSoon && (
-                          <div className="mt-4 pt-4 border-t border-gray-200">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-gray-700 group-hover:text-kawai-red transition-colors">
-                                Learn More
-                              </span>
-                              <div className="w-6 h-6 bg-kawai-red/10 group-hover:bg-kawai-red rounded-full flex items-center justify-center transition-colors">
-                                <svg
-                                  className="w-3 h-3 text-kawai-red group-hover:text-white transition-colors transform group-hover:translate-x-0.5"
-                                  fill="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
-                                </svg>
-                              </div>
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </Link>
                   </motion.div>
@@ -223,17 +214,57 @@ export function ResourcesMegaMenu({
               })}
             </div>
 
-            {/* Footer Note */}
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <p className="text-sm text-gray-600 text-center">
-                Need immediate assistance? Call us at{' '}
-                <a
-                  href="tel:1-800-KAWAI-US"
-                  className="font-medium text-gray-900 hover:text-kawai-red transition-colors"
-                >
-                  1-800-KAWAI-US
-                </a>
-              </p>
+            {/* Register Your Piano — bottom row */}
+            <div className="mt-8 border-t border-gray-200 pt-6">
+              <button
+                onClick={handleRegister}
+                className="group relative w-full overflow-hidden rounded-xl text-left transition-all duration-200 hover:shadow-lg"
+              >
+                {bannerImageUrl ? (
+                  /* ── With banner image ─────────────────────────────── */
+                  <div className="relative overflow-hidden bg-gray-900" style={{ minHeight: '200px' }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={bannerImageUrl}
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    />
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+
+                    {/* Text + CTA */}
+                    <div className="relative flex h-full min-h-[200px] flex-col justify-center px-8 py-6">
+                      <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-kawai-red">
+                        Piano Owner
+                      </p>
+                      <h3 className="text-xl font-bold text-white">
+                        {bannerTitle ?? 'Register Your Piano'}
+                      </h3>
+                      {bannerDescription && (
+                        <p className="mt-1 max-w-sm text-sm text-white/70">{bannerDescription}</p>
+                      )}
+                      <span className="mt-4 inline-flex w-fit items-center rounded-lg bg-white px-5 py-2 text-sm font-semibold text-kawai-black transition-colors group-hover:bg-kawai-red group-hover:text-white">
+                        Register Now
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  /* ── No image fallback ─────────────────────────────── */
+                  <div className="flex items-center justify-between rounded-xl bg-kawai-black px-6 py-4">
+                    <div>
+                      <p className="text-sm font-bold text-white">
+                        {bannerTitle ?? 'Register Your Piano'}
+                      </p>
+                      <p className="mt-0.5 text-xs text-gray-400">
+                        {bannerDescription ?? 'Activate your warranty and unlock owner benefits'}
+                      </p>
+                    </div>
+                    <span className="flex-shrink-0 rounded-lg bg-white/10 px-4 py-2 text-xs font-semibold text-white transition-colors group-hover:bg-white/20">
+                      Register Now
+                    </span>
+                  </div>
+                )}
+              </button>
             </div>
           </div>
         </motion.div>

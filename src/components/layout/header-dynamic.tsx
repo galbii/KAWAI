@@ -29,6 +29,16 @@ interface NewsItem {
   link?: string
 }
 
+interface RegisterConfig {
+  enabled?: boolean
+  bannerImageUrl?: string | null
+  bannerTitle?: string | null
+  bannerDescription?: string | null
+  hubspotEmbedUrl?: string | null
+  hubspotFormId?: string | null
+  hubspotPortalId?: string | null
+}
+
 function getDealerLocationBySlug(slug: string): Promise<DealerLocationData | null> {
   return unstable_cache(
     async () => {
@@ -77,6 +87,54 @@ function getDealerLocationBySlug(slug: string): Promise<DealerLocationData | nul
     { tags: [`storefront-${slug}`, 'storefronts'], revalidate: 3600 }
   )()
 }
+
+const getRegisterConfig = unstable_cache(
+  async (): Promise<RegisterConfig> => {
+    try {
+      const payload = await getPayload({ config })
+      // No `select` — depth population doesn't reliably resolve relationships
+      // inside group fields when select is active. Fetching the full doc is safe
+      // since this is a singleton (1 document).
+      const result = await payload.find({
+        collection: 'home-page',
+        limit: 1,
+        depth: 2,
+      })
+      const data = result.docs[0] as any
+      const reg = data?.registerMyPiano
+      if (!reg) return {}
+
+      // bannerImage is a populated Media object at depth 2.
+      // generateFileURL may not fire on nested populations in the Local API,
+      // so we fall back to constructing the CDN URL from `filename` directly.
+      const image = reg.bannerImage
+      let bannerImageUrl: string | null = null
+      if (image && typeof image === 'object') {
+        const img = image as any
+        bannerImageUrl =
+          img.url ??
+          (img.filename
+            ? `${process.env.NEXT_PUBLIC_S3_PUBLIC_URL}/media/${img.filename}`
+            : null)
+      }
+
+      return {
+        enabled: reg.enabled ?? true,
+        bannerImageUrl,
+        bannerTitle: reg.bannerTitle ?? null,
+        bannerDescription: reg.bannerDescription ?? null,
+        hubspotEmbedUrl: reg.hubspotEmbedUrl ?? null,
+        hubspotFormId: reg.hubspotFormId ?? null,
+        hubspotPortalId: reg.hubspotPortalId ?? null,
+      }
+    } catch (err) {
+      console.error('[getRegisterConfig]', err)
+      return {}
+    }
+  },
+  ['header-register-config'],
+  { tags: ['home-page'], revalidate: 3600 }
+)
 
 const getHomePageNewsItems = unstable_cache(
   async (): Promise<NewsItem[]> => {
@@ -161,8 +219,11 @@ export async function HeaderDynamic() {
       locationData = await getDealerLocationBySlug(origin.dealerSlug)
     }
 
-    // Fetch news items from HomePage collection for news mega menu
-    const newsItems = await getHomePageNewsItems()
+    // Fetch news items and register config from HomePage collection
+    const [newsItems, registerConfig] = await Promise.all([
+      getHomePageNewsItems(),
+      getRegisterConfig(),
+    ])
 
     return (
       <Header
@@ -173,6 +234,7 @@ export async function HeaderDynamic() {
         isUniversityPage={isUniversityPage}
         isFindADealerPage={isFindADealerPage}
         newsItems={newsItems}
+        registerConfig={registerConfig}
       />
     )
   } catch (error) {
