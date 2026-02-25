@@ -50,9 +50,11 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
 
   const [rotation, setRotation] = useState(0)
   const [quality, setQuality] = useState(85)
-  const [convertToWebp, setConvertToWebp] = useState(file.type === 'image/png')
-
   const isPng = file.type === 'image/png'
+  const isJpeg = file.type === 'image/jpeg' || file.type === 'image/jpg'
+  // Show WebP toggle for PNG and JPEG — both benefit from WebP conversion
+  const isWebpConvertible = isPng || isJpeg
+  const [convertToWebp, setConvertToWebp] = useState(isWebpConvertible)
 
   // Crop state (in display coordinates)
   const [crop, setCrop] = useState<CropArea | null>(null)
@@ -326,11 +328,12 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
         0, 0, finalCrop.width, finalCrop.height
       )
 
-      // Determine output format — convert PNG to WebP if toggled on
+      // Determine output format — convert PNG or JPEG to WebP if toggled on
       const originalMimeType = file.type || 'image/jpeg'
-      const supportedFormats = ['image/png', 'image/jpeg', 'image/webp']
+      const supportedFormats = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
       const baseMimeType = supportedFormats.includes(originalMimeType) ? originalMimeType : 'image/jpeg'
-      const outputMimeType = (convertToWebp && baseMimeType === 'image/png') ? 'image/webp' : baseMimeType
+      const isConvertibleMime = baseMimeType === 'image/png' || baseMimeType === 'image/jpeg' || baseMimeType === 'image/jpg'
+      const outputMimeType = (convertToWebp && isConvertibleMime) ? 'image/webp' : baseMimeType
 
       // Quality parameter applies to JPEG and WebP
       const qualityParam = (outputMimeType === 'image/jpeg' || outputMimeType === 'image/webp')
@@ -598,8 +601,8 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
                 Reset Crop
               </button>
 
-              {/* Convert to WebP toggle — PNG only */}
-              {isPng && (
+              {/* Convert to WebP toggle — PNG and JPEG */}
+              {isWebpConvertible && (
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium" style={{ color: colors.slate700 }}>Convert to WebP:</span>
                   <button
