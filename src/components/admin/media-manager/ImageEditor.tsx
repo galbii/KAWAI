@@ -398,8 +398,8 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[10002] flex items-center justify-center p-4 backdrop-blur-sm"
-      style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}
+      className="fixed inset-0 flex items-center justify-center p-4 backdrop-blur-sm"
+      style={{ backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10002 }}
     >
       <div
         className="w-full max-w-5xl h-[90vh] max-h-[900px] flex flex-col overflow-hidden"

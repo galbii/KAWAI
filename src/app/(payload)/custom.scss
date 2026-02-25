@@ -121,3 +121,38 @@ button[class*="mobile-nav"] {
   --base: calc((var(--base-px) / var(--base-body-size)) * 1rem);
   --gutter-h: 40px;
 }
+
+/* ── 8. Sticky tab navigation on tall collection documents ─────────────── */
+/*
+ * Payload's .tabs-field__tabs-wrap is not sticky by default — on tall
+ * documents (like Products) the tab bar scrolls off-screen, forcing the
+ * user to scroll back up just to switch tabs.
+ *
+ * We make it stick directly below the app header using Payload's own
+ * --app-header-height CSS variable, and paint it with --theme-bg so
+ * the scrolling content behind it is fully covered.
+ *
+ * .tabs-field__tabs-wrap  — overflow-x:auto scroll wrapper (sticky target)
+ * .tabs-field__tabs       — inline-flex row of tab buttons + bottom border
+ */
+.tabs-field__tabs-wrap {
+  position: sticky;
+  top: var(--app-header-height, 0px);
+  z-index: 10;
+  background-color: var(--theme-bg);
+  box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.08);
+  /*
+   * Payload sets overflow-x:auto + overflow-y:hidden on this element.
+   * The active-tab underline is `position:absolute; bottom:-1px; height:2px`,
+   * which hangs below the tab button and gets clipped by overflow-y:hidden.
+   *
+   * overflow-x:clip  — clips horizontally like hidden but does NOT create a
+   *                    scroll container, so it doesn't force overflow-y to auto.
+   * overflow-y:visible — lets the absolute-positioned underline paint through.
+   *
+   * (overflow-x:auto + overflow-y:visible is invalid CSS — the visible axis
+   * gets coerced to auto. overflow-x:clip avoids that coercion.)
+   */
+  overflow-x: clip;
+  overflow-y: visible;
+}

@@ -545,34 +545,34 @@ export function ProductTechnicalSpecsRenderer({
 
       <div className="container mx-auto px-4 md:px-8 max-w-7xl relative z-10">
 
-        {/* Outer layout: specs left, [heading + blueprint] right on desktop.
-            Mobile: heading → blueprint → specs stacked. */}
-        <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 lg:items-start">
+        {hasBlueprintToShow ? (
+          /* Two-column layout: specs left, [heading + blueprint] right on desktop.
+             Mobile: heading → blueprint → specs stacked. */
+          <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 lg:items-start">
 
-          {/* Left column: specs only (desktop) / heading + blueprint + specs (mobile) */}
-          <div className="min-w-0 flex-1">
+            {/* Left column: specs only (desktop) / heading + blueprint + specs (mobile) */}
+            <div className="min-w-0 flex-1">
 
-            {/* Header — mobile only */}
-            <div className="lg:hidden mb-8">
-              <div className="space-y-3">
-                {header?.showModelNumber && product?.model && (
-                  <div className="font-mono text-xs text-kawai-red uppercase tracking-[0.2em] font-semibold">
-                    Model: {product.model}
-                  </div>
-                )}
-                <h2 className="font-serif text-4xl md:text-5xl font-bold leading-tight">
-                  {header?.title || 'Technical Specifications'}
-                </h2>
-                {header?.subtitle && (
-                  <p className="text-lg md:text-xl opacity-70 font-light tracking-wide max-w-2xl">
-                    {header.subtitle}
-                  </p>
-                )}
+              {/* Header — mobile only */}
+              <div className="lg:hidden mb-8">
+                <div className="space-y-3">
+                  {header?.showModelNumber && product?.model && (
+                    <div className="font-mono text-xs text-kawai-red uppercase tracking-[0.2em] font-semibold">
+                      Model: {product.model}
+                    </div>
+                  )}
+                  <h2 className="font-serif text-4xl md:text-5xl font-bold leading-tight">
+                    {header?.title || 'Technical Specifications'}
+                  </h2>
+                  {header?.subtitle && (
+                    <p className="text-lg md:text-xl opacity-70 font-light tracking-wide max-w-2xl">
+                      {header.subtitle}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
 
-            {/* Blueprint — mobile only (between header and specs) */}
-            {hasBlueprintToShow && (
+              {/* Blueprint — mobile only (between header and specs) */}
               <div className="lg:hidden mb-10">
                 <div className="relative overflow-hidden rounded-lg shadow-lg w-full">
                   {productBlueprintUrl && (
@@ -598,69 +598,67 @@ export function ProductTechnicalSpecsRenderer({
                   </p>
                 )}
               </div>
-            )}
 
-            {/* Specifications */}
-            {hasSpecs ? (
-              <>
-                {dataSource === 'json' && jsonRows.length > 0 && (
-                  <JsonSpecsSection rows={jsonRows} />
-                )}
-                {productRows.length > 0 && dataSource !== 'json' && (
-                  <ProductRowsSection rows={productRows} />
-                )}
-                {manualCategories.map((category, idx) => (
-                  <SpecificationCategory key={idx} category={category} />
-                ))}
-              </>
-            ) : (
-              <div className="text-center py-12 opacity-50">
-                <p className="font-mono text-sm">
-                  No specifications available. Add a product with specifications or switch to Manual mode.
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Right column: heading + blueprint — desktop only, sticky */}
-          <div className="hidden lg:flex flex-col flex-none lg:sticky lg:top-0 lg:w-[480px] xl:w-[580px] gap-8">
-
-            {/* Header — desktop */}
-            <div className="space-y-3">
-              {header?.showModelNumber && product?.model && (
-                <div className="font-mono text-xs text-kawai-red uppercase tracking-[0.2em] font-semibold">
-                  Model: {product.model}
+              {/* Specifications */}
+              {hasSpecs ? (
+                <>
+                  {dataSource === 'json' && jsonRows.length > 0 && (
+                    <JsonSpecsSection rows={jsonRows} />
+                  )}
+                  {productRows.length > 0 && dataSource !== 'json' && (
+                    <ProductRowsSection rows={productRows} />
+                  )}
+                  {manualCategories.map((category, idx) => (
+                    <SpecificationCategory key={idx} category={category} />
+                  ))}
+                </>
+              ) : (
+                <div className="text-center py-12 opacity-50">
+                  <p className="font-mono text-sm">
+                    No specifications available. Add a product with specifications or switch to Manual mode.
+                  </p>
                 </div>
-              )}
-              <h2 className="font-serif text-4xl xl:text-5xl font-bold leading-tight">
-                {header?.title || 'Technical Specifications'}
-              </h2>
-              {header?.subtitle && (
-                <p className="text-lg opacity-70 font-light tracking-wide">
-                  {header.subtitle}
-                </p>
-              )}
-              {enableDownload && (
-                <button
-                  className="
-                    inline-flex items-center gap-2.5 px-6 py-3.5 mt-2
-                    bg-kawai-red hover:bg-kawai-red/90
-                    text-white font-mono text-sm uppercase tracking-wider font-medium
-                    transition-all duration-200
-                    border-2 border-kawai-red hover:border-kawai-red/70
-                    shadow-lg hover:shadow-xl hover:scale-[1.02]
-                  "
-                  onClick={() => console.log('Download specifications')}
-                  aria-label="Download technical specifications"
-                >
-                  <ArrowDownTrayIcon className="w-4 h-4" />
-                  {downloadButtonText || 'Download Technical Specs'}
-                </button>
               )}
             </div>
 
-            {/* Blueprint */}
-            {hasBlueprintToShow && (
+            {/* Right column: heading + blueprint — desktop only, sticky */}
+            <div className="hidden lg:flex flex-col flex-none lg:sticky lg:top-0 lg:w-[480px] xl:w-[580px] gap-8">
+
+              {/* Header — desktop */}
+              <div className="space-y-3">
+                {header?.showModelNumber && product?.model && (
+                  <div className="font-mono text-xs text-kawai-red uppercase tracking-[0.2em] font-semibold">
+                    Model: {product.model}
+                  </div>
+                )}
+                <h2 className="font-serif text-4xl xl:text-5xl font-bold leading-tight">
+                  {header?.title || 'Technical Specifications'}
+                </h2>
+                {header?.subtitle && (
+                  <p className="text-lg opacity-70 font-light tracking-wide">
+                    {header.subtitle}
+                  </p>
+                )}
+                {enableDownload && (
+                  <button
+                    className="
+                      inline-flex items-center gap-2.5 px-6 py-3.5 mt-2
+                      bg-kawai-red hover:bg-kawai-red/90
+                      text-white font-mono text-sm uppercase tracking-wider font-medium
+                      transition-all duration-200
+                      border-2 border-kawai-red hover:border-kawai-red/70
+                      shadow-lg hover:shadow-xl hover:scale-[1.02]
+                    "
+                    onClick={() => console.log('Download specifications')}
+                    aria-label="Download technical specifications"
+                  >
+                    <ArrowDownTrayIcon className="w-4 h-4" />
+                    {downloadButtonText || 'Download Technical Specs'}
+                  </button>
+                )}
+              </div>
+
+              {/* Blueprint */}
               <div>
                 <div className="relative overflow-hidden rounded-lg shadow-lg w-full">
                   {productBlueprintUrl && (
@@ -686,16 +684,69 @@ export function ProductTechnicalSpecsRenderer({
                   </p>
                 )}
               </div>
+            </div>
+          </div>
+        ) : (
+          /* Single-column layout (no blueprint): header at top, specs below */
+          <div className="flex flex-col gap-8 lg:gap-12">
+
+            {/* Header — full width */}
+            <div className="space-y-3">
+              {header?.showModelNumber && product?.model && (
+                <div className="font-mono text-xs text-kawai-red uppercase tracking-[0.2em] font-semibold">
+                  Model: {product.model}
+                </div>
+              )}
+              <h2 className="font-serif text-4xl md:text-5xl xl:text-6xl font-bold leading-tight">
+                {header?.title || 'Technical Specifications'}
+              </h2>
+              {header?.subtitle && (
+                <p className="text-lg md:text-xl opacity-70 font-light tracking-wide max-w-2xl">
+                  {header.subtitle}
+                </p>
+              )}
+              {enableDownload && (
+                <button
+                  className="
+                    inline-flex items-center gap-2.5 px-6 py-3.5 mt-2
+                    bg-kawai-red hover:bg-kawai-red/90
+                    text-white font-mono text-sm uppercase tracking-wider font-medium
+                    transition-all duration-200
+                    border-2 border-kawai-red hover:border-kawai-red/70
+                    shadow-lg hover:shadow-xl hover:scale-[1.02]
+                  "
+                  onClick={() => console.log('Download specifications')}
+                  aria-label="Download technical specifications"
+                >
+                  <ArrowDownTrayIcon className="w-4 h-4" />
+                  {downloadButtonText || 'Download Technical Specs'}
+                </button>
+              )}
+            </div>
+
+            {/* Specifications — single column */}
+            {hasSpecs ? (
+              <>
+                {dataSource === 'json' && jsonRows.length > 0 && (
+                  <JsonSpecsSection rows={jsonRows} />
+                )}
+                {productRows.length > 0 && dataSource !== 'json' && (
+                  <ProductRowsSection rows={productRows} />
+                )}
+                {manualCategories.map((category, idx) => (
+                  <SpecificationCategory key={idx} category={category} />
+                ))}
+              </>
+            ) : (
+              <div className="text-center py-12 opacity-50">
+                <p className="font-mono text-sm">
+                  No specifications available. Add a product with specifications or switch to Manual mode.
+                </p>
+              </div>
             )}
           </div>
-        </div>
+        )}
 
-        {/* Footer note */}
-        <div className="mt-16 pt-8 border-t border-current opacity-30">
-          <p className="font-mono text-xs text-center">
-            Specifications subject to change without notice. All measurements approximate.
-          </p>
-        </div>
       </div>
     </section>
   )
