@@ -18,12 +18,15 @@ interface RegisterPianoModalProps {
   hubspotFormId?: string | null
   /** HubSpot data-portal-id */
   hubspotPortalId?: string | null
+  /** HubSpot data-region */
+  hubspotRegion?: string | null
 }
 
 // Fallback values — can be overridden from the CMS
 const DEFAULT_EMBED_URL = 'https://js.hsforms.net/forms/embed/21987263.js'
 const DEFAULT_FORM_ID = '2d83f40a-44fe-421e-a4a5-3b4efcd80100'
 const DEFAULT_PORTAL_ID = '21987263'
+const DEFAULT_REGION = 'na1'
 
 export function RegisterPianoModal({
   isOpen,
@@ -34,10 +37,12 @@ export function RegisterPianoModal({
   hubspotEmbedUrl,
   hubspotFormId,
   hubspotPortalId,
+  hubspotRegion,
 }: RegisterPianoModalProps) {
   const scriptUrl = hubspotEmbedUrl || DEFAULT_EMBED_URL
   const formId = hubspotFormId || DEFAULT_FORM_ID
   const portalId = hubspotPortalId || DEFAULT_PORTAL_ID
+  const region = hubspotRegion || DEFAULT_REGION
 
   useEffect(() => {
     if (!isOpen) return
@@ -109,7 +114,7 @@ export function RegisterPianoModal({
       <div className="min-h-[320px] px-8 py-6">
         <div
           className="hs-form-frame"
-          data-region="na1"
+          data-region={region}
           data-form-id={formId}
           data-portal-id={portalId}
         />

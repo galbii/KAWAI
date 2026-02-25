@@ -37,6 +37,7 @@ interface RegisterConfig {
   hubspotEmbedUrl?: string | null
   hubspotFormId?: string | null
   hubspotPortalId?: string | null
+  hubspotRegion?: string | null
 }
 
 function getDealerLocationBySlug(slug: string): Promise<DealerLocationData | null> {
@@ -118,14 +119,22 @@ const getRegisterConfig = unstable_cache(
             : null)
       }
 
+      // Parse the pasted HubSpot embed snippet to extract individual values
+      const embedCode: string = reg.hubspotEmbedCode ?? ''
+      const scriptSrcMatch = embedCode.match(/src="([^"]+)"/)
+      const formIdMatch = embedCode.match(/data-form-id="([^"]+)"/)
+      const portalIdMatch = embedCode.match(/data-portal-id="([^"]+)"/)
+      const regionMatch = embedCode.match(/data-region="([^"]+)"/)
+
       return {
         enabled: reg.enabled ?? true,
         bannerImageUrl,
         bannerTitle: reg.bannerTitle ?? null,
         bannerDescription: reg.bannerDescription ?? null,
-        hubspotEmbedUrl: reg.hubspotEmbedUrl ?? null,
-        hubspotFormId: reg.hubspotFormId ?? null,
-        hubspotPortalId: reg.hubspotPortalId ?? null,
+        hubspotEmbedUrl: scriptSrcMatch?.[1] ?? null,
+        hubspotFormId: formIdMatch?.[1] ?? null,
+        hubspotPortalId: portalIdMatch?.[1] ?? null,
+        hubspotRegion: regionMatch?.[1] ?? null,
       }
     } catch (err) {
       console.error('[getRegisterConfig]', err)

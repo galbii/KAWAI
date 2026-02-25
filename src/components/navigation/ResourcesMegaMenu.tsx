@@ -24,6 +24,8 @@ interface ResourcesMegaMenuProps {
   onClose: () => void
   /** Called when the user clicks "Register Now" — parent handles the modal */
   onRegisterClick: () => void
+  /** Whether the Register Your Piano section is enabled (CMS toggle) */
+  registerEnabled?: boolean
   /** Banner image URL from CMS (shown in the bottom row) */
   bannerImageUrl?: string | null
   /** Overlay title on the banner */
@@ -84,6 +86,7 @@ export function ResourcesMegaMenu({
   isOpen,
   onClose,
   onRegisterClick,
+  registerEnabled = true,
   bannerImageUrl,
   bannerTitle,
   bannerDescription,
@@ -215,42 +218,46 @@ export function ResourcesMegaMenu({
             </div>
 
             {/* Register Your Piano — bottom row */}
-            <div className="mt-8 border-t border-gray-200 pt-6">
+            {registerEnabled && <div className="mt-8 border-t border-gray-200 pt-6">
               <button
                 onClick={handleRegister}
                 className="group relative w-full overflow-hidden rounded-xl text-left transition-all duration-200 hover:shadow-lg"
+                style={{
+                  height: '320px',
+                  ...(bannerImageUrl
+                    ? {
+                        backgroundImage: `url(${bannerImageUrl})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                      }
+                    : { backgroundColor: 'var(--color-kawai-black)' }),
+                }}
               >
                 {bannerImageUrl ? (
                   /* ── With banner image ─────────────────────────────── */
-                  <div className="relative overflow-hidden bg-gray-900" style={{ minHeight: '200px' }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={bannerImageUrl}
-                      alt=""
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                    />
+                  <>
                     {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-transparent transition-opacity duration-500 group-hover:opacity-90" />
 
                     {/* Text + CTA */}
-                    <div className="relative flex h-full min-h-[200px] flex-col justify-center px-8 py-6">
-                      <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-kawai-red">
+                    <div className="absolute inset-0 flex flex-col justify-center px-10 py-8">
+                      <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-widest text-kawai-red">
                         Piano Owner
                       </p>
-                      <h3 className="text-xl font-bold text-white">
+                      <h3 className="text-2xl font-bold text-white">
                         {bannerTitle ?? 'Register Your Piano'}
                       </h3>
                       {bannerDescription && (
-                        <p className="mt-1 max-w-sm text-sm text-white/70">{bannerDescription}</p>
+                        <p className="mt-2 max-w-sm text-sm text-white/75">{bannerDescription}</p>
                       )}
-                      <span className="mt-4 inline-flex w-fit items-center rounded-lg bg-white px-5 py-2 text-sm font-semibold text-kawai-black transition-colors group-hover:bg-kawai-red group-hover:text-white">
+                      <span className="mt-5 inline-flex w-fit items-center rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-kawai-black transition-colors group-hover:bg-kawai-red group-hover:text-white">
                         Register Now
                       </span>
                     </div>
-                  </div>
+                  </>
                 ) : (
                   /* ── No image fallback ─────────────────────────────── */
-                  <div className="flex items-center justify-between rounded-xl bg-kawai-black px-6 py-4">
+                  <div className="absolute inset-0 flex items-center justify-between px-8">
                     <div>
                       <p className="text-sm font-bold text-white">
                         {bannerTitle ?? 'Register Your Piano'}
@@ -265,7 +272,7 @@ export function ResourcesMegaMenu({
                   </div>
                 )}
               </button>
-            </div>
+            </div>}
           </div>
         </motion.div>
       )}

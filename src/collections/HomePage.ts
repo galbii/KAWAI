@@ -1105,31 +1105,14 @@ export const HomePage: CollectionConfig = {
                   },
                 },
                 {
-                  name: 'hubspotEmbedUrl',
-                  type: 'text',
-                  label: 'HubSpot Embed Script URL',
+                  name: 'hubspotEmbedCode',
+                  type: 'textarea',
+                  label: 'HubSpot Embed Code',
                   admin: {
                     description:
-                      'The src URL from the HubSpot <script> tag (e.g., https://js.hsforms.net/forms/embed/21987263.js)',
-                    placeholder: 'https://js.hsforms.net/forms/embed/21987263.js',
-                  },
-                },
-                {
-                  name: 'hubspotFormId',
-                  type: 'text',
-                  label: 'HubSpot Form ID',
-                  admin: {
-                    description:
-                      'The data-form-id attribute from the HubSpot embed div (e.g., 2d83f40a-44fe-421e-a4a5-3b4efcd80100)',
-                  },
-                },
-                {
-                  name: 'hubspotPortalId',
-                  type: 'text',
-                  label: 'HubSpot Portal ID',
-                  admin: {
-                    description:
-                      'The data-portal-id attribute from the HubSpot embed div (e.g., 21987263)',
+                      'Paste the full HubSpot embed snippet here (the <script> tag and <div class="hs-form-frame"> tag together)',
+                    placeholder:
+                      '<script src="https://js.hsforms.net/forms/embed/21987263.js" defer></script>\n<div class="hs-form-frame" data-region="na1" data-form-id="2d83f40a-44fe-421e-a4a5-3b4efcd80100" data-portal-id="21987263"></div>',
                   },
                 },
               ],

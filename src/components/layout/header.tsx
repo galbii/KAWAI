@@ -446,12 +446,14 @@ interface NewsItem {
 }
 
 interface RegisterConfig {
+  enabled?: boolean
   bannerImageUrl?: string | null
   bannerTitle?: string | null
   bannerDescription?: string | null
   hubspotEmbedUrl?: string | null
   hubspotFormId?: string | null
   hubspotPortalId?: string | null
+  hubspotRegion?: string | null
 }
 
 interface HeaderProps {
@@ -1201,7 +1203,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
               )}
 
               {/* Register Your Piano — mobile visible button */}
-              {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
+              {!isSignaturePage && !hidePianoLinks && !isUniversityPage && registerConfig?.enabled !== false && (
                 <button
                   onClick={() => setIsRegisterModalOpen(true)}
                   className="lg:hidden rounded-md bg-kawai-black px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-kawai-charcoal"
@@ -1388,12 +1390,14 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
 
                 {/* Right column — Register button */}
                 <div className="flex-1 flex justify-end">
-                  <button
-                    onClick={() => setIsRegisterModalOpen(true)}
-                    className="rounded-md bg-kawai-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-kawai-charcoal"
-                  >
-                    Register Your Piano
-                  </button>
+                  {registerConfig?.enabled !== false && (
+                    <button
+                      onClick={() => setIsRegisterModalOpen(true)}
+                      className="rounded-md bg-kawai-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-kawai-charcoal"
+                    >
+                      Register Your Piano
+                    </button>
+                  )}
                 </div>
               </div>
             </nav>
@@ -1473,17 +1477,19 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
             </nav>
             
             {/* Register Your Piano — sidebar bottom */}
-            <div className="mt-auto border-t border-gray-200/50 bg-white px-5 py-5 flex-shrink-0">
-              <button
-                onClick={() => {
-                  closeMobileMenu()
-                  setIsRegisterModalOpen(true)
-                }}
-                className="w-full rounded-lg bg-kawai-black px-5 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-kawai-charcoal active:scale-[0.98]"
-              >
-                Register Your Piano
-              </button>
-            </div>
+            {registerConfig?.enabled !== false && (
+              <div className="mt-auto border-t border-gray-200/50 bg-white px-5 py-5 flex-shrink-0">
+                <button
+                  onClick={() => {
+                    closeMobileMenu()
+                    setIsRegisterModalOpen(true)
+                  }}
+                  className="w-full rounded-lg bg-kawai-black px-5 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-kawai-charcoal active:scale-[0.98]"
+                >
+                  Register Your Piano
+                </button>
+              </div>
+            )}
           </motion.div>
           </>
         )}
@@ -1529,6 +1535,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
           isOpen={isResourcesMenuOpen && animationComplete && !isSearchOpen}
           onClose={() => setIsResourcesMenuOpen(false)}
           onRegisterClick={() => setIsRegisterModalOpen(true)}
+          registerEnabled={registerConfig?.enabled !== false}
           bannerImageUrl={registerConfig?.bannerImageUrl ?? null}
           bannerTitle={registerConfig?.bannerTitle ?? null}
           bannerDescription={registerConfig?.bannerDescription ?? null}
@@ -1564,6 +1571,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       hubspotEmbedUrl={registerConfig?.hubspotEmbedUrl ?? null}
       hubspotFormId={registerConfig?.hubspotFormId ?? null}
       hubspotPortalId={registerConfig?.hubspotPortalId ?? null}
+      hubspotRegion={registerConfig?.hubspotRegion ?? null}
     />
     </>
   )
