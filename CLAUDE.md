@@ -469,6 +469,35 @@ const { isOpen, open, close } = useModal({ autoShow: { delay: 2000 } })
 </Modal>
 ```
 
+### NavigationContext — Dealer Location System
+
+`src/contexts/NavigationContext.tsx` tracks whether a user entered via a dealer storefront (`/store/st-louis`) or the main site (`/`). The logo, nav links, and back buttons use this to return users to their origin.
+
+**Key facts:**
+- `origin.isDealerLocation` is always `false` on the server — it's only populated client-side from `sessionStorage` in a `useEffect`
+- `isInitialized` is `false` on first render (server + initial client), becomes `true` after the `useEffect` fires
+- The sessionStorage key is `kawai-navigation-origin`
+
+**Critical: hydration mismatch guard**
+
+Any component that conditionally renders based on `origin.isDealerLocation` MUST use a `mounted` guard to match SSR output:
+
+```tsx
+const { origin, isInitialized } = useNavigationContext()
+const [mounted, setMounted] = useState(false)
+useEffect(() => { setMounted(true) }, [])
+
+// ❌ Renders differently on server vs client if user visited a storefront before
+const isDealerPage = origin.isDealerLocation
+
+// ✅ Server and initial client both get false; switches after mount
+const isDealerPage = mounted && origin.isDealerLocation
+```
+
+This pattern is already applied in `KawaiLogo` — follow it for any new component using `origin.isDealerLocation`.
+
+---
+
 ### Server vs Client Components
 
 All components are Server Components by default. Add `'use client'` only for:
@@ -521,27 +550,295 @@ return <Image {...imageProps} alt={piano.name} />
 
 ## Integrations
 
+### `queries.ts` vs `client.ts` — Critical Distinction
+
+**`src/lib/payload/queries.ts`** — Local API (direct MongoDB, server-only)
+- Uses `getPayloadClient()` → `getPayload({ config })` → Mongoose
+- Zero HTTP overhead — use this for ALL server components, RSC, and Server Actions
+- The `getPayloadClient` export is the canonical way to access Payload
+
+**`src/lib/payload/client.ts`** — HTTP REST client (fetch-based, works client+server)
+- Uses `fetch()` to call Payload's REST API via HTTP
+- Use this ONLY in Client Components that can't import `server-only` modules
+- ❌ Never call `client.ts` functions from Server Components — it's a self-fetch loop
+
+```typescript
+// ✅ Server Component, Server Action, API route
+import { getPayloadClient } from '@/lib/payload/queries'
+const payload = await getPayloadClient()
+const { docs } = await payload.find({ collection: 'products', ... })
+
+// ✅ Client Component needing CMS data (rare — prefer passing data as props)
+import { getProductBySlug } from '@/lib/payload/client'
+```
+
+---
+
+### Server Actions (`src/lib/actions/`)
+
+All lead capture and form submissions use Server Actions with `'use server'` + Zod validation.
+
+| File | Purpose |
+|------|---------|
+| `contact-form.ts` | Main contact form → Shopify customer upsert |
+| `contact-form-with-utm.ts` | Contact form with UTM tracking |
+| `simple-customer-signup.ts` | Newsletter/lead signup → Shopify |
+| `sync-product-shopify.ts` | Admin action: sync product to Shopify |
+| `shopify-navigation.ts` | Fetch mega-menu data server-side |
+| `payload-products-navigation.ts` | Fetch product navigation from Payload |
+
+**Lead capture flow** (contact form → CRM):
+```
+User submits form
+  → Server Action (Zod validation)
+    → upsertCustomer() in src/lib/shopify/customers.ts
+      → Shopify Admin API (customerSet mutation — create OR update in one call)
+        → Customer tagged with storefront slug (e.g. "st-louis")
+```
+Note: Constant Contact was removed from this flow — Shopify is now the single CRM.
+
+---
+
 ### Shopify (`src/lib/shopify/`)
 
 **Purpose**: Product catalog sync, customer CRM, cart, navigation mega-menu.
 
 | File | Purpose |
 |------|---------|
-| `client.ts` | Storefront API (public) |
-| `admin-client.ts` | Admin API (server-side) |
-| `customers.ts` | Customer upsert (lead capture) |
+| `client.ts` | Storefront API (public, no auth) |
+| `admin-client.ts` | Admin API (OAuth, server-side only) |
+| `customers.ts` | `upsertCustomer()` — creates or updates via `customerSet` mutation |
 | `navigation.ts` | Mega menu extraction |
 | `sync-to-payload.ts` | Product sync to CMS |
 
+Required env vars: `SHOPIFY_STORE_DOMAIN`, `SHOPIFY_APP_API_KEY`, `SHOPIFY_APP_CLIENT_SECRET`
+
+### Constant Contact (`src/lib/constantcontact/`)
+
+**Purpose**: Legacy CRM integration (email lists, contact management). Currently supplementary — Shopify is the primary CRM for new leads.
+
+| File | Purpose |
+|------|---------|
+| `client.ts` | API client with rate limiting |
+| `auth.ts` + `auth-helpers.ts` | OAuth2 token management |
+| `credentials.ts` | Token storage (from `ConstantContactSettings` collection) |
+| `lists.ts` | List membership and contact creation |
+| `custom-fields.ts` | Maps `ConstantContactCustomFields` collection to API |
+| `music-school-export.ts` | Bulk export for music school programs |
+
+**Admin UI hooks**: `useConstantContact`, `useConstantContactForm` in `@/hooks`
+**Admin routes**: `/api/constant-contact/contacts`, `/api/constant-contact/lists`
+**Collections used**: `ConstantContactSettings` (OAuth tokens + config), `ConstantContactCustomFields` (field mapping)
+
 ### Analytics
 
-- **PostHog**: `posthog-js` — proxied via `/ingest/*` rewrites in `next.config.js`
+**PostHog** — initialized in TWO places (intentional, guarded against double-init):
+1. `src/lib/instrumentation-client.ts` — Next.js auto-runs this on client boot (captures exceptions, debug mode)
+2. `src/app/providers.tsx` (`PHProvider`) — wraps app in `PostHogProvider` for React hooks
+
+```typescript
+// providers.tsx — always guard against double-init from instrumentation-client.ts
+if (posthog.__loaded) return  // ← REQUIRED — never remove this guard
+posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, { ... })
+```
+
+Proxied via `/ingest/*` rewrites in `next.config.js` to bypass ad blockers. Required env vars: `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST`.
+
 - **Google Analytics**: `NEXT_PUBLIC_GA_ID`
-- **Meta Pixel**: `NEXT_PUBLIC_META_PIXEL_ID` (isolated via `src/lib/integrations/facebook-pixel-isolation.ts`)
+- **Meta Pixel**: `NEXT_PUBLIC_META_PIXEL_ID` — initialized via `<Script strategy="afterInteractive">` in `src/components/MetaPixel.tsx`. Do NOT add a `useEffect` that also calls `fbq('init')` — that causes duplicate pixel warnings.
 
 ### Google Maps
 
 Dealer locator at `/find-a-dealer`. Uses `@vis.gl/react-google-maps` + `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`. Dealer coordinates stored in `Dealers` collection.
+
+---
+
+## Styling System
+
+### Overview
+
+This project uses **Tailwind CSS v4** with a CSS-first configuration. There is **no `tailwind.config.js`** — all theme tokens are defined in CSS files using the `@theme` directive.
+
+```
+src/app/globals.css          # @theme tokens, @source safelist, base styles (570 lines)
+src/styles/brand-components.css   # @utility brand component classes (398 lines)
+src/app/(frontend)/styles.css     # Frontend page-specific overrides (165 lines)
+```
+
+Campaign-specific CSS files (e.g. `es60-*.css`) live alongside their page components.
+
+### Brand Color Tokens
+
+Defined in `globals.css` under `@theme`. Auto-generates `bg-*`, `text-*`, `border-*` utilities.
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `kawai-red` | `#E11922` | Primary CTA, accent, logo color |
+| `kawai-black` | `#1E1B16` | Main text, headings |
+| `kawai-charcoal` | `#2C2C2C` | Secondary text, UI chrome |
+| `kawai-pearl` | `#FAF8F5` | Page backgrounds, cards |
+| `kawai-neutral` | `#DBDBDB` | Borders, dividers |
+| `kawai-gold` | `#d5c78c` | Shigeru Kawai premium accent |
+
+Each has a full 50–900 scale (`kawai-red-500`, `kawai-black-900`, etc.). Campaign-specific tokens use the `es60-` prefix.
+
+**Usage:**
+```html
+<div class="bg-kawai-pearl text-kawai-black border border-kawai-neutral">
+  <button class="bg-kawai-red text-white hover:bg-kawai-red-700">Buy Now</button>
+</div>
+```
+
+**Adding a new color:**
+```css
+/* globals.css — inside @theme */
+--color-kawai-navy: #1B2A4A;
+```
+This auto-generates `bg-kawai-navy`, `text-kawai-navy`, `border-kawai-navy`. If used only in dynamic class strings, also add it to the `@source inline()` safelist.
+
+### Typography
+
+5 Google Fonts are loaded in `src/app/layout.tsx` as Next.js font variables:
+
+| CSS Variable | Font | Use Case |
+|---|---|---|
+| `--font-inter` → `--font-brand-sans` | Inter | Body text, UI, navigation |
+| `--font-crimson` → `--font-brand-serif` / `--font-brand-luxury` | Crimson Text | Editorial headings, product copy |
+| `--font-playfair` | Playfair Display | Legacy/sparse use |
+| `--font-cormorant` → `--font-family-cormorant` | Cormorant Garamond | Artist carousel, Japanese aesthetic sections |
+| `--font-noto` → `--font-family-noto` | Noto Sans | Supplementary sans-serif |
+
+**Only Inter is preloaded** (the others have `preload: false` to avoid font preload spam). All five still load — preload only controls eagerness.
+
+**Usage in Tailwind:**
+```html
+<h1 class="font-[family-name:var(--font-brand-luxury)]">Concert Grand</h1>
+<p class="font-[family-name:var(--font-brand-sans)]">Natural sound technology...</p>
+```
+
+Custom utility classes from `brand-components.css` (e.g. `kawai-heading`, `heading-brand-hero`) apply fonts automatically.
+
+### Component Styling Approach
+
+#### 1. Generated utilities (preferred — 80% of styling)
+
+Use Tailwind utilities generated from `@theme` tokens directly:
+```html
+<div class="bg-kawai-pearl text-kawai-black shadow-brand-medium rounded-lg p-6">
+```
+
+#### 2. `cn()` for conditional/merged classes
+
+```typescript
+import { cn } from '@/lib/utils'  // clsx + tailwind-merge
+
+<div className={cn(
+  "base-class px-4 py-2",
+  isActive && "bg-kawai-red text-white",
+  className  // Always accept and merge external className prop
+)} />
+```
+
+#### 3. CVA for component variants
+
+```typescript
+import { cva, type VariantProps } from 'class-variance-authority'
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center rounded-md font-medium transition-all",
+  {
+    variants: {
+      variant: {
+        primary: "bg-kawai-red text-white hover:bg-kawai-red-700 shadow-brand-red-glow",
+        secondary: "border border-kawai-neutral text-kawai-black hover:border-kawai-red",
+        ghost: "text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl",
+      },
+      size: {
+        sm: "h-8 px-3 text-sm",
+        md: "h-10 px-4",
+        lg: "h-12 px-6 text-base",
+      },
+    },
+    defaultVariants: { variant: "primary", size: "md" },
+  }
+)
+```
+
+#### 4. `@utility` for complex brand components
+
+For multi-property components with pseudo-class logic that would be unwieldy as utility strings, define them in `brand-components.css`:
+
+```css
+/* src/styles/brand-components.css */
+@utility card-brand-intimate {
+  background: var(--color-kawai-pearl);
+  border: 1px solid var(--color-kawai-neutral);
+  box-shadow: var(--shadow-brand-subtle);
+  border-radius: 0.5rem;
+  transition: all 0.3s var(--ease-piano);
+
+  &:hover {
+    box-shadow: var(--shadow-brand-medium);
+    transform: translateY(-2px);
+  }
+}
+```
+
+Then add the class name to the `@source inline()` safelist in `globals.css`.
+
+### Shadow Scale
+
+| Token | Usage |
+|-------|-------|
+| `shadow-brand-subtle` | Cards at rest, inputs |
+| `shadow-brand-medium` | Cards on hover, modals |
+| `shadow-brand-premium` | Feature hero cards, elevated UI |
+| `shadow-brand-red-glow` | Primary CTA buttons |
+
+### Custom Spacing (Brand Ma Scale)
+
+Japanese Ma spacing philosophy — used for brand-aligned white space:
+
+```html
+<section class="py-brand-4xl">        <!-- 96px vertical padding -->
+  <div class="mb-brand-xl gap-brand-lg">  <!-- 32px margin, 24px gap -->
+```
+
+Scale: `brand-xs` (4px) → `brand-sm` (8px) → `brand-md` (16px) → `brand-lg` (24px) → `brand-xl` (32px) → `brand-2xl` (48px) → `brand-3xl` (64px) → `brand-4xl` (96px)
+
+### Animation Tokens
+
+```css
+/* Custom easing curves */
+--ease-piano: cubic-bezier(0.4, 0, 0.2, 1)     /* Standard — most UI transitions */
+--ease-elegant: cubic-bezier(0.25, 0.46, 0.45, 0.94)  /* Softer — content reveals */
+```
+
+Use in Tailwind: `transition-[transform] duration-300 ease-[var(--ease-piano)]`
+
+Motion animations use Framer Motion (`motion.div`) for complex sequences — see `src/components/ui/animations/`.
+
+### Custom Breakpoint
+
+```css
+--breakpoint-3xl: 120rem  /* 1920px — for very large display layouts */
+```
+
+Usage: `3xl:grid-cols-4`
+
+### `@source inline()` Safelist
+
+Tailwind v4 only generates utilities that it can statically scan in source files. Dynamic class names (built at runtime, e.g. `bg-${color}`) won't be generated unless added to the safelist in `globals.css`:
+
+```css
+@source inline("{bg-kawai-red, text-kawai-black, card-brand-intimate, ...}");
+```
+
+**Always add new dynamic class names here** — otherwise they'll work in dev (JIT scanning) but disappear in production builds.
+
+### Accessibility
+
+`prefers-reduced-motion` is handled globally in `globals.css` — all animation/transition durations are overridden to `0.01ms`. No per-component motion guards needed.
 
 ---
 
@@ -621,6 +918,11 @@ Access:
 | **npm instead of bun** | Always use `bun` — npm causes dependency conflicts |
 | **Top-level `console.log` in payload.config.ts** | Runs on every worker spawn — use sparingly |
 | **`searchPlugin` + `storefronts`** | Storefronts use `skipSync: true` and a manual afterChange hook due to a Payload 3.71.1 bug in polymorphic query parsing |
+| **`origin.isDealerLocation` in render** | Always gate on `mounted` state — server always renders `false`, client reads from sessionStorage. Skipping the guard causes React hydration error #418 |
+| **PostHog double-init** | `instrumentation-client.ts` auto-runs on client boot. `PHProvider` must check `if (posthog.__loaded) return` before calling `posthog.init()` |
+| **Meta Pixel duplicate** | `MetaPixel.tsx` uses `<Script>` for init — never add a `useEffect` that also calls `fbq('init')`. The Script is the single init point |
+| **`client.ts` in Server Components** | `src/lib/payload/client.ts` uses `fetch()` — calling it from a Server Component creates a self-fetch HTTP loop. Use `queries.ts` instead |
+| **Constant Contact is legacy** | New lead capture uses Shopify via `src/lib/actions/contact-form.ts`. CC integration still exists for list management but is not the primary CRM |
 
 ---
 

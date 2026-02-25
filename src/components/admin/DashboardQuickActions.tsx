@@ -1,44 +1,45 @@
 const c = {
-  card: '#1C1C26', line: '#252535', high: '#ECECF2', jade: '#2EC4A0',
+  card: '#191926', line: '#1C1C2C', lineStr: '#252535',
+  high: '#ECECF2', mid: '#8484A0', jade: '#2EC4A0', violet: '#6366F1',
 }
 
 const ACTIONS = [
-  { label: '+ New Product',    href: '/admin/collections/products/create',    accent: undefined },
-  { label: '+ New Post',       href: '/admin/collections/posts/create',        accent: undefined },
-  { label: '+ New Storefront', href: '/admin/collections/storefronts/create',  accent: undefined },
-  { label: 'Upload Media',     href: '/admin/collections/media/create',         accent: c.jade },
+  { label: '+ New Product',    href: '/admin/collections/products/create',   color: c.violet },
+  { label: '+ New Post',       href: '/admin/collections/posts/create',       color: undefined },
+  { label: '+ New Storefront', href: '/admin/collections/storefronts/create', color: undefined },
+  { label: 'Upload Media',     href: '/admin/collections/media/create',       color: c.jade },
 ]
 
 export function DashboardQuickActions() {
   return (
     <div style={{
       padding: '0 var(--gutter-h)',
-      marginBottom: 8,
+      marginBottom: 10,
       display: 'flex',
       gap: 10,
       flexWrap: 'wrap' as const,
     }}>
       <style>{`
-        .kawai-action:hover { opacity: 0.85; }
+        .kw-action:hover { opacity: 0.8; transform: translateY(-1px); }
+        .kw-action { transition: opacity 0.15s, transform 0.15s; }
       `}</style>
       {ACTIONS.map((action) => (
         <a
           key={action.label}
           href={action.href}
-          className="kawai-action"
+          className="kw-action"
           style={{
-            display: 'flex',
+            display: 'inline-flex',
             alignItems: 'center',
-            height: 38,
-            padding: '0 16px',
+            height: 42,
+            padding: '0 20px',
             background: c.card,
-            border: `1px solid ${c.line}`,
-            borderRadius: 8,
-            color: action.accent ?? c.high,
-            fontSize: 13,
+            border: `1px solid ${c.lineStr}`,
+            borderRadius: 10,
+            color: action.color ?? c.high,
+            fontSize: 14,
             fontWeight: 500,
             textDecoration: 'none',
-            transition: 'opacity 0.15s',
             whiteSpace: 'nowrap' as const,
           }}
         >

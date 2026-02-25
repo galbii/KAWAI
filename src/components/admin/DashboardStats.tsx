@@ -2,9 +2,9 @@ import 'server-only'
 import { getPayloadClient } from '@/lib/payload/queries'
 
 const c = {
-  bg: '#0C0C0F', panel: '#111116', surface: '#16161E', card: '#1C1C26',
-  line: '#252535', lineSub: '#1C1C28', high: '#ECECF2', mid: '#8484A0', lo: '#4C4C68',
-  violet: '#6366F1', jade: '#2EC4A0', rose: '#F16C6C', gold: '#E8A84E',
+  bg: '#08080C', panel: '#0F0F16', surface: '#141420', card: '#191926',
+  line: '#1C1C2C', lineStr: '#252535', high: '#ECECF2', mid: '#8484A0', lo: '#4C4C68',
+  violet: '#6366F1', jade: '#2EC4A0', rose: '#F16C6C', gold: '#E8A84E', red: '#C41E3A',
 }
 
 function StatusBadge({ status }: { status: string | null | undefined }) {
@@ -12,9 +12,9 @@ function StatusBadge({ status }: { status: string | null | undefined }) {
   const color = s === 'active' ? c.jade : s === 'discontinued' ? c.rose : c.gold
   return (
     <span style={{
-      display: 'inline-block', padding: '2px 8px', borderRadius: 20,
-      background: `${color}1A`, color, fontSize: 11, fontWeight: 600,
-      letterSpacing: '0.03em', textTransform: 'capitalize',
+      display: 'inline-flex', alignItems: 'center', padding: '3px 10px', borderRadius: 20,
+      background: `${color}18`, color, fontSize: 12, fontWeight: 600,
+      letterSpacing: '0.04em', textTransform: 'capitalize',
     }}>
       {s}
     </span>
@@ -22,59 +22,54 @@ function StatusBadge({ status }: { status: string | null | undefined }) {
 }
 
 function formatRelativeTime(iso: string): string {
-  const now = Date.now()
-  const then = new Date(iso).getTime()
-  const diff = now - then
-  const mins = Math.floor(diff / 60000)
+  const diff = Date.now() - new Date(iso).getTime()
+  const mins  = Math.floor(diff / 60000)
   const hours = Math.floor(diff / 3600000)
-  const days = Math.floor(diff / 86400000)
-  if (mins < 60) return `${mins}m ago`
+  const days  = Math.floor(diff / 86400000)
+  if (mins  < 60) return `${mins}m ago`
   if (hours < 24) return `${hours}h ago`
-  if (days < 7) return `${days}d ago`
+  if (days  <  7) return `${days}d ago`
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-// Inline SVG icons
-const IconPiano = () => (
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-    <rect x="2" y="5" width="18" height="12" rx="2" stroke={c.mid} strokeWidth="1.5" />
-    <rect x="5" y="5" width="1.5" height="7" fill={c.mid} />
-    <rect x="8.5" y="5" width="1.5" height="7" fill={c.mid} />
-    <rect x="12" y="5" width="1.5" height="7" fill={c.mid} />
-    <rect x="15.5" y="5" width="1.5" height="7" fill={c.mid} />
+// ── Stat card icons ────────────────────────────────────────────────────────
+const IcoPiano = () => (
+  <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+    <rect x="2.5" y="11" width="21" height="12" rx="2" stroke={c.mid} strokeWidth="1.8" />
+    <rect x="6" y="7.5" width="2.5" height="8" rx="0.8" fill={c.mid} />
+    <rect x="11" y="7.5" width="2.5" height="8" rx="0.8" fill={c.mid} />
+    <rect x="16" y="7.5" width="2.5" height="8" rx="0.8" fill={c.mid} />
+    <line x1="2.5" y1="15" x2="23.5" y2="15" stroke={c.mid} strokeWidth="1.2" />
+  </svg>
+)
+const IcoStore = () => (
+  <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+    <rect x="2.5" y="13" width="21" height="11" rx="1.5" stroke={c.mid} strokeWidth="1.8" />
+    <path d="M1 13L4.5 4H21.5L25 13" stroke={c.mid} strokeWidth="1.8" strokeLinejoin="round" />
+    <rect x="9" y="17" width="8" height="7" rx="1" stroke={c.mid} strokeWidth="1.8" />
+  </svg>
+)
+const IcoDoc = () => (
+  <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+    <rect x="4" y="2.5" width="18" height="21" rx="2" stroke={c.mid} strokeWidth="1.8" />
+    <line x1="8.5" y1="9"  x2="17.5" y2="9"  stroke={c.mid} strokeWidth="1.8" strokeLinecap="round" />
+    <line x1="8.5" y1="13" x2="17.5" y2="13" stroke={c.mid} strokeWidth="1.8" strokeLinecap="round" />
+    <line x1="8.5" y1="17" x2="13.5" y2="17" stroke={c.mid} strokeWidth="1.8" strokeLinecap="round" />
+  </svg>
+)
+const IcoImg = () => (
+  <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+    <rect x="2.5" y="5" width="21" height="16" rx="2" stroke={c.mid} strokeWidth="1.8" />
+    <circle cx="9" cy="10.5" r="2" fill={c.mid} />
+    <path d="M2.5 18L9 11.5L14 16L17.5 13L23.5 18" stroke={c.mid} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 )
 
-const IconStore = () => (
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-    <rect x="3" y="10" width="16" height="9" rx="1" stroke={c.mid} strokeWidth="1.5" />
-    <path d="M1 10 L4 4 H18 L21 10" stroke={c.mid} strokeWidth="1.5" strokeLinejoin="round" />
-    <rect x="8" y="14" width="6" height="5" rx="1" stroke={c.mid} strokeWidth="1.5" />
-  </svg>
-)
-
-const IconDoc = () => (
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-    <rect x="4" y="2" width="14" height="18" rx="2" stroke={c.mid} strokeWidth="1.5" />
-    <line x1="7" y1="8" x2="15" y2="8" stroke={c.mid} strokeWidth="1.5" strokeLinecap="round" />
-    <line x1="7" y1="12" x2="15" y2="12" stroke={c.mid} strokeWidth="1.5" strokeLinecap="round" />
-    <line x1="7" y1="16" x2="11" y2="16" stroke={c.mid} strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-)
-
-const IconImage = () => (
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-    <rect x="2" y="4" width="18" height="14" rx="2" stroke={c.mid} strokeWidth="1.5" />
-    <circle cx="7.5" cy="9" r="1.5" fill={c.mid} />
-    <path d="M2 15 L7 10 L11 14 L14 11 L20 17" stroke={c.mid} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-)
-
-const stats = [
-  { label: 'Products', icon: <IconPiano />, href: '/admin/collections/products', collection: 'products' as const },
-  { label: 'Storefronts', icon: <IconStore />, href: '/admin/collections/storefronts', collection: 'storefronts' as const },
-  { label: 'Posts', icon: <IconDoc />, href: '/admin/collections/posts', collection: 'posts' as const },
-  { label: 'Media', icon: <IconImage />, href: '/admin/collections/media', collection: 'media' as const },
+const STATS = [
+  { label: 'Products',    icon: <IcoPiano />, href: '/admin/collections/products',    key: 0 },
+  { label: 'Storefronts', icon: <IcoStore />, href: '/admin/collections/storefronts', key: 1 },
+  { label: 'Posts',       icon: <IcoDoc />,   href: '/admin/collections/posts',       key: 2 },
+  { label: 'Media',       icon: <IcoImg />,   href: '/admin/collections/media',       key: 3 },
 ]
 
 export async function DashboardStats() {
@@ -88,7 +83,7 @@ export async function DashboardStats() {
     payload.find({
       collection: 'products',
       sort: '-updatedAt',
-      limit: 5,
+      limit: 6,
       depth: 0,
       select: { model: true, name: true, status: true, type: true, updatedAt: true },
     }),
@@ -97,75 +92,90 @@ export async function DashboardStats() {
   const counts = [products.totalDocs, storefronts.totalDocs, posts.totalDocs, media.totalDocs]
 
   return (
-    <div style={{ padding: '24px var(--gutter-h) 0' }}>
+    <div style={{ padding: '28px var(--gutter-h) 0' }}>
       <style>{`
-        .kawai-stat { text-decoration: none; display: flex; flex-direction: column; gap: 14px; }
-        .kawai-stat:hover { border-color: ${c.violet} !important; }
-        .kawai-recent-row { text-decoration: none; display: grid; align-items: center; }
-        .kawai-recent-row:hover { background: ${c.card} !important; }
+        .kw-stat { text-decoration: none; }
+        .kw-stat:hover { border-color: ${c.violet} !important; transform: translateY(-1px); }
+        .kw-stat { transition: border-color 0.15s, transform 0.15s; }
+        .kw-row { text-decoration: none; display: grid; }
+        .kw-row:hover { background: ${c.card} !important; }
       `}</style>
 
-      {/* Stats Grid */}
+      {/* ── Stats Grid ── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-        gap: 12,
-        marginBottom: 16,
+        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+        gap: 14,
+        marginBottom: 20,
       }}>
-        {stats.map((stat, i) => (
+        {STATS.map((stat) => (
           <a
             key={stat.label}
             href={stat.href}
-            className="kawai-stat"
+            className="kw-stat"
             style={{
               background: c.card,
-              border: `1px solid ${c.line}`,
-              borderRadius: 12,
-              padding: '18px 20px',
-              transition: 'border-color 0.15s',
+              border: `1px solid ${c.lineStr}`,
+              borderRadius: 14,
+              padding: '22px 24px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 16,
             }}
           >
             {stat.icon}
             <div>
-              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: c.mid, marginBottom: 4 }}>
+              <div style={{
+                fontSize: 12, fontWeight: 700, letterSpacing: '0.1em',
+                textTransform: 'uppercase', color: c.lo, marginBottom: 6,
+              }}>
                 {stat.label}
               </div>
-              <div style={{ fontSize: 32, fontWeight: 700, color: c.high, lineHeight: 1 }}>
-                {counts[i]?.toLocaleString() ?? '—'}
+              <div style={{ fontSize: 36, fontWeight: 800, color: c.high, lineHeight: 1, letterSpacing: '-0.02em' }}>
+                {counts[stat.key]?.toLocaleString() ?? '—'}
               </div>
             </div>
           </a>
         ))}
       </div>
 
-      {/* Recent Products */}
+      {/* ── Recent Products Table ── */}
       <div style={{
         background: c.panel,
-        border: `1px solid ${c.line}`,
-        borderRadius: 12,
-        padding: '20px 24px',
-        marginBottom: 24,
+        border: `1px solid ${c.lineStr}`,
+        borderRadius: 14,
+        overflow: 'hidden',
+        marginBottom: 28,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.mid }}>
-            Recently Updated
+        {/* Table header */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '18px 26px 16px',
+          borderBottom: `1px solid ${c.line}`,
+        }}>
+          <span style={{
+            fontSize: 12, fontWeight: 700, letterSpacing: '0.1em',
+            textTransform: 'uppercase', color: c.lo,
+          }}>
+            Recently Updated Products
           </span>
-          <a href="/admin/collections/products" style={{ fontSize: 12, color: c.violet, textDecoration: 'none', fontWeight: 500 }}>
+          <a href="/admin/collections/products" style={{ fontSize: 13, color: c.violet, textDecoration: 'none', fontWeight: 500 }}>
             View all →
           </a>
         </div>
 
-        {/* Table header */}
+        {/* Column headers */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '120px 1fr 90px 90px 100px',
-          gap: 8,
-          padding: '0 0 10px',
-          borderBottom: `1px solid ${c.lineSub}`,
-          marginBottom: 6,
+          gridTemplateColumns: '130px 1fr 100px 100px 110px',
+          gap: 8, padding: '10px 26px 8px',
+          borderBottom: `1px solid ${c.line}`,
         }}>
           {['Model', 'Name', 'Status', 'Type', 'Updated'].map(col => (
-            <span key={col} style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: c.lo }}>
+            <span key={col} style={{
+              fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
+              textTransform: 'uppercase', color: c.lo,
+            }}>
               {col}
             </span>
           ))}
@@ -173,34 +183,41 @@ export async function DashboardStats() {
 
         {/* Rows */}
         {recentProducts.docs.length === 0 && (
-          <div style={{ color: c.lo, fontSize: 13, padding: '12px 0' }}>No products yet.</div>
+          <div style={{ color: c.lo, fontSize: 14, padding: '20px 26px' }}>No products yet.</div>
         )}
         {recentProducts.docs.map((product) => (
           <a
             key={product.id}
             href={`/admin/collections/products/${product.id}`}
-            className="kawai-recent-row"
+            className="kw-row"
             style={{
-              gridTemplateColumns: '120px 1fr 90px 90px 100px',
-              gap: 8,
-              padding: '9px 8px',
-              borderRadius: 7,
-              marginLeft: -8,
-              marginRight: -8,
-              transition: 'background 0.12s',
+              gridTemplateColumns: '130px 1fr 100px 100px 110px',
+              gap: 8, padding: '13px 26px',
+              borderBottom: `1px solid ${c.line}`,
+              transition: 'background 0.1s',
+              background: 'transparent',
             }}
           >
-            <span style={{ fontFamily: 'monospace', fontSize: 12, color: c.high, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <span style={{
+              fontFamily: 'ui-monospace, monospace', fontSize: 13,
+              color: c.high, fontWeight: 600,
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
               {(product.model as string | undefined) ?? '—'}
             </span>
-            <span style={{ fontSize: 13, color: c.mid, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <span style={{
+              fontSize: 13.5, color: c.mid,
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
               {(product.name as string | undefined) ?? '—'}
             </span>
-            <span><StatusBadge status={product.status as string | undefined} /></span>
-            <span style={{ fontSize: 12, color: c.mid, textTransform: 'capitalize' }}>
+            <span>
+              <StatusBadge status={product.status as string | undefined} />
+            </span>
+            <span style={{ fontSize: 13, color: c.mid, textTransform: 'capitalize' }}>
               {(product.type as string | undefined) ?? '—'}
             </span>
-            <span style={{ fontSize: 12, color: c.lo }}>
+            <span style={{ fontSize: 12.5, color: c.lo }}>
               {product.updatedAt ? formatRelativeTime(product.updatedAt as string) : '—'}
             </span>
           </a>

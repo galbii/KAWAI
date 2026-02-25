@@ -81,6 +81,7 @@ export function MediaManagerModal() {
     totalDocs,
     toasts,
     dismissToast,
+    showToast,
     editingFile,
     metadataEditingFile,
     editingMedia,
@@ -94,12 +95,16 @@ export function MediaManagerModal() {
     currentFolder,
     folders,
     moveMediaToFolder,
+    replaceMediaFile,
     modalOptions,
   } = useMediaManager()
 
   const [isDragging, setIsDragging] = useState(false)
   const [showMoveMenu, setShowMoveMenu] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [isLoadingEditFile, setIsLoadingEditFile] = useState(false)
+  const [editingExistingFile, setEditingExistingFile] = useState<File | null>(null)
+  const [editingExistingMediaId, setEditingExistingMediaId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const dragCounterRef = useRef(0)
   const pendingConvertToWebpRef = useRef(true)
@@ -161,6 +166,23 @@ export function MediaManagerModal() {
       closeModal()
     }
   }, [selectedMedia, modalOptions, closeModal])
+
+  const handleEditImage = useCallback(async () => {
+    if (!selectedMedia || !selectedMedia.mimeType?.startsWith('image/')) return
+    setIsLoadingEditFile(true)
+    try {
+      const url = selectedMedia.publicUrl || selectedMedia.url
+      const response = await fetch(url)
+      const blob = await response.blob()
+      const file = new File([blob], selectedMedia.filename, { type: selectedMedia.mimeType })
+      setEditingExistingMediaId(selectedMedia.id)
+      setEditingExistingFile(file)
+    } catch (err) {
+      showToast('error', 'Failed to load image for editing')
+    } finally {
+      setIsLoadingEditFile(false)
+    }
+  }, [selectedMedia, showToast])
 
   const isSelectionMode = modalOptions?.mode === 'select'
 
@@ -581,7 +603,48 @@ export function MediaManagerModal() {
                   </div>
                 )}
 
-                {/* Edit metadata */}
+                {/* Edit Image — images only */}
+                {selectedMedia.mimeType?.startsWith('image/') && (
+                  <button
+                    style={fbtn()}
+                    onClick={handleEditImage}
+                    disabled={isLoadingEditFile || isUploading}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = c.hover
+                      e.currentTarget.style.color = c.high
+                      e.currentTarget.style.borderColor = c.line
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent'
+                      e.currentTarget.style.color = c.mid
+                    }}
+                  >
+                    {isLoadingEditFile ? (
+                      <>
+                        <span style={{
+                          width: 12, height: 12,
+                          border: '1.5px solid rgba(132,132,160,0.4)',
+                          borderTopColor: c.mid,
+                          borderRadius: '50%',
+                          display: 'inline-block',
+                          animation: 'spin 0.75s linear infinite',
+                          flexShrink: 0,
+                        }} />
+                        Loading…
+                      </>
+                    ) : (
+                      <>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                        Edit Image
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* Edit Metadata */}
                 <button
                   style={fbtn()}
                   onClick={() => setEditingMedia(selectedMedia)}
@@ -596,10 +659,11 @@ export function MediaManagerModal() {
                   }}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
                   </svg>
-                  Edit
+                  Edit Metadata
                 </button>
 
                 {/* Copy URL */}
@@ -690,6 +754,24 @@ export function MediaManagerModal() {
             } else {
               setEditingFile(null)
             }
+          }}
+        />
+      )}
+
+      {/* ── Edit Existing Image ──────────────────────────────────────────── */}
+      {editingExistingFile && editingExistingMediaId && (
+        <ImageEditor
+          file={editingExistingFile}
+          onSave={async (editedFile, convertToWebp) => {
+            setEditingExistingFile(null)
+            if (editingExistingMediaId) {
+              await replaceMediaFile(editingExistingMediaId, editedFile, convertToWebp)
+            }
+            setEditingExistingMediaId(null)
+          }}
+          onCancel={() => {
+            setEditingExistingFile(null)
+            setEditingExistingMediaId(null)
           }}
         />
       )}

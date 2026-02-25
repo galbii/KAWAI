@@ -65,6 +65,7 @@ interface ExtendedContextValue extends MediaManagerContextValue {
   skipEditing: () => void
   renameFolder: (id: string, name: string) => Promise<void>
   moveFolderToFolder: (folderId: string, newParentId: string | null) => Promise<void>
+  replaceMediaFile: (id: string, file: File, convertToWebp?: boolean) => Promise<void>
 }
 
 const MediaManagerContext = createContext<ExtendedContextValue | null>(null)
@@ -410,6 +411,61 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
       showToast('error', 'Failed to load media')
     }
   }, [state.searchQuery, state.currentFolder, transformMedia, showToast])
+
+  // Replace an existing media file (from the image editor)
+  const replaceMediaFile = useCallback(async (id: string, file: File, convertToWebp?: boolean) => {
+    setState(prev => ({ ...prev, isUploading: true, error: null }))
+    try {
+      // If convertToWebp requested, convert via canvas before uploading
+      let uploadFile = file
+      if (convertToWebp && file.type !== 'image/webp') {
+        uploadFile = await new Promise<File>((resolve, reject) => {
+          const img = new Image()
+          const url = URL.createObjectURL(file)
+          img.onload = () => {
+            URL.revokeObjectURL(url)
+            const canvas = document.createElement('canvas')
+            canvas.width = img.naturalWidth
+            canvas.height = img.naturalHeight
+            const ctx = canvas.getContext('2d')
+            if (!ctx) { reject(new Error('Canvas not supported')); return }
+            ctx.drawImage(img, 0, 0)
+            canvas.toBlob((blob) => {
+              if (!blob) { reject(new Error('Conversion failed')); return }
+              const webpName = file.name.replace(/\.[^.]+$/, '.webp')
+              resolve(new File([blob], webpName, { type: 'image/webp' }))
+            }, 'image/webp', 0.9)
+          }
+          img.onerror = reject
+          img.src = url
+        })
+      }
+
+      const formData = new FormData()
+      formData.append('file', uploadFile)
+      // Preserve existing metadata — just replacing the file binary
+      formData.append('_payload', JSON.stringify({}))
+
+      const response = await fetch(`/api/media/${id}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Failed to replace media: ${errorText}`)
+      }
+
+      await fetchMedia(state.currentPage)
+      setState(prev => ({ ...prev, isUploading: false }))
+      showToast('success', 'Image updated successfully')
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Failed to replace image'
+      setState(prev => ({ ...prev, isUploading: false, error: msg }))
+      showToast('error', msg)
+    }
+  }, [fetchMedia, showToast, state.currentPage])
 
   // Handle file selection - show editor for images
   const handleFilesSelected = useCallback((files: FileList | File[]) => {
@@ -845,6 +901,7 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
     toggleFolderExpanded,
     moveMediaToFolder,
     updateMedia,
+    replaceMediaFile,
   }
 
   return (

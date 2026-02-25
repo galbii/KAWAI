@@ -118,6 +118,9 @@ export default buildConfig({
         Logo: '/components/admin/Logo.tsx#Logo',
         Icon: '/components/admin/Icon.tsx#Icon',
       },
+      // Custom Nav replaces the entire sidebar (collapsed by default, collections modal at bottom).
+      // External links (View Site, Shopify) are handled inside CustomNav directly.
+      Nav: '/components/admin/CustomNav#CustomNav',
       // Root provider - wraps entire admin UI with necessary providers.
       // MediaManagerProvider, MediaManagerModal, and MediaManagerButton are all rendered
       // inside AdminRootProvider so they're available on every admin page without
@@ -127,8 +130,8 @@ export default buildConfig({
         '/components/admin/DashboardStats#DashboardStats',
         '/components/admin/DashboardQuickActions#DashboardQuickActions',
       ],
-      afterNavLinks: [
-        '/components/admin/NavLinks#NavLinks',
+      afterDashboard: [
+        '/components/admin/DashboardCollectionsButton#DashboardCollectionsButton',
       ],
       actions: [
         '/components/admin/ViewSiteButton#ViewSiteButton',

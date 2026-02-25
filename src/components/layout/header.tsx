@@ -1466,6 +1466,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         >
           <ProductsMegaMenu
             productTypes={productsNavData?.types || []}
+            collections={productsNavData?.collections || []}
             isOpen={isProductsMenuOpen && animationComplete && !isSearchOpen}
             onClose={() => setIsProductsMenuOpen(false)}
             isLoading={!productsNavData}

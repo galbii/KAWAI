@@ -103,6 +103,7 @@ export interface MediaManagerActions {
   renameFolder: (id: string, name: string) => Promise<void>
   moveFolderToFolder: (folderId: string, newParentId: string | null) => Promise<void>
   updateMedia: (id: string, data: Record<string, unknown>) => Promise<MediaItem | null>
+  replaceMediaFile: (id: string, file: File, convertToWebp?: boolean) => Promise<void>
 }
 
 /**

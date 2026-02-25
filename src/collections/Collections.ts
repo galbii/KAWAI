@@ -15,7 +15,7 @@ export const Collections: CollectionConfig = {
   },
   admin: {
     group: 'Commerce',
-    defaultColumns: ['title', 'handle', 'productCount', 'updatedAt'],
+    defaultColumns: ['title', 'handle', 'featured', 'productCount', 'updatedAt'],
     useAsTitle: 'title',
     description: 'Product collections automatically synced from Shopify',
   },
@@ -218,6 +218,17 @@ export const Collections: CollectionConfig = {
       ],
     },
 
+    // Featured flag — controls visibility in the nav mega menu carousel
+    {
+      name: 'featured',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Show in the navigation mega menu carousel (Featured Collections)',
+        position: 'sidebar',
+      },
+    },
+
     // Shopify Integration Group - Sidebar
     {
       name: 'shopify',
@@ -271,6 +282,15 @@ export const Collections: CollectionConfig = {
     // Clean up collections with no products
     afterChange: [
       async ({ doc, req, context, operation }) => {
+        // Revalidate the products navigation cache whenever a collection is saved
+        // This ensures featured carousel updates immediately without waiting for the 5-min TTL
+        try {
+          const { revalidateTag } = await import('next/cache')
+          revalidateTag('products-navigation')
+        } catch {
+          // next/cache unavailable outside Next.js runtime (e.g. in seed scripts) — ignore
+        }
+
         // Skip if this is already a cleanup operation
         if (context.skipCollectionCleanup) {
           return doc

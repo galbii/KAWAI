@@ -21,12 +21,13 @@ import type { ProductsNavigation } from '@/lib/payload/products-navigation'
  * - Reduces database load by 95%
  */
 const getCachedProductsNavigation = unstable_cache(
-  async () => {
+  async (): Promise<ProductsNavigation> => {
     console.log('[Products Navigation Cache] Cache miss - fetching from database')
-    return await getProductTypesWithProducts({
-      limit: 250, // Scan up to 250 active products
-      samplesPerType: 6 // Show 6 products per type in mega menu
-    })
+    const [navData, collections] = await Promise.all([
+      getProductTypesWithProducts({ limit: 250, samplesPerType: 6 }),
+      getNavCollections(20),
+    ])
+    return { ...navData, collections }
   },
   ['products-navigation'], // Cache key
   {

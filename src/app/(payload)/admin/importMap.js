@@ -41,10 +41,11 @@ import { QueryPresetsColumnField as QueryPresetsColumnField_3817bf644402e67bfe65
 import { QueryPresetsGroupByCell as QueryPresetsGroupByCell_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { QueryPresetsGroupByField as QueryPresetsGroupByField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { MediaUrlSelectorButton as MediaUrlSelectorButton_e2f4d5213ba57541f34398ce21c16f6e } from '../../../components/admin/MediaUrlSelectorButton'
+import { CustomNav as CustomNav_6de4d01e9d2fdd107175007ae639960b } from '../../../components/admin/CustomNav'
 import { Icon as Icon_22ecfa0add6ea3a2202bd7524740e10d } from '../../../components/admin/Icon.tsx'
 import { Logo as Logo_f6725385e1c85d4569908fa222b1f780 } from '../../../components/admin/Logo.tsx'
 import { ViewSiteButton as ViewSiteButton_01c1d258c47fa7ac125bc6d559ad892b } from '../../../components/admin/ViewSiteButton'
-import { NavLinks as NavLinks_c025f118f75d1c67ec1517e1fc784abd } from '../../../components/admin/NavLinks'
+import { DashboardCollectionsButton as DashboardCollectionsButton_8f41e83e5c41176668c618e3399504bb } from '../../../components/admin/DashboardCollectionsButton'
 import { DashboardStats as DashboardStats_123c62f476ef106d93ca9259c1aa40c9 } from '../../../components/admin/DashboardStats'
 import { DashboardQuickActions as DashboardQuickActions_381daeb6e8c5bc252c48a4ffd141b524 } from '../../../components/admin/DashboardQuickActions'
 import { AdminRootProvider as AdminRootProvider_90270e1a289c41a7c07e2a0de98e46c1 } from '../../../components/admin/AdminRootProvider'
@@ -95,10 +96,11 @@ export const importMap = {
   "@payloadcms/ui#QueryPresetsGroupByCell": QueryPresetsGroupByCell_3817bf644402e67bfe6577f60ef982de,
   "@payloadcms/ui#QueryPresetsGroupByField": QueryPresetsGroupByField_3817bf644402e67bfe6577f60ef982de,
   "/components/admin/MediaUrlSelectorButton#MediaUrlSelectorButton": MediaUrlSelectorButton_e2f4d5213ba57541f34398ce21c16f6e,
+  "/components/admin/CustomNav#CustomNav": CustomNav_6de4d01e9d2fdd107175007ae639960b,
   "/components/admin/Icon.tsx#Icon": Icon_22ecfa0add6ea3a2202bd7524740e10d,
   "/components/admin/Logo.tsx#Logo": Logo_f6725385e1c85d4569908fa222b1f780,
   "/components/admin/ViewSiteButton#ViewSiteButton": ViewSiteButton_01c1d258c47fa7ac125bc6d559ad892b,
-  "/components/admin/NavLinks#NavLinks": NavLinks_c025f118f75d1c67ec1517e1fc784abd,
+  "/components/admin/DashboardCollectionsButton#DashboardCollectionsButton": DashboardCollectionsButton_8f41e83e5c41176668c618e3399504bb,
   "/components/admin/DashboardStats#DashboardStats": DashboardStats_123c62f476ef106d93ca9259c1aa40c9,
   "/components/admin/DashboardQuickActions#DashboardQuickActions": DashboardQuickActions_381daeb6e8c5bc252c48a4ffd141b524,
   "/components/admin/AdminRootProvider#AdminRootProvider": AdminRootProvider_90270e1a289c41a7c07e2a0de98e46c1,

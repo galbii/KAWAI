@@ -1,0 +1,114 @@
+/* ── KAWAI Admin — Layout & Theme Overrides ──────────────────────────────
+ *
+ * Imported by (payload)/layout.tsx after @payloadcms/next/css.
+ * Uses Payload's own CSS variables where possible.
+ *
+ * Core layout problem: Payload's admin grid is
+ *   grid-template-columns: var(--nav-width) auto
+ * and at max-width:1440px it overrides to "0 auto" (mobile overlay mode).
+ * We own --nav-width and force the grid to respect it at all screen sizes.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/* ── 1. Nav-width tokens ──────────────────────────────────────────────── */
+:root {
+  /* Default: sidebar COLLAPSED */
+  --nav-width: 68px;
+  --kawai-nav-trans: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* JS toggles this class on <html> to expand */
+html.kawai-expanded {
+  --nav-width: 272px;
+}
+
+/* ── 2. Always-visible inline nav (override Payload mobile overlay) ────── */
+/*
+ * Payload at max-width:1440px sets:
+ *   .template-default--nav-hydrated { grid-template-columns: 0 auto }
+ *   .template-default .nav          { display: none }
+ * We override so the nav is always an inline grid column, never an overlay.
+ */
+.template-default,
+.template-default--nav-hydrated,
+.template-default--nav-hydrated.template-default--nav-open {
+  grid-template-columns: var(--nav-width) auto !important;
+  transition: grid-template-columns var(--kawai-nav-trans) !important;
+}
+
+.template-default .nav,
+.template-default--nav-hydrated .nav {
+  display: flex !important;   /* shown at all widths */
+}
+
+/* ── 3. Nav element sizing & visibility ──────────────────────────────── */
+.nav {
+  width: var(--nav-width) !important;
+  min-width: var(--nav-width) !important;
+  max-width: var(--nav-width) !important;
+  transition: width var(--kawai-nav-trans),
+              min-width var(--kawai-nav-trans),
+              max-width var(--kawai-nav-trans) !important;
+
+  /* Always visible — bypass the opacity:0 / --nav-open animation */
+  opacity: 1 !important;
+
+  /*
+   * Allow absolute-positioned tooltips to bleed out of the nav.
+   * The inner scroll area handles its own overflow-y.
+   */
+  overflow: visible !important;
+
+  /* Remove Payload's right border — CustomNav renders its own */
+  border-right: none !important;
+}
+
+/* ── 4. Nav scroll/wrap containers ──────────────────────────────────── */
+/*
+ * Payload wraps our Nav component in .nav__scroll > .nav__wrap.
+ * We make those transparent pass-throughs so our flex column fills 100%.
+ */
+.nav__scroll {
+  padding: 0 !important;
+  overflow: visible !important;
+  height: 100% !important;
+}
+
+.nav__wrap {
+  overflow: visible !important;
+  flex-grow: 1 !important;
+  height: 100% !important;
+}
+
+/* ── 5. App header ───────────────────────────────────────────────────── */
+/* Keep the header flush — no padding-left shift on collapse */
+.app-header {
+  transition: padding-left var(--kawai-nav-trans) !important;
+}
+
+/* ── 6. Mobile hamburger — hide it (we handle nav ourselves) ─────────── */
+/* Target both the header toggle and any remaining Payload nav togglers */
+.app-header__mobile-nav-toggler,
+.nav__toggler,
+button[class*="nav-toggler"],
+button[class*="mobile-nav"] {
+  display: none !important;
+}
+
+/* ── 6b. Hide Payload's default dashboard collection cards ───────────── */
+/*
+ * Payload renders collection groups between beforeDashboard and afterDashboard.
+ * We replace these with the DashboardCollectionsButton modal in afterDashboard.
+ */
+.dashboard__groups,
+.dashboard__group,
+[class*="dashboard__group"] {
+  display: none !important;
+}
+
+/* ── 7. Scaled-up base font for admin readability ────────────────────── */
+/* Payload uses --base-body-size: 13 (13px). Bump to 14 for cleaner feel */
+:root {
+  --base-body-size: 14;
+  --base: calc((var(--base-px) / var(--base-body-size)) * 1rem);
+  --gutter-h: 40px;
+}

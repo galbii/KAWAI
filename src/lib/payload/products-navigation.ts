@@ -2,7 +2,7 @@ import 'server-only'
 
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import type { Product, Collection } from '@/payload-types'
+import type { Product } from '@/payload-types'
 
 // ============================================================================
 // Types (compatible with existing ProductsMegaMenu)
@@ -504,7 +504,10 @@ export async function getNavCollections(limit: number = 20): Promise<NavCollecti
     const result = await payload.find({
       collection: 'collections',
       where: {
-        productCount: { greater_than: 0 },
+        and: [
+          { featured: { equals: true } },
+          { productCount: { greater_than: 0 } },
+        ],
       },
       select: {
         id: true,
@@ -517,7 +520,8 @@ export async function getNavCollections(limit: number = 20): Promise<NavCollecti
         mediaUrl: true,
         heading: true,
         subheading: true,
-      } as Partial<Record<keyof Collection, true>>,
+        featured: true,
+      },
       sort: '-productCount',
       limit,
       depth: 0,

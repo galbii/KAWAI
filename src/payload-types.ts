@@ -2430,6 +2430,10 @@ export interface Collection {
    */
   fontFamily?: ('serif' | 'sans') | null;
   /**
+   * Show in the navigation mega menu carousel (Featured Collections)
+   */
+  featured?: boolean | null;
+  /**
    * Shopify synchronization metadata
    */
   shopify?: {
@@ -8601,6 +8605,7 @@ export interface CollectionsSelect<T extends boolean = true> {
   overlayOpacity?: T;
   headingSize?: T;
   fontFamily?: T;
+  featured?: T;
   shopify?:
     | T
     | {
