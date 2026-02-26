@@ -33,6 +33,8 @@ type UnifiedMediaItem = {
   // image
   imageUrl?: string | undefined
   imageAlt?: string | undefined
+  imageWidth?: number | undefined
+  imageHeight?: number | undefined
   // youtube
   youtubeEmbedUrl?: string | undefined
   youtubeId?: string | undefined
@@ -151,6 +153,8 @@ export function ProductDescriptionRenderer(props: ProductDescriptionRendererProp
           type: 'image',
           imageUrl: media.imageUrl,
           imageAlt: media.alt ?? '',
+          imageWidth: media.imageWidth ?? undefined,
+          imageHeight: media.imageHeight ?? undefined,
         }]
       }
       if (media.mediaType === 'EXTERNAL_VIDEO' && media.host === 'YOUTUBE') {
@@ -326,13 +330,23 @@ export function ProductDescriptionRenderer(props: ProductDescriptionRendererProp
     }
 
     if (item.type === 'image' && item.imageUrl) {
+      // Use the image's natural aspect ratio when available so nothing is cropped
+      const naturalAspect =
+        item.imageWidth && item.imageHeight
+          ? item.imageWidth / item.imageHeight
+          : undefined
+
       return (
-        <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-2xl">
+        <div
+          className="relative w-full"
+          style={{ aspectRatio: naturalAspect ? String(naturalAspect) : '4/3' }}
+        >
           <Image
             src={item.imageUrl}
             alt={item.imageAlt ?? item.title ?? ''}
             fill
-            className="object-cover"
+            className="object-contain"
+            style={{ filter: 'drop-shadow(0 24px 48px rgba(0,0,0,0.13))' }}
             sizes="(max-width: 768px) 100vw, 66vw"
           />
         </div>
@@ -492,7 +506,32 @@ export function ProductDescriptionRenderer(props: ProductDescriptionRendererProp
               className="lg:col-span-2 relative order-1 lg:order-2 min-w-0"
             >
               <div className="relative group">
-                {currentItem && renderMediaItem(currentItem)}
+                <AnimatePresence mode="wait">
+                  {currentItem && (
+                    <motion.div
+                      key={currentIndex}
+                      initial={{ opacity: 0, scale: 0.96, y: 20 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.97, y: -12 }}
+                      transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    >
+                      {currentItem.type === 'image' ? (
+                        <motion.div
+                          animate={{ y: [0, -10, 0] }}
+                          transition={{
+                            duration: 6,
+                            repeat: Infinity,
+                            ease: 'easeInOut',
+                          }}
+                        >
+                          {renderMediaItem(currentItem)}
+                        </motion.div>
+                      ) : (
+                        renderMediaItem(currentItem)
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {allItems.length > 1 && (
                   <>

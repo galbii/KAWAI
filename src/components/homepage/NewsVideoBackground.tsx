@@ -19,6 +19,7 @@ export interface NewsVideoBackgroundProps {
   description: string
   videoUrl: string
   videoSource?: 'youtube' | 'direct' | null
+  youtubeZoom?: number | null
   category: string
   link?: string | undefined
   prefersReducedMotion?: boolean
@@ -35,10 +36,12 @@ export function NewsVideoBackground({
   description,
   videoUrl,
   videoSource = 'youtube',
+  youtubeZoom,
   category,
   link,
   prefersReducedMotion = false,
 }: NewsVideoBackgroundProps) {
+  const zoom = youtubeZoom ?? 1.15
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isVideoReady, setIsVideoReady] = useState(false)
 
@@ -76,9 +79,12 @@ export function NewsVideoBackground({
             <iframe
               src={embedUrl}
               className={cn(
-                'absolute left-1/2 top-1/2 h-[56.25vw] min-h-screen w-[177.77vh] min-w-full -translate-x-1/2 -translate-y-1/2 object-cover transition-opacity duration-1000',
+                'absolute left-1/2 top-1/2 h-[56.25vw] min-h-screen w-[177.77vh] min-w-full object-cover transition-opacity duration-1000',
                 isVideoReady ? 'opacity-100' : 'opacity-0'
               )}
+              // Combine translate and scale in one declaration — setting style.transform overrides
+              // Tailwind's utility transforms, so both must live here together.
+              style={{ transform: `translate(-50%, -50%) scale(${zoom})` }}
               allow="autoplay; encrypted-media"
               frameBorder="0"
               onLoad={handleVideoReady}

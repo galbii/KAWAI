@@ -116,16 +116,31 @@ function CollCard({ item, color, onClose }: { item: NavItem; color: string; onCl
   )
 }
 
+// ── Document result type ──────────────────────────────────────────────────────
+type DocResult = {
+  id: string
+  title: string
+  excerpt?: string | null
+  doc: { relationTo: string; value: string }
+}
+
+const DOC_COLORS: Record<string, string> = {
+  products: m.violet, pages: m.jade, storefronts: m.gold,
+  collections: m.pink, posts: m.jade, artists: m.jade,
+}
+
 // ── Collections Modal ────────────────────────────────────────────────────────
 function CollModal({ open, onClose, recent }: { open: boolean; onClose: () => void; recent: string[] }) {
   const [q, setQ] = useState('')
   const [mounted, setMounted] = useState(false)
+  const [docResults, setDocResults] = useState<DocResult[]>([])
+  const [searching, setSearching] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { setMounted(true) }, [])
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 60)
-    else setQ('')
+    else { setQ(''); setDocResults([]) }
   }, [open])
   useEffect(() => {
     if (!open) return
@@ -134,6 +149,31 @@ function CollModal({ open, onClose, recent }: { open: boolean; onClose: () => vo
     return () => window.removeEventListener('keydown', fn)
   }, [open, onClose])
 
+  // Debounced document search against the Payload search collection
+  useEffect(() => {
+    const trimmed = q.trim()
+    if (trimmed.length < 2) { setDocResults([]); return }
+    const timer = setTimeout(async () => {
+      setSearching(true)
+      try {
+        const params = new URLSearchParams({
+          'where[or][0][title][like]': trimmed,
+          'where[or][1][excerpt][like]': trimmed,
+          limit: '12',
+          depth: '0',
+          sort: '-priority',
+        })
+        const res = await fetch(`/api/search?${params}`)
+        if (res.ok) {
+          const data = await res.json() as { docs: DocResult[] }
+          setDocResults(data.docs)
+        }
+      } catch { /* ignore */ }
+      setSearching(false)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [q])
+
   if (!mounted || !open) return null
 
   const recentItems = recent
@@ -141,9 +181,11 @@ function CollModal({ open, onClose, recent }: { open: boolean; onClose: () => vo
     .filter((x): x is NavItem => Boolean(x))
 
   const lower = q.toLowerCase().trim()
-  const groups: CollGroup[] = lower
-    ? [{ group: 'Search Results', color: m.violet, items: FLAT.filter(i => i.label.toLowerCase().includes(lower) || i.slug.includes(lower)) }]
+  const navGroups: CollGroup[] = lower
+    ? [{ group: 'Collections', color: m.violet, items: FLAT.filter(i => i.label.toLowerCase().includes(lower) || i.slug.includes(lower)) }]
     : ALL_GROUPS
+
+  const hasResults = docResults.length > 0 || navGroups.some(g => g.items.length > 0)
 
   return createPortal(
     <>
@@ -163,12 +205,57 @@ function CollModal({ open, onClose, recent }: { open: boolean; onClose: () => vo
             ref={inputRef}
             value={q}
             onChange={e => setQ(e.target.value)}
-            placeholder="Search all collections…"
+            placeholder="Search collections and documents…"
             style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: m.high, fontSize: 17, fontFamily: 'inherit' }}
           />
+          {searching && <span style={{ fontSize: 12, color: m.lo, flexShrink: 0 }}>searching…</span>}
           <button onClick={onClose} style={{ background: m.card, border: `1px solid ${m.lineStr}`, color: m.mid, borderRadius: 8, padding: '5px 12px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>esc</button>
         </div>
         <div style={{ overflowY: 'auto', padding: '26px 30px', flex: 1 }}>
+          {/* Document search results from search index */}
+          {docResults.length > 0 && (
+            <section style={{ marginBottom: 36 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: m.lo, marginBottom: 14 }}>Documents</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {docResults.map(result => {
+                  const col = DOC_COLORS[result.doc.relationTo] ?? m.mid
+                  return (
+                    <a
+                      key={result.id}
+                      href={`/admin/collections/${result.doc.relationTo}/${result.doc.value}`}
+                      onClick={onClose}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 14,
+                        padding: '12px 16px', borderRadius: 10,
+                        background: m.card, border: `1px solid ${m.line}`,
+                        color: m.high, textDecoration: 'none',
+                      }}
+                    >
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: col, flexShrink: 0 }} />
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ fontSize: 14, fontWeight: 600 }}>{result.title}</div>
+                        {result.excerpt && (
+                          <div style={{ fontSize: 12, color: m.lo, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {result.excerpt}
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ fontSize: 11, color: m.lo, flexShrink: 0, fontFamily: 'ui-monospace, monospace' }}>
+                        {result.doc.relationTo}
+                      </div>
+                    </a>
+                  )
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* No results state */}
+          {lower && !searching && !hasResults && (
+            <div style={{ color: m.lo, fontSize: 14, padding: '8px 0' }}>No results for "{q}"</div>
+          )}
+
+          {/* Recently visited (only when not searching) */}
           {!lower && recentItems.length > 0 && (
             <section style={{ marginBottom: 36 }}>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: m.lo, marginBottom: 14 }}>Recently Visited</div>
@@ -182,21 +269,21 @@ function CollModal({ open, onClose, recent }: { open: boolean; onClose: () => vo
               </div>
             </section>
           )}
+
+          {/* Collection nav groups */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 34 }}>
-            {groups.map(grp => (
-              <section key={grp.group}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                  <div style={{ width: 9, height: 9, borderRadius: 3, background: grp.color, flexShrink: 0 }} />
-                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: m.lo }}>{grp.group}</span>
-                </div>
-                {grp.items.length > 0 ? (
+            {navGroups.map(grp => (
+              grp.items.length > 0 && (
+                <section key={grp.group}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                    <div style={{ width: 9, height: 9, borderRadius: 3, background: grp.color, flexShrink: 0 }} />
+                    <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: m.lo }}>{grp.group}</span>
+                  </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
                     {grp.items.map(item => <CollCard key={item.slug} item={item} color={grp.color} onClose={onClose} />)}
                   </div>
-                ) : (
-                  <div style={{ color: m.lo, fontSize: 14, padding: '8px 0' }}>No matches for "{q}"</div>
-                )}
-              </section>
+                </section>
+              )
             ))}
           </div>
         </div>
@@ -275,6 +362,18 @@ export function FloatingActionBar() {
       const rec = localStorage.getItem('kawai-nav-rec')
       if (rec) setRecent(JSON.parse(rec) as string[])
     } catch { /* ignore */ }
+  }, [])
+
+  useEffect(() => {
+    const fn = (e: KeyboardEvent) => {
+      if (e.key !== 'l' && e.key !== 'L') return
+      if (e.ctrlKey || e.metaKey || e.altKey) return
+      const tag = (e.target as HTMLElement)?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement)?.isContentEditable) return
+      setCollOpen(v => !v)
+    }
+    window.addEventListener('keydown', fn)
+    return () => window.removeEventListener('keydown', fn)
   }, [])
 
   /*

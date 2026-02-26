@@ -279,8 +279,66 @@ export const Collections: CollectionConfig = {
   ],
 
   hooks: {
-    // Clean up collections with no products
     afterChange: [
+      // ─── Custom Search Index Sync ──────────────────────────────────────────────
+      // Bypasses @payloadcms/plugin-search's auto-sync because Payload 3.71.1 has
+      // a bug in db-mongodb/queries/parseParams.js:68 where querying polymorphic
+      // relationship fields with dotted-path notation throws:
+      //   TypeError: Cannot delete property '0' of [object String]
+      // We query by collectionHandle (a scalar custom field) instead.
+      async ({ doc, operation, req }) => {
+        const { payload } = req
+        try {
+          const collectionTags = [
+            { tag: 'collection' },
+            ...(doc.shopify?.collectionType ? [{ tag: doc.shopify.collectionType }] : []),
+            ...(doc.featured ? [{ tag: 'featured' }] : []),
+          ]
+          const searchData = {
+            doc: { relationTo: 'collections' as const, value: doc.id },
+            title: doc.title,
+            excerpt: doc.description?.substring(0, 200) || doc.heading || doc.title || '',
+            category: 'collection',
+            tags: collectionTags,
+            collectionHandle: doc.handle,
+            collectionTitle: doc.title,
+          }
+
+          if (operation === 'create') {
+            await payload.create({ collection: 'search', data: { ...searchData, priority: 15 }, depth: 0, req, overrideAccess: true })
+          } else {
+            // Query by collectionHandle — avoids the broken polymorphic dotted-path query
+            const existing = await payload.find({
+              collection: 'search',
+              where: { collectionHandle: { equals: doc.handle } },
+              depth: 0,
+              limit: 1,
+              req,
+            })
+
+            const existingDoc = existing.docs[0]
+
+            if (existingDoc) {
+              await payload.update({
+                collection: 'search',
+                id: existingDoc.id,
+                data: { ...searchData, priority: (existingDoc as any).priority ?? 15 },
+                depth: 0,
+                req,
+                overrideAccess: true,
+              })
+            } else {
+              await payload.create({ collection: 'search', data: { ...searchData, priority: 15 }, depth: 0, req, overrideAccess: true })
+            }
+          }
+        } catch (error) {
+          payload.logger.error(`Failed to sync collection ${doc.handle} to search index: ${error}`)
+        }
+
+        return doc
+      },
+
+      // ─── Revalidation + Cleanup ────────────────────────────────────────────────
       async ({ doc, req, context, operation }) => {
         // Revalidate the products navigation cache whenever a collection is saved
         // This ensures featured carousel updates immediately without waiting for the 5-min TTL

@@ -33,12 +33,15 @@ export async function NewsCarouselRenderer(props: MarketingNewsCarouselBlock) {
 
   // Append block news items if they exist (always additive)
   if (props.newsItems && Array.isArray(props.newsItems) && props.newsItems.length > 0) {
-    const blockNewsItems: NewsItem[] = props.newsItems.map((item) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const blockNewsItems: NewsItem[] = props.newsItems.map((item: any) => ({
       title: item.title,
       description: item.description,
       image: item.image ?? null,
       category: item.category,
       ...(item.link && { link: item.link }),
+      ...(item.videoUrl && { videoUrl: item.videoUrl, videoSource: 'youtube' as const }),
+      ...(item.youtubeZoom != null && { youtubeZoom: item.youtubeZoom }),
     }))
 
     newsItems = [...newsItems, ...blockNewsItems]

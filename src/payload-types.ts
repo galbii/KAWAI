@@ -111,6 +111,7 @@ export interface Config {
     'product-collection-showcase': ProductCollectionShowcaseBlock;
     'product-floating-add-to-cart': ProductFloatingAddToCartBlock;
     'product-feature-slides': ProductFeatureSlidesBlock;
+    'product-hero-carousel': ProductHeroCarouselBlock;
     textContent: TextContentBlock;
     hello: HelloBlock;
     archive: ArchiveBlock;
@@ -4285,6 +4286,14 @@ export interface MarketingNewsCarouselBlock {
          * Button label (default: "Read Full Story")
          */
         ctaText?: string | null;
+        /**
+         * YouTube video URL to use as this slide's background (e.g., https://youtube.com/watch?v=...). When set, overrides the image.
+         */
+        videoUrl?: string | null;
+        /**
+         * Zoom level for YouTube background (1.0 = no zoom, 1.15 = default — crops YouTube UI from edges). Only applies when YouTube URL is set.
+         */
+        youtubeZoom?: number | null;
         id?: string | null;
       }[]
     | null;
@@ -5291,6 +5300,129 @@ export interface ProductSpecificationsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductHeroCarouselBlock".
+ */
+export interface ProductHeroCarouselBlock {
+  /**
+   * Additional slides appended after the Homepage news items. Leave empty to show only homepage news.
+   */
+  slides?:
+    | {
+        /**
+         * Choose the media type for this slide
+         */
+        mediaType: 'image' | 'video' | 'youtube';
+        /**
+         * Background image for this slide (recommended: 1920×1080px or larger)
+         */
+        image?: (string | null) | Media;
+        /**
+         * Uploaded video file (MP4 recommended for best browser support)
+         */
+        videoFile?: (string | null) | Media;
+        /**
+         * YouTube video URL — supports youtube.com/watch?v=..., youtu.be/..., or embed URLs
+         */
+        youtubeUrl?: string | null;
+        /**
+         * Zoom level for the YouTube background (1.0 = no zoom, 1.15 = default — crops YouTube UI from edges, 1.5 = tight crop)
+         */
+        youtubeZoom?: number | null;
+        /**
+         * Small label displayed above the title (e.g., "New Arrival", "Limited Edition")
+         */
+        eyebrow?: string | null;
+        /**
+         * Main headline — leave empty for a pure visual, text-free slide
+         */
+        title?: string | null;
+        /**
+         * Supporting subtitle or short description
+         */
+        subtitle?: string | null;
+        /**
+         * Call-to-action button text — leave empty to hide the button
+         */
+        ctaText?: string | null;
+        /**
+         * CTA destination URL — required when CTA text is set. Use internal paths (/products/sk-ex) or full URLs.
+         */
+        ctaLink?: string | null;
+        /**
+         * Open link in a new tab (recommended for external URLs)
+         */
+        ctaOpenInNewTab?: boolean | null;
+        /**
+         * Button visual style
+         */
+        ctaStyle?: ('white' | 'red' | 'outline') | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Carousel behaviour and controls
+   */
+  settings?: {
+    /**
+     * Auto-play duration per slide in milliseconds (leave empty to use Homepage setting, default: 7000ms)
+     */
+    autoPlayDuration?: number | null;
+    /**
+     * Automatically advance slides
+     */
+    enableAutoPlay?: boolean | null;
+    /**
+     * Loop back to the first slide after the last
+     */
+    enableLoop?: boolean | null;
+    /**
+     * Arrow keys (←/→) and spacebar to play/pause
+     */
+    enableKeyboardNav?: boolean | null;
+    /**
+     * Swipe to navigate on touch devices
+     */
+    enableTouchSwipe?: boolean | null;
+    /**
+     * Show slide progress indicators at the bottom
+     */
+    showNavigationDots?: boolean | null;
+    /**
+     * Show left/right arrow navigation buttons
+     */
+    showArrows?: boolean | null;
+    /**
+     * Show play/pause control button
+     */
+    showPlayPauseButton?: boolean | null;
+    /**
+     * Subtle zoom animation on images (Ken Burns effect)
+     */
+    enableKenBurnsEffect?: boolean | null;
+  };
+  /**
+   * Visual height, content position, and overlay intensity
+   */
+  styling?: {
+    /**
+     * Carousel height
+     */
+    height?: ('screen' | 'large' | 'medium' | 'small') | null;
+    /**
+     * Position of the text content
+     */
+    contentPosition?: ('bottom-left' | 'bottom-center' | 'center' | 'top-left') | null;
+    /**
+     * Gradient overlay darkness — increase for better text legibility over bright images
+     */
+    overlayIntensity?: ('none' | 'subtle' | 'medium' | 'heavy') | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'product-hero-carousel';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TextContentBlock".
  */
 export interface TextContentBlock {
@@ -5882,6 +6014,7 @@ export interface HomePage {
         | MarketingPianoCollectionBlock
         | MarketingPianoGalleryBlock
         | MarketingNewsCarouselBlock
+        | ProductHeroCarouselBlock
         | MarketingContactFormBlock
         | MarketingStorefrontLocationsBlock
         | MarketingFeaturedModelsBlock
@@ -6180,6 +6313,14 @@ export interface HomePage {
      * Button label (default: "Read Full Story")
      */
     ctaText?: string | null;
+    /**
+     * YouTube URL to use as this slide's background (e.g., https://youtube.com/watch?v=...). When set, overrides the image.
+     */
+    videoUrl?: string | null;
+    /**
+     * Zoom level for YouTube background (1.0 = no zoom, 1.15 = default — crops YouTube UI from edges). Only applies when a YouTube URL is set.
+     */
+    youtubeZoom?: number | null;
     id?: string | null;
   }[];
   /**
@@ -7358,6 +7499,10 @@ export interface Search {
     | {
         relationTo: 'pages';
         value: string | Page;
+      }
+    | {
+        relationTo: 'collections';
+        value: string | Collection;
       };
   /**
    * Short excerpt displayed in search results
@@ -7400,6 +7545,14 @@ export interface Search {
    * Page slug (denormalized from Pages collection)
    */
   pageSlug?: string | null;
+  /**
+   * Collection handle (denormalized from Collections collection)
+   */
+  collectionHandle?: string | null;
+  /**
+   * Collection title (denormalized from Collections collection)
+   */
+  collectionTitle?: string | null;
   storefrontSlug?: string | null;
   storefrontLocationName?: string | null;
   storefrontLocationText?: string | null;
@@ -7967,6 +8120,8 @@ export interface HomePageSelect<T extends boolean = true> {
         category?: T;
         link?: T;
         ctaText?: T;
+        videoUrl?: T;
+        youtubeZoom?: T;
         id?: T;
       };
   contactTitle?: T;
@@ -8788,6 +8943,8 @@ export interface SearchSelect<T extends boolean = true> {
   productCategory?: T;
   productSlug?: T;
   pageSlug?: T;
+  collectionHandle?: T;
+  collectionTitle?: T;
   storefrontSlug?: T;
   storefrontLocationName?: T;
   storefrontLocationText?: T;

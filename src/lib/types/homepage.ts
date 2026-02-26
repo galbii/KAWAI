@@ -102,6 +102,7 @@ export interface NewsItem {
   images?: (Media | string)[] | null // Multiple images for carousel display
   videoUrl?: string | null // YouTube URL or direct MP4 URL
   videoSource?: 'youtube' | 'direct' | null // Type of video embed
+  youtubeZoom?: number | null // Per-slide zoom level for YouTube backgrounds (1.0–2.5)
 }
 
 export interface NewsCarouselSectionData {

@@ -73,6 +73,7 @@ export const HomePage: CollectionConfig = {
                 'marketing-piano-collection',
                 'marketing-piano-gallery',
                 'marketing-news-carousel',
+                'product-hero-carousel',
                 'marketing-contact-form',
                 'marketing-storefront-locations',
                 'marketing-featured-models',
@@ -831,6 +832,25 @@ export const HomePage: CollectionConfig = {
                   type: 'text',
                   admin: {
                     description: 'Button label (default: "Read Full Story")'
+                  }
+                },
+                {
+                  name: 'videoUrl',
+                  type: 'text',
+                  admin: {
+                    description: 'YouTube URL to use as this slide\'s background (e.g., https://youtube.com/watch?v=...). When set, overrides the image.',
+                    placeholder: 'https://www.youtube.com/watch?v=...',
+                  }
+                },
+                {
+                  name: 'youtubeZoom',
+                  type: 'number',
+                  min: 1.0,
+                  max: 2.5,
+                  admin: {
+                    description: 'Zoom level for YouTube background (1.0 = no zoom, 1.15 = default — crops YouTube UI from edges). Only applies when a YouTube URL is set.',
+                    step: 0.05,
+                    condition: (_data: any, siblingData: any) => Boolean(siblingData?.videoUrl),
                   }
                 }
               ],

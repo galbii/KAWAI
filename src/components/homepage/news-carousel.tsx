@@ -161,6 +161,7 @@ export function NewsCarousel({ data }: NewsCarouselProps) {
                     description={currentItem.description}
                     videoUrl={currentItem.videoUrl}
                     videoSource={currentItem.videoSource || 'youtube'}
+                    youtubeZoom={currentItem.youtubeZoom ?? null}
                     category={currentItem.category}
                     link={currentItem.link}
                     prefersReducedMotion={prefersReducedMotion}

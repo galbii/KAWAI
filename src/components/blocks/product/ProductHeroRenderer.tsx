@@ -41,7 +41,7 @@ export function ProductHeroRenderer({
         )}>
           {/* Product Image */}
           {overrides?.customImage && (
-            <div className="flex-1 relative">
+            <div className="flex-1 relative z-0 hover:z-10 group">
               {(() => {
                 const imageProps = getImagePropsWithFallback(
                   overrides.customImage,
@@ -49,15 +49,22 @@ export function ProductHeroRenderer({
                   'hero'
                 )
                 return (
-                  <Image
-                    {...imageProps}
-                    alt={overrides.customTitle || ''}
-                    className="w-full h-auto rounded-lg"
-                  />
+                  /* Scale + shadow layer — no overflow clip so it can pop outside */
+                  <div className="relative aspect-square transition-all duration-500 ease-[var(--ease-elegant)] group-hover:scale-[1.12] group-hover:shadow-[0_28px_64px_rgba(0,0,0,0.26)]">
+                    {/* Clip layer — keeps image cropped to square */}
+                    <div className="absolute inset-0 overflow-hidden">
+                      <Image
+                        {...imageProps}
+                        alt={overrides.customTitle || ''}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-kawai-black/0 group-hover:bg-kawai-black/10 transition-colors duration-500" />
+                    </div>
+                  </div>
                 )
               })()}
               {overrides?.badge && (
-                <div className="absolute top-4 right-4 bg-kawai-red text-white px-4 py-2 rounded-full font-semibold">
+                <div className="absolute top-4 right-4 bg-kawai-red text-white px-4 py-2 font-semibold text-sm tracking-wide">
                   {overrides.badge}
                 </div>
               )}

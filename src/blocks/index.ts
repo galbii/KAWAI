@@ -52,6 +52,7 @@ export { TechnicalSpecifications } from './product/TechnicalSpecifications'
 export { CollectionShowcase } from './product/CollectionShowcase'
 export { FloatingAddToCart } from './product/FloatingAddToCart'
 export { ProductFeatureSlides } from './product/ProductFeatureSlides'
+export { ProductHeroCarousel } from './product/ProductHeroCarousel'
 
 // Legacy blocks (keep for backward compatibility - TODO: migrate away from these)
 export { Hello } from './Hello'

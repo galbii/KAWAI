@@ -53,6 +53,7 @@ const signupFormSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address'),
+  subscribeToUpdates: z.boolean().optional(),
 })
 
 type SignupFormData = z.infer<typeof signupFormSchema>
@@ -87,6 +88,7 @@ export function SimpleCustomerSignupForm({
     formData.append('lastName', data.lastName)
     formData.append('email', data.email)
     formData.append('storefrontSlug', storefrontSlug)
+    formData.append('subscribeToUpdates', String(data.subscribeToUpdates ?? false))
 
     // Add custom tags from Payload CMS if provided
     if (customTags && customTags.length > 0) {
@@ -180,6 +182,23 @@ export function SimpleCustomerSignupForm({
           {...(errors.email && { error: errors.email })}
           register={register}
         />
+
+        {/* Newsletter Subscription */}
+        <label className="flex items-start space-x-3 cursor-pointer">
+          <input
+            type="checkbox"
+            {...register('subscribeToUpdates')}
+            className="mt-0.5 w-4 h-4 text-kawai-red border-kawai-black/30 rounded focus:ring-kawai-red"
+          />
+          <div>
+            <div className="text-sm font-medium text-kawai-black">
+              Subscribe to updates
+            </div>
+            <div className="text-xs text-kawai-black/60">
+              Receive news about new pianos, events, and exclusive offers
+            </div>
+          </div>
+        </label>
 
         {/* Submit Button */}
         <Button

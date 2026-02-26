@@ -90,6 +90,7 @@ import { FeaturesListBlock } from './blocks/FeaturesListBlock'
 import { SpecificationsBlock } from './blocks/SpecificationsBlock'
 import { CollectionShowcaseBlock } from './blocks/CollectionShowcaseBlock'
 import { FloatingAddToCartBlock } from './blocks/FloatingAddToCartBlock'
+import { ProductHeroCarouselBlock } from './blocks/ProductHeroCarouselBlock'
 
 /**
  * Block Components Mapping
@@ -155,6 +156,7 @@ const blockComponents = {
   'product-specs': SpecificationsBlock,
   'product-collection-showcase': CollectionShowcaseBlock,
   'product-floating-add-to-cart': FloatingAddToCartBlock,
+  'product-hero-carousel': ProductHeroCarouselBlock,
 } as const
 
 type BlockComponents = typeof blockComponents

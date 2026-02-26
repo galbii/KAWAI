@@ -22,7 +22,8 @@ const simpleSignupSchema = z.object({
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address'),
   storefrontSlug: z.string().min(1, 'Storefront location is required'),
-  customTags: z.string().optional() // Comma-separated tags from Payload CMS
+  customTags: z.string().optional(), // Comma-separated tags from Payload CMS
+  subscribeToUpdates: z.boolean().optional(),
 })
 
 type SimpleSignupData = z.infer<typeof simpleSignupSchema>
@@ -51,7 +52,8 @@ export async function submitSimpleCustomerSignup(
       lastName: formData.get('lastName')?.toString() || '',
       email: formData.get('email')?.toString() || '',
       storefrontSlug: formData.get('storefrontSlug')?.toString() || '',
-      customTags: formData.get('customTags')?.toString() || ''
+      customTags: formData.get('customTags')?.toString() || '',
+      subscribeToUpdates: formData.get('subscribeToUpdates') === 'true',
     }
 
     // Validate the data
@@ -110,6 +112,12 @@ export async function submitSimpleCustomerSignup(
         firstName: signupData.firstName,
         lastName: signupData.lastName,
         tags, // Location slug + custom tags
+        ...(signupData.subscribeToUpdates && {
+          emailMarketingConsent: {
+            marketingState: 'SUBSCRIBED' as const,
+            marketingOptInLevel: 'SINGLE_OPT_IN' as const,
+          },
+        }),
       })
 
       console.log(

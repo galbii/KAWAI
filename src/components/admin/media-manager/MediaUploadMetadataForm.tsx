@@ -71,10 +71,13 @@ export function MediaUploadMetadataForm({ file, onUpload, onCancel, initialConve
 
   // True when ImageEditor already converted PNG/JPEG→WebP client-side (file arrives as webp)
   const alreadyConvertedByEditor = file.type === 'image/webp' && initialConvertToWebp === true
-  // Show the WebP section for PNG/TIFF (server-side conversion) OR files already
-  // converted by ImageEditor so the user can see/confirm the conversion happened
+  // Show the WebP section for PNG/TIFF (server-side conversion), JPEG (client-side),
+  // OR files already converted by ImageEditor so the user can see/confirm the conversion
   const isConvertibleFormat =
-    file.type === 'image/png' || file.type === 'image/tiff' || alreadyConvertedByEditor
+    file.type === 'image/png' ||
+    file.type === 'image/tiff' ||
+    file.type === 'image/jpeg' ||
+    alreadyConvertedByEditor
   const [convertToWebp, setConvertToWebp] = useState(
     initialConvertToWebp ?? isConvertibleFormat
   )
@@ -131,9 +134,9 @@ export function MediaUploadMetadataForm({ file, onUpload, onCancel, initialConve
       alt,
       mediaType,
       featured,
-      // Only include when false — server hook's default is to convert, so we only need to
-      // override when the user explicitly opts out
-      ...(isConvertibleFormat && !convertToWebp ? { convertToWebp: false } : {}),
+      // Always include the explicit choice for convertible formats so the provider
+      // knows to run client-side JPEG→WebP conversion when convertToWebp is true.
+      ...(isConvertibleFormat ? { convertToWebp } : {}),
     }
 
     if (caption) metadata.caption = caption
@@ -408,7 +411,9 @@ export function MediaUploadMetadataForm({ file, onUpload, onCancel, initialConve
                     Convert to WebP
                   </label>
                   <p className="text-xs mt-0.5" style={{ color: colors.slate400 }}>
-                    Smaller file size, better web performance
+                    {file.type === 'image/jpeg'
+                      ? 'Converts client-side before upload — smaller file, better browser support'
+                      : 'Smaller file size, better web performance'}
                   </p>
                 </div>
                 <button

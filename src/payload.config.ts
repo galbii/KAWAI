@@ -9,6 +9,7 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
+import pino from 'pino'
 import { extractTextFromRichText } from './lib/utils'
 
 import { Users } from './collections/Users'
@@ -79,6 +80,7 @@ import {
   CollectionShowcase,
   FloatingAddToCart,
   ProductFeatureSlides,
+  ProductHeroCarousel,
   // Legacy blocks (keep for backward compatibility)
   TextContent,
   Hello,
@@ -94,8 +96,29 @@ import { pianosPageSeedPlugin } from './plugins/pianos-page-seed'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+// Custom logger: downgrade 4xx operational errors (expected user-caused failures
+// like invalid file types) from ERROR to WARN so the console stays clean.
+// Real server errors (5xx) still surface at ERROR level.
+const _baseLogger = pino({ level: 'info' })
+const _origError = _baseLogger.error.bind(_baseLogger) as (...args: unknown[]) => void
+;(_baseLogger as unknown as Record<string, unknown>).error = (obj: unknown, ...rest: unknown[]) => {
+  if (
+    obj !== null && typeof obj === 'object' &&
+    'err' in (obj as object) &&
+    (obj as Record<string, unknown>).err !== null &&
+    typeof (obj as Record<string, unknown>).err === 'object' &&
+    ((obj as any).err as Record<string, unknown>).isOperational === true &&
+    typeof ((obj as any).err as Record<string, unknown>).status === 'number' &&
+    ((obj as any).err as any).status < 500
+  ) {
+    _baseLogger.warn(obj as Parameters<typeof _baseLogger.warn>[0])
+    return
+  }
+  _origError(obj, ...rest)
+}
 
 export default buildConfig({
+  logger: _baseLogger,
   // Enable folders for media organization
   folders: {
     browseByFolder: true,
@@ -261,6 +284,7 @@ export default buildConfig({
     CollectionShowcase,
     FloatingAddToCart,
     ProductFeatureSlides,
+    ProductHeroCarousel,
 
     // Legacy blocks (keep for backward compatibility)
     TextContent,
@@ -322,10 +346,11 @@ export default buildConfig({
       },
     }),
     searchPlugin({
-      collections: ['storefronts', 'products', 'pages'],
+      collections: ['storefronts', 'products', 'pages', 'collections'],
       defaultPriorities: {
         storefronts: 30,
         products: 20,
+        collections: 15,
         pages: 10,
       },
       // Storefronts have a custom afterChange hook in Storefronts.ts that handles their
@@ -333,9 +358,10 @@ export default buildConfig({
       // builder (parseParams.js:68) where querying polymorphic relationship fields using
       // dotted-path notation (doc.value + doc.relationTo simultaneously) causes:
       // TypeError: Cannot delete property '0' of [object String]
-      skipSync: async ({ collectionSlug }) => collectionSlug === 'storefronts',
-      // Note: storefronts are excluded from beforeSync via skipSync above.
-      // Their search index is maintained by the manual afterChange hook in Storefronts.ts.
+      skipSync: async ({ collectionSlug }) =>
+        collectionSlug === 'storefronts' || collectionSlug === 'collections',
+      // Note: storefronts and collections are excluded from beforeSync via skipSync above.
+      // Their search index is maintained by manual afterChange hooks in Storefronts.ts and Collections.ts.
       beforeSync: ({ originalDoc, searchDoc, req }) => {
         const isProduct = originalDoc.name && originalDoc.model
 
@@ -503,6 +529,9 @@ export default buildConfig({
               readOnly: true,
             },
           },
+          // Denormalized collection fields for fast search results
+          { name: 'collectionHandle', type: 'text', admin: { position: 'sidebar', readOnly: true, description: 'Collection handle (denormalized from Collections collection)' } },
+          { name: 'collectionTitle', type: 'text', admin: { position: 'sidebar', readOnly: true, description: 'Collection title (denormalized from Collections collection)' } },
           // Denormalized storefront fields for fast search results
           { name: 'storefrontSlug', type: 'text', admin: { position: 'sidebar', readOnly: true } },
           { name: 'storefrontLocationName', type: 'text', admin: { position: 'sidebar', readOnly: true } },

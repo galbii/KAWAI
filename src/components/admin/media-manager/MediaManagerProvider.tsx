@@ -467,36 +467,6 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
     }
   }, [fetchMedia, showToast, state.currentPage])
 
-  // Handle file selection - show editor for images
-  const handleFilesSelected = useCallback((files: FileList | File[]) => {
-    const fileArray = Array.from(files)
-
-    // TIFF files can't be decoded by the browser canvas — bypass the editor.
-    // The server-side convertImagesToWebp hook converts them to WebP automatically.
-    const isTiff = (f: File) => f.type === 'image/tiff' || /\.tiff?$/i.test(f.name)
-
-    // Filter to get image files for editing (TIFF excluded — not browser-renderable)
-    const imageFiles = fileArray.filter(f => f.type.startsWith('image/') && !isTiff(f))
-    const otherFiles = fileArray.filter(f => !f.type.startsWith('image/') || isTiff(f))
-
-    // If there are non-image files, upload them directly
-    if (otherFiles.length > 0) {
-      uploadFilesDirectly(otherFiles)
-    }
-
-    // If there are image files, queue them for editing
-    if (imageFiles.length > 0) {
-      const firstFile = imageFiles[0]
-      if (firstFile) {
-        setState(prev => ({
-          ...prev,
-          pendingFiles: imageFiles,
-          editingFile: firstFile,
-        }))
-      }
-    }
-  }, [])
-
   // Upload files directly without editing
   const uploadFilesDirectly = useCallback(async (files: File[]) => {
     setState(prev => ({ ...prev, isUploading: true, error: null }))
@@ -569,6 +539,32 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
     }
   }, [fetchMedia, showToast, state.currentFolder])
 
+  // Handle file selection — all images go to the metadata form first.
+  // The ImageEditor is only reachable when editing an already-uploaded image.
+  const handleFilesSelected = useCallback((files: FileList | File[]) => {
+    const fileArray = Array.from(files)
+
+    const imageFiles = fileArray.filter(f => f.type.startsWith('image/'))
+    const otherFiles = fileArray.filter(f => !f.type.startsWith('image/'))
+
+    // Non-image files (PDF, video, audio) upload directly without a form
+    if (otherFiles.length > 0) {
+      uploadFilesDirectly(otherFiles)
+    }
+
+    // All image files — go straight to the metadata form, skip ImageEditor
+    if (imageFiles.length > 0) {
+      const firstFile = imageFiles[0]
+      if (firstFile) {
+        setState(prev => ({
+          ...prev,
+          pendingFiles: imageFiles,
+          metadataEditingFile: firstFile,
+        }))
+      }
+    }
+  }, [uploadFilesDirectly])
+
   // Upload edited file and move to next in queue
   const uploadEditedFile = useCallback(async (file: File) => {
     setState(prev => ({ ...prev, isUploading: true }))
@@ -624,23 +620,17 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
     }
   }, [fetchMedia, showToast, state.currentFolder])
 
-  // Skip editing current file
+  // Skip (discard) the current file in the queue and advance to the next one
   const skipEditing = useCallback(() => {
     setState(prev => {
       const remainingFiles = prev.pendingFiles.slice(1)
-
-      // Upload current file without editing
-      if (prev.editingFile) {
-        uploadFilesDirectly([prev.editingFile])
-      }
-
       return {
         ...prev,
         pendingFiles: remainingFiles,
-        editingFile: remainingFiles[0] || null,
+        metadataEditingFile: remainingFiles[0] || null,
       }
     })
-  }, [uploadFilesDirectly])
+  }, [])
 
   // Move from image editing to metadata editing
   const moveToMetadataEditing = useCallback((file: File) => {
@@ -663,8 +653,33 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
         lastModified: file.lastModified,
       })
 
+      // Client-side JPEG→WebP conversion (server hook only handles PNG/TIFF)
+      let uploadFile = file
+      if (metadata.convertToWebp === true && file.type === 'image/jpeg') {
+        uploadFile = await new Promise<File>((resolve, reject) => {
+          const img = new Image()
+          const url = URL.createObjectURL(file)
+          img.onload = () => {
+            URL.revokeObjectURL(url)
+            const canvas = document.createElement('canvas')
+            canvas.width = img.naturalWidth
+            canvas.height = img.naturalHeight
+            const ctx = canvas.getContext('2d')
+            if (!ctx) { reject(new Error('Canvas not supported')); return }
+            ctx.drawImage(img, 0, 0)
+            canvas.toBlob((blob) => {
+              if (!blob) { reject(new Error('WebP conversion failed')); return }
+              resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), { type: 'image/webp' }))
+            }, 'image/webp', 0.9)
+          }
+          img.onerror = reject
+          img.src = url
+        })
+        console.log('🔄 [UPLOAD WITH METADATA] JPEG converted to WebP client-side')
+      }
+
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', uploadFile)
 
       // Build payload with provided metadata
       const payload: Record<string, any> = {
@@ -712,14 +727,14 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
         sizes: result.doc?.sizes ? Object.keys(result.doc.sizes) : 'none',
       })
 
-      // Move to next file in queue or close
+      // Advance queue — next image goes to the metadata form, not ImageEditor
       setState(prev => {
         const remainingFiles = prev.pendingFiles.slice(1)
         return {
           ...prev,
           isUploading: false,
           pendingFiles: remainingFiles,
-          editingFile: remainingFiles[0] || null,
+          metadataEditingFile: remainingFiles[0] || null,
         }
       })
 
