@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -368,38 +368,27 @@ function CollectionCarousel({
 
 function ProductCard({ product, onClose }: { product: NavProduct; onClose: () => void }) {
   return (
-    <Link href={`/products/${product.handle}`} onClick={onClose} className="group block">
-      <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#F0EDE8] mb-4">
+    <Link href={`/products/${product.handle}`} onClick={onClose} className="block">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-white mb-4">
         {product.image ? (
           <Image
             src={product.image.url}
             alt={product.image.alt}
             fill
             sizes="(max-width: 1280px) 22vw, 280px"
-            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.05]"
+            className="object-cover"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="text-xs uppercase tracking-widest text-[#C8C2BA]">No image</span>
           </div>
         )}
-
-        {product.isFeatured && (
-          <div className="absolute top-3 right-3">
-            <span className="inline-block px-2.5 py-1 bg-[#A01829] text-[10px] font-bold tracking-[0.1em] uppercase text-white rounded-full">
-              Featured
-            </span>
-          </div>
-        )}
-
-        <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-[#A01829] transition-all duration-200 pointer-events-none" />
       </div>
 
       <div className="space-y-1 px-0.5">
-        <h3 className="text-sm font-semibold text-[#2C2C2C] group-hover:text-[#A01829] transition-colors duration-150 leading-snug line-clamp-2 font-serif">
+        <h3 className="text-sm font-semibold text-[#2C2C2C] leading-snug line-clamp-2 font-serif">
           {product.model ?? product.title}
         </h3>
-        <p className="text-sm text-[#8A8078] font-medium tabular-nums">{product.price.display}</p>
       </div>
     </Link>
   )
@@ -420,6 +409,38 @@ function CategoryProductGrid({
   label: string
   onClose: () => void
 }) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+
+  const updateScrollState = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    setCanScrollLeft(el.scrollLeft > 0)
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 1)
+  }, [])
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    updateScrollState()
+    el.addEventListener('scroll', updateScrollState, { passive: true })
+    const ro = new ResizeObserver(updateScrollState)
+    ro.observe(el)
+    return () => {
+      el.removeEventListener('scroll', updateScrollState)
+      ro.disconnect()
+    }
+  }, [updateScrollState, products])
+
+  const scrollBy = useCallback((dir: 1 | -1) => {
+    const el = scrollRef.current
+    if (!el) return
+    // scroll by one card width + gap
+    const cardWidth = (el.offsetWidth - 56) / 3 + 28
+    el.scrollBy({ left: dir * cardWidth, behavior: 'smooth' })
+  }, [])
+
   if (products.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -437,10 +458,10 @@ function CategoryProductGrid({
       <div className="flex items-end justify-between mb-7">
         <div>
           <p className="text-xs font-bold tracking-[0.22em] uppercase text-[#A01829] mb-2">
-            Collection
+            Kawai Piano
           </p>
           <h2 className="text-2xl font-bold text-[#2C2C2C] font-serif leading-none">
-            {label} Pianos
+            Featured {label}
           </h2>
         </div>
         <Link
@@ -456,15 +477,57 @@ function CategoryProductGrid({
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={sidebarKey}
-          className="grid grid-cols-3 gap-7"
+          className="relative"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -12 }}
           transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
         >
-          {products.slice(0, 6).map((product) => (
-            <ProductCard key={product.id} product={product} onClose={onClose} />
-          ))}
+          {/* Left arrow */}
+          <AnimatePresence>
+            {canScrollLeft && (
+              <motion.button
+                key="prev"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => scrollBy(-1)}
+                aria-label="Scroll left"
+                className="absolute -left-5 top-[42%] -translate-y-1/2 w-10 h-10 rounded-full bg-[#FAF9F7] border border-[#E0DCD6] shadow-md flex items-center justify-center text-[#8A8078] hover:border-[#A01829] hover:text-[#A01829] transition-colors z-10"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </motion.button>
+            )}
+          </AnimatePresence>
+
+          {/* Scrollable row */}
+          <div
+            ref={scrollRef}
+            className="flex gap-7 overflow-x-auto pb-3 scroll-smooth snap-x snap-mandatory [scrollbar-width:thin] [scrollbar-color:#C8C2BA_#EDE9E3] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-[#EDE9E3] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#C8C2BA] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-[#A01829]"
+          >
+            {products.map((product) => (
+              <div key={product.id} className="min-w-[calc((100%-56px)/3)] snap-start flex-shrink-0">
+                <ProductCard product={product} onClose={onClose} />
+              </div>
+            ))}
+          </div>
+
+          {/* Right arrow */}
+          <AnimatePresence>
+            {canScrollRight && (
+              <motion.button
+                key="next"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => scrollBy(1)}
+                aria-label="Scroll right"
+                className="absolute -right-5 top-[42%] -translate-y-1/2 w-10 h-10 rounded-full bg-[#FAF9F7] border border-[#E0DCD6] shadow-md flex items-center justify-center text-[#8A8078] hover:border-[#A01829] hover:text-[#A01829] transition-colors z-10"
+              >
+                <ArrowRight className="h-4 w-4" />
+              </motion.button>
+            )}
+          </AnimatePresence>
         </motion.div>
       </AnimatePresence>
     </div>
@@ -612,7 +675,7 @@ export function ProductsMegaMenu({
                   productTypes={productTypes}
                 />
 
-                <div className="flex-1 min-w-0 px-12 py-10">
+                <div className="flex-1 min-w-0 px-12 py-10 bg-white">
                   <AnimatePresence mode="wait" initial={false}>
                     {selectedKey === null ? (
                       <motion.div

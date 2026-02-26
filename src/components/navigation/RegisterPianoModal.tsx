@@ -147,60 +147,77 @@ export function RegisterPianoModal({
       </div>
 
       {/* ── FORM PANE (flex-1, scrolls independently) ─────────────────────── */}
-      <div className="flex-1 overflow-y-auto min-h-0 min-h-[280px] relative bg-white">
-        {/* Loading skeleton — absolutely fills the pane while HubSpot loads */}
-        <AnimatePresence>
-          {!formReady && (
-            <motion.div
-              key="skeleton"
-              initial={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="absolute inset-0 px-4 py-6 sm:px-8 sm:py-8 space-y-4 bg-white"
-            >
-              <div className="space-y-1.5">
-                <div className="h-3 w-20 rounded bg-gray-200 animate-pulse" />
-                <div className="h-10 rounded-md bg-gray-100 animate-pulse" />
-              </div>
-              <div className="space-y-1.5">
-                <div className="h-3 w-24 rounded bg-gray-200 animate-pulse" />
-                <div className="h-10 rounded-md bg-gray-100 animate-pulse" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <div className="h-3 w-16 rounded bg-gray-200 animate-pulse" />
-                  <div className="h-10 rounded-md bg-gray-100 animate-pulse" />
-                </div>
-                <div className="space-y-1.5">
-                  <div className="h-3 w-20 rounded bg-gray-200 animate-pulse" />
-                  <div className="h-10 rounded-md bg-gray-100 animate-pulse" />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <div className="h-3 w-28 rounded bg-gray-200 animate-pulse" />
-                <div className="h-10 rounded-md bg-gray-100 animate-pulse" />
-              </div>
-              <div className="pt-2">
-                <div className="h-11 w-32 rounded-md bg-gray-200 animate-pulse" />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <div className="flex-1 overflow-y-auto min-h-0 relative bg-kawai-pearl">
+        <div className="px-4 py-6 sm:px-6 sm:py-8">
+          {/* Card that wraps the form */}
+          <div className="relative bg-white rounded-2xl shadow-sm border border-kawai-neutral/40 overflow-hidden min-h-[280px]">
 
-        {/* HubSpot form — fades in once ready, natural height inside scroll container */}
-        <div className="px-4 py-6 sm:px-8 sm:py-8">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: formReady ? 1 : 0 }}
-            transition={{ duration: 0.4, ease: 'easeOut' }}
-          >
-            <div
-              className="hs-form-frame"
-              data-region={region}
-              data-form-id={formId}
-              data-portal-id={portalId}
-            />
-          </motion.div>
+            {/* Loading skeleton — absolute inside the card */}
+            <AnimatePresence>
+              {!formReady && (
+                <motion.div
+                  key="skeleton"
+                  initial={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="absolute inset-0 px-5 py-6 space-y-4 bg-white"
+                >
+                  <div className="space-y-1.5">
+                    <div className="h-2.5 w-16 rounded-full bg-gray-200 animate-pulse" />
+                    <div className="h-10 rounded-xl bg-gray-100 animate-pulse" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="h-2.5 w-20 rounded-full bg-gray-200 animate-pulse" />
+                    <div className="h-10 rounded-xl bg-gray-100 animate-pulse" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <div className="h-2.5 w-14 rounded-full bg-gray-200 animate-pulse" />
+                      <div className="h-10 rounded-xl bg-gray-100 animate-pulse" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <div className="h-2.5 w-16 rounded-full bg-gray-200 animate-pulse" />
+                      <div className="h-10 rounded-xl bg-gray-100 animate-pulse" />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="h-2.5 w-24 rounded-full bg-gray-200 animate-pulse" />
+                    <div className="h-10 rounded-xl bg-gray-100 animate-pulse" />
+                  </div>
+                  <div className="pt-3">
+                    <div className="h-11 rounded-xl bg-gray-200 animate-pulse" />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* HubSpot form — fades in once ready */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: formReady ? 1 : 0 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
+              className="px-5 py-6"
+            >
+              <div
+                className="hs-form-frame"
+                data-region={region}
+                data-form-id={formId}
+                data-portal-id={portalId}
+              />
+            </motion.div>
+          </div>
+
+          {/* Privacy note */}
+          {formReady && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+              className="mt-3 text-center text-[11px] text-gray-400 leading-relaxed"
+            >
+              Your information is protected and will never be shared.
+            </motion.p>
+          )}
         </div>
       </div>
     </Modal>

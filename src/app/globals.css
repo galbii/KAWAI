@@ -566,3 +566,236 @@ body {
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+/* ============================================================ */
+/* HUBSPOT FORM — Register Your Piano modal                     */
+/* Scoped to .hs-form-frame so styles never leak.               */
+/* HubSpot renders directly into the DOM (non-iframe embed),    */
+/* so regular CSS can fully style every element.                */
+/* ============================================================ */
+
+/* Base font + box-sizing reset */
+.hs-form-frame *,
+.hs-form-frame *::before,
+.hs-form-frame *::after {
+  box-sizing: border-box;
+}
+
+.hs-form-frame .hs-form {
+  font-family: var(--font-brand-sans, system-ui, sans-serif);
+  color: var(--color-kawai-black);
+}
+
+/* ── Layout: remove HubSpot's fixed-width fieldset constraints ── */
+.hs-form-frame fieldset {
+  max-width: 100% !important;
+  border: none;
+  padding: 0;
+  margin: 0 0 0.75rem;
+}
+
+.hs-form-frame .form-columns-1,
+.hs-form-frame .form-columns-2 {
+  max-width: 100% !important;
+}
+
+/* Stack two-column layouts on mobile */
+@media (max-width: 640px) {
+  .hs-form-frame .form-columns-2 .hs-form-field {
+    width: 100% !important;
+    float: none !important;
+    display: block;
+  }
+}
+
+/* ── Field container ── */
+.hs-form-frame .hs-form-field {
+  margin-bottom: 1rem;
+}
+
+/* ── Labels ── */
+.hs-form-frame label,
+.hs-form-frame .hs-label {
+  display: block;
+  font-size: 0.6875rem;         /* 11px */
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-kawai-charcoal);
+  margin-bottom: 0.375rem;
+}
+
+.hs-form-frame .hs-form-required {
+  color: var(--color-kawai-red);
+  margin-left: 0.125rem;
+}
+
+/* ── Inputs, selects, textareas ── */
+.hs-form-frame input[type="text"],
+.hs-form-frame input[type="email"],
+.hs-form-frame input[type="tel"],
+.hs-form-frame input[type="number"],
+.hs-form-frame input[type="date"],
+.hs-form-frame select,
+.hs-form-frame textarea {
+  width: 100%;
+  /* 16px minimum prevents iOS Safari from auto-zooming the page */
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--color-kawai-black);
+  background-color: #ffffff;
+  border: 1.5px solid var(--color-kawai-neutral);
+  border-radius: 0.625rem;      /* 10px — rounded */
+  padding: 0.625rem 0.875rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+  line-height: 1.5;
+}
+
+.hs-form-frame input[type="text"]:focus,
+.hs-form-frame input[type="email"]:focus,
+.hs-form-frame input[type="tel"]:focus,
+.hs-form-frame input[type="number"]:focus,
+.hs-form-frame input[type="date"]:focus,
+.hs-form-frame select:focus,
+.hs-form-frame textarea:focus {
+  border-color: var(--color-kawai-red);
+  box-shadow: 0 0 0 3px rgba(225, 25, 34, 0.12);
+}
+
+.hs-form-frame input::placeholder,
+.hs-form-frame textarea::placeholder {
+  color: #9ca3af;
+  opacity: 1;
+}
+
+.hs-form-frame textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Inner .input wrapper HubSpot adds — remove stray margin/padding */
+.hs-form-frame .input {
+  margin: 0 !important;
+}
+
+/* ── Checkbox & radio ── */
+.hs-form-frame .hs-form-checkbox label,
+.hs-form-frame .hs-form-boolen label,
+.hs-form-frame .inputs-list label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--color-kawai-charcoal);
+  cursor: pointer;
+  line-height: 1.5;
+}
+
+.hs-form-frame .hs-form-checkbox input[type="checkbox"],
+.hs-form-frame .hs-form-boolen input[type="checkbox"],
+.hs-form-frame .inputs-list input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.25rem;
+  flex-shrink: 0;
+  margin-top: 0.2rem;
+  accent-color: var(--color-kawai-red);
+  cursor: pointer;
+}
+
+.hs-form-frame .inputs-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* ── Submit button ── */
+.hs-form-frame .actions {
+  margin-top: 0.5rem;
+}
+
+.hs-form-frame .hs-button {
+  display: block;
+  width: 100%;
+  background-color: var(--color-kawai-red);
+  color: #ffffff;
+  border: none;
+  border-radius: 0.625rem;
+  padding: 0.8125rem 1.5rem;
+  font-size: 0.9375rem;         /* 15px */
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.hs-form-frame .hs-button:hover {
+  background-color: #b91c1c;
+}
+
+.hs-form-frame .hs-button:active {
+  transform: scale(0.98);
+}
+
+/* ── Error messages ── */
+.hs-form-frame .hs-error-msgs {
+  list-style: none;
+  padding: 0;
+  margin: 0.25rem 0 0;
+}
+
+.hs-form-frame .hs-error-msg,
+.hs-form-frame .hs-error-msgs li {
+  font-size: 0.75rem;
+  color: var(--color-kawai-red);
+  margin-top: 0.2rem;
+}
+
+/* Error state on the input itself */
+.hs-form-frame .hs-input.error,
+.hs-form-frame input.error,
+.hs-form-frame select.error,
+.hs-form-frame textarea.error {
+  border-color: var(--color-kawai-red);
+}
+
+/* ── Legal consent / GDPR ── */
+.hs-form-frame .legal-consent-container {
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.6;
+  margin-top: 1rem;
+  border-top: 1px solid var(--color-kawai-neutral);
+  padding-top: 0.875rem;
+}
+
+.hs-form-frame .legal-consent-container a {
+  color: var(--color-kawai-red);
+  text-decoration: underline;
+}
+
+/* ── Success / thank-you message ── */
+.hs-form-frame .submitted-message {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--color-kawai-black);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* ── HubSpot branding / rich-text below form ── */
+.hs-form-frame .hs-richtext {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
