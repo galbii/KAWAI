@@ -45,6 +45,7 @@ export interface ModalProps extends VariantProps<typeof modalVariants> {
   onClose: () => void
   children: React.ReactNode
   className?: string
+  overlayClassName?: string
   showCloseButton?: boolean
   closeOnOverlayClick?: boolean
   closeOnEscape?: boolean
@@ -57,6 +58,7 @@ export function Modal({
   size = 'md',
   layout = 'centered',
   className,
+  overlayClassName,
   showCloseButton = true,
   closeOnOverlayClick = true,
   closeOnEscape = true,
@@ -70,7 +72,7 @@ export function Modal({
       }
     }}>
       <DialogPortal>
-        <DialogPrimitive.Overlay className={overlayVariants()} />
+        <DialogPrimitive.Overlay className={cn(overlayVariants(), overlayClassName)} />
         <DialogPrimitive.Content
           className={cn(modalVariants({ size, layout }), className)}
           onEscapeKeyDown={(e) => {

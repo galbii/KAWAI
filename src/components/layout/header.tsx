@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { createPortal } from 'react-dom'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Menu, X, ChevronDown, Home } from 'lucide-react'
@@ -493,6 +494,7 @@ const defaultNavigation: NavigationItem[] = [
 export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isUniversityPage = false, isFindADealerPage = false, newsItems = [], registerConfig, quickLinks = [] }: HeaderProps) {
   const pathname = usePathname()
   const isOnFindADealerPage = isFindADealerPage || pathname.startsWith('/find-a-dealer')
+  const [isMounted, setIsMounted] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
@@ -595,6 +597,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   // Mark animation as complete immediately since header has no animations
   useEffect(() => {
     setAnimationComplete(true)
+    setIsMounted(true)
   }, [])
 
   // Initialize scroll state based on initial scroll position
@@ -1403,112 +1406,115 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         </div>
       )}
 
-      {/* Mobile Menu - Hidden on signature page, concert artist page, and university page */}
-      <AnimatePresence>
-        {isMenuOpen && !isSignaturePage && !hidePianoLinks && !isUniversityPage && (
-          <>
-            <motion.div
-              className="fixed inset-0 z-[9500] bg-black/20 xl:hidden"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={closeMobileMenu}
-            />
-            <motion.div
-              ref={mobileMenuRef}
-              className="fixed right-0 top-0 bottom-0 z-[9501] w-[min(90vw,28rem)] xl:hidden bg-white border-l border-gray-200/50 shadow-2xl flex flex-col h-screen"
-              style={{
-                height: '100vh',
-                minHeight: '100vh'
-              }}
-              variants={mobileMenuVariants}
-              initial="closed"
-              animate="open"
-              exit="closed"
-            >
-            <div className="sticky top-0 bg-white border-b border-gray-200/50 p-4 z-10 flex-shrink-0">
-              <div className="flex items-center justify-end">
-                <button
-                  onClick={closeMobileMenu}
-                  className="p-2 rounded-md hover:bg-gray-100/80 transition-colors"
-                  aria-label="Close menu"
-                >
-                  <X className="h-6 w-6 text-gray-900" />
-                </button>
-              </div>
-            </div>
-            
-            <nav className="flex-1 p-6 overflow-y-auto min-h-0">
-              <div className="space-y-4 pb-6 min-h-full flex flex-col justify-start">
-                {/* Home Link - Always goes to global homepage, doesn't preserve dealer context */}
-                <Link
-                  href="/"
-                  className="block py-4 px-6 text-gray-800 hover:text-gray-900 hover:bg-gray-50 font-medium text-xl transition-colors rounded-lg"
-                  onClick={closeMobileMenu}
-                >
-                  Home
-                </Link>
-
-                {navigation.map((item) => (
-                  <MobileMenuItem
-                    key={item.label}
-                    item={item}
-                    onClose={closeMobileMenu}
-                    isOpen={openMobileItems.has(item.label)}
-                    onToggle={() => toggleMobileItem(item.label)}
-                  />
-                ))}
-
-                {/* Quick Links from CMS */}
-                {quickLinks.length > 0 && (
-                  <div className="pt-2 border-t border-gray-100">
-                    <p className="px-6 pb-2 text-xs font-semibold uppercase tracking-widest text-gray-400">
-                      Quick Links
-                    </p>
-                    {quickLinks.map((link) => (
-                      <ContextAwareLink
-                        key={link.url}
-                        href={link.url}
-                        className="block py-3 px-6 text-gray-700 hover:text-kawai-red hover:bg-gray-50 font-medium text-base transition-colors rounded-lg"
-                        onClick={closeMobileMenu}
-                      >
-                        {link.label}
-                      </ContextAwareLink>
-                    ))}
+      {/* Mobile Menu — portaled to document.body so it always sits above the portaled search bar */}
+      {isMounted && createPortal(
+        <AnimatePresence>
+          {isMenuOpen && !isSignaturePage && !hidePianoLinks && !isUniversityPage && (
+            <>
+              <motion.div
+                className="fixed inset-0 z-[9500] bg-black/20 xl:hidden"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={closeMobileMenu}
+              />
+              <motion.div
+                ref={mobileMenuRef}
+                className="fixed right-0 top-0 bottom-0 z-[9501] w-[min(90vw,28rem)] xl:hidden bg-white border-l border-gray-200/50 shadow-2xl flex flex-col h-screen"
+                style={{ height: '100vh', minHeight: '100vh' }}
+                variants={mobileMenuVariants}
+                initial="closed"
+                animate="open"
+                exit="closed"
+              >
+                <div className="sticky top-0 bg-white border-b border-gray-200/50 p-4 z-10 flex-shrink-0">
+                  <div className="flex items-center justify-end">
+                    <button
+                      onClick={closeMobileMenu}
+                      className="p-2 rounded-md hover:bg-gray-100/80 transition-colors"
+                      aria-label="Close menu"
+                    >
+                      <X className="h-6 w-6 text-gray-900" />
+                    </button>
                   </div>
-                )}
+                </div>
 
-                {/* Find a Dealer Link - Only show on non-storefront pages */}
-                {!currentLocationData && (
-                  <ContextAwareLink
-                    href="/find-a-dealer"
-                    className="block py-4 px-6 text-gray-800 hover:text-gray-900 hover:bg-gray-50 font-medium text-xl transition-colors rounded-lg border-2 border-kawai-red text-kawai-red hover:bg-kawai-red hover:text-white"
-                    onClick={closeMobileMenu}
-                  >
-                    Find a Dealer
-                  </ContextAwareLink>
-                )}
-              </div>
-            </nav>
-            
-            {/* Register Your Piano — sidebar bottom */}
-            {registerConfig?.enabled !== false && (
-              <div className="mt-auto border-t border-gray-200/50 bg-white px-5 py-5 flex-shrink-0">
-                <button
-                  onClick={() => {
-                    closeMobileMenu()
-                    setIsRegisterModalOpen(true)
-                  }}
-                  className="w-full rounded-lg bg-kawai-black px-5 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-kawai-charcoal active:scale-[0.98]"
-                >
-                  Register Your Piano
-                </button>
-              </div>
-            )}
-          </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+                <nav className="flex-1 p-6 overflow-y-auto min-h-0">
+                  <div className="space-y-4 pb-6 min-h-full flex flex-col justify-start">
+                    {/* Home */}
+                    <Link
+                      href="/"
+                      className="block py-4 px-6 text-gray-800 hover:text-gray-900 hover:bg-gray-50 font-medium text-xl transition-colors rounded-lg"
+                      onClick={closeMobileMenu}
+                    >
+                      Home
+                    </Link>
+
+                    {/* Quick Links from CMS — directly under Home */}
+                    {quickLinks.length > 0 && (
+                      <div className="border-t border-gray-100 pt-2">
+                        <p className="px-6 pb-2 text-xs font-semibold uppercase tracking-widest text-gray-400">
+                          Quick Links
+                        </p>
+                        {quickLinks.map((link) => (
+                          <ContextAwareLink
+                            key={link.url}
+                            href={link.url}
+                            className="block py-3 px-6 text-gray-700 hover:text-kawai-red hover:bg-gray-50 font-medium text-base transition-colors rounded-lg"
+                            onClick={closeMobileMenu}
+                          >
+                            {link.label}
+                          </ContextAwareLink>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Nav items (Artists, etc.) */}
+                    {navigation.length > 0 && (
+                      <div className="border-t border-gray-100 pt-2">
+                        {navigation.map((item) => (
+                          <MobileMenuItem
+                            key={item.label}
+                            item={item}
+                            onClose={closeMobileMenu}
+                            isOpen={openMobileItems.has(item.label)}
+                            onToggle={() => toggleMobileItem(item.label)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </nav>
+
+                {/* Bottom CTAs */}
+                <div className="mt-auto border-t border-gray-200/50 bg-white px-5 py-5 flex-shrink-0 space-y-3">
+                  {registerConfig?.enabled !== false && (
+                    <button
+                      onClick={() => {
+                        closeMobileMenu()
+                        setIsRegisterModalOpen(true)
+                      }}
+                      className="w-full rounded-lg bg-kawai-black px-5 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-kawai-charcoal active:scale-[0.98]"
+                    >
+                      Register Your Piano
+                    </button>
+                  )}
+                  {!currentLocationData && (
+                    <ContextAwareLink
+                      href="/find-a-dealer"
+                      className="block w-full rounded-lg bg-kawai-red px-5 py-3.5 text-sm font-semibold text-white text-center transition-colors hover:bg-kawai-red-700 active:scale-[0.98]"
+                      onClick={closeMobileMenu}
+                    >
+                      Find a Dealer
+                    </ContextAwareLink>
+                  )}
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* Storefronts Mega Menu - Rendered at root level for proper positioning */}
       <div

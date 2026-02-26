@@ -49,7 +49,6 @@ export function RegisterPianoModal({
 
   useEffect(() => {
     if (!isOpen) {
-      // Reset so the skeleton shows fresh on the next open
       setFormReady(false)
       return
     }
@@ -63,8 +62,7 @@ export function RegisterPianoModal({
     script.async = true
     document.body.appendChild(script)
 
-    // HubSpot renders the form asynchronously after the script executes.
-    // Poll until an iframe or form element appears inside the frame div.
+    // Poll until HubSpot injects its iframe or form element
     const interval = setInterval(() => {
       const injected = document.querySelector('.hs-form-frame iframe, .hs-form-frame form')
       if (injected) {
@@ -87,9 +85,13 @@ export function RegisterPianoModal({
       onClose={onClose}
       size="xl"
       showCloseButton={false}
-      className="p-0 overflow-hidden max-h-[90dvh] overflow-y-auto w-[calc(100%-2rem)] sm:w-full"
+      // flex-col layout: header is fixed, form scrolls independently.
+      // overflow-hidden on the shell prevents the whole modal from growing/jumping.
+      // z-[9601] sits above the portaled search bar (z-[9003]) and sidebar (z-[9501]).
+      className="p-0 flex flex-col max-h-[90dvh] overflow-hidden w-[calc(100%-2rem)] sm:w-full z-[9601]"
+      overlayClassName="z-[9600]"
     >
-      {/* Close button — adapts colour based on whether there's a dark header */}
+      {/* Close button — absolute so it always floats above both sections */}
       <button
         onClick={onClose}
         aria-label="Close"
@@ -104,49 +106,49 @@ export function RegisterPianoModal({
         </svg>
       </button>
 
-      {/* Banner — image from CMS */}
-      {bannerImageUrl ? (
-        <div className="relative overflow-hidden bg-kawai-black min-h-[120px] sm:min-h-[220px]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={bannerImageUrl}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
-          {(bannerTitle ?? bannerDescription) && (
-            <div className="relative hidden sm:flex h-full min-h-[220px] flex-col justify-center px-8 py-8">
-              <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-kawai-red">
-                Piano Owner
-              </p>
-              {bannerTitle && (
-                <h2 className="text-2xl font-bold text-white leading-snug">{bannerTitle}</h2>
-              )}
-              {bannerDescription && (
-                <p className="mt-2 max-w-xs text-sm text-white/75 leading-relaxed">{bannerDescription}</p>
-              )}
-            </div>
-          )}
-        </div>
-      ) : (
-        /* Branded dark header — shown when no banner image is configured */
-        <div className="bg-kawai-black px-8 py-6">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-kawai-red mb-1.5">
-            Piano Owner
-          </p>
-          <h2 className="text-xl font-bold text-white leading-snug">
-            {bannerTitle || 'Register Your Piano'}
-          </h2>
-          {bannerDescription && (
-            <p className="mt-1.5 text-sm text-white/70 leading-relaxed max-w-sm">{bannerDescription}</p>
-          )}
-        </div>
-      )}
+      {/* ── HEADER (flex-shrink-0 — never scrolls away) ───────────────────── */}
+      <div className="flex-shrink-0">
+        {bannerImageUrl ? (
+          <div className="relative overflow-hidden bg-kawai-black h-[140px] sm:h-[220px]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={bannerImageUrl}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+            {(bannerTitle ?? bannerDescription) && (
+              <div className="relative hidden sm:flex h-full flex-col justify-center px-8 py-8">
+                <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-kawai-red">
+                  Piano Owner
+                </p>
+                {bannerTitle && (
+                  <h2 className="text-2xl font-bold text-white leading-snug">{bannerTitle}</h2>
+                )}
+                {bannerDescription && (
+                  <p className="mt-2 max-w-xs text-sm text-white/75 leading-relaxed">{bannerDescription}</p>
+                )}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="bg-kawai-black px-8 py-6">
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-kawai-red mb-1.5">
+              Piano Owner
+            </p>
+            <h2 className="text-xl font-bold text-white leading-snug">
+              {bannerTitle || 'Register Your Piano'}
+            </h2>
+            {bannerDescription && (
+              <p className="mt-1.5 text-sm text-white/70 leading-relaxed max-w-sm">{bannerDescription}</p>
+            )}
+          </div>
+        )}
+      </div>
 
-      {/* Form area */}
-      <div className="relative px-4 py-6 sm:px-8 sm:py-8 sm:min-h-[320px]">
-
-        {/* Loading skeleton — visible until HubSpot renders */}
+      {/* ── FORM PANE (flex-1, scrolls independently) ─────────────────────── */}
+      <div className="flex-1 overflow-y-auto min-h-0 min-h-[280px] relative bg-white">
+        {/* Loading skeleton — absolutely fills the pane while HubSpot loads */}
         <AnimatePresence>
           {!formReady && (
             <motion.div
@@ -154,9 +156,8 @@ export function RegisterPianoModal({
               initial={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="absolute inset-0 px-4 py-6 sm:px-8 sm:py-8 space-y-4"
+              className="absolute inset-0 px-4 py-6 sm:px-8 sm:py-8 space-y-4 bg-white"
             >
-              {/* Mimics a typical HubSpot form layout */}
               <div className="space-y-1.5">
                 <div className="h-3 w-20 rounded bg-gray-200 animate-pulse" />
                 <div className="h-10 rounded-md bg-gray-100 animate-pulse" />
@@ -186,19 +187,21 @@ export function RegisterPianoModal({
           )}
         </AnimatePresence>
 
-        {/* HubSpot form — fades in once rendered */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: formReady ? 1 : 0 }}
-          transition={{ duration: 0.4, ease: 'easeOut' }}
-        >
-          <div
-            className="hs-form-frame"
-            data-region={region}
-            data-form-id={formId}
-            data-portal-id={portalId}
-          />
-        </motion.div>
+        {/* HubSpot form — fades in once ready, natural height inside scroll container */}
+        <div className="px-4 py-6 sm:px-8 sm:py-8">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: formReady ? 1 : 0 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+          >
+            <div
+              className="hs-form-frame"
+              data-region={region}
+              data-form-id={formId}
+              data-portal-id={portalId}
+            />
+          </motion.div>
+        </div>
       </div>
     </Modal>
   )
