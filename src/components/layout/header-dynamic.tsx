@@ -40,6 +40,11 @@ interface RegisterConfig {
   hubspotRegion?: string | null
 }
 
+interface QuickLink {
+  label: string
+  url: string
+}
+
 function getDealerLocationBySlug(slug: string): Promise<DealerLocationData | null> {
   return unstable_cache(
     async () => {
@@ -112,11 +117,10 @@ const getRegisterConfig = unstable_cache(
       let bannerImageUrl: string | null = null
       if (image && typeof image === 'object') {
         const img = image as any
+        const s3Base = (process.env.NEXT_PUBLIC_S3_PUBLIC_URL ?? '').replace(/\/$/, '')
         bannerImageUrl =
           img.url ??
-          (img.filename
-            ? `${process.env.NEXT_PUBLIC_S3_PUBLIC_URL}/media/${img.filename}`
-            : null)
+          (img.filename ? `${s3Base}/media/${img.filename}` : null)
       }
 
       // Parse the pasted HubSpot embed snippet to extract individual values
@@ -142,6 +146,37 @@ const getRegisterConfig = unstable_cache(
     }
   },
   ['header-register-config'],
+  { tags: ['home-page'], revalidate: 3600 }
+)
+
+const DEFAULT_QUICK_LINKS: QuickLink[] = [
+  { label: 'Instrumental to Life', url: '/instrumental-to-life' },
+  { label: 'Find a Dealer', url: '/find-a-dealer' },
+  { label: 'Register My Piano', url: '/register-my-piano' },
+  { label: 'Kawai Exclusive Offers', url: '/explore' },
+]
+
+const getSearchQuickLinks = unstable_cache(
+  async (): Promise<QuickLink[]> => {
+    try {
+      const payload = await getPayload({ config })
+      const result = await payload.find({
+        collection: 'home-page',
+        limit: 1,
+        depth: 0,
+        select: { searchQuickLinks: true },
+      })
+      const links = (result.docs[0] as any)?.searchQuickLinks
+      if (Array.isArray(links) && links.length > 0) {
+        return links.map((l: any) => ({ label: l.label, url: l.url }))
+      }
+      return DEFAULT_QUICK_LINKS
+    } catch (err) {
+      console.error('[getSearchQuickLinks]', err)
+      return DEFAULT_QUICK_LINKS
+    }
+  },
+  ['header-quick-links'],
   { tags: ['home-page'], revalidate: 3600 }
 )
 
@@ -228,10 +263,11 @@ export async function HeaderDynamic() {
       locationData = await getDealerLocationBySlug(origin.dealerSlug)
     }
 
-    // Fetch news items and register config from HomePage collection
-    const [newsItems, registerConfig] = await Promise.all([
+    // Fetch news items, register config, and quick links from HomePage collection
+    const [newsItems, registerConfig, quickLinks] = await Promise.all([
       getHomePageNewsItems(),
       getRegisterConfig(),
+      getSearchQuickLinks(),
     ])
 
     return (
@@ -244,6 +280,7 @@ export async function HeaderDynamic() {
         isFindADealerPage={isFindADealerPage}
         newsItems={newsItems}
         registerConfig={registerConfig}
+        quickLinks={quickLinks}
       />
     )
   } catch (error) {

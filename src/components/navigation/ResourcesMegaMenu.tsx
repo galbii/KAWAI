@@ -221,21 +221,18 @@ export function ResourcesMegaMenu({
             {registerEnabled && <div className="mt-8 border-t border-gray-200 pt-6">
               <button
                 onClick={handleRegister}
-                className="group relative w-full overflow-hidden rounded-xl text-left transition-all duration-200 hover:shadow-lg"
-                style={{
-                  height: '320px',
-                  ...(bannerImageUrl
-                    ? {
-                        backgroundImage: `url(${bannerImageUrl})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                      }
-                    : { backgroundColor: 'var(--color-kawai-black)' }),
-                }}
+                className="group relative w-full overflow-hidden rounded-xl text-left transition-all duration-200 hover:shadow-lg bg-kawai-black"
+                style={{ height: '320px' }}
               >
                 {bannerImageUrl ? (
                   /* ── With banner image ─────────────────────────────── */
                   <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={bannerImageUrl}
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
                     {/* Gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-transparent transition-opacity duration-500 group-hover:opacity-90" />
 

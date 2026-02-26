@@ -31,6 +31,11 @@ interface NavigationItem {
   }[]
 }
 
+interface QuickLink {
+  label: string
+  url: string
+}
+
 interface MobileMenuItemProps {
   item: NavigationItem
   onClose: () => void
@@ -466,6 +471,7 @@ interface HeaderProps {
   hideLogo?: boolean
   newsItems?: NewsItem[]
   registerConfig?: RegisterConfig
+  quickLinks?: QuickLink[]
 }
 
 // Default fallback navigation - URLs will be made context-aware at runtime
@@ -484,7 +490,7 @@ const defaultNavigation: NavigationItem[] = [
   // Resources has been moved to ResourcesMegaMenu - rendered separately below
 ]
 
-export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isUniversityPage = false, isFindADealerPage = false, newsItems = [], registerConfig }: HeaderProps) {
+export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isUniversityPage = false, isFindADealerPage = false, newsItems = [], registerConfig, quickLinks = [] }: HeaderProps) {
   const pathname = usePathname()
   const isOnFindADealerPage = isFindADealerPage || pathname.startsWith('/find-a-dealer')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -1202,16 +1208,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                 </div>
               )}
 
-              {/* Register Your Piano — mobile visible button */}
-              {!isSignaturePage && !hidePianoLinks && !isUniversityPage && registerConfig?.enabled !== false && (
-                <button
-                  onClick={() => setIsRegisterModalOpen(true)}
-                  className="lg:hidden rounded-md bg-kawai-black px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-kawai-charcoal"
-                >
-                  Register
-                </button>
-              )}
-
               {/* Mobile Menu Button */}
               {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
                 <motion.button
@@ -1462,6 +1458,25 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                     onToggle={() => toggleMobileItem(item.label)}
                   />
                 ))}
+
+                {/* Quick Links from CMS */}
+                {quickLinks.length > 0 && (
+                  <div className="pt-2 border-t border-gray-100">
+                    <p className="px-6 pb-2 text-xs font-semibold uppercase tracking-widest text-gray-400">
+                      Quick Links
+                    </p>
+                    {quickLinks.map((link) => (
+                      <ContextAwareLink
+                        key={link.url}
+                        href={link.url}
+                        className="block py-3 px-6 text-gray-700 hover:text-kawai-red hover:bg-gray-50 font-medium text-base transition-colors rounded-lg"
+                        onClick={closeMobileMenu}
+                      >
+                        {link.label}
+                      </ContextAwareLink>
+                    ))}
+                  </div>
+                )}
 
                 {/* Find a Dealer Link - Only show on non-storefront pages */}
                 {!currentLocationData && (

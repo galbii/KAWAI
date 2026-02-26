@@ -3,8 +3,10 @@
 import Link from 'next/link'
 import { Phone, Mail, MapPin, Facebook, Instagram, Youtube, Twitter } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useActionState } from 'react'
 import { KawaiLogo } from '@/components/ui/kawai-logo'
 import { Button } from '@/components/ui/button'
+import { submitNewsletterSignup, type NewsletterSignupResult } from '@/lib/actions/newsletter-signup'
 
 // All footer quick links removed per user request
 // const footerLinks = {
@@ -54,16 +56,16 @@ interface FooterProps {
 }
 
 export function Footer({ locationContactData, isSignaturePage = false }: FooterProps) {
+  const [newsletterState, newsletterAction, newsletterPending] = useActionState<NewsletterSignupResult | null, FormData>(
+    submitNewsletterSignup,
+    null,
+  )
+
   // Generate location-aware business name and description
   const businessName = locationContactData?.name || 'Kawai'
   const locationDescription = locationContactData?.locationName
     ? `${locationContactData.locationName}'s premier piano destination. Experience the harmony of traditional Japanese craftsmanship and innovative technology.`
     : 'Crafting exceptional pianos for over 95 years. Experience the harmony of traditional Japanese craftsmanship and innovative technology.'
-
-  // Debug log to see what data we're getting
-  if (typeof window === 'undefined') { // Only log on server
-    console.log('Footer locationContactData:', locationContactData)
-  }
 
   const linkVariants = {
     initial: { x: 0 },
@@ -105,10 +107,6 @@ export function Footer({ locationContactData, isSignaturePage = false }: FooterP
             <p className="text-kawai-neutral mb-6 leading-relaxed">
               {locationDescription}
             </p>
-            <div className="text-sm text-kawai-neutral/80 mb-6">
-              <div className="mb-2">Est. 1927 • Hamamatsu, Japan</div>
-              <div>"Making beautiful music accessible to all"</div>
-            </div>
 
             {/* Contact Info - Only show when location data is available */}
             {!isSignaturePage && locationContactData && (
@@ -147,19 +145,32 @@ export function Footer({ locationContactData, isSignaturePage = false }: FooterP
                 <p className="text-kawai-neutral mb-4">
                   Join our community for piano insights, artist stories, and exclusive events.
                 </p>
-                <form className="flex space-x-2">
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    className="flex-1 px-4 py-2 bg-kawai-black/60 border border-kawai-neutral/30 rounded-md text-kawai-pearl placeholder-kawai-neutral/60 focus:outline-none focus:ring-2 focus:ring-kawai-red backdrop-blur-sm"
-                  />
-                  <Button
-                    type="submit"
-                    className="px-6 py-2 bg-kawai-red hover:bg-kawai-red/90 text-white shadow-md hover:shadow-lg transition-all"
-                  >
-                    Subscribe
-                  </Button>
-                </form>
+                {newsletterState?.success ? (
+                  <p className="text-kawai-red font-medium">{newsletterState.message}</p>
+                ) : (
+                  <form action={newsletterAction} className="flex space-x-2">
+                    {locationContactData?.slug && (
+                      <input type="hidden" name="storefrontSlug" value={locationContactData.slug} />
+                    )}
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="Enter your email"
+                      required
+                      className="flex-1 px-4 py-2 bg-kawai-black/60 border border-kawai-neutral/30 rounded-md text-kawai-pearl placeholder-kawai-neutral/60 focus:outline-none focus:ring-2 focus:ring-kawai-red backdrop-blur-sm"
+                    />
+                    <Button
+                      type="submit"
+                      disabled={newsletterPending}
+                      className="px-6 py-2 bg-kawai-red hover:bg-kawai-red/90 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-60"
+                    >
+                      {newsletterPending ? 'Subscribing...' : 'Subscribe'}
+                    </Button>
+                  </form>
+                )}
+                {newsletterState && !newsletterState.success && (
+                  <p className="text-red-400 text-sm mt-2">{newsletterState.message}</p>
+                )}
               </div>
               <div>
                 <h3 className="font-semibold text-lg mb-4 text-kawai-pearl">Our Values</h3>
@@ -181,8 +192,7 @@ export function Footer({ locationContactData, isSignaturePage = false }: FooterP
           <div className="flex flex-col md:flex-row justify-between items-center">
             {/* Copyright */}
             <div className="text-kawai-neutral/80 text-sm mb-4 md:mb-0">
-              © 2024 Kawai Musical Instruments Mfg. Co., Ltd. All rights reserved.
-              <div className="mt-1">Crafted with precision in Hamamatsu, Japan since 1927.</div>
+              © 2026 Kawai America Corporation. All rights reserved.
             </div>
 
             {/* Social Links - Hidden until actual URLs are configured */}

@@ -22,6 +22,7 @@ import { ImageGalleryLightbox } from '@/components/ui/image-gallery-lightbox'
 import type { Product as ShopifyProduct } from '@/lib/shopify/types'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { FloatingAddToCartIntegrated } from '@/components/blocks/FloatingAddToCartIntegrated'
+import { createCart } from '@/lib/shopify'
 
 interface ProductHeroBlockProps {
   layout?: {
@@ -75,6 +76,7 @@ export function ProductHeroBlock({
   const [selectedVariation, setSelectedVariation] = useState(defaultVariation)
   const [isFavorited, setIsFavorited] = useState(false)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
+  const [buyNowLoading, setBuyNowLoading] = useState(false)
 
   const sectionRef = useRef<HTMLElement>(null)
   const galleryRef = useRef<HTMLDivElement>(null)
@@ -173,17 +175,24 @@ export function ProductHeroBlock({
   const showPrice = layout.showPrice === true
   const showBuyButton = layout.showBuyButton !== false
 
-  // Secondary CTA config
-  const secondaryText = secondaryCta?.text || 'Learn More'
-  const secondaryAction = secondaryCta?.action || 'url'
-  const secondaryUrl = secondaryCta?.url || `/products/${product?.slug || ''}`
-  const secondaryBlockIndex = secondaryCta?.scrollToBlockIndex ?? null
-
-  const handleSecondaryScroll = () => {
-    if (secondaryBlockIndex === null || secondaryBlockIndex === undefined) return
-    const targetEl = document.getElementById(`block-${secondaryBlockIndex}`)
-    if (targetEl) {
-      targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const handleBuyNow = async () => {
+    if (!selectedVariant || buyNowLoading) return
+    setBuyNowLoading(true)
+    try {
+      const formattedVariantId = selectedVariant.id.startsWith('gid://')
+        ? selectedVariant.id
+        : `gid://shopify/ProductVariant/${selectedVariant.id}`
+      const cart = await createCart([{
+        merchandiseId: formattedVariantId as `gid://shopify/${string}/${string}`,
+        quantity: 1,
+      }])
+      if (cart.checkoutUrl) {
+        window.open(cart.checkoutUrl, '_blank', 'noopener,noreferrer')
+      }
+    } catch (err) {
+      console.error('[ProductHeroBlock] Buy Now error:', err)
+    } finally {
+      setBuyNowLoading(false)
     }
   }
 
@@ -358,16 +367,6 @@ export function ProductHeroBlock({
   // True when inventory is tracked but the selected variant is specifically unavailable (not just untracked)
   const isOutOfStock = tracksInventory && !!selectedVariant && !selectedVariant.available
 
-  // Get the buy button text - hardcoded to "Learn More"
-  const getBuyButtonText = () => {
-    return 'Learn More'
-  }
-
-  // Get the find a dealer button text
-  const getFindDealerButtonText = () => {
-    return 'Find a Dealer'
-  }
-  
   // Helper to get Shopify variant price for a CMS variation
   const getVariationPrice = (variationName: string) => {
     if (!shopifyProduct) return null
@@ -735,60 +734,37 @@ export function ProductHeroBlock({
             {/* Compact CTA Buttons */}
             {shouldShowBuyButton && (
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                {/* NEW: Use unified rendering condition */}
                 {canAddToCart && selectedVariant ? (
                   <>
-                    {/* Left CTA: Add to Cart Button - Compact version */}
-                    <AddToCartButton
-                      variantId={selectedVariant.id}
-                      quantity={1}
-                      available={selectedVariant.available}
+                    {/* Primary: Buy Now — creates fresh cart, opens Shopify checkout in new tab */}
+                    <Button
+                      onClick={handleBuyNow}
+                      disabled={buyNowLoading}
                       className={cn(
                         "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
                         "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/20"
                       )}
                     >
+                      <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
+                        <span>{buyNowLoading ? 'Loading...' : 'Buy Now'}</span>
+                      </span>
+                    </Button>
+
+                    {/* Secondary: Add to Cart — existing cart flow */}
+                    <AddToCartButton
+                      variantId={selectedVariant.id}
+                      quantity={1}
+                      available={selectedVariant.available}
+                      variant="outline"
+                      className={cn(
+                        "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
+                        "border-2 border-gray-300 bg-white hover:bg-gray-50 text-gray-900 hover:border-gray-400"
+                      )}
+                    >
                       Add to Cart
                     </AddToCartButton>
-
-                    {/* Right CTA: Secondary Button - Compact */}
-                    {secondaryAction === 'scroll-to-block' ? (
-                      <Button
-                        onClick={handleSecondaryScroll}
-                        className={cn(
-                          "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
-                          "border-2 border-gray-300 bg-white hover:bg-gray-50",
-                          backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
-                        )}
-                      >
-                        <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
-                          <span>{secondaryText}</span>
-                          <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-y-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </span>
-                      </Button>
-                    ) : (
-                      <Button
-                        asChild
-                        className={cn(
-                          "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
-                          "border-2 border-gray-300 bg-white hover:bg-gray-50",
-                          backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
-                        )}
-                      >
-                        <Link href={secondaryUrl || '#'}>
-                          <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
-                            <span>{secondaryText}</span>
-                            <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                            </svg>
-                          </span>
-                        </Link>
-                      </Button>
-                    )}
                   </>
-                ) : shopifyProduct && selectedVariant && !canAddToCart ? (
+                ) : (
                   <div className="w-full flex flex-col gap-2">
                     {/* Out of stock notice - only when inventory is tracked but variant is unavailable */}
                     {isOutOfStock && (
@@ -796,84 +772,25 @@ export function ProductHeroBlock({
                         Out of stock. Contact an Authorized Dealer.
                       </p>
                     )}
-                    {/* Product doesn't track inventory OR variant not available */}
-                    <div className="flex flex-col sm:flex-row gap-3 w-full">
-                      {/* Left CTA: Find a Dealer Button - Compact */}
-                      <Button
-                        asChild
-                        className={cn(
-                          "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
-                          "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/20"
-                        )}
-                      >
-                        <Link href="/find-a-dealer">
-                          <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
-                            <span>{getFindDealerButtonText()}</span>
-                            <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                            </svg>
-                          </span>
-                        </Link>
-                      </Button>
-
-                      {/* Right CTA: Secondary Button - Compact */}
-                      {secondaryAction === 'scroll-to-block' ? (
-                        <Button
-                          onClick={handleSecondaryScroll}
-                          className={cn(
-                            "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
-                            "border-2 border-gray-300 bg-white hover:bg-gray-50",
-                            backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
-                          )}
-                        >
-                          <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
-                            <span>{secondaryText}</span>
-                            <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-y-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </span>
-                        </Button>
-                      ) : (
-                        <Button
-                          asChild
-                          className={cn(
-                            "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
-                            "border-2 border-gray-300 bg-white hover:bg-gray-50",
-                            backgroundColor === 'black' ? 'text-gray-900 hover:border-gray-400' : 'text-gray-900 hover:border-gray-400'
-                          )}
-                        >
-                          <Link href={secondaryUrl || '#'}>
-                            <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
-                              <span>{secondaryText}</span>
-                              <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                              </svg>
-                            </span>
-                          </Link>
-                        </Button>
+                    {/* Primary: Find a Dealer — covers out of stock, not tracked, and no Shopify data */}
+                    <Button
+                      asChild
+                      className={cn(
+                        "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full",
+                        "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/20"
                       )}
-                    </div>
-                  </div>
-                ) : (
-                  /* Fallback: No Shopify product or variant - Learn More button only */
-                  <Button
-                    asChild
-                    className={cn(
-                      "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
-                      "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/20"
-                    )}
-                  >
-                    <Link href={`/products/${product.slug}` || '#'}>
-                      <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
-                        <span>{getBuyButtonText()}</span>
-                        <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    >
+                      <Link href="/find-a-dealer">
+                        <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
+                          <span>Find a Dealer</span>
+                          <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                           </svg>
                         </span>
                       </Link>
                     </Button>
+                  </div>
                 )}
               </div>
             )}
