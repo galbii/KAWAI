@@ -682,7 +682,7 @@ export async function getCatalogProductsDirect(): Promise<
       id: String(doc.id),
       model: doc.model,
       name: doc.name ?? null,
-      slug: doc.slug,
+      slug: doc.slug ?? '',
       type: doc.type ?? null,
       category: doc.category ?? null,
       imageUrl: doc.imageUrl ?? null,
