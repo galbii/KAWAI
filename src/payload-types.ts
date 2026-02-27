@@ -5893,6 +5893,7 @@ export interface Page {
     | MarketingFeaturedModelsBlock
     | EventsUniversityHeroBlock
     | EventsEventOverviewBlock
+    | ProductHeroCarouselBlock
     | LayoutBrandIntroBlock
     | LayoutHeroCarouselBlock
     | LayoutVideoBackgroundBlock

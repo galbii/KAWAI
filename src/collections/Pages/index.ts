@@ -147,6 +147,9 @@ export const Pages: CollectionConfig<'pages'> = {
                 'events-university-hero',           // University Hero
                 'events-event-overview',            // Event Overview
 
+                // Product blocks
+                'product-hero-carousel',            // Product Hero Carousel
+
                 // Layout blocks - Structural and special elements
                 'layout-brand-intro',               // Brand Intro
                 'layout-hero-carousel',             // Hero Carousel

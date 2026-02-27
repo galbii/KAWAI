@@ -637,6 +637,72 @@ export async function getActiveProductsDirect(
 }
 
 /**
+ * Get all catalog-visible products for the /pianos browse page.
+ * Returns a lightweight shape — only the fields needed for product cards.
+ */
+export async function getCatalogProductsDirect(): Promise<
+  Array<{
+    id: string
+    model: string
+    name?: string | null
+    slug: string
+    type?: string | null
+    category?: string | null
+    imageUrl?: string | null
+    price?: { msrp?: number | null; currency?: string | null } | null
+    shopifyCollections?: Array<{ title: string; handle: string }> | null
+  }>
+> {
+  try {
+    const payload = await getPayloadClient()
+
+    const result = await payload.find({
+      collection: 'products',
+      where: {
+        status: { equals: 'active' },
+        'visibility.showInCatalog': { equals: true },
+      },
+      select: {
+        model: true,
+        name: true,
+        slug: true,
+        type: true,
+        category: true,
+        imageUrl: true,
+        price: true,
+        shopifyCollections: true,
+        visibility: true,
+      },
+      sort: 'visibility.sortOrder,name',
+      limit: 500,
+      depth: 0,
+    })
+
+    return result.docs.map((doc) => ({
+      id: String(doc.id),
+      model: doc.model,
+      name: doc.name ?? null,
+      slug: doc.slug,
+      type: doc.type ?? null,
+      category: doc.category ?? null,
+      imageUrl: doc.imageUrl ?? null,
+      price: doc.price
+        ? { msrp: doc.price.msrp ?? null, currency: doc.price.currency ?? null }
+        : null,
+      shopifyCollections: Array.isArray(doc.shopifyCollections)
+        ? doc.shopifyCollections.map((c: any) => ({
+            title: c.title ?? '',
+            handle: c.handle ?? '',
+          }))
+        : null,
+    }))
+  } catch (error) {
+    console.error('Error fetching catalog products:', error)
+    return []
+  }
+}
+
+/**
  * Get a single storefront by slug using direct Payload access
  * @param slug - The URL-friendly slug identifier for the storefront
  * @returns Storefront object or null if not found

@@ -460,9 +460,9 @@ function CategoryProductGrid({
           <p className="text-xs font-bold tracking-[0.22em] uppercase text-[#A01829] mb-2">
             Kawai Piano
           </p>
-          <h2 className="text-2xl font-bold text-[#2C2C2C] font-serif leading-none">
+          <Link href="/pianos" onClick={onClose} className="text-2xl font-bold text-[#2C2C2C] font-serif leading-none hover:text-[#A01829] transition-colors duration-150">
             Featured {label}
-          </h2>
+          </Link>
         </div>
         <Link
           href={href}

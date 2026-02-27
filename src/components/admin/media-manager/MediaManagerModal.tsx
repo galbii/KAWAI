@@ -171,8 +171,9 @@ export function MediaManagerModal() {
     if (!selectedMedia || !selectedMedia.mimeType?.startsWith('image/')) return
     setIsLoadingEditFile(true)
     try {
-      const url = selectedMedia.publicUrl || selectedMedia.url
-      const response = await fetch(url)
+      // Fetch via same-origin proxy — direct R2 fetches fail due to CORS
+      const response = await fetch(`/api/admin/media-proxy?id=${selectedMedia.id}`)
+      if (!response.ok) throw new Error(`Proxy returned ${response.status}`)
       const blob = await response.blob()
       const file = new File([blob], selectedMedia.filename, { type: selectedMedia.mimeType })
       setEditingExistingMediaId(selectedMedia.id)

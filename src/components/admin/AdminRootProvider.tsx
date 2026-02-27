@@ -4,6 +4,7 @@ import React from 'react'
 import { MediaManagerProvider } from './media-manager/MediaManagerProvider'
 import { MediaManagerModal } from './media-manager/MediaManagerModal'
 import { FloatingActionBar } from './FloatingActionBar'
+import { GlobalDropZone } from './GlobalDropZone'
 
 interface AdminRootProviderProps {
   children: React.ReactNode
@@ -25,6 +26,7 @@ export const AdminRootProvider: React.FC<AdminRootProviderProps> = ({ children }
        */}
       <MediaManagerModal />
       <FloatingActionBar />
+      <GlobalDropZone />
     </MediaManagerProvider>
   )
 }
