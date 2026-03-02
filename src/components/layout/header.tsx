@@ -97,7 +97,7 @@ const MobileMenuItem = ({ item, onClose, isOpen, onToggle }: MobileMenuItemProps
     return (
       <ContextAwareLink
         href={item.href || '#'}
-        className="block py-4 px-6 text-gray-800 hover:text-gray-900 hover:bg-gray-50 font-medium text-xl transition-colors rounded-lg"
+        className="block py-4 px-6 text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/50 font-medium text-xl transition-colors rounded-lg"
         onClick={onClose}
       >
         {item.label}
@@ -111,14 +111,14 @@ const MobileMenuItem = ({ item, onClose, isOpen, onToggle }: MobileMenuItemProps
         <div className="flex items-center">
           <ContextAwareLink
             href={item.href}
-            className="flex-1 py-4 px-6 text-gray-800 hover:text-gray-900 hover:bg-gray-50 font-medium text-xl transition-colors rounded-lg"
+            className="flex-1 py-4 px-6 text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/50 font-medium text-xl transition-colors rounded-lg"
             onClick={onClose}
           >
             {item.label}
           </ContextAwareLink>
           <button
             onClick={onToggle}
-            className="p-4 text-gray-800 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-lg"
+            className="p-4 text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/50 transition-colors rounded-lg"
             aria-expanded={isOpen}
           >
             <ChevronDown className={cn("h-5 w-5 transition-transform duration-200", isOpen && "rotate-180")} />
@@ -127,7 +127,7 @@ const MobileMenuItem = ({ item, onClose, isOpen, onToggle }: MobileMenuItemProps
       ) : (
         <button
           onClick={onToggle}
-          className="flex items-center justify-between w-full py-4 px-6 text-gray-800 hover:text-gray-900 hover:bg-gray-50 font-medium text-xl transition-colors rounded-lg"
+          className="flex items-center justify-between w-full py-4 px-6 text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/50 font-medium text-xl transition-colors rounded-lg"
           aria-expanded={isOpen}
         >
           <span>{item.label}</span>
@@ -148,14 +148,14 @@ const MobileMenuItem = ({ item, onClose, isOpen, onToggle }: MobileMenuItemProps
                 <ContextAwareLink
                   key={subItem.href}
                   href={subItem.href}
-                  className="block py-2 px-4 text-base text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                  className="block py-2 px-4 text-base text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/50 rounded-lg transition-colors"
                   onClick={onClose}
                 >
                   <div className="leading-tight font-medium">
                     {subItem.label}
                   </div>
                   {subItem.description && (
-                    <div className="text-xs text-gray-500 mt-0.5">
+                    <div className="text-xs text-kawai-charcoal/60 mt-0.5">
                       {subItem.description}
                     </div>
                   )}
@@ -355,7 +355,7 @@ const DesktopMenuItem = ({ item, isOpen, onOpen, onClose }: DesktopMenuItemProps
     return (
       <ContextAwareLink
         href={item.href || '#'}
-        className="px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md"
+        className="px-4 py-2 text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/80 font-medium transition-colors rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]"
       >
         {item.label}
       </ContextAwareLink>
@@ -363,7 +363,7 @@ const DesktopMenuItem = ({ item, isOpen, onOpen, onClose }: DesktopMenuItemProps
   }
 
   return (
-    <div 
+    <div
       ref={buttonRef}
       className="relative group"
       onMouseEnter={handleMouseEnter}
@@ -373,16 +373,16 @@ const DesktopMenuItem = ({ item, isOpen, onOpen, onClose }: DesktopMenuItemProps
         <div className="flex items-center">
           <ContextAwareLink
             href={item.href}
-            className="px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md"
+            className="px-4 py-2 text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/80 font-medium transition-colors rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]"
           >
             {item.label}
           </ContextAwareLink>
-          <button className="px-1 py-2 text-gray-700 hover:text-gray-900 transition-colors">
+          <button className="px-1 py-2 text-kawai-charcoal hover:text-kawai-black transition-colors">
             <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-180")} />
           </button>
         </div>
       ) : (
-        <button className="flex items-center px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md">
+        <button className="flex items-center px-4 py-2 text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/80 font-medium transition-colors rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]">
           <span>{item.label}</span>
           <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isOpen && "rotate-180")} />
         </button>
@@ -396,7 +396,7 @@ const DesktopMenuItem = ({ item, isOpen, onOpen, onClose }: DesktopMenuItemProps
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute z-50 mt-2 min-w-[900px] max-w-[1400px] bg-white border border-gray-200/50 shadow-xl rounded-xl overflow-hidden"
+            className="absolute z-50 mt-2 min-w-[900px] max-w-[1400px] bg-white border border-kawai-neutral/50 shadow-xl rounded-xl overflow-hidden"
             style={{
               transformOrigin: dropdownPosition.top === '100%' ? 'top left' : 'bottom left',
               left: dropdownPosition.left,
@@ -417,13 +417,13 @@ const DesktopMenuItem = ({ item, isOpen, onOpen, onClose }: DesktopMenuItemProps
                   <ContextAwareLink
                     key={subItem.href}
                     href={subItem.href}
-                    className="block px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors group/item"
+                    className="block px-3 py-2 rounded-lg hover:bg-kawai-pearl transition-colors group/item"
                   >
-                    <div className="font-semibold text-gray-900 text-sm group-hover/item:text-gray-900">
+                    <div className="font-semibold text-kawai-black text-sm group-hover/item:text-kawai-black">
                       {subItem.label}
                     </div>
                     {subItem.description && (
-                      <div className="text-xs text-gray-500 mt-1">
+                      <div className="text-xs text-kawai-charcoal/60 mt-1">
                         {subItem.description}
                       </div>
                     )}
@@ -1121,7 +1121,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       }}
     >
       {/* Top Row - Utility Bar (Full Width) */}
-      <div className="border-b border-gray-100 w-full bg-white">
+      <div className="border-b border-kawai-neutral/60 w-full bg-white">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             {/* Logo - Left */}
@@ -1140,7 +1140,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                 {/* Home Icon */}
                 <ContextAwareLink
                   href="/"
-                  className="flex-shrink-0 p-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50/80 transition-colors rounded-md"
+                  className="flex-shrink-0 p-2 text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl transition-colors rounded-md"
                   aria-label="Home"
                 >
                   <Home className="h-5 w-5" />
@@ -1166,7 +1166,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                 >
                   <ContextAwareLink
                     href="/find-a-dealer"
-                    className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50/50 font-medium transition-colors rounded-md"
+                    className="px-4 py-2 text-[12px] tracking-[0.08em] uppercase font-medium text-kawai-charcoal hover:text-kawai-red transition-colors font-[family-name:var(--font-brand-sans)]"
                   >
                     Find a Dealer
                   </ContextAwareLink>
@@ -1215,7 +1215,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
               {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
                 <motion.button
                   ref={menuButtonRef}
-                  className="lg:hidden p-2 rounded-md transition-colors hover:bg-gray-100/80 focus:outline-none focus:ring-2 focus:ring-kawai-red focus:ring-offset-2"
+                  className="lg:hidden p-2 rounded-md transition-colors hover:bg-kawai-pearl focus:outline-none focus:ring-2 focus:ring-kawai-red focus:ring-offset-2"
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   whileTap={{ scale: 0.95 }}
                   transition={{ duration: 0.1 }}
@@ -1231,7 +1231,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                         exit={{ rotate: 90, opacity: 0 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <X className="h-6 w-6 text-gray-900" />
+                        <X className="h-6 w-6 text-kawai-black" />
                       </motion.div>
                     ) : (
                       <motion.div
@@ -1241,7 +1241,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                         exit={{ rotate: -90, opacity: 0 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <Menu className="h-6 w-6 text-gray-900" />
+                        <Menu className="h-6 w-6 text-kawai-black" />
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -1312,7 +1312,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                   >
                     <button
                       className={cn(
-                        "flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md",
+                        "flex items-center px-3 py-2 font-medium text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/80 transition-colors rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]",
                         animationComplete ? "cursor-pointer" : "cursor-default opacity-50"
                       )}
                       disabled={!animationComplete}
@@ -1329,7 +1329,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                   >
                     <button
                       className={cn(
-                        "flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md",
+                        "flex items-center px-3 py-2 font-medium text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/80 transition-colors rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]",
                         storefrontsData && animationComplete ? "cursor-pointer" : "cursor-default opacity-50"
                       )}
                       disabled={!storefrontsData || !animationComplete}
@@ -1344,17 +1344,16 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                     <div
                       onMouseEnter={productsNavData && animationComplete ? handleProductsMenuOpen : undefined}
                       onMouseLeave={productsNavData && animationComplete ? handleProductsMenuClose : undefined}
+                      className="flex items-center"
                     >
-                      <button
-                        className={cn(
-                          "flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md",
-                          productsNavData && animationComplete ? "cursor-pointer" : "cursor-default opacity-50"
-                        )}
-                        disabled={!productsNavData || !animationComplete}
+                      <Link
+                        href="/pianos"
+                        onClick={() => setIsProductsMenuOpen(false)}
+                        className="px-3 py-2 font-medium text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/80 transition-colors rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]"
                       >
-                        <span>Products</span>
-                        <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isProductsMenuOpen && "rotate-180")} />
-                      </button>
+                        Products
+                      </Link>
+                      <ChevronDown className={cn("h-4 w-4 text-kawai-charcoal transition-transform duration-200 -ml-1 mr-1", isProductsMenuOpen && "rotate-180")} />
                     </div>
                   )}
 
@@ -1363,7 +1362,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                     <ContextAwareLink
                       key={item.label}
                       href={item.href || '#'}
-                      className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md"
+                      className="px-3 py-2 font-medium text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/80 transition-colors rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]"
                     >
                       {item.label}
                     </ContextAwareLink>
@@ -1376,7 +1375,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                   >
                     <button
                       className={cn(
-                        "flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-md",
+                        "flex items-center px-3 py-2 font-medium text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/80 transition-colors rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]",
                         animationComplete ? "cursor-pointer" : "cursor-default opacity-50"
                       )}
                       disabled={!animationComplete}
@@ -1420,21 +1419,21 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
               />
               <motion.div
                 ref={mobileMenuRef}
-                className="fixed right-0 top-0 bottom-0 z-[9501] w-[min(90vw,28rem)] xl:hidden bg-white border-l border-gray-200/50 shadow-2xl flex flex-col h-screen"
+                className="fixed right-0 top-0 bottom-0 z-[9501] w-[min(90vw,28rem)] xl:hidden bg-white border-l border-kawai-neutral/50 shadow-2xl flex flex-col h-screen"
                 style={{ height: '100vh', minHeight: '100vh' }}
                 variants={mobileMenuVariants}
                 initial="closed"
                 animate="open"
                 exit="closed"
               >
-                <div className="sticky top-0 bg-white border-b border-gray-200/50 p-4 z-10 flex-shrink-0">
+                <div className="sticky top-0 bg-white border-b border-kawai-neutral/50 p-4 z-10 flex-shrink-0">
                   <div className="flex items-center justify-end">
                     <button
                       onClick={closeMobileMenu}
-                      className="p-2 rounded-md hover:bg-gray-100/80 transition-colors"
+                      className="p-2 rounded-md hover:bg-kawai-pearl transition-colors"
                       aria-label="Close menu"
                     >
-                      <X className="h-6 w-6 text-gray-900" />
+                      <X className="h-6 w-6 text-kawai-black" />
                     </button>
                   </div>
                 </div>
@@ -1444,23 +1443,34 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                     {/* Home */}
                     <Link
                       href="/"
-                      className="block py-4 px-6 text-gray-800 hover:text-gray-900 hover:bg-gray-50 font-medium text-xl transition-colors rounded-lg"
+                      className="block py-4 px-6 text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/50 font-medium text-xl transition-colors rounded-lg"
                       onClick={closeMobileMenu}
                     >
                       Home
                     </Link>
 
+                    {/* Products */}
+                    {isProductsMenuEnabled && (
+                      <Link
+                        href="/pianos"
+                        className="block py-4 px-6 text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/50 font-medium text-xl transition-colors rounded-lg"
+                        onClick={closeMobileMenu}
+                      >
+                        Products
+                      </Link>
+                    )}
+
                     {/* Quick Links from CMS — directly under Home */}
                     {quickLinks.length > 0 && (
-                      <div className="border-t border-gray-100 pt-2">
-                        <p className="px-6 pb-2 text-xs font-semibold uppercase tracking-widest text-gray-400">
+                      <div className="border-t border-kawai-neutral/60 pt-2">
+                        <p className="px-6 pb-2 text-xs font-semibold uppercase tracking-widest text-kawai-charcoal/50">
                           Quick Links
                         </p>
                         {quickLinks.map((link) => (
                           <ContextAwareLink
                             key={link.url}
                             href={link.url}
-                            className="block py-3 px-6 text-gray-700 hover:text-kawai-red hover:bg-gray-50 font-medium text-base transition-colors rounded-lg"
+                            className="block py-3 px-6 text-kawai-charcoal hover:text-kawai-red hover:bg-kawai-pearl/50 font-medium text-base transition-colors rounded-lg"
                             onClick={closeMobileMenu}
                           >
                             {link.label}
@@ -1471,7 +1481,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
 
                     {/* Nav items (Artists, etc.) */}
                     {navigation.length > 0 && (
-                      <div className="border-t border-gray-100 pt-2">
+                      <div className="border-t border-kawai-neutral/60 pt-2">
                         {navigation.map((item) => (
                           <MobileMenuItem
                             key={item.label}
@@ -1487,7 +1497,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                 </nav>
 
                 {/* Bottom CTAs */}
-                <div className="mt-auto border-t border-gray-200/50 bg-white px-5 py-5 flex-shrink-0 space-y-3">
+                <div className="mt-auto border-t border-kawai-neutral/50 bg-white px-5 py-5 flex-shrink-0 space-y-3">
                   {registerConfig?.enabled !== false && (
                     <button
                       onClick={() => {

@@ -32,6 +32,8 @@ interface FloatingAddToCartIntegratedProps {
   selectedVariationIndex?: number
   /** Callback when variation is changed */
   onVariationChange?: (index: number) => void
+  /** Callback after successful add to cart (for analytics) */
+  onAddToCart?: () => void
 }
 
 /**
@@ -72,6 +74,7 @@ export function FloatingAddToCartIntegrated({
   availableVariations = [],
   selectedVariationIndex = -1,
   onVariationChange,
+  onAddToCart,
 }: FloatingAddToCartIntegratedProps) {
   const [isVisible, setIsVisible] = useState(!showOnScroll)
   const [isMobile, setIsMobile] = useState(false)
@@ -200,6 +203,7 @@ export function FloatingAddToCartIntegrated({
                 variantName,
                 productName
               })
+              onAddToCart?.()
             }}
           >
             Add to Cart

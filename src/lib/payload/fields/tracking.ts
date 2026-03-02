@@ -184,31 +184,56 @@ export const trackingField = (options: TrackingFieldOptions = {}): GroupField =>
  * CTA-specific tracking field with link tracking
  * Includes Meta Pixel event mapping and conversion tracking
  *
+ * All options are optional — calling with no args preserves the original behavior
+ * (defaults: GA4 = 'generate_lead', Meta = 'Lead').
+ *
  * @example
  * ```typescript
- * {
- *   name: 'buttons',
- *   type: 'array',
- *   fields: [
- *     { name: 'text', type: 'text' },
- *     { name: 'link', type: 'text' },
- *     ctaTrackingField(), // Add CTA-specific tracking
- *   ]
- * }
+ * // Default (lead capture)
+ * ctaTrackingField()
+ *
+ * // E-commerce (add to cart)
+ * ctaTrackingField({
+ *   defaultGA4Event: 'add_to_cart',
+ *   defaultMetaEvent: 'AddToCart',
+ *   defaultCategory: 'conversion',
+ *   label: '📊 Add to Cart Tracking',
+ * })
  * ```
  */
-export const ctaTrackingField = (): GroupField => {
+export const ctaTrackingField = (options: {
+  /** Default GA4 event type (default: 'generate_lead') */
+  defaultGA4Event?: string
+  /** Default Meta Pixel event type (default: 'Lead') */
+  defaultMetaEvent?: string
+  /** Default event category (default: 'engagement') */
+  defaultCategory?: 'engagement' | 'conversion' | 'lead' | 'navigation' | 'media'
+  /** Override group label */
+  label?: string
+  /** Override admin description */
+  adminDescription?: string
+} = {}): GroupField => {
+  const {
+    defaultGA4Event = 'generate_lead',
+    defaultMetaEvent = 'Lead',
+    defaultCategory,
+    label,
+    adminDescription,
+  } = options
+
   const baseTracking = trackingField({
     name: 'ctaTracking',
     defaultEnabled: true,
   })
 
   return deepMerge(baseTracking, {
-    label: '📊 CTA Analytics',
+    label: label || '📊 CTA Analytics',
     admin: {
-      description: 'Track clicks and conversions for this call-to-action',
+      description: adminDescription || 'Track clicks and conversions for this call-to-action',
     },
     fields: [
+      // Override category default if specified
+      ...(defaultCategory ? [{ name: 'category', defaultValue: defaultCategory }] : []),
       {
         name: 'trackAsConversion',
         type: 'checkbox',
@@ -223,7 +248,7 @@ export const ctaTrackingField = (): GroupField => {
         name: 'ga4EventType',
         type: 'select',
         label: 'Google Analytics 4 Event',
-        defaultValue: 'generate_lead',
+        defaultValue: defaultGA4Event,
         options: [
           // E-commerce Events
           { label: 'Add Payment Info', value: 'add_payment_info' },
@@ -267,7 +292,7 @@ export const ctaTrackingField = (): GroupField => {
         name: 'metaEventType',
         type: 'select',
         label: 'Meta Pixel Event',
-        defaultValue: 'Lead',
+        defaultValue: defaultMetaEvent,
         options: [
           // Lead & Registration Events
           { label: 'Lead (Recommended)', value: 'Lead' },

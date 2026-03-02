@@ -88,6 +88,7 @@ export type TrackingAction =
   | 'form_start'
   | 'engagement'
   | 'navigation'
+  | 'add_to_cart'
 
 /**
  * Context for tracking an interaction
@@ -325,6 +326,7 @@ function mapToMetaEvent(
   if (action === 'form_submit') return 'Lead'
   if (action === 'form_start') return 'InitiateCheckout'
   if (action === 'video_play') return 'VideoView'
+  if (action === 'add_to_cart') return 'AddToCart'
 
   // Return custom event with Block_ prefix
   return `Block_${action}`
@@ -463,5 +465,47 @@ export function trackFormInteraction(params: {
     label: params.formName,
     position: params.position,
     additionalProps: params.additionalProps,
+  })
+}
+
+/**
+ * Track an add to cart event with variant and price context
+ *
+ * @example
+ * ```typescript
+ * trackAddToCart({
+ *   blockType: 'product-hero',
+ *   blockData: { ctaTracking },
+ *   productName: product.name,
+ *   variantId: selectedVariant.id,
+ *   variantName: 'Ebony Polish',
+ *   price: selectedVariant.price,
+ *   additionalProps: { button_type: 'buy_now' },
+ * })
+ * ```
+ */
+export function trackAddToCart(params: {
+  blockType: string
+  blockData: BlockWithTracking
+  productName: string
+  variantId: string
+  variantName?: string | null
+  price?: number | null
+  position?: number
+  additionalProps?: Record<string, any>
+}): void {
+  trackWithConfig({
+    blockType: params.blockType,
+    blockData: params.blockData,
+    action: 'add_to_cart',
+    label: params.productName,
+    position: params.position,
+    trackingFieldName: 'ctaTracking',
+    additionalProps: {
+      variant_id: params.variantId,
+      variant_name: params.variantName,
+      price: params.price,
+      ...params.additionalProps,
+    },
   })
 }

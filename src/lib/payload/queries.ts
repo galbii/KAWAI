@@ -650,6 +650,7 @@ export async function getCatalogProductsDirect(): Promise<
     category?: string | null
     imageUrl?: string | null
     price?: { msrp?: number | null; currency?: string | null } | null
+    salePrice?: number | null
     shopifyCollections?: Array<{ title: string; handle: string }> | null
   }>
 > {
@@ -672,6 +673,7 @@ export async function getCatalogProductsDirect(): Promise<
         price: true,
         shopifyCollections: true,
         visibility: true,
+        variations: true,
       },
       sort: 'visibility.sortOrder,name',
       limit: 500,
@@ -689,6 +691,18 @@ export async function getCatalogProductsDirect(): Promise<
       price: doc.price
         ? { msrp: doc.price.msrp ?? null, currency: doc.price.currency ?? null }
         : null,
+      salePrice: (() => {
+        const vars = doc.variations
+        if (!Array.isArray(vars) || vars.length === 0) return null
+        const onSaleVars = vars.filter(
+          (v: any) =>
+            typeof v.compareAtPrice === 'number' &&
+            typeof v.price === 'number' &&
+            v.compareAtPrice > v.price,
+        )
+        if (onSaleVars.length === 0) return null
+        return Math.min(...onSaleVars.map((v: any) => v.price as number))
+      })(),
       shopifyCollections: Array.isArray(doc.shopifyCollections)
         ? doc.shopifyCollections.map((c: any) => ({
             title: c.title ?? '',

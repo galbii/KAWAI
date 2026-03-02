@@ -2120,6 +2120,87 @@ export interface ProductHeroBlock {
      */
     showVariantName?: boolean | null;
   };
+  /**
+   * Configure analytics for the Buy Now and Add to Cart buttons
+   */
+  ctaTracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+    /**
+     * Send conversion event to Meta Pixel and Google Analytics
+     */
+    trackAsConversion?: boolean | null;
+    /**
+     * Map to GA4 recommended event (see developers.google.com/analytics)
+     */
+    ga4EventType?:
+      | (
+          | 'add_payment_info'
+          | 'add_shipping_info'
+          | 'add_to_cart'
+          | 'add_to_wishlist'
+          | 'begin_checkout'
+          | 'purchase'
+          | 'refund'
+          | 'remove_from_cart'
+          | 'generate_lead'
+          | 'qualify_lead'
+          | 'disqualify_lead'
+          | 'close_convert_lead'
+          | 'close_unconvert_lead'
+          | 'select_content'
+          | 'select_item'
+          | 'select_promotion'
+          | 'search'
+          | 'login'
+          | 'join_group'
+          | 'earn_virtual_currency'
+          | 'level_start'
+          | 'level_end'
+          | 'level_up'
+          | 'post_score'
+        )
+      | null;
+    /**
+     * Map to Meta Pixel standard event (see developers.facebook.com/docs/meta-pixel)
+     */
+    metaEventType?:
+      | (
+          | 'Lead'
+          | 'CompleteRegistration'
+          | 'SubmitApplication'
+          | 'StartTrial'
+          | 'Subscribe'
+          | 'AddPaymentInfo'
+          | 'AddToCart'
+          | 'AddToWishlist'
+          | 'InitiateCheckout'
+          | 'Purchase'
+          | 'ViewContent'
+          | 'Search'
+          | 'Contact'
+          | 'FindLocation'
+          | 'Schedule'
+          | 'CustomizeProduct'
+          | 'Donate'
+          | 'Custom'
+        )
+      | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'product-hero';

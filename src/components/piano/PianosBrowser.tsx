@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { Search, ChevronDown, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -15,6 +16,7 @@ export interface CatalogProduct {
   category?: string | null
   imageUrl?: string | null
   price?: { msrp?: number | null; currency?: string | null } | null
+  salePrice?: number | null
   shopifyCollections?: Array<{ title: string; handle: string }> | null
 }
 
@@ -32,13 +34,17 @@ const SORT_OPTIONS = [
   { value: 'price-desc', label: 'Price: High to Low' },
 ] as const
 
-function formatPrice(price?: CatalogProduct['price']): string {
-  if (!price?.msrp) return 'Contact for Price'
+function formatCurrency(amount: number, currency = 'USD'): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: price.currency ?? 'USD',
+    currency,
     maximumFractionDigits: 0,
-  }).format(price.msrp)
+  }).format(amount)
+}
+
+function formatPrice(price?: CatalogProduct['price']): string {
+  if (!price?.msrp) return 'Contact for Price'
+  return formatCurrency(price.msrp, price.currency ?? 'USD')
 }
 
 function normalizeCategory(product: CatalogProduct): string {
@@ -60,6 +66,35 @@ function deriveCollections(products: CatalogProduct[]): string[] {
   }
   return Array.from(set).sort()
 }
+
+/* ── Animation variants ────────────────────────────────────────── */
+
+const gridVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.15 },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.15 },
+  },
+}
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (index: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      delay: Math.min(index * 0.04, 0.5),
+      ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
+    },
+  }),
+}
+
+/* ── Main Component ────────────────────────────────────────────── */
 
 export function PianosBrowser({ products }: Props) {
   const [search, setSearch] = useState('')
@@ -114,6 +149,9 @@ export function PianosBrowser({ products }: Props) {
   const hasFilters =
     search.trim() !== '' || activeCategory !== 'All' || activeCollection !== 'All'
 
+  // Stable filter key drives AnimatePresence grid transitions
+  const gridKey = `${activeCategory}|${activeCollection}|${search.trim()}|${sort}`
+
   function clearAll() {
     setSearch('')
     setActiveCategory('All')
@@ -127,19 +165,32 @@ export function PianosBrowser({ products }: Props) {
         <div className="max-w-7xl mx-auto px-6 pt-12 pb-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-kawai-charcoal/60 mb-2 font-[family-name:var(--font-brand-sans)]">
+              <motion.p
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+                className="text-xs uppercase tracking-[0.3em] text-kawai-charcoal/60 mb-2 font-[family-name:var(--font-brand-sans)]"
+              >
                 Kawai Collection
-              </p>
-              <h1
+              </motion.p>
+              <motion.h1
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
                 className="text-6xl md:text-7xl lg:text-8xl leading-none text-kawai-black"
                 style={{ fontFamily: 'var(--font-brand-luxury)', fontWeight: 400 }}
               >
                 Pianos
-              </h1>
+              </motion.h1>
             </div>
 
             {/* Search */}
-            <div className="relative md:w-72 lg:w-96 group">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="relative md:w-72 lg:w-96 group"
+            >
               <input
                 type="text"
                 value={search}
@@ -169,7 +220,7 @@ export function PianosBrowser({ products }: Props) {
                   <Search size={14} className="text-kawai-charcoal/40" />
                 )}
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
 
@@ -177,29 +228,51 @@ export function PianosBrowser({ products }: Props) {
         <div className="max-w-7xl mx-auto px-6 pb-0">
           {/* Category tabs row */}
           <div className="flex items-center justify-between border-t border-kawai-neutral pt-4 pb-4 gap-4">
-            <nav className="flex items-center gap-2 flex-wrap" aria-label="Piano categories">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={cn(
-                    'px-4 py-1.5 text-xs uppercase tracking-[0.15em] font-medium',
-                    'transition-all duration-200 font-[family-name:var(--font-brand-sans)] border',
-                    activeCategory === cat
-                      ? 'bg-kawai-black text-kawai-pearl border-kawai-black'
-                      : 'bg-transparent text-kawai-charcoal border-kawai-neutral hover:border-kawai-charcoal hover:text-kawai-black',
-                  )}
-                >
-                  {cat}
-                </button>
-              ))}
-            </nav>
+            <LayoutGroup id="category-tabs">
+              <nav className="flex items-center gap-1 flex-wrap" aria-label="Piano categories">
+                {CATEGORIES.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={cn(
+                      'relative px-4 py-1.5 text-xs uppercase tracking-[0.15em] font-medium',
+                      'transition-colors duration-200 font-[family-name:var(--font-brand-sans)]',
+                      'focus-visible:outline-2 focus-visible:outline-kawai-red focus-visible:outline-offset-2',
+                      activeCategory === cat
+                        ? 'text-kawai-pearl'
+                        : 'text-kawai-charcoal hover:text-kawai-black',
+                    )}
+                  >
+                    {/* Animated background pill */}
+                    {activeCategory === cat && (
+                      <motion.span
+                        layoutId="cat-pill"
+                        className="absolute inset-0 bg-kawai-black"
+                        style={{ borderRadius: 0 }}
+                        transition={{ type: 'spring', bounce: 0.18, duration: 0.42 }}
+                        aria-hidden
+                      />
+                    )}
+                    <span className="relative z-10">{cat}</span>
+                  </button>
+                ))}
+              </nav>
+            </LayoutGroup>
 
             <div className="flex items-center gap-4 flex-shrink-0">
               {/* Results count */}
-              <span className="text-xs text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)] whitespace-nowrap">
-                {filtered.length} {filtered.length === 1 ? 'instrument' : 'instruments'}
-              </span>
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={filtered.length}
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 4 }}
+                  transition={{ duration: 0.18 }}
+                  className="text-xs text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)] whitespace-nowrap"
+                >
+                  {filtered.length} {filtered.length === 1 ? 'instrument' : 'instruments'}
+                </motion.span>
+              </AnimatePresence>
 
               {/* Sort */}
               <div className="relative">
@@ -238,14 +311,22 @@ export function PianosBrowser({ products }: Props) {
                     key={col}
                     onClick={() => setActiveCollection(col)}
                     className={cn(
-                      'flex-shrink-0 px-3 py-1 text-[10px] uppercase tracking-[0.12em]',
-                      'transition-all duration-200 font-[family-name:var(--font-brand-sans)]',
+                      'relative flex-shrink-0 px-3 py-1 text-[10px] uppercase tracking-[0.12em]',
+                      'transition-colors duration-200 font-[family-name:var(--font-brand-sans)]',
                       activeCollection === col
-                        ? 'text-kawai-red border-b border-kawai-red'
-                        : 'text-kawai-charcoal/60 hover:text-kawai-charcoal border-b border-transparent',
+                        ? 'text-kawai-red'
+                        : 'text-kawai-charcoal/60 hover:text-kawai-charcoal',
                     )}
                   >
                     {col}
+                    {/* Animated underline */}
+                    {activeCollection === col && (
+                      <motion.span
+                        layoutId="collection-underline"
+                        className="absolute bottom-0 left-3 right-3 h-px bg-kawai-red"
+                        transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
+                      />
+                    )}
                   </button>
                 ))}
               </div>
@@ -253,45 +334,72 @@ export function PianosBrowser({ products }: Props) {
           )}
 
           {/* Active filter chips */}
-          {hasFilters && (
-            <div className="border-t border-kawai-neutral/50 py-3 flex items-center gap-2 flex-wrap">
-              {activeCategory !== 'All' && (
-                <FilterChip
-                  label={activeCategory}
-                  onRemove={() => setActiveCategory('All')}
-                />
-              )}
-              {activeCollection !== 'All' && (
-                <FilterChip
-                  label={activeCollection}
-                  onRemove={() => setActiveCollection('All')}
-                />
-              )}
-              {search && (
-                <FilterChip label={`"${search}"`} onRemove={() => setSearch('')} />
-              )}
-              <button
-                onClick={clearAll}
-                className="text-[10px] uppercase tracking-[0.15em] text-kawai-charcoal/40 hover:text-kawai-charcoal transition-colors font-[family-name:var(--font-brand-sans)] ml-1"
+          <AnimatePresence>
+            {hasFilters && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="border-t border-kawai-neutral/50 overflow-hidden"
               >
-                Clear all
-              </button>
-            </div>
-          )}
+                <div className="py-3 flex items-center gap-2 flex-wrap">
+                  {activeCategory !== 'All' && (
+                    <FilterChip
+                      label={activeCategory}
+                      onRemove={() => setActiveCategory('All')}
+                    />
+                  )}
+                  {activeCollection !== 'All' && (
+                    <FilterChip
+                      label={activeCollection}
+                      onRemove={() => setActiveCollection('All')}
+                    />
+                  )}
+                  {search && (
+                    <FilterChip label={`"${search}"`} onRemove={() => setSearch('')} />
+                  )}
+                  <button
+                    onClick={clearAll}
+                    className="text-[10px] uppercase tracking-[0.15em] text-kawai-charcoal/40 hover:text-kawai-charcoal transition-colors font-[family-name:var(--font-brand-sans)] ml-1"
+                  >
+                    Clear all
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </header>
 
       {/* ── Product Grid ────────────────────────────────────────── */}
       <main className="max-w-7xl mx-auto px-6 py-12">
-        {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-kawai-neutral">
-            {filtered.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        ) : (
-          <EmptyState hasFilters={hasFilters} onClear={clearAll} />
-        )}
+        <AnimatePresence mode="wait">
+          {filtered.length > 0 ? (
+            <motion.div
+              key={gridKey}
+              variants={gridVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-kawai-neutral"
+            >
+              {filtered.map((product, index) => (
+                <ProductCard key={product.id} product={product} index={index} />
+              ))}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <EmptyState hasFilters={hasFilters} onClear={clearAll} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
     </div>
   )
@@ -301,7 +409,13 @@ export function PianosBrowser({ products }: Props) {
 
 function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-kawai-black/5 text-kawai-charcoal text-[10px] uppercase tracking-[0.12em] font-[family-name:var(--font-brand-sans)]">
+    <motion.span
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.15 }}
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-kawai-black/5 text-kawai-charcoal text-[10px] uppercase tracking-[0.12em] font-[family-name:var(--font-brand-sans)]"
+    >
       {label}
       <button
         onClick={onRemove}
@@ -310,124 +424,155 @@ function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }
       >
         <X size={10} />
       </button>
-    </span>
+    </motion.span>
   )
 }
 
 /* ── Product Card ──────────────────────────────────────────────── */
 
-function ProductCard({ product }: { product: CatalogProduct }) {
+function ProductCard({ product, index }: { product: CatalogProduct; index: number }) {
   const category = normalizeCategory(product)
-  const priceLabel = formatPrice(product.price)
   const hasPrice = !!product.price?.msrp
+  const isOnSale = product.salePrice != null && hasPrice
 
   return (
-    <Link
-      href={`/products/${product.slug}`}
-      className="group relative flex flex-col bg-kawai-pearl hover:bg-white transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-kawai-red"
+    <motion.div
+      custom={index}
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
     >
-      {/* Image */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-white">
-        {product.imageUrl ? (
-          <Image
-            src={product.imageUrl}
-            alt={product.name ?? product.model}
-            fill
-            className="object-contain p-6 transition-transform duration-500 group-hover:scale-[1.03]"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
-        ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#F0EDE8]">
-            <PianoSilhouette />
-            <span className="text-[10px] uppercase tracking-[0.25em] text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)]">
-              {product.model}
+      <Link
+        href={`/products/${product.slug}`}
+        className="group relative flex flex-col bg-kawai-pearl hover:bg-white transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-kawai-red h-full"
+      >
+        {/* Image */}
+        <div className="relative aspect-[4/3] overflow-hidden bg-white">
+          {product.imageUrl ? (
+            <Image
+              src={product.imageUrl}
+              alt={product.name ?? product.model}
+              fill
+              className="object-contain p-6 transition-transform duration-500 group-hover:scale-[1.03]"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#F0EDE8]">
+              <PianoSilhouette />
+              <span className="text-[10px] uppercase tracking-[0.25em] text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)]">
+                {product.model}
+              </span>
+            </div>
+          )}
+
+          {/* Category badge — top-left */}
+          <div className="absolute top-3 left-3">
+            <span
+              className={cn(
+                'px-2 py-0.5 text-[10px] uppercase tracking-[0.12em]',
+                'font-[family-name:var(--font-brand-sans)]',
+                category === 'Grand'
+                  ? 'bg-kawai-gold/20 text-kawai-charcoal'
+                  : 'bg-kawai-black/5 text-kawai-charcoal',
+              )}
+            >
+              {product.type ?? category}
             </span>
           </div>
-        )}
 
-        {/* Category badge — top-left */}
-        <div className="absolute top-3 left-3">
-          <span
-            className={cn(
-              'px-2 py-0.5 text-[10px] uppercase tracking-[0.12em]',
-              'font-[family-name:var(--font-brand-sans)]',
-              category === 'Grand'
-                ? 'bg-kawai-gold/20 text-kawai-charcoal'
-                : 'bg-kawai-black/5 text-kawai-charcoal',
-            )}
-          >
-            {product.type ?? category}
-          </span>
+          {/* SALE badge — top-right */}
+          {isOnSale && (
+            <div className="absolute top-3 right-3">
+              <span className="inline-block px-2 py-0.5 bg-kawai-red text-white text-[10px] uppercase tracking-[0.15em] font-semibold font-[family-name:var(--font-brand-sans)]">
+                Sale
+              </span>
+            </div>
+          )}
         </div>
-      </div>
 
-      {/* Card body */}
-      <div className="flex flex-col flex-1 p-6">
-        {/* Model number */}
-        <p className="text-[10px] uppercase tracking-[0.3em] text-kawai-charcoal/50 mb-1 font-[family-name:var(--font-brand-sans)]">
-          {product.model}
-        </p>
-
-        {/* Product name */}
-        <h2
-          className="text-xl leading-snug text-kawai-black mb-auto"
-          style={{ fontFamily: 'var(--font-brand-luxury)', fontWeight: 400 }}
-        >
-          {product.name ?? product.model}
-        </h2>
-
-        {/* Collections (if any) */}
-        {product.shopifyCollections && product.shopifyCollections.length > 0 && (
-          <p className="mt-2 text-[10px] uppercase tracking-[0.12em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] line-clamp-1">
-            {product.shopifyCollections
-              .slice(0, 2)
-              .map((c) => c.title)
-              .join(' · ')}
-          </p>
-        )}
-
-        {/* Divider */}
-        <div className="my-4 h-px bg-kawai-neutral group-hover:bg-kawai-charcoal/20 transition-colors duration-300" />
-
-        {/* Price + CTA row */}
-        <div className="flex items-end justify-between">
-          <p
-            className={cn(
-              'text-sm font-medium font-[family-name:var(--font-brand-sans)]',
-              hasPrice ? 'text-kawai-black' : 'text-kawai-charcoal/60 italic text-xs',
-            )}
-          >
-            {priceLabel}
+        {/* Card body */}
+        <div className="flex flex-col flex-1 p-6">
+          {/* Model number */}
+          <p className="text-[10px] uppercase tracking-[0.3em] text-kawai-charcoal/50 mb-1 font-[family-name:var(--font-brand-sans)]">
+            {product.model}
           </p>
 
-          <span
-            className={cn(
-              'flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em]',
-              'font-[family-name:var(--font-brand-sans)] text-kawai-charcoal/50',
-              'group-hover:text-kawai-red transition-colors duration-300',
-            )}
+          {/* Product name */}
+          <h2
+            className="text-xl leading-snug text-kawai-black mb-auto"
+            style={{ fontFamily: 'var(--font-brand-luxury)', fontWeight: 400 }}
           >
-            Discover
-            <svg
-              width="11"
-              height="8"
-              viewBox="0 0 11 8"
-              fill="none"
-              className="transition-transform duration-300 group-hover:translate-x-0.5"
-              aria-hidden
+            {product.name ?? product.model}
+          </h2>
+
+          {/* Collections (if any) */}
+          {product.shopifyCollections && product.shopifyCollections.length > 0 && (
+            <p className="mt-2 text-[10px] uppercase tracking-[0.12em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] line-clamp-1">
+              {product.shopifyCollections
+                .slice(0, 2)
+                .map((c) => c.title)
+                .join(' · ')}
+            </p>
+          )}
+
+          {/* Divider */}
+          <div className="my-4 h-px bg-kawai-neutral group-hover:bg-kawai-charcoal/20 transition-colors duration-300" />
+
+          {/* Price + CTA row */}
+          <div className="flex items-end justify-between">
+            <div className="flex flex-col gap-0.5">
+              {isOnSale ? (
+                <>
+                  {/* Struck-through MSRP */}
+                  <p className="text-[11px] text-kawai-charcoal/40 line-through font-[family-name:var(--font-brand-sans)]">
+                    {formatPrice(product.price)}
+                  </p>
+                  {/* Sale price — prominent */}
+                  <p className="text-sm font-semibold text-kawai-red font-[family-name:var(--font-brand-sans)]">
+                    {formatCurrency(product.salePrice!, product.price?.currency ?? 'USD')}
+                  </p>
+                </>
+              ) : (
+                <p
+                  className={cn(
+                    'text-sm font-medium font-[family-name:var(--font-brand-sans)]',
+                    hasPrice ? 'text-kawai-black' : 'text-kawai-charcoal/60 italic text-xs',
+                  )}
+                >
+                  {formatPrice(product.price)}
+                </p>
+              )}
+            </div>
+
+            <span
+              className={cn(
+                'flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em]',
+                'font-[family-name:var(--font-brand-sans)] text-kawai-charcoal/50',
+                'group-hover:text-kawai-red transition-colors duration-300',
+              )}
             >
-              <path
-                d="M7 1L10 4M10 4L7 7M10 4H1"
-                stroke="currentColor"
-                strokeWidth="1.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </span>
+              Discover
+              <svg
+                width="11"
+                height="8"
+                viewBox="0 0 11 8"
+                fill="none"
+                className="transition-transform duration-300 group-hover:translate-x-1"
+                aria-hidden
+              >
+                <path
+                  d="M7 1L10 4M10 4L7 7M10 4H1"
+                  stroke="currentColor"
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+          </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </motion.div>
   )
 }
 

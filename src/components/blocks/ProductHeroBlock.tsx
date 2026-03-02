@@ -23,6 +23,8 @@ import type { Product as ShopifyProduct } from '@/lib/shopify/types'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { FloatingAddToCartIntegrated } from '@/components/blocks/FloatingAddToCartIntegrated'
 import { createCart } from '@/lib/shopify'
+import { trackAddToCart } from '@/lib/analytics/unified-tracking'
+import type { CTATrackingConfig } from '@/lib/analytics/unified-tracking'
 
 interface ProductHeroBlockProps {
   layout?: {
@@ -52,6 +54,7 @@ interface ProductHeroBlockProps {
     customImage?: string | Media | null
     badge?: string | null
   }
+  ctaTracking?: CTATrackingConfig | null
   // The product data will be passed from the context (current product document)
   product?: Product | null
   // Shopify product data fetched server-side
@@ -63,6 +66,7 @@ export function ProductHeroBlock({
   secondaryCta = {},
   floatingCart = {}, // NEW: Floating cart configuration
   overrides = {},
+  ctaTracking,
   product,
   shopifyProduct,
 }: ProductHeroBlockProps) {
@@ -187,6 +191,15 @@ export function ProductHeroBlock({
         quantity: 1,
       }])
       if (cart.checkoutUrl) {
+        trackAddToCart({
+          blockType: 'product-hero',
+          blockData: { ctaTracking: ctaTracking ?? undefined },
+          productName: product?.name || '',
+          variantId: selectedVariant.id,
+          variantName: selectedVariation >= 0 ? allVariations[selectedVariation]?.name ?? null : null,
+          price: selectedVariant.price,
+          additionalProps: { button_type: 'buy_now' },
+        })
         window.open(cart.checkoutUrl, '_blank', 'noopener,noreferrer')
       }
     } catch (err) {
@@ -760,6 +773,17 @@ export function ProductHeroBlock({
                         "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
                         "border-2 border-gray-300 bg-white hover:bg-gray-50 text-gray-900 hover:border-gray-400"
                       )}
+                      onSuccess={() => {
+                        trackAddToCart({
+                          blockType: 'product-hero',
+                          blockData: { ctaTracking: ctaTracking ?? undefined },
+                          productName: product?.name || '',
+                          variantId: selectedVariant.id,
+                          variantName: selectedVariation >= 0 ? allVariations[selectedVariation]?.name ?? null : null,
+                          price: selectedVariant.price,
+                          additionalProps: { button_type: 'add_to_cart' },
+                        })
+                      }}
                     >
                       Add to Cart
                     </AddToCartButton>
@@ -954,6 +978,17 @@ export function ProductHeroBlock({
               // Update parent state when variation is changed from floating button
               console.log('[ProductHeroBlock] Variation changed to index:', index)
               setSelectedVariation(index)
+            }}
+            onAddToCart={() => {
+              trackAddToCart({
+                blockType: 'product-hero',
+                blockData: { ctaTracking: ctaTracking ?? undefined },
+                productName: product?.name || '',
+                variantId: selectedVariant.id,
+                variantName: selectedVariation >= 0 ? allVariations[selectedVariation]?.name ?? null : null,
+                price: selectedVariant.price,
+                additionalProps: { button_type: 'floating_add_to_cart' },
+              })
             }}
           />
         )

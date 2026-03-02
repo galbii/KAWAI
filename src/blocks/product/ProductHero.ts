@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { ctaTrackingField } from '@/lib/payload/fields/tracking'
 
 export const ProductHero: Block = {
   slug: 'product-hero',
@@ -213,6 +214,13 @@ export const ProductHero: Block = {
       admin: {
         description: '🛒 Configure floating add to cart button - syncs with variation selection in hero section'
       }
-    }
+    },
+    ctaTrackingField({
+      defaultGA4Event: 'add_to_cart',
+      defaultMetaEvent: 'AddToCart',
+      defaultCategory: 'conversion',
+      label: '📊 Add to Cart Tracking',
+      adminDescription: 'Configure analytics for the Buy Now and Add to Cart buttons',
+    }),
   ]
 }
