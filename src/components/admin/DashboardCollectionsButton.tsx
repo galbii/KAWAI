@@ -57,10 +57,12 @@ const ALL_GROUPS: CollGroup[] = [
     { slug: 'collections', label: 'Collections', href: '/admin/collections/collections', Ic: IcoColl  },
   ]},
   { group: 'Content', color: t.jade, items: [
-    { slug: 'posts',      label: 'Posts',       href: '/admin/collections/posts',      Ic: IcoDoc  },
-    { slug: 'pages',      label: 'Pages',       href: '/admin/collections/pages',      Ic: IcoPage },
-    { slug: 'artists',    label: 'Artists',     href: '/admin/collections/artists',    Ic: IcoMic  },
-    { slug: 'categories', label: 'Categories',  href: '/admin/collections/categories', Ic: IcoTag  },
+    { slug: 'posts',          label: 'Posts',           href: '/admin/collections/posts',          Ic: IcoDoc  },
+    { slug: 'pages',          label: 'Pages',           href: '/admin/collections/pages',          Ic: IcoPage },
+    { slug: 'artists',        label: 'Artists',         href: '/admin/collections/artists',        Ic: IcoMic  },
+    { slug: 'categories',     label: 'Categories',      href: '/admin/collections/categories',     Ic: IcoTag  },
+    { slug: 'faqs',           label: 'FAQs',            href: '/admin/collections/faqs',           Ic: IcoDoc  },
+    { slug: 'faq-categories', label: 'FAQ Categories',  href: '/admin/collections/faq-categories', Ic: IcoTag  },
   ]},
   { group: 'Business', color: t.gold, items: [
     { slug: 'storefronts', label: 'Storefronts', href: '/admin/collections/storefronts', Ic: IcoStore },

@@ -180,7 +180,7 @@ function ProfileDrawer({ artist, onClose }: ProfileDrawerProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px]"
+            className="fixed inset-0 z-[9010] bg-black/50 backdrop-blur-[2px]"
             onClick={onClose}
             aria-hidden="true"
           />
@@ -193,7 +193,7 @@ function ProfileDrawer({ artist, onClose }: ProfileDrawerProps) {
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 35 }}
             className={cn(
-              'fixed left-0 top-0 z-50 flex flex-col',
+              'fixed left-0 top-0 z-[9020] flex flex-col',
               'w-full sm:w-[420px]',
               'h-[100dvh] bg-white',
               'shadow-2xl',
@@ -388,15 +388,21 @@ export function ArtistsGrid({ artists, title = 'Our Artists', showSearch = true 
       <section className="bg-kawai-black w-full">
 
         {/*
-          Sticky header — travels up with the page scroll and latches
-          beneath the main nav (top-16 = 64px) for the full grid scroll.
+          Sticky header — latches beneath the main nav.
+          Uses --header-bottom (set dynamically by header.tsx) which tracks
+          the actual bottom edge of the fixed header including the 6px red
+          line and the auto-hiding bottom nav (when visible on hover).
+          Fallback: 70px = 64px utility bar + 6px red line separator.
         */}
-        <div className={cn(
-          'sticky top-16 z-20',
-          'bg-kawai-black/95 backdrop-blur-sm',
-          'border-b border-white/[0.07]',
-          'shadow-[0_8px_32px_rgba(0,0,0,0.4)]',
-        )}>
+        <div
+          className={cn(
+            'sticky z-20',
+            'bg-kawai-black/95 backdrop-blur-sm',
+            'border-b border-white/[0.07]',
+            'shadow-[0_8px_32px_rgba(0,0,0,0.4)]',
+          )}
+          style={{ top: 'var(--header-bottom, 70px)' }}
+        >
           <div className="px-6 sm:px-12 lg:px-16 py-6 max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-end gap-5">
 
             {/* Title */}

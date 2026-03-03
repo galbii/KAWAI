@@ -130,7 +130,8 @@ export async function generateMetadata(
           _status: { equals: 'published' },
         },
         limit: 1,
-        depth: 0,
+        depth: 1,
+        select: { slug: true, title: true, seo: true },
       })
       .then(({ docs }) => docs?.[0]);
 
@@ -147,12 +148,20 @@ export async function generateMetadata(
     }
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com';
-    const defaultTitle = `${page.title} | KAWAI Pianos`;
-    const defaultDescription = `${page.title} - KAWAI Pianos`;
+    const metaTitle = page.seo?.metaTitle || `${page.title} | Kawai Pianos`;
+    const metaDescription = page.seo?.metaDescription || `${page.title} - Kawai Pianos`;
+    const ogTitle = page.seo?.openGraphTitle || metaTitle;
+    const ogDescription = page.seo?.openGraphDescription || metaDescription;
+
+    const ogImage = page.seo?.openGraphImage;
+    const ogImageUrl = ogImage && typeof ogImage === 'object' && 'url' in ogImage && ogImage.url
+      ? ogImage.url
+      : undefined;
 
     return {
-      title: defaultTitle,
-      description: defaultDescription,
+      title: metaTitle,
+      description: metaDescription,
+      ...(page.seo?.keywords ? { keywords: page.seo.keywords } : {}),
       alternates: {
         canonical: `${siteUrl}/${slugPath}`,
       },
@@ -165,24 +174,26 @@ export async function generateMetadata(
         },
       },
       openGraph: {
-        title: defaultTitle,
-        description: defaultDescription,
+        title: ogTitle,
+        description: ogDescription,
         url: `${siteUrl}/${slugPath}`,
-        siteName: 'KAWAI Pianos',
+        siteName: 'Kawai Pianos',
         type: 'website',
         locale: 'en_US',
+        ...(ogImageUrl ? { images: [{ url: ogImageUrl }] } : {}),
       },
       twitter: {
         card: 'summary_large_image',
-        title: defaultTitle,
-        description: defaultDescription,
+        title: ogTitle,
+        description: ogDescription,
+        ...(ogImageUrl ? { images: [ogImageUrl] } : {}),
       },
     };
   } catch (error) {
     console.error(`[SEO] Error generating metadata for page:`, error);
     return {
-      title: 'Page | KAWAI Pianos',
-      description: 'KAWAI Pianos',
+      title: 'Page | Kawai Pianos',
+      description: 'Kawai Pianos',
     };
   }
 }

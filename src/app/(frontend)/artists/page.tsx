@@ -78,24 +78,24 @@ export default async function ArtistsPage() {
       {hasHeroArtists && <ArtistsHeroWrapper artists={featuredArtists} />}
 
       {/* Artists Grid */}
-      <section id="artists-grid" className="pb-24 scroll-mt-20">
-        <div className="container mx-auto px-6">
-          {/* Section header — only when hero is showing */}
-          {hasHeroArtists && (
-            <div className="text-center mb-16 pt-24">
-              <h2 className="text-4xl md:text-5xl font-light text-white mb-4 font-[family-name:var(--font-brand-serif)]">
-                All Artists
-              </h2>
-              <div className="w-16 h-px bg-kawai-red mx-auto mb-6" />
-              <p className="text-base text-white/50 max-w-2xl mx-auto font-[family-name:var(--font-brand-sans)]">
-                Explore our complete roster of world-class musicians
-              </p>
-            </div>
-          )}
+      <section id="artists-grid" className="scroll-mt-20">
+        {/* Section header — only when hero is showing */}
+        {hasHeroArtists && (
+          <div className="container mx-auto px-6 text-center mb-16 pt-24">
+            <h2 className="text-4xl md:text-5xl font-light text-white mb-4 font-[family-name:var(--font-brand-serif)]">
+              All Artists
+            </h2>
+            <div className="w-16 h-px bg-kawai-red mx-auto mb-6" />
+            <p className="text-base text-white/50 max-w-2xl mx-auto font-[family-name:var(--font-brand-sans)]">
+              Explore our complete roster of world-class musicians
+            </p>
+          </div>
+        )}
 
-          {gridArtists.length > 0 ? (
-            <ArtistsGrid artists={gridArtists} />
-          ) : (
+        {gridArtists.length > 0 ? (
+          <ArtistsGrid artists={gridArtists} />
+        ) : (
+          <div className="container mx-auto px-6 pb-24">
             <div className="max-w-2xl mx-auto text-center py-24">
               <div className="bg-white/5 rounded-2xl p-12 border border-white/10">
                 <h2 className="text-3xl font-light text-white mb-4 font-[family-name:var(--font-brand-serif)]">
@@ -122,8 +122,8 @@ export default async function ArtistsPage() {
                 </Link>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </section>
 
       {/* CTA Section */}

@@ -519,8 +519,8 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const [isLoadingLocation, setIsLoadingLocation] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
   const [animationComplete, setAnimationComplete] = useState(false)
-  const [isAutoHidden, setIsAutoHidden] = useState(true) // Start hidden - only shows on hover or menu open
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isAutoHidden, setIsAutoHidden] = useState(true)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
@@ -593,11 +593,35 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
 
   // REMOVED: CSS variable updates were causing scroll jank
   // Mega menus now position themselves directly without needing this
-  
+
+  // Expose --header-bottom so sticky elements (e.g. artist grid header) can track
+  // exactly where the header ends. When nav is hidden, only the 6px red line shows.
+  useEffect(() => {
+    // Utility bar: always 64px (h-16)
+    // Bottom nav: 48px (scrolled) or 56px (top) when visible; 6px red line when hidden
+    const navHeight = isAutoHidden ? 6 : (isScrolled ? 48 : 56)
+    const totalPx = 64 + navHeight
+    document.documentElement.style.setProperty(
+      '--header-bottom',
+      `calc(${totalPx}px + var(--announcement-bar-height, 0px))`
+    )
+  }, [isScrolled, isAutoHidden])
+
   // Mark animation as complete immediately since header has no animations
   useEffect(() => {
     setAnimationComplete(true)
     setIsMounted(true)
+  }, [])
+
+  // Auto-hide: show nav on mount, then hide after 2s
+  useEffect(() => {
+    setIsAutoHidden(false)
+    autoHideTimeoutRef.current = setTimeout(() => {
+      setIsAutoHidden(true)
+    }, 2000)
+    return () => {
+      if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
+    }
   }, [])
 
   // Initialize scroll state based on initial scroll position
@@ -606,24 +630,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       const initialScrollY = window.scrollY
       const isAtTop = initialScrollY <= 50
       setIsScrolled(!isAtTop)
-    }
-
-    // Start with nav hidden on initial load
-    setIsAutoHidden(true)
-
-    // CRITICAL: Start auto-hide timer on initialization when at top of page
-    // This ensures nav auto-hides after 2 seconds even without scroll movement
-    // Works at ALL scroll positions (including scrollY = 0)
-    autoHideTimeoutRef.current = setTimeout(() => {
-      setIsAutoHidden(true)
-    }, 2000)
-
-    // Cleanup timer on unmount
-    return () => {
-      if (autoHideTimeoutRef.current) {
-        clearTimeout(autoHideTimeoutRef.current)
-        autoHideTimeoutRef.current = null
-      }
     }
   }, [])
   
@@ -770,9 +776,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       if (newsMenuTimeoutRef.current) {
         clearTimeout(newsMenuTimeoutRef.current)
       }
-      if (autoHideTimeoutRef.current) {
-        clearTimeout(autoHideTimeoutRef.current)
-      }
     }
   }, [isMenuOpen, activeDropdown, isProductsMenuOpen, isStorefrontsMenuOpen, isResourcesMenuOpen, isNewsMenuOpen])
   
@@ -804,18 +807,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       // Update last scroll time for menu prevention
       lastScrollTime.current = Date.now()
 
-      // Clear any existing auto-hide timer
-      if (autoHideTimeoutRef.current) {
-        clearTimeout(autoHideTimeoutRef.current)
-        autoHideTimeoutRef.current = null
-      }
-
-      // CRITICAL: Start 2-second auto-hide timer after ANY scroll
-      // This works at ALL scroll positions (including scrollY = 0)
-      autoHideTimeoutRef.current = setTimeout(() => {
-        setIsAutoHidden(true)
-      }, 2000)
-
       // Close menus on any scroll
       if (isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) {
         setIsProductsMenuOpen(false)
@@ -826,14 +817,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     }
   })
   
-  // Clean up timers on unmount
-  useEffect(() => {
-    return () => {
-      if (autoHideTimeoutRef.current) {
-        clearTimeout(autoHideTimeoutRef.current)
-      }
-    }
-  }, [])
 
   // Mobile menu item toggle handlers
   const toggleMobileItem = useCallback((itemLabel: string) => {
@@ -885,7 +868,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       clearTimeout(productsMenuTimeoutRef.current)
       productsMenuTimeoutRef.current = null
     }
-    // Clear auto-hide timer and show nav
     if (autoHideTimeoutRef.current) {
       clearTimeout(autoHideTimeoutRef.current)
       autoHideTimeoutRef.current = null
@@ -902,15 +884,11 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const handleProductsMenuClose = useCallback(() => {
     productsMenuTimeoutRef.current = setTimeout(() => {
       setIsProductsMenuOpen(false)
-      // CRITICAL: Start auto-hide timer after menu closes
-      // Works at ALL scroll positions (including top)
-      if (autoHideTimeoutRef.current) {
-        clearTimeout(autoHideTimeoutRef.current)
-      }
-      autoHideTimeoutRef.current = setTimeout(() => {
-        setIsAutoHidden(true)
-      }, 2000)
     }, 150)
+    if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
+    autoHideTimeoutRef.current = setTimeout(() => {
+      setIsAutoHidden(true)
+    }, 2000)
   }, [])
 
   // Storefronts menu handlers
@@ -922,7 +900,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       clearTimeout(storefrontsMenuTimeoutRef.current)
       storefrontsMenuTimeoutRef.current = null
     }
-    // Clear auto-hide timer and show nav
     if (autoHideTimeoutRef.current) {
       clearTimeout(autoHideTimeoutRef.current)
       autoHideTimeoutRef.current = null
@@ -939,15 +916,11 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const handleStorefrontsMenuClose = useCallback(() => {
     storefrontsMenuTimeoutRef.current = setTimeout(() => {
       setIsStorefrontsMenuOpen(false)
-      // CRITICAL: Start auto-hide timer after menu closes
-      // Works at ALL scroll positions (including top)
-      if (autoHideTimeoutRef.current) {
-        clearTimeout(autoHideTimeoutRef.current)
-      }
-      autoHideTimeoutRef.current = setTimeout(() => {
-        setIsAutoHidden(true)
-      }, 2000)
     }, 150)
+    if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
+    autoHideTimeoutRef.current = setTimeout(() => {
+      setIsAutoHidden(true)
+    }, 2000)
   }, [])
 
   // Resources menu handlers
@@ -959,7 +932,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       clearTimeout(resourcesMenuTimeoutRef.current)
       resourcesMenuTimeoutRef.current = null
     }
-    // Clear auto-hide timer and show nav
     if (autoHideTimeoutRef.current) {
       clearTimeout(autoHideTimeoutRef.current)
       autoHideTimeoutRef.current = null
@@ -976,15 +948,11 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const handleResourcesMenuClose = useCallback(() => {
     resourcesMenuTimeoutRef.current = setTimeout(() => {
       setIsResourcesMenuOpen(false)
-      // CRITICAL: Start auto-hide timer after menu closes
-      // Works at ALL scroll positions (including top)
-      if (autoHideTimeoutRef.current) {
-        clearTimeout(autoHideTimeoutRef.current)
-      }
-      autoHideTimeoutRef.current = setTimeout(() => {
-        setIsAutoHidden(true)
-      }, 2000)
     }, 150)
+    if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
+    autoHideTimeoutRef.current = setTimeout(() => {
+      setIsAutoHidden(true)
+    }, 2000)
   }, [])
 
   // News menu handlers
@@ -996,7 +964,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       clearTimeout(newsMenuTimeoutRef.current)
       newsMenuTimeoutRef.current = null
     }
-    // Clear auto-hide timer and show nav
     if (autoHideTimeoutRef.current) {
       clearTimeout(autoHideTimeoutRef.current)
       autoHideTimeoutRef.current = null
@@ -1013,17 +980,31 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const handleNewsMenuClose = useCallback(() => {
     newsMenuTimeoutRef.current = setTimeout(() => {
       setIsNewsMenuOpen(false)
-      // CRITICAL: Start auto-hide timer after menu closes
-      // Works at ALL scroll positions (including top)
-      if (autoHideTimeoutRef.current) {
-        clearTimeout(autoHideTimeoutRef.current)
-      }
-      autoHideTimeoutRef.current = setTimeout(() => {
-        setIsAutoHidden(true)
-      }, 2000)
     }, 150)
+    if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
+    autoHideTimeoutRef.current = setTimeout(() => {
+      setIsAutoHidden(true)
+    }, 2000)
   }, [])
 
+
+  // Bottom nav hover reveal handlers
+  const handleBottomNavMouseEnter = useCallback(() => {
+    if (autoHideTimeoutRef.current) {
+      clearTimeout(autoHideTimeoutRef.current)
+      autoHideTimeoutRef.current = null
+    }
+    setIsAutoHidden(false)
+  }, [])
+
+  const handleBottomNavMouseLeave = useCallback(() => {
+    if (autoHideTimeoutRef.current) {
+      clearTimeout(autoHideTimeoutRef.current)
+    }
+    autoHideTimeoutRef.current = setTimeout(() => {
+      setIsAutoHidden(true)
+    }, 2000)
+  }, [])
 
   // Header hover handlers for bottom navigation reveal
   // Utility function to check if target is interactive
@@ -1056,31 +1037,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     }
   }, [isInteractiveElement, scrollToTop])
 
-  // Bottom nav hover handler - show nav when hovering
-  // Works at ALL scroll positions (including top)
-  const handleBottomNavMouseEnter = useCallback(() => {
-    if (autoHideTimeoutRef.current) {
-      clearTimeout(autoHideTimeoutRef.current)
-      autoHideTimeoutRef.current = null
-    }
-    setIsAutoHidden(false)
-  }, [])
-
-  // Bottom nav mouse leave handler - start auto-hide timer
-  // CRITICAL: This ensures auto-hide works at ALL scroll positions
-  // Timer triggers regardless of whether we're at top (scrollY = 0) or scrolled
-  const handleBottomNavMouseLeave = useCallback(() => {
-    // Clear any existing timer
-    if (autoHideTimeoutRef.current) {
-      clearTimeout(autoHideTimeoutRef.current)
-      autoHideTimeoutRef.current = null
-    }
-
-    // ALWAYS start 2-second auto-hide timer (scroll-independent)
-    autoHideTimeoutRef.current = setTimeout(() => {
-      setIsAutoHidden(true)
-    }, 2000)
-  }, [])
 
   // Animation variants - use a stable key to prevent re-animation
   const headerVariants = {
@@ -1253,46 +1209,27 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       </div>
 
 
-      {/* Kawai Red Line - Between Top and Bottom Rows */}
-      <motion.div
-        className="w-full bg-[#A01829]"
-        initial={false}
-        animate={{
-          height: (!isAutoHidden || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) ? 0 : 6,
-        }}
-        transition={{
-          duration: 0.2,
-          ease: [0.4, 0, 0.2, 1],
-        }}
-      />
-
-      {/* Bottom Row - Main Navigation (Full Width) - Auto-hide on scroll/hover */}
+      {/* Bottom Row - Main Navigation (Full Width) - Auto-hides, reveals on hover */}
       {!isSignaturePage && !hidePianoLinks && !isUniversityPage && !isSearchOpen && (
         <div
-          className="hidden lg:block w-full relative"
+          className="hidden lg:block w-full"
           onMouseEnter={handleBottomNavMouseEnter}
           onMouseLeave={handleBottomNavMouseLeave}
         >
-          {/* Hover trigger area - always present even when nav is hidden */}
-          <div
-            className="absolute top-0 left-0 right-0 h-4 z-10"
-            style={{
-              pointerEvents: isAutoHidden ? 'auto' : 'none',
-              cursor: isAutoHidden ? 'pointer' : 'default'
-            }}
-          />
+          {/* Red separator line — visible when nav is hidden */}
           <motion.div
-            className="w-full bg-white overflow-hidden relative z-20"
-            initial={false}
-            animate={{
-              height: (!isAutoHidden || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) ? 'auto' : 0,
-              opacity: (!isAutoHidden || isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) ? 1 : 0,
-            }}
-            transition={{
-              duration: 0.3,
-              ease: [0.4, 0, 0.2, 1],
-            }}
+            className="w-full bg-[#A01829] cursor-pointer"
+            animate={{ height: isAutoHidden ? 6 : 0 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+          />
+
+          {/* Nav — animates in/out */}
+          <motion.div
+            animate={{ height: isAutoHidden ? 0 : 'auto', opacity: isAutoHidden ? 0 : 1 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+            style={{ overflow: 'hidden' }}
           >
+          <div className="w-full bg-white relative z-20">
           <div className="w-full bg-white border-b-[6px] border-[#A01829]">
           <div className="container mx-auto px-4 sm:px-6">
             <nav>
@@ -1399,6 +1336,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                 </div>
               </div>
             </nav>
+          </div>
           </div>
           </div>
           </motion.div>

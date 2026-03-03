@@ -162,6 +162,7 @@ export default buildConfig({
         '/components/admin/HideDashboardCollections#HideDashboardCollections',
         '/components/admin/DashboardStats#DashboardStats',
         '/components/admin/DashboardQuickActions#DashboardQuickActions',
+        '/components/admin/DashboardCollectionsButton#DashboardCollectionsButton',
       ],
       actions: [
         '/components/admin/ViewSiteButton#ViewSiteButton',

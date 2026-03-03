@@ -1,4 +1,4 @@
-import type { Viewport } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Crimson_Text, Playfair_Display, Cormorant_Garamond, Noto_Sans } from "next/font/google";
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { Suspense } from 'react';
@@ -54,6 +54,16 @@ const notoSans = Noto_Sans({
   weight: ["300", "400", "500", "600"],
   preload: false,
 });
+
+export const metadata: Metadata = {
+  title: {
+    template: '%s | Kawai Pianos',
+    default: 'Kawai Pianos',
+  },
+  openGraph: {
+    siteName: 'Kawai Pianos',
+  },
+};
 
 export const viewport: Viewport = {
   width: "device-width",
