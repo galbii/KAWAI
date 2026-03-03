@@ -229,6 +229,25 @@ export const Collections: CollectionConfig = {
       },
     },
 
+    // Piano category association — controls which category filter tabs reveal this collection
+    {
+      name: 'pianoCategories',
+      type: 'select',
+      hasMany: true,
+      admin: {
+        description:
+          'Associate with piano category filters. When a visitor selects Digital, Grand, Upright, or Hybrid on the /pianos page, only collections tagged here will appear in the collection filter row.',
+        position: 'sidebar',
+        isClearable: true,
+      },
+      options: [
+        { label: 'Digital', value: 'digital' },
+        { label: 'Grand', value: 'grand' },
+        { label: 'Upright', value: 'upright' },
+        { label: 'Hybrid', value: 'hybrid' },
+      ],
+    },
+
     // Shopify Integration Group - Sidebar
     {
       name: 'shopify',

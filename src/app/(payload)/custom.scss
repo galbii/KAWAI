@@ -142,17 +142,26 @@ button[class*="mobile-nav"] {
   background-color: var(--theme-bg);
   box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.08);
   /*
-   * Payload sets overflow-x:auto + overflow-y:hidden on this element.
+   * overflow-x:auto enables horizontal scrolling for collections with many
+   * tabs (e.g. HomePage with 10 tabs). overflow-y:hidden is explicit so the
+   * browser has no ambiguity — no coercion needed.
+   *
    * The active-tab underline is `position:absolute; bottom:-1px; height:2px`,
-   * which hangs below the tab button and gets clipped by overflow-y:hidden.
-   *
-   * overflow-x:clip  — clips horizontally like hidden but does NOT create a
-   *                    scroll container, so it doesn't force overflow-y to auto.
-   * overflow-y:visible — lets the absolute-positioned underline paint through.
-   *
-   * (overflow-x:auto + overflow-y:visible is invalid CSS — the visible axis
-   * gets coerced to auto. overflow-x:clip avoids that coercion.)
+   * which hangs 1px below its tab button. padding-bottom:3px expands the
+   * padding box downward so the underline sits inside the clipping boundary
+   * rather than being cut off by overflow-y:hidden.
    */
-  overflow-x: clip;
-  overflow-y: visible;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 3px;
+  /* Minimal scrollbar — visible but unobtrusive */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 128, 128, 0.3) transparent;
+  &::-webkit-scrollbar {
+    height: 3px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(128, 128, 128, 0.3);
+    border-radius: 2px;
+  }
 }

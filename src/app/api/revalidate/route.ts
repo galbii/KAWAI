@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
   try {
     // Parse request body
     const body = await request.json()
-    const { secret, slug, path, type } = body
+    const { secret, slug, path, type, tag } = body
 
     // Validate secret token
     const revalidationSecret = process.env.REVALIDATION_SECRET
@@ -47,6 +47,13 @@ export async function POST(request: NextRequest) {
         },
         { status: 401 }
       )
+    }
+
+    // If a specific cache tag is provided, revalidate it directly and return
+    if (tag) {
+      revalidateTag(tag)
+      console.log(`[Revalidation] Revalidated tag: ${tag}`)
+      return NextResponse.json({ revalidated: true, tag, timestamp: new Date().toISOString() })
     }
 
     // Determine path to revalidate

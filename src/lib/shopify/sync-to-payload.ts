@@ -184,27 +184,52 @@ export function mapShopifyProductTypeToPayloadType(
 ): 'digital' | 'grand' | 'hybrid' | 'upright' | 'accessory' | 'other' {
   const normalized = shopifyProductType.toLowerCase().trim()
 
-  // Piano type mapping (for category field)
-  if (normalized.includes('digital')) return 'digital'
+  // ── Grand pianos ───────────────────────────────────────────────────────────
+  // Generic terms
   if (normalized.includes('grand')) return 'grand'
-  if (normalized.includes('hybrid') || normalized.includes('novus') || normalized.includes('aures')) return 'hybrid'
-  if (normalized.includes('upright') || normalized.includes('vertical')) return 'upright'
+  // Kawai product lines: Shigeru Kawai (SK), GX BLAK, GL Series
+  if (normalized.includes('shigeru')) return 'grand'
+  if (normalized.startsWith('gx') || normalized === 'gx series' || normalized.includes('gx blak')) return 'grand'
+  if (normalized.startsWith('gl') || normalized === 'gl series') return 'grand'
+  if (normalized.startsWith('sk') || normalized === 'sk series') return 'grand'
 
-  // Non-piano products
+  // ── Hybrid pianos ──────────────────────────────────────────────────────────
+  if (normalized.includes('hybrid')) return 'hybrid'
+  if (normalized.includes('novus')) return 'hybrid'
+  if (normalized.includes('aures')) return 'hybrid'
+  if (normalized.includes('anytime') || normalized.includes('any time')) return 'hybrid'
+
+  // ── Upright pianos ─────────────────────────────────────────────────────────
+  if (normalized.includes('upright') || normalized.includes('vertical')) return 'upright'
+  // Kawai product lines: K Series, ND Series
+  if (normalized === 'k series' || normalized.startsWith('k-series')) return 'upright'
+  if (normalized === 'nd series' || normalized.startsWith('nd-series')) return 'upright'
+
+  // ── Digital pianos ─────────────────────────────────────────────────────────
+  if (normalized.includes('digital')) return 'digital'
+  // Kawai product lines: Concert Artist (CA), CN, ES, KDP Series
+  if (normalized.includes('concert artist') || normalized === 'ca series') return 'digital'
+  if (normalized === 'cn series' || normalized.startsWith('cn-series')) return 'digital'
+  if (normalized === 'es series' || normalized.startsWith('es-series')) return 'digital'
+  if (normalized === 'kdp series' || normalized.startsWith('kdp')) return 'digital'
+
+  // ── Accessories ────────────────────────────────────────────────────────────
   if (
     normalized.includes('accessory') ||
+    normalized.includes('accessories') ||
     normalized.includes('bench') ||
     normalized.includes('cover') ||
     normalized.includes('stand') ||
     normalized.includes('pedal') ||
     normalized.includes('stool') ||
-    normalized.includes('lamp')
+    normalized.includes('lamp') ||
+    normalized.includes('headphone') ||
+    normalized.includes('sustain')
   ) return 'accessory'
 
-  // Default: if contains "piano" but no specific type, assume digital
+  // Default: if contains "piano" but no specific type, treat as digital
   if (normalized.includes('piano')) return 'digital'
 
-  // Final fallback for everything else
   return 'other'
 }
 

@@ -1,12 +1,16 @@
 import type { Metadata } from 'next'
-import { getCatalogProductsDirect, getProductSpotlightNewsItems } from '@/lib/payload/queries'
+import {
+  getCatalogProductsDirect,
+  getProductSpotlightNewsItems,
+  getCollectionsForBrowser,
+} from '@/lib/payload/queries'
 import { PianosBrowser } from '@/components/piano/PianosBrowser'
 import { NewsCarousel } from '@/components/homepage/news-carousel'
 
 export const revalidate = 3600
 
 export const metadata: Metadata = {
-  title: 'Kawai Pianos — Grand, Digital, Upright & Hybrid Collection',
+  title: 'Kawai Pianos | Digital, Upright, Hybrid, and Grands',
   description:
     'Browse the complete Kawai piano collection — Shigeru Kawai concert grands, GX BLAK grand pianos, Concert Artist digital pianos, and AnyTime hybrid instruments.',
   keywords: [
@@ -36,9 +40,10 @@ export const metadata: Metadata = {
 }
 
 export default async function PianosPage() {
-  const [products, spotlightItems] = await Promise.all([
+  const [products, spotlightItems, collectionsForBrowser] = await Promise.all([
     getCatalogProductsDirect(),
     getProductSpotlightNewsItems(),
+    getCollectionsForBrowser(),
   ])
 
   return (
@@ -46,7 +51,7 @@ export default async function PianosPage() {
       {spotlightItems.length > 0 && (
         <NewsCarousel data={{ autoPlayDuration: 7000, newsItems: spotlightItems }} />
       )}
-      <PianosBrowser products={products} />
+      <PianosBrowser products={products} collectionsForBrowser={collectionsForBrowser} />
     </>
   )
 }

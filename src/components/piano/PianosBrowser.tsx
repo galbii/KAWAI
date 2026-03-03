@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { Search, ChevronDown, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import type { CollectionForBrowser } from '@/lib/payload/queries'
 
 export interface CatalogProduct {
   id: string
@@ -22,6 +23,7 @@ export interface CatalogProduct {
 
 interface Props {
   products: CatalogProduct[]
+  collectionsForBrowser?: CollectionForBrowser[]
 }
 
 const CATEGORIES = ['All', 'Grand', 'Digital', 'Upright', 'Hybrid'] as const
@@ -48,11 +50,12 @@ function formatPrice(price?: CatalogProduct['price']): string {
 }
 
 function normalizeCategory(product: CatalogProduct): string {
-  const raw = (product.type ?? product.category ?? '').toLowerCase()
+  // Use Shopify taxonomy category as primary source, productType as fallback
+  const raw = (product.category ?? product.type ?? '').toLowerCase()
   if (raw.includes('grand') || raw.includes('shigeru')) return 'Grand'
-  if (raw.includes('digital')) return 'Digital'
-  if (raw.includes('upright')) return 'Upright'
-  if (raw.includes('hybrid') || raw.includes('anytime') || raw.includes('novus')) return 'Hybrid'
+  if (raw.includes('digital') || raw.includes('concert artist')) return 'Digital'
+  if (raw.includes('upright') || raw.includes('vertical')) return 'Upright'
+  if (raw.includes('hybrid') || raw.includes('anytime') || raw.includes('novus') || raw.includes('aures')) return 'Hybrid'
   return 'Other'
 }
 
@@ -100,19 +103,39 @@ const cardVariants = {
 
 /* ── Main Component ────────────────────────────────────────────── */
 
-export function PianosBrowser({ products }: Props) {
+export function PianosBrowser({ products, collectionsForBrowser }: Props) {
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState<Category>('All')
   const [activeCollection, setActiveCollection] = useState<string>('All')
   const [sort, setSort] = useState<string>('default')
 
-  const collections = useMemo(() => deriveCollections(products), [products])
+  // When the category tab changes, reset the collection sub-filter
+  function handleCategoryChange(cat: Category) {
+    setActiveCategory(cat)
+    setActiveCollection('All')
+  }
+
+  // Collections visible in the filter row:
+  // - If CMS-sourced collections are available, use them filtered by pianoCategories
+  // - When 'All' is active, show every collection
+  // - When a specific category is active, show only collections tagged with that category
+  // - Falls back to product-derived collections if no CMS data is provided
+  const visibleCollections = useMemo(() => {
+    if (collectionsForBrowser && collectionsForBrowser.length > 0) {
+      if (activeCategory === 'All') return collectionsForBrowser
+      const catLower = activeCategory.toLowerCase()
+      return collectionsForBrowser.filter((c) =>
+        (c.pianoCategories ?? []).includes(catLower),
+      )
+    }
+    return deriveCollections(products)
+  }, [collectionsForBrowser, products, activeCategory])
 
   // Handle of the currently active collection — used to build the "View Collection" link
   const activeCollectionHandle = useMemo(() => {
     if (activeCollection === 'All') return null
-    return collections.find((c) => c.title === activeCollection)?.handle ?? null
-  }, [activeCollection, collections])
+    return visibleCollections.find((c) => c.title === activeCollection)?.handle ?? null
+  }, [activeCollection, visibleCollections])
 
   const filtered = useMemo(() => {
     let items = [...products]
@@ -235,7 +258,7 @@ export function PianosBrowser({ products }: Props) {
                 {CATEGORIES.map((cat) => (
                   <button
                     key={cat}
-                    onClick={() => setActiveCategory(cat)}
+                    onClick={() => handleCategoryChange(cat)}
                     className={cn(
                       'relative px-4 py-1.5 text-xs uppercase tracking-[0.15em] font-medium',
                       'transition-colors duration-200 font-[family-name:var(--font-brand-sans)]',
@@ -300,8 +323,8 @@ export function PianosBrowser({ products }: Props) {
             </div>
           </div>
 
-          {/* Collection filter row — only if collections exist */}
-          {collections.length > 0 && (
+          {/* Collection filter row — only if collections exist for this category */}
+          {visibleCollections.length > 0 && (
             <div className="border-t border-kawai-neutral/50 py-3 flex items-center gap-3 overflow-x-auto scrollbar-none">
               <span className="text-xs uppercase tracking-[0.2em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] flex-shrink-0">
                 Collection
@@ -329,7 +352,7 @@ export function PianosBrowser({ products }: Props) {
                 </button>
 
                 {/* Individual collection filters */}
-                {collections.map((col) => (
+                {visibleCollections.map((col) => (
                   <button
                     key={col.title}
                     onClick={() => setActiveCollection(col.title)}
@@ -363,8 +386,6 @@ export function PianosBrowser({ products }: Props) {
                     exit={{ opacity: 0, x: -6 }}
                     transition={{ duration: 0.2 }}
                     href={`/pianos/${activeCollectionHandle}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className={cn(
                       'flex-shrink-0 ml-auto flex items-center gap-1.5',
                       'px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.15em]',
@@ -494,8 +515,6 @@ function ProductCard({ product, index }: { product: CatalogProduct; index: numbe
     >
       <Link
         href={`/products/${product.slug}`}
-        target="_blank"
-        rel="noopener noreferrer"
         className="group relative flex flex-col bg-kawai-pearl hover:bg-white transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-kawai-red h-full rounded-none"
       >
         {/* Image */}

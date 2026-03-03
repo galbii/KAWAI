@@ -137,6 +137,7 @@ export interface Config {
     dealers: Dealer;
     'constant-contact-settings': ConstantContactSetting;
     'constant-contact-custom-fields': ConstantContactCustomField;
+    redirects: Redirect;
     search: Search;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -167,6 +168,7 @@ export interface Config {
     dealers: DealersSelect<false> | DealersSelect<true>;
     'constant-contact-settings': ConstantContactSettingsSelect<false> | ConstantContactSettingsSelect<true>;
     'constant-contact-custom-fields': ConstantContactCustomFieldsSelect<false> | ConstantContactCustomFieldsSelect<true>;
+    redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     search: SearchSelect<false> | SearchSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -1545,9 +1547,9 @@ export interface MarketingHeroBlock {
 export interface Product {
   id: string;
   /**
-   * Product type (synced from Shopify productType)
+   * Piano category (auto-mapped from Shopify productType, can be overridden)
    */
-  type?: string | null;
+  type?: ('digital' | 'grand' | 'upright' | 'hybrid' | 'accessory' | 'other') | null;
   /**
    * Model identifier - matches Shopify custom.model metafield (PRIMARY KEY)
    */
@@ -2523,6 +2525,10 @@ export interface Collection {
    * Show in the navigation mega menu carousel (Featured Collections)
    */
   featured?: boolean | null;
+  /**
+   * Associate with piano category filters. When a visitor selects Digital, Grand, Upright, or Hybrid on the /pianos page, only collections tagged here will appear in the collection filter row.
+   */
+  pianoCategories?: ('digital' | 'grand' | 'upright' | 'hybrid')[] | null;
   /**
    * Shopify synchronization metadata
    */
@@ -7656,6 +7662,63 @@ export interface ConstantContactCustomField {
   createdAt: string;
 }
 /**
+ * Manage URL redirects. Changes take effect within 30 seconds.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "redirects".
+ */
+export interface Redirect {
+  id: string;
+  /**
+   * The source path to redirect from. Must start with /.
+   */
+  from: string;
+  to: {
+    /**
+     * Custom URL for external links or arbitrary paths. Internal Page for CMS-managed content.
+     */
+    type: 'url' | 'reference';
+    /**
+     * Full URL (https://...) or site-relative path starting with /.
+     */
+    url?: string | null;
+    /**
+     * Select an internal CMS page as the redirect destination.
+     */
+    reference?:
+      | ({
+          relationTo: 'pages';
+          value: string | Page;
+        } | null)
+      | ({
+          relationTo: 'products';
+          value: string | Product;
+        } | null)
+      | ({
+          relationTo: 'storefronts';
+          value: string | Storefront;
+        } | null)
+      | ({
+          relationTo: 'posts';
+          value: string | Post;
+        } | null);
+  };
+  /**
+   * Use 301 for permanent URL changes (SEO equity passes). Use 302 for temporary redirects.
+   */
+  redirectType: '301' | '302';
+  /**
+   * Disable to pause this redirect without deleting it.
+   */
+  isActive?: boolean | null;
+  /**
+   * Internal notes about why this redirect exists (not shown to users).
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This is a collection of automatically created search results. These results are used by the global site search and will be updated automatically as documents in the CMS are created or updated.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -7917,6 +7980,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'constant-contact-custom-fields';
         value: string | ConstantContactCustomField;
+      } | null)
+    | ({
+        relationTo: 'redirects';
+        value: string | Redirect;
       } | null)
     | ({
         relationTo: 'search';
@@ -8980,6 +9047,7 @@ export interface CollectionsSelect<T extends boolean = true> {
   headingSize?: T;
   fontFamily?: T;
   featured?: T;
+  pianoCategories?: T;
   shopify?:
     | T
     | {
@@ -9097,6 +9165,25 @@ export interface ConstantContactCustomFieldsSelect<T extends boolean = true> {
   fieldType?: T;
   createdInConstantContact?: T;
   lastSyncedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "redirects_select".
+ */
+export interface RedirectsSelect<T extends boolean = true> {
+  from?: T;
+  to?:
+    | T
+    | {
+        type?: T;
+        url?: T;
+        reference?: T;
+      };
+  redirectType?: T;
+  isActive?: T;
+  notes?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -949,6 +949,36 @@ export async function getAllCollectionHandles(): Promise<string[]> {
   }
 }
 
+export interface CollectionForBrowser {
+  title: string
+  handle: string
+  pianoCategories?: string[] | null
+}
+
+/**
+ * Get all collections with their piano category associations.
+ * Used by the /pianos browser to show relevant collection filters per category tab.
+ * Cached for 1 hour; invalidated by the 'collections' tag.
+ */
+export const getCollectionsForBrowser = unstable_cache(
+  async (): Promise<CollectionForBrowser[]> => {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'collections',
+      select: { title: true, handle: true, pianoCategories: true },
+      depth: 0,
+      limit: 500,
+    })
+    return result.docs.map((d) => ({
+      title: d.title,
+      handle: d.handle,
+      pianoCategories: (d.pianoCategories as string[] | null) ?? null,
+    }))
+  },
+  ['collections-for-browser'],
+  { tags: ['collections'], revalidate: 3600 },
+)
+
 /**
  * Get all catalog-visible products that belong to a specific collection.
  * Queries via the shopifyCollections.handle array field on products.

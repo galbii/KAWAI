@@ -1,0 +1,130 @@
+import type { CollectionConfig, CollectionAfterChangeHook } from 'payload'
+import { adminOnly, authenticated } from '@/lib/payload/access'
+
+const revalidateRedirects: CollectionAfterChangeHook = async ({ doc, context }) => {
+  if (context.skipRevalidation) return doc
+
+  const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
+  // Fire-and-forget — never await, never block the CMS save
+  fetch(`${baseURL}/api/revalidate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      secret: process.env.REVALIDATION_SECRET,
+      tag: 'redirects',
+    }),
+  }).catch((err) => console.error('[Redirects] Revalidation error:', err))
+
+  return doc
+}
+
+export const Redirects: CollectionConfig = {
+  slug: 'redirects',
+  admin: {
+    useAsTitle: 'from',
+    group: 'Settings',
+    defaultColumns: ['from', 'redirectType', 'isActive', 'updatedAt'],
+    description: 'Manage URL redirects. Changes take effect within 30 seconds.',
+  },
+  access: {
+    create: authenticated,
+    read: () => true, // Public — middleware reads this via /api/redirects-list
+    update: authenticated,
+    delete: adminOnly,
+  },
+  hooks: {
+    afterChange: [revalidateRedirects],
+  },
+  fields: [
+    {
+      name: 'from',
+      type: 'text',
+      required: true,
+      unique: true,
+      index: true,
+      admin: {
+        description: 'The source path to redirect from. Must start with /.',
+        placeholder: '/old-page-slug',
+      },
+      validate: (value: string | null | undefined) => {
+        if (!value) return 'From path is required'
+        if (!value.startsWith('/')) return 'Path must start with a forward slash (/)'
+        if (value.includes('?'))
+          return 'Query strings are not supported — redirect the base path only'
+        return true
+      },
+    },
+    {
+      name: 'to',
+      type: 'group',
+      label: 'Redirect Destination',
+      fields: [
+        {
+          name: 'type',
+          type: 'select',
+          required: true,
+          defaultValue: 'url',
+          options: [
+            { label: 'Custom URL', value: 'url' },
+            { label: 'Internal Page', value: 'reference' },
+          ],
+          admin: {
+            description:
+              'Custom URL for external links or arbitrary paths. Internal Page for CMS-managed content.',
+          },
+        },
+        {
+          name: 'url',
+          type: 'text',
+          admin: {
+            condition: (_, siblingData) => siblingData?.type !== 'reference',
+            description: 'Full URL (https://...) or site-relative path starting with /.',
+            placeholder: '/new-page or https://example.com',
+          },
+        },
+        {
+          name: 'reference',
+          type: 'relationship',
+          relationTo: ['pages', 'products', 'storefronts', 'posts'] as const,
+          admin: {
+            condition: (_, siblingData) => siblingData?.type === 'reference',
+            description: 'Select an internal CMS page as the redirect destination.',
+          },
+        },
+      ],
+    },
+    {
+      name: 'redirectType',
+      type: 'select',
+      required: true,
+      defaultValue: '301',
+      options: [
+        { label: '301 — Permanent (cached by browsers & search engines)', value: '301' },
+        { label: '302 — Temporary (not cached)', value: '302' },
+      ],
+      admin: {
+        description:
+          'Use 301 for permanent URL changes (SEO equity passes). Use 302 for temporary redirects.',
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'isActive',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: {
+        description: 'Disable to pause this redirect without deleting it.',
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'notes',
+      type: 'textarea',
+      admin: {
+        description: 'Internal notes about why this redirect exists (not shown to users).',
+        position: 'sidebar',
+      },
+    },
+  ],
+}

@@ -29,6 +29,7 @@ import { ConcertArtistPage } from './collections/ConcertArtistPage'
 import { ConstantContactSettings } from './collections/ConstantContactSettings'
 import { ConstantContactCustomFields } from './collections/ConstantContactCustomFields'
 import { Dealers } from './collections/Dealers'
+import { Redirects } from './collections/Redirects'
 import {
   // Content blocks
   Text,
@@ -229,6 +230,9 @@ export default buildConfig({
     // Integration Collections
     ConstantContactSettings,
     ConstantContactCustomFields,
+
+    // Settings
+    Redirects,
   ],
   // Define blocks at root level for performance optimization using blockReferences
   blocks: [

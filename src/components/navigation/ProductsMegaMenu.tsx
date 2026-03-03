@@ -214,11 +214,9 @@ function CollectionCarouselCard({
         </div>
       </button>
 
-      {/* CTA below card — links to the collection's dedicated page in a new tab */}
+      {/* CTA below card — links to the collection's dedicated page */}
       <a
         href={collectionHref}
-        target="_blank"
-        rel="noopener noreferrer"
         className="mt-3.5 flex items-center justify-between px-0.5 group/cta"
         aria-label={`View all ${displayTitle} models`}
       >
