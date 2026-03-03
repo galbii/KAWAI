@@ -17,6 +17,8 @@ const VALID_BLOCK_TYPES = [
   'product-collection-showcase',
   'product-floating-add-to-cart',
   'product-feature-slides',
+  'product-soundcloud-embed',
+  'product-related-products',
   // Content blocks
   'content-text',
   'content-banner',
@@ -106,6 +108,12 @@ export function validateBlock(block: any, index: number): BlockValidationResult 
       break
     case 'product-specs':
       validateSpecificationsBlock(block, result)
+      break
+    case 'product-soundcloud-embed':
+      validateSoundCloudEmbedBlock(block, result)
+      break
+    case 'product-related-products':
+      validateRelatedProductsBlock(block, result)
       break
     case 'content-text':
     case 'textContent': // Legacy support
@@ -239,6 +247,34 @@ function validateSpecificationsBlock(block: any, result: BlockValidationResult):
     if (!block.pianoModel) {
       result.warnings.push('Specifications block has no specifications and no pianoModel fallback')
     }
+  }
+}
+
+/**
+ * Validates SoundCloudEmbed block specific requirements
+ */
+function validateSoundCloudEmbedBlock(block: any, result: BlockValidationResult): void {
+  // soundcloudUrl is optional — an empty URL simply hides the block at render time
+  if (block.soundcloudUrl && typeof block.soundcloudUrl === 'string') {
+    if (!block.soundcloudUrl.includes('soundcloud.com')) {
+      result.warnings.push('SoundCloudEmbed: soundcloudUrl does not appear to be a SoundCloud URL')
+    }
+  }
+}
+
+/**
+ * Validates RelatedProducts block specific requirements
+ */
+function validateRelatedProductsBlock(block: any, result: BlockValidationResult): void {
+  if (block.maxProducts !== undefined && block.maxProducts !== null) {
+    const max = Number(block.maxProducts)
+    if (isNaN(max) || max < 2 || max > 8) {
+      result.warnings.push('RelatedProducts: maxProducts should be between 2 and 8')
+    }
+  }
+
+  if (block.displayMode && !['collection', 'accessories', 'both'].includes(block.displayMode)) {
+    result.warnings.push('RelatedProducts: displayMode should be collection, accessories, or both')
   }
 }
 
