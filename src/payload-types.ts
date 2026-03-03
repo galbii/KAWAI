@@ -112,6 +112,8 @@ export interface Config {
     'product-floating-add-to-cart': ProductFloatingAddToCartBlock;
     'product-feature-slides': ProductFeatureSlidesBlock;
     'product-hero-carousel': ProductHeroCarouselBlock;
+    'product-related-products': ProductRelatedProductsBlock;
+    'product-soundcloud-embed': ProductSoundCloudEmbedBlock;
     textContent: TextContentBlock;
     hello: HelloBlock;
     archive: ArchiveBlock;
@@ -1575,6 +1577,10 @@ export interface Product {
    */
   description?: string | null;
   /**
+   * Piano models this accessory is compatible with. These will be shown in the Related Products block when customers view this accessory.
+   */
+  compatibleProducts?: (string | Product)[] | null;
+  /**
    * Shopify collections this product belongs to (synced from Shopify)
    */
   shopifyCollections?:
@@ -1909,6 +1915,8 @@ export interface Product {
         | ProductCollectionShowcaseBlock
         | ProductFloatingAddToCartBlock
         | ProductFeatureSlidesBlock
+        | ProductSoundCloudEmbedBlock
+        | ProductRelatedProductsBlock
         | MarketingInstagramCarouselBlock
         | MarketingFeaturedModelsBlock
       )[]
@@ -2662,6 +2670,94 @@ export interface ProductFeatureSlidesBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'product-feature-slides';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductSoundCloudEmbedBlock".
+ */
+export interface ProductSoundCloudEmbedBlock {
+  /**
+   * Paste any SoundCloud URL — track or playlist (e.g. https://soundcloud.com/kawai-global/sets/ca401-audio-demos). Leave empty to hide the block.
+   */
+  soundcloudUrl?: string | null;
+  /**
+   * Optional heading above the player (e.g., "Listen — CA401 Audio Demos")
+   */
+  heading?: string | null;
+  /**
+   * Controls for the SoundCloud widget
+   */
+  playerOptions?: {
+    /**
+     * Visual mode — shows large artwork above the waveform. Classic mode is compact and minimal.
+     */
+    visual?: boolean | null;
+    /**
+     * Auto-play when the page loads (not recommended — browsers often block this)
+     */
+    autoPlay?: boolean | null;
+    /**
+     * Show SoundCloud comments on the waveform
+     */
+    showComments?: boolean | null;
+    /**
+     * Show related tracks after playback ends
+     */
+    showRelated?: boolean | null;
+  };
+  /**
+   * Section background theme
+   */
+  theme?: ('light' | 'dark') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'product-soundcloud-embed';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductRelatedProductsBlock".
+ */
+export interface ProductRelatedProductsBlock {
+  /**
+   * Heading shown above the related products grid
+   */
+  sectionHeader?: {
+    /**
+     * Small label above the heading (e.g., "Explore More")
+     */
+    eyebrow?: string | null;
+    /**
+     * Section heading
+     */
+    heading?: string | null;
+    /**
+     * Optional supporting description below the heading
+     */
+    subheading?: string | null;
+  };
+  /**
+   * Which related products to show — "Same Collection" finds products from the same Shopify series, "Accessories" shows add-ons, "Both" combines them
+   */
+  displayMode?: ('collection' | 'accessories' | 'both') | null;
+  /**
+   * Maximum number of product cards to display (2–8)
+   */
+  maxProducts?: number | null;
+  /**
+   * Grid: responsive columns. Carousel: horizontal scroll with arrows.
+   */
+  layout?: ('grid' | 'carousel') | null;
+  /**
+   * Show MSRP price on each product card
+   */
+  showPrice?: boolean | null;
+  /**
+   * Section background — Light matches pearl pages, Dark creates contrast
+   */
+  theme?: ('light' | 'dark') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'product-related-products';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -6386,7 +6482,7 @@ export interface HomePage {
     /**
      * News item category
      */
-    category: 'news' | 'events' | 'promotions' | 'new-arrivals' | 'education';
+    category: 'news' | 'events' | 'promotions' | 'new-arrivals' | 'education' | 'view-product';
     /**
      * Link to full article or page (optional)
      */
@@ -8711,6 +8807,7 @@ export interface ProductsSelect<T extends boolean = true> {
   featured?: T;
   category?: T;
   description?: T;
+  compatibleProducts?: T;
   shopifyCollections?:
     | T
     | {

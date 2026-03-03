@@ -81,6 +81,8 @@ import {
   FloatingAddToCart,
   ProductFeatureSlides,
   ProductHeroCarousel,
+  RelatedProducts,
+  SoundCloudEmbed,
   // Legacy blocks (keep for backward compatibility)
   TextContent,
   Hello,
@@ -285,6 +287,8 @@ export default buildConfig({
     FloatingAddToCart,
     ProductFeatureSlides,
     ProductHeroCarousel,
+    RelatedProducts,
+    SoundCloudEmbed,
 
     // Legacy blocks (keep for backward compatibility)
     TextContent,

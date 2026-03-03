@@ -31,9 +31,8 @@ function getCachedDealer(slug: string) {
 // Pre-render all active dealers at build time for SEO
 export async function generateStaticParams() {
   try {
-    const { getPayloadHMR } = await import('@payloadcms/next/utilities')
-    const configPromise = await import('@payload-config')
-    const payload = await getPayloadHMR({ config: configPromise.default })
+    const { getPayloadClient } = await import('@/lib/payload/queries')
+    const payload = await getPayloadClient()
 
     const dealers = await payload.find({
       collection: 'dealers',

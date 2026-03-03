@@ -2,8 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { getPayloadHMR } from '@payloadcms/next/utilities'
-import configPromise from '@payload-config'
+import { getPayloadClient } from '@/lib/payload/queries'
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
 import type { Artist, Media, Product } from '@/payload-types'
 import { cn } from '@/lib/utils'
@@ -15,7 +14,7 @@ export const revalidate = 900
 // Pre-generate all active artist pages at build time
 export async function generateStaticParams() {
   try {
-    const payload = await getPayloadHMR({ config: configPromise })
+    const payload = await getPayloadClient()
 
     const artists = await payload.find({
       collection: 'artists',
@@ -43,7 +42,7 @@ export async function generateStaticParams() {
 
 async function getArtist(slug: string) {
   try {
-    const payload = await getPayloadHMR({ config: configPromise })
+    const payload = await getPayloadClient()
 
     const artists = await payload.find({
       collection: 'artists',

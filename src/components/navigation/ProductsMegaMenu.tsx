@@ -122,7 +122,7 @@ function CollectionCarouselCard({
     return () => clearTimeout(timer)
   }, [videoId, index])
 
-  const handleClick = useCallback(() => {
+  const handleCardClick = useCallback(() => {
     if (sidebarKey) {
       onCategorySelect(sidebarKey)
     } else {
@@ -130,92 +130,104 @@ function CollectionCarouselCard({
     }
   }, [sidebarKey, onCategorySelect, onClose])
 
+  // Collection page URL — always links to /pianos/[handle]
+  const collectionHref = `/pianos/${collection.handle}`
+
   return (
-    <button
-      onClick={handleClick}
-      className="group relative w-full text-left block"
-      aria-label={`Browse ${displayTitle} collection`}
-    >
-      {/* Media — aspect-video for YouTube, 4:3 for images */}
-      <div
-        className={cn(
-          'relative w-full overflow-hidden rounded-2xl bg-[#EAE6E0]',
-          videoId ? 'aspect-video' : 'aspect-[4/3]'
-        )}
+    <div className="group relative w-full">
+      {/* Card image area — click selects category in sidebar */}
+      <button
+        onClick={handleCardClick}
+        className="relative w-full text-left block"
+        aria-label={`Browse ${displayTitle} category`}
       >
-        {/* Thumbnail / fallback image — fades out once iframe is playing */}
-        {imageUrl && (
-          <motion.div
-            animate={{ opacity: isPlaying && videoId ? 0 : 1 }}
-            transition={{ duration: 0.6 }}
-            className="absolute inset-0"
-          >
-            <Image
-              src={imageUrl}
-              alt={displayTitle}
-              fill
-              sizes="(max-width: 1280px) 33vw, 500px"
-              className="object-cover"
-            />
-          </motion.div>
-        )}
-
-        {/* YouTube iframe — fades in when stagger timer fires */}
-        {videoId && isPlaying && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            className="absolute inset-0"
-          >
-            <iframe
-              src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1&playsinline=1`}
-              allow="autoplay; encrypted-media"
-              className="absolute inset-0 w-full h-full pointer-events-none scale-[1.05]"
-              style={{ border: 'none' }}
-              title={displayTitle}
-            />
-          </motion.div>
-        )}
-
-        {/* No media fallback */}
-        {!hasMedia && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-xs tracking-widest uppercase text-[#B8AFA6]">
-              {displayTitle}
-            </span>
-          </div>
-        )}
-
-        {/* Gradient overlay */}
-        {hasMedia && (
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent pointer-events-none rounded-2xl" />
-        )}
-
-        {/* Text overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
-          <p className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/55 mb-1.5">
-            {collection.productCount > 0 ? `${collection.productCount} Models` : 'Collection'}
-          </p>
-          <h3 className="text-lg font-bold text-white font-serif leading-tight">
-            {displayTitle}
-          </h3>
-          {collection.subheading && (
-            <p className="text-sm text-white/60 mt-1 line-clamp-1">{collection.subheading}</p>
+        {/* Media — aspect-video for YouTube, 4:3 for images */}
+        <div
+          className={cn(
+            'relative w-full overflow-hidden rounded-2xl bg-[#EAE6E0]',
+            videoId ? 'aspect-video' : 'aspect-[4/3]'
           )}
+        >
+          {/* Thumbnail / fallback image — fades out once iframe is playing */}
+          {imageUrl && (
+            <motion.div
+              animate={{ opacity: isPlaying && videoId ? 0 : 1 }}
+              transition={{ duration: 0.6 }}
+              className="absolute inset-0"
+            >
+              <Image
+                src={imageUrl}
+                alt={displayTitle}
+                fill
+                sizes="(max-width: 1280px) 33vw, 500px"
+                className="object-cover"
+              />
+            </motion.div>
+          )}
+
+          {/* YouTube iframe — fades in when stagger timer fires */}
+          {videoId && isPlaying && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6 }}
+              className="absolute inset-0"
+            >
+              <iframe
+                src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1&playsinline=1`}
+                allow="autoplay; encrypted-media"
+                className="absolute inset-0 w-full h-full pointer-events-none scale-[1.05]"
+                style={{ border: 'none' }}
+                title={displayTitle}
+              />
+            </motion.div>
+          )}
+
+          {/* No media fallback */}
+          {!hasMedia && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-xs tracking-widest uppercase text-[#B8AFA6]">
+                {displayTitle}
+              </span>
+            </div>
+          )}
+
+          {/* Gradient overlay */}
+          {hasMedia && (
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent pointer-events-none rounded-2xl" />
+          )}
+
+          {/* Text overlay */}
+          <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
+            <p className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/55 mb-1.5">
+              {collection.productCount > 0 ? `${collection.productCount} Models` : 'Collection'}
+            </p>
+            <h3 className="text-lg font-bold text-white font-serif leading-tight">
+              {displayTitle}
+            </h3>
+            {collection.subheading && (
+              <p className="text-sm text-white/60 mt-1 line-clamp-1">{collection.subheading}</p>
+            )}
+          </div>
+
+          <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-[#A01829] transition-all duration-200 pointer-events-none" />
         </div>
+      </button>
 
-        <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-[#A01829] transition-all duration-200 pointer-events-none" />
-      </div>
-
-      {/* CTA below card */}
-      <div className="mt-3.5 flex items-center justify-between px-0.5">
-        <span className="text-sm font-medium text-[#8A8078] group-hover:text-[#A01829] transition-colors duration-150">
+      {/* CTA below card — links to the collection's dedicated page in a new tab */}
+      <a
+        href={collectionHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-3.5 flex items-center justify-between px-0.5 group/cta"
+        aria-label={`View all ${displayTitle} models`}
+      >
+        <span className="text-sm font-medium text-[#8A8078] group-hover/cta:text-[#A01829] transition-colors duration-150">
           Explore Collection
         </span>
-        <ArrowRight className="h-4 w-4 text-[#B8AFA6] group-hover:text-[#A01829] group-hover:translate-x-0.5 transition-all duration-150" />
-      </div>
-    </button>
+        <ArrowRight className="h-4 w-4 text-[#B8AFA6] group-hover/cta:text-[#A01829] group-hover/cta:translate-x-0.5 transition-all duration-150" />
+      </a>
+    </div>
   )
 }
 

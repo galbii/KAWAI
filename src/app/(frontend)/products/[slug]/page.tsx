@@ -1,9 +1,10 @@
-import { getProductBySlug } from '@/lib/payload'
+import { getProductBySlugDirect } from '@/lib/payload/queries'
 import { resolveMediaUrl } from '@/lib/payload'
 import { ProductPageRenderer } from '@/components/products/ProductPageRenderer'
 import { ProductErrorFallback } from '@/components/products/ProductErrorFallback'
 import { ProductLivePreview } from '@/components/products/ProductLivePreview'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
+import { generateProductSchema, generateBreadcrumbSchema } from '@/lib/seo/schemas'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
@@ -19,7 +20,7 @@ interface PageProps {
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const params = await props.params
   const { slug } = params
-  const product = await getProductBySlug(slug)
+  const product = await getProductBySlugDirect(slug)
   
   if (!product) {
     return {
@@ -59,14 +60,43 @@ export default async function ProductPage(props: PageProps) {
   try {
     const params = await props.params
     const { slug } = params
-    const product = await getProductBySlug(slug)
+    const product = await getProductBySlugDirect(slug)
     
     if (!product) {
       notFound()
     }
 
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
+
     return (
       <div className="min-h-screen">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(generateProductSchema({
+              name: product.name || product.slug || '',
+              description: product.description || '',
+              type: (product.type as 'digital' | 'grand' | 'hybrid' | 'upright' | 'accessory' | 'software') || 'digital',
+              ...(product.imageUrl ? { image: product.imageUrl } : {}),
+              ...(product.price?.msrp ? {
+                offers: {
+                  price: product.price.msrp,
+                  currency: product.price.currency || 'USD',
+                },
+              } : {}),
+            })).replace(/</g, '\\u003c')
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(generateBreadcrumbSchema([
+              { name: 'Home', url: `${siteUrl}` },
+              { name: 'Pianos', url: `${siteUrl}/pianos` },
+              { name: product.name || product.slug || '', url: `${siteUrl}/products/${product.slug}` },
+            ])).replace(/</g, '\\u003c')
+          }}
+        />
         <ProductLivePreview />
         <ErrorBoundary fallback={ProductErrorFallback}>
           <ProductPageRenderer product={product} />

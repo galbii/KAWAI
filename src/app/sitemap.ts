@@ -1,6 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { getPayloadHMR } from '@payloadcms/next/utilities'
-import configPromise from '@payload-config'
+import { getPayloadClient } from '@/lib/payload/queries'
 import type { Product, Storefront } from '@/payload-types'
 
 // Get the site URL from environment or use default
@@ -19,7 +18,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
-    const payload = await getPayloadHMR({ config: configPromise })
+    const payload = await getPayloadClient()
 
     // Initialize sitemap array
     const sitemap: MetadataRoute.Sitemap = []
@@ -48,16 +47,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         url: `${SITE_URL}/find-my-piano`,
         changeFrequency: 'weekly',
         priority: 0.9,
-      },
-      {
-        url: `${SITE_URL}/pianos/compare`,
-        changeFrequency: 'weekly',
-        priority: 0.8,
-      },
-      {
-        url: `${SITE_URL}/pianos/search`,
-        changeFrequency: 'weekly',
-        priority: 0.8,
       },
       {
         url: `${SITE_URL}/about`,
@@ -212,7 +201,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })
 
       const storefrontRoutes: MetadataRoute.Sitemap = storefrontsResult.docs.map((storefront: any) => ({
-        url: `${SITE_URL}/${storefront.slug}`,
+        url: `${SITE_URL}/store/${storefront.slug}`,
         lastModified: new Date(storefront.updatedAt),
         changeFrequency: 'monthly' as const,
         priority: 0.7,
@@ -228,6 +217,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // CAMPAIGN LANDING PAGES - REMOVED
     // ==========================================
     // Landing pages collection has been removed from the system
+
+    // ==========================================
+    // COLLECTION PAGES - /pianos/[handle]
+    // ==========================================
+
+    try {
+      const collectionsResult = await payload.find({
+        collection: 'collections',
+        limit: 500,
+        select: { handle: true, updatedAt: true },
+        depth: 0,
+      })
+
+      const collectionRoutes: MetadataRoute.Sitemap = collectionsResult.docs
+        .filter((c: any) => c.handle)
+        .map((c: any) => ({
+          url: `${SITE_URL}/pianos/${c.handle}`,
+          lastModified: new Date(c.updatedAt),
+          changeFrequency: 'weekly' as const,
+          priority: 0.75,
+        }))
+
+      sitemap.push(...collectionRoutes)
+      console.log(`✅ Added ${collectionRoutes.length} collection pages to sitemap`)
+    } catch (error) {
+      console.error('❌ Error fetching collections for sitemap:', error)
+    }
 
     // ==========================================
     // SPECIAL EXPERIENCE PAGES - Known Routes

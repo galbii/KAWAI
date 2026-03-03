@@ -711,6 +711,8 @@ export async function fetchShopifyProductByModel(
       }
     }>(PRODUCT_BY_METAFIELD_QUERY, {
       query: metafieldQuery
+    }, {
+      revalidate: 3600, // Cache product reads for 1h — matches product page ISR
     })
 
     // Extract first product from edges

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { useAuth } from '@payloadcms/ui'
 import { useMediaManager } from './media-manager/MediaManagerProvider'
 
 // ── Dark modal tokens (unchanged) ───────────────────────────────────────────
@@ -352,6 +353,7 @@ function FloatBtn({
 // ── Main export ───────────────────────────────────────────────────────────────
 export function FloatingActionBar() {
   const { openModal } = useMediaManager()
+  const { user } = useAuth()
   const [collOpen, setCollOpen] = useState(false)
   const [recent, setRecent] = useState<string[]>([])
   const [mounted, setMounted] = useState(false)
@@ -375,6 +377,9 @@ export function FloatingActionBar() {
     window.addEventListener('keydown', fn)
     return () => window.removeEventListener('keydown', fn)
   }, [])
+
+  // Only admins see the floating action bar
+  if (!user || (user as { role?: string }).role !== 'admin') return null
 
   /*
    * Portal the dock directly into document.body.

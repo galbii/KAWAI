@@ -3,12 +3,14 @@ import 'server-only'
 import { getPayload } from 'payload'
 import type { Payload } from 'payload'
 import config from '@/payload.config'
+import { unstable_cache } from 'next/cache'
 import type {
   Product,
   PianosPage,
   HomePage,
   Media,
 } from '@/payload-types'
+import type { NewsItem } from '@/lib/types/homepage'
 
 // Direct Payload client access - bypasses HTTP and works during build time
 // This is the preferred approach for server-side data fetching
@@ -905,3 +907,143 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 function toRadians(degrees: number): number {
   return degrees * (Math.PI / 180)
 }
+
+/**
+ * Get a single collection by its handle (Shopify slug).
+ * Used for collection landing pages at /pianos/[handle].
+ * depth:1 to populate the media relationship field.
+ */
+export async function getCollectionByHandle(handle: string): Promise<any | null> {
+  try {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'collections',
+      where: { handle: { equals: handle } },
+      depth: 1,
+      limit: 1,
+    })
+    return result.docs[0] ?? null
+  } catch (error) {
+    console.error(`Error fetching collection by handle "${handle}":`, error)
+    return null
+  }
+}
+
+/**
+ * Get all collection handles for generateStaticParams.
+ * Returns only the handle field to keep the query lightweight.
+ */
+export async function getAllCollectionHandles(): Promise<string[]> {
+  try {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'collections',
+      select: { handle: true },
+      depth: 0,
+      limit: 500,
+    })
+    return result.docs.map((d) => d.handle).filter(Boolean) as string[]
+  } catch (error) {
+    console.error('Error fetching collection handles:', error)
+    return []
+  }
+}
+
+/**
+ * Get all catalog-visible products that belong to a specific collection.
+ * Queries via the shopifyCollections.handle array field on products.
+ * Returns a lightweight card-ready shape.
+ */
+export async function getProductsByCollectionHandle(handle: string): Promise<
+  Array<{
+    id: string
+    model: string
+    name?: string | null
+    slug: string
+    type?: string | null
+    imageUrl?: string | null
+    price?: { msrp?: number | null; currency?: string | null } | null
+    salePrice?: number | null
+    description?: string | null
+  }>
+> {
+  try {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'products',
+      where: {
+        'shopifyCollections.handle': { equals: handle },
+        status: { equals: 'active' },
+        'visibility.showInCatalog': { equals: true },
+      },
+      select: {
+        model: true,
+        name: true,
+        slug: true,
+        type: true,
+        imageUrl: true,
+        price: true,
+        description: true,
+        visibility: true,
+        variations: true,
+      },
+      sort: 'visibility.sortOrder,name',
+      depth: 0,
+      limit: 100,
+    })
+
+    return result.docs.map((doc) => ({
+      id: String(doc.id),
+      model: doc.model,
+      name: doc.name ?? null,
+      slug: doc.slug ?? '',
+      type: doc.type ?? null,
+      imageUrl: doc.imageUrl ?? null,
+      price: doc.price
+        ? { msrp: doc.price.msrp ?? null, currency: doc.price.currency ?? null }
+        : null,
+      salePrice: (() => {
+        const vars = doc.variations
+        if (!Array.isArray(vars) || vars.length === 0) return null
+        const onSaleVars = vars.filter(
+          (v: any) =>
+            typeof v.compareAtPrice === 'number' &&
+            typeof v.price === 'number' &&
+            v.compareAtPrice > v.price,
+        )
+        if (onSaleVars.length === 0) return null
+        return Math.min(...onSaleVars.map((v: any) => v.price as number))
+      })(),
+      description: doc.description ?? null,
+    }))
+  } catch (error) {
+    console.error(`Error fetching products for collection "${handle}":`, error)
+    return []
+  }
+}
+
+/**
+ * Get news items from the HomePage collection that have category 'view-product'.
+ * Used to display a product spotlight carousel on the /pianos page.
+ * Cached for 5 minutes and tagged with 'home-page' for on-demand revalidation.
+ */
+export const getProductSpotlightNewsItems = unstable_cache(
+  async (): Promise<NewsItem[]> => {
+    try {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'home-page',
+        select: { newsItems: true },
+        depth: 1,
+        limit: 1,
+      })
+      const newsItems = (result as any)?.docs?.[0]?.newsItems ?? []
+      return newsItems.filter((item: any) => item.category === 'view-product') as NewsItem[]
+    } catch (error) {
+      console.error('Failed to fetch product spotlight news items:', error)
+      return []
+    }
+  },
+  ['pianos-spotlight-news'],
+  { tags: ['home-page'], revalidate: 300 }
+)

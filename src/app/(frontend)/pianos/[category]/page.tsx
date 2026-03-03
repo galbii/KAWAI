@@ -5,6 +5,7 @@ import config from '@payload-config'
 import { CategoryHero } from "@/components/piano/category-hero"
 import { UnifiedPianoSeries } from "@/components/piano/unified-piano-series"
 import { CategoryCTA } from "@/components/piano/category-cta"
+import { CollectionPageContent } from '@/components/piano/collection-page-content'
 import {
   isValidCategory,
   getCategoryConfig,
@@ -15,6 +16,11 @@ import {
   getCategoryCTA,
   type PianoCategorySlug
 } from '@/lib/data'
+import {
+  getCollectionByHandle,
+  getAllCollectionHandles,
+  getProductsByCollectionHandle,
+} from '@/lib/payload/queries'
 import type { Product } from '@/payload-types'
 
 export const revalidate = 3600
@@ -27,219 +33,247 @@ interface CategoryPageParams {
 }
 
 /**
- * Generate static parameters for all valid piano categories at build time
- * This enables static generation for /pianos/digital, /pianos/grand, etc.
+ * Generate static parameters for all valid piano categories AND all collection handles.
+ * This enables static generation for /pianos/digital, /pianos/grand, AND /pianos/ca-series, etc.
  */
-export async function generateStaticParams(): Promise<Array<{ category: PianoCategorySlug }>> {
-  const categories = getCategorySlugs()
-  
-  return categories.map((category) => ({
-    category,
-  }))
+export async function generateStaticParams(): Promise<Array<{ category: string }>> {
+  const categoryParams = getCategorySlugs().map((category) => ({ category }))
+
+  let collectionParams: Array<{ category: string }> = []
+  try {
+    const handles = await getAllCollectionHandles()
+    collectionParams = handles.map((handle) => ({ category: handle }))
+  } catch {
+    // Non-fatal: collections can fall back to on-demand rendering
+  }
+
+  return [...categoryParams, ...collectionParams]
 }
 
 /**
- * Dynamic metadata generation for SEO optimization
- * Each category gets optimized title, description, and OpenGraph tags
+ * Dynamic metadata generation for SEO optimization.
+ * Handles both category pages and collection pages.
  */
 export async function generateMetadata({ params }: CategoryPageParams): Promise<Metadata> {
-  const resolvedParams = await params
-  const { category } = resolvedParams
-  
-  // Validate category and get config
-  if (!isValidCategory(category)) {
+  const { category } = await params
+
+  // Category metadata
+  if (isValidCategory(category)) {
+    const categoryConfig = getCategoryConfig(category)
+    if (!categoryConfig) return { title: 'Piano Category Not Found' }
+
+    const stats = getCategoryStats(category)
+    const canonicalUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'}/pianos/${category}`
+
     return {
-      title: 'Piano Category Not Found',
-      description: 'The piano category you are looking for does not exist.',
+      title: categoryConfig.metaTitle,
+      description: categoryConfig.metaDescription,
+      keywords: categoryConfig.seoKeywords,
+      openGraph: {
+        title: categoryConfig.metaTitle,
+        description: categoryConfig.metaDescription,
+        type: 'website',
+        url: canonicalUrl,
+        siteName: 'Kawai Piano',
+        images: [
+          {
+            url: getCategoryHeroImage(category),
+            width: 1200,
+            height: 630,
+            alt: `${categoryConfig.name} - ${categoryConfig.shortDescription}`,
+          },
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: categoryConfig.metaTitle,
+        description: categoryConfig.metaDescription,
+        images: [getCategoryHeroImage(category)],
+      },
+      alternates: { canonical: canonicalUrl },
+      other: {
+        'price-range': categoryConfig.priceRange,
+        'piano-category': categoryConfig.name,
+        'model-count': stats.totalModels?.toString() || '0',
+      },
     }
   }
 
-  const categoryConfig = getCategoryConfig(category)
-  if (!categoryConfig) {
+  // Collection metadata
+  const collection = await getCollectionByHandle(category)
+  if (collection) {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
+    const canonicalUrl = `${siteUrl}/pianos/${category}`
+    const description =
+      collection.description ||
+      collection.subheading ||
+      `Browse all ${collection.title} models from Kawai Piano.`
+
     return {
-      title: 'Piano Category Not Found',
-      description: 'The piano category you are looking for does not exist.',
+      title: `${collection.title} — Kawai Piano`,
+      description,
+      openGraph: {
+        title: `${collection.title} — Kawai Piano`,
+        description,
+        type: 'website',
+        url: canonicalUrl,
+        siteName: 'Kawai Piano',
+        ...(collection.imageUrl
+          ? { images: [{ url: collection.imageUrl, width: 1200, height: 630, alt: collection.title }] }
+          : {}),
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: `${collection.title} — Kawai Piano`,
+        description,
+      },
+      alternates: { canonical: canonicalUrl },
     }
   }
 
-  const stats = getCategoryStats(category)
-  const canonicalUrl = `https://kawai-piano.com/pianos/${category}`
-  
   return {
-    title: categoryConfig.metaTitle,
-    description: categoryConfig.metaDescription,
-    keywords: categoryConfig.seoKeywords,
-    openGraph: {
-      title: categoryConfig.metaTitle,
-      description: categoryConfig.metaDescription,
-      type: 'website',
-      url: canonicalUrl,
-      siteName: 'Kawai Piano',
-      images: [
-        {
-          url: getCategoryHeroImage(category),
-          width: 1200,
-          height: 630,
-          alt: `${categoryConfig.name} - ${categoryConfig.shortDescription}`,
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: categoryConfig.metaTitle,
-      description: categoryConfig.metaDescription,
-      images: [getCategoryHeroImage(category)],
-    },
-    alternates: {
-      canonical: canonicalUrl,
-    },
-    other: {
-      'price-range': categoryConfig.priceRange,
-      'piano-category': categoryConfig.name,
-      'model-count': stats.totalModels?.toString() || '0',
-    },
+    title: 'Not Found',
+    description: 'The page you are looking for does not exist.',
   }
 }
 
 /**
- * Dynamic Piano Category Page Component
- * Handles all piano categories: /pianos/digital, /pianos/grand, /pianos/hybrid, /pianos/upright
+ * Dynamic Piano Category / Collection Page
+ *
+ * Handles two types of routes under /pianos/[category]:
+ *  1. Piano type categories: /pianos/digital, /pianos/grand, /pianos/hybrid, /pianos/upright
+ *  2. Shopify collection pages: /pianos/ca-series, /pianos/gx-series, etc.
+ *
+ * Static named routes (digital/, grand/, search/, compare/, shigeru-kawai/)
+ * always take priority over this dynamic segment in Next.js App Router.
  */
 export default async function CategoryPage({ params }: CategoryPageParams) {
-  const resolvedParams = await params
-  const { category } = resolvedParams
+  const { category } = await params
 
-  // Validate category slug - return 404 for invalid categories
-  if (!isValidCategory(category)) {
-    notFound()
-  }
+  // ── Piano Category Pages ────────────────────────────────────────────────────
+  if (isValidCategory(category)) {
+    const categoryConfig = getCategoryConfig(category)
+    if (!categoryConfig) notFound()
 
-  // Get category configuration
-  const categoryConfig = getCategoryConfig(category)
-  if (!categoryConfig) {
-    notFound()
-  }
+    const stats = getCategoryStats(category)
+    const heroTitle = getCategoryHeroTitle(category)
+    const ctaText = getCategoryCTA(category)
 
-  // Get category statistics and content
-  const stats = getCategoryStats(category)
-  const heroTitle = getCategoryHeroTitle(category)
-  const ctaText = getCategoryCTA(category)
+    let series: any[] = []
+    let error: string | null = null
 
-  // Fetch products directly from CMS
-  let series: any[] = []
-  let error: string | null = null
+    try {
+      const payload = await getPayload({ config })
 
-  try {
-    const payload = await getPayload({ config })
-
-    // Fetch all active piano products for this category
-    const { docs: products } = await payload.find({
-      collection: 'products',
-      where: {
-        type: { equals: category },
-        status: { equals: 'active' },
-        'visibility.showInCatalog': { equals: true }
-      },
-      depth: 2,
-      sort: 'visibility.sortOrder',
-      limit: 100
-    })
-
-    // Group products by model series (extract from model field)
-    const seriesMap = new Map<string, any>()
-
-    products.forEach((product: Product) => {
-      // Extract series from model field (e.g., "CA" from "CA99", "GX" from "GX-7")
-      const seriesName = product.model?.match(/^[A-Z]+/)?.[0] || categoryConfig.name || 'Other'
-
-      if (!seriesMap.has(seriesName)) {
-        seriesMap.set(seriesName, {
-          name: `${seriesName} Series`,
-          description: categoryConfig.shortDescription,
-          pianos: [],
-          slides: []
-        })
-      }
-
-      // Transform product to component format
-      seriesMap.get(seriesName)!.pianos.push({
-        slug: product.slug,
-        name: product.name,
-        series: `${seriesName} Series`,
-        rating: 4.5, // Removed from product data, use default
-        reviews: 0,  // Removed from product data, use default
-        badge: undefined, // Removed from product data
-        image: product.imageUrl ? { url: product.imageUrl } : undefined,
-        description: product.description,
-        keyFeatures: [] // Removed from product data, should come from Page Content blocks
+      const { docs: products } = await payload.find({
+        collection: 'products',
+        where: {
+          type: { equals: category },
+          status: { equals: 'active' },
+          'visibility.showInCatalog': { equals: true }
+        },
+        depth: 2,
+        sort: 'visibility.sortOrder',
+        limit: 100
       })
-    })
 
-    // Convert map to array
-    series = Array.from(seriesMap.values())
+      const seriesMap = new Map<string, any>()
 
-  } catch (err) {
-    console.error(`Failed to fetch ${category} category data:`, err)
-    error = `Failed to load ${categoryConfig.name.toLowerCase()} piano data`
+      products.forEach((product: Product) => {
+        const seriesName = product.model?.match(/^[A-Z]+/)?.[0] || categoryConfig!.name || 'Other'
+
+        if (!seriesMap.has(seriesName)) {
+          seriesMap.set(seriesName, {
+            name: `${seriesName} Series`,
+            description: categoryConfig!.shortDescription,
+            pianos: [],
+            slides: []
+          })
+        }
+
+        seriesMap.get(seriesName)!.pianos.push({
+          slug: product.slug,
+          name: product.name,
+          series: `${seriesName} Series`,
+          rating: 4.5,
+          reviews: 0,
+          badge: undefined,
+          image: product.imageUrl ? { url: product.imageUrl } : undefined,
+          description: product.description,
+          keyFeatures: []
+        })
+      })
+
+      series = Array.from(seriesMap.values())
+    } catch (err) {
+      console.error(`Failed to fetch ${category} category data:`, err)
+      error = `Failed to load ${categoryConfig!.name.toLowerCase()} piano data`
+    }
+
+    const heroStats = [
+      {
+        label: "Piano Series",
+        value: stats.totalModels ? Math.ceil(stats.totalModels / 3).toString() : (series.length || 4).toString()
+      },
+      {
+        label: `${categoryConfig!.name.replace(' Pianos', '')} Models`,
+        value: stats.totalModels?.toString() || (series.reduce((acc, s) => acc + (s.pianos?.length || 0), 0) || 12).toString()
+      },
+      {
+        label: "Price Range",
+        value: categoryConfig!.priceRange?.split(' - ')[0]?.replace('$', '') || 'Contact for pricing'
+      }
+    ]
+
+    return (
+      <div className="min-h-screen">
+        <CategoryHero
+          category={categoryConfig!.name}
+          title={heroTitle}
+          description={categoryConfig!.description}
+          backgroundImage={getCategoryHeroImage(category)}
+          stats={heroStats}
+        />
+
+        {error ? (
+          <section className="py-16 lg:py-24 bg-kawai-pearl text-center">
+            <div className="max-w-4xl mx-auto px-6">
+              <div className="bg-kawai-red/10 border border-kawai-red/20 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-kawai-red mb-2">Unable to load product data</h3>
+                <p className="text-kawai-black/70">{error}</p>
+                <p className="text-sm text-kawai-black/60 mt-2">
+                  Please try refreshing the page or contact support if the issue persists.
+                </p>
+              </div>
+            </div>
+          </section>
+        ) : (
+          <UnifiedPianoSeries
+            title={`Explore ${categoryConfig!.name} Series`}
+            description={`Discover our complete collection of ${categoryConfig!.name.toLowerCase()} series. Each series showcases distinct technologies and features for different musical needs.`}
+            series={series}
+            categorySlug={category}
+          />
+        )}
+
+        <CategoryCTA
+          category={categoryConfig!.name}
+          title={`Experience ${categoryConfig!.name.replace(' Pianos', '')} Excellence`}
+          description={`Visit our showroom to experience the ${categoryConfig!.keyFeatures.slice(0, 2).join(', ')} and discover why ${categoryConfig!.name.toLowerCase()} are trusted by musicians worldwide.`}
+          ctaText={ctaText}
+          backgroundTheme={categoryConfig!.colorTheme.primary}
+        />
+      </div>
+    )
   }
 
-  // Generate hero stats based on category and CMS data
-  const heroStats = [
-    { 
-      label: "Piano Series", 
-      value: stats.totalModels ? Math.ceil(stats.totalModels / 3).toString() : (series.length || 4).toString()
-    },
-    { 
-      label: `${categoryConfig.name.replace(' Pianos', '')} Models`, 
-      value: stats.totalModels?.toString() || (series.reduce((acc, s) => acc + (s.pianos?.length || 0), 0) || 12).toString()
-    },
-    {
-      label: "Price Range",
-      value: categoryConfig.priceRange?.split(' - ')[0]?.replace('$', '') || 'Contact for pricing'
-    }
-  ]
+  // ── Collection Pages ────────────────────────────────────────────────────────
+  const [collection, products] = await Promise.all([
+    getCollectionByHandle(category),
+    getProductsByCollectionHandle(category),
+  ])
 
-  return (
-    <div className="min-h-screen">
-      {/* Category Hero Section */}
-      <CategoryHero
-        category={categoryConfig.name}
-        title={heroTitle}
-        description={categoryConfig.description}
-        backgroundImage={getCategoryHeroImage(category)}
-        stats={heroStats}
-      />
+  if (!collection) notFound()
 
-      {/* Piano Series Section */}
-      {error ? (
-        <section className="py-16 lg:py-24 bg-kawai-pearl text-center">
-          <div className="max-w-4xl mx-auto px-6">
-            <div className="bg-kawai-red/10 border border-kawai-red/20 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-kawai-red mb-2">Unable to load product data</h3>
-              <p className="text-kawai-black/70">{error}</p>
-              <p className="text-sm text-kawai-black/60 mt-2">
-                Please try refreshing the page or contact support if the issue persists.
-              </p>
-            </div>
-          </div>
-        </section>
-      ) : (
-        <UnifiedPianoSeries
-          title={`Explore ${categoryConfig.name} Series`}
-          description={`Discover our complete collection of ${categoryConfig.name.toLowerCase()} series. Each series showcases distinct technologies and features for different musical needs.`}
-          series={series}
-          categorySlug={category}
-        />
-      )}
-
-      {/* Category-Specific Call to Action */}
-      <CategoryCTA
-        category={categoryConfig.name}
-        title={`Experience ${categoryConfig.name.replace(' Pianos', '')} Excellence`}
-        description={`Visit our showroom to experience the ${categoryConfig.keyFeatures.slice(0, 2).join(', ')} and discover why ${categoryConfig.name.toLowerCase()} are trusted by musicians worldwide.`}
-        ctaText={ctaText}
-        backgroundTheme={categoryConfig.colorTheme.primary}
-      />
-    </div>
-  )
+  return <CollectionPageContent collection={collection} products={products} />
 }

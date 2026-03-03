@@ -21,6 +21,8 @@ import { BannerBlock } from '@/components/blocks/BannerBlock'
 import { CodeBlock } from '@/components/blocks/CodeBlock'
 import { CollectionShowcaseBlock } from '@/components/blocks/CollectionShowcaseBlock'
 import { FloatingAddToCartBlock } from '@/components/blocks/FloatingAddToCartBlock'
+import { RelatedProductsRenderer } from '@/components/blocks/product/RelatedProductsRenderer'
+import { SoundCloudEmbedRenderer } from '@/components/blocks/product/SoundCloudEmbedRenderer'
 
 // Block component mapping (using actual block slugs from block definitions)
 const BLOCK_COMPONENTS = {
@@ -39,6 +41,8 @@ const BLOCK_COMPONENTS = {
   'product-feature-slides': ProductFeatureSlidesRenderer,
   'product-collection-showcase': CollectionShowcaseBlock,
   'product-floating-add-to-cart': FloatingAddToCartBlock,
+  'product-related-products': RelatedProductsRenderer,
+  'product-soundcloud-embed': SoundCloudEmbedRenderer,
   // Content blocks
   'content-text': TextContentBlock,
   'content-banner': BannerBlock,
@@ -127,8 +131,8 @@ export async function BlockRenderer({ block, index, product }: BlockRendererProp
       )
     }
     
-    // For product-collection-showcase, pass the Payload product (highlights already synced)
-    if (blockType === 'product-collection-showcase') {
+    // For product-collection-showcase and product-related-products, pass the Payload product
+    if (blockType === 'product-collection-showcase' || blockType === 'product-related-products') {
       const populatedBlock = { ...block, product }
       return <BlockComponent key={block.id || `${blockType}-${index}`} {...populatedBlock} />
     }

@@ -225,6 +225,8 @@ export class ShopifyAdminClient {
         const timeoutId = setTimeout(() => controller.abort(), timeout)
 
         // Build fetch options
+        // IMPORTANT: cache: 'no-store' and next.revalidate are mutually exclusive in Next.js.
+        // When revalidate is set, omit the cache directive so Next.js data cache applies.
         const fetchOptions: RequestInit = {
           method: 'POST',
           headers: {
@@ -237,8 +239,10 @@ export class ShopifyAdminClient {
             variables: variables || {},
           }),
           signal: controller.signal,
-          cache,
-          next: revalidate !== false ? { revalidate } : undefined,
+          ...(revalidate !== false
+            ? { next: { revalidate } }          // ISR read — no cache: 'no-store'
+            : { cache }                          // Default: 'no-store' for mutations/admin ops
+          ),
         }
 
         // Execute request

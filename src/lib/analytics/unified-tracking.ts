@@ -64,6 +64,19 @@ export interface VideoTrackingConfig extends BlockTrackingConfig {
 }
 
 /**
+ * GA4 ecommerce item for add_to_cart / purchase events
+ * @see https://developers.google.com/analytics/devguides/collection/ga4/reference/events#add_to_cart
+ */
+export interface GA4EcommerceItem {
+  item_id?: string | null
+  item_name: string
+  item_variant?: string | null
+  item_category?: string | null
+  price?: number | null
+  quantity?: number
+}
+
+/**
  * Any block with optional tracking
  * Uses `| undefined` to satisfy exactOptionalPropertyTypes: true
  */
@@ -89,6 +102,7 @@ export type TrackingAction =
   | 'engagement'
   | 'navigation'
   | 'add_to_cart'
+  | 'begin_checkout'
 
 /**
  * Context for tracking an interaction
@@ -108,6 +122,12 @@ export interface TrackingContext {
   additionalProps?: Record<string, any> | undefined
   /** Override tracking config field name (default: 'tracking') */
   trackingFieldName?: 'tracking' | 'ctaTracking' | 'videoTracking' | 'impressionTracking' | undefined
+  /** GA4 ecommerce items array (for add_to_cart, purchase events) */
+  ecommerceItems?: GA4EcommerceItem[] | undefined
+  /** Currency code for ecommerce events */
+  currency?: string | undefined
+  /** Total monetary value for ecommerce events */
+  value?: number | undefined
 }
 
 /**
@@ -129,6 +149,14 @@ export interface TrackingOptions {
 // ============================================================================
 // Core Tracking Function
 // ============================================================================
+
+/** Meta Pixel standard events — use fbq('track') instead of fbq('trackCustom') */
+const META_STANDARD_EVENTS = new Set([
+  'AddPaymentInfo', 'AddToCart', 'AddToWishlist', 'CompleteRegistration',
+  'Contact', 'CustomizeProduct', 'Donate', 'FindLocation', 'InitiateCheckout',
+  'Lead', 'Purchase', 'Schedule', 'Search', 'StartTrial', 'SubmitApplication',
+  'Subscribe', 'ViewContent',
+])
 
 /**
  * Main tracking function that respects CMS tracking configuration
@@ -167,6 +195,9 @@ export function trackWithConfig(
     position,
     additionalProps = {},
     trackingFieldName = 'tracking',
+    ecommerceItems,
+    currency,
+    value: ecommerceValue,
   } = context
 
   // Get tracking config from specified field
@@ -233,11 +264,20 @@ export function trackWithConfig(
   if (!options.skipGA && window.gtag) {
     try {
       const ga4EventName = mapToGA4Event(action, category, blockType, trackingConfig)
-      window.gtag('event', ga4EventName, {
+      const ga4Payload: Record<string, unknown> = {
         event_category: category,
         event_label: label,
-        ...eventData, // eventData already includes 'value'
-      })
+        ...eventData,
+      }
+      // For ecommerce events, add the structured items array GA4 expects
+      if (ecommerceItems && ecommerceItems.length > 0) {
+        ga4Payload.items = ecommerceItems
+        ga4Payload.currency = currency || 'USD'
+        if (ecommerceValue !== undefined) {
+          ga4Payload.value = ecommerceValue
+        }
+      }
+      window.gtag('event', ga4EventName, ga4Payload)
       if (options.debug) {
         console.log('✅ [GA4] Tracked:', ga4EventName)
       }
@@ -251,7 +291,20 @@ export function trackWithConfig(
     try {
       const metaEventName =
         options.metaEventName || mapToMetaEvent(action, category, blockType, trackingConfig)
-      window.fbq('trackCustom', metaEventName, eventData)
+      // Standard events use fbq('track') so the Meta algorithm can use them for optimization
+      const metaMethod = META_STANDARD_EVENTS.has(metaEventName) ? 'track' : 'trackCustom'
+      const metaPayload: Record<string, unknown> = { ...eventData }
+      // For AddToCart / InitiateCheckout, pass the structured params Meta expects for purchase optimization
+      if ((metaEventName === 'AddToCart' || metaEventName === 'InitiateCheckout') && ecommerceItems && ecommerceItems.length > 0) {
+        metaPayload.content_ids = ecommerceItems.map(i => i.item_id).filter(Boolean)
+        metaPayload.content_type = 'product'
+        metaPayload.currency = currency || 'USD'
+        metaPayload.value = ecommerceValue ?? ecommerceItems.reduce(
+          (sum, i) => sum + ((i.price ?? 0) * (i.quantity ?? 1)), 0
+        )
+        metaPayload.num_items = ecommerceItems.reduce((sum, i) => sum + (i.quantity ?? 1), 0)
+      }
+      window.fbq(metaMethod, metaEventName, metaPayload)
       if (options.debug) {
         console.log('✅ [Meta Pixel] Tracked:', metaEventName)
       }
@@ -276,6 +329,9 @@ function mapToGA4Event(
   blockType: string,
   trackingConfig?: BlockTrackingConfig
 ): string {
+  // begin_checkout always maps to its GA4 standard name — not subject to CMS add_to_cart override
+  if (action === 'begin_checkout') return 'begin_checkout'
+
   // Check for CTA-specific GA4 event type (from CMS configuration)
   const ctaConfig = trackingConfig as CTATrackingConfig | undefined
   if (ctaConfig?.ga4EventType && ctaConfig.ga4EventType !== 'Custom') {
@@ -309,6 +365,9 @@ function mapToMetaEvent(
   blockType: string,
   trackingConfig?: BlockTrackingConfig
 ): string {
+  // begin_checkout always maps to InitiateCheckout — not subject to CMS AddToCart override
+  if (action === 'begin_checkout') return 'InitiateCheckout'
+
   // Check for CTA-specific Meta event type
   const ctaConfig = trackingConfig as CTATrackingConfig | undefined
   if (ctaConfig?.metaEventType && ctaConfig.metaEventType !== 'Custom') {
@@ -469,7 +528,8 @@ export function trackFormInteraction(params: {
 }
 
 /**
- * Track an add to cart event with variant and price context
+ * Track an add to cart event with structured GA4 ecommerce items and Meta Pixel params.
+ * Product data auto-populates GA4 items array and Meta content_ids.
  *
  * @example
  * ```typescript
@@ -480,6 +540,9 @@ export function trackFormInteraction(params: {
  *   variantId: selectedVariant.id,
  *   variantName: 'Ebony Polish',
  *   price: selectedVariant.price,
+ *   currency: shopifyProduct.price.currency,
+ *   productId: shopifyProduct.handle,
+ *   productCategory: shopifyProduct.type,
  *   additionalProps: { button_type: 'buy_now' },
  * })
  * ```
@@ -491,9 +554,29 @@ export function trackAddToCart(params: {
   variantId: string
   variantName?: string | null
   price?: number | null
+  /** Currency code (e.g. 'USD') — used for GA4 and Meta Pixel */
+  currency?: string
+  /** Shopify product handle or stable product ID for item_id */
+  productId?: string | null
+  /** Product type/category for GA4 item_category */
+  productCategory?: string | null
+  quantity?: number
   position?: number
-  additionalProps?: Record<string, any>
+  additionalProps?: Record<string, unknown>
 }): void {
+  const quantity = params.quantity ?? 1
+  const price = params.price ?? 0
+  const totalValue = price * quantity
+
+  const item: GA4EcommerceItem = {
+    item_id: params.productId ?? params.variantId,
+    item_name: params.productName,
+    item_variant: params.variantName ?? null,
+    item_category: params.productCategory ?? null,
+    price: price > 0 ? price : null,
+    quantity,
+  }
+
   trackWithConfig({
     blockType: params.blockType,
     blockData: params.blockData,
@@ -501,6 +584,70 @@ export function trackAddToCart(params: {
     label: params.productName,
     position: params.position,
     trackingFieldName: 'ctaTracking',
+    ecommerceItems: [item],
+    currency: params.currency,
+    value: totalValue > 0 ? totalValue : undefined,
+    additionalProps: {
+      variant_id: params.variantId,
+      variant_name: params.variantName,
+      price: params.price,
+      ...params.additionalProps,
+    },
+  })
+}
+
+/**
+ * Track checkout initiation — fires GA4 `begin_checkout` and Meta Pixel `InitiateCheckout`.
+ * Call alongside trackAddToCart whenever a button directly initiates a purchase flow.
+ *
+ * Early returns in mapToGA4Event / mapToMetaEvent ensure this always fires the correct
+ * standard events regardless of the CMS `ga4EventType` / `metaEventType` config.
+ *
+ * @example
+ * ```typescript
+ * onSuccess={() => {
+ *   trackAddToCart({ ... })
+ *   trackBeginCheckout({ ... })  // same params
+ * }}
+ * ```
+ */
+export function trackBeginCheckout(params: {
+  blockType: string
+  blockData: BlockWithTracking
+  productName: string
+  variantId: string
+  variantName?: string | null
+  price?: number | null
+  currency?: string
+  productId?: string | null
+  productCategory?: string | null
+  quantity?: number
+  position?: number
+  additionalProps?: Record<string, unknown>
+}): void {
+  const quantity = params.quantity ?? 1
+  const price = params.price ?? 0
+  const totalValue = price * quantity
+
+  const item: GA4EcommerceItem = {
+    item_id: params.productId ?? params.variantId,
+    item_name: params.productName,
+    item_variant: params.variantName ?? null,
+    item_category: params.productCategory ?? null,
+    price: price > 0 ? price : null,
+    quantity,
+  }
+
+  trackWithConfig({
+    blockType: params.blockType,
+    blockData: params.blockData,
+    action: 'begin_checkout',
+    label: params.productName,
+    position: params.position,
+    trackingFieldName: 'ctaTracking',
+    ecommerceItems: [item],
+    currency: params.currency,
+    value: totalValue > 0 ? totalValue : undefined,
     additionalProps: {
       variant_id: params.variantId,
       variant_name: params.variantName,

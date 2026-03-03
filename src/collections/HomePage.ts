@@ -813,7 +813,8 @@ export const HomePage: CollectionConfig = {
                     { label: 'Events', value: 'events' },
                     { label: 'Promotions', value: 'promotions' },
                     { label: 'New Arrivals', value: 'new-arrivals' },
-                    { label: 'Education', value: 'education' }
+                    { label: 'Education', value: 'education' },
+                    { label: 'View Product (Pianos Page)', value: 'view-product' }
                   ],
                   required: true,
                   admin: {

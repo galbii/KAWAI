@@ -43,4 +43,5 @@ export default function PianoComparisonPage() {
 export const metadata = {
   title: 'Piano Comparison - Compare Kawai Piano Models',
   description: 'Compare Kawai piano models side-by-side to understand their features, specifications, and find the perfect instrument.',
+  robots: { index: false, follow: true },
 }

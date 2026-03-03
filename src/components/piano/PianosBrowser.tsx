@@ -56,15 +56,19 @@ function normalizeCategory(product: CatalogProduct): string {
   return 'Other'
 }
 
-/** Derive unique collection titles across all products, sorted alphabetically */
-function deriveCollections(products: CatalogProduct[]): string[] {
-  const set = new Set<string>()
+/** Derive unique collections (title + handle) across all products, sorted alphabetically */
+function deriveCollections(products: CatalogProduct[]): Array<{ title: string; handle: string }> {
+  const map = new Map<string, string>() // title → handle (first one wins)
   for (const p of products) {
     for (const c of p.shopifyCollections ?? []) {
-      if (c.title) set.add(c.title)
+      if (c.title && !map.has(c.title)) {
+        map.set(c.title, c.handle)
+      }
     }
   }
-  return Array.from(set).sort()
+  return Array.from(map.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([title, handle]) => ({ title, handle }))
 }
 
 /* ── Animation variants ────────────────────────────────────────── */
@@ -89,7 +93,7 @@ const cardVariants = {
     transition: {
       duration: 0.4,
       delay: Math.min(index * 0.04, 0.5),
-      ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
     },
   }),
 }
@@ -103,6 +107,12 @@ export function PianosBrowser({ products }: Props) {
   const [sort, setSort] = useState<string>('default')
 
   const collections = useMemo(() => deriveCollections(products), [products])
+
+  // Handle of the currently active collection — used to build the "View Collection" link
+  const activeCollectionHandle = useMemo(() => {
+    if (activeCollection === 'All') return null
+    return collections.find((c) => c.title === activeCollection)?.handle ?? null
+  }, [activeCollection, collections])
 
   const filtered = useMemo(() => {
     let items = [...products]
@@ -162,25 +172,17 @@ export function PianosBrowser({ products }: Props) {
     <div className="min-h-screen bg-kawai-pearl">
       {/* ── Page Header ─────────────────────────────────────────── */}
       <header className="border-b border-kawai-neutral bg-kawai-pearl">
-        <div className="max-w-7xl mx-auto px-6 pt-12 pb-8">
+        <div className="max-w-7xl mx-auto px-6 pt-12 pb-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
-              <motion.p
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-                className="text-xs uppercase tracking-[0.3em] text-kawai-charcoal/60 mb-2 font-[family-name:var(--font-brand-sans)]"
-              >
-                Kawai Collection
-              </motion.p>
               <motion.h1
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
-                className="text-6xl md:text-7xl lg:text-8xl leading-none text-kawai-black"
+                transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+                className="text-6xl md:text-7xl lg:text-8xl 2xl:text-9xl leading-none text-kawai-black"
                 style={{ fontFamily: 'var(--font-brand-luxury)', fontWeight: 400 }}
               >
-                Pianos
+                Our Products
               </motion.h1>
             </div>
 
@@ -227,7 +229,7 @@ export function PianosBrowser({ products }: Props) {
         {/* ── Category + Collection Filter Bar ──────────────────── */}
         <div className="max-w-7xl mx-auto px-6 pb-0">
           {/* Category tabs row */}
-          <div className="flex items-center justify-between border-t border-kawai-neutral pt-4 pb-4 gap-4">
+          <div className="flex items-center justify-between border-t border-kawai-neutral pt-5 pb-6 gap-4">
             <LayoutGroup id="category-tabs">
               <nav className="flex items-center gap-1 flex-wrap" aria-label="Piano categories">
                 {CATEGORIES.map((cat) => (
@@ -243,7 +245,6 @@ export function PianosBrowser({ products }: Props) {
                         : 'text-kawai-charcoal hover:text-kawai-black',
                     )}
                   >
-                    {/* Animated background pill */}
                     {activeCategory === cat && (
                       <motion.span
                         layoutId="cat-pill"
@@ -302,25 +303,46 @@ export function PianosBrowser({ products }: Props) {
           {/* Collection filter row — only if collections exist */}
           {collections.length > 0 && (
             <div className="border-t border-kawai-neutral/50 py-3 flex items-center gap-3 overflow-x-auto scrollbar-none">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] flex-shrink-0">
+              <span className="text-xs uppercase tracking-[0.2em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] flex-shrink-0">
                 Collection
               </span>
               <div className="flex items-center gap-2 flex-nowrap">
-                {['All', ...collections].map((col) => (
+                {/* "All" option */}
+                <button
+                  onClick={() => setActiveCollection('All')}
+                  className={cn(
+                    'relative flex-shrink-0 px-3 py-1 text-xs uppercase tracking-[0.12em]',
+                    'transition-colors duration-200 font-[family-name:var(--font-brand-sans)]',
+                    activeCollection === 'All'
+                      ? 'text-kawai-red'
+                      : 'text-kawai-charcoal/60 hover:text-kawai-charcoal',
+                  )}
+                >
+                  All
+                  {activeCollection === 'All' && (
+                    <motion.span
+                      layoutId="collection-underline"
+                      className="absolute bottom-0 left-3 right-3 h-px bg-kawai-red"
+                      transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
+                    />
+                  )}
+                </button>
+
+                {/* Individual collection filters */}
+                {collections.map((col) => (
                   <button
-                    key={col}
-                    onClick={() => setActiveCollection(col)}
+                    key={col.title}
+                    onClick={() => setActiveCollection(col.title)}
                     className={cn(
-                      'relative flex-shrink-0 px-3 py-1 text-[10px] uppercase tracking-[0.12em]',
+                      'relative flex-shrink-0 px-3 py-1 text-xs uppercase tracking-[0.12em]',
                       'transition-colors duration-200 font-[family-name:var(--font-brand-sans)]',
-                      activeCollection === col
+                      activeCollection === col.title
                         ? 'text-kawai-red'
                         : 'text-kawai-charcoal/60 hover:text-kawai-charcoal',
                     )}
                   >
-                    {col}
-                    {/* Animated underline */}
-                    {activeCollection === col && (
+                    {col.title}
+                    {activeCollection === col.title && (
                       <motion.span
                         layoutId="collection-underline"
                         className="absolute bottom-0 left-3 right-3 h-px bg-kawai-red"
@@ -330,6 +352,34 @@ export function PianosBrowser({ products }: Props) {
                   </button>
                 ))}
               </div>
+
+              {/* "View Collection" link — appears when a specific collection is active */}
+              <AnimatePresence>
+                {activeCollectionHandle && (
+                  <motion.a
+                    key="view-collection-link"
+                    initial={{ opacity: 0, x: -6 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -6 }}
+                    transition={{ duration: 0.2 }}
+                    href={`/pianos/${activeCollectionHandle}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                      'flex-shrink-0 ml-auto flex items-center gap-1.5',
+                      'px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.15em]',
+                      'border border-kawai-red/40 text-kawai-red',
+                      'hover:bg-kawai-red hover:text-white hover:border-kawai-red',
+                      'transition-all duration-200 font-[family-name:var(--font-brand-sans)]',
+                    )}
+                  >
+                    View Collection
+                    <svg viewBox="0 0 16 16" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </motion.a>
+                )}
+              </AnimatePresence>
             </div>
           )}
 
@@ -382,7 +432,7 @@ export function PianosBrowser({ products }: Props) {
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-kawai-neutral"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
             >
               {filtered.map((product, index) => (
                 <ProductCard key={product.id} product={product} index={index} />
@@ -444,16 +494,18 @@ function ProductCard({ product, index }: { product: CatalogProduct; index: numbe
     >
       <Link
         href={`/products/${product.slug}`}
-        className="group relative flex flex-col bg-kawai-pearl hover:bg-white transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-kawai-red h-full"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group relative flex flex-col bg-kawai-pearl hover:bg-white transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-kawai-red h-full rounded-none"
       >
         {/* Image */}
-        <div className="relative aspect-[4/3] overflow-hidden bg-white">
+        <div className="relative aspect-square overflow-hidden bg-white">
           {product.imageUrl ? (
             <Image
               src={product.imageUrl}
               alt={product.name ?? product.model}
               fill
-              className="object-contain p-6 transition-transform duration-500 group-hover:scale-[1.03]"
+              className="object-contain p-10 transition-transform duration-500 group-hover:scale-[1.03]"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           ) : (
@@ -491,15 +543,15 @@ function ProductCard({ product, index }: { product: CatalogProduct; index: numbe
         </div>
 
         {/* Card body */}
-        <div className="flex flex-col flex-1 p-6">
+        <div className="flex flex-col flex-1 p-8">
           {/* Model number */}
-          <p className="text-[10px] uppercase tracking-[0.3em] text-kawai-charcoal/50 mb-1 font-[family-name:var(--font-brand-sans)]">
+          <p className="text-xs uppercase tracking-[0.3em] text-kawai-charcoal/50 mb-1 font-[family-name:var(--font-brand-sans)]">
             {product.model}
           </p>
 
           {/* Product name */}
           <h2
-            className="text-xl leading-snug text-kawai-black mb-auto"
+            className="text-2xl leading-tight text-kawai-black mb-auto"
             style={{ fontFamily: 'var(--font-brand-luxury)', fontWeight: 400 }}
           >
             {product.name ?? product.model}
@@ -507,7 +559,7 @@ function ProductCard({ product, index }: { product: CatalogProduct; index: numbe
 
           {/* Collections (if any) */}
           {product.shopifyCollections && product.shopifyCollections.length > 0 && (
-            <p className="mt-2 text-[10px] uppercase tracking-[0.12em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] line-clamp-1">
+            <p className="mt-2 text-xs uppercase tracking-[0.12em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] line-clamp-1">
               {product.shopifyCollections
                 .slice(0, 2)
                 .map((c) => c.title)
@@ -518,28 +570,37 @@ function ProductCard({ product, index }: { product: CatalogProduct; index: numbe
           {/* Divider */}
           <div className="my-4 h-px bg-kawai-neutral group-hover:bg-kawai-charcoal/20 transition-colors duration-300" />
 
-          {/* Price + CTA row */}
+          {/* Price + CTA row — styled to match ProductHero block */}
           <div className="flex items-end justify-between">
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col gap-1">
               {isOnSale ? (
                 <>
-                  {/* Struck-through MSRP */}
-                  <p className="text-[11px] text-kawai-charcoal/40 line-through font-[family-name:var(--font-brand-sans)]">
-                    {formatPrice(product.price)}
-                  </p>
+                  {/* MSRP label + strikethrough */}
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-[10px] font-bold tracking-widest text-kawai-red uppercase font-[family-name:var(--font-brand-sans)]">
+                      MSRP
+                    </span>
+                    <span className="text-[11px] text-kawai-charcoal/40 line-through font-[family-name:var(--font-brand-sans)]">
+                      {formatPrice(product.price)}
+                    </span>
+                  </div>
                   {/* Sale price — prominent */}
-                  <p className="text-sm font-semibold text-kawai-red font-[family-name:var(--font-brand-sans)]">
+                  <p className="text-lg font-bold text-kawai-red font-[family-name:var(--font-brand-sans)]">
                     {formatCurrency(product.salePrice!, product.price?.currency ?? 'USD')}
                   </p>
                 </>
+              ) : hasPrice ? (
+                <>
+                  <span className="text-[10px] font-bold tracking-widest text-kawai-red uppercase font-[family-name:var(--font-brand-sans)]">
+                    MSRP
+                  </span>
+                  <p className="text-lg font-bold text-kawai-black font-[family-name:var(--font-brand-sans)]">
+                    {formatPrice(product.price)}
+                  </p>
+                </>
               ) : (
-                <p
-                  className={cn(
-                    'text-sm font-medium font-[family-name:var(--font-brand-sans)]',
-                    hasPrice ? 'text-kawai-black' : 'text-kawai-charcoal/60 italic text-xs',
-                  )}
-                >
-                  {formatPrice(product.price)}
+                <p className="text-xs italic text-kawai-charcoal/60 font-[family-name:var(--font-brand-sans)]">
+                  Contact for Price
                 </p>
               )}
             </div>

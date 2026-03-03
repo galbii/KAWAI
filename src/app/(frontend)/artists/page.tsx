@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
-import { getPayloadHMR } from '@payloadcms/next/utilities'
-import configPromise from '@payload-config'
+import { getPayloadClient } from '@/lib/payload/queries'
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
 import type { Artist, Media } from '@/payload-types'
 import { cn } from '@/lib/utils'
@@ -18,7 +17,7 @@ export const revalidate = 900
 
 async function getArtists() {
   try {
-    const payload = await getPayloadHMR({ config: configPromise })
+    const payload = await getPayloadClient()
 
     const artists = await payload.find({
       collection: 'artists',

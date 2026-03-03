@@ -159,6 +159,7 @@ export const Products: CollectionConfig = {
     components: {
       beforeList: [
         '/components/admin/BulkShopifySyncButton#default',
+        '/components/admin/PatchMissingBlocksButton#default',
         '/components/admin/ProductsListHeader#ProductsListHeader',
       ],
     },
@@ -261,6 +262,21 @@ export const Products: CollectionConfig = {
               admin: {
                 description: 'Product description (synced from Shopify)'
               }
+            },
+
+            // Compatible Products (accessories only)
+            {
+              name: 'compatibleProducts',
+              type: 'relationship',
+              relationTo: 'products' as const,
+              hasMany: true,
+              admin: {
+                description: 'Piano models this accessory is compatible with. These will be shown in the Related Products block when customers view this accessory.',
+                condition: (data) => data.type === 'accessory',
+              },
+              filterOptions: {
+                type: { not_equals: 'accessory' },
+              },
             },
 
             // Shopify Collections
@@ -688,6 +704,8 @@ export const Products: CollectionConfig = {
                 'product-collection-showcase',       // Collection Showcase - Display collection content
                 'product-floating-add-to-cart',      // Floating Add to Cart - Sticky cart button
                 'product-feature-slides',            // Feature Slides - Scroll-driven fullscreen feature showcase
+                'product-soundcloud-embed',          // SoundCloud Embed - Audio player for demos (leave URL empty to hide)
+                'product-related-products',          // Related Products - Auto-fetches same-collection products + accessories
                 'marketing-instagram-carousel',      // Instagram Carousel - Social proof
                 'marketing-featured-models',         // Featured Models - Showcase related models
               ] as any,
@@ -1090,6 +1108,140 @@ export const Products: CollectionConfig = {
         }
       },
     } as Endpoint,
+
+    // ── Patch Missing Blocks ───────────────────────────────────────────────────
+    // Adds product-soundcloud-embed and product-related-products to any product
+    // that is missing them. Safe to run multiple times — skips products that
+    // already have both blocks. Never removes or reorders existing blocks.
+    {
+      path: '/patch-missing-blocks',
+      method: 'post',
+      handler: async (req) => {
+        if (!req.user) {
+          return Response.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+        if ((req.user as any).role !== 'admin') {
+          return Response.json({ error: 'Forbidden - Admin only' }, { status: 403 })
+        }
+
+        console.log('[PatchBlocks] Starting patch-missing-blocks...')
+
+        try {
+          // Fetch all products including their pageContent blocks
+          const { docs: products } = await req.payload.find({
+            collection: 'products',
+            limit: 1000,
+            depth: 0,
+            req,
+          })
+
+          console.log(`[PatchBlocks] Found ${products.length} products to check`)
+
+          const summary = { total: products.length, patched: 0, skipped: 0, errors: 0 }
+          const errors: Array<{ id: string; model: string; error: string }> = []
+
+          for (const product of products) {
+            const pageContent: any[] = Array.isArray(product.pageContent)
+              ? product.pageContent
+              : []
+
+            const blockTypes = new Set(pageContent.map((b: any) => b?.blockType))
+
+            const needsSoundCloud = !blockTypes.has('product-soundcloud-embed')
+            const needsRelated = !blockTypes.has('product-related-products')
+
+            if (!needsSoundCloud && !needsRelated) {
+              summary.skipped++
+              continue
+            }
+
+            // Build updated blocks array — insert each block at the right position
+            const newBlocks = [...pageContent]
+
+            if (needsSoundCloud) {
+              // Insert before product-feature-slides if present, otherwise append
+              const featureIdx = newBlocks.findIndex(
+                (b: any) => b?.blockType === 'product-feature-slides',
+              )
+              const soundcloudBlock = {
+                blockType: 'product-soundcloud-embed',
+                soundcloudUrl: null,
+                heading: null,
+                playerOptions: {
+                  visual: false,
+                  autoPlay: false,
+                  showComments: false,
+                  showRelated: false,
+                },
+                theme: 'light',
+              }
+              if (featureIdx !== -1) {
+                newBlocks.splice(featureIdx, 0, soundcloudBlock)
+              } else {
+                newBlocks.push(soundcloudBlock)
+              }
+              console.log(`[PatchBlocks] Adding soundcloud-embed to ${product.model}`)
+            }
+
+            if (needsRelated) {
+              // Always append at end
+              newBlocks.push({
+                blockType: 'product-related-products',
+                sectionHeader: {
+                  eyebrow: 'Explore More',
+                  heading: 'You May Also Like',
+                },
+                displayMode: 'both',
+                maxProducts: 4,
+                layout: 'grid',
+                showPrice: true,
+                theme: 'light',
+              })
+              console.log(`[PatchBlocks] Adding related-products to ${product.model}`)
+            }
+
+            try {
+              await req.payload.update({
+                collection: 'products',
+                id: product.id,
+                data: { pageContent: newBlocks },
+                context: {
+                  skipShopifySync: true,
+                  skipNavigationRevalidation: true,
+                },
+                req,
+              })
+              summary.patched++
+            } catch (err) {
+              console.error(`[PatchBlocks] Error patching ${product.model}:`, err)
+              summary.errors++
+              errors.push({
+                id: String(product.id),
+                model: product.model ?? String(product.id),
+                error: err instanceof Error ? err.message : 'Unknown error',
+              })
+            }
+          }
+
+          console.log('[PatchBlocks] ✅ Done:', summary)
+
+          return Response.json({
+            success: true,
+            summary,
+            errors: errors.length > 0 ? errors : undefined,
+          })
+        } catch (err) {
+          console.error('[PatchBlocks] ❌ Fatal error:', err)
+          return Response.json(
+            {
+              success: false,
+              message: err instanceof Error ? err.message : 'patch-missing-blocks failed',
+            },
+            { status: 500 },
+          )
+        }
+      },
+    } as Endpoint,
   ],
 
   hooks: {
@@ -1234,7 +1386,23 @@ export const Products: CollectionConfig = {
             console.log(`🎯 Added default collection-showcase block with collection: ${collectionShowcaseBlock.collection}`)
           }
 
-          // 4. Feature Slides
+          // 4. SoundCloud Embed (before feature slides — empty URL = hidden until configured)
+          defaultBlocks.push({
+            blockType: 'product-soundcloud-embed',
+            soundcloudUrl: null,
+            heading: null,
+            playerOptions: {
+              visual: false,
+              autoPlay: false,
+              showComments: false,
+              showRelated: false,
+            },
+            theme: 'light',
+          })
+
+          console.log(`🎵 Added default product-soundcloud-embed block`)
+
+          // 5. Feature Slides
           defaultBlocks.push({
             blockType: 'product-feature-slides',
             features: [],
@@ -1251,8 +1419,24 @@ export const Products: CollectionConfig = {
 
           console.log(`📐 Added default product-technical-specs block`)
 
+          // 6. Related Products (always last — helps customers discover the catalog)
+          defaultBlocks.push({
+            blockType: 'product-related-products',
+            sectionHeader: {
+              eyebrow: 'Explore More',
+              heading: 'You May Also Like',
+            },
+            displayMode: 'both',
+            maxProducts: 4,
+            layout: 'grid',
+            showPrice: true,
+            theme: 'light',
+          })
+
+          console.log(`🔗 Added default product-related-products block`)
+
           data.pageContent = defaultBlocks
-          console.log(`✅ Added ${defaultBlocks.length} default blocks (operation: ${operation})`)
+          console.log(`✅ Added ${defaultBlocks.length} default blocks: hero, description, ${collectionShowcaseBlock ? 'collection-showcase, ' : ''}soundcloud-embed, feature-slides, technical-specs, related-products (operation: ${operation})`)
         }
 
         // Set sync status to pending if auto-sync is enabled and product should sync

@@ -23,7 +23,8 @@ import type { Product as ShopifyProduct } from '@/lib/shopify/types'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { FloatingAddToCartIntegrated } from '@/components/blocks/FloatingAddToCartIntegrated'
 import { createCart } from '@/lib/shopify'
-import { trackAddToCart } from '@/lib/analytics/unified-tracking'
+import { getStoredUTMParams } from '@/lib/shopify/utm-tracking'
+import { trackAddToCart, trackBeginCheckout } from '@/lib/analytics/unified-tracking'
 import type { CTATrackingConfig } from '@/lib/analytics/unified-tracking'
 
 interface ProductHeroBlockProps {
@@ -75,9 +76,7 @@ export function ProductHeroBlock({
   // Available-only subset used for cart operations and floating cart
   const availableVariations = allVariations.filter(variation => variation.available)
 
-  // Default to first variation if any exist
-  const defaultVariation = allVariations.length > 0 ? 0 : -1
-  const [selectedVariation, setSelectedVariation] = useState(defaultVariation)
+  const [selectedVariation, setSelectedVariation] = useState(-1)
   const [isFavorited, setIsFavorited] = useState(false)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
   const [buyNowLoading, setBuyNowLoading] = useState(false)
@@ -87,17 +86,13 @@ export function ProductHeroBlock({
 
   // Sync selectedVariation when variations change (handles async product loading)
   useEffect(() => {
-    // If variations exist but nothing selected, select first one
-    if (allVariations.length > 0 && selectedVariation < 0) {
-      setSelectedVariation(0)
-    }
     // If no variations exist, deselect
-    else if (allVariations.length === 0 && selectedVariation >= 0) {
+    if (allVariations.length === 0 && selectedVariation >= 0) {
       setSelectedVariation(-1)
     }
-    // If selected index is out of bounds, reset to first
-    else if (selectedVariation >= allVariations.length) {
-      setSelectedVariation(0)
+    // If selected index is out of bounds, deselect (don't auto-select first)
+    else if (allVariations.length > 0 && selectedVariation >= allVariations.length) {
+      setSelectedVariation(-1)
     }
   }, [allVariations.length, selectedVariation])
 
@@ -152,7 +147,10 @@ export function ProductHeroBlock({
   const getSelectedVariant = () => {
     if (!shopifyProduct) return null
 
-    // If no variation selected or only one variant, return first variant
+    // If CMS variations exist but none selected, variant is undetermined — don't guess
+    if (allVariations.length > 0 && selectedVariation < 0) return null
+
+    // If no CMS variations (single-variant product), use first Shopify variant
     if (selectedVariation < 0 || shopifyProduct.variants.length === 1) {
       return shopifyProduct.variants[0]
     }
@@ -186,20 +184,33 @@ export function ProductHeroBlock({
       const formattedVariantId = selectedVariant.id.startsWith('gid://')
         ? selectedVariant.id
         : `gid://shopify/ProductVariant/${selectedVariant.id}`
-      const cart = await createCart([{
-        merchandiseId: formattedVariantId as `gid://shopify/${string}/${string}`,
-        quantity: 1,
-      }])
+      const utmParams = getStoredUTMParams()
+      const cartAttributes = [
+        { key: '_utm_source', value: utmParams?.utm_source ?? '' },
+        { key: '_utm_medium', value: utmParams?.utm_medium ?? '' },
+        { key: '_utm_campaign', value: utmParams?.utm_campaign ?? '' },
+        { key: '_utm_content', value: utmParams?.utm_content ?? '' },
+        { key: '_utm_term', value: utmParams?.utm_term ?? '' },
+      ].filter(a => a.value !== '')
+      const cart = await createCart(
+        [{ merchandiseId: formattedVariantId as `gid://shopify/${string}/${string}`, quantity: 1 }],
+        cartAttributes.length > 0 ? cartAttributes : undefined,
+      )
       if (cart.checkoutUrl) {
-        trackAddToCart({
+        const buyNowParams = {
           blockType: 'product-hero',
           blockData: { ctaTracking: ctaTracking ?? undefined },
           productName: product?.name || '',
           variantId: selectedVariant.id,
           variantName: selectedVariation >= 0 ? allVariations[selectedVariation]?.name ?? null : null,
           price: selectedVariant.price,
+          currency: shopifyProduct?.price.currency ?? 'USD',
+          productId: shopifyProduct?.handle ?? null,
+          productCategory: shopifyProduct?.type ?? null,
           additionalProps: { button_type: 'buy_now' },
-        })
+        }
+        trackAddToCart(buyNowParams)
+        trackBeginCheckout(buyNowParams)
         window.open(cart.checkoutUrl, '_blank', 'noopener,noreferrer')
       }
     } catch (err) {
@@ -747,7 +758,13 @@ export function ProductHeroBlock({
             {/* Compact CTA Buttons */}
             {shouldShowBuyButton && (
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                {canAddToCart && selectedVariant ? (
+                {hasVariations && selectedVariation < 0 && !!shopifyProduct ? (
+                  <div className="w-full py-2 text-center">
+                    <p className={cn("text-sm font-medium", accentColorClass)}>
+                      Select a variation above to continue
+                    </p>
+                  </div>
+                ) : canAddToCart && selectedVariant ? (
                   <>
                     {/* Primary: Buy Now — creates fresh cart, opens Shopify checkout in new tab */}
                     <Button
@@ -774,15 +791,20 @@ export function ProductHeroBlock({
                         "border-2 border-gray-300 bg-white hover:bg-gray-50 text-gray-900 hover:border-gray-400"
                       )}
                       onSuccess={() => {
-                        trackAddToCart({
+                        const addToCartParams = {
                           blockType: 'product-hero',
                           blockData: { ctaTracking: ctaTracking ?? undefined },
                           productName: product?.name || '',
                           variantId: selectedVariant.id,
                           variantName: selectedVariation >= 0 ? allVariations[selectedVariation]?.name ?? null : null,
                           price: selectedVariant.price,
+                          currency: shopifyProduct?.price.currency ?? 'USD',
+                          productId: shopifyProduct?.handle ?? null,
+                          productCategory: shopifyProduct?.type ?? null,
                           additionalProps: { button_type: 'add_to_cart' },
-                        })
+                        }
+                        trackAddToCart(addToCartParams)
+                        trackBeginCheckout(addToCartParams)
                       }}
                     >
                       Add to Cart
@@ -980,15 +1002,20 @@ export function ProductHeroBlock({
               setSelectedVariation(index)
             }}
             onAddToCart={() => {
-              trackAddToCart({
+              const floatingParams = {
                 blockType: 'product-hero',
                 blockData: { ctaTracking: ctaTracking ?? undefined },
                 productName: product?.name || '',
                 variantId: selectedVariant.id,
                 variantName: selectedVariation >= 0 ? allVariations[selectedVariation]?.name ?? null : null,
                 price: selectedVariant.price,
+                currency: shopifyProduct?.price.currency ?? 'USD',
+                productId: shopifyProduct?.handle ?? null,
+                productCategory: shopifyProduct?.type ?? null,
                 additionalProps: { button_type: 'floating_add_to_cart' },
-              })
+              }
+              trackAddToCart(floatingParams)
+              trackBeginCheckout(floatingParams)
             }}
           />
         )

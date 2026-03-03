@@ -245,7 +245,10 @@ export function RenderBlocks({ blocks }: { blocks: Page['layout'] }) {
             )}
           >
             {/* @ts-expect-error - Block types are complex unions; runtime safety ensured by type guard */}
-            <Block {...block} />
+            <Block
+              {...block}
+              {...((blockType as string) === 'product-collection-showcase' ? { showViewCollectionLink: true } : {})}
+            />
           </div>
         )
       })}

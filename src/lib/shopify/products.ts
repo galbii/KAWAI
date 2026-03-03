@@ -13,6 +13,7 @@
  * ```
  */
 
+import { unstable_cache } from 'next/cache'
 import { shopifyClient } from './client'
 import {
   GET_PRODUCTS,
@@ -348,75 +349,81 @@ export async function getProductById(
  * @see Shopify products should have custom.model metafield set for best performance
  * @see Falls back to tag-based search if metafield lookup fails
  */
-export async function getProductByModel(
+export function getProductByModel(
   model: string,
   options?: ShopifyRequestOptions
 ): Promise<Product | null> {
   const normalizedModel = model.toUpperCase().trim()
 
-  console.log(`[getProductByModel] Searching for model: "${normalizedModel}"`)
+  return unstable_cache(
+    async () => {
+      console.log(`[getProductByModel] Searching for model: "${normalizedModel}"`)
 
-  try {
-    // STRATEGY 1: Try metafield-based lookup via Admin API (preferred)
-    console.log(`[getProductByModel] Attempting metafield lookup...`)
+      try {
+        // STRATEGY 1: Try metafield-based lookup via Admin API (preferred)
+        console.log(`[getProductByModel] Attempting metafield lookup...`)
 
-    const adminProduct = await fetchShopifyProductByModel(normalizedModel)
+        const adminProduct = await fetchShopifyProductByModel(normalizedModel)
 
-    if (adminProduct) {
-      console.log(
-        `[getProductByModel] Found via metafield: "${adminProduct.title}" (model: ${normalizedModel})`
-      )
+        if (adminProduct) {
+          console.log(
+            `[getProductByModel] Found via metafield: "${adminProduct.title}" (model: ${normalizedModel})`
+          )
 
-      // Transform Admin API response to match Storefront API format
-      return transformAdminProductToStorefront(adminProduct)
-    }
+          // Transform Admin API response to match Storefront API format
+          return transformAdminProductToStorefront(adminProduct)
+        }
 
-    // STRATEGY 2: Fallback to tag-based search via Storefront API
-    console.log(`[getProductByModel] Metafield lookup failed, trying tag fallback...`)
+        // STRATEGY 2: Fallback to tag-based search via Storefront API
+        console.log(`[getProductByModel] Metafield lookup failed, trying tag fallback...`)
 
-    const data = await shopifyClient.query<ProductsResponse, ProductsQueryVariables>(
-      SEARCH_PRODUCTS,
-      { query: `tag:${normalizedModel}`, first: 1 },
-      options
-    )
+        const data = await shopifyClient.query<ProductsResponse, ProductsQueryVariables>(
+          SEARCH_PRODUCTS,
+          { query: `tag:${normalizedModel}`, first: 1 },
+          options
+        )
 
-    const foundProduct = data.products.edges[0]?.node || null
+        const foundProduct = data.products.edges[0]?.node || null
 
-    if (foundProduct) {
-      console.log(
-        `[getProductByModel] Found via tag fallback: "${foundProduct.title}" (tag: ${normalizedModel})`
-      )
-      return transformProduct(foundProduct)
-    }
+        if (foundProduct) {
+          console.log(
+            `[getProductByModel] Found via tag fallback: "${foundProduct.title}" (tag: ${normalizedModel})`
+          )
+          return transformProduct(foundProduct)
+        }
 
-    console.log(`[getProductByModel] No product found for model "${normalizedModel}"`)
-    return null
+        console.log(`[getProductByModel] No product found for model "${normalizedModel}"`)
+        return null
 
-  } catch (error) {
-    console.error(`[getProductByModel] Error:`, error)
+      } catch (error) {
+        console.error(`[getProductByModel] Error:`, error)
 
-    // If Admin API fails, still try tag fallback
-    console.log(`[getProductByModel] Admin API error, attempting tag fallback...`)
+        // If Admin API fails, still try tag fallback
+        console.log(`[getProductByModel] Admin API error, attempting tag fallback...`)
 
-    try {
-      const data = await shopifyClient.query<ProductsResponse, ProductsQueryVariables>(
-        SEARCH_PRODUCTS,
-        { query: `tag:${normalizedModel}`, first: 1 },
-        options
-      )
+        try {
+          const data = await shopifyClient.query<ProductsResponse, ProductsQueryVariables>(
+            SEARCH_PRODUCTS,
+            { query: `tag:${normalizedModel}`, first: 1 },
+            options
+          )
 
-      const foundProduct = data.products.edges[0]?.node || null
+          const foundProduct = data.products.edges[0]?.node || null
 
-      if (foundProduct) {
-        console.log(`[getProductByModel] Found via tag fallback after error`)
-        return transformProduct(foundProduct)
+          if (foundProduct) {
+            console.log(`[getProductByModel] Found via tag fallback after error`)
+            return transformProduct(foundProduct)
+          }
+        } catch (fallbackError) {
+          console.error(`[getProductByModel] Tag fallback also failed:`, fallbackError)
+        }
+
+        return null
       }
-    } catch (fallbackError) {
-      console.error(`[getProductByModel] Tag fallback also failed:`, fallbackError)
-    }
-
-    return null
-  }
+    },
+    [`shopify-product-model-${normalizedModel}`],
+    { tags: [`shopify-product-model-${normalizedModel}`, 'shopify-products'], revalidate: 3600 }
+  )()
 }
 
 /**

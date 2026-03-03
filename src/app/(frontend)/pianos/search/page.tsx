@@ -52,4 +52,5 @@ export default function PianoSearchPage() {
 export const metadata = {
   title: 'Search Pianos - Find Your Perfect Kawai Piano',
   description: 'Search and filter through our complete collection of Kawai pianos with advanced tools and educational guidance.',
+  robots: { index: false, follow: true },
 }

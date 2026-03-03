@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 interface CollectionShowcaseBlockProps {
   enabled?: boolean | null
@@ -12,6 +13,8 @@ interface CollectionShowcaseBlockProps {
   bannerSize?: 'xxs' | 'xs' | 'small' | 'medium' | 'large' | 'fullscreen' | null
   customSubheading?: string | null
   product?: Product | null
+  /** When true, renders a "View Collection" CTA linking to /pianos/[handle]. Use on product pages. */
+  showViewCollectionLink?: boolean
 }
 
 /**
@@ -46,6 +49,7 @@ export function CollectionShowcaseBlock({
   bannerSize: blockBannerSize,
   customSubheading,
   product,
+  showViewCollectionLink = false,
 }: CollectionShowcaseBlockProps) {
   const [isVideoLoaded, setIsVideoLoaded] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
@@ -402,6 +406,27 @@ export function CollectionShowcaseBlock({
           >
             {displaySubheading}
           </motion.p>
+        )}
+
+        {/* View Collection CTA — appears on product pages to link to the collection page */}
+        {showViewCollectionLink && isCollectionObject && collection.handle && (
+          <motion.div variants={itemVariants} className="mt-8">
+            <Link
+              href={`/pianos/${collection.handle}`}
+              className={cn(
+                'inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold tracking-wide',
+                'border rounded transition-all duration-300',
+                safeTextColor === 'white' || safeTextColor === 'kawai-gold'
+                  ? 'border-white/60 text-white hover:bg-white hover:text-kawai-black'
+                  : 'border-kawai-black/60 text-kawai-black hover:bg-kawai-black hover:text-white',
+              )}
+            >
+              Explore the Collection
+              <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Link>
+          </motion.div>
         )}
 
         {/* Scroll indicator for fullscreen banners - refined detail */}
