@@ -25,6 +25,8 @@ import { Collections } from './collections/Collections'
 import { Posts } from './collections/Posts'
 import { Categories } from './collections/Categories'
 import { Artists } from './collections/Artists'
+import { FaqCategories } from './collections/FaqCategories'
+import { Faqs } from './collections/Faqs'
 import { ConcertArtistPage } from './collections/ConcertArtistPage'
 import { ConstantContactSettings } from './collections/ConstantContactSettings'
 import { ConstantContactCustomFields } from './collections/ConstantContactCustomFields'
@@ -67,6 +69,10 @@ import {
   ContactForm,
   StorefrontLocations,
   FeaturedModels,
+  FeaturedCollections,
+  ArtistHero,
+  PianosBrowser,
+  ArtistsGrid,
   // Events blocks
   UniversityHero,
   EventOverview,
@@ -219,6 +225,8 @@ export default buildConfig({
     Posts,
     Categories,
     Artists,
+    FaqCategories,
+    Faqs,
 
     // Commerce Collections
     Products,
@@ -274,6 +282,10 @@ export default buildConfig({
     ContactForm,
     StorefrontLocations,
     FeaturedModels,
+    FeaturedCollections,
+    ArtistHero,
+    PianosBrowser,
+    ArtistsGrid,
 
     // Events blocks
     UniversityHero,

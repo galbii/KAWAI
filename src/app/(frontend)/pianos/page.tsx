@@ -3,9 +3,12 @@ import {
   getCatalogProductsDirect,
   getProductSpotlightNewsItems,
   getCollectionsForBrowser,
+  getPayloadClient,
 } from '@/lib/payload/queries'
 import { PianosBrowser } from '@/components/piano/PianosBrowser'
 import { NewsCarousel } from '@/components/homepage/news-carousel'
+import { RenderBlocks } from '@/components/RenderBlocks'
+import type { Page } from '@/payload-types'
 
 export const revalidate = 3600
 
@@ -39,7 +42,37 @@ export const metadata: Metadata = {
   },
 }
 
+async function getCMSPianosPage(): Promise<Page | null> {
+  try {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'pages',
+      where: {
+        slug: { equals: 'pianos' },
+        _status: { equals: 'published' },
+      },
+      depth: 2,
+      limit: 1,
+    })
+    const page = result.docs[0] ?? null
+    if (page) {
+      console.log('[PianosPage] CMS override found — blocks:', page.layout?.length ?? 0)
+    }
+    return page
+  } catch (err) {
+    console.error('[PianosPage] CMS override query failed:', err)
+    return null
+  }
+}
+
 export default async function PianosPage() {
+  // Check for a CMS page with slug "pianos" — if published, it overrides the static layout
+  const cmsPage = await getCMSPianosPage()
+  if (cmsPage?.layout && cmsPage.layout.length > 0) {
+    return <RenderBlocks blocks={cmsPage.layout} />
+  }
+
+  // Default static layout
   const [products, spotlightItems, collectionsForBrowser] = await Promise.all([
     getCatalogProductsDirect(),
     getProductSpotlightNewsItems(),

@@ -81,6 +81,10 @@ import { NewsCarouselBlock } from './blocks/NewsCarouselBlock'
 import { ContactFormBlock } from './blocks/ContactFormBlock'
 import { StorefrontLocationsBlock } from './blocks/StorefrontLocationsBlock'
 import { FeaturedModelsBlock } from './blocks/FeaturedModelsBlock'
+import { FeaturedCollectionsBlock } from './blocks/FeaturedCollectionsBlock'
+import { ArtistHeroBlock } from './blocks/ArtistHeroBlock'
+import { PianosBrowserBlock } from './blocks/PianosBrowserBlock'
+import { ArtistsGridBlock } from './blocks/ArtistsGridBlock'
 
 // Product Blocks - Product-specific showcases
 import { ProductShowcaseBlock } from './blocks/ProductShowcaseBlock'
@@ -143,6 +147,10 @@ const blockComponents = {
   'marketing-contact-form': ContactFormBlock,
   'marketing-storefront-locations': StorefrontLocationsBlock,
   'marketing-featured-models': FeaturedModelsBlock,
+  'marketing-featured-collections': FeaturedCollectionsBlock,
+  'marketing-artist-hero': ArtistHeroBlock,
+  'marketing-pianos-browser': PianosBrowserBlock,
+  'marketing-artists-grid': ArtistsGridBlock,
 
   // Events blocks (events-*)
   'events-university-hero': UniversityHeroBlock,

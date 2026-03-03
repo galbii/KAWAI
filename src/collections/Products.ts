@@ -857,6 +857,17 @@ export const Products: CollectionConfig = {
         }
       ]
     },
+    // FAQ Relationship - Sidebar
+    {
+      name: 'faqs',
+      type: 'relationship',
+      relationTo: 'faqs',
+      hasMany: true,
+      admin: {
+        position: 'sidebar',
+        description: 'FAQ documents that answer questions about this product',
+      },
+    },
     // Shopify Integration Group - Sidebar
     {
       name: 'shopify',

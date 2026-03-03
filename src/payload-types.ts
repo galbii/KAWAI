@@ -99,6 +99,10 @@ export interface Config {
     'marketing-contact-form': MarketingContactFormBlock;
     'marketing-storefront-locations': MarketingStorefrontLocationsBlock;
     'marketing-featured-models': MarketingFeaturedModelsBlock;
+    'marketing-featured-collections': MarketingFeaturedCollectionsBlock;
+    'marketing-artist-hero': MarketingArtistHeroBlock;
+    'marketing-pianos-browser': MarketingPianosBrowserBlock;
+    'marketing-artists-grid': MarketingArtistsGridBlock;
     'events-university-hero': EventsUniversityHeroBlock;
     'events-event-overview': EventsEventOverviewBlock;
     'product-showcase': ProductShowcaseBlock;
@@ -132,6 +136,8 @@ export interface Config {
     posts: Post;
     categories: Category;
     artists: Artist;
+    'faq-categories': FaqCategory;
+    faqs: Faq;
     products: Product;
     collections: Collection;
     dealers: Dealer;
@@ -163,6 +169,8 @@ export interface Config {
     posts: PostsSelect<false> | PostsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     artists: ArtistsSelect<false> | ArtistsSelect<true>;
+    'faq-categories': FaqCategoriesSelect<false> | FaqCategoriesSelect<true>;
+    faqs: FaqsSelect<false> | FaqsSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     collections: CollectionsSelect<false> | CollectionsSelect<true>;
     dealers: DealersSelect<false> | DealersSelect<true>;
@@ -1547,9 +1555,9 @@ export interface MarketingHeroBlock {
 export interface Product {
   id: string;
   /**
-   * Piano category (auto-mapped from Shopify productType, can be overridden)
+   * Product type (synced from Shopify productType)
    */
-  type?: ('digital' | 'grand' | 'upright' | 'hybrid' | 'accessory' | 'other') | null;
+  type?: string | null;
   /**
    * Model identifier - matches Shopify custom.model metafield (PRIMARY KEY)
    */
@@ -1986,6 +1994,10 @@ export interface Product {
      */
     inStock?: boolean | null;
   };
+  /**
+   * FAQ documents that answer questions about this product
+   */
+  faqs?: (string | Faq)[] | null;
   /**
    * Shopify synchronization and integration data
    */
@@ -2999,6 +3011,111 @@ export interface MarketingFeaturedModelsBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'marketing-featured-models';
+}
+/**
+ * Frequently asked questions with rich text answers and product linking
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faqs".
+ */
+export interface Faq {
+  id: string;
+  /**
+   * The question as it will appear publicly (also used to generate slug)
+   */
+  question: string;
+  /**
+   * URL-friendly identifier (auto-generated from question)
+   */
+  slug?: string | null;
+  /**
+   * Short summary for FAQ index cards and meta description fallback (max 200 characters)
+   */
+  excerpt?: string | null;
+  /**
+   * Full answer with rich formatting and optional inline images
+   */
+  answer: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * FAQ categories for filtering and navigation
+   */
+  categories?: (string | FaqCategory)[] | null;
+  /**
+   * Products this FAQ applies to (shown on FAQ detail page)
+   */
+  relatedProducts?: (string | Product)[] | null;
+  /**
+   * Publication status — only published FAQs appear on the frontend
+   */
+  status: 'draft' | 'published';
+  /**
+   * Auto-set on first publish
+   */
+  publishedDate?: string | null;
+  /**
+   * SEO optimization for FAQ detail pages
+   */
+  seo?: {
+    /**
+     * Custom meta title (defaults to question)
+     */
+    metaTitle?: string | null;
+    /**
+     * Meta description (max 160 characters, defaults to excerpt)
+     */
+    metaDescription?: string | null;
+    /**
+     * SEO keywords (comma-separated)
+     */
+    keywords?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Taxonomy for organizing FAQs into categories (e.g. "Purchasing", "Technical", "Warranty")
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faq-categories".
+ */
+export interface FaqCategory {
+  id: string;
+  /**
+   * Category display name (e.g. "Purchasing & Financing")
+   */
+  name: string;
+  /**
+   * URL-friendly identifier (auto-generated from name)
+   */
+  slug?: string | null;
+  /**
+   * Optional short description shown on FAQ filter pages
+   */
+  description?: string | null;
+  /**
+   * Optional hex color for frontend badge styling (e.g. #E11922)
+   */
+  color?: string | null;
+  /**
+   * Sort order for category display (lower numbers appear first)
+   */
+  displayOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4609,6 +4726,98 @@ export interface MarketingStorefrontLocationsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingFeaturedCollectionsBlock".
+ */
+export interface MarketingFeaturedCollectionsBlock {
+  /**
+   * Small label above the heading
+   */
+  eyebrow?: string | null;
+  /**
+   * Section heading
+   */
+  heading?: string | null;
+  /**
+   * CTA link text
+   */
+  ctaText?: string | null;
+  /**
+   * CTA link destination
+   */
+  ctaHref?: string | null;
+  /**
+   * Max collections to show (3–24)
+   */
+  limit?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-featured-collections';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingArtistHeroBlock".
+ */
+export interface MarketingArtistHeroBlock {
+  /**
+   * Automatically display all artists marked as "featured" in the Artists collection (recommended)
+   */
+  autoFeatured?: boolean | null;
+  /**
+   * Manually select artists to feature in the hero (used when Auto Featured is disabled)
+   */
+  artists?: (string | Artist)[] | null;
+  /**
+   * Maximum number of artists to display in the hero carousel (1–10)
+   */
+  maxArtists?: number | null;
+  /**
+   * Show the scroll-down indicator at the bottom of the hero
+   */
+  showScrollIndicator?: boolean | null;
+  /**
+   * ID of the element the scroll indicator should link to (without #)
+   */
+  scrollTargetId?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-artist-hero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingPianosBrowserBlock".
+ */
+export interface MarketingPianosBrowserBlock {
+  /**
+   * Show the product spotlight news carousel above the piano browser
+   */
+  showNewsCarousel?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-pianos-browser';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingArtistsGridBlock".
+ */
+export interface MarketingArtistsGridBlock {
+  /**
+   * Section heading (default: "Our Artists")
+   */
+  title?: string | null;
+  /**
+   * Show the search bar
+   */
+  showSearch?: boolean | null;
+  /**
+   * Maximum number of artists to display
+   */
+  limit?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-artists-grid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "EventsUniversityHeroBlock".
  */
 export interface EventsUniversityHeroBlock {
@@ -6074,6 +6283,10 @@ export interface Page {
     | MarketingInstagramCarouselBlock
     | MarketingArtistCarouselBlock
     | MarketingFeaturedModelsBlock
+    | MarketingFeaturedCollectionsBlock
+    | MarketingArtistHeroBlock
+    | MarketingPianosBrowserBlock
+    | MarketingArtistsGridBlock
     | EventsUniversityHeroBlock
     | EventsEventOverviewBlock
     | ProductHeroCarouselBlock
@@ -6085,6 +6298,35 @@ export interface Page {
     | LayoutCalendlyEmbedBlock
     | LayoutBookingModalBlock
   )[];
+  /**
+   * SEO and metadata configuration
+   */
+  seo?: {
+    /**
+     * Page title for search engines (defaults to page title if empty)
+     */
+    metaTitle?: string | null;
+    /**
+     * Page meta description for search engines (max 160 characters)
+     */
+    metaDescription?: string | null;
+    /**
+     * SEO keywords (comma-separated)
+     */
+    keywords?: string | null;
+    /**
+     * Open Graph title for social media sharing (defaults to metaTitle)
+     */
+    openGraphTitle?: string | null;
+    /**
+     * Open Graph description for social media sharing
+     */
+    openGraphDescription?: string | null;
+    /**
+     * Open Graph image for social media sharing (1200x630px recommended)
+     */
+    openGraphImage?: (string | null) | Media;
+  };
   publishedAt?: string | null;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
@@ -7962,6 +8204,14 @@ export interface PayloadLockedDocument {
         value: string | Artist;
       } | null)
     | ({
+        relationTo: 'faq-categories';
+        value: string | FaqCategory;
+      } | null)
+    | ({
+        relationTo: 'faqs';
+        value: string | Faq;
+      } | null)
+    | ({
         relationTo: 'products';
         value: string | Product;
       } | null)
@@ -8237,6 +8487,16 @@ export interface PagesSelect<T extends boolean = true> {
         media?: T;
       };
   layout?: T | {};
+  seo?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+        keywords?: T;
+        openGraphTitle?: T;
+        openGraphDescription?: T;
+        openGraphImage?: T;
+      };
   publishedAt?: T;
   generateSlug?: T;
   slug?: T;
@@ -8863,6 +9123,42 @@ export interface ArtistsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faq-categories_select".
+ */
+export interface FaqCategoriesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  description?: T;
+  color?: T;
+  displayOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faqs_select".
+ */
+export interface FaqsSelect<T extends boolean = true> {
+  question?: T;
+  slug?: T;
+  excerpt?: T;
+  answer?: T;
+  categories?: T;
+  relatedProducts?: T;
+  status?: T;
+  publishedDate?: T;
+  seo?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+        keywords?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
@@ -9002,6 +9298,7 @@ export interface ProductsSelect<T extends boolean = true> {
         lowStockThreshold?: T;
         inStock?: T;
       };
+  faqs?: T;
   shopify?:
     | T
     | {

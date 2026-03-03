@@ -4,9 +4,10 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { getPayloadClient } from '@/lib/payload/queries'
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
-import type { Artist, Media, Product } from '@/payload-types'
+import type { Artist, Media, Page, Product } from '@/payload-types'
 import { cn } from '@/lib/utils'
 import { Instagram, Youtube, Music, Globe, Facebook, Twitter, Linkedin } from 'lucide-react'
+import { RenderBlocks } from '@/components/RenderBlocks'
 
 // Enable ISR with 15-minute revalidation
 export const revalidate = 900
@@ -70,6 +71,25 @@ async function getArtist(slug: string) {
     return artists.docs[0] as Artist
   } catch (error) {
     console.error('Error fetching artist:', error)
+    return null
+  }
+}
+
+async function getCMSArtistPage(slug: string): Promise<Page | null> {
+  try {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'pages',
+      where: {
+        slug: { equals: slug },
+        _status: { equals: 'published' },
+      },
+      depth: 2,
+      limit: 1,
+    })
+    return (result.docs[0] as Page) ?? null
+  } catch (error) {
+    console.error('Error fetching CMS artist page:', error)
     return null
   }
 }
@@ -247,6 +267,19 @@ function serializeRichText(content: any): string {
 
 export default async function ArtistPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
+
+  // Check for a CMS override page in the Pages collection first.
+  // A published page with a slug matching the artist slug takes priority over
+  // the static artist profile layout.
+  const cmsPage = await getCMSArtistPage(slug)
+  if (cmsPage?.layout?.length) {
+    return (
+      <div className="min-h-screen">
+        <RenderBlocks blocks={cmsPage.layout} />
+      </div>
+    )
+  }
+
   const artist = await getArtist(slug)
 
   if (!artist) {

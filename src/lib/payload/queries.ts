@@ -1077,3 +1077,100 @@ export const getProductSpotlightNewsItems = unstable_cache(
   ['pianos-spotlight-news'],
   { tags: ['home-page'], revalidate: 300 }
 )
+
+// ─── FAQ Queries ──────────────────────────────────────────────────────────────
+
+/**
+ * Get all published FAQs, optionally filtered by category slug.
+ */
+export function getAllFaqs(categorySlug?: string) {
+  const cacheKey = categorySlug ? `faqs-category-${categorySlug}` : 'faqs-all'
+  return unstable_cache(
+    async () => {
+      const payload = await getPayloadClient()
+      let categoryId: string | number | undefined
+      if (categorySlug) {
+        const catResult = await payload.find({
+          collection: 'faq-categories',
+          where: { slug: { equals: categorySlug } },
+          depth: 0,
+          limit: 1,
+        })
+        categoryId = catResult.docs[0]?.id
+      }
+      const result = await payload.find({
+        collection: 'faqs',
+        where: {
+          status: { equals: 'published' },
+          ...(categoryId ? { categories: { in: [categoryId] } } : {}),
+        },
+        sort: '-publishedDate',
+        depth: 1,
+        limit: 200,
+      })
+      return result.docs
+    },
+    [cacheKey],
+    { tags: ['faqs'], revalidate: 3600 }
+  )()
+}
+
+/**
+ * Get all FAQ categories for filter UI.
+ */
+export const getAllFaqCategories = unstable_cache(
+  async () => {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'faq-categories',
+      sort: 'displayOrder',
+      depth: 0,
+      limit: 100,
+    })
+    return result.docs
+  },
+  ['faq-categories-all'],
+  { tags: ['faq-categories'], revalidate: 3600 }
+)
+
+/**
+ * Get all published FAQ slugs for generateStaticParams.
+ */
+export const getAllFaqSlugs = unstable_cache(
+  async () => {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'faqs',
+      where: { status: { equals: 'published' } },
+      select: { slug: true },
+      depth: 0,
+      limit: 1000,
+    })
+    return result.docs.map((doc) => ({ slug: doc.slug as string }))
+  },
+  ['faq-slugs'],
+  { tags: ['faqs'], revalidate: 3600 }
+)
+
+/**
+ * Get a single FAQ by slug.
+ */
+export function getFaqBySlug(slug: string) {
+  return unstable_cache(
+    async () => {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'faqs',
+        where: {
+          slug: { equals: slug },
+          status: { equals: 'published' },
+        },
+        depth: 2,
+        limit: 1,
+      })
+      return result.docs[0] ?? null
+    },
+    [`faq-${slug}`],
+    { tags: ['faqs', `faq-${slug}`], revalidate: 3600 }
+  )()
+}

@@ -36,6 +36,10 @@ export { NewsCarousel } from './marketing/NewsCarousel'
 export { ContactForm } from './marketing/ContactForm'
 export { StorefrontLocations } from './marketing/StorefrontLocations'
 export { FeaturedModels } from './marketing/FeaturedModels'
+export { FeaturedCollections } from './marketing/FeaturedCollections'
+export { ArtistHero } from './marketing/ArtistHero'
+export { PianosBrowser } from './marketing/PianosBrowser'
+export { ArtistsGrid } from './marketing/ArtistsGrid'
 
 // Events blocks (event-specific content)
 export { UniversityHero } from './events/UniversityHero'

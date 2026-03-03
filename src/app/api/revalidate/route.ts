@@ -77,6 +77,9 @@ export async function POST(request: NextRequest) {
         case 'artist':
           pathToRevalidate = `/artists/${slug}`
           break
+        case 'faq':
+          pathToRevalidate = `/faq/${slug}`
+          break
         case 'landing-page':
           // Landing pages use dealer/campaign slug pattern
           const [dealerSlug, campaignSlug] = slug.split('/')

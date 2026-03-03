@@ -1,357 +1,281 @@
 'use client'
 
-/**
- * ArtistsHero Component
- *
- * Fullscreen carousel hero for KAWAI Artists page
- * Displays featured artists from Payload CMS with smooth transitions
- */
-
-import { useState, useEffect, useCallback } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { motion, AnimatePresence, useInView } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import type { Artist, Media } from '@/payload-types'
+import type { Artist, Media, Product } from '@/payload-types'
 
 interface ArtistsHeroProps {
   artists: Artist[]
 }
 
-const AUTO_PLAY_INTERVAL = 5000 // 5 seconds
+const AUTO_PLAY_DURATION = 6000
+
+function getImageUrl(artist: Artist): string {
+  if (artist.heroImageUrl) return artist.heroImageUrl
+  if (artist.image && typeof artist.image === 'object') {
+    return (artist.image as Media).url ?? artist.imageUrl ?? '/images/defaults/artist-placeholder.jpg'
+  }
+  return artist.imageUrl ?? '/images/defaults/artist-placeholder.jpg'
+}
 
 export default function ArtistsHero({ artists }: ArtistsHeroProps) {
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
-  const [direction, setDirection] = useState<'left' | 'right'>('right')
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(true)
+  const [progress, setProgress] = useState(0)
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [touchEnd, setTouchEnd] = useState<number | null>(null)
+
+  const sectionRef = useRef<HTMLElement>(null)
+  const isInView = useInView(sectionRef, { once: true, amount: 0.1 })
 
   const totalSlides = artists.length
+  const minSwipeDistance = 50
 
-  // Don't render if no artists
+  const prefersReducedMotion =
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  const goToPrevious = useCallback(() => {
+    setProgress(0)
+    setCurrentIndex((prev) => (prev === 0 ? totalSlides - 1 : prev - 1))
+  }, [totalSlides])
+
+  const goToNext = useCallback(() => {
+    setProgress(0)
+    setCurrentIndex((prev) => (prev + 1) % totalSlides)
+  }, [totalSlides])
+
+  // Auto-play + progress
+  useEffect(() => {
+    if (!isPlaying || !isInView || totalSlides <= 1) {
+      setProgress(0)
+      return
+    }
+    setProgress(0)
+    const tickMs = 50
+    const steps = AUTO_PLAY_DURATION / tickMs
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => Math.min(prev + 100 / steps, 100))
+    }, tickMs)
+    const slideTimer = setTimeout(goToNext, AUTO_PLAY_DURATION)
+    return () => {
+      clearInterval(progressInterval)
+      clearTimeout(slideTimer)
+    }
+  }, [isPlaying, currentIndex, isInView, totalSlides, goToNext])
+
+  // Keyboard
+  useEffect(() => {
+    if (totalSlides === 0) return
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); goToPrevious() }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); goToNext() }
+      else if (e.key === ' ') { e.preventDefault(); setIsPlaying((p) => !p) }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [goToPrevious, goToNext, totalSlides])
+
+  // Touch
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null)
+    if (e.targetTouches[0]) setTouchStart(e.targetTouches[0].clientX)
+    setIsPlaying(false)
+  }
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (e.targetTouches[0]) setTouchEnd(e.targetTouches[0].clientX)
+  }
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return
+    const dist = touchStart - touchEnd
+    if (dist > minSwipeDistance) goToNext()
+    else if (dist < -minSwipeDistance) goToPrevious()
+    setTimeout(() => setIsPlaying(true), 2000)
+  }
+
   if (totalSlides === 0) return null
 
-  // Auto-play functionality
-  useEffect(() => {
-    if (!isAutoPlaying) return
-
-    const interval = setInterval(() => {
-      handleNext()
-    }, AUTO_PLAY_INTERVAL)
-
-    return () => clearInterval(interval)
-  }, [currentSlide, isAutoPlaying])
-
-  const handlePrevious = useCallback(() => {
-    setDirection('left')
-    setCurrentSlide((prev) => (prev === 0 ? totalSlides - 1 : prev - 1))
-  }, [totalSlides])
-
-  const handleNext = useCallback(() => {
-    setDirection('right')
-    setCurrentSlide((prev) => (prev === totalSlides - 1 ? 0 : prev + 1))
-  }, [totalSlides])
-
-  const goToSlide = useCallback((index: number) => {
-    setDirection(index > currentSlide ? 'right' : 'left')
-    setCurrentSlide(index)
-  }, [currentSlide])
-
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
-        handlePrevious()
-        setIsAutoPlaying(false)
-      } else if (e.key === 'ArrowRight') {
-        handleNext()
-        setIsAutoPlaying(false)
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handlePrevious, handleNext])
-
-  // Animation variants
-  const slideVariants = {
-    enter: {
-      opacity: 0,
-      scale: 1.1
-    },
-    center: {
-      opacity: 1,
-      scale: 1,
-      transition: {
-        duration: 1,
-        ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number]
-      }
-    },
-    exit: {
-      opacity: 0,
-      scale: 0.95,
-      transition: {
-        duration: 0.8,
-        ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number]
-      }
-    }
-  }
-
-  const overlayVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.8,
-        delay: 0.3,
-        ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number]
-      }
-    }
-  }
-
-  const currentArtist = artists[currentSlide]
-
-  // Safety check - should never happen due to early return above
-  if (!currentArtist) {
-    console.error('[ArtistsHero] currentArtist is undefined, slide:', currentSlide)
-    return null
-  }
-
-  // Get image URL - prioritize heroImageUrl for featured artists
-  const getImageUrl = (artist: Artist): string => {
-    // First check for heroImageUrl (hero-specific high-res image)
-    if (artist.heroImageUrl) {
-      return artist.heroImageUrl
-    }
-
-    // Fall back to regular image
-    if (artist.image && typeof artist.image === 'object') {
-      return (artist.image as Media).url || artist.imageUrl || '/images/defaults/artist-placeholder.jpg'
-    }
-    return artist.imageUrl || '/images/defaults/artist-placeholder.jpg'
-  }
+  const slideLabel = String(currentIndex + 1).padStart(2, '0')
+  const totalLabel = String(totalSlides).padStart(2, '0')
+  const currentArtist = artists[currentIndex]
+  if (!currentArtist) return null
 
   return (
     <section
-      className="relative min-h-screen w-full overflow-hidden bg-kawai-charcoal"
-      onMouseEnter={() => setIsAutoPlaying(false)}
-      onMouseLeave={() => setIsAutoPlaying(true)}
-      aria-label="Featured KAWAI Artists Carousel"
+      ref={sectionRef}
+      className="relative w-full bg-kawai-black"
+      style={{ height: 'clamp(420px, 60vh, 640px)' }}
+      aria-roledescription="carousel"
+      aria-label="Featured KAWAI Artists"
     >
-      {/* Carousel Images */}
-      <AnimatePresence initial={false} custom={direction} mode="wait">
-        <motion.div
-          key={currentSlide}
-          custom={direction}
-          variants={slideVariants}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          className="absolute inset-0"
-        >
-          <div className="relative h-full w-full">
-            {/* Gradient Overlays */}
-            <div className="absolute inset-0 bg-gradient-to-b from-kawai-charcoal/60 via-kawai-charcoal/40 to-kawai-charcoal/80 z-10" />
-            <div className="absolute inset-0 bg-gradient-to-r from-kawai-charcoal/50 via-transparent to-kawai-charcoal/50 z-10" />
-
-            {/* Artist Image */}
-            <Image
-              src={getImageUrl(currentArtist)}
-              alt={currentArtist.name}
-              fill
-              priority={currentSlide === 0}
-              className="object-cover"
-              sizes="100vw"
-            />
-          </div>
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Content Overlay */}
-      <div className="relative z-20 flex min-h-screen items-center justify-center px-4">
-        <motion.div
-          key={`content-${currentSlide}`}
-          variants={overlayVariants}
-          initial="hidden"
-          animate="visible"
-          className="max-w-5xl text-center"
-        >
-          {/* Genre Badge */}
-          {currentArtist.genre && (
-            <motion.div
-              className="mb-6 inline-block"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-kawai-red/90 text-white text-sm font-medium backdrop-blur-sm">
-                {currentArtist.genre.charAt(0).toUpperCase() + currentArtist.genre.slice(1)}
-              </span>
-            </motion.div>
-          )}
-
-          {/* Artist Name */}
-          <h1 className="mb-6 text-5xl font-light tracking-tight text-white md:text-7xl lg:text-8xl">
-            {currentArtist.name}
-          </h1>
-
-          {/* Short Bio */}
-          {currentArtist.shortBio && (
-            <p className="mx-auto max-w-2xl text-base font-light text-gray-300 md:text-lg mb-12 leading-relaxed">
-              {currentArtist.shortBio}
-            </p>
-          )}
-
-          {/* CTA Button */}
+      <div
+        className="relative w-full h-full"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        {/* ── BACKGROUND IMAGES ─────────────────────────────────────────── */}
+        <AnimatePresence mode="wait">
           <motion.div
-            className="flex justify-center gap-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
+            key={currentIndex}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.8, ease: 'easeInOut' }}
+            className="absolute inset-0"
           >
-            <Link
-              href={`/artists/${currentArtist.slug}`}
-              className={cn(
-                'group inline-flex items-center gap-3 px-8 py-4 rounded-full',
-                'bg-white text-kawai-charcoal hover:bg-white/90',
-                'font-semibold text-base',
-                'transition-all duration-300',
-                'shadow-lg hover:shadow-xl hover:shadow-white/20',
-                'hover:scale-105'
-              )}
-            >
-              <span>View Profile</span>
-              <svg
-                className="w-5 h-5 transition-transform group-hover:translate-x-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
+            {/*
+              Next.js Image with fill requires its immediate parent to have
+              position: relative with explicit width/height — we set both via
+              w-full h-full here so the fill image covers the full section.
+            */}
+            <div className="relative w-full h-full overflow-hidden">
+              <Image
+                src={getImageUrl(currentArtist)}
+                alt={currentArtist.name}
+                fill
+                priority={currentIndex === 0}
+                className="object-cover object-center"
+                sizes="100vw"
+              />
+            </div>
 
-            {/* Secondary CTA - Explore All Artists */}
-            <a
-              href="#artists-grid"
-              className={cn(
-                'group inline-flex items-center gap-3 px-8 py-4 rounded-full',
-                'border-2 border-white/30 text-white hover:bg-white/10',
-                'font-semibold text-base',
-                'transition-all duration-300',
-                'backdrop-blur-sm',
-                'hover:border-white/50'
-              )}
-            >
-              <span>Explore All</span>
-              <svg
-                className="w-5 h-5 transition-transform group-hover:translate-y-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </a>
+            {/* Bottom gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/90 via-kawai-black/30 to-transparent pointer-events-none" />
+            {/* Left gradient */}
+            <div className="absolute inset-0 bg-gradient-to-r from-kawai-black/50 via-kawai-black/10 to-transparent pointer-events-none" />
           </motion.div>
-        </motion.div>
-      </div>
+        </AnimatePresence>
 
-      {/* Navigation Controls - Only show if more than 1 artist */}
-      {totalSlides > 1 && (
-        <>
-          <div className="absolute inset-x-0 top-1/2 z-30 flex -translate-y-1/2 items-center justify-between px-4 md:px-8">
-            {/* Previous Button */}
-            <button
-              onClick={handlePrevious}
-              className={cn(
-                'group flex h-12 w-12 items-center justify-center rounded-full',
-                'border border-white/20 bg-kawai-charcoal/30 backdrop-blur-sm',
-                'transition-all duration-300 hover:bg-white/10 hover:border-white/40',
-                'focus:outline-none focus:ring-2 focus:ring-kawai-red'
-              )}
-              aria-label="Previous artist"
-            >
-              <ChevronLeft className="h-6 w-6 text-white transition-transform group-hover:-translate-x-0.5" />
-            </button>
+        {/* ── OUR ARTISTS LABEL — top left ──────────────────────────────── */}
+        <div className="absolute top-8 left-8 sm:left-12 lg:left-16 z-30">
+          <span className="inline-flex items-center gap-2.5 text-[10px] font-semibold tracking-[0.3em] uppercase text-white/50">
+            <span className="inline-block w-4 h-px bg-kawai-red flex-shrink-0" />
+            Our Artists
+          </span>
+        </div>
 
-            {/* Next Button */}
-            <button
-              onClick={handleNext}
-              className={cn(
-                'group flex h-12 w-12 items-center justify-center rounded-full',
-                'border border-white/20 bg-kawai-charcoal/30 backdrop-blur-sm',
-                'transition-all duration-300 hover:bg-white/10 hover:border-white/40',
-                'focus:outline-none focus:ring-2 focus:ring-kawai-red'
-              )}
-              aria-label="Next artist"
-            >
-              <ChevronRight className="h-6 w-6 text-white transition-transform group-hover:translate-x-0.5" />
-            </button>
+        {/* ── SLIDE COUNTER — top right ─────────────────────────────────── */}
+        {totalSlides > 1 && (
+          <div className="absolute top-8 right-8 sm:right-10 z-30 flex items-center gap-1.5 select-none" aria-hidden="true">
+            <span className="text-base font-light text-white leading-none">{slideLabel}</span>
+            <span className="text-white/30 text-xs">/</span>
+            <span className="text-sm font-light text-white/45 leading-none">{totalLabel}</span>
           </div>
+        )}
 
-          {/* Dot Indicators */}
-          <div className="absolute bottom-8 left-1/2 z-30 flex -translate-x-1/2 gap-3">
+        {/* ── CONTENT — bottom left ─────────────────────────────────────── */}
+        <div className="absolute z-20 bottom-10 sm:bottom-12 left-8 sm:left-12 lg:left-16">
+          <div className="space-y-4">
+            <motion.h2
+              key={`name-${currentIndex}`}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="text-4xl sm:text-5xl lg:text-6xl font-light font-[family-name:var(--font-brand-serif)] text-white leading-[1.05] tracking-tight"
+            >
+              {currentArtist.name}
+            </motion.h2>
+
+            {/* KAWAI Model */}
+            {currentArtist.kawaiModel && typeof currentArtist.kawaiModel !== 'string' && (
+              <motion.p
+                key={`model-${currentIndex}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.32, ease: [0.25, 0.46, 0.45, 0.94] }}
+                className="text-xs font-semibold tracking-[0.22em] uppercase text-white/50 font-[family-name:var(--font-brand-sans)]"
+              >
+                <span className="text-kawai-red">KAWAI</span>{' '}
+                {(currentArtist.kawaiModel as Product).name ?? (currentArtist.kawaiModel as Product).model}
+              </motion.p>
+            )}
+
+            <motion.div
+              key={`cta-${currentIndex}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }}
+            >
+              <Link
+                href={`/artists/${currentArtist.slug}`}
+                className={cn(
+                  'group relative inline-flex items-center gap-2.5 overflow-hidden',
+                  'rounded-full px-6 py-3',
+                  'text-xs font-semibold tracking-[0.14em] uppercase',
+                  'font-[family-name:var(--font-brand-sans)]',
+                  'bg-white text-kawai-black',
+                  'transition-all duration-300',
+                  'hover:bg-kawai-pearl hover:shadow-[0_6px_24px_rgba(0,0,0,0.25)]',
+                )}
+              >
+                <span className="relative z-10">View Profile</span>
+                <svg
+                  className="relative z-10 w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+                  aria-hidden="true"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+                <span className="absolute inset-0 -translate-x-full skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+              </Link>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* ── PROGRESS LINES — bottom left, below content ───────────────── */}
+        {totalSlides > 1 && (
+          <div className="absolute bottom-4 left-8 sm:left-12 lg:left-16 z-30 flex items-center gap-1.5">
             {artists.map((artist, index) => (
               <button
                 key={artist.id}
-                onClick={() => goToSlide(index)}
-                className={cn(
-                  'group relative h-2 rounded-full transition-all duration-300',
-                  'focus:outline-none focus:ring-2 focus:ring-kawai-red',
-                  currentSlide === index ? 'w-12 bg-white' : 'w-2 bg-white/30 hover:bg-white/50'
-                )}
+                onClick={() => {
+                  setCurrentIndex(index)
+                  setProgress(0)
+                  setIsPlaying(false)
+                  setTimeout(() => setIsPlaying(true), 2000)
+                }}
+                className="relative h-[2px] rounded-full overflow-hidden transition-all duration-300 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/60"
+                style={{ width: index === currentIndex ? 40 : 18 }}
                 aria-label={`Go to ${artist.name}`}
-                aria-current={currentSlide === index}
+                aria-current={index === currentIndex}
               >
-                {/* Progress bar for active slide */}
-                {currentSlide === index && isAutoPlaying && (
-                  <motion.div
-                    className="absolute left-0 top-0 h-full rounded-full bg-kawai-red"
-                    initial={{ width: '0%' }}
-                    animate={{ width: '100%' }}
-                    transition={{ duration: AUTO_PLAY_INTERVAL / 1000, ease: 'linear' }}
+                <span className="absolute inset-0 bg-white/25 rounded-full" />
+                {index === currentIndex && (
+                  <motion.span
+                    className="absolute inset-y-0 left-0 bg-white rounded-full"
+                    style={{ width: `${progress}%` }}
                   />
+                )}
+                {index < currentIndex && (
+                  <span className="absolute inset-0 bg-white/60 rounded-full" />
                 )}
               </button>
             ))}
           </div>
+        )}
 
-          {/* Slide Counter */}
-          <div className="absolute bottom-8 right-8 z-30 hidden md:block">
-            <div className="flex items-center gap-2 rounded-full border border-white/20 bg-kawai-charcoal/30 px-4 py-2 backdrop-blur-sm">
-              <span className="text-sm font-light text-white">
-                {String(currentSlide + 1).padStart(2, '0')}
-              </span>
-              <span className="text-sm font-light text-white/50">/</span>
-              <span className="text-sm font-light text-white/50">
-                {String(totalSlides).padStart(2, '0')}
-              </span>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Scroll Down Indicator */}
-      <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 hidden md:block">
-        <motion.a
-          href="#artists-grid"
-          className="flex flex-col items-center gap-2 text-white/60 hover:text-white transition-colors group"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1, duration: 0.8 }}
-        >
-          <span className="text-xs uppercase tracking-wider font-medium">Explore All Artists</span>
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        {/* ── PLAY / PAUSE — bottom right ───────────────────────────────── */}
+        {totalSlides > 1 && (
+          <button
+            onClick={() => setIsPlaying((p) => !p)}
+            className="absolute bottom-3 right-8 sm:right-10 z-30 w-9 h-9 rounded-full border border-white/20 bg-kawai-black/25 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/10 transition-all duration-300"
+            aria-label={isPlaying ? 'Pause slideshow' : 'Resume slideshow'}
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </motion.div>
-        </motion.a>
+            {isPlaying ? (
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+              </svg>
+            ) : (
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            )}
+          </button>
+        )}
       </div>
     </section>
   )

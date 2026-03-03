@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { authenticated } from '@/lib/payload/access'
 import { authenticatedOrPublished } from '@/lib/payload/access'
 import { hero } from '@/lib/payload/fields/hero'
+import { imageField } from '@/lib/payload/fields'
 import { slugField } from 'payload'
 import { populatePublishedAt } from './hooks/populatePublishedAt'
 import { revalidateDelete, revalidatePage } from './hooks/revalidatePage'
@@ -142,6 +143,10 @@ export const Pages: CollectionConfig<'pages'> = {
                 'marketing-instagram-carousel',     // Instagram Carousel
                 'marketing-artist-carousel',        // Artist Carousel
                 'marketing-featured-models',        // Featured Models
+                'marketing-featured-collections',   // Featured Collections carousel
+                'marketing-artist-hero',            // Artist Hero carousel
+                'marketing-pianos-browser',         // Pianos browser catalog
+                'marketing-artists-grid',           // Artists grid with search
 
                 // Events blocks - Event-specific content
                 'events-university-hero',           // University Hero
@@ -169,6 +174,48 @@ export const Pages: CollectionConfig<'pages'> = {
             },
           ],
           label: 'Content',
+        },
+        {
+          label: 'SEO & Meta',
+          description: 'Search engine optimization and metadata settings',
+          fields: [
+            {
+              name: 'seo',
+              type: 'group',
+              admin: { description: 'SEO and metadata configuration' },
+              fields: [
+                {
+                  name: 'metaTitle',
+                  type: 'text',
+                  admin: { description: 'Page title for search engines (defaults to page title if empty)' },
+                },
+                {
+                  name: 'metaDescription',
+                  type: 'textarea',
+                  maxLength: 160,
+                  admin: { description: 'Page meta description for search engines (max 160 characters)' },
+                },
+                {
+                  name: 'keywords',
+                  type: 'text',
+                  admin: { description: 'SEO keywords (comma-separated)' },
+                },
+                {
+                  name: 'openGraphTitle',
+                  type: 'text',
+                  admin: { description: 'Open Graph title for social media sharing (defaults to metaTitle)' },
+                },
+                {
+                  name: 'openGraphDescription',
+                  type: 'textarea',
+                  admin: { description: 'Open Graph description for social media sharing' },
+                },
+                imageField('openGraphImage', {
+                  admin: { description: 'Open Graph image for social media sharing (1200x630px recommended)' },
+                }),
+              ],
+            },
+          ],
         },
       ],
     },
