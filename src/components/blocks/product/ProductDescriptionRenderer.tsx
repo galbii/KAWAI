@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect, useCallback } from 'react'
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
@@ -48,11 +48,142 @@ type UnifiedMediaItem = {
 }
 
 // -------------------------------------------------------------------
-// Helpers
+// Helpers — hoisted outside component so they're never recreated
 // -------------------------------------------------------------------
 function extractYouTubeIdFromEmbed(embedUrl: string): string | null {
   const match = embedUrl.match(/youtube\.com\/embed\/([^?&/]+)/)
   return match?.[1] ?? null
+}
+
+function getThumbnailSrc(item: UnifiedMediaItem): string | null {
+  if (item.type === 'youtube' && item.youtubeId) {
+    return `https://img.youtube.com/vi/${item.youtubeId}/mqdefault.jpg`
+  }
+  if (item.type === 'image' && item.imageUrl) {
+    return item.imageUrl
+  }
+  if (item.type === 'video' && item.thumbnailUrl) {
+    return item.thumbnailUrl
+  }
+  return null
+}
+
+// -------------------------------------------------------------------
+// LazyYouTubeEmbed — only mounts the iframe after user clicks play.
+// Avoids loading ~500KB+ of YouTube JS per embed on page load.
+// -------------------------------------------------------------------
+function LazyYouTubeEmbed({ embedUrl, title }: { embedUrl: string; title?: string | undefined }) {
+  const [activated, setActivated] = useState(false)
+  const videoId = extractYouTubeIdFromEmbed(embedUrl)
+  const thumbnailSrc = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null
+
+  const activate = useCallback(() => setActivated(true), [])
+
+  if (!activated) {
+    return (
+      <div
+        className="relative w-full aspect-video rounded-lg overflow-hidden bg-black shadow-2xl cursor-pointer group"
+        onClick={activate}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === 'Enter' && activate()}
+        aria-label={`Play ${title ?? 'video'}`}
+      >
+        {thumbnailSrc && (
+          <Image
+            src={thumbnailSrc}
+            alt={title ?? 'Video thumbnail'}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 66vw"
+          />
+        )}
+        <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/20 transition-colors">
+          <div className="w-16 h-16 bg-kawai-red rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-200">
+            <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-black shadow-2xl">
+      <iframe
+        src={`${embedUrl}&autoplay=1`}
+        className="absolute inset-0 w-full h-full"
+        allowFullScreen
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        title={title ?? 'Video'}
+        style={{ border: 'none' }}
+      />
+    </div>
+  )
+}
+
+// -------------------------------------------------------------------
+// MediaItemRenderer — stable component outside main to avoid recreation
+// -------------------------------------------------------------------
+function MediaItemRenderer({ item }: { item: UnifiedMediaItem }): React.ReactNode {
+  if (item.type === 'youtube' && item.youtubeEmbedUrl) {
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={item.youtubeEmbedUrl}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <LazyYouTubeEmbed embedUrl={item.youtubeEmbedUrl} title={item.title} />
+        </motion.div>
+      </AnimatePresence>
+    )
+  }
+
+  if (item.type === 'video' && item.videoUrl) {
+    return (
+      <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-black shadow-2xl">
+        <video
+          key={item.videoUrl}
+          className="absolute inset-0 w-full h-full object-cover"
+          controls
+          playsInline
+          preload="metadata"
+          poster={item.thumbnailUrl}
+        >
+          <source src={item.videoUrl} type={item.videoMimeType ?? 'video/mp4'} />
+        </video>
+      </div>
+    )
+  }
+
+  if (item.type === 'image' && item.imageUrl) {
+    const naturalAspect =
+      item.imageWidth && item.imageHeight
+        ? item.imageWidth / item.imageHeight
+        : undefined
+
+    return (
+      <div
+        className="relative w-full"
+        style={{ aspectRatio: naturalAspect ? String(naturalAspect) : '4/3' }}
+      >
+        <Image
+          src={item.imageUrl}
+          alt={item.imageAlt ?? item.title ?? ''}
+          fill
+          className="object-contain"
+          style={{ filter: 'drop-shadow(0 24px 48px rgba(0,0,0,0.13))' }}
+          sizes="(max-width: 768px) 100vw, 66vw"
+        />
+      </div>
+    )
+  }
+
+  return null
 }
 
 // -------------------------------------------------------------------
@@ -106,81 +237,85 @@ export function ProductDescriptionRenderer(props: ProductDescriptionRendererProp
   const hasBackgroundMedia = hasBackgroundImage || hasBackgroundVideo
 
   // ----------------------------------------------------------------
-  // Build unified carousel items:
-  // Order: customMedia YouTube → customMedia images → Shopify media
+  // Build unified carousel items — memoized so array is only rebuilt
+  // when the underlying product data actually changes, not on every
+  // state update (currentIndex, isExpanded, isVisible, etc.)
   // ----------------------------------------------------------------
   const customMedia = (product?.customMedia as CustomMediaItem[] | null | undefined) ?? []
 
-  // 1a. YouTube items from customMedia (shown first)
-  const customYoutubeItems: UnifiedMediaItem[] = customMedia
-    .filter((item) => item.mediaType === 'youtube' && item.youtubeUrl)
-    .flatMap((item): UnifiedMediaItem[] => {
-      const youtubeId = extractYouTubeId(item.youtubeUrl!)
-      if (!youtubeId) return []
-      return [{
-        type: 'youtube',
-        youtubeEmbedUrl: `https://www.youtube.com/embed/${youtubeId}?modestbranding=1&rel=0`,
-        youtubeId,
-        caption: item.alt ?? undefined,
-      }]
-    })
-
-  // 1b. Image items from customMedia (shown after YouTube)
-  const customImageItems: UnifiedMediaItem[] = customMedia
-    .filter((item) => !item.mediaType || item.mediaType === 'media')
-    .flatMap((item): UnifiedMediaItem[] => {
-      if (!item.image) return []
-      const imageProps = getImagePropsWithFallback(
-        item.image as Parameters<typeof getImagePropsWithFallback>[0],
-        '/images/defaults/product-description-bg.jpg',
-        'gallery'
-      )
-      return [{
-        type: 'image',
-        imageUrl: imageProps.src,
-        imageAlt: item.alt ?? '',
-        caption: item.alt ?? undefined,
-      }]
-    })
-
-  // 2. Shopify product media — appended last
-  const shopifyItems: UnifiedMediaItem[] = (product?.shopifyMedia ?? [])
-    .filter((m) => m.status !== 'FAILED' && m.status !== 'PROCESSING')
-    .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
-    .flatMap((media): UnifiedMediaItem[] => {
-      if (media.mediaType === 'IMAGE' && media.imageUrl) {
-        return [{
-          type: 'image',
-          imageUrl: media.imageUrl,
-          imageAlt: media.alt ?? '',
-          imageWidth: media.imageWidth ?? undefined,
-          imageHeight: media.imageHeight ?? undefined,
-        }]
-      }
-      if (media.mediaType === 'EXTERNAL_VIDEO' && media.host === 'YOUTUBE') {
-        const youtubeId =
-          extractYouTubeId(media.originUrl ?? '') ??
-          extractYouTubeIdFromEmbed(media.embedUrl ?? '')
+  const allItems = useMemo<UnifiedMediaItem[]>(() => {
+    // 1a. YouTube items from customMedia (shown first)
+    const customYoutubeItems: UnifiedMediaItem[] = customMedia
+      .filter((item) => item.mediaType === 'youtube' && item.youtubeUrl)
+      .flatMap((item): UnifiedMediaItem[] => {
+        const youtubeId = extractYouTubeId(item.youtubeUrl!)
         if (!youtubeId) return []
         return [{
           type: 'youtube',
           youtubeEmbedUrl: `https://www.youtube.com/embed/${youtubeId}?modestbranding=1&rel=0`,
           youtubeId,
+          caption: item.alt ?? undefined,
         }]
-      }
-      if (media.mediaType === 'VIDEO' && media.videoUrl) {
-        return [{
-          type: 'video',
-          videoUrl: media.videoUrl,
-          videoMimeType: media.videoMimeType ?? undefined,
-          thumbnailUrl: media.thumbnailUrl ?? undefined,
-        }]
-      }
-      return []
-    })
+      })
 
-  // Combined: customMedia YouTube → customMedia images → Shopify media
-  const allItems: UnifiedMediaItem[] = [...customYoutubeItems, ...customImageItems, ...shopifyItems]
+    // 1b. Image items from customMedia (shown after YouTube)
+    const customImageItems: UnifiedMediaItem[] = customMedia
+      .filter((item) => !item.mediaType || item.mediaType === 'media')
+      .flatMap((item): UnifiedMediaItem[] => {
+        if (!item.image) return []
+        const imageProps = getImagePropsWithFallback(
+          item.image as Parameters<typeof getImagePropsWithFallback>[0],
+          '/images/defaults/product-description-bg.jpg',
+          'gallery'
+        )
+        return [{
+          type: 'image',
+          imageUrl: imageProps.src,
+          imageAlt: item.alt ?? '',
+          caption: item.alt ?? undefined,
+        }]
+      })
+
+    // 2. Shopify product media — appended last
+    const shopifyItems: UnifiedMediaItem[] = (product?.shopifyMedia ?? [])
+      .filter((m) => m.status !== 'FAILED' && m.status !== 'PROCESSING')
+      .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+      .flatMap((media): UnifiedMediaItem[] => {
+        if (media.mediaType === 'IMAGE' && media.imageUrl) {
+          return [{
+            type: 'image',
+            imageUrl: media.imageUrl,
+            imageAlt: media.alt ?? '',
+            imageWidth: media.imageWidth ?? undefined,
+            imageHeight: media.imageHeight ?? undefined,
+          }]
+        }
+        if (media.mediaType === 'EXTERNAL_VIDEO' && media.host === 'YOUTUBE') {
+          const youtubeId =
+            extractYouTubeId(media.originUrl ?? '') ??
+            extractYouTubeIdFromEmbed(media.embedUrl ?? '')
+          if (!youtubeId) return []
+          return [{
+            type: 'youtube',
+            youtubeEmbedUrl: `https://www.youtube.com/embed/${youtubeId}?modestbranding=1&rel=0`,
+            youtubeId,
+          }]
+        }
+        if (media.mediaType === 'VIDEO' && media.videoUrl) {
+          return [{
+            type: 'video',
+            videoUrl: media.videoUrl,
+            videoMimeType: media.videoMimeType ?? undefined,
+            thumbnailUrl: media.thumbnailUrl ?? undefined,
+          }]
+        }
+        return []
+      })
+
+    return [...customYoutubeItems, ...customImageItems, ...shopifyItems]
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product?.customMedia, product?.shopifyMedia])
+
   const currentItem = allItems[currentIndex] ?? null
 
   // ----------------------------------------------------------------
@@ -269,90 +404,6 @@ export function ProductDescriptionRenderer(props: ProductDescriptionRendererProp
   // ----------------------------------------------------------------
   if (!description && allItems.length === 0) {
     console.warn('[ProductDescription] No content available — block will not render')
-    return null
-  }
-
-  // ----------------------------------------------------------------
-  // Thumbnail helper
-  // ----------------------------------------------------------------
-  const getThumbnailSrc = (item: UnifiedMediaItem): string | null => {
-    if (item.type === 'youtube' && item.youtubeId) {
-      return `https://img.youtube.com/vi/${item.youtubeId}/mqdefault.jpg`
-    }
-    if (item.type === 'image' && item.imageUrl) {
-      return item.imageUrl
-    }
-    if (item.type === 'video' && item.thumbnailUrl) {
-      return item.thumbnailUrl
-    }
-    return null
-  }
-
-  // ----------------------------------------------------------------
-  // Active media renderer
-  // ----------------------------------------------------------------
-  const renderMediaItem = (item: UnifiedMediaItem) => {
-    if (item.type === 'youtube' && item.youtubeEmbedUrl) {
-      return (
-        <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-black shadow-2xl">
-          <AnimatePresence mode="wait">
-            <motion.iframe
-              key={item.youtubeEmbedUrl}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
-              src={item.youtubeEmbedUrl}
-              className="absolute inset-0 w-full h-full"
-              allowFullScreen
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              title={item.title ?? 'Video'}
-            />
-          </AnimatePresence>
-        </div>
-      )
-    }
-
-    if (item.type === 'video' && item.videoUrl) {
-      return (
-        <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-black shadow-2xl">
-          <video
-            key={item.videoUrl}
-            className="absolute inset-0 w-full h-full object-cover"
-            controls
-            playsInline
-            poster={item.thumbnailUrl}
-          >
-            <source src={item.videoUrl} type={item.videoMimeType ?? 'video/mp4'} />
-          </video>
-        </div>
-      )
-    }
-
-    if (item.type === 'image' && item.imageUrl) {
-      // Use the image's natural aspect ratio when available so nothing is cropped
-      const naturalAspect =
-        item.imageWidth && item.imageHeight
-          ? item.imageWidth / item.imageHeight
-          : undefined
-
-      return (
-        <div
-          className="relative w-full"
-          style={{ aspectRatio: naturalAspect ? String(naturalAspect) : '4/3' }}
-        >
-          <Image
-            src={item.imageUrl}
-            alt={item.imageAlt ?? item.title ?? ''}
-            fill
-            className="object-contain"
-            style={{ filter: 'drop-shadow(0 24px 48px rgba(0,0,0,0.13))' }}
-            sizes="(max-width: 768px) 100vw, 66vw"
-          />
-        </div>
-      )
-    }
-
     return null
   }
 
@@ -481,7 +532,15 @@ export function ProductDescriptionRenderer(props: ProductDescriptionRendererProp
                           aria-label={item.title ?? `Media item ${index + 1}`}
                         >
                           {thumbSrc && (
-                            <Image src={thumbSrc} alt={item.title ?? `Item ${index + 1}`} fill className="object-cover" sizes="80px" />
+                            <Image
+                              src={thumbSrc}
+                              alt={item.title ?? `Item ${index + 1}`}
+                              fill
+                              className="object-cover"
+                              sizes="80px"
+                              priority={index === 0}
+                              loading={index === 0 ? 'eager' : 'lazy'}
+                            />
                           )}
                           {(item.type === 'youtube' || item.type === 'video') && index !== currentIndex && (
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
@@ -515,20 +574,7 @@ export function ProductDescriptionRenderer(props: ProductDescriptionRendererProp
                       exit={{ opacity: 0, scale: 0.97, y: -12 }}
                       transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
                     >
-                      {currentItem.type === 'image' ? (
-                        <motion.div
-                          animate={{ y: [0, -10, 0] }}
-                          transition={{
-                            duration: 6,
-                            repeat: Infinity,
-                            ease: 'easeInOut',
-                          }}
-                        >
-                          {renderMediaItem(currentItem)}
-                        </motion.div>
-                      ) : (
-                        renderMediaItem(currentItem)
-                      )}
+                      <MediaItemRenderer item={currentItem} />
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -612,9 +658,9 @@ export function ProductDescriptionRenderer(props: ProductDescriptionRendererProp
                     key={index}
                     initial={{ opacity: 0, y: 20 }}
                     animate={isVisible ? { opacity: 1, y: 0 } : {}}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    transition={{ duration: 0.5, delay: Math.min(index * 0.1, 0.5) }}
                   >
-                    {renderMediaItem(item)}
+                    <MediaItemRenderer item={item} />
                     {(item.title || item.caption) && (
                       <div className="mt-4">
                         {item.title && <h3 className={cn('text-lg font-medium mb-2', theme.text)}>{item.title}</h3>}
