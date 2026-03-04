@@ -220,7 +220,7 @@ export function CollectionProductRow({
         className="group block relative aspect-[4/3] bg-white overflow-hidden"
       >
         {/* Crossfade between images when variant changes */}
-        <AnimatePresence mode="crossfade">
+        <AnimatePresence mode="sync">
           {displayImageUrl ? (
             <motion.div
               key={displayImageUrl}
