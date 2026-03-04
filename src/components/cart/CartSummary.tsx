@@ -16,6 +16,8 @@ import { useState } from 'react'
 import { ExternalLink, Loader2, Tag } from 'lucide-react'
 import type { SimpleCart } from '@/lib/shopify/types'
 import { cn } from '@/lib/utils'
+import { trackWithConfig } from '@/lib/analytics/unified-tracking'
+import { getStoredUTMParams } from '@/lib/shopify/utm-tracking'
 
 // ============================================================================
 // Component Props
@@ -70,10 +72,39 @@ export function CartSummary({ cart, className }: CartSummaryProps) {
         console.log('[CartSummary] Checkout session marked for cart:', cart.id)
       }
 
-      console.log('[CartSummary] Opening Shopify checkout in new tab:', cart.checkoutUrl)
+      // Fire begin_checkout analytics event
+      trackWithConfig({
+        blockType: 'cart-summary',
+        blockData: {},
+        action: 'begin_checkout',
+        label: `Cart (${cart.totalQuantity} item${cart.totalQuantity !== 1 ? 's' : ''})`,
+        currency: cart.currency || 'USD',
+        value: cart.total,
+        additionalProps: {
+          cart_id: cart.id,
+          item_count: cart.totalQuantity,
+          cart_total: cart.total,
+        },
+      })
+
+      // Append UTM parameters to checkout URL for cross-domain attribution
+      const utmParams = getStoredUTMParams()
+      let finalCheckoutUrl = cart.checkoutUrl
+      if (utmParams) {
+        const utmString = Object.entries(utmParams)
+          .filter(([, v]) => Boolean(v))
+          .map(([k, v]) => `${k}=${encodeURIComponent(v as string)}`)
+          .join('&')
+        if (utmString) {
+          const separator = cart.checkoutUrl.includes('?') ? '&' : '?'
+          finalCheckoutUrl = `${cart.checkoutUrl}${separator}${utmString}`
+        }
+      }
+
+      console.log('[CartSummary] Opening Shopify checkout in new tab:', finalCheckoutUrl)
 
       // Open Shopify checkout in new tab
-      window.open(cart.checkoutUrl, '_blank', 'noopener,noreferrer')
+      window.open(finalCheckoutUrl, '_blank', 'noopener,noreferrer')
 
       // Reset redirecting state since we're opening in new tab (not redirecting current page)
       setRedirecting(false)

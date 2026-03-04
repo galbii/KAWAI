@@ -18,7 +18,7 @@ export const Faqs: CollectionConfig = {
   admin: {
     group: 'Content',
     useAsTitle: 'question',
-    defaultColumns: ['question', 'categories', 'status', 'updatedAt'],
+    defaultColumns: ['question', 'supportHub', 'categories', 'status', 'updatedAt'],
     description: 'Frequently asked questions with rich text answers and product linking',
   },
   access: {
@@ -46,6 +46,20 @@ export const Faqs: CollectionConfig = {
         description: 'URL-friendly identifier (auto-generated from question)',
         position: 'sidebar',
       },
+    },
+
+    {
+      name: 'supportHub',
+      type: 'select',
+      admin: {
+        description: 'Which TSD hub this FAQ belongs to. Leave blank for general /faq index only.',
+        position: 'sidebar',
+      },
+      options: [
+        { label: 'Owner Hub — I own a Kawai', value: 'owner-hub' },
+        { label: "Buyer Hub — I'm choosing a Kawai", value: 'buyer-hub' },
+        { label: 'Technician Resources', value: 'technician-resources' },
+      ],
     },
 
     // Tabs
@@ -244,6 +258,22 @@ export const Faqs: CollectionConfig = {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ secret, tag: 'faqs' }),
         }).catch((err) => console.error('[Faqs Hook] Revalidation error (index):', err))
+
+        // Revalidate TSD landing page
+        fetch(revalidateUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ secret, tag: 'technical-support-division' }),
+        }).catch((err) => console.error('[Faqs Hook] Revalidation error (tsd):', err))
+
+        // Revalidate specific hub if set
+        if (doc.supportHub) {
+          fetch(revalidateUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ secret, tag: `tsd-hub-${doc.supportHub}` }),
+          }).catch((err) => console.error('[Faqs Hook] Revalidation error (tsd-hub):', err))
+        }
 
         return doc
       },

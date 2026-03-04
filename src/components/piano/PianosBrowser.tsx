@@ -7,6 +7,8 @@ import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { Search, ChevronDown, X, SlidersHorizontal } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { CollectionForBrowser } from '@/lib/payload/queries'
+import { FeaturedCollectionsCarousel } from '@/components/piano/featured-collections-carousel'
+import type { NavCollection } from '@/lib/payload/products-navigation'
 
 export interface CatalogProduct {
   id: string
@@ -18,6 +20,7 @@ export interface CatalogProduct {
   imageUrl?: string | null
   price?: { msrp?: number | null; currency?: string | null } | null
   salePrice?: number | null
+  compareAtPrice?: number | null
   shopifyCollections?: Array<{ title: string; handle: string }> | null
 }
 
@@ -47,6 +50,217 @@ function formatCurrency(amount: number, currency = 'USD'): string {
 function formatPrice(price?: CatalogProduct['price']): string {
   if (!price?.msrp) return 'Contact for Price'
   return formatCurrency(price.msrp, price.currency ?? 'USD')
+}
+
+function parseYouTubeId(url: string): string | null {
+  if (!url) return null
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?/]+)/,
+    /^([a-zA-Z0-9_-]{11})$/,
+  ]
+  for (const pattern of patterns) {
+    const match = url.match(pattern)
+    if (match?.[1]) return match[1]
+  }
+  return null
+}
+
+const bannerHeightClasses: Record<string, string> = {
+  xxs: 'h-[150px]',
+  xs: 'h-[250px]',
+  small: 'h-[400px]',
+  medium: 'h-[600px]',
+  large: 'h-[800px]',
+  fullscreen: 'h-screen min-h-[600px]',
+}
+
+const bannerColorClasses: Record<string, string> = {
+  white: 'text-white',
+  black: 'text-kawai-black',
+  'kawai-red': 'text-kawai-red',
+  'kawai-gold': 'text-[#D4AF37]',
+}
+
+const bannerAlignmentClasses: Record<string, string> = {
+  left: 'text-left items-start',
+  center: 'text-center items-center',
+  right: 'text-right items-end',
+}
+
+const bannerHeadingSizeClasses: Record<string, string> = {
+  small: 'text-2xl md:text-3xl lg:text-4xl',
+  medium: 'text-3xl md:text-4xl lg:text-5xl',
+  large: 'text-4xl md:text-5xl lg:text-6xl',
+  xl: 'text-5xl md:text-6xl lg:text-7xl',
+}
+
+const bannerContainerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.15, delayChildren: 0.1 } },
+}
+
+const bannerItemVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const } },
+}
+
+function CollectionBanner({ collection }: { collection: CollectionForBrowser }) {
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false)
+
+  const videoId = collection.youtubeUrl ? parseYouTubeId(collection.youtubeUrl) : null
+  const fallbackImage = collection.mediaUrl ?? collection.imageUrl ?? null
+
+  const safeBannerSize = 'small'
+  const safeTextColor = collection.textColor ?? 'white'
+  const safeTextAlignment = collection.textAlignment ?? 'center'
+  const safeOverlayOpacity = collection.overlayOpacity ?? 50
+  const safeHeadingSize = collection.headingSize ?? 'medium'
+  const safeFontFamily = collection.fontFamily ?? 'serif'
+
+  const hasMedia = !!(videoId || fallbackImage)
+  const hasContent = !!(collection.heading || collection.subheading)
+
+  // Render nothing if no media and no content
+  if (!hasMedia && !hasContent) return null
+
+  return (
+    <section
+      className={cn(
+        'relative w-full overflow-hidden',
+        bannerHeightClasses[safeBannerSize] ?? bannerHeightClasses.xs,
+      )}
+    >
+      {/* YouTube video background — full-cover 16:9 technique */}
+      {videoId && (
+        <div className="absolute inset-0 z-0">
+          <iframe
+            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1`}
+            className={cn(
+              'absolute top-1/2 left-1/2 w-[177.77777778vh] min-w-full h-[56.25vw] min-h-full -translate-x-1/2 -translate-y-1/2 pointer-events-none',
+              'transition-opacity duration-1000',
+              isVideoLoaded ? 'opacity-100' : 'opacity-0',
+            )}
+            allow="autoplay; encrypted-media"
+            onLoad={() => setIsVideoLoaded(true)}
+            title={`${collection.title} video`}
+          />
+        </div>
+      )}
+
+      {/* Fallback image */}
+      {!videoId && fallbackImage && (
+        <div className="absolute inset-0 z-0">
+          <Image src={fallbackImage} alt={collection.heading ?? collection.title} fill className="object-cover" sizes="100vw" priority />
+        </div>
+      )}
+
+      {/* Dark background when no media */}
+      {!hasMedia && (
+        <div className="absolute inset-0 z-0 bg-kawai-black" />
+      )}
+
+      {/* Gradient overlay + grain */}
+      <div
+        className="absolute inset-0 z-10"
+        style={{
+          background: `linear-gradient(135deg, rgba(0,0,0,${safeOverlayOpacity / 100 * 0.7}) 0%, rgba(0,0,0,${safeOverlayOpacity / 100 * 0.5}) 50%, rgba(0,0,0,${safeOverlayOpacity / 100 * 0.8}) 100%)`,
+        }}
+      >
+        <div
+          className="absolute inset-0 opacity-[0.03] mix-blend-overlay"
+          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
+        />
+      </div>
+
+      {/* Corner accents */}
+      <div className="absolute top-0 left-0 w-16 h-16 z-20 opacity-30">
+        <svg viewBox="0 0 100 100" className={bannerColorClasses[safeTextColor] ?? 'text-white'}>
+          <line x1="0" y1="20" x2="20" y2="20" stroke="currentColor" strokeWidth="1" />
+          <line x1="20" y1="0" x2="20" y2="20" stroke="currentColor" strokeWidth="1" />
+        </svg>
+      </div>
+      <div className="absolute bottom-0 right-0 w-16 h-16 z-20 opacity-30 rotate-180">
+        <svg viewBox="0 0 100 100" className={bannerColorClasses[safeTextColor] ?? 'text-white'}>
+          <line x1="0" y1="20" x2="20" y2="20" stroke="currentColor" strokeWidth="1" />
+          <line x1="20" y1="0" x2="20" y2="20" stroke="currentColor" strokeWidth="1" />
+        </svg>
+      </div>
+
+      {/* Content */}
+      <motion.div
+        className={cn(
+          'relative z-30 container mx-auto px-6 md:px-12 h-full flex flex-col justify-center',
+          bannerAlignmentClasses[safeTextAlignment] ?? bannerAlignmentClasses.center,
+        )}
+        variants={bannerContainerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {collection.heading && (
+          <motion.h2
+            variants={bannerItemVariants}
+            className={cn(
+              'font-bold leading-[1.1] mb-4 drop-shadow-2xl',
+              bannerHeadingSizeClasses[safeHeadingSize] ?? bannerHeadingSizeClasses.medium,
+              bannerColorClasses[safeTextColor] ?? 'text-white',
+              safeFontFamily === 'serif' ? 'tracking-tight' : 'tracking-wide',
+            )}
+            style={{
+              fontFamily: safeFontFamily === 'serif' ? 'Playfair Display, serif' : 'Inter, sans-serif',
+              textShadow: '0 4px 24px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3)',
+            }}
+          >
+            {collection.heading}
+          </motion.h2>
+        )}
+
+        {collection.heading && collection.subheading && (
+          <motion.div
+            variants={bannerItemVariants}
+            className={cn(
+              'w-12 h-[2px] mb-4',
+              safeTextAlignment === 'center' && 'mx-auto',
+              safeTextAlignment === 'right' && 'ml-auto',
+            )}
+            style={{
+              background: `linear-gradient(90deg, ${safeTextColor === 'kawai-red' ? '#C41E3A' : safeTextColor === 'kawai-gold' ? '#D4AF37' : safeTextColor === 'black' ? '#1a1a1a' : '#ffffff'} 0%, transparent 100%)`,
+            }}
+          />
+        )}
+
+        {collection.subheading && (
+          <motion.p
+            variants={bannerItemVariants}
+            className={cn(
+              'text-base md:text-lg leading-relaxed max-w-2xl font-light tracking-wide opacity-90 drop-shadow-lg',
+              bannerColorClasses[safeTextColor] ?? 'text-white',
+            )}
+            style={{ fontFamily: 'Inter, sans-serif', textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}
+          >
+            {collection.subheading}
+          </motion.p>
+        )}
+
+        <motion.div variants={bannerItemVariants} className="mt-8">
+          <Link
+            href={`/pianos/${collection.handle}`}
+            className={cn(
+              'inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold tracking-wide',
+              'border transition-all duration-300',
+              safeTextColor === 'black'
+                ? 'border-kawai-black/60 text-kawai-black hover:bg-kawai-black hover:text-white'
+                : 'border-white/60 text-white hover:bg-white hover:text-kawai-black',
+            )}
+          >
+            View the Full Collection
+            <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </Link>
+        </motion.div>
+      </motion.div>
+    </section>
+  )
 }
 
 function normalizeCategory(product: CatalogProduct): string {
@@ -367,6 +581,28 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
     if (activeCollection === 'All') return null
     return visibleCollections.find((c) => c.title === activeCollection)?.handle ?? null
   }, [activeCollection, visibleCollections])
+
+  const activeCollectionObj = useMemo(() => {
+    if (activeCollection === 'All') return null
+    return visibleCollections.find((c) => c.title === activeCollection) ?? null
+  }, [activeCollection, visibleCollections])
+
+  const featuredCollections = useMemo((): NavCollection[] => {
+    return (collectionsForBrowser ?? [])
+      .filter((c) => c.featured)
+      .map((c) => ({
+        id: c.handle,
+        title: c.title,
+        handle: c.handle,
+        description: null,
+        imageUrl: c.imageUrl ?? null,
+        youtubeUrl: c.youtubeUrl ?? null,
+        mediaUrl: c.mediaUrl ?? null,
+        heading: c.heading ?? null,
+        subheading: c.subheading ?? null,
+        productCount: 0,
+      }))
+  }, [collectionsForBrowser])
 
   const filtered = useMemo(() => {
     let items = [...products]
@@ -721,6 +957,35 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
         </AnimatePresence>
       </div>
 
+      {/* ── Collection Banner / Featured Carousel ───────────────── */}
+      <AnimatePresence mode="wait">
+        {activeCollectionObj ? (
+          <motion.div
+            key={activeCollectionObj.title}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+          >
+            <CollectionBanner collection={activeCollectionObj} />
+          </motion.div>
+        ) : featuredCollections.length > 0 ? (
+          <motion.div
+            key="featured-carousel"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+          >
+            <FeaturedCollectionsCarousel
+              collections={featuredCollections}
+              eyebrow="Featured Collections"
+              heading="Shop by Collection"
+            />
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
       {/* ── Product Grid ────────────────────────────────────────── */}
       <main className="max-w-7xl mx-auto px-6 py-10">
         <AnimatePresence mode="wait">
@@ -782,7 +1047,7 @@ function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }
 function ProductCard({ product, index }: { product: CatalogProduct; index: number }) {
   const category = normalizeCategory(product)
   const hasPrice = !!product.price?.msrp
-  const isOnSale = product.salePrice != null && hasPrice
+  const isOnSale = product.salePrice != null && product.compareAtPrice != null
 
   return (
     <motion.div custom={index} variants={cardVariants} initial="hidden" animate="visible">
@@ -855,7 +1120,9 @@ function ProductCard({ product, index }: { product: CatalogProduct; index: numbe
                 <>
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-[10px] font-bold tracking-widest text-kawai-red uppercase font-[family-name:var(--font-brand-sans)]">MSRP</span>
-                    <span className="text-[11px] text-kawai-charcoal/40 line-through font-[family-name:var(--font-brand-sans)]">{formatPrice(product.price)}</span>
+                    <span className="text-[11px] text-kawai-charcoal/40 line-through font-[family-name:var(--font-brand-sans)]">
+                      {formatCurrency(product.compareAtPrice!, product.price?.currency ?? 'USD')}
+                    </span>
                   </div>
                   <p className="text-xl font-bold text-kawai-red font-[family-name:var(--font-brand-sans)]">
                     {formatCurrency(product.salePrice!, product.price?.currency ?? 'USD')}

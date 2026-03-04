@@ -10,7 +10,7 @@ import { UserIcon, EnvelopeIcon } from '@heroicons/react/24/outline'
 import { FormField } from '@/components/ui/form-field'
 import { FormAlert } from '@/components/ui/form-alert'
 import { Button } from '@/components/ui/button'
-import { trackLead } from '@/components/MetaPixel'
+import { trackFormInteraction } from '@/lib/analytics/unified-tracking'
 
 /**
  * Simple Customer Signup Form Component
@@ -109,12 +109,15 @@ export function SimpleCustomerSignupForm({
     if (formState?.success) {
       reset() // Reset form fields
 
-      // Fire Meta Pixel Lead event
-      trackLead({
-        content_name: 'Simple Customer Signup',
-        content_category: storefrontSlug,
-        value: 1.0, // Estimated lead value
-        currency: 'USD',
+      // Fire unified analytics tracking (GA4 + Meta Pixel + PostHog)
+      trackFormInteraction({
+        blockType: 'forms-simple-signup',
+        blockData: {},
+        action: 'form_submit',
+        formName: 'Customer Signup',
+        additionalProps: {
+          storefront: storefrontSlug,
+        },
       })
 
       // Call success callback if provided

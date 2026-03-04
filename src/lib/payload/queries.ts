@@ -653,6 +653,7 @@ export async function getCatalogProductsDirect(): Promise<
     imageUrl?: string | null
     price?: { msrp?: number | null; currency?: string | null } | null
     salePrice?: number | null
+    compareAtPrice?: number | null
     shopifyCollections?: Array<{ title: string; handle: string }> | null
   }>
 > {
@@ -693,17 +694,22 @@ export async function getCatalogProductsDirect(): Promise<
       price: doc.price
         ? { msrp: doc.price.msrp ?? null, currency: doc.price.currency ?? null }
         : null,
-      salePrice: (() => {
+      ...(() => {
         const vars = doc.variations
-        if (!Array.isArray(vars) || vars.length === 0) return null
+        if (!Array.isArray(vars) || vars.length === 0) return { salePrice: null, compareAtPrice: null }
         const onSaleVars = vars.filter(
           (v: any) =>
             typeof v.compareAtPrice === 'number' &&
             typeof v.price === 'number' &&
             v.compareAtPrice > v.price,
         )
-        if (onSaleVars.length === 0) return null
-        return Math.min(...onSaleVars.map((v: any) => v.price as number))
+        if (onSaleVars.length === 0) return { salePrice: null, compareAtPrice: null }
+        const minSalePrice = Math.min(...onSaleVars.map((v: any) => v.price as number))
+        const minSaleVar = onSaleVars.find((v: any) => v.price === minSalePrice)
+        return {
+          salePrice: minSalePrice,
+          compareAtPrice: (minSaleVar?.compareAtPrice as number) ?? null,
+        }
       })(),
       shopifyCollections: Array.isArray(doc.shopifyCollections)
         ? doc.shopifyCollections.map((c: any) => ({
@@ -953,6 +959,18 @@ export interface CollectionForBrowser {
   title: string
   handle: string
   pianoCategories?: string[] | null
+  featured?: boolean | null
+  youtubeUrl?: string | null
+  mediaUrl?: string | null
+  imageUrl?: string | null
+  heading?: string | null
+  subheading?: string | null
+  textColor?: string | null
+  textAlignment?: string | null
+  overlayOpacity?: number | null
+  headingSize?: string | null
+  fontFamily?: string | null
+  bannerSize?: string | null
 }
 
 /**
@@ -965,7 +983,23 @@ export const getCollectionsForBrowser = unstable_cache(
     const payload = await getPayloadClient()
     const result = await payload.find({
       collection: 'collections',
-      select: { title: true, handle: true, pianoCategories: true },
+      select: {
+        title: true,
+        handle: true,
+        pianoCategories: true,
+        featured: true,
+        youtubeUrl: true,
+        mediaUrl: true,
+        imageUrl: true,
+        heading: true,
+        subheading: true,
+        textColor: true,
+        textAlignment: true,
+        overlayOpacity: true,
+        headingSize: true,
+        fontFamily: true,
+        bannerSize: true,
+      },
       depth: 0,
       limit: 500,
     })
@@ -973,6 +1007,18 @@ export const getCollectionsForBrowser = unstable_cache(
       title: d.title,
       handle: d.handle,
       pianoCategories: (d.pianoCategories as string[] | null) ?? null,
+      featured: (d.featured as boolean | null | undefined) ?? null,
+      youtubeUrl: (d.youtubeUrl as string | null | undefined) ?? null,
+      mediaUrl: (d.mediaUrl as string | null | undefined) ?? null,
+      imageUrl: (d.imageUrl as string | null | undefined) ?? null,
+      heading: (d.heading as string | null | undefined) ?? null,
+      subheading: (d.subheading as string | null | undefined) ?? null,
+      textColor: (d.textColor as string | null | undefined) ?? null,
+      textAlignment: (d.textAlignment as string | null | undefined) ?? null,
+      overlayOpacity: (d.overlayOpacity as number | null | undefined) ?? null,
+      headingSize: (d.headingSize as string | null | undefined) ?? null,
+      fontFamily: (d.fontFamily as string | null | undefined) ?? null,
+      bannerSize: (d.bannerSize as string | null | undefined) ?? null,
     }))
   },
   ['collections-for-browser'],
@@ -994,7 +1040,16 @@ export async function getProductsByCollectionHandle(handle: string): Promise<
     imageUrl?: string | null
     price?: { msrp?: number | null; currency?: string | null } | null
     salePrice?: number | null
+    compareAtPrice?: number | null
     description?: string | null
+    variations: Array<{
+      name: string
+      shopifyVariantId: string | null
+      price: number | null
+      compareAtPrice: number | null
+      available: boolean
+      imageUrl: string | null
+    }>
   }>
 > {
   try {
@@ -1017,7 +1072,7 @@ export async function getProductsByCollectionHandle(handle: string): Promise<
         visibility: true,
         variations: true,
       },
-      sort: 'visibility.sortOrder,name',
+      sort: '-price.msrp',
       depth: 0,
       limit: 100,
     })
@@ -1032,19 +1087,34 @@ export async function getProductsByCollectionHandle(handle: string): Promise<
       price: doc.price
         ? { msrp: doc.price.msrp ?? null, currency: doc.price.currency ?? null }
         : null,
-      salePrice: (() => {
+      ...(() => {
         const vars = doc.variations
-        if (!Array.isArray(vars) || vars.length === 0) return null
+        if (!Array.isArray(vars) || vars.length === 0) return { salePrice: null, compareAtPrice: null }
         const onSaleVars = vars.filter(
           (v: any) =>
             typeof v.compareAtPrice === 'number' &&
             typeof v.price === 'number' &&
             v.compareAtPrice > v.price,
         )
-        if (onSaleVars.length === 0) return null
-        return Math.min(...onSaleVars.map((v: any) => v.price as number))
+        if (onSaleVars.length === 0) return { salePrice: null, compareAtPrice: null }
+        const minSalePrice = Math.min(...onSaleVars.map((v: any) => v.price as number))
+        const minSaleVar = onSaleVars.find((v: any) => v.price === minSalePrice)
+        return {
+          salePrice: minSalePrice,
+          compareAtPrice: (minSaleVar?.compareAtPrice as number) ?? null,
+        }
       })(),
       description: doc.description ?? null,
+      variations: Array.isArray(doc.variations)
+        ? doc.variations.map((v: any) => ({
+            name: (v.name as string) ?? '',
+            shopifyVariantId: (v.shopifyVariantId as string) ?? null,
+            price: typeof v.price === 'number' ? v.price : null,
+            compareAtPrice: typeof v.compareAtPrice === 'number' ? v.compareAtPrice : null,
+            available: v.available === true,
+            imageUrl: (v.imageUrl as string) ?? null,
+          }))
+        : [],
     }))
   } catch (error) {
     console.error(`Error fetching products for collection "${handle}":`, error)
@@ -1172,5 +1242,125 @@ export function getFaqBySlug(slug: string) {
     },
     [`faq-${slug}`],
     { tags: ['faqs', `faq-${slug}`], revalidate: 3600 }
+  )()
+}
+
+// ─── TSD Hub Queries ──────────────────────────────────────────────────────────
+
+/** Hub slug → human-readable label and description map */
+export const TSD_HUB_META = {
+  'owner-hub': {
+    label: 'Owner Hub',
+    heading: 'I Own a Kawai Piano',
+    description: 'Get help with your instrument — connectivity, troubleshooting, firmware updates, warranty claims, piano care, and more.',
+    metaTitle: 'Owner Support Hub | Kawai Technical Support',
+    metaDescription: 'Support for Kawai piano owners. Get help with Bluetooth connectivity, troubleshooting, firmware updates, warranty, and piano care.',
+  },
+  'buyer-hub': {
+    label: 'Buyer Hub',
+    heading: "I'm Choosing a Kawai Piano",
+    description: 'Research piano models, compare series, understand technology, and get answers to every pre-purchase question.',
+    metaTitle: "Piano Buyer's Guide & FAQ | Kawai Technical Support",
+    metaDescription: 'Answers to every pre-purchase question about Kawai pianos. Compare models, understand technology, and find the right piano for you.',
+  },
+  'technician-resources': {
+    label: 'Technician Resources',
+    heading: 'Piano Technician Resources',
+    description: 'Technical manuals, regulation guides, voicing documentation, and parts information for authorized Kawai piano technicians.',
+    metaTitle: 'Technician Resources | Kawai Technical Support',
+    metaDescription: 'Technical resources for authorized Kawai piano technicians. Regulation manuals, voicing guides, parts information, and service documentation.',
+  },
+} as const
+
+export type TSDHub = keyof typeof TSD_HUB_META
+
+/**
+ * Get all published FAQs for a specific TSD hub, optionally filtered by category slug.
+ * Per-call unstable_cache pattern since args vary per request.
+ */
+export function getFaqsByHub(hub: string, categorySlug?: string) {
+  const cacheKey = categorySlug
+    ? `faqs-hub-${hub}-cat-${categorySlug}`
+    : `faqs-hub-${hub}`
+  return unstable_cache(
+    async () => {
+      const payload = await getPayloadClient()
+      let categoryId: string | number | undefined
+      if (categorySlug) {
+        const catResult = await payload.find({
+          collection: 'faq-categories',
+          where: { slug: { equals: categorySlug } },
+          depth: 0,
+          limit: 1,
+        })
+        categoryId = catResult.docs[0]?.id
+      }
+      const result = await payload.find({
+        collection: 'faqs',
+        where: {
+          status: { equals: 'published' },
+          supportHub: { equals: hub },
+          ...(categoryId ? { categories: { in: [categoryId] } } : {}),
+        },
+        sort: '-publishedDate',
+        depth: 1,
+        limit: 200,
+      })
+      return result.docs
+    },
+    [cacheKey],
+    { tags: ['faqs', `tsd-hub-${hub}`], revalidate: 3600 }
+  )()
+}
+
+/**
+ * Get all FAQ categories assigned to a specific TSD hub, sorted by displayOrder.
+ */
+export function getFaqCategoriesByHub(hub: string) {
+  return unstable_cache(
+    async () => {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'faq-categories',
+        where: { supportHub: { equals: hub } },
+        sort: 'displayOrder',
+        depth: 0,
+        limit: 100,
+      })
+      return result.docs
+    },
+    [`faq-categories-hub-${hub}`],
+    { tags: ['faq-categories', `tsd-hub-${hub}`], revalidate: 3600 }
+  )()
+}
+
+/**
+ * Get all published FAQs for a specific product (by product ID).
+ * Used by the product-faq block renderer on product pages.
+ */
+export function getFaqsByProductId(productId: string) {
+  return unstable_cache(
+    async () => {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'faqs',
+        where: {
+          status: { equals: 'published' },
+          relatedProducts: { in: [productId] },
+        },
+        sort: '-publishedDate',
+        depth: 0,
+        limit: 50,
+        select: {
+          question: true,
+          slug: true,
+          excerpt: true,
+          supportHub: true,
+        },
+      })
+      return result.docs
+    },
+    [`faqs-product-${productId}`],
+    { tags: ['faqs', `product-faqs-${productId}`], revalidate: 3600 }
   )()
 }

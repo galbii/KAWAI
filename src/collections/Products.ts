@@ -706,6 +706,7 @@ export const Products: CollectionConfig = {
                 'product-feature-slides',            // Feature Slides - Scroll-driven fullscreen feature showcase
                 'product-soundcloud-embed',          // SoundCloud Embed - Audio player for demos (leave URL empty to hide)
                 'product-related-products',          // Related Products - Auto-fetches same-collection products + accessories
+                'product-faq',                       // Product FAQ - Accordion FAQ section pulled from linked FAQs
                 'marketing-instagram-carousel',      // Instagram Carousel - Social proof
                 'marketing-featured-models',         // Featured Models - Showcase related models
               ] as any,

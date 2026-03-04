@@ -95,25 +95,14 @@ function GridCell({ artist, onSelect, index }: GridCellProps) {
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
 
-        {/* Hover scrim */}
+        {/* Scrim — always visible */}
         <div
-          className={cn(
-            'absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent',
-            'opacity-0 group-hover:opacity-100',
-            'transition-opacity duration-300 ease-out',
-          )}
+          className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"
           aria-hidden="true"
         />
 
-        {/* Name reveal */}
-        <div
-          className={cn(
-            'absolute bottom-0 left-0 right-0 px-4 pb-5',
-            'opacity-0 translate-y-3',
-            'group-hover:opacity-100 group-hover:translate-y-0',
-            'transition-all duration-300 ease-out',
-          )}
-        >
+        {/* Name — always visible */}
+        <div className="absolute bottom-0 left-0 right-0 px-4 pb-5">
           <span
             className={cn(
               'block text-xl text-white leading-tight',
@@ -122,13 +111,7 @@ function GridCell({ artist, onSelect, index }: GridCellProps) {
           >
             {artist.name}
           </span>
-          <span
-            className={cn(
-              'block mt-1.5 h-px w-0 bg-kawai-red',
-              'group-hover:w-8',
-              'transition-all duration-500 delay-75 ease-out',
-            )}
-          />
+          <span className="block mt-1.5 h-px w-8 bg-kawai-red" />
         </div>
       </button>
     </motion.div>
@@ -356,10 +339,13 @@ function ProfileDrawer({ artist, onClose }: ProfileDrawerProps) {
 // ArtistsGrid — main export
 // ---------------------------------------------------------------------------
 
+type SortMode = 'recent' | 'alpha'
+
 export function ArtistsGrid({ artists, title = 'Our Artists', showSearch = true }: ArtistsGridProps) {
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const [sortMode, setSortMode] = useState<SortMode>('recent')
 
   const handleSelect = useCallback((artist: Artist) => {
     setSelectedArtist(artist)
@@ -369,14 +355,14 @@ export function ArtistsGrid({ artists, title = 'Our Artists', showSearch = true 
     setSelectedArtist(null)
   }, [])
 
-  const filteredArtists = artists.filter((a) =>
-    a.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  const filteredArtists = artists
+    .filter((a) => a.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .sort((a, b) => sortMode === 'alpha' ? a.name.localeCompare(b.name) : 0)
 
-  // Reset visible count when search changes
+  // Reset visible count when search or sort changes
   useEffect(() => {
     setVisibleCount(PAGE_SIZE)
-  }, [searchQuery])
+  }, [searchQuery, sortMode])
 
   const visibleArtists = filteredArtists.slice(0, visibleCount)
   const hasMore = filteredArtists.length > visibleCount
@@ -457,6 +443,36 @@ export function ArtistsGrid({ artists, title = 'Our Artists', showSearch = true 
                 </div>
               </motion.div>
             )}
+
+            {/* Sort toggle */}
+            <div className="flex items-center gap-1 flex-shrink-0 rounded-full border border-white/10 p-0.5">
+              <button
+                type="button"
+                onClick={() => setSortMode('recent')}
+                className={cn(
+                  'px-3 py-1.5 rounded-full text-xs font-medium tracking-wide transition-all duration-200',
+                  'font-[family-name:var(--font-brand-sans)]',
+                  sortMode === 'recent'
+                    ? 'bg-white/10 text-white'
+                    : 'text-white/35 hover:text-white/60',
+                )}
+              >
+                Most Recent
+              </button>
+              <button
+                type="button"
+                onClick={() => setSortMode('alpha')}
+                className={cn(
+                  'px-3 py-1.5 rounded-full text-xs font-medium tracking-wide transition-all duration-200',
+                  'font-[family-name:var(--font-brand-sans)]',
+                  sortMode === 'alpha'
+                    ? 'bg-white/10 text-white'
+                    : 'text-white/35 hover:text-white/60',
+                )}
+              >
+                A–Z
+              </button>
+            </div>
 
             {/* Live count */}
             <p className="hidden sm:block text-xs text-white/25 font-[family-name:var(--font-brand-sans)] flex-shrink-0 pb-0.5 tabular-nums">

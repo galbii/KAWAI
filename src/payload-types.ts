@@ -118,6 +118,7 @@ export interface Config {
     'product-hero-carousel': ProductHeroCarouselBlock;
     'product-related-products': ProductRelatedProductsBlock;
     'product-soundcloud-embed': ProductSoundCloudEmbedBlock;
+    'product-faq': ProductFaqBlock;
     textContent: TextContentBlock;
     hello: HelloBlock;
     archive: ArchiveBlock;
@@ -1927,6 +1928,7 @@ export interface Product {
         | ProductFeatureSlidesBlock
         | ProductSoundCloudEmbedBlock
         | ProductRelatedProductsBlock
+        | ProductFaqBlock
         | MarketingInstagramCarouselBlock
         | MarketingFeaturedModelsBlock
       )[]
@@ -2779,6 +2781,31 @@ export interface ProductRelatedProductsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductFaqBlock".
+ */
+export interface ProductFaqBlock {
+  /**
+   * Section heading displayed above the FAQ accordion
+   */
+  heading?: string | null;
+  /**
+   * Optional subheading or intro text below the main heading
+   */
+  subheading?: string | null;
+  /**
+   * Background color theme for this FAQ section
+   */
+  theme?: ('pearl' | 'white' | 'charcoal') | null;
+  /**
+   * Show a "View all FAQs" link to the full FAQ section
+   */
+  showViewAllLink?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'product-faq';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "MarketingInstagramCarouselBlock".
  */
 export interface MarketingInstagramCarouselBlock {
@@ -3029,6 +3056,10 @@ export interface Faq {
    */
   slug?: string | null;
   /**
+   * Which TSD hub this FAQ belongs to. Leave blank for general /faq index only.
+   */
+  supportHub?: ('owner-hub' | 'buyer-hub' | 'technician-resources') | null;
+  /**
    * Short summary for FAQ index cards and meta description fallback (max 200 characters)
    */
   excerpt?: string | null;
@@ -3107,9 +3138,17 @@ export interface FaqCategory {
    */
   description?: string | null;
   /**
+   * Icon identifier for this category (e.g. "wifi", "wrench", "book", "shield"). Used for visual navigation on hub pages.
+   */
+  icon?: string | null;
+  /**
    * Optional hex color for frontend badge styling (e.g. #E11922)
    */
   color?: string | null;
+  /**
+   * Which TSD hub this category belongs to. Used to filter categories on hub pages.
+   */
+  supportHub?: ('owner-hub' | 'buyer-hub' | 'technician-resources') | null;
   /**
    * Sort order for category display (lower numbers appear first)
    */
@@ -9129,7 +9168,9 @@ export interface FaqCategoriesSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
   description?: T;
+  icon?: T;
   color?: T;
+  supportHub?: T;
   displayOrder?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -9141,6 +9182,7 @@ export interface FaqCategoriesSelect<T extends boolean = true> {
 export interface FaqsSelect<T extends boolean = true> {
   question?: T;
   slug?: T;
+  supportHub?: T;
   excerpt?: T;
   answer?: T;
   categories?: T;

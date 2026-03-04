@@ -14,6 +14,7 @@ import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
 import type { Media, Product } from '@/payload-types'
 import { parseSpecificationJson, type ParsedSpecRow } from '@/lib/utils/parse-specification-json'
 import { Modal } from '@/components/ui/modal'
+import { trackFileDownload } from '@/lib/analytics/unified-tracking'
 
 const INITIAL_VISIBLE = 6
 
@@ -1027,7 +1028,20 @@ export function ProductTechnicalSpecsRenderer({
                       border-2 border-kawai-red hover:border-kawai-red/70
                       shadow-lg hover:shadow-xl hover:scale-[1.02]
                     "
-                    onClick={() => console.log('Download specifications')}
+                    onClick={() => {
+                      const fileName = downloadButtonText || 'Technical Specs'
+                      const fileUrl = productBlueprintUrl || ''
+                      trackFileDownload({
+                        blockType: 'product-technical-specs',
+                        blockData: {},
+                        fileName,
+                        fileUrl,
+                        additionalProps: { product_name: product?.name ?? '' },
+                      })
+                      if (fileUrl) {
+                        window.open(fileUrl, '_blank')
+                      }
+                    }}
                     aria-label="Download technical specifications"
                   >
                     <ArrowDownTrayIcon className="w-4 h-4" />
@@ -1088,7 +1102,20 @@ export function ProductTechnicalSpecsRenderer({
                     border-2 border-kawai-red hover:border-kawai-red/70
                     shadow-lg hover:shadow-xl hover:scale-[1.02]
                   "
-                  onClick={() => console.log('Download specifications')}
+                  onClick={() => {
+                    const fileName = downloadButtonText || 'Technical Specs'
+                    const fileUrl = productBlueprintUrl || ''
+                    trackFileDownload({
+                      blockType: 'product-technical-specs',
+                      blockData: {},
+                      fileName,
+                      fileUrl,
+                      additionalProps: { product_name: product?.name ?? '' },
+                    })
+                    if (fileUrl) {
+                      window.open(fileUrl, '_blank')
+                    }
+                  }}
                   aria-label="Download technical specifications"
                 >
                   <ArrowDownTrayIcon className="w-4 h-4" />

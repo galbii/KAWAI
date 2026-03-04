@@ -1,12 +1,20 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { cn } from '@/lib/utils'
 import { CollectionShowcaseBlock } from '@/components/blocks/CollectionShowcaseBlock'
+import { CollectionProductRow } from '@/components/piano/CollectionProductRow'
 
-interface CollectionProduct {
+export interface CollectionVariation {
+  name: string
+  shopifyVariantId: string | null
+  price: number | null
+  compareAtPrice: number | null
+  available: boolean
+  imageUrl: string | null
+}
+
+export interface CollectionProduct {
   id: string
   model: string
   name?: string | null
@@ -16,47 +24,13 @@ interface CollectionProduct {
   price?: { msrp?: number | null; currency?: string | null } | null
   salePrice?: number | null
   description?: string | null
+  variations: CollectionVariation[]
 }
 
 interface CollectionPageContentProps {
   collection: any
   products: CollectionProduct[]
 }
-
-function formatPrice(price?: number | null): string | null {
-  if (!price) return null
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(price)
-}
-
-// ─── Scroll-triggered animation variants ─────────────────────────────────────
-
-function makeImageVariants(fromRight: boolean) {
-  return {
-    hidden: { opacity: 0, x: fromRight ? 48 : -48 },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: { duration: 1.0, ease: [0.22, 1, 0.36, 1] as const },
-    },
-  }
-}
-
-function makeInfoVariants(fromRight: boolean) {
-  return {
-    hidden: { opacity: 0, x: fromRight ? -32 : 32 },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: { duration: 0.9, delay: 0.18, ease: [0.22, 1, 0.36, 1] as const },
-    },
-  }
-}
-
-// ─── Piano silhouette fallback ────────────────────────────────────────────────
 
 function PianoSilhouette() {
   return (
@@ -78,270 +52,97 @@ function PianoSilhouette() {
   )
 }
 
-// ─── Individual product row ───────────────────────────────────────────────────
-
-function ProductRow({ product, index }: { product: CollectionProduct; index: number }) {
-  // Even index → image LEFT, text RIGHT. Odd → image RIGHT, text LEFT.
-  const imageOnLeft = index % 2 === 0
-  const indexLabel = String(index + 1).padStart(2, '0')
-
-  const msrp = product.price?.msrp
-  const salePrice = product.salePrice
-  const displayPrice = salePrice ? formatPrice(salePrice) : formatPrice(msrp)
-  const isOnSale = Boolean(salePrice && msrp && salePrice < msrp)
-
-  const imageVariants = makeImageVariants(!imageOnLeft)
-  const infoVariants  = makeInfoVariants(imageOnLeft)
-
-  // ── Image panel ───────────────────────────────────────────────────────────
-  const ImagePanel = (
-    <motion.div
-      variants={imageVariants}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.25 }}
-      className="w-full lg:w-[55%] flex-shrink-0"
-    >
-      <Link
-        href={`/products/${product.slug}`}
-        tabIndex={-1}
-        aria-hidden
-        className="group block relative aspect-[4/3] bg-white overflow-hidden"
-      >
-        {product.imageUrl ? (
-          <Image
-            src={product.imageUrl}
-            alt={product.name ?? product.model}
-            fill
-            className="object-contain p-10 lg:p-14 transition-transform duration-700 ease-out group-hover:scale-[1.035]"
-            sizes="(max-width: 1024px) 100vw, 55vw"
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center opacity-30">
-            <PianoSilhouette />
-          </div>
-        )}
-        {/* Hover tint */}
-        <div className="absolute inset-0 bg-kawai-black/0 group-hover:bg-kawai-black/[0.025] transition-colors duration-500" />
-      </Link>
-    </motion.div>
-  )
-
-  // ── Info panel ────────────────────────────────────────────────────────────
-  const InfoPanel = (
-    <motion.div
-      variants={infoVariants}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.25 }}
-      className={cn(
-        'w-full lg:w-[45%] flex-shrink-0 flex flex-col justify-center',
-        'px-8 py-14',
-        imageOnLeft
-          ? 'lg:pl-14 lg:pr-16 xl:pl-20 xl:pr-24'
-          : 'lg:pr-14 lg:pl-16 xl:pr-20 xl:pl-24',
-      )}
-    >
-      {/* Index + model label row */}
-      <div className="flex items-center gap-3 mb-8">
-        <span
-          className="text-[9px] tracking-[0.35em] uppercase font-semibold text-kawai-charcoal/25"
-          aria-hidden
-          style={{ fontFamily: 'var(--font-brand-sans)' }}
-        >
-          {indexLabel}
-        </span>
-        <div className="flex-1 h-px bg-kawai-neutral/50" />
-        <span
-          className="text-[9px] tracking-[0.3em] uppercase font-bold text-kawai-red"
-          style={{ fontFamily: 'var(--font-brand-sans)' }}
-        >
-          {product.model}
-        </span>
-      </div>
-
-      {/* Product name */}
-      {product.name && (
-        <h2
-          className="text-4xl xl:text-5xl 2xl:text-6xl text-kawai-black leading-[1.04] mb-7"
-          style={{ fontFamily: 'var(--font-brand-luxury)', fontWeight: 400 }}
-        >
-          {product.name}
-        </h2>
-      )}
-
-      {/* Kawai-red accent rule */}
-      <div className="w-10 h-px bg-kawai-red mb-7" />
-
-      {/* Description */}
-      {product.description && (
-        <p
-          className="text-[15px] text-kawai-charcoal/65 leading-[1.75] mb-9 max-w-xs line-clamp-4"
-          style={{ fontFamily: 'var(--font-brand-sans)' }}
-        >
-          {product.description}
-        </p>
-      )}
-
-      {/* Price block */}
-      {displayPrice && (
-        <div className="mb-9">
-          <p
-            className="text-[9px] tracking-[0.25em] uppercase text-kawai-charcoal/35 mb-1.5"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
-          >
-            {isOnSale ? 'Starting from' : 'MSRP from'}
-          </p>
-          <p
-            className={cn(
-              'text-2xl font-semibold',
-              isOnSale ? 'text-kawai-red' : 'text-kawai-black'
-            )}
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
-          >
-            {displayPrice}
-          </p>
-          {isOnSale && msrp && (
-            <p
-              className="text-xs text-kawai-charcoal/35 line-through mt-1"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
-            >
-              {formatPrice(msrp)}
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Discover CTA */}
-      <Link
-        href={`/products/${product.slug}`}
-        className="group/cta inline-flex items-center gap-3 w-fit"
-      >
-        <span
-          className="text-[10px] font-bold tracking-[0.2em] uppercase text-kawai-black group-hover/cta:text-kawai-red transition-colors duration-300"
-          style={{ fontFamily: 'var(--font-brand-sans)' }}
-        >
-          Discover Model
-        </span>
-        <span className="flex items-center justify-center w-8 h-8 border border-kawai-black/25 group-hover/cta:border-kawai-red group-hover/cta:bg-kawai-red transition-all duration-300">
-          <svg
-            viewBox="0 0 16 16"
-            className="w-3 h-3 text-kawai-black group-hover/cta:text-white transition-colors duration-300"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.75"
-          >
-            <path d="M2 8h12M8 3l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </span>
-      </Link>
-    </motion.div>
-  )
-
-  return (
-    <div className="relative">
-      {/* Ghost index — editorial depth layer, hidden on mobile */}
-      <span
-        className={cn(
-          'absolute top-1/2 -translate-y-1/2 z-0 pointer-events-none select-none',
-          'hidden lg:block text-[28vw] leading-none font-bold',
-          'text-kawai-black/[0.022]',
-          imageOnLeft ? 'right-0 translate-x-1/4' : 'left-0 -translate-x-1/4',
-        )}
-        aria-hidden
-        style={{ fontFamily: 'var(--font-brand-luxury)' }}
-      >
-        {indexLabel}
-      </span>
-
-      {/* Row — alternates direction */}
-      <div
-        className={cn(
-          'relative z-10 flex flex-col lg:flex-row items-stretch',
-          !imageOnLeft && 'lg:flex-row-reverse',
-        )}
-      >
-        {ImagePanel}
-        {InfoPanel}
-      </div>
-    </div>
-  )
+const CATEGORY_LABELS: Record<string, string> = {
+  digital: 'Digital Pianos',
+  grand: 'Grand Pianos',
+  upright: 'Upright Pianos',
+  hybrid: 'Hybrid Pianos',
 }
-
-// ─── Main export ──────────────────────────────────────────────────────────────
 
 export function CollectionPageContent({ collection, products }: CollectionPageContentProps) {
   const hasProducts = products.length > 0
 
+  // Use the pianoCategories field from the Collections collection (first value if multiple)
+  const rawCategories: string[] = Array.isArray(collection.pianoCategories)
+    ? collection.pianoCategories
+    : collection.pianoCategories
+      ? [collection.pianoCategories]
+      : []
+  const primaryCategory = rawCategories[0] ?? null
+  const categoryLabel = primaryCategory
+    ? (CATEGORY_LABELS[primaryCategory] ?? primaryCategory)
+    : null
+
   return (
-    <div className="min-h-screen bg-kawai-pearl">
-      {/* ── Hero banner (CollectionShowcaseBlock handles video / image / text) */}
+    <div className="min-h-screen bg-white">
+      {/* ── Hero banner ────────────────────────────────────────────────────────── */}
       <CollectionShowcaseBlock
         collection={collection}
-        bannerSize="large"
+        bannerSize="medium"
         showViewCollectionLink={false}
       />
 
-      {/* ── Breadcrumb ──────────────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-kawai-neutral/60">
-        <div className="max-w-screen-2xl mx-auto px-6 md:px-12 py-4">
+      {/* ── Sticky breadcrumb — tracks header via CSS var ───────────────────── */}
+      <div
+        className="sticky z-40 bg-[#f0eeeb] border-b border-kawai-black/8"
+        style={{ top: 'var(--header-bottom, 0px)' }}
+      >
+        <div className="max-w-screen-2xl mx-auto px-6 md:px-12 py-3.5 flex items-center justify-between">
           <nav
-            className="flex items-center gap-2.5 text-[10px] tracking-[0.2em] uppercase font-semibold"
+            className="flex items-center gap-3 text-[10px] tracking-[0.22em] uppercase font-semibold"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
-            <Link href="/" className="text-kawai-charcoal/35 hover:text-kawai-red transition-colors">
+            <Link href="/" className="text-kawai-charcoal/50 hover:text-kawai-black transition-colors duration-200">
               Home
             </Link>
-            <span className="text-kawai-neutral/70">·</span>
-            <Link href="/pianos" className="text-kawai-charcoal/35 hover:text-kawai-red transition-colors">
+            <span className="text-kawai-charcoal/25">·</span>
+            <Link href="/pianos" className="text-kawai-charcoal/50 hover:text-kawai-black transition-colors duration-200">
               Pianos
             </Link>
-            <span className="text-kawai-neutral/70">·</span>
-            <span className="text-kawai-black">{collection.title}</span>
+            <span className="text-kawai-charcoal/25">·</span>
+            <span className="text-kawai-black font-bold">{collection.title}</span>
           </nav>
+          {/* Red accent pip */}
+          <div className="w-1.5 h-1.5 rounded-full bg-kawai-red" aria-hidden />
         </div>
       </div>
 
-      {/* ── Collection header ───────────────────────────────────────────────── */}
-      <header className="max-w-screen-2xl mx-auto px-6 md:px-12 pt-20 pb-14">
-        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
+      {/* ── Collection name header ──────────────────────────────────────────── */}
+      <header className="max-w-screen-2xl mx-auto px-6 md:px-12 pt-20 pb-16">
+        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-10">
           <div>
-            <motion.p
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="text-[9px] tracking-[0.4em] uppercase font-bold text-kawai-red mb-5"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
-            >
-              {collection.title}
-            </motion.p>
+            {/* Category subheading */}
+            {categoryLabel && (
+              <motion.p
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45 }}
+                className="text-[10px] tracking-[0.45em] uppercase font-bold text-kawai-red mb-4"
+                style={{ fontFamily: 'var(--font-brand-sans)' }}
+              >
+                {categoryLabel}
+              </motion.p>
+            )}
 
+            {/* Collection title */}
             <motion.h1
-              initial={{ opacity: 0, y: 14 }}
+              initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.75, delay: 0.08 }}
-              className="text-6xl lg:text-8xl text-kawai-black leading-none"
+              className="text-6xl lg:text-8xl xl:text-9xl text-kawai-black leading-none tracking-tight"
               style={{ fontFamily: 'var(--font-brand-luxury)', fontWeight: 400 }}
             >
-              {hasProducts ? (
-                <>
-                  {products.length}
-                  <span className="text-kawai-charcoal/30 ml-3">
-                    {products.length === 1 ? 'Instrument' : 'Instruments'}
-                  </span>
-                </>
-              ) : (
-                'Collection'
-              )}
+              {collection.title}
             </motion.h1>
+
           </div>
 
           {collection.description && (
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.7, delay: 0.22 }}
-              className="text-sm text-kawai-charcoal/55 leading-relaxed max-w-xs lg:text-right"
+              transition={{ duration: 0.7, delay: 0.3 }}
+              className="text-sm text-kawai-charcoal/50 leading-relaxed max-w-sm lg:text-right lg:pb-2"
               style={{ fontFamily: 'var(--font-brand-sans)' }}
             >
               {collection.description}
@@ -353,24 +154,29 @@ export function CollectionPageContent({ collection, products }: CollectionPageCo
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
-          transition={{ duration: 0.8, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-14 h-px bg-kawai-neutral/60 origin-left"
+          transition={{ duration: 0.9, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-16 h-px bg-kawai-black/10 origin-left"
         />
       </header>
 
       {/* ── Product rows ─────────────────────────────────────────────────────── */}
       {hasProducts ? (
-        <main className="max-w-screen-2xl mx-auto overflow-hidden">
+        <main className="overflow-hidden">
           {products.map((product, index) => (
             <div key={product.id}>
-              <ProductRow product={product} index={index} />
+              <CollectionProductRow
+                product={product}
+                index={index}
+                isEven={index % 2 === 0}
+                collectionHandle={collection?.handle ?? ''}
+              />
 
               {/* Divider between rows */}
               {index < products.length - 1 && (
                 <div className="flex items-center px-6 md:px-12 py-1">
-                  <div className="flex-1 h-px bg-kawai-neutral/40" />
-                  <div className="mx-5 w-1 h-1 rounded-full bg-kawai-neutral/60" />
-                  <div className="flex-1 h-px bg-kawai-neutral/40" />
+                  <div className="flex-1 h-px bg-kawai-black/8" />
+                  <div className="mx-5 w-1 h-1 rounded-full bg-kawai-black/15" />
+                  <div className="flex-1 h-px bg-kawai-black/8" />
                 </div>
               )}
             </div>
@@ -378,13 +184,13 @@ export function CollectionPageContent({ collection, products }: CollectionPageCo
 
           {/* Closing hairline */}
           <div className="px-6 md:px-12 mt-2">
-            <div className="h-px bg-kawai-neutral/50" />
+            <div className="h-px bg-kawai-black/10" />
           </div>
         </main>
       ) : (
         /* Empty state */
         <div className="flex flex-col items-center justify-center py-40 px-6 text-center">
-          <div className="opacity-25 mb-8">
+          <div className="opacity-20 mb-8">
             <PianoSilhouette />
           </div>
           <p
@@ -395,7 +201,7 @@ export function CollectionPageContent({ collection, products }: CollectionPageCo
           </p>
           <Link
             href="/pianos"
-            className="inline-flex items-center gap-2.5 text-[10px] font-bold tracking-[0.2em] uppercase text-kawai-red hover:opacity-60 transition-opacity"
+            className="inline-flex items-center gap-2.5 text-[10px] font-bold tracking-[0.2em] uppercase text-kawai-black hover:opacity-50 transition-opacity"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             Browse All Pianos
@@ -410,7 +216,7 @@ export function CollectionPageContent({ collection, products }: CollectionPageCo
       <section className="bg-kawai-black text-white py-28 mt-4">
         <div className="max-w-3xl mx-auto px-6 md:px-12 text-center">
           <p
-            className="text-[9px] tracking-[0.45em] uppercase font-bold text-kawai-red/70 mb-6"
+            className="text-[9px] tracking-[0.45em] uppercase font-bold text-white/30 mb-6"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             Find Your Piano

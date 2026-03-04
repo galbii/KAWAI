@@ -44,11 +44,10 @@ interface ResourcesMegaMenuProps {
 
 const resourceItems: ResourceItem[] = [
   {
-    title: 'Technical Support',
-    description: 'Get help with your Kawai piano, troubleshooting, and technical assistance',
-    href: '/resources/technical-support',
+    title: 'Support Center',
+    description: 'Troubleshooting, connectivity, firmware, warranty, and piano care — for owners, buyers, and technicians.',
+    href: '/technical-support-division',
     icon: Headphones,
-    comingSoon: true,
   },
   {
     title: 'Contact Us',

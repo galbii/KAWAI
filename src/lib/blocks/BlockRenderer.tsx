@@ -23,6 +23,7 @@ import { CollectionShowcaseBlock } from '@/components/blocks/CollectionShowcaseB
 import { FloatingAddToCartBlock } from '@/components/blocks/FloatingAddToCartBlock'
 import { RelatedProductsRenderer } from '@/components/blocks/product/RelatedProductsRenderer'
 import { SoundCloudEmbedRenderer } from '@/components/blocks/product/SoundCloudEmbedRenderer'
+import { ProductFaqRenderer } from '@/components/blocks/product/ProductFaqRenderer'
 
 // Block component mapping (using actual block slugs from block definitions)
 const BLOCK_COMPONENTS = {
@@ -43,6 +44,7 @@ const BLOCK_COMPONENTS = {
   'product-floating-add-to-cart': FloatingAddToCartBlock,
   'product-related-products': RelatedProductsRenderer,
   'product-soundcloud-embed': SoundCloudEmbedRenderer,
+  'product-faq': ProductFaqRenderer,
   // Content blocks
   'content-text': TextContentBlock,
   'content-banner': BannerBlock,
@@ -131,8 +133,12 @@ export async function BlockRenderer({ block, index, product }: BlockRendererProp
       )
     }
     
-    // For product-collection-showcase and product-related-products, pass the Payload product
-    if (blockType === 'product-collection-showcase' || blockType === 'product-related-products') {
+    // For product-collection-showcase, product-related-products, and product-faq, pass the Payload product
+    if (
+      blockType === 'product-collection-showcase' ||
+      blockType === 'product-related-products' ||
+      blockType === 'product-faq'
+    ) {
       const populatedBlock = { ...block, product }
       return <BlockComponent key={block.id || `${blockType}-${index}`} {...populatedBlock} />
     }

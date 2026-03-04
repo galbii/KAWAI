@@ -6,6 +6,7 @@ import type { Dealer } from '@/payload-types'
 import type { DealerWithDistance } from '../types'
 import { MapPin, Phone, ExternalLink, Star, Piano, Briefcase, ArrowRight, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { trackCTAClick } from '@/lib/analytics/unified-tracking'
 
 interface Props {
   dealer: DealerWithDistance
@@ -122,7 +123,15 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
 
           <Link
             href={`/find-a-dealer/${dealer.slug}`}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation()
+              trackCTAClick({
+                blockType: 'find-a-dealer-page',
+                blockData: {},
+                ctaText: dealer.dealerName || 'View Details',
+                destination: `/find-a-dealer/${dealer.slug}`,
+              })
+            }}
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-kawai-red hover:bg-kawai-red/90 rounded-lg transition-all duration-200 group"
           >
             <Info className="w-4 h-4" strokeWidth={2} />
@@ -183,7 +192,18 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-3 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-kawai-charcoal hover:bg-kawai-charcoal/90 rounded-lg transition-colors w-full"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  trackCTAClick({
+                    blockType: 'find-a-dealer-page',
+                    blockData: {},
+                    ctaText: 'Get Directions',
+                    destination: `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                      `${dealer.address!.street}, ${dealer.address!.city}, ${dealer.address!.state} ${dealer.address!.zipCode}`
+                    )}`,
+                    additionalProps: { dealer_name: dealer.dealerName || '' },
+                  })
+                }}
               >
                 <ExternalLink className="w-4 h-4" strokeWidth={2} />
                 <span>Get Directions</span>

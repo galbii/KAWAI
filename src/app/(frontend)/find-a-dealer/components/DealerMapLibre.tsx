@@ -8,6 +8,7 @@ import type { Dealer } from '@/payload-types'
 import type { DealerWithDistance } from '../types'
 import { Phone, Navigation, Piano, Briefcase, Star, Globe, MapPin, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import { trackCTAClick } from '@/lib/analytics/unified-tracking'
 
 interface Props {
   dealers: DealerWithDistance[]
@@ -234,7 +235,16 @@ export function DealerMapLibre({
                   <Link
                     href={`/find-a-dealer/${dealer.slug}`}
                     className="flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-kawai-red hover:bg-kawai-red/90 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg group w-full"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      trackCTAClick({
+                        blockType: 'find-a-dealer-page',
+                        blockData: {},
+                        ctaText: dealer.dealerName || 'View Dealer Details',
+                        destination: `/find-a-dealer/${dealer.slug}`,
+                        additionalProps: { source: 'map_popup' },
+                      })
+                    }}
                   >
                     <span>View Dealer Details</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={2.5} />
@@ -277,7 +287,18 @@ export function DealerMapLibre({
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-kawai-charcoal bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200 w-full"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      trackCTAClick({
+                        blockType: 'find-a-dealer-page',
+                        blockData: {},
+                        ctaText: 'Get Directions',
+                        destination: `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                          `${dealer.address!.street}, ${dealer.address!.city}, ${dealer.address!.state} ${dealer.address!.zipCode}`
+                        )}`,
+                        additionalProps: { dealer_name: dealer.dealerName || '', source: 'map_popup' },
+                      })
+                    }}
                   >
                     <Navigation className="w-4 h-4" strokeWidth={2} />
                     <span>Get Directions</span>

@@ -103,6 +103,7 @@ export type TrackingAction =
   | 'navigation'
   | 'add_to_cart'
   | 'begin_checkout'
+  | 'file_download'
 
 /**
  * Context for tracking an interaction
@@ -350,6 +351,7 @@ function mapToGA4Event(
   if (action === 'video_play') return 'video_start'
   if (action === 'video_complete') return 'video_complete'
   if (action === 'impression') return 'view_promotion'
+  if (action === 'file_download') return 'file_download'
 
   // Return action as-is for custom events
   return action
@@ -386,6 +388,7 @@ function mapToMetaEvent(
   if (action === 'form_start') return 'InitiateCheckout'
   if (action === 'video_play') return 'VideoView'
   if (action === 'add_to_cart') return 'AddToCart'
+  if (action === 'file_download') return 'ViewContent'
 
   // Return custom event with Block_ prefix
   return `Block_${action}`
@@ -652,6 +655,31 @@ export function trackBeginCheckout(params: {
       variant_id: params.variantId,
       variant_name: params.variantName,
       price: params.price,
+      ...params.additionalProps,
+    },
+  })
+}
+
+/**
+ * Track a file download (brochure, spec sheet, PDF)
+ */
+export function trackFileDownload(params: {
+  blockType: string
+  blockData: BlockWithTracking
+  fileName: string
+  fileUrl: string
+  position?: number
+  additionalProps?: Record<string, unknown>
+}): void {
+  trackWithConfig({
+    blockType: params.blockType,
+    action: 'file_download',
+    blockData: params.blockData,
+    label: params.fileName,
+    position: params.position,
+    additionalProps: {
+      file_url: params.fileUrl,
+      file_name: params.fileName,
       ...params.additionalProps,
     },
   })

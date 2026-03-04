@@ -10,6 +10,7 @@ import {
   withFallback,
   FALLBACK_CONTACT_FORM_DATA
 } from '@/lib/fallbacks';
+import { trackFormInteraction } from '@/lib/analytics/unified-tracking';
 
 // Create dynamic form validation schema based on data
 const createFormSchema = (formOptions: any) => z.object({
@@ -54,6 +55,7 @@ export function ContactForm({ data }: ContactFormProps) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+  const hasStartedTracking = useRef(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -90,6 +92,17 @@ export function ContactForm({ data }: ContactFormProps) {
 
   const watchedValues = watch();
 
+  const handleFormStart = () => {
+    if (hasStartedTracking.current) return;
+    hasStartedTracking.current = true;
+    trackFormInteraction({
+      blockType: 'marketing-contact-form',
+      blockData: {},
+      action: 'form_start',
+      formName: 'Find Your Perfect Piano',
+    });
+  };
+
   const handleNextStep = async () => {
     const fieldsToValidate = getFieldsForStep(currentStep);
     const isStepValid = await trigger(fieldsToValidate);
@@ -123,7 +136,14 @@ export function ContactForm({ data }: ContactFormProps) {
       
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
+      trackFormInteraction({
+        blockType: 'marketing-contact-form',
+        blockData: {},
+        action: 'form_submit',
+        formName: 'Find Your Perfect Piano',
+      });
+
       setIsSubmitted(true);
     } catch (error) {
       console.error('Form submission error:', error);
@@ -253,6 +273,7 @@ export function ContactForm({ data }: ContactFormProps) {
                           type="radio"
                           value={level.level.toLowerCase()}
                           {...register('experienceLevel')}
+                          onFocus={handleFormStart}
                           className="sr-only"
                         />
                         <div className={`w-4 h-4 rounded-full border-2 mr-3 ${

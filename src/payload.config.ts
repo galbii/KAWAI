@@ -90,6 +90,7 @@ import {
   ProductHeroCarousel,
   RelatedProducts,
   SoundCloudEmbed,
+  ProductFaqBlock,
   // Legacy blocks (keep for backward compatibility)
   TextContent,
   Hello,
@@ -306,6 +307,7 @@ export default buildConfig({
     ProductHeroCarousel,
     RelatedProducts,
     SoundCloudEmbed,
+    ProductFaqBlock,
 
     // Legacy blocks (keep for backward compatibility)
     TextContent,

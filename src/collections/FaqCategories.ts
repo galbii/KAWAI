@@ -10,7 +10,7 @@ export const FaqCategories: CollectionConfig = {
   admin: {
     group: 'Content',
     useAsTitle: 'name',
-    defaultColumns: ['name', 'slug', 'displayOrder', 'updatedAt'],
+    defaultColumns: ['name', 'supportHub', 'slug', 'displayOrder', 'updatedAt'],
     description: 'Taxonomy for organizing FAQs into categories (e.g. "Purchasing", "Technical", "Warranty")',
   },
   access: {
@@ -46,12 +46,33 @@ export const FaqCategories: CollectionConfig = {
       },
     },
     {
+      name: 'icon',
+      type: 'text',
+      admin: {
+        description: 'Icon identifier for this category (e.g. "wifi", "wrench", "book", "shield"). Used for visual navigation on hub pages.',
+        placeholder: 'wrench',
+      },
+    },
+    {
       name: 'color',
       type: 'text',
       admin: {
         description: 'Optional hex color for frontend badge styling (e.g. #E11922)',
         placeholder: '#E11922',
       },
+    },
+    {
+      name: 'supportHub',
+      type: 'select',
+      admin: {
+        description: 'Which TSD hub this category belongs to. Used to filter categories on hub pages.',
+        position: 'sidebar',
+      },
+      options: [
+        { label: 'Owner Hub — I own a Kawai', value: 'owner-hub' },
+        { label: "Buyer Hub — I'm choosing a Kawai", value: 'buyer-hub' },
+        { label: 'Technician Resources', value: 'technician-resources' },
+      ],
     },
     {
       name: 'displayOrder',

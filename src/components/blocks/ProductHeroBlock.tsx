@@ -211,7 +211,19 @@ export function ProductHeroBlock({
         }
         trackAddToCart(buyNowParams)
         trackBeginCheckout(buyNowParams)
-        window.open(cart.checkoutUrl, '_blank', 'noopener,noreferrer')
+        // Append UTM parameters to checkout URL for cross-domain attribution
+        let buyNowCheckoutUrl = cart.checkoutUrl
+        if (utmParams) {
+          const utmString = Object.entries(utmParams)
+            .filter(([, v]) => Boolean(v))
+            .map(([k, v]) => `${k}=${encodeURIComponent(v as string)}`)
+            .join('&')
+          if (utmString) {
+            const separator = cart.checkoutUrl.includes('?') ? '&' : '?'
+            buyNowCheckoutUrl = `${cart.checkoutUrl}${separator}${utmString}`
+          }
+        }
+        window.open(buyNowCheckoutUrl, '_blank', 'noopener,noreferrer')
       }
     } catch (err) {
       console.error('[ProductHeroBlock] Buy Now error:', err)
