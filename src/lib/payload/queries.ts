@@ -655,6 +655,13 @@ export async function getCatalogProductsDirect(): Promise<
     salePrice?: number | null
     compareAtPrice?: number | null
     shopifyCollections?: Array<{ title: string; handle: string }> | null
+    variations?: Array<{
+      name: string
+      price: number | null
+      compareAtPrice: number | null
+      imageUrl: string | null
+      available: boolean
+    }> | null
   }>
 > {
   try {
@@ -715,6 +722,15 @@ export async function getCatalogProductsDirect(): Promise<
         ? doc.shopifyCollections.map((c: any) => ({
             title: c.title ?? '',
             handle: c.handle ?? '',
+          }))
+        : null,
+      variations: Array.isArray(doc.variations)
+        ? doc.variations.map((v: any) => ({
+            name: (v.name as string) ?? '',
+            price: typeof v.price === 'number' ? v.price : null,
+            compareAtPrice: typeof v.compareAtPrice === 'number' ? v.compareAtPrice : null,
+            imageUrl: (v.imageUrl as string) ?? null,
+            available: v.available !== false,
           }))
         : null,
     }))

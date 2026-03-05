@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
@@ -22,6 +22,13 @@ export interface CatalogProduct {
   salePrice?: number | null
   compareAtPrice?: number | null
   shopifyCollections?: Array<{ title: string; handle: string }> | null
+  variations?: Array<{
+    name: string
+    price: number | null
+    compareAtPrice: number | null
+    imageUrl: string | null
+    available: boolean
+  }> | null
 }
 
 interface Props {
@@ -537,6 +544,7 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
   const [activeCollection, setActiveCollection] = useState<string>('All')
   const [sort, setSort] = useState<string>('default')
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   // Lock body scroll when mobile sheet is open
   useEffect(() => {
@@ -544,9 +552,26 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
     return () => { document.body.style.overflow = '' }
   }, [isMobileFilterOpen])
 
+  function scrollToBlock() {
+    if (!containerRef.current) return
+    const rect = containerRef.current.getBoundingClientRect()
+    // Only scroll if we've scrolled past the top of the block
+    if (rect.top >= 0) return
+    const headerH = parseInt(
+      getComputedStyle(document.documentElement).getPropertyValue('--header-bottom').trim() || '70',
+    )
+    window.scrollTo({ top: window.scrollY + rect.top - headerH, behavior: 'smooth' })
+  }
+
   function handleCategoryChange(cat: Category) {
     setActiveCategory(cat)
     setActiveCollection('All')
+    scrollToBlock()
+  }
+
+  function handleCollectionChange(col: string) {
+    setActiveCollection(col)
+    scrollToBlock()
   }
 
   const visibleCollections = useMemo(() => {
@@ -639,14 +664,14 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-kawai-pearl">
+    <div ref={containerRef} className="min-h-screen bg-kawai-pearl">
       {/* ── Mobile filter sheet ──────────────────────────────────── */}
       <MobileFilterSheet
         isOpen={isMobileFilterOpen}
         onClose={() => setIsMobileFilterOpen(false)}
         search={search} setSearch={setSearch}
         activeCategory={activeCategory} onCategoryChange={handleCategoryChange}
-        activeCollection={activeCollection} setActiveCollection={setActiveCollection}
+        activeCollection={activeCollection} setActiveCollection={handleCollectionChange}
         sort={sort} setSort={setSort}
         visibleCollections={visibleCollections}
         resultCount={filtered.length}
@@ -844,7 +869,7 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
               </span>
 
               <button
-                onClick={() => setActiveCollection('All')}
+                onClick={() => handleCollectionChange('All')}
                 className={cn(
                   'flex-shrink-0 px-4 py-1.5 text-sm uppercase tracking-[0.15em] transition-colors duration-200 font-[family-name:var(--font-brand-sans)] border-b-2',
                   activeCollection === 'All' ? 'text-kawai-red border-kawai-red' : 'text-kawai-charcoal/60 border-transparent hover:text-kawai-charcoal',
@@ -856,7 +881,7 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
               {visibleCollections.map((col) => (
                 <button
                   key={col.title}
-                  onClick={() => setActiveCollection(col.title)}
+                  onClick={() => handleCollectionChange(col.title)}
                   className={cn(
                     'flex-shrink-0 px-4 py-1.5 text-sm uppercase tracking-[0.15em] transition-colors duration-200 font-[family-name:var(--font-brand-sans)] border-b-2',
                     activeCollection === col.title ? 'text-kawai-red border-kawai-red' : 'text-kawai-charcoal/60 border-transparent hover:text-kawai-charcoal',
@@ -956,6 +981,37 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
         ) : null}
       </AnimatePresence>
 
+      {/* ── Collection Title ────────────────────────────────────── */}
+      <AnimatePresence>
+        {activeCollectionObj && (
+          <motion.div
+            key={`title-${activeCollectionObj.title}`}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="max-w-7xl mx-auto px-6 pt-10 pb-2"
+          >
+            <div className="flex items-baseline gap-4">
+              <h2
+                className="text-4xl md:text-5xl lg:text-6xl text-kawai-black"
+                style={{ fontFamily: 'var(--font-brand-luxury)', fontWeight: 700 }}
+              >
+                {activeCollectionObj.title}
+              </h2>
+              <span className="text-sm text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)]">
+                {filtered.length} {filtered.length === 1 ? 'instrument' : 'instruments'}
+              </span>
+            </div>
+            {(activeCollectionObj as CollectionForBrowser).subheading && (
+              <p className="mt-2 text-sm text-kawai-charcoal/60 font-[family-name:var(--font-brand-sans)] max-w-2xl">
+                {(activeCollectionObj as CollectionForBrowser).subheading}
+              </p>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ── Product Grid ────────────────────────────────────────── */}
       <main className="max-w-7xl mx-auto px-6 py-10">
         <AnimatePresence mode="wait">
@@ -1038,9 +1094,31 @@ function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }
 /* ── Product Card ──────────────────────────────────────────────── */
 
 function ProductCard({ product, index }: { product: CatalogProduct; index: number }) {
+  const [activeVariantIdx, setActiveVariantIdx] = useState(0)
   const category = normalizeCategory(product)
-  const hasPrice = !!product.price?.msrp
-  const isOnSale = product.salePrice != null && product.compareAtPrice != null
+
+  const variants = product.variations ?? []
+  const hasVariants = variants.length >= 2
+  const activeVariant = hasVariants ? (variants[activeVariantIdx] ?? null) : null
+
+  // Resolved display values based on active variant
+  const displayImageUrl = activeVariant?.imageUrl ?? product.imageUrl
+  const effectivePrice = activeVariant?.price ?? product.price?.msrp ?? null
+  const effectiveCompareAt = activeVariant?.compareAtPrice ?? null
+  const hasPrice = effectivePrice != null
+  const isOnSale = hasPrice && effectiveCompareAt != null && effectiveCompareAt > (effectivePrice ?? 0)
+
+  function prevVariant(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    setActiveVariantIdx((i) => (i === 0 ? variants.length - 1 : i - 1))
+  }
+
+  function nextVariant(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    setActiveVariantIdx((i) => (i + 1) % variants.length)
+  }
 
   return (
     <motion.div custom={index} variants={cardVariants} initial="hidden" animate="visible">
@@ -1050,12 +1128,12 @@ function ProductCard({ product, index }: { product: CatalogProduct; index: numbe
       >
         {/* Image */}
         <div className="relative aspect-square overflow-hidden bg-white">
-          {product.imageUrl ? (
+          {displayImageUrl ? (
             <Image
-              src={product.imageUrl}
-              alt={product.name ?? product.model}
+              src={displayImageUrl}
+              alt={activeVariant?.name ?? product.name ?? product.model}
               fill
-              className="object-contain p-10 transition-transform duration-500 group-hover:scale-[1.03]"
+              className="object-contain p-10 transition-all duration-500 group-hover:scale-[1.03]"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           ) : (
@@ -1085,6 +1163,44 @@ function ProductCard({ product, index }: { product: CatalogProduct; index: numbe
               </span>
             </div>
           )}
+
+          {/* Variant navigation arrows — visible on hover */}
+          {hasVariants && (
+            <>
+              <button
+                onClick={prevVariant}
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-white/90 hover:bg-white text-kawai-black shadow-sm transition-all duration-200 opacity-0 group-hover:opacity-100"
+                aria-label="Previous variant"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={nextVariant}
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-white/90 hover:bg-white text-kawai-black shadow-sm transition-all duration-200 opacity-0 group-hover:opacity-100"
+                aria-label="Next variant"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+              {/* Variant indicator dots */}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                {variants.map((v, i) => (
+                  <button
+                    key={i}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveVariantIdx(i) }}
+                    className={cn(
+                      'w-1.5 h-1.5 rounded-full transition-all duration-200',
+                      i === activeVariantIdx ? 'bg-kawai-black scale-125' : 'bg-kawai-black/30 hover:bg-kawai-black/60',
+                    )}
+                    aria-label={`Variant: ${v.name}`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         {/* Card body */}
@@ -1099,11 +1215,16 @@ function ProductCard({ product, index }: { product: CatalogProduct; index: numbe
             {product.name ?? product.model}
           </h2>
 
-          {product.shopifyCollections && product.shopifyCollections.length > 0 && (
+          {/* Active variant name */}
+          {hasVariants && activeVariant ? (
+            <p className="mt-2 text-xs text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)] italic">
+              {activeVariant.name}
+            </p>
+          ) : product.shopifyCollections && product.shopifyCollections.length > 0 ? (
             <p className="mt-2 text-xs uppercase tracking-[0.12em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] line-clamp-1">
               {product.shopifyCollections.slice(0, 2).map((c) => c.title).join(' · ')}
             </p>
-          )}
+          ) : null}
 
           <div className="my-4 h-px bg-kawai-neutral group-hover:bg-kawai-charcoal/20 transition-colors duration-300" />
 
@@ -1114,17 +1235,19 @@ function ProductCard({ product, index }: { product: CatalogProduct; index: numbe
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-[10px] font-bold tracking-widest text-kawai-red uppercase font-[family-name:var(--font-brand-sans)]">MSRP</span>
                     <span className="text-[11px] text-kawai-charcoal/40 line-through font-[family-name:var(--font-brand-sans)]">
-                      {formatCurrency(product.compareAtPrice!, product.price?.currency ?? 'USD')}
+                      {formatCurrency(effectiveCompareAt ?? 0, product.price?.currency ?? 'USD')}
                     </span>
                   </div>
                   <p className="text-xl font-bold text-kawai-red font-[family-name:var(--font-brand-sans)]">
-                    {formatCurrency(product.salePrice!, product.price?.currency ?? 'USD')}
+                    {formatCurrency(effectivePrice ?? 0, product.price?.currency ?? 'USD')}
                   </p>
                 </>
               ) : hasPrice ? (
                 <>
                   <span className="text-[10px] font-bold tracking-widest text-kawai-red uppercase font-[family-name:var(--font-brand-sans)]">MSRP</span>
-                  <p className="text-xl font-bold text-kawai-black font-[family-name:var(--font-brand-sans)]">{formatPrice(product.price)}</p>
+                  <p className="text-xl font-bold text-kawai-black font-[family-name:var(--font-brand-sans)]">
+                    {formatCurrency(effectivePrice ?? 0, product.price?.currency ?? 'USD')}
+                  </p>
                 </>
               ) : (
                 <p className="text-xs italic text-kawai-charcoal/60 font-[family-name:var(--font-brand-sans)]">Contact for Price</p>

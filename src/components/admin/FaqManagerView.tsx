@@ -39,7 +39,7 @@ interface FaqCategory {
   name: string
   slug: string
   displayOrder?: number
-  color?: string | null
+  color?: string
   description?: string
   icon?: string
   group?: { id: string; name: string; slug: string } | string | null
@@ -206,13 +206,13 @@ export function FaqManagerView() {
           <ActionBtn
             label="+ New Category"
             color={t.gold}
-            onClick={() => setModal({ type: 'category', defaultHubId: activeHubObj?.id })}
+            onClick={() => setModal({ type: 'category', ...(activeHubObj?.id !== undefined && { defaultHubId: activeHubObj.id }) })}
           />
           <ActionBtn
             label="+ New FAQ"
             color={t.violet}
             primary
-            onClick={() => setModal({ type: 'faq', defaultHubId: activeHubObj?.id })}
+            onClick={() => setModal({ type: 'faq', ...(activeHubObj?.id !== undefined && { defaultHubId: activeHubObj.id }) })}
           />
         </div>
       </div>
@@ -268,7 +268,7 @@ export function FaqManagerView() {
             return <Chip key={cat.id} label={`${cat.name} (${count})`} active={activeCat === cat.slug} color={cat.color ?? ''} onClick={() => setActiveCat(cat.slug)} />
           })}
           <button
-            onClick={() => setModal({ type: 'category', defaultHubId: activeHubObj?.id })}
+            onClick={() => setModal({ type: 'category', ...(activeHubObj?.id !== undefined && { defaultHubId: activeHubObj.id }) })}
             style={{ marginLeft: 'auto', alignSelf: 'center', fontSize: 12, color: t.lo, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}
           >
             + New category
@@ -288,7 +288,7 @@ export function FaqManagerView() {
         <EmptyState
           activeHub={activeHub}
           search={search}
-          onNewFaq={() => setModal({ type: 'faq', defaultHubId: activeHubObj?.id })}
+          onNewFaq={() => setModal({ type: 'faq', ...(activeHubObj?.id !== undefined && { defaultHubId: activeHubObj.id }) })}
         />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -316,7 +316,7 @@ export function FaqManagerView() {
         onClose={closeModal}
         category={modal?.type === 'category' ? (modal.category ?? null) : null}
         hubs={hubs}
-        defaultHubId={modal?.type === 'category' ? modal.defaultHubId : undefined}
+        {...(modal?.type === 'category' && modal.defaultHubId !== undefined ? { defaultHubId: modal.defaultHubId } : {})}
         onSaved={() => { closeModal(); loadData() }}
       />
 
@@ -326,7 +326,7 @@ export function FaqManagerView() {
         faq={modal?.type === 'faq' ? (modal.faq ?? null) : null}
         hubs={hubs}
         categories={categories}
-        defaultHubId={modal?.type === 'faq' ? modal.defaultHubId : undefined}
+        {...(modal?.type === 'faq' && modal.defaultHubId !== undefined ? { defaultHubId: modal.defaultHubId } : {})}
         onSaved={() => { closeModal(); loadData() }}
       />
     </div>
