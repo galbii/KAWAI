@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -39,7 +39,7 @@ function CollectionCard({
   index?: number
 }) {
   const videoId = collection.youtubeUrl ? extractYouTubeId(collection.youtubeUrl) : null
-  const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null
+  const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : null
   const imageUrl = thumbnail ?? collection.imageUrl ?? collection.mediaUrl ?? null
   const hasMedia = Boolean(imageUrl || videoId)
   const displayTitle = collection.heading || collection.title
@@ -95,9 +95,9 @@ function CollectionCard({
               className="absolute inset-0"
             >
               <iframe
-                src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1&playsinline=1`}
+                src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3`}
                 allow="autoplay; encrypted-media"
-                className="absolute inset-0 w-full h-full pointer-events-none scale-[1.05]"
+                className="absolute inset-0 w-full h-full pointer-events-none"
                 style={{ border: 'none' }}
                 title={displayTitle}
               />
@@ -121,7 +121,9 @@ function CollectionCard({
           {/* Text overlay at bottom */}
           <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
             <p className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/55 mb-1.5">
-              {collection.productCount > 0 ? `${collection.productCount} Models` : 'Collection'}
+              {collection.pianoCategories && collection.pianoCategories.length > 0
+                ? collection.pianoCategories.map((c) => c.charAt(0).toUpperCase() + c.slice(1)).join(' · ')
+                : collection.productCount > 0 ? `${collection.productCount} Models` : 'Collection'}
             </p>
             <h3 className="text-lg font-bold text-white font-serif leading-tight">
               {displayTitle}
@@ -139,13 +141,11 @@ function CollectionCard({
       {/* CTA below card */}
       <Link
         href={collectionHref}
-        className="mt-3.5 flex items-center justify-between px-0.5 group/cta"
+        className="mt-3.5 flex items-center justify-center gap-2 px-4 py-2.5 bg-transparent text-[#8A8078] text-sm font-medium tracking-wide border border-[#E0DCD6] hover:border-[#A01829] hover:text-[#A01829] transition-colors duration-150"
         aria-label={`View all ${displayTitle} models`}
       >
-        <span className="text-sm font-medium text-[#8A8078] group-hover/cta:text-[#A01829] transition-colors duration-150">
-          Explore Collection
-        </span>
-        <ArrowRight className="h-4 w-4 text-[#B8AFA6] group-hover/cta:text-[#A01829] group-hover/cta:translate-x-0.5 transition-all duration-150" />
+        Explore Collection
+        <ArrowRight className="h-4 w-4" />
       </Link>
     </div>
   )
@@ -167,6 +167,14 @@ export function FeaturedCollectionsCarousel({
   const visible = collections.slice(idx * CARDS_PER_VIEW, (idx + 1) * CARDS_PER_VIEW)
   const hasPrev = idx > 0
   const hasNext = idx < maxIdx
+
+  const mobileScrollRef = useRef<HTMLDivElement>(null)
+  const scrollMobile = useCallback((dir: 'left' | 'right') => {
+    const el = mobileScrollRef.current
+    if (!el) return
+    const cardWidth = el.firstElementChild ? (el.firstElementChild as HTMLElement).offsetWidth + 16 : el.offsetWidth * 0.82
+    el.scrollBy({ left: dir === 'right' ? cardWidth : -cardWidth, behavior: 'smooth' })
+  }, [])
 
   if (collections.length === 0) {
     return (
@@ -219,32 +227,59 @@ export function FeaturedCollectionsCarousel({
           </Link>
         </div>
 
-        {/* Carousel */}
-        <div className="relative">
+        {/* Mobile: native horizontal scroll */}
+        <div className="lg:hidden">
+          <div
+            ref={mobileScrollRef}
+            className="flex overflow-x-auto snap-x snap-mandatory gap-4 -mx-6 px-6 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {collections.map((collection, i) => (
+              <div key={collection.id} className="w-[78vw] sm:w-[44vw] flex-shrink-0 snap-start">
+                <CollectionCard collection={collection} index={i} />
+              </div>
+            ))}
+          </div>
+
+          {collections.length > 1 && (
+            <div className="flex items-center justify-end gap-2 mt-3 px-1">
+              <button
+                onClick={() => scrollMobile('left')}
+                aria-label="Previous collections"
+                className="w-9 h-9 rounded-full bg-[#FAF9F7] border border-[#E0DCD6] flex items-center justify-center text-[#8A8078] hover:border-[#A01829] hover:text-[#A01829] transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => scrollMobile('right')}
+                aria-label="Next collections"
+                className="w-9 h-9 rounded-full bg-[#FAF9F7] border border-[#E0DCD6] flex items-center justify-center text-[#8A8078] hover:border-[#A01829] hover:text-[#A01829] transition-colors"
+              >
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop: paginated grid with arrows */}
+        <div className="hidden lg:block relative">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={idx}
-              className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8"
+              className="grid grid-cols-3 gap-8"
               initial={{ opacity: 0, x: 28 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -28 }}
               transition={{ duration: 0.26, ease: [0.4, 0, 0.2, 1] }}
             >
               {visible.map((collection, i) => (
-                <CollectionCard
-                  key={collection.id}
-                  collection={collection}
-                  index={i}
-                />
+                <CollectionCard key={collection.id} collection={collection} index={i} />
               ))}
-              {/* Fill empty slots on the last page to keep grid stable */}
               {Array.from({ length: Math.max(0, CARDS_PER_VIEW - visible.length) }).map((_, i) => (
                 <div key={`empty-${i}`} />
               ))}
             </motion.div>
           </AnimatePresence>
 
-          {/* Prev / Next arrows */}
           <AnimatePresence>
             {hasPrev && (
               <motion.button
@@ -273,25 +308,21 @@ export function FeaturedCollectionsCarousel({
               </motion.button>
             )}
           </AnimatePresence>
-        </div>
 
-        {/* Pagination dots */}
-        {maxIdx > 0 && (
-          <div className="flex items-center gap-2 mt-8">
-            {Array.from({ length: maxIdx + 1 }).map((_, i) => (
-              <button key={i} onClick={() => setIdx(i)} aria-label={`Go to slide ${i + 1}`}>
-                <motion.div
-                  animate={{
-                    width: i === idx ? 28 : 8,
-                    backgroundColor: i === idx ? '#A01829' : '#C8C2BA',
-                  }}
-                  transition={{ duration: 0.22 }}
-                  className="h-1.5 rounded-full"
-                />
-              </button>
-            ))}
-          </div>
-        )}
+          {maxIdx > 0 && (
+            <div className="flex items-center gap-2 mt-8">
+              {Array.from({ length: maxIdx + 1 }).map((_, i) => (
+                <button key={i} onClick={() => setIdx(i)} aria-label={`Go to slide ${i + 1}`}>
+                  <motion.div
+                    animate={{ width: i === idx ? 28 : 8, backgroundColor: i === idx ? '#A01829' : '#C8C2BA' }}
+                    transition={{ duration: 0.22 }}
+                    className="h-1.5 rounded-full"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </section>
   )

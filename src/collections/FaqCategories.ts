@@ -10,7 +10,7 @@ export const FaqCategories: CollectionConfig = {
   admin: {
     group: 'Content',
     useAsTitle: 'name',
-    defaultColumns: ['name', 'supportHub', 'slug', 'displayOrder', 'updatedAt'],
+    defaultColumns: ['name', 'group', 'supportHub', 'slug', 'displayOrder', 'updatedAt'],
     description: 'Taxonomy for organizing FAQs into categories (e.g. "Purchasing", "Technical", "Warranty")',
   },
   access: {
@@ -73,6 +73,15 @@ export const FaqCategories: CollectionConfig = {
         { label: "Buyer Hub — I'm choosing a Kawai", value: 'buyer-hub' },
         { label: 'Technician Resources', value: 'technician-resources' },
       ],
+    },
+    {
+      name: 'group',
+      type: 'relationship',
+      relationTo: 'support-groups',
+      admin: {
+        description: 'Link this category to a Support Group. This is the new extensible alternative to the Support Hub select above.',
+        position: 'sidebar',
+      },
     },
     {
       name: 'displayOrder',

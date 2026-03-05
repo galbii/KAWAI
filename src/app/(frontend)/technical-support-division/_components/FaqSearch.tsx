@@ -24,7 +24,7 @@ interface SearchResult {
 export interface FaqSearchProps {
   placeholder?: string
   autoFocus?: boolean
-  variant?: 'hero' | 'inline'
+  variant?: 'hero' | 'inline' | 'landing' | 'floating'
 }
 
 const HUB_LABEL: Record<string, string> = {
@@ -93,18 +93,25 @@ export function FaqSearch({
   }
 
   const isHero = variant === 'hero'
+  const isLanding = variant === 'landing'
+  const isFloating = variant === 'floating'
+  const isDark = isHero || isLanding || isFloating
 
   return (
     <div ref={containerRef} className="relative w-full">
       {/* Input */}
       <div className="relative group">
-        <div className="absolute left-5 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+        <div className={cn(
+          'absolute left-5 top-1/2 -translate-y-1/2 pointer-events-none z-10',
+          isFloating && 'left-4',
+        )}>
           <svg
             className={cn(
-              'w-5 h-5 transition-all duration-200',
+              'transition-all duration-200',
+              isFloating ? 'w-4 h-4' : 'w-5 h-5',
               loading
                 ? 'animate-pulse text-kawai-red'
-                : isHero
+                : isDark
                   ? 'text-white/50 group-focus-within:text-white/80'
                   : 'text-kawai-charcoal/40 group-focus-within:text-kawai-charcoal/70'
             )}
@@ -123,10 +130,15 @@ export function FaqSearch({
           onFocus={() => results.length > 0 && setOpen(true)}
           placeholder={placeholder}
           className={cn(
-            'w-full h-16 pl-14 pr-12 rounded-2xl text-base font-[family-name:var(--font-brand-sans)] transition-all duration-200 focus:outline-none',
-            isHero
-              ? 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder:text-white/40 focus:bg-white/15 focus:border-white/50 focus:ring-2 focus:ring-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
-              : 'bg-white border border-kawai-neutral/70 text-kawai-black placeholder:text-kawai-charcoal/30 shadow-sm focus:ring-2 focus:ring-kawai-red/15 focus:border-kawai-red/40'
+            'w-full font-[family-name:var(--font-brand-sans)] transition-all duration-200 focus:outline-none',
+            // Landing variant — prominent pill, large
+            isLanding && 'h-16 pl-14 pr-12 rounded-full text-lg bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder:text-white/40 focus:bg-white/15 focus:border-white/50 focus:ring-2 focus:ring-white/20 shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_8px_32px_rgba(0,0,0,0.4)]',
+            // Hero variant — same as before
+            isHero && 'h-16 pl-14 pr-12 rounded-2xl text-base bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder:text-white/40 focus:bg-white/15 focus:border-white/50 focus:ring-2 focus:ring-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)]',
+            // Floating variant — compact, dark glassmorphism for dark bar bg
+            isFloating && 'h-10 pl-10 pr-10 rounded-xl text-sm bg-white/10 backdrop-blur-sm border border-white/15 text-white placeholder:text-white/40 focus:bg-white/15 focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/20',
+            // Inline variant
+            !isLanding && !isHero && !isFloating && 'h-16 pl-14 pr-12 rounded-2xl text-base bg-white border border-kawai-neutral/70 text-kawai-black placeholder:text-kawai-charcoal/30 shadow-sm focus:ring-2 focus:ring-kawai-red/15 focus:border-kawai-red/40',
           )}
         />
         {query && (
@@ -134,7 +146,8 @@ export function FaqSearch({
             onClick={() => { setQuery(''); setOpen(false); inputRef.current?.focus() }}
             className={cn(
               'absolute right-5 top-1/2 -translate-y-1/2 transition-colors',
-              isHero ? 'text-white/40 hover:text-white/70' : 'text-kawai-charcoal/30 hover:text-kawai-charcoal/60'
+              isFloating && 'right-3',
+              isDark ? 'text-white/40 hover:text-white/70' : 'text-kawai-charcoal/30 hover:text-kawai-charcoal/60'
             )}
             aria-label="Clear search"
           >
@@ -145,7 +158,7 @@ export function FaqSearch({
         )}
       </div>
 
-      {/* Dropdown — always white */}
+      {/* Dropdown — search engine results style */}
       <AnimatePresence>
         {open && results.length > 0 && (
           <motion.div
@@ -155,12 +168,18 @@ export function FaqSearch({
             transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
             className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border border-kawai-neutral/50 shadow-2xl overflow-hidden z-50"
           >
-            <ul role="listbox" className="py-1">
+            <ul role="listbox" className="divide-y divide-kawai-neutral/30">
               {results.map((result, i) => {
                 const cat = Array.isArray(result.categories) && result.categories.length > 0
                   ? result.categories[0]
                   : null
                 const hubLabel = result.supportHub ? HUB_LABEL[result.supportHub] : null
+
+                // Build breadcrumb path string
+                const pathParts = ['support']
+                if (hubLabel) pathParts.push(hubLabel)
+                if (cat?.name) pathParts.push(cat.name)
+                const pathString = pathParts.join(' › ')
 
                 return (
                   <li key={result.id} role="option" aria-selected={activeIndex === i}>
@@ -168,65 +187,31 @@ export function FaqSearch({
                       onClick={() => navigateTo(result.slug)}
                       onMouseEnter={() => setActiveIndex(i)}
                       className={cn(
-                        'w-full text-left px-4 py-3.5 flex items-start gap-3.5 transition-colors duration-100',
+                        'group w-full text-left px-5 py-4 transition-colors duration-100',
                         activeIndex === i ? 'bg-kawai-pearl' : 'hover:bg-kawai-pearl/50'
                       )}
                     >
-                      {/* Question mark icon */}
-                      <div className="flex-shrink-0 mt-0.5 w-7 h-7 rounded-lg bg-kawai-pearl flex items-center justify-center">
-                        <svg className="w-3.5 h-3.5 text-kawai-charcoal/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
-                        </svg>
-                      </div>
+                      {/* Path breadcrumb — like Google's green URL */}
+                      <p className="text-[10px] text-kawai-red/60 font-medium mb-1 font-[family-name:var(--font-brand-sans)]">
+                        kawaipianos.com › {pathString}
+                      </p>
 
-                      <div className="flex-1 min-w-0">
-                        {/* Badges row */}
-                        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                          {cat && (
-                            <span
-                              className="text-[10px] font-semibold px-2 py-0.5 rounded-md"
-                              style={cat.color
-                                ? { backgroundColor: `${cat.color}18`, color: cat.color }
-                                : { backgroundColor: '#f0f0f0', color: '#666' }
-                              }
-                            >
-                              {cat.name}
-                            </span>
-                          )}
-                          {hubLabel && (
-                            <span className="text-[10px] text-kawai-charcoal/40 font-medium">
-                              {hubLabel}
-                            </span>
-                          )}
-                        </div>
-                        {/* Question */}
-                        <p className="text-sm font-medium text-kawai-black leading-snug font-[family-name:var(--font-brand-sans)]">
-                          {result.question}
+                      {/* Question — the search result title */}
+                      <p className="text-sm font-semibold text-kawai-black leading-snug mb-1 font-[family-name:var(--font-brand-sans)] group-hover:text-kawai-red transition-colors duration-100">
+                        {result.question}
+                      </p>
+
+                      {/* Excerpt — the snippet */}
+                      {result.excerpt && (
+                        <p className="text-xs text-kawai-charcoal/50 line-clamp-2 leading-relaxed font-[family-name:var(--font-brand-sans)]">
+                          {result.excerpt}
                         </p>
-                        {/* Excerpt */}
-                        {result.excerpt && (
-                          <p className="text-xs text-kawai-charcoal/50 mt-0.5 line-clamp-1 font-[family-name:var(--font-brand-sans)]">
-                            {result.excerpt}
-                          </p>
-                        )}
-                      </div>
-
-                      <svg className="w-3.5 h-3.5 text-kawai-charcoal/25 flex-shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
+                      )}
                     </button>
                   </li>
                 )
               })}
             </ul>
-            <div className="px-4 py-2 border-t border-kawai-neutral/30 bg-kawai-pearl/40 flex items-center justify-between">
-              <p className="text-[10px] text-kawai-charcoal/35 font-[family-name:var(--font-brand-sans)]">
-                ↑↓ navigate · Enter to open · Esc to close
-              </p>
-              <p className="text-[10px] text-kawai-charcoal/35 font-[family-name:var(--font-brand-sans)]">
-                {results.length} result{results.length !== 1 ? 's' : ''}
-              </p>
-            </div>
           </motion.div>
         )}
 

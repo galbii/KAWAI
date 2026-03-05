@@ -60,6 +60,7 @@ export interface NavCollection {
   heading: string | null
   subheading: string | null
   productCount: number
+  pianoCategories?: string[] | null
 }
 
 export interface ProductsNavigation {

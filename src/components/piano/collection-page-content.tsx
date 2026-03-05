@@ -74,7 +74,7 @@ export function CollectionPageContent({ collection, products }: CollectionPageCo
     : null
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white text-kawai-black">
       {/* ── Hero banner ────────────────────────────────────────────────────────── */}
       <CollectionShowcaseBlock
         collection={collection}

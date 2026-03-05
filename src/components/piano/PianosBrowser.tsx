@@ -241,23 +241,6 @@ function CollectionBanner({ collection }: { collection: CollectionForBrowser }) 
           </motion.p>
         )}
 
-        <motion.div variants={bannerItemVariants} className="mt-8">
-          <Link
-            href={`/pianos/${collection.handle}`}
-            className={cn(
-              'inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold tracking-wide',
-              'border transition-all duration-300',
-              safeTextColor === 'black'
-                ? 'border-kawai-black/60 text-kawai-black hover:bg-kawai-black hover:text-white'
-                : 'border-white/60 text-white hover:bg-white hover:text-kawai-black',
-            )}
-          >
-            View the Full Collection
-            <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </Link>
-        </motion.div>
       </motion.div>
     </section>
   )
@@ -601,6 +584,7 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
         heading: c.heading ?? null,
         subheading: c.subheading ?? null,
         productCount: 0,
+        pianoCategories: c.pianoCategories ?? null,
       }))
   }, [collectionsForBrowser])
 
@@ -862,18 +846,11 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
               <button
                 onClick={() => setActiveCollection('All')}
                 className={cn(
-                  'relative flex-shrink-0 px-4 py-1.5 text-sm uppercase tracking-[0.15em] transition-colors duration-200 font-[family-name:var(--font-brand-sans)]',
-                  activeCollection === 'All' ? 'text-kawai-red' : 'text-kawai-charcoal/60 hover:text-kawai-charcoal',
+                  'flex-shrink-0 px-4 py-1.5 text-sm uppercase tracking-[0.15em] transition-colors duration-200 font-[family-name:var(--font-brand-sans)] border-b-2',
+                  activeCollection === 'All' ? 'text-kawai-red border-kawai-red' : 'text-kawai-charcoal/60 border-transparent hover:text-kawai-charcoal',
                 )}
               >
                 All
-                {activeCollection === 'All' && (
-                  <motion.span
-                    layoutId="collection-underline"
-                    className="absolute bottom-0 left-4 right-4 h-px bg-kawai-red"
-                    transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
-                  />
-                )}
               </button>
 
               {visibleCollections.map((col) => (
@@ -881,18 +858,11 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
                   key={col.title}
                   onClick={() => setActiveCollection(col.title)}
                   className={cn(
-                    'relative flex-shrink-0 px-4 py-1.5 text-sm uppercase tracking-[0.15em] transition-colors duration-200 font-[family-name:var(--font-brand-sans)]',
-                    activeCollection === col.title ? 'text-kawai-red' : 'text-kawai-charcoal/60 hover:text-kawai-charcoal',
+                    'flex-shrink-0 px-4 py-1.5 text-sm uppercase tracking-[0.15em] transition-colors duration-200 font-[family-name:var(--font-brand-sans)] border-b-2',
+                    activeCollection === col.title ? 'text-kawai-red border-kawai-red' : 'text-kawai-charcoal/60 border-transparent hover:text-kawai-charcoal',
                   )}
                 >
                   {col.title}
-                  {activeCollection === col.title && (
-                    <motion.span
-                      layoutId="collection-underline"
-                      className="absolute bottom-0 left-4 right-4 h-px bg-kawai-red"
-                      transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
-                    />
-                  )}
                 </button>
               ))}
 
@@ -1015,6 +985,29 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
           )}
         </AnimatePresence>
       </main>
+
+      {/* ── View Full Collection CTA ─────────────────────────────── */}
+      <AnimatePresence>
+        {activeCollectionHandle && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.2 }}
+            className="max-w-7xl mx-auto px-6 pb-12 flex justify-center"
+          >
+            <Link
+              href={`/pianos/${activeCollectionHandle}`}
+              className="inline-flex items-center gap-3 px-12 py-4 text-base font-semibold tracking-[0.1em] uppercase bg-kawai-black text-white hover:bg-kawai-charcoal transition-colors duration-300 font-[family-name:var(--font-brand-sans)]"
+            >
+              View the Full Collection
+              <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

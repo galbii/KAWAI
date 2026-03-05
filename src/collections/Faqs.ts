@@ -18,7 +18,7 @@ export const Faqs: CollectionConfig = {
   admin: {
     group: 'Content',
     useAsTitle: 'question',
-    defaultColumns: ['question', 'supportHub', 'categories', 'status', 'updatedAt'],
+    defaultColumns: ['question', 'categories', 'status', 'updatedAt'],
     description: 'Frequently asked questions with rich text answers and product linking',
   },
   access: {
@@ -49,17 +49,23 @@ export const Faqs: CollectionConfig = {
     },
 
     {
-      name: 'supportHub',
-      type: 'select',
+      name: 'viewCount',
+      type: 'number',
+      defaultValue: 0,
       admin: {
-        description: 'Which TSD hub this FAQ belongs to. Leave blank for general /faq index only.',
+        description: 'Tracks how many times this FAQ has been viewed. Used to surface popular questions.',
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'group',
+      type: 'relationship',
+      relationTo: 'support-groups',
+      admin: {
+        description: 'Directly assign this FAQ to a Support Group. Used as an alternative or supplement to the supportHub select above.',
         position: 'sidebar',
       },
-      options: [
-        { label: 'Owner Hub — I own a Kawai', value: 'owner-hub' },
-        { label: "Buyer Hub — I'm choosing a Kawai", value: 'buyer-hub' },
-        { label: 'Technician Resources', value: 'technician-resources' },
-      ],
     },
 
     // Tabs
@@ -266,13 +272,16 @@ export const Faqs: CollectionConfig = {
           body: JSON.stringify({ secret, tag: 'technical-support-division' }),
         }).catch((err) => console.error('[Faqs Hook] Revalidation error (tsd):', err))
 
-        // Revalidate specific hub if set
-        if (doc.supportHub) {
-          fetch(revalidateUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ secret, tag: `tsd-hub-${doc.supportHub}` }),
-          }).catch((err) => console.error('[Faqs Hook] Revalidation error (tsd-hub):', err))
+        // Revalidate group hub if set
+        if (doc.group) {
+          const groupSlug = typeof doc.group === 'object' ? doc.group?.slug : doc.group
+          if (groupSlug) {
+            fetch(revalidateUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ secret, tag: `tsd-hub-${groupSlug}` }),
+            }).catch((err) => console.error('[Faqs Hook] Group hub revalidation error:', err))
+          }
         }
 
         return doc

@@ -101,6 +101,7 @@ export function CollectionProductRow({
 
   const [selectedVariationIndex, setSelectedVariationIndex] = useState<number>(-1)
   const [buyNowLoading, setBuyNowLoading] = useState(false)
+  const [descExpanded, setDescExpanded] = useState(false)
 
   useEffect(() => {
     if (product.variations.length === 1) setSelectedVariationIndex(0)
@@ -271,7 +272,7 @@ export function CollectionProductRow({
           : 'lg:pr-16 lg:pl-14 xl:pr-24 xl:pl-20',
       )}
     >
-      {/* Index row */}
+      {/* Index row — desktop only */}
       <motion.div variants={infoChildVariants} className="hidden lg:flex items-center gap-3 mb-8">
         <span
           className="text-[10px] tracking-[0.35em] uppercase font-semibold text-kawai-charcoal/20"
@@ -283,7 +284,7 @@ export function CollectionProductRow({
         <div className="flex-1 h-px bg-kawai-neutral/50" />
       </motion.div>
 
-      {/* Model — primary heading */}
+      {/* Model — primary heading, desktop only */}
       <motion.h2
         variants={infoChildVariants}
         className="hidden lg:block text-6xl xl:text-7xl 2xl:text-8xl text-kawai-black leading-[1.0] mb-3"
@@ -292,7 +293,7 @@ export function CollectionProductRow({
         {product.model}
       </motion.h2>
 
-      {/* Full name — subtitle */}
+      {/* Full name — subtitle, desktop only */}
       {product.name && (
         <motion.p
           variants={infoChildVariants}
@@ -303,22 +304,54 @@ export function CollectionProductRow({
         </motion.p>
       )}
 
-      {/* Red accent rule */}
-      <motion.div
-        variants={infoChildVariants}
-        className="hidden lg:block w-12 h-[1.5px] bg-kawai-red mb-8"
-      />
+      {/* Red accent rule — desktop only */}
+      <motion.div variants={infoChildVariants} className="hidden lg:block w-12 h-[1.5px] bg-kawai-red mb-8" />
 
-      {/* Description */}
+      {/* Description — expandable, both mobile + desktop */}
       {product.description && (
-        <motion.p
-          variants={infoChildVariants}
-          className="text-[17px] text-kawai-charcoal/60 leading-[1.85] mb-10 max-w-md line-clamp-4"
+        <motion.div variants={infoChildVariants} className="mb-8">
+          <p
+            className={cn(
+              'text-[17px] text-kawai-charcoal/60 leading-[1.85] max-w-md transition-all duration-500',
+              !descExpanded && 'line-clamp-3',
+            )}
+            style={{ fontFamily: 'var(--font-brand-sans)' }}
+          >
+            {product.description}
+          </p>
+          <button
+            type="button"
+            onClick={() => setDescExpanded((v) => !v)}
+            className="mt-2 text-[10px] tracking-[0.18em] uppercase font-semibold text-kawai-charcoal/40 hover:text-kawai-black transition-colors duration-200 flex items-center gap-1.5"
+            style={{ fontFamily: 'var(--font-brand-sans)' }}
+          >
+            {descExpanded ? 'Read less' : 'Read more'}
+            <svg
+              viewBox="0 0 12 12"
+              className={cn('w-2.5 h-2.5 transition-transform duration-300', descExpanded && 'rotate-180')}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M2 4l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </motion.div>
+      )}
+
+      {/* View Product */}
+      <motion.div variants={infoChildVariants} className="mb-10">
+        <Link
+          href={`/products/${product.slug}`}
+          className="inline-flex items-center justify-center gap-3 px-10 py-4 bg-kawai-black text-white hover:bg-kawai-black/80 transition-all duration-300 w-fit"
           style={{ fontFamily: 'var(--font-brand-sans)' }}
         >
-          {product.description}
-        </motion.p>
-      )}
+          <span className="text-[11px] font-bold tracking-[0.18em] uppercase">View Product</span>
+          <svg viewBox="0 0 16 16" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="1.75">
+            <path d="M2 8h12M8 3l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </Link>
+      </motion.div>
 
       {/* Price block */}
       {priceDisplay.type === 'single' && priceDisplay.price && (
@@ -331,16 +364,10 @@ export function CollectionProductRow({
           </p>
           {priceDisplay.onSale && priceDisplay.compareAtPrice ? (
             <div className="flex items-baseline gap-4">
-              <span
-                className="text-4xl font-semibold text-kawai-charcoal/35 line-through"
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
-              >
+              <span className="text-4xl font-semibold text-kawai-charcoal/35 line-through" style={{ fontFamily: 'var(--font-brand-sans)' }}>
                 {formatPrice(priceDisplay.compareAtPrice)}
               </span>
-              <span
-                className="text-4xl font-semibold text-kawai-red"
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
-              >
+              <span className="text-4xl font-semibold text-kawai-red" style={{ fontFamily: 'var(--font-brand-sans)' }}>
                 {formatPrice(priceDisplay.price)}
               </span>
             </div>
@@ -353,28 +380,20 @@ export function CollectionProductRow({
       )}
       {priceDisplay.type === 'range' && (
         <motion.div variants={infoChildVariants} className="mb-10">
-          <p
-            className="text-[9px] tracking-[0.25em] uppercase text-kawai-charcoal/35 mb-2"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
-          >
+          <p className="text-[9px] tracking-[0.25em] uppercase text-kawai-charcoal/35 mb-2" style={{ fontFamily: 'var(--font-brand-sans)' }}>
             Starting From
           </p>
           <p className="text-4xl font-semibold text-kawai-black" style={{ fontFamily: 'var(--font-brand-sans)' }}>
             {formatPrice(priceDisplay.minPrice)}
             {priceDisplay.minPrice !== priceDisplay.maxPrice && (
-              <span className="text-kawai-charcoal/35">
-                {' '}– {formatPrice(priceDisplay.maxPrice)}
-              </span>
+              <span className="text-kawai-charcoal/35">{' '}– {formatPrice(priceDisplay.maxPrice)}</span>
             )}
           </p>
         </motion.div>
       )}
       {priceDisplay.type === 'fallback' && priceDisplay.price && (
         <motion.div variants={infoChildVariants} className="mb-10">
-          <p
-            className="text-[9px] tracking-[0.25em] uppercase text-kawai-charcoal/35 mb-2"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
-          >
+          <p className="text-[9px] tracking-[0.25em] uppercase text-kawai-charcoal/35 mb-2" style={{ fontFamily: 'var(--font-brand-sans)' }}>
             MSRP From
           </p>
           <p className="text-4xl font-semibold text-kawai-black" style={{ fontFamily: 'var(--font-brand-sans)' }}>
@@ -386,10 +405,7 @@ export function CollectionProductRow({
       {/* Variant selector */}
       {product.variations.length > 1 && (
         <motion.div variants={infoChildVariants} className="mb-8">
-          <p
-            className="text-[9px] tracking-[0.2em] uppercase text-kawai-charcoal/35 mb-3"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
-          >
+          <p className="text-[9px] tracking-[0.2em] uppercase text-kawai-charcoal/35 mb-3" style={{ fontFamily: 'var(--font-brand-sans)' }}>
             Finish
           </p>
           <div className="flex flex-wrap gap-3">
@@ -416,21 +432,7 @@ export function CollectionProductRow({
         </motion.div>
       )}
 
-      {/* View Product — always visible */}
-      <motion.div variants={infoChildVariants} className={needsFinishSelection ? 'mb-6' : 'mb-6'}>
-        <Link
-          href={`/products/${product.slug}`}
-          className="inline-flex items-center justify-center gap-3 px-10 py-4 bg-kawai-black text-white hover:bg-kawai-black/80 transition-all duration-300 w-fit"
-          style={{ fontFamily: 'var(--font-brand-sans)' }}
-        >
-          <span className="text-[11px] font-bold tracking-[0.18em] uppercase">View Product</span>
-          <svg viewBox="0 0 16 16" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="1.75">
-            <path d="M2 8h12M8 3l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </Link>
-      </motion.div>
-
-      {/* Commerce buttons — animate in below View Product when a finish is selected */}
+      {/* Commerce buttons — animate in below price when finish selected */}
       {hasVariations && (
         <AnimatePresence mode="wait">
           {needsFinishSelection ? (
@@ -440,7 +442,7 @@ export function CollectionProductRow({
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="text-[11px] tracking-[0.14em] uppercase text-kawai-charcoal/35 mb-2"
+              className="text-[11px] tracking-[0.14em] uppercase text-kawai-charcoal/35"
               style={{ fontFamily: 'var(--font-brand-sans)' }}
             >
               Select a finish to continue
@@ -452,7 +454,7 @@ export function CollectionProductRow({
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="flex flex-wrap items-center gap-4 mb-4"
+              className="flex flex-wrap items-center gap-4"
             >
               <button
                 type="button"
@@ -460,15 +462,13 @@ export function CollectionProductRow({
                 disabled={buyNowLoading}
                 className={cn(
                   'inline-flex items-center justify-center px-10 py-4',
-                  'text-[11px] font-bold tracking-[0.18em] uppercase text-white',
-                  'bg-kawai-red transition-all duration-300',
+                  'text-[11px] font-bold tracking-[0.18em] uppercase text-white bg-kawai-red transition-all duration-300',
                   !buyNowLoading ? 'hover:bg-kawai-red/85 cursor-pointer' : 'opacity-60 cursor-not-allowed',
                 )}
                 style={{ fontFamily: 'var(--font-brand-sans)' }}
               >
                 {buyNowLoading ? 'Processing…' : 'Buy Now'}
               </button>
-
               <AddToCartButton
                 variantId={selectedVariation?.shopifyVariantId ?? ''}
                 available={selectedVariation?.available ?? false}
@@ -487,12 +487,8 @@ export function CollectionProductRow({
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="mb-4"
             >
-              <p
-                className="text-[11px] tracking-[0.12em] uppercase text-kawai-charcoal/40 mb-4"
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
-              >
+              <p className="text-[11px] tracking-[0.12em] uppercase text-kawai-charcoal/40 mb-4" style={{ fontFamily: 'var(--font-brand-sans)' }}>
                 Out of stock — contact an authorized dealer
               </p>
               <Link

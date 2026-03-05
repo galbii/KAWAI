@@ -1,108 +1,158 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { FaqSearch } from './FaqSearch'
 
-const options = [
-  {
-    href: '/technical-support-division/owner-hub',
-    number: '01',
-    title: 'I Own a Kawai',
-    description: 'Troubleshooting, connectivity, firmware & care',
-    icon: (
-      <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <rect x="2" y="8" width="20" height="8" rx="1.5" />
-        <path strokeLinecap="round" d="M6 8V7M9 8V6M12 8V7M15 8V6M18 8V7" />
-      </svg>
-    ),
-  },
-  {
-    href: '/technical-support-division/buyer-hub',
-    number: '02',
-    title: "I'm Choosing a Kawai",
-    description: 'Model comparisons, action tech & buying guides',
-    icon: (
-      <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-      </svg>
-    ),
-  },
-  {
-    href: '/technical-support-division/technician-resources',
-    number: '03',
-    title: 'Piano Technician',
-    description: 'Regulation manuals, parts diagrams & specs',
-    icon: (
-      <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l5.654-4.654m5.598-2.167a3.375 3.375 0 0 0-4.242 4.243" />
-      </svg>
-    ),
-  },
+interface GroupWindow {
+  href: string
+  label: string
+  heading: string
+  description: string
+}
+
+const prompts = [
+  'How do I connect via Bluetooth?',
+  'What is the difference between GX and SK series?',
+  'My keys feel uneven — how do I fix this?',
+  'How long is the warranty on my CA piano?',
+  'Regulation guide for upright technicians',
 ]
 
-export function TSDLandingHero() {
+function TypingAnimation() {
+  const [displayText, setDisplayText] = useState('')
+  const [promptIndex, setPromptIndex] = useState(0)
+  const [phase, setPhase] = useState<'typing' | 'pausing' | 'erasing'>('typing')
+  const [charIndex, setCharIndex] = useState(0)
+
+  useEffect(() => {
+    const currentPrompt = prompts[promptIndex] ?? ''
+
+    if (phase === 'typing') {
+      if (charIndex < currentPrompt.length) {
+        const timeout = setTimeout(() => {
+          setDisplayText(currentPrompt.slice(0, charIndex + 1))
+          setCharIndex((i) => i + 1)
+        }, 58)
+        return () => clearTimeout(timeout)
+      } else {
+        const timeout = setTimeout(() => setPhase('erasing'), 2800)
+        return () => clearTimeout(timeout)
+      }
+    }
+
+    if (phase === 'erasing') {
+      if (charIndex > 0) {
+        const timeout = setTimeout(() => {
+          setCharIndex((i) => i - 1)
+          setDisplayText(currentPrompt.slice(0, charIndex - 1))
+        }, 28)
+        return () => clearTimeout(timeout)
+      } else {
+        setPromptIndex((i) => (i + 1) % prompts.length)
+        setPhase('typing')
+      }
+    }
+
+    return undefined
+  }, [phase, charIndex, promptIndex])
+
   return (
-    <div className="flex-1 flex flex-col items-center justify-center px-6 py-24 md:py-32">
-      {/* Overline */}
-      <motion.p
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className="text-[11px] text-kawai-red tracking-[0.35em] uppercase font-medium mb-10 font-[family-name:var(--font-brand-sans)]"
-      >
-        Support Center
-      </motion.p>
+    <p className="text-sm text-white/30 font-[family-name:var(--font-brand-sans)] mt-3 h-5 tracking-wide">
+      {displayText}
+      <span className="inline-block w-[1px] h-[13px] bg-kawai-red ml-0.5 align-middle animate-pulse" />
+    </p>
+  )
+}
 
-      {/* Prompt */}
-      <motion.h1
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className="font-[family-name:var(--font-brand-serif)] font-light text-4xl md:text-5xl lg:text-6xl text-white text-center leading-tight mb-16"
-      >
-        Please select an option.
-      </motion.h1>
+export function TSDLandingHero({ groups }: { groups: GroupWindow[] }) {
+  return (
+    <div className="min-h-screen bg-kawai-black flex flex-col items-center justify-center px-6 py-16">
 
-      {/* Three options */}
-      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-        {options.map((opt, i) => (
+      {/* Windows */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 w-full max-w-3xl mb-10">
+        {groups.map((win, index) => (
           <motion.div
-            key={opt.href}
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
+            key={win.href}
+            initial={{ opacity: 0, y: 40, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{
-              duration: 0.45,
-              delay: 0.18 + i * 0.1,
+              duration: 0.65,
+              delay: index * 0.12,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
           >
             <Link
-              href={opt.href}
-              className="group flex flex-col min-h-[220px] md:min-h-[280px] bg-white/[0.04] border border-white/10 rounded-2xl p-8 transition-all duration-300 hover:bg-white/[0.08] hover:border-kawai-red"
+              href={win.href}
+              className="group relative flex flex-col min-h-[190px] md:min-h-[230px] rounded-2xl overflow-hidden transition-all duration-300
+                bg-white/[0.03] border border-white/[0.08]
+                hover:bg-white/[0.06] hover:border-kawai-red/40
+                hover:shadow-[0_0_32px_rgba(225,25,34,0.08)]"
             >
-              {/* Number */}
-              <span className="text-[10px] font-semibold tracking-[0.3em] text-kawai-red/70 mb-6 font-[family-name:var(--font-brand-sans)]">
-                {opt.number}
-              </span>
+              {/* Red top accent bar */}
+              <div className="h-[2px] w-full bg-gradient-to-r from-kawai-red/60 via-kawai-red to-kawai-red/30 opacity-70 group-hover:opacity-100 transition-opacity duration-300" />
 
-              {/* Icon */}
-              <div className="text-white/40 group-hover:text-white/70 transition-colors duration-300 mb-auto">
-                {opt.icon}
-              </div>
+              <div className="flex flex-col flex-1 p-6 md:p-7">
+                {/* Number */}
+                <span className="text-[10px] text-kawai-red/50 tracking-[0.35em] font-semibold mb-auto font-[family-name:var(--font-brand-sans)] group-hover:text-kawai-red/80 transition-colors duration-300">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
 
-              {/* Text */}
-              <div className="mt-8">
-                <h2 className="text-lg font-semibold text-white mb-1.5 font-[family-name:var(--font-brand-sans)] leading-snug">
-                  {opt.title}
-                </h2>
-                <p className="text-sm text-white/40 font-[family-name:var(--font-brand-sans)] leading-relaxed">
-                  {opt.description}
-                </p>
+                {/* Label */}
+                <div className="mt-6">
+                  <span className="block text-2xl md:text-[1.6rem] font-light text-white/80 group-hover:text-white leading-tight font-[family-name:var(--font-brand-serif)] transition-colors duration-300 whitespace-pre-line">
+                    {win.heading || win.label}
+                  </span>
+
+                  {/* Descriptor */}
+                  <span className="block text-[11px] text-white/25 group-hover:text-white/40 leading-relaxed font-[family-name:var(--font-brand-sans)] mt-2.5 transition-colors duration-300 whitespace-pre-line">
+                    {win.description}
+                  </span>
+                </div>
+
+                {/* Bottom arrow — appears on hover */}
+                <div className="mt-4 flex items-center gap-1 text-[10px] text-kawai-red/0 group-hover:text-kawai-red/70 transition-all duration-300 font-[family-name:var(--font-brand-sans)] font-medium tracking-wide">
+                  Get started
+                  <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
               </div>
             </Link>
           </motion.div>
         ))}
       </div>
+
+      {/* Support Center label */}
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.42, duration: 0.5 }}
+        className="text-[10px] text-white/20 tracking-[0.45em] uppercase font-medium mb-5 font-[family-name:var(--font-brand-sans)]"
+      >
+        Support Center
+      </motion.p>
+
+      {/* Search bar */}
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.48, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="max-w-2xl w-full"
+      >
+        <FaqSearch variant="hero" placeholder="Search for answers, guides, manuals…" />
+      </motion.div>
+
+      {/* Typing prompt */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.7, duration: 0.5 }}
+      >
+        <TypingAnimation />
+      </motion.div>
+
     </div>
   )
 }

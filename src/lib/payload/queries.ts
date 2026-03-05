@@ -1247,32 +1247,46 @@ export function getFaqBySlug(slug: string) {
 
 // ─── TSD Hub Queries ──────────────────────────────────────────────────────────
 
-/** Hub slug → human-readable label and description map */
-export const TSD_HUB_META = {
-  'owner-hub': {
-    label: 'Owner Hub',
-    heading: 'I Own a Kawai Piano',
-    description: 'Get help with your instrument — connectivity, troubleshooting, firmware updates, warranty claims, piano care, and more.',
-    metaTitle: 'Owner Support Hub | Kawai Technical Support',
-    metaDescription: 'Support for Kawai piano owners. Get help with Bluetooth connectivity, troubleshooting, firmware updates, warranty, and piano care.',
-  },
-  'buyer-hub': {
-    label: 'Buyer Hub',
-    heading: "I'm Choosing a Kawai Piano",
-    description: 'Research piano models, compare series, understand technology, and get answers to every pre-purchase question.',
-    metaTitle: "Piano Buyer's Guide & FAQ | Kawai Technical Support",
-    metaDescription: 'Answers to every pre-purchase question about Kawai pianos. Compare models, understand technology, and find the right piano for you.',
-  },
-  'technician-resources': {
-    label: 'Technician Resources',
-    heading: 'Piano Technician Resources',
-    description: 'Technical manuals, regulation guides, voicing documentation, and parts information for authorized Kawai piano technicians.',
-    metaTitle: 'Technician Resources | Kawai Technical Support',
-    metaDescription: 'Technical resources for authorized Kawai piano technicians. Regulation manuals, voicing guides, parts information, and service documentation.',
-  },
-} as const
+/**
+ * Fetch a single support group by its URL slug.
+ * Used by the hub page for metadata and heading text.
+ */
+export function getSupportGroupBySlug(slug: string) {
+  return unstable_cache(
+    async () => {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'support-groups',
+        where: { slug: { equals: slug }, isActive: { equals: true } },
+        depth: 0,
+        limit: 1,
+      })
+      return result.docs[0] ?? null
+    },
+    [`support-group-${slug}`],
+    { tags: ['support-groups', `tsd-hub-${slug}`], revalidate: 3600 }
+  )()
+}
 
-export type TSDHub = keyof typeof TSD_HUB_META
+/**
+ * Fetch all active support groups for generateStaticParams.
+ */
+export const getAllSupportGroups = unstable_cache(
+  async () => {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'support-groups',
+      where: { isActive: { equals: true } },
+      sort: 'displayOrder',
+      depth: 0,
+      limit: 100,
+      select: { slug: true, name: true, heading: true, description: true, seo: true },
+    })
+    return result.docs
+  },
+  ['all-support-groups'],
+  { tags: ['support-groups'], revalidate: 3600 }
+)
 
 /**
  * Get all published FAQs for a specific TSD hub, optionally filtered by category slug.
@@ -1285,6 +1299,17 @@ export function getFaqsByHub(hub: string, categorySlug?: string) {
   return unstable_cache(
     async () => {
       const payload = await getPayloadClient()
+
+      // Resolve hub slug → support group ID
+      const groupResult = await payload.find({
+        collection: 'support-groups',
+        where: { slug: { equals: hub } },
+        depth: 0,
+        limit: 1,
+      })
+      const groupId = groupResult.docs[0]?.id
+      if (!groupId) return []
+
       let categoryId: string | number | undefined
       if (categorySlug) {
         const catResult = await payload.find({
@@ -1295,11 +1320,12 @@ export function getFaqsByHub(hub: string, categorySlug?: string) {
         })
         categoryId = catResult.docs[0]?.id
       }
+
       const result = await payload.find({
         collection: 'faqs',
         where: {
           status: { equals: 'published' },
-          supportHub: { equals: hub },
+          group: { equals: groupId },
           ...(categoryId ? { categories: { in: [categoryId] } } : {}),
         },
         sort: '-publishedDate',
@@ -1320,9 +1346,20 @@ export function getFaqCategoriesByHub(hub: string) {
   return unstable_cache(
     async () => {
       const payload = await getPayloadClient()
+
+      // Resolve hub slug → support group ID
+      const groupResult = await payload.find({
+        collection: 'support-groups',
+        where: { slug: { equals: hub } },
+        depth: 0,
+        limit: 1,
+      })
+      const groupId = groupResult.docs[0]?.id
+      if (!groupId) return []
+
       const result = await payload.find({
         collection: 'faq-categories',
-        where: { supportHub: { equals: hub } },
+        where: { group: { equals: groupId } },
         sort: 'displayOrder',
         depth: 0,
         limit: 100,
@@ -1355,7 +1392,7 @@ export function getFaqsByProductId(productId: string) {
           question: true,
           slug: true,
           excerpt: true,
-          supportHub: true,
+          group: true,
         },
       })
       return result.docs

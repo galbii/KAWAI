@@ -27,6 +27,7 @@ import { Categories } from './collections/Categories'
 import { Artists } from './collections/Artists'
 import { FaqCategories } from './collections/FaqCategories'
 import { Faqs } from './collections/Faqs'
+import { SupportGroups } from './collections/SupportGroups'
 import { ConcertArtistPage } from './collections/ConcertArtistPage'
 import { ConstantContactSettings } from './collections/ConstantContactSettings'
 import { ConstantContactCustomFields } from './collections/ConstantContactCustomFields'
@@ -100,6 +101,7 @@ import {
   Cta,
 } from './blocks'
 import { pianosPageSeedPlugin } from './plugins/pianos-page-seed'
+import { supportGroupsSeedPlugin } from './plugins/support-groups-seed'
 // import { categoriesSeedPlugin } from './plugins/categories-seed' // Disabled - needs type regeneration
 // import DealerLocationsSeedPlugin from './plugins/dealer-locations-seed' // Temporarily disabled
 
@@ -168,6 +170,13 @@ export default buildConfig({
       actions: [
         '/components/admin/ViewSiteButton#ViewSiteButton',
       ],
+      views: {
+        FaqManager: {
+          Component: '/components/admin/FaqManagerPage#FaqManagerPage',
+          path: '/faq-manager',
+          exact: true,
+        },
+      },
     },
     livePreview: {
       url: ({ data, collectionConfig }) => {
@@ -229,6 +238,7 @@ export default buildConfig({
     Artists,
     FaqCategories,
     Faqs,
+    SupportGroups,
 
     // Commerce Collections
     Products,
@@ -342,6 +352,7 @@ export default buildConfig({
     // NOTE: Temporarily disabled to test S3 plugin conflict
     // payloadCloudPlugin(),
     pianosPageSeedPlugin(),
+    supportGroupsSeedPlugin(),
     // categoriesSeedPlugin(), // Disabled - needs type regeneration
     // DealerLocationsSeedPlugin, // Temporarily disabled due to TypeScript errors
     // storage-adapter-placeholder

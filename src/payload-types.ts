@@ -139,6 +139,7 @@ export interface Config {
     artists: Artist;
     'faq-categories': FaqCategory;
     faqs: Faq;
+    'support-groups': SupportGroup;
     products: Product;
     collections: Collection;
     dealers: Dealer;
@@ -172,6 +173,7 @@ export interface Config {
     artists: ArtistsSelect<false> | ArtistsSelect<true>;
     'faq-categories': FaqCategoriesSelect<false> | FaqCategoriesSelect<true>;
     faqs: FaqsSelect<false> | FaqsSelect<true>;
+    'support-groups': SupportGroupsSelect<false> | SupportGroupsSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     collections: CollectionsSelect<false> | CollectionsSelect<true>;
     dealers: DealersSelect<false> | DealersSelect<true>;
@@ -3056,9 +3058,13 @@ export interface Faq {
    */
   slug?: string | null;
   /**
-   * Which TSD hub this FAQ belongs to. Leave blank for general /faq index only.
+   * Tracks how many times this FAQ has been viewed. Used to surface popular questions.
    */
-  supportHub?: ('owner-hub' | 'buyer-hub' | 'technician-resources') | null;
+  viewCount?: number | null;
+  /**
+   * Directly assign this FAQ to a Support Group. Used as an alternative or supplement to the supportHub select above.
+   */
+  group?: (string | null) | SupportGroup;
   /**
    * Short summary for FAQ index cards and meta description fallback (max 200 characters)
    */
@@ -3118,6 +3124,55 @@ export interface Faq {
   createdAt: string;
 }
 /**
+ * Defines support hubs shown on /technical-support-division/[slug]. Add groups to create new hub pages.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "support-groups".
+ */
+export interface SupportGroup {
+  id: string;
+  /**
+   * Display name shown on hub page (e.g. "Owner Hub")
+   */
+  name: string;
+  /**
+   * URL slug — becomes /technical-support-division/[slug]. Use kebab-case (e.g. owner-hub).
+   */
+  slug: string;
+  /**
+   * Large heading shown on hub page (e.g. "I Own a Kawai Piano")
+   */
+  heading?: string | null;
+  /**
+   * Short description shown below the heading on hub page
+   */
+  description?: string | null;
+  /**
+   * Pin up to 5 FAQs to show as "Popular Questions" at the top of this hub page. If empty, shows the 5 most recent FAQs.
+   */
+  featuredFaqs?: (string | Faq)[] | null;
+  /**
+   * Active groups appear on /technical-support-division. Inactive groups are hidden.
+   */
+  isActive?: boolean | null;
+  /**
+   * Sort order on the TSD landing page (lower = first)
+   */
+  displayOrder?: number | null;
+  seo?: {
+    /**
+     * Custom meta title for this hub page
+     */
+    metaTitle?: string | null;
+    /**
+     * Meta description (max 160 chars)
+     */
+    metaDescription?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Taxonomy for organizing FAQs into categories (e.g. "Purchasing", "Technical", "Warranty")
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3149,6 +3204,10 @@ export interface FaqCategory {
    * Which TSD hub this category belongs to. Used to filter categories on hub pages.
    */
   supportHub?: ('owner-hub' | 'buyer-hub' | 'technician-resources') | null;
+  /**
+   * Link this category to a Support Group. This is the new extensible alternative to the Support Hub select above.
+   */
+  group?: (string | null) | SupportGroup;
   /**
    * Sort order for category display (lower numbers appear first)
    */
@@ -8251,6 +8310,10 @@ export interface PayloadLockedDocument {
         value: string | Faq;
       } | null)
     | ({
+        relationTo: 'support-groups';
+        value: string | SupportGroup;
+      } | null)
+    | ({
         relationTo: 'products';
         value: string | Product;
       } | null)
@@ -9171,6 +9234,7 @@ export interface FaqCategoriesSelect<T extends boolean = true> {
   icon?: T;
   color?: T;
   supportHub?: T;
+  group?: T;
   displayOrder?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -9182,7 +9246,8 @@ export interface FaqCategoriesSelect<T extends boolean = true> {
 export interface FaqsSelect<T extends boolean = true> {
   question?: T;
   slug?: T;
-  supportHub?: T;
+  viewCount?: T;
+  group?: T;
   excerpt?: T;
   answer?: T;
   categories?: T;
@@ -9195,6 +9260,27 @@ export interface FaqsSelect<T extends boolean = true> {
         metaTitle?: T;
         metaDescription?: T;
         keywords?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "support-groups_select".
+ */
+export interface SupportGroupsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  heading?: T;
+  description?: T;
+  featuredFaqs?: T;
+  isActive?: T;
+  displayOrder?: T;
+  seo?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
       };
   updatedAt?: T;
   createdAt?: T;

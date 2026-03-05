@@ -1,36 +1,35 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getFaqsByHub, getFaqCategoriesByHub, TSD_HUB_META } from '@/lib/payload/queries'
+import {
+  getFaqsByHub,
+  getFaqCategoriesByHub,
+  getSupportGroupBySlug,
+  getAllSupportGroups,
+} from '@/lib/payload/queries'
 import { HubFaqAccordion } from './_components/HubFaqAccordion'
 import type { FaqItem, FaqGroup } from './_components/HubFaqAccordion'
 import { FaqSearch } from '../_components/FaqSearch'
 
 export const revalidate = 3600
 
-type TSDHub = keyof typeof TSD_HUB_META
-
-const VALID_HUBS: TSDHub[] = ['owner-hub', 'buyer-hub', 'technician-resources']
-
 interface Props {
   params: Promise<{ hub: string }>
 }
 
 export async function generateStaticParams() {
-  return [
-    { hub: 'owner-hub' },
-    { hub: 'buyer-hub' },
-    { hub: 'technician-resources' },
-  ]
+  const groups = await getAllSupportGroups()
+  return groups.map((g) => ({ hub: g.slug as string }))
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { hub } = await params
-  const meta = TSD_HUB_META[hub as TSDHub]
-  if (!meta) return { title: 'Support | Kawai' }
+  const group = await getSupportGroupBySlug(hub)
+  if (!group) return { title: 'Support | Kawai' }
+  const seo = group.seo as { metaTitle?: string; metaDescription?: string } | undefined
   return {
-    title: meta.metaTitle,
-    description: meta.metaDescription,
+    title: seo?.metaTitle ?? `${group.name} | Kawai Technical Support`,
+    description: seo?.metaDescription ?? (group.description as string | undefined),
     alternates: { canonical: `/technical-support-division/${hub}` },
   }
 }
@@ -38,19 +37,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function HubPage({ params }: Props) {
   const { hub } = await params
 
-  if (!VALID_HUBS.includes(hub as TSDHub)) {
-    notFound()
-  }
-
-  const hubKey = hub as TSDHub
-  const meta = TSD_HUB_META[hubKey]
-
-  const [faqs, categories] = await Promise.all([
+  const [group, faqs, categories] = await Promise.all([
+    getSupportGroupBySlug(hub),
     getFaqsByHub(hub),
     getFaqCategoriesByHub(hub),
   ])
 
-  // Build FAQPage JSON-LD (up to 20 FAQs, excerpt truncated to 300 chars)
+  if (!group) notFound()
+
+  const hubName    = group.name as string
+  const hubHeading = (group.heading as string | undefined) ?? hubName
+  const seo        = group.seo as { metaTitle?: string; metaDescription?: string } | undefined
+
+  // Build FAQPage JSON-LD (up to 20 FAQs)
   const faqJsonLd = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -67,7 +66,7 @@ export default async function HubPage({ params }: Props) {
           {
             '@type': 'ListItem',
             position: 3,
-            name: meta.label,
+            name: hubName,
             item: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'}/technical-support-division/${hub}`,
           },
         ],
@@ -90,10 +89,9 @@ export default async function HubPage({ params }: Props) {
     ],
   }
 
-  // Group FAQs by category (server-side, passed to client component)
+  // Group FAQs by category (server-side)
   const categoryMap = new Map<string, FaqGroup>()
 
-  // Add hub categories in order first
   for (const cat of categories as any[]) {
     categoryMap.set(cat.slug, {
       categoryName: cat.name,
@@ -103,7 +101,6 @@ export default async function HubPage({ params }: Props) {
     })
   }
 
-  // Assign each FAQ to its first matching category, or 'general'
   for (const faq of faqs as any[]) {
     const faqCats = Array.isArray(faq.categories)
       ? faq.categories.filter((c: unknown): c is Record<string, unknown> => typeof c === 'object' && c !== null)
@@ -136,9 +133,21 @@ export default async function HubPage({ params }: Props) {
     categoryMap.get(targetSlug)!.faqs.push(faqItem)
   }
 
-  const groups: FaqGroup[] = [...categoryMap.values()].filter(
-    (g) => g.faqs.length > 0
-  )
+  const groups: FaqGroup[] = [...categoryMap.values()].filter((g) => g.faqs.length > 0)
+
+  const featuredFaqs: FaqItem[] = []
+  for (const g of groups) {
+    for (const faq of g.faqs) {
+      if (featuredFaqs.length >= 5) break
+      featuredFaqs.push(faq)
+    }
+    if (featuredFaqs.length >= 5) break
+  }
+
+  const allQuestions: string[] = groups
+    .flatMap((g) => g.faqs)
+    .slice(0, 20)
+    .map((f) => f.question)
 
   return (
     <>
@@ -148,10 +157,8 @@ export default async function HubPage({ params }: Props) {
       />
 
       <div className="min-h-screen bg-kawai-pearl">
-        {/* Header — consistent with landing */}
         <section className="bg-kawai-black text-white pt-28 pb-12 md:pt-32 md:pb-16">
           <div className="max-w-3xl mx-auto px-6">
-            {/* Back */}
             <Link
               href="/technical-support-division"
               className="inline-flex items-center gap-1.5 text-white/30 hover:text-white/60 transition-colors duration-200 text-xs font-[family-name:var(--font-brand-sans)] mb-10"
@@ -162,23 +169,24 @@ export default async function HubPage({ params }: Props) {
               Support Center
             </Link>
 
-            {/* Overline */}
             <p className="text-[11px] text-kawai-red tracking-[0.35em] uppercase font-medium mb-5 font-[family-name:var(--font-brand-sans)]">
-              {meta.label}
+              {hubName}
             </p>
 
-            {/* Heading */}
             <h1 className="font-[family-name:var(--font-brand-serif)] font-light text-4xl md:text-5xl lg:text-6xl text-white leading-tight mb-10">
-              {meta.heading}
+              {hubHeading}
             </h1>
 
-            {/* Search */}
-            <FaqSearch variant="hero" placeholder={`Search ${meta.label} questions…`} />
+            <FaqSearch variant="hero" placeholder={`Search ${hubName} questions…`} />
           </div>
         </section>
 
-        {/* FAQ categories + accordion */}
-        <HubFaqAccordion groups={groups} />
+        <HubFaqAccordion
+          groups={groups}
+          hubLabel={hubName}
+          featuredFaqs={featuredFaqs}
+          allQuestions={allQuestions}
+        />
       </div>
     </>
   )

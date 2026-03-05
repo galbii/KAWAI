@@ -52,6 +52,7 @@ import { DashboardQuickActions as DashboardQuickActions_381daeb6e8c5bc252c48a4ff
 import { DashboardCollectionsButton as DashboardCollectionsButton_8f41e83e5c41176668c618e3399504bb } from '../../../components/admin/DashboardCollectionsButton'
 import { AdminRootProvider as AdminRootProvider_90270e1a289c41a7c07e2a0de98e46c1 } from '../../../components/admin/AdminRootProvider'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
+import { FaqManagerPage as FaqManagerPage_1ecbcb32c98eb2a5b35b86b0e092e1bc } from '../../../components/admin/FaqManagerPage'
 import { CollectionCards as CollectionCards_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 
 export const importMap = {
@@ -109,5 +110,6 @@ export const importMap = {
   "/components/admin/DashboardCollectionsButton#DashboardCollectionsButton": DashboardCollectionsButton_8f41e83e5c41176668c618e3399504bb,
   "/components/admin/AdminRootProvider#AdminRootProvider": AdminRootProvider_90270e1a289c41a7c07e2a0de98e46c1,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
+  "/components/admin/FaqManagerPage#FaqManagerPage": FaqManagerPage_1ecbcb32c98eb2a5b35b86b0e092e1bc,
   "@payloadcms/ui/rsc#CollectionCards": CollectionCards_ab83ff7e88da8d3530831f296ec4756a
 }
