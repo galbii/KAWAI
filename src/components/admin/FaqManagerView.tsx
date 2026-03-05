@@ -1,6 +1,9 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
+import { HubModal } from './faq-manager/HubModal'
+import { CategoryModal } from './faq-manager/CategoryModal'
+import { FaqModal } from './faq-manager/FaqModal'
 
 // ── Design tokens (matching CustomNav) ──────────────────────────────────────
 const t = {
@@ -24,8 +27,11 @@ interface SupportGroup {
   id: string
   name: string
   slug: string
+  heading?: string
+  description?: string
   isActive: boolean
   displayOrder: number
+  seo?: { metaTitle?: string; metaDescription?: string }
 }
 
 interface FaqCategory {
@@ -34,6 +40,9 @@ interface FaqCategory {
   slug: string
   displayOrder?: number
   color?: string | null
+  description?: string
+  icon?: string
+  group?: { id: string; name: string; slug: string } | string | null
 }
 
 interface Faq {
@@ -42,6 +51,7 @@ interface Faq {
   slug: string
   status: 'draft' | 'published'
   excerpt?: string | null
+  answer?: unknown
   group?: SupportGroup | string | null
   categories?: Array<FaqCategory | string>
   updatedAt: string
@@ -51,6 +61,13 @@ interface GroupedFaqs {
   category: FaqCategory | null
   faqs: Faq[]
 }
+
+// ── Modal state ───────────────────────────────────────────────────────────────
+type ModalState =
+  | { type: 'hub'; hub?: SupportGroup | null }
+  | { type: 'category'; category?: FaqCategory | null; defaultHubId?: string }
+  | { type: 'faq'; faq?: Faq | null; defaultHubId?: string }
+  | null
 
 // ── Fetch helper ─────────────────────────────────────────────────────────────
 async function fetchJSON(url: string) {
@@ -70,30 +87,35 @@ export function FaqManagerView() {
   const [activeCat, setActiveCat]   = useState<string>('all')
   const [status, setStatus]         = useState<'all' | 'published' | 'draft'>('all')
   const [search, setSearch]         = useState('')
+  const [modal, setModal]           = useState<ModalState>(null)
 
-  useEffect(() => {
-    async function load() {
-      try {
-        setLoading(true)
-        const [h, c, f] = await Promise.all([
-          fetchJSON('/api/support-groups?limit=100&sort=displayOrder'),
-          fetchJSON('/api/faq-categories?limit=100&sort=displayOrder'),
-          fetchJSON('/api/faqs?limit=500&depth=1&sort=-updatedAt'),
-        ])
-        setHubs(h.docs as SupportGroup[])
-        setCategories(c.docs as FaqCategory[])
-        setFaqs(f.docs as Faq[])
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load data')
-      } finally {
-        setLoading(false)
-      }
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true)
+      const [h, c, f] = await Promise.all([
+        fetchJSON('/api/support-groups?limit=100&sort=displayOrder'),
+        fetchJSON('/api/faq-categories?limit=100&sort=displayOrder'),
+        fetchJSON('/api/faqs?limit=500&depth=1&sort=-updatedAt'),
+      ])
+      setHubs(h.docs as SupportGroup[])
+      setCategories(c.docs as FaqCategory[])
+      setFaqs(f.docs as Faq[])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load data')
+    } finally {
+      setLoading(false)
     }
-    load()
   }, [])
+
+  useEffect(() => { loadData() }, [loadData])
 
   // Reset category filter when hub changes
   useEffect(() => { setActiveCat('all') }, [activeHub])
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  const closeModal = () => setModal(null)
+
+  const activeHubObj = hubs.find(h => h.slug === activeHub) ?? null
 
   // ── Filtering ─────────────────────────────────────────────────────────────
   const filtered = faqs.filter(faq => {
@@ -176,9 +198,22 @@ export function FaqManagerView() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <Btn href="/admin/collections/support-groups/create" label="+ New Hub"      color={t.jade} />
-          <Btn href="/admin/collections/faq-categories/create" label="+ New Category" color={t.gold} />
-          <Btn href="/admin/collections/faqs/create"           label="+ New FAQ"      color={t.violet} primary />
+          <ActionBtn
+            label="+ New Hub"
+            color={t.jade}
+            onClick={() => setModal({ type: 'hub' })}
+          />
+          <ActionBtn
+            label="+ New Category"
+            color={t.gold}
+            onClick={() => setModal({ type: 'category', defaultHubId: activeHubObj?.id })}
+          />
+          <ActionBtn
+            label="+ New FAQ"
+            color={t.violet}
+            primary
+            onClick={() => setModal({ type: 'faq', defaultHubId: activeHubObj?.id })}
+          />
         </div>
       </div>
 
@@ -190,13 +225,16 @@ export function FaqManagerView() {
             key={h.id}
             label={`${h.name} (${hubCount(h.slug)})`}
             active={activeHub === h.slug}
-            editHref={`/admin/collections/support-groups/${h.id}`}
-            onClick={() => setActiveHub(h.slug)}
+            onSelect={() => setActiveHub(h.slug)}
+            onEdit={() => setModal({ type: 'hub', hub: h })}
           />
         ))}
-        <a href="/admin/collections/support-groups" style={{ marginLeft: 'auto', fontSize: 12, color: t.lo, textDecoration: 'none', flexShrink: 0 }}>
-          Manage all hubs →
-        </a>
+        <button
+          onClick={() => setModal({ type: 'hub' })}
+          style={{ marginLeft: 'auto', fontSize: 12, color: t.lo, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, padding: 0 }}
+        >
+          + New hub
+        </button>
       </div>
 
       {/* Search + Status filter */}
@@ -229,9 +267,12 @@ export function FaqManagerView() {
             }).length
             return <Chip key={cat.id} label={`${cat.name} (${count})`} active={activeCat === cat.slug} color={cat.color ?? ''} onClick={() => setActiveCat(cat.slug)} />
           })}
-          <a href="/admin/collections/faq-categories" style={{ marginLeft: 'auto', alignSelf: 'center', fontSize: 12, color: t.lo, textDecoration: 'none' }}>
-            Manage Categories →
-          </a>
+          <button
+            onClick={() => setModal({ type: 'category', defaultHubId: activeHubObj?.id })}
+            style={{ marginLeft: 'auto', alignSelf: 'center', fontSize: 12, color: t.lo, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}
+          >
+            + New category
+          </button>
         </div>
       )}
 
@@ -244,50 +285,93 @@ export function FaqManagerView() {
 
       {/* FAQ Groups */}
       {groups.length === 0 ? (
-        <EmptyState activeHub={activeHub} search={search} />
+        <EmptyState
+          activeHub={activeHub}
+          search={search}
+          onNewFaq={() => setModal({ type: 'faq', defaultHubId: activeHubObj?.id })}
+        />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {groups.map(g => <FaqGroup key={g.category?.id ?? 'uncategorized'} group={g} />)}
+          {groups.map(g => (
+            <FaqGroup
+              key={g.category?.id ?? 'uncategorized'}
+              group={g}
+              onEditCategory={cat => setModal({ type: 'category', category: cat })}
+              onEditFaq={faq => setModal({ type: 'faq', faq })}
+            />
+          ))}
         </div>
       )}
+
+      {/* ── Modals ── */}
+      <HubModal
+        isOpen={modal?.type === 'hub'}
+        onClose={closeModal}
+        hub={modal?.type === 'hub' ? (modal.hub ?? null) : null}
+        onSaved={() => { closeModal(); loadData() }}
+      />
+
+      <CategoryModal
+        isOpen={modal?.type === 'category'}
+        onClose={closeModal}
+        category={modal?.type === 'category' ? (modal.category ?? null) : null}
+        hubs={hubs}
+        defaultHubId={modal?.type === 'category' ? modal.defaultHubId : undefined}
+        onSaved={() => { closeModal(); loadData() }}
+      />
+
+      <FaqModal
+        isOpen={modal?.type === 'faq'}
+        onClose={closeModal}
+        faq={modal?.type === 'faq' ? (modal.faq ?? null) : null}
+        hubs={hubs}
+        categories={categories}
+        defaultHubId={modal?.type === 'faq' ? modal.defaultHubId : undefined}
+        onSaved={() => { closeModal(); loadData() }}
+      />
     </div>
   )
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function Btn({ href, label, color, primary }: { href: string; label: string; color: string; primary?: boolean }) {
+function ActionBtn({ onClick, label, color, primary }: { onClick: () => void; label: string; color: string; primary?: boolean }) {
   const [hov, setHov] = useState(false)
   return (
-    <a href={href} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} style={{ display: 'inline-flex', alignItems: 'center', height: 38, padding: '0 16px', borderRadius: 9, background: primary ? (hov ? color : color + 'dd') : (hov ? color + '22' : 'transparent'), border: `1px solid ${hov ? color : color + '55'}`, color: primary ? '#fff' : color, textDecoration: 'none', fontSize: 13.5, fontWeight: 600, transition: 'all 0.12s' }}>
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{ display: 'inline-flex', alignItems: 'center', height: 38, padding: '0 16px', borderRadius: 9, background: primary ? (hov ? color : color + 'dd') : (hov ? color + '22' : 'transparent'), border: `1px solid ${hov ? color : color + '55'}`, color: primary ? '#fff' : color, textDecoration: 'none', fontSize: 13.5, fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', transition: 'all 0.12s' }}
+    >
       {label}
-    </a>
+    </button>
   )
 }
 
-// Hub tab with an adjacent edit icon link (avoids nesting <a> inside <button>)
-function HubTabWithEdit({ label, active, onClick, editHref }: { label: string; active: boolean; onClick: () => void; editHref: string }) {
+// Hub tab with an adjacent edit icon button
+function HubTabWithEdit({ label, active, onSelect, onEdit }: { label: string; active: boolean; onSelect: () => void; onEdit: () => void }) {
   const [hov, setHov] = useState(false)
   const [editHov, setEditHov] = useState(false)
   return (
     <div style={{ display: 'flex', alignItems: 'center', borderRadius: 9, overflow: 'hidden', border: `1px solid ${active ? t.jade + '55' : (hov ? t.lineStr : 'transparent')}`, transition: 'border-color 0.12s' }}>
       <button
-        onClick={onClick}
+        onClick={onSelect}
         onMouseEnter={() => setHov(true)}
         onMouseLeave={() => setHov(false)}
         style={{ padding: '8px 12px 8px 14px', background: active ? t.jade + '20' : (hov ? t.surface : 'transparent'), border: 'none', color: active ? t.jade : (hov ? t.high : t.mid), cursor: 'pointer', fontSize: 13.5, fontWeight: active ? 600 : 400, fontFamily: 'inherit', transition: 'all 0.12s', borderRadius: 0 }}
       >
         {label}
       </button>
-      <a
-        href={editHref}
+      <button
+        onClick={onEdit}
         onMouseEnter={() => setEditHov(true)}
         onMouseLeave={() => setEditHov(false)}
         title="Edit hub settings"
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: '100%', minHeight: 36, background: editHov ? t.cardHov : (active ? t.jade + '10' : 'transparent'), color: editHov ? t.high : t.lo, textDecoration: 'none', fontSize: 12, borderLeft: `1px solid ${active ? t.jade + '30' : t.line}`, transition: 'all 0.12s', flexShrink: 0 }}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: '100%', minHeight: 36, background: editHov ? t.cardHov : (active ? t.jade + '10' : 'transparent'), color: editHov ? t.high : t.lo, border: 'none', cursor: 'pointer', fontSize: 12, borderLeft: `1px solid ${active ? t.jade + '30' : t.line}`, transition: 'all 0.12s', flexShrink: 0, fontFamily: 'inherit' }}
       >
         ✎
-      </a>
+      </button>
     </div>
   )
 }
@@ -311,7 +395,7 @@ function Chip({ label, active, color, onClick }: { label: string; active: boolea
   )
 }
 
-function FaqGroup({ group }: { group: GroupedFaqs }) {
+function FaqGroup({ group, onEditCategory, onEditFaq }: { group: GroupedFaqs; onEditCategory: (cat: FaqCategory) => void; onEditFaq: (faq: Faq) => void }) {
   const [open, setOpen] = useState(true)
   const accent = group.category?.color || t.violet
   return (
@@ -324,16 +408,19 @@ function FaqGroup({ group }: { group: GroupedFaqs }) {
         <span style={{ fontSize: 11, color: t.lo }}>({group.faqs.length})</span>
         <div style={{ flex: 1, height: 1, background: t.line }} />
         {group.category && (
-          <a href={`/admin/collections/faq-categories/${group.category.id}`} onClick={e => e.stopPropagation()} style={{ fontSize: 11, color: t.lo, textDecoration: 'none', padding: '2px 8px' }} title="Edit category">
+          <button
+            onClick={e => { e.stopPropagation(); onEditCategory(group.category!) }}
+            style={{ fontSize: 11, color: t.lo, background: 'none', border: 'none', cursor: 'pointer', padding: '2px 8px', fontFamily: 'inherit' }}
+          >
             Edit
-          </a>
+          </button>
         )}
         <span style={{ fontSize: 11, color: t.lo, userSelect: 'none' }}>{open ? '▲' : '▼'}</span>
       </button>
       {open && (
         <div style={{ border: `1px solid ${t.line}`, borderRadius: 12, overflow: 'hidden', background: t.surface }}>
           {group.faqs.map((faq, i) => (
-            <FaqRow key={faq.id} faq={faq} last={i === group.faqs.length - 1} />
+            <FaqRow key={faq.id} faq={faq} last={i === group.faqs.length - 1} onEdit={() => onEditFaq(faq)} />
           ))}
         </div>
       )}
@@ -341,7 +428,7 @@ function FaqGroup({ group }: { group: GroupedFaqs }) {
   )
 }
 
-function FaqRow({ faq, last }: { faq: Faq; last: boolean }) {
+function FaqRow({ faq, last, onEdit }: { faq: Faq; last: boolean; onEdit: () => void }) {
   const [hov, setHov] = useState(false)
   const cats = (faq.categories ?? []).filter(c => typeof c === 'object') as FaqCategory[]
   return (
@@ -375,19 +462,22 @@ function FaqRow({ faq, last }: { faq: Faq; last: boolean }) {
       </span>
 
       {/* Edit action */}
-      <a href={`/admin/collections/faqs/${faq.id}`} style={{ padding: '5px 12px', borderRadius: 7, background: hov ? t.card : 'transparent', border: `1px solid ${hov ? t.lineStr : 'transparent'}`, color: hov ? t.high : t.mid, textDecoration: 'none', fontSize: 12.5, fontWeight: 500, transition: 'all 0.1s', flexShrink: 0 }}>
+      <button
+        onClick={onEdit}
+        style={{ padding: '5px 12px', borderRadius: 7, background: hov ? t.card : 'transparent', border: `1px solid ${hov ? t.lineStr : 'transparent'}`, color: hov ? t.high : t.mid, fontSize: 12.5, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.1s', flexShrink: 0 }}
+      >
         Edit
-      </a>
+      </button>
 
       {/* View on site */}
-      <a href={`/faq/${faq.slug}`} target="_blank" rel="noopener noreferrer" style={{ color: t.lo, textDecoration: 'none', fontSize: 14, flexShrink: 0 }} title="View on site">
+      <a href={`/technical-support-division/${typeof faq.group === 'object' && faq.group !== null ? (faq.group as SupportGroup).slug : ''}#${faq.slug}`} target="_blank" rel="noopener noreferrer" style={{ color: t.lo, textDecoration: 'none', fontSize: 14, flexShrink: 0 }} title="View on site">
         ↗
       </a>
     </div>
   )
 }
 
-function EmptyState({ activeHub, search }: { activeHub: string; search: string }) {
+function EmptyState({ activeHub, search, onNewFaq }: { activeHub: string; search: string; onNewFaq: () => void }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 0', color: t.lo, gap: 12 }}>
       <svg width="44" height="44" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -399,9 +489,12 @@ function EmptyState({ activeHub, search }: { activeHub: string; search: string }
         {search ? `No FAQs match "${search}"` : activeHub !== 'all' ? 'No FAQs in this hub yet' : 'No FAQs yet'}
       </span>
       {!search && (
-        <a href="/admin/collections/faqs/create" style={{ color: t.violet, fontSize: 13, textDecoration: 'none' }}>
+        <button
+          onClick={onNewFaq}
+          style={{ color: t.violet, fontSize: 13, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}
+        >
           Create the first FAQ →
-        </a>
+        </button>
       )}
     </div>
   )
