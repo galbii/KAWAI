@@ -60,6 +60,7 @@ export { ProductHeroCarousel } from './product/ProductHeroCarousel'
 export { RelatedProducts } from './product/RelatedProducts'
 export { SoundCloudEmbed } from './product/SoundCloudEmbed'
 export { ProductFaqBlock } from './product/ProductFaq'
+export { PianoPages } from './product/PianoPages'
 
 // Legacy blocks (keep for backward compatibility - TODO: migrate away from these)
 export { Hello } from './Hello'

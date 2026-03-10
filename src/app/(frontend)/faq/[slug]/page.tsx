@@ -21,7 +21,7 @@ export async function generateMetadata({
 
   if (!faq) {
     return {
-      title: 'FAQ Not Found | KAWAI Pianos',
+      title: 'FAQ Not Found | Kawai Pianos',
     }
   }
 
@@ -41,7 +41,7 @@ export async function generateMetadata({
       title,
       description: description ?? undefined,
       url: `${siteUrl}/faq/${slug}`,
-      siteName: 'KAWAI Pianos',
+      siteName: 'Kawai Pianos',
       type: 'article',
     },
   }

@@ -7,10 +7,10 @@
  * Uses CSS variables to dynamically adjust height based on whether
  * announcement bar is present.
  *
- * Only accounts for the TOP utility bar (64px) which is always visible.
- * The bottom navigation bar auto-hides on scroll, so we don't include it.
+ * Mobile (< lg): utility bar (64px) + red line (6px) = 70px
+ * Desktop: only the utility bar (64px) — the bottom nav auto-hides on scroll
+ *   so we don't add it here, avoiding a scroll jump when it disappears.
  *
- * Top utility bar: 64px (h-16)
  * Announcement bar height: var(--announcement-bar-height, 0px)
  */
 export function LayoutSpacer() {
@@ -18,7 +18,8 @@ export function LayoutSpacer() {
     <div
       className="w-full flex-shrink-0"
       style={{
-        height: 'calc(64px + var(--announcement-bar-height, 0px))'
+        // lg:hidden red line (6px) is always visible on mobile, so mobile = 70px
+        height: 'calc(70px + var(--announcement-bar-height, 0px))'
       }}
       aria-hidden="true"
     />

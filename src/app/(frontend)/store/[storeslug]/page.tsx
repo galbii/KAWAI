@@ -464,7 +464,7 @@ export async function generateMetadata(
         title: storefrontData.seo?.openGraphTitle || storefrontData.seo?.metaTitle || defaultTitle,
         description: storefrontData.seo?.openGraphDescription || defaultDescription,
         url: `${siteUrl}/store/${storeslug}`,
-        siteName: 'KAWAI Pianos',
+        siteName: 'Kawai Pianos',
         type: 'website',
         locale: 'en_US',
         images: storefrontData.seo?.openGraphImage ? [
@@ -487,7 +487,7 @@ export async function generateMetadata(
   } catch (error) {
     console.error(`[SEO] Error generating metadata for storefront:`, error);
     return {
-      title: 'Storefront Location | KAWAI Pianos',
+      title: 'Storefront Location | Kawai Pianos',
       description: 'Visit your local KAWAI authorized dealer to explore our collection of grand, upright, and digital pianos.',
     };
   }

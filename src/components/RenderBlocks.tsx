@@ -87,6 +87,7 @@ import { PianosBrowserBlock } from './blocks/PianosBrowserBlock'
 import { ArtistsGridBlock } from './blocks/ArtistsGridBlock'
 
 // Product Blocks - Product-specific showcases
+import PianoPagesBlock from './blocks/PianoPagesBlock'
 import { ProductShowcaseBlock } from './blocks/ProductShowcaseBlock'
 import { ProductHeroBlock } from './blocks/ProductHeroBlock'
 import { ImageGalleryBlock } from './blocks/ImageGalleryBlock'
@@ -157,6 +158,7 @@ const blockComponents = {
   'events-event-overview': EventOverviewBlock,
 
   // Product blocks (product-*)
+  'product-piano-pages': PianoPagesBlock,
   'product-showcase': ProductShowcaseBlock,
   'product-hero': ProductHeroBlock,
   'product-gallery': ImageGalleryBlock,

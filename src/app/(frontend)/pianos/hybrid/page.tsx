@@ -1,10 +1,10 @@
-"use client";
-
 import { CategoryHero } from "@/components/piano/category-hero";
 import { UnifiedPianoSeries } from "@/components/piano/unified-piano-series";
-import { useState } from "react";
 // Productlines removed - TODO: Update to fetch products directly
 // import { getProductlines, transformProductlinesToSeries } from "@/lib/payload";
+import { getPayloadClient } from '@/lib/payload/queries'
+import { RenderBlocks } from '@/components/RenderBlocks'
+import type { Page } from '@/payload-types'
 
 // Featured hybrid pianos - highlighting the best from each series
 const featuredHybridPianos = [
@@ -145,10 +145,26 @@ const hybridPianoSeries = [
   }
 ];
 
-export default function HybridPianosPage() {
-  const [series, setSeries] = useState(hybridPianoSeries);
-  const [loading] = useState(false); // Productlines removed - using fallback data
-  const [error] = useState<string | null>(null);
+export default async function HybridPianosPage() {
+  try {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'pages',
+      where: { slug: { equals: 'pianos/hybrid' }, _status: { equals: 'published' } },
+      depth: 2,
+      limit: 1,
+    })
+    const cmsPage = result.docs[0] as Page | undefined
+    if (cmsPage?.layout && cmsPage.layout.length > 0) {
+      return <RenderBlocks blocks={cmsPage.layout} />
+    }
+  } catch {
+    // fall through to hardcoded layout
+  }
+
+  const series = hybridPianoSeries;
+  const loading = false;
+  const error: string | null = null;
 
   // TODO: Implement direct product fetch if needed
   // For now, using hardcoded fallback data
@@ -210,7 +226,7 @@ export default function HybridPianosPage() {
           <p className="text-xl md:text-2xl leading-relaxed text-kawai-pearl/80 mb-12">
             Kawai hybrid pianos represent decades of innovation, combining traditional piano craftsmanship with cutting-edge digital technology for an unparalleled musical experience.
           </p>
-          
+
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="text-center">
               <div className="w-20 h-20 bg-kawai-red rounded-full flex items-center justify-center mx-auto mb-4">
@@ -274,7 +290,7 @@ export default function HybridPianosPage() {
           <p className="text-xl md:text-2xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto mb-12">
             Hybrid pianos offer unprecedented versatility, allowing you to enjoy authentic acoustic piano performance and silent digital practice in one remarkable instrument.
           </p>
-          
+
           <div className="grid md:grid-cols-2 gap-12 mb-12">
             <div className="text-center">
               <div className="w-24 h-24 bg-kawai-red/10 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -327,7 +343,7 @@ export default function HybridPianosPage() {
           <p className="text-xl md:text-2xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto mb-12">
             Visit our showroom to experience the remarkable innovation of Kawai hybrid pianos. Feel the authentic action and discover the versatility that's changing the piano world.
           </p>
-          
+
           <a
             href="/showroom"
             className="inline-flex items-center px-8 py-4 bg-kawai-black hover:bg-kawai-black/80 text-kawai-pearl font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"

@@ -44,7 +44,7 @@ export async function generateMetadata(): Promise<Metadata> {
           title: homePageData.seo.openGraphTitle || homePageData.seo.metaTitle || 'KAWAI ™ | Digital and Acoustic Pianos',
           description: homePageData.seo.openGraphDescription || homePageData.seo.metaDescription || 'Discover premium KAWAI pianos at authorized dealers nationwide.',
           url: siteUrl,
-          siteName: 'KAWAI Pianos',
+          siteName: 'Kawai Pianos',
           type: 'website',
           images: homePageData.seo.openGraphImage ? [
             {

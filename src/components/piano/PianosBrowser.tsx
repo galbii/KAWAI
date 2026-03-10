@@ -1108,6 +1108,9 @@ function ProductCard({ product, index }: { product: CatalogProduct; index: numbe
   const hasPrice = effectivePrice != null
   const isOnSale = hasPrice && effectiveCompareAt != null && effectiveCompareAt > (effectivePrice ?? 0)
 
+  const visibleVariants = variants.slice(0, 5)
+  const extraCount = variants.length > 5 ? variants.length - 5 : 0
+
   function prevVariant(e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
@@ -1164,9 +1167,10 @@ function ProductCard({ product, index }: { product: CatalogProduct; index: numbe
             </div>
           )}
 
-          {/* Variant navigation arrows — visible on hover */}
+          {/* Variant controls */}
           {hasVariants && (
             <>
+              {/* Arrow navigation — visible on hover */}
               <button
                 onClick={prevVariant}
                 className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-white/90 hover:bg-white text-kawai-black shadow-sm transition-all duration-200 opacity-0 group-hover:opacity-100"
@@ -1185,19 +1189,52 @@ function ProductCard({ product, index }: { product: CatalogProduct; index: numbe
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               </button>
-              {/* Variant indicator dots */}
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                {variants.map((v, i) => (
-                  <button
-                    key={i}
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveVariantIdx(i) }}
-                    className={cn(
-                      'w-1.5 h-1.5 rounded-full transition-all duration-200',
-                      i === activeVariantIdx ? 'bg-kawai-black scale-125' : 'bg-kawai-black/30 hover:bg-kawai-black/60',
-                    )}
-                    aria-label={`Variant: ${v.name}`}
-                  />
-                ))}
+
+              {/* Variation thumbnail strip — always visible, elevated on hover */}
+              <div className="absolute bottom-0 inset-x-0 pt-10 pb-3 bg-gradient-to-t from-white/85 via-white/40 to-transparent flex justify-center transition-opacity duration-300 opacity-80 group-hover:opacity-100">
+                <div className="flex items-center gap-1.5">
+                  {visibleVariants.map((v, i) => (
+                    <button
+                      key={i}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveVariantIdx(i) }}
+                      className={cn(
+                        'relative w-9 h-9 flex-shrink-0 bg-white overflow-hidden transition-all duration-300',
+                        i === activeVariantIdx
+                          ? 'ring-2 ring-kawai-black ring-offset-2 ring-offset-white opacity-100'
+                          : 'ring-1 ring-kawai-neutral opacity-50 hover:opacity-80 hover:ring-kawai-charcoal/40',
+                      )}
+                      aria-label={`Select ${v.name} finish`}
+                      title={v.name}
+                    >
+                      {v.imageUrl ? (
+                        <Image
+                          src={v.imageUrl}
+                          alt={v.name}
+                          fill
+                          className="object-contain p-0.5"
+                          sizes="36px"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div
+                          className={cn(
+                            'absolute inset-0 flex items-center justify-center text-[7px] uppercase tracking-wide font-[family-name:var(--font-brand-sans)]',
+                            i === activeVariantIdx
+                              ? 'bg-kawai-black text-white'
+                              : 'bg-kawai-charcoal/10 text-kawai-charcoal/50',
+                          )}
+                        >
+                          {v.name.slice(0, 2)}
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                  {extraCount > 0 && (
+                    <span className="text-[9px] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] pl-0.5 leading-none select-none">
+                      +{extraCount}
+                    </span>
+                  )}
+                </div>
               </div>
             </>
           )}
@@ -1215,11 +1252,17 @@ function ProductCard({ product, index }: { product: CatalogProduct; index: numbe
             {product.name ?? product.model}
           </h2>
 
-          {/* Active variant name */}
+          {/* Active finish + count */}
           {hasVariants && activeVariant ? (
-            <p className="mt-2 text-xs text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)] italic">
-              {activeVariant.name}
-            </p>
+            <div className="mt-2 flex items-center gap-2 min-h-[1.125rem]">
+              <span className="w-[3px] h-[3px] rounded-full bg-kawai-charcoal/30 flex-shrink-0" />
+              <p className="text-xs text-kawai-charcoal/60 font-[family-name:var(--font-brand-sans)] tracking-wide leading-none truncate">
+                {activeVariant.name}
+              </p>
+              <span className="ml-auto flex-shrink-0 text-[9px] uppercase tracking-[0.18em] text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)]">
+                {variants.length} finishes
+              </span>
+            </div>
           ) : product.shopifyCollections && product.shopifyCollections.length > 0 ? (
             <p className="mt-2 text-xs uppercase tracking-[0.12em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] line-clamp-1">
               {product.shopifyCollections.slice(0, 2).map((c) => c.title).join(' · ')}

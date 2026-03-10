@@ -144,7 +144,7 @@ export async function generateMetadata(
         title: artist.seo?.metaTitle || defaultTitle,
         description: artist.seo?.metaDescription || defaultDescription,
         url: `${siteUrl}/artists/${slug}`,
-        siteName: 'KAWAI Pianos',
+        siteName: 'Kawai Pianos',
         type: 'profile',
         locale: 'en_US',
         images: ogImageUrl ? [{
@@ -163,7 +163,7 @@ export async function generateMetadata(
   } catch (error) {
     console.error(`[SEO] Error generating metadata for artist:`, error)
     return {
-      title: 'KAWAI Artist | KAWAI Pianos',
+      title: 'KAWAI Artist | Kawai Pianos',
       description: 'Discover talented musicians who perform on KAWAI pianos.',
     }
   }

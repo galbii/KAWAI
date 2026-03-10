@@ -266,7 +266,7 @@ export function CollectionProductRow({
       viewport={{ once: true, amount: 0.2 }}
       className={cn(
         'w-full lg:w-[35%] flex-shrink-0 flex flex-col justify-center',
-        'px-10 py-20',
+        'px-10 py-20 bg-white',
         imageOnLeft
           ? 'lg:pl-16 lg:pr-14 xl:pl-24 xl:pr-20'
           : 'lg:pr-16 lg:pl-14 xl:pr-24 xl:pl-20',
@@ -353,9 +353,12 @@ export function CollectionProductRow({
         </Link>
       </motion.div>
 
-      {/* Price block */}
+      {/* Price block — plain div intentionally, not motion.div with parent variants.
+          When a variation is selected the old price unmounts and a new one mounts.
+          If we used infoChildVariants the new element would start at opacity:0 and
+          never animate because the parent's whileInView already fired (once:true). */}
       {priceDisplay.type === 'single' && priceDisplay.price && (
-        <motion.div variants={infoChildVariants} className="mb-10">
+        <div className="mb-8">
           <p
             className="text-[9px] tracking-[0.25em] uppercase text-kawai-charcoal/35 mb-2"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
@@ -376,10 +379,10 @@ export function CollectionProductRow({
               {formatPrice(priceDisplay.price)}
             </p>
           )}
-        </motion.div>
+        </div>
       )}
       {priceDisplay.type === 'range' && (
-        <motion.div variants={infoChildVariants} className="mb-10">
+        <div className="mb-8">
           <p className="text-[9px] tracking-[0.25em] uppercase text-kawai-charcoal/35 mb-2" style={{ fontFamily: 'var(--font-brand-sans)' }}>
             Starting From
           </p>
@@ -389,17 +392,89 @@ export function CollectionProductRow({
               <span className="text-kawai-charcoal/35">{' '}– {formatPrice(priceDisplay.maxPrice)}</span>
             )}
           </p>
-        </motion.div>
+        </div>
       )}
       {priceDisplay.type === 'fallback' && priceDisplay.price && (
-        <motion.div variants={infoChildVariants} className="mb-10">
+        <div className="mb-8">
           <p className="text-[9px] tracking-[0.25em] uppercase text-kawai-charcoal/35 mb-2" style={{ fontFamily: 'var(--font-brand-sans)' }}>
             MSRP From
           </p>
           <p className="text-4xl font-semibold text-kawai-black" style={{ fontFamily: 'var(--font-brand-sans)' }}>
             {formatPrice(priceDisplay.price)}
           </p>
-        </motion.div>
+        </div>
+      )}
+
+      {/* Commerce buttons — rendered below price, above variation selector */}
+      {hasVariations && (
+        <AnimatePresence mode="wait">
+          {needsFinishSelection ? (
+            <motion.p
+              key="prompt"
+              variants={commerceVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="text-[11px] tracking-[0.14em] uppercase text-kawai-charcoal/35 mb-8"
+              style={{ fontFamily: 'var(--font-brand-sans)' }}
+            >
+              Select a finish to continue
+            </motion.p>
+          ) : canAddToCart ? (
+            <motion.div
+              key="cart-buttons"
+              variants={commerceVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="flex flex-row items-center gap-4 mb-8"
+            >
+              <button
+                type="button"
+                onClick={handleBuyNow}
+                disabled={buyNowLoading}
+                className={cn(
+                  'inline-flex items-center justify-center px-8 py-4',
+                  'text-[11px] font-bold tracking-[0.18em] uppercase text-white bg-kawai-red transition-all duration-300',
+                  !buyNowLoading ? 'hover:bg-kawai-red/85 cursor-pointer' : 'opacity-60 cursor-not-allowed',
+                )}
+                style={{ fontFamily: 'var(--font-brand-sans)' }}
+              >
+                {buyNowLoading ? 'Processing…' : 'Buy Now'}
+              </button>
+              <AddToCartButton
+                variantId={selectedVariation?.shopifyVariantId ?? ''}
+                available={selectedVariation?.available ?? false}
+                variant="outline"
+                size="default"
+                onSuccess={handleAddToCartSuccess}
+                className="text-[11px] font-bold tracking-[0.18em] uppercase border-kawai-black/25 text-kawai-black hover:border-kawai-black px-8 py-4 transition-all duration-300"
+              >
+                Add to Cart
+              </AddToCartButton>
+            </motion.div>
+          ) : selectedVariation ? (
+            <motion.div
+              key="dealer"
+              variants={commerceVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="mb-8"
+            >
+              <p className="text-[11px] tracking-[0.12em] uppercase text-kawai-charcoal/40 mb-4" style={{ fontFamily: 'var(--font-brand-sans)' }}>
+                Out of stock — contact an authorized dealer
+              </p>
+              <Link
+                href="/find-a-dealer"
+                className="inline-flex items-center justify-center px-10 py-4 text-[11px] font-bold tracking-[0.18em] uppercase text-white bg-kawai-red hover:bg-kawai-red/85 transition-all duration-300"
+                style={{ fontFamily: 'var(--font-brand-sans)' }}
+              >
+                Find a Dealer
+              </Link>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
       )}
 
       {/* Variant selector */}
@@ -430,77 +505,6 @@ export function CollectionProductRow({
             ))}
           </div>
         </motion.div>
-      )}
-
-      {/* Commerce buttons — animate in below price when finish selected */}
-      {hasVariations && (
-        <AnimatePresence mode="wait">
-          {needsFinishSelection ? (
-            <motion.p
-              key="prompt"
-              variants={commerceVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="text-[11px] tracking-[0.14em] uppercase text-kawai-charcoal/35"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
-            >
-              Select a finish to continue
-            </motion.p>
-          ) : canAddToCart ? (
-            <motion.div
-              key="cart-buttons"
-              variants={commerceVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="flex flex-wrap items-center gap-4"
-            >
-              <button
-                type="button"
-                onClick={handleBuyNow}
-                disabled={buyNowLoading}
-                className={cn(
-                  'inline-flex items-center justify-center px-10 py-4',
-                  'text-[11px] font-bold tracking-[0.18em] uppercase text-white bg-kawai-red transition-all duration-300',
-                  !buyNowLoading ? 'hover:bg-kawai-red/85 cursor-pointer' : 'opacity-60 cursor-not-allowed',
-                )}
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
-              >
-                {buyNowLoading ? 'Processing…' : 'Buy Now'}
-              </button>
-              <AddToCartButton
-                variantId={selectedVariation?.shopifyVariantId ?? ''}
-                available={selectedVariation?.available ?? false}
-                variant="outline"
-                size="default"
-                onSuccess={handleAddToCartSuccess}
-                className="text-[11px] font-bold tracking-[0.18em] uppercase border-kawai-black/25 text-kawai-black hover:border-kawai-black px-10 py-4 transition-all duration-300"
-              >
-                Add to Cart
-              </AddToCartButton>
-            </motion.div>
-          ) : selectedVariation ? (
-            <motion.div
-              key="dealer"
-              variants={commerceVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              <p className="text-[11px] tracking-[0.12em] uppercase text-kawai-charcoal/40 mb-4" style={{ fontFamily: 'var(--font-brand-sans)' }}>
-                Out of stock — contact an authorized dealer
-              </p>
-              <Link
-                href="/find-a-dealer"
-                className="inline-flex items-center justify-center px-10 py-4 text-[11px] font-bold tracking-[0.18em] uppercase text-white bg-kawai-red hover:bg-kawai-red/85 transition-all duration-300"
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
-              >
-                Find a Dealer
-              </Link>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
       )}
     </motion.div>
   )

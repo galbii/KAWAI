@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Headphones, Mail } from 'lucide-react'
+import { Headphones, Mail, Briefcase } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 // ============================================================================
@@ -22,8 +22,8 @@ interface ResourcesMegaMenuProps {
   isOpen: boolean
   /** Callback when menu should close */
   onClose: () => void
-  /** Called when the user clicks "Register Now" — parent handles the modal */
-  onRegisterClick: () => void
+  /** @deprecated Navigation now goes to /warranty-registration directly */
+  onRegisterClick?: () => void
   /** Whether the Register Your Piano section is enabled (CMS toggle) */
   registerEnabled?: boolean
   /** Banner image URL from CMS (shown in the bottom row) */
@@ -56,6 +56,12 @@ const resourceItems: ResourceItem[] = [
     icon: Mail,
     comingSoon: true,
   },
+  {
+    title: 'Careers',
+    description: 'Join the KAWAI team and help bring the world\'s finest pianos to musicians everywhere.',
+    href: '/careers',
+    icon: Briefcase,
+  },
 ]
 
 
@@ -84,7 +90,6 @@ const resourceItems: ResourceItem[] = [
 export function ResourcesMegaMenu({
   isOpen,
   onClose,
-  onRegisterClick,
   registerEnabled = true,
   bannerImageUrl,
   bannerTitle,
@@ -92,10 +97,6 @@ export function ResourcesMegaMenu({
   className,
   isHeaderScrolled = false,
 }: ResourcesMegaMenuProps) {
-  const handleRegister = () => {
-    onClose()
-    onRegisterClick()
-  }
 
   return (
     <AnimatePresence>
@@ -218,9 +219,10 @@ export function ResourcesMegaMenu({
 
             {/* Register Your Piano — bottom row */}
             {registerEnabled && <div className="mt-8 border-t border-gray-200 pt-6">
-              <button
-                onClick={handleRegister}
-                className="group relative w-full overflow-hidden rounded-xl text-left transition-all duration-200 hover:shadow-lg bg-kawai-black"
+              <Link
+                href="/warranty-registration"
+                onClick={onClose}
+                className="group relative w-full overflow-hidden rounded-xl text-left transition-all duration-200 hover:shadow-lg bg-kawai-black flex"
                 style={{ height: '320px' }}
               >
                 {bannerImageUrl ? (
@@ -267,8 +269,9 @@ export function ResourcesMegaMenu({
                     </span>
                   </div>
                 )}
-              </button>
-            </div>}
+              </Link>
+            </div>
+            }
           </div>
         </motion.div>
       )}

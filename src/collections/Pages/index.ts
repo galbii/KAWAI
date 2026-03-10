@@ -154,6 +154,7 @@ export const Pages: CollectionConfig<'pages'> = {
 
                 // Product blocks
                 'product-hero-carousel',            // Product Hero Carousel
+                'product-piano-pages',              // Piano Pages Browser (category-scoped)
 
                 // Layout blocks - Structural and special elements
                 'layout-brand-intro',               // Brand Intro

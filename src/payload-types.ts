@@ -119,6 +119,7 @@ export interface Config {
     'product-related-products': ProductRelatedProductsBlock;
     'product-soundcloud-embed': ProductSoundCloudEmbedBlock;
     'product-faq': ProductFaqBlock;
+    'product-piano-pages': ProductPianoPagesBlock;
     textContent: TextContentBlock;
     hello: HelloBlock;
     archive: ArchiveBlock;
@@ -145,6 +146,8 @@ export interface Config {
     dealers: Dealer;
     'constant-contact-settings': ConstantContactSetting;
     'constant-contact-custom-fields': ConstantContactCustomField;
+    jobs: Job;
+    'job-applications': JobApplication;
     redirects: Redirect;
     search: Search;
     'payload-kv': PayloadKv;
@@ -179,6 +182,8 @@ export interface Config {
     dealers: DealersSelect<false> | DealersSelect<true>;
     'constant-contact-settings': ConstantContactSettingsSelect<false> | ConstantContactSettingsSelect<true>;
     'constant-contact-custom-fields': ConstantContactCustomFieldsSelect<false> | ConstantContactCustomFieldsSelect<true>;
+    jobs: JobsSelect<false> | JobsSelect<true>;
+    'job-applications': JobApplicationsSelect<false> | JobApplicationsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     search: SearchSelect<false> | SearchSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -2145,6 +2150,35 @@ export interface ProductHeroBlock {
      * Display selected variation name above Add to Cart button (e.g., "Ebony Polish")
      */
     showVariantName?: boolean | null;
+  };
+  /**
+   * Track when this block is viewed
+   */
+  impressionTracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+    /**
+     * Only track when block is visible in viewport
+     */
+    trackViewport?: boolean | null;
+    /**
+     * Percentage of block that must be visible (0.5 = 50%)
+     */
+    viewportThreshold?: number | null;
   };
   /**
    * Configure analytics for the Buy Now and Add to Cart buttons
@@ -5913,6 +5947,35 @@ export interface ProductHeroCarouselBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductPianoPagesBlock".
+ */
+export interface ProductPianoPagesBlock {
+  /**
+   * Which piano category to display. Products and collections will be pre-filtered to this category.
+   */
+  category: 'grand' | 'digital' | 'upright' | 'hybrid';
+  /**
+   * Optional heading displayed above the browser. Leave blank to use no heading.
+   */
+  heading?: string | null;
+  /**
+   * Display the collection video carousel above the product browser.
+   */
+  showCarousel?: boolean | null;
+  /**
+   * Height of the video carousel hero section.
+   */
+  carouselHeight?: ('medium' | 'large' | 'fullscreen') | null;
+  /**
+   * Milliseconds between automatic slide transitions. Min 2000, max 30000.
+   */
+  carouselAutoplayInterval?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'product-piano-pages';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TextContentBlock".
  */
 export interface TextContentBlock {
@@ -6388,6 +6451,7 @@ export interface Page {
     | EventsUniversityHeroBlock
     | EventsEventOverviewBlock
     | ProductHeroCarouselBlock
+    | ProductPianoPagesBlock
     | LayoutBrandIntroBlock
     | LayoutHeroCarouselBlock
     | LayoutVideoBackgroundBlock
@@ -8002,6 +8066,103 @@ export interface ConstantContactCustomField {
   createdAt: string;
 }
 /**
+ * Job listings for the careers page
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "jobs".
+ */
+export interface Job {
+  id: string;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  description: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * e.g. "Sales", "Technology", "Marketing"
+   */
+  department?: string | null;
+  /**
+   * e.g. "Los Angeles, CA" or "Remote"
+   */
+  location?: string | null;
+  type?: ('full-time' | 'part-time' | 'contract' | 'internship') | null;
+  status?: ('open' | 'closed') | null;
+  postedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Job applications submitted through the careers page
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "job-applications".
+ */
+export interface JobApplication {
+  id: string;
+  job: string | Job;
+  applicantName: string;
+  email: string;
+  phone?: string | null;
+  /**
+   * LinkedIn profile URL
+   */
+  linkedin?: string | null;
+  /**
+   * Portfolio or website URL
+   */
+  portfolio?: string | null;
+  coverLetter?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  documents?:
+    | {
+        /**
+         * Original filename
+         */
+        filename?: string | null;
+        /**
+         * R2 storage URL
+         */
+        url?: string | null;
+        mimeType?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  status?: ('new' | 'reviewing' | 'interviewing' | 'offer' | 'rejected') | null;
+  submittedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Manage URL redirects. Changes take effect within 30 seconds.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -8332,6 +8493,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'constant-contact-custom-fields';
         value: string | ConstantContactCustomField;
+      } | null)
+    | ({
+        relationTo: 'jobs';
+        value: string | Job;
+      } | null)
+    | ({
+        relationTo: 'job-applications';
+        value: string | JobApplication;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -9590,6 +9759,48 @@ export interface ConstantContactCustomFieldsSelect<T extends boolean = true> {
   fieldType?: T;
   createdInConstantContact?: T;
   lastSyncedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "jobs_select".
+ */
+export interface JobsSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  description?: T;
+  department?: T;
+  location?: T;
+  type?: T;
+  status?: T;
+  postedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "job-applications_select".
+ */
+export interface JobApplicationsSelect<T extends boolean = true> {
+  job?: T;
+  applicantName?: T;
+  email?: T;
+  phone?: T;
+  linkedin?: T;
+  portfolio?: T;
+  coverLetter?: T;
+  documents?:
+    | T
+    | {
+        filename?: T;
+        url?: T;
+        mimeType?: T;
+        id?: T;
+      };
+  status?: T;
+  submittedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

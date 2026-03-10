@@ -64,22 +64,42 @@ const IcoImg = () => (
     <path d="M2.5 18L9 11.5L14 16L17.5 13L23.5 18" stroke={c.mid} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 )
+const IcoBriefcase = () => (
+  <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+    <rect x="3" y="9" width="20" height="14" rx="2" stroke={c.mid} strokeWidth="1.8"/>
+    <path d="M9 9V7C9 5.343 10.343 4 12 4H14C15.657 4 17 5.343 17 7V9" stroke={c.mid} strokeWidth="1.8" strokeLinecap="round"/>
+    <line x1="3" y1="15" x2="23" y2="15" stroke={c.mid} strokeWidth="1.2"/>
+  </svg>
+)
+const IcoApps = () => (
+  <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+    <rect x="3" y="3" width="20" height="20" rx="2" stroke={c.mid} strokeWidth="1.8"/>
+    <line x1="3" y1="10" x2="23" y2="10" stroke={c.mid} strokeWidth="1.2"/>
+    <line x1="9" y1="10" x2="9" y2="23" stroke={c.mid} strokeWidth="1.2"/>
+    <circle cx="6" cy="6.5" r="1.2" fill={c.mid}/>
+    <circle cx="10.5" cy="6.5" r="1.2" fill={c.mid}/>
+  </svg>
+)
 
 const STATS = [
-  { label: 'Products',    icon: <IcoPiano />, href: '/admin/collections/products',    key: 0 },
-  { label: 'Storefronts', icon: <IcoStore />, href: '/admin/collections/storefronts', key: 1 },
-  { label: 'Posts',       icon: <IcoDoc />,   href: '/admin/collections/posts',       key: 2 },
-  { label: 'Media',       icon: <IcoImg />,   href: '/admin/collections/media',       key: 3 },
+  { label: 'Products',     icon: <IcoPiano />,     href: '/admin/collections/products',      key: 0 },
+  { label: 'Storefronts',  icon: <IcoStore />,     href: '/admin/collections/storefronts',   key: 1 },
+  { label: 'Posts',        icon: <IcoDoc />,       href: '/admin/collections/posts',         key: 2 },
+  { label: 'Media',        icon: <IcoImg />,       href: '/admin/collections/media',         key: 3 },
+  { label: 'Open Jobs',    icon: <IcoBriefcase />, href: '/admin/job-manager',               key: 4 },
+  { label: 'Applications', icon: <IcoApps />,      href: '/admin/collections/job-applications', key: 5 },
 ]
 
 export async function DashboardStats() {
   const payload = await getPayloadClient()
 
-  const [products, storefronts, posts, media, recentProducts] = await Promise.all([
+  const [products, storefronts, posts, media, openJobs, applications, recentProducts] = await Promise.all([
     payload.count({ collection: 'products' }),
     payload.count({ collection: 'storefronts' }),
     payload.count({ collection: 'posts' }),
     payload.count({ collection: 'media' }),
+    payload.count({ collection: 'jobs', where: { status: { equals: 'open' } } }),
+    payload.count({ collection: 'job-applications' }),
     payload.find({
       collection: 'products',
       sort: '-updatedAt',
@@ -89,7 +109,14 @@ export async function DashboardStats() {
     }),
   ])
 
-  const counts = [products.totalDocs, storefronts.totalDocs, posts.totalDocs, media.totalDocs]
+  const counts = [
+    products.totalDocs,
+    storefronts.totalDocs,
+    posts.totalDocs,
+    media.totalDocs,
+    openJobs.totalDocs,
+    applications.totalDocs,
+  ]
 
   return (
     <div style={{ padding: '28px var(--gutter-h) 0' }}>

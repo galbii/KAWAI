@@ -32,6 +32,8 @@ import { ConcertArtistPage } from './collections/ConcertArtistPage'
 import { ConstantContactSettings } from './collections/ConstantContactSettings'
 import { ConstantContactCustomFields } from './collections/ConstantContactCustomFields'
 import { Dealers } from './collections/Dealers'
+import { Jobs } from './collections/Jobs'
+import { JobApplications } from './collections/JobApplications'
 import { Redirects } from './collections/Redirects'
 import {
   // Content blocks
@@ -92,6 +94,7 @@ import {
   RelatedProducts,
   SoundCloudEmbed,
   ProductFaqBlock,
+  PianoPages,
   // Legacy blocks (keep for backward compatibility)
   TextContent,
   Hello,
@@ -176,6 +179,11 @@ export default buildConfig({
           path: '/faq-manager',
           exact: true,
         },
+        JobManager: {
+          Component: '/components/admin/job-manager/JobManagerPage#JobManagerPage',
+          path: '/job-manager',
+          exact: true,
+        },
       },
     },
     livePreview: {
@@ -251,6 +259,10 @@ export default buildConfig({
     ConstantContactSettings,
     ConstantContactCustomFields,
 
+    // HR Collections
+    Jobs,
+    JobApplications,
+
     // Settings
     Redirects,
   ],
@@ -318,6 +330,7 @@ export default buildConfig({
     RelatedProducts,
     SoundCloudEmbed,
     ProductFaqBlock,
+    PianoPages,
 
     // Legacy blocks (keep for backward compatibility)
     TextContent,

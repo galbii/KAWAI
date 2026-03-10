@@ -1,10 +1,10 @@
-"use client";
-
 import { CategoryHero } from "@/components/piano/category-hero";
 import { UnifiedPianoSeries } from "@/components/piano/unified-piano-series";
-import { useState } from "react";
 // Productlines removed - TODO: Update to fetch products directly
 // import { getProductlines, transformProductlinesToSeries } from "@/lib/payload";
+import { getPayloadClient } from '@/lib/payload/queries'
+import { RenderBlocks } from '@/components/RenderBlocks'
+import type { Page } from '@/payload-types'
 
 // Featured upright pianos - highlighting the best from each series
 const featuredUprightPianos = [
@@ -253,10 +253,26 @@ const uprightPianoSeries = [
   }
 ];
 
-export default function UprightPianosPage() {
-  const [series, setSeries] = useState(uprightPianoSeries);
-  const [loading] = useState(false); // Productlines removed - using fallback data
-  const [error] = useState<string | null>(null);
+export default async function UprightPianosPage() {
+  try {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'pages',
+      where: { slug: { equals: 'pianos/upright' }, _status: { equals: 'published' } },
+      depth: 2,
+      limit: 1,
+    })
+    const cmsPage = result.docs[0] as Page | undefined
+    if (cmsPage?.layout && cmsPage.layout.length > 0) {
+      return <RenderBlocks blocks={cmsPage.layout} />
+    }
+  } catch {
+    // fall through to hardcoded layout
+  }
+
+  const series = uprightPianoSeries;
+  const loading = false; // Productlines removed - using fallback data
+  const error: string | null = null;
 
   // TODO: Implement direct product fetch if needed
   // For now, using hardcoded fallback data
@@ -318,7 +334,7 @@ export default function UprightPianosPage() {
           <p className="text-xl md:text-2xl leading-relaxed text-kawai-pearl/80 mb-12">
             Kawai upright pianos deliver professional performance in a compact design, featuring advanced technologies and premium materials typically found in grand pianos.
           </p>
-          
+
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="text-center">
               <div className="w-20 h-20 bg-kawai-red rounded-full flex items-center justify-center mx-auto mb-4">
@@ -382,7 +398,7 @@ export default function UprightPianosPage() {
           <p className="text-xl md:text-2xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto mb-12">
             Kawai upright pianos are ideal for homes, studios, schools, and institutions where space is at a premium but professional performance is essential.
           </p>
-          
+
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="text-center">
               <div className="w-24 h-24 bg-kawai-red/10 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -446,7 +462,7 @@ export default function UprightPianosPage() {
           <p className="text-xl md:text-2xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto mb-12">
             Visit our showroom to experience the touch, tone, and compact elegance of Kawai upright pianos. Our specialists will help you find the perfect model for your space and musical needs.
           </p>
-          
+
           <a
             href="/showroom"
             className="inline-flex items-center px-8 py-4 bg-kawai-black hover:bg-kawai-black/80 text-kawai-pearl font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"

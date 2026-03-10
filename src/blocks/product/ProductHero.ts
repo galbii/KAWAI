@@ -1,5 +1,5 @@
 import type { Block } from 'payload'
-import { ctaTrackingField } from '@/lib/payload/fields/tracking'
+import { ctaTrackingField, trackImpressionField } from '@/lib/payload/fields/tracking'
 
 export const ProductHero: Block = {
   slug: 'product-hero',
@@ -215,6 +215,7 @@ export const ProductHero: Block = {
         description: '🛒 Configure floating add to cart button - syncs with variation selection in hero section'
       }
     },
+    trackImpressionField({ trackViewport: true, viewportThreshold: 0.5 }),
     ctaTrackingField({
       defaultGA4Event: 'add_to_cart',
       defaultMetaEvent: 'AddToCart',

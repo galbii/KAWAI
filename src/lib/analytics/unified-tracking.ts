@@ -27,6 +27,7 @@
 
 'use client'
 
+import posthog from 'posthog-js'
 import { getStoredUTMParams } from '@/lib/shopify/utm-tracking'
 
 // ============================================================================
@@ -250,9 +251,9 @@ export function trackWithConfig(
   }
 
   // Track to PostHog
-  if (!options.skipPostHog && window.posthog) {
+  if (!options.skipPostHog && posthog.__loaded) {
     try {
-      window.posthog.capture(eventName, eventData)
+      posthog.capture(eventName, eventData)
       if (options.debug) {
         console.log('✅ [PostHog] Tracked:', eventName)
       }

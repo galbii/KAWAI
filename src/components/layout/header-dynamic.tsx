@@ -94,7 +94,7 @@ function getDealerLocationBySlug(slug: string): Promise<DealerLocationData | nul
   )()
 }
 
-const getRegisterConfig = unstable_cache(
+export const getRegisterConfig = unstable_cache(
   async (): Promise<RegisterConfig> => {
     try {
       const payload = await getPayload({ config })
@@ -152,7 +152,7 @@ const getRegisterConfig = unstable_cache(
 const DEFAULT_QUICK_LINKS: QuickLink[] = [
   { label: 'Instrumental to Life', url: '/instrumental-to-life' },
   { label: 'Find a Dealer', url: '/find-a-dealer' },
-  { label: 'Register My Piano', url: '/register-my-piano' },
+  { label: 'Register My Piano', url: '/warranty-registration' },
   { label: 'Kawai Exclusive Offers', url: '/explore' },
 ]
 

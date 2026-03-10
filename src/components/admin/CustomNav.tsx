@@ -57,6 +57,7 @@ const IcoGear    = ({ size }: IP) => <Svg size={size}><circle cx="10" cy="10" r=
 const IcoHome    = ({ size }: IP) => <Svg size={size}><path d="M2 9L10 3L18 9V18H13V13H7V18H2V9Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></Svg>
 const IcoMusic   = ({ size }: IP) => <Svg size={size}><rect x="2" y="6" width="16" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="4.5" y="3" width="2" height="6" rx="0.5" fill="currentColor"/><rect x="9" y="3" width="2" height="6" rx="0.5" fill="currentColor"/><rect x="13.5" y="3" width="2" height="6" rx="0.5" fill="currentColor"/></Svg>
 const IcoFaq     = ({ size }: IP) => <Svg size={size}><circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5"/><path d="M7.5 7.5C7.5 6.12 8.62 5 10 5C11.38 5 12.5 6.12 12.5 7.5C12.5 8.5 11.92 9.35 11.07 9.76L10 10.75V12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="10" cy="14.5" r="1" fill="currentColor"/></Svg>
+const IcoBriefcase = ({ size }: IP) => <Svg size={size}><rect x="3" y="7" width="14" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><path d="M7 7V5C7 3.895 7.895 3 9 3H11C12.105 3 13 3.895 13 5V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><line x1="3" y1="12" x2="17" y2="12" stroke="currentColor" strokeWidth="1.2"/></Svg>
 const IcoExt     = ({ size }: IP) => <Svg size={size}><path d="M8 4H4V16H16V12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M11 3H17V9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><line x1="11" y1="9" x2="17" y2="3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></Svg>
 const IcoShop    = ({ size }: IP) => <Svg size={size}><path d="M6 8.5V6C6 3.79 7.79 2 10 2C12.21 2 14 3.79 14 6V8.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><path d="M3 8.5H17L15.5 18H4.5L3 8.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></Svg>
 const IcoChevR   = ({ size }: IP) => <Svg size={size}><path d="M8 4L14 10L8 16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></Svg>
@@ -73,6 +74,7 @@ const PRIMARY: NavItem[] = [
   { slug: 'storefronts', label: 'Storefronts',  href: '/admin/collections/storefronts',      Ic: IcoStore },
   { slug: 'posts',       label: 'Posts',        href: '/admin/collections/posts',            Ic: IcoDoc   },
   { slug: 'faq-manager', label: 'FAQ Manager',  href: '/admin/faq-manager',                  Ic: IcoFaq   },
+  { slug: 'job-manager', label: 'Jobs',         href: '/admin/job-manager',                  Ic: IcoBriefcase },
   { slug: 'dealers',     label: 'Dealers',      href: '/admin/collections/dealers',          Ic: IcoPin   },
 ]
 

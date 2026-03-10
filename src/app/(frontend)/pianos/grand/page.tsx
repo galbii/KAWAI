@@ -1,10 +1,10 @@
-"use client";
-
 import { CategoryHero } from "@/components/piano/category-hero";
 import { UnifiedPianoSeries } from "@/components/piano/unified-piano-series";
-import { useState } from "react";
 // Productlines removed - TODO: Update to fetch products directly
 // import { getProductlines, transformProductlinesToSeries } from "@/lib/payload";
+import { getPayloadClient } from '@/lib/payload/queries'
+import { RenderBlocks } from '@/components/RenderBlocks'
+import type { Page } from '@/payload-types'
 
 // Featured grand pianos - highlighting the best from each series
 const featuredGrandPianos = [
@@ -45,7 +45,7 @@ const featuredGrandPianos = [
   {
     slug: "gx-3-blak",
     name: "GX-3 BLAK",
-    series: "GX BLAK Performance Series", 
+    series: "GX BLAK Performance Series",
     rating: 4.9,
     reviews: 47,
     image: "/images/banners/GX-3-BLAK-styling.webp",
@@ -435,10 +435,26 @@ const grandPianoSeries = [
   }
 ];
 
-export default function GrandPianosPage() {
-  const [series, setSeries] = useState(grandPianoSeries);
-  const [loading] = useState(false); // Productlines removed - using fallback data
-  const [error] = useState<string | null>(null);
+export default async function GrandPianosPage() {
+  try {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'pages',
+      where: { slug: { equals: 'pianos/grand' }, _status: { equals: 'published' } },
+      depth: 2,
+      limit: 1,
+    })
+    const cmsPage = result.docs[0] as Page | undefined
+    if (cmsPage?.layout && cmsPage.layout.length > 0) {
+      return <RenderBlocks blocks={cmsPage.layout} />
+    }
+  } catch {
+    // fall through to hardcoded layout
+  }
+
+  const series = grandPianoSeries;
+  const loading = false; // Productlines removed - using fallback data
+  const error: string | null = null;
 
   // TODO: Implement direct product fetch if needed
   // For now, using hardcoded fallback data
@@ -501,7 +517,7 @@ export default function GrandPianosPage() {
           <p className="text-xl md:text-2xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto mb-12">
             Visit our showroom to experience the touch, tone, and craftsmanship of Kawai grand pianos. Our specialists will help you find the perfect instrument for your musical aspirations.
           </p>
-          
+
           <a
             href="/showroom"
             className="inline-flex items-center px-8 py-4 bg-kawai-black hover:bg-kawai-black/80 text-kawai-pearl font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"

@@ -75,7 +75,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
 
   return {
     title: page.title,
-    description: `${page.title} - KAWAI Pianos`,
+    description: `${page.title} - Kawai Pianos`,
   }
 }
 

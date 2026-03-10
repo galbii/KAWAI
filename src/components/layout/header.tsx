@@ -599,7 +599,10 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   useEffect(() => {
     // Utility bar: always 64px (h-16)
     // Bottom nav: 48px (scrolled) or 56px (top) when visible; 6px red line when hidden
-    const navHeight = isAutoHidden ? 6 : (isScrolled ? 48 : 56)
+    // On mobile (< 1024px) the desktop bottom nav is `hidden lg:block` — only the
+    // 6px mobile red line renders, so navHeight is always 6 on mobile.
+    const isMobile = window.innerWidth < 1024
+    const navHeight = isMobile ? 6 : (isAutoHidden ? 6 : (isScrolled ? 48 : 56))
     const totalPx = 64 + navHeight
     document.documentElement.style.setProperty(
       '--header-bottom',
@@ -1209,6 +1212,11 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       </div>
 
 
+      {/* Red line — mobile only (desktop gets it from the bottom nav) */}
+      {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
+        <div className="lg:hidden w-full h-[6px] bg-[#A01829]" />
+      )}
+
       {/* Bottom Row - Main Navigation (Full Width) - Auto-hides, reveals on hover */}
       {!isSignaturePage && !hidePianoLinks && !isUniversityPage && !isSearchOpen && (
         <div
@@ -1326,12 +1334,12 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                 {/* Right column — Register button */}
                 <div className="flex-1 flex justify-end">
                   {registerConfig?.enabled !== false && (
-                    <button
-                      onClick={() => setIsRegisterModalOpen(true)}
+                    <Link
+                      href="/warranty-registration"
                       className="rounded-md bg-kawai-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-kawai-charcoal"
                     >
                       Register Your Piano
-                    </button>
+                    </Link>
                   )}
                 </div>
               </div>
@@ -1437,15 +1445,13 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                 {/* Bottom CTAs */}
                 <div className="mt-auto border-t border-kawai-neutral/50 bg-white px-5 py-5 flex-shrink-0 space-y-3">
                   {registerConfig?.enabled !== false && (
-                    <button
-                      onClick={() => {
-                        closeMobileMenu()
-                        setIsRegisterModalOpen(true)
-                      }}
-                      className="w-full rounded-lg bg-kawai-black px-5 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-kawai-charcoal active:scale-[0.98]"
+                    <Link
+                      href="/warranty-registration"
+                      onClick={closeMobileMenu}
+                      className="block w-full rounded-lg bg-kawai-black px-5 py-3.5 text-sm font-semibold text-white text-center transition-colors hover:bg-kawai-charcoal active:scale-[0.98]"
                     >
                       Register Your Piano
-                    </button>
+                    </Link>
                   )}
                   {!currentLocationData && (
                     <ContextAwareLink

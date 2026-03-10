@@ -11,10 +11,10 @@ import type { ProductTypeNav, NavProduct, NavCollection } from '@/lib/payload/pr
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const SIDEBAR_CATEGORIES = [
-  { label: 'Digital',  key: 'digital',  href: '/pianos',  terms: ['digital'] },
-  { label: 'Hybrid',   key: 'hybrid',   href: '/pianos',  terms: ['hybrid'] },
-  { label: 'Upright',  key: 'upright',  href: '/pianos',  terms: ['upright'] },
-  { label: 'Grand',    key: 'grand',    href: '/pianos',  terms: ['grand', 'baby grand', 'baby-grand', 'gl series'] },
+  { label: 'Digital',  key: 'digital',  href: '/pianos/digital',  terms: ['digital'] },
+  { label: 'Hybrid',   key: 'hybrid',   href: '/pianos/hybrid',   terms: ['hybrid'] },
+  { label: 'Upright',  key: 'upright',  href: '/pianos/upright',  terms: ['upright'] },
+  { label: 'Grand',    key: 'grand',    href: '/pianos/grand',    terms: ['grand', 'baby grand', 'baby-grand', 'gl series'] },
 ] as const
 
 type SidebarKey = (typeof SIDEBAR_CATEGORIES)[number]['key']

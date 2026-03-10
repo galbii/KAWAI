@@ -971,9 +971,13 @@ console.log('Fields:', result.fields.map(f => f.name));
 **Debug checklist:**
 1. ✅ Check browser console (dev mode logs all events)
 2. ✅ Verify `tracking.enabled === true` in CMS
-3. ✅ Check analytics scripts loaded (PostHog, GA4, Meta Pixel)
+3. ✅ Check `posthog.__loaded === true` in browser console — **not** `window.posthog` (see note below)
 4. ✅ Verify `typeof window !== 'undefined'` (client-side only)
 5. ✅ Check for CSP blocking scripts
+
+> **⚠️ Critical: `window.posthog` is always `undefined` in this codebase.**
+>
+> posthog-js only sets `window.posthog` when loaded as a legacy `<script>` tag. We use ES module imports (`import posthog from 'posthog-js'`), so the singleton lives in the module cache, **not** on `window`. `unified-tracking.ts` uses `posthog.__loaded` + direct module capture — never `window.posthog`. If you see a utility function checking `window.posthog`, it is a bug and will silently drop all PostHog events.
 
 **Enable debug mode:**
 ```typescript
@@ -1129,15 +1133,25 @@ localStorage.setItem('debug_tracking', 'true')
 
 #### Automated Testing
 
+> **⚠️ Do NOT use `window.posthog = mockPostHog`** — `unified-tracking.ts` uses the imported posthog module singleton, not `window.posthog`. Mock the module instead.
+
 ```typescript
 // tests/tracking.test.ts
 import { trackCTAClick } from '@/lib/analytics/unified-tracking'
 
-describe('Tracking System', () => {
-  it('should track CTA click when enabled', () => {
-    const mockPostHog = { capture: jest.fn() }
-    window.posthog = mockPostHog
+// ✅ Correct: mock the posthog-js module, not window.posthog
+const mockCapture = jest.fn()
+jest.mock('posthog-js', () => ({
+  __loaded: true,
+  capture: mockCapture,
+}))
 
+describe('Tracking System', () => {
+  beforeEach(() => {
+    mockCapture.mockClear()
+  })
+
+  it('should track CTA click when enabled', () => {
     trackCTAClick({
       blockType: 'test-block',
       blockData: {
@@ -1150,7 +1164,7 @@ describe('Tracking System', () => {
       destination: '/test',
     })
 
-    expect(mockPostHog.capture).toHaveBeenCalledWith(
+    expect(mockCapture).toHaveBeenCalledWith(
       'test-block_cta_click',
       expect.objectContaining({
         block_type: 'test-block',
@@ -1161,9 +1175,6 @@ describe('Tracking System', () => {
   })
 
   it('should NOT track when disabled', () => {
-    const mockPostHog = { capture: jest.fn() }
-    window.posthog = mockPostHog
-
     trackCTAClick({
       blockType: 'test-block',
       blockData: {
@@ -1175,7 +1186,22 @@ describe('Tracking System', () => {
       destination: '/test',
     })
 
-    expect(mockPostHog.capture).not.toHaveBeenCalled()
+    expect(mockCapture).not.toHaveBeenCalled()
+  })
+
+  it('should NOT track when posthog is not yet initialised', () => {
+    // Simulate posthog not loaded (e.g. early SSR hydration)
+    jest.resetModules()
+    jest.mock('posthog-js', () => ({ __loaded: false, capture: mockCapture }))
+
+    trackCTAClick({
+      blockType: 'test-block',
+      blockData: { tracking: { enabled: true } },
+      ctaText: 'Test',
+      destination: '/test',
+    })
+
+    expect(mockCapture).not.toHaveBeenCalled()
   })
 })
 ```
@@ -1204,6 +1230,8 @@ describe('Tracking System', () => {
 - ❌ Call tracking functions on SSR (check `typeof window`)
 - ❌ Forget to check `tracking.enabled === false`
 - ❌ Override base fields without understanding deepMerge
+- ❌ Use `window.posthog` — always `undefined` with ES module imports. Use `import posthog from 'posthog-js'` + check `posthog.__loaded`
+- ❌ Mock `window.posthog` in tests — mock the `posthog-js` module instead (`jest.mock('posthog-js', ...)`)
 
 ---
 
@@ -1218,6 +1246,26 @@ describe('Tracking System', () => {
 ---
 
 ## Changelog
+
+### 2026-03-10 - v1.2.0 - PostHog Module Fix + ProductHero Impression Tracking
+
+**Fixed:**
+- **`window.posthog` was always `undefined`** — posthog-js v3 with ES module imports does NOT attach to `window`. The `trackWithConfig()` guard `if (window.posthog)` was silently dropping **all** PostHog events across the entire app. Fixed by importing the posthog module singleton directly and checking `posthog.__loaded` instead.
+- **ProductHero block had no automatic impression tracking** — no `trackBlockImpression()` call existed anywhere in `ProductHeroBlock.tsx`, so the block never sent any automatic event on view.
+- **`impressionTracking` field missing from CMS schema** — `ProductHero.ts` only registered `ctaTrackingField()`. Added `trackImpressionField()` so editors can configure impression tracking per block instance.
+
+**Updated:**
+- `src/lib/analytics/unified-tracking.ts` — replaced `window.posthog` with `import posthog from 'posthog-js'` + `posthog.__loaded` guard
+- `src/blocks/product/ProductHero.ts` — added `trackImpressionField({ trackViewport: true, viewportThreshold: 0.5 })`
+- `src/components/blocks/ProductHeroBlock.tsx` — added `impressionTracking` prop + mount `useEffect` calling `trackBlockImpression()`
+- Documentation updated throughout to reflect correct posthog usage pattern
+
+**Impact:**
+- PostHog now receives events from **all** blocks that use `trackWithConfig` (CTA clicks, form submissions, video interactions, impressions) — these were all silently failing before
+- ProductHero blocks now fire `product-hero_impression` on mount with `product_name` and `product_slug` context
+- Test examples updated to use `jest.mock('posthog-js')` instead of the now-incorrect `window.posthog` assignment
+
+---
 
 ### 2026-02-10 - v1.1.0 - Complete Standard Events Integration
 

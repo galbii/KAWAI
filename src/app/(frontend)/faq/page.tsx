@@ -5,7 +5,7 @@ import { getAllFaqs, getAllFaqCategories } from '@/lib/payload/queries'
 export const revalidate = 3600
 
 export const metadata: Metadata = {
-  title: 'Frequently Asked Questions | KAWAI Pianos',
+  title: 'Frequently Asked Questions | Kawai Pianos',
   description: 'Find answers to common questions about KAWAI pianos, purchasing, financing, service, and more.',
   alternates: {
     canonical: '/faq',

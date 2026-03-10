@@ -7,7 +7,8 @@ const ACTIONS = [
   { label: '+ New Product',    href: '/admin/collections/products/create',   color: c.violet },
   { label: '+ New Post',       href: '/admin/collections/posts/create',       color: undefined },
   { label: '+ New Storefront', href: '/admin/collections/storefronts/create', color: undefined },
-  { label: 'Upload Media',     href: '/admin/collections/media/create',       color: c.jade },
+  { label: '+ New Job',       href: '/admin/job-manager',                     color: c.jade },
+  { label: 'Upload Media',    href: '/admin/collections/media/create',        color: undefined },
 ]
 
 export function DashboardQuickActions() {

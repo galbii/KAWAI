@@ -788,7 +788,13 @@ Events are automatically sent to all configured platforms:
 
 #### PostHog
 ```typescript
-window.posthog.capture(eventName, eventData)
+// unified-tracking.ts uses the imported module singleton — NOT window.posthog
+// window.posthog is always undefined with ES module imports (posthog-js v3+)
+import posthog from 'posthog-js'
+
+if (posthog.__loaded) {
+  posthog.capture(eventName, eventData)
+}
 ```
 
 #### Google Analytics 4

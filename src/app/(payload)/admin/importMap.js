@@ -53,6 +53,7 @@ import { DashboardCollectionsButton as DashboardCollectionsButton_8f41e83e5c4117
 import { AdminRootProvider as AdminRootProvider_90270e1a289c41a7c07e2a0de98e46c1 } from '../../../components/admin/AdminRootProvider'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { FaqManagerPage as FaqManagerPage_1ecbcb32c98eb2a5b35b86b0e092e1bc } from '../../../components/admin/FaqManagerPage'
+import { JobManagerPage as JobManagerPage_a0c5b7110afa7bffef157ec8dda96cea } from '../../../components/admin/job-manager/JobManagerPage'
 import { CollectionCards as CollectionCards_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 
 export const importMap = {
@@ -111,5 +112,6 @@ export const importMap = {
   "/components/admin/AdminRootProvider#AdminRootProvider": AdminRootProvider_90270e1a289c41a7c07e2a0de98e46c1,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "/components/admin/FaqManagerPage#FaqManagerPage": FaqManagerPage_1ecbcb32c98eb2a5b35b86b0e092e1bc,
+  "/components/admin/job-manager/JobManagerPage#JobManagerPage": JobManagerPage_a0c5b7110afa7bffef157ec8dda96cea,
   "@payloadcms/ui/rsc#CollectionCards": CollectionCards_ab83ff7e88da8d3530831f296ec4756a
 }

@@ -1,8 +1,8 @@
-"use client";
-
 import { CategoryHero } from "@/components/piano/category-hero";
 import { UnifiedPianoSeries } from "@/components/piano/unified-piano-series";
-import { useState } from "react";
+import { getPayloadClient } from '@/lib/payload/queries'
+import { RenderBlocks } from '@/components/RenderBlocks'
+import type { Page } from '@/payload-types'
 
 // Featured digital pianos - highlighting the best from each series
 const featuredDigitalPianos = [
@@ -225,10 +225,28 @@ const digitalPianoSeries = [
 
 
 
-export default function DigitalPianosPage() {
-  const [series] = useState(digitalPianoSeries);
-  const [loading] = useState(false); // Productlines removed - using fallback data
-  const [error] = useState<string | null>(null);
+export default async function DigitalPianosPage() {
+  try {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'pages',
+      where: { slug: { equals: 'pianos/digital' }, _status: { equals: 'published' } },
+      depth: 2,
+      limit: 1,
+    })
+    console.log('[digital/page] CMS query result — total:', result.totalDocs, '| docs[0] slug:', result.docs[0]?.slug ?? 'none')
+    const cmsPage = result.docs[0] as Page | undefined
+    if (cmsPage?.layout && cmsPage.layout.length > 0) {
+      return <RenderBlocks blocks={cmsPage.layout} />
+    }
+  } catch (err) {
+    console.error('[digital/page] CMS override query failed:', err)
+    // fall through to hardcoded layout
+  }
+
+  const series = digitalPianoSeries;
+  const loading = false; // Productlines removed - using fallback data
+  const error: string | null = null;
 
   return (
     <div className="min-h-screen">
@@ -288,7 +306,7 @@ export default function DigitalPianosPage() {
           <p className="text-xl md:text-2xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto mb-12">
             Visit our showroom to experience the touch, sound, and features of our digital pianos. Compare models side-by-side and find your perfect match.
           </p>
-          
+
           <a
             href="/showroom"
             className="inline-flex items-center px-8 py-4 bg-kawai-black hover:bg-kawai-black/80 text-kawai-pearl font-medium rounded-md transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group text-lg"

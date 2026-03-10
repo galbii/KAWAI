@@ -1,9 +1,10 @@
 import 'server-only'
 
 import { getPayload } from 'payload'
-import type { Payload } from 'payload'
+import type { Payload, Where } from 'payload'
 import config from '@/payload.config'
 import { unstable_cache } from 'next/cache'
+import { fetchShopifyProduct } from '@/lib/shopify/fetch-product'
 import type {
   Product,
   PianosPage,
@@ -1087,51 +1088,80 @@ export async function getProductsByCollectionHandle(handle: string): Promise<
         description: true,
         visibility: true,
         variations: true,
+        shopify: true,
       },
       sort: '-price.msrp',
       depth: 0,
       limit: 100,
     })
 
-    return result.docs.map((doc) => ({
-      id: String(doc.id),
-      model: doc.model,
-      name: doc.name ?? null,
-      slug: doc.slug ?? '',
-      type: doc.type ?? null,
-      imageUrl: doc.imageUrl ?? null,
-      price: doc.price
-        ? { msrp: doc.price.msrp ?? null, currency: doc.price.currency ?? null }
-        : null,
-      ...(() => {
-        const vars = doc.variations
-        if (!Array.isArray(vars) || vars.length === 0) return { salePrice: null, compareAtPrice: null }
-        const onSaleVars = vars.filter(
-          (v: any) =>
-            typeof v.compareAtPrice === 'number' &&
-            typeof v.price === 'number' &&
-            v.compareAtPrice > v.price,
-        )
-        if (onSaleVars.length === 0) return { salePrice: null, compareAtPrice: null }
-        const minSalePrice = Math.min(...onSaleVars.map((v: any) => v.price as number))
-        const minSaleVar = onSaleVars.find((v: any) => v.price === minSalePrice)
-        return {
-          salePrice: minSalePrice,
-          compareAtPrice: (minSaleVar?.compareAtPrice as number) ?? null,
+    // Enrich each product with live Shopify variant prices in parallel
+    const shopifyPriceMap = new Map<string, Map<string, { price: number; compareAtPrice: number | null }>>()
+    await Promise.all(
+      result.docs.map(async (doc) => {
+        const shopifyHandle = (doc as any).shopify?.handle as string | null | undefined
+        if (!shopifyHandle) return
+        try {
+          const shopifyProduct = await fetchShopifyProduct(shopifyHandle)
+          if (!shopifyProduct) return
+          const variantMap = new Map<string, { price: number; compareAtPrice: number | null }>()
+          for (const variant of shopifyProduct.variants) {
+            // Normalize to bare numeric ID for matching
+            const numericId = variant.id.replace('gid://shopify/ProductVariant/', '')
+            const priceNum = parseFloat(variant.price)
+            const capNum = variant.compareAtPrice ? parseFloat(variant.compareAtPrice) : null
+            variantMap.set(numericId, { price: priceNum, compareAtPrice: capNum })
+            variantMap.set(variant.id, { price: priceNum, compareAtPrice: capNum })
+          }
+          shopifyPriceMap.set(String(doc.id), variantMap)
+        } catch {
+          // Non-fatal — fall back to CMS price if Shopify is unavailable
         }
-      })(),
-      description: doc.description ?? null,
-      variations: Array.isArray(doc.variations)
-        ? doc.variations.map((v: any) => ({
-            name: (v.name as string) ?? '',
-            shopifyVariantId: (v.shopifyVariantId as string) ?? null,
-            price: typeof v.price === 'number' ? v.price : null,
-            compareAtPrice: typeof v.compareAtPrice === 'number' ? v.compareAtPrice : null,
-            available: v.available === true,
-            imageUrl: (v.imageUrl as string) ?? null,
-          }))
-        : [],
-    }))
+      })
+    )
+
+    return result.docs.map((doc) => {
+      const variantPrices = shopifyPriceMap.get(String(doc.id))
+      const enrichedVariations = Array.isArray(doc.variations)
+        ? doc.variations.map((v: any) => {
+            const variantId = (v.shopifyVariantId as string) ?? null
+            const shopifyPrice = variantId
+              ? (variantPrices?.get(variantId) ?? variantPrices?.get(variantId?.replace('gid://shopify/ProductVariant/', '')))
+              : null
+            return {
+              name: (v.name as string) ?? '',
+              shopifyVariantId: variantId,
+              price: shopifyPrice?.price ?? (typeof v.price === 'number' ? v.price : null),
+              compareAtPrice: shopifyPrice?.compareAtPrice ?? (typeof v.compareAtPrice === 'number' ? v.compareAtPrice : null),
+              available: v.available === true,
+              imageUrl: (v.imageUrl as string) ?? null,
+            }
+          })
+        : []
+
+      const onSaleVars = enrichedVariations.filter(
+        (v) => typeof v.compareAtPrice === 'number' && typeof v.price === 'number' && v.compareAtPrice > v.price,
+      )
+      const minSaleVar = onSaleVars.length > 0
+        ? onSaleVars.reduce((min, v) => (v.price! < min.price! ? v : min), onSaleVars[0]!)
+        : null
+
+      return {
+        id: String(doc.id),
+        model: doc.model,
+        name: doc.name ?? null,
+        slug: doc.slug ?? '',
+        type: doc.type ?? null,
+        imageUrl: doc.imageUrl ?? null,
+        price: doc.price
+          ? { msrp: doc.price.msrp ?? null, currency: doc.price.currency ?? null }
+          : null,
+        salePrice: minSaleVar?.price ?? null,
+        compareAtPrice: minSaleVar?.compareAtPrice ?? null,
+        description: doc.description ?? null,
+        variations: enrichedVariations,
+      }
+    })
   } catch (error) {
     console.error(`Error fetching products for collection "${handle}":`, error)
     return []
@@ -1416,4 +1446,266 @@ export function getFaqsByProductId(productId: string) {
     [`faqs-product-${productId}`],
     { tags: ['faqs', `product-faqs-${productId}`], revalidate: 3600 }
   )()
+}
+
+// ─── Category-filtered Queries ────────────────────────────────────────────────
+
+/**
+ * Get collections filtered by a specific piano category.
+ * Used by the /pianos browser to show only collections relevant to a given tab.
+ * Per-call unstable_cache pattern since the category arg varies.
+ */
+export function getCollectionsForCategory(
+  category: 'digital' | 'grand' | 'upright' | 'hybrid',
+): Promise<CollectionForBrowser[]> {
+  return unstable_cache(
+    async (): Promise<CollectionForBrowser[]> => {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'collections',
+        where: {
+          pianoCategories: { contains: category },
+        },
+        select: {
+          title: true,
+          handle: true,
+          pianoCategories: true,
+          featured: true,
+          youtubeUrl: true,
+          mediaUrl: true,
+          imageUrl: true,
+          heading: true,
+          subheading: true,
+          textColor: true,
+          textAlignment: true,
+          overlayOpacity: true,
+          headingSize: true,
+          fontFamily: true,
+          bannerSize: true,
+        },
+        depth: 1,
+        limit: 100,
+      })
+      return result.docs.map((d) => ({
+        title: d.title,
+        handle: d.handle,
+        pianoCategories: (d.pianoCategories as string[] | null) ?? null,
+        featured: (d.featured as boolean | null | undefined) ?? null,
+        youtubeUrl: (d.youtubeUrl as string | null | undefined) ?? null,
+        mediaUrl: (d.mediaUrl as string | null | undefined) ?? null,
+        imageUrl: (d.imageUrl as string | null | undefined) ?? null,
+        heading: (d.heading as string | null | undefined) ?? null,
+        subheading: (d.subheading as string | null | undefined) ?? null,
+        textColor: (d.textColor as string | null | undefined) ?? null,
+        textAlignment: (d.textAlignment as string | null | undefined) ?? null,
+        overlayOpacity: (d.overlayOpacity as number | null | undefined) ?? null,
+        headingSize: (d.headingSize as string | null | undefined) ?? null,
+        fontFamily: (d.fontFamily as string | null | undefined) ?? null,
+        bannerSize: (d.bannerSize as string | null | undefined) ?? null,
+      }))
+    },
+    ['collections-for-category', category],
+    { tags: ['collections', `collection-category-${category}`], revalidate: 3600 },
+  )()
+}
+
+/**
+ * Get all catalog-visible products for a specific piano category.
+ * Filters by both the `type` and `category` fields using OR conditions that
+ * cover all common values for each category.
+ * Returns the same lightweight card-ready shape as getCatalogProductsDirect.
+ */
+export function getCatalogProductsByCategory(
+  category: 'digital' | 'grand' | 'upright' | 'hybrid',
+): Promise<
+  Array<{
+    id: string
+    model: string
+    name?: string | null
+    slug: string
+    type?: string | null
+    category?: string | null
+    imageUrl?: string | null
+    price?: { msrp?: number | null; currency?: string | null } | null
+    salePrice?: number | null
+    compareAtPrice?: number | null
+    shopifyCollections?: Array<{ title: string; handle: string }> | null
+    variations?: Array<{
+      name: string
+      price: number | null
+      compareAtPrice: number | null
+      imageUrl: string | null
+      available: boolean
+    }> | null
+  }>
+> {
+  const orConditions: Where[] = {
+    grand: [
+      { type: { contains: 'grand' } },
+      { type: { contains: 'shigeru' } },
+      { category: { contains: 'grand' } },
+    ],
+    digital: [
+      { type: { contains: 'digital' } },
+      { type: { contains: 'concert artist' } },
+      { category: { contains: 'digital' } },
+    ],
+    upright: [
+      { type: { contains: 'upright' } },
+      { type: { contains: 'vertical' } },
+      { category: { contains: 'upright' } },
+    ],
+    hybrid: [
+      { type: { contains: 'hybrid' } },
+      { type: { contains: 'anytime' } },
+      { type: { contains: 'novus' } },
+      { type: { contains: 'aures' } },
+      { category: { contains: 'hybrid' } },
+    ],
+  }[category]
+
+  return unstable_cache(
+    async () => {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'products',
+        where: {
+          and: [
+            { status: { equals: 'active' } },
+            { 'visibility.showInCatalog': { equals: true } },
+            { or: orConditions as Where[] },
+          ],
+        },
+        select: {
+          model: true,
+          name: true,
+          slug: true,
+          type: true,
+          category: true,
+          imageUrl: true,
+          price: true,
+          shopifyCollections: true,
+          visibility: true,
+          variations: true,
+        },
+        sort: 'visibility.sortOrder,name',
+        limit: 500,
+        depth: 0,
+      })
+
+      return result.docs.map((doc) => ({
+        id: String(doc.id),
+        model: doc.model,
+        name: doc.name ?? null,
+        slug: doc.slug ?? '',
+        type: doc.type ?? null,
+        category: doc.category ?? null,
+        imageUrl: doc.imageUrl ?? null,
+        price: doc.price
+          ? { msrp: doc.price.msrp ?? null, currency: doc.price.currency ?? null }
+          : null,
+        ...(() => {
+          const vars = doc.variations
+          if (!Array.isArray(vars) || vars.length === 0) return { salePrice: null, compareAtPrice: null }
+          const onSaleVars = vars.filter(
+            (v: any) =>
+              typeof v.compareAtPrice === 'number' &&
+              typeof v.price === 'number' &&
+              v.compareAtPrice > v.price,
+          )
+          if (onSaleVars.length === 0) return { salePrice: null, compareAtPrice: null }
+          const minSalePrice = Math.min(...onSaleVars.map((v: any) => v.price as number))
+          const minSaleVar = onSaleVars.find((v: any) => v.price === minSalePrice)
+          return {
+            salePrice: minSalePrice,
+            compareAtPrice: (minSaleVar?.compareAtPrice as number) ?? null,
+          }
+        })(),
+        shopifyCollections: Array.isArray(doc.shopifyCollections)
+          ? doc.shopifyCollections.map((c: any) => ({
+              title: c.title ?? '',
+              handle: c.handle ?? '',
+            }))
+          : null,
+        variations: Array.isArray(doc.variations)
+          ? doc.variations.map((v: any) => ({
+              name: (v.name as string) ?? '',
+              price: typeof v.price === 'number' ? v.price : null,
+              compareAtPrice: typeof v.compareAtPrice === 'number' ? v.compareAtPrice : null,
+              imageUrl: (v.imageUrl as string) ?? null,
+              available: v.available !== false,
+            }))
+          : null,
+      }))
+    },
+    ['catalog-products-by-category', category],
+    { tags: ['products', `products-category-${category}`], revalidate: 3600 },
+  )()
+}
+
+// ─── Careers Queries ────────────────────────────────────────────────────────
+
+/**
+ * Get all open job listings
+ */
+export const getOpenJobs = unstable_cache(
+  async () => {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'jobs',
+      where: { status: { equals: 'open' } },
+      sort: '-postedAt',
+      select: { title: true, slug: true, department: true, location: true, type: true, postedAt: true, description: true },
+      depth: 0,
+      limit: 100,
+    })
+    return result.docs
+  },
+  ['careers-open-jobs'],
+  { tags: ['careers'], revalidate: 3600 }
+)
+
+/**
+ * Get the N most recently posted open jobs
+ */
+export async function getRecentJobs(limit = 6) {
+  const payload = await getPayloadClient()
+  const result = await payload.find({
+    collection: 'jobs',
+    where: { status: { equals: 'open' } },
+    sort: '-postedAt',
+    select: { title: true, slug: true, department: true, location: true, type: true, postedAt: true, description: true },
+    depth: 0,
+    limit,
+  })
+  return result.docs
+}
+
+/**
+ * Get a single job by slug (for the job detail page)
+ */
+export async function getJobBySlug(slug: string) {
+  const payload = await getPayloadClient()
+  const result = await payload.find({
+    collection: 'jobs',
+    where: { slug: { equals: slug }, status: { equals: 'open' } },
+    depth: 0,
+    limit: 1,
+  })
+  return result.docs[0] ?? null
+}
+
+/**
+ * Generate static params for all open job pages
+ */
+export async function getAllJobSlugs() {
+  const payload = await getPayloadClient()
+  const result = await payload.find({
+    collection: 'jobs',
+    where: { status: { equals: 'open' } },
+    select: { slug: true },
+    depth: 0,
+    limit: 500,
+  })
+  return result.docs
 }

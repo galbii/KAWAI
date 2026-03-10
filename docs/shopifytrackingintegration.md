@@ -82,11 +82,17 @@ Use this if you need custom event data at checkout that Shopify's native integra
 // checkout_started, checkout_completed, payment_info_submitted,
 // checkout_address_info_submitted, cart_viewed, product_viewed
 
+// NOTE: Shopify custom pixels run in a sandboxed browser environment — they do NOT
+// use our Next.js module system. posthog-js is loaded here as a global via Shopify's
+// customer events sandbox, so window.posthog IS the correct check in this context.
+// This is the one place where window.posthog is valid — do not use it anywhere in
+// our Next.js app (use `import posthog from 'posthog-js'` + `posthog.__loaded` there).
+
 analytics.subscribe('checkout_completed', (event) => {
   const order = event.data.checkout
-  // PostHog
+  // PostHog (window.posthog is correct here — Shopify sandbox global, not ES module)
   if (window.posthog) {
-    posthog.capture('purchase', {
+    window.posthog.capture('purchase', {
       order_id: order.order.id,
       value: order.totalPrice.amount,
       currency: order.currencyCode,

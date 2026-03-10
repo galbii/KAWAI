@@ -330,7 +330,7 @@ export async function generateMetadata({ params }) {
   const page = await getPage(params.slug)
 
   return {
-    title: `${page.title} | KAWAI Pianos`,
+    title: `${page.title} | Kawai Pianos`,
     description: generateDescription(page),
     alternates: {
       canonical: `${siteUrl}/${page.slug}`

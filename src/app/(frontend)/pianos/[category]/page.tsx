@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { RenderBlocks } from '@/components/RenderBlocks'
+import type { Page } from '@/payload-types'
 import { CategoryHero } from "@/components/piano/category-hero"
 import { UnifiedPianoSeries } from "@/components/piano/unified-piano-series"
 import { CategoryCTA } from "@/components/piano/category-cta"
@@ -147,8 +149,32 @@ export async function generateMetadata({ params }: CategoryPageParams): Promise<
  * Static named routes (digital/, grand/, search/, compare/, shigeru-kawai/)
  * always take priority over this dynamic segment in Next.js App Router.
  */
+async function getCMSCategoryPage(slug: string): Promise<Page | null> {
+  try {
+    const payload = await getPayload({ config })
+    const result = await payload.find({
+      collection: 'pages',
+      where: {
+        slug: { equals: `pianos/${slug}` },
+        _status: { equals: 'published' },
+      },
+      depth: 2,
+      limit: 1,
+    })
+    return result.docs[0] ?? null
+  } catch {
+    return null
+  }
+}
+
 export default async function CategoryPage({ params }: CategoryPageParams) {
   const { category } = await params
+
+  // Check for a CMS page overriding this category route (slug: "pianos/digital" etc.)
+  const cmsPage = await getCMSCategoryPage(category)
+  if (cmsPage?.layout && cmsPage.layout.length > 0) {
+    return <RenderBlocks blocks={cmsPage.layout} />
+  }
 
   // ── Piano Category Pages ────────────────────────────────────────────────────
   if (isValidCategory(category)) {

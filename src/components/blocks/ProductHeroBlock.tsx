@@ -24,8 +24,8 @@ import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { FloatingAddToCartIntegrated } from '@/components/blocks/FloatingAddToCartIntegrated'
 import { createCart } from '@/lib/shopify'
 import { getStoredUTMParams } from '@/lib/shopify/utm-tracking'
-import { trackAddToCart, trackBeginCheckout } from '@/lib/analytics/unified-tracking'
-import type { CTATrackingConfig } from '@/lib/analytics/unified-tracking'
+import { trackAddToCart, trackBeginCheckout, trackBlockImpression } from '@/lib/analytics/unified-tracking'
+import type { CTATrackingConfig, BlockTrackingConfig } from '@/lib/analytics/unified-tracking'
 
 interface ProductHeroBlockProps {
   layout?: {
@@ -56,6 +56,7 @@ interface ProductHeroBlockProps {
     badge?: string | null
   }
   ctaTracking?: CTATrackingConfig | null
+  impressionTracking?: BlockTrackingConfig | null
   // The product data will be passed from the context (current product document)
   product?: Product | null
   // Shopify product data fetched server-side
@@ -68,6 +69,7 @@ export function ProductHeroBlock({
   floatingCart = {}, // NEW: Floating cart configuration
   overrides = {},
   ctaTracking,
+  impressionTracking,
   product,
   shopifyProduct,
 }: ProductHeroBlockProps) {
@@ -95,6 +97,19 @@ export function ProductHeroBlock({
       setSelectedVariation(-1)
     }
   }, [allVariations.length, selectedVariation])
+
+  // Fire impression event once on mount
+  useEffect(() => {
+    trackBlockImpression({
+      blockType: 'product-hero',
+      blockData: { impressionTracking: impressionTracking ?? undefined },
+      additionalProps: {
+        product_name: product?.name,
+        product_slug: product?.slug,
+      },
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Scroll trap: gallery scrolls first with smooth lerp animation; page resumes at gallery bottom
   useEffect(() => {

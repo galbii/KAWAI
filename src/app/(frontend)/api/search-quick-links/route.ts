@@ -29,7 +29,7 @@ export async function GET() {
           data: [
             { label: 'Instrumental to Life', url: '/instrumental-to-life' },
             { label: 'Find a Dealer', url: '/find-a-dealer' },
-            { label: 'Register My Piano', url: '/register-my-piano' },
+            { label: 'Register My Piano', url: '/warranty-registration' },
             { label: 'Kawai Exclusive Offers', url: '/explore' },
           ]
         },
@@ -48,7 +48,7 @@ export async function GET() {
         : [
             { label: 'Instrumental to Life', url: '/instrumental-to-life' },
             { label: 'Find a Dealer', url: '/find-a-dealer' },
-            { label: 'Register My Piano', url: '/register-my-piano' },
+            { label: 'Register My Piano', url: '/warranty-registration' },
             { label: 'Kawai Exclusive Offers', url: '/explore' },
           ],
     })
@@ -63,7 +63,7 @@ export async function GET() {
         data: [
           { label: 'Instrumental to Life', url: '/instrumental-to-life' },
           { label: 'Find a Dealer', url: '/find-a-dealer' },
-          { label: 'Register My Piano', url: '/register-my-piano' },
+          { label: 'Register My Piano', url: '/warranty-registration' },
           { label: 'Kawai Exclusive Offers', url: '/explore' },
         ],
       },
