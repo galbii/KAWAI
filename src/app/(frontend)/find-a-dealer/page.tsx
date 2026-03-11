@@ -11,8 +11,7 @@ export const metadata = {
 export const revalidate = 900 // 15-minute ISR
 
 // Unified type for dealer finder (combines Dealers and Storefronts)
-interface UnifiedDealer extends Omit<Dealer, 'isOfficialStore'> {
-  isOfficialStore: boolean
+interface UnifiedDealer extends Dealer {
   source: 'dealer' | 'storefront'
 }
 
@@ -27,7 +26,6 @@ function storefrontToDealer(storefront: Storefront): UnifiedDealer {
     slug: storefront.slug,
     isActive: storefront.isActive ?? true,
     isFeatured: false,
-    isOfficialStore: true, // All storefronts are official stores
     source: 'storefront' as const,
     contactInfo: storefront.showroomInfo?.phone ? {
       phone: storefront.showroomInfo.phone,
@@ -43,7 +41,7 @@ function storefrontToDealer(storefront: Storefront): UnifiedDealer {
       latitude: latitude ?? 0,
       longitude: longitude ?? 0,
     },
-    dealerType: ['acoustic-digital'] as ('professional-products' | 'acoustic-digital')[],
+    acousticPianoDealer: true, // Storefronts carry acoustic pianos
     description: storefront.showroomDescription,
     updatedAt: storefront.updatedAt,
     createdAt: storefront.createdAt,
@@ -69,10 +67,10 @@ export default async function FindADealerPage() {
         address: true,
         coordinates: true,
         contactInfo: true,
-        dealerType: true,
+        shigeruKawaiDealer: true,
+        acousticPianoDealer: true,
+        professionalProductDealer: true,
         isFeatured: true,
-        tags: true,
-        isOfficialStore: true,
         isActive: true,
       },
       limit: 1000,
@@ -113,7 +111,6 @@ export default async function FindADealerPage() {
   const unifiedDealers: UnifiedDealer[] = [
     ...dealers.map(d => ({
       ...d,
-      isOfficialStore: d.isOfficialStore ?? false,
       source: 'dealer' as const
     })),
     ...transformedStorefronts

@@ -7796,9 +7796,9 @@ export interface Dealer {
    */
   isFeatured?: boolean | null;
   /**
-   * Mark as official KAWAI-owned store (vs. authorized dealer)
+   * Optional internal dealer ID or official records reference (e.g., "KW-2024-001")
    */
-  isOfficialStore?: boolean | null;
+  dealerIdentification?: string | null;
   contactInfo?: {
     /**
      * Primary phone number (e.g., "636-265-2866" or "(636) 265-2866")
@@ -7856,9 +7856,17 @@ export interface Dealer {
     longitude?: number | null;
   };
   /**
-   * Select the type(s) of products this dealer carries. Dealers can carry both types.
+   * Authorized to sell Shigeru Kawai SK Series grands
    */
-  dealerType: ('professional-products' | 'acoustic-digital')[];
+  shigeruKawaiDealer?: boolean | null;
+  /**
+   * Carries acoustic grand and upright pianos (GX BLAK, GL, K Series, etc.)
+   */
+  acousticPianoDealer?: boolean | null;
+  /**
+   * Carries professional products (MP stage pianos, ES portables, VPC1, etc.)
+   */
+  professionalProductDealer?: boolean | null;
   /**
    * Brief description of the dealer (displayed in dealer finder results)
    */
@@ -7887,31 +7895,6 @@ export interface Dealer {
         id?: string | null;
       }[]
     | null;
-  /**
-   * Tags/categories to help customers find dealers with specific services (multi-select)
-   */
-  tags?:
-    | (
-        | 'authorized-dealer'
-        | 'full-service'
-        | 'grand-specialist'
-        | 'digital-specialist'
-        | 'tuning'
-        | 'repair'
-        | 'restoration'
-        | 'moving'
-        | 'rentals'
-        | 'financing'
-        | 'trade-ins'
-        | 'virtual-consult'
-        | 'education'
-        | 'performance'
-      )[]
-    | null;
-  /**
-   * Special services or unique features (displayed in dealer detail view)
-   */
-  specialties?: string | null;
   /**
    * Showroom or business photo (optional, for enhanced listings)
    */
@@ -9661,7 +9644,7 @@ export interface DealersSelect<T extends boolean = true> {
   slug?: T;
   isActive?: T;
   isFeatured?: T;
-  isOfficialStore?: T;
+  dealerIdentification?: T;
   contactInfo?:
     | T
     | {
@@ -9685,7 +9668,9 @@ export interface DealersSelect<T extends boolean = true> {
         latitude?: T;
         longitude?: T;
       };
-  dealerType?: T;
+  shigeruKawaiDealer?: T;
+  acousticPianoDealer?: T;
+  professionalProductDealer?: T;
   description?: T;
   hours?:
     | T
@@ -9696,8 +9681,6 @@ export interface DealersSelect<T extends boolean = true> {
         isClosed?: T;
         id?: T;
       };
-  tags?: T;
-  specialties?: T;
   dealerImage?: T;
   yearEstablished?: T;
   serviceArea?:

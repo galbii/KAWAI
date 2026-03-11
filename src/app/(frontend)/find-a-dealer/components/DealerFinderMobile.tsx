@@ -8,13 +8,13 @@ import { SearchBar } from './SearchBar'
 import { FilterPanel } from './FilterPanel'
 import { cn } from '@/lib/utils'
 import { calculateDistance } from '@/lib/utils/dealer-search'
-import { MapPin, SlidersHorizontal, Map, List, Piano, Briefcase, X } from 'lucide-react'
+import { MapPin, SlidersHorizontal, Map, List, Piano, Briefcase, Star, X } from 'lucide-react'
 
 interface Props {
   dealers: DealerWithDistance[]
 }
 
-type DealerTypeFilter = 'all' | 'professional-products' | 'acoustic-digital'
+type DealerTypeFilter = 'all' | 'shigeru' | 'acoustic' | 'professional'
 type ViewMode = 'map' | 'list'
 
 export function DealerFinderMobile({ dealers }: Props) {
@@ -22,7 +22,6 @@ export function DealerFinderMobile({ dealers }: Props) {
   const [searchAddress, setSearchAddress] = useState<string>('')
   const [selectedRadius, setSelectedRadius] = useState(25)
   const [selectedDealerTypes, setSelectedDealerTypes] = useState<string[]>([])
-  const [selectedServices, setSelectedServices] = useState<string[]>([])
   const [selectedDealer, setSelectedDealer] = useState<string | null>(null)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('map')
@@ -32,21 +31,12 @@ export function DealerFinderMobile({ dealers }: Props) {
 
   // Calculate dealer type counts
   const dealerCounts = useMemo(() => {
-    const counts = {
-      all: dealers.length,
-      'professional-products': 0,
-      'acoustic-digital': 0,
-    }
-
+    const counts = { all: dealers.length, shigeru: 0, acoustic: 0, professional: 0 }
     dealers.forEach(dealer => {
-      if (dealer.dealerType?.includes('professional-products')) {
-        counts['professional-products']++
-      }
-      if (dealer.dealerType?.includes('acoustic-digital')) {
-        counts['acoustic-digital']++
-      }
+      if (dealer.shigeruKawaiDealer) counts.shigeru++
+      if (dealer.acousticPianoDealer) counts.acoustic++
+      if (dealer.professionalProductDealer) counts.professional++
     })
-
     return counts
   }, [dealers])
 
@@ -57,26 +47,24 @@ export function DealerFinderMobile({ dealers }: Props) {
       ? searchResults.map(dealer => ({ ...dealer }))
       : dealers.map(dealer => ({ ...dealer }))
 
-    // Filter by dealer type
-    if (dealerTypeFilter !== 'all') {
-      result = result.filter(dealer =>
-        dealer.dealerType?.includes(dealerTypeFilter)
-      )
+    // Filter by dealer type pill
+    if (dealerTypeFilter === 'shigeru') {
+      result = result.filter(dealer => dealer.shigeruKawaiDealer === true)
+    } else if (dealerTypeFilter === 'acoustic') {
+      result = result.filter(dealer => dealer.acousticPianoDealer === true)
+    } else if (dealerTypeFilter === 'professional') {
+      result = result.filter(dealer => dealer.professionalProductDealer === true)
     }
 
     // Apply advanced filters
     if (selectedDealerTypes.length > 0) {
       result = result.filter(dealer =>
-        selectedDealerTypes.some(type =>
-          dealer.dealerType?.includes(type as 'professional-products' | 'acoustic-digital')
-        )
-      )
-    }
-
-    // Filter by services
-    if (selectedServices.length > 0) {
-      result = result.filter(dealer =>
-        dealer.tags?.some(tag => selectedServices.includes(tag as string))
+        selectedDealerTypes.some(type => {
+          if (type === 'shigeru') return dealer.shigeruKawaiDealer === true
+          if (type === 'acoustic') return dealer.acousticPianoDealer === true
+          if (type === 'professional') return dealer.professionalProductDealer === true
+          return false
+        })
       )
     }
 
@@ -111,7 +99,7 @@ export function DealerFinderMobile({ dealers }: Props) {
     }
 
     return result
-  }, [dealers, searchResults, searchLocation, dealerTypeFilter, selectedDealerTypes, selectedServices])
+  }, [dealers, searchResults, searchLocation, dealerTypeFilter, selectedDealerTypes])
 
   const handleLocationSearch = useCallback((location: { lat: number; lng: number }, address: string) => {
     setSearchLocation(location)
@@ -145,13 +133,12 @@ export function DealerFinderMobile({ dealers }: Props) {
     }
   }, [viewMode])
 
-  const handleFilterChange = useCallback((dealerTypes: string[], services: string[], radius: number) => {
+  const handleFilterChange = useCallback((dealerTypes: string[], radius: number) => {
     setSelectedDealerTypes(dealerTypes)
-    setSelectedServices(services)
     setSelectedRadius(radius)
   }, [])
 
-  const activeFilterCount = selectedDealerTypes.length + selectedServices.length + (selectedRadius !== 25 ? 1 : 0)
+  const activeFilterCount = selectedDealerTypes.length + (selectedRadius !== 25 ? 1 : 0)
 
   const selectedDealerData = useMemo(() => {
     if (!selectedDealer) return null
@@ -159,37 +146,39 @@ export function DealerFinderMobile({ dealers }: Props) {
   }, [selectedDealer, filteredDealers])
 
   return (
-    <div className="lg:hidden relative h-screen flex flex-col bg-gray-50 overflow-hidden" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
-      {/* Fixed Header - Compact and Elegant */}
-      <div className="relative z-30 bg-white border-b border-gray-200/80 shadow-sm">
-        {/* Dealer Type Pills - Horizontal Scroll */}
-        <div className="px-4 pb-3 overflow-x-auto scrollbar-hide">
-          <div className="flex gap-2 min-w-max">
+    <div className="lg:hidden bg-gray-50" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
+      {/* Sticky Filter Header — sticks under main nav, mirrors desktop pattern */}
+      <div
+        className="sticky z-30 bg-white border-b border-gray-200/80 shadow-sm"
+        style={{ top: 'var(--header-bottom, 70px)' }}
+      >
+        {/* Dealer Type Tabs - Horizontal Scroll */}
+        <div className="overflow-x-auto scrollbar-hide">
+          <div className="flex min-w-max border-b border-kawai-neutral">
             {[
-              { value: 'all' as const, label: 'All', icon: null, count: dealerCounts.all },
-              { value: 'acoustic-digital' as const, label: 'Acoustic & Digital', icon: Piano, count: dealerCounts['acoustic-digital'] },
-              { value: 'professional-products' as const, label: 'Professional', icon: Briefcase, count: dealerCounts['professional-products'] },
+              { value: 'all' as const, label: 'All Dealers', count: dealerCounts.all },
+              { value: 'acoustic' as const, label: 'Acoustic Piano', count: dealerCounts.acoustic },
+              { value: 'professional' as const, label: 'Professional', count: dealerCounts.professional },
+              { value: 'shigeru' as const, label: 'Shigeru Kawai', count: dealerCounts.shigeru },
             ].map((option) => {
               const isSelected = dealerTypeFilter === option.value
-              const Icon = option.icon
-
               return (
                 <button
                   key={option.value}
                   onClick={() => setDealerTypeFilter(option.value)}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap",
-                    "border-2 active:scale-95",
+                    "relative flex items-center gap-2 px-5 py-3 text-xs uppercase tracking-[0.1em] font-medium whitespace-nowrap",
+                    "font-[family-name:var(--font-brand-sans)] transition-colors duration-200",
+                    "focus-visible:outline-2 focus-visible:outline-kawai-red",
                     isSelected
-                      ? "bg-kawai-charcoal border-kawai-charcoal text-white shadow-lg shadow-kawai-charcoal/20"
-                      : "bg-white border-gray-200 text-gray-700 active:bg-gray-50"
+                      ? "text-kawai-black border-b-2 border-kawai-black -mb-px"
+                      : "text-kawai-charcoal/60 border-b-2 border-transparent -mb-px hover:text-kawai-black"
                   )}
                 >
-                  {Icon && <Icon className="w-4 h-4" strokeWidth={2} />}
-                  <span>{option.label}</span>
+                  {option.label}
                   <span className={cn(
-                    "px-1.5 py-0.5 rounded-full text-xs font-semibold",
-                    isSelected ? "bg-white/20 text-white" : "bg-gray-100 text-gray-600"
+                    "text-[10px] font-semibold tabular-nums",
+                    isSelected ? "text-kawai-black/50" : "text-kawai-charcoal/30"
                   )}>
                     {option.count}
                   </span>
@@ -227,8 +216,11 @@ export function DealerFinderMobile({ dealers }: Props) {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 relative overflow-hidden">
+      {/* Main Content Area — fills remaining viewport below nav + sticky header */}
+      <div
+        className="relative overflow-hidden"
+        style={{ height: 'calc(100vh - var(--header-bottom, 70px) - 90px)' }}
+      >
         {/* Map View */}
         <div
           className={cn(
@@ -279,7 +271,6 @@ export function DealerFinderMobile({ dealers }: Props) {
                   onClick={() => {
                     setDealerTypeFilter('all')
                     setSelectedDealerTypes([])
-                    setSelectedServices([])
                     setSelectedRadius(25)
                     setSearchResults([])
                     setSearchLocation(null)
@@ -347,10 +338,8 @@ export function DealerFinderMobile({ dealers }: Props) {
         isOpen={filtersOpen}
         onClose={() => setFiltersOpen(false)}
         selectedDealerTypes={selectedDealerTypes}
-        selectedServices={selectedServices}
         selectedRadius={selectedRadius}
         onFilterChange={handleFilterChange}
-        dealers={dealers}
       />
 
       {/* Selected Dealer Bottom Sheet */}
@@ -443,8 +432,9 @@ interface MobileDealerCardProps {
 }
 
 function MobileDealerCard({ dealer, isSelected, onSelect }: MobileDealerCardProps) {
-  const hasProfessionalProducts = dealer.dealerType?.includes('professional-products')
-  const hasAcousticDigital = dealer.dealerType?.includes('acoustic-digital')
+  const hasShigeru = dealer.shigeruKawaiDealer === true
+  const hasAcoustic = dealer.acousticPianoDealer === true
+  const hasProfessional = dealer.professionalProductDealer === true
 
   return (
     <button
@@ -480,13 +470,19 @@ function MobileDealerCard({ dealer, isSelected, onSelect }: MobileDealerCardProp
 
       {/* Dealer Type Badges */}
       <div className="flex flex-wrap gap-2 mb-3">
-        {hasAcousticDigital && (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg">
-            <Piano className="w-3 h-3" strokeWidth={2} />
-            <span>Acoustic & Digital</span>
+        {hasShigeru && (
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-kawai-gold/10 text-kawai-gold text-xs font-medium rounded-lg border border-kawai-gold/20">
+            <Star className="w-3 h-3" strokeWidth={2} />
+            <span>Shigeru Kawai</span>
           </div>
         )}
-        {hasProfessionalProducts && (
+        {hasAcoustic && (
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg">
+            <Piano className="w-3 h-3" strokeWidth={2} />
+            <span>Acoustic Piano</span>
+          </div>
+        )}
+        {hasProfessional && (
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg">
             <Briefcase className="w-3 h-3" strokeWidth={2} />
             <span>Professional</span>

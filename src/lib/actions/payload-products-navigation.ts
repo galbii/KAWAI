@@ -23,11 +23,12 @@ import type { ProductsNavigation } from '@/lib/payload/products-navigation'
 const getCachedProductsNavigation = unstable_cache(
   async (): Promise<ProductsNavigation> => {
     console.log('[Products Navigation Cache] Cache miss - fetching from database')
-    const [navData, collections] = await Promise.all([
+    const [navData, collections, allCollections] = await Promise.all([
       getProductTypesWithProducts({ limit: 250, samplesPerType: 6 }),
       getNavCollections(20),
+      getNavCollections(50, false),
     ])
-    return { ...navData, collections }
+    return { ...navData, collections, allCollections }
   },
   ['products-navigation'], // Cache key
   {

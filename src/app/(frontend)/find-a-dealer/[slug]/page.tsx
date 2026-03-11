@@ -69,12 +69,7 @@ export async function generateMetadata(
       ? `Piano Dealer in ${locationText} | ${dealer.dealerName} | KAWAI`
       : `${dealer.dealerName} | Authorized Kawai Piano Dealer`
 
-    const services = dealer.tags
-      ?.slice(0, 3)
-      .map((t: string) => t.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()))
-      .join(', ')
-
-    const description = `${dealer.dealerName} — Authorized Kawai piano dealer in ${locationText}.${services ? ` ${services}.` : ''} Call ${dealer.contactInfo?.phone || 'us'} or visit our showroom at ${dealer.address?.street}.`
+    const description = `${dealer.dealerName} — Authorized Kawai piano dealer in ${locationText}. Call ${dealer.contactInfo?.phone || 'us'} or visit our showroom at ${dealer.address?.street}.`
 
     const dealerImage = isMediaObject(dealer.dealerImage) ? dealer.dealerImage.url : null
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianogallerystl.com'

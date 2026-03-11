@@ -172,7 +172,10 @@ export function searchDealers(
     }
 
     // Filter by dealer type
-    if (options?.dealerType && !dealer.dealerType.includes(options.dealerType)) {
+    if (options?.dealerType === 'professional-products' && !dealer.professionalProductDealer) {
+      return false
+    }
+    if (options?.dealerType === 'acoustic-digital' && !dealer.acousticPianoDealer) {
       return false
     }
 

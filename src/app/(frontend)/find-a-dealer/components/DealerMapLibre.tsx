@@ -165,8 +165,9 @@ export function DealerMapLibre({
           return null
         }
 
-        const hasAcousticDigital = dealer.dealerType?.includes('acoustic-digital')
-        const hasProfessionalProducts = dealer.dealerType?.includes('professional-products')
+        const hasShigeru = dealer.shigeruKawaiDealer === true
+        const hasAcoustic = dealer.acousticPianoDealer === true
+        const hasProfessional = dealer.professionalProductDealer === true
 
         return (
           <Popup
@@ -206,13 +207,19 @@ export function DealerMapLibre({
 
               {/* Dealer Type Badges */}
               <div className="flex flex-wrap gap-2 mb-4">
-                {hasAcousticDigital && (
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg">
-                    <Piano className="w-4 h-4" strokeWidth={2} />
-                    <span>Acoustic & Digital</span>
+                {hasShigeru && (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-kawai-gold/10 text-kawai-gold text-xs font-medium rounded-lg border border-kawai-gold/20">
+                    <Star className="w-3.5 h-3.5" fill="currentColor" strokeWidth={0} />
+                    <span>Shigeru Kawai</span>
                   </div>
                 )}
-                {hasProfessionalProducts && (
+                {hasAcoustic && (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg">
+                    <Piano className="w-4 h-4" strokeWidth={2} />
+                    <span>Acoustic Piano</span>
+                  </div>
+                )}
+                {hasProfessional && (
                   <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg">
                     <Briefcase className="w-4 h-4" strokeWidth={2} />
                     <span>Professional</span>

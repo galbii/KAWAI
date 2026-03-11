@@ -78,7 +78,12 @@ export function ProductHeroBlock({
   // Available-only subset used for cart operations and floating cart
   const availableVariations = allVariations.filter(variation => variation.available)
 
-  const [selectedVariation, setSelectedVariation] = useState(-1)
+  const [selectedVariation, setSelectedVariation] = useState(() => {
+    if (allVariations.length === 0) return -1
+    // Auto-select first available variation, fallback to first variation overall
+    const firstAvailable = allVariations.findIndex(v => v.available)
+    return firstAvailable >= 0 ? firstAvailable : 0
+  })
   const [isFavorited, setIsFavorited] = useState(false)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
   const [buyNowLoading, setBuyNowLoading] = useState(false)
@@ -92,9 +97,9 @@ export function ProductHeroBlock({
     if (allVariations.length === 0 && selectedVariation >= 0) {
       setSelectedVariation(-1)
     }
-    // If selected index is out of bounds, deselect (don't auto-select first)
+    // If selected index is out of bounds, reset to first variation
     else if (allVariations.length > 0 && selectedVariation >= allVariations.length) {
-      setSelectedVariation(-1)
+      setSelectedVariation(0)
     }
   }, [allVariations.length, selectedVariation])
 

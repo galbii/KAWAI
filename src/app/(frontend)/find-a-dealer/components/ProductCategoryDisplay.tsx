@@ -1,17 +1,17 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-
-type DealerTypeFilter = 'all' | 'professional-products' | 'acoustic-digital'
+import type { DealerType } from './DealerTypeFilter'
 
 interface ProductCategoryDisplayProps {
-  dealerTypeFilter: DealerTypeFilter
+  dealerTypeFilter: DealerType
 }
 
-const productTexts = {
+const productTexts: Record<DealerType, string> = {
   'all': 'GRAND PIANOS  •  DIGITAL PIANOS  •  UPRIGHT PIANOS  •  HYBRID PIANOS  •  CONCERT  •  PROFESSIONAL  •  STAGE  •  STUDIO  •  ',
-  'professional-products': 'MP11SE & MP7SE STAGE PIANOS  •  VPC1 VIRTUAL PIANO CONTROLLER  •  CA/CN/DG/KDP DIGITAL PIANOS  •  ES SERIES PORTABLE PIANOS  •  PROFESSIONAL ACCESSORIES  •  ',
-  'acoustic-digital': 'GX BLAK & GL GRAND PIANOS  •  K SERIES PROFESSIONAL UPRIGHTS  •  NOVUS HYBRID PIANOS  •  AURES & ATX HYBRIDS  •  CA/CN/KDP/ES DIGITAL PIANOS  •  DESIGNER STUDIO & CONSOLE PIANOS  •  INSTITUTIONAL UPRIGHTS  •  ',
+  'shigeru': 'SHIGERU KAWAI SK SERIES  •  SK-EX CONCERT GRAND  •  SK-7 ARTIST GRAND  •  SK-5 PROFESSIONAL  •  SK-3 STUDIO GRAND  •  SK-2 CHAMBER GRAND  •  HANDCRAFTED PRECISION  •  ',
+  'acoustic': 'GX BLAK CONCERT GRANDS  •  GL GRAND SERIES  •  K PROFESSIONAL UPRIGHTS  •  ND DESIGNER SERIES  •  NOVUS HYBRID PIANOS  •  ANYTIME ATX & AURES SERIES  •  INSTITUTIONAL UPRIGHTS  •  ',
+  'professional': 'MP11SE STAGE PIANO  •  MP7SE STAGE PIANO  •  ES PORTABLE SERIES  •  VPC1 VIRTUAL CONTROLLER  •  CA CONCERT ARTIST  •  CN DIGITAL SERIES  •  KDP HOME DIGITAL  •  ',
 }
 
 export function ProductCategoryDisplay({ dealerTypeFilter }: ProductCategoryDisplayProps) {

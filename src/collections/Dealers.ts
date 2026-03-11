@@ -149,12 +149,12 @@ export const Dealers: CollectionConfig = {
       }
     },
     {
-      name: 'isOfficialStore',
-      type: 'checkbox',
-      defaultValue: false,
+      name: 'dealerIdentification',
+      type: 'text',
       admin: {
-        description: 'Mark as official KAWAI-owned store (vs. authorized dealer)',
-        position: 'sidebar'
+        description: 'Optional internal dealer ID or official records reference (e.g., "KW-2024-001")',
+        position: 'sidebar',
+        placeholder: 'KW-2024-001'
       }
     },
 
@@ -304,18 +304,27 @@ export const Dealers: CollectionConfig = {
           description: 'Operating hours, services, and additional information',
           fields: [
             {
-              name: 'dealerType',
-              type: 'select',
-              hasMany: true,
-              required: true,
-              options: [
-                { label: 'Professional Products', value: 'professional-products' },
-                { label: 'Acoustic and Digital Pianos', value: 'acoustic-digital' },
-              ],
-              defaultValue: ['acoustic-digital'],
+              name: 'shigeruKawaiDealer',
+              type: 'checkbox',
+              defaultValue: false,
               admin: {
-                description: 'Select the type(s) of products this dealer carries. Dealers can carry both types.',
-                isClearable: false,
+                description: 'Authorized to sell Shigeru Kawai SK Series grands'
+              }
+            },
+            {
+              name: 'acousticPianoDealer',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                description: 'Carries acoustic grand and upright pianos (GX BLAK, GL, K Series, etc.)'
+              }
+            },
+            {
+              name: 'professionalProductDealer',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                description: 'Carries professional products (MP stage pianos, ES portables, VPC1, etc.)'
               }
             },
 
@@ -388,42 +397,6 @@ export const Dealers: CollectionConfig = {
               ],
               admin: {
                 description: 'Business hours for each day of the week'
-              }
-            },
-
-            {
-              name: 'tags',
-              type: 'select',
-              hasMany: true,
-              options: [
-                { label: 'Authorized Dealer', value: 'authorized-dealer' },
-                { label: 'Full Service Center', value: 'full-service' },
-                { label: 'Grand Piano Specialist', value: 'grand-specialist' },
-                { label: 'Digital Piano Specialist', value: 'digital-specialist' },
-                { label: 'Piano Tuning Available', value: 'tuning' },
-                { label: 'Piano Repair', value: 'repair' },
-                { label: 'Piano Restoration', value: 'restoration' },
-                { label: 'Piano Moving', value: 'moving' },
-                { label: 'Rentals Available', value: 'rentals' },
-                { label: 'Financing Available', value: 'financing' },
-                { label: 'Trade-Ins Accepted', value: 'trade-ins' },
-                { label: 'Virtual Consultations', value: 'virtual-consult' },
-                { label: 'Education Programs', value: 'education' },
-                { label: 'Performance Venue', value: 'performance' },
-              ],
-              admin: {
-                description: 'Tags/categories to help customers find dealers with specific services (multi-select)',
-                isClearable: true,
-                isSortable: true
-              }
-            },
-
-            {
-              name: 'specialties',
-              type: 'textarea',
-              admin: {
-                description: 'Special services or unique features (displayed in dealer detail view)',
-                placeholder: 'e.g., "Concert piano rentals, Steinway-certified technicians, climate-controlled showroom"'
               }
             },
 

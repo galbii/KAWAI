@@ -36,9 +36,11 @@ interface Props {
   dealers: DealerWithDistance[]
   onSearch: (results: DealerWithDistance[], location?: { lat: number; lng: number }) => void
   onLocationSearch: (location: { lat: number; lng: number }, address: string) => void
+  /** 'floating' = frosted glass, dropdown above (default). 'inline' = minimal underline, dropdown below. */
+  variant?: 'floating' | 'inline'
 }
 
-export function SearchBar({ dealers, onSearch, onLocationSearch }: Props) {
+export function SearchBar({ dealers, onSearch, onLocationSearch, variant = 'floating' }: Props) {
   const [searchInput, setSearchInput] = useState('')
   const [locationPredictions, setLocationPredictions] = useState<NominatimResult[]>([])
   const [dealerResults, setDealerResults] = useState<SearchResult[]>([])
@@ -330,49 +332,95 @@ export function SearchBar({ dealers, onSearch, onLocationSearch }: Props) {
 
   const hasResults = dealerResults.length > 0 || locationPredictions.length > 0
 
+  const isInline = variant === 'inline'
+
   return (
     <div className="relative">
       {/* Search Input */}
-      <div
-        className="relative rounded-2xl shadow-lg border border-white/20"
-        style={{
-          background: 'rgba(255, 255, 255, 0.85)',
-          backdropFilter: 'blur(20px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-        }}
-      >
-        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" strokeWidth={2} />
-        <input
-          ref={inputRef}
-          type="text"
-          value={searchInput}
-          onChange={e => handleInputChange(e.target.value)}
-          onFocus={() => hasResults && setShowDropdown(true)}
-          placeholder="Search by name, address, city, state, or ZIP code"
-          className="w-full pl-14 pr-36 py-4 rounded-2xl bg-transparent focus:outline-none text-gray-900 placeholder:text-gray-400 font-medium text-sm"
-        />
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-          {searchInput && (
-            <button
-              onClick={handleClear}
-              className="p-1.5 hover:bg-gray-200/60 rounded-lg transition-colors"
-              aria-label="Clear search"
-            >
-              <X className="w-4 h-4 text-gray-500" strokeWidth={2} />
-            </button>
-          )}
-          <button
-            onClick={handleUseMyLocation}
-            disabled={isLocating}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-kawai-red hover:bg-kawai-red/8 rounded-lg transition-colors disabled:opacity-60"
+      {isInline ? (
+        /* Inline variant — prominent contained search in the sticky header */
+        <div className="relative">
+          <div
+            className={cn(
+              'flex items-center gap-2.5 h-10 px-4 rounded-lg border transition-all duration-200',
+              searchInput
+                ? 'bg-white border-kawai-charcoal shadow-sm'
+                : 'bg-kawai-pearl border-kawai-neutral hover:border-kawai-charcoal/50 hover:bg-white',
+            )}
           >
-            <Navigation className={cn('w-4 h-4', isLocating && 'animate-pulse')} strokeWidth={2} />
-            <span className="hidden sm:inline">{isLocating ? 'Locating…' : 'My Location'}</span>
-          </button>
+            <Search className="w-4 h-4 text-kawai-charcoal/50 flex-shrink-0" strokeWidth={2} />
+            <input
+              ref={inputRef}
+              type="text"
+              value={searchInput}
+              onChange={e => handleInputChange(e.target.value)}
+              onFocus={() => hasResults && setShowDropdown(true)}
+              placeholder="Search by city, name, or ZIP…"
+              className="flex-1 min-w-0 bg-transparent text-sm text-kawai-black placeholder:text-kawai-charcoal/40 focus:outline-none focus:ring-0 font-[family-name:var(--font-brand-sans)]"
+            />
+            {searchInput ? (
+              <button
+                onClick={handleClear}
+                className="flex-shrink-0 p-0.5 text-kawai-charcoal/50 hover:text-kawai-black transition-colors"
+                aria-label="Clear search"
+              >
+                <X className="w-3.5 h-3.5" strokeWidth={2} />
+              </button>
+            ) : (
+              <button
+                onClick={handleUseMyLocation}
+                disabled={isLocating}
+                className="flex-shrink-0 flex items-center gap-1 text-xs font-medium text-kawai-red hover:text-kawai-red/80 transition-colors disabled:opacity-60 font-[family-name:var(--font-brand-sans)] whitespace-nowrap"
+              >
+                <Navigation className={cn('w-3.5 h-3.5', isLocating && 'animate-pulse')} strokeWidth={2} />
+                <span>{isLocating ? 'Locating…' : 'Near Me'}</span>
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        /* Floating variant — frosted glass (default, used in mobile) */
+        <div
+          className="relative rounded-2xl shadow-lg border border-white/20"
+          style={{
+            background: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          }}
+        >
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" strokeWidth={2} />
+          <input
+            ref={inputRef}
+            type="text"
+            value={searchInput}
+            onChange={e => handleInputChange(e.target.value)}
+            onFocus={() => hasResults && setShowDropdown(true)}
+            placeholder="Search by name, address, city, state, or ZIP code"
+            className="w-full pl-14 pr-36 py-4 rounded-2xl bg-transparent focus:outline-none text-gray-900 placeholder:text-gray-400 font-medium text-sm"
+          />
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+            {searchInput && (
+              <button
+                onClick={handleClear}
+                className="p-1.5 hover:bg-gray-200/60 rounded-lg transition-colors"
+                aria-label="Clear search"
+              >
+                <X className="w-4 h-4 text-gray-500" strokeWidth={2} />
+              </button>
+            )}
+            <button
+              onClick={handleUseMyLocation}
+              disabled={isLocating}
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-kawai-red hover:bg-kawai-red/8 rounded-lg transition-colors disabled:opacity-60"
+            >
+              <Navigation className={cn('w-4 h-4', isLocating && 'animate-pulse')} strokeWidth={2} />
+              <span className="hidden sm:inline">{isLocating ? 'Locating…' : 'My Location'}</span>
+            </button>
+          </div>
+        </div>
+      )}
 
-      {/* Results Popup — slides up above the search bar */}
+      {/* Results Popup — above for floating, below for inline */}
       <AnimatePresence>
         {showDropdown && hasResults && (
           <>
@@ -384,16 +432,23 @@ export function SearchBar({ dealers, onSearch, onLocationSearch }: Props) {
 
             <motion.div
               key="dealer-results"
-              initial={{ opacity: 0, y: 12, scale: 0.98 }}
+              initial={{ opacity: 0, y: isInline ? -8 : 12, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 8, scale: 0.98 }}
+              exit={{ opacity: 0, y: isInline ? -4 : 8, scale: 0.98 }}
               transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute bottom-full left-0 right-0 mb-3 rounded-2xl border border-gray-200/60 z-20 overflow-hidden"
+              className={cn(
+                "absolute left-0 right-0 rounded-xl border border-gray-200/60 z-20 overflow-hidden",
+                isInline
+                  ? "top-full mt-2"
+                  : "bottom-full mb-3 rounded-2xl"
+              )}
               style={{
                 background: 'rgba(255, 255, 255, 0.97)',
                 backdropFilter: 'blur(24px) saturate(180%)',
                 WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-                boxShadow: '0 -4px 24px -4px rgba(0,0,0,0.12), 0 -2px 8px -2px rgba(0,0,0,0.08)',
+                boxShadow: isInline
+                  ? '0 8px 24px -4px rgba(0,0,0,0.12), 0 4px 8px -2px rgba(0,0,0,0.08)'
+                  : '0 -4px 24px -4px rgba(0,0,0,0.12), 0 -2px 8px -2px rgba(0,0,0,0.08)',
                 maxHeight: '60vh',
                 overflowY: 'auto',
               }}

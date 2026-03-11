@@ -251,7 +251,8 @@ export function trackWithConfig(
   }
 
   // Track to PostHog
-  if (!options.skipPostHog && posthog.__loaded) {
+  // posthog-js queues events internally until init completes — no need to guard on __loaded
+  if (!options.skipPostHog) {
     try {
       posthog.capture(eventName, eventData)
       if (options.debug) {

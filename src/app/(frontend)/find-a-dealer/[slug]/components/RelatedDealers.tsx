@@ -8,17 +8,11 @@ interface DealerInfo {
     state: string
   }
   distance: number
-  dealerType?: string[]
 }
 
 interface RelatedDealersProps {
   dealers: DealerInfo[]
   currentCity?: string | null
-}
-
-const DEALER_TYPE_LABELS: Record<string, string> = {
-  'professional-products': 'Professional Products',
-  'acoustic-digital': 'Acoustic & Digital',
 }
 
 export function RelatedDealers({ dealers, currentCity }: RelatedDealersProps) {
@@ -72,20 +66,6 @@ export function RelatedDealers({ dealers, currentCity }: RelatedDealersProps) {
                     {dealer.distance.toFixed(1)} miles away
                   </p>
                 </div>
-
-                {/* Dealer type tags */}
-                {dealer.dealerType && dealer.dealerType.length > 0 && (
-                  <div className="mb-4 flex flex-wrap gap-1.5">
-                    {dealer.dealerType.map((type) => (
-                      <span
-                        key={type}
-                        className="px-2 sm:px-3 py-1 bg-kawai-red/10 text-kawai-red text-xs font-medium rounded-full"
-                      >
-                        {DEALER_TYPE_LABELS[type] ?? type}
-                      </span>
-                    ))}
-                  </div>
-                )}
 
                 {/* CTA — matches homepage card footer */}
                 <div className="pt-3 sm:pt-4 border-t border-kawai-pearl mt-auto">

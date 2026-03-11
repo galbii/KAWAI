@@ -61,13 +61,16 @@ export interface NavCollection {
   subheading: string | null
   productCount: number
   pianoCategories?: string[] | null
+  bannerSize?: 'xxs' | 'xs' | 'small' | 'medium' | 'large' | 'fullscreen' | null
 }
 
 export interface ProductsNavigation {
   /** Products grouped by category for sidebar navigation */
   types: ProductTypeNav[]
-  /** Shopify collections for featured carousel */
+  /** Featured collections for the default carousel */
   collections?: NavCollection[]
+  /** All collections (used for category tab filtering) */
+  allCollections?: NavCollection[]
   /** Total number of active products */
   totalProducts: number
   /** Last updated timestamp */
@@ -498,18 +501,17 @@ export function getProductTypeSlug(type: string): string {
  *
  * @param limit - Maximum number of collections to return (default: 20)
  */
-export async function getNavCollections(limit: number = 20): Promise<NavCollection[]> {
+export async function getNavCollections(limit: number = 20, featuredOnly: boolean = true): Promise<NavCollection[]> {
   try {
     const payload = await getPayload({ config })
 
+    const where = featuredOnly
+      ? { and: [{ featured: { equals: true } }, { productCount: { greater_than: 0 } }] }
+      : { productCount: { greater_than: 0 } }
+
     const result = await payload.find({
       collection: 'collections',
-      where: {
-        and: [
-          { featured: { equals: true } },
-          { productCount: { greater_than: 0 } },
-        ],
-      },
+      where,
       select: {
         id: true,
         title: true,
@@ -522,6 +524,8 @@ export async function getNavCollections(limit: number = 20): Promise<NavCollecti
         heading: true,
         subheading: true,
         featured: true,
+        pianoCategories: true,
+        bannerSize: true,
       },
       sort: '-productCount',
       limit,
@@ -540,6 +544,8 @@ export async function getNavCollections(limit: number = 20): Promise<NavCollecti
       heading: col.heading ?? null,
       subheading: col.subheading ?? null,
       productCount: col.productCount ?? 0,
+      pianoCategories: (col.pianoCategories as string[] | null | undefined) ?? null,
+      bannerSize: (col.bannerSize as NavCollection['bannerSize']) ?? null,
     }))
   } catch (error) {
     console.error('[Payload Collections Navigation] Failed to fetch collections:', error)

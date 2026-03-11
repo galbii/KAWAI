@@ -1,58 +1,33 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
-import { X, Piano, Briefcase } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { X, Piano, Briefcase, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import type { Dealer } from '@/payload-types'
 import { cn } from '@/lib/utils'
-
-type DealerType = 'all' | 'professional-products' | 'acoustic-digital'
 
 interface Props {
   isOpen: boolean
   onClose: () => void
   selectedDealerTypes: string[]
-  selectedServices: string[]
   selectedRadius: number
-  onFilterChange: (dealerTypes: string[], services: string[], radius: number) => void
-  dealers: Dealer[]
+  onFilterChange: (dealerTypes: string[], radius: number) => void
 }
 
 export function FilterPanel({
   isOpen,
   onClose,
   selectedDealerTypes,
-  selectedServices,
   selectedRadius,
   onFilterChange,
-  dealers
 }: Props) {
   const [tempDealerTypes, setTempDealerTypes] = useState<string[]>(selectedDealerTypes)
-  const [tempServices, setTempServices] = useState<string[]>(selectedServices)
   const [tempRadius, setTempRadius] = useState(selectedRadius)
 
   // Update temp state when props change
   useEffect(() => {
     setTempDealerTypes(selectedDealerTypes)
-    setTempServices(selectedServices)
     setTempRadius(selectedRadius)
-  }, [selectedDealerTypes, selectedServices, selectedRadius])
-
-  // Get all unique service tags from dealers
-  const availableServices = useMemo(() => {
-    const servicesMap = new Map<string, number>()
-
-    dealers.forEach(dealer => {
-      dealer.tags?.forEach(tag => {
-        const tagStr = String(tag)
-        servicesMap.set(tagStr, (servicesMap.get(tagStr) || 0) + 1)
-      })
-    })
-
-    return Array.from(servicesMap.entries())
-      .map(([service, count]) => ({ service, count }))
-      .sort((a, b) => a.service.localeCompare(b.service))
-  }, [dealers])
+  }, [selectedDealerTypes, selectedRadius])
 
   const handleDealerTypeToggle = (type: string) => {
     setTempDealerTypes(prev =>
@@ -62,30 +37,44 @@ export function FilterPanel({
     )
   }
 
-  const handleServiceToggle = (service: string) => {
-    setTempServices(prev =>
-      prev.includes(service)
-        ? prev.filter(s => s !== service)
-        : [...prev, service]
-    )
-  }
-
   const handleApply = () => {
-    onFilterChange(tempDealerTypes, tempServices, tempRadius)
+    onFilterChange(tempDealerTypes, tempRadius)
     onClose()
   }
 
   const handleClearAll = () => {
     setTempDealerTypes([])
-    setTempServices([])
     setTempRadius(25)
   }
 
-  const formatServiceName = (service: string) => {
-    return service.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-  }
-
   if (!isOpen) return null
+
+  const dealerTypeOptions = [
+    {
+      value: 'shigeru',
+      label: 'Shigeru Kawai Dealer',
+      description: 'Authorized SK Series grand piano dealers',
+      icon: Star,
+      iconColor: 'text-kawai-gold',
+      bgColor: 'bg-kawai-gold/10',
+    },
+    {
+      value: 'acoustic',
+      label: 'Acoustic Piano Dealer',
+      description: 'Grand, upright & hybrid acoustic pianos',
+      icon: Piano,
+      iconColor: 'text-kawai-charcoal',
+      bgColor: 'bg-kawai-charcoal/10',
+    },
+    {
+      value: 'professional',
+      label: 'Professional Product Dealer',
+      description: 'Stage pianos, portables & professional gear',
+      icon: Briefcase,
+      iconColor: 'text-kawai-red',
+      bgColor: 'bg-kawai-red/10',
+    },
+  ]
 
   return (
     <>
@@ -119,49 +108,32 @@ export function FilterPanel({
                 Dealer Type
               </h3>
               <div className="space-y-2">
-                <label className="flex items-center gap-3 cursor-pointer group p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={tempDealerTypes.includes('acoustic-digital')}
-                    onChange={() => handleDealerTypeToggle('acoustic-digital')}
-                    className="w-4 h-4 rounded text-kawai-charcoal focus:ring-kawai-charcoal cursor-pointer"
-                  />
-                  <div className="flex items-center gap-2 flex-1">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-kawai-charcoal/10">
-                      <Piano className="w-4 h-4 text-kawai-charcoal" strokeWidth={2.5} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-700 group-hover:text-kawai-charcoal">
-                        Acoustic & Digital Pianos
+                {dealerTypeOptions.map(({ value, label, description, icon: Icon, iconColor, bgColor }) => (
+                  <label
+                    key={value}
+                    className="flex items-center gap-3 cursor-pointer group p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={tempDealerTypes.includes(value)}
+                      onChange={() => handleDealerTypeToggle(value)}
+                      className="w-4 h-4 rounded text-kawai-charcoal focus:ring-kawai-charcoal cursor-pointer"
+                    />
+                    <div className="flex items-center gap-2 flex-1">
+                      <div className={cn("flex items-center justify-center w-8 h-8 rounded-lg", bgColor)}>
+                        <Icon className={cn("w-4 h-4", iconColor)} strokeWidth={2.5} />
                       </div>
-                      <div className="text-xs text-gray-500">
-                        Grand, upright & home pianos
-                      </div>
-                    </div>
-                  </div>
-                </label>
-
-                <label className="flex items-center gap-3 cursor-pointer group p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={tempDealerTypes.includes('professional-products')}
-                    onChange={() => handleDealerTypeToggle('professional-products')}
-                    className="w-4 h-4 rounded text-kawai-red focus:ring-kawai-red cursor-pointer"
-                  />
-                  <div className="flex items-center gap-2 flex-1">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-kawai-red/10">
-                      <Briefcase className="w-4 h-4 text-kawai-red" strokeWidth={2.5} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-700 group-hover:text-kawai-charcoal">
-                        Professional Products
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Stage pianos, keyboards & pro gear
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-gray-700 group-hover:text-kawai-charcoal">
+                          {label}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {description}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </label>
+                  </label>
+                ))}
               </div>
             </div>
 
@@ -186,34 +158,6 @@ export function FilterPanel({
                     />
                     <span className="text-sm text-gray-700 group-hover:text-kawai-charcoal">
                       Within {radius} miles
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Service Filters */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                Services & Features
-              </h3>
-              <div className="space-y-2">
-                {availableServices.map(({ service, count }) => (
-                  <label
-                    key={service}
-                    className="flex items-center gap-3 cursor-pointer group"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={tempServices.includes(service)}
-                      onChange={() => handleServiceToggle(service)}
-                      className="w-4 h-4 rounded text-kawai-red focus:ring-kawai-red cursor-pointer"
-                    />
-                    <span className="flex-1 text-sm text-gray-700 group-hover:text-kawai-charcoal">
-                      {formatServiceName(service)}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      ({count})
                     </span>
                   </label>
                 ))}

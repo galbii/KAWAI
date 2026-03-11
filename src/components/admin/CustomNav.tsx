@@ -244,18 +244,23 @@ function BotAction({
   )
 }
 
-// ── K-badge SVG ────────────────────────────────────────────────────────────
-function KBadge({ size = 36 }: { size?: number | undefined }) {
+// ── Piano logo badge ───────────────────────────────────────────────────────
+// Uses the circular KAWAI piano icon from /public/
+const PIANO_LOGO_SRC = '/ChatGPT%20Image%20Sep%209%2C%202025%2C%2003_13_02%20PM%20copy%202.png'
+
+function PianoLogo({ size = 36 }: { size?: number | undefined }) {
   return (
     <div style={{
-      width: size, height: size, borderRadius: 9, background: t.red, flexShrink: 0,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      width: size, height: size, borderRadius: '50%', flexShrink: 0,
+      overflow: 'hidden', background: 'white',
+      boxShadow: '0 0 0 1.5px rgba(196,30,58,0.35), 0 2px 8px rgba(0,0,0,0.4)',
     }}>
-      <svg width={Math.round(size * 0.53)} height={Math.round(size * 0.53)} viewBox="0 0 20 20" fill="none">
-        <rect x="3" y="2" width="3" height="16" rx="1" fill="white" />
-        <path d="M6 10 L15 2 L18 2 L9 10" fill="white" />
-        <path d="M9 10 L18 18 L15 18 L6 10" fill="white" />
-      </svg>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={PIANO_LOGO_SRC}
+        alt="Kawai"
+        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+      />
     </div>
   )
 }
@@ -347,13 +352,15 @@ export function CustomNav() {
           style={{
             display: 'flex', alignItems: 'center',
             height: 60, padding: '0 12px', gap: 10,
-            borderBottom: `1px solid ${t.line}`, flexShrink: 0,
-            background: 'none', border: 'none', cursor: 'pointer',
+            flexShrink: 0,
+            // border shorthand first, then borderBottom override to show divider
+            border: 'none', borderBottom: `1px solid ${t.line}`,
+            background: 'none', cursor: 'pointer',
             width: '100%', textAlign: 'left',
             justifyContent: !isExpanded ? 'center' : 'flex-start',
           }}
         >
-          <KBadge size={34} />
+          <PianoLogo size={34} />
           {isExpanded && (
             <div style={{ minWidth: 0, overflow: 'hidden', flex: 1 }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: t.high, letterSpacing: '0.05em', lineHeight: 1.2 }}>KAWAI</div>
@@ -368,7 +375,7 @@ export function CustomNav() {
         </button>
 
         {/* ── Primary Nav ─────────────────────────────────────────────── */}
-        <nav style={{ flex: 1, overflowY: 'auto', overflowX: 'visible', padding: '10px 0' }}>
+        <nav style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '10px 0' }}>
           {PRIMARY.map(item => (
             <NavRow key={item.slug} item={item} active={isActive(item)} collapsed={!isExpanded} />
           ))}

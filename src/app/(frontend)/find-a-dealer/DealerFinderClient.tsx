@@ -1,69 +1,43 @@
 'use client'
 
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import type { Dealer } from '@/payload-types'
 import type { DealerWithDistance } from './types'
 import { DealerMapLibre } from './components/DealerMapLibre'
 import { DealerList } from './components/DealerList'
 import { SearchBar } from './components/SearchBar'
 import { FilterPanel } from './components/FilterPanel'
-import { MobileViewToggle } from './components/MobileViewToggle'
 import { DealerTypeFilter } from './components/DealerTypeFilter'
+import type { DealerType } from './components/DealerTypeFilter'
 import { VideoHero } from './components/VideoHero'
 import { DealerFinderMobile } from './components/DealerFinderMobile'
 import { ProductCategoryDisplay } from './components/ProductCategoryDisplay'
 import { cn } from '@/lib/utils'
 import { calculateDistance } from '@/lib/utils/dealer-search'
-import { MapPin, SlidersHorizontal, Star } from 'lucide-react'
+import { MapPin, SlidersHorizontal } from 'lucide-react'
 import './components/animations.css'
 
 interface Props {
   dealers: DealerWithDistance[]
 }
 
-type DealerTypeFilter = 'all' | 'professional-products' | 'acoustic-digital'
-
 export function DealerFinderClient({ dealers }: Props) {
   const [searchLocation, setSearchLocation] = useState<{ lat: number; lng: number } | null>(null)
-  const [searchAddress, setSearchAddress] = useState<string>('')
   const [selectedRadius, setSelectedRadius] = useState(25)
   const [selectedDealerTypes, setSelectedDealerTypes] = useState<string[]>([])
-  const [selectedServices, setSelectedServices] = useState<string[]>([])
   const [selectedDealer, setSelectedDealer] = useState<string | null>(null)
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const [mobileView, setMobileView] = useState<'map' | 'list'>('map')
-  const [isMobile, setIsMobile] = useState(false)
-  const [dealerTypeFilter, setDealerTypeFilter] = useState<DealerTypeFilter>('all')
-  const [showOfficialOnly, setShowOfficialOnly] = useState(false)
+  const [dealerTypeFilter, setDealerTypeFilter] = useState<DealerType>('all')
   const [searchResults, setSearchResults] = useState<DealerWithDistance[]>([])
-
-  // Detect mobile screen size
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024)
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
 
   // Calculate dealer type counts
   const dealerCounts = useMemo(() => {
-    const counts = {
-      all: dealers.length,
-      'professional-products': 0,
-      'acoustic-digital': 0,
-    }
-
+    const counts = { all: dealers.length, shigeru: 0, acoustic: 0, professional: 0 }
     dealers.forEach(dealer => {
-      if (dealer.dealerType?.includes('professional-products')) {
-        counts['professional-products']++
-      }
-      if (dealer.dealerType?.includes('acoustic-digital')) {
-        counts['acoustic-digital']++
-      }
+      if (dealer.shigeruKawaiDealer) counts.shigeru++
+      if (dealer.acousticPianoDealer) counts.acoustic++
+      if (dealer.professionalProductDealer) counts.professional++
     })
-
     return counts
   }, [dealers])
 
@@ -74,31 +48,24 @@ export function DealerFinderClient({ dealers }: Props) {
       ? searchResults.map(dealer => ({ ...dealer }))
       : dealers.map(dealer => ({ ...dealer }))
 
-    // Filter by official stores only if enabled
-    if (showOfficialOnly) {
-      result = result.filter(dealer => dealer.isOfficialStore === true)
-    }
-
-    // Filter by dealer type
-    if (dealerTypeFilter !== 'all') {
-      result = result.filter(dealer =>
-        dealer.dealerType?.includes(dealerTypeFilter)
-      )
+    // Filter by dealer type pill
+    if (dealerTypeFilter === 'shigeru') {
+      result = result.filter(dealer => dealer.shigeruKawaiDealer === true)
+    } else if (dealerTypeFilter === 'acoustic') {
+      result = result.filter(dealer => dealer.acousticPianoDealer === true)
+    } else if (dealerTypeFilter === 'professional') {
+      result = result.filter(dealer => dealer.professionalProductDealer === true)
     }
 
     // Apply advanced filters (from filter panel)
     if (selectedDealerTypes.length > 0) {
       result = result.filter(dealer =>
-        selectedDealerTypes.some(type =>
-          dealer.dealerType?.includes(type as 'professional-products' | 'acoustic-digital')
-        )
-      )
-    }
-
-    // Filter by services if any selected
-    if (selectedServices.length > 0) {
-      result = result.filter(dealer =>
-        dealer.tags?.some(tag => selectedServices.includes(tag as string))
+        selectedDealerTypes.some(type => {
+          if (type === 'shigeru') return dealer.shigeruKawaiDealer === true
+          if (type === 'acoustic') return dealer.acousticPianoDealer === true
+          if (type === 'professional') return dealer.professionalProductDealer === true
+          return false
+        })
       )
     }
 
@@ -136,11 +103,10 @@ export function DealerFinderClient({ dealers }: Props) {
     }
 
     return result
-  }, [dealers, searchResults, dealerTypeFilter, selectedDealerTypes, selectedServices, showOfficialOnly, searchLocation])
+  }, [dealers, searchResults, dealerTypeFilter, selectedDealerTypes, searchLocation])
 
-  const handleLocationSearch = useCallback((location: { lat: number; lng: number }, address: string) => {
+  const handleLocationSearch = useCallback((location: { lat: number; lng: number }, _address: string) => {
     setSearchLocation(location)
-    setSearchAddress(address)
   }, [])
 
   const handleDealerSelect = useCallback((dealerId: string | null) => {
@@ -158,24 +124,18 @@ export function DealerFinderClient({ dealers }: Props) {
       const firstResult = results[0]
       if (firstResult && firstResult.id) {
         handleDealerSelect(firstResult.id as string)
-
-        // On mobile, switch to map view to show the selected dealer
-        if (isMobile) {
-          setMobileView('map')
-        }
       }
     } else {
       handleDealerSelect(null)
     }
-  }, [handleDealerSelect, isMobile])
+  }, [handleDealerSelect])
 
-  const handleFilterChange = useCallback((dealerTypes: string[], services: string[], radius: number) => {
+  const handleFilterChange = useCallback((dealerTypes: string[], radius: number) => {
     setSelectedDealerTypes(dealerTypes)
-    setSelectedServices(services)
     setSelectedRadius(radius)
   }, [])
 
-  const activeFilterCount = selectedDealerTypes.length + selectedServices.length + (selectedRadius !== 25 ? 1 : 0)
+  const activeFilterCount = selectedDealerTypes.length + (selectedRadius !== 25 ? 1 : 0)
 
   return (
     <>
@@ -191,108 +151,81 @@ export function DealerFinderClient({ dealers }: Props) {
       <DealerFinderMobile dealers={dealers} />
 
       {/* Desktop View - Shows at lg breakpoint and above */}
-      <div className="hidden lg:block min-h-screen bg-white" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
-        {/* Hero Section with Video Background - First */}
+      <div className="hidden lg:block bg-white" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
+        {/* Sticky Filter Bar — sits immediately under main nav */}
+        <div
+          className="sticky z-40 bg-white border-b border-kawai-neutral shadow-sm"
+          style={{ top: 'var(--header-bottom, 70px)' }}
+        >
+          {/* Scrolling product ticker */}
+          <div className="border-b border-kawai-neutral/40">
+            <div className="max-w-7xl mx-auto px-6">
+              <ProductCategoryDisplay dealerTypeFilter={dealerTypeFilter} />
+            </div>
+          </div>
+
+          {/* Tabs + Search + Filters row */}
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex items-center h-16 gap-0">
+              {/* Dealer type tabs */}
+              <DealerTypeFilter
+                selected={dealerTypeFilter}
+                onChange={setDealerTypeFilter}
+                counts={dealerCounts}
+              />
+
+              {/* Push right */}
+              <div className="flex-1" />
+
+              {/* Prominent search input */}
+              <div className="w-96 mr-5">
+                <SearchBar
+                  dealers={dealers}
+                  onSearch={handleSearch}
+                  onLocationSearch={handleLocationSearch}
+                  variant="inline"
+                />
+              </div>
+
+              {/* Results count */}
+              <span className="text-sm text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] whitespace-nowrap mr-5">
+                {filteredDealers.length} {filteredDealers.length === 1 ? 'dealer' : 'dealers'}
+              </span>
+
+              {/* Filters button */}
+              <button
+                onClick={() => setFiltersOpen(true)}
+                className={cn(
+                  "flex items-center gap-2 h-16 px-5 text-sm uppercase tracking-[0.08em] font-medium border-b-2",
+                  "font-[family-name:var(--font-brand-sans)] transition-colors -mb-px",
+                  "focus-visible:outline-2 focus-visible:outline-kawai-red",
+                  activeFilterCount > 0
+                    ? "text-kawai-red border-kawai-red"
+                    : "text-kawai-charcoal/60 border-transparent hover:text-kawai-black hover:border-kawai-charcoal/30"
+                )}
+              >
+                <SlidersHorizontal className="w-4 h-4" strokeWidth={2} />
+                <span>Filters</span>
+                {activeFilterCount > 0 && (
+                  <span className="text-xs font-bold tabular-nums">{activeFilterCount}</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Hero Section — below the sticky filter bar */}
         <VideoHero
           youtubeVideoId="VrveoooxIno"
           title="Find an Authorized Dealer"
           description="Discover expert KAWAI dealers near you for personalized consultations, showroom visits, and exceptional service."
         />
 
-        {/* Filters Section */}
-        <div className="bg-gray-50 border-b border-gray-100">
-          <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            {/* Mobile View Toggle */}
-            {isMobile && (
-              <div className="flex justify-end mb-4">
-                <MobileViewToggle
-                  view={mobileView}
-                  onViewChange={setMobileView}
-                  dealerCount={filteredDealers.length}
-                />
-              </div>
-            )}
-
-            {/* Product Category Display */}
-            <div className="mb-5">
-              <ProductCategoryDisplay dealerTypeFilter={dealerTypeFilter} />
-            </div>
-
-            {/* Dealer Type Filter Pills */}
-            <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
-              <div className="flex items-center gap-3">
-                <DealerTypeFilter
-                  selected={dealerTypeFilter}
-                  onChange={setDealerTypeFilter}
-                  counts={dealerCounts}
-                />
-
-                {/* Official Stores Only Toggle */}
-                <button
-                  onClick={() => setShowOfficialOnly(!showOfficialOnly)}
-                  className={cn(
-                    "group relative px-5 py-3 rounded-full transition-all duration-300",
-                    "border-2 font-medium text-sm",
-                    "hover:scale-[1.02] active:scale-[0.98]",
-                    showOfficialOnly
-                      ? "bg-gradient-to-br from-yellow-400 to-amber-500 border-yellow-400 text-white shadow-lg shadow-yellow-400/30"
-                      : "bg-white border-gray-200 text-gray-700 hover:border-yellow-400/50 hover:shadow-md"
-                  )}
-                >
-                  <div className="flex items-center gap-2">
-                    <Star
-                      className={cn(
-                        "w-4 h-4 transition-colors",
-                        showOfficialOnly ? "text-white fill-white" : "text-yellow-500"
-                      )}
-                      strokeWidth={2}
-                    />
-                    <span>Official Stores Only</span>
-                  </div>
-                </button>
-              </div>
-
-              {/* Advanced Filters Button */}
-              <button
-                onClick={() => setFiltersOpen(true)}
-                className={cn(
-                  "flex items-center gap-2 px-5 py-3 rounded-xl font-medium text-sm transition-all",
-                  "border-2 hover:scale-[1.02] active:scale-[0.98]",
-                  activeFilterCount > 0
-                    ? "bg-kawai-red border-kawai-red text-white shadow-lg shadow-kawai-red/20"
-                    : "bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md"
-                )}
-              >
-                <SlidersHorizontal className="w-4 h-4" strokeWidth={2} />
-                <span className="hidden sm:inline">More Filters</span>
-                {activeFilterCount > 0 && (
-                  <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-white/20 text-xs font-semibold">
-                    {activeFilterCount}
-                  </span>
-                )}
-              </button>
-            </div>
-
-            {/* Results Count */}
-            {(dealerTypeFilter !== 'all' || activeFilterCount > 0) && (
-              <div className="text-sm text-gray-600 text-center">
-                <span className="font-semibold text-kawai-charcoal">
-                  {filteredDealers.length}
-                </span>
-                {' '}{filteredDealers.length === 1 ? 'dealer' : 'dealers'} found
-              </div>
-            )}
-          </div>
-        </div>
-
         {/* Main Content - Map and List */}
-        <div className="flex" style={{ height: 'calc(100vh - 64px)' }}>
+        <div className="flex" style={{ height: 'calc(100vh - var(--header-bottom, 70px) - 122px)', minHeight: '600px' }}>
           {/* Dealer List Panel */}
           <div
-            className={cn(
-              "border-r border-gray-200 overflow-y-auto bg-gray-50 h-full",
-              isMobile ? (mobileView === 'list' ? 'w-full' : 'hidden') : 'w-2/5'
-            )}
+            className="border-r border-gray-200 overflow-y-auto bg-gray-50 h-full w-1/3"
           >
             {filteredDealers.length > 0 ? (
               <DealerList
@@ -316,7 +249,6 @@ export function DealerFinderClient({ dealers }: Props) {
                       onClick={() => {
                         setDealerTypeFilter('all')
                         setSelectedDealerTypes([])
-                        setSelectedServices([])
                         setSelectedRadius(25)
                         setSearchResults([])
                       }}
@@ -330,12 +262,7 @@ export function DealerFinderClient({ dealers }: Props) {
           </div>
 
           {/* Map Panel */}
-          <div
-            className={cn(
-              "relative bg-gray-100",
-              isMobile ? (mobileView === 'map' ? 'w-full' : 'hidden') : 'w-3/5'
-            )}
-          >
+          <div className="relative bg-gray-100 w-2/3">
             <DealerMapLibre
               dealers={filteredDealers}
               searchCenter={searchLocation}
@@ -351,22 +278,10 @@ export function DealerFinderClient({ dealers }: Props) {
           isOpen={filtersOpen}
           onClose={() => setFiltersOpen(false)}
           selectedDealerTypes={selectedDealerTypes}
-          selectedServices={selectedServices}
           selectedRadius={selectedRadius}
           onFilterChange={handleFilterChange}
-          dealers={dealers}
         />
 
-        {/* Floating Search Bar at Bottom */}
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-3xl px-4">
-          <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50">
-            <SearchBar
-              dealers={dealers}
-              onSearch={handleSearch}
-              onLocationSearch={handleLocationSearch}
-            />
-          </div>
-        </div>
       </div>
     </>
   )

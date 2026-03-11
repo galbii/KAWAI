@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import type { Dealer } from '@/payload-types'
 import type { DealerWithDistance } from '../types'
-import { MapPin, Phone, ExternalLink, Star, Piano, Briefcase, ArrowRight, Info } from 'lucide-react'
+import { MapPin, Phone, ExternalLink, Piano, Briefcase, Star, ArrowRight, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { trackCTAClick } from '@/lib/analytics/unified-tracking'
 
@@ -22,8 +22,9 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
     return day.charAt(0).toUpperCase() + day.slice(1, 3)
   }
 
-  const hasProfessionalProducts = dealer.dealerType?.includes('professional-products')
-  const hasAcousticDigital = dealer.dealerType?.includes('acoustic-digital')
+  const hasShigeru = dealer.shigeruKawaiDealer === true
+  const hasAcoustic = dealer.acousticPianoDealer === true
+  const hasProfessional = dealer.professionalProductDealer === true
 
   return (
     <div
@@ -32,8 +33,7 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
         isSelected
           ? "border-kawai-charcoal shadow-lg"
           : "border-gray-200 hover:border-gray-300 hover:shadow-md",
-        // Official store styling
-        dealer.isOfficialStore && [
+        hasShigeru && [
           "border-l-4 border-l-kawai-gold",
           !isSelected && "hover:shadow-[0_12px_24px_rgba(212,175,55,0.2),0_0_0_2px_rgba(212,175,55,0.3)]"
         ]
@@ -47,16 +47,16 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
     >
 
       {/* Header */}
-      <div className="p-6">
-        <div className="flex items-start justify-between gap-4 mb-4">
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold text-kawai-charcoal leading-tight mb-2">
+            <h3 className="text-base font-semibold text-kawai-charcoal leading-tight mb-1.5">
               {dealer.dealerName}
             </h3>
 
             {/* Location */}
             {dealer.address && (
-              <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+              <div className="flex items-center gap-1.5 text-sm text-gray-600 mb-2.5">
                 <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" strokeWidth={2} />
                 <span>
                   {dealer.address.city}, {dealer.address.state}
@@ -65,22 +65,22 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
             )}
 
             {/* Dealer Type Badges */}
-            <div className="flex flex-wrap gap-2">
-              {dealer.isOfficialStore && (
-                <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-kawai-gold/10 text-kawai-gold text-xs font-semibold rounded-md border border-kawai-gold/20">
+            <div className="flex flex-wrap gap-1.5">
+              {hasShigeru && (
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-kawai-gold/10 text-kawai-gold text-xs font-semibold rounded-md border border-kawai-gold/20">
                   <Star className="w-3 h-3" fill="currentColor" strokeWidth={0} />
-                  <span>Official KAWAI Store</span>
+                  <span>Shigeru Kawai</span>
                 </div>
               )}
-              {hasAcousticDigital && (
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-md">
-                  <Piano className="w-3.5 h-3.5" strokeWidth={2} />
-                  <span>Acoustic & Digital</span>
+              {hasAcoustic && (
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-md">
+                  <Piano className="w-3 h-3" strokeWidth={2} />
+                  <span>Acoustic Piano</span>
                 </div>
               )}
-              {hasProfessionalProducts && (
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-md">
-                  <Briefcase className="w-3.5 h-3.5" strokeWidth={2} />
+              {hasProfessional && (
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-md">
+                  <Briefcase className="w-3 h-3" strokeWidth={2} />
                   <span>Professional</span>
                 </div>
               )}
@@ -90,7 +90,7 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
           {/* Featured Badge */}
           {dealer.isFeatured && (
             <div className="flex-shrink-0">
-              <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-kawai-gold/10 text-kawai-gold text-xs font-semibold rounded-md border border-kawai-gold/20">
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-kawai-gold/10 text-kawai-gold text-xs font-semibold rounded-md border border-kawai-gold/20">
                 <Star className="w-3 h-3" fill="currentColor" strokeWidth={0} />
                 Featured
               </div>
@@ -100,7 +100,7 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
 
         {/* Distance Badge */}
         {dealer.distance !== undefined && (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-kawai-red/5 text-kawai-red text-sm font-medium rounded-lg border border-kawai-red/10">
+          <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-kawai-red/5 text-kawai-red text-xs font-medium rounded-lg border border-kawai-red/10">
             <div className="w-1.5 h-1.5 rounded-full bg-kawai-red" />
             {dealer.distance.toFixed(1)} miles away
           </div>
@@ -108,16 +108,16 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
       </div>
 
       {/* Quick Actions */}
-      <div className="px-6 pb-6">
+      <div className="px-4 pb-4">
         <div className="flex items-center gap-2">
           {dealer.contactInfo?.phone && (
             <a
               href={`tel:${dealer.contactInfo.phone}`}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-kawai-charcoal bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-kawai-charcoal bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
               onClick={(e) => e.stopPropagation()}
             >
-              <Phone className="w-4 h-4" strokeWidth={2} />
-              <span className="hidden sm:inline">Call</span>
+              <Phone className="w-3.5 h-3.5" strokeWidth={2} />
+              <span>Call</span>
             </a>
           )}
 
@@ -132,11 +132,11 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
                 destination: `/find-a-dealer/${dealer.slug}`,
               })
             }}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-kawai-red hover:bg-kawai-red/90 rounded-lg transition-all duration-200 group"
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-white bg-kawai-red hover:bg-kawai-red/90 rounded-lg transition-all duration-200 group"
           >
-            <Info className="w-4 h-4" strokeWidth={2} />
-            <span className="hidden sm:inline">View Details</span>
-            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
+            <Info className="w-3.5 h-3.5" strokeWidth={2} />
+            <span>View Details</span>
+            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
           </Link>
         </div>
       </div>
@@ -244,25 +244,6 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
               <p className="text-sm text-gray-700 leading-relaxed">
                 {dealer.description}
               </p>
-            </div>
-          )}
-
-          {/* Services */}
-          {dealer.tags && dealer.tags.length > 0 && (
-            <div>
-              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                Services
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {dealer.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center px-2.5 py-1 text-xs font-medium bg-white text-gray-700 rounded-md border border-gray-200"
-                  >
-                    {String(tag).replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                  </span>
-                ))}
-              </div>
             </div>
           )}
 
