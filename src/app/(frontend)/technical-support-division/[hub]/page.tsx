@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import {
   getFaqsByHub,
@@ -156,28 +155,35 @@ export default async function HubPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
-      <div className="min-h-screen bg-kawai-pearl">
-        <section className="bg-kawai-black text-white pt-28 pb-12 md:pt-32 md:pb-16">
-          <div className="max-w-3xl mx-auto px-6">
-            <Link
-              href="/technical-support-division"
-              className="inline-flex items-center gap-1.5 text-white/30 hover:text-white/60 transition-colors duration-200 text-xs font-[family-name:var(--font-brand-sans)] mb-10"
-            >
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
-              Support Center
-            </Link>
+      <div className="min-h-screen bg-kawai-black">
+        <section className="relative bg-kawai-black text-white pt-36 pb-24 md:pt-48 md:pb-32 overflow-hidden">
+          {/* Ghost heading backdrop */}
+          <div aria-hidden className="absolute inset-0 flex items-end justify-end pointer-events-none select-none overflow-hidden">
+            <span className="text-[22vw] font-bold leading-none text-white/[0.018] font-[family-name:var(--font-brand-sans)] translate-y-[15%] translate-x-[5%]">
+              TSD
+            </span>
+          </div>
 
-            <p className="text-[11px] text-kawai-red tracking-[0.35em] uppercase font-medium mb-5 font-[family-name:var(--font-brand-sans)]">
-              {hubName}
-            </p>
+          <div className="relative max-w-7xl mx-auto px-8 md:px-12">
+            <div className="flex items-center gap-4 mb-10">
+              <div className="h-px w-10 bg-kawai-red/50" />
+              <p className="text-[10px] text-kawai-red/80 tracking-[0.5em] uppercase font-semibold font-[family-name:var(--font-brand-sans)]">
+                {hubName}
+              </p>
+            </div>
 
-            <h1 className="font-[family-name:var(--font-brand-serif)] font-light text-4xl md:text-5xl lg:text-6xl text-white leading-tight mb-10">
+            <h1 className="font-[family-name:var(--font-brand-serif)] font-light text-6xl md:text-7xl lg:text-[6rem] xl:text-[7rem] text-white leading-[0.95] tracking-tight mb-16 max-w-4xl">
               {hubHeading}
             </h1>
 
-            <FaqSearch variant="hero" placeholder={`Search ${hubName} questions…`} />
+            <div className="max-w-2xl">
+              <FaqSearch
+                variant="hero"
+                placeholder={`Search ${hubName} questions…`}
+                backHref="/technical-support-division"
+                backLabel="Support Center"
+              />
+            </div>
           </div>
         </section>
 

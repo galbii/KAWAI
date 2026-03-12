@@ -11,7 +11,7 @@ interface Props {
 
 export function MobileViewToggle({ view, onViewChange, dealerCount }: Props) {
   return (
-    <div className="px-4 py-3 bg-white border-b border-gray-200">
+    <div className="px-4 py-3 bg-white border-b border-kawai-neutral">
       <div className="flex gap-2">
         <button
           onClick={() => onViewChange('map')}
@@ -19,7 +19,7 @@ export function MobileViewToggle({ view, onViewChange, dealerCount }: Props) {
             "flex-1 py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2",
             view === 'map'
               ? "bg-kawai-red text-white shadow-sm"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              : "bg-kawai-neutral/40 text-kawai-charcoal hover:bg-kawai-neutral/60"
           )}
         >
           <Map className="w-4 h-4" />
@@ -32,7 +32,7 @@ export function MobileViewToggle({ view, onViewChange, dealerCount }: Props) {
             "flex-1 py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2",
             view === 'list'
               ? "bg-kawai-red text-white shadow-sm"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              : "bg-kawai-neutral/40 text-kawai-charcoal hover:bg-kawai-neutral/60"
           )}
         >
           <List className="w-4 h-4" />

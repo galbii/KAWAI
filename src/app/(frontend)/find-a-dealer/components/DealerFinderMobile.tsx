@@ -146,10 +146,10 @@ export function DealerFinderMobile({ dealers }: Props) {
   }, [selectedDealer, filteredDealers])
 
   return (
-    <div className="lg:hidden bg-gray-50" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
+    <div className="lg:hidden bg-kawai-pearl/30">
       {/* Sticky Filter Header — sticks under main nav, mirrors desktop pattern */}
       <div
-        className="sticky z-30 bg-white border-b border-gray-200/80 shadow-sm"
+        className="sticky z-30 bg-white border-b border-kawai-neutral/60 shadow-sm"
         style={{ top: 'var(--header-bottom, 70px)' }}
       >
         {/* Dealer Type Tabs - Horizontal Scroll */}
@@ -189,8 +189,8 @@ export function DealerFinderMobile({ dealers }: Props) {
         </div>
 
         {/* Filters Bar */}
-        <div className="flex items-center justify-between px-4 py-3 bg-gray-50/50 border-t border-gray-200/50">
-          <div className="text-sm text-gray-600">
+        <div className="flex items-center justify-between px-4 py-3 bg-kawai-pearl/30 border-t border-kawai-neutral/40">
+          <div className="text-sm text-kawai-charcoal/60">
             <span className="font-semibold text-kawai-charcoal">{filteredDealers.length}</span>
             {' '}{filteredDealers.length === 1 ? 'dealer' : 'dealers'}
           </div>
@@ -202,7 +202,7 @@ export function DealerFinderMobile({ dealers }: Props) {
               "border-2 active:scale-95",
               activeFilterCount > 0
                 ? "bg-kawai-red border-kawai-red text-white shadow-lg shadow-kawai-red/20"
-                : "bg-white border-gray-200 text-gray-700"
+                : "bg-white border-kawai-neutral text-kawai-charcoal"
             )}
           >
             <SlidersHorizontal className="w-4 h-4" strokeWidth={2} />
@@ -240,7 +240,7 @@ export function DealerFinderMobile({ dealers }: Props) {
         {/* List View */}
         <div
           className={cn(
-            "absolute inset-0 overflow-y-auto bg-gray-50 transition-transform duration-300 ease-out",
+            "absolute inset-0 overflow-y-auto bg-kawai-pearl/30 transition-transform duration-300 ease-out",
             viewMode === 'list' ? "translate-x-0" : "-translate-x-full"
           )}
         >
@@ -258,13 +258,13 @@ export function DealerFinderMobile({ dealers }: Props) {
           ) : (
             <div className="flex items-center justify-center h-full p-8">
               <div className="text-center max-w-sm">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gray-100 flex items-center justify-center">
-                  <MapPin className="w-8 h-8 text-gray-400" strokeWidth={1.5} />
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-kawai-neutral/40 flex items-center justify-center">
+                  <MapPin className="w-8 h-8 text-kawai-charcoal/30" strokeWidth={1.5} />
                 </div>
                 <h3 className="text-lg font-semibold text-kawai-charcoal mb-2">
                   No dealers found
                 </h3>
-                <p className="text-gray-600 text-sm mb-6">
+                <p className="text-kawai-charcoal/60 text-sm mb-6">
                   Try adjusting your filters or search in a different area.
                 </p>
                 <button
@@ -287,7 +287,7 @@ export function DealerFinderMobile({ dealers }: Props) {
 
       {/* Floating Search Bar - Above Bottom Navigation */}
       <div className="fixed bottom-24 left-0 right-0 z-40 px-4">
-        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50">
+        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-kawai-neutral/50">
           <SearchBar
             dealers={dealers}
             onSearch={handleDealerSearch}
@@ -299,7 +299,7 @@ export function DealerFinderMobile({ dealers }: Props) {
       {/* Floating Bottom Navigation - Premium Touch Target */}
       <div className="fixed bottom-0 left-0 right-0 z-40 pb-safe">
         <div className="mx-4 mb-4">
-          <div className="bg-white rounded-2xl shadow-2xl border border-gray-200/80 overflow-hidden backdrop-blur-xl">
+          <div className="bg-white rounded-2xl shadow-2xl border border-kawai-neutral/60 overflow-hidden backdrop-blur-xl">
             <div className="flex">
               <button
                 onClick={() => setViewMode('map')}
@@ -307,14 +307,14 @@ export function DealerFinderMobile({ dealers }: Props) {
                   "flex-1 flex items-center justify-center gap-2 py-4 font-semibold text-sm transition-all duration-200",
                   viewMode === 'map'
                     ? "bg-kawai-charcoal text-white"
-                    : "bg-white text-gray-600 active:bg-gray-50"
+                    : "bg-white text-kawai-charcoal/60 active:bg-kawai-pearl/30"
                 )}
               >
                 <Map className="w-5 h-5" strokeWidth={2.5} />
                 <span>Map</span>
               </button>
 
-              <div className="w-px bg-gray-200" />
+              <div className="w-px bg-kawai-neutral" />
 
               <button
                 onClick={() => setViewMode('list')}
@@ -322,7 +322,7 @@ export function DealerFinderMobile({ dealers }: Props) {
                   "flex-1 flex items-center justify-center gap-2 py-4 font-semibold text-sm transition-all duration-200",
                   viewMode === 'list'
                     ? "bg-kawai-charcoal text-white"
-                    : "bg-white text-gray-600 active:bg-gray-50"
+                    : "bg-white text-kawai-charcoal/60 active:bg-kawai-pearl/30"
                 )}
               >
                 <List className="w-5 h-5" strokeWidth={2.5} />
@@ -350,15 +350,15 @@ export function DealerFinderMobile({ dealers }: Props) {
             onClick={() => setDealerSheetOpen(false)}
           />
           <div className="fixed bottom-0 left-0 right-0 z-[60] bg-white rounded-t-3xl shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[80vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+            <div className="sticky top-0 bg-white border-b border-kawai-neutral px-6 py-4 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-kawai-charcoal">
                 {selectedDealerData.dealerName}
               </h3>
               <button
                 onClick={() => setDealerSheetOpen(false)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors active:scale-95"
+                className="p-2 hover:bg-kawai-pearl rounded-full transition-colors active:scale-95"
               >
-                <X className="w-5 h-5 text-gray-500" strokeWidth={2} />
+                <X className="w-5 h-5 text-kawai-charcoal/50" strokeWidth={2} />
               </button>
             </div>
 
@@ -366,10 +366,10 @@ export function DealerFinderMobile({ dealers }: Props) {
               {/* Address */}
               {selectedDealerData.address && (
                 <div>
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                  <h4 className="text-xs font-semibold text-kawai-charcoal/40 uppercase tracking-wide mb-2">
                     Address
                   </h4>
-                  <address className="text-sm text-gray-700 not-italic leading-relaxed">
+                  <address className="text-sm text-kawai-charcoal/75 not-italic leading-relaxed">
                     {selectedDealerData.address.street}<br />
                     {selectedDealerData.address.city}, {selectedDealerData.address.state} {selectedDealerData.address.zipCode}
                   </address>
@@ -378,7 +378,7 @@ export function DealerFinderMobile({ dealers }: Props) {
 
               {/* Contact */}
               <div>
-                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                <h4 className="text-xs font-semibold text-kawai-charcoal/40 uppercase tracking-wide mb-3">
                   Contact
                 </h4>
                 <div className="space-y-3">
@@ -408,10 +408,10 @@ export function DealerFinderMobile({ dealers }: Props) {
               {/* Description */}
               {selectedDealerData.description && (
                 <div>
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                  <h4 className="text-xs font-semibold text-kawai-charcoal/40 uppercase tracking-wide mb-2">
                     About
                   </h4>
-                  <p className="text-sm text-gray-700 leading-relaxed">
+                  <p className="text-sm text-kawai-charcoal/75 leading-relaxed">
                     {selectedDealerData.description}
                   </p>
                 </div>
@@ -444,7 +444,7 @@ function MobileDealerCard({ dealer, isSelected, onSelect }: MobileDealerCardProp
         "border-2",
         isSelected
           ? "border-kawai-charcoal shadow-xl shadow-kawai-charcoal/10"
-          : "border-gray-200 shadow-md active:border-gray-300"
+          : "border-kawai-neutral shadow-md active:border-kawai-charcoal/30"
       )}
     >
       {/* Header */}
@@ -454,8 +454,8 @@ function MobileDealerCard({ dealer, isSelected, onSelect }: MobileDealerCardProp
             {dealer.dealerName}
           </h3>
           {dealer.address && (
-            <div className="flex items-center gap-1.5 text-xs text-gray-600">
-              <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" strokeWidth={2} />
+            <div className="flex items-center gap-1.5 text-xs text-kawai-charcoal/60">
+              <MapPin className="w-3.5 h-3.5 text-kawai-charcoal/35 flex-shrink-0" strokeWidth={2} />
               <span>{dealer.address.city}, {dealer.address.state}</span>
             </div>
           )}
@@ -477,13 +477,13 @@ function MobileDealerCard({ dealer, isSelected, onSelect }: MobileDealerCardProp
           </div>
         )}
         {hasAcoustic && (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-kawai-charcoal/5 text-kawai-charcoal/70 text-xs font-medium rounded-lg">
             <Piano className="w-3 h-3" strokeWidth={2} />
             <span>Acoustic Piano</span>
           </div>
         )}
         {hasProfessional && (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-kawai-charcoal/5 text-kawai-charcoal/70 text-xs font-medium rounded-lg">
             <Briefcase className="w-3 h-3" strokeWidth={2} />
             <span>Professional</span>
           </div>

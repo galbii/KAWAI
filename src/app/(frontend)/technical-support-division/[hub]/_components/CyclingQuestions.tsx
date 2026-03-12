@@ -48,13 +48,16 @@ export function CyclingQuestions({ questions }: CyclingQuestionsProps) {
   if (questions.length === 0) return null
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8 border-b border-kawai-neutral/30">
-      <p className="text-[10px] font-semibold tracking-[0.3em] uppercase text-kawai-charcoal/25 mb-3 font-[family-name:var(--font-brand-sans)]">
-        People also ask
-      </p>
-      <p className="text-sm text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)] h-5 leading-5">
+    <div className="max-w-7xl mx-auto px-8 md:px-16 py-12 border-b border-white/[0.06]">
+      <div className="flex items-center gap-6 mb-6">
+        <span className="text-[10px] font-semibold tracking-[0.45em] uppercase text-white/20 font-[family-name:var(--font-brand-sans)]">
+          People also ask
+        </span>
+        <div className="flex-1 h-px bg-white/[0.06]" />
+      </div>
+      <p className="text-xl md:text-2xl font-light text-white/30 font-[family-name:var(--font-brand-serif)] h-8 leading-8">
         {displayText}
-        <span className="inline-block w-[1px] h-[13px] bg-kawai-red/60 ml-0.5 align-middle animate-pulse" />
+        <span className="inline-block w-[1px] h-5 bg-kawai-red ml-1 align-middle animate-pulse" />
       </p>
     </div>
   )

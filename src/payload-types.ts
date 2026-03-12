@@ -144,6 +144,7 @@ export interface Config {
     products: Product;
     collections: Collection;
     dealers: Dealer;
+    'music-schools': MusicSchool;
     'constant-contact-settings': ConstantContactSetting;
     'constant-contact-custom-fields': ConstantContactCustomField;
     jobs: Job;
@@ -180,6 +181,7 @@ export interface Config {
     products: ProductsSelect<false> | ProductsSelect<true>;
     collections: CollectionsSelect<false> | CollectionsSelect<true>;
     dealers: DealersSelect<false> | DealersSelect<true>;
+    'music-schools': MusicSchoolsSelect<false> | MusicSchoolsSelect<true>;
     'constant-contact-settings': ConstantContactSettingsSelect<false> | ConstantContactSettingsSelect<true>;
     'constant-contact-custom-fields': ConstantContactCustomFieldsSelect<false> | ConstantContactCustomFieldsSelect<true>;
     jobs: JobsSelect<false> | JobsSelect<true>;
@@ -7947,6 +7949,105 @@ export interface Dealer {
   createdAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "music-schools".
+ */
+export interface MusicSchool {
+  id: string;
+  schoolName: string;
+  /**
+   * URL identifier for this music school
+   */
+  slug: string;
+  isActive?: boolean | null;
+  /**
+   * Which storefront this music school belongs to
+   */
+  storefront: string | Storefront;
+  /**
+   * Official/legal name of the school (if different from display name)
+   */
+  officialName?: string | null;
+  directorName?: string | null;
+  /**
+   * About/description of the music school
+   */
+  about?: string | null;
+  contactInfo?: {
+    address?: string | null;
+    city?: string | null;
+    state?: string | null;
+    zip?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    website?: string | null;
+  };
+  hours?:
+    | {
+        day: string;
+        hoursOpen: string;
+        id?: string | null;
+      }[]
+    | null;
+  programs?:
+    | {
+        name: string;
+        description?: string | null;
+        /**
+         * e.g. "Ages 5–12" or "All ages"
+         */
+        ageRange?: string | null;
+        /**
+         * e.g. "30 minutes", "1 semester"
+         */
+        duration?: string | null;
+        /**
+         * e.g. "$50/month" or "Contact for pricing"
+         */
+        price?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  facilities?:
+    | {
+        name: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  faculty?:
+    | {
+        name: string;
+        title?: string | null;
+        role?: string | null;
+        photo?: (string | null) | Media;
+        /**
+         * e.g. "Classical piano, jazz, music theory"
+         */
+        specialties?: string | null;
+        teachingFocus?: string | null;
+        background?: string | null;
+        education?:
+          | {
+              degree?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Page title for search engines (50–60 characters recommended)
+   */
+  metaTitle?: string | null;
+  /**
+   * Page description for search engines (150–160 characters recommended)
+   */
+  metaDescription?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Manage Constant Contact API credentials and OAuth2 tokens. Restricted to admin users only.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -8468,6 +8569,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'dealers';
         value: string | Dealer;
+      } | null)
+    | ({
+        relationTo: 'music-schools';
+        value: string | MusicSchool;
       } | null)
     | ({
         relationTo: 'constant-contact-settings';
@@ -9706,6 +9811,76 @@ export interface DealersSelect<T extends boolean = true> {
         metaTitle?: T;
         metaDescription?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "music-schools_select".
+ */
+export interface MusicSchoolsSelect<T extends boolean = true> {
+  schoolName?: T;
+  slug?: T;
+  isActive?: T;
+  storefront?: T;
+  officialName?: T;
+  directorName?: T;
+  about?: T;
+  contactInfo?:
+    | T
+    | {
+        address?: T;
+        city?: T;
+        state?: T;
+        zip?: T;
+        phone?: T;
+        email?: T;
+        website?: T;
+      };
+  hours?:
+    | T
+    | {
+        day?: T;
+        hoursOpen?: T;
+        id?: T;
+      };
+  programs?:
+    | T
+    | {
+        name?: T;
+        description?: T;
+        ageRange?: T;
+        duration?: T;
+        price?: T;
+        id?: T;
+      };
+  facilities?:
+    | T
+    | {
+        name?: T;
+        description?: T;
+        id?: T;
+      };
+  faculty?:
+    | T
+    | {
+        name?: T;
+        title?: T;
+        role?: T;
+        photo?: T;
+        specialties?: T;
+        teachingFocus?: T;
+        background?: T;
+        education?:
+          | T
+          | {
+              degree?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  metaTitle?: T;
+  metaDescription?: T;
   updatedAt?: T;
   createdAt?: T;
 }

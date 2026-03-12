@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
@@ -25,6 +26,8 @@ export interface FaqSearchProps {
   placeholder?: string
   autoFocus?: boolean
   variant?: 'hero' | 'inline' | 'landing' | 'floating'
+  backHref?: string
+  backLabel?: string
 }
 
 const HUB_LABEL: Record<string, string> = {
@@ -37,6 +40,8 @@ export function FaqSearch({
   placeholder = 'Search for answers…',
   autoFocus = false,
   variant = 'inline',
+  backHref,
+  backLabel = 'Support Center',
 }: FaqSearchProps) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
@@ -157,6 +162,21 @@ export function FaqSearch({
           </button>
         )}
       </div>
+
+      {/* Back link — shown below input on hero variant when backHref provided */}
+      {backHref && isHero && (
+        <div className="mt-3">
+          <Link
+            href={backHref}
+            className="inline-flex items-center gap-2 text-white/30 hover:text-white/70 transition-colors duration-200 text-[11px] tracking-[0.2em] uppercase font-[family-name:var(--font-brand-sans)]"
+          >
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            {backLabel}
+          </Link>
+        </div>
+      )}
 
       {/* Dropdown — search engine results style */}
       <AnimatePresence>

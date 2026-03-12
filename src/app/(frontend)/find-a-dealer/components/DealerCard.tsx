@@ -2,9 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import type { Dealer } from '@/payload-types'
 import type { DealerWithDistance } from '../types'
-import { MapPin, Phone, ExternalLink, Piano, Briefcase, Star, ArrowRight, Info } from 'lucide-react'
+import { MapPin, Phone, ExternalLink, Piano, Briefcase, Star, ArrowRight, ChevronDown, Navigation } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { trackCTAClick } from '@/lib/analytics/unified-tracking'
 
@@ -16,7 +15,6 @@ interface Props {
 
 export function DealerCard({ dealer, isSelected, onSelect }: Props) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const [isHovering, setIsHovering] = useState(false)
 
   const formatDay = (day: string) => {
     return day.charAt(0).toUpperCase() + day.slice(1, 3)
@@ -26,131 +24,146 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
   const hasAcoustic = dealer.acousticPianoDealer === true
   const hasProfessional = dealer.professionalProductDealer === true
 
+  const handleCardClick = () => {
+    onSelect()
+    setIsExpanded(prev => !prev)
+  }
+
   return (
     <div
       className={cn(
-        "group bg-white border cursor-pointer transition-all duration-200 relative overflow-hidden",
-        isSelected
-          ? "border-kawai-charcoal shadow-lg"
-          : "border-gray-200 hover:border-gray-300 hover:shadow-md",
-        hasShigeru && [
-          "border-l-4 border-l-kawai-gold",
-          !isSelected && "hover:shadow-[0_12px_24px_rgba(212,175,55,0.2),0_0_0_2px_rgba(212,175,55,0.3)]"
-        ]
+        'relative cursor-pointer transition-all duration-200 select-none',
+        'border-b border-kawai-neutral/50 last:border-b-0',
+        'border-l-[3px]',
+        hasShigeru
+          ? 'border-l-kawai-gold'
+          : isSelected
+            ? 'border-l-kawai-red'
+            : 'border-l-transparent hover:border-l-kawai-neutral',
+        isSelected ? 'bg-kawai-pearl/30' : 'bg-white hover:bg-kawai-pearl/10',
       )}
-      onClick={() => {
-        onSelect()
-        setIsExpanded(!isExpanded)
-      }}
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
+      onClick={handleCardClick}
     >
-
-      {/* Header */}
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-base font-semibold text-kawai-charcoal leading-tight mb-1.5">
-              {dealer.dealerName}
-            </h3>
-
-            {/* Location */}
-            {dealer.address && (
-              <div className="flex items-center gap-1.5 text-sm text-gray-600 mb-2.5">
-                <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" strokeWidth={2} />
-                <span>
-                  {dealer.address.city}, {dealer.address.state}
-                </span>
-              </div>
-            )}
-
-            {/* Dealer Type Badges */}
-            <div className="flex flex-wrap gap-1.5">
-              {hasShigeru && (
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-kawai-gold/10 text-kawai-gold text-xs font-semibold rounded-md border border-kawai-gold/20">
-                  <Star className="w-3 h-3" fill="currentColor" strokeWidth={0} />
-                  <span>Shigeru Kawai</span>
-                </div>
-              )}
-              {hasAcoustic && (
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-md">
-                  <Piano className="w-3 h-3" strokeWidth={2} />
-                  <span>Acoustic Piano</span>
-                </div>
-              )}
-              {hasProfessional && (
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-md">
-                  <Briefcase className="w-3 h-3" strokeWidth={2} />
-                  <span>Professional</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Featured Badge */}
-          {dealer.isFeatured && (
-            <div className="flex-shrink-0">
-              <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-kawai-gold/10 text-kawai-gold text-xs font-semibold rounded-md border border-kawai-gold/20">
-                <Star className="w-3 h-3" fill="currentColor" strokeWidth={0} />
+      {/* Card Header */}
+      <div className="px-4 pt-3.5 pb-0">
+        {/* Meta row: featured + distance + chevron */}
+        <div className="flex items-center justify-between mb-1.5">
+          <div className="flex items-center gap-2 min-h-[16px]">
+            {dealer.isFeatured && (
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-kawai-gold">
                 Featured
-              </div>
-            </div>
-          )}
+              </span>
+            )}
+            {dealer.isFeatured && dealer.distance !== undefined && (
+              <span className="text-[10px] text-kawai-charcoal/30">·</span>
+            )}
+            {dealer.distance !== undefined && (
+              <span className="text-[10px] font-medium text-kawai-charcoal/50 tabular-nums">
+                {dealer.distance.toFixed(1)} mi away
+              </span>
+            )}
+          </div>
+          <ChevronDown
+            className={cn(
+              'w-3.5 h-3.5 text-kawai-charcoal/25 transition-transform duration-200 flex-shrink-0',
+              isExpanded && 'rotate-180 text-kawai-charcoal/50'
+            )}
+            strokeWidth={2}
+          />
         </div>
 
-        {/* Distance Badge */}
-        {dealer.distance !== undefined && (
-          <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-kawai-red/5 text-kawai-red text-xs font-medium rounded-lg border border-kawai-red/10">
-            <div className="w-1.5 h-1.5 rounded-full bg-kawai-red" />
-            {dealer.distance.toFixed(1)} miles away
+        {/* Dealer Name */}
+        <h3
+          className={cn(
+            'text-[14px] font-semibold leading-snug mb-1',
+            isSelected ? 'text-kawai-black' : 'text-kawai-charcoal'
+          )}
+        >
+          {dealer.dealerName}
+        </h3>
+
+        {/* Location */}
+        {dealer.address && (
+          <div className="flex items-center gap-1 mb-2.5">
+            <MapPin className="w-3 h-3 text-kawai-charcoal/35 flex-shrink-0" strokeWidth={2} />
+            <span className="text-[12px] text-kawai-charcoal/55">
+              {dealer.address.city}, {dealer.address.state}
+            </span>
+          </div>
+        )}
+
+        {/* Type Badges */}
+        {(hasShigeru || hasAcoustic || hasProfessional) && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {hasShigeru && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-[3px] bg-kawai-gold/10 text-kawai-gold text-[10px] font-semibold rounded border border-kawai-gold/25">
+                <Star className="w-2.5 h-2.5" fill="currentColor" strokeWidth={0} />
+                Shigeru Kawai
+              </span>
+            )}
+            {hasAcoustic && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-[3px] bg-kawai-charcoal/5 text-kawai-charcoal/65 text-[10px] font-medium rounded border border-kawai-charcoal/10">
+                <Piano className="w-2.5 h-2.5" strokeWidth={2} />
+                Acoustic
+              </span>
+            )}
+            {hasProfessional && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-[3px] bg-kawai-red/5 text-kawai-red/75 text-[10px] font-medium rounded border border-kawai-red/10">
+                <Briefcase className="w-2.5 h-2.5" strokeWidth={2} />
+                Professional
+              </span>
+            )}
           </div>
         )}
       </div>
 
       {/* Quick Actions */}
-      <div className="px-4 pb-4">
-        <div className="flex items-center gap-2">
-          {dealer.contactInfo?.phone && (
-            <a
-              href={`tel:${dealer.contactInfo.phone}`}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-kawai-charcoal bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Phone className="w-3.5 h-3.5" strokeWidth={2} />
-              <span>Call</span>
-            </a>
-          )}
-
-          <Link
-            href={`/find-a-dealer/${dealer.slug}`}
-            onClick={(e) => {
-              e.stopPropagation()
-              trackCTAClick({
-                blockType: 'find-a-dealer-page',
-                blockData: {},
-                ctaText: dealer.dealerName || 'View Details',
-                destination: `/find-a-dealer/${dealer.slug}`,
-              })
-            }}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-white bg-kawai-red hover:bg-kawai-red/90 rounded-lg transition-all duration-200 group"
+      <div className="px-4 pb-3 flex gap-2">
+        {dealer.contactInfo?.phone && (
+          <a
+            href={`tel:${dealer.contactInfo.phone}`}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-medium text-kawai-charcoal bg-kawai-pearl hover:bg-kawai-neutral/40 rounded-md transition-colors border border-kawai-neutral"
+            onClick={(e) => e.stopPropagation()}
           >
-            <Info className="w-3.5 h-3.5" strokeWidth={2} />
-            <span>View Details</span>
-            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
-          </Link>
-        </div>
+            <Phone className="w-3 h-3" strokeWidth={2} />
+            Call
+          </a>
+        )}
+        <Link
+          href={`/find-a-dealer/${dealer.slug}`}
+          onClick={(e) => {
+            e.stopPropagation()
+            trackCTAClick({
+              blockType: 'find-a-dealer-page',
+              blockData: {},
+              ctaText: dealer.dealerName || 'View Details',
+              destination: `/find-a-dealer/${dealer.slug}`,
+            })
+          }}
+          className={cn(
+            'flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-semibold rounded-md transition-all duration-200',
+            'group',
+            hasShigeru
+              ? 'bg-kawai-gold hover:bg-kawai-gold/90 text-kawai-black'
+              : 'bg-kawai-red hover:bg-kawai-red/90 text-white'
+          )}
+        >
+          View Details
+          <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" strokeWidth={2.5} />
+        </Link>
       </div>
 
       {/* Expandable Details */}
       {isExpanded && (
-        <div className="border-t border-gray-200 p-6 bg-gray-50 space-y-5 animate-in slide-in-from-top-2 duration-200">
-          {/* Full Address */}
+        <div className="border-t border-kawai-neutral/60 bg-kawai-pearl/40 px-4 py-4 space-y-4 animate-in slide-in-from-top-1 duration-150">
+
+          {/* Address */}
           {dealer.address && (
             <div>
-              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-kawai-charcoal/40 mb-1.5">
                 Address
-              </h4>
-              <address className="text-sm text-gray-700 not-italic leading-relaxed">
+              </p>
+              <address className="text-[12px] text-kawai-charcoal/80 not-italic leading-relaxed">
                 {dealer.address.street}<br />
                 {dealer.address.city}, {dealer.address.state} {dealer.address.zipCode}
               </address>
@@ -158,76 +171,77 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
           )}
 
           {/* Contact */}
-          <div>
-            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-              Contact
-            </h4>
-            <div className="space-y-2 text-sm">
-              {dealer.contactInfo?.phone && (
-                <div className="text-gray-700">{dealer.contactInfo.phone}</div>
-              )}
-              {dealer.contactInfo?.email && (
-                <div className="text-gray-700">{dealer.contactInfo.email}</div>
-              )}
-              {dealer.contactInfo?.website && (
-                <a
-                  href={dealer.contactInfo.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-kawai-red hover:underline inline-flex items-center gap-1"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  Visit Website
-                  <ExternalLink className="w-3 h-3" strokeWidth={2} />
-                </a>
-              )}
+          {(dealer.contactInfo?.phone || dealer.contactInfo?.email || dealer.contactInfo?.website) && (
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-kawai-charcoal/40 mb-1.5">
+                Contact
+              </p>
+              <div className="space-y-1.5 text-[12px]">
+                {dealer.contactInfo?.phone && (
+                  <p className="text-kawai-charcoal/75">{dealer.contactInfo.phone}</p>
+                )}
+                {dealer.contactInfo?.email && (
+                  <p className="text-kawai-charcoal/75">{dealer.contactInfo.email}</p>
+                )}
+                {dealer.contactInfo?.website && (
+                  <a
+                    href={dealer.contactInfo.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-kawai-red hover:text-kawai-red/80 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Visit Website
+                    <ExternalLink className="w-3 h-3" strokeWidth={2} />
+                  </a>
+                )}
+              </div>
             </div>
+          )}
 
-            {/* Directions Button - Only in Expanded View */}
-            {dealer.address && (
-              <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-                  `${dealer.address.street}, ${dealer.address.city}, ${dealer.address.state} ${dealer.address.zipCode}`
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-kawai-charcoal hover:bg-kawai-charcoal/90 rounded-lg transition-colors w-full"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  trackCTAClick({
-                    blockType: 'find-a-dealer-page',
-                    blockData: {},
-                    ctaText: 'Get Directions',
-                    destination: `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-                      `${dealer.address!.street}, ${dealer.address!.city}, ${dealer.address!.state} ${dealer.address!.zipCode}`
-                    )}`,
-                    additionalProps: { dealer_name: dealer.dealerName || '' },
-                  })
-                }}
-              >
-                <ExternalLink className="w-4 h-4" strokeWidth={2} />
-                <span>Get Directions</span>
-              </a>
-            )}
-          </div>
+          {/* Directions Button */}
+          {dealer.address && (
+            <a
+              href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                `${dealer.address.street}, ${dealer.address.city}, ${dealer.address.state} ${dealer.address.zipCode}`
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 px-4 py-2 text-[12px] font-medium text-kawai-charcoal bg-white hover:bg-kawai-pearl rounded-md transition-colors w-full border border-kawai-neutral"
+              onClick={(e) => {
+                e.stopPropagation()
+                trackCTAClick({
+                  blockType: 'find-a-dealer-page',
+                  blockData: {},
+                  ctaText: 'Get Directions',
+                  destination: `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                    `${dealer.address!.street}, ${dealer.address!.city}, ${dealer.address!.state} ${dealer.address!.zipCode}`
+                  )}`,
+                  additionalProps: { dealer_name: dealer.dealerName || '' },
+                })
+              }}
+            >
+              <Navigation className="w-3.5 h-3.5" strokeWidth={2} />
+              Get Directions
+            </a>
+          )}
 
           {/* Business Hours */}
           {dealer.hours && dealer.hours.length > 0 && (
             <div>
-              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-kawai-charcoal/40 mb-1.5">
                 Hours
-              </h4>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+              </p>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[12px]">
                 {dealer.hours.map((hour, index) => (
                   <div key={index} className="flex justify-between">
-                    <span className="text-gray-700 font-medium">
+                    <span className="text-kawai-charcoal/70 font-medium">
                       {formatDay(hour.day || '')}
                     </span>
                     <span className={cn(
-                      "text-gray-600",
-                      hour.isClosed && "text-gray-400"
+                      hour.isClosed ? 'text-kawai-charcoal/35' : 'text-kawai-charcoal/65'
                     )}>
-                      {hour.isClosed ? 'Closed' : `${hour.openTime} - ${hour.closeTime}`}
+                      {hour.isClosed ? 'Closed' : `${hour.openTime}–${hour.closeTime}`}
                     </span>
                   </div>
                 ))}
@@ -238,15 +252,14 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
           {/* Description */}
           {dealer.description && (
             <div>
-              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-kawai-charcoal/40 mb-1.5">
                 About
-              </h4>
-              <p className="text-sm text-gray-700 leading-relaxed">
+              </p>
+              <p className="text-[12px] text-kawai-charcoal/70 leading-relaxed">
                 {dealer.description}
               </p>
             </div>
           )}
-
         </div>
       )}
     </div>

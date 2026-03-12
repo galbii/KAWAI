@@ -34,9 +34,9 @@ export function DealerTypeFilter({ selected, onChange, counts }: Props) {
               key={opt.value}
               onClick={() => onChange(opt.value)}
               className={cn(
-                'relative px-6 py-3 text-sm uppercase tracking-[0.08em] font-semibold',
+                'relative px-5 h-[52px] text-xs uppercase tracking-[0.08em] font-semibold',
                 'transition-colors duration-200 font-[family-name:var(--font-brand-sans)]',
-                'focus-visible:outline-2 focus-visible:outline-kawai-red min-h-[44px]',
+                'focus-visible:outline-2 focus-visible:outline-kawai-red',
                 isSelected
                   ? 'text-kawai-pearl'
                   : 'text-kawai-charcoal hover:text-kawai-black',

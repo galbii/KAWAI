@@ -1711,3 +1711,38 @@ export async function getAllJobSlugs() {
   })
   return result.docs
 }
+
+/**
+ * Get music school by storefront slug using direct Payload access
+ */
+export async function getMusicSchoolByStorefrontSlug(storefrontSlug: string): Promise<any | null> {
+  try {
+    const payload = await getPayloadClient()
+
+    // First get the storefront ID
+    const storefrontResult = await payload.find({
+      collection: 'storefronts',
+      where: { slug: { equals: storefrontSlug } },
+      depth: 0,
+      limit: 1,
+    })
+
+    const storefrontId = storefrontResult.docs[0]?.id
+    if (!storefrontId) return null
+
+    const result = await payload.find({
+      collection: 'music-schools',
+      where: {
+        storefront: { equals: storefrontId },
+        isActive: { equals: true },
+      },
+      depth: 2,
+      limit: 1,
+    })
+
+    return result.docs[0] ?? null
+  } catch (error) {
+    console.error(`Error fetching music school for storefront "${storefrontSlug}":`, error)
+    return null
+  }
+}

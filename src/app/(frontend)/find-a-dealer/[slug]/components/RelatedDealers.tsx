@@ -22,7 +22,7 @@ export function RelatedDealers({ dealers, currentCity }: RelatedDealersProps) {
   const nearCity = currentCity?.trim() || limitedDealers[0]?.address?.city || 'you'
 
   return (
-    <section className="bg-[#F5F5F5] py-16 sm:py-24 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 mt-16 sm:mt-24">
+    <section className="bg-kawai-pearl py-16 sm:py-24 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 mt-16 sm:mt-24">
       <div className="container mx-auto max-w-7xl">
         {/* Section header */}
         <div className="mb-10 sm:mb-14">

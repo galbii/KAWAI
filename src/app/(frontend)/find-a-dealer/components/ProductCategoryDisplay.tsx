@@ -18,7 +18,7 @@ export function ProductCategoryDisplay({ dealerTypeFilter }: ProductCategoryDisp
   const text = productTexts[dealerTypeFilter]
 
   return (
-    <div className="relative overflow-hidden py-4 bg-gradient-to-r from-gray-50 via-white to-gray-50 rounded-lg">
+    <div className="relative overflow-hidden py-3 bg-gradient-to-r from-kawai-pearl/60 via-white to-kawai-pearl/60 rounded-sm">
       <AnimatePresence mode="wait">
         <motion.div
           key={dealerTypeFilter}
@@ -33,7 +33,7 @@ export function ProductCategoryDisplay({ dealerTypeFilter }: ProductCategoryDisp
             {[...Array(4)].map((_, i) => (
               <motion.div
                 key={i}
-                className="flex-shrink-0 text-[15px] text-gray-700 whitespace-nowrap pr-3 font-medium tracking-wide"
+                className="flex-shrink-0 text-[11px] text-kawai-charcoal/50 whitespace-nowrap pr-3 font-semibold tracking-[0.12em]"
                 animate={{
                   x: ['0%', '-100%'],
                 }}

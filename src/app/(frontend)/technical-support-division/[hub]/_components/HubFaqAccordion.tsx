@@ -30,12 +30,12 @@ interface HubFaqAccordionProps {
 
 export function HubFaqAccordion({ groups, hubLabel, featuredFaqs, allQuestions }: HubFaqAccordionProps) {
   const [openId, setOpenId] = useState<string | null>(null)
-  const [activeCategory, setActiveCategory] = useState<string | null>(null)
+  const [activeCategory, setActiveCategory] = useState<string | null>('__popular__')
 
   const hubPath = hubLabel.toLowerCase().replace(/\s+/g, '-')
 
   const visibleGroups =
-    activeCategory === null
+    activeCategory === null || activeCategory === '__popular__'
       ? groups
       : groups.filter((g) => g.categorySlug === activeCategory)
 
@@ -45,12 +45,12 @@ export function HubFaqAccordion({ groups, hubLabel, featuredFaqs, allQuestions }
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className="py-24 text-center max-w-3xl mx-auto px-6"
+        className="py-32 text-center max-w-5xl mx-auto px-6"
       >
-        <p className="text-kawai-black font-medium text-lg mb-2 font-[family-name:var(--font-brand-sans)]">
+        <p className="text-white/40 font-medium text-lg mb-2 font-[family-name:var(--font-brand-sans)]">
           Coming soon
         </p>
-        <p className="text-kawai-charcoal/40 text-sm font-[family-name:var(--font-brand-sans)]">
+        <p className="text-white/20 text-sm font-[family-name:var(--font-brand-sans)]">
           Support articles are on their way.
         </p>
       </motion.div>
@@ -59,14 +59,69 @@ export function HubFaqAccordion({ groups, hubLabel, featuredFaqs, allQuestions }
 
   return (
     <div>
-      {/* SECTION 1 — POPULAR QUESTIONS */}
-      {featuredFaqs.length > 0 && (
-        <div className="max-w-3xl mx-auto px-6 pt-10 pb-2">
-          <div className="flex items-center gap-4 mb-5">
-            <span className="text-[10px] font-semibold tracking-[0.3em] uppercase text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)]">
+      {/* SECTION 1 — CYCLING QUESTIONS "People also ask" */}
+      <CyclingQuestions questions={allQuestions} />
+
+      {/* SECTION 2 — CATEGORY FILTER TABS */}
+      {groups.length > 0 && (
+        <div className="max-w-7xl mx-auto px-8 md:px-16 border-b border-white/[0.06]">
+          <div className="flex items-end overflow-x-auto scrollbar-none">
+            {/* Popular — far left */}
+            {featuredFaqs.length > 0 && (
+              <button
+                onClick={() => setActiveCategory('__popular__')}
+                className={cn(
+                  'flex-shrink-0 text-base font-medium px-6 py-5 border-b-2 transition-all duration-200 font-[family-name:var(--font-brand-sans)] tracking-wide whitespace-nowrap',
+                  activeCategory === '__popular__'
+                    ? 'border-b-kawai-red text-white bg-white/[0.04]'
+                    : 'border-b-transparent text-white/30 hover:text-white/60 hover:border-b-white/20 bg-transparent',
+                )}
+              >
+                Popular
+              </button>
+            )}
+
+            {/* Category tabs */}
+            {groups.map((group) => (
+              <button
+                key={group.categorySlug}
+                onClick={() => setActiveCategory(group.categorySlug)}
+                className={cn(
+                  'flex-shrink-0 text-base font-medium px-6 py-5 border-b-2 transition-all duration-200 font-[family-name:var(--font-brand-sans)] tracking-wide whitespace-nowrap',
+                  activeCategory === group.categorySlug
+                    ? 'border-b-kawai-red text-white bg-white/[0.04]'
+                    : 'border-b-transparent text-white/30 hover:text-white/60 hover:border-b-white/20 bg-transparent',
+                )}
+              >
+                {group.categoryName}{' '}
+                <span className="opacity-30 ml-1.5">{group.faqs.length}</span>
+              </button>
+            ))}
+
+            {/* All — pushed to far right */}
+            <button
+              onClick={() => setActiveCategory(null)}
+              className={cn(
+                'flex-shrink-0 ml-auto text-base font-medium px-6 py-5 border-b-2 transition-all duration-200 font-[family-name:var(--font-brand-sans)] tracking-wide whitespace-nowrap',
+                activeCategory === null
+                  ? 'border-b-kawai-red text-white bg-white/[0.04]'
+                  : 'border-b-transparent text-white/30 hover:text-white/60 hover:border-b-white/20 bg-transparent',
+              )}
+            >
+              All
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* SECTION 3 — POPULAR QUESTIONS (shown when Popular tab active) */}
+      {featuredFaqs.length > 0 && activeCategory === '__popular__' && (
+        <div className="max-w-7xl mx-auto px-8 md:px-16 pt-20 pb-8">
+          <div className="flex items-center gap-6 mb-12">
+            <span className="text-[10px] font-semibold tracking-[0.45em] uppercase text-white/20 whitespace-nowrap font-[family-name:var(--font-brand-sans)]">
               Popular Questions
             </span>
-            <div className="flex-1 h-px bg-kawai-neutral/40" />
+            <div className="flex-1 h-px bg-white/[0.06]" />
           </div>
 
           {featuredFaqs.map((faq, i) => {
@@ -78,21 +133,21 @@ export function HubFaqAccordion({ groups, hubLabel, featuredFaqs, allQuestions }
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: i * 0.07, ease: [0.25, 0.46, 0.45, 0.94] }}
-                className="border-b border-kawai-neutral/25 last:border-0"
+                className="border-b border-white/[0.06] last:border-0"
               >
                 <button
                   onClick={() => setOpenId(isOpen ? null : faq.id)}
-                  className="w-full text-left py-4 group/btn"
+                  className="w-full text-left py-10 group/btn"
                   aria-expanded={isOpen}
                 >
-                  <p className="text-sm font-semibold text-kawai-black group-hover/btn:text-kawai-red transition-colors duration-150 font-[family-name:var(--font-brand-sans)] mb-0.5">
+                  <p className="text-2xl md:text-3xl lg:text-4xl font-light text-white/60 group-hover/btn:text-white transition-colors duration-200 font-[family-name:var(--font-brand-serif)] mb-3 leading-snug">
                     {faq.question}
                   </p>
-                  <p className="text-[11px] text-kawai-red/50 font-[family-name:var(--font-brand-sans)]">
+                  <p className="text-xs text-kawai-red/40 font-[family-name:var(--font-brand-sans)] tracking-wide">
                     kawaipianos.com &rsaquo; {hubPath}{cat ? ` \u203a ${cat.name}` : ''}
                   </p>
                   {faq.excerpt && !isOpen && (
-                    <p className="text-xs text-kawai-charcoal/45 mt-1 line-clamp-1 font-[family-name:var(--font-brand-sans)] leading-relaxed">
+                    <p className="text-base text-white/25 mt-3 line-clamp-1 font-[family-name:var(--font-brand-sans)] leading-relaxed">
                       {faq.excerpt}
                     </p>
                   )}
@@ -107,29 +162,23 @@ export function HubFaqAccordion({ groups, hubLabel, featuredFaqs, allQuestions }
                       transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
                       className="overflow-hidden"
                     >
-                      <div className="bg-kawai-pearl/50 rounded-xl px-5 py-4 mb-3 border border-kawai-neutral/30">
+                      <div className="bg-[#0d0c0a] border-l-[3px] border-l-kawai-red/50 px-10 py-9 mb-6">
                         {faq.excerpt ? (
-                          <p className="text-kawai-charcoal/70 text-sm leading-relaxed mb-3 font-[family-name:var(--font-brand-sans)]">
+                          <p className="text-white/50 text-lg leading-relaxed mb-6 font-[family-name:var(--font-brand-sans)]">
                             {faq.excerpt}
                           </p>
                         ) : (
-                          <p className="text-kawai-charcoal/40 text-sm italic mb-3 font-[family-name:var(--font-brand-sans)]">
+                          <p className="text-white/20 text-lg italic mb-6 font-[family-name:var(--font-brand-sans)]">
                             No preview available.
                           </p>
                         )}
                         {faq.slug && (
                           <Link
                             href={`/faq/${faq.slug}`}
-                            className="inline-flex items-center gap-1.5 text-kawai-red text-sm font-medium font-[family-name:var(--font-brand-sans)] hover:gap-2.5 transition-all duration-200"
+                            className="inline-flex items-center gap-2 text-kawai-red text-base font-medium font-[family-name:var(--font-brand-sans)] hover:gap-3 transition-all duration-200"
                           >
                             Read full answer
-                            <svg
-                              className="w-3.5 h-3.5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth={2}
-                            >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                             </svg>
                           </Link>
@@ -144,49 +193,8 @@ export function HubFaqAccordion({ groups, hubLabel, featuredFaqs, allQuestions }
         </div>
       )}
 
-      {/* SECTION 2 — CYCLING QUESTIONS "People also ask" */}
-      <CyclingQuestions questions={allQuestions} />
-
-      {/* SECTION 3 — CATEGORY FILTER CHIPS */}
-      {groups.length > 0 && (
-        <div className="max-w-3xl mx-auto px-6 py-5 border-b border-kawai-neutral/25">
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setActiveCategory(null)}
-              className={cn(
-                'text-xs font-medium px-3.5 py-1.5 rounded-full border transition-all duration-200 font-[family-name:var(--font-brand-sans)]',
-                activeCategory === null
-                  ? 'bg-kawai-black text-white border-kawai-black'
-                  : 'text-kawai-charcoal/55 border-kawai-neutral/60 hover:border-kawai-black/40 hover:text-kawai-black bg-transparent',
-              )}
-            >
-              All
-            </button>
-            {groups.map((group) => (
-              <button
-                key={group.categorySlug}
-                onClick={() =>
-                  setActiveCategory(
-                    activeCategory === group.categorySlug ? null : group.categorySlug,
-                  )
-                }
-                className={cn(
-                  'text-xs font-medium px-3.5 py-1.5 rounded-full border transition-all duration-200 font-[family-name:var(--font-brand-sans)]',
-                  activeCategory === group.categorySlug
-                    ? 'bg-kawai-black text-white border-kawai-black'
-                    : 'text-kawai-charcoal/55 border-kawai-neutral/60 hover:border-kawai-black/40 hover:text-kawai-black bg-transparent',
-                )}
-              >
-                {group.categoryName}{' '}
-                <span className="opacity-40 ml-1">{group.faqs.length}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* SECTION 4 — GROUPED RESULTS */}
-      <div className="max-w-3xl mx-auto px-6 pb-20">
+      {/* SECTION 4 — GROUPED RESULTS (hidden when Popular tab active) */}
+      {activeCategory !== '__popular__' && <div className="max-w-7xl mx-auto px-8 md:px-16 pb-40">
         {visibleGroups.map((group, gi) => (
           <motion.section
             key={group.categorySlug}
@@ -194,14 +202,14 @@ export function HubFaqAccordion({ groups, hubLabel, featuredFaqs, allQuestions }
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-40px' }}
             transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className={gi > 0 ? 'pt-12' : 'pt-8'}
+            className={gi > 0 ? 'pt-20' : 'pt-14'}
           >
-            <div className="flex items-center gap-4 mb-5">
-              <span className="text-[10px] font-semibold tracking-[0.25em] uppercase text-kawai-charcoal/25 whitespace-nowrap font-[family-name:var(--font-brand-sans)]">
+            <div className="flex items-center gap-6 mb-10">
+              <span className="text-[10px] font-semibold tracking-[0.45em] uppercase text-white/20 whitespace-nowrap font-[family-name:var(--font-brand-sans)]">
                 {group.categoryName}
               </span>
-              <div className="flex-1 h-px bg-kawai-neutral/35" />
-              <span className="text-[10px] text-kawai-charcoal/20 font-[family-name:var(--font-brand-sans)]">
+              <div className="flex-1 h-px bg-white/[0.05]" />
+              <span className="text-xs text-white/15 font-[family-name:var(--font-brand-sans)]">
                 {group.faqs.length}
               </span>
             </div>
@@ -213,26 +221,22 @@ export function HubFaqAccordion({ groups, hubLabel, featuredFaqs, allQuestions }
                   key={faq.id}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: 0.28,
-                    delay: fi * 0.04,
-                    ease: [0.25, 0.46, 0.45, 0.94],
-                  }}
-                  className="border-b border-kawai-neutral/20 last:border-0"
+                  transition={{ duration: 0.28, delay: fi * 0.04, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  className="border-b border-white/[0.05] last:border-0"
                 >
                   <button
                     onClick={() => setOpenId(isOpen ? null : faq.id)}
-                    className="w-full text-left py-3.5 group/btn"
+                    className="w-full text-left py-9 group/btn"
                     aria-expanded={isOpen}
                   >
-                    <p className="text-sm font-semibold text-kawai-black group-hover/btn:text-kawai-red transition-colors duration-150 font-[family-name:var(--font-brand-sans)] mb-0.5">
+                    <p className="text-2xl md:text-3xl font-light text-white/55 group-hover/btn:text-white transition-colors duration-200 font-[family-name:var(--font-brand-serif)] mb-3 leading-snug">
                       {faq.question}
                     </p>
-                    <p className="text-[11px] text-kawai-red/50 font-[family-name:var(--font-brand-sans)]">
+                    <p className="text-xs text-kawai-red/35 font-[family-name:var(--font-brand-sans)] tracking-wide">
                       kawaipianos.com &rsaquo; {hubPath} &rsaquo; {group.categoryName}
                     </p>
                     {faq.excerpt && !isOpen && (
-                      <p className="text-xs text-kawai-charcoal/45 mt-1 line-clamp-1 font-[family-name:var(--font-brand-sans)] leading-relaxed">
+                      <p className="text-base text-white/20 mt-3 line-clamp-1 font-[family-name:var(--font-brand-sans)] leading-relaxed">
                         {faq.excerpt}
                       </p>
                     )}
@@ -247,34 +251,24 @@ export function HubFaqAccordion({ groups, hubLabel, featuredFaqs, allQuestions }
                         transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
                         className="overflow-hidden"
                       >
-                        <div className="bg-kawai-pearl/50 rounded-xl px-5 py-4 mb-3 border border-kawai-neutral/25">
+                        <div className="bg-[#0d0c0a] border-l-[3px] border-l-kawai-red/50 px-10 py-9 mb-6">
                           {faq.excerpt ? (
-                            <p className="text-kawai-charcoal/70 text-sm leading-relaxed mb-3 font-[family-name:var(--font-brand-sans)]">
+                            <p className="text-white/45 text-lg leading-relaxed mb-6 font-[family-name:var(--font-brand-sans)]">
                               {faq.excerpt}
                             </p>
                           ) : (
-                            <p className="text-kawai-charcoal/40 text-sm italic mb-3 font-[family-name:var(--font-brand-sans)]">
+                            <p className="text-white/20 text-lg italic mb-6 font-[family-name:var(--font-brand-sans)]">
                               No preview available.
                             </p>
                           )}
                           {faq.slug && (
                             <Link
                               href={`/faq/${faq.slug}`}
-                              className="inline-flex items-center gap-1.5 text-kawai-red text-sm font-medium font-[family-name:var(--font-brand-sans)] hover:gap-2.5 transition-all duration-200"
+                              className="inline-flex items-center gap-2 text-kawai-red text-base font-medium font-[family-name:var(--font-brand-sans)] hover:gap-3 transition-all duration-200"
                             >
                               Read full answer
-                              <svg
-                                className="w-3.5 h-3.5"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                strokeWidth={2}
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M9 5l7 7-7 7"
-                                />
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                               </svg>
                             </Link>
                           )}
@@ -287,7 +281,7 @@ export function HubFaqAccordion({ groups, hubLabel, featuredFaqs, allQuestions }
             })}
           </motion.section>
         ))}
-      </div>
+      </div>}
     </div>
   )
 }

@@ -388,7 +388,7 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, variant = 'floa
             WebkitBackdropFilter: 'blur(20px) saturate(180%)',
           }}
         >
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" strokeWidth={2} />
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-kawai-charcoal/35" strokeWidth={2} />
           <input
             ref={inputRef}
             type="text"
@@ -396,16 +396,16 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, variant = 'floa
             onChange={e => handleInputChange(e.target.value)}
             onFocus={() => hasResults && setShowDropdown(true)}
             placeholder="Search by name, address, city, state, or ZIP code"
-            className="w-full pl-14 pr-36 py-4 rounded-2xl bg-transparent focus:outline-none text-gray-900 placeholder:text-gray-400 font-medium text-sm"
+            className="w-full pl-14 pr-36 py-4 rounded-2xl bg-transparent focus:outline-none text-kawai-black placeholder:text-kawai-charcoal/35 font-medium text-sm"
           />
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
             {searchInput && (
               <button
                 onClick={handleClear}
-                className="p-1.5 hover:bg-gray-200/60 rounded-lg transition-colors"
+                className="p-1.5 hover:bg-kawai-neutral/50 rounded-lg transition-colors"
                 aria-label="Clear search"
               >
-                <X className="w-4 h-4 text-gray-500" strokeWidth={2} />
+                <X className="w-4 h-4 text-kawai-charcoal/50" strokeWidth={2} />
               </button>
             )}
             <button
@@ -437,7 +437,7 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, variant = 'floa
               exit={{ opacity: 0, y: isInline ? -4 : 8, scale: 0.98 }}
               transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
               className={cn(
-                "absolute left-0 right-0 rounded-xl border border-gray-200/60 z-20 overflow-hidden",
+                "absolute left-0 right-0 rounded-xl border border-kawai-neutral/60 z-20 overflow-hidden",
                 isInline
                   ? "top-full mt-2"
                   : "bottom-full mb-3 rounded-2xl"
@@ -457,7 +457,7 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, variant = 'floa
               {dealerResults.length > 0 && (
                 <div>
                   <div
-                    className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em] border-b border-gray-100"
+                    className="px-4 py-2 text-[10px] font-bold text-kawai-charcoal/40 uppercase tracking-[0.1em] border-b border-kawai-neutral/40"
                     style={{ background: 'linear-gradient(90deg, rgba(196,30,58,0.05) 0%, transparent 100%)' }}
                   >
                     Piano Dealers
@@ -469,22 +469,22 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, variant = 'floa
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.04, duration: 0.15 }}
                       onClick={() => handleDealerResultSelect(result)}
-                      className="w-full px-4 py-3 text-left hover:bg-kawai-red/5 active:bg-kawai-red/10 transition-colors border-b border-gray-100/70 last:border-0 group"
+                      className="w-full px-4 py-3 text-left hover:bg-kawai-red/5 active:bg-kawai-red/10 transition-colors border-b border-kawai-neutral/30 last:border-0 group"
                     >
                       <div className="flex items-center gap-3 min-h-[44px]">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-kawai-red/10 flex items-center justify-center transition-colors">
-                          <Building2 className="w-4 h-4 text-gray-400 group-hover:text-kawai-red transition-colors" strokeWidth={2} />
+                        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-kawai-neutral/40 group-hover:bg-kawai-red/10 flex items-center justify-center transition-colors">
+                          <Building2 className="w-4 h-4 text-kawai-charcoal/40 group-hover:text-kawai-red transition-colors" strokeWidth={2} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-semibold text-gray-900 truncate leading-tight">
+                          <div className="text-sm font-semibold text-kawai-black truncate leading-tight">
                             {result.name}
                           </div>
-                          <div className="text-xs text-gray-500 mt-0.5">
+                          <div className="text-xs text-kawai-charcoal/50 mt-0.5">
                             {result.city}, {result.state}
                           </div>
                         </div>
                         {result.distance !== undefined && (
-                          <span className="flex-shrink-0 text-xs font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full group-hover:bg-kawai-red/10 group-hover:text-kawai-red transition-colors">
+                          <span className="flex-shrink-0 text-xs font-medium text-kawai-charcoal/40 bg-kawai-neutral/40 px-2 py-0.5 rounded-full group-hover:bg-kawai-red/10 group-hover:text-kawai-red transition-colors">
                             {result.distance.toFixed(1)} mi
                           </span>
                         )}
@@ -498,7 +498,7 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, variant = 'floa
               {locationPredictions.length > 0 && (
                 <div>
                   <div
-                    className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em] border-b border-gray-100"
+                    className="px-4 py-2 text-[10px] font-bold text-kawai-charcoal/40 uppercase tracking-[0.1em] border-b border-kawai-neutral/40"
                     style={{ background: 'linear-gradient(90deg, rgba(196,30,58,0.05) 0%, transparent 100%)' }}
                   >
                     Sort by distance from
@@ -510,13 +510,13 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, variant = 'floa
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: (dealerResults.length + i) * 0.04, duration: 0.15 }}
                       onClick={() => handleLocationSelect(prediction)}
-                      className="w-full px-4 py-3 text-left hover:bg-kawai-red/5 active:bg-kawai-red/10 transition-colors border-b border-gray-100/70 last:border-0 group"
+                      className="w-full px-4 py-3 text-left hover:bg-kawai-red/5 active:bg-kawai-red/10 transition-colors border-b border-kawai-neutral/30 last:border-0 group"
                     >
                       <div className="flex items-center gap-3 min-h-[44px]">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-kawai-red/10 flex items-center justify-center transition-colors">
-                          <MapPin className="w-4 h-4 text-gray-400 group-hover:text-kawai-red transition-colors" strokeWidth={2} />
+                        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-kawai-neutral/40 group-hover:bg-kawai-red/10 flex items-center justify-center transition-colors">
+                          <MapPin className="w-4 h-4 text-kawai-charcoal/40 group-hover:text-kawai-red transition-colors" strokeWidth={2} />
                         </div>
-                        <span className="text-sm text-gray-800 font-medium leading-snug">
+                        <span className="text-sm text-kawai-charcoal font-medium leading-snug">
                           {prediction.display_name}
                         </span>
                       </div>

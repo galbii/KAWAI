@@ -189,8 +189,8 @@ export function DealerMapLibre({
                   </h3>
                   {/* Location */}
                   {dealer.address && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" strokeWidth={2} />
+                    <div className="flex items-center gap-2 text-sm text-kawai-charcoal/60">
+                      <MapPin className="w-4 h-4 text-kawai-charcoal/40 flex-shrink-0" strokeWidth={2} />
                       <span>
                         {dealer.address.city}, {dealer.address.state}
                       </span>
@@ -214,13 +214,13 @@ export function DealerMapLibre({
                   </div>
                 )}
                 {hasAcoustic && (
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-kawai-charcoal/5 text-kawai-charcoal/70 text-xs font-medium rounded-lg">
                     <Piano className="w-4 h-4" strokeWidth={2} />
                     <span>Acoustic Piano</span>
                   </div>
                 )}
                 {hasProfessional && (
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-kawai-charcoal/5 text-kawai-charcoal/70 text-xs font-medium rounded-lg">
                     <Briefcase className="w-4 h-4" strokeWidth={2} />
                     <span>Professional</span>
                   </div>
@@ -263,7 +263,7 @@ export function DealerMapLibre({
                   {dealer.contactInfo?.phone && (
                     <a
                       href={`tel:${dealer.contactInfo.phone}`}
-                      className="flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-kawai-charcoal bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+                      className="flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-kawai-charcoal bg-kawai-pearl hover:bg-kawai-neutral/40 rounded-lg transition-colors border border-kawai-neutral"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Phone className="w-4 h-4" strokeWidth={2} />
@@ -276,7 +276,7 @@ export function DealerMapLibre({
                       href={dealer.contactInfo.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-kawai-charcoal bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+                      className="flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-kawai-charcoal bg-kawai-pearl hover:bg-kawai-neutral/40 rounded-lg transition-colors border border-kawai-neutral"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Globe className="w-4 h-4" strokeWidth={2} />
@@ -293,7 +293,7 @@ export function DealerMapLibre({
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-kawai-charcoal bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200 w-full"
+                    className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-kawai-charcoal bg-kawai-pearl hover:bg-kawai-neutral/40 rounded-lg transition-colors border border-kawai-neutral w-full"
                     onClick={(e) => {
                       e.stopPropagation()
                       trackCTAClick({

@@ -68,77 +68,127 @@ function TypingAnimation() {
 
 export function TSDLandingHero({ groups }: { groups: GroupWindow[] }) {
   return (
-    <div className="min-h-screen bg-kawai-black flex flex-col items-center justify-center px-6 py-16">
+    <div className="min-h-screen bg-kawai-black flex flex-col items-center justify-center px-6 py-24">
 
-      {/* Windows */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 w-full max-w-3xl mb-10">
+      {/* Support Center eyebrow — moved above cards */}
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="flex items-center gap-4 mb-14"
+      >
+        <div className="h-px w-12 bg-kawai-red/40" />
+        <p className="text-[10px] text-white/25 tracking-[0.5em] uppercase font-medium font-[family-name:var(--font-brand-sans)]">
+          Support Center
+        </p>
+        <div className="h-px w-12 bg-kawai-red/40" />
+      </motion.div>
+
+      {/* Hub Cards — full-width architectural panels */}
+      <div className={`grid grid-cols-1 gap-px w-full mb-20 border border-white/[0.06] mx-auto ${
+        groups.length === 1
+          ? 'md:grid-cols-1 max-w-sm'
+          : groups.length === 2
+            ? 'md:grid-cols-2 max-w-4xl'
+            : groups.length === 4
+              ? 'md:grid-cols-4 max-w-7xl'
+              : 'md:grid-cols-3 max-w-7xl'
+      }`}>
         {groups.map((win, index) => (
           <motion.div
             key={win.href}
-            initial={{ opacity: 0, y: 40, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
+            initial={{ opacity: 0, y: 32 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{
-              duration: 0.65,
-              delay: index * 0.12,
+              duration: 0.7,
+              delay: index * 0.14,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
+            className="relative h-full"
           >
             <Link
               href={win.href}
-              className="group relative flex flex-col min-h-[190px] md:min-h-[230px] rounded-2xl overflow-hidden transition-all duration-300
-                bg-white/[0.03] border border-white/[0.08]
-                hover:bg-white/[0.06] hover:border-kawai-red/40
-                hover:shadow-[0_0_32px_rgba(225,25,34,0.08)]"
+              className="group relative flex flex-col h-full min-h-[400px] md:min-h-[460px] overflow-hidden
+                bg-[#0d0c0a]
+                border-r border-white/[0.06] last:border-r-0
+                hover:bg-[#111009]
+                transition-colors duration-500"
             >
-              {/* Red top accent bar */}
-              <div className="h-[2px] w-full bg-gradient-to-r from-kawai-red/60 via-kawai-red to-kawai-red/30 opacity-70 group-hover:opacity-100 transition-opacity duration-300" />
+              {/* Left red accent bar — grows on hover */}
+              <div className="absolute left-0 top-0 w-[3px] h-0 bg-kawai-red group-hover:h-full transition-all duration-700 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]" />
 
-              <div className="flex flex-col flex-1 p-6 md:p-7">
-                {/* Number */}
-                <span className="text-[10px] text-kawai-red/50 tracking-[0.35em] font-semibold mb-auto font-[family-name:var(--font-brand-sans)] group-hover:text-kawai-red/80 transition-colors duration-300">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
+              {/* Oversized ghost number — architectural backdrop */}
+              <span
+                aria-hidden
+                className="absolute right-[-0.1em] bottom-[-0.15em] text-[11rem] md:text-[14rem] font-bold leading-none select-none
+                  text-white/[0.025] group-hover:text-white/[0.045]
+                  font-[family-name:var(--font-brand-sans)]
+                  transition-colors duration-700"
+              >
+                {String(index + 1)}
+              </span>
 
-                {/* Label */}
-                <div className="mt-6">
-                  <span className="block text-2xl md:text-[1.6rem] font-light text-white/80 group-hover:text-white leading-tight font-[family-name:var(--font-brand-serif)] transition-colors duration-300 whitespace-pre-line">
-                    {win.heading || win.label}
+              <div className="relative flex flex-col flex-1 p-8 md:p-10 lg:p-12">
+
+                {/* Small index tag */}
+                <div className="flex items-center gap-3 mb-auto">
+                  <span className="text-[9px] text-kawai-red/50 tracking-[0.45em] font-semibold font-[family-name:var(--font-brand-sans)] group-hover:text-kawai-red transition-colors duration-400">
+                    {String(index + 1).padStart(2, '0')}
                   </span>
-
-                  {/* Descriptor */}
-                  <span className="block text-[11px] text-white/25 group-hover:text-white/40 leading-relaxed font-[family-name:var(--font-brand-sans)] mt-2.5 transition-colors duration-300 whitespace-pre-line">
-                    {win.description}
-                  </span>
+                  <div className="h-px flex-1 bg-white/[0.05] group-hover:bg-kawai-red/20 transition-colors duration-500" />
                 </div>
 
-                {/* Bottom arrow — appears on hover */}
-                <div className="mt-4 flex items-center gap-1 text-[10px] text-kawai-red/0 group-hover:text-kawai-red/70 transition-all duration-300 font-[family-name:var(--font-brand-sans)] font-medium tracking-wide">
-                  Get started
-                  <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
+                {/* Main content — pushed to bottom */}
+                <div className="mt-16 md:mt-20">
+
+                  {/* Heading — large editorial serif */}
+                  <h2 className="text-4xl md:text-[2.8rem] lg:text-[3.2rem] font-light leading-[1.05] tracking-tight
+                    text-white/60 group-hover:text-white
+                    font-[family-name:var(--font-brand-serif)]
+                    transition-colors duration-500 whitespace-pre-line">
+                    {win.heading || win.label}
+                  </h2>
+
+                  {/* Animated red rule */}
+                  <div className="mt-5 h-px w-6 bg-kawai-red/30 group-hover:w-14 group-hover:bg-kawai-red/70 transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]" />
+
+                  {/* Description */}
+                  <p className="mt-5 text-sm text-white/25 group-hover:text-white/45 leading-relaxed
+                    font-[family-name:var(--font-brand-sans)]
+                    transition-colors duration-500 whitespace-pre-line max-w-[26ch]">
+                    {win.description}
+                  </p>
+
+                  {/* Enter CTA */}
+                  <div className="mt-8 flex items-center gap-2 overflow-hidden">
+                    <span className="text-[11px] text-kawai-red/0 group-hover:text-kawai-red
+                      font-[family-name:var(--font-brand-sans)] font-semibold tracking-[0.25em] uppercase
+                      transition-colors duration-300">
+                      Enter
+                    </span>
+                    <svg
+                      className="w-3.5 h-3.5 text-kawai-red/0 group-hover:text-kawai-red group-hover:translate-x-1
+                        transition-all duration-300"
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  </div>
                 </div>
               </div>
+
+              {/* Bottom red sweep — fills on hover */}
+              <div className="h-[2px] w-0 group-hover:w-full bg-gradient-to-r from-kawai-red/60 to-kawai-red/10 transition-all duration-700 delay-100" />
             </Link>
           </motion.div>
         ))}
       </div>
 
-      {/* Support Center label */}
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.42, duration: 0.5 }}
-        className="text-[10px] text-white/20 tracking-[0.45em] uppercase font-medium mb-5 font-[family-name:var(--font-brand-sans)]"
-      >
-        Support Center
-      </motion.p>
-
-      {/* Search bar */}
+      {/* Search section */}
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.48, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+        transition={{ delay: 0.55, duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
         className="max-w-2xl w-full"
       >
         <FaqSearch variant="hero" placeholder="Search for answers, guides, manuals…" />
@@ -148,7 +198,7 @@ export function TSDLandingHero({ groups }: { groups: GroupWindow[] }) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.7, duration: 0.5 }}
+        transition={{ delay: 0.75, duration: 0.5 }}
       >
         <TypingAnimation />
       </motion.div>

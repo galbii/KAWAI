@@ -441,6 +441,7 @@ const DesktopMenuItem = ({ item, isOpen, onOpen, onClose }: DesktopMenuItemProps
 interface DealerLocationData {
   locationName: string
   slug: string
+  hasMusicSchool: boolean
 }
 
 interface NewsItem {
@@ -514,6 +515,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   }> | null>(null)
   const [isResourcesMenuOpen, setIsResourcesMenuOpen] = useState(false)
   const [isNewsMenuOpen, setIsNewsMenuOpen] = useState(false)
+  const [isShowroomMenuOpen, setIsShowroomMenuOpen] = useState(false)
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
   const [currentLocationData, setCurrentLocationData] = useState<DealerLocationData | null>(locationData || null)
   const [isLoadingLocation, setIsLoadingLocation] = useState(false)
@@ -529,6 +531,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const storefrontsMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const newsMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const showroomMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const autoHideTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const lastScrollY = useRef(0)
   const lastScrollTime = useRef(0)
@@ -655,15 +658,18 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       setIsLoadingLocation(true)
 
       try {
-        const response = await fetch(`/api/storefronts/by-slug/${origin.dealerSlug}`)
-        const result = await response.json()
+        const [storefrontResponse, musicSchoolResponse] = await Promise.all([
+          fetch(`/api/storefronts/by-slug/${origin.dealerSlug}`),
+          fetch(`/api/music-schools/by-storefront/${origin.dealerSlug}`),
+        ])
+        const result = await storefrontResponse.json()
+        const musicSchoolResult = await musicSchoolResponse.json()
 
         if (result.success && result.data) {
-          // Extract just the location name from the storefront data
-          // The API returns the full storefront structure, but we only need name and slug
           const locationData = {
             locationName: result.data.showroomSection?.showroomInfo?.name || origin.dealerSlug,
-            slug: origin.dealerSlug
+            slug: origin.dealerSlug,
+            hasMusicSchool: musicSchoolResult.hasMusicSchool === true,
           }
           setCurrentLocationData(locationData)
         } else {
@@ -757,6 +763,9 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         if (isNewsMenuOpen) {
           setIsNewsMenuOpen(false)
         }
+        if (isShowroomMenuOpen) {
+          setIsShowroomMenuOpen(false)
+        }
       }
     }
 
@@ -775,6 +784,9 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       }
       if (resourcesMenuTimeoutRef.current) {
         clearTimeout(resourcesMenuTimeoutRef.current)
+      }
+      if (showroomMenuTimeoutRef.current) {
+        clearTimeout(showroomMenuTimeoutRef.current)
       }
       if (newsMenuTimeoutRef.current) {
         clearTimeout(newsMenuTimeoutRef.current)
@@ -990,6 +1002,17 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     }, 2000)
   }, [])
 
+  const handleShowroomMenuOpen = useCallback(() => {
+    if (showroomMenuTimeoutRef.current) clearTimeout(showroomMenuTimeoutRef.current)
+    setIsShowroomMenuOpen(true)
+  }, [])
+
+  const handleShowroomMenuClose = useCallback(() => {
+    showroomMenuTimeoutRef.current = setTimeout(() => {
+      setIsShowroomMenuOpen(false)
+    }, 150)
+  }, [])
+
 
   // Bottom nav hover reveal handlers
   const handleBottomNavMouseEnter = useCallback(() => {
@@ -1070,6 +1093,17 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     }
   }
 
+  // KMS logo detection — computed before JSX so there's no IIFE inside render
+  const isMusicSchoolPage = pathname.includes('/music-school')
+  const kmsUrlSlug = isMusicSchoolPage ? (pathname.match(/\/store\/([^/]+)/)?.[1] ?? '') : ''
+  const kmsRawName = (currentLocationData?.locationName || kmsUrlSlug)
+  const kmsDisplayName = kmsRawName
+    .replace(/PIANO GALLERY/gi, '')
+    .replace(/KAWAI/gi, '')
+    .trim()
+    .toUpperCase()
+  const kmsMusicSchoolHref = pathname.replace(/\/music-school.*/, '/music-school')
+
   return (
     <>
     <header
@@ -1085,12 +1119,30 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
           <div className="flex items-center justify-between h-16">
             {/* Logo - Left */}
             <div className="flex-shrink-0 z-10">
-              <KawaiLogo
-                size="md"
-                animated={true}
-                {...(currentLocationData?.locationName && { dealerName: currentLocationData.locationName })}
-                nonClickable={isSignaturePage}
-              />
+              {isMusicSchoolPage ? (
+                <Link
+                  href={kmsMusicSchoolHref}
+                  className="flex items-center space-x-3"
+                >
+                  <img
+                    src="https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/KMS%20Logo.webp"
+                    alt="Kawai Music School"
+                    className="h-8 w-auto flex-shrink-0"
+                  />
+                  {kmsDisplayName && (
+                    <div className="font-bold tracking-wide kawai-heading whitespace-nowrap text-kawai-black text-base flex-shrink-0">
+                      {kmsDisplayName}
+                    </div>
+                  )}
+                </Link>
+              ) : (
+                <KawaiLogo
+                  size="md"
+                  animated={true}
+                  {...(currentLocationData?.locationName && { dealerName: currentLocationData.locationName })}
+                  nonClickable={isSignaturePage}
+                />
+              )}
             </div>
 
             {/* Home Icon + SearchBar - Center (Desktop Only) */}
@@ -1148,6 +1200,77 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                       Visit Showroom
                     </ContextAwareLink>
                   </Button>
+                </motion.div>
+              )}
+
+              {/* Kawai Music School dropdown - Desktop (dealer location pages, only if school exists) */}
+              {currentLocationData?.hasMusicSchool && !isLoadingLocation && !isSignaturePage && !isUniversityPage && (
+                <motion.div
+                  className="hidden lg:flex items-center"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.25, duration: 0.4 }}
+                  onMouseEnter={handleShowroomMenuOpen}
+                  onMouseLeave={handleShowroomMenuClose}
+                >
+                  <div className="relative">
+                    {/* KMS Logo trigger */}
+                    <button
+                      className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-kawai-pearl transition-colors"
+                      aria-label="Kawai Music School"
+                      aria-expanded={isShowroomMenuOpen}
+                    >
+                      <img
+                        src="https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/KMS%20Logo.webp"
+                        alt="Kawai Music School"
+                        className="h-6 w-auto"
+                      />
+                      <ChevronDown className={cn('h-3 w-3 text-kawai-charcoal transition-transform duration-200', isShowroomMenuOpen && 'rotate-180')} />
+                    </button>
+
+                    <AnimatePresence>
+                      {isShowroomMenuOpen && (
+                        <motion.div
+                          className="absolute right-0 top-full mt-1 w-52 bg-white border border-kawai-neutral rounded-lg shadow-brand-medium overflow-hidden z-50"
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          transition={{ duration: 0.15 }}
+                          onMouseEnter={handleShowroomMenuOpen}
+                          onMouseLeave={handleShowroomMenuClose}
+                        >
+                          <div className="px-4 py-3 border-b border-kawai-neutral/50">
+                            <img
+                              src="https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/KMS%20Logo.webp"
+                              alt="Kawai Music School"
+                              className="h-5 w-auto"
+                            />
+                          </div>
+                          <ContextAwareLink
+                            href={`/store/${currentLocationData.slug}/music-school`}
+                            className="block px-4 py-2.5 text-sm text-kawai-charcoal hover:bg-kawai-pearl hover:text-kawai-red transition-colors"
+                            onClick={() => setIsShowroomMenuOpen(false)}
+                          >
+                            Overview
+                          </ContextAwareLink>
+                          <ContextAwareLink
+                            href={`/store/${currentLocationData.slug}/music-school/programs`}
+                            className="block px-4 py-2.5 text-sm text-kawai-charcoal hover:bg-kawai-pearl hover:text-kawai-red transition-colors"
+                            onClick={() => setIsShowroomMenuOpen(false)}
+                          >
+                            Programs
+                          </ContextAwareLink>
+                          <ContextAwareLink
+                            href={`/store/${currentLocationData.slug}/music-school/faculty`}
+                            className="block px-4 py-2.5 pb-3 text-sm text-kawai-charcoal hover:bg-kawai-pearl hover:text-kawai-red transition-colors"
+                            onClick={() => setIsShowroomMenuOpen(false)}
+                          >
+                            Faculty
+                          </ContextAwareLink>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </motion.div>
               )}
 
@@ -1461,6 +1584,34 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                     >
                       Find a Dealer
                     </ContextAwareLink>
+                  )}
+                  {currentLocationData?.hasMusicSchool && (
+                    <div className="border-t border-kawai-neutral/40 pt-3 space-y-1">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-kawai-charcoal/50 px-1 pb-1">
+                        Kawai Music School
+                      </p>
+                      <Link
+                        href={`/store/${currentLocationData.slug}/music-school`}
+                        onClick={closeMobileMenu}
+                        className="block w-full rounded-lg px-4 py-2.5 text-sm text-kawai-charcoal hover:bg-kawai-pearl hover:text-kawai-red transition-colors text-left"
+                      >
+                        Overview
+                      </Link>
+                      <Link
+                        href={`/store/${currentLocationData.slug}/music-school/programs`}
+                        onClick={closeMobileMenu}
+                        className="block w-full rounded-lg px-4 py-2.5 text-sm text-kawai-charcoal hover:bg-kawai-pearl hover:text-kawai-red transition-colors text-left"
+                      >
+                        Programs
+                      </Link>
+                      <Link
+                        href={`/store/${currentLocationData.slug}/music-school/faculty`}
+                        onClick={closeMobileMenu}
+                        className="block w-full rounded-lg px-4 py-2.5 text-sm text-kawai-charcoal hover:bg-kawai-pearl hover:text-kawai-red transition-colors text-left"
+                      >
+                        Faculty
+                      </Link>
+                    </div>
                   )}
                 </div>
               </motion.div>

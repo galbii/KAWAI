@@ -19,6 +19,7 @@ interface NavigationItem {
 interface DealerLocationData {
   locationName: string
   slug: string
+  hasMusicSchool: boolean
 }
 
 interface NewsItem {
@@ -51,46 +52,44 @@ function getDealerLocationBySlug(slug: string): Promise<DealerLocationData | nul
       try {
         const payload = await getPayload({ config })
 
-        const result = await payload.find({
+        const storefrontResult = await payload.find({
           collection: 'storefronts',
           where: {
             and: [
-              {
-                slug: {
-                  equals: slug
-                }
-              },
-              {
-                isActive: {
-                  equals: true
-                }
-              }
-            ]
+              { slug: { equals: slug } },
+              { isActive: { equals: true } },
+            ],
           },
           limit: 1,
-          select: {
-            locationName: true,
-            slug: true
-          }
+          depth: 0,
         })
 
-        const location = result.docs[0]
+        const location = storefrontResult.docs[0]
+        if (!location) return null
 
-        if (location) {
-          return {
-            locationName: location.locationName,
-            slug: location.slug
-          }
+        // Check if a music school is linked to this storefront
+        const musicSchoolResult = await payload.find({
+          collection: 'music-schools',
+          where: {
+            storefront: { equals: location.id },
+            isActive: { equals: true },
+          },
+          depth: 0,
+          limit: 1,
+        })
+
+        return {
+          locationName: location.locationName,
+          slug: location.slug,
+          hasMusicSchool: musicSchoolResult.docs.length > 0,
         }
-
-        return null
       } catch (error) {
         console.error('Error fetching storefront location:', error)
         return null
       }
     },
     [`header-storefront-${slug}`],
-    { tags: [`storefront-${slug}`, 'storefronts'], revalidate: 3600 }
+    { tags: [`storefront-${slug}`, 'storefronts', 'music-schools'], revalidate: 3600 }
   )()
 }
 
