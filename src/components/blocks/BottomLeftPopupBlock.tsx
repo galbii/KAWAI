@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import type { Media } from '@/payload-types'
 import { X } from 'lucide-react'
+import { trackCTAClick, trackWithConfig } from '@/lib/analytics/unified-tracking'
 
 // Hook to detect mobile screen size
 function useIsMobile() {
@@ -46,6 +47,8 @@ interface BottomLeftPopupBlockProps {
   animationStyle?: 'slide' | 'fade' | 'bounce' | 'scale' | null
   customStorageKey?: string | null
   zIndex?: number | null
+  tracking?: any
+  ctaTracking?: any
 }
 
 type PopupState = 'hidden' | 'entering' | 'visible' | 'exiting' | 'dismissed'
@@ -87,6 +90,8 @@ export function BottomLeftPopupBlock({
   animationStyle = 'slide',
   customStorageKey,
   zIndex = 9000,
+  tracking,
+  ctaTracking,
 }: BottomLeftPopupBlockProps) {
   const [state, setState] = useState<PopupState>('hidden')
   const [shouldRender, setShouldRender] = useState(true)
@@ -96,6 +101,14 @@ export function BottomLeftPopupBlock({
 
   const handleDismiss = useCallback(() => {
     if (!dismissible || state === 'dismissed' || state === 'exiting') return
+
+    trackWithConfig({
+      blockType: 'layout-bottom-left-popup',
+      blockData: { tracking: tracking as any },
+      action: 'engagement',
+      label: 'popup_dismissed',
+      additionalProps: { theme, position },
+    })
 
     setState('exiting')
     setTimeout(() => {
@@ -127,7 +140,16 @@ export function BottomLeftPopupBlock({
     // Auto-show timer
     const showTimer = setTimeout(() => {
       setState('entering')
-      setTimeout(() => setState('visible'), 50)
+      setTimeout(() => {
+        setState('visible')
+        trackWithConfig({
+          blockType: 'layout-bottom-left-popup',
+          blockData: { tracking: tracking as any },
+          action: 'impression',
+          label: title || 'Bottom Popup',
+          additionalProps: { theme, position, auto_show_delay: autoShowDelay },
+        })
+      }, 50)
     }, autoShowDelay ?? 3000)
 
     return () => clearTimeout(showTimer)
@@ -499,6 +521,15 @@ export function BottomLeftPopupBlock({
                     href={ctaLink}
                     target={ctaOpenInNewTab ? '_blank' : undefined}
                     rel={ctaOpenInNewTab ? 'noopener noreferrer' : undefined}
+                    onClick={() => {
+                      trackCTAClick({
+                        blockType: 'layout-bottom-left-popup',
+                        blockData: { ctaTracking: ctaTracking as any },
+                        ctaText: ctaText || '',
+                        destination: ctaLink || '',
+                        additionalProps: { theme, position, size },
+                      })
+                    }}
                     className={cn(
                       'inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium',
                       'transition-all duration-200',

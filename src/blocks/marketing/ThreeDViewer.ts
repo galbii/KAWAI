@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { trackingField } from '@/lib/payload/fields/tracking'
 
 export const ThreeDViewer: Block = {
   slug: 'marketing-3d-viewer',
@@ -162,5 +163,14 @@ export const ThreeDViewer: Block = {
         description: 'Layout and display options',
       },
     },
+    trackingField({
+      defaultEnabled: true,
+      overrides: {
+        admin: {
+          description:
+            'Track when visitors open the 3D model viewer — high-intent engagement signal',
+        },
+      },
+    }),
   ],
 }

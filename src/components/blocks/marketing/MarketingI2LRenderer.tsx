@@ -8,6 +8,7 @@ import type { MarketingI2LBlock, Media } from '@/payload-types'
 import { cn } from '@/lib/utils'
 import { getImagePropsWithFallback } from '@/lib/fallbacks/media'
 import { Button } from '@/components/ui/button'
+import { trackVideoInteraction, trackCTAClick, trackBlockImpression } from '@/lib/analytics/unified-tracking'
 
 interface MarketingI2LRendererProps extends MarketingI2LBlock {}
 
@@ -35,7 +36,8 @@ export function MarketingI2LRenderer({
   videos,
   settings,
   styling,
-}: MarketingI2LRendererProps) {
+  impressionTracking,
+}: MarketingI2LRendererProps & { impressionTracking?: any }) {
   // Validate videos
   if (!videos || videos.length === 0) {
     return null
@@ -86,6 +88,14 @@ export function MarketingI2LRenderer({
 
   const currentTheme = themeClasses[theme as keyof typeof themeClasses] || themeClasses.light
 
+  // Block impression tracking
+  useEffect(() => {
+    trackBlockImpression({
+      blockType: 'marketing-i2l',
+      blockData: { impressionTracking: impressionTracking as any },
+    })
+  }, [])
+
   // Intersection Observer for scroll animations
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -115,12 +125,19 @@ export function MarketingI2LRenderer({
 
   const goToIndex = useCallback((index: number) => {
     setCurrentIndex(index)
+    trackVideoInteraction({
+      blockType: 'marketing-i2l',
+      blockData: { videoTracking: (videos[index] as any)?.videoTracking },
+      action: 'video_play',
+      videoId: videos[index]?.youtubeUrl || '',
+      videoTitle: videos[index]?.title || '',
+    })
     // Scroll thumbnail into view
     if (thumbnailsRef.current) {
       const thumbnail = thumbnailsRef.current.children[index] as HTMLElement
       thumbnail?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
     }
-  }, [])
+  }, [videos])
 
   // Touch handlers for mobile swipe
   const onTouchStart = (e: React.TouchEvent) => {
@@ -242,6 +259,15 @@ export function MarketingI2LRenderer({
                           href={currentVideo.ctaUrl}
                           target={currentVideo.ctaOpenInNewTab ? '_blank' : undefined}
                           rel={currentVideo.ctaOpenInNewTab ? 'noopener noreferrer' : undefined}
+                          onClick={() => {
+                            trackCTAClick({
+                              blockType: 'marketing-i2l',
+                              blockData: { ctaTracking: (currentVideo as any)?.ctaTracking },
+                              ctaText: currentVideo?.ctaText || '',
+                              destination: currentVideo?.ctaUrl || '',
+                              additionalProps: { video_title: currentVideo?.title, video_category: currentVideo?.category },
+                            })
+                          }}
                         >
                           {currentVideo.ctaText}
                         </Link>

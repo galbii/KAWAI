@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion'
 import { usePageLayout } from '@/lib/contexts/PageLayoutContext'
+import { trackWithConfig } from '@/lib/analytics/unified-tracking'
 
 interface NavSection {
   label: string
@@ -31,6 +32,7 @@ interface SideNavigationBlockProps {
   glassmorphism?: boolean | null
   showBorder?: boolean | null
   compactMode?: boolean | null
+  navTracking?: any
 }
 
 const iconMap = {
@@ -62,6 +64,7 @@ export function SideNavigationBlock({
   glassmorphism = true,
   showBorder = true,
   compactMode = false,
+  navTracking,
 }: SideNavigationBlockProps) {
   const pageLayout = usePageLayout()
 
@@ -160,7 +163,7 @@ export function SideNavigationBlock({
   }, [enabled, finalSections, scrollOffset])
 
   const handleNavClick = useCallback(
-    (targetId: string) => {
+    (targetId: string, label?: string, index?: number) => {
       const element = document.getElementById(targetId)
       if (!element) return
 
@@ -176,8 +179,17 @@ export function SideNavigationBlock({
       }
 
       setIsMobileMenuOpen(false)
+
+      trackWithConfig({
+        blockType: 'layout-side-navigation',
+        blockData: { tracking: navTracking as any },
+        action: 'navigation',
+        label: label || '',
+        position: index,
+        additionalProps: { target_section: label },
+      })
     },
-    [smoothScroll, scrollOffset]
+    [smoothScroll, scrollOffset, navTracking]
   )
 
   // Handle mobile sidebar expansion
@@ -322,7 +334,7 @@ export function SideNavigationBlock({
             return (
               <motion.button
                 key={section.targetId}
-                onClick={() => handleNavClick(section.targetId)}
+                onClick={() => handleNavClick(section.targetId, section.label, index)}
                 className={`
                   relative flex items-center gap-3
                   rounded-lg transition-all duration-200
@@ -427,14 +439,14 @@ export function SideNavigationBlock({
           scrollbar-hide
         `}
       >
-        {finalSections.map((section) => {
+        {finalSections.map((section, index) => {
           const isActive = activeSection === section.targetId
           const icon = section.icon && section.icon !== 'none' ? iconMap[section.icon] : '●'
 
           return (
             <motion.button
               key={section.targetId}
-              onClick={() => handleNavClick(section.targetId)}
+              onClick={() => handleNavClick(section.targetId, section.label, index)}
               className={`
                 relative px-4 py-2 rounded-full text-xs whitespace-nowrap
                 transition-all duration-300 font-sans
@@ -541,7 +553,7 @@ export function SideNavigationBlock({
                         transition={{ delay: index * 0.05 }}
                       >
                         <button
-                          onClick={() => handleNavClick(section.targetId)}
+                          onClick={() => handleNavClick(section.targetId, section.label, index)}
                           className={`
                             group flex items-center gap-4 w-full text-left p-3 rounded-lg
                             transition-all duration-300
@@ -640,7 +652,7 @@ export function SideNavigationBlock({
                 key={section.targetId}
                 onClick={(e) => {
                   handleMobileSidebarToggle()
-                  handleNavClick(section.targetId)
+                  handleNavClick(section.targetId, section.label, index)
                 }}
                 className={`
                   relative flex items-center gap-3

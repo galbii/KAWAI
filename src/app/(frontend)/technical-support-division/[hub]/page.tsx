@@ -155,11 +155,11 @@ export default async function HubPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
-      <div className="min-h-screen bg-kawai-black">
-        <section className="relative bg-kawai-black text-white pt-36 pb-24 md:pt-48 md:pb-32 overflow-hidden">
+      <div className="min-h-screen bg-kawai-pearl">
+        <section className="relative bg-kawai-pearl pt-36 pb-24 md:pt-48 md:pb-32 overflow-hidden">
           {/* Ghost heading backdrop */}
           <div aria-hidden className="absolute inset-0 flex items-end justify-end pointer-events-none select-none overflow-hidden">
-            <span className="text-[22vw] font-bold leading-none text-white/[0.018] font-[family-name:var(--font-brand-sans)] translate-y-[15%] translate-x-[5%]">
+            <span className="text-[22vw] font-bold leading-none text-kawai-black/[0.04] font-[family-name:var(--font-brand-sans)] translate-y-[15%] translate-x-[5%]">
               TSD
             </span>
           </div>
@@ -172,7 +172,7 @@ export default async function HubPage({ params }: Props) {
               </p>
             </div>
 
-            <h1 className="font-[family-name:var(--font-brand-serif)] font-light text-6xl md:text-7xl lg:text-[6rem] xl:text-[7rem] text-white leading-[0.95] tracking-tight mb-16 max-w-4xl">
+            <h1 className="font-[family-name:var(--font-brand-serif)] font-light text-6xl md:text-7xl lg:text-[6rem] xl:text-[7rem] text-kawai-black leading-[0.95] tracking-tight mb-16 max-w-4xl">
               {hubHeading}
             </h1>
 

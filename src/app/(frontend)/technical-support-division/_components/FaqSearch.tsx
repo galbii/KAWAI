@@ -100,7 +100,7 @@ export function FaqSearch({
   const isHero = variant === 'hero'
   const isLanding = variant === 'landing'
   const isFloating = variant === 'floating'
-  const isDark = isHero || isLanding || isFloating
+  const isDark = false
 
   return (
     <div ref={containerRef} className="relative w-full">
@@ -116,9 +116,7 @@ export function FaqSearch({
               isFloating ? 'w-4 h-4' : 'w-5 h-5',
               loading
                 ? 'animate-pulse text-kawai-red'
-                : isDark
-                  ? 'text-white/50 group-focus-within:text-white/80'
-                  : 'text-kawai-charcoal/40 group-focus-within:text-kawai-charcoal/70'
+                : 'text-kawai-charcoal/40 group-focus-within:text-kawai-charcoal/70'
             )}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
           >
@@ -137,11 +135,11 @@ export function FaqSearch({
           className={cn(
             'w-full font-[family-name:var(--font-brand-sans)] transition-all duration-200 focus:outline-none',
             // Landing variant — prominent pill, large
-            isLanding && 'h-16 pl-14 pr-12 rounded-full text-lg bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder:text-white/40 focus:bg-white/15 focus:border-white/50 focus:ring-2 focus:ring-white/20 shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_8px_32px_rgba(0,0,0,0.4)]',
-            // Hero variant — same as before
-            isHero && 'h-16 pl-14 pr-12 rounded-2xl text-base bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder:text-white/40 focus:bg-white/15 focus:border-white/50 focus:ring-2 focus:ring-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)]',
-            // Floating variant — compact, dark glassmorphism for dark bar bg
-            isFloating && 'h-10 pl-10 pr-10 rounded-xl text-sm bg-white/10 backdrop-blur-sm border border-white/15 text-white placeholder:text-white/40 focus:bg-white/15 focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/20',
+            isLanding && 'h-16 pl-14 pr-12 rounded-full text-lg bg-white border border-kawai-neutral/70 text-kawai-black placeholder:text-kawai-charcoal/30 shadow-sm focus:ring-2 focus:ring-kawai-red/15 focus:border-kawai-red/40',
+            // Hero variant
+            isHero && 'h-16 pl-14 pr-12 rounded-2xl text-base bg-white border border-kawai-neutral/70 text-kawai-black placeholder:text-kawai-charcoal/30 shadow-sm focus:ring-2 focus:ring-kawai-red/15 focus:border-kawai-red/40',
+            // Floating variant — compact, light for white bar bg
+            isFloating && 'h-10 pl-10 pr-10 rounded-xl text-sm bg-white border border-kawai-neutral/50 text-kawai-black placeholder:text-kawai-charcoal/30 focus:border-kawai-red/40 focus:ring-2 focus:ring-kawai-red/10 focus:outline-none',
             // Inline variant
             !isLanding && !isHero && !isFloating && 'h-16 pl-14 pr-12 rounded-2xl text-base bg-white border border-kawai-neutral/70 text-kawai-black placeholder:text-kawai-charcoal/30 shadow-sm focus:ring-2 focus:ring-kawai-red/15 focus:border-kawai-red/40',
           )}
@@ -152,7 +150,7 @@ export function FaqSearch({
             className={cn(
               'absolute right-5 top-1/2 -translate-y-1/2 transition-colors',
               isFloating && 'right-3',
-              isDark ? 'text-white/40 hover:text-white/70' : 'text-kawai-charcoal/30 hover:text-kawai-charcoal/60'
+              'text-kawai-charcoal/30 hover:text-kawai-charcoal/60'
             )}
             aria-label="Clear search"
           >
@@ -168,7 +166,7 @@ export function FaqSearch({
         <div className="mt-3">
           <Link
             href={backHref}
-            className="inline-flex items-center gap-2 text-white/30 hover:text-white/70 transition-colors duration-200 text-[11px] tracking-[0.2em] uppercase font-[family-name:var(--font-brand-sans)]"
+            className="inline-flex items-center gap-2 text-kawai-black/60 hover:text-kawai-black transition-colors duration-200 text-[11px] tracking-[0.2em] uppercase font-[family-name:var(--font-brand-sans)]"
           >
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />

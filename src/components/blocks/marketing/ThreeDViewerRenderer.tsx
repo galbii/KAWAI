@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { ThreeDViewerButton, ThreeDViewerModal, use3DViewer } from '@/components/ui/3d-viewer'
 import type { Viewer3DConfig } from '@/components/ui/3d-viewer'
+import { trackWithConfig } from '@/lib/analytics/unified-tracking'
 
 /**
  * Type definition for 3D Viewer Block props
@@ -30,6 +31,7 @@ interface ThreeDViewerRendererProps {
   } | null
   blockType?: string
   id?: string
+  tracking?: any
 }
 
 export function ThreeDViewerRenderer({
@@ -41,6 +43,7 @@ export function ThreeDViewerRenderer({
   autoOpen = false,
   contextSection,
   layout,
+  tracking,
 }: ThreeDViewerRendererProps) {
   const searchParams = useSearchParams()
 
@@ -74,6 +77,38 @@ export function ThreeDViewerRenderer({
     productName: productName || modelId,
     searchParams,
   })
+
+  // Tracking helper
+  const fireTracking = React.useCallback(
+    (method: 'click' | 'auto-open') => {
+      trackWithConfig({
+        blockType: 'marketing-3d-viewer',
+        blockData: { tracking: tracking as any },
+        action: 'engagement',
+        label: `3D Viewer: ${productName || modelId}`,
+        additionalProps: {
+          model_id: modelId,
+          product_name: productName || modelId,
+          button_text: buttonText,
+          open_method: method,
+        },
+      })
+    },
+    [tracking, modelId, productName, buttonText],
+  )
+
+  // Handle manual open with tracking
+  const handleOpen = React.useCallback(() => {
+    viewer.open()
+    fireTracking('click')
+  }, [viewer, fireTracking])
+
+  // Track auto-opens (triggered by ?mode=3d URL param)
+  React.useEffect(() => {
+    if (viewer.shouldAutoOpen) {
+      fireTracking('auto-open')
+    }
+  }, [viewer.shouldAutoOpen, fireTracking])
 
   // Theme styles for the button (using !important to override defaults)
   const themeStyles = {
@@ -167,7 +202,7 @@ export function ThreeDViewerRenderer({
 
       {/* 3D Viewer Button */}
       <ThreeDViewerButton
-        onClick={viewer.open}
+        onClick={handleOpen}
         text={buttonText || 'View in 3D'}
         productName={productName || modelId}
         visible={true}

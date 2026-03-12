@@ -31,6 +31,7 @@ interface ThreeDViewerBlockProps {
     hideOnMobile?: boolean | null
     showScrollIndicator?: boolean | null
   } | null
+  tracking?: any
   blockType?: string
   id?: string
 }

@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 import { imageField } from '@/lib/payload/fields/media'
+import { trackingField, ctaTrackingField } from '@/lib/payload/fields/tracking'
 
 export const BottomLeftPopup: Block = {
   slug: 'layout-bottom-left-popup',
@@ -259,5 +260,7 @@ export const BottomLeftPopup: Block = {
         },
       ],
     },
+    ctaTrackingField(),
+    trackingField({ name: 'tracking', defaultEnabled: true }),
   ],
 }

@@ -7,6 +7,7 @@ import { motion, AnimatePresence, useInView } from 'framer-motion'
 import type { LayoutHeroCarouselBlock, Media } from '@/payload-types'
 import { cn } from '@/lib/utils'
 import { getImagePropsWithFallback } from '@/lib/fallbacks/media'
+import { trackCTAClick, trackBlockImpression } from '@/lib/analytics/unified-tracking'
 
 interface LayoutHeroCarouselRendererProps extends LayoutHeroCarouselBlock {}
 
@@ -14,7 +15,8 @@ export function LayoutHeroCarouselRenderer({
   slides,
   settings,
   styling,
-}: LayoutHeroCarouselRendererProps) {
+  impressionTracking,
+}: LayoutHeroCarouselRendererProps & { impressionTracking?: any }) {
   // Validate slides
   if (!slides || slides.length === 0) {
     return null
@@ -174,6 +176,14 @@ export function LayoutHeroCarouselRenderer({
     setImageLoaded(false)
   }, [currentIndex])
 
+  useEffect(() => {
+    trackBlockImpression({
+      blockType: 'layout-hero-carousel',
+      blockData: { impressionTracking: impressionTracking as any },
+      position: 0,
+    })
+  }, [])
+
   return (
     <section
       ref={sectionRef}
@@ -311,6 +321,17 @@ export function LayoutHeroCarouselRenderer({
                               target={currentSlide.ctaOpenInNewTab ? '_blank' : undefined}
                               rel={currentSlide.ctaOpenInNewTab ? 'noopener noreferrer' : undefined}
                               className="group relative inline-flex items-center gap-3 overflow-hidden rounded-full bg-kawai-red px-8 py-4 font-sans text-sm font-semibold uppercase tracking-[0.15em] text-white transition-all duration-500 ease-out hover:bg-kawai-red/90 hover:shadow-[0_8px_32px_rgba(196,30,58,0.5)] hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-kawai-red/50 focus:ring-offset-2 focus:ring-offset-transparent"
+                              onClick={() => {
+                                const slide = slides[currentIndex]
+                                trackCTAClick({
+                                  blockType: 'layout-hero-carousel',
+                                  blockData: { ctaTracking: (slide as any).ctaTracking },
+                                  ctaText: slide?.ctaText || '',
+                                  destination: slide?.ctaLink || '',
+                                  position: currentIndex,
+                                  additionalProps: { slide_title: slide?.title, slide_category: slide?.category },
+                                })
+                              }}
                             >
                               <span className="relative z-10">{currentSlide.ctaText}</span>
                               <svg

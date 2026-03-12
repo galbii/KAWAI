@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { ctaTrackingField, trackImpressionField } from '@/lib/payload/fields/tracking'
 
 export const ArtistCarousel: Block = {
   slug: 'marketing-artist-carousel',
@@ -300,5 +301,9 @@ export const ArtistCarousel: Block = {
         description: 'Optional call-to-action button',
       },
     },
+
+    ctaTrackingField(),
+
+    trackImpressionField({ trackViewport: true, viewportThreshold: 0.3 }),
   ],
 }

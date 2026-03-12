@@ -672,6 +672,87 @@ export interface LayoutHeroCarouselBlock {
      * Open CTA link in a new tab (recommended for external links)
      */
     ctaOpenInNewTab?: boolean | null;
+    /**
+     * Track clicks and conversions for this call-to-action
+     */
+    ctaTracking?: {
+      /**
+       * Track interactions with this block (CTAs, impressions, etc.)
+       */
+      enabled?: boolean | null;
+      /**
+       * Override default event name (leave empty for auto-generated)
+       */
+      eventName?: string | null;
+      /**
+       * Category for organizing analytics reports
+       */
+      category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+      /**
+       * Estimated dollar value of this conversion (for ROI tracking)
+       */
+      conversionValue?: number | null;
+      /**
+       * Send conversion event to Meta Pixel and Google Analytics
+       */
+      trackAsConversion?: boolean | null;
+      /**
+       * Map to GA4 recommended event (see developers.google.com/analytics)
+       */
+      ga4EventType?:
+        | (
+            | 'add_payment_info'
+            | 'add_shipping_info'
+            | 'add_to_cart'
+            | 'add_to_wishlist'
+            | 'begin_checkout'
+            | 'purchase'
+            | 'refund'
+            | 'remove_from_cart'
+            | 'generate_lead'
+            | 'qualify_lead'
+            | 'disqualify_lead'
+            | 'close_convert_lead'
+            | 'close_unconvert_lead'
+            | 'select_content'
+            | 'select_item'
+            | 'select_promotion'
+            | 'search'
+            | 'login'
+            | 'join_group'
+            | 'earn_virtual_currency'
+            | 'level_start'
+            | 'level_end'
+            | 'level_up'
+            | 'post_score'
+          )
+        | null;
+      /**
+       * Map to Meta Pixel standard event (see developers.facebook.com/docs/meta-pixel)
+       */
+      metaEventType?:
+        | (
+            | 'Lead'
+            | 'CompleteRegistration'
+            | 'SubmitApplication'
+            | 'StartTrial'
+            | 'Subscribe'
+            | 'AddPaymentInfo'
+            | 'AddToCart'
+            | 'AddToWishlist'
+            | 'InitiateCheckout'
+            | 'Purchase'
+            | 'ViewContent'
+            | 'Search'
+            | 'Contact'
+            | 'FindLocation'
+            | 'Schedule'
+            | 'CustomizeProduct'
+            | 'Donate'
+            | 'Custom'
+          )
+        | null;
+    };
     id?: string | null;
   }[];
   /**
@@ -739,6 +820,35 @@ export interface LayoutHeroCarouselBlock {
      * Style of content overlay/background
      */
     overlayStyle?: ('glassmorphism' | 'gradient' | 'solid' | 'none') | null;
+  };
+  /**
+   * Track when this block is viewed
+   */
+  impressionTracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+    /**
+     * Only track when block is visible in viewport
+     */
+    trackViewport?: boolean | null;
+    /**
+     * Percentage of block that must be visible (0.5 = 50%)
+     */
+    viewportThreshold?: number | null;
   };
   id?: string | null;
   blockName?: string | null;
@@ -840,9 +950,119 @@ export interface LayoutVideoBackgroundBlock {
     openInNewTab?: boolean | null;
   };
   /**
+   * Track clicks and conversions for this call-to-action
+   */
+  ctaTracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+    /**
+     * Send conversion event to Meta Pixel and Google Analytics
+     */
+    trackAsConversion?: boolean | null;
+    /**
+     * Map to GA4 recommended event (see developers.google.com/analytics)
+     */
+    ga4EventType?:
+      | (
+          | 'add_payment_info'
+          | 'add_shipping_info'
+          | 'add_to_cart'
+          | 'add_to_wishlist'
+          | 'begin_checkout'
+          | 'purchase'
+          | 'refund'
+          | 'remove_from_cart'
+          | 'generate_lead'
+          | 'qualify_lead'
+          | 'disqualify_lead'
+          | 'close_convert_lead'
+          | 'close_unconvert_lead'
+          | 'select_content'
+          | 'select_item'
+          | 'select_promotion'
+          | 'search'
+          | 'login'
+          | 'join_group'
+          | 'earn_virtual_currency'
+          | 'level_start'
+          | 'level_end'
+          | 'level_up'
+          | 'post_score'
+        )
+      | null;
+    /**
+     * Map to Meta Pixel standard event (see developers.facebook.com/docs/meta-pixel)
+     */
+    metaEventType?:
+      | (
+          | 'Lead'
+          | 'CompleteRegistration'
+          | 'SubmitApplication'
+          | 'StartTrial'
+          | 'Subscribe'
+          | 'AddPaymentInfo'
+          | 'AddToCart'
+          | 'AddToWishlist'
+          | 'InitiateCheckout'
+          | 'Purchase'
+          | 'ViewContent'
+          | 'Search'
+          | 'Contact'
+          | 'FindLocation'
+          | 'Schedule'
+          | 'CustomizeProduct'
+          | 'Donate'
+          | 'Custom'
+        )
+      | null;
+  };
+  /**
    * Show scroll indicator at bottom of video (animated chevron)
    */
   showScrollIndicator?: boolean | null;
+  /**
+   * Track video engagement and watch behavior
+   */
+  videoTracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+    /**
+     * Record when users play or pause the video
+     */
+    trackPlayPause?: boolean | null;
+    /**
+     * Record milestone completions
+     */
+    trackProgress?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'layout-video-background';
@@ -982,6 +1202,108 @@ export interface LayoutBottomLeftPopupBlock {
    * Z-index stacking order
    */
   zIndex?: number | null;
+  /**
+   * Track clicks and conversions for this call-to-action
+   */
+  ctaTracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+    /**
+     * Send conversion event to Meta Pixel and Google Analytics
+     */
+    trackAsConversion?: boolean | null;
+    /**
+     * Map to GA4 recommended event (see developers.google.com/analytics)
+     */
+    ga4EventType?:
+      | (
+          | 'add_payment_info'
+          | 'add_shipping_info'
+          | 'add_to_cart'
+          | 'add_to_wishlist'
+          | 'begin_checkout'
+          | 'purchase'
+          | 'refund'
+          | 'remove_from_cart'
+          | 'generate_lead'
+          | 'qualify_lead'
+          | 'disqualify_lead'
+          | 'close_convert_lead'
+          | 'close_unconvert_lead'
+          | 'select_content'
+          | 'select_item'
+          | 'select_promotion'
+          | 'search'
+          | 'login'
+          | 'join_group'
+          | 'earn_virtual_currency'
+          | 'level_start'
+          | 'level_end'
+          | 'level_up'
+          | 'post_score'
+        )
+      | null;
+    /**
+     * Map to Meta Pixel standard event (see developers.facebook.com/docs/meta-pixel)
+     */
+    metaEventType?:
+      | (
+          | 'Lead'
+          | 'CompleteRegistration'
+          | 'SubmitApplication'
+          | 'StartTrial'
+          | 'Subscribe'
+          | 'AddPaymentInfo'
+          | 'AddToCart'
+          | 'AddToWishlist'
+          | 'InitiateCheckout'
+          | 'Purchase'
+          | 'ViewContent'
+          | 'Search'
+          | 'Contact'
+          | 'FindLocation'
+          | 'Schedule'
+          | 'CustomizeProduct'
+          | 'Donate'
+          | 'Custom'
+        )
+      | null;
+  };
+  /**
+   * Configure event tracking for this block
+   */
+  tracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'layout-bottom-left-popup';
@@ -1065,6 +1387,27 @@ export interface LayoutSideNavigationBlock {
    * Use compact spacing for more navigation items
    */
   compactMode?: boolean | null;
+  /**
+   * Track section navigation clicks for user journey analysis
+   */
+  navTracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'layout-side-navigation';
@@ -3343,6 +3686,87 @@ export interface MarketingGrandHeroBlock {
     openInNewTab?: boolean | null;
   };
   /**
+   * Track clicks and conversions for this call-to-action
+   */
+  ctaTracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+    /**
+     * Send conversion event to Meta Pixel and Google Analytics
+     */
+    trackAsConversion?: boolean | null;
+    /**
+     * Map to GA4 recommended event (see developers.google.com/analytics)
+     */
+    ga4EventType?:
+      | (
+          | 'add_payment_info'
+          | 'add_shipping_info'
+          | 'add_to_cart'
+          | 'add_to_wishlist'
+          | 'begin_checkout'
+          | 'purchase'
+          | 'refund'
+          | 'remove_from_cart'
+          | 'generate_lead'
+          | 'qualify_lead'
+          | 'disqualify_lead'
+          | 'close_convert_lead'
+          | 'close_unconvert_lead'
+          | 'select_content'
+          | 'select_item'
+          | 'select_promotion'
+          | 'search'
+          | 'login'
+          | 'join_group'
+          | 'earn_virtual_currency'
+          | 'level_start'
+          | 'level_end'
+          | 'level_up'
+          | 'post_score'
+        )
+      | null;
+    /**
+     * Map to Meta Pixel standard event (see developers.facebook.com/docs/meta-pixel)
+     */
+    metaEventType?:
+      | (
+          | 'Lead'
+          | 'CompleteRegistration'
+          | 'SubmitApplication'
+          | 'StartTrial'
+          | 'Subscribe'
+          | 'AddPaymentInfo'
+          | 'AddToCart'
+          | 'AddToWishlist'
+          | 'InitiateCheckout'
+          | 'Purchase'
+          | 'ViewContent'
+          | 'Search'
+          | 'Contact'
+          | 'FindLocation'
+          | 'Schedule'
+          | 'CustomizeProduct'
+          | 'Donate'
+          | 'Custom'
+        )
+      | null;
+  };
+  /**
    * Hero section height
    */
   height: 'viewport' | 'large' | 'medium' | 'compact';
@@ -3382,6 +3806,35 @@ export interface MarketingGrandHeroBlock {
    * Animation speed
    */
   animationDuration?: ('fast' | 'medium' | 'slow') | null;
+  /**
+   * Track when this block is viewed
+   */
+  impressionTracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+    /**
+     * Only track when block is visible in viewport
+     */
+    trackViewport?: boolean | null;
+    /**
+     * Percentage of block that must be visible (0.5 = 50%)
+     */
+    viewportThreshold?: number | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'marketing-grand-hero';
@@ -3848,6 +4301,116 @@ export interface MarketingI2LBlock {
      * Check this to open the link in a new browser tab. Recommended for external links to keep users on your site.
      */
     ctaOpenInNewTab?: boolean | null;
+    /**
+     * Track video engagement and watch behavior
+     */
+    videoTracking?: {
+      /**
+       * Track interactions with this block (CTAs, impressions, etc.)
+       */
+      enabled?: boolean | null;
+      /**
+       * Override default event name (leave empty for auto-generated)
+       */
+      eventName?: string | null;
+      /**
+       * Category for organizing analytics reports
+       */
+      category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+      /**
+       * Estimated dollar value of this conversion (for ROI tracking)
+       */
+      conversionValue?: number | null;
+      /**
+       * Record when users play or pause the video
+       */
+      trackPlayPause?: boolean | null;
+      /**
+       * Record milestone completions
+       */
+      trackProgress?: boolean | null;
+    };
+    /**
+     * Track clicks and conversions for this call-to-action
+     */
+    ctaTracking?: {
+      /**
+       * Track interactions with this block (CTAs, impressions, etc.)
+       */
+      enabled?: boolean | null;
+      /**
+       * Override default event name (leave empty for auto-generated)
+       */
+      eventName?: string | null;
+      /**
+       * Category for organizing analytics reports
+       */
+      category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+      /**
+       * Estimated dollar value of this conversion (for ROI tracking)
+       */
+      conversionValue?: number | null;
+      /**
+       * Send conversion event to Meta Pixel and Google Analytics
+       */
+      trackAsConversion?: boolean | null;
+      /**
+       * Map to GA4 recommended event (see developers.google.com/analytics)
+       */
+      ga4EventType?:
+        | (
+            | 'add_payment_info'
+            | 'add_shipping_info'
+            | 'add_to_cart'
+            | 'add_to_wishlist'
+            | 'begin_checkout'
+            | 'purchase'
+            | 'refund'
+            | 'remove_from_cart'
+            | 'generate_lead'
+            | 'qualify_lead'
+            | 'disqualify_lead'
+            | 'close_convert_lead'
+            | 'close_unconvert_lead'
+            | 'select_content'
+            | 'select_item'
+            | 'select_promotion'
+            | 'search'
+            | 'login'
+            | 'join_group'
+            | 'earn_virtual_currency'
+            | 'level_start'
+            | 'level_end'
+            | 'level_up'
+            | 'post_score'
+          )
+        | null;
+      /**
+       * Map to Meta Pixel standard event (see developers.facebook.com/docs/meta-pixel)
+       */
+      metaEventType?:
+        | (
+            | 'Lead'
+            | 'CompleteRegistration'
+            | 'SubmitApplication'
+            | 'StartTrial'
+            | 'Subscribe'
+            | 'AddPaymentInfo'
+            | 'AddToCart'
+            | 'AddToWishlist'
+            | 'InitiateCheckout'
+            | 'Purchase'
+            | 'ViewContent'
+            | 'Search'
+            | 'Contact'
+            | 'FindLocation'
+            | 'Schedule'
+            | 'CustomizeProduct'
+            | 'Donate'
+            | 'Custom'
+          )
+        | null;
+    };
     id?: string | null;
   }[];
   /**
@@ -3870,6 +4433,35 @@ export interface MarketingI2LBlock {
      * Enable keyboard navigation (arrow keys) for carousel
      */
     enableKeyboardNav?: boolean | null;
+  };
+  /**
+   * Track when this block is viewed
+   */
+  impressionTracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+    /**
+     * Only track when block is visible in viewport
+     */
+    trackViewport?: boolean | null;
+    /**
+     * Percentage of block that must be visible (0.5 = 50%)
+     */
+    viewportThreshold?: number | null;
   };
   /**
    * Visual styling options
@@ -3918,6 +4510,35 @@ export interface MarketingTechnicalShowcaseBlock {
    */
   videoDuration?: string | null;
   /**
+   * Track video engagement and watch behavior
+   */
+  videoTracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+    /**
+     * Record when users play or pause the video
+     */
+    trackPlayPause?: boolean | null;
+    /**
+     * Record milestone completions
+     */
+    trackProgress?: boolean | null;
+  };
+  /**
    * Add 0-4 products below the video. Leave empty for video-only showcase, add 1 for feature highlight, or add 2-4 for side-by-side comparison.
    */
   products?:
@@ -3956,9 +4577,119 @@ export interface MarketingTechnicalShowcaseBlock {
           highlight?: boolean | null;
           id?: string | null;
         }[];
+        /**
+         * Track clicks and conversions for this call-to-action
+         */
+        ctaTracking?: {
+          /**
+           * Track interactions with this block (CTAs, impressions, etc.)
+           */
+          enabled?: boolean | null;
+          /**
+           * Override default event name (leave empty for auto-generated)
+           */
+          eventName?: string | null;
+          /**
+           * Category for organizing analytics reports
+           */
+          category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+          /**
+           * Estimated dollar value of this conversion (for ROI tracking)
+           */
+          conversionValue?: number | null;
+          /**
+           * Send conversion event to Meta Pixel and Google Analytics
+           */
+          trackAsConversion?: boolean | null;
+          /**
+           * Map to GA4 recommended event (see developers.google.com/analytics)
+           */
+          ga4EventType?:
+            | (
+                | 'add_payment_info'
+                | 'add_shipping_info'
+                | 'add_to_cart'
+                | 'add_to_wishlist'
+                | 'begin_checkout'
+                | 'purchase'
+                | 'refund'
+                | 'remove_from_cart'
+                | 'generate_lead'
+                | 'qualify_lead'
+                | 'disqualify_lead'
+                | 'close_convert_lead'
+                | 'close_unconvert_lead'
+                | 'select_content'
+                | 'select_item'
+                | 'select_promotion'
+                | 'search'
+                | 'login'
+                | 'join_group'
+                | 'earn_virtual_currency'
+                | 'level_start'
+                | 'level_end'
+                | 'level_up'
+                | 'post_score'
+              )
+            | null;
+          /**
+           * Map to Meta Pixel standard event (see developers.facebook.com/docs/meta-pixel)
+           */
+          metaEventType?:
+            | (
+                | 'Lead'
+                | 'CompleteRegistration'
+                | 'SubmitApplication'
+                | 'StartTrial'
+                | 'Subscribe'
+                | 'AddPaymentInfo'
+                | 'AddToCart'
+                | 'AddToWishlist'
+                | 'InitiateCheckout'
+                | 'Purchase'
+                | 'ViewContent'
+                | 'Search'
+                | 'Contact'
+                | 'FindLocation'
+                | 'Schedule'
+                | 'CustomizeProduct'
+                | 'Donate'
+                | 'Custom'
+              )
+            | null;
+        };
         id?: string | null;
       }[]
     | null;
+  /**
+   * Track when this block is viewed
+   */
+  impressionTracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+    /**
+     * Only track when block is visible in viewport
+     */
+    trackViewport?: boolean | null;
+    /**
+     * Percentage of block that must be visible (0.5 = 50%)
+     */
+    viewportThreshold?: number | null;
+  };
   /**
    * Block settings
    */
@@ -4161,6 +4892,27 @@ export interface Marketing3DViewerBlock {
      */
     showScrollIndicator?: boolean | null;
   };
+  /**
+   * Track when visitors open the 3D model viewer — high-intent engagement signal
+   */
+  tracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'marketing-3d-viewer';
@@ -4290,6 +5042,116 @@ export interface MarketingArtistCarouselBlock {
      * Open link in new tab
      */
     openInNewTab?: boolean | null;
+  };
+  /**
+   * Track clicks and conversions for this call-to-action
+   */
+  ctaTracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+    /**
+     * Send conversion event to Meta Pixel and Google Analytics
+     */
+    trackAsConversion?: boolean | null;
+    /**
+     * Map to GA4 recommended event (see developers.google.com/analytics)
+     */
+    ga4EventType?:
+      | (
+          | 'add_payment_info'
+          | 'add_shipping_info'
+          | 'add_to_cart'
+          | 'add_to_wishlist'
+          | 'begin_checkout'
+          | 'purchase'
+          | 'refund'
+          | 'remove_from_cart'
+          | 'generate_lead'
+          | 'qualify_lead'
+          | 'disqualify_lead'
+          | 'close_convert_lead'
+          | 'close_unconvert_lead'
+          | 'select_content'
+          | 'select_item'
+          | 'select_promotion'
+          | 'search'
+          | 'login'
+          | 'join_group'
+          | 'earn_virtual_currency'
+          | 'level_start'
+          | 'level_end'
+          | 'level_up'
+          | 'post_score'
+        )
+      | null;
+    /**
+     * Map to Meta Pixel standard event (see developers.facebook.com/docs/meta-pixel)
+     */
+    metaEventType?:
+      | (
+          | 'Lead'
+          | 'CompleteRegistration'
+          | 'SubmitApplication'
+          | 'StartTrial'
+          | 'Subscribe'
+          | 'AddPaymentInfo'
+          | 'AddToCart'
+          | 'AddToWishlist'
+          | 'InitiateCheckout'
+          | 'Purchase'
+          | 'ViewContent'
+          | 'Search'
+          | 'Contact'
+          | 'FindLocation'
+          | 'Schedule'
+          | 'CustomizeProduct'
+          | 'Donate'
+          | 'Custom'
+        )
+      | null;
+  };
+  /**
+   * Track when this block is viewed
+   */
+  impressionTracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+    /**
+     * Only track when block is visible in viewport
+     */
+    trackViewport?: boolean | null;
+    /**
+     * Percentage of block that must be visible (0.5 = 50%)
+     */
+    viewportThreshold?: number | null;
   };
   id?: string | null;
   blockName?: string | null;

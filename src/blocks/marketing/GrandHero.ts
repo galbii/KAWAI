@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { ctaTrackingField, trackImpressionField } from '@/lib/payload/fields/tracking'
 
 export const GrandHero: Block = {
   slug: 'marketing-grand-hero',
@@ -264,6 +265,8 @@ export const GrandHero: Block = {
       ],
     },
 
+    ctaTrackingField(),
+
     // Layout & Style Configuration
     {
       type: 'collapsible',
@@ -427,5 +430,7 @@ export const GrandHero: Block = {
         },
       ],
     },
+
+    trackImpressionField({ trackViewport: true, viewportThreshold: 0.5 }),
   ],
 }

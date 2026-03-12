@@ -8,5 +8,12 @@ interface GrandHeroBlockProps {
 }
 
 export function GrandHeroBlock(block: GrandHeroBlockProps) {
-  return <MarketingGrandHeroRenderer block={block as any} />
+  const { ctaTracking, impressionTracking, ...rest } = block
+  return (
+    <MarketingGrandHeroRenderer
+      block={rest as any}
+      ctaTracking={ctaTracking}
+      impressionTracking={impressionTracking}
+    />
+  )
 }

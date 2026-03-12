@@ -24,7 +24,7 @@ import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { FloatingAddToCartIntegrated } from '@/components/blocks/FloatingAddToCartIntegrated'
 import { createCart } from '@/lib/shopify'
 import { getStoredUTMParams } from '@/lib/shopify/utm-tracking'
-import { trackAddToCart, trackBeginCheckout, trackBlockImpression } from '@/lib/analytics/unified-tracking'
+import { trackAddToCart, trackBeginCheckout, trackBlockImpression, trackCTAClick } from '@/lib/analytics/unified-tracking'
 import type { CTATrackingConfig, BlockTrackingConfig } from '@/lib/analytics/unified-tracking'
 
 interface ProductHeroBlockProps {
@@ -858,7 +858,21 @@ export function ProductHeroBlock({
                         "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/20"
                       )}
                     >
-                      <Link href="/find-a-dealer">
+                      <Link
+                        href="/find-a-dealer"
+                        onClick={() => trackCTAClick({
+                          blockType: 'product-hero',
+                          blockData: { ctaTracking: ctaTracking ?? undefined },
+                          ctaText: 'Find a Dealer',
+                          destination: '/find-a-dealer',
+                          additionalProps: {
+                            product_name: product?.name,
+                            product_slug: product?.slug,
+                            button_type: 'find_a_dealer',
+                            reason: isOutOfStock ? 'out_of_stock' : 'no_ecommerce',
+                          },
+                        })}
+                      >
                         <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
                           <span>Find a Dealer</span>

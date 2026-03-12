@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 import { imageField } from '@/lib/payload/fields/media'
+import { ctaTrackingField, videoTrackingField } from '@/lib/payload/fields/tracking'
 
 export const VideoBackground: Block = {
   slug: 'layout-video-background',
@@ -289,6 +290,7 @@ export const VideoBackground: Block = {
         description: 'Optional secondary call-to-action button (outline style)',
       },
     },
+    ctaTrackingField(),
     {
       name: 'showScrollIndicator',
       type: 'checkbox',
@@ -297,5 +299,6 @@ export const VideoBackground: Block = {
         description: 'Show scroll indicator at bottom of video (animated chevron)',
       },
     },
+    videoTrackingField(),
   ],
 }

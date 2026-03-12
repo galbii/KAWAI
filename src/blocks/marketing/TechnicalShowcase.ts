@@ -1,6 +1,7 @@
 import type { Block } from 'payload'
 import type { Media } from '@/payload-types'
 import { imageField } from '@/lib/payload/fields/media'
+import { videoTrackingField, ctaTrackingField, trackImpressionField } from '@/lib/payload/fields/tracking'
 
 export const TechnicalShowcase: Block = {
   slug: 'marketing-technical-showcase',
@@ -70,6 +71,7 @@ export const TechnicalShowcase: Block = {
         placeholder: '3:45',
       },
     },
+    videoTrackingField(),
     // Products Section
     {
       name: 'products',
@@ -165,9 +167,11 @@ export const TechnicalShowcase: Block = {
             },
           ],
         },
+        ctaTrackingField(),
       ],
     },
     // Settings
+    trackImpressionField({ trackViewport: true, viewportThreshold: 0.3 }),
     {
       name: 'settings',
       type: 'group',

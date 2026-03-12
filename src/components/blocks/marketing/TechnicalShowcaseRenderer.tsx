@@ -1,12 +1,13 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, useInView } from 'framer-motion'
 import type { MarketingTechnicalShowcaseBlock, Media } from '@/payload-types'
 import { cn } from '@/lib/utils'
 import { getImagePropsWithFallback } from '@/lib/fallbacks/media'
+import { trackVideoInteraction, trackCTAClick, trackBlockImpression } from '@/lib/analytics/unified-tracking'
 
 interface TechnicalShowcaseRendererProps extends MarketingTechnicalShowcaseBlock {}
 
@@ -35,10 +36,19 @@ export function TechnicalShowcaseRenderer({
   videoDuration,
   products,
   settings,
-}: TechnicalShowcaseRendererProps) {
+  videoTracking,
+  impressionTracking,
+}: TechnicalShowcaseRendererProps & { videoTracking?: any; impressionTracking?: any }) {
   const [videoLoaded, setVideoLoaded] = useState(false)
   const sectionRef = useRef<HTMLElement>(null)
   const isInView = useInView(sectionRef, { once: true, margin: '-80px' })
+
+  useEffect(() => {
+    trackBlockImpression({
+      blockType: 'marketing-technical-showcase',
+      blockData: { impressionTracking: impressionTracking as any },
+    })
+  }, [])
 
   const theme = settings?.theme ?? 'dark'
   const enableAnimations = settings?.enableAnimations ?? true
@@ -173,7 +183,16 @@ export function TechnicalShowcaseRenderer({
 
                     {/* Minimalist Play Button */}
                     <button
-                      onClick={() => setVideoLoaded(true)}
+                      onClick={() => {
+                        setVideoLoaded(true)
+                        trackVideoInteraction({
+                          blockType: 'marketing-technical-showcase',
+                          blockData: { videoTracking: videoTracking as any },
+                          action: 'video_play',
+                          videoId: youtubeUrl || '',
+                          videoTitle: heading || '',
+                        })
+                      }}
                       className="absolute inset-0 flex items-center justify-center group/play"
                       aria-label="Play video"
                     >
@@ -302,6 +321,15 @@ export function TechnicalShowcaseRenderer({
                           currentTheme.sectionLabel,
                           'border-current hover:border-kawai-gold hover:text-kawai-gold'
                         )}
+                        onClick={() => {
+                          trackCTAClick({
+                            blockType: 'marketing-technical-showcase',
+                            blockData: { ctaTracking: (product as any).ctaTracking },
+                            ctaText: 'View Details',
+                            destination: product.url || '',
+                            additionalProps: { product_name: product.name, product_badge: product.badge },
+                          })
+                        }}
                       >
                         View Details
                       </Link>

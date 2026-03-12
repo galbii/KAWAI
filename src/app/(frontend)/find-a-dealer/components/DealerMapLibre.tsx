@@ -107,7 +107,7 @@ export function DealerMapLibre({
         }
 
         const isSelected = selectedDealer === dealer.id
-        const isFeatured = dealer.isFeatured
+        const isShigeru = dealer.shigeruKawaiDealer === true
 
         return (
           <Marker
@@ -118,7 +118,24 @@ export function DealerMapLibre({
           >
             {/* KAWAI Custom Marker with Selection Overlay */}
             <div style={{ position: 'relative', display: 'inline-block' }}>
-              {/* Selection Ring/Glow */}
+              {/* Shigeru Kawai: permanent gold ring */}
+              {isShigeru && !isSelected && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '46px',
+                    height: '46px',
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+                    border: '2px solid #D4AF37',
+                    zIndex: -1,
+                  }}
+                />
+              )}
+              {/* Selection Ring/Glow (selected state overrides Shigeru ring) */}
               {isSelected && (
                 <div
                   className="selected-marker-pulse"
@@ -140,13 +157,15 @@ export function DealerMapLibre({
                 src="/ChatGPT%20Image%20Sep%209%2C%202025%2C%2003_13_02%20PM%20copy%202.png"
                 alt="KAWAI Dealer"
                 style={{
-                  width: isSelected ? 48 : isFeatured ? 40 : 32,
-                  height: isSelected ? 48 : isFeatured ? 40 : 32,
+                  width: isSelected ? 48 : isShigeru ? 36 : 32,
+                  height: isSelected ? 48 : isShigeru ? 36 : 32,
                   cursor: 'pointer',
                   transition: 'all 200ms cubic-bezier(0.4, 0.0, 0.2, 1)',
                   filter: isSelected
                     ? 'drop-shadow(0 4px 8px rgba(212, 175, 55, 0.8)) brightness(1.1)'
-                    : 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                    : isShigeru
+                      ? 'drop-shadow(0 2px 6px rgba(212, 175, 55, 0.6))'
+                      : 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
                   transform: isSelected ? 'scale(1.15)' : 'scale(1)',
                   position: 'relative',
                   zIndex: 1,

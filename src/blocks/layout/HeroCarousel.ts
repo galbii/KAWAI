@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 import { imageField } from '@/lib/payload/fields/media'
+import { ctaTrackingField, trackImpressionField } from '@/lib/payload/fields/tracking'
 
 export const HeroCarousel: Block = {
   slug: 'layout-hero-carousel',
@@ -103,6 +104,7 @@ export const HeroCarousel: Block = {
             },
           },
         },
+        ctaTrackingField(),
       ],
       admin: {
         description: 'Add up to 10 carousel slides with images, titles, and call-to-actions',
@@ -241,5 +243,6 @@ export const HeroCarousel: Block = {
         description: 'Visual styling and layout options',
       },
     },
+    trackImpressionField({ trackViewport: true, viewportThreshold: 0.3 }),
   ],
 }

@@ -7,6 +7,7 @@ import { motion, AnimatePresence, useInView } from 'framer-motion'
 import type { MarketingArtistCarouselBlock, Artist, Media } from '@/payload-types'
 import { cn } from '@/lib/utils'
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
+import { trackCTAClick, trackBlockImpression } from '@/lib/analytics/unified-tracking'
 
 interface ArtistCarouselRendererProps extends MarketingArtistCarouselBlock {}
 
@@ -249,7 +250,9 @@ export function ArtistCarouselRenderer({
   settings,
   styling,
   ctaButton,
-}: ArtistCarouselRendererProps) {
+  ctaTracking,
+  impressionTracking,
+}: ArtistCarouselRendererProps & { ctaTracking?: any; impressionTracking?: any }) {
   // Validate artists
   if (!artists || artists.length === 0) {
     return null
@@ -308,6 +311,14 @@ export function ArtistCarouselRenderer({
     comfortable: 'py-16 sm:py-24',
     spacious: 'py-24 sm:py-32 lg:py-40',
   }
+
+  // Block impression tracking
+  useEffect(() => {
+    trackBlockImpression({
+      blockType: 'marketing-artist-carousel',
+      blockData: { impressionTracking: impressionTracking as any },
+    })
+  }, [])
 
   // Auto-play functionality
   useEffect(() => {
@@ -971,6 +982,15 @@ export function ArtistCarouselRenderer({
                 href={ctaButton.url}
                 target={ctaButton.openInNewTab ? '_blank' : undefined}
                 rel={ctaButton.openInNewTab ? 'noopener noreferrer' : undefined}
+                onClick={() => {
+                  trackCTAClick({
+                    blockType: 'marketing-artist-carousel',
+                    blockData: { ctaTracking: ctaTracking as any },
+                    ctaText: ctaButton?.text || '',
+                    destination: ctaButton?.url || '',
+                    additionalProps: { artist_count: artists?.length },
+                  })
+                }}
                 className={cn(
                   'group relative inline-flex items-center gap-3',
                   'px-8 py-4 rounded-full',

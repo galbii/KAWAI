@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 import { imageField } from '@/lib/payload/fields/media'
+import { videoTrackingField, ctaTrackingField, trackImpressionField } from '@/lib/payload/fields/tracking'
 
 export const InstrumentalToLife: Block = {
   slug: 'marketing-i2l',
@@ -187,6 +188,8 @@ export const InstrumentalToLife: Block = {
             condition: (_, siblingData) => Boolean(siblingData?.ctaText),
           },
         },
+        videoTrackingField(),
+        ctaTrackingField(),
       ],
       admin: {
         description: 'Add up to 6 YouTube videos. Each video displays separately with its own title, description, and optional call-to-action button.',
@@ -251,6 +254,7 @@ export const InstrumentalToLife: Block = {
         description: 'Carousel behavior and display settings',
       },
     },
+    trackImpressionField({ trackViewport: true, viewportThreshold: 0.3 }),
     {
       name: 'styling',
       type: 'group',

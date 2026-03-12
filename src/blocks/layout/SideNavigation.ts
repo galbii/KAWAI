@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { trackingField } from '@/lib/payload/fields/tracking'
 
 export const SideNavigation: Block = {
   slug: 'layout-side-navigation',
@@ -221,5 +222,6 @@ export const SideNavigation: Block = {
         },
       ],
     },
+    trackingField({ name: 'navTracking', defaultEnabled: false, overrides: { admin: { description: 'Track section navigation clicks for user journey analysis' } } }),
   ],
 }

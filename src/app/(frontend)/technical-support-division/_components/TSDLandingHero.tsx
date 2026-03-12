@@ -59,7 +59,7 @@ function TypingAnimation() {
   }, [phase, charIndex, promptIndex])
 
   return (
-    <p className="text-sm text-white/30 font-[family-name:var(--font-brand-sans)] mt-3 h-5 tracking-wide">
+    <p className="text-sm text-kawai-black font-[family-name:var(--font-brand-sans)] mt-3 h-5 tracking-wide">
       {displayText}
       <span className="inline-block w-[1px] h-[13px] bg-kawai-red ml-0.5 align-middle animate-pulse" />
     </p>
@@ -68,7 +68,7 @@ function TypingAnimation() {
 
 export function TSDLandingHero({ groups }: { groups: GroupWindow[] }) {
   return (
-    <div className="min-h-screen bg-kawai-black flex flex-col items-center justify-center px-6 py-24">
+    <div className="min-h-screen bg-kawai-pearl flex flex-col items-center justify-center px-6 py-24">
 
       {/* Support Center eyebrow — moved above cards */}
       <motion.div
@@ -78,14 +78,14 @@ export function TSDLandingHero({ groups }: { groups: GroupWindow[] }) {
         className="flex items-center gap-4 mb-14"
       >
         <div className="h-px w-12 bg-kawai-red/40" />
-        <p className="text-[10px] text-white/25 tracking-[0.5em] uppercase font-medium font-[family-name:var(--font-brand-sans)]">
+        <p className="text-[10px] text-kawai-black/60 tracking-[0.5em] uppercase font-medium font-[family-name:var(--font-brand-sans)]">
           Support Center
         </p>
         <div className="h-px w-12 bg-kawai-red/40" />
       </motion.div>
 
       {/* Hub Cards — full-width architectural panels */}
-      <div className={`grid grid-cols-1 gap-px w-full mb-20 border border-white/[0.06] mx-auto ${
+      <div className={`grid grid-cols-1 gap-px w-full mb-20 border border-kawai-black/[0.08] mx-auto ${
         groups.length === 1
           ? 'md:grid-cols-1 max-w-sm'
           : groups.length === 2
@@ -109,9 +109,9 @@ export function TSDLandingHero({ groups }: { groups: GroupWindow[] }) {
             <Link
               href={win.href}
               className="group relative flex flex-col h-full min-h-[400px] md:min-h-[460px] overflow-hidden
-                bg-[#0d0c0a]
-                border-r border-white/[0.06] last:border-r-0
-                hover:bg-[#111009]
+                bg-white
+                border-r border-kawai-black/[0.08] last:border-r-0
+                hover:bg-[#F0EDE8]
                 transition-colors duration-500"
             >
               {/* Left red accent bar — grows on hover */}
@@ -121,7 +121,7 @@ export function TSDLandingHero({ groups }: { groups: GroupWindow[] }) {
               <span
                 aria-hidden
                 className="absolute right-[-0.1em] bottom-[-0.15em] text-[11rem] md:text-[14rem] font-bold leading-none select-none
-                  text-white/[0.025] group-hover:text-white/[0.045]
+                  text-kawai-black/[0.04] group-hover:text-kawai-black/[0.07]
                   font-[family-name:var(--font-brand-sans)]
                   transition-colors duration-700"
               >
@@ -135,7 +135,7 @@ export function TSDLandingHero({ groups }: { groups: GroupWindow[] }) {
                   <span className="text-[9px] text-kawai-red/50 tracking-[0.45em] font-semibold font-[family-name:var(--font-brand-sans)] group-hover:text-kawai-red transition-colors duration-400">
                     {String(index + 1).padStart(2, '0')}
                   </span>
-                  <div className="h-px flex-1 bg-white/[0.05] group-hover:bg-kawai-red/20 transition-colors duration-500" />
+                  <div className="h-px flex-1 bg-kawai-black/[0.08] group-hover:bg-kawai-red/20 transition-colors duration-500" />
                 </div>
 
                 {/* Main content — pushed to bottom */}
@@ -143,7 +143,7 @@ export function TSDLandingHero({ groups }: { groups: GroupWindow[] }) {
 
                   {/* Heading — large editorial serif */}
                   <h2 className="text-4xl md:text-[2.8rem] lg:text-[3.2rem] font-light leading-[1.05] tracking-tight
-                    text-white/60 group-hover:text-white
+                    text-kawai-black group-hover:text-kawai-black
                     font-[family-name:var(--font-brand-serif)]
                     transition-colors duration-500 whitespace-pre-line">
                     {win.heading || win.label}
@@ -153,7 +153,7 @@ export function TSDLandingHero({ groups }: { groups: GroupWindow[] }) {
                   <div className="mt-5 h-px w-6 bg-kawai-red/30 group-hover:w-14 group-hover:bg-kawai-red/70 transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]" />
 
                   {/* Description */}
-                  <p className="mt-5 text-sm text-white/25 group-hover:text-white/45 leading-relaxed
+                  <p className="mt-5 text-sm text-kawai-black group-hover:text-kawai-black leading-relaxed
                     font-[family-name:var(--font-brand-sans)]
                     transition-colors duration-500 whitespace-pre-line max-w-[26ch]">
                     {win.description}

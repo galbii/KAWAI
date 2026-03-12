@@ -7,9 +7,12 @@ import type { Media } from '@/payload-types'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { cn } from '@/lib/utils'
 import { getYouTubeEmbedUrl } from '@/lib/utils/youtube'
+import { trackCTAClick, trackBlockImpression } from '@/lib/analytics/unified-tracking'
 
 interface MarketingGrandHeroRendererProps {
   block: any // Will use MarketingGrandHeroBlock after types are generated
+  ctaTracking?: any
+  impressionTracking?: any
 }
 
 // Type guard for Media object
@@ -19,6 +22,8 @@ function isMediaObject(media: Media | string | null | undefined): media is Media
 
 export const MarketingGrandHeroRenderer: React.FC<MarketingGrandHeroRendererProps> = ({
   block,
+  ctaTracking,
+  impressionTracking,
 }) => {
   const [isVisible, setIsVisible] = useState(false)
   const [scrollY, setScrollY] = useState(0)
@@ -28,6 +33,14 @@ export const MarketingGrandHeroRenderer: React.FC<MarketingGrandHeroRendererProp
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100)
     return () => clearTimeout(timer)
+  }, [])
+
+  // Block impression tracking
+  useEffect(() => {
+    trackBlockImpression({
+      blockType: 'marketing-grand-hero',
+      blockData: { impressionTracking: impressionTracking as any },
+    })
   }, [])
 
   // Parallax effect on scroll
@@ -386,6 +399,15 @@ export const MarketingGrandHeroRenderer: React.FC<MarketingGrandHeroRendererProp
                     target={block.primaryCta.openInNewTab ? '_blank' : undefined}
                     rel={block.primaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
                     className="group relative overflow-hidden rounded-md bg-[#C41E3A] px-8 py-4 text-center font-medium text-white shadow-lg transition-all duration-300 hover:bg-[#A01828] hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#C41E3A] focus:ring-offset-2"
+                    onClick={() => {
+                      trackCTAClick({
+                        blockType: 'marketing-grand-hero',
+                        blockData: { ctaTracking: ctaTracking as any },
+                        ctaText: block.primaryCta?.text || '',
+                        destination: block.primaryCta?.link || '',
+                        additionalProps: { cta_type: 'primary', heading: block.heading },
+                      })
+                    }}
                   >
                     <span className="relative z-10">{block.primaryCta.text}</span>
                     {/* Shine effect on hover */}
@@ -409,6 +431,15 @@ export const MarketingGrandHeroRenderer: React.FC<MarketingGrandHeroRendererProp
                         ? 'border-white text-white hover:bg-white hover:text-gray-900 focus:ring-white'
                         : 'border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white focus:ring-gray-900'
                     )}
+                    onClick={() => {
+                      trackCTAClick({
+                        blockType: 'marketing-grand-hero',
+                        blockData: { ctaTracking: ctaTracking as any },
+                        ctaText: block.secondaryCta?.text || '',
+                        destination: block.secondaryCta?.link || '',
+                        additionalProps: { cta_type: 'secondary', heading: block.heading },
+                      })
+                    }}
                   >
                     {block.secondaryCta.text}
                   </Link>

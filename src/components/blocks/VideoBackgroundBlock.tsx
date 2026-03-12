@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { getYouTubeEmbedUrl } from '@/lib/utils/youtube'
 import type { Media } from '@/payload-types'
+import { trackCTAClick, trackVideoInteraction } from '@/lib/analytics/unified-tracking'
 
 // Type guard for Media object
 function isMediaObject(media: Media | string | null | undefined): media is Media {
@@ -37,6 +38,8 @@ interface VideoBackgroundBlockProps {
   sidebarHeight?: 'centered' | 'full' | null
   overlayOpacity?: number | null
   showScrollIndicator?: boolean | null
+  ctaTracking?: any
+  videoTracking?: any
 }
 
 
@@ -57,6 +60,8 @@ export function VideoBackgroundBlock({
   sidebarHeight = 'centered',
   overlayOpacity = 0.4,
   showScrollIndicator = true,
+  ctaTracking,
+  videoTracking,
 }: VideoBackgroundBlockProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isLoaded, setIsLoaded] = useState(false)
@@ -89,6 +94,36 @@ export function VideoBackgroundBlock({
 
   const handleMediaReady = () => {
     setIsMediaReady(true)
+  }
+
+  const handlePrimaryCtaClick = () => {
+    trackCTAClick({
+      blockType: 'layout-video-background',
+      blockData: { ctaTracking: ctaTracking as any },
+      ctaText: primaryCta?.text || '',
+      destination: primaryCta?.link || '',
+      additionalProps: { cta_type: 'primary', video_source: videoSource },
+    })
+  }
+
+  const handleSecondaryCtaClick = () => {
+    trackCTAClick({
+      blockType: 'layout-video-background',
+      blockData: { ctaTracking: ctaTracking as any },
+      ctaText: secondaryCta?.text || '',
+      destination: secondaryCta?.link || '',
+      additionalProps: { cta_type: 'secondary', video_source: videoSource },
+    })
+  }
+
+  const handleVideoPlay = () => {
+    trackVideoInteraction({
+      blockType: 'layout-video-background',
+      blockData: { videoTracking: videoTracking as any },
+      action: 'video_play',
+      videoId: youtubeUrl || videoUrl || '',
+      videoTitle: heading || '',
+    })
   }
 
   const sidebarOnLeft = sidebarPosition === 'left'
@@ -189,6 +224,7 @@ export function VideoBackgroundBlock({
               webkit-playsinline="true"
               onLoadedData={handleMediaReady}
               onCanPlay={handleMediaReady}
+              onPlay={handleVideoPlay}
               className={cn(
                 'h-full w-full object-cover transition-opacity duration-[1800ms] ease-out',
                 isMediaReady ? 'opacity-100' : 'opacity-0'
@@ -409,6 +445,7 @@ export function VideoBackgroundBlock({
                       href={primaryCta.link}
                       target={primaryCta.openInNewTab ? '_blank' : undefined}
                       rel={primaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
+                      onClick={handlePrimaryCtaClick}
                       className={cn(
                         'group/cta relative inline-flex items-center gap-2.5',
                         'overflow-hidden rounded-full',
@@ -454,6 +491,7 @@ export function VideoBackgroundBlock({
                       href={secondaryCta.link}
                       target={secondaryCta.openInNewTab ? '_blank' : undefined}
                       rel={secondaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
+                      onClick={handleSecondaryCtaClick}
                       className={cn(
                         'group/cta-secondary relative inline-flex items-center gap-2.5',
                         'overflow-hidden rounded-full',

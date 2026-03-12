@@ -73,6 +73,9 @@ export {
   getAllImagePaths,
 } from './pianos-page-seed-data'
 
+// Dealer seed data
+export { DEALER_SEED_DATA, type DealerSeedEntry } from './dealers-seed-data'
+
 // Seed image utilities
 export {
   uploadImageToMedia,

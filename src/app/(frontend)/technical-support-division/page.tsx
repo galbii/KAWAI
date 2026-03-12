@@ -62,7 +62,7 @@ export default async function TSDLandingPage() {
   }))
 
   return (
-    <main className="min-h-screen bg-kawai-black flex flex-col">
+    <main className="min-h-screen bg-kawai-pearl flex flex-col">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -70,23 +70,23 @@ export default async function TSDLandingPage() {
       <TSDLandingHero groups={groups} />
 
       {popularFaqs.length > 0 && (
-        <section className="bg-kawai-black pb-16">
+        <section className="bg-kawai-pearl pb-16">
           <div className="max-w-2xl mx-auto px-6">
-            <p className="text-[10px] text-white/20 tracking-[0.35em] uppercase font-medium mb-5 font-[family-name:var(--font-brand-sans)]">
+            <p className="text-[10px] text-kawai-black/60 tracking-[0.35em] uppercase font-medium mb-5 font-[family-name:var(--font-brand-sans)]">
               Popular Questions
             </p>
             <ul className="space-y-0">
               {popularFaqs.map((faq) => (
-                <li key={faq.id} className="border-b border-white/[0.06] last:border-0">
+                <li key={faq.id} className="border-b border-kawai-black/[0.08] last:border-0">
                   <Link
                     href={`/faq/${faq.slug}`}
-                    className="group flex items-center justify-between py-3.5 gap-4 hover:text-white transition-colors duration-150"
+                    className="group flex items-center justify-between py-3.5 gap-4 transition-colors duration-150"
                   >
-                    <span className="text-sm text-white/50 group-hover:text-white/90 font-[family-name:var(--font-brand-sans)] transition-colors duration-150 leading-snug">
+                    <span className="text-sm text-kawai-black group-hover:text-kawai-black font-[family-name:var(--font-brand-sans)] transition-colors duration-150 leading-snug">
                       {faq.question}
                     </span>
                     <svg
-                      className="w-3.5 h-3.5 text-white/15 group-hover:text-kawai-red flex-shrink-0 transition-colors duration-150 group-hover:translate-x-0.5 transition-transform"
+                      className="w-3.5 h-3.5 text-kawai-black/20 group-hover:text-kawai-red flex-shrink-0 transition-colors duration-150 group-hover:translate-x-0.5 transition-transform"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
