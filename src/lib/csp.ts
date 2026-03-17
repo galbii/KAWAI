@@ -18,14 +18,16 @@
 type Directive = string[]
 type CspDirectives = Record<string, Directive>
 
-export function buildCspHeader(isDev: boolean): string {
+export function buildCspHeader(_isDev: boolean): string {
   const directives: CspDirectives = {
     'default-src': ["'self'"],
 
     'script-src': [
       "'self'",
       "'unsafe-inline'", // required for GTM, Meta Pixel inline snippets
-      ...(isDev ? ["'unsafe-eval'"] : []), // Turbopack source maps in dev only
+      // GTM Custom HTML tags that reference variables ({{Click URL}} etc.) require eval() at runtime.
+      // Turbopack also needs it in dev for source maps.
+      "'unsafe-eval'",
 
       // Google
       'https://www.googletagmanager.com',
@@ -41,9 +43,9 @@ export function buildCspHeader(isDev: boolean): string {
       'https://www.youtube.com',
       'https://s.ytimg.com',
 
-      // PostHog (proxied via /ingest/*)
-      'https://us-assets.i.posthog.com',
-      'https://us.i.posthog.com',
+      // PostHog — wildcard covers us.i, us-assets.i, and toolbar domains (internal-j, us.posthog.com)
+      'https://*.posthog.com',
+      'https://*.i.posthog.com',
 
       // HubSpot — js.hsforms.net loads the embed, static.hsappstatic.net serves the JS bundle
       'https://js.hsforms.net',
@@ -67,6 +69,9 @@ export function buildCspHeader(isDev: boolean): string {
 
       // HubSpot
       'https://static.hsappstatic.net',
+
+      // PostHog toolbar stylesheet
+      'https://us.i.posthog.com',
     ],
 
     'font-src': [
@@ -116,9 +121,9 @@ export function buildCspHeader(isDev: boolean): string {
     'connect-src': [
       "'self'",
 
-      // PostHog (proxied via /ingest/*)
-      'https://us.i.posthog.com',
-      'https://us-assets.i.posthog.com',
+      // PostHog — wildcard covers all endpoints including toolbar (internal-j, us.posthog.com)
+      'https://*.posthog.com',
+      'https://*.i.posthog.com',
 
       // Google Analytics — wildcard covers regional subdomains (region1/region2 added June 2022)
       // stats.g.doubleclick.net receives GA4 data by default even without Google Ads
@@ -139,6 +144,9 @@ export function buildCspHeader(isDev: boolean): string {
 
       // YouTube player requests
       'https://www.youtube.com',
+
+      // Meta Pixel — fbq('track') sends event data to /tr endpoint via XHR/beacon
+      'https://www.facebook.com',
 
       // HubSpot form submissions + tracking
       'https://api.hsforms.com',
