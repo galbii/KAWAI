@@ -96,6 +96,7 @@ import {
   SoundCloudEmbed,
   ProductFaqBlock,
   PianoPages,
+  ProductAccessories,
   // Legacy blocks (keep for backward compatibility)
   TextContent,
   Hello,
@@ -336,6 +337,7 @@ export default buildConfig({
     SoundCloudEmbed,
     ProductFaqBlock,
     PianoPages,
+    ProductAccessories,
 
     // Legacy blocks (keep for backward compatibility)
     TextContent,
@@ -399,6 +401,29 @@ export default buildConfig({
         },
         forcePathStyle: true, // Required for Cloudflare R2
       },
+    }),
+    importExportPlugin({
+      collections: [
+        {
+          slug: 'products',
+          // Import disabled — products are synced from Shopify. Importing CSV/JSON
+          // could overwrite sync fields and corrupt the Shopify integration.
+          import: false,
+        },
+      ],
+      // Make the auto-created exports collection visible in the admin sidebar
+      overrideExportCollection: ({ collection }) => ({
+        ...collection,
+        admin: {
+          ...collection.admin,
+          group: 'Data Management',
+        },
+        access: {
+          ...collection.access,
+          read: ({ req }) => Boolean(req.user),
+          create: ({ req }) => Boolean(req.user),
+        },
+      }),
     }),
     searchPlugin({
       collections: ['storefronts', 'products', 'pages', 'collections'],

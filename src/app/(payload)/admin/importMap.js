@@ -28,9 +28,21 @@ import { UploadFeatureClient as UploadFeatureClient_e70f5e05f09f93e00b997edb1ef0
 import { HorizontalRuleFeatureClient as HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { SlugField as SlugField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { BlocksFeatureClient as BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { ExportListMenuItem as ExportListMenuItem_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { default as default_316a46c3fa81e188b71905bec9cf54a2 } from '../../../components/admin/BulkShopifySyncButton'
 import { default as default_123b32fc965e5def8235f45b2f3fae21 } from '../../../components/admin/PatchMissingBlocksButton'
 import { ProductsListHeader as ProductsListHeader_875e15b0728087b3a068289f8f5cdb5e } from '../../../components/admin/ProductsListHeader'
+import { Page as Page_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
+import { SortBy as SortBy_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
+import { SortOrder as SortOrder_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
+import { SelectionToUseField as SelectionToUseField_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
+import { FieldsToExport as FieldsToExport_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
+import { CollectionField as CollectionField_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
+import { ExportPreview as ExportPreview_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
+import { ExportSaveButton as ExportSaveButton_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
+import { ImportCollectionField as ImportCollectionField_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
+import { ImportPreview as ImportPreview_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
+import { ImportSaveButton as ImportSaveButton_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { LinkToDoc as LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { FolderTypeField as FolderTypeField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
@@ -52,6 +64,7 @@ import { DashboardQuickActions as DashboardQuickActions_381daeb6e8c5bc252c48a4ff
 import { DashboardCollectionsButton as DashboardCollectionsButton_8f41e83e5c41176668c618e3399504bb } from '../../../components/admin/DashboardCollectionsButton'
 import { AdminRootProvider as AdminRootProvider_90270e1a289c41a7c07e2a0de98e46c1 } from '../../../components/admin/AdminRootProvider'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
+import { ImportExportProvider as ImportExportProvider_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { FaqManagerPage as FaqManagerPage_1ecbcb32c98eb2a5b35b86b0e092e1bc } from '../../../components/admin/FaqManagerPage'
 import { JobManagerPage as JobManagerPage_a0c5b7110afa7bffef157ec8dda96cea } from '../../../components/admin/job-manager/JobManagerPage'
 import { CollectionCards as CollectionCards_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
@@ -87,9 +100,21 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#HorizontalRuleFeatureClient": HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/ui#SlugField": SlugField_3817bf644402e67bfe6577f60ef982de,
   "@payloadcms/richtext-lexical/client#BlocksFeatureClient": BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@payloadcms/plugin-import-export/rsc#ExportListMenuItem": ExportListMenuItem_cdf7e044479f899a31f804427d568b36,
   "/components/admin/BulkShopifySyncButton#default": default_316a46c3fa81e188b71905bec9cf54a2,
   "/components/admin/PatchMissingBlocksButton#default": default_123b32fc965e5def8235f45b2f3fae21,
   "/components/admin/ProductsListHeader#ProductsListHeader": ProductsListHeader_875e15b0728087b3a068289f8f5cdb5e,
+  "@payloadcms/plugin-import-export/rsc#Page": Page_cdf7e044479f899a31f804427d568b36,
+  "@payloadcms/plugin-import-export/rsc#SortBy": SortBy_cdf7e044479f899a31f804427d568b36,
+  "@payloadcms/plugin-import-export/rsc#SortOrder": SortOrder_cdf7e044479f899a31f804427d568b36,
+  "@payloadcms/plugin-import-export/rsc#SelectionToUseField": SelectionToUseField_cdf7e044479f899a31f804427d568b36,
+  "@payloadcms/plugin-import-export/rsc#FieldsToExport": FieldsToExport_cdf7e044479f899a31f804427d568b36,
+  "@payloadcms/plugin-import-export/rsc#CollectionField": CollectionField_cdf7e044479f899a31f804427d568b36,
+  "@payloadcms/plugin-import-export/rsc#ExportPreview": ExportPreview_cdf7e044479f899a31f804427d568b36,
+  "@payloadcms/plugin-import-export/rsc#ExportSaveButton": ExportSaveButton_cdf7e044479f899a31f804427d568b36,
+  "@payloadcms/plugin-import-export/rsc#ImportCollectionField": ImportCollectionField_cdf7e044479f899a31f804427d568b36,
+  "@payloadcms/plugin-import-export/rsc#ImportPreview": ImportPreview_cdf7e044479f899a31f804427d568b36,
+  "@payloadcms/plugin-import-export/rsc#ImportSaveButton": ImportSaveButton_cdf7e044479f899a31f804427d568b36,
   "@payloadcms/plugin-search/client#LinkToDoc": LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/plugin-search/client#ReindexButton": ReindexButton_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/ui#FolderTypeField": FolderTypeField_3817bf644402e67bfe6577f60ef982de,
@@ -111,6 +136,7 @@ export const importMap = {
   "/components/admin/DashboardCollectionsButton#DashboardCollectionsButton": DashboardCollectionsButton_8f41e83e5c41176668c618e3399504bb,
   "/components/admin/AdminRootProvider#AdminRootProvider": AdminRootProvider_90270e1a289c41a7c07e2a0de98e46c1,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
+  "@payloadcms/plugin-import-export/rsc#ImportExportProvider": ImportExportProvider_cdf7e044479f899a31f804427d568b36,
   "/components/admin/FaqManagerPage#FaqManagerPage": FaqManagerPage_1ecbcb32c98eb2a5b35b86b0e092e1bc,
   "/components/admin/job-manager/JobManagerPage#JobManagerPage": JobManagerPage_a0c5b7110afa7bffef157ec8dda96cea,
   "@payloadcms/ui/rsc#CollectionCards": CollectionCards_ab83ff7e88da8d3530831f296ec4756a

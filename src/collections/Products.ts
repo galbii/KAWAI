@@ -263,19 +263,11 @@ export const Products: CollectionConfig = {
                 description: 'Product description (synced from Shopify)'
               }
             },
-
-            // Compatible Products (accessories only)
             {
-              name: 'compatibleProducts',
-              type: 'relationship',
-              relationTo: 'products' as const,
-              hasMany: true,
+              name: 'disclaimer',
+              type: 'text',
               admin: {
-                description: 'Piano models this accessory is compatible with. These will be shown in the Related Products block when customers view this accessory.',
-                condition: (data) => data.type === 'accessory',
-              },
-              filterOptions: {
-                type: { not_equals: 'accessory' },
+                description: 'Optional disclaimer shown below the CTA buttons in the Product Hero (e.g. "Starting MSRP. Prices may vary by dealer.")',
               },
             },
 
@@ -706,6 +698,7 @@ export const Products: CollectionConfig = {
                 'product-feature-slides',            // Feature Slides - Scroll-driven fullscreen feature showcase
                 'product-soundcloud-embed',          // SoundCloud Embed - Audio player for demos (leave URL empty to hide)
                 'product-related-products',          // Related Products - Auto-fetches same-collection products + accessories
+                'product-accessories',               // Accessories - Auto-displays compatible accessories (hidden if none exist)
                 'product-faq',                       // Product FAQ - Accordion FAQ section pulled from linked FAQs
                 'marketing-instagram-carousel',      // Instagram Carousel - Social proof
                 'marketing-featured-models',         // Featured Models - Showcase related models
@@ -867,6 +860,21 @@ export const Products: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description: 'FAQ documents that answer questions about this product',
+      },
+    },
+    // Compatible Products (accessories only) - Sidebar
+    {
+      name: 'compatibleProducts',
+      type: 'relationship',
+      relationTo: 'products' as const,
+      hasMany: true,
+      admin: {
+        position: 'sidebar',
+        description: 'Piano models this accessory is compatible with. Shown in the Related Products block when customers view this accessory.',
+        condition: (data) => data.type === 'accessory',
+      },
+      filterOptions: {
+        type: { not_equals: 'accessory' },
       },
     },
     // Shopify Integration Group - Sidebar

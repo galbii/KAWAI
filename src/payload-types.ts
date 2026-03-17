@@ -120,6 +120,7 @@ export interface Config {
     'product-soundcloud-embed': ProductSoundCloudEmbedBlock;
     'product-faq': ProductFaqBlock;
     'product-piano-pages': ProductPianoPagesBlock;
+    'product-accessories': ProductAccessoriesBlock;
     textContent: TextContentBlock;
     hello: HelloBlock;
     archive: ArchiveBlock;
@@ -150,6 +151,8 @@ export interface Config {
     jobs: Job;
     'job-applications': JobApplication;
     redirects: Redirect;
+    exports: Export;
+    imports: Import;
     search: Search;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -187,6 +190,8 @@ export interface Config {
     jobs: JobsSelect<false> | JobsSelect<true>;
     'job-applications': JobApplicationsSelect<false> | JobApplicationsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
+    exports: ExportsSelect<false> | ExportsSelect<true>;
+    imports: ImportsSelect<false> | ImportsSelect<true>;
     search: SearchSelect<false> | SearchSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -208,6 +213,8 @@ export interface Config {
   };
   jobs: {
     tasks: {
+      createCollectionExport: TaskCreateCollectionExport;
+      createCollectionImport: TaskCreateCollectionImport;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -1940,9 +1947,9 @@ export interface Product {
    */
   description?: string | null;
   /**
-   * Piano models this accessory is compatible with. These will be shown in the Related Products block when customers view this accessory.
+   * Optional disclaimer shown below the CTA buttons in the Product Hero (e.g. "Starting MSRP. Prices may vary by dealer.")
    */
-  compatibleProducts?: (string | Product)[] | null;
+  disclaimer?: string | null;
   /**
    * Shopify collections this product belongs to (synced from Shopify)
    */
@@ -2280,6 +2287,7 @@ export interface Product {
         | ProductFeatureSlidesBlock
         | ProductSoundCloudEmbedBlock
         | ProductRelatedProductsBlock
+        | ProductAccessoriesBlock
         | ProductFaqBlock
         | MarketingInstagramCarouselBlock
         | MarketingFeaturedModelsBlock
@@ -2352,6 +2360,10 @@ export interface Product {
    * FAQ documents that answer questions about this product
    */
   faqs?: (string | Faq)[] | null;
+  /**
+   * Piano models this accessory is compatible with. Shown in the Related Products block when customers view this accessory.
+   */
+  compatibleProducts?: (string | Product)[] | null;
   /**
    * Shopify synchronization and integration data
    */
@@ -3159,6 +3171,35 @@ export interface ProductRelatedProductsBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'product-related-products';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductAccessoriesBlock".
+ */
+export interface ProductAccessoriesBlock {
+  /**
+   * Section heading (default: "Accessories & Add-Ons")
+   */
+  heading?: string | null;
+  /**
+   * Small label above the heading
+   */
+  eyebrow?: string | null;
+  /**
+   * Maximum number of accessories to display (2–12)
+   */
+  maxItems?: number | null;
+  /**
+   * Display layout for accessory cards
+   */
+  layout?: ('grid' | 'carousel') | null;
+  /**
+   * Section background theme
+   */
+  theme?: ('light' | 'dark') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'product-accessories';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -9166,6 +9207,80 @@ export interface Redirect {
   createdAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "exports".
+ */
+export interface Export {
+  id: string;
+  name?: string | null;
+  format?: ('csv' | 'json') | null;
+  limit?: number | null;
+  page?: number | null;
+  sort?: string | null;
+  sortOrder?: ('asc' | 'desc') | null;
+  drafts?: ('yes' | 'no') | null;
+  selectionToUse?: ('currentSelection' | 'currentFilters' | 'all') | null;
+  fields?: string[] | null;
+  collectionSlug: string;
+  where?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "imports".
+ */
+export interface Import {
+  id: string;
+  collectionSlug: 'products';
+  importMode?: ('create' | 'update' | 'upsert') | null;
+  matchField?: string | null;
+  status?: ('pending' | 'completed' | 'partial' | 'failed') | null;
+  summary?: {
+    imported?: number | null;
+    updated?: number | null;
+    total?: number | null;
+    issues?: number | null;
+    issueDetails?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
  * This is a collection of automatically created search results. These results are used by the global site search and will be updated automatically as documents in the CMS are created or updated.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -9321,7 +9436,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'schedulePublish';
+        taskSlug: 'inline' | 'createCollectionExport' | 'createCollectionImport' | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -9354,7 +9469,7 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'schedulePublish') | null;
+  taskSlug?: ('inline' | 'createCollectionExport' | 'createCollectionImport' | 'schedulePublish') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -10417,7 +10532,7 @@ export interface ProductsSelect<T extends boolean = true> {
   featured?: T;
   category?: T;
   description?: T;
-  compatibleProducts?: T;
+  disclaimer?: T;
   shopifyCollections?:
     | T
     | {
@@ -10546,6 +10661,7 @@ export interface ProductsSelect<T extends boolean = true> {
         inStock?: T;
       };
   faqs?: T;
+  compatibleProducts?: T;
   shopify?:
     | T
     | {
@@ -10845,6 +10961,64 @@ export interface RedirectsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "exports_select".
+ */
+export interface ExportsSelect<T extends boolean = true> {
+  name?: T;
+  format?: T;
+  limit?: T;
+  page?: T;
+  sort?: T;
+  sortOrder?: T;
+  drafts?: T;
+  selectionToUse?: T;
+  fields?: T;
+  collectionSlug?: T;
+  where?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "imports_select".
+ */
+export interface ImportsSelect<T extends boolean = true> {
+  collectionSlug?: T;
+  importMode?: T;
+  matchField?: T;
+  status?: T;
+  summary?:
+    | T
+    | {
+        imported?: T;
+        updated?: T;
+        total?: T;
+        issues?: T;
+        issueDetails?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "search_select".
  */
 export interface SearchSelect<T extends boolean = true> {
@@ -10997,6 +11171,99 @@ export interface PayloadQueryPresetsSelect<T extends boolean = true> {
   isTemp?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskCreateCollectionExport".
+ */
+export interface TaskCreateCollectionExport {
+  input: {
+    name?: string | null;
+    format?: ('csv' | 'json') | null;
+    limit?: number | null;
+    page?: number | null;
+    sort?: string | null;
+    sortOrder?: ('asc' | 'desc') | null;
+    drafts?: ('yes' | 'no') | null;
+    selectionToUse?: ('currentSelection' | 'currentFilters' | 'all') | null;
+    fields?: string[] | null;
+    collectionSlug: string;
+    where?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+    userID?: string | null;
+    userCollection?: string | null;
+    exportsCollection?: string | null;
+  };
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskCreateCollectionImport".
+ */
+export interface TaskCreateCollectionImport {
+  input: {
+    collectionSlug:
+      | 'users'
+      | 'media'
+      | 'pages'
+      | 'home-page'
+      | 'pianos-page'
+      | 'concert-artist-page'
+      | 'storefronts'
+      | 'posts'
+      | 'categories'
+      | 'artists'
+      | 'faq-categories'
+      | 'faqs'
+      | 'support-groups'
+      | 'products'
+      | 'collections'
+      | 'dealers'
+      | 'music-schools'
+      | 'constant-contact-settings'
+      | 'constant-contact-custom-fields'
+      | 'jobs'
+      | 'job-applications'
+      | 'redirects'
+      | 'exports'
+      | 'imports';
+    importMode?: ('create' | 'update' | 'upsert') | null;
+    matchField?: string | null;
+    status?: ('pending' | 'completed' | 'partial' | 'failed') | null;
+    summary?: {
+      imported?: number | null;
+      updated?: number | null;
+      total?: number | null;
+      issues?: number | null;
+      issueDetails?:
+        | {
+            [k: string]: unknown;
+          }
+        | unknown[]
+        | string
+        | number
+        | boolean
+        | null;
+    };
+    user?: string | null;
+    userCollection?: string | null;
+    importsCollection?: string | null;
+    file?: {
+      data?: string | null;
+      mimetype?: string | null;
+      name?: string | null;
+    };
+    format?: ('csv' | 'json') | null;
+    debug?: boolean | null;
+  };
+  output?: unknown;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -19,6 +19,7 @@ const VALID_BLOCK_TYPES = [
   'product-feature-slides',
   'product-soundcloud-embed',
   'product-related-products',
+  'product-accessories',
   // Content blocks
   'content-text',
   'content-banner',
@@ -114,6 +115,9 @@ export function validateBlock(block: any, index: number): BlockValidationResult 
       break
     case 'product-related-products':
       validateRelatedProductsBlock(block, result)
+      break
+    case 'product-accessories':
+      validateProductAccessoriesBlock(block, result)
       break
     case 'content-text':
     case 'textContent': // Legacy support
@@ -275,6 +279,26 @@ function validateRelatedProductsBlock(block: any, result: BlockValidationResult)
 
   if (block.displayMode && !['collection', 'accessories', 'both'].includes(block.displayMode)) {
     result.warnings.push('RelatedProducts: displayMode should be collection, accessories, or both')
+  }
+}
+
+/**
+ * Validates ProductAccessories block specific requirements
+ */
+function validateProductAccessoriesBlock(block: any, result: BlockValidationResult): void {
+  if (block.maxItems !== undefined && block.maxItems !== null) {
+    const max = Number(block.maxItems)
+    if (isNaN(max) || max < 2 || max > 12) {
+      result.warnings.push('ProductAccessories: maxItems should be between 2 and 12')
+    }
+  }
+
+  if (block.layout && !['grid', 'carousel'].includes(block.layout)) {
+    result.warnings.push('ProductAccessories: layout should be grid or carousel')
+  }
+
+  if (block.theme && !['light', 'dark'].includes(block.theme)) {
+    result.warnings.push('ProductAccessories: theme should be light or dark')
   }
 }
 

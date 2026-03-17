@@ -1122,7 +1122,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
               {isMusicSchoolPage ? (
                 <Link
                   href={kmsMusicSchoolHref}
-                  className="flex items-center space-x-3"
+                  className="flex items-end space-x-3"
                 >
                   <img
                     src="https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/KMS%20Logo.webp"
@@ -1130,7 +1130,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                     className="h-8 w-auto flex-shrink-0"
                   />
                   {kmsDisplayName && (
-                    <div className="font-bold tracking-wide kawai-heading whitespace-nowrap text-kawai-black text-base flex-shrink-0">
+                    <div className="font-bold tracking-wide kawai-heading whitespace-nowrap text-kawai-black text-base flex-shrink-0 leading-none self-end mb-[3px]">
                       {kmsDisplayName}
                     </div>
                   )}
@@ -1184,8 +1184,8 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                 </motion.div>
               )}
 
-              {/* Visit Showroom CTA - Desktop (dealer location pages) */}
-              {currentLocationData && !isLoadingLocation && !isSignaturePage && !isUniversityPage && (
+              {/* Visit Showroom CTA - Desktop (dealer location pages, not on music school pages) */}
+              {currentLocationData && !isLoadingLocation && !isSignaturePage && !isUniversityPage && !isMusicSchoolPage && (
                 <motion.div
                   className="hidden lg:flex items-center"
                   initial={{ opacity: 0, x: 20 }}
@@ -1203,8 +1203,8 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                 </motion.div>
               )}
 
-              {/* Kawai Music School dropdown - Desktop (dealer location pages, only if school exists) */}
-              {currentLocationData?.hasMusicSchool && !isLoadingLocation && !isSignaturePage && !isUniversityPage && (
+              {/* Kawai Music School dropdown - Desktop (dealer location pages, only if school exists, not on music school pages) */}
+              {currentLocationData?.hasMusicSchool && !isLoadingLocation && !isSignaturePage && !isUniversityPage && !isMusicSchoolPage && (
                 <motion.div
                   className="hidden lg:flex items-center"
                   initial={{ opacity: 0, x: 20 }}

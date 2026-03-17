@@ -836,7 +836,6 @@ export function ProductHeroBlock({
                           additionalProps: { button_type: 'add_to_cart' },
                         }
                         trackAddToCart(addToCartParams)
-                        trackBeginCheckout(addToCartParams)
                       }}
                     >
                       Add to Cart
@@ -885,6 +884,13 @@ export function ProductHeroBlock({
                   </div>
                 )}
               </div>
+            )}
+
+            {/* Product Disclaimer */}
+            {product?.disclaimer && (
+              <p className={cn("text-xs mt-2 leading-relaxed opacity-70", textColorClass)}>
+                {product.disclaimer}
+              </p>
             )}
           </div>
 
@@ -1061,7 +1067,6 @@ export function ProductHeroBlock({
                 additionalProps: { button_type: 'floating_add_to_cart' },
               }
               trackAddToCart(floatingParams)
-              trackBeginCheckout(floatingParams)
             }}
           />
         )

@@ -2,6 +2,7 @@
 
 import { useCallback, useState, useRef, useEffect, type DragEvent } from 'react'
 import { useMediaManager } from './MediaManagerProvider'
+import type { FolderTreeNode } from './types'
 import { MediaGrid } from './MediaGrid'
 import { FolderTree } from './FolderTree'
 import { ToastContainer } from './Toast'
@@ -94,6 +95,7 @@ export function MediaManagerModal() {
     pendingFiles,
     currentFolder,
     folders,
+    folderTree,
     moveMediaToFolder,
     replaceMediaFile,
     modalOptions,
@@ -105,9 +107,17 @@ export function MediaManagerModal() {
   const [isLoadingEditFile, setIsLoadingEditFile] = useState(false)
   const [editingExistingFile, setEditingExistingFile] = useState<File | null>(null)
   const [editingExistingMediaId, setEditingExistingMediaId] = useState<string | null>(null)
+  const [isAnimatingIn, setIsAnimatingIn] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const dragCounterRef = useRef(0)
   const pendingConvertToWebpRef = useRef(true)
+
+  // Trigger entrance animation when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setIsAnimatingIn(true)
+    }
+  }, [isOpen])
 
   // Keyboard escape
   useEffect(() => {
@@ -187,10 +197,45 @@ export function MediaManagerModal() {
 
   const isSelectionMode = modalOptions?.mode === 'select'
 
+  // ─── Recursive move-menu folder renderer ───────────────────────────────────
+  function renderMoveFolderTree(
+    nodes: FolderTreeNode[],
+    onMove: (id: string | null) => void,
+    depth: number
+  ): React.ReactNode {
+    return nodes.map((node) => (
+      <div key={node.id}>
+        <MoveMenuItem label={node.name} onClick={() => onMove(node.id)} isFolder depth={depth} />
+        {node.children.length > 0 && renderMoveFolderTree(node.children, onMove, depth + 1)}
+      </div>
+    ))
+  }
+
   if (!isOpen) return null
 
   return (
     <>
+      {/* ── Keyframe animations ──────────────────────────────────────────── */}
+      <style>{`
+        @keyframes mmBackdropIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes mmModalIn {
+          from { opacity: 0; transform: scale(0.975) translateY(10px); }
+          to   { opacity: 1; transform: scale(1)     translateY(0); }
+        }
+        @keyframes mmSlideDown {
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes mmFadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes spin { to { transform: rotate(360deg) } }
+      `}</style>
+
       {/* ── Backdrop + modal shell ───────────────────────────────────────── */}
       <div
         style={{
@@ -210,6 +255,7 @@ export function MediaManagerModal() {
             inset: 0,
             background: c.backdrop,
             backdropFilter: 'blur(6px)',
+            animation: 'mmBackdropIn 0.2s ease forwards',
           }}
           onClick={closeModal}
         />
@@ -229,6 +275,7 @@ export function MediaManagerModal() {
             boxShadow: '0 32px 96px rgba(0,0,0,0.8), 0 8px 32px rgba(0,0,0,0.5)',
             color: c.high,
             overflow: 'hidden',
+            animation: 'mmModalIn 0.22s cubic-bezier(0.22,1,0.36,1) forwards',
           }}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
@@ -499,6 +546,7 @@ export function MediaManagerModal() {
                 gap: 12,
                 borderTop: `1px solid ${c.line}`,
                 background: c.panel,
+                animation: 'mmSlideDown 0.18s ease forwards',
               }}
             >
               {/* Thumbnail */}
@@ -587,17 +635,16 @@ export function MediaManagerModal() {
                         <div style={{ position: 'fixed', inset: 0, zIndex: 10 }} onClick={() => setShowMoveMenu(false)} />
                         <div style={{
                           position: 'absolute', bottom: '100%', right: 0, marginBottom: 6,
-                          minWidth: 200,
-                          background: c.card, border: `1px solid ${c.line}`, borderRadius: 8,
-                          boxShadow: '0 8px 28px rgba(0,0,0,0.6)',
-                          zIndex: 20, overflow: 'hidden',
+                          minWidth: 220, maxWidth: 280, maxHeight: 320,
+                          background: c.card, border: `1px solid ${c.line}`, borderRadius: 9,
+                          boxShadow: '0 12px 36px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.4)',
+                          zIndex: 20, overflowY: 'auto',
                           paddingTop: 4, paddingBottom: 4,
+                          animation: 'mmSlideDown 0.15s ease forwards',
                         }}>
-                          <MoveMenuItem label="Root (no folder)" onClick={() => handleMoveToFolder(null)} />
-                          {folders.length > 0 && <div style={{ height: 1, background: c.line, margin: '4px 0' }} />}
-                          {folders.map((f) => (
-                            <MoveMenuItem key={f.id} label={f.name} onClick={() => handleMoveToFolder(f.id)} isFolder />
-                          ))}
+                          <MoveMenuItem label="Root (no folder)" onClick={() => handleMoveToFolder(null)} depth={0} />
+                          {folderTree.length > 0 && <div style={{ height: 1, background: c.line, margin: '4px 6px' }} />}
+                          {renderMoveFolderTree(folderTree, handleMoveToFolder, 0)}
                         </div>
                       </>
                     )}
@@ -879,16 +926,18 @@ function HeaderIconBtn({
   )
 }
 
-function MoveMenuItem({ label, onClick, isFolder }: { label: string; onClick: () => void; isFolder?: boolean }) {
+function MoveMenuItem({ label, onClick, isFolder, depth = 0 }: { label: string; onClick: () => void; isFolder?: boolean; depth?: number }) {
+  const indent = 16 + depth * 16
   return (
     <button
       onClick={onClick}
       style={{
-        width: '100%', display: 'flex', alignItems: 'center', gap: 9,
-        padding: '8px 16px',
+        width: '100%', display: 'flex', alignItems: 'center', gap: 8,
+        padding: `6px 14px 6px ${indent}px`,
         background: 'transparent',
         border: 'none',
-        color: c.mid, fontSize: 13.5,
+        color: depth === 0 ? c.mid : c.lo,
+        fontSize: depth === 0 ? 13 : 12.5,
         cursor: 'pointer', outline: 'none',
         transition: 'background 0.1s, color 0.1s',
         textAlign: 'left',
@@ -899,21 +948,28 @@ function MoveMenuItem({ label, onClick, isFolder }: { label: string; onClick: ()
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.background = 'transparent'
-        e.currentTarget.style.color = c.mid
+        e.currentTarget.style.color = depth === 0 ? c.mid : c.lo
       }}
     >
       {isFolder ? (
-        <svg width="15" height="15" viewBox="0 0 24 24" fill={c.gold} stroke="none">
-          <path d="M3 7V17a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6.586a1 1 0 01-.707-.293L10 5H5a2 2 0 00-2 2z" />
-        </svg>
+        <>
+          {depth > 0 && (
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={c.lo} strokeWidth="2.5" style={{ flexShrink: 0 }}>
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          )}
+          <svg width="13" height="13" viewBox="0 0 24 24" fill={depth === 0 ? c.gold : 'rgba(232,168,78,0.6)'} stroke="none" style={{ flexShrink: 0 }}>
+            <path d="M3 7V17a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6.586a1 1 0 01-.707-.293L10 5H5a2 2 0 00-2 2z" />
+          </svg>
+        </>
       ) : (
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c.lo} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={c.lo} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
           <rect x="3" y="3" width="18" height="18" rx="2" />
           <circle cx="8.5" cy="8.5" r="1.5" />
           <polyline points="21 15 16 10 5 21" />
         </svg>
       )}
-      {label}
+      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
     </button>
   )
 }

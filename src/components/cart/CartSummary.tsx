@@ -16,7 +16,7 @@ import { useState } from 'react'
 import { ExternalLink, Loader2, Tag } from 'lucide-react'
 import type { SimpleCart } from '@/lib/shopify/types'
 import { cn } from '@/lib/utils'
-import { trackWithConfig } from '@/lib/analytics/unified-tracking'
+import { trackBeginCheckout } from '@/lib/analytics/unified-tracking'
 import { getStoredUTMParams } from '@/lib/shopify/utm-tracking'
 
 // ============================================================================
@@ -72,19 +72,26 @@ export function CartSummary({ cart, className }: CartSummaryProps) {
         console.log('[CartSummary] Checkout session marked for cart:', cart.id)
       }
 
-      // Fire begin_checkout analytics event
-      trackWithConfig({
-        blockType: 'cart-summary',
-        blockData: {},
-        action: 'begin_checkout',
-        label: `Cart (${cart.totalQuantity} item${cart.totalQuantity !== 1 ? 's' : ''})`,
-        currency: cart.currency || 'USD',
-        value: cart.total,
-        additionalProps: {
-          cart_id: cart.id,
-          item_count: cart.totalQuantity,
-          cart_total: cart.total,
-        },
+      // Fire begin_checkout for each cart line so GA4 begin_checkout + Meta InitiateCheckout
+      // fire with proper structured ecommerce data
+      cart.lines.forEach((line) => {
+        trackBeginCheckout({
+          blockType: 'cart-summary',
+          blockData: {},
+          productName: line.productTitle,
+          variantId: line.variantId,
+          variantName: line.variantTitle || null,
+          price: line.price,
+          currency: cart.currency || 'USD',
+          productId: line.productHandle || null,
+          quantity: line.quantity,
+          additionalProps: {
+            cart_id: cart.id,
+            item_count: cart.totalQuantity,
+            cart_total: cart.total,
+            entry_point: 'cart_drawer',
+          },
+        })
       })
 
       // Append UTM parameters to checkout URL for cross-domain attribution

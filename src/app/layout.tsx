@@ -1,11 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Crimson_Text, Playfair_Display, Cormorant_Garamond, Noto_Sans } from "next/font/google";
-import { GoogleAnalytics } from '@next/third-parties/google';
+import { GoogleTagManager } from '@next/third-parties/google';
 import { Suspense } from 'react';
 import { PHProvider } from './providers'
 import { CartProvider } from '@/contexts/CartContext'
 import PageViewTracker from '../components/PageViewTracker'
-import MetaPixel from '../components/MetaPixel'
 import "./globals.css";
 
 // Primary font for body text and UI elements
@@ -78,6 +77,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
+      <GoogleTagManager gtmId="GTM-MGQR7XXS" />
       <body className={`${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${notoSans.variable} antialiased bg-kawai-black text-kawai-pearl`}>
         <PHProvider>
           <CartProvider>
@@ -87,12 +87,6 @@ export default function RootLayout({
             {children}
           </CartProvider>
         </PHProvider>
-        {process.env.NEXT_PUBLIC_GA_ID && (
-          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
-        )}
-        {process.env.NEXT_PUBLIC_META_PIXEL_ID && (
-          <MetaPixel pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID} />
-        )}
       </body>
     </html>
   );

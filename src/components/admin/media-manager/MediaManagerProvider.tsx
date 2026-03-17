@@ -539,8 +539,8 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
     }
   }, [fetchMedia, showToast, state.currentFolder])
 
-  // Handle file selection — all images go to the metadata form first.
-  // The ImageEditor is only reachable when editing an already-uploaded image.
+  // Handle file selection — images open in ImageEditor first, then metadata form.
+  // Non-image files (PDF, video, audio) upload directly.
   const handleFilesSelected = useCallback((files: FileList | File[]) => {
     const fileArray = Array.from(files)
 
@@ -552,14 +552,14 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
       uploadFilesDirectly(otherFiles)
     }
 
-    // All image files — go straight to the metadata form, skip ImageEditor
+    // Image files — open ImageEditor first so user can crop/adjust before metadata
     if (imageFiles.length > 0) {
       const firstFile = imageFiles[0]
       if (firstFile) {
         setState(prev => ({
           ...prev,
           pendingFiles: imageFiles,
-          metadataEditingFile: firstFile,
+          editingFile: firstFile,
         }))
       }
     }
@@ -624,10 +624,13 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
   const skipEditing = useCallback(() => {
     setState(prev => {
       const remainingFiles = prev.pendingFiles.slice(1)
+      const nextFile = remainingFiles[0] || null
       return {
         ...prev,
         pendingFiles: remainingFiles,
-        metadataEditingFile: remainingFiles[0] || null,
+        // Advance in the same mode we're currently in
+        editingFile: prev.editingFile !== null ? nextFile : null,
+        metadataEditingFile: prev.metadataEditingFile !== null ? nextFile : null,
       }
     })
   }, [])

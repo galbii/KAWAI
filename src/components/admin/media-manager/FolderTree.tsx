@@ -86,15 +86,15 @@ function FolderTreeItem({
   return (
     <div>
       <div
-        className="group flex items-center gap-3 px-4 py-3.5 rounded-xl cursor-pointer transition-all duration-150 mb-1"
+        className="group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer mb-0.5"
         style={{
-          marginLeft: `${depth * 20}px`,
+          marginLeft: `${depth * 16}px`,
           backgroundColor: isDragOver ? colors.primary + '22' : isSelected ? colors.hoverBg : 'transparent',
           borderLeft: isDragOver
-            ? `3px solid ${colors.primary}`
-            : isSelected ? `3px solid ${colors.primary}` : '3px solid transparent',
+            ? `2px solid ${colors.primary}`
+            : isSelected ? `2px solid ${colors.primary}` : '2px solid transparent',
           outline: isDragOver ? `1px solid ${colors.primary}33` : undefined,
-          transition: 'background 0.1s, outline 0.1s',
+          transition: 'background 0.15s ease, border-color 0.15s ease',
         }}
         onClick={() => {
           if (!isRenaming) onSelect(folder)
@@ -136,43 +136,29 @@ function FolderTreeItem({
             e.stopPropagation()
             onToggle(folder.id)
           }}
-          className="w-6 h-6 flex items-center justify-center rounded-lg transition-colors"
+          className="flex items-center justify-center flex-shrink-0"
           style={{
+            width: 18,
+            height: 18,
             opacity: hasChildren ? 1 : 0,
-            backgroundColor: hasChildren ? colors.cardBg : 'transparent',
+            pointerEvents: hasChildren ? 'auto' : 'none',
           }}
         >
-          {hasChildren && (
-            <svg
-              className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
-              style={{ color: colors.textSecondary }}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          )}
-        </button>
-
-        {/* Folder icon */}
-        <div
-          className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ backgroundColor: isSelected ? colors.cardBg : colors.inputBg }}
-        >
           <svg
-            className="w-5 h-5"
-            style={{ color: isSelected ? colors.primary : colors.gold }}
-            fill="currentColor"
+            style={{
+              color: colors.textMuted,
+              width: 12,
+              height: 12,
+              transition: 'transform 0.18s ease',
+              transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+            }}
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            {isExpanded ? (
-              <path d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h4.586a1 1 0 01.707.293L12 6h7a2 2 0 012 2v10a2 2 0 01-2 2z" />
-            ) : (
-              <path d="M3 7V17a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6.586a1 1 0 01-.707-.293L10 5H5a2 2 0 00-2 2z" />
-            )}
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
           </svg>
-        </div>
+        </button>
 
         {/* Folder name or rename input */}
         {isRenaming ? (
@@ -191,17 +177,28 @@ function FolderTreeItem({
               }
             }}
             onBlur={handleRenameSave}
-            className="flex-1 text-base font-medium bg-transparent border-0 border-b outline-none min-w-0"
             style={{
+              flex: 1,
+              minWidth: 0,
+              fontSize: 13.5,
+              fontWeight: 500,
+              background: colors.inputBg,
+              border: `1px solid ${colors.borderFocus}`,
+              borderRadius: 4,
+              outline: 'none',
               color: colors.textAccent,
-              borderColor: colors.borderFocus,
-              padding: '0 2px',
+              padding: '1px 6px',
             }}
           />
         ) : (
           <span
-            className="flex-1 text-base font-medium truncate"
-            style={{ color: isSelected ? colors.textAccent : colors.textPrimary }}
+            className="flex-1 truncate"
+            style={{
+              fontSize: 13.5,
+              fontWeight: isSelected ? 500 : 400,
+              color: isSelected ? colors.textAccent : colors.textSecondary,
+              letterSpacing: '-0.01em',
+            }}
           >
             {folder.name}
           </span>
@@ -209,34 +206,42 @@ function FolderTreeItem({
 
         {/* Actions */}
         {showActions && !isRenaming && (
-          <div className="flex items-center gap-1">
-            {/* Rename button */}
+          <div className="flex items-center gap-0.5" style={{ flexShrink: 0 }}>
             <button
               onClick={(e) => {
                 e.stopPropagation()
                 setRenameValue(folder.name)
                 setIsRenaming(true)
               }}
-              className="p-2 rounded-lg transition-colors hover:bg-opacity-80"
-              style={{ backgroundColor: colors.cardBg, color: colors.textSecondary }}
-              title="Rename folder"
+              style={{
+                width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                borderRadius: 5, background: 'transparent', border: 'none',
+                color: colors.textMuted, cursor: 'pointer', transition: 'background 0.12s, color 0.12s',
+              }}
+              title="Rename"
+              onMouseEnter={(e) => { e.currentTarget.style.background = colors.cardBg; e.currentTarget.style.color = colors.textSecondary }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = colors.textMuted }}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
             </button>
-            {/* Create subfolder button */}
             <button
               onClick={(e) => {
                 e.stopPropagation()
                 onCreateChild(folder.id)
               }}
-              className="p-2 rounded-lg transition-colors hover:bg-opacity-80"
-              style={{ backgroundColor: colors.cardBg, color: colors.textSecondary }}
-              title="Create subfolder"
+              style={{
+                width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                borderRadius: 5, background: 'transparent', border: 'none',
+                color: colors.textMuted, cursor: 'pointer', transition: 'background 0.12s, color 0.12s',
+              }}
+              title="New subfolder"
+              onMouseEnter={(e) => { e.currentTarget.style.background = colors.cardBg; e.currentTarget.style.color = colors.textSecondary }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = colors.textMuted }}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
               </svg>
             </button>
             <button
@@ -246,11 +251,16 @@ function FolderTreeItem({
                   onDelete(folder.id)
                 }
               }}
-              className="p-2 rounded-lg transition-colors hover:bg-opacity-80"
-              style={{ backgroundColor: colors.errorBg, color: colors.error }}
-              title="Delete folder"
+              style={{
+                width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                borderRadius: 5, background: 'transparent', border: 'none',
+                color: colors.error, cursor: 'pointer', transition: 'background 0.12s',
+              }}
+              title="Delete"
+              onMouseEnter={(e) => { e.currentTarget.style.background = colors.errorBg }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
             </button>
@@ -424,19 +434,37 @@ export function FolderTree() {
     <div className="flex flex-col h-full" style={{ backgroundColor: colors.sidebarBg }}>
       {/* Header */}
       <div
-        className="flex-shrink-0 px-6 py-5 border-b"
+        className="flex-shrink-0 px-4 py-3 border-b"
         style={{ borderColor: colors.border }}
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-xl font-semibold" style={{ color: colors.textPrimary }}>Folders</h3>
+          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: colors.textMuted }}>Folders</span>
           <button
             onClick={() => openCreateDialog()}
-            className="p-2.5 rounded-xl transition-colors hover:bg-opacity-80"
-            style={{ backgroundColor: colors.cardBg, color: colors.textSecondary }}
-            title="Create folder"
+            className="flex items-center justify-center rounded-md"
+            style={{
+              width: 26,
+              height: 26,
+              background: 'transparent',
+              border: `1px solid ${colors.border}`,
+              color: colors.textMuted,
+              cursor: 'pointer',
+              transition: 'background 0.15s ease, color 0.15s ease, border-color 0.15s ease',
+            }}
+            title="New folder"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = colors.hoverBg
+              e.currentTarget.style.color = colors.textPrimary
+              e.currentTarget.style.borderColor = colors.borderLight
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.color = colors.textMuted
+              e.currentTarget.style.borderColor = colors.border
+            }}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
             </svg>
           </button>
         </div>
@@ -446,16 +474,16 @@ export function FolderTree() {
       <div className="flex-1 overflow-y-auto p-4">
         {/* All Media (Root) */}
         <div
-          className="flex items-center gap-3 px-4 py-3.5 rounded-xl cursor-pointer transition-all duration-150 mb-2"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer mb-1"
           style={{
             backgroundColor: isDragOverRoot
               ? colors.primary + '22'
               : currentFolder === null ? colors.hoverBg : 'transparent',
             borderLeft: isDragOverRoot
-              ? `3px solid ${colors.primary}`
-              : currentFolder === null ? `3px solid ${colors.primary}` : '3px solid transparent',
+              ? `2px solid ${colors.primary}`
+              : currentFolder === null ? `2px solid ${colors.primary}` : '2px solid transparent',
             outline: isDragOverRoot ? `1px solid ${colors.primary}33` : undefined,
-            transition: 'background 0.1s, outline 0.1s',
+            transition: 'background 0.15s ease, border-color 0.15s ease',
           }}
           onClick={() => setCurrentFolder(null)}
           onDragOver={(e) => {
@@ -477,23 +505,15 @@ export function FolderTree() {
             }
           }}
         >
-          <div
-            className="w-10 h-10 rounded-lg flex items-center justify-center"
-            style={{ backgroundColor: currentFolder === null ? colors.cardBg : colors.inputBg }}
-          >
-            <svg
-              className="w-5 h-5"
-              style={{ color: currentFolder === null ? colors.primary : colors.textMuted }}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </div>
+          {/* Spacer to align with folder chevron width */}
+          <div style={{ width: 18, flexShrink: 0 }} />
           <span
-            className="text-base font-medium"
-            style={{ color: currentFolder === null ? colors.textAccent : colors.textPrimary }}
+            style={{
+              fontSize: 13.5,
+              fontWeight: currentFolder === null ? 500 : 400,
+              color: currentFolder === null ? colors.textAccent : colors.textSecondary,
+              letterSpacing: '-0.01em',
+            }}
           >
             All Media
           </span>
@@ -507,22 +527,23 @@ export function FolderTree() {
         {/* Folder tree */}
         {folderTree.length === 0 ? (
           <div className="px-4 py-8 text-center">
-            <div
-              className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center"
-              style={{ backgroundColor: colors.cardBg }}
-            >
-              <svg className="w-8 h-8" style={{ color: colors.textMuted }} fill="currentColor" viewBox="0 0 24 24">
-                <path d="M3 7V17a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6.586a1 1 0 01-.707-.293L10 5H5a2 2 0 00-2 2z" />
-              </svg>
-            </div>
-            <p className="text-base font-medium mb-2" style={{ color: colors.textSecondary }}>No folders yet</p>
-            <p className="text-sm mb-4" style={{ color: colors.textMuted }}>Organize your media into folders</p>
+            <p style={{ fontSize: 13, color: colors.textMuted, marginBottom: 10 }}>No folders yet</p>
             <button
               onClick={() => openCreateDialog()}
-              className="px-5 py-2.5 text-sm font-medium rounded-xl transition-colors hover:bg-opacity-90"
-              style={{ backgroundColor: colors.primary, color: colors.white }}
+              style={{
+                fontSize: 12, fontWeight: 500,
+                padding: '5px 12px',
+                borderRadius: 6,
+                background: colors.cardBg,
+                border: `1px solid ${colors.border}`,
+                color: colors.textSecondary,
+                cursor: 'pointer',
+                transition: 'background 0.12s, color 0.12s',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = colors.hoverBg; e.currentTarget.style.color = colors.textPrimary }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = colors.cardBg; e.currentTarget.style.color = colors.textSecondary }}
             >
-              Create First Folder
+              Create folder
             </button>
           </div>
         ) : (
