@@ -199,34 +199,26 @@ export const Products: CollectionConfig = {
                 },
               },
             },
-            // Compatible Piano Products — visible only when type is accessory
+            // Compatible Piano Products — always visible so editors can configure it on any accessory.
+            // Leave blank on piano products; fill in on accessory products.
             {
               name: 'compatibleProducts',
               type: 'relationship',
               relationTo: 'products' as const,
               hasMany: true,
               admin: {
-                description: 'Piano models this accessory is compatible with. Products listed here will display this accessory in their Accessories block.',
-                condition: (data) => {
-                  const t = (data?.type ?? '').toLowerCase()
-                  // Match normalized value ('accessory') and common raw Shopify values
-                  // that haven't been re-synced yet
-                  return (
-                    t === 'accessory' ||
-                    t.includes('accessor') ||
-                    t.includes('bench') ||
-                    t.includes('stand') ||
-                    t.includes('pedal') ||
-                    t.includes('stool') ||
-                    t.includes('cover') ||
-                    t.includes('lamp') ||
-                    t.includes('headphone') ||
-                    t.includes('sustain')
-                  )
-                },
+                description: 'Accessory products only: select the piano models this accessory is compatible with. The Accessories block on those piano pages will then display this item.',
               },
+              // Picker only shows piano products (not accessories).
+              // Covers both normalized values (post-sync) and raw Shopify productType strings.
               filterOptions: {
-                type: { not_in: ['accessory'] },
+                or: [
+                  { type: { equals: 'digital' } },
+                  { type: { equals: 'grand' } },
+                  { type: { equals: 'upright' } },
+                  { type: { equals: 'hybrid' } },
+                  { type: { like: 'Piano' } },
+                ],
               },
             },
             // Model - Primary Identifier
@@ -882,45 +874,6 @@ export const Products: CollectionConfig = {
         }
       ]
     },
-    // Compatible Accessories - Sidebar (piano/hybrid/grand/upright products only)
-    {
-      name: 'accessories',
-      type: 'relationship',
-      relationTo: 'products' as const,
-      hasMany: true,
-      admin: {
-        position: 'sidebar',
-        description: 'Accessories compatible with this product. These are displayed by the Accessories block on this product\'s page.',
-        condition: (data) => {
-          const t = (data?.type ?? '').toLowerCase()
-          return !(
-            t === 'accessory' ||
-            t.includes('accessor') ||
-            t.includes('bench') ||
-            t.includes('stand') ||
-            t.includes('pedal') ||
-            t.includes('stool') ||
-            t.includes('cover') ||
-            t.includes('lamp') ||
-            t.includes('headphone') ||
-            t.includes('sustain')
-          )
-        },
-      },
-      filterOptions: {
-        or: [
-          { type: { equals: 'accessory' } },
-          { type: { like: 'accessor' } },
-          { type: { like: 'bench' } },
-          { type: { like: 'stand' } },
-          { type: { like: 'pedal' } },
-          { type: { like: 'stool' } },
-          { type: { like: 'cover' } },
-          { type: { like: 'headphone' } },
-          { type: { like: 'sustain' } },
-        ],
-      },
-    },
     // FAQ Relationship - Sidebar
     {
       name: 'faqs',
@@ -1222,16 +1175,59 @@ export const Products: CollectionConfig = {
 
             const blockTypes = new Set(pageContent.map((b: any) => b?.blockType))
 
+            const isAccessory = product.type === 'accessory'
             const needsSoundCloud = !blockTypes.has('product-soundcloud-embed')
             const needsRelated = !blockTypes.has('product-related-products')
+            // Accessories block only belongs on piano pages, not on accessory products themselves
+            const needsAccessories = !isAccessory && !blockTypes.has('product-accessories')
+            const needsFaq = !blockTypes.has('product-faq')
 
-            if (!needsSoundCloud && !needsRelated) {
+            if (!needsSoundCloud && !needsRelated && !needsAccessories && !needsFaq) {
               summary.skipped++
               continue
             }
 
             // Build updated blocks array — insert each block at the right position
             const newBlocks = [...pageContent]
+
+            if (needsAccessories) {
+              // Insert immediately after product-description (or after product-hero as fallback)
+              const descIdx = newBlocks.findIndex((b: any) => b?.blockType === 'product-description')
+              const heroIdx = newBlocks.findIndex((b: any) => b?.blockType === 'product-hero')
+              const insertAfter = descIdx !== -1 ? descIdx : heroIdx
+              const accessoriesBlock = {
+                blockType: 'product-accessories',
+                heading: 'Accessories & Add-Ons',
+                eyebrow: 'Enhance Your Piano',
+                maxItems: 8,
+                layout: 'grid',
+                theme: 'light',
+              }
+              if (insertAfter !== -1) {
+                newBlocks.splice(insertAfter + 1, 0, accessoriesBlock)
+              } else {
+                newBlocks.push(accessoriesBlock)
+              }
+              console.log(`[PatchBlocks] Adding product-accessories to ${product.model}`)
+            }
+
+            if (needsFaq) {
+              // Insert immediately after product-technical-specs (or append)
+              const techIdx = newBlocks.findIndex((b: any) => b?.blockType === 'product-technical-specs')
+              const faqBlock = {
+                blockType: 'product-faq',
+                heading: 'FAQ',
+                subheading: null,
+                theme: 'pearl',
+                showViewAllLink: true,
+              }
+              if (techIdx !== -1) {
+                newBlocks.splice(techIdx + 1, 0, faqBlock)
+              } else {
+                newBlocks.push(faqBlock)
+              }
+              console.log(`[PatchBlocks] Adding product-faq to ${product.model}`)
+            }
 
             if (needsSoundCloud) {
               // Insert before product-feature-slides if present, otherwise append

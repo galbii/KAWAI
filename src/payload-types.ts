@@ -1920,7 +1920,7 @@ export interface Product {
    */
   type?: string | null;
   /**
-   * Piano models this accessory is compatible with. Products listed here will display this accessory in their Accessories block.
+   * Accessory products only: select the piano models this accessory is compatible with. The Accessories block on those piano pages will then display this item.
    */
   compatibleProducts?: (string | Product)[] | null;
   /**
@@ -2361,10 +2361,6 @@ export interface Product {
      */
     inStock?: boolean | null;
   };
-  /**
-   * Accessories compatible with this product. These are displayed by the Accessories block on this product's page.
-   */
-  accessories?: (string | Product)[] | null;
   /**
    * FAQ documents that answer questions about this product
    */
@@ -10700,7 +10696,6 @@ export interface ProductsSelect<T extends boolean = true> {
         lowStockThreshold?: T;
         inStock?: T;
       };
-  accessories?: T;
   faqs?: T;
   shopify?:
     | T

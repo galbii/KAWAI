@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Product } from '@/payload-types'
+import { getPayloadClient } from '@/lib/payload/queries'
 import { formatPrice } from '@/lib/utils'
 
 // ---------------------------------------------------------------------------
@@ -25,6 +26,20 @@ type AccessoryCard = {
   price?: { msrp?: number | null; currency?: string | null } | null
   description?: string | null
 }
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const SELECT_FIELDS = {
+  model: true,
+  name: true,
+  slug: true,
+  type: true,
+  imageUrl: true,
+  price: true,
+  description: true,
+} as any
 
 // ---------------------------------------------------------------------------
 // Card Component
@@ -165,23 +180,29 @@ export async function ProductAccessoriesRenderer({
   if (!product) return null
 
   const limit = Math.min(Math.max(maxItems ?? 8, 2), 12)
+  const payload = await getPayloadClient()
 
-  // product.accessories is populated at depth 2 by getProductBySlugDirect.
-  // Editors configure compatible accessories directly on the piano product's sidebar.
-  const accessories: AccessoryCard[] = (product.accessories ?? [])
-    .filter((a): a is Product => typeof a === 'object' && a !== null)
-    .filter((a) => a.status === 'active')
-    .slice(0, limit)
-    .map((a) => ({
-      id: String(a.id),
-      model: a.model,
-      name: a.name ?? null,
-      slug: a.slug ?? null,
-      type: a.type ?? null,
-      imageUrl: a.imageUrl ?? null,
-      price: a.price ?? null,
-      description: a.description ?? null,
-    }))
+  let accessories: AccessoryCard[] = []
+
+  try {
+    // Mirror the same query RelatedProductsRenderer uses for compatible accessories:
+    // find products where the accessory has declared this piano in its compatibleProducts field.
+    const { docs } = await payload.find({
+      collection: 'products',
+      where: {
+        and: [
+          { compatibleProducts: { in: [String(product.id)] } } as any,
+          { status: { equals: 'active' } },
+        ],
+      },
+      select: SELECT_FIELDS,
+      depth: 0,
+      limit,
+    })
+    accessories = docs as AccessoryCard[]
+  } catch {
+    return null
+  }
 
   if (accessories.length === 0) return null
 
