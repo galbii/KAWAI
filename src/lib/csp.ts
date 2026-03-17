@@ -83,9 +83,10 @@ export function buildCspHeader(isDev: boolean): string {
       // Cloudflare R2 — wildcard covers all bucket account IDs
       'https://*.r2.dev',
 
-      // Google (Analytics, GTM, Maps tiles — *.googleapis.com covers all subdomains)
-      'https://www.google-analytics.com',
+      // Google (Analytics, GTM, Maps tiles — wildcards cover all regional subdomains)
+      'https://*.google-analytics.com',
       'https://www.googletagmanager.com',
+      'https://stats.g.doubleclick.net',
       'https://*.googleapis.com',
       'https://*.gstatic.com',
 
@@ -119,9 +120,14 @@ export function buildCspHeader(isDev: boolean): string {
       'https://us.i.posthog.com',
       'https://us-assets.i.posthog.com',
 
-      // Google Analytics + Maps API (*.googleapis.com covers Places, Geocoding, Directions)
-      'https://www.google-analytics.com',
+      // Google Analytics — wildcard covers regional subdomains (region1/region2 added June 2022)
+      // stats.g.doubleclick.net receives GA4 data by default even without Google Ads
+      // www.googletagmanager.com needed in connect-src so GTM can fetch its own container config
+      'https://www.googletagmanager.com',
+      'https://*.google-analytics.com',
       'https://analytics.google.com',
+      'https://stats.g.doubleclick.net',
+      // Google Maps API (*.googleapis.com covers Places, Geocoding, Directions)
       'https://*.googleapis.com',
 
       // Calendly
