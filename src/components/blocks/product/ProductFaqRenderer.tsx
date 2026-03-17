@@ -1,7 +1,6 @@
 import 'server-only'
-import { getFaqsByProductId } from '@/lib/payload/queries'
 import { ProductFaqAccordion } from './ProductFaqAccordion'
-import type { Product } from '@/payload-types'
+import type { Product, Faq } from '@/payload-types'
 
 // Props are spread from BlockRenderer (same pattern as RelatedProductsRenderer)
 // ProductFaqBlock type will be available after next build — using inline interface
@@ -23,8 +22,12 @@ export async function ProductFaqRenderer({
 }: ProductFaqRendererProps) {
   if (!product) return null
 
-  const faqs = await getFaqsByProductId(String(product.id))
-  if (!faqs || faqs.length === 0) return null
+  // product.faqs is populated at depth 2 by getProductBySlugDirect.
+  // Filter to only fully-populated Faq objects (not bare string IDs).
+  const faqs = (product.faqs ?? []).filter(
+    (f): f is Faq => typeof f === 'object' && f !== null,
+  )
+  if (faqs.length === 0) return null
 
   const bgClass =
     theme === 'charcoal'
@@ -46,7 +49,7 @@ export async function ProductFaqRenderer({
           <h2
             className={`text-3xl md:text-4xl font-light font-[family-name:var(--font-brand-serif)] ${isDark ? 'text-white' : 'text-kawai-black'} mb-3`}
           >
-            {heading ?? 'Common Questions'}
+            {heading ?? 'FAQ'}
           </h2>
           {subheading && (
             <p className={`text-lg ${isDark ? 'text-white/70' : 'text-kawai-charcoal/70'}`}>

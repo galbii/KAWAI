@@ -602,9 +602,9 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   useEffect(() => {
     // Utility bar: always 64px (h-16)
     // Bottom nav: 48px (scrolled) or 56px (top) when visible; 6px red line when hidden
-    // On mobile (< 1024px) the desktop bottom nav is `hidden lg:block` — only the
-    // 6px mobile red line renders, so navHeight is always 6 on mobile.
-    const isMobile = window.innerWidth < 1024
+    // On mobile/tablet (< 1280px) the desktop bottom nav is `hidden xl:block` — only the
+    // 6px mobile red line renders, so navHeight is always 6 on mobile/tablet.
+    const isMobile = window.innerWidth < 1280
     const navHeight = isMobile ? 6 : (isAutoHidden ? 6 : (isScrolled ? 48 : 56))
     const totalPx = 64 + navHeight
     document.documentElement.style.setProperty(
@@ -1170,7 +1170,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
               {/* Find a Dealer Link - Desktop (non-storefront pages) */}
               {!isSignaturePage && !isUniversityPage && !currentLocationData && (
                 <motion.div
-                  className="hidden lg:flex items-center"
+                  className="hidden xl:flex items-center"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3, duration: 0.4 }}
@@ -1187,7 +1187,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
               {/* Visit Showroom CTA - Desktop (dealer location pages, not on music school pages) */}
               {currentLocationData && !isLoadingLocation && !isSignaturePage && !isUniversityPage && !isMusicSchoolPage && (
                 <motion.div
-                  className="hidden lg:flex items-center"
+                  className="hidden xl:flex items-center"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3, duration: 0.4 }}
@@ -1206,7 +1206,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
               {/* Kawai Music School dropdown - Desktop (dealer location pages, only if school exists, not on music school pages) */}
               {currentLocationData?.hasMusicSchool && !isLoadingLocation && !isSignaturePage && !isUniversityPage && !isMusicSchoolPage && (
                 <motion.div
-                  className="hidden lg:flex items-center"
+                  className="hidden xl:flex items-center"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.25, duration: 0.4 }}
@@ -1277,7 +1277,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
               {/* Cart Icon */}
               {!isSignaturePage && !isUniversityPage && (
                 <motion.div
-                  className="hidden lg:flex items-center"
+                  className="hidden xl:flex items-center"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.35, duration: 0.4 }}
@@ -1288,7 +1288,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
 
               {/* Cart Icon - Mobile */}
               {!isSignaturePage && !isUniversityPage && (
-                <div className="lg:hidden flex items-center">
+                <div className="xl:hidden flex items-center">
                   <CartIcon onOpen={() => setIsCartOpen(true)} />
                 </div>
               )}
@@ -1297,7 +1297,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
               {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
                 <motion.button
                   ref={menuButtonRef}
-                  className="lg:hidden p-2 rounded-md transition-colors hover:bg-kawai-pearl focus:outline-none focus:ring-2 focus:ring-kawai-red focus:ring-offset-2"
+                  className="xl:hidden p-2 rounded-md transition-colors hover:bg-kawai-pearl focus:outline-none focus:ring-2 focus:ring-kawai-red focus:ring-offset-2"
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   whileTap={{ scale: 0.95 }}
                   transition={{ duration: 0.1 }}
@@ -1337,13 +1337,13 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
 
       {/* Red line — mobile only (desktop gets it from the bottom nav) */}
       {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
-        <div className="lg:hidden w-full h-[6px] bg-[#A01829]" />
+        <div className="xl:hidden w-full h-[6px] bg-[#A01829]" />
       )}
 
       {/* Bottom Row - Main Navigation (Full Width) - Auto-hides, reveals on hover */}
       {!isSignaturePage && !hidePianoLinks && !isUniversityPage && !isSearchOpen && (
         <div
-          className="hidden lg:block w-full"
+          className="hidden xl:block w-full"
           onMouseEnter={handleBottomNavMouseEnter}
           onMouseLeave={handleBottomNavMouseLeave}
         >

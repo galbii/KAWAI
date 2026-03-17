@@ -1,15 +1,20 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getAllFaqs, getAllFaqCategories } from '@/lib/payload/queries'
+import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
 
 export const revalidate = 3600
 
-export const metadata: Metadata = {
+const fallbackMetadata: Metadata = {
   title: 'Frequently Asked Questions | Kawai Pianos',
   description: 'Find answers to common questions about KAWAI pianos, purchasing, financing, service, and more.',
   alternates: {
     canonical: '/faq',
   },
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  return getCMSPageMetadata('faq', fallbackMetadata)
 }
 
 interface PageProps {

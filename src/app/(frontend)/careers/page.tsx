@@ -5,12 +5,17 @@ import { JobGrid } from '@/components/careers/JobGrid'
 import { LifeAtKawai } from '@/components/careers/LifeAtKawai'
 import type { JobListingItem } from '@/components/careers/JobListingsPanel'
 import { extractTextFromRichText } from '@/lib/utils'
+import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
 
 export const revalidate = 3600
 
-export const metadata: Metadata = {
+const fallbackMetadata: Metadata = {
   title: 'Careers | KAWAI Piano',
   description: 'Join the KAWAI team. View open positions in sales, technology, service, and more.',
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  return getCMSPageMetadata('careers', fallbackMetadata)
 }
 
 function toJobListingItem(doc: {

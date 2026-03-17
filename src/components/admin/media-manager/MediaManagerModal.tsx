@@ -7,7 +7,6 @@ import { MediaGrid } from './MediaGrid'
 import { FolderTree } from './FolderTree'
 import { ToastContainer } from './Toast'
 import { ImageEditor } from './ImageEditor'
-import { MediaUploadMetadataForm } from './MediaUploadMetadataForm'
 import { MediaEditPanel } from './MediaEditPanel'
 
 // ─── Design tokens ──────────────────────────────────────────────────────────
@@ -77,6 +76,10 @@ export function MediaManagerModal() {
     error,
     searchQuery,
     setSearchQuery,
+    fileTypeFilter,
+    setFileTypeFilter,
+    sortOrder,
+    setSortOrder,
     selectedMedia,
     copyPublicUrl,
     totalDocs,
@@ -84,12 +87,9 @@ export function MediaManagerModal() {
     dismissToast,
     showToast,
     editingFile,
-    metadataEditingFile,
     editingMedia,
     setEditingFile,
-    setMetadataEditingFile,
     setEditingMedia,
-    moveToMetadataEditing,
     uploadWithMetadata,
     skipEditing,
     pendingFiles,
@@ -110,7 +110,6 @@ export function MediaManagerModal() {
   const [isAnimatingIn, setIsAnimatingIn] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const dragCounterRef = useRef(0)
-  const pendingConvertToWebpRef = useRef(true)
 
   // Trigger entrance animation when modal opens
   useEffect(() => {
@@ -397,20 +396,6 @@ export function MediaManagerModal() {
 
             {/* Right: actions */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, marginLeft: 'auto' }}>
-              {/* Sidebar toggle */}
-              <HeaderIconBtn
-                title={sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
-                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                active={!sidebarCollapsed}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2" />
-                  <line x1="9" y1="3" x2="9" y2="21" />
-                </svg>
-              </HeaderIconBtn>
-
-              {/* Divider */}
-              <div style={{ width: 1, height: 22, background: c.line, margin: '0 2px' }} />
 
               {/* Upload */}
               <button
@@ -482,21 +467,172 @@ export function MediaManagerModal() {
             </div>
           )}
 
+          {/* ── Filter / sort toolbar ────────────────────────────────────────── */}
+          <div
+            style={{
+              flexShrink: 0,
+              height: 46,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '0 16px',
+              borderBottom: `1px solid ${c.line}`,
+              background: c.panel,
+            }}
+          >
+            {/* File type pills */}
+            {(['all', 'image', 'video', 'audio', 'pdf'] as const).map((type) => {
+              const active = type === 'all' ? fileTypeFilter === null : fileTypeFilter === type
+              const labels: Record<string, string> = { all: 'All', image: 'Images', video: 'Videos', audio: 'Audio', pdf: 'PDFs' }
+              const icons: Record<string, React.ReactNode> = {
+                all: (
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                  </svg>
+                ),
+                image: (
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                  </svg>
+                ),
+                video: (
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+                  </svg>
+                ),
+                audio: (
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+                  </svg>
+                ),
+                pdf: (
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                ),
+              }
+              return (
+                <button
+                  key={type}
+                  onClick={() => setFileTypeFilter(type === 'all' ? null : type)}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                    height: 28, padding: '0 10px',
+                    borderRadius: 5,
+                    background: active ? c.violetGlow : 'transparent',
+                    border: `1px solid ${active ? c.violetRing : c.line}`,
+                    color: active ? c.violet : c.mid,
+                    fontSize: 12.5, fontWeight: active ? 600 : 400,
+                    cursor: 'pointer', outline: 'none',
+                    transition: 'all 0.1s',
+                    whiteSpace: 'nowrap' as const,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!active) {
+                      e.currentTarget.style.background = c.hover
+                      e.currentTarget.style.color = c.high
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!active) {
+                      e.currentTarget.style.background = 'transparent'
+                      e.currentTarget.style.color = c.mid
+                    }
+                  }}
+                >
+                  {icons[type]}
+                  {labels[type]}
+                </button>
+              )
+            })}
+
+            {/* Spacer */}
+            <div style={{ flex: 1 }} />
+
+            {/* Sort */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={c.lo} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="9" y2="18"/>
+              </svg>
+              <select
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
+                style={{
+                  height: 28,
+                  background: c.input,
+                  border: `1px solid ${c.line}`,
+                  borderRadius: 5,
+                  color: c.mid,
+                  fontSize: 12.5,
+                  padding: '0 8px',
+                  cursor: 'pointer',
+                  outline: 'none',
+                }}
+                onFocus={(e) => { e.target.style.borderColor = c.lineFocus }}
+                onBlur={(e) => { e.target.style.borderColor = c.line }}
+              >
+                <option value="-createdAt">Newest first</option>
+                <option value="createdAt">Oldest first</option>
+                <option value="filename">Name A → Z</option>
+                <option value="-filename">Name Z → A</option>
+                <option value="-filesize">Largest first</option>
+                <option value="filesize">Smallest first</option>
+              </select>
+            </div>
+          </div>
+
           {/* ── Body ────────────────────────────────────────────────────────── */}
           <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
-            {/* Sidebar */}
+            {/* Sidebar panel */}
             <div
               style={{
                 flexShrink: 0,
                 width: sidebarCollapsed ? 0 : 300,
                 overflow: 'hidden',
-                borderRight: sidebarCollapsed ? 'none' : `1px solid ${c.line}`,
                 background: c.panel,
                 transition: 'width 0.22s cubic-bezier(0.4,0,0.2,1)',
               }}
             >
               <FolderTree />
             </div>
+
+            {/* Sidebar toggle strip — always visible, rides the sidebar/grid border */}
+            <button
+              title={sidebarCollapsed ? 'Show folders' : 'Hide folders'}
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              style={{
+                flexShrink: 0,
+                width: 18,
+                background: c.panel,
+                border: 'none',
+                borderRight: `1px solid ${c.line}`,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'flex-start',
+                justifyContent: 'center',
+                paddingTop: 14,
+                color: c.lo,
+                transition: 'background 0.1s, color 0.1s',
+                outline: 'none',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = c.hover
+                e.currentTarget.style.color = c.high
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = c.panel
+                e.currentTarget.style.color = c.lo
+              }}
+            >
+              <svg
+                width="10" height="10" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" strokeWidth="2.5"
+                strokeLinecap="round" strokeLinejoin="round"
+                style={{ transition: 'transform 0.22s cubic-bezier(0.4,0,0.2,1)', transform: sidebarCollapsed ? 'rotate(0deg)' : 'rotate(180deg)' }}
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
 
             {/* Grid area */}
             <div style={{ flex: 1, position: 'relative', background: c.bg }}>
@@ -811,13 +947,12 @@ export function MediaManagerModal() {
         </div>
       </div>
 
-      {/* ── Image Editor ─────────────────────────────────────────────────── */}
+      {/* ── Image Editor (with inline metadata sidebar) ──────────────────── */}
       {editingFile && (
         <ImageEditor
           file={editingFile}
-          onSave={(editedFile, convertToWebp) => {
-            pendingConvertToWebpRef.current = convertToWebp
-            moveToMetadataEditing(editedFile)
+          onSave={(editedFile, metadata) => {
+            uploadWithMetadata(editedFile, metadata)
           }}
           onCancel={() => {
             if (pendingFiles.length > 1) {
@@ -833,32 +968,16 @@ export function MediaManagerModal() {
       {editingExistingFile && editingExistingMediaId && (
         <ImageEditor
           file={editingExistingFile}
-          onSave={async (editedFile, convertToWebp) => {
+          onSave={async (editedFile, metadata) => {
             setEditingExistingFile(null)
             if (editingExistingMediaId) {
-              await replaceMediaFile(editingExistingMediaId, editedFile, convertToWebp)
+              await replaceMediaFile(editingExistingMediaId, editedFile, metadata.convertToWebp)
             }
             setEditingExistingMediaId(null)
           }}
           onCancel={() => {
             setEditingExistingFile(null)
             setEditingExistingMediaId(null)
-          }}
-        />
-      )}
-
-      {/* ── Metadata Form ────────────────────────────────────────────────── */}
-      {metadataEditingFile && (
-        <MediaUploadMetadataForm
-          file={metadataEditingFile}
-          initialConvertToWebp={pendingConvertToWebpRef.current}
-          onUpload={(metadata) => uploadWithMetadata(metadataEditingFile, metadata)}
-          onCancel={() => {
-            if (pendingFiles.length > 1) {
-              skipEditing()
-            } else {
-              setMetadataEditingFile(null)
-            }
           }}
         />
       )}

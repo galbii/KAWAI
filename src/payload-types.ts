@@ -103,6 +103,7 @@ export interface Config {
     'marketing-artist-hero': MarketingArtistHeroBlock;
     'marketing-pianos-browser': MarketingPianosBrowserBlock;
     'marketing-artists-grid': MarketingArtistsGridBlock;
+    'marketing-blog-grid': MarketingBlogGridBlock;
     'events-university-hero': EventsUniversityHeroBlock;
     'events-event-overview': EventsEventOverviewBlock;
     'product-showcase': ProductShowcaseBlock;
@@ -1915,9 +1916,13 @@ export interface MarketingHeroBlock {
 export interface Product {
   id: string;
   /**
-   * Product type (synced from Shopify productType)
+   * Product type — normalized from Shopify productType (e.g. "Piano Bench" → accessory). Re-sync from Shopify to update.
    */
   type?: string | null;
+  /**
+   * Piano models this accessory is compatible with. Products listed here will display this accessory in their Accessories block.
+   */
+  compatibleProducts?: (string | Product)[] | null;
   /**
    * Model identifier - matches Shopify custom.model metafield (PRIMARY KEY)
    */
@@ -2357,13 +2362,13 @@ export interface Product {
     inStock?: boolean | null;
   };
   /**
+   * Accessories compatible with this product. These are displayed by the Accessories block on this product's page.
+   */
+  accessories?: (string | Product)[] | null;
+  /**
    * FAQ documents that answer questions about this product
    */
   faqs?: (string | Faq)[] | null;
-  /**
-   * Piano models this accessory is compatible with. Shown in the Related Products block when customers view this accessory.
-   */
-  compatibleProducts?: (string | Product)[] | null;
   /**
    * Shopify synchronization and integration data
    */
@@ -5855,6 +5860,35 @@ export interface MarketingArtistsGridBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingBlogGridBlock".
+ */
+export interface MarketingBlogGridBlock {
+  /**
+   * Section heading displayed above the blog grid
+   */
+  heading?: string | null;
+  /**
+   * Optional subtitle displayed below the heading
+   */
+  tagline?: string | null;
+  /**
+   * Number of posts to show in the grid (not counting the featured post)
+   */
+  postLimit?: number | null;
+  /**
+   * Show the featured post as a large hero card above the grid
+   */
+  showFeatured?: boolean | null;
+  /**
+   * Show the heading and tagline section
+   */
+  showHeading?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-blog-grid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "EventsUniversityHeroBlock".
  */
 export interface EventsUniversityHeroBlock {
@@ -7353,6 +7387,7 @@ export interface Page {
     | MarketingArtistHeroBlock
     | MarketingPianosBrowserBlock
     | MarketingArtistsGridBlock
+    | MarketingBlogGridBlock
     | EventsUniversityHeroBlock
     | EventsEventOverviewBlock
     | ProductHeroCarouselBlock
@@ -10525,6 +10560,7 @@ export interface SupportGroupsSelect<T extends boolean = true> {
  */
 export interface ProductsSelect<T extends boolean = true> {
   type?: T;
+  compatibleProducts?: T;
   model?: T;
   name?: T;
   slug?: T;
@@ -10660,8 +10696,8 @@ export interface ProductsSelect<T extends boolean = true> {
         lowStockThreshold?: T;
         inStock?: T;
       };
+  accessories?: T;
   faqs?: T;
-  compatibleProducts?: T;
   shopify?:
     | T
     | {

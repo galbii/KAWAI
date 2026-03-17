@@ -5,10 +5,15 @@ import type { Artist, Page } from '@/payload-types'
 import ArtistsHeroWrapper from '@/components/artists/ArtistsHeroWrapper'
 import { ArtistsGrid } from '@/components/artists/ArtistsGrid'
 import { RenderBlocks } from '@/components/RenderBlocks'
+import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
 
-export const metadata: Metadata = {
+const fallbackMetadata: Metadata = {
   title: 'KAWAI Artists | World-Class Musicians & Performers',
   description: 'Discover the talented artists and musicians who trust KAWAI pianos for their performances and recordings. From concert halls to recording studios, explore our roster of acclaimed pianists.',
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  return getCMSPageMetadata('artists', fallbackMetadata)
 }
 
 // Enable ISR with 15-minute revalidation

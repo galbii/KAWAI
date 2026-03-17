@@ -10,6 +10,8 @@
 
 export { ArticleSidebar } from './ArticleSidebar'
 export { BlogCard } from './BlogCard'
+export { BlogCardAnimated } from './BlogCardAnimated'
+export { BlogIndexClient } from './BlogIndexClient'
 export { LivePreviewPost } from './LivePreviewPost'
 export { ReadingProgressBar } from './ReadingProgressBar'
 export { RelatedPosts } from './RelatedPosts'

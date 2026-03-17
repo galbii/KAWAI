@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import { getConcertArtistPageServer } from '@/lib/payload/server'
+import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
 import ConcertArtistHero from './components/ConcertArtistHero'
 import ConcertArtistModels from './components/ConcertArtistModels'
 import CraftsmanPromise from './components/CraftsmanPromise'
@@ -12,7 +13,7 @@ import ExperienceInvitation from './components/ExperienceInvitation'
 import { ConcertArtistFAQ } from './components/ConcertArtistFAQ'
 
 // SEO Metadata
-export const metadata: Metadata = {
+const fallbackMetadata: Metadata = {
   title: 'Premium Digital Pianos with Wooden Keys | Kawai Concert Artist Series',
   description:
     'Experience authentic acoustic piano feel with real wooden keys. Concert Artist digital pianos for serious and classical pianists. SK-EX concert grand sampling, Grand Feel action. 4.9★ from 575+ reviews. Four models to match your goals.',
@@ -79,6 +80,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://kawaius.com/concert-artist',
   },
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  return getCMSPageMetadata('concert-artist', fallbackMetadata)
 }
 
 // ISR - Revalidate every 15 minutes

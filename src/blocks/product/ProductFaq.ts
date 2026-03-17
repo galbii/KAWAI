@@ -11,7 +11,7 @@ export const ProductFaqBlock: Block = {
     {
       name: 'heading',
       type: 'text',
-      defaultValue: 'Common Questions',
+      defaultValue: 'FAQ',
       admin: {
         description: 'Section heading displayed above the FAQ accordion',
       },

@@ -154,7 +154,7 @@ export function NewsMegaMenu({
           transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
           className={cn(
             'fixed left-0 right-0 z-[60]',
-            'bg-white border-b border-gray-200 shadow-2xl',
+            'bg-kawai-pearl border-b border-kawai-neutral shadow-2xl',
             className
           )}
           style={{
@@ -163,17 +163,35 @@ export function NewsMegaMenu({
             transformOrigin: 'top center',
           }}
         >
-          <div className="container mx-auto px-4 sm:px-6 py-6 lg:py-8">
-            {/* Header */}
-            <div className="mb-4 lg:mb-6">
-              <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-1">
-                Latest News & Updates
-              </h2>
-              <p className="text-xs lg:text-sm text-gray-600">
-                Stay informed about KAWAI innovations, events, and artist spotlights
-              </p>
-            </div>
+          {/* Full-bleed editorial header — title + "The Newsroom" CTA */}
+          <div className="bg-kawai-pearl border-b border-kawai-neutral">
+            <div className="container mx-auto px-4 sm:px-6 py-6 flex items-center justify-between gap-6">
+              {/* Left: red accent bar + heading */}
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="w-px h-12 bg-kawai-red shrink-0" />
+                <div className="min-w-0">
+                  <h2 className="text-3xl lg:text-5xl font-bold text-kawai-black leading-tight mb-0.5">
+                    Latest News &amp; Updates
+                  </h2>
+                  <p className="text-sm text-kawai-charcoal/60 leading-snug">
+                    Stay informed about KAWAI innovations, events, and artist spotlights
+                  </p>
+                </div>
+              </div>
 
+              {/* Right: prominent white pill button */}
+              <Link
+                href="/blog"
+                onClick={onClose}
+                className="group inline-flex items-center gap-2.5 bg-kawai-black hover:bg-kawai-charcoal text-white text-sm font-semibold px-6 py-2.5 rounded-full transition-all duration-300 shrink-0 shadow-lg hover:shadow-xl hover:-translate-y-px"
+              >
+                View all posts
+                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
+            </div>
+          </div>
+
+          <div className="container mx-auto px-4 sm:px-6 py-6 lg:py-8">
             {/* News Carousel - Full Width */}
             <div className="mb-6 lg:mb-8 relative">
               {/* Carousel Container */}
@@ -294,6 +312,7 @@ export function NewsMegaMenu({
                 </div>
               )}
             </div>
+
           </div>
         </motion.div>
       )}

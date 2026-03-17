@@ -82,6 +82,9 @@ export interface MediaManagerState {
   isFoldersLoading: boolean
   expandedFolders: Set<string>
   subFolders: FolderItem[] // Child folders of currentFolder (or root folders when null)
+  // Filter + sort
+  fileTypeFilter: string | null // null = all, 'image' | 'video' | 'audio' | 'pdf'
+  sortOrder: string // '-createdAt' | 'createdAt' | 'filename' | '-filename' | '-filesize' | 'filesize'
 }
 
 export interface MediaManagerActions {
@@ -92,6 +95,8 @@ export interface MediaManagerActions {
   deleteMedia: (id: string) => Promise<void>
   selectMedia: (media: MediaItem | null) => void
   setSearchQuery: (query: string) => void
+  setFileTypeFilter: (filter: string | null) => void
+  setSortOrder: (order: string) => void
   copyPublicUrl: (url: string) => Promise<void>
   // Folder actions
   fetchFolders: () => Promise<void>

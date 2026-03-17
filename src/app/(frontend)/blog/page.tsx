@@ -1,125 +1,110 @@
 import { Metadata } from 'next'
-import { BlogCard } from '@/components/blog/BlogCard'
+import type { Where } from 'payload'
+import { BlogIndexClient } from '@/components/blog/BlogIndexClient'
+import { getPayloadClient } from '@/lib/payload/queries'
 import type { Post } from '@/payload-types'
 
-// Use ISR (Incremental Static Regeneration) for better SEO and performance
-// Pages are statically generated and revalidated every 5 minutes
 export const revalidate = 300
 
 interface BlogPageProps {
-  searchParams: { category?: string }
+  searchParams: Promise<{ category?: string }>
 }
 
-// Generate metadata for blog index page
 export async function generateMetadata(): Promise<Metadata> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
-
   return {
-    title: 'Blog | KAWAI Piano Gallery',
+    title: 'The KAWAI Journal | Notes & Stories',
     description:
-      'Explore our piano blog featuring education guides, product news, artist spotlights, maintenance tips, and more from KAWAI Piano Gallery.',
-    alternates: {
-      canonical: `${siteUrl}/blog`,
-    },
+      'Explore our piano journal featuring education guides, product news, artist spotlights, maintenance tips, and more from KAWAI Piano Gallery.',
+    alternates: { canonical: `${siteUrl}/blog` },
     openGraph: {
-      title: 'Blog | KAWAI Piano Gallery',
+      title: 'The KAWAI Journal | Notes & Stories',
       description:
-        'Explore our piano blog featuring education guides, product news, artist spotlights, maintenance tips, and more.',
+        'Explore our piano journal featuring education guides, product news, artist spotlights, and more.',
       url: `${siteUrl}/blog`,
       type: 'website',
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'Blog | KAWAI Piano Gallery',
+      title: 'The KAWAI Journal | Notes & Stories',
       description:
-        'Explore our piano blog featuring education guides, product news, artist spotlights, and more.',
+        'Explore our piano journal featuring education guides, product news, artist spotlights, and more.',
     },
   }
 }
 
-// Fetch published posts from Payload CMS
-async function getPosts(category?: string): Promise<Post[]> {
+interface PostsResult {
+  featuredPost: Post | null
+  gridPosts: Post[]
+}
+
+async function getPosts(category?: string): Promise<PostsResult> {
   try {
-    const { getPayload } = await import('payload')
-    const configPromise = await import('@payload-config')
-    const payload = await getPayload({ config: configPromise.default })
+    const payload = await getPayloadClient()
 
-    const whereClause: any = {
-      status: {
-        equals: 'published',
-      },
+    const baseWhere: Where = {
+      status: { equals: 'published' },
     }
 
-    // Add category filter if provided
     if (category) {
-      whereClause.categories = {
-        contains: category,
-      }
+      baseWhere['categories'] = { contains: category }
     }
 
-    const posts = await payload.find({
-      collection: 'posts',
-      where: whereClause,
-      limit: 50,
-      sort: '-publishedDate',
-      depth: 2, // Populate relationships
-    })
+    // Run both queries in parallel
+    const [featuredResult, allResult] = await Promise.all([
+      // Query 1: find the featured post (limit 1)
+      payload.find({
+        collection: 'posts',
+        where: {
+          ...baseWhere,
+          featured: { equals: true },
+        },
+        limit: 1,
+        sort: '-publishedDate',
+        depth: 2,
+        overrideAccess: true,
+      }),
+      // Query 2: all published posts sorted by date
+      payload.find({
+        collection: 'posts',
+        where: baseWhere,
+        limit: 50,
+        sort: '-publishedDate',
+        depth: 2,
+        overrideAccess: true,
+      }),
+    ])
 
-    return posts.docs as Post[]
+    const featuredPost = (featuredResult.docs[0] as Post) ?? null
+    const allPosts = allResult.docs as Post[]
+
+    // Use the featured post as hero; fall back to first chronological post
+    const heroPost: Post | null = featuredPost ?? allPosts[0] ?? null
+
+    // Exclude the hero from the grid to avoid duplication
+    const heroId = heroPost?.id
+    const gridPosts = heroId ? allPosts.filter((p) => p.id !== heroId) : allPosts
+
+    return { featuredPost: heroPost, gridPosts }
   } catch (error) {
     console.error('Error fetching posts:', error)
-    return []
+    return { featuredPost: null, gridPosts: [] }
   }
 }
 
-// Blog index page component
 export default async function BlogPage({ searchParams }: BlogPageProps) {
-  const { category } = searchParams
-  const posts = await getPosts(category)
+  const { category } = await searchParams
+  const { featuredPost, gridPosts } = await getPosts(category)
+
+  // Determine whether the hero is a truly featured post (has featured flag set)
+  const heroIsFeatured = featuredPost?.featured === true
 
   return (
-    <div className="min-h-screen bg-kawai-pearl">
-      {/* Page Header */}
-      <section className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-kawai-charcoal mb-4">
-            Blog
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl">
-            Discover insights about pianos, music education, product updates, and
-            expert advice from KAWAI Piano Gallery.
-          </p>
-        </div>
-      </section>
-
-      {/* Posts Grid */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {posts.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-xl text-gray-500">
-              No blog posts available at this time. Check back soon!
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {posts.map((post) => (
-              <BlogCard key={post.id} post={post} />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Category Filter Info (if active) */}
-      {category && posts.length > 0 && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-          <a
-            href="/blog"
-            className="inline-flex items-center text-kawai-red hover:underline"
-          >
-            ← View all posts
-          </a>
-        </div>
-      )}
-    </div>
+    <BlogIndexClient
+      featuredPost={featuredPost}
+      heroIsFeatured={heroIsFeatured}
+      gridPosts={gridPosts}
+      {...(category !== undefined && { category })}
+    />
   )
 }

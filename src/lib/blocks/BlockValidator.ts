@@ -19,6 +19,7 @@ const VALID_BLOCK_TYPES = [
   'product-feature-slides',
   'product-soundcloud-embed',
   'product-related-products',
+  'product-faq',
   'product-accessories',
   // Content blocks
   'content-text',

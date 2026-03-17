@@ -2,10 +2,16 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import type { Dealer, Storefront } from '@/payload-types'
 import { DealerFinderClient } from './DealerFinderClient'
+import type { Metadata } from 'next'
+import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
 
-export const metadata = {
+const fallbackMetadata: Metadata = {
   title: 'Find a KAWAI Piano Dealer | Authorized Dealers Near You',
   description: 'Locate authorized KAWAI piano dealers in your area. Find showrooms, services, and contact information for expert piano consultations and purchases.',
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  return getCMSPageMetadata('find-a-dealer', fallbackMetadata)
 }
 
 export const revalidate = 900 // 15-minute ISR

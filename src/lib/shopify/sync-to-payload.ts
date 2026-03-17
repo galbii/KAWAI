@@ -372,8 +372,8 @@ export async function syncShopifyDataToProduct(
       description: stripHtml(shopifyData.description || shopifyData.descriptionHtml) ?? undefined,
       // Only update model if we have a non-empty value from Shopify, otherwise keep existing
       model: (extractedModel && extractedModel.trim()) || product.model || undefined,
-      // Type comes from Shopify productType
-      type: shopifyData.productType || undefined,
+      // Type comes from Shopify productType — normalized to canonical value
+      type: mapShopifyProductTypeToPayloadType(shopifyData.productType || '') || undefined,
       // Category comes from Shopify Standard Product Taxonomy (last part only)
       category: shopifyData.category?.name || undefined,
       // Collections from Shopify

@@ -58,7 +58,7 @@ export async function RelatedPosts({ relatedPosts }: RelatedPostsProps) {
       },
       depth: 1, // Populate featured image
       limit: postIds.length,
-      overrideAccess: false, // Enforce access control (security best practice)
+      overrideAccess: true, // Posts has no versioning — authenticatedOrPublished uses _status which doesn't exist
     })
 
     // If no posts found, return null

@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { adminOnly, authenticated } from '@/lib/payload/access'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -8,6 +9,12 @@ export const Users: CollectionConfig = {
     description: 'User accounts and authentication management',
   },
   auth: true,
+  access: {
+    create: adminOnly,
+    read: authenticated,
+    update: authenticated,
+    delete: adminOnly,
+  },
   fields: [
     // Email added by default
     {

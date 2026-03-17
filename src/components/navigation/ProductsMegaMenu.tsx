@@ -279,7 +279,7 @@ function ProductCard({ product, onClose }: { product: NavProduct; onClose: () =>
     <Link href={`/products/${product.handle}`} onClick={onClose} className="block">
       <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-white mb-4">
         {product.image ? (
-          <Image src={product.image.url} alt={product.image.alt} fill sizes="(max-width: 1280px) 22vw, 280px" className="object-cover" />
+          <Image src={product.image.url} alt={product.image.alt} fill sizes="(max-width: 1280px) 22vw, 280px" className="object-contain p-2" />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="text-xs uppercase tracking-widest text-[#C8C2BA]">No image</span>

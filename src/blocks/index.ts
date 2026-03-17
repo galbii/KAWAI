@@ -40,6 +40,7 @@ export { FeaturedCollections } from './marketing/FeaturedCollections'
 export { ArtistHero } from './marketing/ArtistHero'
 export { PianosBrowser } from './marketing/PianosBrowser'
 export { ArtistsGrid } from './marketing/ArtistsGrid'
+export { BlogGrid } from './marketing/BlogGrid'
 
 // Events blocks (event-specific content)
 export { UniversityHero } from './events/UniversityHero'

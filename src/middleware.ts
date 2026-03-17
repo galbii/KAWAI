@@ -37,6 +37,15 @@ async function getRedirects(baseUrl: string): Promise<ResolvedRedirect[]> {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // Block unauthenticated access to /api/access
+  if (pathname === '/api/access') {
+    const token = request.cookies.get('payload-token')
+    if (!token) {
+      return NextResponse.json({ errors: [{ message: 'Unauthorized' }] }, { status: 401 })
+    }
+    return NextResponse.next()
+  }
+
   // Add the pathname to headers so server components can access it
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-pathname', pathname)
@@ -64,11 +73,12 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
+     * - api (API routes) — but explicitly include /api/access
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/api/access',
   ],
 }

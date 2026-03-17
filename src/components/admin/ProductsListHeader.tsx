@@ -7,13 +7,15 @@ const c = {
   panel: '#111116', line: '#252535', high: '#ECECF2', mid: '#8484A0', red: '#C41E3A',
 }
 
+// All tabs now filter by the normalized `type` field (digital / grand / upright / hybrid / accessory)
+// which is populated by mapShopifyProductTypeToPayloadType() during Shopify sync.
 const TABS = [
   { label: 'All',         where: null },
-  { label: 'Digital',     where: { category: { like: 'Digital' } } },
-  { label: 'Grand',       where: { category: { like: 'Grand' } } },
-  { label: 'Upright',     where: { category: { like: 'Upright' } } },
-  { label: 'Hybrid',      where: { category: { like: 'Hybrid' } } },
-  { label: 'Accessories', where: { type: { like: 'accessory' } } },
+  { label: 'Digital',     where: { type: { equals: 'digital' } } },
+  { label: 'Grand',       where: { type: { equals: 'grand' } } },
+  { label: 'Upright',     where: { type: { equals: 'upright' } } },
+  { label: 'Hybrid',      where: { type: { equals: 'hybrid' } } },
+  { label: 'Accessories', where: { type: { equals: 'accessory' } } },
 ]
 
 export function ProductsListHeader() {

@@ -95,8 +95,8 @@ async function transformShopifyToPayload(shopifyProduct: ShopifyProductData): Pr
     slug: shopifyProduct.handle,
     description: stripHtml(shopifyProduct.description || shopifyProduct.descriptionHtml),
     status: statusMap[shopifyProduct.status] || 'draft',
-    // Type comes from Shopify productType
-    type: shopifyProduct.productType || null,
+    // Type comes from Shopify productType — normalized to canonical value
+    type: mapShopifyProductTypeToPayloadType(shopifyProduct.productType || '') || null,
     // Category comes from Shopify Standard Product Taxonomy (last part only)
     category: (shopifyProduct as any).category?.name || null,
     // Collections from Shopify
@@ -158,9 +158,7 @@ export const Products: CollectionConfig = {
     description: 'Unified product management - pianos, accessories, and other products with dynamic page building',
     components: {
       beforeList: [
-        '/components/admin/BulkShopifySyncButton#default',
-        '/components/admin/PatchMissingBlocksButton#default',
-        '/components/admin/ProductsListHeader#ProductsListHeader',
+        '/components/admin/ProductsListToolbar#ProductsListToolbar',
       ],
     },
     livePreview: {
@@ -189,14 +187,47 @@ export const Products: CollectionConfig = {
           label: 'Product Details',
           description: 'Core product information synced from Shopify',
           fields: [
-            // Product Type (from Shopify productType)
+            // Product Type (from Shopify productType — normalized)
             {
               name: 'type',
               type: 'text',
               admin: {
-                description: 'Product type (synced from Shopify productType)',
+                description: 'Product type — normalized from Shopify productType (e.g. "Piano Bench" → accessory). Re-sync from Shopify to update.',
                 readOnly: true,
-              }
+                components: {
+                  Cell: '/components/admin/ProductTypeCell#ProductTypeCell',
+                },
+              },
+            },
+            // Compatible Piano Products — visible only when type is accessory
+            {
+              name: 'compatibleProducts',
+              type: 'relationship',
+              relationTo: 'products' as const,
+              hasMany: true,
+              admin: {
+                description: 'Piano models this accessory is compatible with. Products listed here will display this accessory in their Accessories block.',
+                condition: (data) => {
+                  const t = (data?.type ?? '').toLowerCase()
+                  // Match normalized value ('accessory') and common raw Shopify values
+                  // that haven't been re-synced yet
+                  return (
+                    t === 'accessory' ||
+                    t.includes('accessor') ||
+                    t.includes('bench') ||
+                    t.includes('stand') ||
+                    t.includes('pedal') ||
+                    t.includes('stool') ||
+                    t.includes('cover') ||
+                    t.includes('lamp') ||
+                    t.includes('headphone') ||
+                    t.includes('sustain')
+                  )
+                },
+              },
+              filterOptions: {
+                type: { not_in: ['accessory'] },
+              },
             },
             // Model - Primary Identifier
             {
@@ -851,6 +882,45 @@ export const Products: CollectionConfig = {
         }
       ]
     },
+    // Compatible Accessories - Sidebar (piano/hybrid/grand/upright products only)
+    {
+      name: 'accessories',
+      type: 'relationship',
+      relationTo: 'products' as const,
+      hasMany: true,
+      admin: {
+        position: 'sidebar',
+        description: 'Accessories compatible with this product. These are displayed by the Accessories block on this product\'s page.',
+        condition: (data) => {
+          const t = (data?.type ?? '').toLowerCase()
+          return !(
+            t === 'accessory' ||
+            t.includes('accessor') ||
+            t.includes('bench') ||
+            t.includes('stand') ||
+            t.includes('pedal') ||
+            t.includes('stool') ||
+            t.includes('cover') ||
+            t.includes('lamp') ||
+            t.includes('headphone') ||
+            t.includes('sustain')
+          )
+        },
+      },
+      filterOptions: {
+        or: [
+          { type: { equals: 'accessory' } },
+          { type: { like: 'accessor' } },
+          { type: { like: 'bench' } },
+          { type: { like: 'stand' } },
+          { type: { like: 'pedal' } },
+          { type: { like: 'stool' } },
+          { type: { like: 'cover' } },
+          { type: { like: 'headphone' } },
+          { type: { like: 'sustain' } },
+        ],
+      },
+    },
     // FAQ Relationship - Sidebar
     {
       name: 'faqs',
@@ -860,21 +930,6 @@ export const Products: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description: 'FAQ documents that answer questions about this product',
-      },
-    },
-    // Compatible Products (accessories only) - Sidebar
-    {
-      name: 'compatibleProducts',
-      type: 'relationship',
-      relationTo: 'products' as const,
-      hasMany: true,
-      admin: {
-        position: 'sidebar',
-        description: 'Piano models this accessory is compatible with. Shown in the Related Products block when customers view this accessory.',
-        condition: (data) => data.type === 'accessory',
-      },
-      filterOptions: {
-        type: { not_equals: 'accessory' },
       },
     },
     // Shopify Integration Group - Sidebar

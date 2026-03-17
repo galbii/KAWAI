@@ -85,6 +85,7 @@ import { FeaturedCollectionsBlock } from './blocks/FeaturedCollectionsBlock'
 import { ArtistHeroBlock } from './blocks/ArtistHeroBlock'
 import { PianosBrowserBlock } from './blocks/PianosBrowserBlock'
 import { ArtistsGridBlock } from './blocks/ArtistsGridBlock'
+import { BlogGridBlock } from './blocks/BlogGridBlock'
 
 // Product Blocks - Product-specific showcases
 import PianoPagesBlock from './blocks/PianoPagesBlock'
@@ -152,6 +153,7 @@ const blockComponents = {
   'marketing-artist-hero': ArtistHeroBlock,
   'marketing-pianos-browser': PianosBrowserBlock,
   'marketing-artists-grid': ArtistsGridBlock,
+  'marketing-blog-grid': BlogGridBlock,
 
   // Events blocks (events-*)
   'events-university-hero': UniversityHeroBlock,

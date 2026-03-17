@@ -45,6 +45,9 @@ const initialState: ExtendedState = {
   isFoldersLoading: false,
   expandedFolders: new Set<string>(),
   subFolders: [],
+  // Filter + sort
+  fileTypeFilter: null,
+  sortOrder: '-createdAt',
 }
 
 interface ExtendedContextValue extends MediaManagerContextValue {
@@ -66,6 +69,8 @@ interface ExtendedContextValue extends MediaManagerContextValue {
   renameFolder: (id: string, name: string) => Promise<void>
   moveFolderToFolder: (folderId: string, newParentId: string | null) => Promise<void>
   replaceMediaFile: (id: string, file: File, convertToWebp?: boolean) => Promise<void>
+  setFileTypeFilter: (filter: string | null) => void
+  setSortOrder: (order: string) => void
 }
 
 const MediaManagerContext = createContext<ExtendedContextValue | null>(null)
@@ -371,7 +376,7 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: '24',
-        sort: '-createdAt',
+        sort: state.sortOrder,
         depth: '1', // Include folder relationship
       })
 
@@ -384,6 +389,15 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
       // Add folder filter
       if (state.currentFolder) {
         params.append('where[folder][equals]', state.currentFolder.id)
+      }
+
+      // Add mime type filter
+      if (state.fileTypeFilter) {
+        if (state.fileTypeFilter === 'pdf') {
+          params.append('where[mimeType][equals]', 'application/pdf')
+        } else {
+          params.append('where[mimeType][contains]', `${state.fileTypeFilter}/`)
+        }
       }
 
       const response = await fetch(`/api/media?${params.toString()}`)
@@ -410,7 +424,7 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
       }))
       showToast('error', 'Failed to load media')
     }
-  }, [state.searchQuery, state.currentFolder, transformMedia, showToast])
+  }, [state.searchQuery, state.currentFolder, state.fileTypeFilter, state.sortOrder, transformMedia, showToast])
 
   // Replace an existing media file (from the image editor)
   const replaceMediaFile = useCallback(async (id: string, file: File, convertToWebp?: boolean) => {
@@ -646,7 +660,7 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
 
   // Upload file with metadata
   const uploadWithMetadata = useCallback(async (file: File, metadata: any) => {
-    setState(prev => ({ ...prev, isUploading: true, metadataEditingFile: null }))
+    setState(prev => ({ ...prev, isUploading: true }))
 
     try {
       console.log('📤 [UPLOAD WITH METADATA] Starting upload for:', {
@@ -730,14 +744,14 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
         sizes: result.doc?.sizes ? Object.keys(result.doc.sizes) : 'none',
       })
 
-      // Advance queue — next image goes to the metadata form, not ImageEditor
+      // Advance queue — next image opens the combined editor again
       setState(prev => {
         const remainingFiles = prev.pendingFiles.slice(1)
         return {
           ...prev,
           isUploading: false,
           pendingFiles: remainingFiles,
-          metadataEditingFile: remainingFiles[0] || null,
+          editingFile: remainingFiles[0] || null,
         }
       })
 
@@ -856,6 +870,14 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
     setState(prev => ({ ...prev, searchQuery: query }))
   }, [])
 
+  const setFileTypeFilter = useCallback((filter: string | null) => {
+    setState(prev => ({ ...prev, fileTypeFilter: filter, currentPage: 1 }))
+  }, [])
+
+  const setSortOrder = useCallback((order: string) => {
+    setState(prev => ({ ...prev, sortOrder: order, currentPage: 1 }))
+  }, [])
+
   // Copy URL to clipboard with toast feedback
   const copyPublicUrl = useCallback(async (url: string) => {
     try {
@@ -887,12 +909,12 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
     }
   }, [state.isOpen, fetchFolders])
 
-  // Refetch media when search query or current folder changes
+  // Refetch media when search query, current folder, filter, or sort changes
   useEffect(() => {
     if (state.isOpen) {
       fetchMedia(1)
     }
-  }, [state.searchQuery, state.currentFolder, fetchMedia])
+  }, [state.searchQuery, state.currentFolder, state.fileTypeFilter, state.sortOrder, fetchMedia])
 
   const contextValue: ExtendedContextValue = {
     ...state,
@@ -903,6 +925,8 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
     deleteMedia,
     selectMedia,
     setSearchQuery,
+    setFileTypeFilter,
+    setSortOrder,
     copyPublicUrl,
     dismissToast,
     showToast,

@@ -6,7 +6,11 @@
  * Files:
  *   - schemas.ts: Schema.org structured data definitions
  *   - utilities.ts: SEO generation utilities and helpers
+ *   - cms-page-metadata.ts: CMS-driven metadata overlay for static pages
  */
+
+// CMS-driven metadata (server-only)
+export { getCMSPageMetadata } from './cms-page-metadata'
 
 // Schema.org structured data
 export {

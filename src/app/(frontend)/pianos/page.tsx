@@ -5,6 +5,7 @@ import {
   getCollectionsForBrowser,
   getPayloadClient,
 } from '@/lib/payload/queries'
+import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
 import { PianosBrowser } from '@/components/piano/PianosBrowser'
 import { NewsCarousel } from '@/components/homepage/news-carousel'
 import { RenderBlocks } from '@/components/RenderBlocks'
@@ -12,7 +13,7 @@ import type { Page } from '@/payload-types'
 
 export const revalidate = 3600
 
-export const metadata: Metadata = {
+const fallbackMetadata: Metadata = {
   title: 'Kawai Pianos | Digital, Upright, Hybrid, and Grands',
   description:
     'Browse the complete Kawai piano collection — Shigeru Kawai concert grands, GX BLAK grand pianos, Concert Artist digital pianos, and AnyTime hybrid instruments.',
@@ -40,6 +41,10 @@ export const metadata: Metadata = {
     description:
       'Browse the complete Kawai piano collection — Shigeru Kawai concert grands, GX BLAK grand pianos, Concert Artist digital pianos, and AnyTime hybrid instruments.',
   },
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  return getCMSPageMetadata('pianos', fallbackMetadata)
 }
 
 async function getCMSPianosPage(): Promise<Page | null> {

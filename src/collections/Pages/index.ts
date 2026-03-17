@@ -147,6 +147,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 'marketing-artist-hero',            // Artist Hero carousel
                 'marketing-pianos-browser',         // Pianos browser catalog
                 'marketing-artists-grid',           // Artists grid with search
+                'marketing-blog-grid',              // Blog grid with featured hero
 
                 // Events blocks - Event-specific content
                 'events-university-hero',           // University Hero

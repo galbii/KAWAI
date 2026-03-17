@@ -138,6 +138,12 @@ const _origError = _baseLogger.error.bind(_baseLogger) as (...args: unknown[]) =
 }
 
 export default buildConfig({
+  serverURL: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
+  cors: [process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'].filter(Boolean),
+  csrf: [process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'].filter(Boolean),
+  graphQL: {
+    disable: process.env.NODE_ENV === 'production',
+  },
   logger: _baseLogger,
   // Enable folders for media organization
   folders: {

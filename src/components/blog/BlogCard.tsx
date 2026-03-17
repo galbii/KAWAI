@@ -1,35 +1,21 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import type { Post, Media, Category } from '@/payload-types'
+import type { Post } from '@/payload-types'
 import { resolveMediaUrl } from '@/lib/payload'
-import { getOptimizedImageProps } from '@/lib/media/r2-utils'
+import { cn } from '@/lib/utils'
 
 interface BlogCardProps {
   post: Post
+  className?: string
+  featured?: boolean
 }
 
-/**
- * BlogCard Component
- *
- * Displays a single blog post card with featured image, title, excerpt,
- * categories, and publish date. Optimized for responsive layouts with
- * hover effects and KAWAI brand styling.
- */
-export function BlogCard({ post }: BlogCardProps) {
-  const {
-    title,
-    slug,
-    excerpt,
-    featuredImage,
-    publishedDate,
-    categories: rawCategories,
-  } = post
+export function BlogCard({ post, className, featured }: BlogCardProps) {
+  const { title, slug, excerpt, featuredImage, publishedDate, categories: rawCategories } = post
 
-  // Resolve featured image URL
   const imageUrl = resolveMediaUrl(featuredImage)
   const hasImage = imageUrl && imageUrl !== ''
 
-  // Format publish date
   const formattedDate = publishedDate
     ? new Date(publishedDate).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -38,76 +24,115 @@ export function BlogCard({ post }: BlogCardProps) {
       })
     : null
 
-  // Extract category data (handles both Category objects and string IDs)
-  const categories = rawCategories?.map((cat) => {
-    if (typeof cat === 'string') {
-      return { slug: cat, title: cat }
-    }
-    return { slug: cat.slug, title: cat.title }
-  }) || []
+  const categories =
+    rawCategories?.map((cat) => {
+      if (typeof cat === 'string') return { slug: cat, title: cat }
+      return { slug: cat.slug ?? cat.id, title: cat.title }
+    }) ?? []
+
+  const primaryCategory = categories[0] ?? null
 
   return (
     <Link
       href={`/blog/${slug}`}
-      className="group block h-full"
+      className={cn('group block h-full', className)}
     >
-      <article className="flex flex-col h-full bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
-        {/* Featured Image */}
-        {hasImage && (
-          <div className="relative w-full aspect-[16/9] overflow-hidden bg-gray-100">
+      <article
+        className={cn(
+          'flex flex-col h-full bg-white rounded-xl border border-kawai-neutral overflow-hidden',
+          'transition-all duration-300 ease-[var(--ease-piano)]',
+          'hover:-translate-y-[2px] hover:shadow-brand-medium',
+        )}
+      >
+        {/* Image */}
+        <div className="relative w-full aspect-[3/2] overflow-hidden bg-kawai-pearl shrink-0">
+          {hasImage ? (
             <Image
               src={imageUrl}
               alt={title}
               fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              className="object-cover transition-transform duration-500 ease-[var(--ease-elegant)] group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
-          </div>
-        )}
-
-        {/* Card Content */}
-        <div className="flex flex-col flex-1 p-6">
-          {/* Categories */}
-          {categories && categories.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-3">
-              {categories.slice(0, 2).map((category) => (
-                <span
-                  key={category.slug}
-                  className="inline-block px-2 py-1 text-xs font-medium text-kawai-red bg-kawai-red/10 rounded"
-                >
-                  {category.title}
-                </span>
-              ))}
+          ) : (
+            <div className="absolute inset-0 bg-kawai-pearl flex items-center justify-center">
+              <span className="text-kawai-neutral text-4xl select-none">♪</span>
             </div>
           )}
 
+          {/* Category pill — absolute top-left over image */}
+          {primaryCategory && (
+            <span className="absolute top-3 left-3 inline-flex items-center px-2.5 py-1 rounded text-[10px] font-semibold uppercase tracking-widest bg-kawai-red text-white font-[family-name:var(--font-brand-sans)]">
+              {primaryCategory.title}
+            </span>
+          )}
+
+          {/* Featured badge — absolute top-right over image */}
+          {featured && (
+            <span className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-semibold uppercase tracking-widest bg-kawai-black/80 text-white backdrop-blur-sm font-[family-name:var(--font-brand-sans)]">
+              <svg
+                viewBox="0 0 12 12"
+                className="w-2.5 h-2.5 fill-kawai-gold shrink-0"
+                aria-hidden="true"
+              >
+                <path d="M6 1l1.236 2.504 2.764.402-2 1.95.472 2.751L6 7.351l-2.472 1.256.472-2.751-2-1.95 2.764-.402L6 1z" />
+              </svg>
+              Featured
+            </span>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="flex flex-col flex-1 p-6">
           {/* Title */}
-          <h3 className="text-xl font-bold text-kawai-charcoal mb-2 line-clamp-2 group-hover:text-kawai-red transition-colors duration-200">
+          <h3
+            className={cn(
+              'text-xl leading-snug mb-3 line-clamp-2',
+              'font-[family-name:var(--font-brand-serif)] font-semibold text-kawai-black',
+              'transition-colors duration-200 ease-[var(--ease-piano)]',
+              'group-hover:text-kawai-red',
+            )}
+          >
             {title}
           </h3>
 
           {/* Excerpt */}
           {excerpt && (
-            <p className="text-gray-600 mb-4 line-clamp-3 flex-1">
+            <p className="text-sm leading-relaxed text-kawai-charcoal/70 line-clamp-2 flex-1 font-[family-name:var(--font-brand-sans)]">
               {excerpt}
             </p>
           )}
 
-          {/* Meta Footer */}
-          <div className="flex items-center justify-between pt-4 mt-auto border-t border-gray-100">
-            {/* Published Date */}
-            {formattedDate && (
+          {/* Footer */}
+          <div className="flex items-center justify-between mt-5 pt-4 border-t border-kawai-neutral">
+            {formattedDate ? (
               <time
-                dateTime={publishedDate || undefined}
-                className="text-sm text-gray-500"
+                dateTime={publishedDate ?? undefined}
+                className="text-xs text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)] tracking-wide"
               >
                 {formattedDate}
               </time>
+            ) : (
+              <span />
             )}
 
-            {/* Read More Link */}
-            <span className="text-sm font-medium text-kawai-red group-hover:underline">
-              Read more →
+            {/* Animated arrow */}
+            <span
+              aria-hidden="true"
+              className={cn(
+                'flex items-center gap-1 text-kawai-red text-sm',
+                'transition-transform duration-200 ease-[var(--ease-piano)]',
+                'group-hover:translate-x-1',
+              )}
+            >
+              <span className="w-5 h-px bg-kawai-red inline-block transition-all duration-200 group-hover:w-7" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 10 10"
+                className="w-2.5 h-2.5 fill-kawai-red"
+              >
+                <path d="M1 5h8M5.5 1.5 9 5l-3.5 3.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </span>
           </div>
         </div>

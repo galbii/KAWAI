@@ -131,7 +131,6 @@ export async function generateMetadata(
         },
         limit: 1,
         depth: 1,
-        select: { slug: true, title: true, seo: true },
       })
       .then(({ docs }) => docs?.[0]);
 
@@ -159,7 +158,7 @@ export async function generateMetadata(
       : undefined;
 
     return {
-      title: metaTitle,
+      title: { absolute: metaTitle },
       description: metaDescription,
       ...(page.seo?.keywords ? { keywords: page.seo.keywords } : {}),
       alternates: {

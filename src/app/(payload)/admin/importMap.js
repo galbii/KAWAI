@@ -28,10 +28,12 @@ import { UploadFeatureClient as UploadFeatureClient_e70f5e05f09f93e00b997edb1ef0
 import { HorizontalRuleFeatureClient as HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { SlugField as SlugField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { BlocksFeatureClient as BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { ProductTypeCell as ProductTypeCell_2ee4334009970004c1a3c71e772c87c1 } from '../../../components/admin/ProductTypeCell'
 import { ExportListMenuItem as ExportListMenuItem_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { default as default_316a46c3fa81e188b71905bec9cf54a2 } from '../../../components/admin/BulkShopifySyncButton'
 import { default as default_123b32fc965e5def8235f45b2f3fae21 } from '../../../components/admin/PatchMissingBlocksButton'
 import { ProductsListHeader as ProductsListHeader_875e15b0728087b3a068289f8f5cdb5e } from '../../../components/admin/ProductsListHeader'
+import { ProductsListToolbar as ProductsListToolbar_c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4 } from '../../../components/admin/ProductsListToolbar'
 import { Page as Page_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { SortBy as SortBy_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { SortOrder as SortOrder_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
@@ -100,10 +102,12 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#HorizontalRuleFeatureClient": HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/ui#SlugField": SlugField_3817bf644402e67bfe6577f60ef982de,
   "@payloadcms/richtext-lexical/client#BlocksFeatureClient": BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "/components/admin/ProductTypeCell#ProductTypeCell": ProductTypeCell_2ee4334009970004c1a3c71e772c87c1,
   "@payloadcms/plugin-import-export/rsc#ExportListMenuItem": ExportListMenuItem_cdf7e044479f899a31f804427d568b36,
   "/components/admin/BulkShopifySyncButton#default": default_316a46c3fa81e188b71905bec9cf54a2,
   "/components/admin/PatchMissingBlocksButton#default": default_123b32fc965e5def8235f45b2f3fae21,
   "/components/admin/ProductsListHeader#ProductsListHeader": ProductsListHeader_875e15b0728087b3a068289f8f5cdb5e,
+  "/components/admin/ProductsListToolbar#ProductsListToolbar": ProductsListToolbar_c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4,
   "@payloadcms/plugin-import-export/rsc#Page": Page_cdf7e044479f899a31f804427d568b36,
   "@payloadcms/plugin-import-export/rsc#SortBy": SortBy_cdf7e044479f899a31f804427d568b36,
   "@payloadcms/plugin-import-export/rsc#SortOrder": SortOrder_cdf7e044479f899a31f804427d568b36,
