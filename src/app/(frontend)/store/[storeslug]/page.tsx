@@ -1,12 +1,11 @@
 import {
-  Hero,
   NewsCarousel,
   PianoGallery,
   PianoCollection,
   ContactForm,
   ShowroomLocation
 } from "@/components/homepage";
-import { SimpleDivider } from "@/components/ui/SimpleDivider";
+import { MusicSchoolSection } from "@/components/music-school/MusicSchoolSection";
 import { SimpleCustomerSignup } from "@/components/forms/SimpleCustomerSignup";
 import { getStorefrontBySlugDirect, getHomePageDataDirect } from "@/lib/payload/queries";
 import { LocalBusinessSchema } from "@/components/seo/LocalBusinessSchema";
@@ -109,24 +108,6 @@ function mergeNewsCarouselWithFallback(dealerData: any, homePageData: any): any 
 }
 
 // Loading components for each section
-function HeroSkeleton() {
-  return (
-    <section className="relative min-h-screen flex items-center bg-kawai-black animate-pulse">
-      <div className="container mx-auto px-8 lg:px-16">
-        <div className="max-w-5xl">
-          <div className="h-8 bg-kawai-pearl/20 rounded mb-4 w-1/3"></div>
-          <div className="h-16 bg-kawai-pearl/20 rounded mb-8 w-3/4"></div>
-          <div className="h-6 bg-kawai-pearl/20 rounded mb-12 w-1/2"></div>
-          <div className="flex gap-4">
-            <div className="h-12 bg-kawai-pearl/20 rounded w-48"></div>
-            <div className="h-12 bg-kawai-pearl/20 rounded w-48"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function ShowroomSkeleton() {
   return (
     <section className="bg-kawai-pearl py-24 animate-pulse">
@@ -173,12 +154,6 @@ function NewsCarouselSkeleton() {
         <div className="h-96 bg-kawai-black/20 rounded"></div>
       </div>
     </section>
-  );
-}
-
-function SimpleDividerSkeleton() {
-  return (
-    <div className="w-full h-0.5 bg-gray-300/50 animate-pulse" />
   );
 }
 
@@ -292,22 +267,14 @@ async function StorefrontContent({ storeslug }: { storeslug: string }) {
       )}
 
       <div className="min-h-screen">
-        {/* Hero Section */}
-        <Hero
-          {...(storefrontData?.heroSection && { data: storefrontData.heroSection })}
-          {...(storefrontData?.showroomSection?.showroomInfo?.name && {
-            storefrontName: storefrontData.showroomSection.showroomInfo.name
-          })}
-        />
-
-        {/* Brand Divider */}
-        <SimpleDivider />
-
         {/* News Carousel Section */}
         <NewsCarousel {...(storefrontData?.newsCarouselSection && { data: storefrontData.newsCarouselSection })} />
 
         {/* Showroom Location Section */}
         <ShowroomLocation {...(storefrontData?.showroomSection && { data: storefrontData.showroomSection })} />
+
+        {/* Music School Section - only renders if a music school exists for this storefront */}
+        <MusicSchoolSection storeslug={storeslug} />
 
         {/* Piano Collection Section */}
         <PianoCollection {...(storefrontData?.pianoCollectionSection && { data: storefrontData.pianoCollectionSection })} />
@@ -505,8 +472,6 @@ export default async function StorefrontPage({ params }: { params: Promise<{ sto
   return (
     <Suspense fallback={
       <div className="min-h-screen">
-        <HeroSkeleton />
-        <SimpleDividerSkeleton />
         <NewsCarouselSkeleton />
         <ShowroomSkeleton />
         <PianoCollectionSkeleton />

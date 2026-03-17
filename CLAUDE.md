@@ -364,6 +364,91 @@ export const authenticatedOrPublished: Access = ({ req: { user } }) => {
 
 ---
 
+## HTTP Security Architecture
+
+All security lives in three files. Touch only the relevant one:
+
+| What you need to do | File |
+|---|---|
+| Add a new third-party domain (script, image, frame, etc.) | `src/lib/csp.ts` |
+| Change HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy | `next.config.ts` → `headers()` |
+| Change Payload-level security (maxDepth, graphQL, serverURL) | `src/payload.config.ts` |
+| Change login brute-force protection or cookie settings | `src/collections/Users.ts` → `auth:` |
+| Add a new route-level guard (block unauthenticated access to an API route) | `src/middleware.ts` |
+
+### Content Security Policy — `src/lib/csp.ts`
+
+The CSP is a structured TypeScript object — one array per directive. **Adding a new third-party service = add its domain to the right array.**
+
+```typescript
+// src/lib/csp.ts
+'script-src': [
+  "'self'",
+  "'unsafe-inline'",
+  'https://www.googletagmanager.com',
+  'https://new-analytics-tool.com',  // ← add here
+],
+'frame-src': [
+  'https://calendly.com',
+  'https://new-embed.com',           // ← add here
+],
+```
+
+Directive cheatsheet:
+- `script-src` — JS files and inline scripts
+- `style-src` — CSS files and inline styles
+- `img-src` — images (including CSS background-image)
+- `font-src` — web fonts
+- `frame-src` — iframes this page embeds (YouTube, Calendly, HubSpot forms)
+- `connect-src` — fetch/XHR/WebSocket (API calls the browser makes)
+- `media-src` — video and audio
+- `worker-src` — Web Workers
+
+`'unsafe-eval'` is added to `script-src` automatically in dev only (Turbopack needs it for source maps). Never add it for production.
+
+**Admin CSP**: The Payload admin panel (`/admin/*`) gets a separate relaxed policy (`ADMIN_CSP` constant). Don't tighten it — the admin UI requires `unsafe-inline` and `unsafe-eval` to function.
+
+### Payload-level hardening — `src/payload.config.ts`
+
+```typescript
+serverURL: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
+// ↑ anchors CSRF protection — Payload auto-includes it in the allowlist
+
+maxDepth: 3,
+// ↑ caps ?depth= query param to prevent recursive MongoDB lookup abuse
+
+graphQL: { disable: process.env.NODE_ENV === 'production' },
+// ↑ kills GraphQL entirely in prod (no playground, no introspection)
+```
+
+No `cors:` or `csrf:` arrays — this is a co-located app. Adding them would break admin panel auth by replacing Payload's automatic same-origin allowlist.
+
+### Login protection — `src/collections/Users.ts`
+
+```typescript
+auth: {
+  maxLoginAttempts: 5,          // lock after 5 failed attempts
+  lockTime: 60 * 60 * 1000,    // 1 hour lockout
+  cookies: { secure: process.env.NODE_ENV === 'production' },
+}
+```
+
+### Route guards — `src/middleware.ts`
+
+`/api/access` is blocked for unauthenticated requests (it exposes the full schema structure). Pattern for adding more guards:
+
+```typescript
+if (pathname === '/api/your-route') {
+  const token = request.cookies.get('payload-token')
+  if (!token) return NextResponse.json({ errors: [{ message: 'Unauthorized' }] }, { status: 401 })
+  return NextResponse.next()
+}
+```
+
+The middleware matcher explicitly includes `/api/access` — any new route guard you add must also be in the matcher array.
+
+---
+
 ## Collection Patterns
 
 ### Media Field Factories (`src/lib/payload/fields/`)
