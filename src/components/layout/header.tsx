@@ -1129,11 +1129,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                     alt="Kawai Music School"
                     className="h-8 w-auto flex-shrink-0"
                   />
-                  {kmsDisplayName && (
-                    <div className="font-bold tracking-wide kawai-heading whitespace-nowrap text-kawai-black text-base flex-shrink-0 leading-none self-end mb-[3px]">
-                      {kmsDisplayName}
-                    </div>
-                  )}
                 </Link>
               ) : (
                 <KawaiLogo

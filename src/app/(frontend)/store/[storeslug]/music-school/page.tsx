@@ -2,6 +2,12 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getMusicSchoolByStorefrontSlug } from '@/lib/payload/queries'
+import { MusicSchoolFacultyCarousel } from '@/components/music-school/MusicSchoolFacultyCarousel'
+import type { Media } from '@/payload-types'
+
+function isMedia(val: unknown): val is Media {
+  return typeof val === 'object' && val !== null && 'url' in val
+}
 
 type Props = { params: Promise<{ storeslug: string }> }
 
@@ -224,6 +230,25 @@ export default async function MusicSchoolPage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {/* ═══ FACULTY CAROUSEL ════════════════════════════════════ */}
+      {school.faculty && school.faculty.length > 0 && (
+        <section className="border-t border-kawai-neutral">
+          <MusicSchoolFacultyCarousel
+            faculty={school.faculty.map((m: any) => ({
+              id: m.id,
+              name: m.name,
+              title: m.title,
+              role: m.role,
+              photoUrl: isMedia(m.photo) ? (m.photo.url ?? null) : null,
+              specialties: m.specialties,
+              background: m.background,
+            }))}
+            schoolName={school.schoolName}
+            baseUrl={baseUrl}
+          />
+        </section>
+      )}
 
       {/* ═══ FACILITIES ══════════════════════════════════════════ */}
       {school.facilities && school.facilities.length > 0 && (
