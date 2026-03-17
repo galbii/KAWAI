@@ -108,15 +108,29 @@ const nextConfig = {
       },
     ]
 
+    // In dev, Turbopack requires 'unsafe-eval' for source maps
+    const scriptSrcEval = process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''
+
     const frontendCSP = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net https://maps.googleapis.com https://assets.calendly.com https://www.youtube.com https://us-assets.i.posthog.com https://us.i.posthog.com",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://assets.calendly.com",
-      "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https://www.google-analytics.com https://www.googletagmanager.com https://www.facebook.com https://maps.googleapis.com https://maps.gstatic.com https://img.youtube.com https://i.ytimg.com https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev https://pub-8cc11ba1a6ef43369715136333c4b35a.r2.dev https://pub-486ee03121a24ede8b51409434e22709.r2.dev https://pub-8da77878131e4c099bb045b914814926.r2.dev https://cdn.shopify.com https://www.instagram.com https://i1.sndcdn.com https://kawaius.com https://cdn.kawaius.com",
-      "connect-src 'self' https://us.i.posthog.com https://us-assets.i.posthog.com https://www.google-analytics.com https://analytics.google.com https://maps.googleapis.com https://api.calendly.com https://api.instagram.com https://api.soundcloud.com",
-      "frame-src 'self' https://calendly.com https://www.youtube.com https://w.soundcloud.com https://www.instagram.com",
-      "media-src 'self' blob: https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev https://pub-8cc11ba1a6ef43369715136333c4b35a.r2.dev https://pub-486ee03121a24ede8b51409434e22709.r2.dev https://pub-8da77878131e4c099bb045b914814926.r2.dev https://cdn.shopify.com",
+      // HubSpot embed v2: js.hsforms.net loads the embed, static.hsappstatic.net serves its JS/CSS assets
+      // Google Maps JS API loads from maps.googleapis.com
+      // Shopify Buy SDK loads from cdn.shopify.com
+      `script-src 'self' 'unsafe-inline'${scriptSrcEval} https://www.googletagmanager.com https://connect.facebook.net https://maps.googleapis.com https://assets.calendly.com https://www.youtube.com https://s.ytimg.com https://us-assets.i.posthog.com https://us.i.posthog.com https://js.hsforms.net https://static.hsappstatic.net https://js.hs-scripts.com https://js.hubspot.com https://cdn.shopify.com`,
+      // static.hsappstatic.net serves HubSpot form stylesheets
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://assets.calendly.com https://static.hsappstatic.net",
+      "font-src 'self' https://fonts.gstatic.com https://static.hsappstatic.net",
+      // *.googleapis.com + *.gstatic.com cover all Google Maps tile subdomains (satellite, terrain, street view)
+      "img-src 'self' data: blob: https://*.r2.dev https://www.google-analytics.com https://www.googletagmanager.com https://www.facebook.com https://*.googleapis.com https://*.gstatic.com https://img.youtube.com https://i.ytimg.com https://cdn.shopify.com https://www.instagram.com https://i1.sndcdn.com https://kawaius.com https://cdn.kawaius.com https://track.hubspot.com https://static.hsappstatic.net",
+      // *.googleapis.com covers all Google Maps API subdomains (Places, Geocoding, Directions, etc.)
+      // api.hsforms.com handles HubSpot form submissions; track.hubspot.com is HubSpot analytics
+      // *.myshopify.com covers Shopify cart/storefront API; monorail-edge is Shopify's analytics beacon
+      "connect-src 'self' https://us.i.posthog.com https://us-assets.i.posthog.com https://www.google-analytics.com https://analytics.google.com https://*.googleapis.com https://api.calendly.com https://api.instagram.com https://api.soundcloud.com https://www.youtube.com https://api.hsforms.com https://forms.hsforms.com https://track.hubspot.com https://*.myshopify.com https://monorail-edge.shopifysvc.com",
+      // forms.hsforms.com is the iframe origin for HubSpot hs-form-frame embeds
+      // google.com covers Street View iframes; youtube-nocookie.com is YouTube's privacy-enhanced embed domain
+      "frame-src 'self' https://calendly.com https://www.youtube.com https://www.youtube-nocookie.com https://w.soundcloud.com https://www.instagram.com https://www.google.com https://js.hsforms.net https://forms.hsforms.com https://share.hsforms.com https://checkout.shopify.com",
+      // *.googlevideo.com serves YouTube video stream data
+      "media-src 'self' blob: https://*.r2.dev https://cdn.shopify.com https://*.googlevideo.com",
       "worker-src 'self' blob:",
       "upgrade-insecure-requests",
     ].join('; ')

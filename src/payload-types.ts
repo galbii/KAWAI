@@ -5883,6 +5883,10 @@ export interface MarketingBlogGridBlock {
    * Show the heading and tagline section
    */
   showHeading?: boolean | null;
+  /**
+   * Optional YouTube video URL — plays as a muted background behind the heading (e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+   */
+  youtubeUrl?: string | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'marketing-blog-grid';

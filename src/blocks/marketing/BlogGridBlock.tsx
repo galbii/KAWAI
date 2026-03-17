@@ -9,6 +9,7 @@ export async function BlogGridBlock({
   postLimit,
   showFeatured,
   showHeading,
+  youtubeUrl,
 }: MarketingBlogGridBlock) {
   const limit = postLimit ?? 6
 
@@ -68,6 +69,7 @@ export async function BlogGridBlock({
       gridPosts={gridPosts}
       showFeatured={showFeatured ?? true}
       showHeading={showHeading ?? true}
+      youtubeUrl={youtubeUrl ?? null}
     />
   )
 }

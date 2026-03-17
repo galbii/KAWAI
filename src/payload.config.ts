@@ -77,6 +77,7 @@ import {
   ArtistHero,
   PianosBrowser,
   ArtistsGrid,
+  BlogGrid,
   // Events blocks
   UniversityHero,
   EventOverview,
@@ -138,9 +139,12 @@ const _origError = _baseLogger.error.bind(_baseLogger) as (...args: unknown[]) =
 }
 
 export default buildConfig({
+  // serverURL anchors CSRF protection — Payload auto-includes it in the CSRF allowlist.
+  // cors/csrf arrays are intentionally omitted: this is a co-located app (frontend + admin
+  // on the same domain), so all requests are same-origin and no extra allowlist is needed.
   serverURL: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
-  cors: [process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'].filter(Boolean),
-  csrf: [process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'].filter(Boolean),
+  // Hard cap on ?depth= query param — prevents recursive MongoDB lookup abuse on public endpoints
+  maxDepth: 3,
   graphQL: {
     disable: process.env.NODE_ENV === 'production',
   },
@@ -322,6 +326,7 @@ export default buildConfig({
     ArtistHero,
     PianosBrowser,
     ArtistsGrid,
+    BlogGrid,
 
     // Events blocks
     UniversityHero,

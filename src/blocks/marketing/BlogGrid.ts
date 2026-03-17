@@ -51,5 +51,13 @@ export const BlogGrid: Block = {
         description: 'Show the heading and tagline section',
       },
     },
+    {
+      name: 'youtubeUrl',
+      type: 'text',
+      admin: {
+        description: 'Optional YouTube video URL — plays as a muted background behind the heading (e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ)',
+        placeholder: 'https://www.youtube.com/watch?v=...',
+      },
+    },
   ],
 }

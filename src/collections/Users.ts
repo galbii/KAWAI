@@ -8,7 +8,15 @@ export const Users: CollectionConfig = {
     group: 'System',
     description: 'User accounts and authentication management',
   },
-  auth: true,
+  auth: {
+    tokenExpiration: 7200, // 2 hours
+    maxLoginAttempts: 5,
+    lockTime: 60 * 60 * 1000, // 1 hour lockout after 5 failed attempts
+    cookies: {
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Lax',
+    },
+  },
   access: {
     create: adminOnly,
     read: authenticated,
