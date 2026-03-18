@@ -36,7 +36,7 @@ interface Props {
   collectionsForBrowser?: CollectionForBrowser[]
 }
 
-const CATEGORIES = ['All', 'Grand', 'Digital', 'Upright', 'Hybrid'] as const
+const CATEGORIES = ['All', 'Grand', 'Shigeru', 'Digital', 'Upright', 'Hybrid'] as const
 type Category = (typeof CATEGORIES)[number]
 
 const SORT_OPTIONS = [
@@ -254,11 +254,20 @@ function CollectionBanner({ collection }: { collection: CollectionForBrowser }) 
 }
 
 function normalizeCategory(product: CatalogProduct): string {
-  const raw = (product.category ?? product.type ?? '').toLowerCase()
-  if (raw.includes('grand') || raw.includes('shigeru')) return 'Grand'
-  if (raw.includes('digital') || raw.includes('concert artist')) return 'Digital'
-  if (raw.includes('upright') || raw.includes('vertical')) return 'Upright'
-  if (raw.includes('hybrid') || raw.includes('anytime') || raw.includes('novus') || raw.includes('aures')) return 'Hybrid'
+  // Check canonical type field first (exact match — this is the source of truth)
+  const type = product.type?.toLowerCase()
+  if (type === 'grand') return 'Grand'
+  if (type === 'shigeru') return 'Shigeru'
+  if (type === 'digital') return 'Digital'
+  if (type === 'upright') return 'Upright'
+  if (type === 'hybrid') return 'Hybrid'
+  // Fallback: scan the free-form category text field from Shopify taxonomy
+  const cat = (product.category ?? '').toLowerCase()
+  if (cat.includes('grand')) return 'Grand'
+  if (cat.includes('shigeru')) return 'Shigeru'
+  if (cat.includes('digital') || cat.includes('concert artist')) return 'Digital'
+  if (cat.includes('upright') || cat.includes('vertical')) return 'Upright'
+  if (cat.includes('hybrid') || cat.includes('anytime') || cat.includes('novus') || cat.includes('aures')) return 'Hybrid'
   return 'Other'
 }
 

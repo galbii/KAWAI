@@ -236,7 +236,7 @@ export const Collections: CollectionConfig = {
       hasMany: true,
       admin: {
         description:
-          'Associate with piano category filters. When a visitor selects Digital, Grand, Upright, or Hybrid on the /pianos page, only collections tagged here will appear in the collection filter row.',
+          'Associate with piano category filters. When a visitor selects Digital, Grand, Upright, Hybrid, or Shigeru Kawai on the /pianos page, only collections tagged here will appear in the collection filter row.',
         position: 'sidebar',
         isClearable: true,
       },
@@ -245,6 +245,7 @@ export const Collections: CollectionConfig = {
         { label: 'Grand', value: 'grand' },
         { label: 'Upright', value: 'upright' },
         { label: 'Hybrid', value: 'hybrid' },
+        { label: 'Shigeru Kawai', value: 'shigeru' },
       ],
     },
 

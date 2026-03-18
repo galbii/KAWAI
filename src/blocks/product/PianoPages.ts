@@ -19,6 +19,7 @@ export const PianoPages: Block = {
       },
       options: [
         { label: 'Grand Pianos', value: 'grand' },
+        { label: 'Shigeru Kawai', value: 'shigeru' },
         { label: 'Digital Pianos', value: 'digital' },
         { label: 'Upright Pianos', value: 'upright' },
         { label: 'Hybrid Pianos', value: 'hybrid' },

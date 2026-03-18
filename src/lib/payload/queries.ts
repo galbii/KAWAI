@@ -1458,7 +1458,7 @@ export function getFaqsByProductId(productId: string) {
  * Per-call unstable_cache pattern since the category arg varies.
  */
 export function getCollectionsForCategory(
-  category: 'digital' | 'grand' | 'upright' | 'hybrid',
+  category: 'digital' | 'grand' | 'upright' | 'hybrid' | 'shigeru',
 ): Promise<CollectionForBrowser[]> {
   return unstable_cache(
     async (): Promise<CollectionForBrowser[]> => {
@@ -1518,7 +1518,7 @@ export function getCollectionsForCategory(
  * Returns the same lightweight card-ready shape as getCatalogProductsDirect.
  */
 export function getCatalogProductsByCategory(
-  category: 'digital' | 'grand' | 'upright' | 'hybrid',
+  category: 'digital' | 'grand' | 'upright' | 'hybrid' | 'shigeru',
 ): Promise<
   Array<{
     id: string
@@ -1541,30 +1541,24 @@ export function getCatalogProductsByCategory(
     }> | null
   }>
 > {
-  const orConditions: Where[] = {
+  const typeConditions: Record<string, Where[]> = {
     grand: [
-      { type: { contains: 'grand' } },
-      { type: { contains: 'shigeru' } },
-      { category: { contains: 'grand' } },
+      { type: { equals: 'grand' } },
     ],
     digital: [
-      { type: { contains: 'digital' } },
-      { type: { contains: 'concert artist' } },
-      { category: { contains: 'digital' } },
+      { type: { equals: 'digital' } },
     ],
     upright: [
-      { type: { contains: 'upright' } },
-      { type: { contains: 'vertical' } },
-      { category: { contains: 'upright' } },
+      { type: { equals: 'upright' } },
     ],
     hybrid: [
-      { type: { contains: 'hybrid' } },
-      { type: { contains: 'anytime' } },
-      { type: { contains: 'novus' } },
-      { type: { contains: 'aures' } },
-      { category: { contains: 'hybrid' } },
+      { type: { equals: 'hybrid' } },
     ],
-  }[category]
+    shigeru: [
+      { type: { equals: 'shigeru' } },
+    ],
+  }
+  const orConditions = typeConditions[category] ?? []
 
   return unstable_cache(
     async () => {

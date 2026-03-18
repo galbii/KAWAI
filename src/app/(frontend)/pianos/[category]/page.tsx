@@ -197,12 +197,7 @@ export default async function CategoryPage({ params }: CategoryPageParams) {
           and: [
             { status: { equals: 'active' } },
             { 'visibility.showInCatalog': { equals: true } },
-            {
-              or: [
-                { category: { like: category } },
-                { type: { like: category } },
-              ],
-            },
+            { type: { equals: category } },
           ],
         },
         depth: 2,

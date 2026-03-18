@@ -2934,9 +2934,9 @@ export interface Collection {
    */
   featured?: boolean | null;
   /**
-   * Associate with piano category filters. When a visitor selects Digital, Grand, Upright, or Hybrid on the /pianos page, only collections tagged here will appear in the collection filter row.
+   * Associate with piano category filters. When a visitor selects Digital, Grand, Upright, Hybrid, or Shigeru Kawai on the /pianos page, only collections tagged here will appear in the collection filter row.
    */
-  pianoCategories?: ('digital' | 'grand' | 'upright' | 'hybrid')[] | null;
+  pianoCategories?: ('digital' | 'grand' | 'upright' | 'hybrid' | 'shigeru')[] | null;
   /**
    * Shopify synchronization metadata
    */
@@ -6892,7 +6892,7 @@ export interface ProductPianoPagesBlock {
   /**
    * Which piano category to display. Products and collections will be pre-filtered to this category.
    */
-  category: 'grand' | 'digital' | 'upright' | 'hybrid';
+  category: 'grand' | 'shigeru' | 'digital' | 'upright' | 'hybrid';
   /**
    * Optional heading displayed above the browser. Leave blank to use no heading.
    */

@@ -1,8 +1,11 @@
 import { Metadata } from 'next'
 import type { Where } from 'payload'
+import { draftMode } from 'next/headers'
 import { BlogIndexClient } from '@/components/blog/BlogIndexClient'
 import { getPayloadClient } from '@/lib/payload/queries'
-import type { Post } from '@/payload-types'
+import { Hero as PageHero } from '@/components/Hero'
+import { RenderBlocks } from '@/components/RenderBlocks'
+import type { Post, Page } from '@/payload-types'
 
 export const revalidate = 300
 
@@ -10,8 +13,37 @@ interface BlogPageProps {
   searchParams: Promise<{ category?: string }>
 }
 
+async function getBlogPage(): Promise<Page | null> {
+  const { isEnabled: isDraftMode } = await draftMode()
+  const payload = await getPayloadClient()
+  const result = await payload.find({
+    collection: 'pages',
+    where: {
+      slug: { equals: 'blog' },
+      ...(isDraftMode ? {} : { _status: { equals: 'published' } }),
+    },
+    limit: 1,
+    depth: 1,
+    draft: isDraftMode,
+    overrideAccess: isDraftMode,
+  })
+  return (result.docs[0] as Page) ?? null
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
+  const page = await getBlogPage()
+
+  if (page) {
+    const metaTitle = page.seo?.metaTitle || `${page.title} | Kawai Pianos`
+    const metaDescription = page.seo?.metaDescription || page.title
+    return {
+      title: { absolute: metaTitle },
+      description: metaDescription,
+      alternates: { canonical: `${siteUrl}/blog` },
+    }
+  }
+
   return {
     title: 'The KAWAI Journal | Notes & Stories',
     description:
@@ -93,6 +125,17 @@ async function getPosts(category?: string): Promise<PostsResult> {
 }
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
+  const page = await getBlogPage()
+
+  if (page) {
+    return (
+      <>
+        {page.hero && <PageHero hero={page.hero} />}
+        {page.layout?.length ? <RenderBlocks blocks={page.layout} /> : null}
+      </>
+    )
+  }
+
   const { category } = await searchParams
   const { featuredPost, gridPosts } = await getPosts(category)
 

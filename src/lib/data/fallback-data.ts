@@ -1139,7 +1139,8 @@ const CATEGORY_FALLBACK_DATA: Record<PianoCategorySlug, CategoryFallbackData> = 
   digital: digitalPianosFallback,
   grand: grandPianosFallback,
   hybrid: hybridPianosFallback,
-  upright: uprightPianosFallback
+  upright: uprightPianosFallback,
+  shigeru: grandPianosFallback,
 };
 
 // =============================================================================

@@ -217,6 +217,7 @@ export const Products: CollectionConfig = {
                   { type: { equals: 'grand' } },
                   { type: { equals: 'upright' } },
                   { type: { equals: 'hybrid' } },
+                  { type: { equals: 'shigeru' } },
                   { type: { like: 'Piano' } },
                 ],
               },

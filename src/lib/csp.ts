@@ -156,6 +156,9 @@ export function buildCspHeader(_isDev: boolean): string {
       // Shopify storefront/cart API + analytics beacon
       'https://*.myshopify.com',
       'https://monorail-edge.shopifysvc.com',
+
+      // OpenFreeMap — map tile styles and vector tiles for the dealer locator
+      'https://tiles.openfreemap.org',
     ],
 
     'frame-src': [

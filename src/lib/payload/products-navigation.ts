@@ -114,6 +114,17 @@ function normalizeCategory(category: string | null | undefined): string {
   return normalized
 }
 
+/** Maps canonical product type values to display names used for grouping in the mega menu. */
+const TYPE_DISPLAY_NAMES: Record<string, string> = {
+  digital: 'Digital Pianos',
+  grand: 'Grand Pianos',
+  shigeru: 'Shigeru Kawai',
+  hybrid: 'Hybrid Pianos',
+  upright: 'Upright Pianos',
+  accessory: 'Accessories',
+  other: 'Other',
+}
+
 /**
  * Convert a category display name to a URL-safe slug.
  * "Digital Pianos" → "digital"  (matches /pianos/[category] routes)
@@ -300,9 +311,9 @@ export async function getProductTypesWithProducts(options?: {
     const categoryMap = new Map<string, Product[]>()
 
     products.forEach((product) => {
-      // Group by taxonomy category; fall back to type, then "Other"
-      const categoryName = normalizeCategory(product.category) ||
-        normalizeCategory(product.type) ||
+      // Group by canonical type field first; fall back to Shopify taxonomy category text
+      const categoryName = (product.type && TYPE_DISPLAY_NAMES[product.type]) ||
+        normalizeCategory(product.category) ||
         'Other'
 
       if (!categoryMap.has(categoryName)) {
@@ -358,7 +369,7 @@ export async function getProductTypesWithProducts(options?: {
       })
       // Piano categories first (Digital, Grand, Hybrid, Upright), then Other
       .sort((a, b) => {
-        const pianoOrder = ['Digital Pianos', 'Grand Pianos', 'Hybrid Pianos', 'Upright Pianos']
+        const pianoOrder = ['Digital Pianos', 'Grand Pianos', 'Shigeru Kawai', 'Hybrid Pianos', 'Upright Pianos']
         const aIdx = pianoOrder.indexOf(a.type)
         const bIdx = pianoOrder.indexOf(b.type)
         if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx

@@ -169,7 +169,7 @@ export function formatShopifyPrice(price: {
  * This enables automatic categorization from Shopify sync.
  *
  * @param shopifyProductType - Shopify product type field value
- * @returns Payload type value ('digital' | 'grand' | 'hybrid' | 'upright' | 'accessory' | 'other')
+ * @returns Payload type value ('digital' | 'grand' | 'hybrid' | 'upright' | 'accessory' | 'shigeru' | 'other')
  *
  * @example
  * ```typescript
@@ -181,17 +181,18 @@ export function formatShopifyPrice(price: {
  */
 export function mapShopifyProductTypeToPayloadType(
   shopifyProductType: string
-): 'digital' | 'grand' | 'hybrid' | 'upright' | 'accessory' | 'other' {
+): 'digital' | 'grand' | 'hybrid' | 'upright' | 'accessory' | 'shigeru' | 'other' {
   const normalized = shopifyProductType.toLowerCase().trim()
 
+  // ── Shigeru Kawai (must come before generic 'grand' check) ─────────────────
+  if (normalized.includes('shigeru')) return 'shigeru'
+  if (normalized.startsWith('sk') || normalized === 'sk series') return 'shigeru'
+
   // ── Grand pianos ───────────────────────────────────────────────────────────
-  // Generic terms
   if (normalized.includes('grand')) return 'grand'
-  // Kawai product lines: Shigeru Kawai (SK), GX BLAK, GL Series
-  if (normalized.includes('shigeru')) return 'grand'
+  // Kawai product lines: GX BLAK, GL Series
   if (normalized.startsWith('gx') || normalized === 'gx series' || normalized.includes('gx blak')) return 'grand'
   if (normalized.startsWith('gl') || normalized === 'gl series') return 'grand'
-  if (normalized.startsWith('sk') || normalized === 'sk series') return 'grand'
 
   // ── Hybrid pianos ──────────────────────────────────────────────────────────
   if (normalized.includes('hybrid')) return 'hybrid'

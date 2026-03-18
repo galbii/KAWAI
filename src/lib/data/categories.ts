@@ -18,7 +18,7 @@
  * Piano category slugs used throughout the application
  * Must match the values in Payload CMS collections (Productlines, Products, etc.)
  */
-export type PianoCategorySlug = 'digital' | 'grand' | 'hybrid' | 'upright'
+export type PianoCategorySlug = 'digital' | 'grand' | 'hybrid' | 'upright' | 'shigeru'
 
 /**
  * Configuration interface for each piano category
@@ -224,6 +224,43 @@ export const PIANO_CATEGORIES: Record<PianoCategorySlug, CategoryConfig> = {
       'apartment piano'
     ],
     sortOrder: 4
+  },
+
+  shigeru: {
+    slug: 'shigeru',
+    name: 'Shigeru Kawai',
+    fullName: 'Shigeru Kawai Concert Grand Pianos',
+    description: 'The Shigeru Kawai piano represents the pinnacle of Japanese piano craftsmanship. Each instrument is handcrafted by Kawai\'s most skilled artisans in the Shigeru Kawai workshop, using only the finest materials — hand-selected Sitka spruce soundboards, premium European components, and meticulous voicing by master technicians. From the SK-2 to the legendary SK-EX concert grand, these instruments are trusted by the world\'s greatest pianists and performing arts centers.',
+    shortDescription: 'Handcrafted concert grand pianos representing the ultimate in Japanese piano artistry',
+    metaTitle: 'Shigeru Kawai Pianos - Handcrafted Concert Grand Pianos | Kawai',
+    metaDescription: 'Discover the Shigeru Kawai collection — handcrafted concert grand pianos built by master artisans. From the SK-2 to the SK-EX concert grand, the pinnacle of piano craftsmanship.',
+    keyFeatures: [
+      'Hand-Selected Sitka Spruce Soundboards',
+      'Master Artisan Construction',
+      'Premium European Components',
+      'Expert Voicing by Master Technicians',
+      'Renner Action Components',
+      'Concert Hall Trusted'
+    ],
+    priceRange: '$89,000 - $200,000+',
+    defaultHeroImage: '/images/piano-categories/shigeru.jpg',
+    iconName: 'Star',
+    colorTheme: {
+      primary: '#d5c78c', // Gold - representing luxury and prestige
+      accent: '#b8a96e',
+      background: '#fefdf7'
+    },
+    seoKeywords: [
+      'shigeru kawai piano',
+      'sk series piano',
+      'concert grand piano',
+      'handcrafted piano',
+      'japanese concert grand',
+      'sk-ex',
+      'professional concert piano',
+      'kawai flagship piano'
+    ],
+    sortOrder: 5
   }
 }
 
@@ -307,6 +344,8 @@ export function getCategoryHeroTitle(slug: string): string {
       return 'Revolutionary Hybrid Piano Technology'
     case 'upright':
       return 'Premium Upright Piano Collection'
+    case 'shigeru':
+      return 'The Art of the Shigeru Kawai'
     default:
       return `${config.name} Collection`
   }
@@ -361,7 +400,14 @@ export function getCategoryStats(slug: string): CategoryStats {
       priceRangeMax: 18999,
       popularModels: ['K-800AS', 'K-600', 'K-400'],
       lastUpdated: new Date('2024-08-15')
-    }
+    },
+    shigeru: {
+      totalModels: 6,
+      priceRangeMin: 89000,
+      priceRangeMax: 200000,
+      popularModels: ['SK-EX', 'SK-7', 'SK-5'],
+      lastUpdated: new Date('2024-08-15')
+    },
   }
 
   return statsMap[slug as PianoCategorySlug] || {}
@@ -387,7 +433,8 @@ export function getCategoryCTA(slug: string): string {
     digital: 'Explore Digital Innovation',
     grand: 'Discover Grand Excellence',
     hybrid: 'Experience Hybrid Technology',
-    upright: 'Find Your Perfect Upright'
+    upright: 'Find Your Perfect Upright',
+    shigeru: 'Experience Shigeru Kawai',
   }
 
   return ctaMap[slug as PianoCategorySlug] || 'Explore Collection'
@@ -427,7 +474,8 @@ export const CATEGORY_NAMES: Record<PianoCategorySlug, string> = {
   digital: PIANO_CATEGORIES.digital.name,
   grand: PIANO_CATEGORIES.grand.name,
   hybrid: PIANO_CATEGORIES.hybrid.name,
-  upright: PIANO_CATEGORIES.upright.name
+  upright: PIANO_CATEGORIES.upright.name,
+  shigeru: PIANO_CATEGORIES.shigeru.name,
 }
 
 // =============================================================================

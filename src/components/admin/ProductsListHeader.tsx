@@ -13,6 +13,7 @@ const TABS = [
   { label: 'All',         where: null },
   { label: 'Digital',     where: { type: { equals: 'digital' } } },
   { label: 'Grand',       where: { type: { equals: 'grand' } } },
+  { label: 'Shigeru',     where: { type: { equals: 'shigeru' } } },
   { label: 'Upright',     where: { type: { equals: 'upright' } } },
   { label: 'Hybrid',      where: { type: { equals: 'hybrid' } } },
   { label: 'Accessories', where: { type: { equals: 'accessory' } } },
