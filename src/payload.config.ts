@@ -78,6 +78,7 @@ import {
   PianosBrowser,
   ArtistsGrid,
   BlogGrid,
+  BlogLatest,
   // Events blocks
   UniversityHero,
   EventOverview,
@@ -327,6 +328,7 @@ export default buildConfig({
     PianosBrowser,
     ArtistsGrid,
     BlogGrid,
+    BlogLatest,
 
     // Events blocks
     UniversityHero,

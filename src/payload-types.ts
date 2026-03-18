@@ -104,6 +104,7 @@ export interface Config {
     'marketing-pianos-browser': MarketingPianosBrowserBlock;
     'marketing-artists-grid': MarketingArtistsGridBlock;
     'marketing-blog-grid': MarketingBlogGridBlock;
+    'marketing-blog-latest': MarketingBlogLatestBlock;
     'events-university-hero': EventsUniversityHeroBlock;
     'events-event-overview': EventsEventOverviewBlock;
     'product-showcase': ProductShowcaseBlock;
@@ -5886,6 +5887,23 @@ export interface MarketingBlogGridBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'marketing-blog-grid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingBlogLatestBlock".
+ */
+export interface MarketingBlogLatestBlock {
+  /**
+   * Number of latest posts to display
+   */
+  postLimit?: number | null;
+  /**
+   * Number of columns in the grid
+   */
+  columns?: ('2' | '3') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-blog-latest';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -2,7 +2,6 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import type { Post } from '@/payload-types'
 import { resolveMediaUrl } from '@/lib/payload'
@@ -61,87 +60,55 @@ export function BlogGridClient({
   return (
     <section className="bg-kawai-pearl py-16 lg:py-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* ── Heading Band — matches NewsMegaMenu style ── */}
+        {/* ── Heading ── */}
         {showHeading && (
-          <motion.div
-            className="mb-14 -mx-4 sm:-mx-6 lg:-mx-8"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={VIEWPORT}
-            transition={{ duration: 0.7, ease: EASE_PIANO }}
-          >
-            {/* Outer band — pearl by default, cinematic dark when video is active */}
-            <div
-              className={cn(
-                'relative overflow-hidden',
-                videoId ? 'bg-kawai-black' : 'bg-kawai-pearl border-b border-kawai-neutral',
-              )}
-            >
-              {/* YouTube video background */}
-              {videoId && (
-                <>
-                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    <iframe
-                      src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&disablekb=1&modestbranding=1&playsinline=1&rel=0`}
-                      allow="autoplay; encrypted-media"
-                      title="Background video"
-                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                      style={{
-                        width: '100vw',
-                        height: '56.25vw',
-                        minHeight: '100%',
-                        minWidth: '177.78vh',
-                      }}
-                    />
-                  </div>
-                  {/* Gradient overlay — heavier on left for text legibility */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-kawai-black/85 via-kawai-black/60 to-kawai-black/30 pointer-events-none" />
-                </>
-              )}
-
-              {/* Content row */}
-              <div className="relative px-4 sm:px-6 lg:px-8 py-7 flex items-center justify-between gap-6">
-                {/* Left: accent bar + heading + tagline */}
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-px h-12 bg-kawai-red shrink-0" />
-                  <div className="min-w-0">
-                    <h2
-                      className={cn(
-                        'text-2xl lg:text-4xl font-[family-name:var(--font-brand-serif)] font-semibold leading-tight mb-0.5',
-                        videoId ? 'text-kawai-pearl' : 'text-kawai-black',
-                      )}
-                    >
-                      {heading}
-                    </h2>
-                    {tagline && (
-                      <p
-                        className={cn(
-                          'text-sm leading-snug truncate max-w-lg font-[family-name:var(--font-brand-sans)]',
-                          videoId ? 'text-white/50' : 'text-kawai-charcoal/60',
-                        )}
-                      >
-                        {tagline}
-                      </p>
-                    )}
-                  </div>
+          <div className={cn('relative mb-14 overflow-hidden', videoId && 'bg-kawai-black -mx-4 sm:-mx-6 lg:-mx-8')}>
+            {/* YouTube video background */}
+            {videoId && (
+              <>
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&disablekb=1&modestbranding=1&playsinline=1&rel=0`}
+                    allow="autoplay; encrypted-media"
+                    title="Background video"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                    style={{ width: '100vw', height: '56.25vw', minHeight: '100%', minWidth: '177.78vh' }}
+                  />
                 </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-kawai-black/90 via-kawai-black/70 to-kawai-black/40 pointer-events-none" />
+              </>
+            )}
 
-                {/* Right: View all posts pill */}
-                <Link
-                  href="/blog"
-                  className={cn(
-                    'group inline-flex items-center gap-2.5 text-sm font-semibold px-6 py-2.5 rounded-full transition-all duration-300 shrink-0 shadow-lg hover:shadow-xl hover:-translate-y-px font-[family-name:var(--font-brand-sans)]',
-                    videoId
-                      ? 'bg-white hover:bg-kawai-pearl text-kawai-black'
-                      : 'bg-kawai-black hover:bg-kawai-charcoal text-white',
-                  )}
-                >
-                  View all posts
-                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                </Link>
+            <motion.div
+              className={cn('relative', videoId ? 'px-4 sm:px-6 lg:px-8 py-16' : 'pb-10')}
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={VIEWPORT}
+              transition={{ duration: 0.6, ease: EASE_PIANO }}
+            >
+              {/* Heading */}
+              <h2 className={cn(
+                'text-5xl lg:text-7xl font-[family-name:var(--font-brand-serif)] font-semibold leading-[1.0] tracking-tight mb-5',
+                videoId ? 'text-white' : 'text-kawai-black',
+              )}>
+                {heading}
+              </h2>
+
+              {/* Tagline */}
+              <p className={cn(
+                'text-base font-[family-name:var(--font-brand-sans)] leading-relaxed max-w-lg',
+                videoId ? 'text-white/50' : 'text-kawai-charcoal/60',
+              )}>
+                {tagline || 'Stories from the studio, the stage, and the showroom.'}
+              </p>
+
+              {/* Rule */}
+              <div className="flex items-center mt-8">
+                <div className="w-10 h-px bg-kawai-red" />
+                <div className={cn('flex-1 h-px', videoId ? 'bg-white/15' : 'bg-kawai-neutral')} />
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         )}
 
         {!hasPosts ? (

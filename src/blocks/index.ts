@@ -41,6 +41,7 @@ export { ArtistHero } from './marketing/ArtistHero'
 export { PianosBrowser } from './marketing/PianosBrowser'
 export { ArtistsGrid } from './marketing/ArtistsGrid'
 export { BlogGrid } from './marketing/BlogGrid'
+export { BlogLatest } from './marketing/BlogLatest'
 
 // Events blocks (event-specific content)
 export { UniversityHero } from './events/UniversityHero'

@@ -4,24 +4,22 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+import type { Media } from '@/payload-types'
 
 // ============================================================================
 // Types
 // ============================================================================
-
-import type { Media } from '@/payload-types'
 
 interface NewsArticle {
   id: string
   title: string
   excerpt: string
   category: string
-  date: string
   image: string
   link: string
-  featured?: boolean
 }
 
 export interface NewsItem {
@@ -33,27 +31,18 @@ export interface NewsItem {
 }
 
 interface NewsMegaMenuProps {
-  /** Whether the menu is currently open */
   isOpen: boolean
-  /** Callback when menu should close */
   onClose: () => void
-  /** Optional CSS class */
   className?: string
-  /** Whether the header is in scrolled (compact) state */
   isHeaderScrolled?: boolean
-  /** News items from CMS (HomePage collection) */
   newsItems?: NewsItem[]
 }
 
 // ============================================================================
-// Helper Functions
+// Helper
 // ============================================================================
 
-/**
- * Convert CMS NewsItem to display format for mega menu
- */
 function transformNewsItem(item: NewsItem, index: number): NewsArticle {
-  // Extract image URL from Media object or use string directly
   let imageUrl = '/images/defaults/piano-fallback.jpg'
   if (item.image) {
     if (typeof item.image === 'string') {
@@ -62,16 +51,13 @@ function transformNewsItem(item: NewsItem, index: number): NewsArticle {
       imageUrl = item.image.url
     }
   }
-
   return {
     id: `news-${index}`,
     title: item.title,
     excerpt: item.description,
     category: item.category,
-    date: 'Latest', // CMS doesn't have date field currently
     image: imageUrl,
-    link: item.link || '/news',
-    featured: index === 0, // First item is featured
+    link: item.link || '/blog',
   }
 }
 
@@ -79,24 +65,6 @@ function transformNewsItem(item: NewsItem, index: number): NewsArticle {
 // Component
 // ============================================================================
 
-/**
- * NewsMegaMenu - Full-width mega menu for news navigation
- *
- * Features:
- * - Featured news card with glassmorphism design
- * - Pulls news from HomePage collection news tab
- * - Category badges matching carousel style
- * - Elegant hover effects
- *
- * @example
- * ```tsx
- * <NewsMegaMenu
- *   isOpen={isMenuOpen}
- *   onClose={() => setIsMenuOpen(false)}
- *   newsItems={newsItemsFromCMS}
- * />
- * ```
- */
 export function NewsMegaMenu({
   isOpen,
   onClose,
@@ -104,213 +72,216 @@ export function NewsMegaMenu({
   isHeaderScrolled = false,
   newsItems = [],
 }: NewsMegaMenuProps) {
-  // Carousel state
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [direction, setDirection] = useState(1)
 
-  // Transform CMS news items to display format
-  const newsArticles = newsItems.map(transformNewsItem)
+  const articles = newsItems.map(transformNewsItem)
 
-  // Don't render if no articles available
-  if (newsArticles.length === 0) {
-    return null
+  if (articles.length === 0) return null
+
+  const current = articles[currentIndex]
+  if (!current) return null
+
+  const goTo = (index: number) => {
+    setDirection(index > currentIndex ? 1 : -1)
+    setCurrentIndex(index)
   }
 
-  const currentArticle = newsArticles[currentIndex]
+  const goToPrev = () => goTo(currentIndex === 0 ? articles.length - 1 : currentIndex - 1)
+  const goToNext = () => goTo((currentIndex + 1) % articles.length)
 
-  // Type guard: Ensure currentArticle exists (required for strict TypeScript)
-  if (!currentArticle) {
-    return null
-  }
+  if (!isOpen && currentIndex !== 0) setCurrentIndex(0)
 
-  // Navigation functions
-  const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? newsArticles.length - 1 : prev - 1))
-  }
-
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % newsArticles.length)
-  }
-
-  // Reset to first slide when menu closes
-  if (!isOpen && currentIndex !== 0) {
-    setCurrentIndex(0)
-  }
+  const topOffset = isHeaderScrolled
+    ? 'calc(112px + var(--announcement-bar-height, 0px))'
+    : 'calc(128px + var(--announcement-bar-height, 0px))'
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
           key="news-mega-menu"
-          initial={{ opacity: 0, scaleY: 0.95, y: -20 }}
-          animate={{
-            opacity: 1,
-            scaleY: 1,
-            y: 0,
-            top: isHeaderScrolled
-              ? 'calc(112px + var(--announcement-bar-height, 0px))'
-              : 'calc(128px + var(--announcement-bar-height, 0px))',
-          }}
-          exit={{ opacity: 0, scaleY: 0.95, y: -20 }}
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0, top: topOffset }}
+          exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
           className={cn(
             'fixed left-0 right-0 z-[60]',
-            'bg-kawai-pearl border-b border-kawai-neutral shadow-2xl',
-            className
+            'border-b border-kawai-neutral',
+            className,
           )}
           style={{
-            maxHeight: isHeaderScrolled ? 'calc(100vh - 112px - 20px)' : 'calc(100vh - 128px - 20px)',
+            maxHeight: isHeaderScrolled ? 'calc(100vh - 112px)' : 'calc(100vh - 128px)',
             overflowY: 'auto',
             transformOrigin: 'top center',
+            boxShadow: '0 40px 80px -16px rgba(30,27,22,0.25)',
           }}
         >
-          {/* Full-bleed editorial header — title + "The Newsroom" CTA */}
-          <div className="bg-kawai-pearl border-b border-kawai-neutral">
-            <div className="container mx-auto px-4 sm:px-6 py-6 flex items-center justify-between gap-6">
-              {/* Left: red accent bar + heading */}
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="w-px h-12 bg-kawai-red shrink-0" />
-                <div className="min-w-0">
-                  <h2 className="text-3xl lg:text-5xl font-bold text-kawai-black leading-tight mb-0.5">
-                    Latest News &amp; Updates
-                  </h2>
-                  <p className="text-sm text-kawai-charcoal/60 leading-snug">
-                    Stay informed about KAWAI innovations, events, and artist spotlights
-                  </p>
-                </div>
+          <div
+            className="grid grid-cols-[220px_1fr] lg:grid-cols-[260px_1fr]"
+            style={{ minHeight: 'min(480px, 56vh)' }}
+          >
+
+            {/* ── LEFT: minimal editorial panel ── */}
+            <div className="relative flex flex-col justify-between bg-kawai-black px-8 py-10">
+              {/* Red left rule */}
+              <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-kawai-red" />
+
+              {/* Heading */}
+              <div>
+                <p
+                  className="text-kawai-red font-[family-name:var(--font-brand-sans)] mb-6"
+                  style={{ fontSize: '9px', letterSpacing: '0.35em', fontWeight: 700 }}
+                >
+                  KAWAI
+                </p>
+                <h2
+                  className="text-kawai-pearl"
+                  style={{
+                    fontFamily: 'var(--font-brand-luxury)',
+                    fontSize: 'clamp(2.8rem, 4vw, 3.6rem)',
+                    fontWeight: 300,
+                    letterSpacing: '-0.03em',
+                    lineHeight: 0.92,
+                  }}
+                >
+                  Latest<br />News
+                </h2>
               </div>
 
-              {/* Right: prominent white pill button */}
+              {/* CTA */}
               <Link
                 href="/blog"
                 onClick={onClose}
-                className="group inline-flex items-center gap-2.5 bg-kawai-black hover:bg-kawai-charcoal text-white text-sm font-semibold px-6 py-2.5 rounded-full transition-all duration-300 shrink-0 shadow-lg hover:shadow-xl hover:-translate-y-px"
+                className="group inline-flex items-center gap-2 self-start"
               >
-                View all posts
-                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                <span
+                  className="text-kawai-pearl/45 group-hover:text-kawai-pearl transition-colors duration-300 font-[family-name:var(--font-brand-sans)] uppercase"
+                  style={{ fontSize: '10px', letterSpacing: '0.22em', fontWeight: 600 }}
+                >
+                  All Stories
+                </span>
+                <ArrowUpRight className="h-3 w-3 text-kawai-red transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </Link>
             </div>
-          </div>
 
-          <div className="container mx-auto px-4 sm:px-6 py-6 lg:py-8">
-            {/* News Carousel - Full Width */}
-            <div className="mb-6 lg:mb-8 relative">
-              {/* Carousel Container */}
-              <div className="relative h-[min(350px,40vh)] rounded-2xl overflow-hidden">
-                <AnimatePresence mode="wait" custom={currentIndex}>
-                  <motion.div
-                    key={currentIndex}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="absolute inset-0"
+            {/* ── RIGHT: full-bleed carousel ── */}
+            <div className="relative overflow-hidden bg-kawai-black">
+              <AnimatePresence mode="wait" custom={direction}>
+                <motion.div
+                  key={currentIndex}
+                  custom={direction}
+                  initial={{ opacity: 0, x: direction * 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: direction * -50 }}
+                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                  className="absolute inset-0"
+                >
+                  <Link
+                    href={current.link}
+                    onClick={onClose}
+                    className="group block relative h-full"
                   >
-                    <Link
-                      href={currentArticle.link}
-                      onClick={onClose}
-                      className="group block relative h-full bg-gray-900"
-                    >
-                      {/* Background Image */}
-                      <div className="absolute inset-0">
-                        <Image
-                          src={currentArticle.image}
-                          alt={currentArticle.title}
-                          fill
-                          className="object-cover transition-transform duration-700 group-hover:scale-105"
-                          sizes="100vw"
-                          priority={currentIndex === 0}
-                        />
+                    {/* Image */}
+                    <div className="absolute inset-0">
+                      <Image
+                        src={current.image}
+                        alt={current.title}
+                        fill
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                        sizes="(max-width: 1280px) 80vw, 85vw"
+                        priority={currentIndex === 0}
+                      />
+                    </div>
+
+                    {/* Single gradient — bottom only, clean */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/75 via-kawai-black/20 to-transparent" />
+
+                    {/* Category badge */}
+                    <div className="absolute top-8 left-8 z-10">
+                      <span
+                        className="bg-kawai-red text-white font-[family-name:var(--font-brand-sans)] uppercase px-3 py-1"
+                        style={{ fontSize: '9px', letterSpacing: '0.28em', fontWeight: 700 }}
+                      >
+                        {current.category}
+                      </span>
+                    </div>
+
+                    {/* Text content */}
+                    <div className="absolute bottom-0 left-0 right-0 px-10 pb-10 z-10">
+                      <h3
+                        className="text-white mb-3 leading-tight"
+                        style={{
+                          fontFamily: 'var(--font-brand-luxury)',
+                          fontSize: 'clamp(1.7rem, 2.6vw, 2.5rem)',
+                          fontWeight: 300,
+                          letterSpacing: '-0.02em',
+                          maxWidth: '70%',
+                        }}
+                      >
+                        {current.title}
+                      </h3>
+
+                      <p
+                        className="text-white/60 mb-5 line-clamp-2 font-[family-name:var(--font-brand-sans)]"
+                        style={{ fontSize: '13px', maxWidth: '55%', lineHeight: 1.6 }}
+                      >
+                        {current.excerpt}
+                      </p>
+
+                      <div
+                        className="inline-flex items-center gap-2 text-kawai-red font-[family-name:var(--font-brand-sans)] uppercase"
+                        style={{ fontSize: '10px', letterSpacing: '0.2em', fontWeight: 600 }}
+                      >
+                        <span>Read Story</span>
+                        <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1.5" />
                       </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              </AnimatePresence>
 
-                      {/* Gradient Overlays */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/80 via-kawai-black/40 to-kawai-black/20" />
+              {/* ── Nav controls: arrows + dots together, bottom-right ── */}
+              <div className="absolute bottom-8 right-8 z-20 flex items-center gap-4">
+                {/* Dots */}
+                {articles.length > 1 && (
+                  <div className="flex items-center gap-2">
+                    {articles.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => goTo(i)}
+                        aria-label={`Go to story ${i + 1}`}
+                        className={cn(
+                          'rounded-full transition-all duration-300',
+                          i === currentIndex
+                            ? 'w-5 h-1.5 bg-kawai-red'
+                            : 'w-1.5 h-1.5 bg-white/30 hover:bg-white/60',
+                        )}
+                      />
+                    ))}
+                  </div>
+                )}
 
-                      {/* Category Badge - Top Right */}
-                      <div className="absolute top-4 right-4 z-10">
-                        <span className="inline-block px-4 py-2 text-xs font-bold tracking-[0.2em] uppercase bg-kawai-red/90 backdrop-blur-sm text-white rounded-full shadow-lg border border-white/10">
-                          {currentArticle.category}
-                        </span>
-                      </div>
-
-                      {/* Content - Bottom with Glassmorphism */}
-                      <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
-                        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6 space-y-3 transition-all duration-300 group-hover:bg-white/15">
-                          {/* Label */}
-                          <div className="flex items-center gap-2 text-xs text-kawai-pearl tracking-[0.15em] uppercase font-medium">
-                            <Calendar className="h-3 w-3" />
-                            <span>{currentArticle.date}</span>
-                          </div>
-
-                          {/* Title */}
-                          <h3 className="text-2xl lg:text-3xl font-light font-serif text-white leading-tight">
-                            {currentArticle.title}
-                          </h3>
-
-                          {/* Excerpt */}
-                          <p className="text-sm text-white/90 leading-relaxed">
-                            {currentArticle.excerpt}
-                          </p>
-
-                          {/* CTA */}
-                          <div className="flex items-center gap-2 text-white font-medium text-sm pt-2">
-                            <span>Read Full Story</span>
-                            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  </motion.div>
-                </AnimatePresence>
-
-                {/* Navigation Arrows - Only show if multiple items */}
-                {newsArticles.length > 1 && (
-                  <>
-                    {/* Previous Button */}
+                {/* Arrows */}
+                {articles.length > 1 && (
+                  <div className="flex items-center gap-1">
                     <button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        goToPrevious()
-                      }}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 backdrop-blur-xl bg-white/10 hover:bg-white/20 border border-white/20 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg"
-                      aria-label="Previous news item"
+                      onClick={(e) => { e.preventDefault(); goToPrev() }}
+                      className="w-8 h-8 border border-white/20 hover:border-white/50 hover:bg-white/8 flex items-center justify-center transition-all duration-300"
+                      aria-label="Previous story"
                     >
-                      <ChevronLeft className="h-5 w-5 text-white" />
+                      <ChevronLeft className="h-4 w-4 text-white" />
                     </button>
-
-                    {/* Next Button */}
                     <button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        goToNext()
-                      }}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 backdrop-blur-xl bg-white/10 hover:bg-white/20 border border-white/20 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg"
-                      aria-label="Next news item"
+                      onClick={(e) => { e.preventDefault(); goToNext() }}
+                      className="w-8 h-8 border border-white/20 hover:border-white/50 hover:bg-white/8 flex items-center justify-center transition-all duration-300"
+                      aria-label="Next story"
                     >
-                      <ChevronRight className="h-5 w-5 text-white" />
+                      <ChevronRight className="h-4 w-4 text-white" />
                     </button>
-                  </>
+                  </div>
                 )}
               </div>
-
-              {/* Navigation Dots - Only show if multiple items */}
-              {newsArticles.length > 1 && (
-                <div className="flex items-center justify-center gap-2 mt-4">
-                  {newsArticles.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentIndex(index)}
-                      className={cn(
-                        'transition-all duration-300 rounded-full',
-                        index === currentIndex
-                          ? 'w-8 h-2 bg-kawai-red shadow-md'
-                          : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'
-                      )}
-                      aria-label={`Go to news item ${index + 1}`}
-                      aria-current={index === currentIndex}
-                    />
-                  ))}
-                </div>
-              )}
             </div>
 
           </div>
