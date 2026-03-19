@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Map, Marker } from 'react-map-gl/maplibre'
+import type { MapLibreEvent } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import '../dealer-map.css'
 
@@ -30,6 +31,8 @@ export function DealerMap({ dealer }: DealerMapProps) {
     longitude: -98.5795,
     latitude: 39.8283,
     zoom: 4,
+    pitch: 0,
+    bearing: 0,
   }
 
   const [viewState, setViewState] = useState(
@@ -37,10 +40,56 @@ export function DealerMap({ dealer }: DealerMapProps) {
       ? {
           longitude: dealer.coordinates.longitude,
           latitude: dealer.coordinates.latitude,
-          zoom: 13,
+          zoom: 15.5,
+          pitch: 45,
+          bearing: -17.6,
         }
       : defaultView
   )
+
+  const handleMapLoad = useCallback((event: MapLibreEvent) => {
+    const map = event.target
+    if (map.getSource('ofm-buildings')) return
+
+    map.addSource('ofm-buildings', {
+      url: 'https://tiles.openfreemap.org/planet',
+      type: 'vector',
+    })
+
+    const layers = map.getStyle().layers
+    const labelLayerId = layers.find(
+      (layer) => layer.type === 'symbol' && (layer.layout as any)?.['text-field']
+    )?.id
+
+    map.addLayer({
+      id: '3d-buildings',
+      source: 'ofm-buildings',
+      'source-layer': 'building',
+      type: 'fill-extrusion',
+      minzoom: 15,
+      filter: ['!=', ['get', 'hide_3d'], true],
+      paint: {
+        'fill-extrusion-color': [
+          'interpolate', ['linear'], ['get', 'render_height'],
+          0, '#ddd5c8',
+          200, '#c8d0da',
+          400, '#b8c4d4',
+        ],
+        'fill-extrusion-height': [
+          'interpolate', ['linear'], ['zoom'],
+          15, 0,
+          16, ['get', 'render_height'],
+        ],
+        'fill-extrusion-base': [
+          'case',
+          ['>=', ['get', 'zoom'], 16],
+          ['get', 'render_min_height'],
+          0,
+        ],
+        'fill-extrusion-opacity': 0.85,
+      },
+    } as any, labelLayerId)
+  }, [])
 
   if (!dealer.coordinates?.latitude || !dealer.coordinates?.longitude) {
     return (
@@ -64,8 +113,11 @@ export function DealerMap({ dealer }: DealerMapProps) {
       <Map
         {...viewState}
         onMove={(evt) => setViewState(evt.viewState)}
+        onLoad={handleMapLoad}
         mapStyle="https://tiles.openfreemap.org/styles/liberty"
         style={{ width: '100%', height: '100%' }}
+        maxPitch={85}
+        antialias={true}
       >
         {/* Clean kawai-red marker — matches brand */}
         <Marker

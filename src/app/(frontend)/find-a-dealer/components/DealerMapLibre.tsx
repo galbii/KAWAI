@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { Map, Marker, Popup } from 'react-map-gl/maplibre'
+import type { MapLibreEvent } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import './dealer-map.css'
 import type { Dealer } from '@/payload-types'
@@ -36,6 +37,54 @@ export function DealerMapLibre({
 
   const [activePopup, setActivePopup] = useState<string | null>(null)
 
+  // Inject 3D building extrusions after the liberty style loads
+  const handleMapLoad = useCallback((event: MapLibreEvent) => {
+    const map = event.target
+    if (map.getSource('ofm-buildings')) return
+
+    // Add a dedicated OpenFreeMap planet source for building extrusions
+    // (separate from the style's internal source — this is the official approach)
+    map.addSource('ofm-buildings', {
+      url: 'https://tiles.openfreemap.org/planet',
+      type: 'vector',
+    })
+
+    // Insert buildings beneath label layers so text stays readable
+    const layers = map.getStyle().layers
+    const labelLayerId = layers.find(
+      (layer) => layer.type === 'symbol' && (layer.layout as any)?.['text-field']
+    )?.id
+
+    map.addLayer({
+      id: '3d-buildings',
+      source: 'ofm-buildings',
+      'source-layer': 'building',
+      type: 'fill-extrusion',
+      minzoom: 15,
+      filter: ['!=', ['get', 'hide_3d'], true],
+      paint: {
+        'fill-extrusion-color': [
+          'interpolate', ['linear'], ['get', 'render_height'],
+          0, '#ddd5c8',
+          200, '#c8d0da',
+          400, '#b8c4d4',
+        ],
+        'fill-extrusion-height': [
+          'interpolate', ['linear'], ['zoom'],
+          15, 0,
+          16, ['get', 'render_height'],
+        ],
+        'fill-extrusion-base': [
+          'case',
+          ['>=', ['get', 'zoom'], 16],
+          ['get', 'render_min_height'],
+          0,
+        ],
+        'fill-extrusion-opacity': 0.85,
+      },
+    } as any, labelLayerId)
+  }, [])
+
   // Update map center and zoom when search location changes
   useEffect(() => {
     if (searchCenter) {
@@ -43,7 +92,9 @@ export function DealerMapLibre({
         ...prev,
         longitude: searchCenter.lng,
         latitude: searchCenter.lat,
-        zoom: 10
+        zoom: 12,
+        pitch: 45,
+        bearing: -17.6,
       }))
     }
   }, [searchCenter])
@@ -55,12 +106,14 @@ export function DealerMapLibre({
       if (dealer?.coordinates?.latitude && dealer?.coordinates?.longitude) {
         const lat = dealer.coordinates.latitude
         const lng = dealer.coordinates.longitude
-        // Center map on selected dealer
+        // Center map on selected dealer with 3D tilt
         setViewState(prev => ({
           ...prev,
           longitude: lng,
           latitude: lat,
-          zoom: 14 // Zoom in closer for individual dealer
+          zoom: 15.5,
+          pitch: 45,
+          bearing: -17.6,
         }))
         // Show popup for selected dealer
         setActivePopup(selectedDealer)
@@ -80,6 +133,14 @@ export function DealerMapLibre({
   const handlePopupClose = useCallback(() => {
     setActivePopup(null)
     onMarkerClick(null)
+    // Reset to default USA overview
+    setViewState({
+      longitude: -98.5795,
+      latitude: 39.8283,
+      zoom: 4,
+      pitch: 0,
+      bearing: 0,
+    })
   }, [onMarkerClick])
 
   const handleMapClick = useCallback(() => {
@@ -92,8 +153,11 @@ export function DealerMapLibre({
       {...viewState}
       onMove={evt => setViewState(evt.viewState)}
       onClick={handleMapClick}
+      onLoad={handleMapLoad}
       mapStyle="https://tiles.openfreemap.org/styles/liberty"
       style={{ width: '100%', height: '100%' }}
+      maxPitch={85}
+      antialias={true}
     >
       {/* Dealer Markers */}
       {dealers.map(dealer => {
@@ -118,24 +182,7 @@ export function DealerMapLibre({
           >
             {/* KAWAI Custom Marker with Selection Overlay */}
             <div style={{ position: 'relative', display: 'inline-block' }}>
-              {/* Shigeru Kawai: permanent gold ring */}
-              {isShigeru && !isSelected && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: '46px',
-                    height: '46px',
-                    borderRadius: '50%',
-                    backgroundColor: 'rgba(212, 175, 55, 0.15)',
-                    border: '2px solid #D4AF37',
-                    zIndex: -1,
-                  }}
-                />
-              )}
-              {/* Selection Ring/Glow (selected state overrides Shigeru ring) */}
+              {/* Selection pulse ring */}
               {isSelected && (
                 <div
                   className="selected-marker-pulse"
@@ -147,24 +194,26 @@ export function DealerMapLibre({
                     width: '60px',
                     height: '60px',
                     borderRadius: '50%',
-                    backgroundColor: 'rgba(212, 175, 55, 0.2)',
-                    border: '3px solid #D4AF37',
+                    backgroundColor: isShigeru ? 'rgba(255, 172, 41, 0.2)' : 'rgba(225, 25, 34, 0.15)',
+                    border: `3px solid ${isShigeru ? '#FFAC29' : '#E11922'}`,
                     zIndex: -1,
                   }}
                 />
               )}
               <img
-                src="/ChatGPT%20Image%20Sep%209%2C%202025%2C%2003_13_02%20PM%20copy%202.png"
+                src={isShigeru ? '/KAWAI ICON Gold.png' : '/ChatGPT%20Image%20Sep%209%2C%202025%2C%2003_13_02%20PM%20copy%202.png'}
                 alt="KAWAI Dealer"
                 style={{
-                  width: isSelected ? 48 : isShigeru ? 36 : 32,
-                  height: isSelected ? 48 : isShigeru ? 36 : 32,
+                  width: isSelected ? 48 : isShigeru ? 40 : 32,
+                  height: isSelected ? 48 : isShigeru ? 40 : 32,
                   cursor: 'pointer',
                   transition: 'all 200ms cubic-bezier(0.4, 0.0, 0.2, 1)',
-                  filter: isSelected
-                    ? 'drop-shadow(0 4px 8px rgba(212, 175, 55, 0.8)) brightness(1.1)'
-                    : isShigeru
-                      ? 'drop-shadow(0 2px 6px rgba(212, 175, 55, 0.6))'
+                  filter: isShigeru
+                    ? isSelected
+                      ? 'drop-shadow(0 4px 12px rgba(255, 172, 41, 0.85))'
+                      : 'drop-shadow(0 2px 8px rgba(255, 172, 41, 0.65))'
+                    : isSelected
+                      ? 'drop-shadow(0 4px 8px rgba(225, 25, 34, 0.7)) brightness(1.1)'
                       : 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
                   transform: isSelected ? 'scale(1.15)' : 'scale(1)',
                   position: 'relative',
