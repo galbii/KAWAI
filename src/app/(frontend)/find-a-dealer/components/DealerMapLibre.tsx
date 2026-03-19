@@ -157,7 +157,7 @@ export function DealerMapLibre({
       mapStyle="https://tiles.openfreemap.org/styles/liberty"
       style={{ width: '100%', height: '100%' }}
       maxPitch={85}
-      antialias={true}
+      canvasContextAttributes={{ antialias: true }}
     >
       {/* Dealer Markers */}
       {dealers.map(dealer => {
