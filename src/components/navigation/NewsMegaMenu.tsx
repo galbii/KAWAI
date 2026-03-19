@@ -4,10 +4,11 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 import type { Media } from '@/payload-types'
+import type { LatestPost } from '@/components/layout/header'
 
 // ============================================================================
 // Types
@@ -36,6 +37,7 @@ interface NewsMegaMenuProps {
   className?: string
   isHeaderScrolled?: boolean
   newsItems?: NewsItem[]
+  latestPosts?: LatestPost[]
 }
 
 // ============================================================================
@@ -71,6 +73,7 @@ export function NewsMegaMenu({
   className,
   isHeaderScrolled = false,
   newsItems = [],
+  latestPosts = [],
 }: NewsMegaMenuProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [direction, setDirection] = useState(1)
@@ -117,12 +120,13 @@ export function NewsMegaMenu({
             boxShadow: '0 40px 80px -16px rgba(30,27,22,0.25)',
           }}
         >
+          {/* ── Main two-column layout ── */}
           <div
             className="grid grid-cols-[220px_1fr] lg:grid-cols-[260px_1fr]"
-            style={{ minHeight: 'min(480px, 56vh)' }}
+            style={{ minHeight: 'min(460px, 54vh)' }}
           >
 
-            {/* ── LEFT: minimal editorial panel ── */}
+            {/* ── LEFT: editorial panel ── */}
             <div className="relative flex flex-col justify-between bg-kawai-black px-8 py-10">
               {/* Red left rule */}
               <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-kawai-red" />
@@ -149,19 +153,19 @@ export function NewsMegaMenu({
                 </h2>
               </div>
 
-              {/* CTA */}
+              {/* Prominent CTA button */}
               <Link
                 href="/blog"
                 onClick={onClose}
-                className="group inline-flex items-center gap-2 self-start"
+                className="group inline-flex items-center justify-between gap-3 bg-kawai-red hover:bg-kawai-red-700 text-white px-5 py-3 transition-all duration-300 self-stretch"
               >
                 <span
-                  className="text-kawai-pearl/45 group-hover:text-kawai-pearl transition-colors duration-300 font-[family-name:var(--font-brand-sans)] uppercase"
-                  style={{ fontSize: '10px', letterSpacing: '0.22em', fontWeight: 600 }}
+                  className="font-[family-name:var(--font-brand-sans)] uppercase"
+                  style={{ fontSize: '11px', letterSpacing: '0.2em', fontWeight: 700 }}
                 >
                   All Stories
                 </span>
-                <ArrowUpRight className="h-3 w-3 text-kawai-red transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 shrink-0" />
               </Link>
             </div>
 
@@ -194,7 +198,7 @@ export function NewsMegaMenu({
                       />
                     </div>
 
-                    {/* Single gradient — bottom only, clean */}
+                    {/* Gradient */}
                     <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/75 via-kawai-black/20 to-transparent" />
 
                     {/* Category badge */}
@@ -241,10 +245,9 @@ export function NewsMegaMenu({
                 </motion.div>
               </AnimatePresence>
 
-              {/* ── Nav controls: arrows + dots together, bottom-right ── */}
-              <div className="absolute bottom-8 right-8 z-20 flex items-center gap-4">
-                {/* Dots */}
-                {articles.length > 1 && (
+              {/* Nav controls: dots + arrows, bottom-right */}
+              {articles.length > 1 && (
+                <div className="absolute bottom-8 right-8 z-20 flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     {articles.map((_, i) => (
                       <button
@@ -260,31 +263,101 @@ export function NewsMegaMenu({
                       />
                     ))}
                   </div>
-                )}
-
-                {/* Arrows */}
-                {articles.length > 1 && (
                   <div className="flex items-center gap-1">
                     <button
                       onClick={(e) => { e.preventDefault(); goToPrev() }}
-                      className="w-8 h-8 border border-white/20 hover:border-white/50 hover:bg-white/8 flex items-center justify-center transition-all duration-300"
+                      className="w-8 h-8 border border-white/20 hover:border-white/50 hover:bg-white/10 flex items-center justify-center transition-all duration-300"
                       aria-label="Previous story"
                     >
                       <ChevronLeft className="h-4 w-4 text-white" />
                     </button>
                     <button
                       onClick={(e) => { e.preventDefault(); goToNext() }}
-                      className="w-8 h-8 border border-white/20 hover:border-white/50 hover:bg-white/8 flex items-center justify-center transition-all duration-300"
+                      className="w-8 h-8 border border-white/20 hover:border-white/50 hover:bg-white/10 flex items-center justify-center transition-all duration-300"
                       aria-label="Next story"
                     >
                       <ChevronRight className="h-4 w-4 text-white" />
                     </button>
                   </div>
-                )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── Latest posts strip ── */}
+          {latestPosts.length > 0 && (
+            <div className="bg-white border-t border-kawai-neutral">
+              {/* Section label row */}
+              <div className="px-8 pt-5 pb-4 flex items-center gap-4">
+                <span
+                  className="text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] uppercase"
+                  style={{ fontSize: '9px', letterSpacing: '0.35em', fontWeight: 600 }}
+                >
+                  From the blog
+                </span>
+                <div className="flex-1 h-px bg-kawai-neutral" />
+              </div>
+
+              {/* Cards */}
+              <div
+                className="grid px-6 pb-7 gap-5"
+                style={{ gridTemplateColumns: `repeat(${latestPosts.length}, 1fr)` }}
+              >
+                {latestPosts.map((post, i) => (
+                  <Link
+                    key={post.id}
+                    href={`/blog/${post.slug}`}
+                    onClick={onClose}
+                    className="group flex flex-col"
+                  >
+                    {/* Image */}
+                    <div
+                      className="relative overflow-hidden w-full mb-3 bg-kawai-neutral/40"
+                      style={{ aspectRatio: '16/5' }}
+                    >
+                      {post.featuredImage ? (
+                        <Image
+                          src={post.featuredImage}
+                          alt={post.title}
+                          fill
+                          className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                          sizes="(max-width: 1280px) 25vw, 300px"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-kawai-neutral/60" />
+                      )}
+                      {/* Subtle darkening on hover */}
+                      <div className="absolute inset-0 bg-kawai-black/0 group-hover:bg-kawai-black/10 transition-colors duration-300" />
+                    </div>
+
+                    {/* Text below image */}
+                    <div className="flex flex-col gap-1.5">
+                      {post.category && (
+                        <span
+                          className="text-kawai-red font-[family-name:var(--font-brand-sans)] uppercase"
+                          style={{ fontSize: '8px', letterSpacing: '0.28em', fontWeight: 700 }}
+                        >
+                          {post.category}
+                        </span>
+                      )}
+                      <p
+                        className="text-kawai-black group-hover:text-kawai-charcoal transition-colors duration-200 line-clamp-2 leading-snug"
+                        style={{
+                          fontFamily: 'var(--font-brand-luxury)',
+                          fontSize: 'clamp(0.85rem, 1vw, 0.95rem)',
+                          fontWeight: 400,
+                          letterSpacing: '-0.01em',
+                        }}
+                      >
+                        {post.title}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
               </div>
             </div>
+          )}
 
-          </div>
         </motion.div>
       )}
     </AnimatePresence>

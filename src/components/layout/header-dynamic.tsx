@@ -5,6 +5,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { parseNavigationOrigin, getContextAwareUrl, type NavigationOrigin } from '@/lib/navigation-utils'
 import type { Media } from '@/payload-types'
+import type { LatestPost } from './header'
 
 interface NavigationItem {
   label: string
@@ -215,6 +216,59 @@ const getHomePageNewsItems = unstable_cache(
   { tags: ['home-page'], revalidate: 300 }
 )
 
+const getLatestPosts = unstable_cache(
+  async (): Promise<LatestPost[]> => {
+    try {
+      const payload = await getPayload({ config })
+      const result = await payload.find({
+        collection: 'posts',
+        where: { status: { equals: 'published' } },
+        sort: '-publishedDate',
+        limit: 4,
+        depth: 1,
+        select: {
+          title: true,
+          slug: true,
+          excerpt: true,
+          featuredImage: true,
+          categories: true,
+        },
+      })
+      return result.docs.map((post: any) => {
+        // Extract image URL
+        let featuredImage: string | null = null
+        if (post.featuredImage) {
+          if (typeof post.featuredImage === 'object' && post.featuredImage.url) {
+            featuredImage = post.featuredImage.url
+          } else if (typeof post.featuredImage === 'object' && post.featuredImage.filename) {
+            const s3Base = (process.env.NEXT_PUBLIC_S3_PUBLIC_URL ?? '').replace(/\/$/, '')
+            featuredImage = `${s3Base}/media/${post.featuredImage.filename}`
+          }
+        }
+        // Extract first category title
+        const firstCategory = post.categories?.[0]
+        const category =
+          typeof firstCategory === 'object' && firstCategory !== null
+            ? (firstCategory as any).title ?? null
+            : null
+        return {
+          id: String(post.id),
+          title: post.title,
+          slug: post.slug ?? '',
+          excerpt: post.excerpt ?? null,
+          featuredImage,
+          category,
+        }
+      })
+    } catch (err) {
+      console.error('[getLatestPosts]', err)
+      return []
+    }
+  },
+  ['header-latest-posts'],
+  { tags: ['posts'], revalidate: 300 }
+)
+
 export async function HeaderDynamic() {
   try {
     // Get current path and determine navigation origin
@@ -262,11 +316,12 @@ export async function HeaderDynamic() {
       locationData = await getDealerLocationBySlug(origin.dealerSlug)
     }
 
-    // Fetch news items, register config, and quick links from HomePage collection
-    const [newsItems, registerConfig, quickLinks] = await Promise.all([
+    // Fetch news items, register config, quick links, and latest posts
+    const [newsItems, registerConfig, quickLinks, latestPosts] = await Promise.all([
       getHomePageNewsItems(),
       getRegisterConfig(),
       getSearchQuickLinks(),
+      getLatestPosts(),
     ])
 
     return (
@@ -278,6 +333,7 @@ export async function HeaderDynamic() {
         isUniversityPage={isUniversityPage}
         isFindADealerPage={isFindADealerPage}
         newsItems={newsItems}
+        latestPosts={latestPosts}
         registerConfig={registerConfig}
         quickLinks={quickLinks}
       />

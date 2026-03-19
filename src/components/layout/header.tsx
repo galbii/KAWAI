@@ -452,6 +452,15 @@ interface NewsItem {
   link?: string
 }
 
+export interface LatestPost {
+  id: string
+  title: string
+  slug: string
+  excerpt?: string | null
+  featuredImage?: string | null
+  category?: string | null
+}
+
 interface RegisterConfig {
   enabled?: boolean
   bannerImageUrl?: string | null
@@ -472,6 +481,7 @@ interface HeaderProps {
   isFindADealerPage?: boolean
   hideLogo?: boolean
   newsItems?: NewsItem[]
+  latestPosts?: LatestPost[]
   registerConfig?: RegisterConfig
   quickLinks?: QuickLink[]
 }
@@ -492,7 +502,7 @@ const defaultNavigation: NavigationItem[] = [
   // Resources has been moved to ResourcesMegaMenu - rendered separately below
 ]
 
-export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isUniversityPage = false, isFindADealerPage = false, newsItems = [], registerConfig, quickLinks = [] }: HeaderProps) {
+export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isUniversityPage = false, isFindADealerPage = false, newsItems = [], latestPosts = [], registerConfig, quickLinks = [] }: HeaderProps) {
   const pathname = usePathname()
   const isOnFindADealerPage = isFindADealerPage || pathname.startsWith('/find-a-dealer')
   const [isMounted, setIsMounted] = useState(false)
@@ -1675,6 +1685,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
           onClose={() => setIsNewsMenuOpen(false)}
           isHeaderScrolled={isScrolled}
           newsItems={newsItems}
+          latestPosts={latestPosts}
         />
       </div>
 

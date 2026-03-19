@@ -7564,6 +7564,8 @@ export interface HomePage {
         | MarketingContactFormBlock
         | MarketingStorefrontLocationsBlock
         | MarketingFeaturedModelsBlock
+        | MarketingBlogGridBlock
+        | MarketingBlogLatestBlock
       )[]
     | null;
   /**

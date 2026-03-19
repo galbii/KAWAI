@@ -77,6 +77,8 @@ export const HomePage: CollectionConfig = {
                 'marketing-contact-form',
                 'marketing-storefront-locations',
                 'marketing-featured-models',
+                'marketing-blog-grid',
+                'marketing-blog-latest',
               ] as any,
               blocks: [], // Required to be empty for compatibility
               admin: {

@@ -166,6 +166,9 @@ export function CollectionShowcaseBlock({
   const highlights = (product?.highlights ?? []) as Array<{ id: string; highlight: string; description: string }>
   const hasHighlights = highlights.length > 0
 
+  // Don't render if there are no Shopify-synced highlights
+  if (!hasHighlights) return null
+
   if (hasHighlights) {
     const active = highlights[activeIndex] ?? highlights[0]
     return (

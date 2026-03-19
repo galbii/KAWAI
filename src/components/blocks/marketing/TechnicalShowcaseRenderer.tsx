@@ -53,6 +53,10 @@ export function TechnicalShowcaseRenderer({
   const theme = settings?.theme ?? 'dark'
   const enableAnimations = settings?.enableAnimations ?? true
 
+  // Don't render if there are no products with features (Shopify-synced highlights)
+  const hasProducts = products && products.length > 0 && products.some((p) => p.features && p.features.length > 0)
+  if (!hasProducts) return null
+
   const youtubeId = youtubeUrl ? extractYouTubeId(youtubeUrl) : null
   const thumbnailMedia = videoThumbnail as Media | string | null | undefined
   const thumbnailUrl =
