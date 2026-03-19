@@ -484,6 +484,7 @@ interface HeaderProps {
   latestPosts?: LatestPost[]
   registerConfig?: RegisterConfig
   quickLinks?: QuickLink[]
+  autoMinimize?: boolean
 }
 
 // Default fallback navigation - URLs will be made context-aware at runtime
@@ -502,7 +503,7 @@ const defaultNavigation: NavigationItem[] = [
   // Resources has been moved to ResourcesMegaMenu - rendered separately below
 ]
 
-export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isUniversityPage = false, isFindADealerPage = false, newsItems = [], latestPosts = [], registerConfig, quickLinks = [] }: HeaderProps) {
+export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isUniversityPage = false, isFindADealerPage = false, newsItems = [], latestPosts = [], registerConfig, quickLinks = [], autoMinimize = true }: HeaderProps) {
   const pathname = usePathname()
   const isOnFindADealerPage = isFindADealerPage || pathname.startsWith('/find-a-dealer')
   const [isMounted, setIsMounted] = useState(false)
@@ -629,16 +630,17 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     setIsMounted(true)
   }, [])
 
-  // Auto-hide: show nav on mount, then hide after 2s
+  // Auto-hide: show nav on mount, then hide after 2s (only when autoMinimize is enabled)
   useEffect(() => {
     setIsAutoHidden(false)
+    if (!autoMinimize) return
     autoHideTimeoutRef.current = setTimeout(() => {
       setIsAutoHidden(true)
     }, 2000)
     return () => {
       if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
     }
-  }, [])
+  }, [autoMinimize])
 
   // Initialize scroll state based on initial scroll position
   useEffect(() => {
@@ -910,11 +912,12 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     productsMenuTimeoutRef.current = setTimeout(() => {
       setIsProductsMenuOpen(false)
     }, 150)
+    if (!autoMinimize) return
     if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
     autoHideTimeoutRef.current = setTimeout(() => {
       setIsAutoHidden(true)
     }, 2000)
-  }, [])
+  }, [autoMinimize])
 
   // Storefronts menu handlers
   const handleStorefrontsMenuOpen = useCallback(() => {
@@ -942,11 +945,12 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     storefrontsMenuTimeoutRef.current = setTimeout(() => {
       setIsStorefrontsMenuOpen(false)
     }, 150)
+    if (!autoMinimize) return
     if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
     autoHideTimeoutRef.current = setTimeout(() => {
       setIsAutoHidden(true)
     }, 2000)
-  }, [])
+  }, [autoMinimize])
 
   // Resources menu handlers
   const handleResourcesMenuOpen = useCallback(() => {
@@ -974,11 +978,12 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     resourcesMenuTimeoutRef.current = setTimeout(() => {
       setIsResourcesMenuOpen(false)
     }, 150)
+    if (!autoMinimize) return
     if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
     autoHideTimeoutRef.current = setTimeout(() => {
       setIsAutoHidden(true)
     }, 2000)
-  }, [])
+  }, [autoMinimize])
 
   // News menu handlers
   const handleNewsMenuOpen = useCallback(() => {
@@ -1006,11 +1011,12 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     newsMenuTimeoutRef.current = setTimeout(() => {
       setIsNewsMenuOpen(false)
     }, 150)
+    if (!autoMinimize) return
     if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
     autoHideTimeoutRef.current = setTimeout(() => {
       setIsAutoHidden(true)
     }, 2000)
-  }, [])
+  }, [autoMinimize])
 
   const handleShowroomMenuOpen = useCallback(() => {
     if (showroomMenuTimeoutRef.current) clearTimeout(showroomMenuTimeoutRef.current)
@@ -1034,13 +1040,14 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   }, [])
 
   const handleBottomNavMouseLeave = useCallback(() => {
+    if (!autoMinimize) return
     if (autoHideTimeoutRef.current) {
       clearTimeout(autoHideTimeoutRef.current)
     }
     autoHideTimeoutRef.current = setTimeout(() => {
       setIsAutoHidden(true)
     }, 2000)
-  }, [])
+  }, [autoMinimize])
 
   // Header hover handlers for bottom navigation reveal
   // Utility function to check if target is interactive

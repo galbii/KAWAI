@@ -36,6 +36,7 @@ import { MusicSchools } from './collections/MusicSchools'
 import { Jobs } from './collections/Jobs'
 import { JobApplications } from './collections/JobApplications'
 import { Redirects } from './collections/Redirects'
+import { HeaderSettings } from './globals/HeaderSettings'
 import {
   // Content blocks
   Text,
@@ -282,6 +283,9 @@ export default buildConfig({
 
     // Settings
     Redirects,
+  ],
+  globals: [
+    HeaderSettings,
   ],
   // Define blocks at root level for performance optimization using blockReferences
   blocks: [

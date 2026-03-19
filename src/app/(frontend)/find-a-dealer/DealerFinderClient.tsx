@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useCallback, useMemo } from 'react'
+import Image from 'next/image'
+import { motion } from 'framer-motion'
 import type { Dealer } from '@/payload-types'
 import type { DealerWithDistance } from './types'
 import { DealerMapLibre } from './components/DealerMapLibre'
@@ -126,46 +128,126 @@ export function DealerFinderClient({ dealers }: Props) {
       {/* Desktop View */}
       <div className="hidden lg:block bg-white">
 
-        {/* ── Compact Branded Hero (scrolls away) ── */}
-        <div className="relative bg-kawai-black overflow-hidden">
-          {/* Subtle diagonal grid texture */}
+        {/* ── Full-Bleed Editorial Hero ── */}
+        <div className="relative bg-kawai-black overflow-hidden" style={{ height: '480px' }}>
+
+          {/* Background image — subtle Ken Burns scale-in */}
+          <motion.div
+            className="absolute inset-0"
+            initial={{ scale: 1.06 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 2.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            <Image
+              src="/videos/Find a Dealer Banner 3.png"
+              alt=""
+              fill
+              className="object-cover object-center"
+              priority
+            />
+          </motion.div>
+
+          {/* Directional gradient — heavy left for text, dissolves right revealing the image */}
           <div
-            className="absolute inset-0 opacity-[0.04]"
+            className="absolute inset-0"
             style={{
-              backgroundImage: `repeating-linear-gradient(
-                -45deg,
-                transparent,
-                transparent 14px,
-                rgba(255,255,255,1) 14px,
-                rgba(255,255,255,1) 15px
-              )`,
+              background: 'linear-gradient(108deg, rgba(30,27,22,0.97) 0%, rgba(30,27,22,0.90) 32%, rgba(30,27,22,0.52) 58%, rgba(30,27,22,0.08) 100%)',
             }}
           />
-          {/* Red accent line at bottom */}
-          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-kawai-red/60" />
 
-          <div className="relative max-w-7xl mx-auto px-8 py-9">
-            <div className="flex items-end justify-between gap-8">
+          {/* Left edge red accent stripe */}
+          <motion.div
+            className="absolute left-0 top-0 bottom-0 w-[3px] bg-kawai-red origin-top"
+            initial={{ scaleY: 0 }}
+            animate={{ scaleY: 1 }}
+            transition={{ duration: 0.9, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+          />
+
+          {/* Bottom rule */}
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-white/10" />
+
+          {/* ── Hero Content ── */}
+          <div className="relative h-full max-w-7xl mx-auto px-12 flex flex-col justify-center">
+
+            {/* Eyebrow */}
+            <motion.p
+              className="text-kawai-red text-[10px] font-bold uppercase tracking-[0.24em] mb-5 font-[family-name:var(--font-brand-sans)]"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25, duration: 0.55 }}
+            >
+              Kawai America Corporation
+            </motion.p>
+
+            {/* Main heading */}
+            <motion.h1
+              className="font-[family-name:var(--font-brand-luxury)] text-white leading-[0.93] tracking-[-0.01em] mb-6"
+              style={{ fontSize: 'clamp(52px, 5.8vw, 82px)' }}
+              initial={{ opacity: 0, y: 26 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.38, duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+            >
+              Our Authorized Dealers
+            </motion.h1>
+
+            {/* Animated red divider line */}
+            <motion.div
+              className="h-px bg-kawai-red/50 mb-6 origin-left"
+              style={{ width: '260px' }}
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ delay: 0.65, duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+            />
+
+            {/* Description */}
+            <motion.p
+              className="text-white/48 text-[13px] font-[family-name:var(--font-brand-sans)] max-w-sm leading-relaxed mb-10 tracking-[0.01em]"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.58, duration: 0.6 }}
+            >
+              Expert consultations, showroom experiences &amp; exceptional service at authorized locations across North America.
+            </motion.p>
+
+            {/* Stats row */}
+            <motion.div
+              className="flex items-center gap-9"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.75, duration: 0.6 }}
+            >
               <div>
-                <p className="text-kawai-red text-[10px] font-bold uppercase tracking-[0.18em] mb-3">
-                  Kawai Piano — Authorized Dealers
-                </p>
-                <h1 className="text-[2rem] font-[family-name:var(--font-brand-luxury)] text-white leading-tight tracking-tight">
-                  Find an Authorized Dealer
-                </h1>
-                <p className="text-white/45 text-sm mt-2 font-[family-name:var(--font-brand-sans)] max-w-lg">
-                  Expert consultations, showroom visits & exceptional service across North America
-                </p>
-              </div>
-              <div className="text-right flex-shrink-0">
-                <div className="text-[2.5rem] font-bold text-white leading-none tabular-nums">
+                <div className="text-[2.4rem] font-bold text-white tabular-nums leading-none font-[family-name:var(--font-brand-sans)]">
                   {dealers.length}
                 </div>
-                <div className="text-white/35 text-[10px] uppercase tracking-[0.15em] mt-1">
-                  Authorized Dealers
+                <div className="text-white/28 text-[9px] uppercase tracking-[0.22em] mt-1.5 font-[family-name:var(--font-brand-sans)]">
+                  Total Dealers
                 </div>
               </div>
-            </div>
+
+              <div className="w-px h-9 bg-white/12" />
+
+              <div>
+                <div className="text-[2.4rem] font-bold text-white tabular-nums leading-none font-[family-name:var(--font-brand-sans)]">
+                  {dealerCounts.shigeru}
+                </div>
+                <div className="text-white/28 text-[9px] uppercase tracking-[0.22em] mt-1.5 font-[family-name:var(--font-brand-sans)]">
+                  Shigeru Kawai
+                </div>
+              </div>
+
+              <div className="w-px h-9 bg-white/12" />
+
+              <div>
+                <div className="text-[2.4rem] font-bold text-white tabular-nums leading-none font-[family-name:var(--font-brand-sans)]">
+                  {dealerCounts.acoustic}
+                </div>
+                <div className="text-white/28 text-[9px] uppercase tracking-[0.22em] mt-1.5 font-[family-name:var(--font-brand-sans)]">
+                  Acoustic Piano
+                </div>
+              </div>
+            </motion.div>
+
           </div>
         </div>
 

@@ -207,8 +207,12 @@ export interface Config {
     defaultIDType: string;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'header-settings': HeaderSetting;
+  };
+  globalsSelect: {
+    'header-settings': HeaderSettingsSelect<false> | HeaderSettingsSelect<true>;
+  };
   locale: null;
   user: User & {
     collection: 'users';
@@ -11226,6 +11230,31 @@ export interface PayloadQueryPresetsSelect<T extends boolean = true> {
   isTemp?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * Global settings for the site header
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "header-settings".
+ */
+export interface HeaderSetting {
+  id: string;
+  /**
+   * When enabled, the navigation bar automatically collapses after 2 seconds and reveals on hover. Disable to keep the navigation always visible.
+   */
+  autoMinimize?: boolean | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "header-settings_select".
+ */
+export interface HeaderSettingsSelect<T extends boolean = true> {
+  autoMinimize?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

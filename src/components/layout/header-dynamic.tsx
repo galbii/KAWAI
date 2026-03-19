@@ -216,6 +216,21 @@ const getHomePageNewsItems = unstable_cache(
   { tags: ['home-page'], revalidate: 300 }
 )
 
+const getHeaderSettings = unstable_cache(
+  async (): Promise<{ autoMinimize: boolean }> => {
+    try {
+      const payload = await getPayload({ config })
+      const settings = await payload.findGlobal({ slug: 'header-settings' })
+      return { autoMinimize: settings.autoMinimize ?? true }
+    } catch (err) {
+      console.error('[getHeaderSettings]', err)
+      return { autoMinimize: true }
+    }
+  },
+  ['header-settings'],
+  { tags: ['header-settings'], revalidate: 3600 }
+)
+
 const getLatestPosts = unstable_cache(
   async (): Promise<LatestPost[]> => {
     try {
@@ -316,12 +331,13 @@ export async function HeaderDynamic() {
       locationData = await getDealerLocationBySlug(origin.dealerSlug)
     }
 
-    // Fetch news items, register config, quick links, and latest posts
-    const [newsItems, registerConfig, quickLinks, latestPosts] = await Promise.all([
+    // Fetch news items, register config, quick links, latest posts, and header settings
+    const [newsItems, registerConfig, quickLinks, latestPosts, headerSettings] = await Promise.all([
       getHomePageNewsItems(),
       getRegisterConfig(),
       getSearchQuickLinks(),
       getLatestPosts(),
+      getHeaderSettings(),
     ])
 
     return (
@@ -336,6 +352,7 @@ export async function HeaderDynamic() {
         latestPosts={latestPosts}
         registerConfig={registerConfig}
         quickLinks={quickLinks}
+        autoMinimize={headerSettings.autoMinimize}
       />
     )
   } catch (error) {
