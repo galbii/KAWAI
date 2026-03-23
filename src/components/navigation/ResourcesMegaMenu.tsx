@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Headphones, Briefcase, ArrowRight } from 'lucide-react'
+import { Headphones, Briefcase, ArrowRight, Cpu, Building2, GraduationCap, BookOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 // ============================================================================
@@ -15,6 +15,7 @@ interface ResourceItem {
   href: string
   icon: React.ComponentType<{ className?: string }>
   comingSoon?: boolean
+  migration?: boolean
 }
 
 interface ResourcesMegaMenuProps {
@@ -34,7 +35,11 @@ interface ResourcesMegaMenuProps {
 // Resource Items Data
 // ============================================================================
 
-const resourceItems: ResourceItem[] = [
+// Set NEXT_PUBLIC_MIGRATION_NAV=true to show Technology, Company, Institutions, and Glossary links.
+// Omit or set to anything else to hide them (e.g. before the April 1st launch).
+const MIGRATION_NAV_ENABLED = process.env.NEXT_PUBLIC_MIGRATION_NAV === 'true'
+
+const allResourceItems: ResourceItem[] = [
   {
     title: 'Support Center',
     description: 'Troubleshooting, connectivity, firmware, warranty, and piano care — for owners, buyers, and technicians.',
@@ -42,12 +47,44 @@ const resourceItems: ResourceItem[] = [
     icon: Headphones,
   },
   {
+    title: 'Technology',
+    description: 'ABS-Carbon actions, Harmonic Imaging sound engines, wooden key actions, and the science behind Kawai pianos.',
+    href: '/technology',
+    icon: Cpu,
+    migration: true,
+  },
+  {
+    title: 'Company',
+    description: 'Our history, philosophy, founder story, awards, and the legacy behind every Kawai instrument.',
+    href: '/company',
+    icon: Building2,
+    migration: true,
+  },
+  {
+    title: 'Institutions',
+    description: 'EPIC partnerships, fleet management, loan programs, and financial assistance for schools and universities.',
+    href: '/institutions/epic-program',
+    icon: GraduationCap,
+    migration: true,
+  },
+  {
     title: 'Careers',
     description: 'Join the Kawai team and help bring the world\'s finest pianos to musicians everywhere.',
     href: '/careers',
     icon: Briefcase,
   },
+  {
+    title: 'Glossary',
+    description: 'A complete index of Kawai technology, company, and institutional resources — all in one place.',
+    href: '/glossary',
+    icon: BookOpen,
+    migration: true,
+  },
 ]
+
+const resourceItems = MIGRATION_NAV_ENABLED
+  ? allResourceItems
+  : allResourceItems.filter((item) => !item.migration)
 
 // ============================================================================
 // Component
