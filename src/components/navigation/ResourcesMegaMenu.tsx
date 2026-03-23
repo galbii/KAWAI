@@ -35,8 +35,7 @@ interface ResourcesMegaMenuProps {
 // Resource Items Data
 // ============================================================================
 
-// Set NEXT_PUBLIC_MIGRATION_NAV=true to show Technology, Company, Institutions, and Glossary links.
-// Omit or set to anything else to hide them (e.g. before the April 1st launch).
+// Defaults to hidden. Set NEXT_PUBLIC_MIGRATION_NAV=true to show Technology, Company, Institutions, and Glossary.
 const MIGRATION_NAV_ENABLED = process.env.NEXT_PUBLIC_MIGRATION_NAV === 'true'
 
 const allResourceItems: ResourceItem[] = [
