@@ -64,9 +64,27 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(destination, { status: Number(match.type) })
   }
 
-  return NextResponse.next({
+  const response = NextResponse.next({
     request: { headers: requestHeaders },
   })
+
+  // Dealer context cookie — readable server-side via cookies() and client-side via document.cookie.
+  // Set when entering a storefront, clear when returning to the homepage.
+  if (pathname.startsWith('/store/')) {
+    const slug = pathname.split('/')[2]
+    if (slug) {
+      response.cookies.set('kawai-dealer-slug', slug, {
+        path: '/',
+        sameSite: 'lax',
+        // No httpOnly — NavigationContext reads this client-side via document.cookie
+        // No maxAge — session cookie, cleared when browser closes
+      })
+    }
+  } else if (pathname === '/' || pathname === '') {
+    response.cookies.delete('kawai-dealer-slug')
+  }
+
+  return response
 }
 
 export const config = {

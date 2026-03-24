@@ -44,6 +44,7 @@ import {
   Video,
   Code,
   Banner,
+  RichTextContent,
   // Layout blocks
   Columns,
   Spacer,
@@ -295,6 +296,7 @@ export default buildConfig({
     Video,
     Code,
     Banner,
+    RichTextContent,
 
     // Layout blocks
     Columns,

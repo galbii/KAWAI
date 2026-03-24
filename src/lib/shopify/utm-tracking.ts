@@ -60,9 +60,14 @@ interface StoredUTMData {
 // ============================================================================
 
 /**
- * sessionStorage key for UTM parameters
+ * Cookie name for UTM parameters (30-day persistence across sessions)
  */
-const UTM_STORAGE_KEY = 'kawai_utm_params'
+const UTM_COOKIE_NAME = 'kawai-utm'
+
+/**
+ * Cookie max-age: 30 days in seconds
+ */
+const UTM_COOKIE_MAX_AGE = 60 * 60 * 24 * 30
 
 /**
  * Standard UTM parameter names
@@ -81,23 +86,34 @@ const UTM_PARAMS = [
 const MAX_UTM_VALUE_LENGTH = 50
 
 // ============================================================================
-// Utility Functions
+// Cookie Helpers
 // ============================================================================
 
-/**
- * Check if sessionStorage is available (SSR-safe)
- */
-function isSessionStorageAvailable(): boolean {
-  try {
-    if (typeof window === 'undefined') return false
-    const test = '__storage_test__'
-    window.sessionStorage.setItem(test, test)
-    window.sessionStorage.removeItem(test)
-    return true
-  } catch {
-    return false
-  }
+function isCookieAvailable(): boolean {
+  return typeof document !== 'undefined'
 }
+
+function setCookie(value: string): void {
+  const secure = location.protocol === 'https:' ? '; Secure' : ''
+  document.cookie = `${UTM_COOKIE_NAME}=${encodeURIComponent(value)}; max-age=${UTM_COOKIE_MAX_AGE}; path=/; SameSite=Lax${secure}`
+}
+
+function getCookie(): string | null {
+  if (!isCookieAvailable()) return null
+  const match = document.cookie
+    .split('; ')
+    .find(row => row.startsWith(`${UTM_COOKIE_NAME}=`))
+  return match ? decodeURIComponent(match.split('=')[1] ?? '') : null
+}
+
+function deleteCookie(): void {
+  if (!isCookieAvailable()) return
+  document.cookie = `${UTM_COOKIE_NAME}=; max-age=0; path=/; SameSite=Lax`
+}
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
 
 /**
  * Sanitize UTM value for use in Shopify tags
@@ -152,44 +168,24 @@ function formatUTMTag(param: string, value: string): string {
 // ============================================================================
 
 /**
- * Capture UTM parameters from URL and store in sessionStorage
+ * Capture UTM parameters from URL and store in a 30-day cookie.
  *
- * This should be called on every page load (client-side) to capture
- * UTM parameters from the URL. Uses first-touch attribution - once
- * UTMs are captured, they persist for the session.
+ * Uses first-touch attribution — once UTMs are captured, they persist for
+ * 30 days across sessions. A returning visitor from a direct link within the
+ * attribution window retains the original campaign source.
  *
  * @param searchParams - URLSearchParams from URL or location.search
  * @returns Captured UTM parameters (if any)
- *
- * @example
- * ```typescript
- * // In root layout or _app.tsx
- * 'use client'
- * import { useEffect } from 'react'
- * import { useSearchParams } from 'next/navigation'
- * import { captureUTMParams } from '@/lib/shopify/utm-tracking'
- *
- * export function UTMCapture() {
- *   const searchParams = useSearchParams()
- *
- *   useEffect(() => {
- *     captureUTMParams(searchParams)
- *   }, [searchParams])
- *
- *   return null
- * }
- * ```
  */
 export function captureUTMParams(searchParams: URLSearchParams): UTMParams | null {
-  if (!isSessionStorageAvailable()) {
-    console.warn('[UTM Tracking] sessionStorage not available')
+  if (!isCookieAvailable()) {
+    console.warn('[UTM Tracking] document.cookie not available')
     return null
   }
 
-  // Check if UTMs are already captured (first-touch attribution)
-  const existing = window.sessionStorage.getItem(UTM_STORAGE_KEY)
-  if (existing) {
-    console.log('[UTM Tracking] UTMs already captured for this session')
+  // First-touch attribution: if cookie already exists, don't overwrite
+  if (getCookie() !== null) {
+    console.log('[UTM Tracking] UTMs already captured (cookie exists)')
     return null
   }
 
@@ -210,7 +206,6 @@ export function captureUTMParams(searchParams: URLSearchParams): UTMParams | nul
     return null
   }
 
-  // Store in sessionStorage with metadata
   const storedData: StoredUTMData = {
     params: utmParams,
     capturedAt: Date.now(),
@@ -218,7 +213,7 @@ export function captureUTMParams(searchParams: URLSearchParams): UTMParams | nul
   }
 
   try {
-    window.sessionStorage.setItem(UTM_STORAGE_KEY, JSON.stringify(storedData))
+    setCookie(JSON.stringify(storedData))
     console.log('[UTM Tracking] UTM parameters captured:', utmParams)
     return utmParams
   } catch (error) {
@@ -228,22 +223,19 @@ export function captureUTMParams(searchParams: URLSearchParams): UTMParams | nul
 }
 
 /**
- * Retrieve stored UTM parameters from sessionStorage
+ * Retrieve stored UTM parameters from cookie
  *
  * @returns Stored UTM parameters or null if none found
  */
 export function getStoredUTMParams(): UTMParams | null {
-  if (!isSessionStorageAvailable()) {
+  if (!isCookieAvailable()) {
     return null
   }
 
   try {
-    const stored = window.sessionStorage.getItem(UTM_STORAGE_KEY)
-    if (!stored) {
-      return null
-    }
-
-    const data: StoredUTMData = JSON.parse(stored)
+    const raw = getCookie()
+    if (!raw) return null
+    const data: StoredUTMData = JSON.parse(raw)
     return data.params
   } catch (error) {
     console.error('[UTM Tracking] Failed to retrieve UTM parameters:', error)
@@ -300,15 +292,10 @@ export function getUTMTags(): string[] {
  * Clear stored UTM parameters
  *
  * Useful for testing or manual session reset.
- * Normally, UTMs clear automatically when the browser tab closes.
  */
 export function clearUTMParams(): void {
-  if (!isSessionStorageAvailable()) {
-    return
-  }
-
   try {
-    window.sessionStorage.removeItem(UTM_STORAGE_KEY)
+    deleteCookie()
     console.log('[UTM Tracking] UTM parameters cleared')
   } catch (error) {
     console.error('[UTM Tracking] Failed to clear UTM parameters:', error)
@@ -321,17 +308,12 @@ export function clearUTMParams(): void {
  * @returns UTM data with capture metadata or null
  */
 export function getUTMMetadata(): StoredUTMData | null {
-  if (!isSessionStorageAvailable()) {
-    return null
-  }
+  if (!isCookieAvailable()) return null
 
   try {
-    const stored = window.sessionStorage.getItem(UTM_STORAGE_KEY)
-    if (!stored) {
-      return null
-    }
-
-    return JSON.parse(stored)
+    const raw = getCookie()
+    if (!raw) return null
+    return JSON.parse(raw)
   } catch (error) {
     console.error('[UTM Tracking] Failed to retrieve UTM metadata:', error)
     return null
@@ -370,10 +352,6 @@ export function hasStoredUTMs(): boolean {
  * ```
  */
 export function useUTMTracking() {
-  // Note: This would require React imports and useState/useEffect
-  // Keeping it simple as a utility function instead
-  // Users can call getUTMTags() directly when needed
-
   return {
     tags: getUTMTags(),
     hasUTMs: hasStoredUTMs(),

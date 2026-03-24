@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { HeaderDynamic } from "@/components/layout/header-dynamic";
 import { FooterDynamic } from "@/components/layout/footer-dynamic";
 import { AnnouncementBarWrapper } from "@/components/layout/AnnouncementBarWrapper";
 import { LayoutSpacer } from "@/components/layout/LayoutSpacer";
 import { NavigationContextProvider } from "@/contexts/NavigationContext";
-import { parseNavigationOrigin } from "@/lib/navigation-utils";
-import { headers } from 'next/headers';
+import type { NavigationOrigin } from "@/lib/navigation-utils";
+import { headers, cookies } from 'next/headers';
 import { organizationSchema, featuredProductsSchema } from "@/lib/seo/schemas";
+import { UTMCapture } from "@/components/analytics/UTMCapture";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'),
@@ -66,10 +69,17 @@ export const metadata: Metadata = {
 export default async function FrontendLayout(props: { children: React.ReactNode }) {
   const { children } = props
 
-  // Get initial navigation origin from server request
-  const headersList = await headers()
+  // Derive initial dealer context from cookie + pathname so the first client
+  // render matches the server render (no flash of un-branded → dealer header).
+  const [headersList, cookieStore] = await Promise.all([headers(), cookies()])
   const pathname = headersList.get('x-pathname') || '/'
-  const initialOrigin = parseNavigationOrigin(pathname)
+  const cookieDealerSlug = cookieStore.get('kawai-dealer-slug')?.value
+  const pathDealerSlug = pathname.startsWith('/store/') ? pathname.split('/')[2] : undefined
+  const dealerSlug = pathDealerSlug ?? cookieDealerSlug
+
+  const initialOrigin: NavigationOrigin = dealerSlug
+    ? { basePath: `/store/${dealerSlug}`, isDealerLocation: true, dealerSlug }
+    : { basePath: '/', isDealerLocation: false }
 
   // Check if this is any NAMM 2026 page (has its own custom header/footer)
   const isNAMMPage = pathname.startsWith('/namm-2026')
@@ -133,6 +143,10 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
         </main>
         {!isNAMMPage && <FooterDynamic />}
       </div>
+      <Suspense fallback={null}>
+        <UTMCapture />
+      </Suspense>
+      <CookieConsentBanner />
     </NavigationContextProvider>
   )
 }

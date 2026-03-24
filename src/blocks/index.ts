@@ -4,6 +4,7 @@ export { Image } from './content/Image'
 export { Video } from './content/Video'
 export { Code } from './content/Code'
 export { Banner } from './content/Banner'
+export { RichTextContent } from './content/RichTextContent'
 
 // Layout blocks (structural)
 export { Columns } from './layout/Columns'

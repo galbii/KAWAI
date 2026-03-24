@@ -1,9 +1,8 @@
 import { Header } from './header'
-import { headers } from 'next/headers'
+import { headers, cookies } from 'next/headers'
 import { unstable_cache } from 'next/cache'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { parseNavigationOrigin, getContextAwareUrl, type NavigationOrigin } from '@/lib/navigation-utils'
 import type { Media } from '@/payload-types'
 import type { LatestPost } from './header'
 
@@ -286,10 +285,9 @@ const getLatestPosts = unstable_cache(
 
 export async function HeaderDynamic() {
   try {
-    // Get current path and determine navigation origin
-    const headersList = await headers()
+    // Get current path and dealer context from cookie
+    const [headersList, cookieStore] = await Promise.all([headers(), cookies()])
     const pathname = headersList.get('x-pathname') || ''
-    const origin = parseNavigationOrigin(pathname)
 
     // Check if we're on a signature page (signature, signature2, or gl-10-signature)
     const isSignaturePage = pathname.endsWith('/signature') || pathname.endsWith('/signature/') ||
@@ -305,30 +303,22 @@ export async function HeaderDynamic() {
     // Check if we're on the find-a-dealer page (hide search on this page)
     const isFindADealerPage = pathname.startsWith('/find-a-dealer')
 
-    // Check if we're on the homepage or a storefront page (hide logo on these pages)
-    const isHomepage = pathname === '/' || pathname === ''
-    const isStorefrontPage = pathname.includes('/store/')
-    const shouldHideLogo = isHomepage || isStorefrontPage
+    // Resolve dealer slug: pathname takes priority (user is on the storefront right now),
+    // cookie is the fallback (user navigated here from a storefront).
+    const pathDealerSlug = pathname.startsWith('/store/') ? pathname.split('/')[2] : undefined
+    const cookieDealerSlug = cookieStore.get('kawai-dealer-slug')?.value
+    const dealerSlug = pathDealerSlug ?? cookieDealerSlug
 
-    // Static navigation items (non-piano categories)
-    // Note: Piano navigation is now handled by ProductsMegaMenu (Shopify integration),
-    // StorefrontsMegaMenu, NewsMegaMenu, and ResourcesMegaMenu - these are rendered separately in header.tsx
-    // Artists appears after the mega menus in the header
     const staticNavigation: NavigationItem[] = [
-      // News has been moved to NewsMegaMenu - see header.tsx
-      // Artists positioned after mega menus - see header.tsx
-      {
-        label: 'Artists',
-        href: getContextAwareUrl('/artists', origin)
-      },
-      // Resources has been moved to ResourcesMegaMenu - see header.tsx
+      { label: 'Artists', href: '/artists' },
     ]
 
-    // Check if we're on a dealer location page and fetch location data
+    // Fetch dealer location data server-side on every page where cookie is present.
+    // This eliminates the client-side flash of un-branded → dealer header.
     let locationData: DealerLocationData | null = null
 
-    if (origin.isDealerLocation && origin.dealerSlug) {
-      locationData = await getDealerLocationBySlug(origin.dealerSlug)
+    if (dealerSlug) {
+      locationData = await getDealerLocationBySlug(dealerSlug)
     }
 
     // Fetch news items, register config, quick links, latest posts, and header settings
@@ -358,10 +348,9 @@ export async function HeaderDynamic() {
   } catch (error) {
     console.error('Error in HeaderDynamic:', error)
 
-    // Fallback to basic static navigation (non-piano items only)
+    // Fallback to basic static navigation
     const headersList = await headers()
     const pathname = headersList.get('x-pathname') || ''
-    const fallbackOrigin = parseNavigationOrigin(pathname)
     const isSignaturePage = pathname.endsWith('/signature') || pathname.endsWith('/signature/') ||
                             pathname.endsWith('/signature2') || pathname.endsWith('/signature2/') ||
                             pathname.endsWith('/gl-10-signature') || pathname.endsWith('/gl-10-signature/')
@@ -369,19 +358,6 @@ export async function HeaderDynamic() {
     const isUniversityPage = pathname.includes('/university')
     const isFindADealerPage = pathname.startsWith('/find-a-dealer')
 
-    // Minimal fallback navigation (piano navigation handled by ProductsMegaMenu)
-    // News moved to NewsMegaMenu - see header.tsx
-    // Resources moved to ResourcesMegaMenu - see header.tsx
-    const fallbackNavigation: NavigationItem[] = [
-      // News has been moved to NewsMegaMenu - see header.tsx
-      // Artists positioned after mega menus - see header.tsx
-      {
-        label: 'Artists',
-        href: getContextAwareUrl('/artists', fallbackOrigin)
-      },
-      // Resources has been moved to ResourcesMegaMenu - see header.tsx
-    ]
-
-    return <Header navigation={fallbackNavigation} isSignaturePage={isSignaturePage} hidePianoLinks={isConcertArtistPage} isUniversityPage={isUniversityPage} isFindADealerPage={isFindADealerPage} newsItems={[]} />
+    return <Header navigation={[{ label: 'Artists', href: '/artists' }]} isSignaturePage={isSignaturePage} hidePianoLinks={isConcertArtistPage} isUniversityPage={isUniversityPage} isFindADealerPage={isFindADealerPage} newsItems={[]} />
   }
 }

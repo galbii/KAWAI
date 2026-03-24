@@ -58,7 +58,7 @@ export const MusicSchools: CollectionConfig = {
       name: 'storefront',
       type: 'relationship',
       relationTo: 'storefronts',
-      required: true,
+      required: false,
       admin: {
         description: 'Which storefront this music school belongs to',
       },
@@ -112,10 +112,22 @@ export const MusicSchools: CollectionConfig = {
                 {
                   name: 'phone',
                   type: 'text',
+                  admin: { description: 'Gallery/main phone number' },
+                },
+                {
+                  name: 'schoolPhone',
+                  type: 'text',
+                  admin: { description: 'Direct school phone (may differ from gallery phone)' },
                 },
                 {
                   name: 'email',
                   type: 'email',
+                  admin: { description: 'Gallery/main email address' },
+                },
+                {
+                  name: 'schoolEmail',
+                  type: 'email',
+                  admin: { description: 'School-specific email (may differ from gallery email)' },
                 },
                 {
                   name: 'website',
@@ -183,7 +195,72 @@ export const MusicSchools: CollectionConfig = {
             },
           ],
         },
-        // Tab 3: Facilities
+        // Tab 3: Policies & Fees
+        {
+          label: 'Policies & Fees',
+          fields: [
+            {
+              name: 'tuitionSemesters',
+              type: 'array',
+              label: 'Tuition by Semester',
+              admin: {
+                description:
+                  'Semester-based tuition table (e.g. Houston). Leave empty for monthly-billing schools.',
+              },
+              fields: [
+                {
+                  name: 'semester',
+                  type: 'text',
+                  required: true,
+                  admin: { description: 'e.g. "Fall", "Spring", "Summer"' },
+                },
+                {
+                  name: 'weeks',
+                  type: 'text',
+                  admin: { description: 'e.g. "14 weeks" or "6–8 weeks"' },
+                },
+                { name: 'price30min', type: 'text', label: '30-Min Price' },
+                { name: 'price45min', type: 'text', label: '45-Min Price' },
+                { name: 'price60min', type: 'text', label: '60-Min Price' },
+              ],
+            },
+            {
+              name: 'fees',
+              type: 'array',
+              label: 'Additional Fees',
+              admin: { description: 'Registration fees, supply fees, etc.' },
+              fields: [
+                { name: 'feeName', type: 'text', required: true },
+                { name: 'amount', type: 'text' },
+                { name: 'notes', type: 'text' },
+              ],
+            },
+            {
+              name: 'policies',
+              type: 'array',
+              label: 'School Policies',
+              fields: [
+                {
+                  name: 'title',
+                  type: 'text',
+                  required: true,
+                  admin: { description: 'e.g. "Tuition Payment", "Missed Lessons"' },
+                },
+                { name: 'body', type: 'textarea', required: true },
+              ],
+            },
+            {
+              name: 'faqs',
+              type: 'array',
+              label: 'FAQs',
+              fields: [
+                { name: 'question', type: 'text', required: true },
+                { name: 'answer', type: 'textarea', required: true },
+              ],
+            },
+          ],
+        },
+        // Tab 4: Facilities
         {
           label: 'Facilities',
           fields: [
@@ -200,11 +277,21 @@ export const MusicSchools: CollectionConfig = {
                   name: 'description',
                   type: 'textarea',
                 },
+                {
+                  name: 'capacity',
+                  type: 'number',
+                  admin: { description: 'Seating/room capacity (optional)' },
+                },
+                {
+                  name: 'dimensions',
+                  type: 'text',
+                  admin: { description: 'Stage or room dimensions, e.g. "33′ × 20′ stage"' },
+                },
               ],
             },
           ],
         },
-        // Tab 4: Faculty
+        // Tab 5: Faculty
         {
           label: 'Faculty',
           fields: [
@@ -255,7 +342,7 @@ export const MusicSchools: CollectionConfig = {
             },
           ],
         },
-        // Tab 5: SEO
+        // Tab 6: SEO
         {
           label: 'SEO',
           fields: [

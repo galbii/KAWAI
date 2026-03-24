@@ -13,15 +13,15 @@ export const ProductAccessories: Block = {
     {
       name: 'heading',
       type: 'text',
-      defaultValue: 'Accessories & Add-Ons',
+      defaultValue: 'Popular Additions',
       admin: {
-        description: 'Section heading (default: "Accessories & Add-Ons")',
+        description: 'Section heading (default: "Popular Additions")',
       },
     },
     {
       name: 'eyebrow',
       type: 'text',
-      defaultValue: 'Enhance Your Piano',
+      defaultValue: 'Accessories',
       admin: {
         description: 'Small label above the heading',
       },

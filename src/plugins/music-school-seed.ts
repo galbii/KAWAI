@@ -74,6 +74,7 @@ async function seedMusicSchools(payload: import('payload').Payload): Promise<voi
         state: 'TX',
         zip: '77057',
         phone: '713-904-0001',
+        schoolPhone: '832-392-0702',
         email: 'info@kawaipianoshouston.com',
         website: 'kawaipianoshouston.com',
       },
@@ -105,20 +106,57 @@ async function seedMusicSchools(payload: import('payload').Payload): Promise<voi
         },
         {
           name: 'Voice Lessons',
-          description: '',
+          description:
+            'Vocal instruction for students of all ages, covering classical, pop, and musical theater styles. Lessons focus on technique, breath support, and performance skills.',
         },
         {
           name: 'Adult Group Keyboard Class',
           description: '14 weekly sessions, Tues @ 6pm–6:45pm',
-          price: '$420/session',
+          price: '$420 for 14 weekly sessions',
         },
       ],
       facilities: [
         { name: 'Soundproof Teaching and Practice Rooms', description: '' },
         { name: 'Comfortable Waiting Area', description: '' },
         {
-          name: 'Recital Hall',
-          description: "Equipped with Kawai's flagship Shigeru Kawai SK-EX concert grand piano",
+          name: 'Concert Hall',
+          description:
+            "160-seat concert hall with Kawai's flagship Shigeru Kawai SK-EX concert grand piano and a second 7-foot SK semi-concert grand for dual-piano performances.",
+          capacity: 160,
+          dimensions: "33′ × 20′ stage",
+        },
+      ],
+      tuitionSemesters: [
+        { semester: 'Fall',   weeks: '14 weeks',  price30min: '$630',       price45min: '$910',       price60min: '$1,190' },
+        { semester: 'Spring', weeks: '18 weeks',  price30min: '$810',       price45min: '$1,170',     price60min: '$1,530' },
+        { semester: 'Summer', weeks: '6–8 weeks', price30min: '$270–$350',  price45min: '$390–$520',  price60min: '$510–$680' },
+      ],
+      fees: [
+        { feeName: 'Registration Fee (per student)', amount: '$25' },
+        { feeName: 'Registration Fee (per family)',  amount: '$30' },
+        { feeName: 'Supply Fee — Fall semester',     amount: '$10' },
+        { feeName: 'Supply Fee — Spring semester',   amount: '$15' },
+      ],
+      policies: [
+        {
+          title: 'Semester Structure',
+          body: 'Fall: 14 lessons (Aug–Dec). Spring: 18 lessons (Jan–May). Summer: 6–8 lessons (Jun–Aug). Summer is not required but highly recommended.',
+        },
+        {
+          title: 'Registration Deadlines',
+          body: 'Fall: August 10. Spring: December 1. Summer: May 1.',
+        },
+        {
+          title: 'Tuition Payment',
+          body: 'Tuition is due by the 10th of each month or may be paid in full per semester in advance.',
+        },
+        {
+          title: 'New Student Trial',
+          body: 'New students meet with the director for a free trial lesson. Parents are expected to be present.',
+        },
+        {
+          title: 'Minimum Age',
+          body: 'Minimum age for private lessons is five years old.',
         },
       ],
       faculty: [
@@ -176,8 +214,10 @@ async function seedMusicSchools(payload: import('payload').Payload): Promise<voi
         city: 'Plano',
         state: 'TX',
         zip: '75075',
-        phone: '972-955-3339',
+        phone: '972-379-2200',
+        schoolPhone: '972-955-3339',
         email: 'info@kawaipianosdallas.com',
+        schoolEmail: 'kawaimusicschool@kawaius.com',
         website: 'kawaipianosdallas.com',
       },
       hours: [
@@ -230,7 +270,13 @@ async function seedMusicSchools(payload: import('payload').Payload): Promise<voi
         {
           name: 'Concert Hall',
           description:
-            "Stunning concert hall with Kawai's flagship Shigeru Kawai SK-EX concert grand piano (200-seat capacity). Available for personal recitals, group performances, educational presentations, private parties, corporate meetings, and special events.",
+            "200-seat concert hall with Kawai's flagship Shigeru Kawai SK-EX concert grand piano. Available for personal recitals, group performances, educational presentations, private parties, corporate meetings, and special events.",
+          capacity: 200,
+        },
+        {
+          name: 'Shigeru Room',
+          description:
+            'Dedicated room presenting the luxury Shigeru Kawai Grand Piano line, used for masterclasses and advanced student performances.',
         },
       ],
       faculty: [
@@ -328,7 +374,7 @@ async function seedMusicSchools(payload: import('payload').Payload): Promise<voi
           title: 'Piano Teacher',
           role: 'Piano teacher',
           background:
-            'Born in Osaka, Japan; started piano at age 4. Won Premier Prix (First Prize) at CNR de Paris graduation exam. Awards include 1st prize at Miyanishi Music Competition, special prize at Kanagawa Piano Competition, semi-finalist at Maria Canals International Competition (Spain), finalist at Marsala International Competition (Italy). Concerts in Paris, Nice, Tokyo, Osaka, Kobe. Former teacher at Toho-Gakuen Music School for Children.',
+            'Born in Osaka, Japan; started piano at age 4. Won Premier Prix (First Prize) at CNR de Paris graduation exam. Awards include 1st prize at Miyanichi Music Competition, special prize at Kanagawa Piano Competition, semi-finalist at Maria Canals International Competition (Spain), finalist at Marsala International Competition (Italy). Concerts in Paris, Nice, Tokyo, Osaka, Kobe. Former teacher at Toho-Gakuen Music School for Children.',
           education: [
             {
               degree:
@@ -345,7 +391,7 @@ async function seedMusicSchools(payload: import('payload').Payload): Promise<voi
           title: 'Piano Teacher',
           role: 'Piano teacher',
           background:
-            'Seven years teaching experience. Previous faculty roles at music schools in Singapore. Graduate Instructional Assistant at Texas State University. Finalist in Texas State Concerto Competition. Incorporates music theory, musical selection discussions, and composer histories into lessons.',
+            'Seven years teaching experience. Graduate Instructional Assistant at Texas State University. Finalist in Texas State Concerto Competition. Incorporates music theory, musical selection discussions, and composer histories into lessons. Post-graduate studies at School of the Arts Singapore under Dr. Kim Bo Kyung.',
           education: [
             {
               degree: 'M.M. in Piano Performance and Pedagogy, Texas State University',
@@ -361,7 +407,7 @@ async function seedMusicSchools(payload: import('payload').Payload): Promise<voi
           title: 'Piano Teacher',
           role: 'Piano teacher',
           background:
-            'Korean-American pianist; began piano at age five. Won senior division of MTNA competition for Oklahoma. Orchestral debut as soloist with Lawton Philharmonic Orchestra at age 16. Full scholarship to Aspen Music Festival and School. Extensive experience in collaborative performance and keyboard skills instruction.',
+            'Korean-American pianist; began piano at age five. Won senior division of MTNA competition for Oklahoma. Orchestral debut as soloist with Lawton Philharmonic Orchestra at age 16. Full scholarship to Aspen Music Festival and School, studying with Joseph Kalichstein and Gabriel Chodos. Previous instructors include Hyunsoon Whang, Thomas Labé, and Gabriel Chodos. Extensive experience in collaborative performance and keyboard skills instruction.',
           education: [
             {
               degree:
@@ -372,6 +418,45 @@ async function seedMusicSchools(payload: import('payload').Payload): Promise<voi
             },
             { degree: 'B.M., Cameron University (Presser Scholar Award)' },
           ],
+        },
+      ],
+      policies: [
+        {
+          title: 'Tuition Payment',
+          body: 'Tuition is due on the first day of every month via credit card auto-withdrawal on the first week of the month. No cash accepted.',
+        },
+        {
+          title: 'Contracts & Withdrawal',
+          body: 'No long-term contracts. One-month written withdrawal notice required to end enrollment. Notify the Director at kawaimusicschool@kawaius.com — notice to the teacher alone is not sufficient.',
+        },
+        {
+          title: 'Missed Lessons',
+          body: 'Lessons missed without 24-hour advance notice are non-refundable; makeup provided via Recorded Video. Lessons cancelled with 24-hour notice will be rescheduled or a substitute teacher provided. Group class absences are non-refundable with no makeup.',
+        },
+        {
+          title: 'Child Supervision',
+          body: 'Children under age 12 must be escorted by a responsible adult at all times.',
+        },
+        {
+          title: 'Conduct',
+          body: 'No food or drinks inside the school except bottled water.',
+        },
+      ],
+      faqs: [
+        {
+          question: 'Is the piano difficult to learn?',
+          answer:
+            'The piano is difficult to learn; however it can be one of the most fun and rewarding experiences you undertake. With a good teacher, patience and dedication, you can learn to play. The important thing is to enjoy the journey.',
+        },
+        {
+          question: 'What age should my child start?',
+          answer:
+            'There is no right age to begin. Whether they start at three or ten, they can both excel with the right learning environment and support. The school has beginning students of all ages.',
+        },
+        {
+          question: 'How often should I practice?',
+          answer:
+            'Daily practice is required. Each session should be focused on learning or improving a passage, piece, or musical concept. Students are taught how to practice correctly to ensure consistent improvement.',
         },
       ],
     }

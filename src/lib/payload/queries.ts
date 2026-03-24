@@ -1706,6 +1706,129 @@ export async function getAllJobSlugs() {
   return result.docs
 }
 
+// ─── Accessories Queries ─────────────────────────────────────────────────────
+
+export interface PianoForSelector {
+  id: string
+  model: string
+  name?: string | null
+  slug: string
+  type?: string | null
+  category?: string | null
+  imageUrl?: string | null
+  price?: { msrp?: number | null; currency?: string | null } | null
+}
+
+export interface AccessoryForPage {
+  id: string
+  model: string
+  name?: string | null
+  slug?: string | null
+  imageUrl?: string | null
+  description?: string | null
+  price?: { msrp?: number | null; currency?: string | null } | null
+  compatibleProductIds: string[]
+  accessoryType?: string | null
+}
+
+/**
+ * Get all active, catalog-visible non-accessory products for the accessories browser piano selector.
+ * Cached for 1 hour; invalidated by the 'products' tag.
+ */
+export const getCatalogPianoProducts = unstable_cache(
+  async (): Promise<PianoForSelector[]> => {
+    try {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'products',
+        where: {
+          and: [
+            { status: { equals: 'active' } },
+            { 'visibility.showInCatalog': { equals: true } },
+            { type: { not_equals: 'accessory' } },
+          ],
+        },
+        select: {
+          model: true,
+          name: true,
+          slug: true,
+          type: true,
+          category: true,
+          imageUrl: true,
+          price: true,
+          visibility: true,
+        },
+        sort: 'visibility.sortOrder,name',
+        depth: 0,
+        limit: 500,
+      })
+      return result.docs.map((doc) => ({
+        id: String(doc.id),
+        model: doc.model,
+        name: doc.name ?? null,
+        slug: doc.slug ?? '',
+        type: (doc.type as string | null | undefined) ?? null,
+        category: (doc.category as string | null | undefined) ?? null,
+        imageUrl: (doc.imageUrl as string | null | undefined) ?? null,
+        price: doc.price
+          ? { msrp: (doc.price as any).msrp ?? null, currency: (doc.price as any).currency ?? null }
+          : null,
+      }))
+    } catch {
+      return []
+    }
+  },
+  ['catalog-piano-products'],
+  { tags: ['products'], revalidate: 3600 },
+)
+
+/**
+ * Get all active accessory products with their compatible piano product IDs pre-flattened.
+ * depth: 0 returns compatibleProducts as an array of plain ID strings — no population needed
+ * since we only need the IDs for client-side filtering on the accessories browse page.
+ * Cached for 1 hour; invalidated by the 'products' tag.
+ */
+export const getAccessoriesForPage = unstable_cache(
+  async (): Promise<AccessoryForPage[]> => {
+    try {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'products',
+        where: {
+          and: [
+            { status: { equals: 'active' } },
+            { type: { equals: 'accessory' } },
+          ],
+        },
+        // No select restriction — accessories are few and we need compatibleProducts reliably.
+        // At depth: 0, compatibleProducts returns plain string IDs.
+        depth: 0,
+        limit: 200,
+      })
+      return result.docs.map((doc) => ({
+        id: String(doc.id),
+        model: doc.model,
+        name: (doc.name as string | null | undefined) ?? null,
+        slug: (doc.slug as string | null | undefined) ?? null,
+        imageUrl: (doc.imageUrl as string | null | undefined) ?? null,
+        description: (doc.description as string | null | undefined) ?? null,
+        price: doc.price
+          ? { msrp: (doc.price as any).msrp ?? null, currency: (doc.price as any).currency ?? null }
+          : null,
+        // At depth: 0, compatibleProducts is string[] (plain IDs)
+        compatibleProductIds: ((doc.compatibleProducts as any[] | null | undefined) ?? []).map(
+          (p: any) => String(p),
+        ),
+        accessoryType: (doc.accessoryType as string | null | undefined) ?? null,
+      }))
+    } catch {
+      return []
+    }
+  },
+  ['accessories-for-page'],
+  { tags: ['products'], revalidate: 3600 },
+)
+
 /**
  * Get music school by storefront slug using direct Payload access
  */

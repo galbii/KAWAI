@@ -10,6 +10,7 @@ import { StickyHeaderBar } from '@/components/blog/StickyHeaderBar'
 import { ArticleSidebar } from '@/components/blog/ArticleSidebar'
 import { RelatedPosts } from '@/components/blog/RelatedPosts'
 import { BlogPostClient } from '@/components/blog/BlogPostClient'
+import { RenderBlocks } from '@/components/RenderBlocks'
 
 // ISR — revalidate every 5 minutes
 export const revalidate = 300
@@ -124,6 +125,7 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
 
     const featuredImageUrl = resolveMediaUrl(post.featuredImage)
     const hasFeaturedImage = featuredImageUrl && featuredImageUrl !== ''
+    const heroVideoUrl = (post as any).heroVideoUrl || null
 
     const formattedDate = post.publishedDate
       ? new Date(post.publishedDate).toLocaleDateString('en-US', {
@@ -173,10 +175,12 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
           post={post}
           featuredImageUrl={featuredImageUrl}
           hasFeaturedImage={!!hasFeaturedImage}
+          heroVideoUrl={heroVideoUrl}
           formattedDate={formattedDate}
           authorName={authorName}
           categoryLabels={categoryLabels}
           readTime={readTime}
+          layoutSlot={post.layout?.length ? <RenderBlocks blocks={post.layout as any} /> : undefined}
           sidebarSlot={<ArticleSidebar post={post} />}
           relatedPostsSlot={
             post.relatedPosts && post.relatedPosts.length > 0

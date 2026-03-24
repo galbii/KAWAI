@@ -222,6 +222,25 @@ export const Products: CollectionConfig = {
                 ],
               },
             },
+            // Accessory sub-type — only relevant for accessory products.
+            // Used to power type-based filtering on the /pianos/accessories browse page.
+            {
+              name: 'accessoryType',
+              type: 'select',
+              options: [
+                { label: 'Bench', value: 'bench' },
+                { label: 'Pedal', value: 'pedal' },
+                { label: 'Cover', value: 'cover' },
+                { label: 'Headphones', value: 'headphones' },
+                { label: 'Stand', value: 'stand' },
+                { label: 'Lamp', value: 'lamp' },
+                { label: 'Other', value: 'other' },
+              ],
+              admin: {
+                description: 'Accessory category — used to filter accessories by type on the browse page.',
+                condition: (data) => data?.type === 'accessory',
+              },
+            },
             // Model - Primary Identifier
             {
               name: 'model',
@@ -286,6 +305,14 @@ export const Products: CollectionConfig = {
               admin: {
                 description: 'Product description (synced from Shopify)'
               }
+            },
+            {
+              name: 'backorder',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                description: 'When checked and the product is out of stock, the hero will show "Backorder Now" instead of "Find a Dealer" and replace the out-of-stock notice with "Available for backorder."',
+              },
             },
             {
               name: 'disclaimer',

@@ -1,8 +1,7 @@
 import { Footer } from './footer'
-import { headers } from 'next/headers'
+import { headers, cookies } from 'next/headers'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { parseNavigationOrigin } from '@/lib/navigation-utils'
 
 interface DealerLocationContactData {
   name: string
@@ -21,43 +20,30 @@ async function getDealerLocationContactInfo(slug: string): Promise<DealerLocatio
       collection: 'storefronts',
       where: {
         and: [
-          {
-            slug: {
-              equals: slug
-            }
-          },
-          {
-            isActive: {
-              equals: true
-            }
-          }
-        ]
+          { slug: { equals: slug } },
+          { isActive: { equals: true } },
+        ],
       },
       limit: 1,
       select: {
         showroomInfo: true,
         locationName: true,
-        slug: true
-      }
+        slug: true,
+      },
     })
 
     const location = result.docs[0]
+    if (!location) return null
 
-    if (location) {
-      const showroomInfo = location.showroomInfo
-
-      return {
-        name: showroomInfo?.name || '',
-        address: showroomInfo?.address || '',
-        phone: showroomInfo?.phone || '',
-        // Generate location-specific email if needed
-        email: `info@kawaipianos${slug.replace(/-/g, '')}.com`,
-        locationName: location.locationName || '',
-        slug: location.slug || ''
-      }
+    const showroomInfo = location.showroomInfo
+    return {
+      name: showroomInfo?.name || '',
+      address: showroomInfo?.address || '',
+      phone: showroomInfo?.phone || '',
+      email: `info@kawaipianos${slug.replace(/-/g, '')}.com`,
+      locationName: location.locationName || '',
+      slug: location.slug || '',
     }
-
-    return null
   } catch (error) {
     console.error('Error fetching storefront location contact info:', error)
     return null
@@ -66,27 +52,22 @@ async function getDealerLocationContactInfo(slug: string): Promise<DealerLocatio
 
 export async function FooterDynamic() {
   try {
-    // Get current path and determine navigation origin
-    const headersList = await headers()
+    const [headersList, cookieStore] = await Promise.all([headers(), cookies()])
     const pathname = headersList.get('x-pathname') || ''
-    const origin = parseNavigationOrigin(pathname)
 
-    // Check if we're on a signature page (signature, signature2, or gl-10-signature)
-    const isSignaturePage = pathname.endsWith('/signature') || pathname.endsWith('/signature/') ||
-                            pathname.endsWith('/signature2') || pathname.endsWith('/signature2/') ||
-                            pathname.endsWith('/gl-10-signature') || pathname.endsWith('/gl-10-signature/')
+    const isSignaturePage =
+      pathname.endsWith('/signature') || pathname.endsWith('/signature/') ||
+      pathname.endsWith('/signature2') || pathname.endsWith('/signature2/') ||
+      pathname.endsWith('/gl-10-signature') || pathname.endsWith('/gl-10-signature/')
 
-    // Check if we're on a dealer location page and fetch location contact data
+    // Resolve dealer slug from pathname first, then cookie fallback
+    const pathDealerSlug = pathname.startsWith('/store/') ? pathname.split('/')[2] : undefined
+    const cookieDealerSlug = cookieStore.get('kawai-dealer-slug')?.value
+    const dealerSlug = pathDealerSlug ?? cookieDealerSlug
+
     let locationContactData: DealerLocationContactData | null = null
-
-    console.log('FooterDynamic - pathname:', pathname)
-    console.log('FooterDynamic - origin:', origin)
-    console.log('FooterDynamic - isSignaturePage:', isSignaturePage)
-
-    if (origin.isDealerLocation && origin.dealerSlug) {
-      console.log('FooterDynamic - fetching data for slug:', origin.dealerSlug)
-      locationContactData = await getDealerLocationContactInfo(origin.dealerSlug)
-      console.log('FooterDynamic - fetched locationContactData:', locationContactData)
+    if (dealerSlug) {
+      locationContactData = await getDealerLocationContactInfo(dealerSlug)
     }
 
     return (
@@ -98,12 +79,12 @@ export async function FooterDynamic() {
   } catch (error) {
     console.error('Error in FooterDynamic:', error)
 
-    // Fallback to basic footer with signature page detection
     const headersList = await headers()
     const pathname = headersList.get('x-pathname') || ''
-    const isSignaturePage = pathname.endsWith('/signature') || pathname.endsWith('/signature/') ||
-                            pathname.endsWith('/signature2') || pathname.endsWith('/signature2/') ||
-                            pathname.endsWith('/gl-10-signature') || pathname.endsWith('/gl-10-signature/')
+    const isSignaturePage =
+      pathname.endsWith('/signature') || pathname.endsWith('/signature/') ||
+      pathname.endsWith('/signature2') || pathname.endsWith('/signature2/') ||
+      pathname.endsWith('/gl-10-signature') || pathname.endsWith('/gl-10-signature/')
 
     return <Footer isSignaturePage={isSignaturePage} />
   }

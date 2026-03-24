@@ -799,3 +799,15 @@ body {
   margin-bottom: 0.75rem;
   line-height: 1.5;
 }
+
+/* ============================================================================
+   Cookie Consent Banner — Brand Colors
+   ============================================================================ */
+#cc-main {
+  --cc-btn-primary-bg: #E11922;
+  --cc-btn-primary-hover-bg: #c41119;
+  --cc-bg: #1E1B16;
+  --cc-text: #FAF8F5;
+  --cc-btn-secondary-bg: #2C2C2C;
+  --cc-cookie-category-block-bg: #2C2C2C;
+}

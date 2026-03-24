@@ -24,6 +24,14 @@ const SIDEBAR_CATEGORIES = [
     bannerOnly: true as const,
     externalCtaUrl: 'https://shigerukawai.com?utm_source=kawaiusa&utm_medium=navigation&utm_campaign=mega-menu&utm_content=shigeru-kawai',
   },
+  {
+    label: 'Accessories',
+    key: 'accessories',
+    href: '/pianos/accessories',
+    terms: [],
+    bannerOnly: true as const,
+    accessoriesPanel: true as const,
+  },
 ] as const
 
 const BANNER_SIZE_HEIGHT: Record<string, string> = {
@@ -570,6 +578,53 @@ function BannerOnlyView({ label, href, externalCtaUrl, collectionHandle, collect
   )
 }
 
+// ─── Accessories Panel ────────────────────────────────────────────────────────
+// Shown when "Accessories" is selected in the sidebar.
+
+function AccessoriesBannerView({ onClose }: { onClose: () => void }) {
+  return (
+    <div>
+      {/* Header row — matches CategoryView / BannerOnlyView / CollectionCarousel exactly */}
+      <div className="flex items-end justify-between mb-5">
+        <h2 className="text-2xl font-bold text-[#2C2C2C] font-serif leading-none">Accessories</h2>
+        <Link href="/pianos/accessories" onClick={onClose} className="group flex items-center gap-2 text-sm font-medium text-[#A01829]">
+          Browse All
+          <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+        </Link>
+      </div>
+
+      {/* Editorial layout — two columns, clean type, no dark box */}
+      <div className="flex gap-16 mt-2">
+
+        {/* Left: supporting text */}
+        <div className="w-48 flex-shrink-0 pt-1">
+          <p className="text-sm text-[#8A8078] leading-relaxed">
+            Everything you need to complete your piano setup.
+          </p>
+        </div>
+
+        {/* Right: category list with hairline dividers */}
+        <div className="flex-1 border-t border-[#E8E4DF]">
+          {['Benches', 'Pedals', 'Covers', 'Headphones'].map((cat) => (
+            <Link
+              key={cat}
+              href="/pianos/accessories"
+              onClick={onClose}
+              className="group flex items-center justify-between py-5 border-b border-[#E8E4DF]"
+            >
+              <span className="text-xl font-serif text-[#2C2C2C] group-hover:text-[#A01829] transition-colors duration-150">
+                {cat}
+              </span>
+              <ArrowRight className="h-4 w-4 text-[#C8C2BA] group-hover:text-[#A01829] group-hover:translate-x-0.5 transition-all duration-150" />
+            </Link>
+          ))}
+        </div>
+
+      </div>
+    </div>
+  )
+}
+
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
 function Sidebar({ selectedKey, onSelect, onClose, productTypes }: {
@@ -584,26 +639,31 @@ function Sidebar({ selectedKey, onSelect, onClose, productTypes }: {
 
   return (
     <div className="w-80 flex-shrink-0 border-r border-[#E8E4DF] py-10 px-8 flex flex-col self-stretch">
-      <p className="text-xs font-bold tracking-[0.25em] uppercase text-[#B8AFA6] mb-6">Piano Families</p>
+      <p className="text-xs font-bold tracking-[0.25em] uppercase text-[#B8AFA6] mb-6">Browse</p>
 
       <nav className="flex-1 space-y-2">
         {availableCategories.map((cat) => {
           const isSelected = selectedKey === cat.key
+          const isAccessories = cat.key === 'accessories'
           return (
-            <button
-              key={cat.key}
-              onClick={() => onSelect(isSelected ? null : (cat.key as SidebarKey))}
-              className={cn(
-                'w-full text-left px-5 py-[18px] rounded-xl transition-all duration-150',
-                'flex items-center justify-between group',
-                isSelected ? 'bg-[#A01829] text-white shadow-sm' : 'text-[#2C2C2C] hover:bg-[#F2EFE9]'
+            <div key={cat.key}>
+              {isAccessories && (
+                <div className="h-px bg-[#E8E4DF] my-3" />
               )}
-            >
-              <span className="text-xl font-semibold leading-none tracking-tight">{cat.label}</span>
-              {isSelected
-                ? <div className="w-2 h-2 rounded-full bg-white/80 flex-shrink-0" />
-                : <ChevronRight className="h-5 w-5 text-[#C8C2BA] group-hover:text-[#8A8078] transition-colors flex-shrink-0" />}
-            </button>
+              <button
+                onClick={() => onSelect(isSelected ? null : (cat.key as SidebarKey))}
+                className={cn(
+                  'w-full text-left px-5 py-[18px] rounded-xl transition-all duration-150',
+                  'flex items-center justify-between group',
+                  isSelected ? 'bg-[#A01829] text-white shadow-sm' : 'text-[#2C2C2C] hover:bg-[#F2EFE9]'
+                )}
+              >
+                <span className="text-xl font-semibold leading-none tracking-tight">{cat.label}</span>
+                {isSelected
+                  ? <div className="w-2 h-2 rounded-full bg-white/80 flex-shrink-0" />
+                  : <ChevronRight className="h-5 w-5 text-[#C8C2BA] group-hover:text-[#8A8078] transition-colors flex-shrink-0" />}
+              </button>
+            </div>
           )
         })}
       </nav>
@@ -684,6 +744,14 @@ export function ProductsMegaMenu({
                         transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
                       >
                         <CollectionCarousel collections={collections} onClose={onClose} onCategorySelect={setSelectedKey} />
+                      </motion.div>
+                    ) : selectedCat && 'accessoriesPanel' in selectedCat ? (
+                      <motion.div
+                        key="accessories-panel"
+                        initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                      >
+                        <AccessoriesBannerView onClose={onClose} />
                       </motion.div>
                     ) : selectedCat && 'bannerOnly' in selectedCat ? (
                       <motion.div

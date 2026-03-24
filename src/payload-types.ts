@@ -71,6 +71,7 @@ export interface Config {
     'content-video': ContentVideoBlock;
     'content-code': ContentCodeBlock;
     'content-banner': ContentBannerBlock;
+    'content-rich-text': ContentRichTextBlock;
     'layout-columns': LayoutColumnsBlock;
     'layout-spacer': LayoutSpacerBlock;
     'layout-divider': LayoutDividerBlock;
@@ -569,6 +570,33 @@ export interface ContentBannerBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'content-banner';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ContentRichTextBlock".
+ */
+export interface ContentRichTextBlock {
+  /**
+   * Rich text content with headings, lists, quotes, and inline Banner/Code blocks
+   */
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'content-rich-text';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1929,6 +1957,10 @@ export interface Product {
    */
   compatibleProducts?: (string | Product)[] | null;
   /**
+   * Accessory category — used to filter accessories by type on the browse page.
+   */
+  accessoryType?: ('bench' | 'pedal' | 'cover' | 'headphones' | 'stand' | 'lamp' | 'other') | null;
+  /**
    * Model identifier - matches Shopify custom.model metafield (PRIMARY KEY)
    */
   model: string;
@@ -1956,6 +1988,10 @@ export interface Product {
    * Product description (synced from Shopify)
    */
   description?: string | null;
+  /**
+   * When checked and the product is out of stock, the hero will show "Backorder Now" instead of "Find a Dealer" and replace the out-of-stock notice with "Available for backorder."
+   */
+  backorder?: boolean | null;
   /**
    * Optional disclaimer shown below the CTA buttons in the Product Hero (e.g. "Starting MSRP. Prices may vary by dealer.")
    */
@@ -3184,7 +3220,7 @@ export interface ProductRelatedProductsBlock {
  */
 export interface ProductAccessoriesBlock {
   /**
-   * Section heading (default: "Accessories & Add-Ons")
+   * Section heading (default: "Popular Additions")
    */
   heading?: string | null;
   /**
@@ -7141,50 +7177,30 @@ export interface Post {
    */
   excerpt?: string | null;
   /**
-   * Featured image for post header and social sharing
+   * Featured image for post header and social sharing (used as fallback when no hero video is set)
    */
   featuredImage?: (string | null) | Media;
   /**
-   * Main article content with rich formatting, embedded content blocks, and media
+   * YouTube URL to embed as the hero (e.g. https://youtu.be/abc123). When set, this replaces the featured image in the hero. The featured image is still used as the social share image.
    */
-  content: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
+  heroVideoUrl?: string | null;
   /**
-   * Optional: Add promotional content before the article (Hero, Banner, Hero Carousel, Artist Carousel, Featured Models)
+   * Add blocks to build the post. Use "Rich Text" for article prose, "Video" for YouTube/Vimeo embeds, "Image" for standalone photos.
    */
-  headerBlocks?:
+  layout?:
     | (
-        | MarketingHeroBlock
-        | MarketingGrandHeroBlock
+        | ContentRichTextBlock
+        | ContentImageBlock
+        | ContentVideoBlock
         | ContentBannerBlock
-        | LayoutHeroCarouselBlock
-        | MarketingArtistCarouselBlock
-        | MarketingFeaturedModelsBlock
-      )[]
-    | null;
-  /**
-   * Optional: Add calls-to-action or related content after the article (CTA, Testimonials, Columns, Artist Carousel, Featured Models)
-   */
-  footerBlocks?:
-    | (
-        | MarketingCallToActionBlock
-        | MarketingTestimonialsBlock
+        | ContentCodeBlock
+        | LayoutSpacerBlock
+        | LayoutDividerBlock
         | LayoutColumnsBlock
-        | MarketingArtistCarouselBlock
+        | MarketingCallToActionBlock
         | MarketingFeaturedModelsBlock
+        | MarketingArtistCarouselBlock
+        | MarketingBlogLatestBlock
       )[]
     | null;
   /**
@@ -8925,7 +8941,7 @@ export interface MusicSchool {
   /**
    * Which storefront this music school belongs to
    */
-  storefront: string | Storefront;
+  storefront?: (string | null) | Storefront;
   /**
    * Official/legal name of the school (if different from display name)
    */
@@ -8940,8 +8956,22 @@ export interface MusicSchool {
     city?: string | null;
     state?: string | null;
     zip?: string | null;
+    /**
+     * Gallery/main phone number
+     */
     phone?: string | null;
+    /**
+     * Direct school phone (may differ from gallery phone)
+     */
+    schoolPhone?: string | null;
+    /**
+     * Gallery/main email address
+     */
     email?: string | null;
+    /**
+     * School-specific email (may differ from gallery email)
+     */
+    schoolEmail?: string | null;
     website?: string | null;
   };
   hours?:
@@ -8970,10 +9000,65 @@ export interface MusicSchool {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Semester-based tuition table (e.g. Houston). Leave empty for monthly-billing schools.
+   */
+  tuitionSemesters?:
+    | {
+        /**
+         * e.g. "Fall", "Spring", "Summer"
+         */
+        semester: string;
+        /**
+         * e.g. "14 weeks" or "6–8 weeks"
+         */
+        weeks?: string | null;
+        price30min?: string | null;
+        price45min?: string | null;
+        price60min?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Registration fees, supply fees, etc.
+   */
+  fees?:
+    | {
+        feeName: string;
+        amount?: string | null;
+        notes?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  policies?:
+    | {
+        /**
+         * e.g. "Tuition Payment", "Missed Lessons"
+         */
+        title: string;
+        body: string;
+        id?: string | null;
+      }[]
+    | null;
+  faqs?:
+    | {
+        question: string;
+        answer: string;
+        id?: string | null;
+      }[]
+    | null;
   facilities?:
     | {
         name: string;
         description?: string | null;
+        /**
+         * Seating/room capacity (optional)
+         */
+        capacity?: number | null;
+        /**
+         * Stage or room dimensions, e.g. "33′ × 20′ stage"
+         */
+        dimensions?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -10418,9 +10503,8 @@ export interface PostsSelect<T extends boolean = true> {
   slug?: T;
   excerpt?: T;
   featuredImage?: T;
-  content?: T;
-  headerBlocks?: T | {};
-  footerBlocks?: T | {};
+  heroVideoUrl?: T;
+  layout?: T | {};
   authors?: T;
   populatedAuthors?:
     | T
@@ -10585,6 +10669,7 @@ export interface SupportGroupsSelect<T extends boolean = true> {
 export interface ProductsSelect<T extends boolean = true> {
   type?: T;
   compatibleProducts?: T;
+  accessoryType?: T;
   model?: T;
   name?: T;
   slug?: T;
@@ -10592,6 +10677,7 @@ export interface ProductsSelect<T extends boolean = true> {
   featured?: T;
   category?: T;
   description?: T;
+  backorder?: T;
   disclaimer?: T;
   shopifyCollections?:
     | T
@@ -10871,7 +10957,9 @@ export interface MusicSchoolsSelect<T extends boolean = true> {
         state?: T;
         zip?: T;
         phone?: T;
+        schoolPhone?: T;
         email?: T;
+        schoolEmail?: T;
         website?: T;
       };
   hours?:
@@ -10891,11 +10979,45 @@ export interface MusicSchoolsSelect<T extends boolean = true> {
         price?: T;
         id?: T;
       };
+  tuitionSemesters?:
+    | T
+    | {
+        semester?: T;
+        weeks?: T;
+        price30min?: T;
+        price45min?: T;
+        price60min?: T;
+        id?: T;
+      };
+  fees?:
+    | T
+    | {
+        feeName?: T;
+        amount?: T;
+        notes?: T;
+        id?: T;
+      };
+  policies?:
+    | T
+    | {
+        title?: T;
+        body?: T;
+        id?: T;
+      };
+  faqs?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        id?: T;
+      };
   facilities?:
     | T
     | {
         name?: T;
         description?: T;
+        capacity?: T;
+        dimensions?: T;
         id?: T;
       };
   faculty?:

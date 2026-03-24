@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { BookOpen, Calendar, Tag } from 'lucide-react'
+import { ArrowLeft, BookOpen, Calendar, Tag } from 'lucide-react'
 import type { Post, Category } from '@/payload-types'
 import { cn } from '@/lib/utils'
 import { ShareButtons } from './ShareButtons'
@@ -33,10 +33,22 @@ export function ArticleSidebar({ post, className = '' }: ArticleSidebarProps) {
 
   return (
     <aside
-      className={cn('hidden lg:block w-80 ml-12', className)}
+      className={cn('hidden lg:block w-80 mr-12 h-full', className)}
       aria-label="Article sidebar"
     >
-      <div className="sticky top-24 space-y-5">
+      <div
+        className="sticky space-y-5"
+        style={{ top: 'calc(var(--header-bottom, 120px) + 24px)' }}
+      >
+
+        {/* Back link */}
+        <Link
+          href="/blog"
+          className="inline-flex items-center gap-2 text-kawai-red hover:text-kawai-red/80 font-medium transition-colors text-sm font-[family-name:var(--font-brand-sans)]"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Kawai Latest News
+        </Link>
 
         {/* Section A — About This Post */}
         <div className="bg-white border border-kawai-neutral rounded-xl p-5">

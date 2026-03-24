@@ -1,17 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import {
-  BlocksFeature,
-  FixedToolbarFeature,
-  HeadingFeature,
-  HorizontalRuleFeature,
-  InlineToolbarFeature,
-  lexicalEditor,
-} from '@payloadcms/richtext-lexical'
 import { slugField } from 'payload'
-
-// Import blocks for rich text content
-import { Banner } from '@/blocks/content/Banner'
-import { Code } from '@/blocks/content/Code'
 
 // Import access control utilities
 import { authenticated, authenticatedOrPublished, adminOnly } from '@/lib/payload/access'
@@ -73,10 +61,10 @@ export const Posts: CollectionConfig = {
     {
       type: 'tabs',
       tabs: [
-        // Article Content Tab
+        // Post Details Tab
         {
-          label: 'Article Content',
-          description: 'Main article content with rich text formatting',
+          label: 'Post Details',
+          description: 'Featured image and excerpt for the post',
           fields: [
             {
               name: 'excerpt',
@@ -88,68 +76,48 @@ export const Posts: CollectionConfig = {
             },
             imageField('featuredImage', {
               admin: {
-                description: 'Featured image for post header and social sharing',
+                description: 'Featured image for post header and social sharing (used as fallback when no hero video is set)',
               },
             }),
             {
-              name: 'content',
-              type: 'richText',
-              required: true,
-              editor: lexicalEditor({
-                features: ({ rootFeatures }) => [
-                  ...rootFeatures,
-                  HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
-                  // Add content blocks to rich text editor
-                  BlocksFeature({ blocks: [Banner, Code] }),
-                  FixedToolbarFeature(),
-                  InlineToolbarFeature(),
-                  HorizontalRuleFeature(),
-                ],
-              }),
+              name: 'heroVideoUrl',
+              type: 'text',
               admin: {
-                description: 'Main article content with rich formatting, embedded content blocks, and media',
+                description: 'YouTube URL to embed as the hero (e.g. https://youtu.be/abc123). When set, this replaces the featured image in the hero. The featured image is still used as the social share image.',
+                placeholder: 'https://www.youtube.com/watch?v=...',
               },
             },
           ],
         },
 
-        // Page Builder Tab
+        // Content Tab — unified page builder
         {
-          label: 'Page Builder',
-          description: 'Optional promotional content before and after the article',
+          label: 'Content',
+          description: 'Build the post content using blocks — add Rich Text for article prose, Video for embeds, Images, Banners, and more',
           fields: [
             {
-              name: 'headerBlocks',
-              label: 'Header Content (Before Article)',
+              name: 'layout',
               type: 'blocks',
-              blockReferences: ['marketing-hero', 'marketing-grand-hero', 'content-banner', 'layout-hero-carousel', 'marketing-artist-carousel', 'marketing-featured-models'] as any,
+              blockReferences: [
+                'content-rich-text',
+                'content-image',
+                'content-video',
+                'content-banner',
+                'content-code',
+                'layout-spacer',
+                'layout-divider',
+                'layout-columns',
+                'marketing-cta',
+                'marketing-featured-models',
+                'marketing-artist-carousel',
+                'marketing-blog-latest',
+              ] as any,
               blocks: [],
+              defaultValue: [{ blockType: 'content-rich-text' }],
               admin: {
-                initCollapsed: true,
-                description: 'Optional: Add promotional content before the article (Hero, Banner, Hero Carousel, Artist Carousel, Featured Models)',
+                description: 'Add blocks to build the post. Use "Rich Text" for article prose, "Video" for YouTube/Vimeo embeds, "Image" for standalone photos.',
               },
             },
-            {
-              name: 'footerBlocks',
-              label: 'Footer Content (After Article)',
-              type: 'blocks',
-              blockReferences: ['marketing-cta', 'marketing-testimonials', 'layout-columns', 'marketing-artist-carousel', 'marketing-featured-models'] as any,
-              blocks: [],
-              admin: {
-                initCollapsed: true,
-                description: 'Optional: Add calls-to-action or related content after the article (CTA, Testimonials, Columns, Artist Carousel, Featured Models)',
-              },
-            },
-            // TODO: Remove after data migration - keep commented for reference
-            // {
-            //   name: 'contentBlocks',
-            //   type: 'blocks',
-            //   blockReferences: ['content-image', 'content-text', 'content-video', 'layout-spacer', 'layout-divider', 'layout-columns'],
-            //   blocks: [],
-            //   admin: {
-            //     description: 'DEPRECATED: Legacy field, use headerBlocks or footerBlocks instead',
-            //   },
-            // },
           ],
         },
 

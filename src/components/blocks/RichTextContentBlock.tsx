@@ -1,0 +1,54 @@
+'use client'
+
+import React from 'react'
+import Image from 'next/image'
+import { RichText } from '@payloadcms/richtext-lexical/react'
+import type { JSXConvertersFunction } from '@payloadcms/richtext-lexical/react'
+import type { ContentRichTextBlock } from '@/payload-types'
+import { BannerBlock } from './BannerBlock'
+import { CodeBlock } from './CodeBlock'
+
+// Converters keyed by actual block slugs ('content-banner', 'content-code')
+const converters: JSXConvertersFunction = ({ defaultConverters }) => ({
+  ...defaultConverters,
+  blocks: {
+    'content-banner': ({ node }: { node: any }) => <BannerBlock {...node.fields} />,
+    'content-code': ({ node }: { node: any }) => <CodeBlock {...node.fields} />,
+  },
+  upload: ({ node }: { node: any }) => {
+    const { value } = node ?? {}
+    const url: string | undefined = value?.url || value?.publicUrl
+    const alt: string = value?.alt || value?.filename || ''
+    const width: number = value?.width || 1200
+    const height: number = value?.height || 800
+
+    if (!url) return null
+
+    return (
+      <figure className="my-8">
+        <Image
+          src={url}
+          alt={alt}
+          width={width}
+          height={height}
+          className="rounded-lg w-full h-auto"
+        />
+        {alt && (
+          <figcaption className="mt-2 text-center text-sm text-kawai-charcoal/70 italic">
+            {alt}
+          </figcaption>
+        )}
+      </figure>
+    )
+  },
+})
+
+export function RichTextContentBlock({ content }: ContentRichTextBlock) {
+  if (!content) return null
+
+  return (
+    <div className="prose prose-lg prose-headings:font-[family-name:var(--font-brand-serif)] prose-headings:text-kawai-black prose-p:text-kawai-charcoal prose-p:leading-relaxed prose-a:text-kawai-red prose-a:no-underline hover:prose-a:underline prose-strong:text-kawai-black prose-blockquote:border-l-kawai-red prose-blockquote:text-kawai-charcoal prose-li:text-kawai-charcoal prose-li:leading-relaxed max-w-none">
+      <RichText converters={converters} data={content} />
+    </div>
+  )
+}
