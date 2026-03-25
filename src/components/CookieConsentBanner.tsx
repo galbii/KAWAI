@@ -97,7 +97,9 @@ export function CookieConsentBanner() {
             cookies: [
               { name: /^_ph_/ },
               { name: /^ph_/ },
-              { name: 'kawai-utm' },
+              { name: 'kawai-utm-first' },
+              { name: 'kawai-utm-last' },
+              { name: 'kawai-utm' }, // legacy — keep for existing cookies
               { name: /^_ga/ }, // matches _ga and _ga_<stream-id>
               { name: '_gid' },
             ],

@@ -9,6 +9,7 @@ import type { NavigationOrigin } from "@/lib/navigation-utils";
 import { headers, cookies } from 'next/headers';
 import { organizationSchema, featuredProductsSchema } from "@/lib/seo/schemas";
 import { UTMCapture } from "@/components/analytics/UTMCapture";
+import { DealerDimensionTracker } from "@/components/analytics/DealerDimensionTracker";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 
 export const metadata: Metadata = {
@@ -146,6 +147,7 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
       <Suspense fallback={null}>
         <UTMCapture />
       </Suspense>
+      <DealerDimensionTracker />
       <CookieConsentBanner />
     </NavigationContextProvider>
   )

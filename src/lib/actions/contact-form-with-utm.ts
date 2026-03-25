@@ -12,6 +12,8 @@
 'use server'
 
 import { upsertCustomer, CustomerError } from '@/lib/shopify/customers'
+import { sendMetaCAPIEvents, buildLeadEvent } from '@/lib/integrations/meta-capi'
+import { headers } from 'next/headers'
 
 /**
  * Result type for form submission
@@ -146,7 +148,24 @@ export async function submitContactFormWithUTM(
     })
 
     // ============================================================================
-    // 4. Optional: Additional Integrations
+    // 4. Meta CAPI — server-side Lead event (fire-and-forget)
+    // ============================================================================
+
+    const headersList = await headers()
+    const sourceUrl = headersList.get('referer') ?? undefined
+
+    sendMetaCAPIEvents([
+      buildLeadEvent({
+        email,
+        ...(phone && { phone }),
+        ...(sourceUrl && { sourceUrl }),
+        dealerSlug: storefront,
+        inquiryType,
+      }),
+    ]).catch((err) => console.error('[Contact Form] Meta CAPI error:', err))
+
+    // ============================================================================
+    // 5. Optional: Additional Integrations
     // ============================================================================
 
     // Send email notification

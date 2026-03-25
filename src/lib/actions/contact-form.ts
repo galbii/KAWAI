@@ -2,6 +2,8 @@
 
 import { z } from 'zod'
 import { upsertCustomer } from '@/lib/shopify/customers'
+import { sendMetaCAPIEvents, buildLeadEvent } from '@/lib/integrations/meta-capi'
+import { headers } from 'next/headers'
 
 // Form validation schema matching your existing form
 const contactFormSchema = z.object({
@@ -157,6 +159,20 @@ export async function submitContactForm(
       await upsertCustomer(customerInput)
 
       console.log(`[Contact Form] Successfully created/updated Shopify customer ${contactData.email} with tags:`, tags)
+
+      // Meta CAPI — server-side Lead event (fire-and-forget)
+      const headersList = await headers()
+      const sourceUrl = headersList.get('referer') ?? undefined
+
+      sendMetaCAPIEvents([
+        buildLeadEvent({
+          email: contactData.email,
+          phone: contactData.phone,
+          ...(sourceUrl && { sourceUrl }),
+          ...(storefrontSlug && { dealerSlug: storefrontSlug }),
+          inquiryType: contactData.inquiryType,
+        }),
+      ]).catch((err) => console.error('[Contact Form] Meta CAPI error:', err))
     } catch (error) {
       console.error('[Contact Form] Shopify Admin API integration failed:', error)
 

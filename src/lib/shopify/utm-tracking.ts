@@ -60,9 +60,19 @@ interface StoredUTMData {
 // ============================================================================
 
 /**
- * Cookie name for UTM parameters (30-day persistence across sessions)
+ * First-touch UTM cookie — set once and never overwritten.
+ * Captures which channel originally brought this visitor.
  */
-const UTM_COOKIE_NAME = 'kawai-utm'
+const UTM_COOKIE_FIRST = 'kawai-utm-first'
+
+/**
+ * Last-touch UTM cookie — always overwritten with the most recent UTM.
+ * Captures which channel was active just before conversion.
+ */
+const UTM_COOKIE_LAST = 'kawai-utm-last'
+
+/** @deprecated Renamed to kawai-utm-first. Read as fallback for existing cookies. */
+const UTM_COOKIE_LEGACY = 'kawai-utm'
 
 /**
  * Cookie max-age: 30 days in seconds
@@ -93,22 +103,22 @@ function isCookieAvailable(): boolean {
   return typeof document !== 'undefined'
 }
 
-function setCookie(value: string): void {
+function writeCookie(name: string, value: string): void {
   const secure = location.protocol === 'https:' ? '; Secure' : ''
-  document.cookie = `${UTM_COOKIE_NAME}=${encodeURIComponent(value)}; max-age=${UTM_COOKIE_MAX_AGE}; path=/; SameSite=Lax${secure}`
+  document.cookie = `${name}=${encodeURIComponent(value)}; max-age=${UTM_COOKIE_MAX_AGE}; path=/; SameSite=Lax${secure}`
 }
 
-function getCookie(): string | null {
+function readCookie(name: string): string | null {
   if (!isCookieAvailable()) return null
   const match = document.cookie
     .split('; ')
-    .find(row => row.startsWith(`${UTM_COOKIE_NAME}=`))
+    .find(row => row.startsWith(`${name}=`))
   return match ? decodeURIComponent(match.split('=')[1] ?? '') : null
 }
 
-function deleteCookie(): void {
+function eraseCookie(name: string): void {
   if (!isCookieAvailable()) return
-  document.cookie = `${UTM_COOKIE_NAME}=; max-age=0; path=/; SameSite=Lax`
+  document.cookie = `${name}=; max-age=0; path=/; SameSite=Lax`
 }
 
 // ============================================================================
@@ -168,24 +178,19 @@ function formatUTMTag(param: string, value: string): string {
 // ============================================================================
 
 /**
- * Capture UTM parameters from URL and store in a 30-day cookie.
+ * Capture UTM parameters from URL.
  *
- * Uses first-touch attribution — once UTMs are captured, they persist for
- * 30 days across sessions. A returning visitor from a direct link within the
- * attribution window retains the original campaign source.
+ * - First-touch (`kawai-utm-first`): written once, never overwritten.
+ *   Captures which channel originally brought this visitor.
+ * - Last-touch (`kawai-utm-last`): always overwritten.
+ *   Captures which channel was active just before conversion.
  *
  * @param searchParams - URLSearchParams from URL or location.search
- * @returns Captured UTM parameters (if any)
+ * @returns Captured UTM parameters (if any UTMs were in the URL)
  */
 export function captureUTMParams(searchParams: URLSearchParams): UTMParams | null {
   if (!isCookieAvailable()) {
     console.warn('[UTM Tracking] document.cookie not available')
-    return null
-  }
-
-  // First-touch attribution: if cookie already exists, don't overwrite
-  if (getCookie() !== null) {
-    console.log('[UTM Tracking] UTMs already captured (cookie exists)')
     return null
   }
 
@@ -201,19 +206,27 @@ export function captureUTMParams(searchParams: URLSearchParams): UTMParams | nul
     }
   }
 
-  // Only store if at least one UTM parameter is present
-  if (!hasUTMs) {
-    return null
-  }
+  if (!hasUTMs) return null
 
   const storedData: StoredUTMData = {
     params: utmParams,
     capturedAt: Date.now(),
-    url: typeof window !== 'undefined' ? window.location.href : ''
+    url: typeof window !== 'undefined' ? window.location.href : '',
   }
 
+  const serialized = JSON.stringify(storedData)
+
   try {
-    setCookie(JSON.stringify(storedData))
+    // First-touch: only write if no first-touch cookie exists yet
+    // Also accept the legacy 'kawai-utm' cookie as equivalent
+    const hasFirstTouch = readCookie(UTM_COOKIE_FIRST) !== null || readCookie(UTM_COOKIE_LEGACY) !== null
+    if (!hasFirstTouch) {
+      writeCookie(UTM_COOKIE_FIRST, serialized)
+    }
+
+    // Last-touch: always overwrite
+    writeCookie(UTM_COOKIE_LAST, serialized)
+
     console.log('[UTM Tracking] UTM parameters captured:', utmParams)
     return utmParams
   } catch (error) {
@@ -223,79 +236,104 @@ export function captureUTMParams(searchParams: URLSearchParams): UTMParams | nul
 }
 
 /**
- * Retrieve stored UTM parameters from cookie
- *
- * @returns Stored UTM parameters or null if none found
+ * Retrieve first-touch UTM parameters.
+ * Falls back to the legacy `kawai-utm` cookie for existing users.
  */
 export function getStoredUTMParams(): UTMParams | null {
-  if (!isCookieAvailable()) {
-    return null
-  }
+  if (!isCookieAvailable()) return null
 
   try {
-    const raw = getCookie()
+    const raw = readCookie(UTM_COOKIE_FIRST) ?? readCookie(UTM_COOKIE_LEGACY)
     if (!raw) return null
     const data: StoredUTMData = JSON.parse(raw)
     return data.params
   } catch (error) {
-    console.error('[UTM Tracking] Failed to retrieve UTM parameters:', error)
+    console.error('[UTM Tracking] Failed to retrieve first-touch UTM parameters:', error)
     return null
   }
 }
 
 /**
- * Convert stored UTM parameters to Shopify customer tags
- *
- * This should be called when submitting forms to include UTM tags
- * in the customer record for attribution tracking.
- *
- * @returns Array of formatted tag strings (e.g., ['utm-source-google', 'utm-medium-cpc'])
- *
- * @example
- * ```typescript
- * // In server action or form submission
- * const utmTags = getUTMTags()
- *
- * await upsertCustomer({
- *   email: 'user@example.com',
- *   firstName: 'John',
- *   tags: [
- *     ...utmTags,              // UTM attribution tags
- *     'location-stlouis',      // Location tag
- *     'inquiry-consultation'   // Inquiry type tag
- *   ]
- * })
- * ```
+ * Retrieve last-touch UTM parameters (the most recent campaign that touched this visitor).
+ */
+export function getLastTouchUTMParams(): UTMParams | null {
+  if (!isCookieAvailable()) return null
+
+  try {
+    const raw = readCookie(UTM_COOKIE_LAST)
+    if (!raw) return null
+    const data: StoredUTMData = JSON.parse(raw)
+    return data.params
+  } catch (error) {
+    console.error('[UTM Tracking] Failed to retrieve last-touch UTM parameters:', error)
+    return null
+  }
+}
+
+/**
+ * Convert first-touch UTM parameters to Shopify customer tags.
+ * Tags format: `utm-source-google`, `utm-medium-cpc`, etc.
  */
 export function getUTMTags(): string[] {
   const params = getStoredUTMParams()
-  if (!params) {
-    return []
-  }
+  if (!params) return []
 
   const tags: string[] = []
-
   for (const [param, value] of Object.entries(params)) {
     if (value) {
       const tag = formatUTMTag(param, value)
-      if (tag) {
-        tags.push(tag)
-      }
+      if (tag) tags.push(tag)
     }
   }
 
-  console.log('[UTM Tracking] Generated tags:', tags)
   return tags
 }
 
 /**
- * Clear stored UTM parameters
+ * Returns both first-touch and last-touch UTM tags for Shopify.
  *
+ * First-touch tags: `utm-source-google` (which channel found them)
+ * Last-touch tags:  `utm-last-source-email` (which channel converted them)
+ *
+ * Use this instead of getUTMTags() on form submissions so Shopify has the
+ * full attribution picture.
+ */
+export function getAllUTMTags(): string[] {
+  const firstParams = getStoredUTMParams()
+  const lastParams = getLastTouchUTMParams()
+  const tags = new Set<string>()
+
+  if (firstParams) {
+    for (const [param, value] of Object.entries(firstParams)) {
+      if (value) {
+        const tag = formatUTMTag(param, value)
+        if (tag) tags.add(tag)
+      }
+    }
+  }
+
+  if (lastParams) {
+    for (const [param, value] of Object.entries(lastParams)) {
+      if (value) {
+        // Prefix last-touch tags with 'last-' to distinguish from first-touch
+        const tag = formatUTMTag(`last-${param}`, value)
+        if (tag) tags.add(tag)
+      }
+    }
+  }
+
+  return Array.from(tags)
+}
+
+/**
+ * Clear all UTM cookies (first-touch, last-touch, and legacy).
  * Useful for testing or manual session reset.
  */
 export function clearUTMParams(): void {
   try {
-    deleteCookie()
+    eraseCookie(UTM_COOKIE_FIRST)
+    eraseCookie(UTM_COOKIE_LAST)
+    eraseCookie(UTM_COOKIE_LEGACY)
     console.log('[UTM Tracking] UTM parameters cleared')
   } catch (error) {
     console.error('[UTM Tracking] Failed to clear UTM parameters:', error)
@@ -304,14 +342,12 @@ export function clearUTMParams(): void {
 
 /**
  * Get UTM tracking metadata (for debugging)
- *
- * @returns UTM data with capture metadata or null
  */
 export function getUTMMetadata(): StoredUTMData | null {
   if (!isCookieAvailable()) return null
 
   try {
-    const raw = getCookie()
+    const raw = readCookie(UTM_COOKIE_FIRST) ?? readCookie(UTM_COOKIE_LEGACY)
     if (!raw) return null
     return JSON.parse(raw)
   } catch (error) {
@@ -353,9 +389,11 @@ export function hasStoredUTMs(): boolean {
  */
 export function useUTMTracking() {
   return {
-    tags: getUTMTags(),
+    tags: getAllUTMTags(),
+    firstTouchTags: getUTMTags(),
     hasUTMs: hasStoredUTMs(),
     params: getStoredUTMParams(),
-    clear: clearUTMParams
+    lastTouchParams: getLastTouchUTMParams(),
+    clear: clearUTMParams,
   }
 }

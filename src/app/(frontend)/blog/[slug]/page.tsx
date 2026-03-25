@@ -7,7 +7,6 @@ import { getPayloadClient } from '@/lib/payload/queries'
 import { LivePreviewPost } from '@/components/blog/LivePreviewPost'
 import { ArticleSidebar } from '@/components/blog/ArticleSidebar'
 import { RelatedPosts } from '@/components/blog/RelatedPosts'
-import { RenderBlocks } from '@/components/RenderBlocks'
 
 // ISR — revalidate every 5 minutes
 export const revalidate = 300
@@ -120,11 +119,8 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
     }
 
     // RSC slots — server-rendered once, refreshed on save via RefreshRouteOnSave.
-    // Real-time field updates (title, image, etc.) are handled by useLivePreview in LivePreviewPost.
-    const layoutSlot = post.layout?.length ? (
-      <RenderBlocks blocks={post.layout as any} />
-    ) : undefined
-
+    // Layout blocks are now rendered client-side by RenderBlocksClient in LivePreviewPost
+    // so they update in real-time as the editor types (no slot needed for layout).
     const sidebarSlot = <ArticleSidebar post={post} />
 
     const relatedPostsSlot =
@@ -136,7 +132,6 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
       <LivePreviewPost
         initialPost={post}
         isDraftMode={isDraftMode}
-        layoutSlot={layoutSlot}
         sidebarSlot={sidebarSlot}
         relatedPostsSlot={relatedPostsSlot}
       />

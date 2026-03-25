@@ -23,6 +23,7 @@ import { resolveMediaUrl } from '@/lib/payload'
 import { BlogPostClient } from '@/components/blog/BlogPostClient'
 import { ReadingProgressBar } from '@/components/blog/ReadingProgressBar'
 import { StickyHeaderBar } from '@/components/blog/StickyHeaderBar'
+import { RenderBlocksClient } from '@/components/RenderBlocksClient'
 
 // Shared map — keeps page.tsx and this component in sync without duplication
 export const CATEGORY_LABELS: Record<string, string> = {
@@ -44,8 +45,8 @@ export interface LivePreviewPostProps {
   /**
    * Pre-rendered RSC slots — these update on save (via RefreshRouteOnSave),
    * not in real-time, because they are Server Components.
+   * layout blocks are rendered client-side via RenderBlocksClient for real-time updates.
    */
-  layoutSlot: React.ReactNode
   sidebarSlot: React.ReactNode
   relatedPostsSlot: React.ReactNode
 }
@@ -54,9 +55,9 @@ export interface LivePreviewPostProps {
 function getAuthorName(post: Post): string {
   const first = post.authors?.[0]
   if (typeof first === 'object' && first !== null) {
-    return (first as User).email || 'KAWAI Piano Gallery'
+    return (first as User).email || 'Kawai America'
   }
-  return 'KAWAI Piano Gallery'
+  return 'Kawai America'
 }
 
 /** Derive primary category label from post.categories. */
@@ -79,7 +80,6 @@ function getReadTime(post: Post): number {
 export function LivePreviewPost({
   initialPost,
   isDraftMode,
-  layoutSlot,
   sidebarSlot,
   relatedPostsSlot,
 }: LivePreviewPostProps) {
@@ -132,7 +132,7 @@ export function LivePreviewPost({
         authorName={authorName}
         categoryLabels={CATEGORY_LABELS}
         readTime={readTime}
-        layoutSlot={layoutSlot}
+        layoutSlot={<RenderBlocksClient blocks={post.layout} />}
         sidebarSlot={sidebarSlot}
         relatedPostsSlot={relatedPostsSlot}
       />
