@@ -33,19 +33,21 @@
 import { useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { captureUTMParams } from '@/lib/shopify/utm-tracking'
+import * as CookieConsent from 'vanilla-cookieconsent'
 
 /**
  * UTM Capture Component
  *
  * Automatically captures UTM parameters from the URL on page load.
- * Must be a client component to access window and sessionStorage.
+ * Only stores UTMs when the user has accepted analytics cookies.
+ * For new visitors who later accept, CookieConsentBanner handles capture
+ * in its onConsent callback.
  */
 export function UTMCapture() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    // Capture UTM parameters if present
-    if (searchParams) {
+    if (searchParams && CookieConsent.acceptedCategory('analytics')) {
       captureUTMParams(searchParams)
     }
   }, [searchParams])

@@ -1,15 +1,12 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { draftMode } from 'next/headers'
-import type { Post, User } from '@/payload-types'
+import type { Post } from '@/payload-types'
 import { resolveMediaUrl } from '@/lib/payload'
 import { getPayloadClient } from '@/lib/payload/queries'
 import { LivePreviewPost } from '@/components/blog/LivePreviewPost'
-import { ReadingProgressBar } from '@/components/blog/ReadingProgressBar'
-import { StickyHeaderBar } from '@/components/blog/StickyHeaderBar'
 import { ArticleSidebar } from '@/components/blog/ArticleSidebar'
 import { RelatedPosts } from '@/components/blog/RelatedPosts'
-import { BlogPostClient } from '@/components/blog/BlogPostClient'
 import { RenderBlocks } from '@/components/RenderBlocks'
 
 // ISR — revalidate every 5 minutes
@@ -116,79 +113,33 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
     const { slug } = params
 
     const { isEnabled: isDraftMode } = await draftMode()
-
     const post = await getPostBySlug(slug, isDraftMode)
 
     if (!post) {
       notFound()
     }
 
-    const featuredImageUrl = resolveMediaUrl(post.featuredImage)
-    const hasFeaturedImage = featuredImageUrl && featuredImageUrl !== ''
-    const heroVideoUrl = (post as any).heroVideoUrl || null
+    // RSC slots — server-rendered once, refreshed on save via RefreshRouteOnSave.
+    // Real-time field updates (title, image, etc.) are handled by useLivePreview in LivePreviewPost.
+    const layoutSlot = post.layout?.length ? (
+      <RenderBlocks blocks={post.layout as any} />
+    ) : undefined
 
-    const formattedDate = post.publishedDate
-      ? new Date(post.publishedDate).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })
-      : null
+    const sidebarSlot = <ArticleSidebar post={post} />
 
-    const authorName =
-      Array.isArray(post.authors) && post.authors.length > 0 && typeof post.authors[0] === 'object'
-        ? (post.authors[0] as User).email || 'KAWAI Piano Gallery'
-        : 'KAWAI Piano Gallery'
-
-    const categoryLabels: Record<string, string> = {
-      education: 'Piano Education',
-      'product-news': 'Product News',
-      artists: 'Artist Spotlights',
-      maintenance: 'Maintenance & Care',
-      'buying-guides': 'Buying Guides',
-      events: 'Events',
-      'company-news': 'Company News',
-      technology: 'Technology',
-    }
-
-    const wordCount = post.excerpt?.split(' ').length || 0
-    const readTime = Math.ceil(wordCount / 200) || 5
-
-    const firstCategory = post.categories?.[0]
-    const primaryCategory =
-      typeof firstCategory === 'object' && firstCategory !== null
-        ? firstCategory.slug || ''
-        : typeof firstCategory === 'string'
-          ? firstCategory
-          : ''
-    const categoryLabel = categoryLabels[primaryCategory] || primaryCategory
+    const relatedPostsSlot =
+      post.relatedPosts && post.relatedPosts.length > 0 ? (
+        <RelatedPosts relatedPosts={post.relatedPosts} />
+      ) : null
 
     return (
-      <LivePreviewPost post={post} isDraftMode={isDraftMode}>
-        {/* Reading Progress Bar */}
-        <ReadingProgressBar />
-
-        {/* Sticky Header Bar */}
-        <StickyHeaderBar title={post.title} category={categoryLabel} readTime={readTime} />
-
-        <BlogPostClient
-          post={post}
-          featuredImageUrl={featuredImageUrl}
-          hasFeaturedImage={!!hasFeaturedImage}
-          heroVideoUrl={heroVideoUrl}
-          formattedDate={formattedDate}
-          authorName={authorName}
-          categoryLabels={categoryLabels}
-          readTime={readTime}
-          layoutSlot={post.layout?.length ? <RenderBlocks blocks={post.layout as any} /> : undefined}
-          sidebarSlot={<ArticleSidebar post={post} />}
-          relatedPostsSlot={
-            post.relatedPosts && post.relatedPosts.length > 0
-              ? <RelatedPosts relatedPosts={post.relatedPosts} />
-              : null
-          }
-        />
-      </LivePreviewPost>
+      <LivePreviewPost
+        initialPost={post}
+        isDraftMode={isDraftMode}
+        layoutSlot={layoutSlot}
+        sidebarSlot={sidebarSlot}
+        relatedPostsSlot={relatedPostsSlot}
+      />
     )
   } catch (error) {
     console.error('Error loading blog post page:', error)
