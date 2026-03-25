@@ -202,6 +202,7 @@ const getHomePageNewsItems = unstable_cache(
           image: item.image ?? null,
           category: item.category,
           ...(item.link && { link: item.link }),
+          ...(item.videoUrl && { videoUrl: item.videoUrl }),
         }))
       }
 

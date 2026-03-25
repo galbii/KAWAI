@@ -10,9 +10,17 @@ interface BlogCardProps {
   featured?: boolean
 }
 
-export function BlogCard({ post, className, featured }: BlogCardProps) {
-  const { title, slug, excerpt, featuredImage, publishedDate, categories: rawCategories } = post
+function getYouTubeId(url: string): string | null {
+  const match = url.match(
+    /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+  )
+  return match?.[1] ?? null
+}
 
+export function BlogCard({ post, className, featured }: BlogCardProps) {
+  const { title, slug, excerpt, featuredImage, heroVideoUrl, publishedDate, categories: rawCategories } = post
+
+  const videoId = heroVideoUrl ? getYouTubeId(heroVideoUrl) : null
   const imageUrl = resolveMediaUrl(featuredImage)
   const hasImage = imageUrl && imageUrl !== ''
 
@@ -44,9 +52,28 @@ export function BlogCard({ post, className, featured }: BlogCardProps) {
           'hover:-translate-y-[2px] hover:shadow-brand-medium',
         )}
       >
-        {/* Image */}
-        <div className="relative w-full aspect-[3/2] overflow-hidden bg-kawai-pearl shrink-0">
-          {hasImage ? (
+        {/* Image / Video */}
+        <div className="relative w-full aspect-[3/2] overflow-hidden bg-kawai-black shrink-0">
+          {videoId ? (
+            /* Auto-playing muted YouTube embed.
+               16:9 video in 3:2 container → fill by height (video is wider):
+               width = container_height × 16/9 = (2/3 × W) × 16/9 = 32W/27 ≈ 118.5% */
+            <iframe
+              src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&rel=0&playsinline=1&modestbranding=1`}
+              allow="autoplay; encrypted-media"
+              title={title}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                height: '100%',
+                width: '118.52%',
+                border: 'none',
+                pointerEvents: 'none',
+              }}
+            />
+          ) : hasImage ? (
             <Image
               src={imageUrl}
               alt={title}

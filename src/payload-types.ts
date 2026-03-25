@@ -72,6 +72,7 @@ export interface Config {
     'content-code': ContentCodeBlock;
     'content-banner': ContentBannerBlock;
     'content-rich-text': ContentRichTextBlock;
+    'content-cta': ContentCtaBlock;
     'layout-columns': LayoutColumnsBlock;
     'layout-spacer': LayoutSpacerBlock;
     'layout-divider': LayoutDividerBlock;
@@ -597,6 +598,53 @@ export interface ContentRichTextBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'content-rich-text';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ContentCtaBlock".
+ */
+export interface ContentCtaBlock {
+  /**
+   * Optional short heading displayed above the buttons
+   */
+  heading?: string | null;
+  /**
+   * Optional supporting text displayed below the heading
+   */
+  subtext?: string | null;
+  /**
+   * Layout style for the CTA block
+   */
+  style?: ('centered' | 'left-aligned' | 'card') | null;
+  /**
+   * Add 1 or 2 CTA buttons
+   */
+  links: {
+    /**
+     * Button label text
+     */
+    label: string;
+    /**
+     * Button destination URL (e.g. /pianos or https://example.com)
+     */
+    url: string;
+    /**
+     * Visual style of the button
+     */
+    variant?: ('primary' | 'secondary' | 'ghost') | null;
+    /**
+     * Button color — applies to filled background (primary) or text/border (secondary/ghost)
+     */
+    color?: ('red' | 'black' | 'white' | 'gold') | null;
+    /**
+     * Open link in a new browser tab
+     */
+    openInNewTab?: boolean | null;
+    id?: string | null;
+  }[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'content-cta';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -7194,6 +7242,7 @@ export interface Post {
         | ContentVideoBlock
         | ContentBannerBlock
         | ContentCodeBlock
+        | ContentCtaBlock
         | LayoutSpacerBlock
         | LayoutDividerBlock
         | LayoutColumnsBlock

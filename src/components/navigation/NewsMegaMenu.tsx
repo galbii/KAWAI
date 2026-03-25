@@ -28,6 +28,7 @@ interface NewsArticle {
   category: string
   image: string
   link: string
+  videoUrl?: string | null
 }
 
 export interface NewsItem {
@@ -36,6 +37,7 @@ export interface NewsItem {
   image?: Media | string | null
   category: string
   link?: string
+  videoUrl?: string | null
 }
 
 interface NewsMegaMenuProps {
@@ -67,6 +69,7 @@ function transformNewsItem(item: NewsItem, index: number): NewsArticle {
     category: item.category,
     image: imageUrl,
     link: item.link || '/blog',
+    videoUrl: item.videoUrl ?? null,
   }
 }
 
@@ -130,11 +133,11 @@ export function NewsMegaMenu({
           {/* ── Main two-column layout ── */}
           <div
             className="grid grid-cols-[220px_1fr] lg:grid-cols-[260px_1fr]"
-            style={{ minHeight: 'min(460px, 54vh)' }}
+            style={{ minHeight: 'min(300px, 38vh)' }}
           >
 
             {/* ── LEFT: editorial panel ── */}
-            <div className="relative flex flex-col justify-between bg-kawai-black px-8 py-10">
+            <div className="relative flex flex-col justify-start bg-kawai-black px-8 py-10">
               {/* Red left rule */}
               <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-kawai-red" />
 
@@ -160,20 +163,6 @@ export function NewsMegaMenu({
                 </h2>
               </div>
 
-              {/* Prominent CTA button */}
-              <Link
-                href="/blog"
-                onClick={onClose}
-                className="group inline-flex items-center justify-between gap-3 bg-kawai-red hover:bg-kawai-red-700 text-white px-5 py-3 transition-all duration-300 self-stretch"
-              >
-                <span
-                  className="font-[family-name:var(--font-brand-sans)] uppercase"
-                  style={{ fontSize: '11px', letterSpacing: '0.2em', fontWeight: 700 }}
-                >
-                  All Stories
-                </span>
-                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 shrink-0" />
-              </Link>
             </div>
 
             {/* ── RIGHT: full-bleed carousel ── */}
@@ -195,31 +184,39 @@ export function NewsMegaMenu({
                   >
                     {/* Image */}
                     <div className="absolute inset-0">
-                      <Image
-                        src={current.image}
-                        alt={current.title}
-                        fill
-                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-                        sizes="(max-width: 1280px) 80vw, 85vw"
-                        priority={currentIndex === 0}
-                      />
+                      {current.videoUrl ? (
+                        /* Auto-playing muted video background */
+                        <iframe
+                          src={`https://www.youtube-nocookie.com/embed/${getYouTubeId(current.videoUrl)}?autoplay=1&mute=1&loop=1&playlist=${getYouTubeId(current.videoUrl)}&controls=0&rel=0&playsinline=1&modestbranding=1`}
+                          allow="autoplay; encrypted-media"
+                          title={current.title}
+                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                          style={{ width: '177.78vh', height: '100vh', minWidth: '100%', minHeight: '56.25vw', border: 'none' }}
+                        />
+                      ) : (
+                        <Image
+                          src={current.image}
+                          alt={current.title}
+                          fill
+                          className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                          sizes="(max-width: 1280px) 80vw, 85vw"
+                          priority={currentIndex === 0}
+                        />
+                      )}
                     </div>
 
-                    {/* Gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/75 via-kawai-black/20 to-transparent" />
+                    {/* Gradient — radial-style vignette for centered text legibility */}
+                    <div className="absolute inset-0 bg-kawai-black/50" />
 
-                    {/* Category badge */}
-                    <div className="absolute top-8 left-8 z-10">
+                    {/* Text content — centered */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-10 z-10">
                       <span
-                        className="bg-kawai-red text-white font-[family-name:var(--font-brand-sans)] uppercase px-3 py-1"
+                        className="bg-kawai-red text-white font-[family-name:var(--font-brand-sans)] uppercase px-3 py-1 mb-5 inline-block"
                         style={{ fontSize: '9px', letterSpacing: '0.28em', fontWeight: 700 }}
                       >
                         {current.category}
                       </span>
-                    </div>
 
-                    {/* Text content */}
-                    <div className="absolute bottom-0 left-0 right-0 px-10 pb-10 z-10">
                       <h3
                         className="text-white mb-3 leading-tight"
                         style={{
@@ -307,7 +304,7 @@ export function NewsMegaMenu({
 
               {/* Cards */}
               <div
-                className="grid px-6 pb-7 gap-5"
+                className="grid px-6 gap-5"
                 style={{ gridTemplateColumns: `repeat(${latestPosts.length}, 1fr)` }}
               >
                 {latestPosts.map((post, i) => (
@@ -321,24 +318,24 @@ export function NewsMegaMenu({
                     {(() => {
                       const videoId = post.heroVideoUrl ? getYouTubeId(post.heroVideoUrl) : null
                       return (
+                        /* padding-bottom trick: height = 56.25% × width → reliable 16:9 in any flex/grid context */
                         <div
                           className="relative overflow-hidden w-full mb-3 bg-kawai-black"
-                          style={{ aspectRatio: '16/5' }}
+                          style={{ height: 0, paddingBottom: '56.25%' }}
                         >
                           {videoId ? (
-                            /* Auto-playing muted embed — pointer-events-none so the <Link> still navigates on click */
+                            /* Auto-playing muted embed — pointer-events-none so the <Link> still navigates on click.
+                               iframe fills the padding-box exactly: inset-0 spans top-padding-edge to bottom-padding-edge */
                             <iframe
                               src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&rel=0&playsinline=1&modestbranding=1`}
                               allow="autoplay; encrypted-media"
                               title={post.title}
                               style={{
                                 position: 'absolute',
+                                top: 0,
                                 left: 0,
-                                top: '50%',
-                                transform: 'translateY(-50%)',
                                 width: '100%',
-                                /* 9:16 inverted × 16:5 container ratio = 180% keeps 16:9 centered in a 16:5 crop */
-                                height: '180%',
+                                height: '100%',
                                 border: 'none',
                                 pointerEvents: 'none',
                               }}
@@ -384,6 +381,23 @@ export function NewsMegaMenu({
                     </div>
                   </Link>
                 ))}
+              </div>
+
+              {/* All Stories CTA — below blog cards */}
+              <div className="px-6 py-5 border-t border-kawai-neutral">
+                <Link
+                  href="/blog"
+                  onClick={onClose}
+                  className="group inline-flex items-center gap-3 bg-kawai-red hover:bg-kawai-red-700 text-white px-5 py-3 transition-all duration-300"
+                >
+                  <span
+                    className="font-[family-name:var(--font-brand-sans)] uppercase"
+                    style={{ fontSize: '11px', letterSpacing: '0.2em', fontWeight: 700 }}
+                  >
+                    All Stories
+                  </span>
+                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 shrink-0" />
+                </Link>
               </div>
             </div>
           )}
