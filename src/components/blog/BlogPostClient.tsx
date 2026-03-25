@@ -50,7 +50,7 @@ export function BlogPostClient({
       {/* Cinematic Hero Section */}
       {hasHero && (
         <div
-          className="relative w-full h-[50vh] md:h-[60vh] lg:h-[65vh] bg-kawai-black overflow-hidden"
+          className="relative w-full min-h-[60vh] md:min-h-[68vh] lg:min-h-[72vh] bg-kawai-black overflow-hidden"
           data-blog-hero
         >
           {youtubeId ? (
@@ -89,11 +89,11 @@ export function BlogPostClient({
           )}
 
           {/* Gradient overlay for readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/10" />
 
           {/* Hero Content */}
           <div className="absolute inset-0 flex flex-col justify-end">
-            <div className="max-w-7xl mx-auto w-full px-6 md:px-12 lg:px-16 pb-12 md:pb-16">
+            <div className="max-w-7xl mx-auto w-full px-6 md:px-12 lg:px-16 pb-14 md:pb-20 lg:pb-24">
               {/* Category badges — stagger in from bottom */}
               {post.categories && post.categories.length > 0 && (
                 <motion.div
@@ -124,7 +124,7 @@ export function BlogPostClient({
               {/* Author byline above title */}
               {authorName && (
                 <motion.p
-                  className="text-white/70 text-sm md:text-base italic mb-3 font-[family-name:var(--font-brand-serif)]"
+                  className="text-white/60 text-sm md:text-sm tracking-wide italic mb-4 font-[family-name:var(--font-brand-serif)]"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, ease: easeKawai, delay: 0.6 }}
@@ -135,7 +135,7 @@ export function BlogPostClient({
 
               {/* Title — serif, delayed */}
               <motion.h1
-                className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight tracking-tight max-w-5xl font-[family-name:var(--font-brand-serif)]"
+                className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-[1.15] tracking-tight max-w-4xl font-[family-name:var(--font-brand-serif)]"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, ease: easeKawai, delay: 0.45 }}
@@ -145,7 +145,7 @@ export function BlogPostClient({
 
               {/* Metadata strip */}
               <motion.div
-                className="mt-5 flex flex-wrap items-center gap-4 text-white/70 text-sm font-[family-name:var(--font-brand-sans)]"
+                className="mt-6 flex flex-wrap items-center gap-3 text-white/55 text-xs tracking-wide font-[family-name:var(--font-brand-sans)]"
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, ease: easeKawai, delay: 0.6 }}
@@ -153,7 +153,7 @@ export function BlogPostClient({
                 {formattedDate && (
                   <time dateTime={post.publishedDate || undefined}>{formattedDate}</time>
                 )}
-                {formattedDate && <span aria-hidden>•</span>}
+                {formattedDate && <span aria-hidden className="opacity-40">•</span>}
                 <span>{readTime} min read</span>
               </motion.div>
             </div>

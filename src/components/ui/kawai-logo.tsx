@@ -43,7 +43,7 @@ export function KawaiLogo({
   // first client render always matches the server render — no hydration mismatch,
   // no mounted guard needed.
   const { origin, isInitialized } = useNavigationContext()
-  const contextAwareHomeUrl = homeUrl || (isInitialized ? origin.basePath : '/')
+  const contextAwareHomeUrl = homeUrl ?? '/'
   const contextAwareAriaLabel = ariaLabel || getContextAwareAriaLabel('Kawai Piano - Home', origin)
 
   // Handle logo click - scroll to top if already on home page
