@@ -245,6 +245,7 @@ const getLatestPosts = unstable_cache(
           slug: true,
           excerpt: true,
           featuredImage: true,
+          heroVideoUrl: true,
           categories: true,
         },
       })
@@ -271,6 +272,7 @@ const getLatestPosts = unstable_cache(
           slug: post.slug ?? '',
           excerpt: post.excerpt ?? null,
           featuredImage,
+          heroVideoUrl: post.heroVideoUrl ?? null,
           category,
         }
       })

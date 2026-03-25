@@ -104,6 +104,7 @@ export const Posts: CollectionConfig = {
                 'content-video',
                 'content-banner',
                 'content-code',
+                'content-cta',
                 'layout-spacer',
                 'layout-divider',
                 'layout-columns',

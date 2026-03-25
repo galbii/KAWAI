@@ -45,6 +45,7 @@ import {
   Code,
   Banner,
   RichTextContent,
+  ContentCta,
   // Layout blocks
   Columns,
   Spacer,
@@ -297,6 +298,7 @@ export default buildConfig({
     Code,
     Banner,
     RichTextContent,
+    ContentCta,
 
     // Layout blocks
     Columns,

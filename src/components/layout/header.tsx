@@ -458,6 +458,7 @@ export interface LatestPost {
   slug: string
   excerpt?: string | null
   featuredImage?: string | null
+  heroVideoUrl?: string | null
   category?: string | null
 }
 

@@ -48,6 +48,7 @@ import { VideoBlock } from './blocks/VideoBlock'
 import { CodeBlock } from './blocks/CodeBlock'
 import { BannerBlock } from './blocks/BannerBlock'
 import { RichTextContentBlock } from './blocks/RichTextContentBlock'
+import { ContentCtaBlock } from './blocks/ContentCtaBlock'
 
 // Layout Blocks - Structural components
 import { ColumnsBlock } from './blocks/ColumnsBlock'
@@ -120,6 +121,7 @@ const blockComponents = {
   'content-video': VideoBlock,
   'content-code': CodeBlock,
   'content-banner': BannerBlock,
+  'content-cta': ContentCtaBlock,
 
   // Layout blocks (layout-*)
   'layout-columns': ColumnsBlock,

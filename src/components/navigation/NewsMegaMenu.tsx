@@ -10,6 +10,13 @@ import { cn } from '@/lib/utils'
 import type { Media } from '@/payload-types'
 import type { LatestPost } from '@/components/layout/header'
 
+function getYouTubeId(url: string): string | null {
+  const match = url.match(
+    /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+  )
+  return match?.[1] ?? null
+}
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -310,25 +317,48 @@ export function NewsMegaMenu({
                     onClick={onClose}
                     className="group flex flex-col"
                   >
-                    {/* Image */}
-                    <div
-                      className="relative overflow-hidden w-full mb-3 bg-kawai-neutral/40"
-                      style={{ aspectRatio: '16/5' }}
-                    >
-                      {post.featuredImage ? (
-                        <Image
-                          src={post.featuredImage}
-                          alt={post.title}
-                          fill
-                          className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
-                          sizes="(max-width: 1280px) 25vw, 300px"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 bg-kawai-neutral/60" />
-                      )}
-                      {/* Subtle darkening on hover */}
-                      <div className="absolute inset-0 bg-kawai-black/0 group-hover:bg-kawai-black/10 transition-colors duration-300" />
-                    </div>
+                    {/* Thumbnail / Video */}
+                    {(() => {
+                      const videoId = post.heroVideoUrl ? getYouTubeId(post.heroVideoUrl) : null
+                      return (
+                        <div
+                          className="relative overflow-hidden w-full mb-3 bg-kawai-black"
+                          style={{ aspectRatio: '16/5' }}
+                        >
+                          {videoId ? (
+                            /* Auto-playing muted embed — pointer-events-none so the <Link> still navigates on click */
+                            <iframe
+                              src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&rel=0&playsinline=1&modestbranding=1`}
+                              allow="autoplay; encrypted-media"
+                              title={post.title}
+                              style={{
+                                position: 'absolute',
+                                left: 0,
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                width: '100%',
+                                /* 9:16 inverted × 16:5 container ratio = 180% keeps 16:9 centered in a 16:5 crop */
+                                height: '180%',
+                                border: 'none',
+                                pointerEvents: 'none',
+                              }}
+                            />
+                          ) : post.featuredImage ? (
+                            <Image
+                              src={post.featuredImage}
+                              alt={post.title}
+                              fill
+                              className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                              sizes="(max-width: 1280px) 25vw, 300px"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 bg-kawai-neutral/60" />
+                          )}
+                          {/* Subtle darkening on hover */}
+                          <div className="absolute inset-0 bg-kawai-black/0 group-hover:bg-kawai-black/10 transition-colors duration-300" />
+                        </div>
+                      )
+                    })()}
 
                     {/* Text below image */}
                     <div className="flex flex-col gap-1.5">

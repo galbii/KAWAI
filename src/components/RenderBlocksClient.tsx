@@ -28,6 +28,7 @@ import { ImageBlock } from '@/components/blocks/ImageBlock'
 import { VideoBlock } from '@/components/blocks/VideoBlock'
 import { BannerBlock } from '@/components/blocks/BannerBlock'
 import { CodeBlock } from '@/components/blocks/CodeBlock'
+import { ContentCtaBlock } from '@/components/blocks/ContentCtaBlock'
 
 // Layout blocks — all `'use client'`, render purely from props
 import { SpacerBlock } from '@/components/blocks/SpacerBlock'
@@ -46,6 +47,7 @@ const POST_BLOCK_COMPONENTS = {
   'content-video': VideoBlock,
   'content-banner': BannerBlock,
   'content-code': CodeBlock,
+  'content-cta': ContentCtaBlock,
   'layout-spacer': SpacerBlock,
   'layout-divider': DividerBlock,
   'layout-columns': ColumnsBlock,
