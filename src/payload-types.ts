@@ -9382,6 +9382,14 @@ export interface Redirect {
       | ({
           relationTo: 'posts';
           value: string | Post;
+        } | null)
+      | ({
+          relationTo: 'artists';
+          value: string | Artist;
+        } | null)
+      | ({
+          relationTo: 'dealers';
+          value: string | Dealer;
         } | null);
   };
   /**

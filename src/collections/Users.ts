@@ -9,7 +9,7 @@ export const Users: CollectionConfig = {
     description: 'User accounts and authentication management',
   },
   auth: {
-    tokenExpiration: 7200, // 2 hours
+    tokenExpiration: 60 * 60 * 24 * 30, // 30 days
     maxLoginAttempts: 5,
     lockTime: 60 * 60 * 1000, // 1 hour lockout after 5 failed attempts
     cookies: {

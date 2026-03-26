@@ -1,17 +1,18 @@
 import 'server-only'
 import { NextResponse } from 'next/server'
 import { unstable_cache } from 'next/cache'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import { getPayloadClient } from '@/lib/payload/queries'
 
 export type ResolvedRedirect = { from: string; to: string; type: '301' | '302' }
 
 // Maps Payload collection slugs → URL path prefixes
 const COLLECTION_PATHS: Record<string, string> = {
-  pages: '',         // /about, /contact (catch-all)
-  products: '/products', // /products/gx-7-blak
-  storefronts: '/store', // /store/st-louis
-  posts: '/blog',    // /blog/my-post
+  pages: '',              // /about, /contact (catch-all)
+  products: '/products',  // /products/gx-7-blak
+  storefronts: '/store',  // /store/st-louis
+  posts: '/blog',         // /blog/my-post
+  artists: '/artists',    // /artists/john-doe
+  dealers: '/find-a-dealer', // /find-a-dealer/st-louis
 }
 
 /**
@@ -20,7 +21,7 @@ const COLLECTION_PATHS: Record<string, string> = {
  */
 const getActiveRedirects = unstable_cache(
   async (): Promise<ResolvedRedirect[]> => {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadClient()
     const result = await payload.find({
       collection: 'redirects',
       where: { isActive: { equals: true } },

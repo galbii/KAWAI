@@ -51,9 +51,12 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set('x-pathname', pathname)
 
   // Check CMS-managed redirects
+  // Normalize pathname by stripping trailing slash (except root "/") so that
+  // /old-page/ matches a stored redirect of /old-page
+  const normalizedPathname = pathname.length > 1 ? pathname.replace(/\/$/, '') : pathname
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? request.nextUrl.origin
   const redirects = await getRedirects(baseUrl)
-  const match = redirects.find((r) => r.from === pathname)
+  const match = redirects.find((r) => r.from === normalizedPathname)
 
   if (match) {
     // Support both absolute URLs (https://...) and relative paths (/new-path)

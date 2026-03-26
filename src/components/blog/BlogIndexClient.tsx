@@ -16,6 +16,13 @@ interface BlogIndexClientProps {
 
 const EASE_PIANO = [0.4, 0, 0.2, 1] as const
 
+function getYouTubeId(url: string): string | null {
+  const match = url.match(
+    /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+  )
+  return match?.[1] ?? null
+}
+
 export function BlogIndexClient({
   featuredPost,
   heroIsFeatured,
@@ -25,6 +32,7 @@ export function BlogIndexClient({
   const hasPosts = featuredPost !== null || gridPosts.length > 0
 
   const featuredImageUrl = featuredPost ? resolveMediaUrl(featuredPost.featuredImage) : null
+  const featuredVideoId = featuredPost?.heroVideoUrl ? getYouTubeId(featuredPost.heroVideoUrl) : null
   const featuredCategories =
     featuredPost?.categories?.map((cat) => {
       if (typeof cat === 'string') return { slug: cat, title: cat }
@@ -126,9 +134,17 @@ export function BlogIndexClient({
                 >
                   <Link href={`/blog/${featuredPost.slug}`} className="group block">
                     <article className="grid md:grid-cols-[3fr_2fr] gap-0 bg-white rounded-2xl border border-kawai-neutral overflow-hidden transition-all duration-300 ease-[var(--ease-piano)] hover:shadow-brand-premium">
-                      {/* Image — left 60% */}
-                      <div className="relative w-full aspect-[4/3] md:aspect-auto md:min-h-[480px] overflow-hidden bg-kawai-pearl">
-                        {featuredImageUrl ? (
+                      {/* Image / Video — left 60% */}
+                      <div className="relative w-full aspect-[4/3] md:aspect-auto md:min-h-[480px] overflow-hidden bg-kawai-black">
+                        {featuredVideoId ? (
+                          <iframe
+                            src={`https://www.youtube-nocookie.com/embed/${featuredVideoId}?autoplay=1&mute=1&loop=1&playlist=${featuredVideoId}&controls=0&rel=0&playsinline=1&modestbranding=1`}
+                            allow="autoplay; encrypted-media"
+                            title={featuredPost.title}
+                            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                            style={{ width: '177.78vh', height: '100vh', minWidth: '100%', minHeight: '56.25vw', border: 'none' }}
+                          />
+                        ) : featuredImageUrl ? (
                           <Image
                             src={featuredImageUrl}
                             alt={featuredPost.title}

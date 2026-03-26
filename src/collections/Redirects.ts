@@ -52,6 +52,8 @@ export const Redirects: CollectionConfig = {
         if (!value.startsWith('/')) return 'Path must start with a forward slash (/)'
         if (value.includes('?'))
           return 'Query strings are not supported — redirect the base path only'
+        if (value.length > 1 && value.endsWith('/'))
+          return 'Trailing slashes are not allowed — use /old-page not /old-page/'
         return true
       },
     },
@@ -82,11 +84,16 @@ export const Redirects: CollectionConfig = {
             description: 'Full URL (https://...) or site-relative path starting with /.',
             placeholder: '/new-page or https://example.com',
           },
+          validate: (value: string | null | undefined, { siblingData }: { siblingData: Record<string, unknown> }) => {
+            if (siblingData?.type === 'reference') return true
+            if (!value || value.trim() === '') return 'A destination URL is required'
+            return true
+          },
         },
         {
           name: 'reference',
           type: 'relationship',
-          relationTo: ['pages', 'products', 'storefronts', 'posts'] as const,
+          relationTo: ['pages', 'products', 'storefronts', 'posts', 'artists', 'dealers'] as const,
           admin: {
             condition: (_, siblingData) => siblingData?.type === 'reference',
             description: 'Select an internal CMS page as the redirect destination.',
