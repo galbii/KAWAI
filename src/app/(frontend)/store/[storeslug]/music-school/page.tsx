@@ -273,6 +273,35 @@ export default async function MusicSchoolPage({ params }: Props) {
           </div>
         </section>
       )}
+
+      {/* ═══ TRIAL LESSON CTA ════════════════════════════════════ */}
+      {school.trialLesson?.enabled && (
+        <section className="bg-kawai-red">
+          <div className="max-w-3xl mx-auto px-6 py-20 md:py-28 text-center">
+            <h2 className="text-3xl md:text-5xl font-[family-name:var(--font-brand-luxury)] text-white leading-tight mb-6">
+              Begin Your Musical Journey
+            </h2>
+            {school.trialLesson.description && (
+              <p className="text-white/80 text-base md:text-lg leading-relaxed mb-10 max-w-xl mx-auto">
+                {school.trialLesson.description}
+              </p>
+            )}
+            {(school.trialLesson.ctaLink || school.trialLesson.phone) && (
+              <a
+                href={
+                  school.trialLesson.ctaLink
+                    ? school.trialLesson.ctaLink
+                    : `tel:${school.trialLesson.phone}`
+                }
+                {...(!school.trialLesson.ctaLink ? {} : { target: '_blank', rel: 'noopener noreferrer' })}
+                className="inline-block bg-white text-kawai-red font-bold text-sm tracking-[0.1em] uppercase px-10 py-4 rounded hover:bg-kawai-pearl transition-colors"
+              >
+                {school.trialLesson.ctaText ?? 'Schedule a Trial Lesson'}
+              </a>
+            )}
+          </div>
+        </section>
+      )}
     </main>
   )
 }

@@ -6,6 +6,9 @@ import {
   ShowroomLocation
 } from "@/components/homepage";
 import { MusicSchoolSection } from "@/components/music-school/MusicSchoolSection";
+import { PianoRentalsSection } from '@/components/storefronts/piano-rentals-section'
+import { FacilityRentalsSection } from '@/components/storefronts/facility-rentals-section'
+import { TuningRepairSection } from '@/components/storefronts/tuning-repair-section'
 import { SimpleCustomerSignup } from "@/components/forms/SimpleCustomerSignup";
 import { getStorefrontBySlugDirect, getHomePageDataDirect } from "@/lib/payload/queries";
 import { LocalBusinessSchema } from "@/components/seo/LocalBusinessSchema";
@@ -272,6 +275,15 @@ async function StorefrontContent({ storeslug }: { storeslug: string }) {
 
         {/* Showroom Location Section */}
         <ShowroomLocation {...(storefrontData?.showroomSection && { data: storefrontData.showroomSection })} />
+
+        {/* Piano Rentals Section */}
+        <PianoRentalsSection data={rawStorefrontData ?? {}} />
+
+        {/* Facility Rentals Section */}
+        <FacilityRentalsSection data={rawStorefrontData ?? {}} />
+
+        {/* Tuning & Repair Section */}
+        <TuningRepairSection data={rawStorefrontData ?? {}} />
 
         {/* Music School Section - only renders if a music school exists for this storefront */}
         <MusicSchoolSection storeslug={storeslug} />

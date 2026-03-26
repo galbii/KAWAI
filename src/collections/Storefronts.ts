@@ -1154,6 +1154,259 @@ export const Storefronts: CollectionConfig = {
           ]
         },
 
+        // Piano Rentals Tab
+        {
+          label: 'Piano Rentals',
+          fields: [
+            {
+              name: 'pianoRentalsEnabled',
+              type: 'checkbox',
+              label: 'Enable Piano Rentals Section',
+              defaultValue: false,
+            },
+            {
+              name: 'pianoRentalsTitle',
+              type: 'text',
+              label: 'Section Title',
+              defaultValue: 'Piano Rentals',
+            },
+            {
+              name: 'pianoRentalsDescription',
+              type: 'textarea',
+              label: 'Section Description',
+            },
+            {
+              name: 'monthlyRentals',
+              type: 'array',
+              label: 'Monthly Rental Rates',
+              labels: { singular: 'Piano Type', plural: 'Piano Types' },
+              defaultValue: [
+                {
+                  pianoType: 'Grand Pianos',
+                  startingPrice: 280,
+                  unit: '/month',
+                  description: 'Experience the full range of Kawai grand pianos with a flexible monthly rental.',
+                },
+                {
+                  pianoType: 'Upright Pianos',
+                  startingPrice: 100,
+                  unit: '/month',
+                  description: 'Quality Kawai upright pianos available for home or studio rental.',
+                },
+                {
+                  pianoType: 'Digital Pianos',
+                  startingPrice: 70,
+                  unit: '/month',
+                  description: 'Kawai digital pianos with authentic touch and sound for any space.',
+                },
+              ],
+              fields: [
+                { name: 'pianoType', type: 'text', label: 'Piano Type', required: true },
+                { name: 'startingPrice', type: 'number', label: 'Starting Price (USD)', required: true },
+                { name: 'unit', type: 'text', label: 'Price Unit', defaultValue: '/month' },
+                { name: 'description', type: 'textarea', label: 'Description' },
+                imageField('image', { label: 'Piano Image (optional)' }),
+              ],
+            },
+            {
+              name: 'rentToOwn',
+              type: 'group',
+              label: 'Rent-to-Own Program',
+              fields: [
+                { name: 'enabled', type: 'checkbox', label: 'Show Rent-to-Own Callout', defaultValue: true },
+                { name: 'applicationMonths', type: 'number', label: 'Months Applied Toward Purchase', defaultValue: 6 },
+                { name: 'minimumRentalMonths', type: 'number', label: 'Minimum Rental Period (months)', defaultValue: 6 },
+                {
+                  name: 'description',
+                  type: 'textarea',
+                  label: 'Description',
+                  defaultValue: 'The first six months of rental payments can be applied toward the purchase price. The option to purchase may be applied at any time after the minimum 6-month rental period is satisfied.',
+                },
+              ],
+            },
+            {
+              name: 'eventRentals',
+              type: 'group',
+              label: 'Event Rentals',
+              fields: [
+                { name: 'enabled', type: 'checkbox', label: 'Enable Event Rentals', defaultValue: false },
+                {
+                  name: 'rates',
+                  type: 'array',
+                  label: 'Event Rental Rates',
+                  labels: { singular: 'Rate', plural: 'Rates' },
+                  defaultValue: [
+                    { pianoType: 'Kawai Upright Piano', price: 400, durationLabel: 'one-day or multi-day' },
+                    { pianoType: 'Kawai Grand Piano', price: 750, durationLabel: 'one-day or multi-day' },
+                  ],
+                  fields: [
+                    { name: 'pianoType', type: 'text', label: 'Piano Type', required: true },
+                    { name: 'price', type: 'number', label: 'Price (USD)', required: true },
+                    { name: 'durationLabel', type: 'text', label: 'Duration Label', defaultValue: 'one-day or multi-day' },
+                  ],
+                },
+                {
+                  name: 'eventTypes',
+                  type: 'array',
+                  label: 'Available Event Types',
+                  labels: { singular: 'Event Type', plural: 'Event Types' },
+                  defaultValue: [
+                    { eventType: 'Concerts' },
+                    { eventType: 'Recitals' },
+                    { eventType: 'Weddings' },
+                    { eventType: 'Private Parties' },
+                    { eventType: 'Corporate Events' },
+                  ],
+                  fields: [{ name: 'eventType', type: 'text', label: 'Event Type', required: true }],
+                },
+                { name: 'contactPhone', type: 'text', label: 'Contact Phone' },
+                { name: 'contactNote', type: 'textarea', label: 'Contact Note' },
+              ],
+            },
+            { name: 'rentalCtaText', type: 'text', label: 'CTA Button Text', defaultValue: 'Schedule a Rental' },
+            { name: 'rentalCtaLink', type: 'text', label: 'CTA Button Link' },
+          ],
+        },
+
+        // Facility Rentals Tab
+        {
+          label: 'Facility Rentals',
+          fields: [
+            {
+              name: 'facilityRentalsEnabled',
+              type: 'checkbox',
+              label: 'Enable Facility Rentals Section',
+              defaultValue: false,
+            },
+            {
+              name: 'facilityRentalsTitle',
+              type: 'text',
+              label: 'Section Title',
+              defaultValue: 'Facility Rentals',
+            },
+            {
+              name: 'facilityRentalsDescription',
+              type: 'textarea',
+              label: 'Section Description',
+            },
+            {
+              name: 'facilities',
+              type: 'array',
+              label: 'Venue Spaces',
+              labels: { singular: 'Venue', plural: 'Venues' },
+              fields: [
+                { name: 'name', type: 'text', label: 'Venue Name', required: true },
+                { name: 'capacity', type: 'number', label: 'Seating Capacity' },
+                { name: 'description', type: 'textarea', label: 'Description' },
+                { name: 'stageDimensions', type: 'text', label: "Stage Dimensions (e.g. 33' x 20')" },
+                {
+                  name: 'availablePianos',
+                  type: 'array',
+                  label: 'Pianos Available',
+                  labels: { singular: 'Piano', plural: 'Pianos' },
+                  fields: [
+                    { name: 'model', type: 'text', label: 'Model Name', required: true },
+                    { name: 'description', type: 'textarea', label: 'Description' },
+                  ],
+                },
+                {
+                  name: 'useCases',
+                  type: 'array',
+                  label: 'Available For',
+                  labels: { singular: 'Use Case', plural: 'Use Cases' },
+                  defaultValue: [
+                    { useCase: 'Personal Recitals' },
+                    { useCase: 'Group Performances' },
+                    { useCase: 'Educational Presentations' },
+                    { useCase: 'Private Parties' },
+                    { useCase: 'Corporate Meetings & Events' },
+                  ],
+                  fields: [{ name: 'useCase', type: 'text', label: 'Use Case', required: true }],
+                },
+                imageField('image', { label: 'Venue Photo (optional)' }),
+              ],
+            },
+            {
+              name: 'pricingNote',
+              type: 'textarea',
+              label: 'Pricing Note',
+              defaultValue: 'Pricing varies based on event type, date, and time. Please contact us for details.',
+            },
+            { name: 'pricingContactPhone', type: 'text', label: 'Contact Phone' },
+            { name: 'pricingContactEmail', type: 'text', label: 'Contact Email' },
+            { name: 'facilityCtaText', type: 'text', label: 'CTA Button Text', defaultValue: 'Inquire About Availability' },
+            { name: 'facilityCtaLink', type: 'text', label: 'CTA Button Link' },
+          ],
+        },
+
+        // Tuning & Repair Tab
+        {
+          label: 'Tuning & Repair',
+          fields: [
+            {
+              name: 'tuningRepairEnabled',
+              type: 'checkbox',
+              label: 'Enable Tuning & Repair Section',
+              defaultValue: false,
+            },
+            {
+              name: 'tuningRepairTitle',
+              type: 'text',
+              label: 'Section Title',
+              defaultValue: 'Piano Tuning & Repair',
+            },
+            {
+              name: 'tuningRepairDescription',
+              type: 'textarea',
+              label: 'Section Description',
+              defaultValue: 'Professional and affordable piano tuning and repair services.',
+            },
+            {
+              name: 'tuningFrequency',
+              type: 'textarea',
+              label: 'Tuning Frequency Recommendation',
+              defaultValue: 'We recommend tuning your piano at least once per year. Pianos played regularly should be tuned every 4–6 months.',
+            },
+            {
+              name: 'tuningServices',
+              type: 'array',
+              label: 'Services Offered',
+              labels: { singular: 'Service', plural: 'Services' },
+              defaultValue: [
+                { name: 'Installation & Repair of Player Systems', description: 'Expert installation and repair of automated player piano systems.', icon: 'settings' },
+                { name: 'Action Regulation', description: 'Precision regulation of piano action to improve touch and responsiveness.', icon: 'piano' },
+                { name: 'Voicing', description: 'Tone shaping and voicing to achieve your ideal piano sound.', icon: 'music' },
+                { name: 'Parts Replacement', description: 'Replacement of broken or worn parts including hammers, strings, felts, and keytops.', icon: 'wrench' },
+                { name: 'Piano Cleaning & Lubrication', description: 'Thorough interior and exterior cleaning with proper lubrication.', icon: 'shield' },
+                { name: 'Cabinet Buffing & Polishing', description: 'Professional cabinet restoration to keep your piano looking its best.', icon: 'sparkle' },
+              ],
+              fields: [
+                { name: 'name', type: 'text', label: 'Service Name', required: true },
+                { name: 'description', type: 'textarea', label: 'Description' },
+                {
+                  name: 'icon',
+                  type: 'select',
+                  label: 'Icon',
+                  defaultValue: 'wrench',
+                  options: [
+                    { label: 'Wrench', value: 'wrench' },
+                    { label: 'Settings/Gear', value: 'settings' },
+                    { label: 'Music Note', value: 'music' },
+                    { label: 'Shield', value: 'shield' },
+                    { label: 'Award', value: 'award' },
+                    { label: 'Sparkle', value: 'sparkle' },
+                    { label: 'Piano', value: 'piano' },
+                  ],
+                },
+              ],
+            },
+            { name: 'tuningContactPhone', type: 'text', label: 'Contact Phone' },
+            { name: 'tuningContactNote', type: 'textarea', label: 'Contact Note' },
+            { name: 'serviceCtaText', type: 'text', label: 'CTA Button Text', defaultValue: 'Schedule Service' },
+            { name: 'serviceCtaLink', type: 'text', label: 'CTA Button Link' },
+          ],
+        },
+
         // SEO & Meta Tab
         {
           label: 'SEO & Meta',

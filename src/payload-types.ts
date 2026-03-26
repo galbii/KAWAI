@@ -8768,6 +8768,93 @@ export interface Storefront {
      */
     foundingDate?: string | null;
   };
+  pianoRentalsEnabled?: boolean | null;
+  pianoRentalsTitle?: string | null;
+  pianoRentalsDescription?: string | null;
+  monthlyRentals?:
+    | {
+        pianoType: string;
+        startingPrice: number;
+        unit?: string | null;
+        description?: string | null;
+        image?: (string | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  rentToOwn?: {
+    enabled?: boolean | null;
+    applicationMonths?: number | null;
+    minimumRentalMonths?: number | null;
+    description?: string | null;
+  };
+  eventRentals?: {
+    enabled?: boolean | null;
+    rates?:
+      | {
+          pianoType: string;
+          price: number;
+          durationLabel?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    eventTypes?:
+      | {
+          eventType: string;
+          id?: string | null;
+        }[]
+      | null;
+    contactPhone?: string | null;
+    contactNote?: string | null;
+  };
+  rentalCtaText?: string | null;
+  rentalCtaLink?: string | null;
+  facilityRentalsEnabled?: boolean | null;
+  facilityRentalsTitle?: string | null;
+  facilityRentalsDescription?: string | null;
+  facilities?:
+    | {
+        name: string;
+        capacity?: number | null;
+        description?: string | null;
+        stageDimensions?: string | null;
+        availablePianos?:
+          | {
+              model: string;
+              description?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        useCases?:
+          | {
+              useCase: string;
+              id?: string | null;
+            }[]
+          | null;
+        image?: (string | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  pricingNote?: string | null;
+  pricingContactPhone?: string | null;
+  pricingContactEmail?: string | null;
+  facilityCtaText?: string | null;
+  facilityCtaLink?: string | null;
+  tuningRepairEnabled?: boolean | null;
+  tuningRepairTitle?: string | null;
+  tuningRepairDescription?: string | null;
+  tuningFrequency?: string | null;
+  tuningServices?:
+    | {
+        name: string;
+        description?: string | null;
+        icon?: ('wrench' | 'settings' | 'music' | 'shield' | 'award' | 'sparkle' | 'piano') | null;
+        id?: string | null;
+      }[]
+    | null;
+  tuningContactPhone?: string | null;
+  tuningContactNote?: string | null;
+  serviceCtaText?: string | null;
+  serviceCtaLink?: string | null;
   /**
    * SEO and metadata configuration
    */
@@ -9030,6 +9117,37 @@ export interface MusicSchool {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Minimum student age for private lessons (e.g. 5)
+   */
+  minimumAge?: number | null;
+  instruments?:
+    | {
+        instrument: string;
+        id?: string | null;
+      }[]
+    | null;
+  studentAgeGroups?:
+    | {
+        ageGroup: string;
+        id?: string | null;
+      }[]
+    | null;
+  whyChooseTitle?: string | null;
+  whyChooseBenefits?:
+    | {
+        title: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  trialLesson?: {
+    enabled?: boolean | null;
+    description?: string | null;
+    phone?: string | null;
+    ctaText?: string | null;
+    ctaLink?: string | null;
+  };
   programs?:
     | {
         name: string;
@@ -9046,6 +9164,25 @@ export interface MusicSchool {
          * e.g. "$50/month" or "Contact for pricing"
          */
         price?: string | null;
+        programType?: ('private-lessons' | 'group-lessons' | 'voice-lessons' | 'keyboard-class' | 'other') | null;
+        isHighlighted?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Fixed-schedule group classes (keyboard classes, adult hobbyist groups, etc.)
+   */
+  groupClasses?:
+    | {
+        name: string;
+        description?: string | null;
+        ageRange?: string | null;
+        studentsMin?: number | null;
+        studentsMax?: number | null;
+        tuition?: number | null;
+        schedule?: string | null;
+        sessionsInfo?: string | null;
+        isHighlighted?: boolean | null;
         id?: string | null;
       }[]
     | null;
@@ -9065,6 +9202,36 @@ export interface MusicSchool {
         price30min?: string | null;
         price45min?: string | null;
         price60min?: string | null;
+        registrationDeadline?: string | null;
+        fullSemesterPrice30?: number | null;
+        fullSemesterPrice45?: number | null;
+        fullSemesterPrice60?: number | null;
+        /**
+         * Per-month pricing within this semester (if rates vary by month)
+         */
+        monthlyRates?:
+          | {
+              month: string;
+              price30?: number | null;
+              price45?: number | null;
+              price60?: number | null;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Fixed-lesson-count pricing (e.g. Summer: 6 or 8 lessons)
+         */
+        lessonPackages?:
+          | {
+              lessonCount: number;
+              price30?: number | null;
+              price45?: number | null;
+              price60?: number | null;
+              id?: string | null;
+            }[]
+          | null;
+        payInFullDeadline?: string | null;
+        semesterNotes?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -9096,6 +9263,31 @@ export interface MusicSchool {
         id?: string | null;
       }[]
     | null;
+  tuitionPaymentType?: ('semester' | 'monthly' | 'per-lesson') | null;
+  /**
+   * e.g. "10th of each month" or "1st of each month"
+   */
+  tuitionDueDate?: string | null;
+  /**
+   * e.g. "Credit card only — no cash or checks accepted"
+   */
+  acceptedPayments?: string | null;
+  withdrawalPolicy?: string | null;
+  withdrawalEmail?: string | null;
+  withdrawalNoticeDays?: number | null;
+  makeupLessonPolicy?: string | null;
+  makeupOptions?:
+    | {
+        option: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * e.g. escort policy, pickup policy for minors
+   */
+  lessonProtocol?: string | null;
+  foodDrinksPolicy?: string | null;
+  photoReleasePolicy?: string | null;
   facilities?:
     | {
         name: string;
@@ -10537,6 +10729,97 @@ export interface StorefrontsSelect<T extends boolean = true> {
             };
         foundingDate?: T;
       };
+  pianoRentalsEnabled?: T;
+  pianoRentalsTitle?: T;
+  pianoRentalsDescription?: T;
+  monthlyRentals?:
+    | T
+    | {
+        pianoType?: T;
+        startingPrice?: T;
+        unit?: T;
+        description?: T;
+        image?: T;
+        id?: T;
+      };
+  rentToOwn?:
+    | T
+    | {
+        enabled?: T;
+        applicationMonths?: T;
+        minimumRentalMonths?: T;
+        description?: T;
+      };
+  eventRentals?:
+    | T
+    | {
+        enabled?: T;
+        rates?:
+          | T
+          | {
+              pianoType?: T;
+              price?: T;
+              durationLabel?: T;
+              id?: T;
+            };
+        eventTypes?:
+          | T
+          | {
+              eventType?: T;
+              id?: T;
+            };
+        contactPhone?: T;
+        contactNote?: T;
+      };
+  rentalCtaText?: T;
+  rentalCtaLink?: T;
+  facilityRentalsEnabled?: T;
+  facilityRentalsTitle?: T;
+  facilityRentalsDescription?: T;
+  facilities?:
+    | T
+    | {
+        name?: T;
+        capacity?: T;
+        description?: T;
+        stageDimensions?: T;
+        availablePianos?:
+          | T
+          | {
+              model?: T;
+              description?: T;
+              id?: T;
+            };
+        useCases?:
+          | T
+          | {
+              useCase?: T;
+              id?: T;
+            };
+        image?: T;
+        id?: T;
+      };
+  pricingNote?: T;
+  pricingContactPhone?: T;
+  pricingContactEmail?: T;
+  facilityCtaText?: T;
+  facilityCtaLink?: T;
+  tuningRepairEnabled?: T;
+  tuningRepairTitle?: T;
+  tuningRepairDescription?: T;
+  tuningFrequency?: T;
+  tuningServices?:
+    | T
+    | {
+        name?: T;
+        description?: T;
+        icon?: T;
+        id?: T;
+      };
+  tuningContactPhone?: T;
+  tuningContactNote?: T;
+  serviceCtaText?: T;
+  serviceCtaLink?: T;
   seo?:
     | T
     | {
@@ -11026,6 +11309,36 @@ export interface MusicSchoolsSelect<T extends boolean = true> {
         hoursOpen?: T;
         id?: T;
       };
+  minimumAge?: T;
+  instruments?:
+    | T
+    | {
+        instrument?: T;
+        id?: T;
+      };
+  studentAgeGroups?:
+    | T
+    | {
+        ageGroup?: T;
+        id?: T;
+      };
+  whyChooseTitle?: T;
+  whyChooseBenefits?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        id?: T;
+      };
+  trialLesson?:
+    | T
+    | {
+        enabled?: T;
+        description?: T;
+        phone?: T;
+        ctaText?: T;
+        ctaLink?: T;
+      };
   programs?:
     | T
     | {
@@ -11034,6 +11347,22 @@ export interface MusicSchoolsSelect<T extends boolean = true> {
         ageRange?: T;
         duration?: T;
         price?: T;
+        programType?: T;
+        isHighlighted?: T;
+        id?: T;
+      };
+  groupClasses?:
+    | T
+    | {
+        name?: T;
+        description?: T;
+        ageRange?: T;
+        studentsMin?: T;
+        studentsMax?: T;
+        tuition?: T;
+        schedule?: T;
+        sessionsInfo?: T;
+        isHighlighted?: T;
         id?: T;
       };
   tuitionSemesters?:
@@ -11044,6 +11373,30 @@ export interface MusicSchoolsSelect<T extends boolean = true> {
         price30min?: T;
         price45min?: T;
         price60min?: T;
+        registrationDeadline?: T;
+        fullSemesterPrice30?: T;
+        fullSemesterPrice45?: T;
+        fullSemesterPrice60?: T;
+        monthlyRates?:
+          | T
+          | {
+              month?: T;
+              price30?: T;
+              price45?: T;
+              price60?: T;
+              id?: T;
+            };
+        lessonPackages?:
+          | T
+          | {
+              lessonCount?: T;
+              price30?: T;
+              price45?: T;
+              price60?: T;
+              id?: T;
+            };
+        payInFullDeadline?: T;
+        semesterNotes?: T;
         id?: T;
       };
   fees?:
@@ -11068,6 +11421,22 @@ export interface MusicSchoolsSelect<T extends boolean = true> {
         answer?: T;
         id?: T;
       };
+  tuitionPaymentType?: T;
+  tuitionDueDate?: T;
+  acceptedPayments?: T;
+  withdrawalPolicy?: T;
+  withdrawalEmail?: T;
+  withdrawalNoticeDays?: T;
+  makeupLessonPolicy?: T;
+  makeupOptions?:
+    | T
+    | {
+        option?: T;
+        id?: T;
+      };
+  lessonProtocol?: T;
+  foodDrinksPolicy?: T;
+  photoReleasePolicy?: T;
   facilities?:
     | T
     | {

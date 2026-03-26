@@ -230,6 +230,30 @@ export default async function DynamicPage({ params }: { params: Promise<{ slug: 
     redirect(`/store/${slug[0]}`);
   }
 
+  // CRITICAL: Check page existence BEFORE Suspense boundary.
+  // Calling notFound() inside a Suspense causes a hydration mismatch — the
+  // skeleton is streamed to the client and then swapped mid-stream, which
+  // breaks React hydration and makes all interactive elements (including
+  // header links) unresponsive on 404 pages.
+  const { isEnabled: isDraftMode } = await draftMode();
+  const pageExists = await payload
+    .find({
+      collection: 'pages',
+      where: {
+        slug: { equals: slugPath },
+        ...(isDraftMode ? {} : { _status: { equals: 'published' } }),
+      },
+      limit: 1,
+      depth: 0,
+      draft: isDraftMode,
+      overrideAccess: isDraftMode,
+    })
+    .then(({ docs }) => docs[0] ?? null);
+
+  if (!pageExists) {
+    notFound();
+  }
+
   return (
     <Suspense fallback={<PageSkeleton />}>
       <PageContent slug={slug} />
