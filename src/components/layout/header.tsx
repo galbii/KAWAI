@@ -4,14 +4,13 @@ import Link from 'next/link'
 import { createPortal } from 'react-dom'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Menu, X, ChevronDown, Home } from 'lucide-react'
+import { Menu, X, ChevronDown, Home, MapPin } from 'lucide-react'
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { KawaiLogo } from '@/components/ui/kawai-logo'
 import { CartIcon } from '@/components/cart/CartIcon'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { ProductsMegaMenu } from '@/components/navigation/ProductsMegaMenu'
-import { StorefrontsMegaMenu } from '@/components/navigation/StorefrontsMegaMenu'
 import { ResourcesMegaMenu } from '@/components/navigation/ResourcesMegaMenu'
 import { RegisterPianoModal } from '@/components/navigation/RegisterPianoModal'
 import { NewsMegaMenu } from '@/components/navigation/NewsMegaMenu'
@@ -515,17 +514,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [isProductsMenuOpen, setIsProductsMenuOpen] = useState(false)
   const [productsNavData, setProductsNavData] = useState<ProductsNavigation | null>(null)
-  const [isStorefrontsMenuOpen, setIsStorefrontsMenuOpen] = useState(false)
-  const [storefrontsData, setStorefrontsData] = useState<Array<{
-    id: string
-    slug: string
-    locationName: string
-    locationText: string
-    establishedText?: string
-    showroomInfo?: { address?: string; phone?: string }
-    features?: Array<{ title: string }>
-  }> | null>(null)
-  const [isResourcesMenuOpen, setIsResourcesMenuOpen] = useState(false)
+const [isResourcesMenuOpen, setIsResourcesMenuOpen] = useState(false)
   const [isNewsMenuOpen, setIsNewsMenuOpen] = useState(false)
   const [isShowroomMenuOpen, setIsShowroomMenuOpen] = useState(false)
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
@@ -540,8 +529,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const headerRef = useRef<HTMLDivElement>(null)
   const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const productsMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const storefrontsMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const newsMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const showroomMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const autoHideTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -586,24 +574,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     return () => {
       clearInterval(refreshInterval)
     }
-  }, [])
-
-  // Fetch storefronts data on mount
-  useEffect(() => {
-    const loadStorefronts = async () => {
-      try {
-        const response = await fetch('/api/storefronts/active')
-        const result = await response.json()
-
-        if (result.success && result.data) {
-          setStorefrontsData(result.data)
-        }
-      } catch (error) {
-        console.error('[Header] Failed to load storefronts:', error)
-      }
-    }
-
-    loadStorefronts()
   }, [])
 
   // REMOVED: CSS variable updates were causing scroll jank
@@ -767,9 +737,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         if (isProductsMenuOpen) {
           setIsProductsMenuOpen(false)
         }
-        if (isStorefrontsMenuOpen) {
-          setIsStorefrontsMenuOpen(false)
-        }
         if (isResourcesMenuOpen) {
           setIsResourcesMenuOpen(false)
         }
@@ -792,9 +759,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       if (productsMenuTimeoutRef.current) {
         clearTimeout(productsMenuTimeoutRef.current)
       }
-      if (storefrontsMenuTimeoutRef.current) {
-        clearTimeout(storefrontsMenuTimeoutRef.current)
-      }
       if (resourcesMenuTimeoutRef.current) {
         clearTimeout(resourcesMenuTimeoutRef.current)
       }
@@ -805,7 +769,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         clearTimeout(newsMenuTimeoutRef.current)
       }
     }
-  }, [isMenuOpen, activeDropdown, isProductsMenuOpen, isStorefrontsMenuOpen, isResourcesMenuOpen, isNewsMenuOpen])
+  }, [isMenuOpen, activeDropdown, isProductsMenuOpen, isResourcesMenuOpen, isNewsMenuOpen])
   
   // ============================================================================
   // Scroll Detection Logic
@@ -836,9 +800,8 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
       lastScrollTime.current = Date.now()
 
       // Close menus on any scroll
-      if (isProductsMenuOpen || isStorefrontsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) {
+      if (isProductsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) {
         setIsProductsMenuOpen(false)
-        setIsStorefrontsMenuOpen(false)
         setIsResourcesMenuOpen(false)
         setIsNewsMenuOpen(false)
       }
@@ -873,7 +836,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     setActiveDropdown(itemLabel)
     // Close mega menus when opening regular dropdown
     setIsProductsMenuOpen(false)
-    setIsStorefrontsMenuOpen(false)
     setIsResourcesMenuOpen(false)
     setIsNewsMenuOpen(false)
   }, [])
@@ -904,7 +866,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     setIsProductsMenuOpen(true)
     // Close other menus
     setActiveDropdown(null)
-    setIsStorefrontsMenuOpen(false)
     setIsResourcesMenuOpen(false)
     setIsNewsMenuOpen(false)
   }, [animationComplete])
@@ -912,39 +873,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const handleProductsMenuClose = useCallback(() => {
     productsMenuTimeoutRef.current = setTimeout(() => {
       setIsProductsMenuOpen(false)
-    }, 150)
-    if (!autoMinimize) return
-    if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
-    autoHideTimeoutRef.current = setTimeout(() => {
-      setIsAutoHidden(true)
-    }, 2000)
-  }, [autoMinimize])
-
-  // Storefronts menu handlers
-  const handleStorefrontsMenuOpen = useCallback(() => {
-    if (!animationComplete) return
-    if (Date.now() - lastScrollTime.current < 200) return
-
-    if (storefrontsMenuTimeoutRef.current) {
-      clearTimeout(storefrontsMenuTimeoutRef.current)
-      storefrontsMenuTimeoutRef.current = null
-    }
-    if (autoHideTimeoutRef.current) {
-      clearTimeout(autoHideTimeoutRef.current)
-      autoHideTimeoutRef.current = null
-    }
-    setIsAutoHidden(false)
-    setIsStorefrontsMenuOpen(true)
-    // Close other menus
-    setActiveDropdown(null)
-    setIsProductsMenuOpen(false)
-    setIsResourcesMenuOpen(false)
-    setIsNewsMenuOpen(false)
-  }, [animationComplete])
-
-  const handleStorefrontsMenuClose = useCallback(() => {
-    storefrontsMenuTimeoutRef.current = setTimeout(() => {
-      setIsStorefrontsMenuOpen(false)
     }, 150)
     if (!autoMinimize) return
     if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
@@ -971,7 +899,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     // Close other menus
     setActiveDropdown(null)
     setIsProductsMenuOpen(false)
-    setIsStorefrontsMenuOpen(false)
     setIsNewsMenuOpen(false)
   }, [animationComplete])
 
@@ -1004,7 +931,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
     // Close other menus
     setActiveDropdown(null)
     setIsProductsMenuOpen(false)
-    setIsStorefrontsMenuOpen(false)
     setIsResourcesMenuOpen(false)
   }, [animationComplete])
 
@@ -1180,7 +1106,7 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
 
             {/* Right Side - Cart + CTA/Dealer Link + Mobile Menu */}
             <div className="flex items-center gap-2">
-              {/* Find a Dealer Link - Desktop (non-storefront pages) */}
+              {/* Find a Dealer - Desktop (non-storefront pages) */}
               {!isSignaturePage && !isUniversityPage && !currentLocationData && (
                 <motion.div
                   className="hidden xl:flex items-center"
@@ -1190,8 +1116,9 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                 >
                   <ContextAwareLink
                     href="/find-a-dealer"
-                    className="px-4 py-2 text-[12px] tracking-[0.08em] uppercase font-medium text-kawai-charcoal hover:text-kawai-red transition-colors font-[family-name:var(--font-brand-sans)]"
+                    className="flex items-center gap-2 rounded-md bg-kawai-red px-4 py-2.5 text-[11px] tracking-[0.08em] uppercase font-semibold text-white hover:bg-kawai-red-700 shadow-sm transition-all duration-200 font-[family-name:var(--font-brand-sans)]"
                   >
+                    <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
                     Find a Dealer
                   </ContextAwareLink>
                 </motion.div>
@@ -1400,23 +1327,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
                     >
                       <span>News</span>
                       <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isNewsMenuOpen && "rotate-180")} />
-                    </button>
-                  </div>
-
-                  {/* Official Storefronts Mega Menu */}
-                  <div
-                    onMouseEnter={storefrontsData && animationComplete ? handleStorefrontsMenuOpen : undefined}
-                    onMouseLeave={storefrontsData && animationComplete ? handleStorefrontsMenuClose : undefined}
-                  >
-                    <button
-                      className={cn(
-                        "flex items-center px-3 py-2 font-medium text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/80 transition-colors rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]",
-                        storefrontsData && animationComplete ? "cursor-pointer" : "cursor-default opacity-50"
-                      )}
-                      disabled={!storefrontsData || !animationComplete}
-                    >
-                      <span>Official Storefronts</span>
-                      <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isStorefrontsMenuOpen && "rotate-180")} />
                     </button>
                   </div>
 
@@ -1633,20 +1543,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
         </AnimatePresence>,
         document.body
       )}
-
-      {/* Storefronts Mega Menu - Rendered at root level for proper positioning */}
-      <div
-        onMouseEnter={storefrontsData && animationComplete ? handleStorefrontsMenuOpen : undefined}
-        onMouseLeave={storefrontsData && animationComplete ? handleStorefrontsMenuClose : undefined}
-      >
-        <StorefrontsMegaMenu
-          storefronts={storefrontsData || []}
-          isOpen={isStorefrontsMenuOpen && animationComplete && !isSearchOpen}
-          onClose={() => setIsStorefrontsMenuOpen(false)}
-          isLoading={!storefrontsData}
-          isHeaderScrolled={isScrolled}
-        />
-      </div>
 
       {/* Products Mega Menu - Rendered at root level for proper positioning, controlled by feature flag */}
       {isProductsMenuEnabled && (

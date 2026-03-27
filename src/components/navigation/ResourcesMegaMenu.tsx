@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Headphones, Briefcase, ArrowRight, Cpu, Building2, GraduationCap, BookOpen } from 'lucide-react'
+import { Headphones, Briefcase, ArrowRight, Cpu, Building2, GraduationCap, BookOpen, Store } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 // ============================================================================
@@ -128,6 +129,31 @@ export function ResourcesMegaMenu({
             <p className="text-[10px] text-kawai-red/70 tracking-[0.45em] uppercase font-semibold font-[family-name:var(--font-brand-sans)] mb-6">
               Resources
             </p>
+
+            {/* ── Kawai Stores — featured row ────────────────────────────── */}
+            <Link
+              href="/stores"
+              onClick={onClose}
+              className="group relative flex items-center justify-between py-4 pl-5 pr-2 mb-2 border-b border-kawai-black/[0.06] transition-colors duration-200"
+            >
+              <div className="absolute left-0 top-0 w-[2px] h-0 bg-kawai-red group-hover:h-full transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]" />
+              <div className="flex items-baseline gap-2.5">
+                <Image
+                  src="/images/Kawai (Red)(2).png"
+                  alt="KAWAI"
+                  width={52}
+                  height={16}
+                  className="h-[14px] w-auto self-center"
+                />
+                <span className="text-[17px] font-semibold text-kawai-black/80 group-hover:text-kawai-black font-[family-name:var(--font-brand-sans)] transition-colors duration-200">
+                  Stores
+                </span>
+                <span className="text-xs text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] hidden sm:inline">
+                  — official showrooms
+                </span>
+              </div>
+              <ArrowRight className="w-4 h-4 text-kawai-red/0 group-hover:text-kawai-red group-hover:translate-x-0.5 transition-all duration-200 flex-shrink-0" />
+            </Link>
 
             {/* ── Link rows ──────────────────────────────────────────────── */}
             <div className="divide-y divide-kawai-black/[0.06] mb-8">
