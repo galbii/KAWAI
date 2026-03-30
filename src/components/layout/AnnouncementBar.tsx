@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useLayoutEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
@@ -55,7 +55,7 @@ export function AnnouncementBar({
   divider = 'bullet'
 }: AnnouncementBarProps) {
   // Set CSS variable on document root so it's accessible by header and layout
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.documentElement.style.setProperty('--announcement-bar-height', sizeHeights[size])
 
     // Cleanup: remove the variable when component unmounts

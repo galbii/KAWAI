@@ -1,25 +1,29 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useLayoutEffect, useRef } from 'react'
 import { PayloadAdminBar } from '@payloadcms/admin-bar'
 import { useAdminBar } from '@/contexts/AdminBarContext'
 
 /**
  * Global admin bar — rendered once in the frontend layout.
  * Automatically shows/hides based on Payload auth state.
- * Uses ResizeObserver to set --admin-bar-height exactly to the rendered
- * bar height so the fixed header and announcement bar offset correctly.
+ *
+ * CRITICAL: PayloadAdminBar renders position:fixed by default, which takes
+ * it out of our wrapper's flow (making height 0). We override position to
+ * 'relative' so it stays in flow, then our wrapper provides the fixed
+ * positioning. This lets getBoundingClientRect() measure the true height.
+ *
+ * useLayoutEffect fires synchronously before the browser paints, so
+ * --admin-bar-height is always set before the header/announcement bar render.
  */
 export function AdminBar() {
   const { doc } = useAdminBar()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const barRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = barRef.current
-    if (!el) return
-
-    if (!isAuthenticated) {
+    if (!el || !isAuthenticated) {
       document.documentElement.style.setProperty('--admin-bar-height', '0px')
       return
     }
@@ -31,10 +35,10 @@ export function AdminBar() {
       }
     }
 
+    update()
+
     const observer = new ResizeObserver(update)
     observer.observe(el)
-    // Let the display:block paint before measuring
-    requestAnimationFrame(() => requestAnimationFrame(update))
 
     return () => {
       observer.disconnect()
@@ -65,7 +69,16 @@ export function AdminBar() {
             Kawai America Corp
           </span>
         }
-        style={{ backgroundColor: '#E11922' }}
+        style={{
+          // Override PayloadAdminBar's default position:fixed so it stays in our
+          // wrapper's flow and getBoundingClientRect() returns the true height.
+          position: 'relative',
+          top: 'auto',
+          left: 'auto',
+          width: '100%',
+          zIndex: 'auto',
+          backgroundColor: '#8B0F14',
+        }}
       />
     </div>
   )

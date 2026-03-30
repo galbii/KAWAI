@@ -591,7 +591,7 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
     const totalPx = 64 + navHeight
     document.documentElement.style.setProperty(
       '--header-bottom',
-      `calc(${totalPx}px + var(--announcement-bar-height, 0px))`
+      `calc(${totalPx}px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))`
     )
   }, [isScrolled, isAutoHidden])
 
