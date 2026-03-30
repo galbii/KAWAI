@@ -12,6 +12,7 @@
  *   so we don't add it here, avoiding a scroll jump when it disappears.
  *
  * Announcement bar height: var(--announcement-bar-height, 0px)
+ * Admin bar height: var(--admin-bar-height, 0px)
  */
 export function LayoutSpacer() {
   return (
@@ -19,7 +20,7 @@ export function LayoutSpacer() {
       className="w-full flex-shrink-0"
       style={{
         // lg:hidden red line (6px) is always visible on mobile, so mobile = 70px
-        height: 'calc(70px + var(--announcement-bar-height, 0px))'
+        height: 'calc(70px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))'
       }}
       aria-hidden="true"
     />

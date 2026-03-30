@@ -7,6 +7,7 @@ import { getPayloadClient } from '@/lib/payload/queries'
 import { LivePreviewPost } from '@/components/blog/LivePreviewPost'
 import { ArticleSidebar } from '@/components/blog/ArticleSidebar'
 import { RelatedPosts } from '@/components/blog/RelatedPosts'
+import { AdminBarDoc } from '@/components/layout/AdminBarDoc'
 
 // ISR — revalidate every 5 minutes
 export const revalidate = 300
@@ -129,12 +130,19 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
       ) : null
 
     return (
-      <LivePreviewPost
-        initialPost={post}
-        isDraftMode={isDraftMode}
-        sidebarSlot={sidebarSlot}
-        relatedPostsSlot={relatedPostsSlot}
-      />
+      <>
+        <AdminBarDoc
+          collection="posts"
+          id={String(post.id)}
+          collectionLabels={{ singular: 'Post', plural: 'Posts' }}
+        />
+        <LivePreviewPost
+          initialPost={post}
+          isDraftMode={isDraftMode}
+          sidebarSlot={sidebarSlot}
+          relatedPostsSlot={relatedPostsSlot}
+        />
+      </>
     )
   } catch (error) {
     console.error('Error loading blog post page:', error)

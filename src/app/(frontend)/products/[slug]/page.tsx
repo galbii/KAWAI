@@ -7,6 +7,7 @@ import { ErrorBoundary } from '@/components/ui/error-boundary'
 import { generateProductSchema, generateBreadcrumbSchema } from '@/lib/seo/schemas'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { AdminBarDoc } from '@/components/layout/AdminBarDoc'
 
 // Use ISR (Incremental Static Regeneration) for better SEO and performance
 // Pages are statically generated and revalidated every 1 hour
@@ -70,6 +71,11 @@ export default async function ProductPage(props: PageProps) {
 
     return (
       <div className="min-h-screen">
+        <AdminBarDoc
+          collection="products"
+          id={String(product.id)}
+          collectionLabels={{ singular: 'Product', plural: 'Products' }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import { getConcertArtistPageServer } from '@/lib/payload/server'
+import { AdminBarDoc } from '@/components/layout/AdminBarDoc'
 import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
 import ConcertArtistHero from './components/ConcertArtistHero'
 import ConcertArtistModels from './components/ConcertArtistModels'
@@ -315,6 +316,13 @@ export default async function ConcertArtistPage() {
 
   return (
     <>
+      {(pageData as any)?.id && (
+        <AdminBarDoc
+          collection="concert-artist-page"
+          id={String((pageData as any).id)}
+          collectionLabels={{ singular: 'Concert Artist Page', plural: 'Concert Artist Pages' }}
+        />
+      )}
       {/* Structured Data */}
       <script
         type="application/ld+json"

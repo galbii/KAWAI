@@ -57,7 +57,17 @@ export function NavigationContextProvider({
       }
     }
 
-    // Priority 2: dealer cookie set by middleware (not httpOnly — readable here)
+    // Priority 2: homepage — middleware always deletes the cookie on '/'. Trust the pathname
+    // rather than document.cookie, which may still hold a stale value because the browser
+    // hasn't yet applied the server's Set-Cookie deletion response when this effect fires
+    // (usePathname() updates before the RSC response arrives during soft navigation).
+    if (pathname === '/' || pathname === '') {
+      setOrigin({ basePath: '/', isDealerLocation: false })
+      setIsInitialized(true)
+      return
+    }
+
+    // Priority 3: dealer cookie set by middleware (not httpOnly — readable here)
     const match = document.cookie.match(/(?:^|;\s*)kawai-dealer-slug=([^;]+)/)
     const cookieSlug = match?.[1]
     if (cookieSlug) {

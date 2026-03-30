@@ -9,6 +9,7 @@ import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
 import { PianosBrowser } from '@/components/piano/PianosBrowser'
 import { NewsCarousel } from '@/components/homepage/news-carousel'
 import { RenderBlocks } from '@/components/RenderBlocks'
+import { AdminBarDoc } from '@/components/layout/AdminBarDoc'
 import type { Page } from '@/payload-types'
 
 export const revalidate = 3600
@@ -74,7 +75,16 @@ export default async function PianosPage() {
   // Check for a CMS page with slug "pianos" — if published, it overrides the static layout
   const cmsPage = await getCMSPianosPage()
   if (cmsPage?.layout && cmsPage.layout.length > 0) {
-    return <RenderBlocks blocks={cmsPage.layout} />
+    return (
+      <>
+        <AdminBarDoc
+          collection="pages"
+          id={String(cmsPage.id)}
+          collectionLabels={{ singular: 'Page', plural: 'Pages' }}
+        />
+        <RenderBlocks blocks={cmsPage.layout} />
+      </>
+    )
   }
 
   // Default static layout

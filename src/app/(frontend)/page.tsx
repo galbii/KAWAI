@@ -11,8 +11,9 @@ import { InnovationSection } from "@/components/homepage/innovation-section";
 import { SoundQualitySection } from "@/components/homepage/sound-quality-section";
 import { FAQSection } from "@/components/homepage/faq-section";
 import { SimpleDivider } from "@/components/ui/SimpleDivider";
-import { getHomePageDataDirect } from "@/lib/payload/queries";
+import { getHomePageDataDirect, getPayloadClient } from "@/lib/payload/queries";
 import type { HomePageData } from "@/lib/types/homepage";
+import { AdminBarDoc } from '@/components/layout/AdminBarDoc';
 import { Suspense } from "react";
 import type { Metadata } from 'next';
 import { RenderBlocks } from '@/components/RenderBlocks';
@@ -198,6 +199,13 @@ async function HomePageContent() {
     console.error('Homepage data fetch error:', error);
   }
 
+  let homePageDocId: string | undefined
+  try {
+    const payloadForId = await getPayloadClient()
+    const homePageResult = await payloadForId.find({ collection: 'home-page', limit: 1, depth: 0, select: {} })
+    homePageDocId = homePageResult.docs[0]?.id ? String(homePageResult.docs[0].id) : undefined
+  } catch { /* non-critical */ }
+
   // Fetch dealer locations using the proper utility function
   try {
     const { getActiveStorefrontsDirect } = await import('@/lib/payload/queries');
@@ -220,6 +228,13 @@ async function HomePageContent() {
     // Blocks mode: Render using RenderBlocks
     return (
       <div className="min-h-screen">
+        {homePageDocId && (
+          <AdminBarDoc
+            collection="home-page"
+            id={homePageDocId}
+            collectionLabels={{ singular: 'Home Page', plural: 'Home Pages' }}
+          />
+        )}
         <HomePageLivePreview />
         <RenderBlocks blocks={homePageData.content as any} />
       </div>
@@ -229,6 +244,13 @@ async function HomePageContent() {
   // LEGACY: Fallback to existing section components
   return (
     <div className="min-h-screen">
+      {homePageDocId && (
+        <AdminBarDoc
+          collection="home-page"
+          id={homePageDocId}
+          collectionLabels={{ singular: 'Home Page', plural: 'Home Pages' }}
+        />
+      )}
       <HomePageLivePreview />
       {/* Hero Section */}
       <HomeHero />

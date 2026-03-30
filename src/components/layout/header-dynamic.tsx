@@ -312,9 +312,7 @@ export async function HeaderDynamic() {
     const cookieDealerSlug = cookieStore.get('kawai-dealer-slug')?.value
     const dealerSlug = pathDealerSlug ?? cookieDealerSlug
 
-    const staticNavigation: NavigationItem[] = [
-      { label: 'Artists', href: '/artists' },
-    ]
+    const staticNavigation: NavigationItem[] = []
 
     // Fetch dealer location data server-side on every page where cookie is present.
     // This eliminates the client-side flash of un-branded → dealer header.
@@ -361,6 +359,6 @@ export async function HeaderDynamic() {
     const isUniversityPage = pathname.includes('/university')
     const isFindADealerPage = pathname.startsWith('/find-a-dealer')
 
-    return <Header navigation={[{ label: 'Artists', href: '/artists' }]} isSignaturePage={isSignaturePage} hidePianoLinks={isConcertArtistPage} isUniversityPage={isUniversityPage} isFindADealerPage={isFindADealerPage} newsItems={[]} />
+    return <Header navigation={[]} isSignaturePage={isSignaturePage} hidePianoLinks={isConcertArtistPage} isUniversityPage={isUniversityPage} isFindADealerPage={isFindADealerPage} newsItems={[]} />
   }
 }

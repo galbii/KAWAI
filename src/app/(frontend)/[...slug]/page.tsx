@@ -7,6 +7,7 @@ import config from '@payload-config';
 import type { Page } from '@/payload-types';
 import { Hero as PageHero } from '@/components/Hero';
 import { RenderBlocks } from '@/components/RenderBlocks';
+import { AdminBarDoc } from '@/components/layout/AdminBarDoc';
 
 /**
  * Page Content Component (for Pages collection)
@@ -43,6 +44,11 @@ async function PageContent({ slug }: { slug: string[] }) {
 
   return (
     <>
+      <AdminBarDoc
+        collection="pages"
+        id={String(page.id)}
+        collectionLabels={{ singular: 'Page', plural: 'Pages' }}
+      />
       {/* Hero Section */}
       {page.hero && <PageHero hero={page.hero} />}
 

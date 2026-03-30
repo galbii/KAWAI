@@ -8,6 +8,7 @@ import type { Artist, Media, Page, Product } from '@/payload-types'
 import { cn } from '@/lib/utils'
 import { Instagram, Youtube, Music, Globe, Facebook, Twitter, Linkedin } from 'lucide-react'
 import { RenderBlocks } from '@/components/RenderBlocks'
+import { AdminBarDoc } from '@/components/layout/AdminBarDoc'
 
 // Enable ISR with 15-minute revalidation
 export const revalidate = 900
@@ -298,6 +299,11 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-kawai-pearl via-white to-gray-50">
+      <AdminBarDoc
+        collection="artists"
+        id={String(artist.id)}
+        collectionLabels={{ singular: 'Artist', plural: 'Artists' }}
+      />
       {/* Hero Section */}
       <section className="relative bg-kawai-charcoal text-white overflow-hidden">
         <div className="container mx-auto px-6 py-24">

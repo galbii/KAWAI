@@ -6,6 +6,8 @@ import { AnnouncementBarWrapper } from "@/components/layout/AnnouncementBarWrapp
 import { LayoutSpacer } from "@/components/layout/LayoutSpacer";
 import { NavigationContextProvider } from "@/contexts/NavigationContext";
 import type { NavigationOrigin } from "@/lib/navigation-utils";
+import { AdminBarProvider } from "@/contexts/AdminBarContext";
+import { AdminBar } from "@/components/layout/AdminBar";
 import { headers, cookies } from 'next/headers';
 import { organizationSchema, featuredProductsSchema } from "@/lib/seo/schemas";
 import { UTMCapture } from "@/components/analytics/UTMCapture";
@@ -113,7 +115,9 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
   };
 
   return (
-    <NavigationContextProvider initialOrigin={initialOrigin}>
+    <AdminBarProvider>
+      <AdminBar />
+      <NavigationContextProvider initialOrigin={initialOrigin}>
       {/* WebSite Schema for sitelinks search box */}
       <script
         type="application/ld+json"
@@ -150,5 +154,6 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
       <DealerDimensionTracker />
       <CookieConsentBanner />
     </NavigationContextProvider>
+    </AdminBarProvider>
   )
 }

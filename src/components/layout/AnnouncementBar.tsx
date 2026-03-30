@@ -75,10 +75,11 @@ export function AnnouncementBar({
   const content = (
     <div
       className={cn(
-        'fixed top-0 left-0 right-0 z-40 w-full overflow-hidden',
+        'fixed left-0 right-0 z-40 w-full overflow-hidden',
         styleClasses[style],
         sizeClasses[size]
       )}
+      style={{ top: 'var(--admin-bar-height, 0px)' }}
     >
       <motion.div
         initial={{ opacity: 0 }}

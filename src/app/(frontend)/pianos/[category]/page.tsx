@@ -8,6 +8,7 @@ import { CategoryHero } from "@/components/piano/category-hero"
 import { UnifiedPianoSeries } from "@/components/piano/unified-piano-series"
 import { CategoryCTA } from "@/components/piano/category-cta"
 import { CollectionPageContent } from '@/components/piano/collection-page-content'
+import { AdminBarDoc } from '@/components/layout/AdminBarDoc'
 import {
   isValidCategory,
   getCategoryConfig,
@@ -303,5 +304,14 @@ export default async function CategoryPage({ params }: CategoryPageParams) {
 
   if (!collection) notFound()
 
-  return <CollectionPageContent collection={collection} products={products} />
+  return (
+    <>
+      <AdminBarDoc
+        collection="collections"
+        id={String(collection.id)}
+        collectionLabels={{ singular: 'Collection', plural: 'Collections' }}
+      />
+      <CollectionPageContent collection={collection} products={products} />
+    </>
+  )
 }

@@ -1054,7 +1054,7 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
       ref={headerRef}
       className="fixed left-0 right-0 z-50 w-full bg-white shadow-sm"
       style={{
-        top: 'var(--announcement-bar-height, 0)'
+        top: 'calc(var(--admin-bar-height, 0px) + var(--announcement-bar-height, 0px))'
       }}
     >
       {/* Top Row - Utility Bar (Full Width) */}
@@ -1358,6 +1358,14 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
                       {item.label}
                     </ContextAwareLink>
                   ))}
+
+                  {/* Support Link */}
+                  <ContextAwareLink
+                    href="/technical-support-division"
+                    className="px-3 py-2 font-medium text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/80 transition-colors rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]"
+                  >
+                    Support
+                  </ContextAwareLink>
 
                   {/* Resources Mega Menu */}
                   <div

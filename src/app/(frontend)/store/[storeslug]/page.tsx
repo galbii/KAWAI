@@ -12,6 +12,7 @@ import { TuningRepairSection } from '@/components/storefronts/tuning-repair-sect
 import { SimpleCustomerSignup } from "@/components/forms/SimpleCustomerSignup";
 import { getStorefrontBySlugDirect, getHomePageDataDirect } from "@/lib/payload/queries";
 import { LocalBusinessSchema } from "@/components/seo/LocalBusinessSchema";
+import { AdminBarDoc } from '@/components/layout/AdminBarDoc';
 import type { HomePageData } from "@/lib/types/homepage";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
@@ -250,6 +251,14 @@ async function StorefrontContent({ storeslug }: { storeslug: string }) {
 
   return (
     <>
+      {rawStorefrontData?.id && (
+        <AdminBarDoc
+          collection="storefronts"
+          id={String(rawStorefrontData.id)}
+          collectionLabels={{ singular: 'Storefront', plural: 'Storefronts' }}
+        />
+      )}
+
       {/* LocalBusiness Structured Data for SEO */}
       <LocalBusinessSchema storefront={rawStorefrontData} siteUrl={siteUrl} />
 
