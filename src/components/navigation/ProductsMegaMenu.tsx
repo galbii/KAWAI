@@ -347,7 +347,7 @@ function CollectionVideoBanner({ collection, onClose, heightClass = 'h-36', exte
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/10 pointer-events-none" />
       {comingSoon && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <span className="text-xs font-semibold tracking-[0.25em] uppercase text-white/50">Coming Soon</span>
+          <span className="text-2xl font-serif font-semibold tracking-wide text-white/60">Coming Soon</span>
         </div>
       )}
       <div className="absolute inset-0 flex items-center justify-between px-8">
@@ -528,6 +528,19 @@ function CategoryView({ sidebarKey, collections, allTabProducts, categoryHref, l
           <CollectionVideoBanner collection={activeCollection} onClose={onClose} />
         )}
       </AnimatePresence>
+
+      {/* Explore All Products — only shown on the All tab, not when a collection is selected */}
+      {activeTab === 'all' && (
+        <div className="mt-16">
+          <Link
+            href="/pianos"
+            onClick={onClose}
+            className="flex items-center justify-center w-full py-3.5 bg-[#1E1B16] text-white text-sm font-semibold tracking-[0.08em] uppercase rounded-lg hover:bg-[#2C2C2C] transition-colors duration-200"
+          >
+            Explore All Products
+          </Link>
+        </div>
+      )}
     </div>
   )
 }
@@ -551,10 +564,11 @@ function BannerOnlyView({ label, href, externalCtaUrl, collectionHandle, collect
 
   return (
     <div>
+      {/* Header */}
       <div className="flex items-end justify-between mb-5">
         <h2 className="text-2xl font-bold text-[#2C2C2C] font-serif leading-none">{label}</h2>
         {comingSoon ? (
-          <span className="text-xs font-semibold tracking-[0.15em] uppercase text-[#B8AFA6]">Coming Soon</span>
+          <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#B8AFA6]">Coming Soon</span>
         ) : isExternal ? (
           <a
             href={ctaHref}
@@ -573,6 +587,8 @@ function BannerOnlyView({ label, href, externalCtaUrl, collectionHandle, collect
           </Link>
         )}
       </div>
+
+      {/* Banner */}
       {collection ? (
         <CollectionVideoBanner collection={collection} onClose={onClose} heightClass={heightClass} {...(externalCtaUrl !== undefined && { externalCtaUrl })} {...(comingSoon && { comingSoon })} />
       ) : (
@@ -581,6 +597,24 @@ function BannerOnlyView({ label, href, externalCtaUrl, collectionHandle, collect
             Explore {label} →
           </Link>
         </div>
+      )}
+
+      {/* Post-banner CTA — only for comingSoon panels */}
+      {comingSoon && (
+        <motion.div
+          initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, delay: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="flex justify-center mt-5"
+        >
+          <Link
+            href="/pianos"
+            onClick={onClose}
+            className="group inline-flex items-center gap-2.5 px-6 py-2.5 bg-[#E11922] hover:bg-[#C41019] rounded-full text-sm font-semibold text-white transition-colors duration-200"
+          >
+            Browse All Products
+            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+          </Link>
+        </motion.div>
       )}
     </div>
   )
@@ -591,21 +625,51 @@ function BannerOnlyView({ label, href, externalCtaUrl, collectionHandle, collect
 
 function AccessoriesBannerView({ onClose }: { onClose: () => void }) {
   return (
-    <div className="flex flex-col items-center text-center gap-6 py-10">
-      <div className="flex flex-col gap-3">
-        <h2 className="text-3xl font-bold text-[#2C2C2C] font-serif leading-none">Accessories</h2>
-        <p className="text-5xl font-semibold text-[#2C2C2C] font-serif leading-tight">Coming Soon</p>
-        <p className="text-sm text-[#8A8078] leading-relaxed max-w-xs">Piano accessories, benches, headphones, and more — arriving soon.</p>
+    <motion.div
+      initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="flex flex-col items-center justify-center text-center py-16 px-8"
+    >
+      {/* Ornamental rule */}
+      <div className="flex items-center gap-3 mb-8 w-full max-w-[260px]">
+        <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#D5C78C]" />
+        <div className="w-1 h-1 rounded-full bg-[#D5C78C]" />
+        <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#D5C78C]" />
       </div>
+
+      <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#B8AFA6] mb-3">
+        Accessories
+      </p>
+
+      <h2 className="text-4xl font-serif text-[#1E1B16] leading-[1.1] mb-4">
+        Coming Soon
+      </h2>
+
+      <p className="text-sm text-[#8A8078] leading-relaxed max-w-[220px] mb-8">
+        Benches, pedals, headphones, and care essentials — curated for the discerning pianist.
+      </p>
+
       <Link
-        href="/products"
+        href="/pianos"
         onClick={onClose}
-        className="flex items-center gap-2 px-6 py-3 bg-[#2C2C2C] hover:bg-[#A01829] rounded-full text-sm font-medium text-white transition-colors duration-200"
+        className={cn(
+          'group inline-flex items-center gap-2.5 px-6 py-2.5',
+          'border border-[#2C2C2C] rounded-full',
+          'text-xs font-semibold tracking-[0.12em] uppercase text-[#2C2C2C]',
+          'hover:bg-[#2C2C2C] hover:text-white transition-all duration-200'
+        )}
       >
-        Browse All Products
-        <ArrowRight className="h-4 w-4" />
+        Explore Pianos
+        <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
       </Link>
-    </div>
+
+      {/* Ornamental rule */}
+      <div className="flex items-center gap-3 mt-8 w-full max-w-[260px]">
+        <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#D5C78C]" />
+        <div className="w-1 h-1 rounded-full bg-[#D5C78C]" />
+        <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#D5C78C]" />
+      </div>
+    </motion.div>
   )
 }
 

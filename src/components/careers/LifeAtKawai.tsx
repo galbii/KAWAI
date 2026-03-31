@@ -26,7 +26,7 @@ const PILLARS = [
 ]
 
 const STATS = [
-  { num: '97', label: 'Years of Craft' },
+  { num: '100', label: 'Years of Craft' },
   { num: '180+', label: 'Countries' },
   { num: '100K+', label: 'Instruments Yearly' },
   { num: '1927', label: 'Founded' },
@@ -118,14 +118,16 @@ export function LifeAtKawai() {
           <div className="w-12 h-px bg-kawai-red mb-14" />
 
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-16 lg:gap-24 items-end">
-            {/* Quote */}
-            <blockquote className="text-[2rem] md:text-[2.5rem] lg:text-[3rem] font-[family-name:var(--font-brand-luxury)] text-white leading-[1.2] italic max-w-3xl">
-              &ldquo;We don&apos;t make products.
-              <br />
-              We make instruments
-              <br />
-              <span className="not-italic text-kawai-red">that outlast their owners.</span>&rdquo;
-            </blockquote>
+            {/* Value proposition */}
+            <div className="max-w-3xl">
+              <h2 className="text-[2rem] md:text-[2.5rem] lg:text-[3rem] font-[family-name:var(--font-brand-luxury)] text-white leading-[1.2] mb-6">
+                A century of craft.<br />
+                <span className="text-kawai-red">Built for the next century.</span>
+              </h2>
+              <p className="text-white/50 font-[family-name:var(--font-brand-sans)] text-base leading-relaxed max-w-lg">
+                Kawai has been shaping how the world experiences music since 1927. Join a team where your work contributes to instruments played by millions of musicians across 180+ countries.
+              </p>
+            </div>
 
             {/* Attribution */}
             <div className="lg:pb-1">

@@ -65,35 +65,6 @@ export default async function CareersPage() {
       {/* 5. Open positions */}
       <JobGrid jobs={openJobs} />
 
-      {/* 6. CTA */}
-      <section className="px-8 md:px-16 lg:px-24 py-20 border-t border-kawai-neutral/60 bg-white">
-        <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div>
-            <div className="w-8 h-px bg-kawai-red mb-6" />
-            <h3 className="text-2xl md:text-3xl font-[family-name:var(--font-brand-luxury)] text-kawai-black mb-2">
-              Don&apos;t see the right role?
-            </h3>
-            <p className="text-sm text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)]">
-              We&apos;re always interested in exceptional people. Reach out — we read every note.
-            </p>
-          </div>
-          <a
-            href="mailto:careers@kawaipianos.com"
-            className="flex-shrink-0 inline-flex items-center gap-3 px-8 py-3.5 bg-kawai-black text-white text-sm font-medium uppercase tracking-[0.1em] font-[family-name:var(--font-brand-sans)] hover:bg-kawai-red transition-colors duration-200 self-start md:self-auto"
-          >
-            Get in Touch
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
-              <path
-                d="M2.5 7.5h10M8 3l4.5 4.5L8 12"
-                stroke="currentColor"
-                strokeWidth="1.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </a>
-        </div>
-      </section>
     </main>
   )
 }

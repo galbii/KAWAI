@@ -1008,7 +1008,7 @@ export const getCollectionsForBrowser = unstable_cache(
         pianoCategories: true,
         featured: true,
         youtubeUrl: true,
-        mediaUrl: true,
+        media: true,
         imageUrl: true,
         heading: true,
         subheading: true,
@@ -1019,26 +1019,30 @@ export const getCollectionsForBrowser = unstable_cache(
         fontFamily: true,
         bannerSize: true,
       },
-      depth: 0,
+      depth: 1,
       limit: 500,
     })
-    return result.docs.map((d) => ({
-      title: d.title,
-      handle: d.handle,
-      pianoCategories: (d.pianoCategories as string[] | null) ?? null,
-      featured: (d.featured as boolean | null | undefined) ?? null,
-      youtubeUrl: (d.youtubeUrl as string | null | undefined) ?? null,
-      mediaUrl: (d.mediaUrl as string | null | undefined) ?? null,
-      imageUrl: (d.imageUrl as string | null | undefined) ?? null,
-      heading: (d.heading as string | null | undefined) ?? null,
-      subheading: (d.subheading as string | null | undefined) ?? null,
-      textColor: (d.textColor as string | null | undefined) ?? null,
-      textAlignment: (d.textAlignment as string | null | undefined) ?? null,
-      overlayOpacity: (d.overlayOpacity as number | null | undefined) ?? null,
-      headingSize: (d.headingSize as string | null | undefined) ?? null,
-      fontFamily: (d.fontFamily as string | null | undefined) ?? null,
-      bannerSize: (d.bannerSize as string | null | undefined) ?? null,
-    }))
+    return result.docs.map((d) => {
+      const mediaObjectUrl =
+        d.media && typeof d.media === 'object' ? ((d.media as any).url as string | null | undefined) ?? null : null
+      return {
+        title: d.title,
+        handle: d.handle,
+        pianoCategories: (d.pianoCategories as string[] | null) ?? null,
+        featured: (d.featured as boolean | null | undefined) ?? null,
+        youtubeUrl: (d.youtubeUrl as string | null | undefined) ?? null,
+        mediaUrl: mediaObjectUrl,
+        imageUrl: (d.imageUrl as string | null | undefined) ?? null,
+        heading: (d.heading as string | null | undefined) ?? null,
+        subheading: (d.subheading as string | null | undefined) ?? null,
+        textColor: (d.textColor as string | null | undefined) ?? null,
+        textAlignment: (d.textAlignment as string | null | undefined) ?? null,
+        overlayOpacity: (d.overlayOpacity as number | null | undefined) ?? null,
+        headingSize: (d.headingSize as string | null | undefined) ?? null,
+        fontFamily: (d.fontFamily as string | null | undefined) ?? null,
+        bannerSize: (d.bannerSize as string | null | undefined) ?? null,
+      }
+    })
   },
   ['collections-for-browser'],
   { tags: ['collections'], revalidate: 3600 },
