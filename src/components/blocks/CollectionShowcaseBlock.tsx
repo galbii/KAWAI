@@ -12,6 +12,7 @@ interface CollectionShowcaseBlockProps {
   collection?: string | Collection | null
   bannerSize?: 'xxs' | 'xs' | 'small' | 'medium' | 'large' | 'fullscreen' | null
   customSubheading?: string | null
+  overrideYoutubeUrl?: string | null
   product?: Product | null
   /** When true, renders a "View Collection" CTA linking to /pianos/[handle]. Use on product pages. */
   showViewCollectionLink?: boolean
@@ -48,6 +49,7 @@ export function CollectionShowcaseBlock({
   collection,
   bannerSize: blockBannerSize,
   customSubheading,
+  overrideYoutubeUrl,
   product,
   showViewCollectionLink = false,
 }: CollectionShowcaseBlockProps) {
@@ -88,15 +90,18 @@ export function CollectionShowcaseBlock({
   // Use custom subheading if provided, otherwise use collection's subheading
   const displaySubheading = customSubheading || subheading
 
-  // Parse YouTube video ID
-  const videoId = youtubeUrl ? parseYouTubeId(youtubeUrl) : null
+  // Block-level YouTube URL takes priority over the collection's YouTube URL
+  const activeYoutubeUrl = overrideYoutubeUrl || youtubeUrl
+  const videoId = activeYoutubeUrl ? parseYouTubeId(activeYoutubeUrl) : null
 
-  // Get fallback image
+  // Get fallback image — only used when no YouTube video is present
   let fallbackImage: string | null = null
-  if (media && typeof media === 'object') {
-    fallbackImage = (media as Media).url || null
-  } else if (mediaUrl) {
-    fallbackImage = mediaUrl
+  if (!videoId) {
+    if (media && typeof media === 'object') {
+      fallbackImage = (media as Media).url || null
+    } else if (mediaUrl) {
+      fallbackImage = mediaUrl
+    }
   }
 
   // Banner height mapping
@@ -173,7 +178,7 @@ export function CollectionShowcaseBlock({
     const active = highlights[activeIndex] ?? highlights[0]
     return (
       <section className="relative w-full overflow-hidden bg-black text-white" style={{ minHeight: '420px' }}>
-        {/* Same video background as normal mode */}
+        {/* Video background */}
         {videoId && (
           <div className="absolute inset-0 z-0">
             <iframe
@@ -267,7 +272,7 @@ export function CollectionShowcaseBlock({
         heightClasses[safeBannerSize as keyof typeof heightClasses] || heightClasses.xs
       )}
     >
-      {/* YouTube Video Background - Now works on mobile and desktop */}
+      {/* YouTube Video Background */}
       {videoId && (
         <div className="absolute inset-0 z-0">
           <iframe

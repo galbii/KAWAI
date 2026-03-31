@@ -185,5 +185,13 @@ export const CollectionShowcase: Block = {
         placeholder: 'Leave empty to use the collection\'s default subheading',
       },
     },
+    {
+      name: 'overrideYoutubeUrl',
+      type: 'text',
+      admin: {
+        description: 'Optional: YouTube URL to override the collection\'s default video on this block only.',
+        placeholder: 'https://www.youtube.com/watch?v=...',
+      },
+    },
   ],
 }

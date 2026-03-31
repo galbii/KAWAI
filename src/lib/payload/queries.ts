@@ -1069,6 +1069,11 @@ export async function getProductsByCollectionHandle(handle: string): Promise<
       available: boolean
       imageUrl: string | null
     }>
+    customMedia?: Array<{
+      id?: string | null
+      image: { url: string; alt?: string | null }
+      alt?: string | null
+    }> | null
   }>
 > {
   try {
@@ -1091,9 +1096,10 @@ export async function getProductsByCollectionHandle(handle: string): Promise<
         visibility: true,
         variations: true,
         shopify: true,
+        customMedia: true,
       },
       sort: '-price.msrp',
-      depth: 0,
+      depth: 1,
       limit: 100,
     })
 
@@ -1162,6 +1168,35 @@ export async function getProductsByCollectionHandle(handle: string): Promise<
         compareAtPrice: minSaleVar?.compareAtPrice ?? null,
         description: doc.description ?? null,
         variations: enrichedVariations,
+        customMedia: Array.isArray((doc as any).customMedia)
+          ? ((doc as any).customMedia as Array<{
+              mediaType?: string | null
+              image?: unknown
+              alt?: string | null
+              id?: string | null
+            }>)
+              .filter(
+                (item): item is {
+                  mediaType: 'media'
+                  image: { url: string; alt?: string | null }
+                  alt?: string | null
+                  id?: string | null
+                } =>
+                  item.mediaType === 'media' &&
+                  typeof item.image === 'object' &&
+                  item.image !== null &&
+                  typeof (item.image as any).url === 'string' &&
+                  Boolean((item.image as any).url),
+              )
+              .map((item) => ({
+                id: item.id ?? null,
+                image: {
+                  url: (item.image as any).url as string,
+                  alt: (item.image as any).alt ?? null,
+                },
+                alt: item.alt ?? null,
+              }))
+          : null,
       }
     })
   } catch (error) {

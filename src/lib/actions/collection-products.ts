@@ -18,6 +18,7 @@ export async function getProductsByCollection(handle: string): Promise<NavProduc
         where: {
           'shopifyCollections.handle': { equals: handle },
           status: { equals: 'active' },
+          type: { not_equals: 'accessory' },
         },
         select: {
           id: true,

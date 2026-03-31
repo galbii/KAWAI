@@ -2938,6 +2938,10 @@ export interface ProductCollectionShowcaseBlock {
    * Optional: Override the collection subheading with product-specific text
    */
   customSubheading?: string | null;
+  /**
+   * Optional: YouTube URL to override the collection's default video on this block only.
+   */
+  overrideYoutubeUrl?: string | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'product-collection-showcase';
@@ -2986,19 +2990,6 @@ export interface Collection {
    * Fallback image URL if no media item is selected (optional)
    */
   mediaUrl?: string | null;
-  /**
-   * Images displayed in the bento grid on the collection page. First image becomes the featured (large) tile.
-   */
-  gallery?:
-    | {
-        image: string | Media;
-        /**
-         * Optional caption shown on hover
-         */
-        caption?: string | null;
-        id?: string | null;
-      }[]
-    | null;
   /**
    * Main heading text for collection banner
    */
@@ -11220,13 +11211,6 @@ export interface CollectionsSelect<T extends boolean = true> {
   youtubeUrl?: T;
   media?: T;
   mediaUrl?: T;
-  gallery?:
-    | T
-    | {
-        image?: T;
-        caption?: T;
-        id?: T;
-      };
   heading?: T;
   subheading?: T;
   bannerSize?: T;

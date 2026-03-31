@@ -22,7 +22,7 @@ const SIDEBAR_CATEGORIES = [
     href: '/pianos/shigeru-kawai',
     terms: [],
     bannerOnly: true as const,
-    externalCtaUrl: 'https://shigerukawai.com?utm_source=kawaiusa&utm_medium=navigation&utm_campaign=mega-menu&utm_content=shigeru-kawai',
+    comingSoon: true as const,
   },
   {
     label: 'Accessories',
@@ -268,6 +268,16 @@ function CollectionCarousel({ collections, onClose, onCategorySelect }: {
               ))}
             </div>
           )}
+
+          <div className="mt-8">
+            <Link
+              href="/pianos"
+              onClick={onClose}
+              className="flex items-center justify-center w-full py-3.5 bg-[#1E1B16] text-white text-sm font-semibold tracking-[0.08em] uppercase rounded-lg hover:bg-[#2C2C2C] transition-colors duration-200"
+            >
+              Explore All Products
+            </Link>
+          </div>
         </>
       )}
     </div>
@@ -524,13 +534,14 @@ function CategoryView({ sidebarKey, collections, allTabProducts, categoryHref, l
 // ─── Banner-Only View ─────────────────────────────────────────────────────────
 // Shown for categories like Shigeru Kawai that render only a collection banner.
 
-function BannerOnlyView({ label, href, externalCtaUrl, collectionHandle, collections, onClose }: {
+function BannerOnlyView({ label, href, externalCtaUrl, collectionHandle, collections, onClose, comingSoon }: {
   label: string
   href: string
   externalCtaUrl?: string
   collectionHandle: string
   collections: NavCollection[]
   onClose: () => void
+  comingSoon?: boolean
 }) {
   const collection = collections.find((c) => c.handle === collectionHandle)
   const heightClass = collection?.bannerSize ? (BANNER_SIZE_HEIGHT[collection.bannerSize] ?? 'h-[250px]') : 'h-[250px]'
@@ -541,7 +552,9 @@ function BannerOnlyView({ label, href, externalCtaUrl, collectionHandle, collect
     <div>
       <div className="flex items-end justify-between mb-5">
         <h2 className="text-2xl font-bold text-[#2C2C2C] font-serif leading-none">{label}</h2>
-        {isExternal ? (
+        {comingSoon ? (
+          <span className="text-xs font-semibold tracking-[0.15em] uppercase text-[#B8AFA6]">Coming Soon</span>
+        ) : isExternal ? (
           <a
             href={ctaHref}
             target="_blank"
@@ -578,42 +591,24 @@ function BannerOnlyView({ label, href, externalCtaUrl, collectionHandle, collect
 function AccessoriesBannerView({ onClose }: { onClose: () => void }) {
   return (
     <div>
-      {/* Header row — matches CategoryView / BannerOnlyView / CollectionCarousel exactly */}
+      {/* Header row */}
       <div className="flex items-end justify-between mb-5">
         <h2 className="text-2xl font-bold text-[#2C2C2C] font-serif leading-none">Accessories</h2>
-        <Link href="/pianos/accessories" onClick={onClose} className="group flex items-center gap-2 text-sm font-medium text-[#A01829]">
-          Browse All
-          <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-        </Link>
+        <span className="text-xs font-semibold tracking-[0.15em] uppercase text-[#B8AFA6]">Coming Soon</span>
       </div>
 
-      {/* Editorial layout — two columns, clean type, no dark box */}
-      <div className="flex gap-16 mt-2">
-
-        {/* Left: supporting text */}
-        <div className="w-48 flex-shrink-0 pt-1">
-          <p className="text-sm text-[#8A8078] leading-relaxed">
-            Everything you need to complete your piano setup.
-          </p>
-        </div>
-
-        {/* Right: category list with hairline dividers */}
-        <div className="flex-1 border-t border-[#E8E4DF]">
-          {['Benches', 'Pedals', 'Covers', 'Headphones'].map((cat) => (
-            <Link
-              key={cat}
-              href="/pianos/accessories"
-              onClick={onClose}
-              className="group flex items-center justify-between py-5 border-b border-[#E8E4DF]"
-            >
-              <span className="text-xl font-serif text-[#2C2C2C] group-hover:text-[#A01829] transition-colors duration-150">
-                {cat}
-              </span>
-              <ArrowRight className="h-4 w-4 text-[#C8C2BA] group-hover:text-[#A01829] group-hover:translate-x-0.5 transition-all duration-150" />
-            </Link>
-          ))}
-        </div>
-
+      {/* Single access point */}
+      <div className="border-t border-[#E8E4DF]">
+        <Link
+          href="/pianos/accessories"
+          onClick={onClose}
+          className="group flex items-center justify-between py-5 border-b border-[#E8E4DF]"
+        >
+          <span className="text-xl font-serif text-[#2C2C2C] group-hover:text-[#A01829] transition-colors duration-150">
+            Browse Accessories
+          </span>
+          <ArrowRight className="h-4 w-4 text-[#C8C2BA] group-hover:text-[#A01829] group-hover:translate-x-0.5 transition-all duration-150" />
+        </Link>
       </div>
     </div>
   )
@@ -756,7 +751,8 @@ export function ProductsMegaMenu({
                         <BannerOnlyView
                           label={selectedCat.label}
                           href={selectedCat.href}
-                          {...('externalCtaUrl' in selectedCat && { externalCtaUrl: selectedCat.externalCtaUrl })}
+                          {...('externalCtaUrl' in selectedCat && typeof selectedCat.externalCtaUrl === 'string' && { externalCtaUrl: selectedCat.externalCtaUrl })}
+                          {...('comingSoon' in selectedCat && { comingSoon: selectedCat.comingSoon })}
                           collectionHandle={selectedCat.key}
                           collections={allCollections ?? collections}
                           onClose={onClose}

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Phone, Mail, MapPin, Facebook, Instagram, Youtube, Twitter } from 'lucide-react'
+import { Phone, Mail, MapPin, Facebook, Instagram, Youtube, Linkedin } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useActionState } from 'react'
 import { KawaiLogo } from '@/components/ui/kawai-logo'
@@ -33,13 +33,12 @@ import { submitNewsletterSignup, type NewsletterSignupResult } from '@/lib/actio
 //   },
 // }
 
-// Social links hidden until actual URLs are configured
-// const socialLinks = [
-//   { icon: Facebook, href: '#', label: 'Facebook' },
-//   { icon: Instagram, href: '#', label: 'Instagram' },
-//   { icon: Youtube, href: '#', label: 'YouTube' },
-//   { icon: Twitter, href: '#', label: 'Twitter' },
-// ]
+const socialLinks = [
+  { icon: Instagram, href: 'https://www.instagram.com/kawaipianosus/', label: 'Instagram' },
+  { icon: Facebook, href: 'https://www.facebook.com/KawaiPianosUS/', label: 'Facebook' },
+  { icon: Linkedin, href: 'https://www.linkedin.com/company/9083672', label: 'LinkedIn' },
+  { icon: Youtube, href: 'https://www.youtube.com/@KawaiPianosUS', label: 'YouTube' },
+]
 
 interface DealerLocationContactData {
   name: string
@@ -195,25 +194,25 @@ export function Footer({ locationContactData, isSignaturePage = false }: FooterP
               © 2026 Kawai America Corporation. All rights reserved.
             </div>
 
-            {/* Social Links - Hidden until actual URLs are configured */}
-            {/* {!isSignaturePage && (
-              <div className="flex space-x-4">
-                {socialLinks.map((social) => {
-                  const Icon = social.icon
-                  return (
-                    <motion.div key={social.label} variants={socialVariants} initial="initial" whileHover="hover">
-                      <Link
-                        href={social.href}
-                        className="text-kawai-neutral/80 hover:text-kawai-red transition-colors"
-                        aria-label={social.label}
-                      >
-                        <Icon className="h-5 w-5" />
-                      </Link>
-                    </motion.div>
-                  )
-                })}
-              </div>
-            )} */}
+            {/* Social Links */}
+            <div className="flex space-x-6">
+              {socialLinks.map((social) => {
+                const Icon = social.icon
+                return (
+                  <motion.div key={social.label} variants={socialVariants} initial="initial" whileHover="hover">
+                    <Link
+                      href={social.href}
+                      className="text-kawai-neutral/80 hover:text-kawai-red transition-colors"
+                      aria-label={social.label}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Icon className="h-7 w-7" />
+                    </Link>
+                  </motion.div>
+                )
+              })}
+            </div>
           </div>
         </div>
       </div>

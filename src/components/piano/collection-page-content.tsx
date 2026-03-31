@@ -16,6 +16,12 @@ export interface CollectionVariation {
   imageUrl: string | null
 }
 
+export interface CollectionMediaItem {
+  id?: string | null
+  image: { url: string; alt?: string | null }
+  alt?: string | null
+}
+
 export interface CollectionProduct {
   id: string
   model: string
@@ -27,6 +33,7 @@ export interface CollectionProduct {
   salePrice?: number | null
   description?: string | null
   variations: CollectionVariation[]
+  customMedia?: CollectionMediaItem[] | null
 }
 
 interface CollectionPageContentProps {
@@ -61,17 +68,8 @@ const CATEGORY_LABELS: Record<string, string> = {
   hybrid: 'Hybrid Pianos',
 }
 
-interface GalleryItem {
-  id?: string | null
-  image: { url: string; alt?: string | null } | string | null
-  caption?: string | null
-}
-
-function CollectionBentoGrid({ gallery }: { gallery: GalleryItem[] }) {
-  const items = (gallery ?? []).filter(
-    (item): item is GalleryItem & { image: { url: string; alt?: string | null } } =>
-      typeof item.image === 'object' && item.image !== null && Boolean((item.image as any).url),
-  )
+function CollectionBentoGrid({ products }: { products: CollectionProduct[] }) {
+  const items: CollectionMediaItem[] = products.flatMap((p) => p.customMedia ?? [])
   if (items.length === 0) return null
 
   const isFeaturedLayout = items.length >= 3
@@ -99,7 +97,7 @@ function CollectionBentoGrid({ gallery }: { gallery: GalleryItem[] }) {
         >
           <Image
             src={items[0].image.url}
-            alt={items[0].caption ?? items[0].image.alt ?? ''}
+            alt={items[0].alt ?? items[0].image.alt ?? ''}
             fill
             sizes="100vw"
             className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
@@ -126,18 +124,18 @@ function CollectionBentoGrid({ gallery }: { gallery: GalleryItem[] }) {
               >
                 <Image
                   src={item.image.url}
-                  alt={item.caption ?? item.image.alt ?? ''}
+                  alt={item.alt ?? item.image.alt ?? ''}
                   fill
                   sizes={isFeatured ? '(max-width: 768px) 100vw, 66vw' : '(max-width: 768px) 50vw, 33vw'}
                   className="object-cover transition-transform duration-700 ease-[var(--ease-piano)] group-hover:scale-[1.04]"
                 />
-                {item.caption && (
+                {item.alt && (
                   <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <p
                       className="text-white/90 text-xs tracking-wide"
                       style={{ fontFamily: 'var(--font-brand-sans)' }}
                     >
-                      {item.caption}
+                      {item.alt}
                     </p>
                   </div>
                 )}
@@ -304,9 +302,7 @@ export function CollectionPageContent({ collection, products }: CollectionPageCo
       )}
 
       {/* ── Media gallery bento grid ────────────────────────────────────────── */}
-      {Array.isArray(collection.gallery) && collection.gallery.length > 0 && (
-        <CollectionBentoGrid gallery={collection.gallery} />
-      )}
+      <CollectionBentoGrid products={products} />
 
       {/* ── Bottom CTA ──────────────────────────────────────────────────────── */}
       <section className="bg-kawai-black text-white py-28 mt-4">

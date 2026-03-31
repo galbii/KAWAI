@@ -798,8 +798,11 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
     if (Math.abs(movement) > 5) {
       // Update last scroll time for menu prevention
       lastScrollTime.current = Date.now()
+    }
 
-      // Close menus on any scroll
+    // Close menus only on intentional scrolling (120px+ movement) to prevent
+    // trackpad jitter and accidental closes when moving mouse toward a mega menu.
+    if (Math.abs(movement) > 120) {
       if (isProductsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) {
         setIsProductsMenuOpen(false)
         setIsResourcesMenuOpen(false)
@@ -843,7 +846,7 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const handleDropdownClose = useCallback(() => {
     dropdownTimeoutRef.current = setTimeout(() => {
       setActiveDropdown(null)
-    }, 150)
+    }, 500)
   }, [])
 
   // Products menu handlers
@@ -873,7 +876,7 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const handleProductsMenuClose = useCallback(() => {
     productsMenuTimeoutRef.current = setTimeout(() => {
       setIsProductsMenuOpen(false)
-    }, 150)
+    }, 500)
     if (!autoMinimize) return
     if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
     autoHideTimeoutRef.current = setTimeout(() => {
@@ -905,7 +908,7 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const handleResourcesMenuClose = useCallback(() => {
     resourcesMenuTimeoutRef.current = setTimeout(() => {
       setIsResourcesMenuOpen(false)
-    }, 150)
+    }, 500)
     if (!autoMinimize) return
     if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
     autoHideTimeoutRef.current = setTimeout(() => {
@@ -937,7 +940,7 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const handleNewsMenuClose = useCallback(() => {
     newsMenuTimeoutRef.current = setTimeout(() => {
       setIsNewsMenuOpen(false)
-    }, 150)
+    }, 500)
     if (!autoMinimize) return
     if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
     autoHideTimeoutRef.current = setTimeout(() => {
@@ -953,7 +956,7 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const handleShowroomMenuClose = useCallback(() => {
     showroomMenuTimeoutRef.current = setTimeout(() => {
       setIsShowroomMenuOpen(false)
-    }, 150)
+    }, 400)
   }, [])
 
 
