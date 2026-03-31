@@ -343,7 +343,7 @@ export async function HeaderDynamic() {
         latestPosts={latestPosts}
         registerConfig={registerConfig}
         quickLinks={quickLinks}
-        autoMinimize={headerSettings.autoMinimize}
+        autoMinimize={false}
       />
     )
   } catch (error) {
