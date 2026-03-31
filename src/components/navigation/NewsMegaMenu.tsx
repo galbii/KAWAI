@@ -106,8 +106,8 @@ export function NewsMegaMenu({
   if (!isOpen && currentIndex !== 0) setCurrentIndex(0)
 
   const topOffset = isHeaderScrolled
-    ? 'calc(112px + var(--announcement-bar-height, 0px))'
-    : 'calc(128px + var(--announcement-bar-height, 0px))'
+    ? 'calc(112px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))'
+    : 'calc(128px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))'
 
   return (
     <AnimatePresence>
@@ -124,7 +124,7 @@ export function NewsMegaMenu({
             className,
           )}
           style={{
-            maxHeight: isHeaderScrolled ? 'calc(100vh - 112px)' : 'calc(100vh - 128px)',
+            maxHeight: isHeaderScrolled ? 'calc(100vh - 112px - var(--admin-bar-height, 0px))' : 'calc(100vh - 128px - var(--admin-bar-height, 0px))',
             overflowY: 'auto',
             transformOrigin: 'top center',
             boxShadow: '0 40px 80px -16px rgba(30,27,22,0.25)',

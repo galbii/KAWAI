@@ -711,8 +711,8 @@ export function ProductsMegaMenu({
   const selectedCat = SIDEBAR_CATEGORIES.find((c) => c.key === selectedKey)
 
   const topOffset = isHeaderScrolled
-    ? 'calc(112px + var(--announcement-bar-height, 0px))'
-    : 'calc(128px + var(--announcement-bar-height, 0px))'
+    ? 'calc(112px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))'
+    : 'calc(128px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))'
 
   return (
     <AnimatePresence>

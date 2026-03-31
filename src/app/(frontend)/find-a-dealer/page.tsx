@@ -47,6 +47,7 @@ function storefrontToDealer(storefront: Storefront): UnifiedDealer {
       latitude: latitude ?? 0,
       longitude: longitude ?? 0,
     },
+    dealerType: 'dealer' as const, // Storefronts are always retail dealers
     acousticPianoDealer: true, // Storefronts carry acoustic pianos
     description: storefront.showroomDescription,
     updatedAt: storefront.updatedAt,

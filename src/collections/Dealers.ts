@@ -95,7 +95,7 @@ export const Dealers: CollectionConfig = {
     group: 'Business',
     useAsTitle: 'dealerName',
     description: 'Manage authorized Kawai piano dealers with location, contact information, and service details for the dealer finder map.',
-    defaultColumns: ['dealerName', 'city', 'state', 'isActive', 'updatedAt']
+    defaultColumns: ['dealerName', 'dealerType', 'city', 'state', 'isActive', 'updatedAt']
   },
   access: {
     read: () => true, // Public read access for dealer finder
@@ -152,9 +152,17 @@ export const Dealers: CollectionConfig = {
       name: 'dealerIdentification',
       type: 'text',
       admin: {
-        description: 'Optional internal dealer ID or official records reference (e.g., "KW-2024-001")',
+        description: 'Optional internal dealer ID or official records reference (e.g., "V111C00923")',
         position: 'sidebar',
-        placeholder: 'KW-2024-001'
+        placeholder: 'V111C00923'
+      }
+    },
+    {
+      name: 'dbaName',
+      type: 'text',
+      admin: {
+        description: 'DBA / alternate business name (e.g., "dba Piano Gallery")',
+        placeholder: 'dba Piano Gallery'
       }
     },
 
@@ -209,6 +217,14 @@ export const Dealers: CollectionConfig = {
                   admin: {
                     description: 'Fax number (if applicable)',
                     placeholder: '(555) 123-4568'
+                  }
+                },
+                {
+                  name: 'contactPerson',
+                  type: 'text',
+                  admin: {
+                    description: 'Primary contact name at this location',
+                    placeholder: 'Jane Smith'
                   }
                 }
               ]
@@ -304,6 +320,20 @@ export const Dealers: CollectionConfig = {
           description: 'Operating hours, services, and additional information',
           fields: [
             {
+              name: 'dealerType',
+              type: 'select',
+              required: true,
+              defaultValue: 'dealer',
+              options: [
+                { label: 'Dealer', value: 'dealer' },
+                { label: 'Branch', value: 'branch' },
+                { label: 'Technician', value: 'technician' },
+              ],
+              admin: {
+                description: 'Dealer, branch location, or piano technician — controls display in finder'
+              }
+            },
+            {
               name: 'shigeruKawaiDealer',
               type: 'checkbox',
               defaultValue: false,
@@ -325,6 +355,14 @@ export const Dealers: CollectionConfig = {
               defaultValue: false,
               admin: {
                 description: 'Carries professional products (MP stage pianos, ES portables, VPC1, etc.)'
+              }
+            },
+            {
+              name: 'digitalPianoDealer',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                description: 'Carries digital pianos (CA, CN, KDP Series, etc.)'
               }
             },
 
@@ -471,6 +509,30 @@ export const Dealers: CollectionConfig = {
                   }
                 }
               ]
+            }
+          ]
+        },
+
+        // Internal Tab
+        {
+          label: 'Internal',
+          description: 'Internal Kawai admin data — not displayed publicly',
+          fields: [
+            {
+              name: 'region',
+              type: 'text',
+              admin: {
+                description: 'Sales territory / rep name (e.g., "Kerry McCoy", "Western Canada")',
+                placeholder: 'Kerry McCoy'
+              }
+            },
+            {
+              name: 'paymentTerms',
+              type: 'text',
+              admin: {
+                description: 'Payment terms from KAC/KCM records (e.g., "PAS/Net 30 Days")',
+                placeholder: 'PAS/Net 30 Days'
+              }
             }
           ]
         },

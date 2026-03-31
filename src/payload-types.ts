@@ -8912,9 +8912,13 @@ export interface Dealer {
    */
   isFeatured?: boolean | null;
   /**
-   * Optional internal dealer ID or official records reference (e.g., "KW-2024-001")
+   * Optional internal dealer ID or official records reference (e.g., "V111C00923")
    */
   dealerIdentification?: string | null;
+  /**
+   * DBA / alternate business name (e.g., "dba Piano Gallery")
+   */
+  dbaName?: string | null;
   contactInfo?: {
     /**
      * Primary phone number (e.g., "636-265-2866" or "(636) 265-2866")
@@ -8932,6 +8936,10 @@ export interface Dealer {
      * Fax number (if applicable)
      */
     fax?: string | null;
+    /**
+     * Primary contact name at this location
+     */
+    contactPerson?: string | null;
   };
   /**
    * Complete physical address for map placement and directions
@@ -8972,6 +8980,10 @@ export interface Dealer {
     longitude?: number | null;
   };
   /**
+   * Dealer, branch location, or piano technician — controls display in finder
+   */
+  dealerType: 'dealer' | 'branch' | 'technician';
+  /**
    * Authorized to sell Shigeru Kawai SK Series grands
    */
   shigeruKawaiDealer?: boolean | null;
@@ -8983,6 +8995,10 @@ export interface Dealer {
    * Carries professional products (MP stage pianos, ES portables, VPC1, etc.)
    */
   professionalProductDealer?: boolean | null;
+  /**
+   * Carries digital pianos (CA, CN, KDP Series, etc.)
+   */
+  digitalPianoDealer?: boolean | null;
   /**
    * Brief description of the dealer (displayed in dealer finder results)
    */
@@ -9049,6 +9065,14 @@ export interface Dealer {
         }[]
       | null;
   };
+  /**
+   * Sales territory / rep name (e.g., "Kerry McCoy", "Western Canada")
+   */
+  region?: string | null;
+  /**
+   * Payment terms from KAC/KCM records (e.g., "PAS/Net 30 Days")
+   */
+  paymentTerms?: string | null;
   seo?: {
     /**
      * Custom meta title (leave empty to auto-generate from dealer name)
@@ -11213,6 +11237,7 @@ export interface DealersSelect<T extends boolean = true> {
   isActive?: T;
   isFeatured?: T;
   dealerIdentification?: T;
+  dbaName?: T;
   contactInfo?:
     | T
     | {
@@ -11220,6 +11245,7 @@ export interface DealersSelect<T extends boolean = true> {
         email?: T;
         website?: T;
         fax?: T;
+        contactPerson?: T;
       };
   address?:
     | T
@@ -11236,9 +11262,11 @@ export interface DealersSelect<T extends boolean = true> {
         latitude?: T;
         longitude?: T;
       };
+  dealerType?: T;
   shigeruKawaiDealer?: T;
   acousticPianoDealer?: T;
   professionalProductDealer?: T;
+  digitalPianoDealer?: T;
   description?: T;
   hours?:
     | T
@@ -11268,6 +11296,8 @@ export interface DealersSelect<T extends boolean = true> {
               id?: T;
             };
       };
+  region?: T;
+  paymentTerms?: T;
   seo?:
     | T
     | {
