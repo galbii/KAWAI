@@ -39,8 +39,13 @@ export const MediaSelectorButton: React.FC = () => {
       mode: 'select',
       onSelect: (media) => {
         console.log('[MediaSelectorButton] Media selected:', media.id)
-        // Set the field value to the selected media ID
+        const savedScroll = window.scrollY
         setValue(media.id)
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            window.scrollTo({ top: savedScroll, behavior: 'instant' })
+          })
+        })
       },
     })
     console.log('[MediaSelectorButton] Modal state after open:', isOpen)

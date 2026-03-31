@@ -2987,6 +2987,19 @@ export interface Collection {
    */
   mediaUrl?: string | null;
   /**
+   * Images displayed in the bento grid on the collection page. First image becomes the featured (large) tile.
+   */
+  gallery?:
+    | {
+        image: string | Media;
+        /**
+         * Optional caption shown on hover
+         */
+        caption?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * Main heading text for collection banner
    */
   heading?: string | null;
@@ -11207,6 +11220,13 @@ export interface CollectionsSelect<T extends boolean = true> {
   youtubeUrl?: T;
   media?: T;
   mediaUrl?: T;
+  gallery?:
+    | T
+    | {
+        image?: T;
+        caption?: T;
+        id?: T;
+      };
   heading?: T;
   subheading?: T;
   bannerSize?: T;

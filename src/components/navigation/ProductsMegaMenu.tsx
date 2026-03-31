@@ -152,7 +152,6 @@ function CollectionCarouselCard({
   const imageUrl = thumbnail ?? collection.imageUrl ?? collection.mediaUrl ?? null
   const hasMedia = Boolean(imageUrl || videoId)
   const displayTitle = collection.heading || collection.title
-  const sidebarKey = getSidebarKeyForCollection(collection)
   const collectionHref = `/pianos/${collection.handle}`
 
   const [isPlaying, setIsPlaying] = useState(false)
@@ -162,14 +161,9 @@ function CollectionCarouselCard({
     return () => clearTimeout(t)
   }, [videoId, index])
 
-  const handleCardClick = useCallback(() => {
-    if (sidebarKey) onCategorySelect(sidebarKey)
-    else onClose()
-  }, [sidebarKey, onCategorySelect, onClose])
-
   return (
     <div className="group relative w-full">
-      <button onClick={handleCardClick} className="relative w-full text-left block" aria-label={`Browse ${displayTitle}`}>
+      <Link href={collectionHref} onClick={onClose} className="relative w-full text-left block" aria-label={`Browse ${displayTitle}`}>
         <div className={cn('relative w-full overflow-hidden rounded-2xl bg-[#EAE6E0]', videoId ? 'aspect-video' : 'aspect-[4/3]')}>
           {imageUrl && (
             <motion.div animate={{ opacity: isPlaying && videoId ? 0 : 1 }} transition={{ duration: 0.6 }} className="absolute inset-0">
@@ -202,7 +196,7 @@ function CollectionCarouselCard({
           </div>
           <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-[#A01829] transition-all duration-200 pointer-events-none" />
         </div>
-      </button>
+      </Link>
 
       <Link href={collectionHref} onClick={onClose} className="mt-3.5 flex items-center justify-between px-0.5 group/cta" aria-label={`View all ${displayTitle} models`}>
         <span className="text-sm font-medium text-[#8A8078] group-hover/cta:text-[#A01829] transition-colors duration-150">Explore Collection</span>

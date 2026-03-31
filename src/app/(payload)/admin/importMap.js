@@ -27,7 +27,10 @@ import { BlockquoteFeatureClient as BlockquoteFeatureClient_e70f5e05f09f93e00b99
 import { UploadFeatureClient as UploadFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { HorizontalRuleFeatureClient as HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { SlugField as SlugField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
+import { CustomMediaRowLabel as CustomMediaRowLabel_a21c52456ab73f6055854ecc285d9149 } from '../../../components/admin/CustomMediaRowLabel'
 import { ProductTypeCell as ProductTypeCell_2ee4334009970004c1a3c71e772c87c1 } from '../../../components/admin/ProductTypeCell'
+import { SpecificationRowLabel as SpecificationRowLabel_1091d94778fdba3b9f9086a79ac873b7 } from '../../../components/admin/SpecificationRowLabel'
+import { VariationRowLabel as VariationRowLabel_e070f1ecdc2279c31ac736f90d4c5bf7 } from '../../../components/admin/VariationRowLabel'
 import { ExportListMenuItem as ExportListMenuItem_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { ProductsListToolbar as ProductsListToolbar_a0d9fee0546177f42149c7c463677b6e } from '../../../components/admin/ProductsListToolbar'
 import { Page as Page_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
@@ -51,6 +54,7 @@ import { QueryPresetsColumnsCell as QueryPresetsColumnsCell_3817bf644402e67bfe65
 import { QueryPresetsColumnField as QueryPresetsColumnField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { QueryPresetsGroupByCell as QueryPresetsGroupByCell_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { QueryPresetsGroupByField as QueryPresetsGroupByField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
+import { MediaManagerUploadClientFeature as MediaManagerUploadClientFeature_c23e718fff8c2de6914fa37d88d9c9dd } from '@/features/mediaManagerUpload/client'
 import { BlocksFeatureClient as BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { MediaUrlSelectorButton as MediaUrlSelectorButton_e2f4d5213ba57541f34398ce21c16f6e } from '../../../components/admin/MediaUrlSelectorButton'
 import { CustomNav as CustomNav_6de4d01e9d2fdd107175007ae639960b } from '../../../components/admin/CustomNav'
@@ -98,7 +102,10 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#UploadFeatureClient": UploadFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#HorizontalRuleFeatureClient": HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/ui#SlugField": SlugField_3817bf644402e67bfe6577f60ef982de,
+  "/components/admin/CustomMediaRowLabel#CustomMediaRowLabel": CustomMediaRowLabel_a21c52456ab73f6055854ecc285d9149,
   "/components/admin/ProductTypeCell#ProductTypeCell": ProductTypeCell_2ee4334009970004c1a3c71e772c87c1,
+  "/components/admin/SpecificationRowLabel#SpecificationRowLabel": SpecificationRowLabel_1091d94778fdba3b9f9086a79ac873b7,
+  "/components/admin/VariationRowLabel#VariationRowLabel": VariationRowLabel_e070f1ecdc2279c31ac736f90d4c5bf7,
   "@payloadcms/plugin-import-export/rsc#ExportListMenuItem": ExportListMenuItem_cdf7e044479f899a31f804427d568b36,
   "/components/admin/ProductsListToolbar#ProductsListToolbar": ProductsListToolbar_a0d9fee0546177f42149c7c463677b6e,
   "@payloadcms/plugin-import-export/rsc#Page": Page_cdf7e044479f899a31f804427d568b36,
@@ -122,6 +129,7 @@ export const importMap = {
   "@payloadcms/ui#QueryPresetsColumnField": QueryPresetsColumnField_3817bf644402e67bfe6577f60ef982de,
   "@payloadcms/ui#QueryPresetsGroupByCell": QueryPresetsGroupByCell_3817bf644402e67bfe6577f60ef982de,
   "@payloadcms/ui#QueryPresetsGroupByField": QueryPresetsGroupByField_3817bf644402e67bfe6577f60ef982de,
+  "@/features/mediaManagerUpload/client#MediaManagerUploadClientFeature": MediaManagerUploadClientFeature_c23e718fff8c2de6914fa37d88d9c9dd,
   "@payloadcms/richtext-lexical/client#BlocksFeatureClient": BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "/components/admin/MediaUrlSelectorButton#MediaUrlSelectorButton": MediaUrlSelectorButton_e2f4d5213ba57541f34398ce21c16f6e,
   "/components/admin/CustomNav#CustomNav": CustomNav_6de4d01e9d2fdd107175007ae639960b,

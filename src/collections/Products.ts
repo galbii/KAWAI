@@ -182,22 +182,73 @@ export const Products: CollectionConfig = {
     {
       type: 'tabs',
       tabs: [
-        // Product Details Tab
+        // Product Details Tab — editable fields only
         {
           label: 'Product Details',
-          description: 'Core product information synced from Shopify',
+          description: 'Core editable product information',
           fields: [
-            // Product Type (from Shopify productType — normalized)
+            // Model - Primary Identifier
             {
-              name: 'type',
+              name: 'model',
+              type: 'text',
+              required: true,
+              unique: true,
+              index: true,
+              admin: {
+                description: 'Model identifier - matches Shopify custom.model metafield (PRIMARY KEY)',
+                placeholder: 'CA99, GX-7, SK-EX'
+              }
+            },
+            {
+              name: 'name',
               type: 'text',
               admin: {
-                description: 'Product type — normalized from Shopify productType (e.g. "Piano Bench" → accessory). Re-sync from Shopify to update.',
-                readOnly: true,
-                components: {
-                  Cell: '/components/admin/ProductTypeCell#ProductTypeCell',
-                },
+                description: 'Product name (synced from Shopify, or auto-generated from model)'
+              }
+            },
+            {
+              name: 'slug',
+              type: 'text',
+              unique: true,
+              index: true,
+              admin: {
+                description: 'URL slug (auto-generated from name or model)'
+              }
+            },
+            {
+              name: 'status',
+              type: 'select',
+              defaultValue: 'draft',
+              options: [
+                { label: 'Draft', value: 'draft' },
+                { label: 'Active', value: 'active' },
+                { label: 'Discontinued', value: 'discontinued' }
+              ],
+              admin: {
+                description: 'Draft products are hidden from frontend'
+              }
+            },
+            {
+              name: 'backorder',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                description: 'When checked and the product is out of stock, the hero will show "Backorder Now" instead of "Find a Dealer" and replace the out-of-stock notice with "Available for backorder."',
               },
+            },
+            {
+              name: 'disclaimer',
+              type: 'text',
+              admin: {
+                description: 'Optional disclaimer shown below the CTA buttons in the Product Hero (e.g. "Starting MSRP. Prices may vary by dealer.")',
+              },
+            },
+            {
+              name: 'description',
+              type: 'textarea',
+              admin: {
+                description: 'Product description (synced from Shopify)'
+              }
             },
             // Compatible Piano Products — always visible so editors can configure it on any accessory.
             // Leave blank on piano products; fill in on accessory products.
@@ -241,123 +292,6 @@ export const Products: CollectionConfig = {
                 condition: (data) => data?.type === 'accessory',
               },
             },
-            // Model - Primary Identifier
-            {
-              name: 'model',
-              type: 'text',
-              required: true,
-              unique: true,
-              index: true,
-              admin: {
-                description: 'Model identifier - matches Shopify custom.model metafield (PRIMARY KEY)',
-                placeholder: 'CA99, GX-7, SK-EX'
-              }
-            },
-            {
-              name: 'name',
-              type: 'text',
-              admin: {
-                description: 'Product name (synced from Shopify, or auto-generated from model)'
-              }
-            },
-            {
-              name: 'slug',
-              type: 'text',
-              unique: true,
-              index: true,
-              admin: {
-                description: 'URL slug (auto-generated from name or model)'
-              }
-            },
-            {
-              name: 'status',
-              type: 'select',
-              defaultValue: 'draft',
-              options: [
-                { label: 'Draft', value: 'draft' },
-                { label: 'Active', value: 'active' },
-                { label: 'Discontinued', value: 'discontinued' }
-              ],
-              admin: {
-                description: 'Draft products are hidden from frontend'
-              }
-            },
-            {
-              name: 'featured',
-              type: 'checkbox',
-              defaultValue: false,
-              admin: {
-                description: 'Mark this product as featured to display in homepage piano collection block',
-                position: 'sidebar',
-              }
-            },
-            {
-              name: 'category',
-              type: 'text',
-              admin: {
-                description: 'Product category (synced from Shopify taxonomy, e.g. "Digital Pianos")',
-                readOnly: true,
-              }
-            },
-            {
-              name: 'description',
-              type: 'textarea',
-              admin: {
-                description: 'Product description (synced from Shopify)'
-              }
-            },
-            {
-              name: 'backorder',
-              type: 'checkbox',
-              defaultValue: false,
-              admin: {
-                description: 'When checked and the product is out of stock, the hero will show "Backorder Now" instead of "Find a Dealer" and replace the out-of-stock notice with "Available for backorder."',
-              },
-            },
-            {
-              name: 'disclaimer',
-              type: 'text',
-              admin: {
-                description: 'Optional disclaimer shown below the CTA buttons in the Product Hero (e.g. "Starting MSRP. Prices may vary by dealer.")',
-              },
-            },
-
-            // Shopify Collections
-            {
-              name: 'shopifyCollections',
-              type: 'array',
-              maxRows: 20,
-              admin: {
-                description: 'Shopify collections this product belongs to (synced from Shopify)',
-                readOnly: true,
-              },
-              fields: [
-                {
-                  name: 'shopifyCollectionId',
-                  type: 'text',
-                  admin: {
-                    description: 'Shopify Collection ID',
-                    readOnly: true,
-                  },
-                },
-                {
-                  name: 'title',
-                  type: 'text',
-                  admin: {
-                    description: 'Collection title',
-                    readOnly: true,
-                  },
-                },
-                {
-                  name: 'handle',
-                  type: 'text',
-                  admin: {
-                    description: 'Collection handle',
-                    readOnly: true,
-                  },
-                },
-              ],
-            },
 
             // Pricing (simplified)
             {
@@ -389,19 +323,6 @@ export const Products: CollectionConfig = {
               }
             },
 
-            // Image URL (from Shopify)
-            {
-              name: 'imageUrl',
-              type: 'text',
-              admin: {
-                description: 'Product image URL (synced from Shopify)',
-                readOnly: true
-              }
-            },
-
-            // Shopify Media Array
-            shopifyMediaField(),
-
             // Custom Media — editor-curated media appended to galleries
             {
               name: 'customMedia',
@@ -411,6 +332,9 @@ export const Products: CollectionConfig = {
               admin: {
                 description: 'Editor-curated images and YouTube videos. Images are appended to the hero gallery; YouTube videos + images appear in the product description carousel (YouTube first, then images, then Shopify media).',
                 initCollapsed: true,
+                components: {
+                  RowLabel: '/components/admin/CustomMediaRowLabel#CustomMediaRowLabel',
+                },
               },
               fields: [
                 {
@@ -448,6 +372,95 @@ export const Products: CollectionConfig = {
                 },
               ],
             },
+
+            {
+              name: 'featured',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                description: 'Mark this product as featured to display in homepage piano collection block',
+                position: 'sidebar',
+              }
+            },
+          ]
+        },
+
+        // Shopify Data Tab — read-only synced fields
+        {
+          label: 'Shopify Data',
+          description: 'Read-only data synced from Shopify. Re-sync from Shopify to update any of these fields.',
+          fields: [
+            // Product Type (from Shopify productType — normalized)
+            {
+              name: 'type',
+              type: 'text',
+              admin: {
+                description: 'Product type — normalized from Shopify productType (e.g. "Piano Bench" → accessory). Re-sync from Shopify to update.',
+                readOnly: true,
+                components: {
+                  Cell: '/components/admin/ProductTypeCell#ProductTypeCell',
+                },
+              },
+            },
+            {
+              name: 'category',
+              type: 'text',
+              admin: {
+                description: 'Product category (synced from Shopify taxonomy, e.g. "Digital Pianos")',
+                readOnly: true,
+              }
+            },
+
+            // Image URL (from Shopify)
+            {
+              name: 'imageUrl',
+              type: 'text',
+              admin: {
+                description: 'Product image URL (synced from Shopify)',
+                readOnly: true
+              }
+            },
+
+            // Shopify Collections
+            {
+              name: 'shopifyCollections',
+              type: 'array',
+              maxRows: 20,
+              admin: {
+                description: 'Shopify collections this product belongs to (synced from Shopify)',
+                readOnly: true,
+                initCollapsed: true,
+              },
+              fields: [
+                {
+                  name: 'shopifyCollectionId',
+                  type: 'text',
+                  admin: {
+                    description: 'Shopify Collection ID',
+                    readOnly: true,
+                  },
+                },
+                {
+                  name: 'title',
+                  type: 'text',
+                  admin: {
+                    description: 'Collection title',
+                    readOnly: true,
+                  },
+                },
+                {
+                  name: 'handle',
+                  type: 'text',
+                  admin: {
+                    description: 'Collection handle',
+                    readOnly: true,
+                  },
+                },
+              ],
+            },
+
+            // Shopify Media Array
+            shopifyMediaField(),
 
             // Blueprint - Custom metafield from Shopify
             {
@@ -509,6 +522,10 @@ export const Products: CollectionConfig = {
               admin: {
                 description: 'Product specifications (synced from Shopify custom.specifications metaobject)',
                 readOnly: true,
+                initCollapsed: true,
+                components: {
+                  RowLabel: '/components/admin/SpecificationRowLabel#SpecificationRowLabel',
+                },
               },
               fields: [
                 {
@@ -568,6 +585,7 @@ export const Products: CollectionConfig = {
               admin: {
                 description: 'Product highlights (synced from Shopify custom.highlights metaobject)',
                 readOnly: true,
+                initCollapsed: true,
               },
               fields: [
                 {
@@ -725,7 +743,10 @@ export const Products: CollectionConfig = {
               ],
               admin: {
                 description: 'Product variations from Shopify (variants with pricing, inventory, and options)',
-                // Show variations for all products (they come from Shopify)
+                initCollapsed: true,
+                components: {
+                  RowLabel: '/components/admin/VariationRowLabel#VariationRowLabel',
+                },
               }
             }
           ]

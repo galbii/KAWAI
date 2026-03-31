@@ -166,8 +166,8 @@ export function CollectionShowcaseBlock({
   const highlights = (product?.highlights ?? []) as Array<{ id: string; highlight: string; description: string }>
   const hasHighlights = highlights.length > 0
 
-  // Don't render if there are no Shopify-synced highlights
-  if (!hasHighlights) return null
+  // Only bail if we're in product mode but have no highlights — collection pages always fall through to the banner
+  if (product && !hasHighlights) return null
 
   if (hasHighlights) {
     const active = highlights[activeIndex] ?? highlights[0]

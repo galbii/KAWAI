@@ -1,7 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
+import { cn } from '@/lib/utils'
 import { CollectionShowcaseBlock } from '@/components/blocks/CollectionShowcaseBlock'
 import { CollectionProductRow } from '@/components/piano/CollectionProductRow'
 
@@ -57,6 +59,95 @@ const CATEGORY_LABELS: Record<string, string> = {
   grand: 'Grand Pianos',
   upright: 'Upright Pianos',
   hybrid: 'Hybrid Pianos',
+}
+
+interface GalleryItem {
+  id?: string | null
+  image: { url: string; alt?: string | null } | string | null
+  caption?: string | null
+}
+
+function CollectionBentoGrid({ gallery }: { gallery: GalleryItem[] }) {
+  const items = (gallery ?? []).filter(
+    (item): item is GalleryItem & { image: { url: string; alt?: string | null } } =>
+      typeof item.image === 'object' && item.image !== null && Boolean((item.image as any).url),
+  )
+  if (items.length === 0) return null
+
+  const isFeaturedLayout = items.length >= 3
+
+  return (
+    <section className="max-w-screen-2xl mx-auto px-6 md:px-12 pb-24">
+      <div className="flex items-center gap-6 mb-8">
+        <div className="h-px flex-1 bg-kawai-black/8" />
+        <p
+          className="text-[9px] tracking-[0.45em] uppercase font-bold text-kawai-charcoal/30 shrink-0"
+          style={{ fontFamily: 'var(--font-brand-sans)' }}
+        >
+          Gallery
+        </p>
+        <div className="h-px flex-1 bg-kawai-black/8" />
+      </div>
+
+      {items.length === 1 && items[0] ? (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7 }}
+          className="relative aspect-video overflow-hidden rounded-2xl group"
+        >
+          <Image
+            src={items[0].image.url}
+            alt={items[0].caption ?? items[0].image.alt ?? ''}
+            fill
+            sizes="100vw"
+            className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+          />
+        </motion.div>
+      ) : (
+        <div
+          className={cn('grid gap-3', items.length === 2 ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-3')}
+          style={{ gridAutoRows: '240px' }}
+        >
+          {items.map((item, i) => {
+            const isFeatured = isFeaturedLayout && i === 0
+            return (
+              <motion.div
+                key={item.id ?? i}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{ duration: 0.65, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] }}
+                className={cn(
+                  'relative overflow-hidden rounded-2xl group bg-kawai-neutral/20',
+                  isFeatured && 'col-span-2 row-span-2',
+                )}
+              >
+                <Image
+                  src={item.image.url}
+                  alt={item.caption ?? item.image.alt ?? ''}
+                  fill
+                  sizes={isFeatured ? '(max-width: 768px) 100vw, 66vw' : '(max-width: 768px) 50vw, 33vw'}
+                  className="object-cover transition-transform duration-700 ease-[var(--ease-piano)] group-hover:scale-[1.04]"
+                />
+                {item.caption && (
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <p
+                      className="text-white/90 text-xs tracking-wide"
+                      style={{ fontFamily: 'var(--font-brand-sans)' }}
+                    >
+                      {item.caption}
+                    </p>
+                  </div>
+                )}
+              </motion.div>
+            )
+          })}
+        </div>
+      )}
+    </section>
+  )
 }
 
 export function CollectionPageContent({ collection, products }: CollectionPageContentProps) {
@@ -210,6 +301,11 @@ export function CollectionPageContent({ collection, products }: CollectionPageCo
             </svg>
           </Link>
         </div>
+      )}
+
+      {/* ── Media gallery bento grid ────────────────────────────────────────── */}
+      {Array.isArray(collection.gallery) && collection.gallery.length > 0 && (
+        <CollectionBentoGrid gallery={collection.gallery} />
       )}
 
       {/* ── Bottom CTA ──────────────────────────────────────────────────────── */}

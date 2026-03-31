@@ -119,6 +119,29 @@ export const Collections: CollectionConfig = {
               },
             },
             {
+              name: 'gallery',
+              type: 'array',
+              label: 'Media Gallery',
+              admin: {
+                description: 'Images displayed in the bento grid on the collection page. First image becomes the featured (large) tile.',
+              },
+              fields: [
+                {
+                  name: 'image',
+                  type: 'upload',
+                  relationTo: 'media',
+                  required: true,
+                },
+                {
+                  name: 'caption',
+                  type: 'text',
+                  admin: {
+                    description: 'Optional caption shown on hover',
+                  },
+                },
+              ],
+            },
+            {
               name: 'heading',
               type: 'text',
               admin: {
