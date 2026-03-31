@@ -28,7 +28,7 @@ const benefits = [
   {
     num: '03',
     title: 'Learn with the Best',
-    body: 'Unlock access to TomPlay, PianoMarvel, and Skoove — premium learning platforms included with your registration.',
+    body: 'Unlock access to PianoMarvel and Skoove — premium learning platforms included with your registration.',
   },
 ]
 
@@ -45,21 +45,26 @@ export default async function WarrantyRegistrationPage() {
     <main className="min-h-screen bg-white">
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#1E1B16]" style={{ minHeight: '380px' }}>
+      <section className="relative overflow-hidden bg-[#1E1B16] aspect-[4/3] sm:aspect-auto sm:min-h-[380px]">
+        <style>{`
+          @media (max-width: 639px) {
+            .hero-banner-img { object-position: calc(50% + 50px) center; }
+          }
+        `}</style>
         {/* Banner image — no overlay, shown at full opacity */}
         {bannerImageUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={bannerImageUrl}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover"
+            className="hero-banner-img absolute inset-0 h-full w-full object-cover sm:object-center"
           />
         )}
 
         {/* Fine horizontal rule at bottom */}
         <div className="absolute bottom-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, #E11922 0%, rgba(225,25,34,0.15) 60%, transparent 100%)' }} />
 
-        <div className="relative mx-auto max-w-6xl px-6 sm:px-10" style={{ paddingTop: '96px', paddingBottom: '80px' }}>
+        <div className="relative mx-auto max-w-6xl px-6 sm:px-10" style={{ paddingTop: 'clamp(48px, 10vw, 96px)', paddingBottom: 'clamp(40px, 8vw, 80px)' }}>
           {/* Heading */}
           <h1
             style={{
@@ -80,7 +85,7 @@ export default async function WarrantyRegistrationPage() {
             className="mt-5 max-w-md leading-relaxed"
             style={{ fontFamily: 'var(--font-brand-sans)', fontSize: '14px', color: '#FAF8F5', opacity: 0.65, textShadow: '0 1px 8px rgba(0,0,0,0.4)' }}
           >
-            Activate your warranty and claim your free trial for TomPlay, PianoMarvel, and Skoove.
+            Activate your warranty and claim your free trial for PianoMarvel and Skoove.
           </p>
         </div>
       </section>
