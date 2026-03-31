@@ -2983,13 +2983,9 @@ export interface Collection {
    */
   youtubeUrl?: string | null;
   /**
-   * Fallback image if no YouTube URL (optional)
+   * Fallback image shown when no YouTube URL is set
    */
   media?: (string | null) | Media;
-  /**
-   * Fallback image URL if no media item is selected (optional)
-   */
-  mediaUrl?: string | null;
   /**
    * Main heading text for collection banner
    */
@@ -11210,7 +11206,6 @@ export interface CollectionsSelect<T extends boolean = true> {
   productCount?: T;
   youtubeUrl?: T;
   media?: T;
-  mediaUrl?: T;
   heading?: T;
   subheading?: T;
   bannerSize?: T;

@@ -20,6 +20,8 @@ export interface NavProduct {
   available: boolean
   /** True if this product is marked featured — shown in the nav carousel */
   isFeatured: boolean
+  /** IDs of Shopify collections this product belongs to — used for featured-collection prioritization */
+  collectionIds: string[]
   /** First YouTube URL from customMedia, if any — used for collection carousel cards */
   youtubeUrl: string | null
   price: {
@@ -291,7 +293,10 @@ export async function getProductTypesWithProducts(options?: {
         visibility: {
           sortOrder: true,
           featured: true // Settings tab featured flag
-        }
+        },
+
+        // Collection membership — returned as IDs at depth:0, used for featured-collection prioritization
+        shopifyCollections: true,
       },
       // Featured products first, then by sort order, then name
       sort: '-featured,visibility.sortOrder,-updatedAt,name',
@@ -339,6 +344,11 @@ export async function getProductTypesWithProducts(options?: {
           ? (product.customMedia.find((m) => m.mediaType === 'youtube')?.youtubeUrl ?? null)
           : null
 
+      // At depth:0, shopifyCollections is an array of raw IDs (string | ObjectId)
+      const collectionIds = Array.isArray((product as any).shopifyCollections)
+        ? (product as any).shopifyCollections.map((c: any) => String(typeof c === 'object' && c !== null ? (c.id ?? c) : c))
+        : []
+
       return {
         id: String(product.id),
         title: product.name || product.model || 'Untitled Product',
@@ -348,6 +358,7 @@ export async function getProductTypesWithProducts(options?: {
         model: product.model || null,
         available: product.inventory?.inStock !== false,
         isFeatured: product.featured === true || product.visibility?.featured === true,
+        collectionIds,
         youtubeUrl,
         price: priceInfo,
         image,
@@ -531,7 +542,7 @@ export async function getNavCollections(limit: number = 20, featuredOnly: boolea
         imageUrl: true,
         productCount: true,
         youtubeUrl: true,
-        mediaUrl: true,
+        media: true,
         heading: true,
         subheading: true,
         featured: true,
@@ -540,24 +551,30 @@ export async function getNavCollections(limit: number = 20, featuredOnly: boolea
       },
       sort: '-productCount',
       limit,
-      depth: 0,
+      depth: 1,
       pagination: false,
     })
 
-    return result.docs.map((col) => ({
-      id: String(col.id),
-      title: col.title,
-      handle: col.handle,
-      description: col.description ?? null,
-      imageUrl: col.imageUrl ?? null,
-      youtubeUrl: col.youtubeUrl ?? null,
-      mediaUrl: col.mediaUrl ?? null,
-      heading: col.heading ?? null,
-      subheading: col.subheading ?? null,
-      productCount: col.productCount ?? 0,
-      pianoCategories: (col.pianoCategories as string[] | null | undefined) ?? null,
-      bannerSize: (col.bannerSize as NavCollection['bannerSize']) ?? null,
-    }))
+    return result.docs.map((col) => {
+      // Resolve fallback image URL from the `media` upload relationship (populated at depth:1)
+      const mediaObjectUrl =
+        col.media && typeof col.media === 'object' ? ((col.media as any).url as string | null | undefined) ?? null : null
+
+      return {
+        id: String(col.id),
+        title: col.title,
+        handle: col.handle,
+        description: col.description ?? null,
+        imageUrl: col.imageUrl ?? null,
+        youtubeUrl: col.youtubeUrl ?? null,
+        mediaUrl: mediaObjectUrl,
+        heading: col.heading ?? null,
+        subheading: col.subheading ?? null,
+        productCount: col.productCount ?? 0,
+        pianoCategories: (col.pianoCategories as string[] | null | undefined) ?? null,
+        bannerSize: (col.bannerSize as NavCollection['bannerSize']) ?? null,
+      }
+    })
   } catch (error) {
     console.error('[Payload Collections Navigation] Failed to fetch collections:', error)
     return []

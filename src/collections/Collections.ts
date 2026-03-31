@@ -105,17 +105,8 @@ export const Collections: CollectionConfig = {
               name: 'media',
               type: 'upload',
               relationTo: 'media',
-              maxDepth: 0,
               admin: {
-                description: 'Fallback image if no YouTube URL (optional)',
-              },
-            },
-            {
-              name: 'mediaUrl',
-              type: 'text',
-              admin: {
-                description: 'Fallback image URL if no media item is selected (optional)',
-                placeholder: 'https://example.com/image.jpg',
+                description: 'Fallback image shown when no YouTube URL is set',
               },
             },
             {

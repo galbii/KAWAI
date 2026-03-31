@@ -67,7 +67,6 @@ export function CollectionShowcaseBlock({
   const {
     youtubeUrl,
     media,
-    mediaUrl,
     heading,
     subheading,
     bannerSize,
@@ -99,8 +98,6 @@ export function CollectionShowcaseBlock({
   if (!videoId) {
     if (media && typeof media === 'object') {
       fallbackImage = (media as Media).url || null
-    } else if (mediaUrl) {
-      fallbackImage = mediaUrl
     }
   }
 

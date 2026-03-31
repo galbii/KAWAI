@@ -46,6 +46,7 @@ export async function getProductsByCollection(handle: string): Promise<NavProduc
           model: doc.model || null,
           available: doc.inventory?.inStock !== false,
           isFeatured: doc.featured === true,
+          collectionIds: [],
           youtubeUrl: null,
           price: { min: 0, max: 0, currency: 'USD', display: '' },
           image: doc.imageUrl

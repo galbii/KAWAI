@@ -221,12 +221,8 @@ function CollectionCarousel({ collections, onClose, onCategorySelect }: {
 
   return (
     <div>
-      <div className="flex items-end justify-between mb-7">
+      <div className="mb-7">
         <h2 className="text-2xl font-bold text-[#2C2C2C] font-serif leading-none">Featured Collections</h2>
-        <Link href="/pianos" onClick={onClose} className="group flex items-center gap-2 text-sm font-medium text-[#A01829]">
-          Explore All
-          <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-        </Link>
       </div>
 
       {collections.length === 0 ? (
@@ -269,7 +265,7 @@ function CollectionCarousel({ collections, onClose, onCategorySelect }: {
             </div>
           )}
 
-          <div className="mt-8">
+          <div className="mt-16">
             <Link
               href="/pianos"
               onClick={onClose}
@@ -308,7 +304,7 @@ function ProductCard({ product, onClose }: { product: NavProduct; onClose: () =>
 // ─── Collection Video Banner ───────────────────────────────────────────────────
 // Cinematic strip shown at the bottom of CategoryView when a collection tab is active.
 
-function CollectionVideoBanner({ collection, onClose, heightClass = 'h-36', externalCtaUrl }: { collection: NavCollection; onClose: () => void; heightClass?: string; externalCtaUrl?: string }) {
+function CollectionVideoBanner({ collection, onClose, heightClass = 'h-36', externalCtaUrl, comingSoon }: { collection: NavCollection; onClose: () => void; heightClass?: string; externalCtaUrl?: string; comingSoon?: boolean }) {
   const videoId = collection.youtubeUrl ? extractYouTubeId(collection.youtubeUrl) : null
   const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null
   const imageUrl = thumbnail ?? collection.imageUrl ?? collection.mediaUrl ?? null
@@ -349,6 +345,11 @@ function CollectionVideoBanner({ collection, onClose, heightClass = 'h-36', exte
       )}
       {!imageUrl && !videoId && <div className="absolute inset-0 bg-gradient-to-br from-[#2C2C2C] to-[#1A1A1A]" />}
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/10 pointer-events-none" />
+      {comingSoon && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <span className="text-xs font-semibold tracking-[0.25em] uppercase text-white/50">Coming Soon</span>
+        </div>
+      )}
       <div className="absolute inset-0 flex items-center justify-between px-8">
         <div className="text-white min-w-0 mr-6">
           {collection.productCount > 0 && (
@@ -357,7 +358,7 @@ function CollectionVideoBanner({ collection, onClose, heightClass = 'h-36', exte
           <h3 className="text-xl font-bold font-serif leading-tight truncate">{displayTitle}</h3>
           {collection.subheading && <p className="text-sm text-white/60 mt-0.5 line-clamp-1">{collection.subheading}</p>}
         </div>
-        {isExternal ? (
+        {!comingSoon && (isExternal ? (
           <a
             href={collectionHref}
             target="_blank"
@@ -377,7 +378,7 @@ function CollectionVideoBanner({ collection, onClose, heightClass = 'h-36', exte
             View Collection
             <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
           </Link>
-        )}
+        ))}
       </div>
     </motion.div>
   )
@@ -573,7 +574,7 @@ function BannerOnlyView({ label, href, externalCtaUrl, collectionHandle, collect
         )}
       </div>
       {collection ? (
-        <CollectionVideoBanner collection={collection} onClose={onClose} heightClass={heightClass} {...(externalCtaUrl !== undefined && { externalCtaUrl })} />
+        <CollectionVideoBanner collection={collection} onClose={onClose} heightClass={heightClass} {...(externalCtaUrl !== undefined && { externalCtaUrl })} {...(comingSoon && { comingSoon })} />
       ) : (
         <div className="flex items-center justify-center py-16">
           <Link href={href} onClick={onClose} className="text-sm font-medium text-[#A01829] hover:underline">
@@ -590,26 +591,20 @@ function BannerOnlyView({ label, href, externalCtaUrl, collectionHandle, collect
 
 function AccessoriesBannerView({ onClose }: { onClose: () => void }) {
   return (
-    <div>
-      {/* Header row */}
-      <div className="flex items-end justify-between mb-5">
-        <h2 className="text-2xl font-bold text-[#2C2C2C] font-serif leading-none">Accessories</h2>
-        <span className="text-xs font-semibold tracking-[0.15em] uppercase text-[#B8AFA6]">Coming Soon</span>
+    <div className="flex flex-col items-center text-center gap-6 py-10">
+      <div className="flex flex-col gap-3">
+        <h2 className="text-3xl font-bold text-[#2C2C2C] font-serif leading-none">Accessories</h2>
+        <p className="text-5xl font-semibold text-[#2C2C2C] font-serif leading-tight">Coming Soon</p>
+        <p className="text-sm text-[#8A8078] leading-relaxed max-w-xs">Piano accessories, benches, headphones, and more — arriving soon.</p>
       </div>
-
-      {/* Single access point */}
-      <div className="border-t border-[#E8E4DF]">
-        <Link
-          href="/pianos/accessories"
-          onClick={onClose}
-          className="group flex items-center justify-between py-5 border-b border-[#E8E4DF]"
-        >
-          <span className="text-xl font-serif text-[#2C2C2C] group-hover:text-[#A01829] transition-colors duration-150">
-            Browse Accessories
-          </span>
-          <ArrowRight className="h-4 w-4 text-[#C8C2BA] group-hover:text-[#A01829] group-hover:translate-x-0.5 transition-all duration-150" />
-        </Link>
-      </div>
+      <Link
+        href="/products"
+        onClick={onClose}
+        className="flex items-center gap-2 px-6 py-3 bg-[#2C2C2C] hover:bg-[#A01829] rounded-full text-sm font-medium text-white transition-colors duration-200"
+      >
+        Browse All Products
+        <ArrowRight className="h-4 w-4" />
+      </Link>
     </div>
   )
 }
@@ -688,8 +683,23 @@ export function ProductsMegaMenu({
   const selectedProducts = useMemo(() => {
     if (!selectedKey) return []
     const cat = SIDEBAR_CATEGORIES.find((c) => c.key === selectedKey)
-    return cat ? getProductsForSidebarKey(productTypes, cat.terms) : []
-  }, [selectedKey, productTypes])
+    if (!cat) return []
+    const products = getProductsForSidebarKey(productTypes, cat.terms)
+    // Build a set of collection IDs for this category's featured collections
+    // so we can float products that belong to them to the top.
+    const pool = allCollections ?? collections
+    const featuredCollectionIds = new Set(
+      getCollectionsForSidebarKey(pool, selectedKey).map((c) => c.id)
+    )
+    if (featuredCollectionIds.size === 0) return products
+    return [...products].sort((a, b) => {
+      const aInFeatured = a.collectionIds.some((id) => featuredCollectionIds.has(id))
+      const bInFeatured = b.collectionIds.some((id) => featuredCollectionIds.has(id))
+      if (aInFeatured && !bInFeatured) return -1
+      if (!aInFeatured && bInFeatured) return 1
+      return 0
+    })
+  }, [selectedKey, productTypes, collections, allCollections])
 
   const selectedCollections = useMemo(() => {
     if (!selectedKey) return []
