@@ -1052,10 +1052,11 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
     <>
     <header
       ref={headerRef}
-      className="fixed left-0 right-0 z-50 w-full bg-white shadow-sm"
+      className="fixed left-0 right-0 z-50 w-full bg-white shadow-sm cursor-pointer"
       style={{
         top: 'calc(var(--admin-bar-height, 0px) + var(--announcement-bar-height, 0px))'
       }}
+      onClick={handleHeaderClick}
     >
       {/* Top Row - Utility Bar (Full Width) */}
       <div className="border-b border-kawai-neutral/60 w-full bg-white">

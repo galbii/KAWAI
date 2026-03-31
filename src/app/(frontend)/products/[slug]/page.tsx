@@ -70,7 +70,7 @@ export default async function ProductPage(props: PageProps) {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
 
     return (
-      <div className="min-h-screen" style={{ paddingTop: 'var(--header-bottom, 120px)' }}>
+      <div className="min-h-screen">
         <AdminBarDoc
           collection="products"
           id={String(product.id)}

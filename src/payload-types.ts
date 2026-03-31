@@ -1997,18 +1997,6 @@ export interface MarketingHeroBlock {
 export interface Product {
   id: string;
   /**
-   * Product type — normalized from Shopify productType (e.g. "Piano Bench" → accessory). Re-sync from Shopify to update.
-   */
-  type?: string | null;
-  /**
-   * Accessory products only: select the piano models this accessory is compatible with. The Accessories block on those piano pages will then display this item.
-   */
-  compatibleProducts?: (string | Product)[] | null;
-  /**
-   * Accessory category — used to filter accessories by type on the browse page.
-   */
-  accessoryType?: ('bench' | 'pedal' | 'cover' | 'headphones' | 'stand' | 'lamp' | 'other') | null;
-  /**
    * Model identifier - matches Shopify custom.model metafield (PRIMARY KEY)
    */
   model: string;
@@ -2025,18 +2013,6 @@ export interface Product {
    */
   status?: ('draft' | 'active' | 'discontinued') | null;
   /**
-   * Mark this product as featured to display in homepage piano collection block
-   */
-  featured?: boolean | null;
-  /**
-   * Product category (synced from Shopify taxonomy, e.g. "Digital Pianos")
-   */
-  category?: string | null;
-  /**
-   * Product description (synced from Shopify)
-   */
-  description?: string | null;
-  /**
    * When checked and the product is out of stock, the hero will show "Backorder Now" instead of "Find a Dealer" and replace the out-of-stock notice with "Available for backorder."
    */
   backorder?: boolean | null;
@@ -2044,6 +2020,68 @@ export interface Product {
    * Optional disclaimer shown below the CTA buttons in the Product Hero (e.g. "Starting MSRP. Prices may vary by dealer.")
    */
   disclaimer?: string | null;
+  /**
+   * Product description (synced from Shopify)
+   */
+  description?: string | null;
+  /**
+   * Accessory products only: select the piano models this accessory is compatible with. The Accessories block on those piano pages will then display this item.
+   */
+  compatibleProducts?: (string | Product)[] | null;
+  /**
+   * Accessory category — used to filter accessories by type on the browse page.
+   */
+  accessoryType?: ('bench' | 'pedal' | 'cover' | 'headphones' | 'stand' | 'lamp' | 'other') | null;
+  /**
+   * Product pricing information
+   */
+  price?: {
+    /**
+     * MSRP (synced from Shopify)
+     */
+    msrp?: number | null;
+    currency?: ('USD' | 'EUR' | 'GBP' | 'CAD') | null;
+  };
+  /**
+   * Editor-curated images and YouTube videos. Images are appended to the hero gallery; YouTube videos + images appear in the product description carousel (YouTube first, then images, then Shopify media).
+   */
+  customMedia?:
+    | {
+        /**
+         * Select whether this item is an uploaded image or a YouTube video
+         */
+        mediaType?: ('media' | 'youtube') | null;
+        /**
+         * Upload or select an image from the media library
+         */
+        image?: (string | null) | Media;
+        /**
+         * YouTube video URL (e.g. https://youtube.com/watch?v=...)
+         */
+        youtubeUrl?: string | null;
+        /**
+         * Alt text or caption (optional)
+         */
+        alt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Mark this product as featured to display in homepage piano collection block
+   */
+  featured?: boolean | null;
+  /**
+   * Product type — normalized from Shopify productType (e.g. "Piano Bench" → accessory). Re-sync from Shopify to update.
+   */
+  type?: string | null;
+  /**
+   * Product category (synced from Shopify taxonomy, e.g. "Digital Pianos")
+   */
+  category?: string | null;
+  /**
+   * Product image URL (synced from Shopify)
+   */
+  imageUrl?: string | null;
   /**
    * Shopify collections this product belongs to (synced from Shopify)
    */
@@ -2064,20 +2102,6 @@ export interface Product {
         id?: string | null;
       }[]
     | null;
-  /**
-   * Product pricing information
-   */
-  price?: {
-    /**
-     * MSRP (synced from Shopify)
-     */
-    msrp?: number | null;
-    currency?: ('USD' | 'EUR' | 'GBP' | 'CAD') | null;
-  };
-  /**
-   * Product image URL (synced from Shopify)
-   */
-  imageUrl?: string | null;
   /**
    * Media items synced from Shopify (images, videos, 3D models, external videos) - Auto-populated from Shopify Admin API
    */
@@ -2195,30 +2219,6 @@ export interface Product {
          * When this media was last updated in Shopify
          */
         updatedAt?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Editor-curated images and YouTube videos. Images are appended to the hero gallery; YouTube videos + images appear in the product description carousel (YouTube first, then images, then Shopify media).
-   */
-  customMedia?:
-    | {
-        /**
-         * Select whether this item is an uploaded image or a YouTube video
-         */
-        mediaType?: ('media' | 'youtube') | null;
-        /**
-         * Upload or select an image from the media library
-         */
-        image?: (string | null) | Media;
-        /**
-         * YouTube video URL (e.g. https://youtube.com/watch?v=...)
-         */
-        youtubeUrl?: string | null;
-        /**
-         * Alt text or caption (optional)
-         */
-        alt?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -11044,18 +11044,34 @@ export interface SupportGroupsSelect<T extends boolean = true> {
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
-  type?: T;
-  compatibleProducts?: T;
-  accessoryType?: T;
   model?: T;
   name?: T;
   slug?: T;
   status?: T;
-  featured?: T;
-  category?: T;
-  description?: T;
   backorder?: T;
   disclaimer?: T;
+  description?: T;
+  compatibleProducts?: T;
+  accessoryType?: T;
+  price?:
+    | T
+    | {
+        msrp?: T;
+        currency?: T;
+      };
+  customMedia?:
+    | T
+    | {
+        mediaType?: T;
+        image?: T;
+        youtubeUrl?: T;
+        alt?: T;
+        id?: T;
+      };
+  featured?: T;
+  type?: T;
+  category?: T;
+  imageUrl?: T;
   shopifyCollections?:
     | T
     | {
@@ -11064,13 +11080,6 @@ export interface ProductsSelect<T extends boolean = true> {
         handle?: T;
         id?: T;
       };
-  price?:
-    | T
-    | {
-        msrp?: T;
-        currency?: T;
-      };
-  imageUrl?: T;
   shopifyMedia?:
     | T
     | {
@@ -11100,15 +11109,6 @@ export interface ProductsSelect<T extends boolean = true> {
         host?: T;
         createdAt?: T;
         updatedAt?: T;
-        id?: T;
-      };
-  customMedia?:
-    | T
-    | {
-        mediaType?: T;
-        image?: T;
-        youtubeUrl?: T;
-        alt?: T;
         id?: T;
       };
   blueprint?:

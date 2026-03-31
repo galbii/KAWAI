@@ -696,9 +696,9 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
               'transition-colors duration-200'
             )}
           />
-          {/* Keyboard Hint - Show when not focused and empty */}
+          {/* Keyboard Hint - Show when not focused and empty (large screens only) */}
           {query.length === 0 && !isFocused && (
-            <div className="pointer-events-none absolute inset-y-0 right-12 flex items-center">
+            <div className="pointer-events-none absolute inset-y-0 right-12 hidden lg:flex items-center">
               <div className="flex items-center gap-1.5 text-xs text-gray-400">
                 <span>Press</span>
                 <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-300 rounded text-gray-600 font-mono text-xs">

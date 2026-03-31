@@ -3,24 +3,20 @@
 /**
  * LayoutSpacer Component
  *
- * Adds spacing to account for fixed header and announcement bar.
- * Uses CSS variables to dynamically adjust height based on whether
- * announcement bar is present.
+ * Adds spacing to account for the fixed header (utility bar + bottom nav).
+ * Uses --header-bottom, which is set dynamically by header.tsx and already
+ * includes announcement bar and admin bar offsets.
  *
- * Mobile (< lg): utility bar (64px) + red line (6px) = 70px
- * Desktop: only the utility bar (64px) — the bottom nav auto-hides on scroll
- *   so we don't add it here, avoiding a scroll jump when it disappears.
- *
- * Announcement bar height: var(--announcement-bar-height, 0px)
- * Admin bar height: var(--admin-bar-height, 0px)
+ * Fallback (before JS sets the variable):
+ *   Mobile: 70px (utility 64px + red line 6px)
+ *   Desktop: 120px (utility 64px + bottom nav 56px)
  */
 export function LayoutSpacer() {
   return (
     <div
       className="w-full flex-shrink-0"
       style={{
-        // lg:hidden red line (6px) is always visible on mobile, so mobile = 70px
-        height: 'calc(70px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))'
+        height: 'var(--header-bottom, 120px)'
       }}
       aria-hidden="true"
     />
