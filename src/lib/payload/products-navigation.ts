@@ -480,6 +480,12 @@ export async function getProductsByTypeForNav(
           ? (product.customMedia.find((m) => m.mediaType === 'youtube')?.youtubeUrl ?? null)
           : null
 
+      const collectionIds = Array.isArray((product as any).shopifyCollections)
+        ? ((product as any).shopifyCollections as Array<{ id?: string; handle?: string } | string>)
+            .map((c) => (typeof c === 'object' && c !== null ? (c.id ?? c.handle ?? '') : String(c)))
+            .filter(Boolean)
+        : []
+
       return {
         id: String(product.id),
         title: product.name || product.model || 'Untitled Product',
@@ -489,6 +495,7 @@ export async function getProductsByTypeForNav(
         model: product.model || null,
         available: product.inventory?.inStock !== false,
         isFeatured: product.featured === true || product.visibility?.featured === true,
+        collectionIds,
         youtubeUrl,
         price: priceInfo,
         image,

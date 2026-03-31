@@ -1513,7 +1513,7 @@ export function getCollectionsForCategory(
           pianoCategories: true,
           featured: true,
           youtubeUrl: true,
-          mediaUrl: true,
+          media: true,
           imageUrl: true,
           heading: true,
           subheading: true,
@@ -1527,23 +1527,27 @@ export function getCollectionsForCategory(
         depth: 1,
         limit: 100,
       })
-      return result.docs.map((d) => ({
-        title: d.title,
-        handle: d.handle,
-        pianoCategories: (d.pianoCategories as string[] | null) ?? null,
-        featured: (d.featured as boolean | null | undefined) ?? null,
-        youtubeUrl: (d.youtubeUrl as string | null | undefined) ?? null,
-        mediaUrl: (d.mediaUrl as string | null | undefined) ?? null,
-        imageUrl: (d.imageUrl as string | null | undefined) ?? null,
-        heading: (d.heading as string | null | undefined) ?? null,
-        subheading: (d.subheading as string | null | undefined) ?? null,
-        textColor: (d.textColor as string | null | undefined) ?? null,
-        textAlignment: (d.textAlignment as string | null | undefined) ?? null,
-        overlayOpacity: (d.overlayOpacity as number | null | undefined) ?? null,
-        headingSize: (d.headingSize as string | null | undefined) ?? null,
-        fontFamily: (d.fontFamily as string | null | undefined) ?? null,
-        bannerSize: (d.bannerSize as string | null | undefined) ?? null,
-      }))
+      return result.docs.map((d) => {
+        const mediaObjectUrl =
+          d.media && typeof d.media === 'object' ? ((d.media as any).url as string | null | undefined) ?? null : null
+        return {
+          title: d.title,
+          handle: d.handle,
+          pianoCategories: (d.pianoCategories as string[] | null) ?? null,
+          featured: (d.featured as boolean | null | undefined) ?? null,
+          youtubeUrl: (d.youtubeUrl as string | null | undefined) ?? null,
+          mediaUrl: mediaObjectUrl,
+          imageUrl: (d.imageUrl as string | null | undefined) ?? null,
+          heading: (d.heading as string | null | undefined) ?? null,
+          subheading: (d.subheading as string | null | undefined) ?? null,
+          textColor: (d.textColor as string | null | undefined) ?? null,
+          textAlignment: (d.textAlignment as string | null | undefined) ?? null,
+          overlayOpacity: (d.overlayOpacity as number | null | undefined) ?? null,
+          headingSize: (d.headingSize as string | null | undefined) ?? null,
+          fontFamily: (d.fontFamily as string | null | undefined) ?? null,
+          bannerSize: (d.bannerSize as string | null | undefined) ?? null,
+        }
+      })
     },
     ['collections-for-category', category],
     { tags: ['collections', `collection-category-${category}`], revalidate: 3600 },
