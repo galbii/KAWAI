@@ -140,46 +140,26 @@ function CollectionCarouselCard({
   collection,
   onClose,
   onCategorySelect,
-  index = 0,
+  cardHeight,
 }: {
   collection: NavCollection
   onClose: () => void
   onCategorySelect: (key: SidebarKey) => void
-  index?: number
+  cardHeight: number
 }) {
   const videoId = collection.youtubeUrl ? extractYouTubeId(collection.youtubeUrl) : null
-  const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null
+  const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null
   const imageUrl = thumbnail ?? collection.imageUrl ?? collection.mediaUrl ?? null
-  const hasMedia = Boolean(imageUrl || videoId)
+  const hasMedia = Boolean(imageUrl)
   const displayTitle = collection.heading || collection.title
   const collectionHref = `/pianos/${collection.handle}`
-
-  const [isPlaying, setIsPlaying] = useState(false)
-  useEffect(() => {
-    if (!videoId) return
-    const t = setTimeout(() => setIsPlaying(true), index * 600)
-    return () => clearTimeout(t)
-  }, [videoId, index])
 
   return (
     <div className="group relative w-full">
       <Link href={collectionHref} onClick={onClose} className="relative w-full text-left block" aria-label={`Browse ${displayTitle}`}>
-        <div className={cn('relative w-full overflow-hidden rounded-2xl bg-[#EAE6E0]', videoId ? 'aspect-video' : 'aspect-[4/3]')}>
+        <div className="relative w-full overflow-hidden rounded-2xl bg-[#EAE6E0]" style={{ height: cardHeight }}>
           {imageUrl && (
-            <motion.div animate={{ opacity: isPlaying && videoId ? 0 : 1 }} transition={{ duration: 0.6 }} className="absolute inset-0">
-              <Image src={imageUrl} alt={displayTitle} fill sizes="(max-width: 1280px) 33vw, 500px" className="object-cover" />
-            </motion.div>
-          )}
-          {videoId && isPlaying && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }} className="absolute inset-0">
-              <iframe
-                src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1&playsinline=1`}
-                allow="autoplay; encrypted-media"
-                className="absolute inset-0 w-full h-full pointer-events-none scale-[1.05]"
-                style={{ border: 'none' }}
-                title={displayTitle}
-              />
-            </motion.div>
+            <Image src={imageUrl} alt={displayTitle} fill sizes="(max-width: 1280px) 90vw, 1100px" className="object-cover transition-transform duration-500 group-hover:scale-105" />
           )}
           {!hasMedia && (
             <div className="absolute inset-0 flex items-center justify-center">
@@ -208,7 +188,8 @@ function CollectionCarouselCard({
 
 // ─── Collection Carousel (default view) ───────────────────────────────────────
 
-const CARDS_PER_VIEW = 3
+const AUTO_ROTATE_MS = 5000
+const CARD_HEIGHT = 260 // px — fixed so every card is the same size
 
 function CollectionCarousel({ collections, onClose, onCategorySelect }: {
   collections: NavCollection[]
@@ -216,8 +197,17 @@ function CollectionCarousel({ collections, onClose, onCategorySelect }: {
   onCategorySelect: (key: SidebarKey) => void
 }) {
   const [idx, setIdx] = useState(0)
-  const maxIdx = Math.max(0, Math.ceil(collections.length / CARDS_PER_VIEW) - 1)
-  const visible = collections.slice(idx * CARDS_PER_VIEW, (idx + 1) * CARDS_PER_VIEW)
+  const [paused, setPaused] = useState(false)
+  const total = collections.length
+
+  const prev = useCallback(() => setIdx((i) => (i - 1 + total) % total), [total])
+  const next = useCallback(() => setIdx((i) => (i + 1) % total), [total])
+
+  useEffect(() => {
+    if (paused || total <= 1) return
+    const t = setInterval(next, AUTO_ROTATE_MS)
+    return () => clearInterval(t)
+  }, [paused, next, total])
 
   return (
     <div>
@@ -225,35 +215,58 @@ function CollectionCarousel({ collections, onClose, onCategorySelect }: {
         <h2 className="text-2xl font-bold text-[#2C2C2C] font-serif leading-none">Featured Collections</h2>
       </div>
 
-      {collections.length === 0 ? (
+      {total === 0 ? (
         <div className="flex items-center justify-center py-16">
           <p className="text-sm text-[#B8AFA6]">Select a piano family to explore.</p>
         </div>
       ) : (
         <>
-          <div className="relative">
+          <div
+            className="relative"
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+          >
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={idx}
-                className="grid grid-cols-3 gap-7"
                 initial={{ opacity: 0, x: 28 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -28 }}
-                transition={{ duration: 0.26, ease: [0.4, 0, 0.2, 1] }}
+                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
               >
-                {visible.map((col, i) => (
-                  <CollectionCarouselCard key={col.id} collection={col} onClose={onClose} onCategorySelect={onCategorySelect} index={i} />
-                ))}
-                {Array.from({ length: Math.max(0, CARDS_PER_VIEW - visible.length) }).map((_, i) => <div key={i} />)}
+                <CollectionCarouselCard
+                  collection={collections[idx]!}
+                  onClose={onClose}
+                  onCategorySelect={onCategorySelect}
+                  cardHeight={CARD_HEIGHT}
+                />
               </motion.div>
             </AnimatePresence>
-            <AnimatePresence>
-              {idx > 0 && <NavArrow dir="left" onClick={() => setIdx((i) => i - 1)} offset="-left-6" />}
-              {idx < maxIdx && <NavArrow dir="right" onClick={() => setIdx((i) => i + 1)} offset="-left-6" />}
-            </AnimatePresence>
+
+            {/* Prev / Next overlaid on the card */}
+            {total > 1 && (
+              <>
+                <button
+                  onClick={prev}
+                  aria-label="Previous collection"
+                  className="absolute left-3 z-20 w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-white hover:bg-white/35 transition-colors"
+                  style={{ top: CARD_HEIGHT / 2, transform: 'translateY(-50%)' }}
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  onClick={next}
+                  aria-label="Next collection"
+                  className="absolute right-3 z-20 w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-white hover:bg-white/35 transition-colors"
+                  style={{ top: CARD_HEIGHT / 2, transform: 'translateY(-50%)' }}
+                >
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+              </>
+            )}
           </div>
 
-          {maxIdx > 0 && (
+          {total > 1 && (
             <div className="flex items-center gap-2 mt-5">
-              {Array.from({ length: maxIdx + 1 }).map((_, i) => (
+              {collections.map((_, i) => (
                 <button key={i} onClick={() => setIdx(i)} aria-label={`Slide ${i + 1}`}>
                   <motion.div
                     animate={{ width: i === idx ? 28 : 8, backgroundColor: i === idx ? '#A01829' : '#C8C2BA' }}
@@ -265,7 +278,7 @@ function CollectionCarousel({ collections, onClose, onCategorySelect }: {
             </div>
           )}
 
-          <div className="mt-16">
+          <div className="mt-8">
             <Link
               href="/pianos"
               onClick={onClose}
@@ -312,14 +325,6 @@ function CollectionVideoBanner({ collection, onClose, heightClass = 'h-36', exte
   const collectionHref = externalCtaUrl ?? `/pianos/${collection.handle}`
   const isExternal = Boolean(externalCtaUrl)
 
-  const [isPlaying, setIsPlaying] = useState(false)
-  useEffect(() => {
-    if (!videoId) return
-    setIsPlaying(false)
-    const t = setTimeout(() => setIsPlaying(true), 400)
-    return () => clearTimeout(t)
-  }, [videoId, collection.handle])
-
   return (
     <motion.div
       key={collection.handle}
@@ -328,20 +333,7 @@ function CollectionVideoBanner({ collection, onClose, heightClass = 'h-36', exte
       className={cn('mt-5 relative rounded-2xl overflow-hidden bg-[#111]', heightClass)}
     >
       {imageUrl && (
-        <motion.div animate={{ opacity: isPlaying && videoId ? 0 : 1 }} transition={{ duration: 0.6 }} className="absolute inset-0">
-          <Image src={imageUrl} alt={displayTitle} fill sizes="100vw" className="object-cover" />
-        </motion.div>
-      )}
-      {videoId && isPlaying && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }} className="absolute inset-0 overflow-hidden pointer-events-none">
-          <iframe
-            src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1&playsinline=1`}
-            allow="autoplay; encrypted-media"
-            className="absolute w-full top-1/2 -translate-y-1/2 pointer-events-none"
-            style={{ border: 'none', aspectRatio: '16/9' }}
-            title={displayTitle}
-          />
-        </motion.div>
+        <Image src={imageUrl} alt={displayTitle} fill sizes="100vw" className="object-cover" />
       )}
       {!imageUrl && !videoId && <div className="absolute inset-0 bg-gradient-to-br from-[#2C2C2C] to-[#1A1A1A]" />}
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/10 pointer-events-none" />

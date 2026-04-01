@@ -55,24 +55,22 @@ export function BlogCard({ post, className, featured }: BlogCardProps) {
         {/* Image / Video */}
         <div className="relative w-full aspect-[3/2] overflow-hidden bg-kawai-black shrink-0">
           {videoId ? (
-            /* Auto-playing muted YouTube embed.
-               16:9 video in 3:2 container → fill by height (video is wider):
-               width = container_height × 16/9 = (2/3 × W) × 16/9 = 32W/27 ≈ 118.5% */
-            <iframe
-              src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&rel=0&playsinline=1&modestbranding=1`}
-              allow="autoplay; encrypted-media"
-              title={title}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                height: '100%',
-                width: '118.52%',
-                border: 'none',
-                pointerEvents: 'none',
-              }}
-            />
+            /* YouTube thumbnail — avoids autoplay bot-detection (YouTube flags
+               autoplay + controls=0 + pointerEvents:none as non-human behaviour).
+               The thumbnail is served from img.youtube.com which is already in CSP img-src. */
+            <>
+              <img
+                src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                alt={title}
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-[var(--ease-elegant)] group-hover:scale-105"
+              />
+              {/* Play badge — signals this card has a video */}
+              <span className="absolute bottom-3 right-3 flex items-center justify-center w-9 h-9 rounded-full bg-kawai-black/70 backdrop-blur-sm">
+                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white ml-0.5" aria-hidden="true">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </span>
+            </>
           ) : hasImage ? (
             <Image
               src={imageUrl}
