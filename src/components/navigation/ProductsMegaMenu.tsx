@@ -993,6 +993,8 @@ export function ProductsMegaMenu({
                   onSelect={setActiveCollectionHandle}
                   isAllView={selectedKey === null}
                   onClose={onClose}
+                  categoryHref={selectedCat?.href ?? '/pianos'}
+                  categoryLabel={selectedCat ? selectedCat.label : null}
                 />
               </>
             )}
