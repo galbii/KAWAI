@@ -140,26 +140,26 @@ function CollectionCarouselCard({
   collection,
   onClose,
   onCategorySelect,
-  cardHeight,
+  index = 0,
 }: {
   collection: NavCollection
   onClose: () => void
   onCategorySelect: (key: SidebarKey) => void
-  cardHeight: number
+  index?: number
 }) {
   const videoId = collection.youtubeUrl ? extractYouTubeId(collection.youtubeUrl) : null
-  const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null
+  const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null
   const imageUrl = thumbnail ?? collection.imageUrl ?? collection.mediaUrl ?? null
-  const hasMedia = Boolean(imageUrl)
+  const hasMedia = Boolean(imageUrl || videoId)
   const displayTitle = collection.heading || collection.title
   const collectionHref = `/pianos/${collection.handle}`
 
   return (
     <div className="group relative w-full">
       <Link href={collectionHref} onClick={onClose} className="relative w-full text-left block" aria-label={`Browse ${displayTitle}`}>
-        <div className="relative w-full overflow-hidden rounded-2xl bg-[#EAE6E0]" style={{ height: cardHeight }}>
+        <div className={cn('relative w-full overflow-hidden rounded-2xl bg-[#EAE6E0]', videoId ? 'aspect-video' : 'aspect-[4/3]')}>
           {imageUrl && (
-            <Image src={imageUrl} alt={displayTitle} fill sizes="(max-width: 1280px) 90vw, 1100px" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+            <Image src={imageUrl} alt={displayTitle} fill sizes="(max-width: 1280px) 33vw, 500px" className="object-cover transition-transform duration-500 group-hover:scale-105" />
           )}
           {!hasMedia && (
             <div className="absolute inset-0 flex items-center justify-center">
@@ -188,8 +188,7 @@ function CollectionCarouselCard({
 
 // ─── Collection Carousel (default view) ───────────────────────────────────────
 
-const AUTO_ROTATE_MS = 5000
-const CARD_HEIGHT = 260 // px — fixed so every card is the same size
+const CARDS_PER_VIEW = 3
 
 function CollectionCarousel({ collections, onClose, onCategorySelect }: {
   collections: NavCollection[]
@@ -197,17 +196,8 @@ function CollectionCarousel({ collections, onClose, onCategorySelect }: {
   onCategorySelect: (key: SidebarKey) => void
 }) {
   const [idx, setIdx] = useState(0)
-  const [paused, setPaused] = useState(false)
-  const total = collections.length
-
-  const prev = useCallback(() => setIdx((i) => (i - 1 + total) % total), [total])
-  const next = useCallback(() => setIdx((i) => (i + 1) % total), [total])
-
-  useEffect(() => {
-    if (paused || total <= 1) return
-    const t = setInterval(next, AUTO_ROTATE_MS)
-    return () => clearInterval(t)
-  }, [paused, next, total])
+  const maxIdx = Math.max(0, Math.ceil(collections.length / CARDS_PER_VIEW) - 1)
+  const visible = collections.slice(idx * CARDS_PER_VIEW, (idx + 1) * CARDS_PER_VIEW)
 
   return (
     <div>
@@ -215,58 +205,35 @@ function CollectionCarousel({ collections, onClose, onCategorySelect }: {
         <h2 className="text-2xl font-bold text-[#2C2C2C] font-serif leading-none">Featured Collections</h2>
       </div>
 
-      {total === 0 ? (
+      {collections.length === 0 ? (
         <div className="flex items-center justify-center py-16">
           <p className="text-sm text-[#B8AFA6]">Select a piano family to explore.</p>
         </div>
       ) : (
         <>
-          <div
-            className="relative"
-            onMouseEnter={() => setPaused(true)}
-            onMouseLeave={() => setPaused(false)}
-          >
+          <div className="relative">
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={idx}
+                className="grid grid-cols-3 gap-7"
                 initial={{ opacity: 0, x: 28 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -28 }}
-                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                transition={{ duration: 0.26, ease: [0.4, 0, 0.2, 1] }}
               >
-                <CollectionCarouselCard
-                  collection={collections[idx]!}
-                  onClose={onClose}
-                  onCategorySelect={onCategorySelect}
-                  cardHeight={CARD_HEIGHT}
-                />
+                {visible.map((col, i) => (
+                  <CollectionCarouselCard key={col.id} collection={col} onClose={onClose} onCategorySelect={onCategorySelect} index={i} />
+                ))}
+                {Array.from({ length: Math.max(0, CARDS_PER_VIEW - visible.length) }).map((_, i) => <div key={i} />)}
               </motion.div>
             </AnimatePresence>
-
-            {/* Prev / Next overlaid on the card */}
-            {total > 1 && (
-              <>
-                <button
-                  onClick={prev}
-                  aria-label="Previous collection"
-                  className="absolute left-3 z-20 w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-white hover:bg-white/35 transition-colors"
-                  style={{ top: CARD_HEIGHT / 2, transform: 'translateY(-50%)' }}
-                >
-                  <ArrowLeft className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  onClick={next}
-                  aria-label="Next collection"
-                  className="absolute right-3 z-20 w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-white hover:bg-white/35 transition-colors"
-                  style={{ top: CARD_HEIGHT / 2, transform: 'translateY(-50%)' }}
-                >
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </button>
-              </>
-            )}
+            <AnimatePresence>
+              {idx > 0 && <NavArrow dir="left" onClick={() => setIdx((i) => i - 1)} offset="-left-6" />}
+              {idx < maxIdx && <NavArrow dir="right" onClick={() => setIdx((i) => i + 1)} offset="-left-6" />}
+            </AnimatePresence>
           </div>
 
-          {total > 1 && (
+          {maxIdx > 0 && (
             <div className="flex items-center gap-2 mt-5">
-              {collections.map((_, i) => (
+              {Array.from({ length: maxIdx + 1 }).map((_, i) => (
                 <button key={i} onClick={() => setIdx(i)} aria-label={`Slide ${i + 1}`}>
                   <motion.div
                     animate={{ width: i === idx ? 28 : 8, backgroundColor: i === idx ? '#A01829' : '#C8C2BA' }}
@@ -278,7 +245,7 @@ function CollectionCarousel({ collections, onClose, onCategorySelect }: {
             </div>
           )}
 
-          <div className="mt-8">
+          <div className="mt-16">
             <Link
               href="/pianos"
               onClick={onClose}
