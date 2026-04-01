@@ -220,6 +220,17 @@ export const Collections: CollectionConfig = {
       },
     },
 
+    // Priority — controls sort order in the nav footer collection strip
+    {
+      name: 'collectionPriority',
+      type: 'number',
+      defaultValue: 0,
+      admin: {
+        description: 'Higher value = shown first in the nav collection footer. Default 0.',
+        position: 'sidebar',
+      },
+    },
+
     // Piano category association — controls which category filter tabs reveal this collection
     {
       name: 'pianoCategories',

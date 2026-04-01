@@ -171,6 +171,9 @@ export function CollectionShowcaseBlock({
   // Only bail if we're in product mode but have no highlights — collection pages always fall through to the banner
   if (product && !hasHighlights) return null
 
+  // Don't render the banner shell if there's nothing to show behind it
+  if (!hasHighlights && !videoId && !fallbackImage) return null
+
   if (hasHighlights) {
     const active = highlights[activeIndex] ?? highlights[0]
     return (

@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useQueryStates, parseAsString } from 'nuqs'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, ArrowRight, ChevronRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ProductTypeNav, NavProduct, NavCollection } from '@/lib/payload/products-navigation'
 import { getProductsByCollection } from '@/lib/actions/collection-products'
@@ -111,15 +112,16 @@ function NavArrow({ dir, onClick, offset = '-left-5' }: { dir: 'left' | 'right';
 
 function LoadingSkeleton() {
   return (
-    <div className="flex">
-      <div className="w-80 flex-shrink-0 border-r border-[#E8E4DF] py-10 px-8 space-y-3">
-        <div className="h-3 w-28 bg-[#EDE9E3] rounded animate-pulse mb-8" />
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-[68px] bg-[#F2EFE9] rounded-xl animate-pulse" />
+    <div className="flex flex-col">
+      <div className="flex items-center gap-8 px-10 py-0 border-b border-[#E8E4DF]">
+        {[36, 52, 44, 60, 40, 96, 76].map((w, i) => (
+          <div key={i} className="py-4">
+            <div style={{ width: w }} className="h-2.5 bg-[#EDE9E3] rounded-full animate-pulse" />
+          </div>
         ))}
       </div>
-      <div className="flex-1 px-12 py-10">
-        <div className="h-9 w-56 bg-[#EDE9E3] rounded animate-pulse mb-8" />
+      <div className="px-12 py-8">
+        <div className="h-8 w-52 bg-[#EDE9E3] rounded animate-pulse mb-7" />
         <div className="grid grid-cols-3 gap-7">
           {[1, 2, 3].map((i) => (
             <div key={i} className="space-y-4">
@@ -149,7 +151,7 @@ function CollectionCarouselCard({
 }) {
   const videoId = collection.youtubeUrl ? extractYouTubeId(collection.youtubeUrl) : null
   const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null
-  const imageUrl = thumbnail ?? collection.imageUrl ?? collection.mediaUrl ?? null
+  const imageUrl = collection.mediaUrl ?? thumbnail ?? collection.imageUrl ?? null
   const hasMedia = Boolean(imageUrl || videoId)
   const displayTitle = collection.heading || collection.title
   const collectionHref = `/pianos/${collection.handle}`
@@ -157,7 +159,7 @@ function CollectionCarouselCard({
   return (
     <div className="group relative w-full">
       <Link href={collectionHref} onClick={onClose} className="relative w-full text-left block" aria-label={`Browse ${displayTitle}`}>
-        <div className={cn('relative w-full overflow-hidden rounded-2xl bg-[#EAE6E0]', videoId ? 'aspect-video' : 'aspect-[4/3]')}>
+        <div className="relative w-full overflow-hidden rounded-2xl bg-[#EAE6E0] aspect-video">
           {imageUrl && (
             <Image src={imageUrl} alt={displayTitle} fill sizes="(max-width: 1280px) 33vw, 500px" className="object-cover transition-transform duration-500 group-hover:scale-105" />
           )}
@@ -166,20 +168,20 @@ function CollectionCarouselCard({
               <span className="text-xs tracking-widest uppercase text-[#B8AFA6]">{displayTitle}</span>
             </div>
           )}
-          {hasMedia && <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent pointer-events-none rounded-2xl" />}
-          <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
-            <p className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/55 mb-1.5">
+          {hasMedia && <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none rounded-2xl" />}
+          <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
+            <p className="text-[11px] font-bold tracking-[0.22em] uppercase text-white/70 mb-2" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
               {collection.productCount > 0 ? `${collection.productCount} Models` : 'Collection'}
             </p>
-            <h3 className="text-lg font-bold text-white font-serif leading-tight">{displayTitle}</h3>
-            {collection.subheading && <p className="text-sm text-white/60 mt-1 line-clamp-1">{collection.subheading}</p>}
+            <h3 className="text-xl font-bold text-white font-serif leading-tight" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.7), 0 1px 3px rgba(0,0,0,0.5)' }}>{displayTitle}</h3>
+            {collection.subheading && <p className="text-sm text-white/80 mt-1.5 line-clamp-1" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>{collection.subheading}</p>}
           </div>
           <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-[#A01829] transition-all duration-200 pointer-events-none" />
         </div>
       </Link>
 
-      <Link href={collectionHref} onClick={onClose} className="mt-3.5 flex items-center justify-between px-0.5 group/cta" aria-label={`View all ${displayTitle} models`}>
-        <span className="text-sm font-medium text-[#8A8078] group-hover/cta:text-[#A01829] transition-colors duration-150">Explore Collection</span>
+      <Link href={collectionHref} onClick={onClose} className="mt-4 flex items-center justify-between px-0.5 group/cta" aria-label={`View all ${displayTitle} models`}>
+        <span className="text-[15px] font-medium text-[#8A8078] group-hover/cta:text-[#A01829] transition-colors duration-150">Explore Collection</span>
         <ArrowRight className="h-4 w-4 text-[#B8AFA6] group-hover/cta:text-[#A01829] group-hover/cta:translate-x-0.5 transition-all duration-150" />
       </Link>
     </div>
@@ -201,8 +203,8 @@ function CollectionCarousel({ collections, onClose, onCategorySelect }: {
 
   return (
     <div>
-      <div className="mb-7">
-        <h2 className="text-2xl font-bold text-[#2C2C2C] font-serif leading-none">Featured Collections</h2>
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-[#2C2C2C] font-serif leading-none">Featured Collections</h2>
       </div>
 
       {collections.length === 0 ? (
@@ -215,7 +217,7 @@ function CollectionCarousel({ collections, onClose, onCategorySelect }: {
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={idx}
-                className="grid grid-cols-3 gap-7"
+                className="grid grid-cols-3 gap-8"
                 initial={{ opacity: 0, x: 28 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -28 }}
                 transition={{ duration: 0.26, ease: [0.4, 0, 0.2, 1] }}
               >
@@ -274,17 +276,113 @@ function ProductCard({ product, onClose }: { product: NavProduct; onClose: () =>
           </div>
         )}
       </div>
-      <h3 className="text-sm font-semibold text-[#2C2C2C] leading-snug line-clamp-2 font-serif px-0.5">
+      <h3 className="text-[15px] font-semibold text-[#2C2C2C] leading-snug line-clamp-2 font-serif px-0.5">
         {product.model ?? product.title}
       </h3>
     </Link>
   )
 }
 
+// ─── Collection Top Banner ────────────────────────────────────────────────────
+// Cinematic hero shown at the TOP of CategoryView when a collection tab is active.
+
+function CollectionTopBanner({ collection, onClose }: { collection: NavCollection; onClose: () => void }) {
+  const videoId = collection.youtubeUrl ? extractYouTubeId(collection.youtubeUrl) : null
+  const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null
+  const imageUrl = collection.mediaUrl ?? thumbnail ?? collection.imageUrl ?? null
+  const displayTitle = collection.heading || collection.title
+  const collectionHref = `/pianos/${collection.handle}`
+
+  return (
+    <motion.div
+      key={collection.handle}
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -6 }}
+      transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="relative h-64 rounded-xl overflow-hidden mb-7 bg-[#111]"
+    >
+      {/* Background image */}
+      {imageUrl && (
+        <Image
+          src={imageUrl}
+          alt={displayTitle}
+          fill
+          sizes="100vw"
+          className="object-cover"
+        />
+      )}
+      {!imageUrl && <div className="absolute inset-0 bg-gradient-to-br from-[#1E1B16] to-[#3a3530]" />}
+
+      {/* Cinematic gradient — heavy left, fades right */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-black/10 pointer-events-none" />
+      {/* Subtle bottom vignette for grounding */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+
+      {/* Content */}
+      <div className="absolute inset-0 flex items-center justify-between px-8">
+        {/* Left — identity */}
+        <div className="flex flex-col gap-1.5">
+          {collection.productCount > 0 && (
+            <motion.p
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.08, duration: 0.22 }}
+              className="text-xs font-bold tracking-[0.28em] uppercase text-white/60 mb-0.5"
+              style={{ textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}
+            >
+              {collection.productCount} Models
+            </motion.p>
+          )}
+          <motion.h3
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.12, duration: 0.26 }}
+            className="text-4xl font-bold text-white font-serif leading-tight"
+            style={{ textShadow: '0 2px 20px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.5)' }}
+          >
+            {displayTitle}
+          </motion.h3>
+          {collection.subheading && (
+            <motion.p
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.16, duration: 0.22 }}
+              className="text-base text-white/70 leading-relaxed max-w-sm line-clamp-1 mt-1"
+              style={{ textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}
+            >
+              {collection.subheading}
+            </motion.p>
+          )}
+        </div>
+
+        {/* Right — CTA */}
+        <motion.div
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2, duration: 0.24 }}
+        >
+          <Link
+            href={collectionHref}
+            onClick={onClose}
+            className="group flex items-center gap-3 px-7 py-3.5 rounded-full border border-white/30 bg-white/10 hover:bg-[#A01829] hover:border-[#A01829] text-white text-[15px] font-semibold transition-all duration-200 backdrop-blur-sm flex-shrink-0 tracking-wide"
+          >
+            View Collection
+            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+          </Link>
+        </motion.div>
+      </div>
+
+      {/* Thin red accent line at bottom */}
+      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#A01829] via-[#A01829]/60 to-transparent" />
+    </motion.div>
+  )
+}
+
 // ─── Collection Video Banner ───────────────────────────────────────────────────
 // Cinematic strip shown at the bottom of CategoryView when a collection tab is active.
 
-function CollectionVideoBanner({ collection, onClose, heightClass = 'h-36', externalCtaUrl, comingSoon }: { collection: NavCollection; onClose: () => void; heightClass?: string; externalCtaUrl?: string; comingSoon?: boolean }) {
+function CollectionVideoBanner({ collection, onClose, heightClass = 'h-44', externalCtaUrl, comingSoon }: { collection: NavCollection; onClose: () => void; heightClass?: string; externalCtaUrl?: string; comingSoon?: boolean }) {
   const videoId = collection.youtubeUrl ? extractYouTubeId(collection.youtubeUrl) : null
   const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null
   const imageUrl = thumbnail ?? collection.imageUrl ?? collection.mediaUrl ?? null
@@ -310,12 +408,12 @@ function CollectionVideoBanner({ collection, onClose, heightClass = 'h-36', exte
         </div>
       )}
       <div className="absolute inset-0 flex items-center justify-between px-8">
-        <div className="text-white min-w-0 mr-6">
+        <div className="text-white min-w-0 mr-8">
           {collection.productCount > 0 && (
-            <p className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/50 mb-1">{collection.productCount} Models</p>
+            <p className="text-xs font-bold tracking-[0.22em] uppercase text-white/50 mb-1.5">{collection.productCount} Models</p>
           )}
-          <h3 className="text-xl font-bold font-serif leading-tight truncate">{displayTitle}</h3>
-          {collection.subheading && <p className="text-sm text-white/60 mt-0.5 line-clamp-1">{collection.subheading}</p>}
+          <h3 className="text-2xl font-bold font-serif leading-tight truncate">{displayTitle}</h3>
+          {collection.subheading && <p className="text-[15px] text-white/60 mt-1 line-clamp-1">{collection.subheading}</p>}
         </div>
         {!comingSoon && (isExternal ? (
           <a
@@ -323,7 +421,7 @@ function CollectionVideoBanner({ collection, onClose, heightClass = 'h-36', exte
             target="_blank"
             rel="noopener noreferrer"
             onClick={onClose}
-            className="group flex items-center gap-2.5 px-5 py-2.5 bg-white/10 hover:bg-[#A01829] border border-white/25 hover:border-[#A01829] rounded-full text-sm font-medium text-white transition-all duration-200 flex-shrink-0"
+            className="group flex items-center gap-2.5 px-6 py-3 bg-white/10 hover:bg-[#A01829] border border-white/25 hover:border-[#A01829] rounded-full text-[15px] font-medium text-white transition-all duration-200 flex-shrink-0"
           >
             View Collection
             <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
@@ -332,7 +430,7 @@ function CollectionVideoBanner({ collection, onClose, heightClass = 'h-36', exte
           <Link
             href={collectionHref}
             onClick={onClose}
-            className="group flex items-center gap-2.5 px-5 py-2.5 bg-white/10 hover:bg-[#A01829] border border-white/25 hover:border-[#A01829] rounded-full text-sm font-medium text-white transition-all duration-200 flex-shrink-0"
+            className="group flex items-center gap-2.5 px-6 py-3 bg-white/10 hover:bg-[#A01829] border border-white/25 hover:border-[#A01829] rounded-full text-[15px] font-medium text-white transition-all duration-200 flex-shrink-0"
           >
             View Collection
             <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
@@ -348,15 +446,85 @@ function CollectionVideoBanner({ collection, onClose, heightClass = 'h-36', exte
 // Pill tabs: "All" (featured products) + one per tagged collection (fetched on demand).
 // Bottom: video banner for the active collection.
 
-function CategoryView({ sidebarKey, collections, allTabProducts, categoryHref, label, onClose }: {
+// ─── Collection Footer ────────────────────────────────────────────────────────
+// Sticky footer strip showing collection pills. Lives outside the scroll area.
+
+function CollectionFooter({ collections, activeHandle, onSelect, isAllView, onClose, categoryHref, categoryLabel }: {
+  collections: NavCollection[]
+  activeHandle: string
+  onSelect: (handle: string) => void
+  isAllView: boolean
+  onClose: () => void
+  categoryHref: string
+  categoryLabel: string | null
+}) {
+  if (collections.length === 0) return null
+
+  const ctaHref = categoryHref
+  const ctaLabel = categoryLabel ? `Browse All ${categoryLabel}` : 'Browse All Products'
+
+  return (
+    <div className="flex-shrink-0 border-t border-[#E8E4DF] bg-[#FAF9F7] px-12 py-3.5">
+      <div className="flex items-center gap-4">
+        <span className="text-[10px] font-bold tracking-[0.28em] uppercase text-[#C8C2BA] whitespace-nowrap flex-shrink-0">
+          Collections
+        </span>
+        <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-0.5 flex-1">
+          {collections.map((col) => {
+            const label = col.heading || col.title
+            const isActive = !isAllView && activeHandle === col.handle
+            if (isAllView) {
+              return (
+                <Link
+                  key={col.id}
+                  href={`/pianos/${col.handle}`}
+                  onClick={onClose}
+                  className="px-3.5 py-1.5 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all duration-150 bg-[#F2EFE9] text-[#8A8078] hover:bg-[#EDE9E3] hover:text-[#2C2C2C]"
+                >
+                  {label}
+                </Link>
+              )
+            }
+            return (
+              <button
+                key={col.id}
+                onClick={() => onSelect(isActive ? 'all' : col.handle)}
+                className={cn(
+                  'px-3.5 py-1.5 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all duration-150',
+                  isActive ? 'bg-[#A01829] text-white' : 'bg-[#F2EFE9] text-[#8A8078] hover:bg-[#EDE9E3] hover:text-[#2C2C2C]'
+                )}
+              >
+                {label}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* CTA — bottom-right */}
+        <Link
+          href={ctaHref}
+          onClick={onClose}
+          className="group flex-shrink-0 flex items-center gap-1.5 text-sm font-medium text-[#A01829] hover:text-[#C41019] transition-colors duration-150 whitespace-nowrap ml-auto"
+        >
+          {ctaLabel}
+          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-150 group-hover:translate-x-0.5" />
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+// ─── Category View ─────────────────────────────────────────────────────────────
+
+function CategoryView({ sidebarKey, collections, allTabProducts, categoryHref, label, onClose, activeCollectionHandle }: {
   sidebarKey: string
   collections: NavCollection[]
   allTabProducts: NavProduct[]
   categoryHref: string
   label: string
   onClose: () => void
+  activeCollectionHandle: string
 }) {
-  const [activeTab, setActiveTab] = useState('all')
   const [fetchedProducts, setFetchedProducts] = useState<NavProduct[]>([])
   const [isLoadingProducts, setIsLoadingProducts] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -364,23 +532,18 @@ function CategoryView({ sidebarKey, collections, allTabProducts, categoryHref, l
   const [canScrollRight, setCanScrollRight] = useState(false)
 
   useEffect(() => {
-    setActiveTab('all')
-    setFetchedProducts([])
-  }, [sidebarKey])
-
-  useEffect(() => {
-    if (activeTab === 'all') { setFetchedProducts([]); return }
+    if (activeCollectionHandle === 'all') { setFetchedProducts([]); return }
     let cancelled = false
     setIsLoadingProducts(true)
-    getProductsByCollection(activeTab)
+    getProductsByCollection(activeCollectionHandle)
       .then((products) => { if (!cancelled) setFetchedProducts(products) })
       .catch(() => { if (!cancelled) setFetchedProducts([]) })
       .finally(() => { if (!cancelled) setIsLoadingProducts(false) })
     return () => { cancelled = true }
-  }, [activeTab])
+  }, [activeCollectionHandle])
 
-  const displayProducts = activeTab === 'all' ? allTabProducts : fetchedProducts
-  const activeCollection = collections.find((c) => c.handle === activeTab)
+  const displayProducts = activeCollectionHandle === 'all' ? allTabProducts : fetchedProducts
+  const activeCollection = collections.find((c) => c.handle === activeCollectionHandle)
 
   const updateScrollState = useCallback(() => {
     const el = scrollRef.current
@@ -408,40 +571,21 @@ function CategoryView({ sidebarKey, collections, allTabProducts, categoryHref, l
   return (
     <div>
       {/* Header */}
-      <div className="flex items-end justify-between mb-5">
-        <h2 className="text-2xl font-bold text-[#2C2C2C] font-serif leading-none">{label} Pianos</h2>
-        <Link href={categoryHref} onClick={onClose} className="group flex items-center gap-2 text-sm font-medium text-[#A01829]">
-          Browse All {label}
-          <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-        </Link>
+      <div className="mb-6">
+        <h2 className="text-3xl font-bold text-[#2C2C2C] font-serif leading-none">{label} Pianos</h2>
       </div>
 
-      {/* Collection pill tabs */}
-      {collections.length > 0 && (
-        <div className="flex gap-2 mb-6 flex-wrap">
-          {['all', ...collections.map((c) => c.handle)].map((tab) => {
-            const col = collections.find((c) => c.handle === tab)
-            const tabLabel = tab === 'all' ? 'All' : (col?.heading || col?.title || tab)
-            return (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={cn(
-                  'px-3.5 py-1.5 rounded-full text-sm font-medium transition-all duration-150 whitespace-nowrap',
-                  activeTab === tab ? 'bg-[#A01829] text-white' : 'bg-[#F2EFE9] text-[#8A8078] hover:bg-[#EDE9E3] hover:text-[#2C2C2C]'
-                )}
-              >
-                {tabLabel}
-              </button>
-            )
-          })}
-        </div>
-      )}
+      {/* Collection banner — top, shown when a collection is selected */}
+      <AnimatePresence mode="wait">
+        {activeCollectionHandle !== 'all' && activeCollection && !isLoadingProducts && (
+          <CollectionTopBanner key={activeCollection.handle} collection={activeCollection} onClose={onClose} />
+        )}
+      </AnimatePresence>
 
       {/* Product scroll */}
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
-          key={activeTab}
+          key={activeCollectionHandle}
           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
         >
@@ -481,20 +625,13 @@ function CategoryView({ sidebarKey, collections, allTabProducts, categoryHref, l
         </motion.div>
       </AnimatePresence>
 
-      {/* Collection video banner */}
-      <AnimatePresence>
-        {activeTab !== 'all' && activeCollection && !isLoadingProducts && (
-          <CollectionVideoBanner collection={activeCollection} onClose={onClose} />
-        )}
-      </AnimatePresence>
-
-      {/* Explore All Products — only shown on the All tab, not when a collection is selected */}
-      {activeTab === 'all' && (
-        <div className="mt-16">
+      {/* Explore All Products — only shown when no collection is selected */}
+      {activeCollectionHandle === 'all' && (
+        <div className="mt-7">
           <Link
             href="/pianos"
             onClick={onClose}
-            className="flex items-center justify-center w-full py-3.5 bg-[#1E1B16] text-white text-sm font-semibold tracking-[0.08em] uppercase rounded-lg hover:bg-[#2C2C2C] transition-colors duration-200"
+            className="flex items-center justify-center w-full py-4 bg-[#1E1B16] text-white text-[15px] font-semibold tracking-[0.08em] uppercase rounded-lg hover:bg-[#2C2C2C] transition-colors duration-200"
           >
             Explore All Products
           </Link>
@@ -524,8 +661,8 @@ function BannerOnlyView({ label, href, externalCtaUrl, collectionHandle, collect
   return (
     <div>
       {/* Header */}
-      <div className="flex items-end justify-between mb-5">
-        <h2 className="text-2xl font-bold text-[#2C2C2C] font-serif leading-none">{label}</h2>
+      <div className="flex items-end justify-between mb-6">
+        <h2 className="text-3xl font-bold text-[#2C2C2C] font-serif leading-none">{label}</h2>
         {comingSoon ? (
           <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#B8AFA6]">Coming Soon</span>
         ) : isExternal ? (
@@ -632,9 +769,9 @@ function AccessoriesBannerView({ onClose }: { onClose: () => void }) {
   )
 }
 
-// ─── Sidebar ──────────────────────────────────────────────────────────────────
+// ─── Top Tab Bar ──────────────────────────────────────────────────────────────
 
-function Sidebar({ selectedKey, onSelect, onClose, productTypes }: {
+function TopTabBar({ selectedKey, onSelect, onClose, productTypes }: {
   selectedKey: SidebarKey | null
   onSelect: (key: SidebarKey | null) => void
   onClose: () => void
@@ -644,39 +781,44 @@ function Sidebar({ selectedKey, onSelect, onClose, productTypes }: {
     (cat) => 'bannerOnly' in cat || getProductsForSidebarKey(productTypes, cat.terms).length > 0
   )
 
+  const tabs: { label: string; key: SidebarKey | null }[] = [
+    { label: 'All', key: null },
+    ...availableCategories.map((cat) => ({ label: cat.label, key: cat.key as SidebarKey })),
+  ]
+
   return (
-    <div className="w-80 flex-shrink-0 border-r border-[#E8E4DF] py-10 px-8 flex flex-col self-stretch">
-      <p className="text-xs font-bold tracking-[0.25em] uppercase text-[#B8AFA6] mb-6">Browse</p>
-
-      <nav className="flex-1 space-y-2">
-        {availableCategories.map((cat) => {
-          const isSelected = selectedKey === cat.key
-          const isAccessories = cat.key === 'accessories'
-          return (
-            <div key={cat.key}>
-              {isAccessories && (
-                <div className="h-px bg-[#E8E4DF] my-3" />
+    <div className="flex items-stretch gap-0 px-12 bg-[#FAF9F7] border-b border-[#E8E4DF]">
+      {tabs.map((tab) => {
+        const isActive = selectedKey === tab.key
+        const isAccessories = tab.key === 'accessories'
+        return (
+          <div key={tab.key ?? 'all'} className={cn('flex items-stretch', isAccessories && 'ml-5 pl-5 border-l border-[#E8E4DF]')}>
+            <button
+              onClick={() => onSelect(tab.key)}
+              className={cn(
+                'relative flex items-center px-5 py-5 text-[15px] whitespace-nowrap transition-colors duration-150 outline-none',
+                isActive ? 'text-[#1E1B16] font-semibold' : 'text-[#9A9189] font-medium hover:text-[#2C2C2C]'
               )}
-              <button
-                onClick={() => onSelect(isSelected ? null : (cat.key as SidebarKey))}
-                className={cn(
-                  'w-full text-left px-5 py-[18px] rounded-xl transition-all duration-150',
-                  'flex items-center justify-between group',
-                  isSelected ? 'bg-[#A01829] text-white shadow-sm' : 'text-[#2C2C2C] hover:bg-[#F2EFE9]'
-                )}
-              >
-                <span className="text-xl font-semibold leading-none tracking-tight">{cat.label}</span>
-                {isSelected
-                  ? <div className="w-2 h-2 rounded-full bg-white/80 flex-shrink-0" />
-                  : <ChevronRight className="h-5 w-5 text-[#C8C2BA] group-hover:text-[#8A8078] transition-colors flex-shrink-0" />}
-              </button>
-            </div>
-          )
-        })}
-      </nav>
+            >
+              {tab.label}
+              {isActive && (
+                <motion.div
+                  layoutId="mega-menu-tab-indicator"
+                  className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#A01829] rounded-t-full"
+                  transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                />
+              )}
+            </button>
+          </div>
+        )
+      })}
 
-      <div className="pt-6 border-t border-[#E8E4DF]">
-        <Link href="/pianos" onClick={onClose} className="group flex items-center gap-2 text-sm font-medium text-[#8A8078] hover:text-[#A01829] transition-colors duration-150">
+      <div className="ml-auto flex items-center pl-8">
+        <Link
+          href="/pianos"
+          onClick={onClose}
+          className="group flex items-center gap-2 text-sm font-medium text-[#9A9189] hover:text-[#A01829] transition-colors duration-150 whitespace-nowrap"
+        >
           View All Pianos
           <ArrowRight className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-0.5" />
         </Link>
@@ -697,11 +839,29 @@ export function ProductsMegaMenu({
   isLoading = false,
   isHeaderScrolled = false,
 }: ProductsMegaMenuProps) {
-  const [selectedKey, setSelectedKey] = useState<SidebarKey | null>(null)
+  const [menuState, setMenuState] = useQueryStates(
+    {
+      nav_cat: parseAsString.withDefault(''),
+      nav_col: parseAsString.withDefault('all'),
+    },
+    { history: 'replace', shallow: true, clearOnDefault: true },
+  )
 
-  useEffect(() => {
-    if (isOpen) setSelectedKey(null)
-  }, [isOpen])
+  // Derive typed selectedKey — fall back to null if URL value isn't a valid category
+  const selectedKey = (
+    SIDEBAR_CATEGORIES.some((c) => c.key === menuState.nav_cat) ? menuState.nav_cat : null
+  ) as SidebarKey | null
+
+  const activeCollectionHandle = menuState.nav_col
+
+  function setSelectedKey(key: SidebarKey | null) {
+    // Changing category always resets the collection selection
+    setMenuState({ nav_cat: key ?? '', nav_col: 'all' })
+  }
+
+  function setActiveCollectionHandle(handle: string) {
+    setMenuState({ nav_col: handle })
+  }
 
   const selectedProducts = useMemo(() => {
     if (!selectedKey) return []
@@ -730,6 +890,20 @@ export function ProductsMegaMenu({
     return getCollectionsForSidebarKey(pool, selectedKey)
   }, [selectedKey, collections, allCollections])
 
+  // Footer: all collections on "All" tab, category-filtered on a category tab.
+  // Featured collections (cross-referenced from the featured-only `collections` prop) sort first.
+  const footerCollections = useMemo(() => {
+    const pool = allCollections ?? collections
+    const featuredIds = new Set(collections.map((c) => c.id))
+    const base = !selectedKey ? [...pool] : getCollectionsForSidebarKey(pool, selectedKey)
+    return base.sort((a, b) => {
+      const aFeatured = featuredIds.has(a.id) || a.featured
+      const bFeatured = featuredIds.has(b.id) || b.featured
+      if (aFeatured !== bFeatured) return aFeatured ? -1 : 1
+      return (b.collectionPriority ?? 0) - (a.collectionPriority ?? 0)
+    })
+  }, [selectedKey, collections, allCollections])
+
   const selectedCat = SIDEBAR_CATEGORIES.find((c) => c.key === selectedKey)
 
   const topOffset = isHeaderScrolled
@@ -745,19 +919,19 @@ export function ProductsMegaMenu({
           animate={{ opacity: 1, scaleY: 1, y: 0, top: topOffset }}
           exit={{ opacity: 0, scaleY: 0.97, y: -8 }}
           transition={{ duration: 0.24, ease: [0.4, 0, 0.2, 1] }}
-          style={{ transformOrigin: 'top center' }}
-          className={cn('fixed left-0 right-0 z-[60] bg-[#FAF9F7] shadow-[0_24px_80px_-12px_rgba(0,0,0,0.14)] overflow-hidden', className)}
+          style={{ transformOrigin: 'top center', left: '50%', x: '-50%' }}
+          className={cn('fixed z-[60] w-[95vw] max-w-[1440px] bg-[#FAF9F7] shadow-[0_8px_24px_-4px_rgba(0,0,0,0.12),0_32px_80px_-8px_rgba(0,0,0,0.28)] overflow-hidden rounded-2xl', className)}
         >
           <div className="h-px w-full bg-gradient-to-r from-transparent via-[#A01829]/30 to-transparent" />
 
-          <div className="flex">
+          <div className="flex flex-col max-h-[75vh]">
             {isLoading ? (
               <LoadingSkeleton />
             ) : (
               <>
-                <Sidebar selectedKey={selectedKey} onSelect={setSelectedKey} onClose={onClose} productTypes={productTypes} />
+                <TopTabBar selectedKey={selectedKey} onSelect={setSelectedKey} onClose={onClose} productTypes={productTypes} />
 
-                <div className="flex-1 min-w-0 px-12 py-10 bg-white">
+                <div className="min-w-0 px-14 py-10 bg-white overflow-y-auto flex-1">
                   <AnimatePresence mode="wait" initial={false}>
                     {selectedKey === null ? (
                       <motion.div
@@ -805,12 +979,21 @@ export function ProductsMegaMenu({
                             categoryHref={selectedCat.href}
                             label={selectedCat.label}
                             onClose={onClose}
+                            activeCollectionHandle={activeCollectionHandle}
                           />
                         )}
                       </motion.div>
                     )}
                   </AnimatePresence>
                 </div>
+
+                <CollectionFooter
+                  collections={footerCollections}
+                  activeHandle={activeCollectionHandle}
+                  onSelect={setActiveCollectionHandle}
+                  isAllView={selectedKey === null}
+                  onClose={onClose}
+                />
               </>
             )}
           </div>

@@ -106,24 +106,25 @@ export function ResourcesMegaMenu({
       {isOpen && (
         <motion.div
           key="resources-mega-menu"
-          initial={{ opacity: 0, y: -8 }}
+          initial={{ opacity: 0, scaleY: 0.97, y: -8 }}
           animate={{
             opacity: 1,
+            scaleY: 1,
             y: 0,
             top: isHeaderScrolled
               ? 'calc(112px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))'
               : 'calc(128px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))',
           }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
+          exit={{ opacity: 0, scaleY: 0.97, y: -8 }}
+          transition={{ duration: 0.24, ease: [0.4, 0, 0.2, 1] }}
           className={cn(
-            'fixed left-0 right-0 z-[60]',
-            'bg-white border-b border-kawai-neutral/40 shadow-lg',
+            'fixed z-[60] w-[95vw] max-w-[1440px]',
+            'bg-white shadow-[0_8px_24px_-4px_rgba(0,0,0,0.12),0_32px_80px_-8px_rgba(0,0,0,0.28)] overflow-hidden rounded-2xl',
             className
           )}
-          style={{ transformOrigin: 'top center' }}
+          style={{ transformOrigin: 'top center', left: '50%', x: '-50%' }}
         >
-          <div className="max-w-7xl mx-auto px-8 md:px-12 py-8">
+          <div className="px-8 md:px-12 py-8 max-h-[75vh] overflow-y-auto">
 
             {/* Eyebrow label */}
             <p className="text-[10px] text-kawai-red/70 tracking-[0.45em] uppercase font-semibold font-[family-name:var(--font-brand-sans)] mb-6">

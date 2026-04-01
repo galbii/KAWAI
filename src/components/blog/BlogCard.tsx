@@ -53,7 +53,7 @@ export function BlogCard({ post, className, featured }: BlogCardProps) {
         )}
       >
         {/* Image / Video */}
-        <div className="relative w-full aspect-[3/2] overflow-hidden bg-kawai-black shrink-0">
+        <div className="relative w-full aspect-video overflow-hidden bg-kawai-black shrink-0">
           {videoId ? (
             /* YouTube thumbnail — avoids autoplay bot-detection (YouTube flags
                autoplay + controls=0 + pointerEvents:none as non-human behaviour).

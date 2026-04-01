@@ -73,6 +73,7 @@
     "maplibre-gl": "^5.19.0",
     "next": "15.4.8",
     "next-seo": "^6.8.0",
+    "nuqs": "^2.8.9",
     "papaparse": "^5.5.3",
     "payload": "3.71.1",
     "pdfjs-dist": "5.4.449",

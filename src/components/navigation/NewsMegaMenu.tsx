@@ -114,25 +114,20 @@ export function NewsMegaMenu({
       {isOpen && (
         <motion.div
           key="news-mega-menu"
-          initial={{ opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0, top: topOffset }}
-          exit={{ opacity: 0, y: -6 }}
-          transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+          initial={{ opacity: 0, scaleY: 0.97, y: -8 }}
+          animate={{ opacity: 1, scaleY: 1, y: 0, top: topOffset }}
+          exit={{ opacity: 0, scaleY: 0.97, y: -8 }}
+          transition={{ duration: 0.24, ease: [0.4, 0, 0.2, 1] }}
           className={cn(
-            'fixed left-0 right-0 z-[60]',
-            'border-b border-kawai-neutral',
+            'fixed z-[60] w-[95vw] max-w-[1440px]',
+            'shadow-[0_8px_24px_-4px_rgba(0,0,0,0.12),0_32px_80px_-8px_rgba(0,0,0,0.28)] overflow-hidden rounded-2xl',
             className,
           )}
-          style={{
-            maxHeight: isHeaderScrolled ? 'calc(100vh - 112px - var(--admin-bar-height, 0px))' : 'calc(100vh - 128px - var(--admin-bar-height, 0px))',
-            overflowY: 'auto',
-            transformOrigin: 'top center',
-            boxShadow: '0 40px 80px -16px rgba(30,27,22,0.25)',
-          }}
+          style={{ transformOrigin: 'top center', left: '50%', x: '-50%' }}
         >
           {/* ── Main two-column layout ── */}
           <div
-            className="grid grid-cols-[220px_1fr] lg:grid-cols-[260px_1fr]"
+            className="grid grid-cols-[220px_1fr] lg:grid-cols-[260px_1fr] max-h-[75vh] overflow-y-auto"
             style={{ minHeight: 'min(300px, 38vh)' }}
           >
 

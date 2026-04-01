@@ -62,6 +62,8 @@ export interface NavCollection {
   heading: string | null
   subheading: string | null
   productCount: number
+  collectionPriority: number
+  featured: boolean
   pianoCategories?: string[] | null
   bannerSize?: 'xxs' | 'xs' | 'small' | 'medium' | 'large' | 'fullscreen' | null
 }
@@ -555,8 +557,9 @@ export async function getNavCollections(limit: number = 20, featuredOnly: boolea
         featured: true,
         pianoCategories: true,
         bannerSize: true,
+        collectionPriority: true,
       },
-      sort: '-productCount',
+      sort: '-collectionPriority,-productCount',
       limit,
       depth: 1,
       pagination: false,
@@ -578,6 +581,8 @@ export async function getNavCollections(limit: number = 20, featuredOnly: boolea
         heading: col.heading ?? null,
         subheading: col.subheading ?? null,
         productCount: col.productCount ?? 0,
+        collectionPriority: (col as any).collectionPriority ?? 0,
+        featured: col.featured === true,
         pianoCategories: (col.pianoCategories as string[] | null | undefined) ?? null,
         bannerSize: (col.bannerSize as NavCollection['bannerSize']) ?? null,
       }

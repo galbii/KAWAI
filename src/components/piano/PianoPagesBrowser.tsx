@@ -560,6 +560,8 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
         heading: c.heading ?? null,
         subheading: c.subheading ?? null,
         productCount: 0,
+        collectionPriority: c.collectionPriority ?? 0,
+        featured: c.featured === true,
         pianoCategories: c.pianoCategories ?? null,
       }))
   }, [collections])

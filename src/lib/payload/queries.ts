@@ -979,6 +979,7 @@ export interface CollectionForBrowser {
   handle: string
   pianoCategories?: string[] | null
   featured?: boolean | null
+  collectionPriority?: number | null
   youtubeUrl?: string | null
   mediaUrl?: string | null
   imageUrl?: string | null
@@ -1007,6 +1008,7 @@ export const getCollectionsForBrowser = unstable_cache(
         handle: true,
         pianoCategories: true,
         featured: true,
+        collectionPriority: true,
         youtubeUrl: true,
         media: true,
         imageUrl: true,
@@ -1030,6 +1032,7 @@ export const getCollectionsForBrowser = unstable_cache(
         handle: d.handle,
         pianoCategories: (d.pianoCategories as string[] | null) ?? null,
         featured: (d.featured as boolean | null | undefined) ?? null,
+        collectionPriority: (d.collectionPriority as number | null | undefined) ?? null,
         youtubeUrl: (d.youtubeUrl as string | null | undefined) ?? null,
         mediaUrl: mediaObjectUrl,
         imageUrl: (d.imageUrl as string | null | undefined) ?? null,

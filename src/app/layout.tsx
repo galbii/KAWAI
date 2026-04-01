@@ -5,6 +5,7 @@ import Script from 'next/script';
 import { Suspense } from 'react';
 import { PHProvider } from './providers'
 import { CartProvider } from '@/contexts/CartContext'
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import PageViewTracker from '../components/PageViewTracker'
 import "./globals.css";
 
@@ -98,14 +99,16 @@ export default function RootLayout({
       />
       <GoogleTagManager gtmId="GTM-MGQR7XXS" />
       <body className={`${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${notoSans.variable} antialiased bg-kawai-black text-kawai-pearl`}>
-        <PHProvider>
-          <CartProvider>
-            <Suspense fallback={null}>
-              <PageViewTracker />
-            </Suspense>
-            {children}
-          </CartProvider>
-        </PHProvider>
+        <NuqsAdapter>
+          <PHProvider>
+            <CartProvider>
+              <Suspense fallback={null}>
+                <PageViewTracker />
+              </Suspense>
+              {children}
+            </CartProvider>
+          </PHProvider>
+        </NuqsAdapter>
       </body>
     </html>
   );

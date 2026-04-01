@@ -3023,6 +3023,10 @@ export interface Collection {
    */
   featured?: boolean | null;
   /**
+   * Higher value = shown first in the nav collection footer. Default 0.
+   */
+  collectionPriority?: number | null;
+  /**
    * Associate with piano category filters. When a visitor selects Digital, Grand, Upright, Hybrid, or Shigeru Kawai on the /pianos page, only collections tagged here will appear in the collection filter row.
    */
   pianoCategories?: ('digital' | 'grand' | 'upright' | 'hybrid' | 'shigeru')[] | null;
@@ -11215,6 +11219,7 @@ export interface CollectionsSelect<T extends boolean = true> {
   headingSize?: T;
   fontFamily?: T;
   featured?: T;
+  collectionPriority?: T;
   pianoCategories?: T;
   shopify?:
     | T

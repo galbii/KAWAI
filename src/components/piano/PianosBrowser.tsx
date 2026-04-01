@@ -553,7 +553,20 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
   const [activeCollection, setActiveCollection] = useState<string>('All')
   const [sort, setSort] = useState<string>('default')
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  const filterPanelRef = useRef<HTMLDivElement>(null)
+
+  // Close filter dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (filterPanelRef.current && !filterPanelRef.current.contains(e.target as Node)) {
+        setIsFiltersOpen(false)
+      }
+    }
+    if (isFiltersOpen) document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isFiltersOpen])
 
   // Lock body scroll when mobile sheet is open
   useEffect(() => {
@@ -618,8 +631,19 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
         heading: c.heading ?? null,
         subheading: c.subheading ?? null,
         productCount: 0,
+        collectionPriority: c.collectionPriority ?? 0,
+        featured: c.featured === true,
         pianoCategories: c.pianoCategories ?? null,
       }))
+  }, [collectionsForBrowser])
+
+  // Map of collection handle → priority for featured collections (used by default sort)
+  const featuredPriorityMap = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const c of collectionsForBrowser ?? []) {
+      if (c.featured) map.set(c.handle, c.collectionPriority ?? 0)
+    }
+    return map
   }, [collectionsForBrowser])
 
   const filtered = useMemo(() => {
@@ -644,6 +668,16 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
     }
 
     switch (sort) {
+      case 'default': {
+        // Sort by the highest collectionPriority among the product's featured collections.
+        // Products with no featured collection get 0 and sort last.
+        items.sort((a, b) => {
+          const aMax = Math.max(0, ...(a.shopifyCollections ?? []).map((c) => featuredPriorityMap.get(c.handle) ?? 0))
+          const bMax = Math.max(0, ...(b.shopifyCollections ?? []).map((c) => featuredPriorityMap.get(c.handle) ?? 0))
+          return bMax - aMax
+        })
+        break
+      }
       case 'name-asc':
         items.sort((a, b) => (a.model ?? '').localeCompare(b.model ?? ''))
         break
@@ -656,7 +690,7 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
     }
 
     return items
-  }, [products, search, activeCategory, activeCollection, sort])
+  }, [products, search, activeCategory, activeCollection, sort, featuredPriorityMap])
 
   const hasFilters = search.trim() !== '' || activeCategory !== 'All' || activeCollection !== 'All'
 
@@ -695,101 +729,231 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
         <div className="max-w-7xl mx-auto px-6">
 
           {/* ── Desktop layout ───────────────────────────────────── */}
-          <div className="hidden md:flex items-center h-16 gap-6">
-            {/* "Our Products" label */}
+          <div className="hidden md:flex items-center h-14 gap-5">
+
+            {/* "Our Products" heading */}
             <span
-              className="text-xl text-kawai-black flex-shrink-0 whitespace-nowrap"
-              style={{ fontFamily: 'var(--font-brand-luxury)', fontWeight: 400 }}
+              className="text-[1.35rem] text-kawai-black flex-shrink-0 whitespace-nowrap leading-none"
+              style={{ fontFamily: 'var(--font-brand-luxury)', fontWeight: 400, letterSpacing: '-0.01em' }}
             >
               Our Products
             </span>
 
             {/* Divider */}
-            <div className="h-5 w-px bg-kawai-neutral flex-shrink-0" />
+            <div className="h-4 w-px bg-kawai-neutral flex-shrink-0" />
 
-            {/* Category tabs with animated pill */}
-            <LayoutGroup id="category-tabs">
-              <nav className="flex items-center gap-0" aria-label="Piano categories">
-                {CATEGORIES.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => handleCategoryChange(cat)}
-                    className={cn(
-                      'relative px-5 py-2 text-sm uppercase tracking-[0.1em] font-medium',
-                      'transition-colors duration-200 font-[family-name:var(--font-brand-sans)]',
-                      'focus-visible:outline-2 focus-visible:outline-kawai-red',
-                      activeCategory === cat ? 'text-kawai-pearl' : 'text-kawai-charcoal hover:text-kawai-black',
-                    )}
-                  >
-                    {activeCategory === cat && (
-                      <motion.span
-                        layoutId="cat-pill"
-                        className="absolute inset-0 bg-kawai-black"
-                        style={{ borderRadius: 0 }}
-                        transition={{ type: 'spring', bounce: 0.18, duration: 0.42 }}
-                        aria-hidden
-                      />
-                    )}
-                    <span className="relative z-10">{cat}</span>
-                  </button>
-                ))}
-              </nav>
-            </LayoutGroup>
-
-            {/* Push right */}
-            <div className="flex-1" />
-
-            {/* Search */}
-            <div className="relative w-72 group">
+            {/* Search — minimal underline */}
+            <div className="relative group flex-1 max-w-[200px]">
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by model or name…"
+                placeholder="Search models…"
                 className={cn(
-                  'w-full bg-transparent border-0 border-b pb-2 pt-1 text-sm',
-                  'text-kawai-black placeholder:text-kawai-charcoal/40',
+                  'w-full bg-transparent border-0 border-b pb-1.5 pt-1 text-sm',
+                  'text-kawai-black placeholder:text-kawai-charcoal/35',
                   'focus:outline-none focus:ring-0 font-[family-name:var(--font-brand-sans)]',
                   'transition-colors duration-200',
-                  search ? 'border-kawai-black' : 'border-kawai-neutral group-hover:border-kawai-charcoal',
+                  search ? 'border-kawai-black' : 'border-kawai-neutral group-hover:border-kawai-charcoal/50',
                 )}
               />
-              <div className="absolute right-0 bottom-2">
+              <div className="absolute right-0 bottom-1.5">
                 {search ? (
-                  <button
-                    onClick={() => setSearch('')}
-                    className="text-kawai-charcoal/50 hover:text-kawai-black transition-colors"
-                    aria-label="Clear search"
-                  >
-                    <X size={13} />
+                  <button onClick={() => setSearch('')} className="text-kawai-charcoal/40 hover:text-kawai-black transition-colors" aria-label="Clear search">
+                    <X size={12} />
                   </button>
                 ) : (
-                  <Search size={13} className="text-kawai-charcoal/40" />
+                  <Search size={12} className="text-kawai-charcoal/30" />
                 )}
               </div>
             </div>
+
+            {/* Spacer */}
+            <div className="flex-1" />
 
             {/* Results count */}
             <AnimatePresence mode="wait">
               <motion.span
                 key={filtered.length}
-                initial={{ opacity: 0, y: -4 }}
+                initial={{ opacity: 0, y: -3 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 4 }}
-                transition={{ duration: 0.18 }}
-                className="text-sm text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)] whitespace-nowrap"
+                exit={{ opacity: 0, y: 3 }}
+                transition={{ duration: 0.15 }}
+                className="text-xs text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] whitespace-nowrap tabular-nums"
               >
                 {filtered.length} {filtered.length === 1 ? 'instrument' : 'instruments'}
               </motion.span>
             </AnimatePresence>
 
+            {/* Filters button + dropdown */}
+            <div className="relative flex-shrink-0" ref={filterPanelRef}>
+              <button
+                onClick={() => setIsFiltersOpen((v) => !v)}
+                aria-expanded={isFiltersOpen}
+                aria-haspopup="true"
+                className={cn(
+                  'flex items-center gap-2 h-8 px-4 text-xs uppercase tracking-[0.12em]',
+                  'border transition-all duration-200 font-[family-name:var(--font-brand-sans)]',
+                  'focus-visible:outline-2 focus-visible:outline-kawai-red',
+                  isFiltersOpen || activeFilterCount > 0
+                    ? 'bg-kawai-black border-kawai-black text-white'
+                    : 'border-kawai-neutral text-kawai-charcoal hover:border-kawai-charcoal',
+                )}
+              >
+                <SlidersHorizontal size={12} />
+                <span>Filters</span>
+                <AnimatePresence>
+                  {activeFilterCount > 0 && (
+                    <motion.span
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      transition={{ duration: 0.15, type: 'spring', bounce: 0.3 }}
+                      className="flex items-center justify-center w-4 h-4 rounded-full bg-kawai-red text-white text-[9px] font-bold leading-none"
+                    >
+                      {activeFilterCount}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </button>
+
+              {/* Filter dropdown panel */}
+              <AnimatePresence>
+                {isFiltersOpen && (
+                  <motion.div
+                    key="filter-panel"
+                    initial={{ opacity: 0, scale: 0.97, y: -6 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.97, y: -6 }}
+                    transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
+                    style={{ transformOrigin: 'top right' }}
+                    className="absolute right-0 top-[calc(100%+10px)] w-[480px] bg-white border border-kawai-neutral shadow-[0_12px_48px_-8px_rgba(0,0,0,0.13)] z-50"
+                  >
+                    <div className="p-6 space-y-6">
+
+                      {/* Category */}
+                      <div>
+                        <p className="text-[9px] uppercase tracking-[0.25em] text-kawai-charcoal/40 mb-3 font-[family-name:var(--font-brand-sans)]">
+                          Category
+                        </p>
+                        <LayoutGroup id="filter-panel-cats">
+                          <div className="flex flex-wrap gap-2">
+                            {CATEGORIES.map((cat) => (
+                              <button
+                                key={cat}
+                                onClick={() => { handleCategoryChange(cat) }}
+                                className={cn(
+                                  'relative px-4 py-2 text-xs uppercase tracking-[0.1em] border transition-colors duration-150',
+                                  'font-[family-name:var(--font-brand-sans)] focus-visible:outline-2 focus-visible:outline-kawai-red',
+                                  activeCategory === cat
+                                    ? 'border-kawai-black bg-kawai-black text-white'
+                                    : 'border-kawai-neutral text-kawai-charcoal hover:border-kawai-charcoal',
+                                )}
+                              >
+                                {cat}
+                              </button>
+                            ))}
+                          </div>
+                        </LayoutGroup>
+                      </div>
+
+                      {/* Collection */}
+                      {visibleCollections.length > 0 && (
+                        <div>
+                          <div className="h-px bg-kawai-neutral/50 -mx-6 mb-6" />
+                          <p className="text-[9px] uppercase tracking-[0.25em] text-kawai-charcoal/40 mb-3 font-[family-name:var(--font-brand-sans)]">
+                            Collection
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              onClick={() => handleCollectionChange('All')}
+                              className={cn(
+                                'px-4 py-2 text-xs uppercase tracking-[0.1em] border transition-colors duration-150',
+                                'font-[family-name:var(--font-brand-sans)]',
+                                activeCollection === 'All'
+                                  ? 'border-kawai-red text-kawai-red'
+                                  : 'border-kawai-neutral text-kawai-charcoal hover:border-kawai-charcoal',
+                              )}
+                            >
+                              All
+                            </button>
+                            {visibleCollections.map((col) => (
+                              <button
+                                key={col.title}
+                                onClick={() => handleCollectionChange(col.title)}
+                                className={cn(
+                                  'px-4 py-2 text-xs uppercase tracking-[0.1em] border transition-colors duration-150',
+                                  'font-[family-name:var(--font-brand-sans)]',
+                                  activeCollection === col.title
+                                    ? 'border-kawai-red text-kawai-red'
+                                    : 'border-kawai-neutral text-kawai-charcoal hover:border-kawai-charcoal',
+                                )}
+                              >
+                                {col.title}
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* View Collection link */}
+                          <AnimatePresence>
+                            {activeCollectionHandle && (
+                              <motion.a
+                                key="view-col"
+                                initial={{ opacity: 0, y: 4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 4 }}
+                                transition={{ duration: 0.18 }}
+                                href={`/pianos/${activeCollectionHandle}`}
+                                className="inline-flex items-center gap-1.5 mt-4 text-[10px] uppercase tracking-[0.15em] text-kawai-red hover:underline font-[family-name:var(--font-brand-sans)]"
+                              >
+                                View full collection
+                                <svg viewBox="0 0 16 16" className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              </motion.a>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-between px-6 py-4 border-t border-kawai-neutral/60">
+                      <button
+                        onClick={() => { clearAll() }}
+                        className="text-[10px] uppercase tracking-[0.15em] text-kawai-charcoal/40 hover:text-kawai-charcoal transition-colors font-[family-name:var(--font-brand-sans)]"
+                      >
+                        Clear all
+                      </button>
+                      <button
+                        onClick={() => setIsFiltersOpen(false)}
+                        className={cn(
+                          'flex items-center gap-2 px-5 py-2 text-xs uppercase tracking-[0.12em]',
+                          'bg-kawai-black text-white hover:bg-kawai-charcoal transition-colors duration-150',
+                          'font-[family-name:var(--font-brand-sans)]',
+                        )}
+                      >
+                        Done
+                        <svg viewBox="0 0 16 16" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Divider */}
+            <div className="h-4 w-px bg-kawai-neutral flex-shrink-0" />
+
             {/* Sort */}
-            <div className="relative">
+            <div className="relative flex-shrink-0">
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
                 className={cn(
-                  'appearance-none text-sm bg-transparent border-0 border-b border-kawai-neutral pb-1 pr-5',
+                  'appearance-none text-xs bg-transparent border-0 border-b border-kawai-neutral pb-1 pr-4',
                   'text-kawai-charcoal focus:outline-none focus:ring-0 cursor-pointer',
                   'font-[family-name:var(--font-brand-sans)] hover:border-kawai-charcoal transition-colors',
                 )}
@@ -798,13 +962,12 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
-              <ChevronDown size={10} className="absolute right-0 bottom-2 text-kawai-charcoal/40 pointer-events-none" />
+              <ChevronDown size={9} className="absolute right-0 bottom-1.5 text-kawai-charcoal/35 pointer-events-none" />
             </div>
           </div>
 
           {/* ── Mobile layout ────────────────────────────────────── */}
-          <div className="md:hidden py-3 space-y-2.5">
-            {/* Row 1: Search + Filter button */}
+          <div className="md:hidden py-3">
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -847,87 +1010,8 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
                 )}
               </button>
             </div>
-
-            {/* Row 2: Category tabs */}
-            <div className="flex gap-2 overflow-x-auto scrollbar-none">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => handleCategoryChange(cat)}
-                  className={cn(
-                    'flex-shrink-0 h-10 px-5 text-sm uppercase tracking-[0.08em] font-medium border transition-all duration-150 rounded-lg',
-                    'font-[family-name:var(--font-brand-sans)]',
-                    activeCategory === cat
-                      ? 'bg-kawai-black border-kawai-black text-white'
-                      : 'border-kawai-neutral text-kawai-charcoal bg-white',
-                  )}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
-
-        {/* ── Collection row — inside sticky bar ───────────────────── */}
-        {visibleCollections.length > 0 && (
-          <div className="border-t border-kawai-neutral/40 bg-white">
-            <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-3 overflow-x-auto scrollbar-none">
-              <span className="text-xs uppercase tracking-[0.2em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] flex-shrink-0">
-                Collection
-              </span>
-
-              <button
-                onClick={() => handleCollectionChange('All')}
-                className={cn(
-                  'flex-shrink-0 px-4 py-1.5 text-sm uppercase tracking-[0.15em] transition-colors duration-200 font-[family-name:var(--font-brand-sans)] border-b-2',
-                  activeCollection === 'All' ? 'text-kawai-red border-kawai-red' : 'text-kawai-charcoal/60 border-transparent hover:text-kawai-charcoal',
-                )}
-              >
-                All
-              </button>
-
-              {visibleCollections.map((col) => (
-                <button
-                  key={col.title}
-                  onClick={() => handleCollectionChange(col.title)}
-                  className={cn(
-                    'flex-shrink-0 px-4 py-1.5 text-sm uppercase tracking-[0.15em] transition-colors duration-200 font-[family-name:var(--font-brand-sans)] border-b-2',
-                    activeCollection === col.title ? 'text-kawai-red border-kawai-red' : 'text-kawai-charcoal/60 border-transparent hover:text-kawai-charcoal',
-                  )}
-                >
-                  {col.title}
-                </button>
-              ))}
-
-              {/* View Collection link */}
-              <AnimatePresence>
-                {activeCollectionHandle && (
-                  <motion.a
-                    key="view-link"
-                    initial={{ opacity: 0, x: -6 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -6 }}
-                    transition={{ duration: 0.2 }}
-                    href={`/pianos/${activeCollectionHandle}`}
-                    className={cn(
-                      'flex-shrink-0 ml-auto flex items-center gap-1.5',
-                      'px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.15em]',
-                      'border border-kawai-red/40 text-kawai-red',
-                      'hover:bg-kawai-red hover:text-white hover:border-kawai-red',
-                      'transition-all duration-200 font-[family-name:var(--font-brand-sans)]',
-                    )}
-                  >
-                    View Collection
-                    <svg viewBox="0 0 16 16" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </motion.a>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        )}
 
         {/* ── Active filter chips ──────────────────────────────────── */}
         <AnimatePresence>
@@ -961,9 +1045,18 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
         </AnimatePresence>
       </div>
 
-      {/* ── Collection Banner / Featured Carousel ───────────────── */}
+      {/* ── Featured Collections Carousel — always first ────────── */}
+      {featuredCollections.length > 0 && !activeCollectionObj && (
+        <FeaturedCollectionsCarousel
+          collections={featuredCollections}
+          eyebrow="Featured Collections"
+          heading="Shop by Collection"
+        />
+      )}
+
+      {/* ── Collection Banner (selected collection hero) ────────── */}
       <AnimatePresence mode="wait">
-        {activeCollectionObj ? (
+        {activeCollectionObj && (
           <motion.div
             key={activeCollectionObj.title}
             initial={{ opacity: 0, y: -10 }}
@@ -973,21 +1066,7 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
           >
             <CollectionBanner collection={activeCollectionObj} />
           </motion.div>
-        ) : featuredCollections.length > 0 ? (
-          <motion.div
-            key="featured-carousel"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
-          >
-            <FeaturedCollectionsCarousel
-              collections={featuredCollections}
-              eyebrow="Featured Collections"
-              heading="Shop by Collection"
-            />
-          </motion.div>
-        ) : null}
+        )}
       </AnimatePresence>
 
       {/* ── Collection Title ────────────────────────────────────── */}
@@ -1073,6 +1152,7 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
           </motion.div>
         )}
       </AnimatePresence>
+
     </div>
   )
 }

@@ -80,7 +80,7 @@ export function DealerLocations({ className = '', locations = [], data }: Dealer
         </motion.div>
 
         {/* Dealer Locations Grid - Mobile first approach */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
           {locations.map((location, index) => (
             <motion.div
               key={location.id}

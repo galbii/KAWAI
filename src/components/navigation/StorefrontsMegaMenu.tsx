@@ -96,7 +96,7 @@ export function StorefrontsMegaMenu({
       {isOpen && (
         <motion.div
           key="storefronts-mega-menu"
-          initial={{ opacity: 0, scaleY: 0.95, y: -20 }}
+          initial={{ opacity: 0, scaleY: 0.97, y: -8 }}
           animate={{
             opacity: 1,
             scaleY: 1,
@@ -105,20 +105,16 @@ export function StorefrontsMegaMenu({
               ? 'calc(112px + var(--announcement-bar-height, 0px))'
               : 'calc(128px + var(--announcement-bar-height, 0px))',
           }}
-          exit={{ opacity: 0, scaleY: 0.95, y: -20 }}
-          transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+          exit={{ opacity: 0, scaleY: 0.97, y: -8 }}
+          transition={{ duration: 0.24, ease: [0.4, 0, 0.2, 1] }}
           className={cn(
-            'fixed left-0 right-0 z-[60]',
-            'bg-white border-b border-gray-200 shadow-2xl',
+            'fixed z-[60] w-[95vw] max-w-[1440px]',
+            'bg-white shadow-[0_8px_24px_-4px_rgba(0,0,0,0.12),0_32px_80px_-8px_rgba(0,0,0,0.28)] overflow-hidden rounded-2xl',
             className
           )}
-          style={{
-            maxHeight: 'calc(100vh - 130px)',
-            overflow: 'visible',
-            transformOrigin: 'top center',
-          }}
+          style={{ transformOrigin: 'top center', left: '50%', x: '-50%' }}
         >
-          <div className="relative pt-10 pb-4">
+          <div className="relative pt-10 pb-4 max-h-[75vh] overflow-y-auto">
             {isLoading ? (
               /* Loading State */
               <div className="container mx-auto px-4 sm:px-6">

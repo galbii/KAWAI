@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, ArrowLeft } from 'lucide-react'
 import type { NavCollection } from '@/lib/payload/products-navigation'
+import { cn } from '@/lib/utils'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -19,56 +20,46 @@ export interface FeaturedCollectionsCarouselProps {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const AUTO_ROTATE_MS = 5000
-const CARD_HEIGHT = 420 // px — fixed height so all cards are identical size
+const AUTO_ROTATE_MS = 6000
 
-// ─── YouTube helpers ──────────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function extractYouTubeId(url: string): string | null {
   const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?/\s]{11})/)
   return match?.[1] ?? null
 }
 
-// ─── Header ───────────────────────────────────────────────────────────────────
-
-function Header({
-  eyebrow,
-  heading,
-  ctaText,
-  ctaHref,
-}: {
-  eyebrow: string
-  heading: string
-  ctaText: string
-  ctaHref: string
-}) {
-  return (
-    <div className="flex items-end justify-between mb-10">
-      <div>
-        <p className="text-xs font-bold tracking-[0.22em] uppercase text-[#A01829] mb-2">
-          {eyebrow}
-        </p>
-        <h2 className="text-3xl md:text-4xl font-bold text-[#2C2C2C] font-serif leading-none">
-          {heading}
-        </h2>
-      </div>
-      <Link
-        href={ctaHref}
-        className="group flex items-center gap-2 text-sm font-medium text-[#A01829]"
-      >
-        {ctaText}
-        <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-      </Link>
-    </div>
-  )
+/**
+ * Returns the static image URL if one is explicitly set (mediaUrl or imageUrl).
+ * Does NOT fall back to the YouTube thumbnail — use getVideoId() for that path.
+ */
+function getStaticImageUrl(collection: NavCollection): string | null {
+  return collection.mediaUrl ?? collection.imageUrl ?? null
 }
 
-// ─── Main Carousel Component ──────────────────────────────────────────────────
+/**
+ * Returns the YouTube video ID — prioritized over static images.
+ * Static image is used only when no YouTube URL is set.
+ */
+function getVideoId(collection: NavCollection): string | null {
+  return collection.youtubeUrl ? extractYouTubeId(collection.youtubeUrl) : null
+}
+
+function getCategoryLabel(collection: NavCollection): string {
+  if (collection.pianoCategories && collection.pianoCategories.length > 0) {
+    return collection.pianoCategories
+      .map((c) => c.charAt(0).toUpperCase() + c.slice(1))
+      .join(' · ')
+  }
+  if (collection.productCount > 0) return `${collection.productCount} Models`
+  return 'Collection'
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export function FeaturedCollectionsCarousel({
   collections,
-  eyebrow = 'Kawai Piano',
-  heading = 'Featured Collections',
+  eyebrow = 'Featured Collections',
   ctaText = 'Explore All',
   ctaHref = '/pianos',
 }: FeaturedCollectionsCarouselProps) {
@@ -79,160 +70,215 @@ export function FeaturedCollectionsCarousel({
   const prev = useCallback(() => setIdx((i) => (i - 1 + total) % total), [total])
   const next = useCallback(() => setIdx((i) => (i + 1) % total), [total])
 
-  // Auto-rotate — pauses on hover
   useEffect(() => {
     if (paused || total <= 1) return
     const t = setInterval(next, AUTO_ROTATE_MS)
     return () => clearInterval(t)
   }, [paused, next, total])
 
-  if (total === 0) {
-    return (
-      <section className="py-16 md:py-24 bg-white">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <Header eyebrow={eyebrow} heading={heading} ctaText={ctaText} ctaHref={ctaHref} />
-          <div className="flex items-center justify-center py-20">
-            <p className="text-sm text-[#B8AFA6]">No featured collections available.</p>
-          </div>
-        </div>
-      </section>
-    )
-  }
+  if (total === 0) return null
 
   const collection = collections[idx]!
-  const videoId = collection.youtubeUrl ? extractYouTubeId(collection.youtubeUrl) : null
-  const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null
-  const imageUrl = thumbnail ?? collection.imageUrl ?? collection.mediaUrl ?? null
+  const videoId = getVideoId(collection)
+  const imageUrl = videoId ? null : getStaticImageUrl(collection)
   const displayTitle = collection.heading || collection.title
   const collectionHref = `/pianos/${collection.handle}`
+  const categoryLabel = getCategoryLabel(collection)
+  const idxDisplay = String(idx + 1).padStart(2, '0')
+  const totalDisplay = String(total).padStart(2, '0')
 
   return (
-    <section className="py-16 md:py-24 bg-white">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <Header eyebrow={eyebrow} heading={heading} ctaText={ctaText} ctaHref={ctaHref} />
-
-        {/* Single-card slot — fixed height so all cards are the same size */}
-        <div
-          className="relative"
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
+    <section
+      className="relative w-full overflow-hidden bg-kawai-black"
+      style={{ height: 'clamp(500px, 62vh, 720px)' }}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {/* ── Background — crossfade between slides ─────────────────── */}
+      <AnimatePresence initial={false}>
+        <motion.div
+          key={`bg-${idx}`}
+          className="absolute inset-0"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.9, ease: 'easeInOut' }}
         >
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -40 }}
-              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-              className="group"
-            >
-              {/* Card image */}
-              <Link
-                href={collectionHref}
-                aria-label={`Browse ${displayTitle} collection`}
-                className="block"
-              >
-                <div
-                  className="relative w-full overflow-hidden rounded-2xl bg-[#EAE6E0]"
-                  style={{ height: CARD_HEIGHT }}
+          {imageUrl ? (
+            /* Static image (mediaUrl or imageUrl takes priority) */
+            <Image
+              src={imageUrl}
+              alt={displayTitle}
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+            />
+          ) : videoId ? (
+            /* YouTube embed — full-cover 16:9 letterbox technique */
+            <div className="absolute inset-0 overflow-hidden">
+              <iframe
+                key={videoId}
+                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1`}
+                allow="autoplay; encrypted-media"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                style={{ width: 'max(100%, 177.78vh)', height: 'max(100%, 56.25vw)' }}
+                title={displayTitle}
+              />
+            </div>
+          ) : (
+            /* No media at all */
+            <div className="absolute inset-0 bg-kawai-black" />
+          )}
+        </motion.div>
+      </AnimatePresence>
+
+      {/* ── Gradient overlays ──────────────────────────────────────── */}
+      {/* Bottom: for text legibility */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent pointer-events-none z-10" />
+      {/* Left edge: adds painterly depth */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/35 via-transparent to-transparent pointer-events-none z-10" />
+      {/* Top: subtle vignette so top-bar text reads */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent pointer-events-none z-10" />
+
+      {/* ── Top bar ────────────────────────────────────────────────── */}
+      <div className="absolute top-0 left-0 right-0 z-20">
+        <div className="max-w-7xl mx-auto px-8 md:px-10 pt-8 flex items-center justify-between">
+          <p
+            className="text-[9px] tracking-[0.35em] uppercase text-white/45 font-[family-name:var(--font-brand-sans)]"
+          >
+            {eyebrow}
+          </p>
+          <Link
+            href={ctaHref}
+            className="group flex items-center gap-1.5 text-[9px] tracking-[0.25em] uppercase text-white/45 hover:text-white/80 transition-colors duration-200 font-[family-name:var(--font-brand-sans)]"
+          >
+            {ctaText}
+            <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+          </Link>
+        </div>
+      </div>
+
+      {/* ── Bottom content ─────────────────────────────────────────── */}
+      <div className="absolute bottom-0 left-0 right-0 z-20">
+        <div className="max-w-7xl mx-auto px-8 md:px-10 pb-10">
+
+          {/* Title + CTA row */}
+          <div className="flex items-end justify-between gap-8">
+
+            {/* Left: category + title + subheading + CTA */}
+            <div className="flex-1 min-w-0">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={`content-${idx}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
                 >
-                  {imageUrl && (
-                    <Image
-                      src={imageUrl}
-                      alt={displayTitle}
-                      fill
-                      priority
-                      sizes="(max-width: 768px) 100vw, (max-width: 1280px) 90vw, 1280px"
-                      className="object-cover transition-transform duration-700 ease-[var(--ease-elegant)] group-hover:scale-105"
+                  {/* Category eyebrow */}
+                  <p className="text-[9px] tracking-[0.35em] uppercase text-white/45 mb-4 font-[family-name:var(--font-brand-sans)]">
+                    {categoryLabel}
+                  </p>
+
+                  {/* Collection title */}
+                  <h2
+                    className="text-4xl md:text-5xl lg:text-6xl text-white leading-[1.02] mb-3"
+                    style={{
+                      fontFamily: 'var(--font-brand-luxury)',
+                      fontWeight: 400,
+                      letterSpacing: '-0.02em',
+                      textShadow: '0 2px 24px rgba(0,0,0,0.4)',
+                    }}
+                  >
+                    {displayTitle}
+                  </h2>
+
+                  {/* Subheading */}
+                  {collection.subheading && (
+                    <p className="text-sm text-white/55 mb-6 max-w-md leading-relaxed font-[family-name:var(--font-brand-sans)]">
+                      {collection.subheading}
+                    </p>
+                  )}
+
+                  {/* CTA */}
+                  <Link
+                    href={collectionHref}
+                    className={cn(
+                      'inline-flex items-center gap-2.5',
+                      'px-6 py-3 text-[11px] uppercase tracking-[0.18em]',
+                      'border border-white/40 text-white',
+                      'hover:bg-white hover:text-kawai-black hover:border-white',
+                      'transition-all duration-250 font-[family-name:var(--font-brand-sans)]',
+                      !collection.subheading && 'mt-2',
+                    )}
+                  >
+                    Explore Collection
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Right: counter + prev/next */}
+            {total > 1 && (
+              <div className="flex-shrink-0 flex flex-col items-end gap-5 pb-1">
+                {/* Counter */}
+                <div
+                  className="text-white/30 font-[family-name:var(--font-brand-sans)] tabular-nums"
+                  style={{ fontSize: '11px', letterSpacing: '0.1em' }}
+                >
+                  <span className="text-white/70">{idxDisplay}</span>
+                  <span className="mx-1.5">/</span>
+                  {totalDisplay}
+                </div>
+
+                {/* Prev / Next */}
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={prev}
+                    aria-label="Previous collection"
+                    className="w-9 h-9 border border-white/25 flex items-center justify-center text-white/60 hover:border-white/60 hover:text-white transition-all duration-200"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={next}
+                    aria-label="Next collection"
+                    className="w-9 h-9 border border-white/25 flex items-center justify-center text-white/60 hover:border-white/60 hover:text-white transition-all duration-200"
+                  >
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Progress bars */}
+          {total > 1 && (
+            <div className="flex gap-1 mt-8">
+              {collections.map((col, i) => (
+                <button
+                  key={i}
+                  onClick={() => setIdx(i)}
+                  aria-label={`Go to ${col.heading || col.title}`}
+                  className="flex-1 group relative h-px focus-visible:outline-none"
+                >
+                  {/* Track */}
+                  <div className="absolute inset-0 bg-white/18 group-hover:bg-white/30 transition-colors duration-150" />
+                  {/* Fill */}
+                  {i === idx && (
+                    <motion.div
+                      layoutId="progress-fill"
+                      className="absolute inset-0 bg-white/75"
+                      transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
                     />
                   )}
-                  {!imageUrl && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-xs tracking-widest uppercase text-[#B8AFA6]">
-                        {displayTitle}
-                      </span>
-                    </div>
-                  )}
-                  {imageUrl && (
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent pointer-events-none" />
-                  )}
-
-                  {/* Text overlay — bottom left */}
-                  <div className="absolute bottom-0 left-0 right-0 p-8 z-10">
-                    <p className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/60 mb-2">
-                      {collection.pianoCategories && collection.pianoCategories.length > 0
-                        ? collection.pianoCategories
-                            .map((c) => c.charAt(0).toUpperCase() + c.slice(1))
-                            .join(' · ')
-                        : collection.productCount > 0
-                          ? `${collection.productCount} Models`
-                          : 'Collection'}
-                    </p>
-                    <h3 className="text-3xl md:text-4xl font-bold text-white font-serif leading-tight">
-                      {displayTitle}
-                    </h3>
-                    {collection.subheading && (
-                      <p className="text-base text-white/70 mt-2 max-w-xl">{collection.subheading}</p>
-                    )}
-                  </div>
-
-                  {/* Hover border ring */}
-                  <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-[#A01829] transition-all duration-200 pointer-events-none" />
-                </div>
-              </Link>
-
-              {/* CTA below card */}
-              <Link
-                href={collectionHref}
-                className="mt-3.5 flex items-center justify-center gap-2 px-4 py-2.5 bg-transparent text-[#8A8078] text-sm font-medium tracking-wide border border-[#E0DCD6] hover:border-[#A01829] hover:text-[#A01829] transition-colors duration-150"
-                aria-label={`View all ${displayTitle} models`}
-              >
-                Explore Collection
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Prev / Next — overlaid on card */}
-          {total > 1 && (
-            <>
-              <button
-                onClick={prev}
-                aria-label="Previous collection"
-                className="absolute left-4 z-20 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-white hover:bg-white/35 transition-colors"
-                style={{ top: CARD_HEIGHT / 2, transform: 'translateY(-50%)' }}
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </button>
-              <button
-                onClick={next}
-                aria-label="Next collection"
-                className="absolute right-4 z-20 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-white hover:bg-white/35 transition-colors"
-                style={{ top: CARD_HEIGHT / 2, transform: 'translateY(-50%)' }}
-              >
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </>
+                </button>
+              ))}
+            </div>
           )}
         </div>
-
-        {/* Dot indicators */}
-        {total > 1 && (
-          <div className="flex items-center gap-2 mt-6">
-            {collections.map((_, i) => (
-              <button key={i} onClick={() => setIdx(i)} aria-label={`Go to slide ${i + 1}`}>
-                <motion.div
-                  animate={{
-                    width: i === idx ? 28 : 8,
-                    backgroundColor: i === idx ? '#A01829' : '#C8C2BA',
-                  }}
-                  transition={{ duration: 0.22 }}
-                  className="h-1.5 rounded-full"
-                />
-              </button>
-            ))}
-          </div>
-        )}
       </div>
     </section>
   )

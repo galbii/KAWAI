@@ -75,7 +75,7 @@ function CollectionBentoGrid({ products }: { products: CollectionProduct[] }) {
   const isFeaturedLayout = items.length >= 3
 
   return (
-    <section className="max-w-screen-2xl mx-auto px-6 md:px-12 pb-24">
+    <section className="max-w-screen-2xl mx-auto px-6 md:px-12 pt-16 pb-24">
       <div className="flex items-center gap-6 mb-8">
         <div className="h-px flex-1 bg-kawai-black/8" />
         <p
@@ -106,7 +106,7 @@ function CollectionBentoGrid({ products }: { products: CollectionProduct[] }) {
       ) : (
         <div
           className={cn('grid gap-3', items.length === 2 ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-3')}
-          style={{ gridAutoRows: '240px' }}
+          style={{ gridAutoRows: '480px' }}
         >
           {items.map((item, i) => {
             const isFeatured = isFeaturedLayout && i === 0
@@ -271,10 +271,6 @@ export function CollectionPageContent({ collection, products }: CollectionPageCo
             </div>
           ))}
 
-          {/* Closing hairline */}
-          <div className="px-6 md:px-12 mt-2">
-            <div className="h-px bg-kawai-black/10" />
-          </div>
         </main>
       ) : (
         /* Empty state */
