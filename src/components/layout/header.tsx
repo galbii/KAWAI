@@ -68,17 +68,6 @@ const ContextAwareLink = ({ href, children, className, onClick }: {
     ? getContextAwareUrl(href, origin) 
     : href
   
-  // Debug logging for development
-  if (process.env.NODE_ENV === 'development' && origin.isDealerLocation) {
-    console.log('[ContextAwareLink]', {
-      originalHref: href,
-      finalHref,
-      hasOriginParam,
-      isInitialized,
-      origin
-    })
-  }
-  
   return (
     <Link
       href={finalHref}
@@ -181,87 +170,79 @@ const DesktopMenuItem = ({ item, isOpen, onOpen, onClose }: DesktopMenuItemProps
   const dropdownRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLDivElement>(null)
 
+  const calculatePosition = useCallback(() => {
+    if (!buttonRef.current) return
+    const buttonRect = buttonRef.current.getBoundingClientRect()
+    const viewportWidth = window.innerWidth
+    const viewportHeight = window.innerHeight
+    const dropdownWidth = 1400
+    const maxDropdownHeight = 600
+
+    let positioning: {
+      left: number | 'auto',
+      right: 'auto' | number,
+      top: '100%' | 'auto',
+      bottom: 'auto' | '100%',
+      maxHeight: 'none' | string
+    } = {
+      left: 0,
+      right: 'auto' as const,
+      top: '100%' as const,
+      bottom: 'auto' as const,
+      maxHeight: 'none' as const
+    }
+
+    // Horizontal positioning
+    const spaceOnRight = viewportWidth - buttonRect.left
+    const spaceOnLeft = buttonRect.right
+
+    if (spaceOnRight < dropdownWidth && spaceOnLeft > dropdownWidth) {
+      positioning.left = 'auto'
+      positioning.right = 0
+    } else if (spaceOnRight < dropdownWidth) {
+      positioning.left = -Math.max(0, dropdownWidth - spaceOnRight)
+      positioning.right = 'auto'
+    } else {
+      positioning.left = 0
+      positioning.right = 'auto'
+    }
+
+    // Vertical positioning and height constraints
+    const availableSpaceBelow = viewportHeight - buttonRect.bottom
+    const availableSpaceAbove = buttonRect.top
+
+    if (availableSpaceBelow < maxDropdownHeight && availableSpaceAbove > availableSpaceBelow) {
+      positioning.top = 'auto'
+      positioning.bottom = '100%'
+      positioning.maxHeight = `${Math.min(availableSpaceAbove - 20, maxDropdownHeight)}px`
+    } else if (availableSpaceBelow < maxDropdownHeight) {
+      positioning.top = '100%'
+      positioning.bottom = 'auto'
+      positioning.maxHeight = `${availableSpaceBelow - 20}px`
+    } else {
+      positioning.top = '100%'
+      positioning.bottom = 'auto'
+      positioning.maxHeight = 'none'
+    }
+
+    const effectiveMaxHeight = positioning.maxHeight === 'none'
+      ? maxDropdownHeight
+      : parseInt(positioning.maxHeight)
+    const maxItemsPerColumn = Math.floor(effectiveMaxHeight / 40)
+    const totalItems = item.dropdown?.length || 0
+    const optimalColumns = Math.min(4, Math.ceil(totalItems / Math.max(maxItemsPerColumn, 1)))
+
+    setColumnConfig({
+      columns: Math.max(1, optimalColumns),
+      maxItemsPerColumn: Math.max(5, maxItemsPerColumn)
+    })
+    setDropdownPosition(positioning)
+  }, [item.dropdown])
+
   const handleMouseEnter = useCallback(() => {
     onOpen(item.label)
-    
-    // Calculate dropdown position to keep it on screen
-    if (buttonRef.current) {
-      const buttonRect = buttonRef.current.getBoundingClientRect()
-      const viewportWidth = window.innerWidth
-      const viewportHeight = window.innerHeight
-      const dropdownWidth = 1400 // max width from CSS
-      const maxDropdownHeight = 600 // Maximum dropdown height before scrolling
-      
-      let positioning: {
-        left: number | 'auto',
-        right: 'auto' | number,
-        top: '100%' | 'auto',
-        bottom: 'auto' | '100%',
-        maxHeight: 'none' | string
-      } = { 
-        left: 0, 
-        right: 'auto' as const, 
-        top: '100%' as const, 
-        bottom: 'auto' as const,
-        maxHeight: 'none' as const
-      }
-      
-      // Horizontal positioning
-      const spaceOnRight = viewportWidth - buttonRect.left
-      const spaceOnLeft = buttonRect.right
-      
-      if (spaceOnRight < dropdownWidth && spaceOnLeft > dropdownWidth) {
-        positioning.left = 'auto'
-        positioning.right = 0
-      } else if (spaceOnRight < dropdownWidth) {
-        const leftOffset = Math.max(0, dropdownWidth - spaceOnRight)
-        positioning.left = -leftOffset
-        positioning.right = 'auto'
-      } else {
-        positioning.left = 0
-        positioning.right = 'auto'
-      }
-      
-      // Vertical positioning and height constraints
-      const availableSpaceBelow = viewportHeight - buttonRect.bottom
-      const availableSpaceAbove = buttonRect.top
-      
-      if (availableSpaceBelow < maxDropdownHeight && availableSpaceAbove > availableSpaceBelow) {
-        // Position above if there's more space above
-        positioning.top = 'auto'
-        positioning.bottom = '100%'
-        positioning.maxHeight = `${Math.min(availableSpaceAbove - 20, maxDropdownHeight)}px`
-      } else if (availableSpaceBelow < maxDropdownHeight) {
-        // Constrain height if not enough space below
-        positioning.top = '100%'
-        positioning.bottom = 'auto'
-        positioning.maxHeight = `${availableSpaceBelow - 20}px`
-      } else {
-        // Default positioning with full height
-        positioning.top = '100%'
-        positioning.bottom = 'auto'
-        positioning.maxHeight = 'none'
-      }
-      
-      // Adjust column configuration based on available vertical space
-      const effectiveMaxHeight = positioning.maxHeight === 'none' 
-        ? maxDropdownHeight 
-        : parseInt(positioning.maxHeight)
-      
-      const estimatedItemHeight = 40 // Approximate height per item including padding
-      const maxItemsPerColumn = Math.floor(effectiveMaxHeight / estimatedItemHeight)
-      
-      // Calculate optimal columns based on total items and max per column
-      const totalItems = item.dropdown?.length || 0
-      const optimalColumns = Math.min(4, Math.ceil(totalItems / Math.max(maxItemsPerColumn, 1)))
-      
-      setColumnConfig({ 
-        columns: Math.max(1, optimalColumns), 
-        maxItemsPerColumn: Math.max(5, maxItemsPerColumn) 
-      })
-      setDropdownPosition(positioning)
-    }
-  }, [item.dropdown, item.label, onOpen])
+    calculatePosition()
+  }, [item.label, onOpen, calculatePosition])
 
   const handleMouseLeave = useCallback(() => {
     onClose()
@@ -269,86 +250,11 @@ const DesktopMenuItem = ({ item, isOpen, onOpen, onClose }: DesktopMenuItemProps
 
   useEffect(() => {
     const handleResize = () => {
-      if (isOpen && buttonRef.current) {
-        // Recalculate position on window resize
-        const buttonRect = buttonRef.current.getBoundingClientRect()
-        const viewportWidth = window.innerWidth
-        const viewportHeight = window.innerHeight
-        const dropdownWidth = 1400
-        const maxDropdownHeight = 600
-        
-        let positioning: {
-          left: number | 'auto',
-          right: 'auto' | number,
-          top: '100%' | 'auto',
-          bottom: 'auto' | '100%',
-          maxHeight: 'none' | string
-        } = { 
-          left: 0, 
-          right: 'auto' as const, 
-          top: '100%' as const, 
-          bottom: 'auto' as const,
-          maxHeight: 'none' as const
-        }
-        
-        // Horizontal positioning
-        const spaceOnRight = viewportWidth - buttonRect.left
-        const spaceOnLeft = buttonRect.right
-        
-        if (spaceOnRight < dropdownWidth && spaceOnLeft > dropdownWidth) {
-          positioning.left = 'auto'
-          positioning.right = 0
-        } else if (spaceOnRight < dropdownWidth) {
-          const leftOffset = Math.max(0, dropdownWidth - spaceOnRight)
-          positioning.left = -leftOffset
-          positioning.right = 'auto'
-        } else {
-          positioning.left = 0
-          positioning.right = 'auto'
-        }
-        
-        // Vertical positioning and height constraints
-        const availableSpaceBelow = viewportHeight - buttonRect.bottom
-        const availableSpaceAbove = buttonRect.top
-        
-        if (availableSpaceBelow < maxDropdownHeight && availableSpaceAbove > availableSpaceBelow) {
-          positioning.top = 'auto'
-          positioning.bottom = '100%'
-          positioning.maxHeight = `${Math.min(availableSpaceAbove - 20, maxDropdownHeight)}px`
-        } else if (availableSpaceBelow < maxDropdownHeight) {
-          positioning.top = '100%'
-          positioning.bottom = 'auto'
-          positioning.maxHeight = `${availableSpaceBelow - 20}px`
-        } else {
-          positioning.top = '100%'
-          positioning.bottom = 'auto'
-          positioning.maxHeight = 'none'
-        }
-        
-        // Update column configuration
-        const effectiveMaxHeight = positioning.maxHeight === 'none' 
-          ? maxDropdownHeight 
-          : parseInt(positioning.maxHeight)
-        
-        const estimatedItemHeight = 40
-        const maxItemsPerColumn = Math.floor(effectiveMaxHeight / estimatedItemHeight)
-        const totalItems = item.dropdown?.length || 0
-        const optimalColumns = Math.min(4, Math.ceil(totalItems / Math.max(maxItemsPerColumn, 1)))
-        
-        setColumnConfig({ 
-          columns: Math.max(1, optimalColumns), 
-          maxItemsPerColumn: Math.max(5, maxItemsPerColumn) 
-        })
-        setDropdownPosition(positioning)
-      }
+      if (isOpen) calculatePosition()
     }
-
     window.addEventListener('resize', handleResize)
-    
-    return () => {
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [isOpen, item.dropdown])
+    return () => window.removeEventListener('resize', handleResize)
+  }, [isOpen, calculatePosition])
 
   if (!item.dropdown) {
     return (
@@ -511,30 +417,28 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [openMobileItems, setOpenMobileItems] = useState<Set<string>>(new Set())
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
-  const [isProductsMenuOpen, setIsProductsMenuOpen] = useState(false)
+  const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [productsNavData, setProductsNavData] = useState<ProductsNavigation | null>(null)
-const [isResourcesMenuOpen, setIsResourcesMenuOpen] = useState(false)
-  const [isNewsMenuOpen, setIsNewsMenuOpen] = useState(false)
-  const [isShowroomMenuOpen, setIsShowroomMenuOpen] = useState(false)
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
   const [currentLocationData, setCurrentLocationData] = useState<DealerLocationData | null>(locationData || null)
   const [isLoadingLocation, setIsLoadingLocation] = useState(false)
-  const [isVisible, setIsVisible] = useState(true)
-  const [animationComplete, setAnimationComplete] = useState(false)
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
+const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isAutoHidden, setIsAutoHidden] = useState(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
-  const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const productsMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const newsMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const showroomMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const autoHideTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const lastScrollY = useRef(0)
   const lastScrollTime = useRef(0)
+  const isScrolledRef = useRef(false)
+
+  // Derived menu open states for readability
+  const isProductsMenuOpen = activeMenu === 'products'
+  const isResourcesMenuOpen = activeMenu === 'resources'
+  const isNewsMenuOpen = activeMenu === 'news'
+  const isShowroomMenuOpen = activeMenu === 'showroom'
+  const activeDropdown = activeMenu
 
   // Use navigation context to detect location changes
   const { origin, isInitialized } = useNavigationContext()
@@ -543,37 +447,17 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   // Only show Products menu if feature flag is enabled (NEXT_PUBLIC_SHOW_PRODUCTS_MENU=true)
   const isProductsMenuEnabled = process.env.NEXT_PUBLIC_SHOW_PRODUCTS_MENU === 'true'
 
-  // Fetch products navigation data on mount and refresh periodically
+  // Fetch products navigation data on mount
   useEffect(() => {
     const loadProductsNav = async () => {
       try {
         const navData = await fetchPayloadProductsNavigation()
         setProductsNavData(navData)
-        console.log('[Header] Products navigation loaded from Payload:', {
-          types: navData.types.length,
-          totalProducts: navData.totalProducts,
-          timestamp: new Date().toISOString()
-        })
       } catch (error) {
         console.error('[Header] Failed to load products navigation:', error)
       }
     }
-
-    // Initial load
     loadProductsNav()
-
-    // OPTIMIZATION: Reduced refresh interval since we have cache revalidation hooks
-    // Refresh every 10 minutes as a fallback check
-    // The cache is automatically revalidated when products change in Payload
-    const refreshInterval = setInterval(() => {
-      console.log('[Header] Refreshing products navigation (fallback check)...')
-      loadProductsNav()
-    }, 10 * 60 * 1000) // 10 minutes
-
-    // Cleanup interval on unmount
-    return () => {
-      clearInterval(refreshInterval)
-    }
   }, [])
 
   // REMOVED: CSS variable updates were causing scroll jank
@@ -595,9 +479,7 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
     )
   }, [isScrolled, isAutoHidden])
 
-  // Mark animation as complete immediately since header has no animations
   useEffect(() => {
-    setAnimationComplete(true)
     setIsMounted(true)
   }, [])
 
@@ -625,7 +507,7 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   // Fetch dealer location data when origin changes - but only after animation completes
   useEffect(() => {
     const fetchDealerData = async () => {
-      if (!isInitialized || !animationComplete) return
+      if (!isInitialized || !isMounted) return
       
       // If not a dealer location, clear location data
       if (!origin.isDealerLocation || !origin.dealerSlug) {
@@ -668,14 +550,14 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
     }
     
     fetchDealerData()
-  }, [origin.isDealerLocation, origin.dealerSlug, isInitialized, animationComplete, currentLocationData?.slug])
+  }, [origin.isDealerLocation, origin.dealerSlug, isInitialized, isMounted, currentLocationData?.slug])
   
   // Update current location data when initial locationData prop changes - but only after animation completes
   useEffect(() => {
-    if (locationData && animationComplete) {
+    if (locationData && isMounted) {
       setCurrentLocationData(locationData)
     }
-  }, [locationData, animationComplete])
+  }, [locationData, isMounted])
   
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -731,21 +613,7 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
           setIsMenuOpen(false)
           setOpenMobileItems(new Set())
         }
-        if (activeDropdown) {
-          setActiveDropdown(null)
-        }
-        if (isProductsMenuOpen) {
-          setIsProductsMenuOpen(false)
-        }
-        if (isResourcesMenuOpen) {
-          setIsResourcesMenuOpen(false)
-        }
-        if (isNewsMenuOpen) {
-          setIsNewsMenuOpen(false)
-        }
-        if (isShowroomMenuOpen) {
-          setIsShowroomMenuOpen(false)
-        }
+        setActiveMenu(null)
       }
     }
 
@@ -753,23 +621,9 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
     return () => {
       document.removeEventListener('keydown', handleEscape)
-      if (dropdownTimeoutRef.current) {
-        clearTimeout(dropdownTimeoutRef.current)
-      }
-      if (productsMenuTimeoutRef.current) {
-        clearTimeout(productsMenuTimeoutRef.current)
-      }
-      if (resourcesMenuTimeoutRef.current) {
-        clearTimeout(resourcesMenuTimeoutRef.current)
-      }
-      if (showroomMenuTimeoutRef.current) {
-        clearTimeout(showroomMenuTimeoutRef.current)
-      }
-      if (newsMenuTimeoutRef.current) {
-        clearTimeout(newsMenuTimeoutRef.current)
-      }
+      if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current)
     }
-  }, [isMenuOpen, activeDropdown, isProductsMenuOpen, isResourcesMenuOpen, isNewsMenuOpen])
+  }, [isMenuOpen])
   
   // ============================================================================
   // Scroll Detection Logic
@@ -784,13 +638,15 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = lastScrollY.current
-
-    // Always update position (critical for accurate tracking)
     lastScrollY.current = latest
 
-    // Update "scrolled past top" state
-    const isAtTop = latest <= 50
-    setIsScrolled(!isAtTop)
+    // Only call setState when the value actually changes — prevents re-rendering
+    // the entire header on every scroll frame when already past the threshold
+    const nowScrolled = latest > 50
+    if (nowScrolled !== isScrolledRef.current) {
+      isScrolledRef.current = nowScrolled
+      setIsScrolled(nowScrolled)
+    }
 
     // Detect scroll movement (only if movement is significant enough)
     const movement = latest - previous
@@ -803,10 +659,8 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
     // Close menus only on intentional scrolling (120px+ movement) to prevent
     // trackpad jitter and accidental closes when moving mouse toward a mega menu.
     if (Math.abs(movement) > 120) {
-      if (isProductsMenuOpen || isResourcesMenuOpen || isNewsMenuOpen) {
-        setIsProductsMenuOpen(false)
-        setIsResourcesMenuOpen(false)
-        setIsNewsMenuOpen(false)
+      if (activeMenu === 'products' || activeMenu === 'resources' || activeMenu === 'news') {
+        setActiveMenu(null)
       }
     }
   })
@@ -830,132 +684,81 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
     setOpenMobileItems(new Set())
   }, [])
 
-  // Desktop dropdown handlers
-  const handleDropdownOpen = useCallback((itemLabel: string) => {
-    if (dropdownTimeoutRef.current) {
-      clearTimeout(dropdownTimeoutRef.current)
-      dropdownTimeoutRef.current = null
+  // Generic menu open helper
+  const openMenu = useCallback((key: string) => {
+    if (menuTimeoutRef.current) {
+      clearTimeout(menuTimeoutRef.current)
+      menuTimeoutRef.current = null
     }
-    setActiveDropdown(itemLabel)
-    // Close mega menus when opening regular dropdown
-    setIsProductsMenuOpen(false)
-    setIsResourcesMenuOpen(false)
-    setIsNewsMenuOpen(false)
+    if (autoHideTimeoutRef.current) {
+      clearTimeout(autoHideTimeoutRef.current)
+      autoHideTimeoutRef.current = null
+    }
+    setIsAutoHidden(false)
+    setActiveMenu(key)
   }, [])
 
-  const handleDropdownClose = useCallback(() => {
-    dropdownTimeoutRef.current = setTimeout(() => {
-      setActiveDropdown(null)
+  const closeMenu = useCallback(() => {
+    menuTimeoutRef.current = setTimeout(() => {
+      setActiveMenu(null)
     }, 500)
-  }, [])
+    if (!autoMinimize) return
+    if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
+    autoHideTimeoutRef.current = setTimeout(() => {
+      setIsAutoHidden(true)
+    }, 2000)
+  }, [autoMinimize])
+
+  // Desktop dropdown handlers (for generic nav items with dropdowns)
+  const handleDropdownOpen = useCallback((itemLabel: string) => {
+    openMenu(itemLabel)
+  }, [openMenu])
+
+  const handleDropdownClose = useCallback(() => {
+    closeMenu()
+  }, [closeMenu])
 
   // Products menu handlers
   const handleProductsMenuOpen = useCallback(() => {
-    // Don't open menu if header animation hasn't completed yet
-    if (!animationComplete) return
-
-    // Don't open if user scrolled in the last 200ms (prevents menu opening during scroll)
+    if (!isMounted) return
     if (Date.now() - lastScrollTime.current < 200) return
-
-    if (productsMenuTimeoutRef.current) {
-      clearTimeout(productsMenuTimeoutRef.current)
-      productsMenuTimeoutRef.current = null
-    }
-    if (autoHideTimeoutRef.current) {
-      clearTimeout(autoHideTimeoutRef.current)
-      autoHideTimeoutRef.current = null
-    }
-    setIsAutoHidden(false)
-    setIsProductsMenuOpen(true)
-    // Close other menus
-    setActiveDropdown(null)
-    setIsResourcesMenuOpen(false)
-    setIsNewsMenuOpen(false)
-  }, [animationComplete])
+    openMenu('products')
+  }, [isMounted, openMenu])
 
   const handleProductsMenuClose = useCallback(() => {
-    productsMenuTimeoutRef.current = setTimeout(() => {
-      setIsProductsMenuOpen(false)
-    }, 500)
-    if (!autoMinimize) return
-    if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
-    autoHideTimeoutRef.current = setTimeout(() => {
-      setIsAutoHidden(true)
-    }, 2000)
-  }, [autoMinimize])
+    closeMenu()
+  }, [closeMenu])
 
   // Resources menu handlers
   const handleResourcesMenuOpen = useCallback(() => {
-    if (!animationComplete) return
+    if (!isMounted) return
     if (Date.now() - lastScrollTime.current < 200) return
-
-    if (resourcesMenuTimeoutRef.current) {
-      clearTimeout(resourcesMenuTimeoutRef.current)
-      resourcesMenuTimeoutRef.current = null
-    }
-    if (autoHideTimeoutRef.current) {
-      clearTimeout(autoHideTimeoutRef.current)
-      autoHideTimeoutRef.current = null
-    }
-    setIsAutoHidden(false)
-    setIsResourcesMenuOpen(true)
-    // Close other menus
-    setActiveDropdown(null)
-    setIsProductsMenuOpen(false)
-    setIsNewsMenuOpen(false)
-  }, [animationComplete])
+    openMenu('resources')
+  }, [isMounted, openMenu])
 
   const handleResourcesMenuClose = useCallback(() => {
-    resourcesMenuTimeoutRef.current = setTimeout(() => {
-      setIsResourcesMenuOpen(false)
-    }, 500)
-    if (!autoMinimize) return
-    if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
-    autoHideTimeoutRef.current = setTimeout(() => {
-      setIsAutoHidden(true)
-    }, 2000)
-  }, [autoMinimize])
+    closeMenu()
+  }, [closeMenu])
 
   // News menu handlers
   const handleNewsMenuOpen = useCallback(() => {
-    if (!animationComplete) return
+    if (!isMounted) return
     if (Date.now() - lastScrollTime.current < 200) return
-
-    if (newsMenuTimeoutRef.current) {
-      clearTimeout(newsMenuTimeoutRef.current)
-      newsMenuTimeoutRef.current = null
-    }
-    if (autoHideTimeoutRef.current) {
-      clearTimeout(autoHideTimeoutRef.current)
-      autoHideTimeoutRef.current = null
-    }
-    setIsAutoHidden(false)
-    setIsNewsMenuOpen(true)
-    // Close other menus
-    setActiveDropdown(null)
-    setIsProductsMenuOpen(false)
-    setIsResourcesMenuOpen(false)
-  }, [animationComplete])
+    openMenu('news')
+  }, [isMounted, openMenu])
 
   const handleNewsMenuClose = useCallback(() => {
-    newsMenuTimeoutRef.current = setTimeout(() => {
-      setIsNewsMenuOpen(false)
-    }, 500)
-    if (!autoMinimize) return
-    if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
-    autoHideTimeoutRef.current = setTimeout(() => {
-      setIsAutoHidden(true)
-    }, 2000)
-  }, [autoMinimize])
+    closeMenu()
+  }, [closeMenu])
 
   const handleShowroomMenuOpen = useCallback(() => {
-    if (showroomMenuTimeoutRef.current) clearTimeout(showroomMenuTimeoutRef.current)
-    setIsShowroomMenuOpen(true)
+    if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current)
+    setActiveMenu('showroom')
   }, [])
 
   const handleShowroomMenuClose = useCallback(() => {
-    showroomMenuTimeoutRef.current = setTimeout(() => {
-      setIsShowroomMenuOpen(false)
+    menuTimeoutRef.current = setTimeout(() => {
+      setActiveMenu(null)
     }, 400)
   }, [])
 
@@ -1193,21 +996,21 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
                           <ContextAwareLink
                             href={`/store/${currentLocationData.slug}/music-school`}
                             className="block px-4 py-2.5 text-sm text-kawai-charcoal hover:bg-kawai-pearl hover:text-kawai-red transition-colors"
-                            onClick={() => setIsShowroomMenuOpen(false)}
+                            onClick={() => setActiveMenu(null)}
                           >
                             Overview
                           </ContextAwareLink>
                           <ContextAwareLink
                             href={`/store/${currentLocationData.slug}/music-school/programs`}
                             className="block px-4 py-2.5 text-sm text-kawai-charcoal hover:bg-kawai-pearl hover:text-kawai-red transition-colors"
-                            onClick={() => setIsShowroomMenuOpen(false)}
+                            onClick={() => setActiveMenu(null)}
                           >
                             Programs
                           </ContextAwareLink>
                           <ContextAwareLink
                             href={`/store/${currentLocationData.slug}/music-school/faculty`}
                             className="block px-4 py-2.5 pb-3 text-sm text-kawai-charcoal hover:bg-kawai-pearl hover:text-kawai-red transition-colors"
-                            onClick={() => setIsShowroomMenuOpen(false)}
+                            onClick={() => setActiveMenu(null)}
                           >
                             Faculty
                           </ContextAwareLink>
@@ -1298,18 +1101,21 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
           />
 
-          {/* Nav — animates in/out */}
-          <motion.div
-            animate={{ height: isAutoHidden ? 0 : 'auto', opacity: isAutoHidden ? 0 : 1 }}
-            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            style={{ overflow: 'hidden' }}
+          {/* Nav — animates in/out using max-height (layout-safe, compositor-friendly) */}
+          <div
+            style={{
+              overflow: 'hidden',
+              maxHeight: isAutoHidden ? '0px' : '56px',
+              opacity: isAutoHidden ? 0 : 1,
+              transition: 'max-height 0.25s cubic-bezier(0.4,0,0.2,1), opacity 0.2s cubic-bezier(0.4,0,0.2,1)',
+            }}
           >
           <div className="w-full bg-white relative z-20">
           <div className="w-full bg-white border-b-[6px] border-[#A01829]">
           <div className="container mx-auto px-4 sm:px-6">
             <nav>
               <div className={cn(
-                "flex items-center transition-all duration-300",
+                "flex items-center transition-[height] duration-300",
                 isScrolled ? 'h-12' : 'h-14'
               )}>
                 {/* Left spacer — mirrors the Register button on the right */}
@@ -1319,15 +1125,15 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
                 <div className="flex items-center gap-8">
                   {/* News Mega Menu */}
                   <div
-                    onMouseEnter={animationComplete ? handleNewsMenuOpen : undefined}
-                    onMouseLeave={animationComplete ? handleNewsMenuClose : undefined}
+                    onMouseEnter={isMounted ? handleNewsMenuOpen : undefined}
+                    onMouseLeave={isMounted ? handleNewsMenuClose : undefined}
                   >
                     <button
                       className={cn(
                         "flex items-center px-3 py-2 font-medium text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/80 transition-colors rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]",
-                        animationComplete ? "cursor-pointer" : "cursor-default opacity-50"
+                        isMounted ? "cursor-pointer" : "cursor-default opacity-50"
                       )}
-                      disabled={!animationComplete}
+                      disabled={!isMounted}
                     >
                       <span>News</span>
                       <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isNewsMenuOpen && "rotate-180")} />
@@ -1337,13 +1143,13 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
                   {/* Products Mega Menu - Controlled by feature flag */}
                   {isProductsMenuEnabled && (
                     <div
-                      onMouseEnter={productsNavData && animationComplete ? handleProductsMenuOpen : undefined}
-                      onMouseLeave={productsNavData && animationComplete ? handleProductsMenuClose : undefined}
+                      onMouseEnter={productsNavData && isMounted ? handleProductsMenuOpen : undefined}
+                      onMouseLeave={productsNavData && isMounted ? handleProductsMenuClose : undefined}
                       className="flex items-center"
                     >
                       <Link
                         href="/pianos"
-                        onClick={() => setIsProductsMenuOpen(false)}
+                        onClick={() => setActiveMenu(null)}
                         className="px-3 py-2 font-medium text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/80 transition-colors rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]"
                       >
                         Products
@@ -1373,15 +1179,15 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
                   {/* Resources Mega Menu */}
                   <div
-                    onMouseEnter={animationComplete ? handleResourcesMenuOpen : undefined}
-                    onMouseLeave={animationComplete ? handleResourcesMenuClose : undefined}
+                    onMouseEnter={isMounted ? handleResourcesMenuOpen : undefined}
+                    onMouseLeave={isMounted ? handleResourcesMenuClose : undefined}
                   >
                     <button
                       className={cn(
                         "flex items-center px-3 py-2 font-medium text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/80 transition-colors rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]",
-                        animationComplete ? "cursor-pointer" : "cursor-default opacity-50"
+                        isMounted ? "cursor-pointer" : "cursor-default opacity-50"
                       )}
-                      disabled={!animationComplete}
+                      disabled={!isMounted}
                     >
                       <span>Resources</span>
                       <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isResourcesMenuOpen && "rotate-180")} />
@@ -1405,7 +1211,7 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
           </div>
           </div>
           </div>
-          </motion.div>
+          </div>
         </div>
       )}
 
@@ -1559,15 +1365,15 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
       {/* Products Mega Menu - Rendered at root level for proper positioning, controlled by feature flag */}
       {isProductsMenuEnabled && (
         <div
-          onMouseEnter={productsNavData && animationComplete ? handleProductsMenuOpen : undefined}
-          onMouseLeave={productsNavData && animationComplete ? handleProductsMenuClose : undefined}
+          onMouseEnter={productsNavData && isMounted ? handleProductsMenuOpen : undefined}
+          onMouseLeave={productsNavData && isMounted ? handleProductsMenuClose : undefined}
         >
           <ProductsMegaMenu
             productTypes={productsNavData?.types || []}
             collections={productsNavData?.collections || []}
             {...(productsNavData?.allCollections !== undefined && { allCollections: productsNavData.allCollections })}
-            isOpen={isProductsMenuOpen && animationComplete && !isSearchOpen}
-            onClose={() => setIsProductsMenuOpen(false)}
+            isOpen={isProductsMenuOpen && isMounted && !isSearchOpen}
+            onClose={() => setActiveMenu(null)}
             isLoading={!productsNavData}
             isHeaderScrolled={isScrolled}
           />
@@ -1576,12 +1382,12 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
       {/* Resources Mega Menu - Rendered at root level for proper positioning */}
       <div
-        onMouseEnter={animationComplete ? handleResourcesMenuOpen : undefined}
-        onMouseLeave={animationComplete ? handleResourcesMenuClose : undefined}
+        onMouseEnter={isMounted ? handleResourcesMenuOpen : undefined}
+        onMouseLeave={isMounted ? handleResourcesMenuClose : undefined}
       >
         <ResourcesMegaMenu
-          isOpen={isResourcesMenuOpen && animationComplete && !isSearchOpen}
-          onClose={() => setIsResourcesMenuOpen(false)}
+          isOpen={isResourcesMenuOpen && isMounted && !isSearchOpen}
+          onClose={() => setActiveMenu(null)}
           onRegisterClick={() => setIsRegisterModalOpen(true)}
           registerEnabled={registerConfig?.enabled !== false}
           bannerImageUrl={registerConfig?.bannerImageUrl ?? null}
@@ -1593,12 +1399,12 @@ const resourcesMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
       {/* News Mega Menu - Rendered at root level for proper positioning */}
       <div
-        onMouseEnter={animationComplete ? handleNewsMenuOpen : undefined}
-        onMouseLeave={animationComplete ? handleNewsMenuClose : undefined}
+        onMouseEnter={isMounted ? handleNewsMenuOpen : undefined}
+        onMouseLeave={isMounted ? handleNewsMenuClose : undefined}
       >
         <NewsMegaMenu
-          isOpen={isNewsMenuOpen && animationComplete && !isSearchOpen}
-          onClose={() => setIsNewsMenuOpen(false)}
+          isOpen={isNewsMenuOpen && isMounted && !isSearchOpen}
+          onClose={() => setActiveMenu(null)}
           isHeaderScrolled={isScrolled}
           newsItems={newsItems}
           latestPosts={latestPosts}

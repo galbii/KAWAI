@@ -38,9 +38,11 @@ interface Props {
   onLocationSearch: (location: { lat: number; lng: number }, address: string) => void
   /** 'floating' = frosted glass, dropdown above (default). 'inline' = minimal underline, dropdown below. */
   variant?: 'floating' | 'inline'
+  /** Auto-focus the input on mount (used when expanding from FAB). */
+  autoFocus?: boolean
 }
 
-export function SearchBar({ dealers, onSearch, onLocationSearch, variant = 'floating' }: Props) {
+export function SearchBar({ dealers, onSearch, onLocationSearch, variant = 'floating', autoFocus }: Props) {
   const [searchInput, setSearchInput] = useState('')
   const [locationPredictions, setLocationPredictions] = useState<NominatimResult[]>([])
   const [dealerResults, setDealerResults] = useState<SearchResult[]>([])
@@ -396,6 +398,7 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, variant = 'floa
             onChange={e => handleInputChange(e.target.value)}
             onFocus={() => hasResults && setShowDropdown(true)}
             placeholder="Search by name, address, city, state, or ZIP code"
+            autoFocus={autoFocus}
             className="w-full pl-14 pr-36 py-4 rounded-2xl bg-transparent focus:outline-none text-kawai-black placeholder:text-kawai-charcoal/35 font-medium text-sm"
           />
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">

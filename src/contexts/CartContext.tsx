@@ -75,8 +75,6 @@ export function CartProvider({ children }: CartProviderProps) {
       const cartData = await getCart(cartId)
 
       if (!cartData) {
-        // Cart not found or expired
-        console.log('[Cart Context] Cart not found or expired, clearing storage')
         clearCartId()
         clearCartMetadata()
         setCart(null)
@@ -92,12 +90,6 @@ export function CartProvider({ children }: CartProviderProps) {
         itemCount: cartData.totalQuantity,
         total: cartData.total,
         currency: cartData.currency,
-      })
-
-      console.log('[Cart Context] Cart loaded:', {
-        id: cartData.id,
-        items: cartData.totalQuantity,
-        total: cartData.total,
       })
     } catch (error) {
       console.error('[Cart Context] Failed to refresh cart:', error)

@@ -36,6 +36,7 @@ interface CartSummaryProps {
 
 export function CartSummary({ cart, className }: CartSummaryProps) {
   const [redirecting, setRedirecting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   /**
    * Format price for display
@@ -51,25 +52,20 @@ export function CartSummary({ cart, className }: CartSummaryProps) {
    * Handle checkout button click
    */
   const handleCheckout = () => {
-    console.log('[CartSummary] Checkout button clicked')
-    console.log('[CartSummary] Cart ID:', cart.id)
-    console.log('[CartSummary] Checkout URL:', cart.checkoutUrl)
+    setError(null)
 
     if (!cart.checkoutUrl) {
-      console.error('[CartSummary] No checkout URL available!')
-      console.error('[CartSummary] Cart object:', cart)
-      alert('Unable to proceed to checkout. Please try again.')
+      console.error('[CartSummary] No checkout URL available for cart:', cart.id)
+      setError('Unable to proceed to checkout. Please try again.')
       return
     }
 
     setRedirecting(true)
 
     try {
-      // Mark checkout in progress for return detection
       if (typeof sessionStorage !== 'undefined') {
         sessionStorage.setItem('checkout_in_progress', cart.id)
         sessionStorage.setItem('checkout_started_at', Date.now().toString())
-        console.log('[CartSummary] Checkout session marked for cart:', cart.id)
       }
 
       // Fire begin_checkout for each cart line so GA4 begin_checkout + Meta InitiateCheckout
@@ -108,16 +104,11 @@ export function CartSummary({ cart, className }: CartSummaryProps) {
         }
       }
 
-      console.log('[CartSummary] Opening Shopify checkout in new tab:', finalCheckoutUrl)
-
-      // Open Shopify checkout in new tab
       window.open(finalCheckoutUrl, '_blank', 'noopener,noreferrer')
-
-      // Reset redirecting state since we're opening in new tab (not redirecting current page)
       setRedirecting(false)
-    } catch (error) {
-      console.error('[CartSummary] Redirect failed:', error)
-      alert('Failed to redirect to checkout. Please try again.')
+    } catch (err) {
+      console.error('[CartSummary] Checkout failed:', err)
+      setError('Failed to open checkout. Please try again.')
       setRedirecting(false)
     }
   }
@@ -129,8 +120,8 @@ export function CartSummary({ cart, className }: CartSummaryProps) {
     <div className={cn('space-y-4', className)}>
       {/* Subtotal */}
       <div className="flex justify-between items-center text-sm">
-        <span className="text-gray-600">Subtotal</span>
-        <span className="font-medium text-gray-900">{formatPrice(cart.subtotal)}</span>
+        <span className="text-kawai-charcoal">Subtotal</span>
+        <span className="font-medium text-kawai-black">{formatPrice(cart.subtotal)}</span>
       </div>
 
       {/* Discount Codes */}
@@ -157,18 +148,23 @@ export function CartSummary({ cart, className }: CartSummaryProps) {
       )}
 
       {/* Divider */}
-      <div className="border-t border-gray-200" />
+      <div className="border-t border-kawai-neutral" />
 
       {/* Total */}
       <div className="flex justify-between items-center">
-        <span className="text-base font-semibold text-gray-900">Total</span>
-        <span className="text-xl font-bold text-gray-900">{formatPrice(cart.total)}</span>
+        <span className="text-base font-semibold text-kawai-black">Total</span>
+        <span className="text-xl font-bold text-kawai-black">{formatPrice(cart.total)}</span>
       </div>
 
       {/* Taxes & Shipping Notice */}
-      <p className="text-xs text-gray-500 text-center">
+      <p className="text-xs text-kawai-charcoal/60 text-center">
         Taxes and shipping calculated at checkout
       </p>
+
+      {/* Inline error */}
+      {error && (
+        <p className="text-xs text-kawai-red text-center">{error}</p>
+      )}
 
       {/* Checkout Button */}
       <button
@@ -176,7 +172,7 @@ export function CartSummary({ cart, className }: CartSummaryProps) {
         disabled={isEmpty || redirecting}
         className={cn(
           'w-full py-3 px-4 rounded-md font-semibold text-white',
-          'bg-kawai-red hover:bg-kawai-red/90',
+          'bg-kawai-red hover:bg-kawai-red-700',
           'transition-all duration-200',
           'disabled:opacity-50 disabled:cursor-not-allowed',
           'flex items-center justify-center gap-2',
@@ -187,7 +183,7 @@ export function CartSummary({ cart, className }: CartSummaryProps) {
         {redirecting ? (
           <>
             <Loader2 className="h-5 w-5 animate-spin" />
-            <span>Redirecting to Checkout...</span>
+            <span>Opening Checkout...</span>
           </>
         ) : (
           <>
@@ -198,7 +194,7 @@ export function CartSummary({ cart, className }: CartSummaryProps) {
       </button>
 
       {/* Security Badge */}
-      <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+      <div className="flex items-center justify-center gap-2 text-xs text-kawai-charcoal/60">
         <svg
           className="h-4 w-4"
           fill="none"

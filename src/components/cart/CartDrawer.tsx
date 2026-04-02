@@ -41,14 +41,18 @@ const drawerVariants = {
     opacity: 0,
     x: '100%',
     transition: {
-      duration: 0.3,
+      duration: 0.35,
+      ease: [0.4, 0, 1, 1] as const,
     },
   },
   open: {
     opacity: 1,
     x: 0,
     transition: {
-      duration: 0.4,
+      type: 'spring' as const,
+      stiffness: 380,
+      damping: 36,
+      mass: 1,
     },
   },
 }
@@ -131,7 +135,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         <>
           {/* Backdrop Overlay */}
           <motion.div
-            className="fixed inset-0 z-[9500] bg-black/20 backdrop-blur-sm"
+            className="fixed inset-0 z-[9500] bg-black/30"
             variants={overlayVariants}
             initial="closed"
             animate="open"
@@ -145,23 +149,24 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             className={cn(
               'fixed right-0 top-0 bottom-0 z-[9501]',
               'w-full max-w-md',
-              'bg-white shadow-2xl',
+              'bg-white',
               'flex flex-col',
               'overflow-hidden'
             )}
+            style={{ boxShadow: '-4px 0 32px rgba(0,0,0,0.10)', willChange: 'transform' }}
             variants={drawerVariants}
             initial="closed"
             animate="open"
             exit="closed"
           >
             {/* Header */}
-            <div className="flex-shrink-0 sticky top-0 bg-white border-b border-gray-200/50 p-4 z-10">
+            <div className="flex-shrink-0 sticky top-0 bg-kawai-pearl border-b border-kawai-neutral/60 p-4 z-10">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                  <ShoppingBag className="h-5 w-5" />
-                  <span>Shopping Cart</span>
+                <h2 className="text-base font-semibold tracking-wide text-kawai-black font-[family-name:var(--font-brand-sans)] uppercase flex items-center gap-2">
+                  <ShoppingBag className="h-4 w-4" />
+                  <span>Your Cart</span>
                   {cart && cart.totalQuantity > 0 && (
-                    <span className="text-sm font-normal text-gray-500">
+                    <span className="text-xs text-kawai-charcoal/50 font-normal tracking-wider">
                       ({cart.totalQuantity} {cart.totalQuantity === 1 ? 'item' : 'items'})
                     </span>
                   )}
@@ -172,11 +177,11 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   onClick={onClose}
                   className={cn(
                     'p-2 rounded-md transition-colors',
-                    'hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-kawai-red'
+                    'hover:bg-kawai-pearl focus:outline-none focus:ring-2 focus:ring-kawai-red'
                   )}
                   aria-label="Close cart"
                 >
-                  <X className="h-5 w-5 text-gray-700" />
+                  <X className="h-5 w-5 text-kawai-charcoal" />
                 </button>
               </div>
             </div>
@@ -187,16 +192,16 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 // Loading State
                 <div className="flex flex-col items-center justify-center h-full p-8">
                   <Loader2 className="h-8 w-8 text-kawai-red animate-spin mb-4" />
-                  <p className="text-gray-600">Loading your cart...</p>
+                  <p className="text-kawai-charcoal">Loading your cart...</p>
                 </div>
               ) : isEmpty ? (
                 // Empty Cart State
                 <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                  <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-                    <ShoppingBag className="h-12 w-12 text-gray-400" />
+                  <div className="w-20 h-20 bg-kawai-pearl border border-kawai-neutral rounded-full flex items-center justify-center mb-6">
+                    <ShoppingBag className="h-10 w-10 text-kawai-neutral" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Your cart is empty</h3>
-                  <p className="text-gray-600 mb-6 max-w-sm">
+                  <h3 className="text-lg font-semibold text-kawai-black mb-2 font-[family-name:var(--font-brand-serif)]">Your cart is empty</h3>
+                  <p className="text-kawai-charcoal/70 mb-6 max-w-sm text-sm">
                     Browse our collection and add items to your cart
                   </p>
                   <Link
@@ -205,7 +210,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     className={cn(
                       'px-6 py-3 rounded-md font-semibold',
                       'bg-kawai-red text-white',
-                      'hover:bg-kawai-red/90 transition-colors',
+                      'hover:bg-kawai-red-700 transition-colors',
                       'focus:outline-none focus:ring-2 focus:ring-kawai-red focus:ring-offset-2'
                     )}
                   >
@@ -229,7 +234,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
             {/* Footer - Cart Summary */}
             {!loading && !isEmpty && cart && (
-              <div className="flex-shrink-0 bg-white border-t border-gray-200 p-6">
+              <div className="flex-shrink-0 bg-kawai-pearl border-t border-kawai-neutral/60 p-6">
                 <CartSummary cart={cart} />
 
                 {/* Continue Shopping Link */}
@@ -237,7 +242,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   <Link
                     href="/shop"
                     onClick={onClose}
-                    className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                    className="text-sm text-kawai-charcoal hover:text-kawai-black transition-colors"
                   >
                     Continue Shopping
                   </Link>

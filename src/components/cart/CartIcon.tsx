@@ -52,7 +52,7 @@ export function CartIcon({ onOpen, className, iconOnly = false }: CartIconProps)
       onClick={onOpen}
       className={cn(
         'relative p-2 rounded-md transition-colors',
-        'hover:bg-gray-100/80',
+        'hover:bg-kawai-pearl',
         'focus:outline-none focus:ring-2 focus:ring-kawai-red focus:ring-offset-2',
         className
       )}
@@ -61,7 +61,7 @@ export function CartIcon({ onOpen, className, iconOnly = false }: CartIconProps)
       aria-label={`Shopping cart with ${itemCount} item${itemCount === 1 ? '' : 's'}`}
     >
       {/* Shopping Bag Icon */}
-      <ShoppingBag className="h-6 w-6 text-gray-700" strokeWidth={2} />
+      <ShoppingBag className="h-6 w-6 text-kawai-charcoal" strokeWidth={2} />
 
       {/* Item Count Badge - Only render after hydration */}
       {!iconOnly && mounted && (

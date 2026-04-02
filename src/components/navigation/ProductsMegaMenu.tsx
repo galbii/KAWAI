@@ -35,6 +35,8 @@ const SIDEBAR_CATEGORIES = [
   },
 ] as const
 
+const NAV_SESSION_KEY = 'kawai-nav-state'
+
 const BANNER_SIZE_HEIGHT: Record<string, string> = {
   xxs:        'h-[150px]',
   xs:         'h-[250px]',
@@ -180,9 +182,13 @@ function CollectionCarouselCard({
         </div>
       </Link>
 
-      <Link href={collectionHref} onClick={onClose} className="mt-4 flex items-center justify-between px-0.5 group/cta" aria-label={`View all ${displayTitle} models`}>
-        <span className="text-[15px] font-medium text-[#8A8078] group-hover/cta:text-[#A01829] transition-colors duration-150">Explore Collection</span>
-        <ArrowRight className="h-4 w-4 text-[#B8AFA6] group-hover/cta:text-[#A01829] group-hover/cta:translate-x-0.5 transition-all duration-150" />
+      <Link
+        href={collectionHref}
+        onClick={onClose}
+        className="mt-4 flex items-center justify-center w-full py-2.5 bg-[#1E1B16] text-white text-sm font-semibold tracking-[0.07em] uppercase rounded-lg hover:bg-[#2C2C2C] transition-colors duration-200"
+        aria-label={`View all ${displayTitle} models`}
+      >
+        Explore Collection
       </Link>
     </div>
   )
@@ -190,17 +196,11 @@ function CollectionCarouselCard({
 
 // ─── Collection Carousel (default view) ───────────────────────────────────────
 
-const CARDS_PER_VIEW = 3
-
 function CollectionCarousel({ collections, onClose, onCategorySelect }: {
   collections: NavCollection[]
   onClose: () => void
   onCategorySelect: (key: SidebarKey) => void
 }) {
-  const [idx, setIdx] = useState(0)
-  const maxIdx = Math.max(0, Math.ceil(collections.length / CARDS_PER_VIEW) - 1)
-  const visible = collections.slice(idx * CARDS_PER_VIEW, (idx + 1) * CARDS_PER_VIEW)
-
   return (
     <div>
       <div className="mb-8">
@@ -213,49 +213,18 @@ function CollectionCarousel({ collections, onClose, onCategorySelect }: {
         </div>
       ) : (
         <>
-          <div className="relative">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={idx}
-                className="grid grid-cols-3 gap-8"
-                initial={{ opacity: 0, x: 28 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -28 }}
-                transition={{ duration: 0.26, ease: [0.4, 0, 0.2, 1] }}
-              >
-                {visible.map((col, i) => (
-                  <CollectionCarouselCard key={col.id} collection={col} onClose={onClose} onCategorySelect={onCategorySelect} index={i} />
-                ))}
-                {Array.from({ length: Math.max(0, CARDS_PER_VIEW - visible.length) }).map((_, i) => <div key={i} />)}
-              </motion.div>
-            </AnimatePresence>
-            <AnimatePresence>
-              {idx > 0 && <NavArrow dir="left" onClick={() => setIdx((i) => i - 1)} offset="-left-6" />}
-              {idx < maxIdx && <NavArrow dir="right" onClick={() => setIdx((i) => i + 1)} offset="-left-6" />}
-            </AnimatePresence>
+          <div className="grid grid-cols-3 gap-8">
+            {collections.length === 1 ? (
+              <div className="col-start-2">
+                <CollectionCarouselCard collection={collections[0]!} onClose={onClose} onCategorySelect={onCategorySelect} index={0} />
+              </div>
+            ) : (
+              collections.map((col, i) => (
+                <CollectionCarouselCard key={col.id} collection={col} onClose={onClose} onCategorySelect={onCategorySelect} index={i} />
+              ))
+            )}
           </div>
 
-          {maxIdx > 0 && (
-            <div className="flex items-center gap-2 mt-5">
-              {Array.from({ length: maxIdx + 1 }).map((_, i) => (
-                <button key={i} onClick={() => setIdx(i)} aria-label={`Slide ${i + 1}`}>
-                  <motion.div
-                    animate={{ width: i === idx ? 28 : 8, backgroundColor: i === idx ? '#A01829' : '#C8C2BA' }}
-                    transition={{ duration: 0.22 }}
-                    className="h-1.5 rounded-full"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div className="mt-16">
-            <Link
-              href="/pianos"
-              onClick={onClose}
-              className="flex items-center justify-center w-full py-3.5 bg-[#1E1B16] text-white text-sm font-semibold tracking-[0.08em] uppercase rounded-lg hover:bg-[#2C2C2C] transition-colors duration-200"
-            >
-              Explore All Products
-            </Link>
-          </div>
         </>
       )}
     </div>
@@ -300,7 +269,7 @@ function CollectionTopBanner({ collection, onClose }: { collection: NavCollectio
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -6 }}
       transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="relative h-64 rounded-xl overflow-hidden mb-7 bg-[#111]"
+      className="relative h-72 -mx-14 -mt-10 mb-8 overflow-hidden bg-[#111]"
     >
       {/* Background image */}
       {imageUrl && (
@@ -449,11 +418,10 @@ function CollectionVideoBanner({ collection, onClose, heightClass = 'h-44', exte
 // ─── Collection Footer ────────────────────────────────────────────────────────
 // Sticky footer strip showing collection pills. Lives outside the scroll area.
 
-function CollectionFooter({ collections, activeHandle, onSelect, isAllView, onClose, categoryHref, categoryLabel }: {
+function CollectionFooter({ collections, activeHandle, onSelect, onClose, categoryHref, categoryLabel }: {
   collections: NavCollection[]
   activeHandle: string
   onSelect: (handle: string) => void
-  isAllView: boolean
   onClose: () => void
   categoryHref: string
   categoryLabel: string | null
@@ -472,19 +440,7 @@ function CollectionFooter({ collections, activeHandle, onSelect, isAllView, onCl
         <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-0.5 flex-1">
           {collections.map((col) => {
             const label = col.heading || col.title
-            const isActive = !isAllView && activeHandle === col.handle
-            if (isAllView) {
-              return (
-                <Link
-                  key={col.id}
-                  href={`/pianos/${col.handle}`}
-                  onClick={onClose}
-                  className="px-3.5 py-1.5 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all duration-150 bg-[#F2EFE9] text-[#8A8078] hover:bg-[#EDE9E3] hover:text-[#2C2C2C]"
-                >
-                  {label}
-                </Link>
-              )
-            }
+            const isActive = activeHandle === col.handle
             return (
               <button
                 key={col.id}
@@ -570,11 +526,6 @@ function CategoryView({ sidebarKey, collections, allTabProducts, categoryHref, l
 
   return (
     <div>
-      {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-3xl font-bold text-[#2C2C2C] font-serif leading-none">{label} Pianos</h2>
-      </div>
-
       {/* Collection banner — top, shown when a collection is selected */}
       <AnimatePresence mode="wait">
         {activeCollectionHandle !== 'all' && activeCollection && !isLoadingProducts && (
@@ -625,18 +576,6 @@ function CategoryView({ sidebarKey, collections, allTabProducts, categoryHref, l
         </motion.div>
       </AnimatePresence>
 
-      {/* Explore All Products — only shown when no collection is selected */}
-      {activeCollectionHandle === 'all' && (
-        <div className="mt-7">
-          <Link
-            href="/pianos"
-            onClick={onClose}
-            className="flex items-center justify-center w-full py-4 bg-[#1E1B16] text-white text-[15px] font-semibold tracking-[0.08em] uppercase rounded-lg hover:bg-[#2C2C2C] transition-colors duration-200"
-          >
-            Explore All Products
-          </Link>
-        </div>
-      )}
     </div>
   )
 }
@@ -855,13 +794,49 @@ export function ProductsMegaMenu({
   const activeCollectionHandle = menuState.nav_col
 
   function setSelectedKey(key: SidebarKey | null) {
-    // Changing category always resets the collection selection
+    if (key === null) {
+      // Explicit "All" — clear persistence so reopening the menu doesn't re-restore
+      try { sessionStorage.removeItem(NAV_SESSION_KEY) } catch { /* ignore */ }
+    }
     setMenuState({ nav_cat: key ?? '', nav_col: 'all' })
   }
 
   function setActiveCollectionHandle(handle: string) {
     setMenuState({ nav_col: handle })
   }
+
+  // Persist selected category + collection for the session so navigating to another page
+  // and reopening the menu restores the last selection (nuqs resets on URL change).
+  useEffect(() => {
+    if (!menuState.nav_cat) return
+    try {
+      sessionStorage.setItem(
+        NAV_SESSION_KEY,
+        JSON.stringify({ nav_cat: menuState.nav_cat, nav_col: menuState.nav_col }),
+      )
+    } catch { /* sessionStorage unavailable */ }
+  }, [menuState.nav_cat, menuState.nav_col])
+
+  // Tracks whether we've already attempted a restore for this menu open — prevents
+  // the effect from re-running after setMenuState updates nav_cat mid-session.
+  const hasRestoredRef = useRef(false)
+
+  useEffect(() => {
+    if (!isOpen) {
+      hasRestoredRef.current = false // reset on close so next open can restore again
+      return
+    }
+    if (hasRestoredRef.current || menuState.nav_cat) return
+    try {
+      const saved = sessionStorage.getItem(NAV_SESSION_KEY)
+      if (!saved) return
+      const parsed = JSON.parse(saved) as { nav_cat?: string; nav_col?: string }
+      if (parsed.nav_cat && SIDEBAR_CATEGORIES.some((c) => c.key === parsed.nav_cat)) {
+        hasRestoredRef.current = true
+        void setMenuState({ nav_cat: parsed.nav_cat, nav_col: parsed.nav_col ?? 'all' })
+      }
+    } catch { /* ignore */ }
+  }, [isOpen, menuState.nav_cat, setMenuState])
 
   const selectedProducts = useMemo(() => {
     if (!selectedKey) return []
@@ -906,6 +881,14 @@ export function ProductsMegaMenu({
 
   const selectedCat = SIDEBAR_CATEGORIES.find((c) => c.key === selectedKey)
 
+  // When on "All" tab with a specific collection selected, look up the collection
+  // so we can render the same CategoryView experience as category-specific tabs.
+  const allViewActiveCollection = useMemo(() => {
+    if (selectedKey !== null || activeCollectionHandle === 'all') return null
+    const pool = allCollections ?? collections
+    return pool.find((c) => c.handle === activeCollectionHandle) ?? null
+  }, [selectedKey, activeCollectionHandle, allCollections, collections])
+
   const topOffset = isHeaderScrolled
     ? 'calc(112px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))'
     : 'calc(128px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))'
@@ -933,7 +916,23 @@ export function ProductsMegaMenu({
 
                 <div className="min-w-0 px-14 py-10 bg-white overflow-y-auto flex-1">
                   <AnimatePresence mode="wait" initial={false}>
-                    {selectedKey === null ? (
+                    {selectedKey === null && allViewActiveCollection ? (
+                      <motion.div
+                        key={`all-collection-${activeCollectionHandle}`}
+                        initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                      >
+                        <CategoryView
+                          sidebarKey=""
+                          collections={allCollections ?? collections}
+                          allTabProducts={[]}
+                          categoryHref={`/pianos/${activeCollectionHandle}`}
+                          label={allViewActiveCollection.heading || allViewActiveCollection.title}
+                          onClose={onClose}
+                          activeCollectionHandle={activeCollectionHandle}
+                        />
+                      </motion.div>
+                    ) : selectedKey === null ? (
                       <motion.div
                         key="carousel"
                         initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}
@@ -991,7 +990,6 @@ export function ProductsMegaMenu({
                   collections={footerCollections}
                   activeHandle={activeCollectionHandle}
                   onSelect={setActiveCollectionHandle}
-                  isAllView={selectedKey === null}
                   onClose={onClose}
                   categoryHref={selectedCat?.href ?? '/pianos'}
                   categoryLabel={selectedCat ? selectedCat.label : null}

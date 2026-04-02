@@ -8,7 +8,7 @@ import { SearchBar } from './SearchBar'
 import { FilterPanel } from './FilterPanel'
 import { cn } from '@/lib/utils'
 import { calculateDistance } from '@/lib/utils/dealer-search'
-import { MapPin, SlidersHorizontal, Map, List, Piano, Briefcase, Star, X } from 'lucide-react'
+import { MapPin, SlidersHorizontal, Map, List, Piano, Briefcase, Star, X, Search } from 'lucide-react'
 
 interface Props {
   dealers: DealerWithDistance[]
@@ -28,6 +28,7 @@ export function DealerFinderMobile({ dealers }: Props) {
   const [dealerTypeFilter, setDealerTypeFilter] = useState<DealerTypeFilter>('all')
   const [dealerSheetOpen, setDealerSheetOpen] = useState(false)
   const [searchResults, setSearchResults] = useState<DealerWithDistance[]>([])
+  const [searchExpanded, setSearchExpanded] = useState(false)
 
   // Calculate dealer type counts
   const dealerCounts = useMemo(() => {
@@ -285,16 +286,36 @@ export function DealerFinderMobile({ dealers }: Props) {
         </div>
       </div>
 
-      {/* Floating Search Bar - Above Bottom Navigation */}
-      <div className="fixed bottom-24 left-0 right-0 z-40 px-4">
-        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-kawai-neutral/50">
-          <SearchBar
-            dealers={dealers}
-            onSearch={handleDealerSearch}
-            onLocationSearch={handleLocationSearch}
-          />
+      {/* Floating Search — FAB when idle, full bar when expanded */}
+      {searchExpanded ? (
+        <div className="fixed bottom-24 left-0 right-0 z-40 px-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSearchExpanded(false)}
+              className="flex-shrink-0 w-12 h-12 rounded-2xl bg-white/95 border border-kawai-neutral/50 shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+              aria-label="Close search"
+            >
+              <X className="w-5 h-5 text-kawai-charcoal/60" strokeWidth={2} />
+            </button>
+            <div className="flex-1 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-kawai-neutral/50">
+              <SearchBar
+                dealers={dealers}
+                onSearch={handleDealerSearch}
+                onLocationSearch={handleLocationSearch}
+                autoFocus
+              />
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        <button
+          onClick={() => setSearchExpanded(true)}
+          className="fixed bottom-24 right-4 z-40 w-14 h-14 rounded-full bg-kawai-charcoal text-white shadow-2xl flex items-center justify-center active:scale-95 transition-transform animate-in fade-in duration-200"
+          aria-label="Search dealers"
+        >
+          <Search className="w-6 h-6" strokeWidth={2} />
+        </button>
+      )}
 
       {/* Floating Bottom Navigation - Premium Touch Target */}
       <div className="fixed bottom-0 left-0 right-0 z-40 pb-safe">

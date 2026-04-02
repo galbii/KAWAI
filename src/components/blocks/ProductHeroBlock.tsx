@@ -9,7 +9,7 @@ import { getOptimizedImageProps } from '@/lib/media/r2-utils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect, createElement, useRef } from 'react'
-import { ShoppingCart, Heart, Share2, CheckCircle, Sparkles, Clock, Play, Volume2, Images } from 'lucide-react'
+import { ShoppingCart, Heart, Share2, CheckCircle, Sparkles, Clock, Play, Volume2, Images, ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn, formatPrice } from '@/lib/utils'
 import {
   Dialog,
@@ -87,6 +87,11 @@ export function ProductHeroBlock({
   const [isFavorited, setIsFavorited] = useState(false)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
   const [buyNowLoading, setBuyNowLoading] = useState(false)
+  const [mobileCarouselIndex, setMobileCarouselIndex] = useState(0)
+  const [lightboxStartIndex, setLightboxStartIndex] = useState(0)
+  const mobileSwipeInProgress = useRef(false)
+  const mobileTouchStartX = useRef<number | null>(null)
+  const sliderRef = useRef<HTMLDivElement>(null)
 
   const sectionRef = useRef<HTMLElement>(null)
   const galleryRef = useRef<HTMLDivElement>(null)
@@ -623,6 +628,73 @@ export function ProductHeroBlock({
     }
   })
   
+  // Open lightbox at a specific index
+  const openLightbox = (index: number) => {
+    setLightboxStartIndex(index)
+    setIsGalleryOpen(true)
+  }
+
+  // Mobile carousel navigation — arrow buttons let React drive the CSS transition via style prop
+  const goToNextMobileImage = () => {
+    if (allGalleryImages.length <= 1) return
+    setMobileCarouselIndex(prev => (prev + 1) % allGalleryImages.length)
+  }
+
+  const goToPrevMobileImage = () => {
+    if (allGalleryImages.length <= 1) return
+    setMobileCarouselIndex(prev => (prev - 1 + allGalleryImages.length) % allGalleryImages.length)
+  }
+
+  const SLIDE_TRANSITION = 'transform 380ms cubic-bezier(0.4, 0, 0.2, 1)'
+
+  const handleMobileTouchStart = (e: React.TouchEvent) => {
+    mobileSwipeInProgress.current = false
+    const touch = e.targetTouches[0]
+    if (!touch) return
+    mobileTouchStartX.current = touch.clientX
+    // Kill transition so drag feels instant
+    if (sliderRef.current) sliderRef.current.style.transition = 'none'
+  }
+
+  const handleMobileTouchMove = (e: React.TouchEvent) => {
+    const touch = e.targetTouches[0]
+    if (!touch || mobileTouchStartX.current === null || !sliderRef.current) return
+    const dx = touch.clientX - mobileTouchStartX.current
+    if (Math.abs(dx) > 15) mobileSwipeInProgress.current = true
+    const n = allGalleryImages.length
+    if (n === 0) return
+    // Mutate DOM directly — zero React re-renders during drag
+    sliderRef.current.style.transform = `translateX(calc(-${mobileCarouselIndex * (100 / n)}% + ${dx}px))`
+  }
+
+  const handleMobileTouchEnd = (e: React.TouchEvent) => {
+    const touch = e.changedTouches[0]
+    if (!touch || mobileTouchStartX.current === null) return
+    const n = allGalleryImages.length
+    const distance = mobileTouchStartX.current - touch.clientX // positive = left swipe = next
+    let newIndex = mobileCarouselIndex
+    if (Math.abs(distance) > 50 && n > 1) {
+      newIndex = distance > 0
+        ? (mobileCarouselIndex + 1) % n
+        : (mobileCarouselIndex - 1 + n) % n
+    }
+    mobileTouchStartX.current = null
+    // Snap (or spring back) via DOM first — React re-render will match and not cause a flicker
+    if (sliderRef.current) {
+      sliderRef.current.style.transition = SLIDE_TRANSITION
+      sliderRef.current.style.transform = `translateX(-${newIndex * (100 / n)}%)`
+    }
+    if (newIndex !== mobileCarouselIndex) setMobileCarouselIndex(newIndex)
+  }
+
+  const handleMobileClick = () => {
+    if (mobileSwipeInProgress.current) {
+      mobileSwipeInProgress.current = false
+      return
+    }
+    if (allGalleryImages.length > 0) openLightbox(mobileCarouselIndex)
+  }
+
   return (
     <section ref={sectionRef} className={`relative overflow-visible ${backgroundClass}`}>
       {/* Subtle gradient overlay for better image blending */}
@@ -655,46 +727,108 @@ export function ProductHeroBlock({
               )}
             </div>
 
-            {/* Mobile-only image - between title and model */}
-            {displayImage && (
-              <div
-                className={cn(
-                  "lg:hidden relative w-full h-[320px] sm:h-[400px] overflow-hidden rounded-xl",
-                  allGalleryImages.length > 0 && "cursor-pointer"
-                )}
-                onClick={() => allGalleryImages.length > 0 && setIsGalleryOpen(true)}
-                role={allGalleryImages.length > 0 ? "button" : undefined}
-                tabIndex={allGalleryImages.length > 0 ? 0 : undefined}
-                onKeyDown={(e) => {
-                  if (allGalleryImages.length > 0 && (e.key === 'Enter' || e.key === ' ')) {
-                    e.preventDefault()
-                    setIsGalleryOpen(true)
-                  }
-                }}
-                aria-label={allGalleryImages.length > 0 ? `Open image gallery (${allGalleryImages.length} photos)` : undefined}
-              >
-                {(() => {
-                  const imageProps = getOptimizedImageProps(displayImage, 'hero')
-                  if (!imageProps?.src) return null
-                  const { width, height, ...optimizedProps } = imageProps
-                  return (
-                    <Image
-                      {...optimizedProps}
-                      fill
-                      className="object-contain"
-                      priority={true}
-                      sizes="100vw"
-                      alt={optimizedProps.alt || displayTitle || 'Product image'}
-                    />
-                  )
-                })()}
+            {/* Mobile-only image carousel - between title and model */}
+            {(displayImage || allGalleryImages.length > 0) && (
+              <div className="lg:hidden relative w-full h-[320px] sm:h-[400px] overflow-hidden rounded-xl select-none">
+                {allGalleryImages.length > 0 ? (
+                  <>
+                    {/* Sliding strip — all images in a horizontal row, GPU-animated via transform */}
+                    <div
+                      className="absolute inset-0 overflow-hidden cursor-pointer"
+                      onTouchStart={handleMobileTouchStart}
+                      onTouchMove={handleMobileTouchMove}
+                      onTouchEnd={handleMobileTouchEnd}
+                      onClick={handleMobileClick}
+                      role="button"
+                      aria-label={`Image ${mobileCarouselIndex + 1} of ${allGalleryImages.length} — tap to open gallery`}
+                    >
+                      <div
+                        ref={sliderRef}
+                        className="flex h-full"
+                        style={{
+                          width: `${allGalleryImages.length * 100}%`,
+                          transform: `translateX(-${mobileCarouselIndex * (100 / allGalleryImages.length)}%)`,
+                          transition: SLIDE_TRANSITION,
+                          willChange: 'transform',
+                        }}
+                      >
+                        {allGalleryImages.map((img, idx) => (
+                          <div
+                            key={img.url || idx}
+                            className="relative flex-shrink-0 h-full"
+                            style={{ width: `${100 / allGalleryImages.length}%` }}
+                          >
+                            <Image
+                              src={img.url}
+                              alt={img.alt || displayTitle || 'Product image'}
+                              fill
+                              className="object-contain"
+                              priority={idx === 0}
+                              sizes="100vw"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
 
-                {/* Persistent gallery indicator for mobile (no hover on touch devices) */}
-                {allGalleryImages.length > 0 && (
-                  <div className="absolute bottom-2.5 right-2.5 z-10 flex items-center gap-1.5 bg-white/80 backdrop-blur-sm px-2.5 py-1.5 rounded-full shadow-sm">
-                    <Images className="w-3.5 h-3.5 text-kawai-charcoal" />
-                    <span className="text-xs font-medium text-kawai-charcoal">{allGalleryImages.length}</span>
-                  </div>
+                    {/* Prev / Next arrow buttons */}
+                    {allGalleryImages.length > 1 && (
+                      <>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); goToPrevMobileImage() }}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow-md active:scale-95 transition-transform"
+                          aria-label="Previous image"
+                        >
+                          <ChevronLeft className="w-4 h-4 text-kawai-charcoal" />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); goToNextMobileImage() }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow-md active:scale-95 transition-transform"
+                          aria-label="Next image"
+                        >
+                          <ChevronRight className="w-4 h-4 text-kawai-charcoal" />
+                        </button>
+
+                        {/* Dot indicators */}
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5">
+                          {allGalleryImages.map((_, idx) => (
+                            <button
+                              key={idx}
+                              onClick={(e) => { e.stopPropagation(); setMobileCarouselIndex(idx) }}
+                              className={cn(
+                                "h-1.5 rounded-full transition-all duration-200",
+                                idx === mobileCarouselIndex ? "w-4 bg-kawai-red" : "w-1.5 bg-white/70"
+                              )}
+                              aria-label={`Go to image ${idx + 1}`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    {/* Image count badge */}
+                    <div className="absolute top-2.5 right-2.5 z-20 flex items-center gap-1.5 bg-white/80 backdrop-blur-sm px-2.5 py-1.5 rounded-full shadow-sm pointer-events-none">
+                      <Images className="w-3.5 h-3.5 text-kawai-charcoal" />
+                      <span className="text-xs font-medium text-kawai-charcoal">{allGalleryImages.length}</span>
+                    </div>
+                  </>
+                ) : displayImage && (
+                  // Single image, no Shopify gallery
+                  (() => {
+                    const imageProps = getOptimizedImageProps(displayImage, 'hero')
+                    if (!imageProps?.src) return null
+                    const { width, height, ...optimizedProps } = imageProps
+                    return (
+                      <Image
+                        {...optimizedProps}
+                        fill
+                        className="object-contain"
+                        priority={true}
+                        sizes="100vw"
+                        alt={optimizedProps.alt || displayTitle || 'Product image'}
+                      />
+                    )
+                  })()
                 )}
               </div>
             )}
@@ -989,13 +1123,13 @@ export function ProductHeroBlock({
                 allGalleryImages.length > 0 && "cursor-pointer group"
               )}
               style={{ height: '720px' }}
-              onClick={() => allGalleryImages.length > 0 && setIsGalleryOpen(true)}
+              onClick={() => allGalleryImages.length > 0 && openLightbox(currentImageIndex)}
               role={allGalleryImages.length > 0 ? "button" : undefined}
               tabIndex={allGalleryImages.length > 0 ? 0 : undefined}
               onKeyDown={(e) => {
                 if (allGalleryImages.length > 0 && (e.key === 'Enter' || e.key === ' ')) {
                   e.preventDefault()
-                  setIsGalleryOpen(true)
+                  openLightbox(currentImageIndex)
                 }
               }}
               aria-label={allGalleryImages.length > 0 ? "Open image gallery" : undefined}
@@ -1056,13 +1190,13 @@ export function ProductHeroBlock({
                     key={idx}
                     className="relative overflow-hidden cursor-pointer group"
                     style={{ height: '360px' }}
-                    onClick={() => setIsGalleryOpen(true)}
+                    onClick={() => openLightbox(idx + 1)}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault()
-                        setIsGalleryOpen(true)
+                        openLightbox(idx + 1)
                       }
                     }}
                     aria-label={`View image ${idx + 2} of ${allGalleryImages.length}`}
@@ -1089,7 +1223,7 @@ export function ProductHeroBlock({
       {/* Image Gallery Lightbox */}
       <ImageGalleryLightbox
         images={allGalleryImages}
-        initialIndex={currentImageIndex}
+        initialIndex={lightboxStartIndex}
         isOpen={isGalleryOpen}
         onClose={() => setIsGalleryOpen(false)}
       />

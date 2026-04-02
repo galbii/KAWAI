@@ -189,9 +189,13 @@ export function Footer({ locationContactData, isSignaturePage = false }: FooterP
       <div className="border-t border-kawai-neutral/20">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            {/* Copyright */}
-            <div className="text-kawai-neutral/80 text-sm mb-4 md:mb-0">
-              © 2026 Kawai America Corporation. All rights reserved.
+            {/* Copyright + Legal Links */}
+            <div className="flex flex-col md:flex-row items-center gap-3 text-kawai-neutral/80 text-sm mb-4 md:mb-0">
+              <span>© 2026 Kawai America Corporation. All rights reserved.</span>
+              <span className="hidden md:inline text-kawai-neutral/40">·</span>
+              <Link href="/privacy" className="hover:text-kawai-red transition-colors">
+                Privacy Policy
+              </Link>
             </div>
 
             {/* Social Links */}
