@@ -462,7 +462,7 @@ export function ProductDescriptionRenderer(props: ProductDescriptionRendererProp
               initial={{ opacity: 0, y: 30 }}
               animate={isVisible ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.7 }}
-              className="lg:col-span-1 order-2 lg:order-1 min-w-0"
+              className="lg:col-span-1 order-2 lg:order-1 min-w-0 flex flex-col"
             >
               {/* Model display + description */}
               <div className="mb-6">
@@ -506,10 +506,10 @@ export function ProductDescriptionRenderer(props: ProductDescriptionRendererProp
                 )}
               </div>
 
-              {/* Thumbnail strip */}
+              {/* Thumbnail strip — floats above model on mobile, stays below description on desktop */}
               {allItems.length > 1 && (
                 <div
-                  className="overflow-x-auto"
+                  className="overflow-x-auto order-first lg:order-last"
                   style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                 >
                   <div ref={thumbnailsRef} className="flex gap-2 p-1">
