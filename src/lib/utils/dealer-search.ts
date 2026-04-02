@@ -190,17 +190,17 @@ export function searchDealers(
     }
 
     // Search by city
-    if (dealer.address.city.toLowerCase().includes(normalizedQuery)) {
+    if (dealer.address?.city?.toLowerCase().includes(normalizedQuery)) {
       return true
     }
 
     // Search by ZIP code (exact or partial match)
-    if (dealer.address.zipCode.toLowerCase().includes(normalizedQuery)) {
+    if (dealer.address?.zipCode?.toLowerCase().includes(normalizedQuery)) {
       return true
     }
 
     // Search by state
-    if (dealer.address.state.toLowerCase().includes(normalizedQuery)) {
+    if (dealer.address?.state?.toLowerCase().includes(normalizedQuery)) {
       return true
     }
 

@@ -131,7 +131,7 @@ export async function searchByLocation(dealers: Dealer[], location: string) {
   // Group by state for better organization
   const groupedByState = results.reduce(
     (acc, result) => {
-      const state = result.dealer.address.state
+      const state = result.dealer.address?.state ?? 'Unknown'
       if (!acc[state]) {
         acc[state] = []
       }

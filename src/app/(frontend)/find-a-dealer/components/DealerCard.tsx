@@ -83,11 +83,11 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
         </h3>
 
         {/* Location */}
-        {dealer.address && (
+        {(dealer.address?.city || dealer.address?.state) && (
           <div className="flex items-center gap-1 mb-2.5">
             <MapPin className="w-3 h-3 text-kawai-charcoal/35 flex-shrink-0" strokeWidth={2} />
             <span className="text-[12px] text-kawai-charcoal/55">
-              {dealer.address.city}, {dealer.address.state}
+              {[dealer.address.city, dealer.address.state].filter(Boolean).join(', ')}
             </span>
           </div>
         )}
@@ -158,14 +158,17 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
         <div className="border-t border-kawai-neutral/60 bg-kawai-pearl/40 px-4 py-4 space-y-4 animate-in slide-in-from-top-1 duration-150">
 
           {/* Address */}
-          {dealer.address && (
+          {(dealer.address?.street || dealer.address?.city) && (
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-kawai-charcoal/40 mb-1.5">
                 Address
               </p>
               <address className="text-[12px] text-kawai-charcoal/80 not-italic leading-relaxed">
-                {dealer.address.street}<br />
-                {dealer.address.city}, {dealer.address.state} {dealer.address.zipCode}
+                {dealer.address.street && <>{dealer.address.street}<br /></>}
+                {[
+                  dealer.address.city,
+                  [dealer.address.state, dealer.address.zipCode].filter(Boolean).join(' '),
+                ].filter(Boolean).join(', ')}
               </address>
             </div>
           )}

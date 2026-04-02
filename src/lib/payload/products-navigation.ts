@@ -346,9 +346,13 @@ export async function getProductTypesWithProducts(options?: {
           ? (product.customMedia.find((m) => m.mediaType === 'youtube')?.youtubeUrl ?? null)
           : null
 
-      // At depth:0, shopifyCollections is an array of raw IDs (string | ObjectId)
+      // shopifyCollections is a Payload array field (not a relationship), so each item
+      // is a subdocument with shopifyCollectionId/title/handle — NOT a document reference.
+      // Store the handle for each collection so the mega menu can match against NavCollection.handle.
       const collectionIds = Array.isArray((product as any).shopifyCollections)
-        ? (product as any).shopifyCollections.map((c: any) => String(typeof c === 'object' && c !== null ? (c.id ?? c) : c))
+        ? (product as any).shopifyCollections
+            .map((c: any) => (typeof c === 'object' && c !== null ? (c.handle ?? '') : ''))
+            .filter(Boolean)
         : []
 
       return {
@@ -483,8 +487,8 @@ export async function getProductsByTypeForNav(
           : null
 
       const collectionIds = Array.isArray((product as any).shopifyCollections)
-        ? ((product as any).shopifyCollections as Array<{ id?: string; handle?: string } | string>)
-            .map((c) => (typeof c === 'object' && c !== null ? (c.id ?? c.handle ?? '') : String(c)))
+        ? ((product as any).shopifyCollections as Array<{ handle?: string } | string>)
+            .map((c) => (typeof c === 'object' && c !== null ? (c.handle ?? '') : ''))
             .filter(Boolean)
         : []
 

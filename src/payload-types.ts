@@ -8948,23 +8948,23 @@ export interface Dealer {
   /**
    * Complete physical address for map placement and directions
    */
-  address: {
+  address?: {
     /**
      * Street address (e.g., "21 Meadows Circle Drive, Suite 312")
      */
-    street: string;
+    street?: string | null;
     /**
      * City name
      */
-    city: string;
+    city?: string | null;
     /**
      * State or region (2-letter abbreviation preferred: MO, CA, NY)
      */
-    state: string;
+    state?: string | null;
     /**
      * ZIP or postal code
      */
-    zipCode: string;
+    zipCode?: string | null;
     /**
      * Country (defaults to USA)
      */

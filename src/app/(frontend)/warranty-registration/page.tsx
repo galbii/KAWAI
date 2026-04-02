@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { getRegisterConfig } from '@/components/layout/header-dynamic'
 import { WarrantyRegistrationForm } from '@/components/warranty/WarrantyRegistrationForm'
 
@@ -89,6 +90,19 @@ export default async function WarrantyRegistrationPage() {
           </p>
         </div>
       </section>
+
+      {/* ── LEARN MORE CALLOUT ───────────────────────────────────────────── */}
+      <div
+        style={{ background: '#1E1B16', borderTop: '1px solid rgba(255,255,255,0.06)' }}
+        className="text-center py-3"
+      >
+        <p style={{ fontFamily: 'var(--font-brand-sans)', fontSize: '12px', color: 'rgba(250,248,245,0.45)' }}>
+          Not sure about your coverage?{' '}
+          <Link href="/warranty" style={{ color: '#E11922' }} className="hover:underline">
+            View warranty details first →
+          </Link>
+        </p>
+      </div>
 
       {/* ── BODY ─────────────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-6xl px-6 sm:px-10 py-16 sm:py-24">

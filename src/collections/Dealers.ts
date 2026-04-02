@@ -33,11 +33,15 @@ const geocodeDealerAddress: CollectionBeforeValidateHook = async ({ data, origin
     address.state !== prev?.state ||
     address.zipCode !== prev?.zipCode
 
+  // Skip if address is too incomplete to geocode meaningfully (need at least state)
+  const hasMinimalAddress = Boolean(address.state)
+
   // Create: geocode if no coords were manually provided
   // Update: geocode whenever the address changes (overwrites existing coords)
   const shouldGeocode =
-    (operation === 'create' && !data.coordinates?.latitude) ||
-    (operation === 'update' && addressChanged)
+    hasMinimalAddress &&
+    ((operation === 'create' && !data.coordinates?.latitude) ||
+      (operation === 'update' && addressChanged))
 
   if (!shouldGeocode) return data
 
@@ -238,7 +242,6 @@ export const Dealers: CollectionConfig = {
                 {
                   name: 'street',
                   type: 'text',
-                  required: true,
                   admin: {
                     description: 'Street address (e.g., "21 Meadows Circle Drive, Suite 312")',
                     placeholder: '123 Main Street'
@@ -247,7 +250,6 @@ export const Dealers: CollectionConfig = {
                 {
                   name: 'city',
                   type: 'text',
-                  required: true,
                   admin: {
                     description: 'City name',
                     placeholder: 'St. Louis'
@@ -256,7 +258,6 @@ export const Dealers: CollectionConfig = {
                 {
                   name: 'state',
                   type: 'text',
-                  required: true,
                   admin: {
                     description: 'State or region (2-letter abbreviation preferred: MO, CA, NY)',
                     placeholder: 'MO'
@@ -265,7 +266,6 @@ export const Dealers: CollectionConfig = {
                 {
                   name: 'zipCode',
                   type: 'text',
-                  required: true,
                   admin: {
                     description: 'ZIP or postal code',
                     placeholder: '63367'
@@ -308,7 +308,10 @@ export const Dealers: CollectionConfig = {
                 }
               ],
               admin: {
-                description: '📍 Coordinates are automatically geocoded from the address whenever street, city, state, or ZIP changes. Manually enter only to fine-tune an inaccurate pin.'
+                description: '📍 Coordinates are automatically geocoded from the address whenever street, city, state, or ZIP changes. Manually enter only to fine-tune an inaccurate pin.',
+                components: {
+                  afterInput: ['/components/admin/GeocodeButton#GeocodeButton'],
+                },
               }
             }
           ]

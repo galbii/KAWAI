@@ -7,7 +7,7 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import './dealer-map.css'
 import type { Dealer } from '@/payload-types'
 import type { DealerWithDistance } from '../types'
-import { Phone, Navigation, Piano, Briefcase, Star, Globe, MapPin, ArrowRight } from 'lucide-react'
+import { Phone, Navigation, Star, Globe, MapPin, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { trackCTAClick } from '@/lib/analytics/unified-tracking'
 
@@ -85,7 +85,7 @@ export function DealerMapLibre({
     } as any, labelLayerId)
   }, [])
 
-  // Update map center and zoom when search location changes
+  // Update map center and zoom when search location changes — flat view, no tilt
   useEffect(() => {
     if (searchCenter) {
       setViewState(prev => ({
@@ -93,8 +93,8 @@ export function DealerMapLibre({
         longitude: searchCenter.lng,
         latitude: searchCenter.lat,
         zoom: 12,
-        pitch: 45,
-        bearing: -17.6,
+        pitch: 0,
+        bearing: 0,
       }))
     }
   }, [searchCenter])
@@ -107,11 +107,14 @@ export function DealerMapLibre({
         const lat = dealer.coordinates.latitude
         const lng = dealer.coordinates.longitude
         // Center map on selected dealer with 3D tilt
+        // Offset latitude slightly north so the popup (anchored above the marker)
+        // appears centered in the viewport rather than the raw coordinates.
+        const LAT_OFFSET = 0.022
         setViewState(prev => ({
           ...prev,
           longitude: lng,
-          latitude: lat,
-          zoom: 15.5,
+          latitude: lat + LAT_OFFSET,
+          zoom: 13,
           pitch: 45,
           bearing: -17.6,
         }))
@@ -133,19 +136,32 @@ export function DealerMapLibre({
   const handlePopupClose = useCallback(() => {
     setActivePopup(null)
     onMarkerClick(null)
-    // Reset to default USA overview
-    setViewState({
-      longitude: -98.5795,
-      latitude: 39.8283,
-      zoom: 4,
-      pitch: 0,
-      bearing: 0,
-    })
-  }, [onMarkerClick])
+    // Return to flat search view, or USA overview if no search has been made
+    if (searchCenter) {
+      setViewState(prev => ({
+        ...prev,
+        longitude: searchCenter.lng,
+        latitude: searchCenter.lat,
+        zoom: 12,
+        pitch: 0,
+        bearing: 0,
+      }))
+    } else {
+      setViewState({
+        longitude: -98.5795,
+        latitude: 39.8283,
+        zoom: 4,
+        pitch: 0,
+        bearing: 0,
+      })
+    }
+  }, [onMarkerClick, searchCenter])
 
   const handleMapClick = useCallback(() => {
     setActivePopup(null)
     onMarkerClick(null)
+    // Un-tilt when dismissing popup by clicking the map
+    setViewState(prev => ({ ...prev, pitch: 0, bearing: 0 }))
   }, [onMarkerClick])
 
   return (
@@ -274,24 +290,21 @@ export function DealerMapLibre({
               </div>
 
               {/* Dealer Type Badges */}
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="flex flex-wrap gap-1.5 mb-4">
                 {hasShigeru && (
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-kawai-gold/10 text-kawai-gold text-xs font-medium rounded-lg border border-kawai-gold/20">
-                    <Star className="w-3.5 h-3.5" fill="currentColor" strokeWidth={0} />
-                    <span>Shigeru Kawai</span>
-                  </div>
+                  <span className="px-2.5 py-1 bg-kawai-gold/10 text-kawai-gold text-xs font-semibold tracking-wide uppercase rounded border border-kawai-gold/25">
+                    Shigeru Kawai
+                  </span>
                 )}
                 {hasAcoustic && (
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-kawai-charcoal/5 text-kawai-charcoal/70 text-xs font-medium rounded-lg">
-                    <Piano className="w-4 h-4" strokeWidth={2} />
-                    <span>Acoustic Piano</span>
-                  </div>
+                  <span className="px-2.5 py-1 bg-kawai-charcoal/5 text-kawai-charcoal/60 text-xs font-semibold tracking-wide uppercase rounded border border-kawai-charcoal/10">
+                    Acoustic
+                  </span>
                 )}
                 {hasProfessional && (
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-kawai-charcoal/5 text-kawai-charcoal/70 text-xs font-medium rounded-lg">
-                    <Briefcase className="w-4 h-4" strokeWidth={2} />
-                    <span>Professional</span>
-                  </div>
+                  <span className="px-2.5 py-1 bg-kawai-red/5 text-kawai-red/80 text-xs font-semibold tracking-wide uppercase rounded border border-kawai-red/15">
+                    Professional
+                  </span>
                 )}
               </div>
 

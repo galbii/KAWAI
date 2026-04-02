@@ -137,7 +137,7 @@ export function RegisterPianoModal({
               Piano Owner
             </p>
             <h2 className="text-xl font-bold text-white leading-snug">
-              {bannerTitle || 'Register Your Piano'}
+              {bannerTitle || '3 Month Subscription When You Activate Your Warranty Today'}
             </h2>
             {bannerDescription && (
               <p className="mt-1.5 text-sm text-white/70 leading-relaxed max-w-sm">{bannerDescription}</p>

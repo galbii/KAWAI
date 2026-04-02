@@ -16,7 +16,7 @@ export const dealersSeedPlugin = (): Plugin =>
         let created = 0
         let skipped = 0
 
-        for (const dealer of DEALER_SEED_DATA.filter((d) => d.dealerType === 'dealer')) {
+        for (const dealer of DEALER_SEED_DATA) {
           // Deduplicate by slug
           const existing = await payload.find({
             collection: 'dealers',
@@ -36,17 +36,16 @@ export const dealersSeedPlugin = (): Plugin =>
               context: { skipRevalidation: true },
               data: {
                 dealerName: dealer.dealerName,
-                dbaName: dealer.dbaName,
                 slug: dealer.slug,
                 isActive: dealer.isActive,
                 isFeatured: dealer.isFeatured,
                 dealerIdentification: dealer.dealerIdentification,
-                dealerType: dealer.dealerType,
+                dealerType: 'dealer',
                 contactInfo: {
                   phone: dealer.phone,
                   fax: dealer.fax,
                   email: dealer.email,
-                  contactPerson: dealer.contactPerson,
+                  website: dealer.website,
                 },
                 address: {
                   street: dealer.street,
@@ -55,17 +54,20 @@ export const dealersSeedPlugin = (): Plugin =>
                   zipCode: dealer.zipCode,
                   country: dealer.country,
                 },
+                ...(dealer.latitude !== undefined && dealer.longitude !== undefined
+                  ? { coordinates: { latitude: dealer.latitude, longitude: dealer.longitude } }
+                  : {}),
                 shigeruKawaiDealer: dealer.shigeruKawaiDealer,
                 acousticPianoDealer: dealer.acousticPianoDealer,
                 digitalPianoDealer: dealer.digitalPianoDealer,
                 professionalProductDealer: dealer.professionalProductDealer,
-                region: dealer.region,
-                paymentTerms: dealer.paymentTerms,
+                description: dealer.description,
+                ...(dealer.metaTitle || dealer.metaDescription
+                  ? { seo: { metaTitle: dealer.metaTitle, metaDescription: dealer.metaDescription } }
+                  : {}),
               } as any,
             })
             created++
-            // Respect Nominatim's 1 req/sec rate limit
-            await new Promise((resolve) => setTimeout(resolve, 1100))
           } catch (createErr) {
             payload.logger.warn(
               `  ⚠ Skipped "${dealer.slug}": ${createErr instanceof Error ? createErr.message : String(createErr)}`,

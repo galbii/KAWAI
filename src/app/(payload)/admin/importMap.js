@@ -33,6 +33,7 @@ import { SpecificationRowLabel as SpecificationRowLabel_1091d94778fdba3b9f9086a7
 import { VariationRowLabel as VariationRowLabel_e070f1ecdc2279c31ac736f90d4c5bf7 } from '../../../components/admin/VariationRowLabel'
 import { ExportListMenuItem as ExportListMenuItem_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { ProductsListToolbar as ProductsListToolbar_a0d9fee0546177f42149c7c463677b6e } from '../../../components/admin/ProductsListToolbar'
+import { GeocodeButton as GeocodeButton_8375e85e78c6cb75ee71f674d8be8598 } from '../../../components/admin/GeocodeButton'
 import { Page as Page_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { SortBy as SortBy_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { SortOrder as SortOrder_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
@@ -108,6 +109,7 @@ export const importMap = {
   "/components/admin/VariationRowLabel#VariationRowLabel": VariationRowLabel_e070f1ecdc2279c31ac736f90d4c5bf7,
   "@payloadcms/plugin-import-export/rsc#ExportListMenuItem": ExportListMenuItem_cdf7e044479f899a31f804427d568b36,
   "/components/admin/ProductsListToolbar#ProductsListToolbar": ProductsListToolbar_a0d9fee0546177f42149c7c463677b6e,
+  "/components/admin/GeocodeButton#GeocodeButton": GeocodeButton_8375e85e78c6cb75ee71f674d8be8598,
   "@payloadcms/plugin-import-export/rsc#Page": Page_cdf7e044479f899a31f804427d568b36,
   "@payloadcms/plugin-import-export/rsc#SortBy": SortBy_cdf7e044479f899a31f804427d568b36,
   "@payloadcms/plugin-import-export/rsc#SortOrder": SortOrder_cdf7e044479f899a31f804427d568b36,

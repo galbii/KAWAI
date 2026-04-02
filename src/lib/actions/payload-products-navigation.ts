@@ -20,15 +20,52 @@ import type { ProductsNavigation } from '@/lib/payload/products-navigation'
  * - Cache hit rate: ~95% in production
  * - Reduces database load by 95%
  */
+const DISPLAY_SAMPLES = 6
+
 const getCachedProductsNavigation = unstable_cache(
   async (): Promise<ProductsNavigation> => {
     console.log('[Products Navigation Cache] Cache miss - fetching from database')
+
+    // Fetch more samples than we'll display so we can sort by featured-collection
+    // priority before slicing. The final nav still shows DISPLAY_SAMPLES per category.
     const [navData, collections, allCollections] = await Promise.all([
-      getProductTypesWithProducts({ limit: 250, samplesPerType: 6 }),
-      getNavCollections(20),
-      getNavCollections(50, false),
+      getProductTypesWithProducts({ limit: 250, samplesPerType: 50 }),
+      getNavCollections(20),       // featured only
+      getNavCollections(50, false), // all
     ])
-    return { ...navData, collections, allCollections }
+
+    // Build a map of collection handle → collectionPriority for featured collections only.
+    // Products belonging to higher-priority featured collections should render first.
+    const featuredHandleScore = new Map<string, number>()
+    for (const col of collections) {
+      featuredHandleScore.set(col.handle, col.collectionPriority ?? 0)
+    }
+
+    // For each category, sort products so featured-collection members come first
+    // (ranked by their collection's collectionPriority, descending), then slice to DISPLAY_SAMPLES.
+    const sortedTypes = navData.types.map((typeNav) => {
+      if (featuredHandleScore.size === 0) {
+        return { ...typeNav, products: typeNav.products.slice(0, DISPLAY_SAMPLES) }
+      }
+
+      const sorted = [...typeNav.products].sort((a, b) => {
+        // Score = highest collectionPriority among featured collections this product belongs to.
+        // Products not in any featured collection score -Infinity and sink to the bottom.
+        const score = (product: typeof a) =>
+          product.collectionIds.reduce<number>((max, h) => {
+            const s = featuredHandleScore.get(h)
+            return s !== undefined && s > max ? s : max
+          }, -Infinity)
+
+        const diff = score(b) - score(a)
+        if (diff !== 0) return diff // Higher priority first
+        return 0 // Preserve the DB sort order (featured flag → sortOrder → date → name) among ties
+      })
+
+      return { ...typeNav, products: sorted.slice(0, DISPLAY_SAMPLES) }
+    })
+
+    return { ...navData, types: sortedTypes, collections, allCollections }
   },
   ['products-navigation'], // Cache key
   {

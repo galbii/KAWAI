@@ -119,20 +119,21 @@ export async function nominatimGeocode(
   address: AddressInput,
   userAgent: string,
 ): Promise<Coords | null> {
-  if (!address.street || !address.city || !address.state) return null
+  // Minimum viable geocoding: need at least a state
+  if (!address.state) return null
 
   const country = toCountryCode(address.country)
-  const cleanStreet = stripSuiteFromStreet(address.street)
+  const cleanStreet = address.street ? stripSuiteFromStreet(address.street) : undefined
 
-  // Pass 1: Nominatim structured search
+  // Pass 1: Nominatim structured search — omit street/city if not present
   const structuredParams = new URLSearchParams({
-    street: cleanStreet,
-    city: address.city,
     state: address.state,
     country,
     format: 'json',
     limit: '1',
   })
+  if (cleanStreet) structuredParams.set('street', cleanStreet)
+  if (address.city) structuredParams.set('city', address.city)
   if (address.zipCode) structuredParams.set('postalcode', address.zipCode)
 
   const structured = await fetchNominatim(structuredParams, userAgent)
@@ -146,6 +147,6 @@ export async function nominatimGeocode(
   const freeResult = await fetchNominatim(freeParams, userAgent)
   if (freeResult) return freeResult
 
-  // Pass 3: US Census Bureau — authoritative US coverage, catches commercial addresses OSM misses
+  // Pass 3: US Census Bureau — authoritative US coverage, requires full address
   return fetchCensusBureau(address)
 }

@@ -843,16 +843,18 @@ export function ProductsMegaMenu({
     const cat = SIDEBAR_CATEGORIES.find((c) => c.key === selectedKey)
     if (!cat) return []
     const products = getProductsForSidebarKey(productTypes, cat.terms)
-    // Build a set of collection IDs for this category's featured collections
+    // Build a set of handles for this category's featured collections (featured: true)
     // so we can float products that belong to them to the top.
     const pool = allCollections ?? collections
-    const featuredCollectionIds = new Set(
-      getCollectionsForSidebarKey(pool, selectedKey).map((c) => c.id)
+    const featuredHandles = new Set(
+      getCollectionsForSidebarKey(pool, selectedKey)
+        .filter((c) => c.featured)
+        .map((c) => c.handle)
     )
-    if (featuredCollectionIds.size === 0) return products
+    if (featuredHandles.size === 0) return products
     return [...products].sort((a, b) => {
-      const aInFeatured = a.collectionIds.some((id) => featuredCollectionIds.has(id))
-      const bInFeatured = b.collectionIds.some((id) => featuredCollectionIds.has(id))
+      const aInFeatured = a.collectionIds.some((h) => featuredHandles.has(h))
+      const bInFeatured = b.collectionIds.some((h) => featuredHandles.has(h))
       if (aInFeatured && !bInFeatured) return -1
       if (!aInFeatured && bInFeatured) return 1
       return 0

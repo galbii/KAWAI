@@ -196,6 +196,10 @@ export function Footer({ locationContactData, isSignaturePage = false }: FooterP
               <Link href="/privacy" className="hover:text-kawai-red transition-colors">
                 Privacy Policy
               </Link>
+              <span className="hidden md:inline text-kawai-neutral/40">·</span>
+              <Link href="/terms" className="hover:text-kawai-red transition-colors">
+                Terms of Service
+              </Link>
             </div>
 
             {/* Social Links */}

@@ -9,7 +9,7 @@ import { getOptimizedImageProps } from '@/lib/media/r2-utils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect, createElement, useRef } from 'react'
-import { ShoppingCart, Heart, Share2, CheckCircle, Sparkles, Clock, Play, Volume2, Images, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ShoppingCart, Heart, Share2, CheckCircle, Sparkles, Clock, Play, Volume2, Images, ChevronLeft, ChevronRight, Truck, Shield, RotateCcw, GraduationCap, Headphones as HeadphonesIcon } from 'lucide-react'
 import { cn, formatPrice } from '@/lib/utils'
 import {
   Dialog,
@@ -1100,6 +1100,59 @@ export function ProductHeroBlock({
                 )}
               </div>
             )}
+
+            {/* Value Propositions */}
+            <div className="pt-1">
+              <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mb-3" />
+              <div className="grid grid-cols-2 gap-1.5">
+
+                {/* Free Shipping */}
+                <div className="flex items-start gap-2.5 p-3 rounded-xl border border-gray-100 bg-stone-50/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200">
+                  <Truck className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Free Shipping</p>
+                    <p className="text-[9px] text-gray-400 mt-1 leading-tight">Shipped in 1–3 days</p>
+                  </div>
+                </div>
+
+                {/* Warranty — links to registration */}
+                <Link href="/warranty-registration" className="flex items-start gap-2.5 p-3 rounded-xl border border-gray-100 bg-stone-50/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200 group">
+                  <Shield className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Warranty</p>
+                    <p className="text-[9px] text-kawai-red mt-1 leading-tight underline underline-offset-2 group-hover:no-underline transition-all">Learn more →</p>
+                  </div>
+                </Link>
+
+                {/* 30-Day Returns — hidden for now */}
+                {/* <div className="flex items-start gap-2.5 p-3 rounded-xl border border-gray-100 bg-stone-50/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200">
+                  <RotateCcw className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">30-Day Returns</p>
+                    <p className="text-[9px] text-gray-400 mt-1 leading-tight">No questions asked</p>
+                  </div>
+                </div> */}
+
+                {/* Free Learning Partner Trial */}
+                <Link href="/warranty-registration" className="flex items-start gap-2.5 p-3 rounded-xl border border-gray-100 bg-stone-50/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200 group">
+                  <GraduationCap className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Free Trial</p>
+                    <p className="text-[9px] text-kawai-red mt-1 leading-tight underline underline-offset-2 group-hover:no-underline transition-all">Learning Partner →</p>
+                  </div>
+                </Link>
+
+                {/* Order Support */}
+                <Link href="/technical-support-division" className="flex items-start gap-2.5 p-3 rounded-xl border border-gray-100 bg-stone-50/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200 group">
+                  <HeadphonesIcon className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Expert Support</p>
+                    <p className="text-[9px] text-gray-400 mt-1 leading-tight">We&apos;re here to help</p>
+                  </div>
+                </Link>
+
+              </div>
+            </div>
 
             {/* Product Disclaimer */}
             {product?.disclaimer && (
