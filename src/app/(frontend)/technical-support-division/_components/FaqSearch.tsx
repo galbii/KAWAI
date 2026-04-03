@@ -211,7 +211,7 @@ export function FaqSearch({
                     >
                       {/* Path breadcrumb — like Google's green URL */}
                       <p className="text-[10px] text-kawai-red/60 font-medium mb-1 font-[family-name:var(--font-brand-sans)]">
-                        kawaipianos.com › {pathString}
+                        kawaius.com › {pathString}
                       </p>
 
                       {/* Question — the search result title */}

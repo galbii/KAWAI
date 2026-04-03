@@ -243,7 +243,7 @@ async function StorefrontContent({ storeslug }: { storeslug: string }) {
     notFound();
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com';
 
   // Extract signup modal settings from CMS
   const signupModalSettings = rawStorefrontData?.signupModal;
@@ -406,7 +406,7 @@ export async function generateMetadata(
       };
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com';
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com';
 
     // Extract storefront name and city for SEO optimization
     const storefrontName = storefrontData.showroomSection?.showroomInfo?.name || 'Piano Gallery';

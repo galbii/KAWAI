@@ -32,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
     // Use CMS SEO data if available
     if (homePageData?.seo) {
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com';
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com';
 
       return {
         title: homePageData.seo.metaTitle || 'KAWAI ™ | Digital and Acoustic Pianos',
@@ -69,7 +69,7 @@ export async function generateMetadata(): Promise<Metadata> {
       description: 'Discover premium KAWAI pianos at authorized dealers nationwide. Explore our collection of grand, upright, and digital pianos crafted with 95+ years of Japanese excellence.',
       keywords: ['kawai piano', 'piano dealer', 'grand piano', 'digital piano', 'upright piano', 'piano store', 'kawai authorized dealer'],
       alternates: {
-        canonical: process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
+        canonical: process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
       }
     };
   } catch (error) {

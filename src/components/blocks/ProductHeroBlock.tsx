@@ -1124,25 +1124,97 @@ export function ProductHeroBlock({
                   </div>
                 </Link>
 
-                {/* 30-Day Returns — hidden for now */}
-                {/* <div className="flex items-start gap-2.5 p-3 rounded-xl border border-gray-100 bg-stone-50/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200">
-                  <RotateCcw className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">30-Day Returns</p>
-                    <p className="text-[9px] text-gray-400 mt-1 leading-tight">No questions asked</p>
-                  </div>
-                </div> */}
+                {/* Returns Policy */}
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <button className="flex items-start gap-2.5 p-3 rounded-xl border border-gray-100 bg-stone-50/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200 text-left w-full group cursor-pointer">
+                      <RotateCcw className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Returns</p>
+                        <p className="text-[9px] text-kawai-red mt-1 leading-tight underline underline-offset-2 group-hover:no-underline transition-all">View policy →</p>
+                      </div>
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle className="text-lg font-semibold tracking-tight text-kawai-black">Return Policy</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-5 text-sm text-kawai-charcoal leading-relaxed">
 
-                {/* Free Learning Partner Trial */}
-                <Link href="/warranty-registration" className="flex items-start gap-2.5 p-3 rounded-xl border border-gray-100 bg-stone-50/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200 group">
-                  <GraduationCap className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Free Trial</p>
-                    <p className="text-[9px] text-kawai-red mt-1 leading-tight underline underline-offset-2 group-hover:no-underline transition-all">Learning Partner →</p>
-                  </div>
-                </Link>
+                      <p className="text-xs text-gray-500 leading-relaxed">
+                        These policies apply to instruments purchased directly from Kawai America at kawaius.com.
+                      </p>
 
-                {/* Order Support */}
+                      {/* 3 policy cards */}
+                      <div className="space-y-3">
+                        {[
+                          {
+                            title: '15-Day Return Policy',
+                            badge: '15 Days',
+                            body: 'Changed your mind? No problem. We accept returns on instruments within 15 days of delivery — no questions asked. The instrument must be returned in its original packaging and in new, unplayed condition. Accessories are not eligible for return. Please note that original and return shipping charges are non-refundable, and you are responsible for the cost of return shipping.',
+                          },
+                          {
+                            title: 'Arrived Damaged?',
+                            badge: 'Report Within 5 Days',
+                            body: 'If your instrument arrives with visible or concealed damage from shipping, please report it within 5 days of delivery. Email contact@kawaius.com with your model, serial number, order number, and photos of the damage. When shipping damage is confirmed, return shipping and replacement are on us.',
+                          },
+                          {
+                            title: 'Defective Instrument',
+                            badge: 'Report Promptly',
+                            body: 'In the rare event your instrument doesn\'t perform as expected, reach out to us as soon as possible at contact@kawaius.com or call (310) 631-1771 (Mon–Fri, 8am–5pm PT) with your model, serial number, and order number. A product specialist will assess the issue and, if a defect is confirmed, we\'ll arrange repair or replacement at no cost to you — including shipping both ways.',
+                          },
+                        ].map(({ title, badge, body }) => (
+                          <div key={title} className="bg-white border border-kawai-neutral rounded-lg p-4">
+                            <div className="flex items-start justify-between gap-2 mb-1.5">
+                              <p className="font-semibold text-kawai-black text-xs">{title}</p>
+                              <span className="flex-shrink-0 text-[9px] font-semibold bg-kawai-red/10 text-kawai-red px-2 py-0.5 rounded-full">{badge}</span>
+                            </div>
+                            <p className="text-xs text-kawai-charcoal/70 leading-relaxed">{body}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* How to return — step by step */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-4">
+                          <div className="h-px flex-1 bg-kawai-neutral" />
+                          <p className="text-[10px] font-semibold uppercase tracking-widest text-kawai-charcoal/40 px-2 whitespace-nowrap">How to Return</p>
+                          <div className="h-px flex-1 bg-kawai-neutral" />
+                        </div>
+                        <div className="space-y-3">
+                          {[
+                            {
+                              num: '1',
+                              title: 'Email Us',
+                              body: 'Send an email to contact@kawaius.com with your model, serial number, and original order number. Our team will review your request and send return instructions within 1–2 business days.',
+                            },
+                            {
+                              num: '2',
+                              title: 'Pack Your Piano',
+                              body: 'Repack the instrument securely in its original box and packaging materials. Once you\'ve shipped it back to us, we\'ll handle the rest — you\'ll receive a confirmation email as soon as we receive and inspect the return.',
+                            },
+                            {
+                              num: '3',
+                              title: 'Your Refund',
+                              body: 'Once the instrument passes inspection, your refund will be issued to your original payment method. Please allow 5–10 business days for the refund to appear. Your refund will reflect the full purchase price minus the original and return shipping costs.',
+                            },
+                          ].map(({ num, title, body }) => (
+                            <div key={num} className="flex gap-3">
+                              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-kawai-charcoal text-white text-[10px] font-bold flex items-center justify-center mt-0.5">{num}</span>
+                              <div>
+                                <p className="font-semibold text-kawai-black text-xs mb-1">{title}</p>
+                                <p className="text-xs text-kawai-charcoal/70 leading-relaxed">{body}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Expert Support */}
                 <Link href="/technical-support-division" className="flex items-start gap-2.5 p-3 rounded-xl border border-gray-100 bg-stone-50/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200 group">
                   <HeadphonesIcon className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
                   <div>
@@ -1152,6 +1224,13 @@ export function ProductHeroBlock({
                 </Link>
 
               </div>
+
+              {/* Subscription nudge */}
+              <p className="text-center text-[10px] text-gray-400 mt-2">
+                <Link href="/warranty-registration" className="hover:text-kawai-red transition-colors duration-200 underline underline-offset-2 decoration-gray-300 hover:decoration-kawai-red">
+                  3 Month Subscription with your Product Registration
+                </Link>
+              </p>
             </div>
 
             {/* Product Disclaimer */}

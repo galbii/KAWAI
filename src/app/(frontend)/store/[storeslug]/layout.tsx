@@ -170,7 +170,7 @@ export default async function StorefrontLayout({
     "@type": "MusicStore",
     "name": storefrontData.locationName,
     "description": businessDescription,
-    "url": `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'}/store/${storeslug}`,
+    "url": `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/store/${storeslug}`,
     "brand": "Kawai",
     "hasOfferCatalog": {
       "@type": "OfferCatalog",

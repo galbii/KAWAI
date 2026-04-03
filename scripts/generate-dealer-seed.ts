@@ -1,92 +1,49 @@
 #!/usr/bin/env bun
 /**
- * Generates src/lib/data/dealers-seed-data.ts from the CSV export.
+ * Generates src/lib/data/dealers-seed-data.ts from an Excel (.xlsx) source file.
  *
  * Usage:
- *   bun scripts/generate-dealer-seed.ts > src/lib/data/dealers-seed-data.ts
+ *   bun scripts/generate-dealer-seed.ts [path/to/file.xlsx] > src/lib/data/dealers-seed-data.ts
+ *
+ * Reads the first sheet ("Updated Dealer List") which has columns matching
+ * the DealerSeedEntry type. Boolean values may come as "True"/"False" strings
+ * or actual booleans depending on the Excel cell type.
  */
 
-import { readFileSync } from 'fs'
+import * as XLSX from 'xlsx'
 
-const CSV_PATH =
+const XLSX_PATH =
   process.argv[2] ??
-  '/Users/chancenoonan/Downloads/kawai_dealer_network/Dealers-Table 1.csv'
-
-// ---------------------------------------------------------------------------
-// Minimal RFC 4180-compliant CSV parser (handles quoted fields with commas)
-// ---------------------------------------------------------------------------
-function parseCSV(raw: string): string[][] {
-  const rows: string[][] = []
-  let row: string[] = []
-  let field = ''
-  let inQuotes = false
-
-  for (let i = 0; i < raw.length; i++) {
-    const ch = raw[i]!
-    const next = raw[i + 1]
-
-    if (inQuotes) {
-      if (ch === '"' && next === '"') {
-        field += '"'
-        i++
-      } else if (ch === '"') {
-        inQuotes = false
-      } else {
-        field += ch
-      }
-    } else {
-      if (ch === '"') {
-        inQuotes = true
-      } else if (ch === ',') {
-        row.push(field)
-        field = ''
-      } else if (ch === '\r' && next === '\n') {
-        row.push(field)
-        field = ''
-        rows.push(row)
-        row = []
-        i++
-      } else if (ch === '\n') {
-        row.push(field)
-        field = ''
-        rows.push(row)
-        row = []
-      } else {
-        field += ch
-      }
-    }
-  }
-  // Last field / row
-  if (field || row.length > 0) {
-    row.push(field)
-    rows.push(row)
-  }
-  return rows
-}
+  '/Users/chancenoonan/Library/Application Support/Claude/local-agent-mode-sessions/4e22694c-2efd-41dc-8fdd-5bbdb15c1efb/82058319-0efa-4063-9b01-8e98ed98ef9d/local_43124ee5-0cdc-4076-a0f9-6eda1642f3dc/outputs/Dealer_List_Update.xlsx'
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-function bool(val: string): boolean {
-  return val.trim().toUpperCase() === 'TRUE'
+function bool(val: unknown): boolean {
+  if (typeof val === 'boolean') return val
+  if (typeof val === 'string') return val.trim().toUpperCase() === 'TRUE'
+  if (typeof val === 'number') return val !== 0
+  return false
 }
 
-function str(val: string): string | undefined {
-  const trimmed = val.trim()
-  return trimmed.length > 0 ? trimmed : undefined
+function str(val: unknown): string | undefined {
+  if (val === null || val === undefined) return undefined
+  const s = String(val).trim()
+  return s.length > 0 ? s : undefined
 }
 
 // Take only the first email if comma-separated; discard if it looks like a URL
-function parseEmail(val: string): string | undefined {
-  const first = val.split(',')[0]?.trim() ?? ''
+function parseEmail(val: unknown): string | undefined {
+  const raw = str(val)
+  if (!raw) return undefined
+  const first = raw.split(',')[0]?.trim() ?? ''
   if (!first || first.startsWith('http') || !first.includes('@')) return undefined
   return first
 }
 
-function num(val: string): number | undefined {
-  const trimmed = val.trim()
-  if (!trimmed) return undefined
-  const n = parseFloat(trimmed)
+function num(val: unknown): number | undefined {
+  if (val === null || val === undefined || val === '') return undefined
+  const n = typeof val === 'number' ? val : parseFloat(String(val))
   return isNaN(n) ? undefined : n
 }
 
@@ -94,109 +51,69 @@ function escapeStr(val: string): string {
   return val.replace(/\\/g, '\\\\').replace(/'/g, "\\'")
 }
 
-function renderOptStr(val: string | undefined): string {
-  return val !== undefined ? `'${escapeStr(val)}'` : 'undefined'
-}
-
 function renderOptNum(val: number | undefined): string {
   return val !== undefined ? String(val) : 'undefined'
 }
 
 // ---------------------------------------------------------------------------
-// Main
+// Read Excel
 // ---------------------------------------------------------------------------
-const raw = readFileSync(CSV_PATH, 'utf-8')
-const rows = parseCSV(raw)
+const wb = XLSX.readFile(XLSX_PATH)
+const sheetName = wb.SheetNames[0]!
+const ws = wb.Sheets[sheetName]!
 
-// Row 0 = headers, rows 1+ = data
-const headers = rows[0]!
-const dataRows = rows.slice(1).filter((r) => r.some((c) => c.trim()))
+// header: 1 → array of arrays; row[0] = headers
+const rawRows = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1 })
+const headers = rawRows[0] as string[]
+const dataRows = rawRows.slice(1).filter((r) => (r as unknown[]).some((c) => c !== null && c !== undefined && c !== ''))
 
-// Validate expected columns exist
-const expectedCols = [
-  'dealerName', 'slug', 'isActive', 'isFeatured', 'dealerIdentification',
-  'phone', 'email', 'website', 'fax', 'street', 'city', 'state', 'zipCode',
-  'country', 'latitude', 'longitude', 'shigeruKawaiDealer', 'acousticPianoDealer',
-  'professionalProductDealer', 'description', 'hours', 'dealerImage',
-  'yearEstablished', 'serviceRadius', 'primaryMarkets', 'statesServed',
-  'metaTitle', 'metaDescription',
-]
-
+// Build column index map
 const colIdx: Record<string, number> = {}
-for (const col of expectedCols) {
-  const idx = headers.indexOf(col)
-  if (idx === -1) {
-    process.stderr.write(`Warning: column "${col}" not found in CSV\n`)
-  }
-  colIdx[col] = idx
+for (const h of headers) {
+  colIdx[h] = headers.indexOf(h)
 }
 
-function col(row: string[], name: string): string {
+function col(row: unknown[], name: string): unknown {
   const idx = colIdx[name]
-  if (idx === undefined || idx === -1) return ''
-  return row[idx] ?? ''
+  if (idx === undefined) return undefined
+  return row[idx]
 }
+
+// ---------------------------------------------------------------------------
+// Map rows to entries
+// ---------------------------------------------------------------------------
+const entries = dataRows.map((row) => ({
+  dealerName:              str(col(row, 'dealerName')) ?? '',
+  slug:                    str(col(row, 'slug')) ?? '',
+  isActive:                bool(col(row, 'isActive')),
+  isFeatured:              bool(col(row, 'isFeatured')),
+  dealerIdentification:    str(col(row, 'dealerIdentification')),
+  phone:                   str(col(row, 'phone')),
+  email:                   parseEmail(col(row, 'email')),
+  website:                 str(col(row, 'website')),
+  fax:                     str(col(row, 'fax')),
+  street:                  str(col(row, 'street')),
+  city:                    str(col(row, 'city')),
+  state:                   str(col(row, 'state')),
+  zipCode:                 str(col(row, 'zipCode')),
+  country:                 str(col(row, 'country')),
+  latitude:                num(col(row, 'latitude')),
+  longitude:               num(col(row, 'longitude')),
+  shigeruKawaiDealer:      bool(col(row, 'shigeruKawaiDealer')),
+  acousticPianoDealer:     bool(col(row, 'acousticPianoDealer')),
+  professionalProductDealer: bool(col(row, 'professionalProductDealer')),
+  description:             str(col(row, 'description')),
+  metaTitle:               str(col(row, 'metaTitle')),
+  metaDescription:         str(col(row, 'metaDescription')),
+}))
 
 // ---------------------------------------------------------------------------
 // Render TypeScript output
 // ---------------------------------------------------------------------------
-const entries = dataRows.map((row) => {
-  const dealerName = str(col(row, 'dealerName')) ?? ''
-  const slug = str(col(row, 'slug')) ?? ''
-  const isActive = bool(col(row, 'isActive'))
-  const isFeatured = bool(col(row, 'isFeatured'))
-  const dealerIdentification = str(col(row, 'dealerIdentification'))
-  const phone = str(col(row, 'phone'))
-  const email = parseEmail(col(row, 'email'))
-  const website = str(col(row, 'website'))
-  const fax = str(col(row, 'fax'))
-  const street = str(col(row, 'street'))
-  const city = str(col(row, 'city'))
-  const state = str(col(row, 'state'))
-  const zipCode = str(col(row, 'zipCode'))
-  const country = str(col(row, 'country'))
-  const latitude = num(col(row, 'latitude'))
-  const longitude = num(col(row, 'longitude'))
-  const shigeruKawaiDealer = bool(col(row, 'shigeruKawaiDealer'))
-  const acousticPianoDealer = bool(col(row, 'acousticPianoDealer'))
-  const professionalProductDealer = bool(col(row, 'professionalProductDealer'))
-  const description = str(col(row, 'description'))
-  const metaTitle = str(col(row, 'metaTitle'))
-  const metaDescription = str(col(row, 'metaDescription'))
-
-  return {
-    dealerName,
-    slug,
-    isActive,
-    isFeatured,
-    dealerIdentification,
-    phone,
-    email,
-    website,
-    fax,
-    street,
-    city,
-    state,
-    zipCode,
-    country,
-    latitude,
-    longitude,
-    shigeruKawaiDealer,
-    acousticPianoDealer,
-    professionalProductDealer,
-    description,
-    metaTitle,
-    metaDescription,
-  }
-})
-
-// ---------------------------------------------------------------------------
-// Output file
-// ---------------------------------------------------------------------------
 const lines: string[] = []
 
 lines.push(`// AUTO-GENERATED by scripts/generate-dealer-seed.ts`)
-lines.push(`// Source: Dealers-Table 1.csv  (${dataRows.length} entries)`)
+lines.push(`// Source: Dealer_List_Update.xlsx — sheet: "${sheetName}" (${entries.length} entries)`)
 lines.push(`// DO NOT EDIT MANUALLY — re-run the generation script instead.`)
 lines.push(``)
 lines.push(`export type DealerSeedEntry = {`)
@@ -234,23 +151,23 @@ for (const e of entries) {
   lines.push(`    isActive: ${e.isActive},`)
   lines.push(`    isFeatured: ${e.isFeatured},`)
   if (e.dealerIdentification !== undefined) lines.push(`    dealerIdentification: '${escapeStr(e.dealerIdentification)}',`)
-  if (e.phone !== undefined) lines.push(`    phone: '${escapeStr(e.phone)}',`)
-  if (e.fax !== undefined) lines.push(`    fax: '${escapeStr(e.fax)}',`)
-  if (e.email !== undefined) lines.push(`    email: '${escapeStr(e.email)}',`)
-  if (e.website !== undefined) lines.push(`    website: '${escapeStr(e.website)}',`)
-  if (e.street !== undefined) lines.push(`    street: '${escapeStr(e.street)}',`)
-  if (e.city !== undefined) lines.push(`    city: '${escapeStr(e.city)}',`)
-  if (e.state !== undefined) lines.push(`    state: '${escapeStr(e.state)}',`)
-  if (e.zipCode !== undefined) lines.push(`    zipCode: '${escapeStr(e.zipCode)}',`)
-  if (e.country !== undefined) lines.push(`    country: '${escapeStr(e.country)}',`)
-  if (e.latitude !== undefined) lines.push(`    latitude: ${renderOptNum(e.latitude)},`)
+  if (e.phone !== undefined)    lines.push(`    phone: '${escapeStr(e.phone)}',`)
+  if (e.fax !== undefined)      lines.push(`    fax: '${escapeStr(e.fax)}',`)
+  if (e.email !== undefined)    lines.push(`    email: '${escapeStr(e.email)}',`)
+  if (e.website !== undefined)  lines.push(`    website: '${escapeStr(e.website)}',`)
+  if (e.street !== undefined)   lines.push(`    street: '${escapeStr(e.street)}',`)
+  if (e.city !== undefined)     lines.push(`    city: '${escapeStr(e.city)}',`)
+  if (e.state !== undefined)    lines.push(`    state: '${escapeStr(e.state)}',`)
+  if (e.zipCode !== undefined)  lines.push(`    zipCode: '${escapeStr(e.zipCode)}',`)
+  if (e.country !== undefined)  lines.push(`    country: '${escapeStr(e.country)}',`)
+  if (e.latitude !== undefined)  lines.push(`    latitude: ${renderOptNum(e.latitude)},`)
   if (e.longitude !== undefined) lines.push(`    longitude: ${renderOptNum(e.longitude)},`)
   lines.push(`    shigeruKawaiDealer: ${e.shigeruKawaiDealer},`)
   lines.push(`    acousticPianoDealer: ${e.acousticPianoDealer},`)
   lines.push(`    digitalPianoDealer: false,`)
   lines.push(`    professionalProductDealer: ${e.professionalProductDealer},`)
-  if (e.description !== undefined) lines.push(`    description: '${escapeStr(e.description)}',`)
-  if (e.metaTitle !== undefined) lines.push(`    metaTitle: '${escapeStr(e.metaTitle)}',`)
+  if (e.description !== undefined)    lines.push(`    description: '${escapeStr(e.description)}',`)
+  if (e.metaTitle !== undefined)      lines.push(`    metaTitle: '${escapeStr(e.metaTitle)}',`)
   if (e.metaDescription !== undefined) lines.push(`    metaDescription: '${escapeStr(e.metaDescription)}',`)
   lines.push(`  },`)
 }
@@ -259,4 +176,4 @@ lines.push(`]`)
 lines.push(``)
 
 process.stdout.write(lines.join('\n'))
-process.stderr.write(`\nGenerated ${entries.length} dealer entries.\n`)
+process.stderr.write(`\nGenerated ${entries.length} dealer entries from sheet "${sheetName}".\n`)

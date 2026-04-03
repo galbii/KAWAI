@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'),
   title: {
     default: 'Shigeru Kawai Grand Pianos | Premier Handcrafted Pianos of Japan',
     template: '%s | Shigeru Kawai',
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'}/shigeru`,
+    canonical: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/shigeru`,
   },
 }
 
@@ -74,8 +74,8 @@ const shigeruOrganizationSchema = {
   name: 'Shigeru Kawai',
   description:
     'Shigeru Kawai grand pianos represent the pinnacle of Japanese piano craftsmanship. Handcrafted at the Ryuyo Grand Piano Factory in Hamamatsu, Japan, each instrument is a limited-edition treasure built to the exacting standards of Shigeru Kawai himself.',
-  url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'}/shigeru`,
-  logo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'}/images/shigeru-kawai-logo.png`,
+  url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/shigeru`,
+  logo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/images/shigeru-kawai-logo.png`,
   founder: {
     '@type': 'Person',
     name: 'Shigeru Kawai',
@@ -89,7 +89,7 @@ const shigeruOrganizationSchema = {
   parentOrganization: {
     '@type': 'Organization',
     name: 'Kawai Musical Instruments',
-    url: 'https://kawaipianos.com',
+    url: 'https://kawaius.com',
   },
 }
 
@@ -98,7 +98,7 @@ const shigeruProductListSchema = {
   '@type': 'ItemList',
   name: 'Shigeru Kawai Grand Piano Models',
   description: 'The complete collection of six Shigeru Kawai handcrafted grand pianos.',
-  url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'}/shigeru`,
+  url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/shigeru`,
   numberOfItems: 6,
   itemListElement: [
     {
@@ -339,11 +339,11 @@ export default function ShigeruLayout({ children }: { children: React.ReactNode 
             &copy; 2026 Kawai Musical Instruments. All rights reserved.
           </span>
           <Link
-            href="https://kawaipianos.com"
+            href="https://kawaius.com"
             className="text-white/20 hover:text-white/50 text-[9px] tracking-[0.3em] uppercase transition-colors duration-200"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
-            kawaipianos.com
+            kawaius.com
           </Link>
         </div>
       </footer>

@@ -32,7 +32,7 @@ export interface TwitterCardData {
 
 export const KAWAI_SEO_CONFIG = {
   siteName: 'Kawai Piano',
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com',
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com',
   twitterSite: '@KawaiPianoUSA',
   defaultImage: '/images/kawai-og-default.jpg',
   brandKeywords: [

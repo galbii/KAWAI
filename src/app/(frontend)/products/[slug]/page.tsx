@@ -32,7 +32,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
 
   // Use imageUrl instead of mainImage (field removed from Product schema)
   const mainImageUrl = product.imageUrl || null
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
 
   return {
     title: product.name || 'Piano Product',
@@ -67,7 +67,7 @@ export default async function ProductPage(props: PageProps) {
       notFound()
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
 
     return (
       <div className="min-h-screen">

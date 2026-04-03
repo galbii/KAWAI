@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/technical-support-division' },
 }
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
 
 const jsonLd = {
   '@context': 'https://schema.org',

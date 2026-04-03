@@ -15,7 +15,7 @@ import { DealerDimensionTracker } from "@/components/analytics/DealerDimensionTr
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'),
   title: "Kawai Piano Store | Authorized Kawai Piano Dealer | Grand, Digital & Upright Pianos",
   description: "Official Kawai Piano authorized dealer. Explore premium grand pianos, digital pianos, upright pianos, and exclusive Shigeru Kawai concert grands. Expert piano consultation, competitive prices, and 95+ years of Japanese craftsmanship. Browse our complete Kawai piano collection.",
   keywords: [
@@ -87,7 +87,7 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
   // Check if this is any NAMM 2026 page (has its own custom header/footer)
   const isNAMMPage = pathname.startsWith('/namm-2026')
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com';
 
   const websiteSchema = {
     "@context": "https://schema.org",

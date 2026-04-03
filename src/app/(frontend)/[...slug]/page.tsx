@@ -152,7 +152,7 @@ export async function generateMetadata(
       };
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com';
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com';
     const metaTitle = page.seo?.metaTitle || `${page.title} | Kawai Pianos`;
     const metaDescription = page.seo?.metaDescription || `${page.title} - Kawai Pianos`;
     const ogTitle = page.seo?.openGraphTitle || metaTitle;

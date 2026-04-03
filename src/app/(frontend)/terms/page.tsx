@@ -4,7 +4,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Terms of Service | Kawai Pianos',
   description:
-    'Read the Terms of Service for kawai.com — the rules and conditions that govern your use of our website, products, and services.',
+    'Read the Terms of Service for kawaius.com — the rules and conditions that govern your use of our website, products, and services.',
   alternates: {
     canonical: '/terms',
   },
@@ -69,7 +69,7 @@ export default function TermsOfServicePage() {
 
             {/* Intro */}
             <div className="bg-white border border-kawai-neutral rounded-xl p-6 text-kawai-charcoal/80 leading-relaxed">
-              These Terms of Service govern your use of kawai.com, operated by Kawai America
+              These Terms of Service govern your use of kawaius.com, operated by Kawai America
               Corporation. By accessing or using this site — including browsing our catalog,
               submitting a contact form, or purchasing a piano — you agree to these terms. If you
               don&apos;t agree, please don&apos;t use the site.
@@ -86,7 +86,7 @@ export default function TermsOfServicePage() {
                   Musical Instruments Manufacturing Co., Ltd., headquartered in Hamamatsu, Japan.
                 </p>
                 <p>
-                  By using kawai.com — including dealer storefronts hosted on our domain — you
+                  By using kawaius.com — including dealer storefronts hosted on our domain — you
                   confirm that you are at least 18 years old, have read and understood these Terms,
                   and agree to be bound by them. If you are using this site on behalf of a
                   business, you represent that you have authority to bind that business to these
@@ -99,7 +99,7 @@ export default function TermsOfServicePage() {
             <section id="use-of-site" className="scroll-mt-8">
               <SectionHeading>Use of This Site</SectionHeading>
               <Prose>
-                <p>You may use kawai.com for lawful purposes only. You agree not to:</p>
+                <p>You may use kawaius.com for lawful purposes only. You agree not to:</p>
               </Prose>
               <div className="mt-4 bg-white border border-kawai-neutral rounded-xl divide-y divide-kawai-neutral">
                 {[
@@ -138,7 +138,7 @@ export default function TermsOfServicePage() {
                   },
                   {
                     heading: 'Pricing',
-                    body: 'Prices displayed on kawai.com are in US dollars and are subject to change without notice. We reserve the right to correct pricing errors at any time. In the event a product is listed at an incorrect price, we may cancel or refuse any order placed at that price and notify you accordingly.',
+                    body: 'Prices displayed on kawaius.com are in US dollars and are subject to change without notice. We reserve the right to correct pricing errors at any time. In the event a product is listed at an incorrect price, we may cancel or refuse any order placed at that price and notify you accordingly.',
                   },
                   {
                     heading: 'Availability',
@@ -146,7 +146,7 @@ export default function TermsOfServicePage() {
                   },
                   {
                     heading: 'Dealer pricing',
-                    body: 'Independent authorized dealers may set their own prices. Prices advertised through dealer storefronts on this site are the responsibility of the individual dealer and may differ from kawai.com direct pricing.',
+                    body: 'Independent authorized dealers may set their own prices. Prices advertised through dealer storefronts on this site are the responsibility of the individual dealer and may differ from kawaius.com direct pricing.',
                   },
                 ].map(({ heading, body }) => (
                   <div key={heading} className="bg-white border border-kawai-neutral rounded-xl p-5">
@@ -181,7 +181,7 @@ export default function TermsOfServicePage() {
                   ['Cart storage', 'Your cart is saved in your browser\'s local storage for up to 7 days. Clearing browser data will remove it.'],
                   ['Order confirmation', 'A confirmation email will be sent once your order is placed. This constitutes acceptance of your order.'],
                   ['Cancellations', 'Orders may be cancelled before shipment. Contact us immediately if you need to cancel. Once shipped, our return policy applies.'],
-                  ['Returns & warranty', 'Product returns and warranty claims are governed by the warranty documentation included with your instrument. Contact us at legal@kawai.com for assistance.'],
+                  ['Returns & warranty', 'Product returns and warranty claims are governed by the warranty documentation included with your instrument. Contact us at contact@kawaius.com for assistance.'],
                 ].map(([label, desc]) => (
                   <div key={label} className="bg-white border border-kawai-neutral rounded-xl p-4">
                     <p className="font-semibold text-kawai-charcoal text-sm">{label}</p>
@@ -196,9 +196,9 @@ export default function TermsOfServicePage() {
               <SectionHeading>Dealer Storefronts</SectionHeading>
               <Prose>
                 <p>
-                  kawai.com hosts branded storefronts for authorized Kawai dealers (e.g.,{' '}
+                  kawaius.com hosts branded storefronts for authorized Kawai dealers (e.g.,{' '}
                   <code className="text-sm bg-kawai-pearl px-1.5 py-0.5 rounded">
-                    kawai.com/store/dealer-name
+                    kawaius.com/store/dealer-name
                   </code>
                   ). These pages are operated by independent businesses that are separately owned
                   and managed.
@@ -224,7 +224,7 @@ export default function TermsOfServicePage() {
               <SectionHeading>Forms &amp; Communications</SectionHeading>
               <Prose>
                 <p>
-                  kawai.com provides contact forms, newsletter signups, consultation booking,
+                  kawaius.com provides contact forms, newsletter signups, consultation booking,
                   warranty registration, and job application forms. By submitting any form you agree
                   to the following:
                 </p>
@@ -261,7 +261,7 @@ export default function TermsOfServicePage() {
               <SectionHeading>Intellectual Property</SectionHeading>
               <Prose>
                 <p>
-                  All content on kawai.com — including text, images, video, audio, product
+                  All content on kawaius.com — including text, images, video, audio, product
                   descriptions, logos, design, and code — is owned by or licensed to Kawai America
                   Corporation and is protected by US and international copyright, trademark, and
                   other intellectual property laws.
@@ -282,7 +282,7 @@ export default function TermsOfServicePage() {
                     'appearing on this site are used with permission and subject to separate agreements. You may not reproduce them.',
                   ],
                   [
-                    'Linking to kawai.com',
+                    'Linking to kawaius.com',
                     'is permitted provided it does not imply endorsement, misrepresent our content, or link to our pages in a misleading context.',
                   ],
                 ].map(([label, desc]) => (
@@ -303,7 +303,7 @@ export default function TermsOfServicePage() {
               <SectionHeading>Third-Party Services &amp; Embeds</SectionHeading>
               <Prose>
                 <p>
-                  kawai.com integrates with and embeds content from third-party services. These
+                  kawaius.com integrates with and embeds content from third-party services. These
                   services operate independently under their own terms and privacy policies. Kawai
                   is not responsible for their content, availability, or data practices.
                 </p>
@@ -351,7 +351,7 @@ export default function TermsOfServicePage() {
               </div>
               <Prose>
                 <p className="mt-4">
-                  Links to external websites from kawai.com are provided for convenience only.
+                  Links to external websites from kawaius.com are provided for convenience only.
                   Kawai does not endorse, control, or take responsibility for the content or
                   practices of any external site.
                 </p>
@@ -365,7 +365,7 @@ export default function TermsOfServicePage() {
               <SubHeading>Site provided &quot;as is&quot;</SubHeading>
               <Prose>
                 <p>
-                  kawai.com is provided on an &quot;as is&quot; and &quot;as available&quot; basis
+                  kawaius.com is provided on an &quot;as is&quot; and &quot;as available&quot; basis
                   without warranties of any kind — express, implied, or statutory — including but
                   not limited to implied warranties of merchantability, fitness for a particular
                   purpose, or non-infringement. We do not warrant that the site will be
@@ -407,7 +407,7 @@ export default function TermsOfServicePage() {
                   <p className="text-kawai-charcoal/70 text-[15px] leading-relaxed">
                     These Terms are governed by the laws of the State of California, without regard
                     to its conflict-of-law provisions. Any dispute arising out of or relating to
-                    these Terms or your use of kawai.com shall be subject to the exclusive
+                    these Terms or your use of kawaius.com shall be subject to the exclusive
                     jurisdiction of the state and federal courts located in Los Angeles County,
                     California.
                   </p>
@@ -416,8 +416,8 @@ export default function TermsOfServicePage() {
                   <h3 className="font-semibold text-kawai-charcoal mb-1">Informal resolution</h3>
                   <p className="text-kawai-charcoal/70 text-[15px] leading-relaxed">
                     Before filing any formal legal claim, you agree to contact us at{' '}
-                    <a href="mailto:legal@kawai.com" className="text-kawai-red hover:underline">
-                      legal@kawai.com
+                    <a href="mailto:contact@kawaius.com" className="text-kawai-red hover:underline">
+                      contact@kawaius.com
                     </a>{' '}
                     and give us 30 days to attempt to resolve the dispute informally.
                   </p>
@@ -441,14 +441,14 @@ export default function TermsOfServicePage() {
                   We may update these Terms from time to time. When we do, we will update the
                   &quot;Last Updated&quot; date at the top of this page. Material changes will be
                   communicated via email to users with an active account or recent purchase history.
-                  Continued use of kawai.com after changes are posted constitutes your acceptance
+                  Continued use of kawaius.com after changes are posted constitutes your acceptance
                   of the updated Terms.
                 </p>
                 <p>
                   We encourage you to review these Terms periodically. You can always find the
                   current version at{' '}
                   <Link href="/terms" className="text-kawai-red hover:underline">
-                    kawai.com/terms
+                    kawaius.com/terms
                   </Link>
                   .
                 </p>
@@ -464,8 +464,8 @@ export default function TermsOfServicePage() {
                 </p>
                 <p>
                   <span className="font-medium text-kawai-charcoal">Email: </span>
-                  <a href="mailto:legal@kawai.com" className="text-kawai-red hover:underline">
-                    legal@kawai.com
+                  <a href="mailto:contact@kawaius.com" className="text-kawai-red hover:underline">
+                    contact@kawaius.com
                   </a>
                 </p>
                 <p>
@@ -478,7 +478,7 @@ export default function TermsOfServicePage() {
             {/* Footer note */}
             <div className="border-t border-kawai-neutral pt-8 text-sm text-kawai-charcoal/40">
               <p>
-                These Terms apply to kawai.com and all dealer storefronts hosted on this domain.
+                These Terms apply to kawaius.com and all dealer storefronts hosted on this domain.
                 For privacy-related questions, see our{' '}
                 <Link href="/privacy" className="text-kawai-red hover:underline">
                   Privacy Policy

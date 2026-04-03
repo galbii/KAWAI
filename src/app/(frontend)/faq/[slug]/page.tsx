@@ -25,7 +25,7 @@ export async function generateMetadata({
     }
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
   const title = (faq as any).seo?.metaTitle || `${(faq as any).question} | KAWAI FAQ`
   const description =
     (faq as any).seo?.metaDescription || (faq as any).excerpt || undefined

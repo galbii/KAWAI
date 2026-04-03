@@ -12,8 +12,8 @@ export const organizationSchema = {
   "@type": "Organization",
   "name": "Kawai America Corporation",
   "alternateName": "Kawai Piano Gallery St. Louis",
-  "url": "https://kawaipianos.com",
-  "logo": "https://kawaipianos.com/images/logo.png",
+  "url": "https://kawaius.com",
+  "logo": "https://kawaius.com/images/logo.png",
   "description": "Since 1927, Kawai has been crafting world-class pianos that blend Japanese precision craftsmanship with innovative technology. Family-owned and dedicated to musical excellence.",
   "foundingDate": "1927",
   "founder": {
@@ -115,7 +115,7 @@ export const featuredProductsSchema = {
         "@type": "Thing",
         "name": "Kawai Grand Pianos",
         "description": "Premium grand pianos featuring the revolutionary Millennium III Carbon Fiber Action for unmatched performance and durability",
-        "url": "https://kawaipianos.com/pianos/grand"
+        "url": "https://kawaius.com/pianos/grand"
       }
     },
     {
@@ -125,7 +125,7 @@ export const featuredProductsSchema = {
         "@type": "Thing",
         "name": "Shigeru Kawai Grand Pianos",
         "description": "Hand-crafted concert grand pianos representing the pinnacle of piano artistry and Japanese craftsmanship",
-        "url": "https://kawaipianos.com/pianos/shigeru-kawai"
+        "url": "https://kawaius.com/pianos/shigeru-kawai"
       }
     },
     {
@@ -135,7 +135,7 @@ export const featuredProductsSchema = {
         "@type": "Thing",
         "name": "Kawai Digital Pianos",
         "description": "Advanced digital pianos with authentic wooden-key action and world-class piano sound sampling",
-        "url": "https://kawaipianos.com/pianos/digital"
+        "url": "https://kawaius.com/pianos/digital"
       }
     },
     {
@@ -145,7 +145,7 @@ export const featuredProductsSchema = {
         "@type": "Thing",
         "name": "Kawai Upright Pianos",
         "description": "Space-efficient upright pianos delivering rich tone and responsive touch for home and studio",
-        "url": "https://kawaipianos.com/pianos/upright"
+        "url": "https://kawaius.com/pianos/upright"
       }
     },
     {
@@ -155,7 +155,7 @@ export const featuredProductsSchema = {
         "@type": "Thing",
         "name": "Kawai Hybrid Pianos",
         "description": "Revolutionary instruments combining acoustic piano touch with digital versatility via AnyTime silent system",
-        "url": "https://kawaipianos.com/pianos/hybrid"
+        "url": "https://kawaius.com/pianos/hybrid"
       }
     }
   ]

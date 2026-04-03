@@ -100,7 +100,7 @@ const institutionalPartnersSchema = {
   name: 'Shigeru Kawai',
   description:
     'Shigeru Kawai grand pianos are chosen by over 100 leading academic institutions, concert halls, and performing arts organizations worldwide.',
-  url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'}/shigeru/institutions`,
+  url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/shigeru/institutions`,
   member: [
     {
       '@type': 'PerformingGroup',

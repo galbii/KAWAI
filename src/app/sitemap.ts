@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { getPayloadClient } from '@/lib/payload/queries'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
 
 // Regenerate every hour so CMS changes (new blog posts, artists, dealers) appear quickly
 export const revalidate = 3600

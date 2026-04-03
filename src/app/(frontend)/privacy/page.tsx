@@ -4,7 +4,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Privacy Policy | Kawai Pianos',
   description:
-    'Learn how Kawai America Corporation collects, uses, and protects your personal information when you visit or purchase from kawai.com.',
+    'Learn how Kawai America Corporation collects, uses, and protects your personal information when you visit or purchase from kawaius.com.',
   alternates: {
     canonical: '/privacy',
   },
@@ -68,7 +68,7 @@ export default function PrivacyPolicyPage() {
 
             {/* Intro */}
             <div className="bg-white border border-kawai-neutral rounded-xl p-6 text-kawai-charcoal/80 leading-relaxed">
-              Kawai America Corporation operates kawai.com. We make pianos. We don&apos;t make a
+              Kawai America Corporation operates kawaius.com. We make pianos. We don&apos;t make a
               business out of your personal data. This policy explains what information we collect
               when you visit or purchase from our site, why we collect it, and what we do — and
               don&apos;t do — with it.
@@ -81,10 +81,10 @@ export default function PrivacyPolicyPage() {
                 <p>
                   <strong>Kawai America Corporation</strong> is the US subsidiary of Kawai Musical
                   Instruments Manufacturing Co., Ltd., headquartered in Hamamatsu, Japan. We are
-                  the manufacturer and direct seller of Kawai pianos through kawai.com.
+                  the manufacturer and direct seller of Kawai pianos through kawaius.com.
                 </p>
                 <p>
-                  When you purchase from kawai.com, you are buying directly from Kawai — not a
+                  When you purchase from kawaius.com, you are buying directly from Kawai — not a
                   third-party retailer or marketplace. Your data is handled by us, not passed
                   through a dealer network.
                 </p>
@@ -276,8 +276,8 @@ export default function PrivacyPolicyPage() {
                     You have the right to know what personal information we&apos;ve collected,
                     request deletion, and opt out of any sale of personal information. To exercise
                     these rights, email{' '}
-                    <a href="mailto:privacy@kawai.com" className="text-kawai-red hover:underline">
-                      privacy@kawai.com
+                    <a href="mailto:contact@kawaius.com" className="text-kawai-red hover:underline">
+                      contact@kawaius.com
                     </a>
                     .
                   </p>
@@ -295,8 +295,8 @@ export default function PrivacyPolicyPage() {
 
               <p className="mt-4 text-[15px] text-kawai-charcoal/70">
                 To exercise any of your rights, email{' '}
-                <a href="mailto:privacy@kawai.com" className="text-kawai-red hover:underline">
-                  privacy@kawai.com
+                <a href="mailto:contact@kawaius.com" className="text-kawai-red hover:underline">
+                  contact@kawaius.com
                 </a>
                 . We&apos;ll respond within 30 days.
               </p>
@@ -363,8 +363,8 @@ export default function PrivacyPolicyPage() {
               <p className="mt-4 text-[15px] text-kawai-charcoal/70">
                 You can manage cookie preferences via the cookie banner on your first visit, or by
                 emailing{' '}
-                <a href="mailto:privacy@kawai.com" className="text-kawai-red hover:underline">
-                  privacy@kawai.com
+                <a href="mailto:contact@kawaius.com" className="text-kawai-red hover:underline">
+                  contact@kawaius.com
                 </a>
                 .
               </p>
@@ -392,8 +392,8 @@ export default function PrivacyPolicyPage() {
                 </p>
                 <p>
                   <span className="font-medium text-kawai-charcoal">Email: </span>
-                  <a href="mailto:privacy@kawai.com" className="text-kawai-red hover:underline">
-                    privacy@kawai.com
+                  <a href="mailto:contact@kawaius.com" className="text-kawai-red hover:underline">
+                    contact@kawaius.com
                   </a>
                 </p>
                 <p>
@@ -406,7 +406,7 @@ export default function PrivacyPolicyPage() {
             {/* Footer note */}
             <div className="border-t border-kawai-neutral pt-8 text-sm text-kawai-charcoal/40">
               <p>
-                This policy applies to kawai.com only. For questions about our instruments, visit{' '}
+                This policy applies to kawaius.com only. For questions about our instruments, visit{' '}
                 <Link href="/pianos" className="text-kawai-red hover:underline">
                   our piano catalog
                 </Link>{' '}

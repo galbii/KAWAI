@@ -144,7 +144,7 @@ export function HubFaqAccordion({ groups, hubLabel, featuredFaqs, allQuestions }
                     {faq.question}
                   </p>
                   <p className="text-xs text-kawai-red/40 font-[family-name:var(--font-brand-sans)] tracking-wide">
-                    kawaipianos.com &rsaquo; {hubPath}{cat ? ` \u203a ${cat.name}` : ''}
+                    kawaius.com &rsaquo; {hubPath}{cat ? ` \u203a ${cat.name}` : ''}
                   </p>
                   {faq.excerpt && !isOpen && (
                     <p className="text-base text-kawai-black mt-3 line-clamp-1 font-[family-name:var(--font-brand-sans)] leading-relaxed">
@@ -233,7 +233,7 @@ export function HubFaqAccordion({ groups, hubLabel, featuredFaqs, allQuestions }
                       {faq.question}
                     </p>
                     <p className="text-xs text-kawai-red/35 font-[family-name:var(--font-brand-sans)] tracking-wide">
-                      kawaipianos.com &rsaquo; {hubPath} &rsaquo; {group.categoryName}
+                      kawaius.com &rsaquo; {hubPath} &rsaquo; {group.categoryName}
                     </p>
                     {faq.excerpt && !isOpen && (
                       <p className="text-base text-kawai-black mt-3 line-clamp-1 font-[family-name:var(--font-brand-sans)] leading-relaxed">

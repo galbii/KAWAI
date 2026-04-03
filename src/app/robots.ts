@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
 
 /**
  * Robots.txt configuration for KAWAI Piano website

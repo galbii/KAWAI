@@ -55,18 +55,18 @@ export default async function HubPage({ params }: Props) {
       {
         '@type': 'BreadcrumbList',
         itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Home', item: process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com' },
+          { '@type': 'ListItem', position: 1, name: 'Home', item: process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com' },
           {
             '@type': 'ListItem',
             position: 2,
             name: 'Support',
-            item: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'}/technical-support-division`,
+            item: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/technical-support-division`,
           },
           {
             '@type': 'ListItem',
             position: 3,
             name: hubName,
-            item: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'}/technical-support-division/${hub}`,
+            item: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/technical-support-division/${hub}`,
           },
         ],
       },

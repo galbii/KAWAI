@@ -51,7 +51,7 @@ export async function generateMetadata(props: BlogPostPageProps): Promise<Metada
     }
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
 
   const metaTitle = post.seo?.metaTitle || post.title
   const metaDescription = post.seo?.metaDescription || post.excerpt || post.title

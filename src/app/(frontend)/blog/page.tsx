@@ -31,7 +31,7 @@ async function getBlogPage(): Promise<Page | null> {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
   const page = await getBlogPage()
 
   if (page) {

@@ -447,7 +447,7 @@ export class RegionalPricing {
 
 // SEO support for multiple languages
 export function generateHrefLangTags(path: string): Array<{ hrefLang: string; href: string }> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
 
   return SUPPORTED_LOCALES.map(locale => ({
     hrefLang: locale.code,
@@ -458,7 +458,7 @@ export function generateHrefLangTags(path: string): Array<{ hrefLang: string; hr
 }
 
 export function getCanonicalUrl(path: string, locale: string): string {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianos.com'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
   return locale === DEFAULT_LOCALE
     ? `${baseUrl}${path}`
     : `${baseUrl}/${locale}${path}`
