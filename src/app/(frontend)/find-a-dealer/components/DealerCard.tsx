@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import type { DealerWithDistance } from '../types'
-import { MapPin, Phone, ExternalLink, Piano, Briefcase, Star, ArrowRight, ChevronDown, Navigation } from 'lucide-react'
+import { MapPin, Phone, ExternalLink, ArrowRight, ChevronDown, Navigation } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { trackCTAClick } from '@/lib/analytics/unified-tracking'
 
@@ -36,7 +36,7 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
         'border-b border-kawai-neutral/50 last:border-b-0',
         'border-l-[3px]',
         hasShigeru
-          ? 'border-l-kawai-gold'
+          ? 'border-l-[#C49A00]'
           : isSelected
             ? 'border-l-kawai-red'
             : 'border-l-transparent hover:border-l-kawai-neutral',
@@ -45,27 +45,27 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
       onClick={handleCardClick}
     >
       {/* Card Header */}
-      <div className="px-4 pt-3.5 pb-0">
+      <div className="px-5 pt-4 pb-0">
         {/* Meta row: featured + distance + chevron */}
-        <div className="flex items-center justify-between mb-1.5">
-          <div className="flex items-center gap-2 min-h-[16px]">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2 min-h-[18px]">
             {dealer.isFeatured && (
-              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-kawai-gold">
+              <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-kawai-gold">
                 Featured
               </span>
             )}
             {dealer.isFeatured && dealer.distance !== undefined && (
-              <span className="text-[10px] text-kawai-charcoal/30">·</span>
+              <span className="text-[11px] text-kawai-charcoal/30">·</span>
             )}
             {dealer.distance !== undefined && (
-              <span className="text-[10px] font-medium text-kawai-charcoal/50 tabular-nums">
+              <span className="text-[11px] font-medium text-kawai-charcoal/50 tabular-nums">
                 {dealer.distance.toFixed(1)} mi away
               </span>
             )}
           </div>
           <ChevronDown
             className={cn(
-              'w-3.5 h-3.5 text-kawai-charcoal/25 transition-transform duration-200 flex-shrink-0',
+              'w-4 h-4 text-kawai-charcoal/25 transition-transform duration-200 flex-shrink-0',
               isExpanded && 'rotate-180 text-kawai-charcoal/50'
             )}
             strokeWidth={2}
@@ -75,7 +75,7 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
         {/* Dealer Name */}
         <h3
           className={cn(
-            'text-[14px] font-semibold leading-snug mb-1',
+            'text-[15px] font-semibold leading-snug mb-1.5',
             isSelected ? 'text-kawai-black' : 'text-kawai-charcoal'
           )}
         >
@@ -84,32 +84,32 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
 
         {/* Location */}
         {(dealer.address?.city || dealer.address?.state) && (
-          <div className="flex items-center gap-1 mb-2.5">
-            <MapPin className="w-3 h-3 text-kawai-charcoal/35 flex-shrink-0" strokeWidth={2} />
-            <span className="text-[12px] text-kawai-charcoal/55">
+          <div className="flex items-center gap-1.5 mb-3">
+            <MapPin className="w-3.5 h-3.5 text-kawai-charcoal/35 flex-shrink-0" strokeWidth={2} />
+            <span className="text-[13px] text-kawai-charcoal/55">
               {[dealer.address.city, dealer.address.state].filter(Boolean).join(', ')}
             </span>
           </div>
         )}
 
-        {/* Type Badges */}
+        {/* Type Labels */}
         {(hasShigeru || hasAcoustic || hasProfessional) && (
-          <div className="flex flex-wrap gap-1 mb-3">
+          <div className="flex items-center gap-3 mb-3.5">
             {hasShigeru && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-[3px] bg-kawai-gold/10 text-kawai-gold text-[10px] font-semibold rounded border border-kawai-gold/25">
-                <Star className="w-2.5 h-2.5" fill="currentColor" strokeWidth={0} />
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-wide" style={{ color: '#A07800' }}>
+                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: '#C49A00' }} />
                 Shigeru Kawai
               </span>
             )}
             {hasAcoustic && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-[3px] bg-kawai-charcoal/5 text-kawai-charcoal/65 text-[10px] font-medium rounded border border-kawai-charcoal/10">
-                <Piano className="w-2.5 h-2.5" strokeWidth={2} />
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-kawai-charcoal/55 tracking-wide">
+                <span className="w-1.5 h-1.5 rounded-full bg-kawai-charcoal/35 flex-shrink-0" />
                 Acoustic
               </span>
             )}
             {hasProfessional && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-[3px] bg-kawai-red/5 text-kawai-red/75 text-[10px] font-medium rounded border border-kawai-red/10">
-                <Briefcase className="w-2.5 h-2.5" strokeWidth={2} />
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-medium tracking-wide" style={{ color: '#C01820' }}>
+                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: '#C01820' }} />
                 Professional
               </span>
             )}
@@ -118,14 +118,14 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
       </div>
 
       {/* Quick Actions */}
-      <div className="px-4 pb-3 flex gap-2">
+      <div className="px-5 pb-4 flex gap-2">
         {dealer.contactInfo?.phone && (
           <a
             href={`tel:${dealer.contactInfo.phone}`}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-medium text-kawai-charcoal bg-kawai-pearl hover:bg-kawai-neutral/40 rounded-md transition-colors border border-kawai-neutral"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[12px] font-medium text-kawai-charcoal bg-kawai-pearl hover:bg-kawai-neutral/40 rounded-md transition-colors border border-kawai-neutral"
             onClick={(e) => e.stopPropagation()}
           >
-            <Phone className="w-3 h-3" strokeWidth={2} />
+            <Phone className="w-3.5 h-3.5" strokeWidth={2} />
             Call
           </a>
         )}
@@ -140,30 +140,24 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
               destination: `/find-a-dealer/${dealer.slug}`,
             })
           }}
-          className={cn(
-            'flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-semibold rounded-md transition-all duration-200',
-            'group',
-            hasShigeru
-              ? 'bg-kawai-gold hover:bg-kawai-gold/90 text-kawai-black'
-              : 'bg-kawai-red hover:bg-kawai-red/90 text-white'
-          )}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[12px] font-semibold rounded-md transition-all duration-200 group bg-kawai-black hover:bg-kawai-charcoal text-white"
         >
           View Details
-          <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" strokeWidth={2.5} />
+          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" strokeWidth={2.5} />
         </Link>
       </div>
 
       {/* Expandable Details */}
       {isExpanded && (
-        <div className="border-t border-kawai-neutral/60 bg-kawai-pearl/40 px-4 py-4 space-y-4 animate-in slide-in-from-top-1 duration-150">
+        <div className="border-t border-kawai-neutral/60 bg-kawai-pearl/40 px-5 py-4 space-y-4 animate-in slide-in-from-top-1 duration-150">
 
           {/* Address */}
           {(dealer.address?.street || dealer.address?.city) && (
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-kawai-charcoal/40 mb-1.5">
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-kawai-charcoal/40 mb-1.5">
                 Address
               </p>
-              <address className="text-[12px] text-kawai-charcoal/80 not-italic leading-relaxed">
+              <address className="text-[13px] text-kawai-charcoal/80 not-italic leading-relaxed">
                 {dealer.address.street && <>{dealer.address.street}<br /></>}
                 {[
                   dealer.address.city,
@@ -176,10 +170,10 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
           {/* Contact */}
           {(dealer.contactInfo?.phone || dealer.contactInfo?.email || dealer.contactInfo?.website) && (
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-kawai-charcoal/40 mb-1.5">
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-kawai-charcoal/40 mb-1.5">
                 Contact
               </p>
-              <div className="space-y-1.5 text-[12px]">
+              <div className="space-y-1.5 text-[13px]">
                 {dealer.contactInfo?.phone && (
                   <p className="text-kawai-charcoal/75">{dealer.contactInfo.phone}</p>
                 )}
@@ -232,7 +226,7 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
           {/* Business Hours */}
           {dealer.hours && dealer.hours.length > 0 && (
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-kawai-charcoal/40 mb-1.5">
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-kawai-charcoal/40 mb-1.5">
                 Hours
               </p>
               <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[12px]">
@@ -255,7 +249,7 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
           {/* Description */}
           {dealer.description && (
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-kawai-charcoal/40 mb-1.5">
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-kawai-charcoal/40 mb-1.5">
                 About
               </p>
               <p className="text-[12px] text-kawai-charcoal/70 leading-relaxed">

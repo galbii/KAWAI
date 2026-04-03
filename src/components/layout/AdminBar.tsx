@@ -69,6 +69,7 @@ export function AdminBar() {
             Kawai America Corp
           </span>
         }
+        logoProps={{ target: '_blank', rel: 'noopener noreferrer' }}
         style={{
           // Override PayloadAdminBar's default position:fixed so it stays in our
           // wrapper's flow and getBoundingClientRect() returns the true height.

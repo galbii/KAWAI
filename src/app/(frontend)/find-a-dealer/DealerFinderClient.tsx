@@ -30,6 +30,7 @@ export function DealerFinderClient({ dealers }: Props) {
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [dealerTypeFilter, setDealerTypeFilter] = useState<DealerType>('all')
   const [searchResults, setSearchResults] = useState<DealerWithDistance[]>([])
+  const [heroVisible, setHeroVisible] = useState(true)
 
   const dealerCounts = useMemo(() => {
     const counts = { all: dealers.length, shigeru: 0, acoustic: 0, professional: 0 }
@@ -105,13 +106,13 @@ export function DealerFinderClient({ dealers }: Props) {
   const handleSearch = useCallback((results: Dealer[], location?: { lat: number; lng: number }) => {
     setSearchResults(results as DealerWithDistance[])
     if (location) setSearchLocation(location)
-    if (results.length > 0) {
-      const firstResult = results[0]
-      if (firstResult && firstResult.id) handleDealerSelect(firstResult.id as string)
-    } else {
-      handleDealerSelect(null)
-    }
-  }, [handleDealerSelect])
+    // Don't auto-select: selecting a dealer opens the map popup which steals focus
+    // from the search input. Let the user pick explicitly from the list or map.
+    setSelectedDealer(null)
+    setHeroVisible(false)
+  }, [])
+
+  const hideHero = useCallback(() => setHeroVisible(false), [])
 
   const handleFilterChange = useCallback((dealerTypes: string[], radius: number) => {
     setSelectedDealerTypes(dealerTypes)
@@ -126,199 +127,27 @@ export function DealerFinderClient({ dealers }: Props) {
       <DealerFinderMobile dealers={dealers} />
 
       {/* Desktop View */}
-      <div className="hidden lg:block bg-white">
+      <div
+        className="hidden lg:flex"
+        style={{ height: 'calc(100vh - var(--header-bottom, 70px))', minHeight: '560px' }}
+      >
 
-        {/* ── Full-Bleed Editorial Hero ── */}
-        <div className="relative bg-kawai-black overflow-hidden" style={{ height: '480px' }}>
+        {/* Dealer List Panel — full height */}
+        <div className="border-r border-kawai-neutral overflow-hidden bg-kawai-pearl/20 h-full w-[400px] flex-shrink-0 flex flex-col">
 
-          {/* Background image — subtle Ken Burns scale-in */}
-          <motion.div
-            className="absolute inset-0"
-            initial={{ scale: 1.06 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 2.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-          >
-            <Image
-              src="/videos/Find a Dealer Banner 3.png"
-              alt=""
-              fill
-              className="object-cover object-center"
-              priority
-            />
-          </motion.div>
-
-          {/* Directional gradient — heavy left for text, dissolves right revealing the image */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background: 'linear-gradient(108deg, rgba(30,27,22,0.97) 0%, rgba(30,27,22,0.90) 32%, rgba(30,27,22,0.52) 58%, rgba(30,27,22,0.08) 100%)',
-            }}
-          />
-
-          {/* Left edge red accent stripe */}
-          <motion.div
-            className="absolute left-0 top-0 bottom-0 w-[3px] bg-kawai-red origin-top"
-            initial={{ scaleY: 0 }}
-            animate={{ scaleY: 1 }}
-            transition={{ duration: 0.9, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-          />
-
-          {/* Bottom rule */}
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-white/10" />
-
-          {/* ── Hero Content ── */}
-          <div className="relative h-full max-w-7xl mx-auto px-12 flex flex-col justify-center">
-
-            {/* Eyebrow */}
-            <motion.p
-              className="text-kawai-red text-[10px] font-bold uppercase tracking-[0.24em] mb-5 font-[family-name:var(--font-brand-sans)]"
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25, duration: 0.55 }}
-            >
+          {/* Title header */}
+          <div className="flex-shrink-0 bg-kawai-pearl px-8 pt-7 pb-6 border-b border-kawai-neutral">
+            <p className="text-kawai-red text-[9px] font-bold uppercase tracking-[0.32em] mb-4 font-[family-name:var(--font-brand-sans)]">
               Kawai America Corporation
-            </motion.p>
-
-            {/* Main heading */}
-            <motion.h1
-              className="font-[family-name:var(--font-brand-luxury)] text-white leading-[0.93] tracking-[-0.01em] mb-6"
-              style={{ fontSize: 'clamp(52px, 5.8vw, 82px)' }}
-              initial={{ opacity: 0, y: 26 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.38, duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+            </p>
+            <h1
+              className="font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-[0.9] tracking-[-0.02em]"
+              style={{ fontSize: 'clamp(28px, 2.8vw, 40px)' }}
             >
-              Our Authorized Dealers
-            </motion.h1>
-
-            {/* Animated red divider line */}
-            <motion.div
-              className="h-px bg-kawai-red/50 mb-6 origin-left"
-              style={{ width: '260px' }}
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ delay: 0.65, duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-            />
-
-            {/* Description */}
-            <motion.p
-              className="text-white/48 text-[13px] font-[family-name:var(--font-brand-sans)] max-w-sm leading-relaxed mb-10 tracking-[0.01em]"
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.58, duration: 0.6 }}
-            >
-              Expert consultations, showroom experiences &amp; exceptional service at authorized locations across North America.
-            </motion.p>
-
-            {/* Stats row */}
-            <motion.div
-              className="flex items-center gap-9"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.75, duration: 0.6 }}
-            >
-              <div>
-                <div className="text-[2.4rem] font-bold text-white tabular-nums leading-none font-[family-name:var(--font-brand-sans)]">
-                  {dealers.length}
-                </div>
-                <div className="text-white/28 text-[9px] uppercase tracking-[0.22em] mt-1.5 font-[family-name:var(--font-brand-sans)]">
-                  Total Dealers
-                </div>
-              </div>
-
-              <div className="w-px h-9 bg-white/12" />
-
-              <div>
-                <div className="text-[2.4rem] font-bold text-white tabular-nums leading-none font-[family-name:var(--font-brand-sans)]">
-                  {dealerCounts.shigeru}
-                </div>
-                <div className="text-white/28 text-[9px] uppercase tracking-[0.22em] mt-1.5 font-[family-name:var(--font-brand-sans)]">
-                  Shigeru Kawai
-                </div>
-              </div>
-
-              <div className="w-px h-9 bg-white/12" />
-
-              <div>
-                <div className="text-[2.4rem] font-bold text-white tabular-nums leading-none font-[family-name:var(--font-brand-sans)]">
-                  {dealerCounts.acoustic}
-                </div>
-                <div className="text-white/28 text-[9px] uppercase tracking-[0.22em] mt-1.5 font-[family-name:var(--font-brand-sans)]">
-                  Acoustic Piano
-                </div>
-              </div>
-            </motion.div>
-
-          </div>
-        </div>
-
-        {/* ── Sticky Filter Bar ── */}
-        <div
-          className="sticky z-40 bg-white border-b border-kawai-neutral shadow-sm"
-          style={{ top: 'var(--header-bottom, 70px)' }}
-        >
-          {/* Scrolling product ticker */}
-          <div className="border-b border-kawai-neutral/40">
-            <div className="max-w-7xl mx-auto px-6">
-              <ProductCategoryDisplay dealerTypeFilter={dealerTypeFilter} />
-            </div>
+              Our Authorized<br />Dealers
+            </h1>
           </div>
 
-          {/* Tabs + Search + Filters row */}
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex items-center h-[52px] gap-0">
-              {/* Dealer type tabs */}
-              <DealerTypeFilter
-                selected={dealerTypeFilter}
-                onChange={setDealerTypeFilter}
-                counts={dealerCounts}
-              />
-
-              <div className="flex-1" />
-
-              {/* Search input */}
-              <div className="w-80 mr-4">
-                <SearchBar
-                  dealers={dealers}
-                  onSearch={handleSearch}
-                  onLocationSearch={handleLocationSearch}
-                  variant="inline"
-                />
-              </div>
-
-              {/* Results count */}
-              <span className="text-xs text-kawai-charcoal/35 font-[family-name:var(--font-brand-sans)] whitespace-nowrap mr-4">
-                {filteredDealers.length} {filteredDealers.length === 1 ? 'dealer' : 'dealers'}
-              </span>
-
-              {/* Filters button */}
-              <button
-                onClick={() => setFiltersOpen(true)}
-                className={cn(
-                  'flex items-center gap-2 h-[52px] px-4 text-xs uppercase tracking-[0.08em] font-semibold',
-                  'font-[family-name:var(--font-brand-sans)] transition-colors -mb-px border-b-2',
-                  'focus-visible:outline-2 focus-visible:outline-kawai-red',
-                  activeFilterCount > 0
-                    ? 'text-kawai-red border-kawai-red'
-                    : 'text-kawai-charcoal/50 border-transparent hover:text-kawai-black hover:border-kawai-neutral'
-                )}
-              >
-                <SlidersHorizontal className="w-3.5 h-3.5" strokeWidth={2} />
-                <span>Filters</span>
-                {activeFilterCount > 0 && (
-                  <span className="text-[10px] font-bold tabular-nums">{activeFilterCount}</span>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Main Content: Map + List ── */}
-        <div
-          className="flex"
-          style={{ height: 'calc(100vh - var(--header-bottom, 70px) - 106px)', minHeight: '560px' }}
-        >
-          {/* Dealer List Panel */}
-          <div className="border-r border-kawai-neutral overflow-hidden bg-kawai-pearl/20 h-full w-[340px] flex-shrink-0 flex flex-col">
             {filteredDealers.length > 0 ? (
               <DealerList
                 dealers={filteredDealers}
@@ -353,16 +182,125 @@ export function DealerFinderClient({ dealers }: Props) {
             )}
           </div>
 
-          {/* Map Panel */}
-          <div className="relative bg-kawai-neutral/20 flex-1">
-            <DealerMapLibre
-              dealers={filteredDealers}
-              searchCenter={searchLocation}
-              searchRadius={selectedRadius}
-              selectedDealer={selectedDealer}
-              onMarkerClick={handleDealerSelect}
+          {/* Right: Filter Bar + Map */}
+          <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+
+            {/* Filter Bar */}
+            <div className="bg-white border-b border-kawai-neutral shadow-sm flex-shrink-0">
+              <div className="border-b border-kawai-neutral/40">
+                <div className="px-6">
+                  <ProductCategoryDisplay dealerTypeFilter={dealerTypeFilter} />
+                </div>
+              </div>
+              <div className="px-6">
+                <div className="flex items-center h-[52px] gap-0">
+                  <DealerTypeFilter
+                    selected={dealerTypeFilter}
+                    onChange={setDealerTypeFilter}
+                    counts={dealerCounts}
+                  />
+                  <div className="flex-1" />
+                  <div className="w-72 mr-4">
+                    <SearchBar
+                      dealers={dealers}
+                      onSearch={handleSearch}
+                      onLocationSearch={handleLocationSearch}
+                      onDealerSelect={handleDealerSelect}
+                      variant="inline"
+                    />
+                  </div>
+                  <span className="text-xs text-kawai-charcoal/35 font-[family-name:var(--font-brand-sans)] whitespace-nowrap mr-4">
+                    {filteredDealers.length} {filteredDealers.length === 1 ? 'dealer' : 'dealers'}
+                  </span>
+                  <button
+                    onClick={() => setFiltersOpen(true)}
+                    className={cn(
+                      'flex items-center gap-2 h-[52px] px-4 text-xs uppercase tracking-[0.08em] font-semibold',
+                      'font-[family-name:var(--font-brand-sans)] transition-colors -mb-px border-b-2',
+                      'focus-visible:outline-2 focus-visible:outline-kawai-red',
+                      activeFilterCount > 0
+                        ? 'text-kawai-red border-kawai-red'
+                        : 'text-kawai-charcoal/50 border-transparent hover:text-kawai-black hover:border-kawai-neutral'
+                    )}
+                  >
+                    <SlidersHorizontal className="w-3.5 h-3.5" strokeWidth={2} />
+                    <span>Filters</span>
+                    {activeFilterCount > 0 && (
+                      <span className="text-[10px] font-bold tabular-nums">{activeFilterCount}</span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Map */}
+            <div className="relative bg-kawai-neutral/20 flex-1 min-h-0">
+              <DealerMapLibre
+                dealers={filteredDealers}
+                searchCenter={searchLocation}
+                searchRadius={selectedRadius}
+                selectedDealer={selectedDealer}
+                onMarkerClick={handleDealerSelect}
+                onInteract={hideHero}
+              />
+            </div>
+
+          {/* ── Bottom: Piano image + stats cap ── */}
+          <motion.div
+            animate={{ height: heroVisible ? 160 : 0 }}
+            transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+            className="relative flex-shrink-0 overflow-hidden"
+          >
+
+            {/* Red top rule */}
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-kawai-red z-20" />
+
+            {/* Piano image */}
+            <Image
+              src="/videos/Find a Dealer Banner 3.png"
+              alt=""
+              fill
+              className="object-cover object-center"
+              priority
             />
-          </div>
+
+            {/* Dark overlay */}
+            <div
+              className="absolute inset-0"
+              style={{ background: 'linear-gradient(90deg, rgba(30,27,22,0.88) 0%, rgba(30,27,22,0.65) 50%, rgba(30,27,22,0.35) 100%)' }}
+            />
+
+            {/* Stats */}
+            <div className="relative h-full flex items-center px-9 gap-0">
+              <div className="flex-1">
+                <div className="text-white text-[2rem] font-bold tabular-nums leading-none font-[family-name:var(--font-brand-sans)]">
+                  {dealers.length}
+                </div>
+                <div className="text-white/45 text-[8px] uppercase tracking-[0.24em] mt-1.5 font-[family-name:var(--font-brand-sans)]">
+                  Total Dealers
+                </div>
+              </div>
+              <div className="w-px self-stretch my-6 bg-white/15" />
+              <div className="flex-1 pl-8">
+                <div className="text-white text-[2rem] font-bold tabular-nums leading-none font-[family-name:var(--font-brand-sans)]">
+                  {dealerCounts.shigeru}
+                </div>
+                <div className="text-white/45 text-[8px] uppercase tracking-[0.24em] mt-1.5 font-[family-name:var(--font-brand-sans)]">
+                  Shigeru Kawai
+                </div>
+              </div>
+              <div className="w-px self-stretch my-6 bg-white/15" />
+              <div className="flex-1 pl-8">
+                <div className="text-white text-[2rem] font-bold tabular-nums leading-none font-[family-name:var(--font-brand-sans)]">
+                  {dealerCounts.acoustic}
+                </div>
+                <div className="text-white/45 text-[8px] uppercase tracking-[0.24em] mt-1.5 font-[family-name:var(--font-brand-sans)]">
+                  Acoustic Piano
+                </div>
+              </div>
+            </div>
+
+          </motion.div>
         </div>
 
         {/* Filter Panel Drawer */}

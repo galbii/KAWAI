@@ -12,6 +12,7 @@ import { DealerStickyNav } from './components/DealerStickyNav'
 import { DealerInfo } from './components/DealerInfo'
 import { DealerMap } from './components/DealerMap'
 import { RelatedDealers } from './components/RelatedDealers'
+import { AdminBarDoc } from '@/components/layout/AdminBarDoc'
 
 // ISR: 15-minute revalidation
 export const revalidate = 900
@@ -126,6 +127,12 @@ async function DealerContent({ slug }: { slug: string }) {
 
   return (
     <>
+      <AdminBarDoc
+        collection="dealers"
+        id={dealer.id}
+        collectionLabels={{ singular: 'Dealer', plural: 'Dealers' }}
+      />
+
       {/* Local business structured data for Google */}
       <DealerBusinessSchema dealer={dealer} />
 

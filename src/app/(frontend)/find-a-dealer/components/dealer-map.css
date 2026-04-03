@@ -2,30 +2,39 @@
 .maplibregl-popup-content {
   padding: 0 !important;
   border-radius: 12px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-  min-width: 360px !important;
-  max-width: 420px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  min-width: 300px !important;
+  max-width: 360px !important;
   width: auto !important;
+  overflow: hidden !important;
 }
 
 @media (max-width: 640px) {
   .maplibregl-popup-content {
-    min-width: 280px !important;
-    max-width: 90vw !important;
+    min-width: 260px !important;
+    max-width: 88vw !important;
   }
 }
 
 .maplibregl-popup-close-button {
-  font-size: 20px !important;
-  padding: 8px !important;
-  color: #2C2C2C !important;
-  right: 4px !important;
-  top: 4px !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  width: 24px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: rgba(44, 44, 44, 0.45) !important;
+  right: 10px !important;
+  top: 10px !important;
+  border-radius: 50% !important;
+  background: rgba(255,255,255,0.8) !important;
+  z-index: 10 !important;
 }
 
 .maplibregl-popup-close-button:hover {
-  background-color: #f3f4f6 !important;
-  border-radius: 4px !important;
+  background: #FAF8F5 !important;
+  color: #1E1B16 !important;
 }
 
 .maplibregl-popup-tip {

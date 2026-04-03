@@ -7,7 +7,7 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import './dealer-map.css'
 import type { Dealer } from '@/payload-types'
 import type { DealerWithDistance } from '../types'
-import { Phone, Navigation, Star, Globe, MapPin, ArrowRight } from 'lucide-react'
+import { Phone, Navigation, Globe, MapPin, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { trackCTAClick } from '@/lib/analytics/unified-tracking'
 
@@ -17,6 +17,7 @@ interface Props {
   searchRadius: number
   selectedDealer: string | null
   onMarkerClick: (dealerId: string | null) => void
+  onInteract?: () => void
 }
 
 export function DealerMapLibre({
@@ -24,7 +25,8 @@ export function DealerMapLibre({
   searchCenter,
   searchRadius,
   selectedDealer,
-  onMarkerClick
+  onMarkerClick,
+  onInteract,
 }: Props) {
   // Controlled map state
   const [viewState, setViewState] = useState({
@@ -129,9 +131,10 @@ export function DealerMapLibre({
 
   const handleMarkerClick = useCallback((dealerId: string, e: any) => {
     e.originalEvent.stopPropagation()
+    onInteract?.()
     setActivePopup(dealerId)
     onMarkerClick(dealerId)
-  }, [onMarkerClick])
+  }, [onMarkerClick, onInteract])
 
   const handlePopupClose = useCallback(() => {
     setActivePopup(null)
@@ -158,11 +161,12 @@ export function DealerMapLibre({
   }, [onMarkerClick, searchCenter])
 
   const handleMapClick = useCallback(() => {
+    onInteract?.()
     setActivePopup(null)
     onMarkerClick(null)
     // Un-tilt when dismissing popup by clicking the map
     setViewState(prev => ({ ...prev, pitch: 0, bearing: 0 }))
-  }, [onMarkerClick])
+  }, [onMarkerClick, onInteract])
 
   return (
     <Map
@@ -170,6 +174,8 @@ export function DealerMapLibre({
       onMove={evt => setViewState(evt.viewState)}
       onClick={handleMapClick}
       onLoad={handleMapLoad}
+      onDragStart={() => onInteract?.()}
+      onZoomStart={() => onInteract?.()}
       mapStyle="https://tiles.openfreemap.org/styles/liberty"
       style={{ width: '100%', height: '100%' }}
       maxPitch={85}
@@ -264,65 +270,66 @@ export function DealerMapLibre({
             closeOnClick={false}
             className="dealer-popup"
           >
-            <div className="p-5 w-full">
-              {/* Header with Featured Badge */}
-              <div className="flex items-start justify-between gap-3 mb-4">
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-kawai-charcoal leading-tight mb-1">
-                    {dealer.dealerName}
-                  </h3>
-                  {/* Location */}
-                  {dealer.address && (
-                    <div className="flex items-center gap-2 text-sm text-kawai-charcoal/60">
-                      <MapPin className="w-4 h-4 text-kawai-charcoal/40 flex-shrink-0" strokeWidth={2} />
-                      <span>
-                        {dealer.address.city}, {dealer.address.state}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                {dealer.isFeatured && (
-                  <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-kawai-gold/10 text-kawai-gold text-xs font-semibold rounded-md border border-kawai-gold/20 flex-shrink-0">
-                    <Star className="w-3 h-3" fill="currentColor" strokeWidth={0} />
-                    Featured
+            {/* Red top accent */}
+            <div className="h-[3px] w-full rounded-t-xl" style={{ background: hasShigeru ? '#C49A00' : '#E11922' }} />
+
+            <div className="px-5 pt-4 pb-5">
+              {/* Name + location */}
+              <div className="mb-3">
+                <h3 className="text-[15px] font-semibold text-kawai-black leading-snug mb-1">
+                  {dealer.dealerName}
+                </h3>
+                {dealer.address && (
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-kawai-charcoal/35 flex-shrink-0" strokeWidth={2} />
+                    <span className="text-[12px] text-kawai-charcoal/55">
+                      {[dealer.address.city, dealer.address.state].filter(Boolean).join(', ')}
+                    </span>
+                    {dealer.distance !== undefined && (
+                      <>
+                        <span className="text-kawai-charcoal/25 text-[12px]">·</span>
+                        <span className="text-[12px] text-kawai-charcoal/45 tabular-nums">
+                          {dealer.distance.toFixed(1)} mi
+                        </span>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
 
-              {/* Dealer Type Badges */}
-              <div className="flex flex-wrap gap-1.5 mb-4">
-                {hasShigeru && (
-                  <span className="px-2.5 py-1 bg-kawai-gold/10 text-kawai-gold text-xs font-semibold tracking-wide uppercase rounded border border-kawai-gold/25">
-                    Shigeru Kawai
-                  </span>
-                )}
-                {hasAcoustic && (
-                  <span className="px-2.5 py-1 bg-kawai-charcoal/5 text-kawai-charcoal/60 text-xs font-semibold tracking-wide uppercase rounded border border-kawai-charcoal/10">
-                    Acoustic
-                  </span>
-                )}
-                {hasProfessional && (
-                  <span className="px-2.5 py-1 bg-kawai-red/5 text-kawai-red/80 text-xs font-semibold tracking-wide uppercase rounded border border-kawai-red/15">
-                    Professional
-                  </span>
-                )}
-              </div>
-
-              {/* Distance Badge */}
-              {dealer.distance !== undefined && (
-                <div className="inline-flex items-center gap-2 px-3 py-2 bg-kawai-red/5 text-kawai-red text-sm font-semibold rounded-lg border border-kawai-red/10 mb-4">
-                  <div className="w-2 h-2 rounded-full bg-kawai-red animate-pulse" />
-                  {dealer.distance.toFixed(1)} miles away
+              {/* Type labels — dot + text, matching DealerCard */}
+              {(hasShigeru || hasAcoustic || hasProfessional) && (
+                <div className="flex items-center gap-3 mb-4">
+                  {hasShigeru && (
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold" style={{ color: '#A07800' }}>
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: '#C49A00' }} />
+                      Shigeru Kawai
+                    </span>
+                  )}
+                  {hasAcoustic && (
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-kawai-charcoal/55">
+                      <span className="w-1.5 h-1.5 rounded-full bg-kawai-charcoal/35 flex-shrink-0" />
+                      Acoustic
+                    </span>
+                  )}
+                  {hasProfessional && (
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-medium" style={{ color: '#C01820' }}>
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: '#C01820' }} />
+                      Professional
+                    </span>
+                  )}
                 </div>
               )}
 
-              {/* Contact Actions */}
+              {/* Divider */}
+              <div className="h-px bg-kawai-neutral/60 mb-4" />
+
+              {/* Actions */}
               <div className="space-y-2">
-                {/* View Details Button - Primary */}
                 {dealer.slug && (
                   <Link
                     href={`/find-a-dealer/${dealer.slug}`}
-                    className="flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-kawai-red hover:bg-kawai-red/90 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg group w-full"
+                    className="flex items-center justify-center gap-2 py-2.5 text-[12px] font-semibold text-white bg-kawai-black hover:bg-kawai-charcoal rounded-lg transition-colors w-full group"
                     onClick={(e) => {
                       e.stopPropagation()
                       trackCTAClick({
@@ -334,64 +341,60 @@ export function DealerMapLibre({
                       })
                     }}
                   >
-                    <span>View Dealer Details</span>
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={2.5} />
+                    View Dealer Details
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" strokeWidth={2.5} />
                   </Link>
                 )}
 
-                {/* Secondary Actions Row */}
                 <div className="grid grid-cols-2 gap-2">
                   {dealer.contactInfo?.phone && (
                     <a
                       href={`tel:${dealer.contactInfo.phone}`}
-                      className="flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-kawai-charcoal bg-kawai-pearl hover:bg-kawai-neutral/40 rounded-lg transition-colors border border-kawai-neutral"
+                      className="flex items-center justify-center gap-1.5 py-2 text-[12px] font-medium text-kawai-charcoal bg-kawai-pearl hover:bg-kawai-neutral/50 rounded-lg transition-colors border border-kawai-neutral"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <Phone className="w-4 h-4" strokeWidth={2} />
-                      <span className="hidden sm:inline">Call</span>
+                      <Phone className="w-3.5 h-3.5" strokeWidth={2} />
+                      Call
                     </a>
                   )}
-
                   {dealer.contactInfo?.website && (
                     <a
                       href={dealer.contactInfo.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-kawai-charcoal bg-kawai-pearl hover:bg-kawai-neutral/40 rounded-lg transition-colors border border-kawai-neutral"
+                      className="flex items-center justify-center gap-1.5 py-2 text-[12px] font-medium text-kawai-charcoal bg-kawai-pearl hover:bg-kawai-neutral/50 rounded-lg transition-colors border border-kawai-neutral"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <Globe className="w-4 h-4" strokeWidth={2} />
-                      <span className="hidden sm:inline">Website</span>
+                      <Globe className="w-3.5 h-3.5" strokeWidth={2} />
+                      Website
+                    </a>
+                  )}
+                  {dealer.address && (
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                        `${dealer.address.street}, ${dealer.address.city}, ${dealer.address.state} ${dealer.address.zipCode}`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="col-span-2 flex items-center justify-center gap-1.5 py-2 text-[12px] font-medium text-kawai-charcoal bg-kawai-pearl hover:bg-kawai-neutral/50 rounded-lg transition-colors border border-kawai-neutral"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        trackCTAClick({
+                          blockType: 'find-a-dealer-page',
+                          blockData: {},
+                          ctaText: 'Get Directions',
+                          destination: `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                            `${dealer.address!.street}, ${dealer.address!.city}, ${dealer.address!.state} ${dealer.address!.zipCode}`
+                          )}`,
+                          additionalProps: { dealer_name: dealer.dealerName || '', source: 'map_popup' },
+                        })
+                      }}
+                    >
+                      <Navigation className="w-3.5 h-3.5" strokeWidth={2} />
+                      Get Directions
                     </a>
                   )}
                 </div>
-
-                {/* Get Directions - Full Width */}
-                {dealer.address && (
-                  <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-                      `${dealer.address.street}, ${dealer.address.city}, ${dealer.address.state} ${dealer.address.zipCode}`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-kawai-charcoal bg-kawai-pearl hover:bg-kawai-neutral/40 rounded-lg transition-colors border border-kawai-neutral w-full"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      trackCTAClick({
-                        blockType: 'find-a-dealer-page',
-                        blockData: {},
-                        ctaText: 'Get Directions',
-                        destination: `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-                          `${dealer.address!.street}, ${dealer.address!.city}, ${dealer.address!.state} ${dealer.address!.zipCode}`
-                        )}`,
-                        additionalProps: { dealer_name: dealer.dealerName || '', source: 'map_popup' },
-                      })
-                    }}
-                  >
-                    <Navigation className="w-4 h-4" strokeWidth={2} />
-                    <span>Get Directions</span>
-                  </a>
-                )}
               </div>
             </div>
           </Popup>

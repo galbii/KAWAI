@@ -36,13 +36,14 @@ interface Props {
   dealers: DealerWithDistance[]
   onSearch: (results: DealerWithDistance[], location?: { lat: number; lng: number }) => void
   onLocationSearch: (location: { lat: number; lng: number }, address: string) => void
+  onDealerSelect?: (dealerId: string) => void
   /** 'floating' = frosted glass, dropdown above (default). 'inline' = minimal underline, dropdown below. */
   variant?: 'floating' | 'inline'
   /** Auto-focus the input on mount (used when expanding from FAB). */
   autoFocus?: boolean
 }
 
-export function SearchBar({ dealers, onSearch, onLocationSearch, variant = 'floating', autoFocus }: Props) {
+export function SearchBar({ dealers, onSearch, onLocationSearch, onDealerSelect, variant = 'floating', autoFocus }: Props) {
   const [searchInput, setSearchInput] = useState('')
   const [locationPredictions, setLocationPredictions] = useState<NominatimResult[]>([])
   const [dealerResults, setDealerResults] = useState<SearchResult[]>([])
@@ -216,10 +217,12 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, variant = 'floa
       if (result.coordinates) {
         onLocationSearch(result.coordinates, result.name)
       }
+      // Explicit selection — trigger the map popup for this dealer
+      onDealerSelect?.(result.id)
     }
 
     setTimeout(() => inputRef.current?.focus(), 0)
-  }, [dealers, onSearch, onLocationSearch])
+  }, [dealers, onSearch, onLocationSearch, onDealerSelect])
 
   const handleLocationSelect = useCallback((prediction: NominatimResult) => {
     // Nominatim already includes lat/lon — no second geocode request needed

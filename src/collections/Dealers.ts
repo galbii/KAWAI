@@ -99,7 +99,16 @@ export const Dealers: CollectionConfig = {
     group: 'Business',
     useAsTitle: 'dealerName',
     description: 'Manage authorized Kawai piano dealers with location, contact information, and service details for the dealer finder map.',
-    defaultColumns: ['dealerName', 'dealerType', 'city', 'state', 'isActive', 'updatedAt']
+    defaultColumns: ['dealerName', 'dealerType', 'city', 'state', 'isActive', 'updatedAt'],
+    components: {
+      beforeList: [
+        '/components/admin/FindADealerButton#SeedDealersButton',
+        '/components/admin/FindADealerButton#FindADealerListButton',
+      ],
+      edit: {
+        beforeDocumentControls: ['/components/admin/FindADealerButton#FindADealerDocButton'],
+      },
+    },
   },
   access: {
     read: () => true, // Public read access for dealer finder

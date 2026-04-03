@@ -4,6 +4,7 @@ import type { Dealer, Storefront } from '@/payload-types'
 import { DealerFinderClient } from './DealerFinderClient'
 import type { Metadata } from 'next'
 import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
+import { AdminBarDoc } from '@/components/layout/AdminBarDoc'
 
 const fallbackMetadata: Metadata = {
   title: 'Find a KAWAI Piano Dealer | Authorized Dealers Near You',
@@ -131,7 +132,12 @@ export default async function FindADealerPage() {
   })
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="bg-white overflow-hidden">
+      <AdminBarDoc
+        collection="dealers"
+        id=""
+        collectionLabels={{ singular: 'Dealer', plural: 'Dealers' }}
+      />
       <DealerFinderClient dealers={unifiedDealers} />
     </main>
   )

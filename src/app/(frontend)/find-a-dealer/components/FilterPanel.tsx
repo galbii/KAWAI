@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Piano, Briefcase, Star } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -12,6 +11,32 @@ interface Props {
   selectedRadius: number
   onFilterChange: (dealerTypes: string[], radius: number) => void
 }
+
+const DEALER_TYPES = [
+  {
+    value: 'shigeru',
+    label: 'Shigeru Kawai',
+    description: 'Authorized SK Series grand piano dealers',
+    dot: '#C49A00',
+    text: '#A07800',
+  },
+  {
+    value: 'acoustic',
+    label: 'Acoustic Piano',
+    description: 'Grand, upright & hybrid acoustic pianos',
+    dot: 'rgba(44,44,44,0.35)',
+    text: 'rgba(44,44,44,0.6)',
+  },
+  {
+    value: 'professional',
+    label: 'Professional',
+    description: 'Stage pianos, portables & professional gear',
+    dot: '#C01820',
+    text: '#C01820',
+  },
+]
+
+const RADII = [10, 25, 50, 100, 200]
 
 export function FilterPanel({
   isOpen,
@@ -28,13 +53,10 @@ export function FilterPanel({
     setTempRadius(selectedRadius)
   }, [selectedDealerTypes, selectedRadius])
 
-  const handleDealerTypeToggle = (type: string) => {
+  const toggle = (type: string) =>
     setTempDealerTypes(prev =>
-      prev.includes(type)
-        ? prev.filter(t => t !== type)
-        : [...prev, type]
+      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
     )
-  }
 
   const handleApply = () => {
     onFilterChange(tempDealerTypes, tempRadius)
@@ -48,141 +70,165 @@ export function FilterPanel({
 
   if (!isOpen) return null
 
-  const dealerTypeOptions = [
-    {
-      value: 'shigeru',
-      label: 'Shigeru Kawai Dealer',
-      description: 'Authorized SK Series grand piano dealers',
-      icon: Star,
-      iconColor: 'text-kawai-gold',
-      bgColor: 'bg-kawai-gold/10',
-    },
-    {
-      value: 'acoustic',
-      label: 'Acoustic Piano Dealer',
-      description: 'Grand, upright & hybrid acoustic pianos',
-      icon: Piano,
-      iconColor: 'text-kawai-charcoal',
-      bgColor: 'bg-kawai-charcoal/10',
-    },
-    {
-      value: 'professional',
-      label: 'Professional Product Dealer',
-      description: 'Stage pianos, portables & professional gear',
-      icon: Briefcase,
-      iconColor: 'text-kawai-red',
-      bgColor: 'bg-kawai-red/10',
-    },
-  ]
-
   return (
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/30 z-[60] animate-in fade-in duration-200"
+        className="fixed inset-0 bg-black/20 z-[60] animate-in fade-in duration-200"
         onClick={onClose}
       />
 
-      {/* Filter Panel */}
-      <div className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-[70] animate-in slide-in-from-right duration-300">
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-kawai-neutral">
-            <h2 className="text-lg font-semibold text-kawai-black">
-              Filter Dealers
-            </h2>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-kawai-pearl rounded-lg transition-colors"
-            >
-              <X className="w-5 h-5 text-kawai-charcoal/60" />
-            </button>
-          </div>
+      {/* Panel */}
+      <div className="fixed right-0 top-0 bottom-0 w-full max-w-sm bg-white shadow-2xl z-[70] animate-in slide-in-from-right duration-300 flex flex-col">
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            {/* Dealer Type Filter */}
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-[0.1em] text-kawai-charcoal/50 mb-3">
-                Dealer Type
-              </h3>
-              <div className="space-y-1.5">
-                {dealerTypeOptions.map(({ value, label, description, icon: Icon, iconColor, bgColor }) => (
+        {/* Header */}
+        <div className="flex items-center justify-between px-7 py-5 border-b border-kawai-neutral">
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-[0.28em] text-kawai-red mb-0.5 font-[family-name:var(--font-brand-sans)]">
+              Kawai Dealers
+            </p>
+            <h2 className="text-[17px] font-semibold text-kawai-black font-[family-name:var(--font-brand-luxury)]">
+              Filter Results
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-kawai-pearl transition-colors"
+          >
+            <X className="w-4 h-4 text-kawai-charcoal/50" strokeWidth={2} />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto px-7 py-6 space-y-8">
+
+          {/* Dealer Type */}
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-kawai-charcoal/40 mb-4 font-[family-name:var(--font-brand-sans)]">
+              Dealer Type
+            </p>
+            <div className="space-y-1">
+              {DEALER_TYPES.map(({ value, label, description, dot, text }) => {
+                const checked = tempDealerTypes.includes(value)
+                return (
                   <label
                     key={value}
-                    className="flex items-center gap-3 cursor-pointer group p-3 rounded-lg hover:bg-kawai-pearl/60 transition-colors"
+                    className={cn(
+                      'flex items-start gap-4 cursor-pointer py-3 px-3 -mx-3 rounded-lg transition-colors',
+                      checked ? 'bg-kawai-pearl/60' : 'hover:bg-kawai-pearl/30'
+                    )}
                   >
-                    <input
-                      type="checkbox"
-                      checked={tempDealerTypes.includes(value)}
-                      onChange={() => handleDealerTypeToggle(value)}
-                      className="w-4 h-4 rounded text-kawai-charcoal focus:ring-kawai-charcoal cursor-pointer"
-                    />
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className={cn('flex items-center justify-center w-8 h-8 rounded-lg', bgColor)}>
-                        <Icon className={cn('w-4 h-4', iconColor)} strokeWidth={2.5} />
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-sm font-medium text-kawai-charcoal group-hover:text-kawai-black">
-                          {label}
-                        </div>
-                        <div className="text-xs text-kawai-charcoal/50">
-                          {description}
-                        </div>
+                    {/* Custom checkbox */}
+                    <div className="relative flex-shrink-0 mt-0.5">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggle(value)}
+                        className="sr-only"
+                      />
+                      <div className={cn(
+                        'w-4 h-4 rounded border transition-all',
+                        checked
+                          ? 'bg-kawai-black border-kawai-black'
+                          : 'border-kawai-neutral bg-white'
+                      )}>
+                        {checked && (
+                          <svg viewBox="0 0 10 8" className="w-full h-full p-[3px] text-white" fill="none">
+                            <path d="M1 4l2.5 2.5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
                       </div>
                     </div>
-                  </label>
-                ))}
-              </div>
-            </div>
 
-            {/* Search Radius */}
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-[0.1em] text-kawai-charcoal/50 mb-3">
-                Search Radius
-              </h3>
-              <div className="space-y-2">
-                {[10, 25, 50, 100, 200].map(radius => (
-                  <label
-                    key={radius}
-                    className="flex items-center gap-3 cursor-pointer group py-1"
-                  >
-                    <input
-                      type="radio"
-                      name="radius"
-                      value={radius}
-                      checked={tempRadius === radius}
-                      onChange={() => setTempRadius(radius)}
-                      className="w-4 h-4 text-kawai-red focus:ring-kawai-red cursor-pointer"
-                    />
-                    <span className="text-sm text-kawai-charcoal/70 group-hover:text-kawai-charcoal">
-                      Within {radius} miles
-                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: dot }} />
+                        <span className="text-[13px] font-semibold" style={{ color: text }}>
+                          {label}
+                        </span>
+                      </div>
+                      <p className="text-[12px] text-kawai-charcoal/45 leading-snug">
+                        {description}
+                      </p>
+                    </div>
                   </label>
-                ))}
-              </div>
+                )
+              })}
             </div>
           </div>
 
-          {/* Footer Actions */}
-          <div className="p-6 bg-white border-t border-kawai-neutral">
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={handleClearAll}
-                className="flex-1 border-kawai-neutral text-kawai-charcoal hover:bg-kawai-pearl"
-              >
-                Clear All
-              </Button>
-              <Button
-                onClick={handleApply}
-                className="flex-1 bg-kawai-red hover:bg-kawai-red/90 text-white"
-              >
-                Apply Filters
-              </Button>
+          {/* Divider */}
+          <div className="h-px bg-kawai-neutral/60" />
+
+          {/* Search Radius */}
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-kawai-charcoal/40 mb-4 font-[family-name:var(--font-brand-sans)]">
+              Search Radius
+            </p>
+            <div className="space-y-0.5">
+              {RADII.map(radius => {
+                const active = tempRadius === radius
+                return (
+                  <label
+                    key={radius}
+                    className={cn(
+                      'flex items-center justify-between cursor-pointer py-2.5 px-3 -mx-3 rounded-lg transition-colors',
+                      active ? 'bg-kawai-pearl/60' : 'hover:bg-kawai-pearl/30'
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      {/* Custom radio */}
+                      <div className="relative flex-shrink-0">
+                        <input
+                          type="radio"
+                          name="radius"
+                          value={radius}
+                          checked={active}
+                          onChange={() => setTempRadius(radius)}
+                          className="sr-only"
+                        />
+                        <div className={cn(
+                          'w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all',
+                          active ? 'border-kawai-black' : 'border-kawai-neutral'
+                        )}>
+                          {active && <div className="w-1.5 h-1.5 rounded-full bg-kawai-black" />}
+                        </div>
+                      </div>
+                      <span className={cn(
+                        'text-[13px] transition-colors',
+                        active ? 'font-semibold text-kawai-black' : 'text-kawai-charcoal/60'
+                      )}>
+                        Within {radius} miles
+                      </span>
+                    </div>
+                    {active && (
+                      <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-kawai-charcoal/30">
+                        Selected
+                      </span>
+                    )}
+                  </label>
+                )
+              })}
             </div>
           </div>
         </div>
+
+        {/* Footer */}
+        <div className="px-7 py-5 border-t border-kawai-neutral flex gap-3">
+          <button
+            onClick={handleClearAll}
+            className="flex-1 py-2.5 text-[12px] font-semibold text-kawai-charcoal/60 hover:text-kawai-black border border-kawai-neutral hover:border-kawai-charcoal/40 rounded-lg transition-colors"
+          >
+            Clear All
+          </button>
+          <button
+            onClick={handleApply}
+            className="flex-1 py-2.5 text-[12px] font-semibold text-white bg-kawai-black hover:bg-kawai-charcoal rounded-lg transition-colors"
+          >
+            Apply Filters
+          </button>
+        </div>
+
       </div>
     </>
   )

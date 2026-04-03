@@ -32,8 +32,8 @@ export function DealerList({ dealers, selectedDealer, onDealerSelect }: Props) {
   return (
     <div className="flex flex-col h-full">
       {/* List header */}
-      <div className="px-4 py-2.5 border-b border-kawai-neutral/60 bg-white flex-shrink-0">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-kawai-charcoal/50">
+      <div className="px-5 py-3 border-b border-kawai-neutral/60 bg-white flex-shrink-0">
+        <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-kawai-charcoal/50">
           {dealers.length} {dealers.length === 1 ? 'Dealer' : 'Dealers'}
         </p>
       </div>
