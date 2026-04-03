@@ -86,6 +86,7 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
 
   // Check if this is any NAMM 2026 page (has its own custom header/footer)
   const isNAMMPage = pathname.startsWith('/namm-2026')
+  const isFindADealerPage = pathname === '/find-a-dealer'
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com';
 
@@ -146,7 +147,7 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
         <main className="flex-1 m-0 p-0">
           {children}
         </main>
-        {!isNAMMPage && <FooterDynamic />}
+        {!isNAMMPage && !isFindADealerPage && <FooterDynamic />}
       </div>
       <Suspense fallback={null}>
         <UTMCapture />

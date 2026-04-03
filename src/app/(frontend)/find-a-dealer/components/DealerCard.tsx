@@ -29,19 +29,20 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
     setIsExpanded(prev => !prev)
   }
 
+  const borderColor = hasShigeru
+    ? '#C49A00'
+    : isSelected
+      ? '#E11922'
+      : 'transparent'
+
   return (
     <div
       className={cn(
         'relative cursor-pointer transition-all duration-200 select-none',
         'border-b border-kawai-neutral/50 last:border-b-0',
-        'border-l-[3px]',
-        hasShigeru
-          ? 'border-l-[#C49A00]'
-          : isSelected
-            ? 'border-l-kawai-red'
-            : 'border-l-transparent hover:border-l-kawai-neutral',
-        isSelected ? 'bg-kawai-pearl/30' : 'bg-white hover:bg-kawai-pearl/10',
+        isSelected ? 'bg-kawai-pearl/40' : 'bg-white hover:bg-kawai-pearl/10',
       )}
+      style={{ borderLeft: `3px solid ${borderColor}` }}
       onClick={handleCardClick}
     >
       {/* Card Header */}

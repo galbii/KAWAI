@@ -32,6 +32,7 @@ export function DealerFinderClient({ dealers }: Props) {
   const [searchResults, setSearchResults] = useState<DealerWithDistance[]>([])
   const [heroVisible, setHeroVisible] = useState(true)
 
+
   const dealerCounts = useMemo(() => {
     const counts = { all: dealers.length, shigeru: 0, acoustic: 0, professional: 0 }
     dealers.forEach(dealer => {

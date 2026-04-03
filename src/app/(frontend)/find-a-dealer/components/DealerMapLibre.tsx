@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { Map, Marker, Popup } from 'react-map-gl/maplibre'
 import type { MapLibreEvent } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
@@ -10,6 +10,157 @@ import type { DealerWithDistance } from '../types'
 import { Phone, Navigation, Globe, MapPin, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { trackCTAClick } from '@/lib/analytics/unified-tracking'
+
+// Separate component so we can attach a non-passive native wheel listener.
+// React's synthetic onWheel is passive — stopPropagation() alone can't block scroll.
+function DealerPopupContent({ dealer }: { dealer: DealerWithDistance }) {
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const block = (e: WheelEvent) => {
+      e.stopPropagation()
+      e.preventDefault()
+    }
+    el.addEventListener('wheel', block, { passive: false })
+    return () => el.removeEventListener('wheel', block)
+  }, [])
+
+  const hasShigeru = dealer.shigeruKawaiDealer === true
+  const hasAcoustic = dealer.acousticPianoDealer === true
+  const hasProfessional = dealer.professionalProductDealer === true
+
+  return (
+    <div ref={ref}>
+      {/* Accent bar */}
+      <div className="h-[3px] w-full rounded-t-xl" style={{ background: hasShigeru ? '#C49A00' : '#E11922' }} />
+
+      <div className="px-5 pt-4 pb-5">
+        {/* Name + location */}
+        <div className="mb-3">
+          <h3 className="text-[15px] font-semibold text-kawai-black leading-snug mb-1">
+            {dealer.dealerName}
+          </h3>
+          {dealer.address && (
+            <div className="flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-kawai-charcoal/35 flex-shrink-0" strokeWidth={2} />
+              <span className="text-[12px] text-kawai-charcoal/55">
+                {[dealer.address.city, dealer.address.state].filter(Boolean).join(', ')}
+              </span>
+              {dealer.distance !== undefined && (
+                <>
+                  <span className="text-kawai-charcoal/25 text-[12px]">·</span>
+                  <span className="text-[12px] text-kawai-charcoal/45 tabular-nums">
+                    {dealer.distance.toFixed(1)} mi
+                  </span>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Type labels */}
+        {(hasShigeru || hasAcoustic || hasProfessional) && (
+          <div className="flex items-center gap-3 mb-4">
+            {hasShigeru && (
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold" style={{ color: '#A07800' }}>
+                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: '#C49A00' }} />
+                Shigeru Kawai
+              </span>
+            )}
+            {hasAcoustic && (
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-kawai-charcoal/55">
+                <span className="w-1.5 h-1.5 rounded-full bg-kawai-charcoal/35 flex-shrink-0" />
+                Acoustic
+              </span>
+            )}
+            {hasProfessional && (
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-medium" style={{ color: '#C01820' }}>
+                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: '#C01820' }} />
+                Professional
+              </span>
+            )}
+          </div>
+        )}
+
+        <div className="h-px bg-kawai-neutral/60 mb-4" />
+
+        <div className="space-y-2">
+          {dealer.slug && (
+            <Link
+              href={`/find-a-dealer/${dealer.slug}`}
+              className="flex items-center justify-center gap-2 py-2.5 text-[12px] font-semibold text-white bg-kawai-black hover:bg-kawai-charcoal rounded-lg transition-colors w-full group"
+              onClick={(e) => {
+                e.stopPropagation()
+                trackCTAClick({
+                  blockType: 'find-a-dealer-page',
+                  blockData: {},
+                  ctaText: dealer.dealerName || 'View Dealer Details',
+                  destination: `/find-a-dealer/${dealer.slug}`,
+                  additionalProps: { source: 'map_popup' },
+                })
+              }}
+            >
+              View Dealer Details
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" strokeWidth={2.5} />
+            </Link>
+          )}
+
+          <div className="grid grid-cols-2 gap-2">
+            {dealer.contactInfo?.phone && (
+              <a
+                href={`tel:${dealer.contactInfo.phone}`}
+                className="flex items-center justify-center gap-1.5 py-2 text-[12px] font-medium text-kawai-charcoal bg-kawai-pearl hover:bg-kawai-neutral/50 rounded-lg transition-colors border border-kawai-neutral"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Phone className="w-3.5 h-3.5" strokeWidth={2} />
+                Call
+              </a>
+            )}
+            {dealer.contactInfo?.website && (
+              <a
+                href={dealer.contactInfo.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-1.5 py-2 text-[12px] font-medium text-kawai-charcoal bg-kawai-pearl hover:bg-kawai-neutral/50 rounded-lg transition-colors border border-kawai-neutral"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Globe className="w-3.5 h-3.5" strokeWidth={2} />
+                Website
+              </a>
+            )}
+            {dealer.address && (
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                  `${dealer.address.street}, ${dealer.address.city}, ${dealer.address.state} ${dealer.address.zipCode}`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="col-span-2 flex items-center justify-center gap-1.5 py-2 text-[12px] font-medium text-kawai-charcoal bg-kawai-pearl hover:bg-kawai-neutral/50 rounded-lg transition-colors border border-kawai-neutral"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  trackCTAClick({
+                    blockType: 'find-a-dealer-page',
+                    blockData: {},
+                    ctaText: 'Get Directions',
+                    destination: `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                      `${dealer.address!.street}, ${dealer.address!.city}, ${dealer.address!.state} ${dealer.address!.zipCode}`
+                    )}`,
+                    additionalProps: { dealer_name: dealer.dealerName || '', source: 'map_popup' },
+                  })
+                }}
+              >
+                <Navigation className="w-3.5 h-3.5" strokeWidth={2} />
+                Get Directions
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 interface Props {
   dealers: DealerWithDistance[]
@@ -273,7 +424,7 @@ export function DealerMapLibre({
             {/* Red top accent */}
             <div className="h-[3px] w-full rounded-t-xl" style={{ background: hasShigeru ? '#C49A00' : '#E11922' }} />
 
-            <div className="px-5 pt-4 pb-5">
+            <div className="px-5 pt-4 pb-5" onWheel={e => e.stopPropagation()}>
               {/* Name + location */}
               <div className="mb-3">
                 <h3 className="text-[15px] font-semibold text-kawai-black leading-snug mb-1">
