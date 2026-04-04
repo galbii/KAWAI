@@ -147,12 +147,12 @@ export function DealerFinderMobile({ dealers }: Props) {
   }, [selectedDealer, filteredDealers])
 
   return (
-    <div className="lg:hidden bg-kawai-pearl/30">
-      {/* Sticky Filter Header — sticks under main nav, mirrors desktop pattern */}
-      <div
-        className="sticky z-30 bg-white border-b border-kawai-neutral/60 shadow-sm"
-        style={{ top: 'var(--header-bottom, 70px)' }}
-      >
+    <div
+      className="lg:hidden flex flex-col overflow-hidden"
+      style={{ height: 'calc(100dvh - var(--header-bottom, 70px))' }}
+    >
+      {/* Filter Header */}
+      <div className="flex-shrink-0 bg-white border-b border-kawai-neutral/60 shadow-sm z-30">
         {/* Dealer Type Tabs - Horizontal Scroll */}
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex min-w-max border-b border-kawai-neutral">
@@ -217,11 +217,8 @@ export function DealerFinderMobile({ dealers }: Props) {
         </div>
       </div>
 
-      {/* Main Content Area — fills remaining viewport below nav + sticky header */}
-      <div
-        className="relative overflow-hidden"
-        style={{ height: 'calc(100vh - var(--header-bottom, 70px) - 90px)' }}
-      >
+      {/* Main Content Area — fills remaining space */}
+      <div className="flex-1 relative overflow-hidden min-h-0">
         {/* Map View */}
         <div
           className={cn(
