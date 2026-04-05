@@ -11,22 +11,23 @@ export const revalidatePage: CollectionAfterChangeHook<Page> = ({
 }) => {
   if (!context.disableRevalidate) {
     if (doc._status === 'published') {
-      // Pages are rendered at /[slug] (unified route with storefronts)
       const path = `/${doc.slug}`
 
       payload.logger.info(`Revalidating page at path: ${path}`)
 
-      revalidatePath(path)
+      revalidatePath(path, 'page')
+      revalidateTag(`page-meta-${doc.slug}`)
       revalidateTag('pages-sitemap')
     }
 
-    // If the page was previously published, we need to revalidate the old path
+    // If the page was previously published, revalidate the old path too
     if (previousDoc?._status === 'published' && doc._status !== 'published') {
       const oldPath = `/${previousDoc.slug}`
 
       payload.logger.info(`Revalidating old page at path: ${oldPath}`)
 
-      revalidatePath(oldPath)
+      revalidatePath(oldPath, 'page')
+      revalidateTag(`page-meta-${previousDoc.slug}`)
       revalidateTag('pages-sitemap')
     }
   }

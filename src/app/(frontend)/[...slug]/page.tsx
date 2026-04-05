@@ -2,12 +2,14 @@ import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from 'next';
 import { getPayload } from 'payload';
+import { unstable_cache } from 'next/cache';
 import { draftMode } from 'next/headers';
 import config from '@payload-config';
 import type { Page } from '@/payload-types';
 import { Hero as PageHero } from '@/components/Hero';
 import { RenderBlocks } from '@/components/RenderBlocks';
 import { AdminBarDoc } from '@/components/layout/AdminBarDoc';
+import { getPayloadClient } from '@/lib/payload/queries';
 
 /**
  * Page Content Component (for Pages collection)
@@ -95,18 +97,37 @@ export async function generateStaticParams() {
   }
 }
 
+function getPageMetadata(slugPath: string) {
+  return unstable_cache(
+    async () => {
+      const payload = await getPayloadClient()
+      return payload
+        .find({
+          collection: 'pages',
+          where: {
+            slug: { equals: slugPath },
+            _status: { equals: 'published' },
+          },
+          limit: 1,
+          depth: 1,
+        })
+        .then(({ docs }) => docs[0] ?? null)
+    },
+    [`page-meta-${slugPath}`],
+    { tags: [`page-meta-${slugPath}`, 'pages'], revalidate: 3600 },
+  )()
+}
+
 // Generate metadata for SEO - CRITICAL FOR GOOGLE INDEXING
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string[] }> }
 ): Promise<Metadata> {
   try {
     const { slug } = await params;
-    // Convert slug array to path string
     const slugPath = slug.join('/')
-    const payload = await getPayload({ config });
+    const payload = await getPayloadClient()
 
     // Check if this is a storefront (redirect will happen in page component)
-    // Only check first segment for storefront match
     const storefront = await payload
       .find({
         collection: 'storefronts',
@@ -117,9 +138,8 @@ export async function generateMetadata(
         limit: 1,
         depth: 0,
       })
-      .then(({ docs }) => docs?.[0]);
+      .then(({ docs }) => docs[0] ?? null)
 
-    // If storefront, return minimal metadata (page component will redirect)
     if (storefront) {
       return {
         title: 'Redirecting...',
@@ -127,28 +147,13 @@ export async function generateMetadata(
       };
     }
 
-    // Check Pages collection (published only)
-    const page = await payload
-      .find({
-        collection: 'pages',
-        where: {
-          slug: { equals: slugPath },
-          _status: { equals: 'published' },
-        },
-        limit: 1,
-        depth: 1,
-      })
-      .then(({ docs }) => docs?.[0]);
+    const page = await getPageMetadata(slugPath)
 
-    // If Page not found, return 404 metadata
     if (!page) {
       return {
         title: 'Page Not Found',
         description: 'The requested page could not be found.',
-        robots: {
-          index: false,
-          follow: false,
-        }
+        robots: { index: false, follow: false },
       };
     }
 
@@ -173,10 +178,7 @@ export async function generateMetadata(
       robots: {
         index: true,
         follow: true,
-        googleBot: {
-          index: true,
-          follow: true,
-        },
+        googleBot: { index: true, follow: true },
       },
       openGraph: {
         title: ogTitle,
