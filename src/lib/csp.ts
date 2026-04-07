@@ -89,11 +89,13 @@ export function buildCspHeader(_isDev: boolean): string {
       'https://*.r2.dev',
 
       // Google (Analytics, GTM, Maps tiles — wildcards cover all regional subdomains)
+      // googlesyndication.com covers Google Ads conversion pixel pings
       'https://*.google-analytics.com',
       'https://www.googletagmanager.com',
       'https://stats.g.doubleclick.net',
       'https://*.googleapis.com',
       'https://*.gstatic.com',
+      'https://pagead2.googlesyndication.com',
 
       // Meta
       'https://www.facebook.com',
@@ -128,10 +130,12 @@ export function buildCspHeader(_isDev: boolean): string {
       // Google Analytics — wildcard covers regional subdomains (region1/region2 added June 2022)
       // stats.g.doubleclick.net receives GA4 data by default even without Google Ads
       // www.googletagmanager.com needed in connect-src so GTM can fetch its own container config
+      // pagead2.googlesyndication.com — Google Ads conversion measurement (ccm/collect endpoint)
       'https://www.googletagmanager.com',
       'https://*.google-analytics.com',
       'https://analytics.google.com',
       'https://stats.g.doubleclick.net',
+      'https://pagead2.googlesyndication.com',
       // Google Maps API (*.googleapis.com covers Places, Geocoding, Directions)
       'https://*.googleapis.com',
 
