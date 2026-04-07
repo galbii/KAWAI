@@ -33,6 +33,7 @@ interface ProductHeroCarouselRendererProps {
   slides: ProductHeroSlideData[]
   settings?: ProductHeroCarouselBlock['settings']
   styling?: ProductHeroCarouselBlock['styling']
+  headingLevel?: 'h1' | 'h2'
 }
 
 // ── HEIGHT CLASSES ─────────────────────────────────────────────────────────
@@ -83,6 +84,7 @@ export function ProductHeroCarouselRenderer({
   slides,
   settings,
   styling,
+  headingLevel = 'h2',
 }: ProductHeroCarouselRendererProps) {
   if (!slides || slides.length === 0) return null
 
@@ -311,14 +313,19 @@ export function ProductHeroCarouselRenderer({
 
                   {/* Title */}
                   {currentSlide.title && (
-                    <motion.h2
-                      initial={{ opacity: 0, y: 22 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.7, delay: 0.3 }}
-                      className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-light font-[family-name:var(--font-brand-serif)] text-white leading-[1.04] tracking-tight"
-                    >
-                      {currentSlide.title}
-                    </motion.h2>
+                    (() => {
+                      const TitleTag = headingLevel === 'h1' ? motion.h1 : motion.h2
+                      return (
+                        <TitleTag
+                          initial={{ opacity: 0, y: 22 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.7, delay: 0.3 }}
+                          className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-light font-[family-name:var(--font-brand-serif)] text-white leading-[1.04] tracking-tight"
+                        >
+                          {currentSlide.title}
+                        </TitleTag>
+                      )
+                    })()
                   )}
 
                   {/* Subtitle */}

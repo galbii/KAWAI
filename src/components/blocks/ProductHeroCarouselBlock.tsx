@@ -1,7 +1,9 @@
 import type { ProductHeroCarouselBlock as ProductHeroCarouselBlockType } from '@/payload-types'
 import { ProductHeroCarouselServerRenderer } from './product/ProductHeroCarouselServerRenderer'
 
-interface ProductHeroCarouselBlockProps extends ProductHeroCarouselBlockType {}
+interface ProductHeroCarouselBlockProps extends ProductHeroCarouselBlockType {
+  headingLevel?: 'h1' | 'h2'
+}
 
 /**
  * ProductHeroCarouselBlock — wrapper for product-hero-carousel

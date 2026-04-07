@@ -301,9 +301,7 @@ export function ProductHeroBlock({
       ]
 
   const hasVariations = allVariations.length > 0
-  // CONSOLIDATED: Updated price field names (msrp only, priceText removed)
-  const hasPrice = product.price && product.price.msrp
-  
+
   // Get display image - priority: custom override > selected variation image > main product image > imageUrl fallback
   const getDisplayImage = () => {
     if (overrides.customImage) {
@@ -525,31 +523,6 @@ export function ProductHeroBlock({
 
   const variationsDisplayPrice = getVariationsDisplayPrice()
 
-  // Enhanced price formatting with animations
-  const formatMainPrice = () => {
-    if (!product.price) return 'Learn more'
-
-    // CONSOLIDATED: Updated to use msrp only (priceText removed from schema)
-    if (!product.price.msrp) {
-      return 'Learn more'
-    }
-
-    const currency = product.price.currency || 'USD'
-    const currencySymbols = { USD: '$', EUR: '€', GBP: '£', CAD: 'C$' }
-    const symbol = currencySymbols[currency] || '$'
-
-    // Use actual variant price if variation is selected, otherwise use base MSRP
-    const basePrice = product.price.msrp
-    const selectedVariationPrice = hasVariations && selectedVariation >= 0
-      ? allVariations[selectedVariation]?.price
-      : null
-    const displayPrice = selectedVariationPrice || basePrice
-    const mainPrice = `${symbol}${displayPrice.toLocaleString()}`
-
-    // Simplified price display (salePrice removed from schema)
-    return <span className="text-4xl font-bold">{mainPrice}</span>
-  }
-  
   // Off-white background fading to white in center for image blending
   const getBackgroundClasses = () => {
     switch (backgroundColor) {

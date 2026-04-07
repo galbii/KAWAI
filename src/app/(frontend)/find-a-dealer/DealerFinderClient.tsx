@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useCallback, useMemo } from 'react'
-import Image from 'next/image'
-import { motion } from 'framer-motion'
 import type { Dealer } from '@/payload-types'
 import type { DealerWithDistance } from './types'
 import { DealerMapLibre } from './components/DealerMapLibre'
@@ -30,7 +28,6 @@ export function DealerFinderClient({ dealers }: Props) {
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [dealerTypeFilter, setDealerTypeFilter] = useState<DealerType>('all')
   const [searchResults, setSearchResults] = useState<DealerWithDistance[]>([])
-  const [heroVisible, setHeroVisible] = useState(true)
 
 
   const dealerCounts = useMemo(() => {
@@ -110,10 +107,7 @@ export function DealerFinderClient({ dealers }: Props) {
     // Don't auto-select: selecting a dealer opens the map popup which steals focus
     // from the search input. Let the user pick explicitly from the list or map.
     setSelectedDealer(null)
-    setHeroVisible(false)
   }, [])
-
-  const hideHero = useCallback(() => setHeroVisible(false), [])
 
   const handleFilterChange = useCallback((dealerTypes: string[], radius: number) => {
     setSelectedDealerTypes(dealerTypes)
@@ -242,66 +236,9 @@ export function DealerFinderClient({ dealers }: Props) {
                 searchRadius={selectedRadius}
                 selectedDealer={selectedDealer}
                 onMarkerClick={handleDealerSelect}
-                onInteract={hideHero}
               />
             </div>
 
-          {/* ── Bottom: Piano image + stats cap ── */}
-          <motion.div
-            animate={{ height: heroVisible ? 160 : 0 }}
-            transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-            className="relative flex-shrink-0 overflow-hidden"
-          >
-
-            {/* Red top rule */}
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-kawai-red z-20" />
-
-            {/* Piano image */}
-            <Image
-              src="/videos/Find a Dealer Banner 3.png"
-              alt=""
-              fill
-              className="object-cover object-center"
-              priority
-            />
-
-            {/* Dark overlay */}
-            <div
-              className="absolute inset-0"
-              style={{ background: 'linear-gradient(90deg, rgba(30,27,22,0.88) 0%, rgba(30,27,22,0.65) 50%, rgba(30,27,22,0.35) 100%)' }}
-            />
-
-            {/* Stats */}
-            <div className="relative h-full flex items-center px-9 gap-0">
-              <div className="flex-1">
-                <div className="text-white text-[2rem] font-bold tabular-nums leading-none font-[family-name:var(--font-brand-sans)]">
-                  {dealers.length}
-                </div>
-                <div className="text-white/45 text-[8px] uppercase tracking-[0.24em] mt-1.5 font-[family-name:var(--font-brand-sans)]">
-                  Total Dealers
-                </div>
-              </div>
-              <div className="w-px self-stretch my-6 bg-white/15" />
-              <div className="flex-1 pl-8">
-                <div className="text-white text-[2rem] font-bold tabular-nums leading-none font-[family-name:var(--font-brand-sans)]">
-                  {dealerCounts.shigeru}
-                </div>
-                <div className="text-white/45 text-[8px] uppercase tracking-[0.24em] mt-1.5 font-[family-name:var(--font-brand-sans)]">
-                  Shigeru Kawai
-                </div>
-              </div>
-              <div className="w-px self-stretch my-6 bg-white/15" />
-              <div className="flex-1 pl-8">
-                <div className="text-white text-[2rem] font-bold tabular-nums leading-none font-[family-name:var(--font-brand-sans)]">
-                  {dealerCounts.acoustic}
-                </div>
-                <div className="text-white/45 text-[8px] uppercase tracking-[0.24em] mt-1.5 font-[family-name:var(--font-brand-sans)]">
-                  Acoustic Piano
-                </div>
-              </div>
-            </div>
-
-          </motion.div>
         </div>
 
         {/* Filter Panel Drawer */}

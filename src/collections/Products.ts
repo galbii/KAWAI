@@ -1601,6 +1601,37 @@ export const Products: CollectionConfig = {
         return doc
       },
 
+      // Hook 3: Revalidate product page on save
+      async ({ doc, req, context, operation }) => {
+        // Skip if context flag is set (prevents infinite loops)
+        if (context.skipProductPageRevalidation) {
+          return doc
+        }
+
+        // Only revalidate for active products with a slug
+        if (doc.status === 'active' && doc.slug) {
+          console.log('[Products Hook] Revalidating product page for:', doc.slug)
+
+          try {
+            // Dynamically import to avoid edge runtime issues
+            const { revalidatePath, revalidateTag } = await import('next/cache')
+
+            // Invalidate the ISR static page
+            revalidatePath(`/products/${doc.slug}`)
+            // Invalidate any unstable_cache entries tagged with this product's slug
+            revalidateTag(`product-${doc.slug}`)
+            // Invalidate any list views that include all products
+            revalidateTag('products')
+            console.log(`[Products Hook] ✅ Product page revalidated: /products/${doc.slug}`)
+          } catch (error) {
+            // Log error but don't throw - revalidation failure shouldn't block saves
+            console.error('[Products Hook] ⚠️ Product page revalidation failed:', error)
+          }
+        }
+
+        return doc
+      },
+
       // Hook 2: Shopify sync (existing)
       async ({ doc, req, context, operation }) => {
         // Prevent infinite loop - skip if already syncing

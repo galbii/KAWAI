@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { useState } from 'react'
 import type { Post } from '@/payload-types'
 import { resolveMediaUrl } from '@/lib/payload'
 import { BlogCardAnimated } from './BlogCardAnimated'
@@ -13,7 +14,10 @@ export interface BlogGridClientProps {
   tagline: string
   featuredPost: Post | null
   heroIsFeatured: boolean
-  gridPosts: Post[]
+  /** All grid posts (pre-fetched); client paginates these */
+  allGridPosts: Post[]
+  /** How many posts to show per page / per "Load More" click */
+  pageSize: number
   showFeatured: boolean
   showHeading: boolean
   youtubeUrl?: string | null
@@ -35,12 +39,18 @@ export function BlogGridClient({
   tagline,
   featuredPost,
   heroIsFeatured,
-  gridPosts,
+  allGridPosts,
+  pageSize,
   showFeatured,
   showHeading,
   youtubeUrl,
 }: BlogGridClientProps) {
-  const hasPosts = featuredPost !== null || gridPosts.length > 0
+  const [visibleCount, setVisibleCount] = useState(pageSize)
+
+  const gridPosts = allGridPosts.slice(0, visibleCount)
+  const hasMore = visibleCount < allGridPosts.length
+
+  const hasPosts = featuredPost !== null || allGridPosts.length > 0
   const videoId = youtubeUrl ? extractYouTubeId(youtubeUrl) : null
 
   const featuredImageUrl = featuredPost ? resolveMediaUrl(featuredPost.featuredImage) : null
@@ -167,7 +177,13 @@ export function BlogGridClient({
                           />
                         ) : (
                           <div className="absolute inset-0 bg-kawai-pearl flex items-center justify-center">
-                            <span className="text-kawai-neutral text-6xl select-none">♪</span>
+                            <Image
+                              src="/images/kawai-logo-red-1x.png"
+                              alt="KAWAI"
+                              fill
+                              className="object-contain p-16"
+                              sizes="(max-width: 768px) 100vw, 60vw"
+                            />
                           </div>
                         )}
                       </div>
@@ -264,6 +280,45 @@ export function BlogGridClient({
                     <BlogCardAnimated key={post.id} post={post} index={i} />
                   ))}
                 </motion.div>
+
+                {/* Load More */}
+                {hasMore && (
+                  <motion.div
+                    className="flex justify-center mt-14"
+                    initial={{ opacity: 0, y: 12 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={VIEWPORT}
+                    transition={{ duration: 0.4, ease: EASE_PIANO }}
+                  >
+                    <button
+                      onClick={() => setVisibleCount((c) => c + pageSize)}
+                      className={cn(
+                        'inline-flex items-center gap-3 px-8 py-3.5 rounded-full',
+                        'border border-kawai-neutral bg-white text-kawai-black',
+                        'text-sm font-semibold font-[family-name:var(--font-brand-sans)] tracking-wide',
+                        'transition-all duration-300 ease-[var(--ease-piano)]',
+                        'hover:border-kawai-red hover:text-kawai-red hover:shadow-brand-red-glow',
+                      )}
+                    >
+                      <span>Load more stories</span>
+                      <span className="text-xs text-kawai-charcoal/40">
+                        {allGridPosts.length - visibleCount} remaining
+                      </span>
+                      <svg
+                        viewBox="0 0 16 16"
+                        className="w-4 h-4 shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M8 3v10M3 8l5 5 5-5" />
+                      </svg>
+                    </button>
+                  </motion.div>
+                )}
               </div>
             )}
           </>

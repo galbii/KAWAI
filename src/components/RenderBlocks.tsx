@@ -266,6 +266,7 @@ export function RenderBlocks({ blocks }: { blocks: Page['layout'] }) {
             <Block
               {...block}
               {...((blockType as string) === 'product-collection-showcase' ? { showViewCollectionLink: true } : {})}
+              {...((blockType as string) === 'product-hero-carousel' ? { headingLevel: index === 0 ? 'h1' : 'h2' } : {})}
             />
           </div>
         )

@@ -21,6 +21,9 @@ export const Posts: CollectionConfig = {
     defaultColumns: ['title', 'authors', 'status', 'publishedDate'],
     useAsTitle: 'title',
     description: 'Blog posts with rich content, featured images, and flexible page building',
+    components: {
+      beforeList: ['/components/admin/SeedPostsButton#SeedPostsButton'],
+    },
     livePreview: {
       url: ({ data }) => {
         const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'

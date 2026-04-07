@@ -79,26 +79,26 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
-      {/* GA4 Consent Mode v2 — must run before GTM so tags are held until consent */}
-      <Script
-        id="gtag-consent-defaults"
-        strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{
-          __html: `
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('consent', 'default', {
-              'ad_storage': 'denied',
-              'ad_user_data': 'denied',
-              'ad_personalization': 'denied',
-              'analytics_storage': 'denied',
-              'wait_for_update': 500
-            });
-          `,
-        }}
-      />
-      <GoogleTagManager gtmId="GTM-MGQR7XXS" />
       <body className={`${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${notoSans.variable} antialiased bg-kawai-black text-kawai-pearl`}>
+        {/* GA4 Consent Mode v2 — must run before GTM so tags are held until consent */}
+        <Script
+          id="gtag-consent-defaults"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('consent', 'default', {
+                'ad_storage': 'denied',
+                'ad_user_data': 'denied',
+                'ad_personalization': 'denied',
+                'analytics_storage': 'denied',
+                'wait_for_update': 500
+              });
+            `,
+          }}
+        />
+        <GoogleTagManager gtmId="GTM-MGQR7XXS" />
         <NuqsAdapter>
           <PHProvider>
             <CartProvider>

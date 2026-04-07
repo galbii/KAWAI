@@ -155,7 +155,13 @@ export function BlogIndexClient({
                           />
                         ) : (
                           <div className="absolute inset-0 bg-kawai-pearl flex items-center justify-center">
-                            <span className="text-kawai-neutral text-6xl select-none">♪</span>
+                            <Image
+                              src="/images/kawai-logo-red-1x.png"
+                              alt="KAWAI"
+                              fill
+                              className="object-contain p-16"
+                              sizes="(max-width: 768px) 100vw, 60vw"
+                            />
                           </div>
                         )}
                       </div>

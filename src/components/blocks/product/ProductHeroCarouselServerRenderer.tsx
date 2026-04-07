@@ -12,7 +12,7 @@ import type { ProductHeroSlideData } from './ProductHeroCarouselRenderer'
  * format. Block-level slides are appended after the homepage items.
  */
 export async function ProductHeroCarouselServerRenderer(
-  props: ProductHeroCarouselBlock
+  props: ProductHeroCarouselBlock & { headingLevel?: 'h1' | 'h2' }
 ) {
   const payload = await getPayload({ config })
 
@@ -71,6 +71,7 @@ export async function ProductHeroCarouselServerRenderer(
       slides={slides}
       settings={{ ...props.settings, autoPlayDuration }}
       styling={props.styling ?? undefined}
+      {...(props.headingLevel ? { headingLevel: props.headingLevel } : {})}
     />
   )
 }

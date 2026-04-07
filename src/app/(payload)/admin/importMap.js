@@ -27,6 +27,7 @@ import { BlockquoteFeatureClient as BlockquoteFeatureClient_e70f5e05f09f93e00b99
 import { UploadFeatureClient as UploadFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { HorizontalRuleFeatureClient as HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { SlugField as SlugField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
+import { SeedPostsButton as SeedPostsButton_426f4390a0ceb7b702a9ca8700ffecd7 } from '../../../components/admin/SeedPostsButton'
 import { CustomMediaRowLabel as CustomMediaRowLabel_a21c52456ab73f6055854ecc285d9149 } from '../../../components/admin/CustomMediaRowLabel'
 import { ProductTypeCell as ProductTypeCell_2ee4334009970004c1a3c71e772c87c1 } from '../../../components/admin/ProductTypeCell'
 import { SpecificationRowLabel as SpecificationRowLabel_1091d94778fdba3b9f9086a79ac873b7 } from '../../../components/admin/SpecificationRowLabel'
@@ -106,6 +107,7 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#UploadFeatureClient": UploadFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#HorizontalRuleFeatureClient": HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/ui#SlugField": SlugField_3817bf644402e67bfe6577f60ef982de,
+  "/components/admin/SeedPostsButton#SeedPostsButton": SeedPostsButton_426f4390a0ceb7b702a9ca8700ffecd7,
   "/components/admin/CustomMediaRowLabel#CustomMediaRowLabel": CustomMediaRowLabel_a21c52456ab73f6055854ecc285d9149,
   "/components/admin/ProductTypeCell#ProductTypeCell": ProductTypeCell_2ee4334009970004c1a3c71e772c87c1,
   "/components/admin/SpecificationRowLabel#SpecificationRowLabel": SpecificationRowLabel_1091d94778fdba3b9f9086a79ac873b7,

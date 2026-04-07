@@ -5861,7 +5861,31 @@ export interface MarketingStorefrontLocationsBlock {
  */
 export interface MarketingFeaturedCollectionsBlock {
   /**
-   * Small label above the heading
+   * How collections are displayed on the page
+   */
+  displayMode: 'grid' | 'carousel';
+  /**
+   * "Featured" pulls from the collections marked as featured in CMS, sorted by priority. "Manual" lets you pick specific collections. "Category" filters by piano type.
+   */
+  collectionSource: 'featured' | 'manual' | 'category';
+  /**
+   * Select the collections to display. Order here is the display order.
+   */
+  collections?: (string | Collection)[] | null;
+  /**
+   * Show only collections tagged with this piano category.
+   */
+  categoryFilter?: ('digital' | 'grand' | 'upright' | 'hybrid' | 'shigeru') | null;
+  /**
+   * Maximum number of collections to show (ignored when using manual selection)
+   */
+  limit?: number | null;
+  /**
+   * Number of columns on desktop. Always 1 on mobile, 2 on tablet.
+   */
+  columns?: ('2' | '3' | '4') | null;
+  /**
+   * Small label above the heading (optional)
    */
   eyebrow?: string | null;
   /**
@@ -5869,17 +5893,13 @@ export interface MarketingFeaturedCollectionsBlock {
    */
   heading?: string | null;
   /**
-   * CTA link text
+   * Link text next to the heading (leave blank to hide)
    */
   ctaText?: string | null;
   /**
-   * CTA link destination
+   * Destination for the "Explore All" link
    */
   ctaHref?: string | null;
-  /**
-   * Max collections to show (3–24)
-   */
-  limit?: number | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'marketing-featured-collections';

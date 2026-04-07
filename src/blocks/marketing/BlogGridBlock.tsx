@@ -11,10 +11,10 @@ export async function BlogGridBlock({
   showHeading,
   youtubeUrl,
 }: MarketingBlogGridBlock) {
-  const limit = postLimit ?? 6
+  const pageSize = postLimit ?? 6
 
   let featuredPost: Post | null = null
-  let gridPosts: Post[] = []
+  let allGridPosts: Post[] = []
 
   try {
     const payload = await getPayloadClient()
@@ -31,12 +31,13 @@ export async function BlogGridBlock({
         depth: 2,
         overrideAccess: true,
       }),
+      // Fetch all published posts for client-side pagination
       payload.find({
         collection: 'posts',
         where: {
           status: { equals: 'published' },
         },
-        limit: limit + 1, // +1 so we can exclude the hero from the grid without under-fetching
+        limit: 200,
         sort: '-publishedDate',
         depth: 2,
         overrideAccess: true,
@@ -46,11 +47,11 @@ export async function BlogGridBlock({
     const hero: Post | null = (featuredResult.docs[0] as Post) ?? (allResult.docs[0] as Post) ?? null
     const allPosts = allResult.docs as Post[]
 
+    // Exclude the hero from the grid so it doesn't appear twice
     const heroId = hero?.id
-    const remaining = heroId ? allPosts.filter((p) => p.id !== heroId) : allPosts
+    allGridPosts = heroId ? allPosts.filter((p) => p.id !== heroId) : allPosts
 
     featuredPost = hero
-    gridPosts = remaining.slice(0, limit)
   } catch (error) {
     console.error('[BlogGridBlock] Error fetching posts:', error)
   }
@@ -66,7 +67,8 @@ export async function BlogGridBlock({
       }
       featuredPost={featuredPost}
       heroIsFeatured={heroIsFeatured}
-      gridPosts={gridPosts}
+      allGridPosts={allGridPosts}
+      pageSize={pageSize}
       showFeatured={showFeatured ?? true}
       showHeading={showHeading ?? true}
       youtubeUrl={youtubeUrl ?? null}

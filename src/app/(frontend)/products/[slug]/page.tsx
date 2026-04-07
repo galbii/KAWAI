@@ -30,28 +30,37 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
     }
   }
 
-  // Use imageUrl instead of mainImage (field removed from Product schema)
-  const mainImageUrl = product.imageUrl || null
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
 
+  const title = product.seo?.metaTitle || product.name || 'Piano Product'
+  const description = product.seo?.metaDescription || product.description || ''
+
+  const ogImageRaw = product.seo?.ogImage
+  const ogImageUrl =
+    typeof ogImageRaw === 'object' && ogImageRaw !== null && 'url' in ogImageRaw
+      ? (ogImageRaw as { url: string }).url
+      : product.imageUrl || null
+
   return {
-    title: product.name || 'Piano Product',
-    description: product.description || '',
+    title,
+    description,
+    ...(product.seo?.keywords ? { keywords: product.seo.keywords } : {}),
     alternates: {
       canonical: `${siteUrl}/products/${slug}`
     },
     openGraph: {
-      title: product.name || 'Piano Product',
-      description: product.description || '',
+      title,
+      description,
       url: `${siteUrl}/products/${slug}`,
-      images: mainImageUrl ? [{ url: mainImageUrl }] : [],
+      images: ogImageUrl ? [{ url: ogImageUrl, width: 1200, height: 630, alt: title }] : [],
       type: 'website'
     },
     twitter: {
       card: 'summary_large_image',
-      title: product.name || 'Piano Product',
-      description: product.description || '',
-      images: mainImageUrl ? [mainImageUrl] : [],
+      site: '@KawaiPianoUSA',
+      title,
+      description,
+      images: ogImageUrl ? [ogImageUrl] : [],
     }
   }
 }
@@ -90,6 +99,9 @@ export default async function ProductPage(props: PageProps) {
                   currency: product.price.currency || 'USD',
                 },
               } : {}),
+              ...(product.variations?.[0]?.sku ? { sku: product.variations[0].sku } : {}),
+              url: `${siteUrl}/products/${product.slug}`,
+              ...(product.model ? { model: product.model } : {}),
             })).replace(/</g, '\\u003c')
           }}
         />
@@ -98,7 +110,16 @@ export default async function ProductPage(props: PageProps) {
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(generateBreadcrumbSchema([
               { name: 'Home', url: `${siteUrl}` },
-              { name: 'Pianos', url: `${siteUrl}/pianos` },
+              ...(() => {
+                const typeMap: Record<string, { name: string; url: string }> = {
+                  digital: { name: 'Digital Pianos', url: `${siteUrl}/pianos/digital` },
+                  grand: { name: 'Grand Pianos', url: `${siteUrl}/pianos/grand` },
+                  upright: { name: 'Upright Pianos', url: `${siteUrl}/pianos/upright` },
+                  hybrid: { name: 'Hybrid Pianos', url: `${siteUrl}/pianos/hybrid` },
+                  accessory: { name: 'Accessories', url: `${siteUrl}/pianos/accessories` },
+                }
+                return [typeMap[product.type ?? ''] ?? { name: 'Pianos', url: `${siteUrl}/pianos` }]
+              })(),
               { name: product.name || product.slug || '', url: `${siteUrl}/products/${product.slug}` },
             ])).replace(/</g, '\\u003c')
           }}

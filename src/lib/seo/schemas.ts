@@ -51,6 +51,9 @@ export function generateProductSchema(product: {
   type: 'digital' | 'grand' | 'hybrid' | 'upright' | 'accessory' | 'software';
   brand?: string;
   image?: string;
+  sku?: string;
+  url?: string;
+  model?: string;
   offers?: {
     price?: number;
     currency?: string;
@@ -80,6 +83,9 @@ export function generateProductSchema(product: {
       "name": product.brand || "Kawai"
     },
     "category": getSchemaCategory(product.type),
+    ...(product.sku && { "sku": product.sku }),
+    ...(product.url && { "url": product.url }),
+    ...(product.model && { "model": product.model }),
     ...(product.image && {
       "image": product.image
     }),

@@ -1,0 +1,277 @@
+'use client'
+
+import { useRef } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { motion, useInView } from 'framer-motion'
+import { ArrowRight, Play } from 'lucide-react'
+import type { NavCollection } from '@/lib/payload/products-navigation'
+import { cn } from '@/lib/utils'
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export interface FeaturedCollectionsGridProps {
+  collections: NavCollection[]
+  eyebrow?: string
+  heading?: string
+  ctaText?: string
+  ctaHref?: string
+  columns?: '2' | '3' | '4'
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const CATEGORY_LABELS: Record<string, string> = {
+  digital: 'Digital',
+  grand: 'Grand',
+  upright: 'Upright',
+  hybrid: 'Hybrid',
+  shigeru: 'Shigeru Kawai',
+}
+
+function getCategoryLabels(collection: NavCollection): string[] {
+  if (!collection.pianoCategories?.length) return []
+  return collection.pianoCategories.map((c) => CATEGORY_LABELS[c] ?? c)
+}
+
+function getImageUrl(collection: NavCollection): string | null {
+  return collection.mediaUrl ?? collection.imageUrl ?? null
+}
+
+function hasVideo(collection: NavCollection): boolean {
+  return Boolean(collection.youtubeUrl)
+}
+
+// ─── Grid column map ──────────────────────────────────────────────────────────
+
+const GRID_COLS = {
+  '2': 'grid-cols-1 sm:grid-cols-2',
+  '3': 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+  '4': 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
+} as const
+
+// ─── Collection Card ──────────────────────────────────────────────────────────
+
+function CollectionCard({ collection, index }: { collection: NavCollection; index: number }) {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, amount: 0.15 })
+
+  const imageUrl = getImageUrl(collection)
+  const displayTitle = collection.heading ?? collection.title
+  const categoryLabels = getCategoryLabels(collection)
+  const href = `/pianos/${collection.handle}`
+  const showVideo = hasVideo(collection)
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 24 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6, delay: index * 0.07, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <Link href={href} className="group block relative overflow-hidden bg-kawai-black" style={{ aspectRatio: '4/3' }}>
+
+        {/* ── Background image ── */}
+        {imageUrl ? (
+          <Image
+            src={imageUrl}
+            alt={displayTitle}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover transition-transform duration-700 ease-[var(--ease-elegant)] group-hover:scale-105"
+          />
+        ) : (
+          /* Placeholder when no image */
+          <div className="absolute inset-0 bg-kawai-charcoal flex items-center justify-center">
+            <div className="opacity-10">
+              <svg viewBox="0 0 120 80" className="w-24 h-auto" fill="currentColor" aria-hidden>
+                <rect x="8" y="24" width="104" height="40" rx="2" opacity="0.6" />
+                <rect x="12" y="27" width="8" height="33" rx="1" fill="white" />
+                <rect x="22" y="27" width="5" height="21" rx="1" fill="#111" />
+                <rect x="29" y="27" width="8" height="33" rx="1" fill="white" />
+                <rect x="39" y="27" width="5" height="21" rx="1" fill="#111" />
+                <rect x="46" y="27" width="8" height="33" rx="1" fill="white" />
+                <rect x="56" y="27" width="8" height="33" rx="1" fill="white" />
+                <rect x="66" y="27" width="5" height="21" rx="1" fill="#111" />
+                <rect x="73" y="27" width="8" height="33" rx="1" fill="white" />
+                <rect x="83" y="27" width="5" height="21" rx="1" fill="#111" />
+                <rect x="90" y="27" width="8" height="33" rx="1" fill="white" />
+                <rect x="100" y="27" width="5" height="21" rx="1" fill="#111" />
+              </svg>
+            </div>
+          </div>
+        )}
+
+        {/* ── Gradient overlays ── */}
+        {/* Bottom: text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent pointer-events-none" />
+        {/* Hover: darken slightly */}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors duration-500 pointer-events-none" />
+
+        {/* ── Top: category chips + video indicator ── */}
+        <div className="absolute top-0 left-0 right-0 p-4 flex items-start justify-between z-10">
+          {/* Category chips */}
+          <div className="flex flex-wrap gap-1.5">
+            {categoryLabels.slice(0, 2).map((label) => (
+              <span
+                key={label}
+                className="text-[9px] tracking-[0.2em] uppercase font-medium px-2 py-1 bg-black/40 backdrop-blur-sm text-white/70"
+                style={{ fontFamily: 'var(--font-brand-sans)' }}
+              >
+                {label}
+              </span>
+            ))}
+          </div>
+
+          {/* Video indicator */}
+          {showVideo && (
+            <span className="flex items-center gap-1 text-[9px] tracking-[0.15em] uppercase font-medium text-white/50 bg-black/40 backdrop-blur-sm px-2 py-1"
+              style={{ fontFamily: 'var(--font-brand-sans)' }}
+            >
+              <Play className="h-2.5 w-2.5" />
+              Video
+            </span>
+          )}
+        </div>
+
+        {/* ── Bottom: title + count + CTA ── */}
+        <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
+          {/* Title */}
+          <h3
+            className="text-white leading-tight mb-1.5 transition-transform duration-500 group-hover:-translate-y-1"
+            style={{
+              fontFamily: 'var(--font-brand-luxury)',
+              fontSize: 'clamp(1.1rem, 2vw, 1.5rem)',
+              fontWeight: 400,
+              letterSpacing: '-0.01em',
+              textShadow: '0 1px 12px rgba(0,0,0,0.4)',
+            }}
+          >
+            {displayTitle}
+          </h3>
+
+          {/* Product count */}
+          <p
+            className="text-white/45 text-xs mb-0 transition-all duration-500 group-hover:mb-4"
+            style={{ fontFamily: 'var(--font-brand-sans)', letterSpacing: '0.04em' }}
+          >
+            {collection.productCount > 0 ? `${collection.productCount} models` : 'Collection'}
+          </p>
+
+          {/* Subheading — only shown on hover */}
+          {collection.subheading && (
+            <p
+              className="text-white/50 text-xs leading-relaxed mb-3 max-w-xs overflow-hidden max-h-0 opacity-0 group-hover:max-h-10 group-hover:opacity-100 transition-all duration-500"
+              style={{ fontFamily: 'var(--font-brand-sans)' }}
+            >
+              {collection.subheading}
+            </p>
+          )}
+
+          {/* Explore CTA — slides in on hover */}
+          <div className="overflow-hidden max-h-0 opacity-0 group-hover:max-h-10 group-hover:opacity-100 transition-all duration-500">
+            <span
+              className="inline-flex items-center gap-2 text-[10px] tracking-[0.2em] uppercase font-medium text-white border-b border-white/40 pb-px group-hover:border-white transition-colors duration-300"
+              style={{ fontFamily: 'var(--font-brand-sans)' }}
+            >
+              Explore Collection
+              <ArrowRight className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-0.5" />
+            </span>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  )
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+
+export function FeaturedCollectionsGrid({
+  collections,
+  eyebrow = 'Kawai Piano',
+  heading = 'Featured Collections',
+  ctaText,
+  ctaHref = '/pianos',
+  columns = '3',
+}: FeaturedCollectionsGridProps) {
+  const headerRef = useRef(null)
+  const headerInView = useInView(headerRef, { once: true, amount: 0.4 })
+
+  if (collections.length === 0) return null
+
+  return (
+    <section className="py-16 md:py-24 bg-kawai-pearl">
+      <div className="container mx-auto px-6 md:px-10 max-w-screen-2xl">
+
+        {/* ── Section header ── */}
+        <motion.div
+          ref={headerRef}
+          initial={{ opacity: 0, y: 16 }}
+          animate={headerInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="flex items-end justify-between mb-10 md:mb-14"
+        >
+          <div>
+            {eyebrow && (
+              <div className="flex items-center gap-3 mb-4">
+                <span className="block w-6 h-px bg-kawai-red" />
+                <p
+                  className="text-[10px] tracking-[0.3em] uppercase font-medium text-kawai-charcoal/40"
+                  style={{ fontFamily: 'var(--font-brand-sans)' }}
+                >
+                  {eyebrow}
+                </p>
+              </div>
+            )}
+            <h2
+              className="font-light text-kawai-black leading-tight"
+              style={{
+                fontFamily: 'var(--font-crimson), Georgia, serif',
+                fontSize: 'clamp(1.75rem, 3vw, 2.75rem)',
+                letterSpacing: '-0.02em',
+              }}
+            >
+              {heading}
+            </h2>
+          </div>
+
+          {ctaText && ctaHref && (
+            <Link
+              href={ctaHref}
+              className={cn(
+                'hidden sm:inline-flex items-center gap-2 flex-shrink-0 ml-8',
+                'text-[10px] tracking-[0.2em] uppercase font-medium',
+                'text-kawai-charcoal/45 hover:text-kawai-black transition-colors duration-200',
+              )}
+              style={{ fontFamily: 'var(--font-brand-sans)' }}
+            >
+              {ctaText}
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          )}
+        </motion.div>
+
+        {/* ── Grid ── */}
+        <div className={cn('grid gap-4 md:gap-5', GRID_COLS[columns])}>
+          {collections.map((collection, i) => (
+            <CollectionCard key={collection.id} collection={collection} index={i} />
+          ))}
+        </div>
+
+        {/* Mobile CTA */}
+        {ctaText && ctaHref && (
+          <div className="sm:hidden mt-8 text-center">
+            <Link
+              href={ctaHref}
+              className="inline-flex items-center gap-2 text-[10px] tracking-[0.2em] uppercase font-medium text-kawai-charcoal/50 hover:text-kawai-black transition-colors duration-200"
+              style={{ fontFamily: 'var(--font-brand-sans)' }}
+            >
+              {ctaText}
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}

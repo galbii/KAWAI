@@ -536,13 +536,23 @@ export function getProductTypeSlug(type: string): string {
  *
  * @param limit - Maximum number of collections to return (default: 20)
  */
-export async function getNavCollections(limit: number = 20, featuredOnly: boolean = true): Promise<NavCollection[]> {
+export async function getNavCollections(
+  limit: number = 20,
+  featuredOnly: boolean = true,
+  categoryFilter?: string,
+): Promise<NavCollection[]> {
   try {
     const payload = await getPayload({ config })
 
-    const where = featuredOnly
-      ? { and: [{ featured: { equals: true } }, { productCount: { greater_than: 0 } }] }
-      : { productCount: { greater_than: 0 } }
+    // Build where clause imperatively. We use `any[]` here because the conditional
+    // spread produces a complex discriminated union that conflicts with Payload's
+    // exactOptionalPropertyTypes overloads.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const conditions: any[] = [{ productCount: { greater_than: 0 } }]
+    if (featuredOnly) conditions.push({ featured: { equals: true } })
+    if (categoryFilter) conditions.push({ pianoCategories: { contains: categoryFilter } })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: any = conditions.length === 1 ? conditions[0] : { and: conditions }
 
     const result = await payload.find({
       collection: 'collections',

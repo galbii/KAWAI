@@ -75,7 +75,8 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
   // Derive initial dealer context from cookie + pathname so the first client
   // render matches the server render (no flash of un-branded → dealer header).
   const [headersList, cookieStore] = await Promise.all([headers(), cookies()])
-  const pathname = headersList.get('x-pathname') || '/'
+  const rawPathname = headersList.get('x-pathname') || '/'
+  const pathname = rawPathname.length > 1 ? rawPathname.replace(/\/$/, '') : rawPathname
   const cookieDealerSlug = cookieStore.get('kawai-dealer-slug')?.value
   const pathDealerSlug = pathname.startsWith('/store/') ? pathname.split('/')[2] : undefined
   const dealerSlug = pathDealerSlug ?? cookieDealerSlug

@@ -80,8 +80,14 @@ export function BlogCard({ post, className, featured }: BlogCardProps) {
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           ) : (
-            <div className="absolute inset-0 bg-kawai-pearl flex items-center justify-center">
-              <span className="text-kawai-neutral text-4xl select-none">♪</span>
+            <div className="absolute inset-0 bg-kawai-pearl flex items-center justify-center p-8">
+              <Image
+                src="/images/kawai-logo-red-1x.png"
+                alt="KAWAI"
+                fill
+                className="object-contain p-8"
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              />
             </div>
           )}
 
