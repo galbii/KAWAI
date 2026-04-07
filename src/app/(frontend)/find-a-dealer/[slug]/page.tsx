@@ -54,14 +54,15 @@ export async function generateStaticParams() {
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
+  const { slug } = await params
+  const dealer = await getDealerBySlugDirect(slug)
+
+  // Only noindex if the dealer genuinely doesn't exist
+  if (!dealer) {
+    return { title: 'Dealer Not Found', robots: { index: false, follow: false } }
+  }
+
   try {
-    const { slug } = await params
-    const dealer = await getDealerBySlugDirect(slug)
-
-    if (!dealer) {
-      return { title: 'Dealer Not Found', robots: { index: false, follow: false } }
-    }
-
     const city = dealer.address?.city
     const state = dealer.address?.state
     const locationText = city && state ? `${city}, ${state}` : ''
@@ -97,8 +98,12 @@ export async function generateMetadata(
       },
     }
   } catch (error) {
+    // Transient error building metadata — dealer exists, so don't block indexing
     console.error('❌ [SEO] Error generating dealer metadata:', error)
-    return { title: 'Dealer Not Found', robots: { index: false, follow: false } }
+    return {
+      title: `${dealer.dealerName} | Authorized KAWAI Piano Dealer`,
+      robots: { index: true, follow: true },
+    }
   }
 }
 

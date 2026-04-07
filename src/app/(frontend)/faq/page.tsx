@@ -14,7 +14,11 @@ const fallbackMetadata: Metadata = {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  return getCMSPageMetadata('faq', fallbackMetadata)
+  const metadata = await getCMSPageMetadata('faq', fallbackMetadata)
+  return {
+    ...metadata,
+    robots: { index: true, follow: true },
+  }
 }
 
 interface PageProps {

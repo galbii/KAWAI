@@ -122,6 +122,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     )
 
     // ==========================================
+    // DYNAMIC — FAQ Pages (from CMS)
+    // ==========================================
+
+    try {
+      const faqsResult = await payload.find({
+        collection: 'faqs',
+        where: { status: { equals: 'published' } },
+        limit: 1000,
+        select: { slug: true, updatedAt: true },
+        depth: 0,
+      })
+
+      const faqRoutes: MetadataRoute.Sitemap = faqsResult.docs
+        .filter((f: any) => f.slug)
+        .map((f: any) => ({
+          url: `${SITE_URL}/faq/${f.slug}`,
+          lastModified: new Date(f.updatedAt),
+          changeFrequency: 'monthly' as const,
+          priority: 0.55,
+        }))
+
+      sitemap.push(...faqRoutes)
+      console.log(`✅ Sitemap: ${faqRoutes.length} FAQ pages`)
+    } catch (err) {
+      console.error('❌ Sitemap: faqs fetch failed', err)
+    }
+
+    // ==========================================
     // STATIC ROUTES — NAMM 2026 Event Pages
     // ==========================================
 

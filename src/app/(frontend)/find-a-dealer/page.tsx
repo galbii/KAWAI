@@ -10,7 +10,11 @@ const fallbackMetadata: Metadata = {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  return getCMSPageMetadata('find-a-dealer', fallbackMetadata)
+  const metadata = await getCMSPageMetadata('find-a-dealer', fallbackMetadata)
+  return {
+    ...metadata,
+    robots: { index: true, follow: true },
+  }
 }
 
 export const revalidate = 900 // 15-minute ISR

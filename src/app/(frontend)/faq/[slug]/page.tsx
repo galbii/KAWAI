@@ -22,6 +22,7 @@ export async function generateMetadata({
   if (!faq) {
     return {
       title: 'FAQ Not Found | Kawai Pianos',
+      robots: { index: false, follow: false },
     }
   }
 
@@ -34,6 +35,7 @@ export async function generateMetadata({
     title,
     description,
     keywords: (faq as any).seo?.keywords,
+    robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
     alternates: {
       canonical: `${siteUrl}/faq/${slug}`,
     },
