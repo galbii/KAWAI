@@ -48,6 +48,7 @@ export async function generateMetadata(props: BlogPostPageProps): Promise<Metada
     return {
       title: 'Post Not Found',
       description: 'The requested blog post could not be found.',
+      robots: { index: false, follow: false },
     }
   }
 
@@ -66,6 +67,7 @@ export async function generateMetadata(props: BlogPostPageProps): Promise<Metada
   return {
     title: metaTitle,
     description: metaDescription,
+    robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
     alternates: {
       canonical: `${siteUrl}/blog/${slug}`,
     },
@@ -76,6 +78,7 @@ export async function generateMetadata(props: BlogPostPageProps): Promise<Metada
       images: ogImageUrl ? [{ url: ogImageUrl }] : [],
       type: 'article',
       publishedTime: post.publishedDate || undefined,
+      modifiedTime: post.updatedAt,
     },
     twitter: {
       card: 'summary_large_image',
@@ -119,6 +122,36 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
       notFound()
     }
 
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
+
+    let ogImageUrl = ''
+    if (post.seo?.ogImage) {
+      ogImageUrl = resolveMediaUrl(post.seo.ogImage)
+    } else if (post.featuredImage) {
+      ogImageUrl = resolveMediaUrl(post.featuredImage)
+    }
+
+    const authors = (post.populatedAuthors ?? [])
+      .filter((a): a is { id?: string | null; name?: string | null } => Boolean(a?.name))
+      .map((a) => ({ '@type': 'Person', name: a.name }))
+
+    const articleSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: post.title,
+      description: post.excerpt ?? post.title,
+      url: `${siteUrl}/blog/${slug}`,
+      ...(ogImageUrl && { image: ogImageUrl }),
+      ...(post.publishedDate && { datePublished: post.publishedDate }),
+      dateModified: post.updatedAt,
+      ...(authors.length > 0 && { author: authors.length === 1 ? authors[0] : authors }),
+      publisher: {
+        '@type': 'Organization',
+        name: 'KAWAI Piano',
+        url: siteUrl,
+      },
+    }
+
     // RSC slots — server-rendered once, refreshed on save via RefreshRouteOnSave.
     // Layout blocks are now rendered client-side by RenderBlocksClient in LivePreviewPost
     // so they update in real-time as the editor types (no slot needed for layout).
@@ -131,6 +164,10 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
 
     return (
       <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+        />
         <AdminBarDoc
           collection="posts"
           id={String(post.id)}

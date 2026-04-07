@@ -40,6 +40,7 @@ export async function generateMetadata(): Promise<Metadata> {
     return {
       title: { absolute: metaTitle },
       description: metaDescription,
+      robots: { index: true, follow: true },
       alternates: { canonical: `${siteUrl}/blog` },
     }
   }
@@ -48,6 +49,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'The KAWAI Journal | Notes & Stories',
     description:
       'Explore our piano journal featuring education guides, product news, artist spotlights, maintenance tips, and more from KAWAI Piano Gallery.',
+    robots: { index: true, follow: true },
     alternates: { canonical: `${siteUrl}/blog` },
     openGraph: {
       title: 'The KAWAI Journal | Notes & Stories',
