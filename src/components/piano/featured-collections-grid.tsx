@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, useInView } from 'framer-motion'
@@ -17,6 +17,7 @@ export interface FeaturedCollectionsGridProps {
   ctaText?: string
   ctaHref?: string
   columns?: '2' | '3' | '4'
+  showCategoryFilter?: boolean
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -34,8 +35,20 @@ function getCategoryLabels(collection: NavCollection): string[] {
   return collection.pianoCategories.map((c) => CATEGORY_LABELS[c] ?? c)
 }
 
+function extractYouTubeId(url: string): string | null {
+  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?/\s]{11})/)
+  return match?.[1] ?? null
+}
+
 function getImageUrl(collection: NavCollection): string | null {
-  return collection.mediaUrl ?? collection.imageUrl ?? null
+  if (collection.mediaUrl) return collection.mediaUrl
+  if (collection.imageUrl) return collection.imageUrl
+  // Fall back to YouTube thumbnail when no static image is set
+  if (collection.youtubeUrl) {
+    const videoId = extractYouTubeId(collection.youtubeUrl)
+    if (videoId) return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+  }
+  return null
 }
 
 function hasVideo(collection: NavCollection): boolean {
@@ -184,6 +197,50 @@ function CollectionCard({ collection, index }: { collection: NavCollection; inde
   )
 }
 
+// ─── Category filter bar ──────────────────────────────────────────────────────
+
+const CATEGORY_ORDER = ['digital', 'grand', 'upright', 'hybrid', 'shigeru'] as const
+
+function CategoryFilterBar({
+  available,
+  selected,
+  onSelect,
+}: {
+  available: string[]
+  selected: string
+  onSelect: (cat: string) => void
+}) {
+  const options = ['all', ...CATEGORY_ORDER.filter((c) => available.includes(c))]
+
+  return (
+    <div className="overflow-x-auto scrollbar-none -mx-6 md:-mx-10">
+      <div className="flex items-center gap-2 px-6 md:px-10 pb-1 min-w-max">
+        {options.map((cat) => {
+          const isActive = selected === cat
+          const label = cat === 'all' ? 'All' : (CATEGORY_LABELS[cat] ?? cat)
+          return (
+            <button
+              key={cat}
+              onClick={() => onSelect(cat)}
+              className={cn(
+                'px-4 py-2 text-[10px] tracking-[0.2em] uppercase font-medium whitespace-nowrap transition-all duration-200',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red',
+                isActive
+                  ? 'bg-kawai-black text-white'
+                  : 'border border-kawai-neutral text-kawai-charcoal/45 hover:border-kawai-charcoal/30 hover:text-kawai-black',
+              )}
+              style={{ fontFamily: 'var(--font-brand-sans)' }}
+              aria-pressed={isActive}
+            >
+              {label}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function FeaturedCollectionsGrid({
@@ -193,11 +250,26 @@ export function FeaturedCollectionsGrid({
   ctaText,
   ctaHref = '/pianos',
   columns = '3',
+  showCategoryFilter = false,
 }: FeaturedCollectionsGridProps) {
   const headerRef = useRef(null)
   const headerInView = useInView(headerRef, { once: true, amount: 0.4 })
+  const [selectedCategory, setSelectedCategory] = useState('all')
 
   if (collections.length === 0) return null
+
+  // Derive which categories are actually present in this collection set
+  const availableCategories = Array.from(
+    new Set(collections.flatMap((c) => c.pianoCategories ?? [])),
+  )
+
+  const rawFiltered =
+    selectedCategory === 'all' || !showCategoryFilter
+      ? collections
+      : collections.filter((c) => c.pianoCategories?.includes(selectedCategory))
+
+  // Fall back to all collections if the selected category yields nothing
+  const filtered = rawFiltered.length > 0 ? rawFiltered : collections
 
   return (
     <section className="py-16 md:py-24 bg-kawai-pearl">
@@ -209,7 +281,7 @@ export function FeaturedCollectionsGrid({
           initial={{ opacity: 0, y: 16 }}
           animate={headerInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="flex items-end justify-between mb-10 md:mb-14"
+          className="flex items-end justify-between mb-8 md:mb-10"
         >
           <div>
             {eyebrow && (
@@ -251,12 +323,29 @@ export function FeaturedCollectionsGrid({
           )}
         </motion.div>
 
+        {/* ── Category filter ── */}
+        {showCategoryFilter && availableCategories.length > 1 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={headerInView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.4, delay: 0.15 }}
+            className="mb-8 md:mb-10"
+          >
+            <CategoryFilterBar
+              available={availableCategories}
+              selected={selectedCategory}
+              onSelect={setSelectedCategory}
+            />
+          </motion.div>
+        )}
+
         {/* ── Grid ── */}
         <div className={cn('grid gap-4 md:gap-5', GRID_COLS[columns])}>
-          {collections.map((collection, i) => (
+          {filtered.map((collection, i) => (
             <CollectionCard key={collection.id} collection={collection} index={i} />
           ))}
         </div>
+
 
         {/* Mobile CTA */}
         {ctaText && ctaHref && (

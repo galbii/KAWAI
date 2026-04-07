@@ -4,9 +4,22 @@ import { useState, useRef } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
-import type { RebateSeries } from '../page'
+
+export type RebateModel = {
+  model: string
+  finishes: string
+  consumerRebate: number
+}
+
+export type RebateSeries = {
+  seriesName: string
+  models: RebateModel[]
+}
 
 type Props = {
+  eyebrow?: string
+  heading?: string
+  deadline?: string
   schedule: RebateSeries[]
 }
 
@@ -85,7 +98,7 @@ function SeriesSidebar({
   return (
     <nav className="bg-kawai-black" aria-label="Filter by series">
       {/* Header label */}
-      <div className="px-6 py-4 border-b border-white/[0.08]">
+      <div className="px-7 py-5 border-b border-white/[0.08]">
         <p
           className="text-[9px] tracking-[0.3em] uppercase text-white/25 font-medium"
           style={{ fontFamily: 'var(--font-brand-sans)' }}
@@ -118,8 +131,8 @@ function SeriesSidebar({
             />
 
             {/* Content */}
-            <div className="flex-1 px-5 py-5">
-              <div className="flex items-center justify-between gap-2 mb-1.5">
+            <div className="flex-1 px-6 py-6">
+              <div className="flex items-center justify-between gap-2 mb-2">
                 <span
                   className={[
                     'font-light transition-colors duration-200 leading-tight',
@@ -127,7 +140,7 @@ function SeriesSidebar({
                   ].join(' ')}
                   style={{
                     fontFamily: 'var(--font-crimson), Georgia, serif',
-                    fontSize: '1.3rem',
+                    fontSize: '1.5rem',
                     letterSpacing: '-0.02em',
                   }}
                 >
@@ -135,7 +148,7 @@ function SeriesSidebar({
                 </span>
                 <ArrowRight
                   className={[
-                    'h-3 w-3 flex-shrink-0 transition-all duration-300',
+                    'h-3.5 w-3.5 flex-shrink-0 transition-all duration-300',
                     isActive
                       ? 'text-kawai-red opacity-100'
                       : 'text-white/20 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5',
@@ -178,15 +191,15 @@ function SeriesBlock({
         initial={{ opacity: 0, y: -6 }}
         animate={shouldShow ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="flex items-center justify-between px-6 py-5 bg-kawai-black"
+        className="flex items-center justify-between px-8 py-7 bg-kawai-black"
       >
-        <div className="flex items-center gap-4">
-          <span className="block w-px h-6 bg-kawai-red flex-shrink-0" />
+        <div className="flex items-center gap-5">
+          <span className="block w-px h-8 bg-kawai-red flex-shrink-0" />
           <span
             className="font-light text-white"
             style={{
               fontFamily: 'var(--font-crimson), Georgia, serif',
-              fontSize: 'clamp(1.25rem, 2.5vw, 1.875rem)',
+              fontSize: 'clamp(1.5rem, 2.5vw, 2.25rem)',
               letterSpacing: '-0.02em',
             }}
           >
@@ -194,12 +207,12 @@ function SeriesBlock({
           </span>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-5">
           <span
             className="text-kawai-red font-light"
             style={{
               fontFamily: 'var(--font-crimson), Georgia, serif',
-              fontSize: 'clamp(1rem, 1.75vw, 1.375rem)',
+              fontSize: 'clamp(1.1rem, 1.75vw, 1.5rem)',
               letterSpacing: '-0.015em',
             }}
           >
@@ -226,7 +239,7 @@ function SeriesBlock({
               delay: mIdx * 0.055 + 0.08,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="group relative flex items-center justify-between px-6 py-6 border-t border-kawai-neutral/60 hover:bg-kawai-red/[0.025] transition-colors duration-200 cursor-default"
+            className="group relative flex items-center justify-between px-8 py-8 border-t border-kawai-neutral/60 hover:bg-kawai-red/[0.025] transition-colors duration-200 cursor-default"
           >
             {/* Red left border on hover */}
             <div
@@ -235,12 +248,12 @@ function SeriesBlock({
             />
 
             {/* Left: model name stacked above finish */}
-            <div className="flex flex-col gap-1 min-w-0 pr-6">
+            <div className="flex flex-col gap-1.5 min-w-0 pr-8">
               <span
                 className="font-semibold text-kawai-black flex-shrink-0"
                 style={{
                   fontFamily: 'var(--font-brand-sans)',
-                  fontSize: '0.9375rem',
+                  fontSize: '1.0625rem',
                   letterSpacing: '0.06em',
                 }}
               >
@@ -266,7 +279,7 @@ function SeriesBlock({
                 className="text-kawai-red font-light leading-none"
                 style={{
                   fontFamily: 'var(--font-crimson), Georgia, serif',
-                  fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
+                  fontSize: 'clamp(3rem, 5.5vw, 6rem)',
                   letterSpacing: '-0.04em',
                 }}
               >
@@ -279,26 +292,37 @@ function SeriesBlock({
 
       {/* ── Series CTA ── */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={shouldShow ? { opacity: 1 } : {}}
-        transition={{ duration: 0.4, delay: series.models.length * 0.055 + 0.2 }}
-        className="flex items-center justify-between px-6 py-4 border-l border-r border-b border-kawai-neutral/60 bg-kawai-pearl/50"
+        initial={{ opacity: 0, y: 6 }}
+        animate={shouldShow ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.45, delay: series.models.length * 0.055 + 0.2, ease: [0.22, 1, 0.36, 1] }}
+        className="flex items-center gap-3 px-8 py-6 border-l border-r border-b border-kawai-neutral/60 bg-white"
       >
+        {/* Primary — solid red */}
         <Link
           href={`/pianos/${series.seriesName.toLowerCase().replace(/\s+/g, '-')}`}
-          className="group inline-flex items-center gap-2 text-[10px] tracking-[0.2em] uppercase font-medium text-kawai-charcoal/50 hover:text-kawai-black transition-colors duration-200"
+          className="group relative inline-flex items-center gap-3 overflow-hidden bg-kawai-red px-7 py-4 transition-all duration-300 hover:bg-[#c5141c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red focus-visible:ring-offset-2"
           style={{ fontFamily: 'var(--font-brand-sans)' }}
         >
-          Explore {series.seriesName}
-          <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+          <span
+            className="pointer-events-none absolute inset-0 -translate-x-full skew-x-[-20deg] bg-white/10 transition-transform duration-500 group-hover:translate-x-[120%]"
+            aria-hidden="true"
+          />
+          <span className="relative text-[11px] tracking-[0.22em] uppercase font-semibold text-white">
+            Explore {series.seriesName}
+          </span>
+          <ArrowRight className="relative h-4 w-4 text-white transition-transform duration-300 group-hover:translate-x-0.5" />
         </Link>
+
+        {/* Secondary — black outline */}
         <Link
           href="/pianos"
-          className="group inline-flex items-center gap-2 text-[10px] tracking-[0.2em] uppercase font-medium text-kawai-charcoal/30 hover:text-kawai-charcoal/60 transition-colors duration-200"
+          className="group relative inline-flex items-center gap-3 overflow-hidden border border-kawai-black/20 px-7 py-4 transition-all duration-300 hover:border-kawai-black hover:bg-kawai-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-black focus-visible:ring-offset-2"
           style={{ fontFamily: 'var(--font-brand-sans)' }}
         >
-          View all pianos
-          <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+          <span className="text-[11px] tracking-[0.22em] uppercase font-medium text-kawai-black/70 transition-colors duration-300 group-hover:text-white">
+            View All Pianos
+          </span>
+          <ArrowRight className="h-4 w-4 text-kawai-black/40 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-white" />
         </Link>
       </motion.div>
     </div>
@@ -307,7 +331,12 @@ function SeriesBlock({
 
 // ─── Main Section ─────────────────────────────────────────────────────────────
 
-export function RebateSchedule({ schedule }: Props) {
+export function RebateSchedule({
+  schedule,
+  eyebrow = 'Spring 2026 Savings',
+  heading = 'Digital Piano Rebates',
+  deadline = 'June 30, 2026',
+}: Props) {
   const [selected, setSelected] = useState<string>(ALL)
   const headerRef = useRef(null)
   const headerInView = useInView(headerRef, { once: true, amount: 0.4 })
@@ -315,16 +344,19 @@ export function RebateSchedule({ schedule }: Props) {
   const filtered = selected === ALL ? schedule : schedule.filter((s) => s.seriesName === selected)
   const activeSeries = filtered[0]
 
+  const totalModels = schedule.reduce((acc, s) => acc + s.models.length, 0)
+  const totalSeries = schedule.length
+
   const subtitle =
     selected === ALL
-      ? `15 models across 7 series\u00a0·\u00a0April 1\u2013June 30, 2026`
+      ? `${totalModels} models across ${totalSeries} series\u00a0·\u00a0Available until ${deadline}`
       : activeSeries
-        ? `${activeSeries.models.length} ${activeSeries.models.length === 1 ? 'model' : 'models'}\u00a0·\u00a0save ${formatSavings(maxRebate(activeSeries))}\u00a0·\u00a0April 1\u2013June 30, 2026`
+        ? `${activeSeries.models.length} ${activeSeries.models.length === 1 ? 'model' : 'models'}\u00a0·\u00a0save ${formatSavings(maxRebate(activeSeries))}\u00a0·\u00a0Available until ${deadline}`
         : ''
 
   return (
-    <section id="schedule" className="bg-white py-28 lg:py-44">
-      <div className="container mx-auto px-8 lg:px-20 max-w-6xl">
+    <section id="schedule" className="bg-white py-16 lg:py-24">
+      <div className="container mx-auto px-4 lg:px-8 max-w-screen-xl">
 
         {/* ── Section header ── */}
         <motion.div
@@ -332,27 +364,27 @@ export function RebateSchedule({ schedule }: Props) {
           initial={{ opacity: 0, y: 20 }}
           animate={headerInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-12"
+          className="mb-10"
         >
-          <div className="flex items-center gap-3 mb-10">
+          <div className="flex items-center gap-3 mb-8">
             <span className="block w-8 h-px bg-kawai-red" />
             <span
               className="text-[11px] tracking-[0.3em] uppercase text-kawai-charcoal/40 font-medium"
               style={{ fontFamily: 'var(--font-brand-sans)' }}
             >
-              Spring 2026 Savings
+              {eyebrow}
             </span>
           </div>
 
           <h2
-            className="font-light text-kawai-black leading-tight mb-5"
+            className="font-light text-kawai-black leading-tight mb-4"
             style={{
               fontFamily: 'var(--font-crimson), Georgia, serif',
-              fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
+              fontSize: 'clamp(2.75rem, 5vw, 5rem)',
               letterSpacing: '-0.025em',
             }}
           >
-            Digital Piano Rebates<span className="text-kawai-red mx-3 font-extralight opacity-40">|</span>Available only until June 30, 2026
+            {heading}<span className="text-kawai-red mx-3 font-extralight opacity-40">|</span>Available only until {deadline}
           </h2>
 
           <AnimatePresence mode="wait">
@@ -375,10 +407,10 @@ export function RebateSchedule({ schedule }: Props) {
           initial={{ opacity: 0 }}
           animate={headerInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.5, delay: 0.15 }}
-          className="lg:grid lg:grid-cols-[260px_1fr] lg:items-start"
+          className="lg:grid lg:grid-cols-[320px_1fr] lg:gap-0 lg:items-start"
         >
           {/* ── Sidebar (desktop) ── */}
-          <div className="hidden lg:block lg:sticky lg:top-8 lg:self-start">
+          <div className="hidden lg:block lg:sticky lg:self-start" style={{ top: '6rem' }}>
             <SeriesSidebar schedule={schedule} selected={selected} onSelect={setSelected} />
           </div>
 
@@ -388,8 +420,8 @@ export function RebateSchedule({ schedule }: Props) {
           </div>
 
           {/* ── Content ── */}
-          <div className="lg:pl-12">
-            {/* Column hints — only when a specific series is active */}
+          <div className="lg:pl-10">
+            {/* Column hints */}
             <AnimatePresence>
               {selected !== ALL && (
                 <motion.div
@@ -397,7 +429,7 @@ export function RebateSchedule({ schedule }: Props) {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.25 }}
-                  className="flex justify-between px-6 mb-3"
+                  className="flex justify-between px-8 mb-3"
                 >
                   <span
                     className="text-[10px] tracking-[0.3em] uppercase text-kawai-charcoal/25 font-medium"
@@ -444,7 +476,7 @@ export function RebateSchedule({ schedule }: Props) {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, delay: 0.2 }}
-          className="text-kawai-charcoal/30 text-sm leading-relaxed pt-8 border-t border-kawai-neutral mt-14"
+          className="text-kawai-charcoal/30 text-sm leading-relaxed pt-8 border-t border-kawai-neutral mt-12"
           style={{ fontFamily: 'var(--font-brand-sans)' }}
         >
           Savings applied as instant rebate at point of sale on qualifying new piano purchases at participating authorized Kawai dealers. Offer valid April 1–June 30, 2026.

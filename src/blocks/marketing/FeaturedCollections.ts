@@ -76,6 +76,16 @@ export const FeaturedCollections: Block = {
       },
     },
 
+    // ── Filter ────────────────────────────────────────────────────────────────
+    {
+      name: 'showCategoryFilter',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Show a category pill bar (Digital / Grand / Upright / etc.) that lets visitors filter collections client-side.',
+      },
+    },
+
     // ── Grid options ───────────────────────────────────────────────────────────
     {
       name: 'columns',

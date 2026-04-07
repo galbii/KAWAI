@@ -50,6 +50,7 @@ export async function FeaturedCollectionsRenderer(props: MarketingFeaturedCollec
     categoryFilter,
     limit,
     columns,
+    showCategoryFilter,
     eyebrow,
     heading,
     ctaText,
@@ -80,13 +81,14 @@ export async function FeaturedCollectionsRenderer(props: MarketingFeaturedCollec
 
   // ── Route to display component ───────────────────────────────────────────────
   if (displayMode === 'carousel') {
-    return <FeaturedCollectionsCarousel {...sharedProps} />
+    return <FeaturedCollectionsCarousel {...sharedProps} showCategoryFilter={showCategoryFilter ?? false} />
   }
 
   return (
     <FeaturedCollectionsGrid
       {...sharedProps}
       columns={columns ?? '3'}
+      showCategoryFilter={showCategoryFilter ?? false}
     />
   )
 }

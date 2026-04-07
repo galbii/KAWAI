@@ -90,6 +90,7 @@ export interface Config {
     'marketing-i2l': MarketingI2LBlock;
     'marketing-technical-showcase': MarketingTechnicalShowcaseBlock;
     'marketing-find-a-dealer': MarketingFindADealerBlock;
+    'marketing-dealer-finder': MarketingDealerFinderBlock;
     'marketing-3d-viewer': Marketing3DViewerBlock;
     'marketing-instagram-carousel': MarketingInstagramCarouselBlock;
     'marketing-artist-carousel': MarketingArtistCarouselBlock;
@@ -102,6 +103,7 @@ export interface Config {
     'marketing-storefront-locations': MarketingStorefrontLocationsBlock;
     'marketing-featured-models': MarketingFeaturedModelsBlock;
     'marketing-featured-collections': MarketingFeaturedCollectionsBlock;
+    'marketing-rebate-table': MarketingRebateTableBlock;
     'marketing-artist-hero': MarketingArtistHeroBlock;
     'marketing-pianos-browser': MarketingPianosBrowserBlock;
     'marketing-artists-grid': MarketingArtistsGridBlock;
@@ -4966,6 +4968,19 @@ export interface MarketingFindADealerBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingDealerFinderBlock".
+ */
+export interface MarketingDealerFinderBlock {
+  /**
+   * Heading shown in the dealer list panel
+   */
+  heading?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-dealer-finder';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "Marketing3DViewerBlock".
  */
 export interface Marketing3DViewerBlock {
@@ -5881,6 +5896,10 @@ export interface MarketingFeaturedCollectionsBlock {
    */
   limit?: number | null;
   /**
+   * Show a category pill bar (Digital / Grand / Upright / etc.) that lets visitors filter collections client-side.
+   */
+  showCategoryFilter?: boolean | null;
+  /**
    * Number of columns on desktop. Always 1 on mobile, 2 on tablet.
    */
   columns?: ('2' | '3' | '4') | null;
@@ -5903,6 +5922,52 @@ export interface MarketingFeaturedCollectionsBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'marketing-featured-collections';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingRebateTableBlock".
+ */
+export interface MarketingRebateTableBlock {
+  /**
+   * Small label above the heading
+   */
+  eyebrow?: string | null;
+  /**
+   * Section heading
+   */
+  heading?: string | null;
+  /**
+   * Offer end date shown in the heading and subtitle (e.g. "June 30, 2026")
+   */
+  deadline?: string | null;
+  /**
+   * Add one entry per series. Each series contains one or more model rows.
+   */
+  schedule: {
+    /**
+     * e.g. "CN Series", "CA Series"
+     */
+    seriesName: string;
+    models: {
+      /**
+       * Model number, e.g. "CN201"
+       */
+      model: string;
+      /**
+       * Available finishes, e.g. "Black / White / Gold"
+       */
+      finishes?: string | null;
+      /**
+       * Consumer rebate amount in USD
+       */
+      consumerRebate: number;
+      id?: string | null;
+    }[];
+    id?: string | null;
+  }[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-rebate-table';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -6013,6 +6078,30 @@ export interface MarketingBlogLatestBlock {
    * Number of columns in the grid
    */
   columns?: ('2' | '3') | null;
+  /**
+   * Show a primary call-to-action button below the grid
+   */
+  showCta?: boolean | null;
+  /**
+   * Primary CTA label
+   */
+  ctaLabel?: string | null;
+  /**
+   * Primary CTA link URL
+   */
+  ctaHref?: string | null;
+  /**
+   * Show a secondary call-to-action button alongside the primary
+   */
+  showSecondaryCta?: boolean | null;
+  /**
+   * Secondary CTA label
+   */
+  secondaryCtaLabel?: string | null;
+  /**
+   * Secondary CTA link URL
+   */
+  secondaryCtaHref?: string | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'marketing-blog-latest';
@@ -7490,11 +7579,13 @@ export interface Page {
     | MarketingTechnicalShowcaseBlock
     | MarketingGrandHeroBlock
     | MarketingFindADealerBlock
+    | MarketingDealerFinderBlock
     | Marketing3DViewerBlock
     | MarketingInstagramCarouselBlock
     | MarketingArtistCarouselBlock
     | MarketingFeaturedModelsBlock
     | MarketingFeaturedCollectionsBlock
+    | MarketingRebateTableBlock
     | MarketingArtistHeroBlock
     | MarketingPianosBrowserBlock
     | MarketingArtistsGridBlock
@@ -7657,8 +7748,10 @@ export interface HomePage {
         | MarketingContactFormBlock
         | MarketingStorefrontLocationsBlock
         | MarketingFeaturedModelsBlock
+        | MarketingFeaturedCollectionsBlock
         | MarketingBlogGridBlock
         | MarketingBlogLatestBlock
+        | LayoutBottomLeftPopupBlock
       )[]
     | null;
   /**

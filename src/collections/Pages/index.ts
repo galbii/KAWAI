@@ -138,12 +138,14 @@ export const Pages: CollectionConfig<'pages'> = {
                 'marketing-i2l',                    // Instrumental to Life
                 'marketing-technical-showcase',     // Technical Showcase
                 'marketing-grand-hero',             // Grand Hero
-                'marketing-find-a-dealer',          // Find a Dealer
+                'marketing-find-a-dealer',          // Find a Dealer (CTA link)
+                'marketing-dealer-finder',          // Dealer Finder (interactive map)
                 'marketing-3d-viewer',              // 3D Model Viewer
                 'marketing-instagram-carousel',     // Instagram Carousel
                 'marketing-artist-carousel',        // Artist Carousel
                 'marketing-featured-models',        // Featured Models
                 'marketing-featured-collections',   // Featured Collections carousel
+                'marketing-rebate-table',           // Rebate Table
                 'marketing-artist-hero',            // Artist Hero carousel
                 'marketing-pianos-browser',         // Pianos browser catalog
                 'marketing-artists-grid',           // Artists grid with search

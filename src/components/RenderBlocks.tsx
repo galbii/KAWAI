@@ -8,7 +8,7 @@
  * - Legacy (4): archive, content, mediaBlock, cta
  * - Content (5): content-text, content-image, content-video, content-code, content-banner
  * - Layout (10): layout-columns, layout-spacer, layout-divider, layout-hero-carousel, layout-video-background, layout-brand-intro, layout-bottom-left-popup, layout-side-navigation, layout-calendly-embed, layout-booking-modal
- * - Marketing (11): marketing-hero, marketing-grand-hero, marketing-cta, marketing-testimonials, marketing-i2l, marketing-technical-showcase, marketing-find-a-dealer, marketing-3d-viewer, marketing-instagram-carousel, marketing-artist-carousel, marketing-featured-models
+ * - Marketing (12): marketing-hero, marketing-grand-hero, marketing-cta, marketing-testimonials, marketing-i2l, marketing-technical-showcase, marketing-find-a-dealer, marketing-dealer-finder, marketing-3d-viewer, marketing-instagram-carousel, marketing-artist-carousel, marketing-featured-models
  * - Events (2): events-university-hero, events-event-overview
  * - Product (6): product-showcase, product-hero, product-gallery, product-features, product-specs, product-collection-showcase
  *
@@ -72,6 +72,7 @@ import { TestimonialsBlock } from './blocks/TestimonialsBlock'
 import { InstrumentalToLifeBlock } from './blocks/InstrumentalToLifeBlock'
 import { TechnicalShowcaseBlock } from './blocks/TechnicalShowcaseBlock'
 import { FindADealerBlock } from './blocks/FindADealerBlock'
+import { DealerFinderMapBlock } from './blocks/DealerFinderMapBlock'
 import { ThreeDViewerBlock } from './blocks/ThreeDViewerBlock'
 import { InstagramCarouselBlock } from './blocks/InstagramCarouselBlock'
 import { ArtistCarouselBlock } from './blocks/ArtistCarouselBlock'
@@ -84,6 +85,7 @@ import { ContactFormBlock } from './blocks/ContactFormBlock'
 import { StorefrontLocationsBlock } from './blocks/StorefrontLocationsBlock'
 import { FeaturedModelsBlock } from './blocks/FeaturedModelsBlock'
 import { FeaturedCollectionsBlock } from './blocks/FeaturedCollectionsBlock'
+import { RebateTableBlock } from './blocks/RebateTableBlock'
 import { ArtistHeroBlock } from './blocks/ArtistHeroBlock'
 import { PianosBrowserBlock } from './blocks/PianosBrowserBlock'
 import { ArtistsGridBlock } from './blocks/ArtistsGridBlock'
@@ -143,6 +145,7 @@ const blockComponents = {
   'marketing-i2l': InstrumentalToLifeBlock,
   'marketing-technical-showcase': TechnicalShowcaseBlock,
   'marketing-find-a-dealer': FindADealerBlock,
+  'marketing-dealer-finder': DealerFinderMapBlock,
   'marketing-3d-viewer': ThreeDViewerBlock,
   'marketing-instagram-carousel': InstagramCarouselBlock,
   'marketing-artist-carousel': ArtistCarouselBlock,
@@ -155,6 +158,7 @@ const blockComponents = {
   'marketing-storefront-locations': StorefrontLocationsBlock,
   'marketing-featured-models': FeaturedModelsBlock,
   'marketing-featured-collections': FeaturedCollectionsBlock,
+  'marketing-rebate-table': RebateTableBlock,
   'marketing-artist-hero': ArtistHeroBlock,
   'marketing-pianos-browser': PianosBrowserBlock,
   'marketing-artists-grid': ArtistsGridBlock,

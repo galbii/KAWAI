@@ -18,9 +18,10 @@ import './components/animations.css'
 
 interface Props {
   dealers: DealerWithDistance[]
+  heading?: string
 }
 
-export function DealerFinderClient({ dealers }: Props) {
+export function DealerFinderClient({ dealers, heading = 'Our Authorized Dealers' }: Props) {
   const [searchLocation, setSearchLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [selectedRadius, setSelectedRadius] = useState(25)
   const [selectedDealerTypes, setSelectedDealerTypes] = useState<string[]>([])
@@ -139,7 +140,7 @@ export function DealerFinderClient({ dealers }: Props) {
               className="font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-[0.9] tracking-[-0.02em]"
               style={{ fontSize: 'clamp(28px, 2.8vw, 40px)' }}
             >
-              Our Authorized<br />Dealers
+              {heading}
             </h1>
           </div>
 

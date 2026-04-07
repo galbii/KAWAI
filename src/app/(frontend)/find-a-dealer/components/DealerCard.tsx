@@ -38,9 +38,9 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
   return (
     <div
       className={cn(
-        'relative cursor-pointer transition-all duration-200 select-none',
+        'relative cursor-pointer transition-colors duration-150 select-none',
         'border-b border-kawai-neutral/50 last:border-b-0',
-        isSelected ? 'bg-kawai-pearl/40' : 'bg-white hover:bg-kawai-pearl/10',
+        isSelected ? 'bg-kawai-pearl' : 'bg-white hover:bg-kawai-pearl',
       )}
       style={{ borderLeft: `3px solid ${borderColor}` }}
       onClick={handleCardClick}
@@ -150,7 +150,7 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
 
       {/* Expandable Details */}
       {isExpanded && (
-        <div className="border-t border-kawai-neutral/60 bg-kawai-pearl/40 px-5 py-4 space-y-4 animate-in slide-in-from-top-1 duration-150">
+        <div className="border-t border-kawai-neutral/60 bg-[#F5F3EF] px-5 py-4 space-y-4 animate-in slide-in-from-top-1 duration-150">
 
           {/* Address */}
           {(dealer.address?.street || dealer.address?.city) && (

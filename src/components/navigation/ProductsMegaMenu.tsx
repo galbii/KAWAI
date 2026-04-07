@@ -460,7 +460,7 @@ function CollectionFooter({ collections, activeHandle, onSelect, onClose, catego
         <Link
           href={ctaHref}
           onClick={onClose}
-          className="group flex-shrink-0 flex items-center gap-1.5 text-sm font-medium text-[#A01829] hover:text-[#C41019] transition-colors duration-150 whitespace-nowrap ml-auto"
+          className="group flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-1.5 bg-[#E11922] hover:bg-[#C41019] rounded-full text-sm font-semibold text-white transition-colors duration-150 whitespace-nowrap ml-auto"
         >
           {ctaLabel}
           <ArrowRight className="h-3.5 w-3.5 transition-transform duration-150 group-hover:translate-x-0.5" />
@@ -756,10 +756,10 @@ function TopTabBar({ selectedKey, onSelect, onClose, productTypes }: {
         <Link
           href="/pianos"
           onClick={onClose}
-          className="group flex items-center gap-2 text-sm font-medium text-[#9A9189] hover:text-[#A01829] transition-colors duration-150 whitespace-nowrap"
+          className="group inline-flex items-center gap-2 px-4 py-1.5 bg-[#1E1B16] hover:bg-[#2C2C2C] rounded-sm text-sm font-semibold text-white transition-colors duration-150 whitespace-nowrap"
         >
           View All Pianos
-          <ArrowRight className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-0.5" />
+          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-150 group-hover:translate-x-0.5" />
         </Link>
       </div>
     </div>

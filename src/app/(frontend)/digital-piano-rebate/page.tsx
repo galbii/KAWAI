@@ -1,7 +1,10 @@
 import type { Metadata } from 'next'
 import { Hero } from './components/Hero'
 import { RebateSchedule } from './components/RebateSchedule'
+import type { RebateSeries, RebateModel } from './components/RebateSchedule'
 import { FindDealerCta } from './components/FindDealerCta'
+
+export type { RebateSeries, RebateModel }
 
 export const metadata: Metadata = {
   title: 'Save Up To $400 on Kawai Digital Pianos | Spring 2026 Rebate',
@@ -14,19 +17,6 @@ export const metadata: Metadata = {
 }
 
 export const revalidate = 3600
-
-export type RebateSeries = {
-  seriesName: string
-  models: RebateModel[]
-}
-
-export type RebateModel = {
-  model: string
-  finishes: string
-  consumerRebate: number
-  kawaiPortion: number
-  dealerPortion: number
-}
 
 export const REBATE_SCHEDULE: RebateSeries[] = [
   {

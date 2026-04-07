@@ -1,30 +1,39 @@
 import type { MarketingBlogLatestBlock } from '@/payload-types'
 import type { Post } from '@/payload-types'
 import { getPayloadClient } from '@/lib/payload/queries'
-import { BlogCardAnimated } from '@/components/blog/BlogCardAnimated'
+import { BlogLatestClient } from '@/components/blog/BlogLatestClient'
 
-export async function BlogLatestBlock({ postLimit, columns }: MarketingBlogLatestBlock) {
-  const limit = postLimit ?? 3
+export async function BlogLatestBlock({
+  postLimit,
+  columns,
+  showCta,
+  ctaLabel,
+  ctaHref,
+  showSecondaryCta,
+  secondaryCtaLabel,
+  secondaryCtaHref,
+}: MarketingBlogLatestBlock) {
+  const pageSize = postLimit ?? 3
   const cols = columns === '2' ? 2 : 3
 
-  let posts: Post[] = []
+  let allPosts: Post[] = []
 
   try {
     const payload = await getPayloadClient()
     const result = await payload.find({
       collection: 'posts',
       where: { status: { equals: 'published' } },
-      limit,
+      limit: 200,
       sort: '-publishedDate',
       depth: 2,
       overrideAccess: true,
     })
-    posts = result.docs as Post[]
+    allPosts = result.docs as Post[]
   } catch (error) {
     console.error('[BlogLatestBlock] Error fetching posts:', error)
   }
 
-  if (!posts.length) return null
+  if (!allPosts.length) return null
 
   return (
     <section className="bg-kawai-pearl py-16 lg:py-24">
@@ -38,17 +47,18 @@ export async function BlogLatestBlock({ postLimit, columns }: MarketingBlogLates
             <div className="flex-1 h-px bg-kawai-neutral" />
           </div>
         </div>
-        <div
-          className={
-            cols === 2
-              ? 'grid grid-cols-1 md:grid-cols-2 gap-8'
-              : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'
-          }
-        >
-          {posts.map((post, i) => (
-            <BlogCardAnimated key={post.id} post={post} index={i} />
-          ))}
-        </div>
+
+        <BlogLatestClient
+          allPosts={allPosts}
+          pageSize={pageSize}
+          cols={cols}
+          showCta={showCta !== false}
+          ctaLabel={ctaLabel || 'View all posts'}
+          ctaHref={ctaHref || '/blog'}
+          showSecondaryCta={showSecondaryCta === true}
+          secondaryCtaLabel={secondaryCtaLabel}
+          secondaryCtaHref={secondaryCtaHref}
+        />
       </div>
     </section>
   )
