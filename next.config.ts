@@ -83,6 +83,17 @@ const nextConfig: NextConfig = {
     // Disable ESLint during builds to allow deployment
     ignoreDuringBuilds: true,
   },
+  async redirects() {
+    return [
+      // Redirect old nested category URLs to flat collection URLs for SEO
+      // e.g. /pianos/grand-pianos/gx-blak → /pianos/gx-blak
+      {
+        source: '/pianos/:category(upright-pianos|digital-pianos|hybrid-pianos|grand-pianos)/:slug',
+        destination: '/pianos/:slug',
+        permanent: true,
+      },
+    ]
+  },
   async rewrites() {
     return [
       {
