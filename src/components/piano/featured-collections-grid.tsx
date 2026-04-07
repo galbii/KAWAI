@@ -18,6 +18,8 @@ export interface FeaturedCollectionsGridProps {
   ctaHref?: string
   columns?: '2' | '3' | '4'
   showCategoryFilter?: boolean
+  browseCtaText?: string
+  browseCtaHref?: string
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -251,6 +253,8 @@ export function FeaturedCollectionsGrid({
   ctaHref = '/pianos',
   columns = '3',
   showCategoryFilter = false,
+  browseCtaText,
+  browseCtaHref = '/pianos',
 }: FeaturedCollectionsGridProps) {
   const headerRef = useRef(null)
   const headerInView = useInView(headerRef, { once: true, amount: 0.4 })
@@ -347,7 +351,7 @@ export function FeaturedCollectionsGrid({
         </div>
 
 
-        {/* Mobile CTA */}
+        {/* Mobile header CTA */}
         {ctaText && ctaHref && (
           <div className="sm:hidden mt-8 text-center">
             <Link
@@ -357,6 +361,22 @@ export function FeaturedCollectionsGrid({
             >
               {ctaText}
               <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+        )}
+
+        {/* ── Browse all button ── */}
+        {browseCtaText && (
+          <div className="mt-10 flex justify-center">
+            <Link
+              href={browseCtaHref}
+              className="group relative inline-flex items-center gap-3 overflow-hidden border border-kawai-black px-10 py-4 transition-all duration-300 hover:bg-kawai-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-black focus-visible:ring-offset-2"
+              style={{ fontFamily: 'var(--font-brand-sans)' }}
+            >
+              <span className="text-[11px] tracking-[0.25em] uppercase font-medium text-kawai-black transition-colors duration-300 group-hover:text-white">
+                {browseCtaText}
+              </span>
+              <ArrowRight className="h-4 w-4 text-kawai-black transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-white" />
             </Link>
           </div>
         )}

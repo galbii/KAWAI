@@ -38,6 +38,7 @@ import { GeocodeButton as GeocodeButton_8375e85e78c6cb75ee71f674d8be8598 } from 
 import { SeedDealersButton as SeedDealersButton_e23770bdac2ef90b66daaeba172fe468 } from '../../../components/admin/FindADealerButton'
 import { FindADealerListButton as FindADealerListButton_e23770bdac2ef90b66daaeba172fe468 } from '../../../components/admin/FindADealerButton'
 import { FindADealerDocButton as FindADealerDocButton_e23770bdac2ef90b66daaeba172fe468 } from '../../../components/admin/FindADealerButton'
+import { SeedRedirectsButton as SeedRedirectsButton_48d9caafad059be8ac70d5ba871b0510 } from '../../../components/admin/SeedRedirectsButton'
 import { Page as Page_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { SortBy as SortBy_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { SortOrder as SortOrder_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
@@ -118,6 +119,7 @@ export const importMap = {
   "/components/admin/FindADealerButton#SeedDealersButton": SeedDealersButton_e23770bdac2ef90b66daaeba172fe468,
   "/components/admin/FindADealerButton#FindADealerListButton": FindADealerListButton_e23770bdac2ef90b66daaeba172fe468,
   "/components/admin/FindADealerButton#FindADealerDocButton": FindADealerDocButton_e23770bdac2ef90b66daaeba172fe468,
+  "/components/admin/SeedRedirectsButton#SeedRedirectsButton": SeedRedirectsButton_48d9caafad059be8ac70d5ba871b0510,
   "@payloadcms/plugin-import-export/rsc#Page": Page_cdf7e044479f899a31f804427d568b36,
   "@payloadcms/plugin-import-export/rsc#SortBy": SortBy_cdf7e044479f899a31f804427d568b36,
   "@payloadcms/plugin-import-export/rsc#SortOrder": SortOrder_cdf7e044479f899a31f804427d568b36,

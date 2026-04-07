@@ -19,9 +19,9 @@ export function RebateTableRenderer(props: MarketingRebateTableBlock) {
   return (
     <RebateSchedule
       schedule={schedule}
-      eyebrow={eyebrow ?? undefined}
-      heading={heading ?? undefined}
-      deadline={deadline ?? undefined}
+      {...(eyebrow != null ? { eyebrow } : {})}
+      {...(heading != null ? { heading } : {})}
+      {...(deadline != null ? { deadline } : {})}
     />
   )
 }

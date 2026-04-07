@@ -1,29 +1,19 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import type { Media } from '@/payload-types'
 import { X } from 'lucide-react'
 import { trackCTAClick, trackWithConfig } from '@/lib/analytics/unified-tracking'
 
-// Hook to detect mobile screen size
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
-
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768) // md breakpoint
-    }
-
-    // Check on mount
-    checkMobile()
-
-    // Listen for resize
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
   }, [])
-
   return isMobile
 }
 
@@ -55,21 +45,73 @@ type PopupState = 'hidden' | 'entering' | 'visible' | 'exiting' | 'dismissed'
 
 const DEFAULT_STORAGE_KEY = 'kawai-bottom-popup-shown'
 
-/**
- * BottomLeftPopupBlock - Japanese minimalist notification popup
- *
- * Design inspired by Japanese 行灯 (andon) paper lanterns and 間 (ma - meaningful space).
- * Features glassmorphism, refined animations, and haptic spring physics.
- *
- * Features:
- * - Customizable content (icon, title, message, CTA)
- * - Multiple animation styles (slide, fade, bounce, scale)
- * - Auto-show and auto-dismiss timing
- * - Session-based persistence
- * - Accessibility-friendly with ARIA labels and keyboard support
- * - Japanese-inspired refined glassmorphism
- * - Mobile-optimized: Displays as centered dialog on mobile, corner popup on desktop
- */
+// Theme tokens — each theme has a complete set of design values
+const THEMES = {
+  light: {
+    bg: '#FAF8F5',
+    accentBar: '#E11922',
+    titleColor: '#1E1B16',
+    messageColor: '#6B7280',
+    eyebrowColor: '#E11922',
+    divider: 'rgba(30,27,22,0.08)',
+    dismissFg: 'rgba(30,27,22,0.35)',
+    dismissHoverBg: 'rgba(30,27,22,0.06)',
+    ctaBg: '#E11922',
+    ctaFg: '#FFFFFF',
+    ctaHoverBg: '#c7151c',
+    ctaBorderColor: 'transparent',
+    shadow: '0 24px 64px rgba(0,0,0,0.10), 0 6px 20px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)',
+  },
+  dark: {
+    bg: '#1E1B16',
+    accentBar: '#d5c78c',
+    titleColor: '#FFFFFF',
+    messageColor: '#9CA3AF',
+    eyebrowColor: '#d5c78c',
+    divider: 'rgba(255,255,255,0.08)',
+    dismissFg: 'rgba(255,255,255,0.38)',
+    dismissHoverBg: 'rgba(255,255,255,0.08)',
+    ctaBg: 'transparent',
+    ctaFg: '#FFFFFF',
+    ctaHoverBg: 'rgba(255,255,255,0.08)',
+    ctaBorderColor: 'rgba(255,255,255,0.24)',
+    shadow: '0 24px 64px rgba(0,0,0,0.50), 0 6px 20px rgba(0,0,0,0.30), 0 1px 4px rgba(0,0,0,0.20)',
+  },
+  red: {
+    bg: '#E11922',
+    accentBar: 'rgba(255,255,255,0.25)',
+    titleColor: '#FFFFFF',
+    messageColor: 'rgba(255,255,255,0.72)',
+    eyebrowColor: 'rgba(255,255,255,0.55)',
+    divider: 'rgba(255,255,255,0.14)',
+    dismissFg: 'rgba(255,255,255,0.55)',
+    dismissHoverBg: 'rgba(255,255,255,0.12)',
+    ctaBg: '#FFFFFF',
+    ctaFg: '#E11922',
+    ctaHoverBg: '#F5F5F5',
+    ctaBorderColor: 'transparent',
+    shadow: '0 24px 64px rgba(225,25,34,0.38), 0 6px 20px rgba(225,25,34,0.22), 0 1px 4px rgba(0,0,0,0.10)',
+  },
+  gold: {
+    bg: '#F4EFE2',
+    accentBar: '#d5c78c',
+    titleColor: '#1E1B16',
+    messageColor: '#6B7280',
+    eyebrowColor: '#9A7E42',
+    divider: 'rgba(213,199,140,0.45)',
+    dismissFg: 'rgba(30,27,22,0.32)',
+    dismissHoverBg: 'rgba(30,27,22,0.06)',
+    ctaBg: '#1E1B16',
+    ctaFg: '#FFFFFF',
+    ctaHoverBg: '#2C2C2C',
+    ctaBorderColor: 'transparent',
+    shadow: '0 24px 64px rgba(0,0,0,0.09), 0 6px 20px rgba(213,199,140,0.30), 0 1px 4px rgba(0,0,0,0.04)',
+  },
+} as const
+
+const IMG_HEIGHTS = { small: 140, medium: 192, large: 256, tall: 320 } as const
+const DESKTOP_WIDTHS = { compact: '276px', medium: '316px', large: '356px' } as const
+
 export function BottomLeftPopupBlock({
   enabled = true,
   icon,
@@ -114,31 +156,18 @@ export function BottomLeftPopupBlock({
     setTimeout(() => {
       setState('dismissed')
       setShouldRender(false)
-
-      // Mark as shown in session storage
       if (showOncePerSession && typeof window !== 'undefined') {
         sessionStorage.setItem(storageKey, 'true')
       }
-    }, 400) // Exit animation duration
-  }, [dismissible, state, showOncePerSession, storageKey])
+    }, 350)
+  }, [dismissible, state, showOncePerSession, storageKey, theme, position, tracking])
 
   useEffect(() => {
-    // Check if disabled or already shown this session
-    if (!enabled) {
-      setShouldRender(false)
-      return
-    }
-
+    if (!enabled) { setShouldRender(false); return }
     if (showOncePerSession && typeof window !== 'undefined') {
-      const hasShown = sessionStorage.getItem(storageKey)
-      if (hasShown) {
-        setShouldRender(false)
-        return
-      }
+      if (sessionStorage.getItem(storageKey)) { setShouldRender(false); return }
     }
-
-    // Auto-show timer
-    const showTimer = setTimeout(() => {
+    const timer = setTimeout(() => {
       setState('entering')
       setTimeout(() => {
         setState('visible')
@@ -151,314 +180,154 @@ export function BottomLeftPopupBlock({
         })
       }, 50)
     }, autoShowDelay ?? 3000)
-
-    return () => clearTimeout(showTimer)
+    return () => clearTimeout(timer)
   }, [enabled, autoShowDelay, showOncePerSession, storageKey])
 
   useEffect(() => {
-    // Auto-dismiss timer
     if (state === 'visible' && autoDismissDelay && autoDismissDelay > 0) {
-      const dismissTimer = setTimeout(() => {
-        handleDismiss()
-      }, autoDismissDelay)
-
-      return () => clearTimeout(dismissTimer)
+      const timer = setTimeout(handleDismiss, autoDismissDelay)
+      return () => clearTimeout(timer)
     }
     return undefined
   }, [state, autoDismissDelay, handleDismiss])
 
-  // Keyboard accessibility - dismiss on Escape
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && state === 'visible') {
-        handleDismiss()
-      }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && state === 'visible') handleDismiss()
     }
-
     if (state === 'visible') {
-      document.addEventListener('keydown', handleKeyDown)
-      return () => document.removeEventListener('keydown', handleKeyDown)
+      document.addEventListener('keydown', onKey)
+      return () => document.removeEventListener('keydown', onKey)
     }
     return undefined
   }, [state, handleDismiss])
 
-  // Don't render if disabled or dismissed
-  if (!shouldRender || state === 'dismissed') {
-    return null
-  }
+  if (!shouldRender || state === 'dismissed') return null
 
-  // Get icon URL
   const iconUrl = typeof icon === 'object' && icon !== null && 'url' in icon ? icon.url : null
-
-  // Get featured image URL and alt text
   const featuredImageUrl =
     typeof featuredImage === 'object' && featuredImage !== null && 'url' in featuredImage
       ? featuredImage.url
       : null
   const featuredImageAlt =
     typeof featuredImage === 'object' && featuredImage !== null && 'alt' in featuredImage
-      ? featuredImage.alt
+      ? ((featuredImage as Media).alt ?? '')
       : ''
 
-  // Featured image height classes
-  const imageHeightClasses = {
-    small: 'h-40',    // 160px
-    medium: 'h-60',   // 240px
-    large: 'h-80',    // 320px
-    tall: 'h-[400px]', // 400px
-  }
+  const t = THEMES[theme ?? 'light']
+  const isVisible = state === 'entering' || state === 'visible'
+  const isExiting = state === 'exiting'
+  const imgH = IMG_HEIGHTS[featuredImageHeight ?? 'medium']
 
-  // Size classes - mobile uses responsive widths, desktop uses fixed
-  const sizeClasses = {
-    compact: isMobile ? 'w-[calc(100vw-2rem)] max-w-[320px]' : 'w-[280px]',
-    medium: isMobile ? 'w-[calc(100vw-2rem)] max-w-[380px]' : 'w-[360px]',
-    large: isMobile ? 'w-[calc(100vw-2rem)] max-w-[440px]' : 'w-[420px]',
-  }
+  // Animation — mobile slides up from below, desktop fades + lifts from below
+  const enterEase = 'cubic-bezier(0.16, 1, 0.3, 1)'
+  const exitEase = 'cubic-bezier(0.4, 0, 1, 1)'
 
-  // Position classes - mobile is centered, desktop is corner
-  const positionClasses = {
-    'bottom-left': isMobile ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' : 'bottom-6 left-6',
-    'bottom-right': isMobile ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' : 'bottom-6 right-6',
-  }
+  const popupTransform = isMobile
+    ? isVisible ? 'translateY(0)' : 'translateY(108%)'
+    : isVisible ? 'translateY(0)' : 'translateY(14px)'
 
-  // Theme styles (glassmorphism with Japanese refinement)
-  const themeStyles = {
-    light: {
-      bg: 'bg-white/80',
-      border: 'border-neutral-200/40',
-      text: 'text-neutral-900',
-      subtext: 'text-neutral-600',
-      shadow: 'shadow-[0_8px_30px_rgb(0,0,0,0.08),0_2px_8px_rgb(0,0,0,0.04)]',
-      backdrop: 'backdrop-blur-xl',
-      accent: 'bg-kawai-red hover:bg-kawai-red/90',
-      accentText: 'text-white',
-    },
-    dark: {
-      bg: 'bg-neutral-900/85',
-      border: 'border-neutral-700/40',
-      text: 'text-white',
-      subtext: 'text-neutral-300',
-      shadow: 'shadow-[0_8px_40px_rgb(0,0,0,0.35),0_2px_12px_rgb(0,0,0,0.2)]',
-      backdrop: 'backdrop-blur-xl',
-      accent: 'bg-white hover:bg-neutral-100',
-      accentText: 'text-neutral-900',
-    },
-    red: {
-      bg: 'bg-gradient-to-br from-red-50/90 to-red-100/80',
-      border: 'border-red-200/50',
-      text: 'text-neutral-900',
-      subtext: 'text-red-900/70',
-      shadow: 'shadow-[0_8px_30px_rgb(127,29,29,0.15),0_2px_8px_rgb(127,29,29,0.08)]',
-      backdrop: 'backdrop-blur-xl',
-      accent: 'bg-kawai-red hover:bg-kawai-red/90',
-      accentText: 'text-white',
-    },
-    gold: {
-      bg: 'bg-gradient-to-br from-amber-50/90 to-yellow-100/80',
-      border: 'border-amber-200/50',
-      text: 'text-neutral-900',
-      subtext: 'text-amber-900/70',
-      shadow: 'shadow-[0_8px_30px_rgb(120,53,15,0.15),0_2px_8px_rgb(120,53,15,0.08)]',
-      backdrop: 'backdrop-blur-xl',
-      accent: 'bg-kawai-gold hover:bg-kawai-gold/90',
-      accentText: 'text-neutral-900',
-    },
-  }
+  const popupOpacity = isMobile ? 1 : isVisible ? 1 : 0
 
-  const currentTheme = themeStyles[theme ?? 'light']
+  const popupTransition = isMobile
+    ? `transform ${isExiting ? `0.28s ${exitEase}` : `0.44s ${enterEase}`}`
+    : `transform ${isExiting ? `0.24s ${exitEase}` : `0.38s ${enterEase}`}, opacity ${isExiting ? '0.20s ease' : '0.32s ease'}`
 
-  // Animation transform based on state, style, and device
-  const getTransform = () => {
-    // Mobile: Always use centered fade/scale animations
-    if (isMobile) {
-      if (state === 'hidden') {
-        return 'scale(0.92) translateY(10px)'
-      }
-      if (state === 'entering' || state === 'visible') {
-        return 'scale(1) translateY(0)'
-      }
-      if (state === 'exiting') {
-        return 'scale(0.92) translateY(10px)'
-      }
-      return 'scale(1) translateY(0)'
-    }
-
-    // Desktop: Use position-aware animations
-    const isLeft = position === 'bottom-left'
-
-    if (state === 'hidden') {
-      switch (animationStyle) {
-        case 'slide':
-          return isLeft ? 'translateX(-120%)' : 'translateX(120%)'
-        case 'fade':
-          return 'translateY(0)'
-        case 'bounce':
-          return isLeft ? 'translateX(-120%)' : 'translateX(120%)'
-        case 'scale':
-          return 'scale(0.85)'
-        default:
-          return isLeft ? 'translateX(-120%)' : 'translateX(120%)'
-      }
-    }
-
-    if (state === 'entering' || state === 'visible') {
-      return animationStyle === 'scale' ? 'scale(1)' : 'translateX(0) translateY(0)'
-    }
-
-    if (state === 'exiting') {
-      switch (animationStyle) {
-        case 'slide':
-          return 'translateY(120%)'
-        case 'fade':
-          return 'translateY(20px)'
-        case 'bounce':
-          return 'translateY(120%)'
-        case 'scale':
-          return 'scale(0.85)'
-        default:
-          return 'translateY(120%)'
-      }
-    }
-
-    return 'translateX(0) translateY(0)'
-  }
-
-  const getOpacity = () => {
-    if (state === 'hidden') return 0
-    if (state === 'entering') return animationStyle === 'fade' ? 0 : 1
-    if (state === 'visible') return 1
-    if (state === 'exiting') return animationStyle === 'fade' ? 0 : 1
-    return 0
-  }
-
-  // Animation timing - spring physics for bounce
-  const getTransition = () => {
-    if (animationStyle === 'bounce') {
-      return 'transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s ease-in-out'
-    }
-    if (animationStyle === 'scale') {
-      return 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease-in-out'
-    }
-    return 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease-in-out'
-  }
+  const scrimOpacity = isVisible ? 1 : 0
+  const scrimTransition = isExiting ? `opacity 0.24s ease` : `opacity 0.38s ease`
 
   return (
     <>
-      {/* Mobile backdrop overlay */}
+      {/* Mobile backdrop */}
       {isMobile && (
         <div
-          className={cn(
-            'fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300',
-            'z-[var(--backdrop-z-index)]'
-          )}
-          style={
-            {
-              '--backdrop-z-index': (zIndex ?? 9000) - 1,
-              opacity: state === 'entering' || state === 'visible' ? 1 : 0,
-              pointerEvents: state === 'entering' || state === 'visible' ? 'auto' : 'none',
-            } as React.CSSProperties
-          }
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.52)',
+            zIndex: (zIndex ?? 9000) - 1,
+            opacity: scrimOpacity,
+            pointerEvents: isVisible ? 'auto' : 'none',
+            transition: scrimTransition,
+          }}
           onClick={dismissible ? handleDismiss : undefined}
           aria-hidden="true"
         />
       )}
 
-      {/* Subtle noise texture overlay */}
-      <style jsx>{`
-        @keyframes grain {
-          0%,
-          100% {
-            transform: translate(0, 0);
-          }
-          10% {
-            transform: translate(-5%, -10%);
-          }
-          20% {
-            transform: translate(-15%, 5%);
-          }
-          30% {
-            transform: translate(7%, -25%);
-          }
-          40% {
-            transform: translate(-5%, 25%);
-          }
-          50% {
-            transform: translate(-15%, 10%);
-          }
-          60% {
-            transform: translate(15%, 0%);
-          }
-          70% {
-            transform: translate(0%, 15%);
-          }
-          80% {
-            transform: translate(3%, 35%);
-          }
-          90% {
-            transform: translate(-10%, 10%);
-          }
-        }
-
-        .grain-texture::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-          pointer-events: none;
-          animation: grain 8s steps(10) infinite;
-          opacity: 0.35;
-          border-radius: inherit;
-        }
-      `}</style>
-
+      {/* Popup */}
       <div
-        className={cn(
-          'fixed z-[var(--popup-z-index)] transition-all duration-300',
-          positionClasses[position ?? 'bottom-left'],
-          sizeClasses[size ?? 'medium']
-        )}
-        style={
-          {
-            '--popup-z-index': zIndex,
-            transform: getTransform(),
-            opacity: getOpacity(),
-            transition: getTransition(),
-          } as React.CSSProperties
-        }
+        style={{
+          position: 'fixed',
+          zIndex: zIndex ?? 9000,
+          ...(isMobile
+            ? { bottom: 0, left: 0, right: 0 }
+            : position === 'bottom-right'
+              ? { bottom: 24, right: 24, width: DESKTOP_WIDTHS[size ?? 'medium'] }
+              : { bottom: 24, left: 24, width: DESKTOP_WIDTHS[size ?? 'medium'] }),
+          transform: popupTransform,
+          opacity: popupOpacity,
+          transition: popupTransition,
+        }}
         role="dialog"
-        aria-labelledby="popup-title"
-        aria-describedby="popup-message"
+        aria-labelledby="kawai-popup-title"
+        aria-describedby="kawai-popup-message"
         aria-live="polite"
       >
-        {/* Main popup container with glassmorphism */}
         <div
-          className={cn(
-            'grain-texture relative overflow-hidden rounded-2xl border',
-            isMobile ? 'p-6' : 'p-5',
-            currentTheme.bg,
-            currentTheme.border,
-            currentTheme.shadow,
-            currentTheme.backdrop,
-            // Subtle inner shadow for depth
-            'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]'
-          )}
+          style={{
+            background: t.bg,
+            borderRadius: isMobile ? '20px 20px 0 0' : '10px',
+            boxShadow: t.shadow,
+            overflow: 'hidden',
+            position: 'relative',
+          }}
         >
-          {/* Subtle inner glow */}
-          <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/5 to-transparent" />
+          {/* Accent bar — the brand signature line */}
+          <div style={{ height: 3, background: t.accentBar }} />
 
-          {/* Featured Image */}
+          {/* Featured image */}
           {featuredImageUrl && (
-            <div className="relative -mx-5 -mt-5 mb-4 overflow-hidden rounded-t-2xl">
+            <div style={{ position: 'relative', width: '100%', height: imgH, flexShrink: 0 }}>
               <Image
                 src={featuredImageUrl}
-                alt={featuredImageAlt || title || 'Featured image'}
-                width={420}
-                height={400}
-                className={cn('w-full object-cover', imageHeightClasses[featuredImageHeight ?? 'medium'])}
+                alt={featuredImageAlt || title || ''}
+                fill
+                style={{ objectFit: 'cover' }}
                 priority
               />
-              {/* Gradient overlay for better text readability */}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+              {/* Bottom vignette so title reads cleanly below */}
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'linear-gradient(to bottom, transparent 55%, rgba(0,0,0,0.18) 100%)',
+                  pointerEvents: 'none',
+                }}
+              />
+            </div>
+          )}
+
+          {/* Mobile drag handle */}
+          {isMobile && (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                paddingTop: featuredImageUrl ? 14 : 14,
+                paddingBottom: 2,
+              }}
+            >
+              <div
+                style={{
+                  width: 36,
+                  height: 4,
+                  borderRadius: 2,
+                  background: theme === 'dark' || theme === 'red'
+                    ? 'rgba(255,255,255,0.20)'
+                    : 'rgba(0,0,0,0.14)',
+                }}
+              />
             </div>
           )}
 
@@ -466,106 +335,185 @@ export function BottomLeftPopupBlock({
           {dismissible && (
             <button
               onClick={handleDismiss}
-              className={cn(
-                'absolute right-3 top-3 rounded-lg p-1.5 transition-all duration-200',
-                'hover:bg-black/5 focus:outline-none focus:ring-2 focus:ring-white/50',
-                'text-white',
-                'hover:rotate-90'
-              )}
-              aria-label="Dismiss notification"
+              className="kawai-popup-dismiss"
+              style={{
+                position: 'absolute',
+                top: featuredImageUrl ? imgH + (isMobile ? 20 : 14) : isMobile ? 22 : 14,
+                right: isMobile ? 20 : 14,
+                width: 28,
+                height: 28,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 6,
+                border: 'none',
+                background: 'transparent',
+                cursor: 'pointer',
+                color: t.dismissFg,
+                transition: 'background 0.15s ease, color 0.15s ease',
+                flexShrink: 0,
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget as HTMLButtonElement
+                el.style.background = t.dismissHoverBg
+                el.style.color = t.titleColor
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget as HTMLButtonElement
+                el.style.background = 'transparent'
+                el.style.color = t.dismissFg
+              }}
+              aria-label="Dismiss"
             >
-              <X size={16} strokeWidth={2.5} />
+              <X size={13} strokeWidth={2.2} />
             </button>
           )}
 
           {/* Content */}
-          <div className="flex gap-4">
-            {/* Icon */}
-            {iconUrl && (
-              <div className="flex-shrink-0">
-                <div className="relative h-12 w-12 overflow-hidden rounded-xl bg-gradient-to-br from-white/20 to-white/5 p-2.5 shadow-inner">
+          <div
+            style={{
+              padding: isMobile ? '16px 24px 36px' : '18px 20px 22px',
+            }}
+          >
+            {/* Eyebrow row */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                marginBottom: 12,
+              }}
+            >
+              {iconUrl && (
+                <div
+                  style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: 5,
+                    overflow: 'hidden',
+                    flexShrink: 0,
+                  }}
+                >
                   <Image
                     src={iconUrl}
                     alt=""
-                    width={48}
-                    height={48}
-                    className="h-full w-full object-contain"
+                    width={22}
+                    height={22}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 </div>
-              </div>
-            )}
-
-            {/* Text content */}
-            <div className="flex-1 space-y-2 pr-6">
-              <h3
-                id="popup-title"
-                className={cn(
-                  'font-serif text-lg font-semibold leading-tight tracking-tight',
-                  currentTheme.text
-                )}
-                style={{ fontFamily: "'Noto Serif JP', 'Crimson Text', serif" }}
+              )}
+              <span
+                style={{
+                  fontFamily: 'var(--font-brand-sans, system-ui)',
+                  fontSize: 9.5,
+                  fontWeight: 700,
+                  letterSpacing: '0.15em',
+                  textTransform: 'uppercase' as const,
+                  color: t.eyebrowColor,
+                }}
               >
-                {title}
-              </h3>
+                KAWAI
+              </span>
+            </div>
+
+            {/* Thin divider */}
+            <div style={{ height: 1, background: t.divider, marginBottom: 16 }} />
+
+            {/* Title */}
+            <h3
+              id="kawai-popup-title"
+              style={{
+                fontFamily: 'var(--font-brand-luxury, Georgia, serif)',
+                fontSize: isMobile ? 21 : 18,
+                fontWeight: 600,
+                lineHeight: 1.28,
+                color: t.titleColor,
+                margin: '0 0 9px',
+                paddingRight: dismissible ? 18 : 0,
+                letterSpacing: '-0.01em',
+              }}
+            >
+              {title}
+            </h3>
+
+            {/* Message */}
+            {message && (
               <p
-                id="popup-message"
-                className={cn('text-sm leading-relaxed', currentTheme.subtext)}
+                id="kawai-popup-message"
+                style={{
+                  fontFamily: 'var(--font-brand-sans, system-ui)',
+                  fontSize: 13,
+                  lineHeight: 1.62,
+                  color: t.messageColor,
+                  margin: '0 0 18px',
+                  fontWeight: 400,
+                }}
               >
                 {message}
               </p>
+            )}
 
-              {/* CTA Button */}
-              {ctaText && ctaLink && (
-                <div className="pt-2">
-                  <a
-                    href={ctaLink}
-                    target={ctaOpenInNewTab ? '_blank' : undefined}
-                    rel={ctaOpenInNewTab ? 'noopener noreferrer' : undefined}
-                    onClick={() => {
-                      trackCTAClick({
-                        blockType: 'layout-bottom-left-popup',
-                        blockData: { ctaTracking: ctaTracking as any },
-                        ctaText: ctaText || '',
-                        destination: ctaLink || '',
-                        additionalProps: { theme, position, size },
-                      })
-                    }}
-                    className={cn(
-                      'inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium',
-                      'transition-all duration-200',
-                      'focus:outline-none focus:ring-2 focus:ring-offset-2',
-                      'shadow-sm hover:shadow-md',
-                      currentTheme.accent,
-                      currentTheme.accentText
-                    )}
-                  >
-                    {ctaText}
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="transition-transform duration-200 group-hover:translate-x-0.5"
-                    >
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                  </a>
-                </div>
-              )}
-            </div>
+            {/* CTA */}
+            {ctaText && ctaLink && (
+              <a
+                href={ctaLink}
+                target={ctaOpenInNewTab ? '_blank' : undefined}
+                rel={ctaOpenInNewTab ? 'noopener noreferrer' : undefined}
+                onClick={() => {
+                  trackCTAClick({
+                    blockType: 'layout-bottom-left-popup',
+                    blockData: { ctaTracking: ctaTracking as any },
+                    ctaText: ctaText || '',
+                    destination: ctaLink || '',
+                    additionalProps: { theme, position, size },
+                  })
+                }}
+                style={{
+                  display: 'block',
+                  textAlign: 'center' as const,
+                  padding: isMobile ? '13px 20px' : '11px 20px',
+                  background: t.ctaBg,
+                  color: t.ctaFg,
+                  border: `1px solid ${t.ctaBorderColor}`,
+                  borderRadius: 4,
+                  fontSize: 11,
+                  fontFamily: 'var(--font-brand-sans, system-ui)',
+                  fontWeight: 600,
+                  letterSpacing: '0.10em',
+                  textTransform: 'uppercase' as const,
+                  textDecoration: 'none',
+                  transition: 'background 0.18s ease',
+                }}
+                onMouseEnter={(e) => {
+                  ;(e.currentTarget as HTMLAnchorElement).style.background = t.ctaHoverBg
+                }}
+                onMouseLeave={(e) => {
+                  ;(e.currentTarget as HTMLAnchorElement).style.background = t.ctaBg
+                }}
+              >
+                {ctaText}
+              </a>
+            )}
           </div>
 
-          {/* Progress bar for auto-dismiss */}
+          {/* Auto-dismiss progress bar */}
           {(autoDismissDelay ?? 0) > 0 && state === 'visible' && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 overflow-hidden rounded-b-2xl bg-black/5">
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: 2,
+                overflow: 'hidden',
+              }}
+            >
               <div
-                className={cn('h-full', currentTheme.accent)}
                 style={{
-                  animation: `shrink ${autoDismissDelay}ms linear forwards`,
+                  height: '100%',
+                  background: t.accentBar,
+                  animation: `kawai-popup-shrink ${autoDismissDelay}ms linear forwards`,
                 }}
               />
             </div>
@@ -573,25 +521,12 @@ export function BottomLeftPopupBlock({
         </div>
       </div>
 
-      {/* Progress bar animation */}
-      <style jsx>{`
-        @keyframes shrink {
-          from {
-            width: 100%;
-          }
-          to {
-            width: 0%;
-          }
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes kawai-popup-shrink {
+          from { width: 100%; }
+          to   { width: 0%; }
         }
-      `}</style>
-
-      {/* Google Fonts: Noto Serif JP for Japanese refinement */}
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      <link
-        href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&display=swap"
-        rel="stylesheet"
-      />
+      ` }} />
     </>
   )
 }

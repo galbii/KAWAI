@@ -105,7 +105,7 @@ export async function DealerFinderMapBlock({ heading }: Props) {
   return (
     <DealerFinderClient
       dealers={unifiedDealers}
-      heading={heading ?? undefined}
+      {...(heading != null ? { heading } : {})}
     />
   )
 }

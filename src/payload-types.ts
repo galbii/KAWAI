@@ -5919,6 +5919,14 @@ export interface MarketingFeaturedCollectionsBlock {
    * Destination for the "Explore All" link
    */
   ctaHref?: string | null;
+  /**
+   * Text for the bottom browse button (leave blank to hide)
+   */
+  browseCtaText?: string | null;
+  /**
+   * Destination for the bottom browse button
+   */
+  browseCtaHref?: string | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'marketing-featured-collections';

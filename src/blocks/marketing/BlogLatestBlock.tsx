@@ -56,8 +56,8 @@ export async function BlogLatestBlock({
           ctaLabel={ctaLabel || 'View all posts'}
           ctaHref={ctaHref || '/blog'}
           showSecondaryCta={showSecondaryCta === true}
-          secondaryCtaLabel={secondaryCtaLabel}
-          secondaryCtaHref={secondaryCtaHref}
+          secondaryCtaLabel={secondaryCtaLabel ?? null}
+          secondaryCtaHref={secondaryCtaHref ?? null}
         />
       </div>
     </section>

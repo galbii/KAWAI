@@ -127,5 +127,23 @@ export const FeaturedCollections: Block = {
       defaultValue: '/pianos',
       admin: { description: 'Destination for the "Explore All" link' },
     },
+    {
+      name: 'browseCtaText',
+      type: 'text',
+      defaultValue: 'Browse All Products',
+      admin: {
+        condition: (_data, siblingData) => siblingData.displayMode === 'grid',
+        description: 'Text for the bottom browse button (leave blank to hide)',
+      },
+    },
+    {
+      name: 'browseCtaHref',
+      type: 'text',
+      defaultValue: '/pianos',
+      admin: {
+        condition: (_data, siblingData) => siblingData.displayMode === 'grid',
+        description: 'Destination for the bottom browse button',
+      },
+    },
   ],
 }

@@ -1,9 +1,7 @@
-import type { CollectionConfig, CollectionAfterChangeHook } from 'payload'
+import type { CollectionConfig, CollectionAfterChangeHook, CollectionAfterDeleteHook } from 'payload'
 import { adminOnly, authenticated } from '@/lib/payload/access'
 
-const revalidateRedirects: CollectionAfterChangeHook = async ({ doc, context }) => {
-  if (context.skipRevalidation) return doc
-
+function triggerRedirectsRevalidation() {
   const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
   // Fire-and-forget — never await, never block the CMS save
@@ -15,7 +13,17 @@ const revalidateRedirects: CollectionAfterChangeHook = async ({ doc, context }) 
       tag: 'redirects',
     }),
   }).catch((err) => console.error('[Redirects] Revalidation error:', err))
+}
 
+const revalidateRedirects: CollectionAfterChangeHook = async ({ doc, context }) => {
+  if (context.skipRevalidation) return doc
+  triggerRedirectsRevalidation()
+  return doc
+}
+
+const revalidateOnDelete: CollectionAfterDeleteHook = async ({ doc, req: { context } }) => {
+  if (context.skipRevalidation) return doc
+  triggerRedirectsRevalidation()
   return doc
 }
 
@@ -26,6 +34,9 @@ export const Redirects: CollectionConfig = {
     group: 'Settings',
     defaultColumns: ['from', 'redirectType', 'isActive', 'updatedAt'],
     description: 'Manage URL redirects. Changes take effect within 30 seconds.',
+    components: {
+      beforeList: ['/components/admin/SeedRedirectsButton#SeedRedirectsButton'],
+    },
   },
   access: {
     create: authenticated,
@@ -35,6 +46,7 @@ export const Redirects: CollectionConfig = {
   },
   hooks: {
     afterChange: [revalidateRedirects],
+    afterDelete: [revalidateOnDelete],
   },
   fields: [
     {

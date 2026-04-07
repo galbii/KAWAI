@@ -55,6 +55,8 @@ export async function FeaturedCollectionsRenderer(props: MarketingFeaturedCollec
     heading,
     ctaText,
     ctaHref,
+    browseCtaText,
+    browseCtaHref,
   } = props
 
   // ── Resolve collection data ──────────────────────────────────────────────────
@@ -89,6 +91,8 @@ export async function FeaturedCollectionsRenderer(props: MarketingFeaturedCollec
       {...sharedProps}
       columns={columns ?? '3'}
       showCategoryFilter={showCategoryFilter ?? false}
+      browseCtaText={browseCtaText ?? 'Browse All Products'}
+      browseCtaHref={browseCtaHref ?? '/pianos'}
     />
   )
 }
