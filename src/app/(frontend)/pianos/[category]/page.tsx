@@ -24,6 +24,7 @@ import {
   getAllCollectionHandles,
   getProductsByCollectionHandle,
 } from '@/lib/payload/queries'
+import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
 import type { Product } from '@/payload-types'
 
 export const revalidate = 3600
@@ -68,7 +69,7 @@ export async function generateMetadata({ params }: CategoryPageParams): Promise<
     const stats = getCategoryStats(category)
     const canonicalUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/pianos/${category}`
 
-    return {
+    const baseMetadata: Metadata = {
       title: categoryConfig.metaTitle,
       description: categoryConfig.metaDescription,
       keywords: categoryConfig.seoKeywords,
@@ -100,6 +101,9 @@ export async function generateMetadata({ params }: CategoryPageParams): Promise<
         'model-count': stats.totalModels?.toString() || '0',
       },
     }
+
+    // Overlay any SEO fields set on the matching Pages collection doc
+    return getCMSPageMetadata(`pianos/${category}`, baseMetadata)
   }
 
   // Collection metadata
