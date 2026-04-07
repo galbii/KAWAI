@@ -5,9 +5,11 @@ import { ProductErrorFallback } from '@/components/products/ProductErrorFallback
 import { ProductLivePreview } from '@/components/products/ProductLivePreview'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
 import { generateProductSchema, generateBreadcrumbSchema } from '@/lib/seo/schemas'
+import type { SchemaAvailability } from '@/lib/seo/schemas'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { AdminBarDoc } from '@/components/layout/AdminBarDoc'
+import { getPayloadClient } from '@/lib/payload/queries'
 
 // Use ISR (Incremental Static Regeneration) for better SEO and performance
 // Pages are statically generated and revalidated every 1 hour
@@ -41,10 +43,17 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
       ? (ogImageRaw as { url: string }).url
       : product.imageUrl || null
 
+  // Noindex discontinued products and catalog-hidden products
+  const isDiscontinued = product.status === 'discontinued'
+  const isHidden = product.visibility?.showInCatalog === false
+
   return {
     title,
     description,
     ...(product.seo?.keywords ? { keywords: product.seo.keywords } : {}),
+    ...(isDiscontinued || isHidden
+      ? { robots: { index: false, follow: false } }
+      : {}),
     alternates: {
       canonical: `${siteUrl}/products/${slug}`
     },
@@ -93,15 +102,24 @@ export default async function ProductPage(props: PageProps) {
               description: product.description || '',
               type: (product.type as 'digital' | 'grand' | 'hybrid' | 'upright' | 'accessory' | 'software') || 'digital',
               ...(product.imageUrl ? { image: product.imageUrl } : {}),
-              ...(product.price?.msrp ? {
-                offers: {
-                  price: product.price.msrp,
-                  currency: product.price.currency || 'USD',
-                },
-              } : {}),
-              ...(product.variations?.[0]?.sku ? { sku: product.variations[0].sku } : {}),
+              // sku: prefer first variation SKU, fall back to model number
+              ...(product.variations?.[0]?.sku
+                ? { sku: product.variations[0].sku }
+                : product.model ? { sku: product.model } : {}),
+              // mpn: Kawai model number is the manufacturer part number (e.g. CA99, GX-7)
+              ...(product.model ? { mpn: product.model, model: product.model } : {}),
               url: `${siteUrl}/products/${product.slug}`,
-              ...(product.model ? { model: product.model } : {}),
+              offers: {
+                ...(product.price?.msrp != null ? { price: product.price.msrp } : {}),
+                currency: product.price?.currency || 'USD',
+                // Map product status to schema.org availability URL
+                availability: ((): SchemaAvailability => {
+                  if (product.status === 'discontinued') return 'https://schema.org/Discontinued'
+                  const hasStock = product.variations?.some((v: any) => v.available !== false)
+                  if (product.variations && product.variations.length > 0 && !hasStock) return 'https://schema.org/OutOfStock'
+                  return 'https://schema.org/InStock'
+                })(),
+              },
             })).replace(/</g, '\\u003c')
           }}
         />
@@ -140,9 +158,7 @@ export default async function ProductPage(props: PageProps) {
 // This ensures Google crawler gets fast, pre-rendered HTML for all products
 export async function generateStaticParams() {
   try {
-    const { getPayload } = await import('payload')
-    const configPromise = await import('@payload-config')
-    const payload = await getPayload({ config: configPromise.default })
+    const payload = await getPayloadClient()
 
     const products = await payload.find({
       collection: 'products',

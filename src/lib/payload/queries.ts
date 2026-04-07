@@ -565,25 +565,31 @@ export async function getProductsDirect(category?: string): Promise<Product[]> {
  * @param slug - The URL-friendly slug identifier for the product
  * @returns Product object or null if not found
  */
-export async function getProductBySlugDirect(slug: string): Promise<Product | null> {
-  try {
-    const payload = await getPayloadClient()
+export function getProductBySlugDirect(slug: string): Promise<Product | null> {
+  return unstable_cache(
+    async () => {
+      try {
+        const payload = await getPayloadClient()
 
-    const result = await payload.find({
-      collection: 'products',
-      where: {
-        slug: { equals: slug },
-        status: { not_equals: 'draft' }
-      },
-      depth: 2,
-      limit: 1
-    })
+        const result = await payload.find({
+          collection: 'products',
+          where: {
+            slug: { equals: slug },
+            status: { not_equals: 'draft' }
+          },
+          depth: 2,
+          limit: 1
+        })
 
-    return result.docs[0] || null
-  } catch (error) {
-    console.error(`Error fetching product with slug "${slug}" using direct Payload access:`, error)
-    return null
-  }
+        return result.docs[0] ?? null
+      } catch (error) {
+        console.error(`Error fetching product with slug "${slug}" using direct Payload access:`, error)
+        return null
+      }
+    },
+    [`product-${slug}`],
+    { tags: ['products', `product-${slug}`], revalidate: 3600 }
+  )()
 }
 
 /**

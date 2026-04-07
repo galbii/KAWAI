@@ -42,6 +42,17 @@ export const organizationSchema = {
 };
 
 /**
+ * Valid schema.org availability values for Product offers.
+ * Google requires the full URL form for rich result eligibility.
+ */
+export type SchemaAvailability =
+  | 'https://schema.org/InStock'
+  | 'https://schema.org/OutOfStock'
+  | 'https://schema.org/PreOrder'
+  | 'https://schema.org/BackOrder'
+  | 'https://schema.org/Discontinued'
+
+/**
  * Product Schema Generator
  * Creates structured data for specific piano models
  */
@@ -52,12 +63,13 @@ export function generateProductSchema(product: {
   brand?: string;
   image?: string;
   sku?: string;
+  mpn?: string;
   url?: string;
   model?: string;
   offers?: {
     price?: number;
     currency?: string;
-    availability?: string;
+    availability?: SchemaAvailability;
   };
 }) {
   // Map type slugs to Schema.org category display names
@@ -73,6 +85,11 @@ export function generateProductSchema(product: {
     return categoryMap[type] || 'Musical Instrument'
   }
 
+  // Always emit offers — Google requires it for Product rich results.
+  // Include price only when known; always include priceCurrency and availability.
+  const offersData = product.offers ?? {}
+  const availability: SchemaAvailability = offersData.availability ?? 'https://schema.org/InStock'
+
   return {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -84,23 +101,27 @@ export function generateProductSchema(product: {
     },
     "category": getSchemaCategory(product.type),
     ...(product.sku && { "sku": product.sku }),
+    // mpn = Manufacturer Part Number; for Kawai, this is the model number (e.g. CA99, GX-7)
+    ...(product.mpn && { "mpn": product.mpn }),
     ...(product.url && { "url": product.url }),
     ...(product.model && { "model": product.model }),
     ...(product.image && {
-      "image": product.image
-    }),
-    ...(product.offers && {
-      "offers": {
-        "@type": "Offer",
-        "priceCurrency": product.offers.currency || "USD",
-        ...(product.offers.price && { "price": product.offers.price }),
-        "availability": product.offers.availability || "https://schema.org/InStock",
-        "seller": {
-          "@type": "Organization",
-          "name": "Kawai Piano Gallery St. Louis"
-        }
+      "image": {
+        "@type": "ImageObject",
+        "url": product.image
       }
-    })
+    }),
+    "offers": {
+      "@type": "Offer",
+      "priceCurrency": offersData.currency || "USD",
+      ...(offersData.price != null && { "price": offersData.price }),
+      "availability": availability,
+      "seller": {
+        "@type": "Organization",
+        "name": "Kawai America Corporation",
+        "url": "https://kawaius.com"
+      }
+    }
   };
 }
 
