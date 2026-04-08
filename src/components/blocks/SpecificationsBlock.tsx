@@ -33,7 +33,6 @@ function SpecCategorySection({
   const [expanded, setExpanded] = useState(false)
   const specs = category.specs
   const needsToggle = specs.length > INITIAL_VISIBLE
-  const visibleSpecs = needsToggle && !expanded ? specs.slice(0, INITIAL_VISIBLE) : specs
   const hiddenCount = specs.length - INITIAL_VISIBLE
 
   return (
@@ -48,33 +47,35 @@ function SpecCategorySection({
       )}
 
       <div>
-        {visibleSpecs.map((spec, i) => {
+        {specs.map((spec, i) => {
+          const isOverflow = needsToggle && !expanded && i >= INITIAL_VISIBLE
           const lines = (spec.value || '').split('\n').filter(l => l.trim())
           return (
-            <div
-              key={i}
-              className={[
-                'flex justify-between items-start gap-8',
-                compact ? 'py-2.5' : 'py-3.5',
-                i > 0 ? 'border-t border-kawai-charcoal/8' : '',
-              ].join(' ')}
-            >
-              <span className="text-sm text-kawai-charcoal/60 font-medium flex-1 min-w-0 leading-relaxed">
-                {spec.label}
-              </span>
-              {lines.length <= 1 ? (
-                <span className="font-mono text-sm text-kawai-charcoal font-semibold text-right flex-shrink-0 leading-relaxed">
-                  {spec.value || '—'}
+            <div key={i} className={isOverflow ? 'hidden' : undefined}>
+              <div
+                className={[
+                  'flex justify-between items-start gap-8',
+                  compact ? 'py-2.5' : 'py-3.5',
+                  i > 0 ? 'border-t border-kawai-charcoal/8' : '',
+                ].join(' ')}
+              >
+                <span className="text-sm text-kawai-charcoal/60 font-medium flex-1 min-w-0 leading-relaxed">
+                  {spec.label}
                 </span>
-              ) : (
-                <ul className="text-right flex-shrink-0 space-y-0.5">
-                  {lines.map((line, j) => (
-                    <li key={j} className="font-mono text-sm text-kawai-charcoal font-semibold leading-relaxed">
-                      {line.trim()}
-                    </li>
-                  ))}
-                </ul>
-              )}
+                {lines.length <= 1 ? (
+                  <span className="font-mono text-sm text-kawai-charcoal font-semibold text-right flex-shrink-0 leading-relaxed">
+                    {spec.value || '—'}
+                  </span>
+                ) : (
+                  <ul className="text-right flex-shrink-0 space-y-0.5">
+                    {lines.map((line, j) => (
+                      <li key={j} className="font-mono text-sm text-kawai-charcoal font-semibold leading-relaxed">
+                        {line.trim()}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
           )
         })}
