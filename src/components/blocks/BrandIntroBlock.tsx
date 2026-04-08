@@ -48,12 +48,16 @@ export function BrandIntroBlock({
   allowSkip = true,
 }: BrandIntroBlockProps) {
   const [phase, setPhase] = useState<AnimationPhase>('hidden')
-  const [shouldRender, setShouldRender] = useState(true)
+  const [shouldRender, setShouldRender] = useState(false)
 
   // Get timing values with defaults
   const fadeInDuration = timing?.fadeInDuration ?? 800
   const displayDuration = timing?.displayDuration ?? 2000
   const fadeOutDuration = timing?.fadeOutDuration ?? 800
+
+  useEffect(() => {
+    setShouldRender(true)
+  }, [])
 
   useEffect(() => {
     // Check if disabled or already shown this session
@@ -231,7 +235,7 @@ export function BrandIntroBlock({
               'font-serif text-6xl font-bold tracking-wider md:text-7xl lg:text-8xl',
               textColorClasses[backgroundColor ?? 'black']
             )}
-            style={{ fontFamily: "'Cormorant Garamond', serif" }}
+            style={{ fontFamily: "var(--font-cormorant), serif" }}
           >
             KAWAI
           </div>
@@ -264,13 +268,6 @@ export function BrandIntroBlock({
         )}
       </div>
 
-      {/* Google Fonts Preconnect */}
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      <link
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&display=swap"
-        rel="stylesheet"
-      />
     </div>
   )
 }
