@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import type { Product } from '@/payload-types'
@@ -63,11 +64,11 @@ function AccessoryCardItem({ accessory, isDark }: CardProps) {
       {/* Image */}
       <div className="relative overflow-hidden rounded-sm mb-3 aspect-[4/3] bg-kawai-pearl">
         {accessory.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={accessory.imageUrl}
             alt={accessory.name ?? accessory.model}
-            className="w-full h-full object-cover object-center transition-transform duration-500 ease-[var(--ease-piano)] group-hover:scale-105"
+            fill
+            className="object-cover object-center transition-transform duration-500 ease-[var(--ease-piano)] group-hover:scale-105"
           />
         ) : (
           /* Accessory placeholder */
