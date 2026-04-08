@@ -154,7 +154,7 @@ export const Products: CollectionConfig = {
   admin: {
     group: 'Commerce',
     defaultColumns: ['model', 'name', 'type', 'status', 'updatedAt'],
-    useAsTitle: 'model',
+    useAsTitle: 'name',
     description: 'Unified product management - pianos, accessories, and other products with dynamic page building',
     components: {
       beforeList: [
@@ -209,11 +209,12 @@ export const Products: CollectionConfig = {
             {
               name: 'slug',
               type: 'text',
+              required: true,
               unique: true,
               index: true,
               admin: {
-                description: 'URL slug (auto-generated from name or model)'
-              }
+                description: 'URL slug — auto-generated on creation. Changing after publishing breaks indexed URLs and cached pages.',
+              },
             },
             {
               name: 'status',
@@ -763,6 +764,7 @@ export const Products: CollectionConfig = {
               type: 'blocks',
               blockReferences: [
                 'product-hero',                      // Product Hero - Only allowed block for product pages
+                'product-hero-carousel',             // Product Hero Carousel - Multi-slide hero variant
                 'product-description',               // Product Description - Rich descriptions with image/video backgrounds
                 'product-technical-specs',           // Technical Specifications - Blueprint-style specifications with dynamic data
                 'product-collection-showcase',       // Collection Showcase - Display collection content
@@ -821,7 +823,14 @@ export const Products: CollectionConfig = {
                   admin: {
                     description: 'Open Graph image for social sharing (defaults to main image)'
                   }
-                })
+                }),
+                {
+                  name: 'canonical',
+                  type: 'text',
+                  admin: {
+                    description: 'Custom canonical URL (leave blank to use the default /products/[slug] URL)',
+                  },
+                },
               ],
               admin: {
                 description: 'SEO and social media optimization'
@@ -1602,14 +1611,16 @@ export const Products: CollectionConfig = {
       },
 
       // Hook 3: Revalidate product page on save
-      async ({ doc, req, context, operation }) => {
+      async ({ doc, previousDoc, req, context, operation }) => {
         // Skip if context flag is set (prevents infinite loops)
         if (context.skipProductPageRevalidation) {
           return doc
         }
 
-        // Only revalidate for active products with a slug
-        if (doc.status === 'active' && doc.slug) {
+        // Revalidate for active products, or products transitioning away from active
+        const wasActive = previousDoc?.status === 'active'
+        const isNowActive = doc.status === 'active'
+        if (doc.slug && (isNowActive || wasActive)) {
           console.log('[Products Hook] Revalidating product page for:', doc.slug)
 
           try {
