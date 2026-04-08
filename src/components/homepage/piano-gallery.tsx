@@ -177,13 +177,13 @@ export function PianoGallery({ data }: PianoGalleryProps) {
       {/* Section Header */}
       <section ref={heroRef} className="py-12 text-center">
         <div className="max-w-4xl mx-auto px-6">
-          <h1 className={`text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-kawai-black mb-6 transition-all duration-700 ease-out ${
-            isHeroVisible 
-              ? 'opacity-100 translate-y-0' 
+          <h2 className={`text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-kawai-black mb-6 transition-all duration-700 ease-out ${
+            isHeroVisible
+              ? 'opacity-100 translate-y-0'
               : 'opacity-0 translate-y-8'
           }`}>
             {galleryData.galleryTitle}
-          </h1>
+          </h2>
           <p className={`text-xl md:text-2xl leading-relaxed text-kawai-black/70 max-w-3xl mx-auto transition-all duration-700 ease-out delay-200 ${
             isHeroVisible
               ? 'opacity-100 translate-y-0'
