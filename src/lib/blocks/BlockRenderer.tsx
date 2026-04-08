@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { cache } from 'react'
 import type { Product } from '@/payload-types'
 import { populateBlockData } from '@/lib/blockDataPopulation'
 import { validateBlock, logBlockValidation } from './BlockValidator'
 import { getProductByModel } from '@/lib/shopify'
+
+const getProductByModelCached = cache(getProductByModel)
 
 // Import all block components
 import { HeroBlock } from '@/components/blocks/HeroBlock'
@@ -93,7 +95,7 @@ export async function BlockRenderer({ block, index, product }: BlockRendererProp
       if (product.model) {
         try {
           console.log(`[BlockRenderer] Fetching Shopify product for model: "${product.model}"`)
-          shopifyProduct = await getProductByModel(product.model)
+          shopifyProduct = await getProductByModelCached(product.model)
 
           if (shopifyProduct) {
             console.log(`[BlockRenderer] Shopify product loaded: "${shopifyProduct.title}" with ${shopifyProduct.variants.length} variant(s)`)

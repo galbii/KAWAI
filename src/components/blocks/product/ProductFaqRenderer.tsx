@@ -58,6 +58,27 @@ export async function ProductFaqRenderer({
           )}
         </div>
 
+        {/* FAQ JSON-LD schema */}
+        {faqs.length > 0 && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'FAQPage',
+                mainEntity: faqs.map((f) => ({
+                  '@type': 'Question',
+                  name: f.question,
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: f.excerpt ?? f.question,
+                  },
+                })),
+              }),
+            }}
+          />
+        )}
+
         {/* Accordion — client component */}
         <ProductFaqAccordion
           faqs={faqs.map((f) => ({
