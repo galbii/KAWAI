@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useRef, useCallback, useMemo } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
@@ -194,20 +194,7 @@ export function ProductDescriptionRenderer(props: ProductDescriptionRendererProp
 
   const [isExpanded, setIsExpanded] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [isVisible, setIsVisible] = useState(false)
-  const sectionRef = useRef<HTMLElement>(null)
   const thumbnailsRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) setIsVisible(true)
-      },
-      { threshold: 0.1 }
-    )
-    if (sectionRef.current) observer.observe(sectionRef.current)
-    return () => observer.disconnect()
-  }, [])
 
   // ----------------------------------------------------------------
   // Description text
@@ -412,7 +399,6 @@ export function ProductDescriptionRenderer(props: ProductDescriptionRendererProp
   // ================================================================
   return (
     <section
-      ref={sectionRef}
       className={cn('relative w-full overflow-hidden', theme.bg)}
     >
       {/* Optional background media behind the whole section */}
@@ -460,7 +446,7 @@ export function ProductDescriptionRenderer(props: ProductDescriptionRendererProp
             {/* Left column: description + thumbnails */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
-              animate={isVisible ? { opacity: 1, y: 0 } : {}}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7 }}
               className="lg:col-span-1 order-2 lg:order-1 min-w-0 flex flex-col"
             >
@@ -560,7 +546,7 @@ export function ProductDescriptionRenderer(props: ProductDescriptionRendererProp
             {/* Right column: active player */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
-              animate={isVisible ? { opacity: 1, x: 0 } : {}}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.7, delay: 0.2 }}
               className="lg:col-span-2 relative order-1 lg:order-2 min-w-0"
             >
@@ -657,7 +643,7 @@ export function ProductDescriptionRenderer(props: ProductDescriptionRendererProp
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, y: 20 }}
-                    animate={isVisible ? { opacity: 1, y: 0 } : {}}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: Math.min(index * 0.1, 0.5) }}
                   >
                     <MediaItemRenderer item={item} />

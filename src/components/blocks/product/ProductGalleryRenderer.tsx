@@ -83,12 +83,12 @@ export function ProductGalleryRenderer({
                       item.image,
                       '/images/defaults/gallery-placeholder.jpg',
                       'gallery',
-                      { fill: true }
+                      { fill: true, priority: index === 0 }
                     )
                     return (
                       <Image
                         {...imageProps}
-                        alt={item.alt || item.caption || ''}
+                        alt={item.alt || item.caption || title || 'Piano gallery image'}
                         className="object-cover transition-transform group-hover:scale-105"
                       />
                     )
@@ -123,12 +123,13 @@ export function ProductGalleryRenderer({
                     const imageProps = getImagePropsWithFallback(
                       item.image,
                       '/images/defaults/gallery-placeholder.jpg',
-                      'gallery'
+                      'gallery',
+                      { priority: index === 0 }
                     )
                     return (
                       <Image
                         {...imageProps}
-                        alt={item.alt || item.caption || ''}
+                        alt={item.alt || item.caption || title || 'Piano gallery image'}
                         className="w-full h-auto"
                       />
                     )

@@ -332,7 +332,7 @@ function Inner(props: ProductFeatureSlidesBlock) {
               transition: `transform 1.35s ${EASE}`,
             }}
           >
-            <SlideMedia feature={feature} />
+            <SlideMedia feature={feature} priority={i === 0} />
 
             {/*
               Base overlay — always-on flat layer.
@@ -574,7 +574,7 @@ function Inner(props: ProductFeatureSlidesBlock) {
 
 // ─── Slide media ──────────────────────────────────────────────────────────────
 
-function SlideMedia({ feature }: { feature: FeatureSlide }) {
+function SlideMedia({ feature, priority }: { feature: FeatureSlide; priority: boolean }) {
   const { mediaType, image, youtubeUrl, video } = feature
 
   if (mediaType === 'youtube' && youtubeUrl) {
@@ -601,7 +601,7 @@ function SlideMedia({ feature }: { feature: FeatureSlide }) {
   if (isMediaObject(image) && image.url) {
     const imgProps = getImagePropsWithFallback(image, '', 'hero', {
       fill: true,
-      priority: true,
+      priority,
       sizes: '100vw',
     })
     return (
