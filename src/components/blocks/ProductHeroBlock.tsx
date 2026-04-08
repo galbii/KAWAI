@@ -57,6 +57,7 @@ interface ProductHeroBlockProps {
   }
   ctaTracking?: CTATrackingConfig | null
   impressionTracking?: BlockTrackingConfig | null
+  headingLevel?: 'h1' | 'h2'
   // The product data will be passed from the context (current product document)
   product?: Product | null
   // Shopify product data fetched server-side
@@ -70,6 +71,7 @@ export function ProductHeroBlock({
   overrides = {},
   ctaTracking,
   impressionTracking,
+  headingLevel = 'h1',
   product,
   shopifyProduct,
 }: ProductHeroBlockProps) {
@@ -289,6 +291,7 @@ export function ProductHeroBlock({
   
   // Extract data from product, with overrides taking precedence
   const displayTitle = overrides.customTitle || product.name
+  const TitleTag = headingLevel === 'h2' ? 'h2' : 'h1'
 
   // CONSOLIDATED: Use the new root-level model field
   const modelDisplay = product.model || product.name
@@ -691,12 +694,12 @@ export function ProductHeroBlock({
             {/* Compact Hero Headlines */}
             <div className="space-y-2">
               {displayTitle && (
-                <h1 className={cn(
+                <TitleTag className={cn(
                   "text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold tracking-tight leading-[1.15]",
                   textColorClass
                 )}>
                   {displayTitle}
-                </h1>
+                </TitleTag>
               )}
             </div>
 
