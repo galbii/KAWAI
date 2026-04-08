@@ -23,6 +23,7 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
   const hasShigeru = dealer.shigeruKawaiDealer === true
   const hasAcoustic = dealer.acousticPianoDealer === true
   const hasProfessional = dealer.professionalProductDealer === true
+  const hasDigital = dealer.digitalPianoDealer === true
 
   const handleCardClick = () => {
     onSelect()
@@ -94,7 +95,7 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
         )}
 
         {/* Type Labels */}
-        {(hasShigeru || hasAcoustic || hasProfessional) && (
+        {(hasShigeru || hasAcoustic || hasProfessional || hasDigital) && (
           <div className="flex items-center gap-3 mb-3.5">
             {hasShigeru && (
               <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-wide" style={{ color: '#A07800' }}>
@@ -106,6 +107,12 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
               <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-kawai-charcoal/55 tracking-wide">
                 <span className="w-1.5 h-1.5 rounded-full bg-kawai-charcoal/35 flex-shrink-0" />
                 Acoustic
+              </span>
+            )}
+            {hasDigital && (
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-kawai-charcoal/55 tracking-wide">
+                <span className="w-1.5 h-1.5 rounded-full bg-kawai-charcoal/35 flex-shrink-0" />
+                Digital
               </span>
             )}
             {hasProfessional && (

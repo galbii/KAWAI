@@ -57,6 +57,7 @@ export async function DealerFinderMapBlock({ heading }: Props) {
         shigeruKawaiDealer: true,
         acousticPianoDealer: true,
         professionalProductDealer: true,
+        digitalPianoDealer: true,
         isFeatured: true,
         isActive: true,
       },

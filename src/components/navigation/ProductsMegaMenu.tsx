@@ -432,7 +432,7 @@ function CollectionFooter({ collections, activeHandle, onSelect, onClose, catego
   const ctaLabel = categoryLabel ? `Browse All ${categoryLabel}` : 'Browse All Products'
 
   return (
-    <div className="flex-shrink-0 border-t border-[#E8E4DF] bg-[#FAF9F7] px-12 py-3.5">
+    <div className="flex-shrink-0 border-b border-[#E8E4DF] bg-[#FAF9F7] px-12 py-3.5">
       <div className="flex items-center gap-4">
         <span className="text-[10px] font-bold tracking-[0.28em] uppercase text-[#C8C2BA] whitespace-nowrap flex-shrink-0">
           Collections
@@ -752,16 +752,6 @@ function TopTabBar({ selectedKey, onSelect, onClose, productTypes }: {
         )
       })}
 
-      <div className="ml-auto flex items-center pl-8">
-        <Link
-          href="/pianos"
-          onClick={onClose}
-          className="group inline-flex items-center gap-2 px-4 py-1.5 bg-[#1E1B16] hover:bg-[#2C2C2C] rounded-sm text-sm font-semibold text-white transition-colors duration-150 whitespace-nowrap"
-        >
-          View All Pianos
-          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-150 group-hover:translate-x-0.5" />
-        </Link>
-      </div>
     </div>
   )
 }
@@ -916,6 +906,15 @@ export function ProductsMegaMenu({
               <>
                 <TopTabBar selectedKey={selectedKey} onSelect={setSelectedKey} onClose={onClose} productTypes={productTypes} />
 
+                <CollectionFooter
+                  collections={footerCollections}
+                  activeHandle={activeCollectionHandle}
+                  onSelect={setActiveCollectionHandle}
+                  onClose={onClose}
+                  categoryHref={selectedCat?.href ?? '/pianos'}
+                  categoryLabel={selectedCat ? selectedCat.label : null}
+                />
+
                 <div className="min-w-0 px-14 py-10 bg-white overflow-y-auto flex-1">
                   <AnimatePresence mode="wait" initial={false}>
                     {selectedKey === null && allViewActiveCollection ? (
@@ -987,15 +986,6 @@ export function ProductsMegaMenu({
                     )}
                   </AnimatePresence>
                 </div>
-
-                <CollectionFooter
-                  collections={footerCollections}
-                  activeHandle={activeCollectionHandle}
-                  onSelect={setActiveCollectionHandle}
-                  onClose={onClose}
-                  categoryHref={selectedCat?.href ?? '/pianos'}
-                  categoryLabel={selectedCat ? selectedCat.label : null}
-                />
               </>
             )}
           </div>

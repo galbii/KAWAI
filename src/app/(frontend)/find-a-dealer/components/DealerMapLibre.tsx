@@ -30,6 +30,7 @@ function DealerPopupContent({ dealer }: { dealer: DealerWithDistance }) {
   const hasShigeru = dealer.shigeruKawaiDealer === true
   const hasAcoustic = dealer.acousticPianoDealer === true
   const hasProfessional = dealer.professionalProductDealer === true
+  const hasDigital = dealer.digitalPianoDealer === true
 
   return (
     <div ref={ref}>
@@ -61,7 +62,7 @@ function DealerPopupContent({ dealer }: { dealer: DealerWithDistance }) {
         </div>
 
         {/* Type labels */}
-        {(hasShigeru || hasAcoustic || hasProfessional) && (
+        {(hasShigeru || hasAcoustic || hasProfessional || hasDigital) && (
           <div className="flex items-center gap-3 mb-4">
             {hasShigeru && (
               <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold" style={{ color: '#A07800' }}>
@@ -73,6 +74,12 @@ function DealerPopupContent({ dealer }: { dealer: DealerWithDistance }) {
               <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-kawai-charcoal/55">
                 <span className="w-1.5 h-1.5 rounded-full bg-kawai-charcoal/35 flex-shrink-0" />
                 Acoustic
+              </span>
+            )}
+            {hasDigital && (
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-kawai-charcoal/55">
+                <span className="w-1.5 h-1.5 rounded-full bg-kawai-charcoal/35 flex-shrink-0" />
+                Digital
               </span>
             )}
             {hasProfessional && (
@@ -409,6 +416,7 @@ export function DealerMapLibre({
         const hasShigeru = dealer.shigeruKawaiDealer === true
         const hasAcoustic = dealer.acousticPianoDealer === true
         const hasProfessional = dealer.professionalProductDealer === true
+        const hasDigital = dealer.digitalPianoDealer === true
 
         return (
           <Popup
@@ -449,7 +457,7 @@ export function DealerMapLibre({
               </div>
 
               {/* Type labels — dot + text, matching DealerCard */}
-              {(hasShigeru || hasAcoustic || hasProfessional) && (
+              {(hasShigeru || hasAcoustic || hasProfessional || hasDigital) && (
                 <div className="flex items-center gap-3 mb-4">
                   {hasShigeru && (
                     <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold" style={{ color: '#A07800' }}>
@@ -461,6 +469,12 @@ export function DealerMapLibre({
                     <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-kawai-charcoal/55">
                       <span className="w-1.5 h-1.5 rounded-full bg-kawai-charcoal/35 flex-shrink-0" />
                       Acoustic
+                    </span>
+                  )}
+                  {hasDigital && (
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-kawai-charcoal/55">
+                      <span className="w-1.5 h-1.5 rounded-full bg-kawai-charcoal/35 flex-shrink-0" />
+                      Digital
                     </span>
                   )}
                   {hasProfessional && (
