@@ -120,6 +120,15 @@ export const RebateTable: Block = {
               min: 0,
               admin: { description: 'Consumer rebate amount in USD' },
             },
+            {
+              name: 'productPage',
+              type: 'relationship',
+              relationTo: 'products',
+              hasMany: false,
+              admin: {
+                description: 'Link to the internal product page for this model (optional)',
+              },
+            },
           ],
         },
       ],

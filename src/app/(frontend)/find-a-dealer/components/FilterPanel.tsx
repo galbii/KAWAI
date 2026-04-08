@@ -28,9 +28,9 @@ const DEALER_TYPES = [
     text: 'rgba(44,44,44,0.6)',
   },
   {
-    value: 'professional',
-    label: 'Professional',
-    description: 'Stage pianos, portables & professional gear',
+    value: 'digital',
+    label: 'Digital Piano',
+    description: 'CA, CN, ES & KDP digital piano series',
     dot: '#C01820',
     text: '#C01820',
   },

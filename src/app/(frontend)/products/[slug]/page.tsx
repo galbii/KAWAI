@@ -46,16 +46,16 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
       ? (ogImageRaw as { url: string }).url
       : product.imageUrl || null
 
-  // Noindex discontinued, pending, and catalog-hidden products
+  // Noindex discontinued, draft, and catalog-hidden products
   const isDiscontinued = product.status === 'discontinued'
-  const isPending = product.status === 'pending'
+  const isDraft = product.status === 'draft'
   const isHidden = product.visibility?.showInCatalog === false
 
   return {
     title,
     description,
     ...(product.seo?.keywords ? { keywords: product.seo.keywords } : {}),
-    ...(isDiscontinued || isPending || isHidden
+    ...(isDiscontinued || isDraft || isHidden
       ? { robots: { index: false, follow: false } }
       : {}),
     alternates: {
@@ -66,7 +66,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
       description,
       url: `${siteUrl}/products/${slug}`,
       images: ogImageUrl ? [{ url: ogImageUrl, width: 1200, height: 630, alt: title }] : [],
-      type: 'product'
+      type: 'website'
     },
     twitter: {
       card: 'summary_large_image',

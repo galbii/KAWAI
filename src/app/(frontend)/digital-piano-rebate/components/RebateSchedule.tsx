@@ -9,6 +9,7 @@ export type RebateModel = {
   model: string
   finishes: string
   consumerRebate: number
+  productSlug?: string
 }
 
 export type RebateSeries = {
@@ -267,7 +268,7 @@ function SeriesBlock({
               </span>
             </div>
 
-            {/* Right: save label + amount */}
+            {/* Right: save label + amount + optional product link */}
             <div className="text-right flex-shrink-0">
               <p
                 className="text-[9px] tracking-[0.35em] uppercase text-kawai-charcoal/30 mb-1 leading-none"
@@ -285,6 +286,16 @@ function SeriesBlock({
               >
                 {formatSavings(model.consumerRebate)}
               </p>
+              {model.productSlug && (
+                <Link
+                  href={`/products/${model.productSlug}`}
+                  className="inline-flex items-center gap-1.5 mt-2 text-[10px] tracking-[0.2em] uppercase font-medium text-kawai-charcoal/40 hover:text-kawai-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red"
+                  style={{ fontFamily: 'var(--font-brand-sans)' }}
+                >
+                  View {model.model}
+                  <ArrowRight className="h-3 w-3" />
+                </Link>
+              )}
             </div>
           </motion.div>
         ))}

@@ -62,6 +62,9 @@ function transformStorefrontData(rawData: any): HomePageData | null {
     heroSection: {
       locationText: rawData.locationText,
       establishedText: rawData.establishedText,
+      titlePrefix: rawData.titlePrefix ?? 'The',
+      titleMain: rawData.titleMain ?? 'INSTRUMENTAL',
+      titleSuffix: rawData.titleSuffix ?? 'to Life',
       description: rawData.description,
       primaryCta: rawData.primaryCta,
       secondaryCta: rawData.secondaryCta,

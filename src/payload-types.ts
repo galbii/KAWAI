@@ -2007,9 +2007,9 @@ export interface Product {
    */
   name?: string | null;
   /**
-   * URL slug (auto-generated from name or model)
+   * URL slug — auto-generated on creation. Changing after publishing breaks indexed URLs and cached pages.
    */
-  slug?: string | null;
+  slug: string;
   /**
    * Draft products are hidden from frontend
    */
@@ -2376,6 +2376,7 @@ export interface Product {
   pageContent?:
     | (
         | ProductHeroBlock
+        | ProductHeroCarouselBlock
         | ProductDescriptionBlock
         | ProductTechnicalSpecsBlock
         | ProductCollectionShowcaseBlock
@@ -2409,6 +2410,10 @@ export interface Product {
      * Open Graph image for social sharing (defaults to main image)
      */
     ogImage?: (string | null) | Media;
+    /**
+     * Custom canonical URL (leave blank to use the default /products/[slug] URL)
+     */
+    canonical?: string | null;
   };
   /**
    * Product visibility and display settings
@@ -2713,6 +2718,129 @@ export interface ProductHeroBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'product-hero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductHeroCarouselBlock".
+ */
+export interface ProductHeroCarouselBlock {
+  /**
+   * Additional slides appended after the Homepage news items. Leave empty to show only homepage news.
+   */
+  slides?:
+    | {
+        /**
+         * Choose the media type for this slide
+         */
+        mediaType: 'image' | 'video' | 'youtube';
+        /**
+         * Background image for this slide (recommended: 1920×1080px or larger)
+         */
+        image?: (string | null) | Media;
+        /**
+         * Uploaded video file (MP4 recommended for best browser support)
+         */
+        videoFile?: (string | null) | Media;
+        /**
+         * YouTube video URL — supports youtube.com/watch?v=..., youtu.be/..., or embed URLs
+         */
+        youtubeUrl?: string | null;
+        /**
+         * Zoom level for the YouTube background (1.0 = no zoom, 1.15 = default — crops YouTube UI from edges, 1.5 = tight crop)
+         */
+        youtubeZoom?: number | null;
+        /**
+         * Small label displayed above the title (e.g., "New Arrival", "Limited Edition")
+         */
+        eyebrow?: string | null;
+        /**
+         * Main headline — leave empty for a pure visual, text-free slide
+         */
+        title?: string | null;
+        /**
+         * Supporting subtitle or short description
+         */
+        subtitle?: string | null;
+        /**
+         * Call-to-action button text — leave empty to hide the button
+         */
+        ctaText?: string | null;
+        /**
+         * CTA destination URL — required when CTA text is set. Use internal paths (/products/sk-ex) or full URLs.
+         */
+        ctaLink?: string | null;
+        /**
+         * Open link in a new tab (recommended for external URLs)
+         */
+        ctaOpenInNewTab?: boolean | null;
+        /**
+         * Button visual style
+         */
+        ctaStyle?: ('white' | 'red' | 'outline') | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Carousel behaviour and controls
+   */
+  settings?: {
+    /**
+     * Auto-play duration per slide in milliseconds (leave empty to use Homepage setting, default: 7000ms)
+     */
+    autoPlayDuration?: number | null;
+    /**
+     * Automatically advance slides
+     */
+    enableAutoPlay?: boolean | null;
+    /**
+     * Loop back to the first slide after the last
+     */
+    enableLoop?: boolean | null;
+    /**
+     * Arrow keys (←/→) and spacebar to play/pause
+     */
+    enableKeyboardNav?: boolean | null;
+    /**
+     * Swipe to navigate on touch devices
+     */
+    enableTouchSwipe?: boolean | null;
+    /**
+     * Show slide progress indicators at the bottom
+     */
+    showNavigationDots?: boolean | null;
+    /**
+     * Show left/right arrow navigation buttons
+     */
+    showArrows?: boolean | null;
+    /**
+     * Show play/pause control button
+     */
+    showPlayPauseButton?: boolean | null;
+    /**
+     * Subtle zoom animation on images (Ken Burns effect)
+     */
+    enableKenBurnsEffect?: boolean | null;
+  };
+  /**
+   * Visual height, content position, and overlay intensity
+   */
+  styling?: {
+    /**
+     * Carousel height
+     */
+    height?: ('screen' | 'large' | 'medium' | 'small') | null;
+    /**
+     * Position of the text content
+     */
+    contentPosition?: ('bottom-left' | 'bottom-center' | 'center' | 'top-left') | null;
+    /**
+     * Gradient overlay darkness — increase for better text legibility over bright images
+     */
+    overlayIntensity?: ('none' | 'subtle' | 'medium' | 'heavy') | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'product-hero-carousel';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -5969,6 +6097,10 @@ export interface MarketingRebateTableBlock {
        * Consumer rebate amount in USD
        */
       consumerRebate: number;
+      /**
+       * Link to the internal product page for this model (optional)
+       */
+      productPage?: (string | null) | Product;
       id?: string | null;
     }[];
     id?: string | null;
@@ -6558,7 +6690,7 @@ export interface ProductShowcaseBlock {
    */
   product: {
     /**
-     * Main product image (leave empty to use Piano Model image)
+     * Product hero image
      */
     image?: (string | null) | Media;
     /**
@@ -6600,7 +6732,7 @@ export interface ProductShowcaseBlock {
            */
           name: string;
           /**
-           * Variation sample image (optional)
+           * Variation product image
            */
           image?: (string | null) | Media;
           /**
@@ -6691,18 +6823,15 @@ export interface ProductImageGalleryBlock {
    */
   images?:
     | {
-        /**
-         * Gallery image
-         */
         image: string | Media;
         /**
          * Image caption (optional)
          */
         caption?: string | null;
         /**
-         * Alt text for accessibility (optional, will use image alt if not provided)
+         * Alt text for accessibility and SEO (required)
          */
-        alt?: string | null;
+        alt: string;
         id?: string | null;
       }[]
     | null;
@@ -6811,7 +6940,7 @@ export interface ProductFeaturesListBlock {
        */
       type?: ('none' | 'image' | 'icon' | 'emoji') | null;
       /**
-       * Custom icon image
+       * Icon image (used when icon type is "image")
        */
       image?: (string | null) | Media;
       /**
@@ -6972,7 +7101,7 @@ export interface ProductSpecificationsBlock {
      */
     enableDownload?: boolean | null;
     /**
-     * Specifications document to download
+     * Downloadable spec sheet (PDF or image)
      */
     downloadFile?: (string | null) | Media;
     /**
@@ -6987,129 +7116,6 @@ export interface ProductSpecificationsBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'product-specs';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ProductHeroCarouselBlock".
- */
-export interface ProductHeroCarouselBlock {
-  /**
-   * Additional slides appended after the Homepage news items. Leave empty to show only homepage news.
-   */
-  slides?:
-    | {
-        /**
-         * Choose the media type for this slide
-         */
-        mediaType: 'image' | 'video' | 'youtube';
-        /**
-         * Background image for this slide (recommended: 1920×1080px or larger)
-         */
-        image?: (string | null) | Media;
-        /**
-         * Uploaded video file (MP4 recommended for best browser support)
-         */
-        videoFile?: (string | null) | Media;
-        /**
-         * YouTube video URL — supports youtube.com/watch?v=..., youtu.be/..., or embed URLs
-         */
-        youtubeUrl?: string | null;
-        /**
-         * Zoom level for the YouTube background (1.0 = no zoom, 1.15 = default — crops YouTube UI from edges, 1.5 = tight crop)
-         */
-        youtubeZoom?: number | null;
-        /**
-         * Small label displayed above the title (e.g., "New Arrival", "Limited Edition")
-         */
-        eyebrow?: string | null;
-        /**
-         * Main headline — leave empty for a pure visual, text-free slide
-         */
-        title?: string | null;
-        /**
-         * Supporting subtitle or short description
-         */
-        subtitle?: string | null;
-        /**
-         * Call-to-action button text — leave empty to hide the button
-         */
-        ctaText?: string | null;
-        /**
-         * CTA destination URL — required when CTA text is set. Use internal paths (/products/sk-ex) or full URLs.
-         */
-        ctaLink?: string | null;
-        /**
-         * Open link in a new tab (recommended for external URLs)
-         */
-        ctaOpenInNewTab?: boolean | null;
-        /**
-         * Button visual style
-         */
-        ctaStyle?: ('white' | 'red' | 'outline') | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Carousel behaviour and controls
-   */
-  settings?: {
-    /**
-     * Auto-play duration per slide in milliseconds (leave empty to use Homepage setting, default: 7000ms)
-     */
-    autoPlayDuration?: number | null;
-    /**
-     * Automatically advance slides
-     */
-    enableAutoPlay?: boolean | null;
-    /**
-     * Loop back to the first slide after the last
-     */
-    enableLoop?: boolean | null;
-    /**
-     * Arrow keys (←/→) and spacebar to play/pause
-     */
-    enableKeyboardNav?: boolean | null;
-    /**
-     * Swipe to navigate on touch devices
-     */
-    enableTouchSwipe?: boolean | null;
-    /**
-     * Show slide progress indicators at the bottom
-     */
-    showNavigationDots?: boolean | null;
-    /**
-     * Show left/right arrow navigation buttons
-     */
-    showArrows?: boolean | null;
-    /**
-     * Show play/pause control button
-     */
-    showPlayPauseButton?: boolean | null;
-    /**
-     * Subtle zoom animation on images (Ken Burns effect)
-     */
-    enableKenBurnsEffect?: boolean | null;
-  };
-  /**
-   * Visual height, content position, and overlay intensity
-   */
-  styling?: {
-    /**
-     * Carousel height
-     */
-    height?: ('screen' | 'large' | 'medium' | 'small') | null;
-    /**
-     * Position of the text content
-     */
-    contentPosition?: ('bottom-left' | 'bottom-center' | 'center' | 'top-left') | null;
-    /**
-     * Gradient overlay darkness — increase for better text legibility over bright images
-     */
-    overlayIntensity?: ('none' | 'subtle' | 'medium' | 'heavy') | null;
-  };
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'product-hero-carousel';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -11278,6 +11284,7 @@ export interface ProductsSelect<T extends boolean = true> {
         metaDescription?: T;
         keywords?: T;
         ogImage?: T;
+        canonical?: T;
       };
   visibility?:
     | T

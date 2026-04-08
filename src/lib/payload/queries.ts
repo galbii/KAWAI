@@ -297,7 +297,7 @@ export const getHomePageDataDirect = unstable_cache(
           description: homePageData.description,
           primaryCta: homePageData.primaryCta,
           secondaryCta: homePageData.secondaryCta,
-          backgroundVideo: homePageData.backgroundVideo
+          backgroundVideo: homePageData.backgroundVideo ?? null
         },
         showroomSection: {
           sectionHeader: homePageData.sectionHeader,
@@ -306,7 +306,7 @@ export const getHomePageDataDirect = unstable_cache(
           showroomInfo: homePageData.showroomInfo,
           hours: homePageData.hours,
           features: homePageData.features,
-          mapApiKey: homePageData.mapApiKey,
+          mapApiKey: homePageData.mapApiKey ?? null,
           showroomCtas: homePageData.showroomCtas
         },
         pianoCollectionSection: {
@@ -314,7 +314,7 @@ export const getHomePageDataDirect = unstable_cache(
           collectionTitle: homePageData.collectionTitle,
           collectionDescription: homePageData.collectionDescription,
           collectionCta: homePageData.collectionCta,
-          featuredVideo: homePageData.featuredVideo
+          ...(homePageData.featuredVideo !== undefined ? { featuredVideo: homePageData.featuredVideo } : {}),
         },
         pianoGallerySection: {
           galleryTitle: homePageData.galleryTitle,
@@ -334,7 +334,7 @@ export const getHomePageDataDirect = unstable_cache(
           benefits: homePageData.benefits,
           formOptions: homePageData.formOptions
         },
-        seo: homePageData.seo
+        ...(homePageData.seo !== undefined ? { seo: homePageData.seo } : {}),
       }
     }
   } catch (error) {
@@ -343,7 +343,6 @@ export const getHomePageDataDirect = unstable_cache(
 
   // Return fallback structure
   return {
-    id: undefined,
     content: [], // NEW: Empty blocks array for fallback
     heroSection: {
       locationText: "St. Louis's Premier Kawai Piano Dealer",

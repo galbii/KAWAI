@@ -74,6 +74,7 @@ export async function getCMSPageMetadata(slug: string, fallback: Metadata): Prom
       const fallbackOG =
         fallback.openGraph && typeof fallback.openGraph === 'object' ? fallback.openGraph : {}
       merged.openGraph = {
+        type: 'website',
         ...fallbackOG,
         ...(seo.openGraphTitle ? { title: seo.openGraphTitle } : {}),
         ...(seo.openGraphDescription ? { description: seo.openGraphDescription } : {}),

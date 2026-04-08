@@ -57,6 +57,7 @@ const notoSans = Noto_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'),
   title: {
     template: '%s | Kawai Pianos',
     default: 'Kawai Pianos',

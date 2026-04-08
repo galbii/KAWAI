@@ -36,7 +36,7 @@ interface BottomLeftPopupBlockProps {
   dismissible?: boolean | null
   animationStyle?: 'slide' | 'fade' | 'bounce' | 'scale' | null
   customStorageKey?: string | null
-  zIndex?: number | null
+  zIndex?: number | null  // Default 9010 — must be above mobile search bar (z-9003)
   tracking?: any
   ctaTracking?: any
 }
@@ -131,7 +131,7 @@ export function BottomLeftPopupBlock({
   dismissible = true,
   animationStyle = 'slide',
   customStorageKey,
-  zIndex = 9000,
+  zIndex = 9010,
   tracking,
   ctaTracking,
 }: BottomLeftPopupBlockProps) {
@@ -214,6 +214,8 @@ export function BottomLeftPopupBlock({
       ? ((featuredImage as Media).alt ?? '')
       : ''
 
+  // Ensure popup is above mobile floating search bar (z-9003)
+  const resolvedZIndex = Math.max(zIndex ?? 9010, 9010)
   const t = THEMES[theme ?? 'light']
   const isVisible = state === 'entering' || state === 'visible'
   const isExiting = state === 'exiting'
@@ -245,7 +247,7 @@ export function BottomLeftPopupBlock({
             position: 'fixed',
             inset: 0,
             background: 'rgba(0,0,0,0.52)',
-            zIndex: (zIndex ?? 9000) - 1,
+            zIndex: resolvedZIndex - 1,
             opacity: scrimOpacity,
             pointerEvents: isVisible ? 'auto' : 'none',
             transition: scrimTransition,
@@ -259,7 +261,7 @@ export function BottomLeftPopupBlock({
       <div
         style={{
           position: 'fixed',
-          zIndex: zIndex ?? 9000,
+          zIndex: resolvedZIndex,
           ...(isMobile
             ? { bottom: 0, left: 0, right: 0 }
             : position === 'bottom-right'

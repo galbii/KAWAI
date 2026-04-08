@@ -24,7 +24,7 @@ export interface NewsImageCarouselProps {
   description: string
   images: (Media | string)[]
   category: string
-  link?: string | undefined
+  link?: string | null | undefined
   prefersReducedMotion?: boolean
   slideDuration: number // Total time this slide is visible
 }

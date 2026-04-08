@@ -658,7 +658,7 @@ export async function getHomePageData(): Promise<{
   pianoGallerySection: any
   newsCarouselSection: any
   contactFormSection: any
-  seo: any
+  seo?: any
 } | null> {
   let cmsData = null
 

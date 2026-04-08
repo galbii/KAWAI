@@ -72,7 +72,7 @@ export function PianoCollection({ data = DEFAULT_PIANO_COLLECTION_DATA }: PianoC
           >
             <div className="relative w-full overflow-hidden rounded-lg shadow-lg" style={{ paddingBottom: '56.25%' /* 16:9 aspect ratio */ }}>
               <iframe
-                src={`https://www.youtube.com/embed/${data.featuredVideo.youtubeId || "1cmwb6evs2A"}?modestbranding=1&rel=0`}
+                src={`https://www.youtube.com/embed/${data.featuredVideo?.youtubeId || "1cmwb6evs2A"}?modestbranding=1&rel=0`}
                 className="absolute top-0 left-0 w-full h-full rounded-lg"
                 allowFullScreen
                 frameBorder="0"

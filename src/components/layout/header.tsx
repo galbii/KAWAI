@@ -484,15 +484,16 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
   }, [])
 
   // Auto-hide: show nav on mount, then hide after 2s (only when autoMinimize is enabled)
+  // DISABLED — bottom bar should always be visible
   useEffect(() => {
     setIsAutoHidden(false)
-    if (!autoMinimize) return
-    autoHideTimeoutRef.current = setTimeout(() => {
-      setIsAutoHidden(true)
-    }, 2000)
-    return () => {
-      if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
-    }
+    // if (!autoMinimize) return
+    // autoHideTimeoutRef.current = setTimeout(() => {
+    //   setIsAutoHidden(true)
+    // }, 2000)
+    // return () => {
+    //   if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
+    // }
   }, [autoMinimize])
 
   // Initialize scroll state based on initial scroll position
@@ -702,11 +703,12 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
     menuTimeoutRef.current = setTimeout(() => {
       setActiveMenu(null)
     }, 500)
-    if (!autoMinimize) return
-    if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
-    autoHideTimeoutRef.current = setTimeout(() => {
-      setIsAutoHidden(true)
-    }, 2000)
+    // DISABLED — bottom bar should always be visible
+    // if (!autoMinimize) return
+    // if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
+    // autoHideTimeoutRef.current = setTimeout(() => {
+    //   setIsAutoHidden(true)
+    // }, 2000)
   }, [autoMinimize])
 
   // Desktop dropdown handlers (for generic nav items with dropdowns)
@@ -773,13 +775,14 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
   }, [])
 
   const handleBottomNavMouseLeave = useCallback(() => {
-    if (!autoMinimize) return
-    if (autoHideTimeoutRef.current) {
-      clearTimeout(autoHideTimeoutRef.current)
-    }
-    autoHideTimeoutRef.current = setTimeout(() => {
-      setIsAutoHidden(true)
-    }, 2000)
+    // DISABLED — bottom bar should always be visible
+    // if (!autoMinimize) return
+    // if (autoHideTimeoutRef.current) {
+    //   clearTimeout(autoHideTimeoutRef.current)
+    // }
+    // autoHideTimeoutRef.current = setTimeout(() => {
+    //   setIsAutoHidden(true)
+    // }, 2000)
   }, [autoMinimize])
 
   // Header hover handlers for bottom navigation reveal

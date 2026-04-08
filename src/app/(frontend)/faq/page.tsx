@@ -33,26 +33,36 @@ export default async function FaqIndexPage({ searchParams }: PageProps) {
     getAllFaqCategories(),
   ])
 
-  // Build FAQPage JSON-LD from all visible FAQs (truncate answer to 300 chars for index)
-  const faqJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqs.slice(0, 20).map((faq: any) => ({
-      '@type': 'Question',
-      name: faq.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: (faq.excerpt ?? '').substring(0, 300),
-      },
-    })),
-  }
+  // Build FAQPage JSON-LD — only include FAQs that have usable answer text.
+  // Google treats an empty mainEntity array as "Missing field mainEntity", so
+  // we skip the schema entirely when no qualifying FAQs are available.
+  const faqSchemaItems = faqs
+    .slice(0, 20)
+    .map((faq: any) => {
+      const text = (faq.excerpt ?? '').substring(0, 300)
+      if (!text) return null
+      return {
+        '@type': 'Question',
+        name: faq.question,
+        acceptedAnswer: { '@type': 'Answer', text },
+      }
+    })
+    .filter(Boolean)
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
-      />
+      {faqSchemaItems.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'FAQPage',
+              mainEntity: faqSchemaItems,
+            }),
+          }}
+        />
+      )}
 
       <div className="min-h-screen bg-kawai-pearl">
         {/* Page Header */}

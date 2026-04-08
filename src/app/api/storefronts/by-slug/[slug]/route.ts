@@ -51,6 +51,9 @@ export async function GET(
         heroSection: {
           locationText: storefront.locationText,
           establishedText: storefront.establishedText,
+          titlePrefix: (storefront as any).titlePrefix ?? 'The',
+          titleMain: (storefront as any).titleMain ?? 'INSTRUMENTAL',
+          titleSuffix: (storefront as any).titleSuffix ?? 'to Life',
           description: storefront.description,
           primaryCta: storefront.primaryCta,
           secondaryCta: storefront.secondaryCta,

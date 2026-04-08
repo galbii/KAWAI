@@ -21,7 +21,7 @@ export interface NewsVideoBackgroundProps {
   videoSource?: 'youtube' | 'direct' | null
   youtubeZoom?: number | null
   category: string
-  link?: string | undefined
+  link?: string | null | undefined
   prefersReducedMotion?: boolean
 }
 

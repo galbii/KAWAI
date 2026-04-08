@@ -5,6 +5,9 @@ import type { BlockTrackingConfig } from '@/lib/analytics/unified-tracking'
 export interface HeroSectionData {
   locationText: string
   establishedText: string
+  titlePrefix: string
+  titleMain: string
+  titleSuffix: string
   description: string
   primaryCta: {
     text: string
@@ -54,15 +57,15 @@ export interface ShowroomSectionData {
   showroomInfo: ShowroomInfo
   hours: ShowroomHours[]
   features: ShowroomFeature[]
-  mapApiKey?: string
+  mapApiKey?: string | null
   showroomCtas: ShowroomCtas
   trustBanner?: TrustBannerItem[]
 }
 
 export interface FeaturedVideo {
-  youtubeId?: string
-  width?: number
-  height?: number
+  youtubeId?: string | null
+  width?: number | null
+  height?: number | null
 }
 
 export interface PianoCollectionSectionData {
@@ -73,7 +76,7 @@ export interface PianoCollectionSectionData {
     text: string
     link: string
   }
-  featuredVideo: FeaturedVideo
+  featuredVideo?: FeaturedVideo
 }
 
 export interface PianoCategory {
@@ -95,8 +98,8 @@ export interface NewsItem {
   description: string
   image?: Media | string | null
   category: string
-  link?: string
-  ctaText?: string
+  link?: string | null
+  ctaText?: string | null
 
   // Multi-media support
   images?: (Media | string)[] | null // Multiple images for carousel display
@@ -144,11 +147,11 @@ export interface ContactFormSectionData {
 }
 
 export interface SEOData {
-  metaTitle?: string
-  metaDescription?: string
-  keywords?: string
-  openGraphTitle?: string
-  openGraphDescription?: string
+  metaTitle?: string | null
+  metaDescription?: string | null
+  keywords?: string | null
+  openGraphTitle?: string | null
+  openGraphDescription?: string | null
   openGraphImage?: Media | string | null
 }
 
@@ -161,7 +164,7 @@ export interface HomePageData {
   pianoGallerySection: PianoGallerySectionData
   newsCarouselSection: NewsCarouselSectionData
   contactFormSection: ContactFormSectionData
-  seo: SEOData
+  seo?: SEOData
 }
 
 // Component Props Types
@@ -194,6 +197,9 @@ export interface ContactFormProps {
 export const DEFAULT_HERO_DATA: HeroSectionData = {
   locationText: "St. Louis's Premier Kawai Piano Gallery",
   establishedText: "Est. 1927 • Lake St. Louis, Missouri",
+  titlePrefix: "The",
+  titleMain: "INSTRUMENTAL",
+  titleSuffix: "to Life",
   description: "Every musician harbors a vision. Every performance seeks perfection. Since 1927, we've been crafting the instruments that transform inspiration into reality. Visit our Lake St. Louis showroom and discover why we're Missouri's trusted Kawai piano experts.",
   primaryCta: {
     text: "View Our Piano Collection",

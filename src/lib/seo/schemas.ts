@@ -11,7 +11,6 @@ export const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
   "name": "Kawai America Corporation",
-  "alternateName": "Kawai Piano Gallery St. Louis",
   "url": "https://kawaius.com",
   "logo": "https://kawaius.com/images/logo.png",
   "description": "Since 1927, Kawai has been crafting world-class pianos that blend Japanese precision craftsmanship with innovative technology. Family-owned and dedicated to musical excellence.",

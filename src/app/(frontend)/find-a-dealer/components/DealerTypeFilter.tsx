@@ -3,7 +3,7 @@
 import { LayoutGroup, motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
-export type DealerType = 'all' | 'shigeru' | 'acoustic' | 'professional'
+export type DealerType = 'all' | 'shigeru' | 'acoustic' | 'digital'
 
 interface Props {
   selected: DealerType
@@ -12,14 +12,14 @@ interface Props {
     all: number
     shigeru: number
     acoustic: number
-    professional: number
+    digital: number
   }
 }
 
 const OPTIONS: { value: DealerType; label: string }[] = [
   { value: 'all', label: 'All Dealers' },
+  { value: 'digital', label: 'Digital Piano' },
   { value: 'acoustic', label: 'Acoustic Piano' },
-  { value: 'professional', label: 'Professional' },
   { value: 'shigeru', label: 'Shigeru Kawai' },
 ]
 

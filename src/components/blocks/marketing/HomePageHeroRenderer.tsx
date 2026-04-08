@@ -6,6 +6,9 @@ export function HomePageHeroRenderer(props: MarketingHomePageHeroBlock) {
   const heroData: HeroSectionData = {
     locationText: props.locationText || '',
     establishedText: props.establishedText || 'Est. 1927 • Lake St. Louis, Missouri',
+    titlePrefix: props.titlePrefix || 'The',
+    titleMain: props.titleMain || 'INSTRUMENTAL',
+    titleSuffix: props.titleSuffix || 'to Life',
     description: props.description || 'Every musician harbors a vision. Every performance seeks perfection. At Kawai Piano Gallery, we understand that finding the right piano is a deeply personal journey.',
     primaryCta: {
       text: props.primaryCta?.text || 'View Our Piano Collection',

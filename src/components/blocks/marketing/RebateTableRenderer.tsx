@@ -7,11 +7,19 @@ export function RebateTableRenderer(props: MarketingRebateTableBlock) {
 
   const schedule: RebateSeries[] = (rawSchedule ?? []).map((series) => ({
     seriesName: series.seriesName,
-    models: (series.models ?? []).map((m) => ({
-      model: m.model,
-      finishes: m.finishes ?? '',
-      consumerRebate: m.consumerRebate,
-    })),
+    models: (series.models ?? []).map((m) => {
+      const row = m as typeof m & { productPage?: { slug?: string } | string | null }
+      const productPage = row.productPage
+      const productSlug =
+        productPage != null && typeof productPage === 'object' ? productPage.slug : undefined
+
+      return {
+        model: m.model,
+        finishes: m.finishes ?? '',
+        consumerRebate: m.consumerRebate,
+        ...(productSlug ? { productSlug } : {}),
+      }
+    }),
   }))
 
   if (schedule.length === 0) return null

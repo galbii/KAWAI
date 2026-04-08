@@ -14,7 +14,7 @@ interface Props {
   dealers: DealerWithDistance[]
 }
 
-type DealerTypeFilter = 'all' | 'shigeru' | 'acoustic' | 'professional'
+type DealerTypeFilter = 'all' | 'shigeru' | 'acoustic' | 'digital'
 type ViewMode = 'map' | 'list'
 
 export function DealerFinderMobile({ dealers }: Props) {
@@ -32,11 +32,11 @@ export function DealerFinderMobile({ dealers }: Props) {
 
   // Calculate dealer type counts
   const dealerCounts = useMemo(() => {
-    const counts = { all: dealers.length, shigeru: 0, acoustic: 0, professional: 0 }
+    const counts = { all: dealers.length, shigeru: 0, acoustic: 0, digital: 0 }
     dealers.forEach(dealer => {
       if (dealer.shigeruKawaiDealer) counts.shigeru++
       if (dealer.acousticPianoDealer) counts.acoustic++
-      if (dealer.professionalProductDealer) counts.professional++
+      if (dealer.digitalPianoDealer) counts.digital++
     })
     return counts
   }, [dealers])
@@ -53,8 +53,8 @@ export function DealerFinderMobile({ dealers }: Props) {
       result = result.filter(dealer => dealer.shigeruKawaiDealer === true)
     } else if (dealerTypeFilter === 'acoustic') {
       result = result.filter(dealer => dealer.acousticPianoDealer === true)
-    } else if (dealerTypeFilter === 'professional') {
-      result = result.filter(dealer => dealer.professionalProductDealer === true)
+    } else if (dealerTypeFilter === 'digital') {
+      result = result.filter(dealer => dealer.digitalPianoDealer === true)
     }
 
     // Apply advanced filters
@@ -63,7 +63,7 @@ export function DealerFinderMobile({ dealers }: Props) {
         selectedDealerTypes.some(type => {
           if (type === 'shigeru') return dealer.shigeruKawaiDealer === true
           if (type === 'acoustic') return dealer.acousticPianoDealer === true
-          if (type === 'professional') return dealer.professionalProductDealer === true
+          if (type === 'digital') return dealer.digitalPianoDealer === true
           return false
         })
       )
@@ -158,8 +158,8 @@ export function DealerFinderMobile({ dealers }: Props) {
           <div className="flex min-w-max border-b border-kawai-neutral">
             {[
               { value: 'all' as const, label: 'All Dealers', count: dealerCounts.all },
+              { value: 'digital' as const, label: 'Digital Piano', count: dealerCounts.digital },
               { value: 'acoustic' as const, label: 'Acoustic Piano', count: dealerCounts.acoustic },
-              { value: 'professional' as const, label: 'Professional', count: dealerCounts.professional },
               { value: 'shigeru' as const, label: 'Shigeru Kawai', count: dealerCounts.shigeru },
             ].map((option) => {
               const isSelected = dealerTypeFilter === option.value
@@ -452,7 +452,7 @@ interface MobileDealerCardProps {
 function MobileDealerCard({ dealer, isSelected, onSelect }: MobileDealerCardProps) {
   const hasShigeru = dealer.shigeruKawaiDealer === true
   const hasAcoustic = dealer.acousticPianoDealer === true
-  const hasProfessional = dealer.professionalProductDealer === true
+  const hasDigital = dealer.digitalPianoDealer === true
 
   return (
     <button
@@ -500,10 +500,10 @@ function MobileDealerCard({ dealer, isSelected, onSelect }: MobileDealerCardProp
             <span>Acoustic Piano</span>
           </div>
         )}
-        {hasProfessional && (
+        {hasDigital && (
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-kawai-charcoal/5 text-kawai-charcoal/70 text-xs font-medium rounded-lg">
             <Briefcase className="w-3 h-3" strokeWidth={2} />
-            <span>Professional</span>
+            <span>Digital Piano</span>
           </div>
         )}
       </div>

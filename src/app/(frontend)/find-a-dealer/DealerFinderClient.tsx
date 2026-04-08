@@ -33,11 +33,11 @@ export function DealerFinderClient({ dealers, heading }: Props) {
 
 
   const dealerCounts = useMemo(() => {
-    const counts = { all: dealers.length, shigeru: 0, acoustic: 0, professional: 0 }
+    const counts = { all: dealers.length, shigeru: 0, acoustic: 0, digital: 0 }
     dealers.forEach(dealer => {
       if (dealer.shigeruKawaiDealer) counts.shigeru++
       if (dealer.acousticPianoDealer) counts.acoustic++
-      if (dealer.professionalProductDealer) counts.professional++
+      if (dealer.digitalPianoDealer) counts.digital++
     })
     return counts
   }, [dealers])
@@ -51,8 +51,8 @@ export function DealerFinderClient({ dealers, heading }: Props) {
       result = result.filter(dealer => dealer.shigeruKawaiDealer === true)
     } else if (dealerTypeFilter === 'acoustic') {
       result = result.filter(dealer => dealer.acousticPianoDealer === true)
-    } else if (dealerTypeFilter === 'professional') {
-      result = result.filter(dealer => dealer.professionalProductDealer === true)
+    } else if (dealerTypeFilter === 'digital') {
+      result = result.filter(dealer => dealer.digitalPianoDealer === true)
     }
 
     if (selectedDealerTypes.length > 0) {
@@ -60,7 +60,7 @@ export function DealerFinderClient({ dealers, heading }: Props) {
         selectedDealerTypes.some(type => {
           if (type === 'shigeru') return dealer.shigeruKawaiDealer === true
           if (type === 'acoustic') return dealer.acousticPianoDealer === true
-          if (type === 'professional') return dealer.professionalProductDealer === true
+          if (type === 'digital') return dealer.digitalPianoDealer === true
           return false
         })
       )
