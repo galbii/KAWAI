@@ -99,6 +99,8 @@ export function HomeHero({ data }: HomeHeroProps = {}) {
         muted
         loop
         playsInline
+        poster="/images/piano-categories/grand-pianos.jpg"
+        preload="metadata"
         className="absolute top-0 left-0 w-full h-full object-cover z-0"
         style={{ willChange: 'transform' }}
         aria-hidden="true"
@@ -132,7 +134,7 @@ export function HomeHero({ data }: HomeHeroProps = {}) {
         )}
 
         <div className="w-full mt-16 sm:mt-20 md:mt-24 lg:mt-28">
-          <motion.p
+          <motion.h1
             className="text-brand-sophisticated text-kawai-pearl/80 mb-12 lg:mb-16 max-w-2xl text-lg md:text-xl leading-relaxed font-light text-center mx-auto"
             variants={contentReveal}
             custom={1.6}
@@ -140,7 +142,7 @@ export function HomeHero({ data }: HomeHeroProps = {}) {
             animate={isInView ? "visible" : "hidden"}
           >
             {heroData.description}
-          </motion.p>
+          </motion.h1>
         </div>
 
         {/* CTA Buttons - Side by side */}

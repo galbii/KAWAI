@@ -79,6 +79,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
+      <head>
+        <link
+          rel="preload"
+          as="video"
+          href="/assets/videos/Hero_compressed.mp4"
+          type="video/mp4"
+          {...{ fetchPriority: 'high' }}
+        />
+      </head>
       <body className={`${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${notoSans.variable} antialiased bg-kawai-black text-kawai-pearl`}>
         {/* GA4 Consent Mode v2 — must run before GTM so tags are held until consent */}
         <Script
