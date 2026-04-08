@@ -1,4 +1,7 @@
+import { cache } from 'react'
 import { getProductBySlugDirect } from '@/lib/payload/queries'
+
+const getCachedProduct = cache(getProductBySlugDirect)
 import { resolveMediaUrl } from '@/lib/payload'
 import { ProductPageRenderer } from '@/components/products/ProductPageRenderer'
 import { ProductErrorFallback } from '@/components/products/ProductErrorFallback'
@@ -23,8 +26,8 @@ interface PageProps {
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const params = await props.params
   const { slug } = params
-  const product = await getProductBySlugDirect(slug)
-  
+  const product = await getCachedProduct(slug)
+
   if (!product) {
     return {
       title: 'Product Not Found',
@@ -43,15 +46,16 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
       ? (ogImageRaw as { url: string }).url
       : product.imageUrl || null
 
-  // Noindex discontinued products and catalog-hidden products
+  // Noindex discontinued, pending, and catalog-hidden products
   const isDiscontinued = product.status === 'discontinued'
+  const isPending = product.status === 'pending'
   const isHidden = product.visibility?.showInCatalog === false
 
   return {
     title,
     description,
     ...(product.seo?.keywords ? { keywords: product.seo.keywords } : {}),
-    ...(isDiscontinued || isHidden
+    ...(isDiscontinued || isPending || isHidden
       ? { robots: { index: false, follow: false } }
       : {}),
     alternates: {
@@ -62,7 +66,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
       description,
       url: `${siteUrl}/products/${slug}`,
       images: ogImageUrl ? [{ url: ogImageUrl, width: 1200, height: 630, alt: title }] : [],
-      type: 'website'
+      type: 'product'
     },
     twitter: {
       card: 'summary_large_image',
@@ -79,8 +83,8 @@ export default async function ProductPage(props: PageProps) {
   try {
     const params = await props.params
     const { slug } = params
-    const product = await getProductBySlugDirect(slug)
-    
+    const product = await getCachedProduct(slug)
+
     if (!product) {
       notFound()
     }
