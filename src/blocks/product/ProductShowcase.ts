@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { imageField } from '@/lib/payload/fields'
 
 export const ProductShowcase: Block = {
   slug: 'product-showcase',
@@ -42,19 +43,11 @@ export const ProductShowcase: Block = {
       name: 'product',
       type: 'group',
       fields: [
-        {
-          name: 'image',
-          type: 'upload',
-          relationTo: 'media',
-          maxDepth: 0, // Prevent deep media fetching
+        imageField('image', {
           admin: {
-            description: 'Main product image (leave empty to use Piano Model image)',
-            condition: (data) => {
-              const dataSource = data?.dataSource;
-              return dataSource === 'manual' || dataSource === 'hybrid';
-            }
-          }
-        },
+            description: 'Product hero image',
+          },
+        }),
         {
           name: 'title',
           type: 'text',
@@ -142,15 +135,9 @@ export const ProductShowcase: Block = {
                 description: 'Variation name (e.g., "Ebony Polish", "White Satin")'
               }
             },
-            {
-              name: 'image',
-              type: 'upload',
-              relationTo: 'media',
-              maxDepth: 0, // Prevent deep media fetching in variations array
-              admin: {
-                description: 'Variation sample image (optional)'
-              }
-            },
+            imageField('image', {
+              admin: { description: 'Variation product image' },
+            }),
             {
               name: 'priceModifier',
               type: 'number',

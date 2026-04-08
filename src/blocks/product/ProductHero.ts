@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 import { ctaTrackingField, trackImpressionField } from '@/lib/payload/fields/tracking'
+import { imageField } from '@/lib/payload/fields'
 
 export const ProductHero: Block = {
   slug: 'product-hero',
@@ -87,15 +88,9 @@ export const ProductHero: Block = {
             description: 'Override the product description with custom text (optional)'
           }
         },
-        {
-          name: 'customImage',
-          type: 'upload',
-          relationTo: 'media',
-          maxDepth: 0, // Prevent deep media fetching
-          admin: {
-            description: 'Override the main product image (optional)'
-          }
-        },
+        imageField('customImage', {
+          admin: { description: 'Override the main product image (optional)' },
+        }),
         {
           name: 'badge',
           type: 'text',
