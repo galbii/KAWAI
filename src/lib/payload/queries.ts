@@ -11,7 +11,7 @@ import type {
   HomePage,
   Media,
 } from '@/payload-types'
-import type { NewsItem } from '@/lib/types/homepage'
+import type { NewsItem, HomePageData } from '@/lib/types/homepage'
 
 // Direct Payload client access - bypasses HTTP and works during build time
 // This is the preferred approach for server-side data fetching
@@ -271,16 +271,8 @@ export async function getPianosPageDataDirect(): Promise<{
 /**
  * Get homepage data using direct Payload access
  */
-export async function getHomePageDataDirect(): Promise<{
-  content?: any[] // NEW: Blocks-based content from Page Builder tab
-  heroSection: any
-  showroomSection: any
-  pianoCollectionSection: any
-  pianoGallerySection: any
-  newsCarouselSection: any
-  contactFormSection: any
-  seo: any
-} | null> {
+export const getHomePageDataDirect = unstable_cache(
+  async (): Promise<HomePageData | null> => {
   try {
     const payload = await getPayloadClient()
 
@@ -294,6 +286,7 @@ export async function getHomePageDataDirect(): Promise<{
     const homePageData = homePageResult?.docs?.[0]
     if (homePageData) {
       return {
+        id: String(homePageData.id),
         content: homePageData.content || [], // NEW: Include blocks from Page Builder tab
         heroSection: {
           locationText: homePageData.locationText,
@@ -350,6 +343,7 @@ export async function getHomePageDataDirect(): Promise<{
 
   // Return fallback structure
   return {
+    id: undefined,
     content: [], // NEW: Empty blocks array for fallback
     heroSection: {
       locationText: "St. Louis's Premier Kawai Piano Dealer",
@@ -517,7 +511,10 @@ export async function getHomePageDataDirect(): Promise<{
       keywords: "Kawai pianos, St. Louis piano dealer, Lake St. Louis piano store, acoustic pianos, digital pianos, piano showroom, Missouri piano dealer, piano sales, piano service"
     }
   }
-}
+},
+  ['home-page-data'],
+  { tags: ['home-page'], revalidate: 300 }
+)
 
 /**
  * Helper function to get fallback images for featured models
@@ -781,26 +778,30 @@ export async function getStorefrontBySlugDirect(slug: string): Promise<any | nul
  * Get all active storefronts using direct Payload access
  * @returns Array of active Storefront objects sorted by most recently updated
  */
-export async function getActiveStorefrontsDirect(): Promise<any[]> {
-  try {
-    const payload = await getPayloadClient()
+export const getActiveStorefrontsDirect = unstable_cache(
+  async (): Promise<any[]> => {
+    try {
+      const payload = await getPayloadClient()
 
-    const result = await payload.find({
-      collection: 'storefronts',
-      where: {
-        isActive: { equals: true }
-      },
-      sort: '-updatedAt',
-      limit: 100,
-      depth: 2
-    })
+      const result = await payload.find({
+        collection: 'storefronts',
+        where: {
+          isActive: { equals: true }
+        },
+        sort: '-updatedAt',
+        limit: 100,
+        depth: 2
+      })
 
-    return result.docs
-  } catch (error) {
-    console.error('Error fetching active storefronts with direct Payload access:', error)
-    return []
-  }
-}
+      return result.docs
+    } catch (error) {
+      console.error('Error fetching active storefronts with direct Payload access:', error)
+      return []
+    }
+  },
+  ['active-storefronts'],
+  { tags: ['storefronts'], revalidate: 3600 }
+)
 
 /**
  * Get dealer by slug with full relationship population

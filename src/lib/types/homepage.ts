@@ -153,6 +153,7 @@ export interface SEOData {
 }
 
 export interface HomePageData {
+  id?: string
   content?: any[] // NEW: Blocks-based content
   heroSection: HeroSectionData
   showroomSection: ShowroomSectionData

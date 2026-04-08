@@ -11,7 +11,7 @@ import { InnovationSection } from "@/components/homepage/innovation-section";
 import { SoundQualitySection } from "@/components/homepage/sound-quality-section";
 import { FAQSection } from "@/components/homepage/faq-section";
 import { SimpleDivider } from "@/components/ui/SimpleDivider";
-import { getHomePageDataDirect, getPayloadClient } from "@/lib/payload/queries";
+import { getHomePageDataDirect, getActiveStorefrontsDirect } from "@/lib/payload/queries";
 import type { HomePageData } from "@/lib/types/homepage";
 import { AdminBarDoc } from '@/components/layout/AdminBarDoc';
 import { Suspense } from "react";
@@ -190,34 +190,17 @@ function ContactFormSkeleton() {
 async function HomePageContent() {
   let homePageData: HomePageData | null = null;
   let dealerLocations: any[] = [];
-  let error: string | null = null;
 
   try {
-    homePageData = await getHomePageDataDirect();
+    [homePageData, dealerLocations] = await Promise.all([
+      getHomePageDataDirect(),
+      getActiveStorefrontsDirect(),
+    ]);
   } catch (err) {
-    error = err instanceof Error ? err.message : 'Failed to load homepage data';
-    console.error('Homepage data fetch error:', error);
+    console.error('Homepage data fetch error:', err);
   }
 
-  let homePageDocId: string | undefined
-  try {
-    const payloadForId = await getPayloadClient()
-    const homePageResult = await payloadForId.find({ collection: 'home-page', limit: 1, depth: 0, select: {} })
-    homePageDocId = homePageResult.docs[0]?.id ? String(homePageResult.docs[0].id) : undefined
-  } catch { /* non-critical */ }
-
-  // Fetch dealer locations using the proper utility function
-  try {
-    const { getActiveStorefrontsDirect } = await import('@/lib/payload/queries');
-    dealerLocations = await getActiveStorefrontsDirect();
-  } catch (err) {
-    console.error('Failed to fetch dealer locations:', err);
-  }
-
-  // If there's an error or no data, components will use their fallback defaults
-  if (error) {
-    console.warn(`Homepage CMS data unavailable: ${error}. Using fallback content.`);
-  }
+  const homePageDocId = homePageData?.id
 
   // NEW: Check if using blocks system
   const hasBlocks = homePageData?.content &&
