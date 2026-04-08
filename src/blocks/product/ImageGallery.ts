@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { imageField } from '@/lib/payload/fields'
 
 export const ImageGallery: Block = {
   slug: 'product-gallery',
@@ -62,16 +63,7 @@ export const ImageGallery: Block = {
         plural: 'Gallery Images'
       },
       fields: [
-        {
-          name: 'image',
-          type: 'upload',
-          relationTo: 'media',
-          maxDepth: 0, // Prevent deep media fetching in array
-          required: true,
-          admin: {
-            description: 'Gallery image'
-          }
-        },
+        imageField('image', { required: true }),
         {
           name: 'caption',
           type: 'text',
@@ -82,9 +74,10 @@ export const ImageGallery: Block = {
         {
           name: 'alt',
           type: 'text',
+          required: true,
           admin: {
-            description: 'Alt text for accessibility (optional, will use image alt if not provided)'
-          }
+            description: 'Alt text for accessibility and SEO (required)',
+          },
         }
       ],
       admin: {

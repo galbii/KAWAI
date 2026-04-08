@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { imageField } from '@/lib/payload/fields'
 
 export const FeaturesList: Block = {
   slug: 'product-features',
@@ -96,16 +97,12 @@ export const FeaturesList: Block = {
                 description: 'Type of icon to display'
               }
             },
-            {
-              name: 'image',
-              type: 'upload',
-              relationTo: 'media',
-              maxDepth: 0, // Prevent deep media fetching
+            imageField('image', {
               admin: {
-                description: 'Custom icon image',
-                condition: (data, siblingData) => siblingData?.type === 'image'
-              }
-            },
+                description: 'Icon image (used when icon type is "image")',
+                condition: (data, siblingData) => siblingData?.type === 'image',
+              },
+            }),
             {
               name: 'iconName',
               type: 'text',

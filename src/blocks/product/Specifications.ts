@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { mediaField } from '@/lib/payload/fields'
 
 export const Specifications: Block = {
   slug: 'product-specs',
@@ -225,16 +226,12 @@ export const Specifications: Block = {
             description: 'Allow users to download specifications as PDF/document'
           }
         },
-        {
-          name: 'downloadFile',
-          type: 'upload',
-          relationTo: 'media',
-          maxDepth: 0, // Prevent deep media fetching
+        mediaField('downloadFile', {
           admin: {
-            description: 'Specifications document to download',
-            condition: (data, siblingData) => siblingData?.enableDownload === true
-          }
-        },
+            description: 'Downloadable spec sheet (PDF or image)',
+            condition: (data, siblingData) => siblingData?.enableDownload === true,
+          },
+        }),
         {
           name: 'downloadButtonText',
           type: 'text',
