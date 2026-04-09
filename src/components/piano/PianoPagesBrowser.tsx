@@ -613,6 +613,27 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
 
   return (
     <div ref={containerRef} className="min-h-screen bg-kawai-pearl">
+      {/* ── Page H1 — SEO anchor; ghost text treatment keeps it visually light ── */}
+      {(heading ?? category) && (
+        <div className="relative overflow-hidden h-20 select-none pointer-events-none" aria-hidden="false">
+          <h1
+            className="absolute inset-0 flex items-center px-6"
+            style={{
+              fontFamily: 'var(--font-brand-luxury)',
+              fontWeight: 700,
+              fontSize: 'clamp(3.5rem, 12vw, 10rem)',
+              lineHeight: 1,
+              letterSpacing: '-0.03em',
+              color: 'transparent',
+              WebkitTextStroke: '1px rgba(30,27,22,0.07)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {heading ?? (category ? category.charAt(0).toUpperCase() + category.slice(1) + ' Pianos' : '')}
+          </h1>
+        </div>
+      )}
+
       {/* ── Mobile filter sheet ──────────────────────────────────── */}
       <MobileFilterSheet
         isOpen={isMobileFilterOpen}

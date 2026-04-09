@@ -9,7 +9,8 @@ import { SearchBar } from './SearchBar'
 import { FilterPanel } from './FilterPanel'
 import { cn } from '@/lib/utils'
 import { calculateDistance } from '@/lib/utils/dealer-search'
-import { MapPin, SlidersHorizontal, Map, List, Piano, Briefcase, Star, X } from 'lucide-react'
+import { MapPin, SlidersHorizontal, Map, List, Piano, Briefcase, Star, X, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
 
 interface Props {
   dealers: DealerWithDistance[]
@@ -402,6 +403,13 @@ export function DealerFinderMobile({ dealers }: Props) {
                       <span>Get Directions</span>
                     </a>
                   )}
+                  <Link
+                    href={`/find-a-dealer/${selectedDealerData.slug}`}
+                    className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-white border border-kawai-neutral text-kawai-charcoal rounded-xl font-medium text-sm active:scale-95 transition-transform hover:bg-kawai-pearl"
+                  >
+                    <span>View Dealer Details</span>
+                    <ArrowRight className="w-4 h-4" strokeWidth={2} />
+                  </Link>
                 </div>
               </div>
 
@@ -450,7 +458,13 @@ function MobileDealerCard({ dealer, isSelected, onSelect }: MobileDealerCardProp
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex-1 min-w-0">
           <h3 className="text-base font-semibold text-kawai-charcoal leading-tight mb-1">
-            {dealer.dealerName}
+            <Link
+              href={`/find-a-dealer/${dealer.slug}`}
+              onClick={(e) => e.stopPropagation()}
+              className="hover:text-kawai-red transition-colors"
+            >
+              {dealer.dealerName}
+            </Link>
           </h3>
           {dealer.address && (
             <div className="flex items-center gap-1.5 text-xs text-kawai-charcoal/60">

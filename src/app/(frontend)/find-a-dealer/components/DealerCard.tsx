@@ -81,7 +81,13 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
             isSelected ? 'text-kawai-black' : 'text-kawai-charcoal'
           )}
         >
-          {dealer.dealerName}
+          <Link
+            href={`/find-a-dealer/${dealer.slug}`}
+            onClick={(e) => e.stopPropagation()}
+            className="hover:text-kawai-red transition-colors"
+          >
+            {dealer.dealerName}
+          </Link>
         </h3>
 
         {/* Location */}

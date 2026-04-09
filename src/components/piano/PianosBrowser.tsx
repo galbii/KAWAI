@@ -709,12 +709,21 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading }: 
 
   return (
     <div ref={containerRef} className="min-h-screen bg-kawai-pearl">
-      {/* ── Page H1 — rendered for SEO; visible section heading ── */}
+      {/* ── Page H1 — SEO anchor; ghost text treatment keeps it visually light ── */}
       {pageHeading && (
-        <div className="max-w-7xl mx-auto px-6 pt-10 pb-4">
+        <div className="relative overflow-hidden h-20 select-none pointer-events-none" aria-hidden="false">
           <h1
-            className="text-3xl md:text-4xl text-kawai-black font-normal tracking-tight"
-            style={{ fontFamily: 'var(--font-brand-luxury)' }}
+            className="absolute inset-0 flex items-center px-6"
+            style={{
+              fontFamily: 'var(--font-brand-luxury)',
+              fontWeight: 700,
+              fontSize: 'clamp(3.5rem, 12vw, 10rem)',
+              lineHeight: 1,
+              letterSpacing: '-0.03em',
+              color: 'transparent',
+              WebkitTextStroke: '1px rgba(30,27,22,0.07)',
+              whiteSpace: 'nowrap',
+            }}
           >
             {pageHeading}
           </h1>
