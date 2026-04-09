@@ -48,6 +48,20 @@ export async function generateMetadata(): Promise<Metadata> {
   return getCMSPageMetadata('pianos', fallbackMetadata)
 }
 
+async function getPianosPageHeading(): Promise<string | null> {
+  try {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'pianos-page',
+      limit: 1,
+      depth: 0,
+    })
+    return result.docs[0]?.heroTitle ?? null
+  } catch {
+    return null
+  }
+}
+
 async function getCMSPianosPage(): Promise<Page | null> {
   try {
     const payload = await getPayloadClient()
@@ -88,10 +102,11 @@ export default async function PianosPage() {
   }
 
   // Default static layout
-  const [products, spotlightItems, collectionsForBrowser] = await Promise.all([
+  const [products, spotlightItems, collectionsForBrowser, pianosPageData] = await Promise.all([
     getCatalogProductsDirect(),
     getProductSpotlightNewsItems(),
     getCollectionsForBrowser(),
+    getPianosPageHeading(),
   ])
 
   return (
@@ -99,7 +114,11 @@ export default async function PianosPage() {
       {spotlightItems.length > 0 && (
         <NewsCarousel data={{ autoPlayDuration: 7000, newsItems: spotlightItems }} />
       )}
-      <PianosBrowser products={products} collectionsForBrowser={collectionsForBrowser} />
+      <PianosBrowser
+        products={products}
+        collectionsForBrowser={collectionsForBrowser}
+        pageHeading={pianosPageData ?? undefined}
+      />
     </>
   )
 }

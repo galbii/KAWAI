@@ -6144,6 +6144,10 @@ export interface MarketingArtistHeroBlock {
  */
 export interface MarketingPianosBrowserBlock {
   /**
+   * H1 heading rendered at the top of the piano browser section (used by search engines as the primary page heading)
+   */
+  pageHeading?: string | null;
+  /**
    * Show the product spotlight news carousel above the piano browser
    */
   showNewsCarousel?: boolean | null;

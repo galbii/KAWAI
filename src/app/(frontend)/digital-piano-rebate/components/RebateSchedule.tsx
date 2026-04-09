@@ -333,28 +333,39 @@ function SeriesBlock({
                 </div>
 
                 {/* CTA strip */}
-                {hasProduct && (
-                  <div className="flex items-center gap-3 px-5 py-4 border-t border-kawai-neutral/40 bg-white">
-                    {model.productVariantId && (
-                      <AddToCartButton
-                        variantId={model.productVariantId}
-                        available={isAvailable}
-                        size="sm"
-                        className="flex-1 bg-kawai-black hover:bg-kawai-charcoal text-white border-none text-[10px] tracking-[0.18em] uppercase font-semibold h-10 rounded-none"
-                      />
-                    )}
-                    {model.productSlug && (
-                      <Link
-                        href={`/products/${model.productSlug}`}
-                        className="inline-flex items-center gap-1.5 text-[10px] tracking-[0.2em] uppercase font-medium text-kawai-charcoal/40 hover:text-kawai-red transition-colors duration-200 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red"
-                        style={{ fontFamily: 'var(--font-brand-sans)' }}
-                      >
-                        View {model.model}
-                        <ArrowRight className="h-3 w-3" />
-                      </Link>
-                    )}
-                  </div>
-                )}
+                <div className="flex items-center gap-3 px-5 py-4 border-t border-kawai-neutral/40 bg-white">
+                  {hasProduct ? (
+                    <>
+                      {model.productVariantId && (
+                        <AddToCartButton
+                          variantId={model.productVariantId}
+                          available={isAvailable}
+                          size="sm"
+                          className="flex-1 bg-kawai-black hover:bg-kawai-charcoal text-white border-none text-[10px] tracking-[0.18em] uppercase font-semibold h-10 rounded-none"
+                        />
+                      )}
+                      {model.productSlug && (
+                        <Link
+                          href={`/products/${model.productSlug}`}
+                          className="inline-flex items-center gap-1.5 text-[10px] tracking-[0.2em] uppercase font-medium text-kawai-charcoal/40 hover:text-kawai-red transition-colors duration-200 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red"
+                          style={{ fontFamily: 'var(--font-brand-sans)' }}
+                        >
+                          View {model.model}
+                          <ArrowRight className="h-3 w-3" />
+                        </Link>
+                      )}
+                    </>
+                  ) : (
+                    <Link
+                      href="/find-a-dealer"
+                      className="inline-flex items-center gap-1.5 text-[10px] tracking-[0.2em] uppercase font-medium text-kawai-charcoal/55 hover:text-kawai-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red"
+                      style={{ fontFamily: 'var(--font-brand-sans)' }}
+                    >
+                      Find a Local Dealer
+                      <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  )}
+                </div>
               </div>
 
               {/* ── DESKTOP ROW (lg+) — original layout unchanged ── */}
@@ -419,7 +430,7 @@ function SeriesBlock({
                     </p>
                   </div>
 
-                  {hasProduct && (
+                  {hasProduct ? (
                     <div className="flex flex-col items-end gap-2">
                       {model.productVariantId && (
                         <AddToCartButton
@@ -438,6 +449,15 @@ function SeriesBlock({
                         <ArrowRight className="h-3 w-3" />
                       </Link>
                     </div>
+                  ) : (
+                    <Link
+                      href="/find-a-dealer"
+                      className="inline-flex items-center gap-1.5 text-[10px] tracking-[0.2em] uppercase font-medium text-kawai-charcoal/55 hover:text-kawai-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red"
+                      style={{ fontFamily: 'var(--font-brand-sans)' }}
+                    >
+                      Find a Local Dealer
+                      <ArrowRight className="h-3 w-3" />
+                    </Link>
                   )}
                 </div>
               </div>

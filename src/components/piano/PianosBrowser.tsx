@@ -34,6 +34,7 @@ export interface CatalogProduct {
 interface Props {
   products: CatalogProduct[]
   collectionsForBrowser?: CollectionForBrowser[]
+  pageHeading?: string | undefined
 }
 
 const CATEGORIES = ['All', 'Grand', 'Shigeru', 'Digital', 'Upright', 'Hybrid'] as const
@@ -547,7 +548,7 @@ function MobileFilterSheet({
 
 /* ── Main Component ────────────────────────────────────────────── */
 
-export function PianosBrowser({ products, collectionsForBrowser }: Props) {
+export function PianosBrowser({ products, collectionsForBrowser, pageHeading }: Props) {
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState<Category>('All')
   const [activeCollection, setActiveCollection] = useState<string>('All')
@@ -708,6 +709,18 @@ export function PianosBrowser({ products, collectionsForBrowser }: Props) {
 
   return (
     <div ref={containerRef} className="min-h-screen bg-kawai-pearl">
+      {/* ── Page H1 — rendered for SEO; visible section heading ── */}
+      {pageHeading && (
+        <div className="max-w-7xl mx-auto px-6 pt-10 pb-4">
+          <h1
+            className="text-3xl md:text-4xl text-kawai-black font-normal tracking-tight"
+            style={{ fontFamily: 'var(--font-brand-luxury)' }}
+          >
+            {pageHeading}
+          </h1>
+        </div>
+      )}
+
       {/* ── Mobile filter sheet ──────────────────────────────────── */}
       <MobileFilterSheet
         isOpen={isMobileFilterOpen}

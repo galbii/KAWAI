@@ -17,7 +17,7 @@ export async function PianosBrowserRenderer(props: MarketingPianosBrowserBlock) 
       {showNewsCarousel && spotlightItems.length > 0 && (
         <NewsCarousel data={{ autoPlayDuration: 7000, newsItems: spotlightItems }} />
       )}
-      <PianosBrowser products={products} collectionsForBrowser={collectionsForBrowser} />
+      <PianosBrowser products={products} collectionsForBrowser={collectionsForBrowser} pageHeading={props.pageHeading ?? undefined} />
     </>
   )
 }
