@@ -361,7 +361,7 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, onDealerSelect,
               onChange={e => handleInputChange(e.target.value)}
               onFocus={() => hasResults && setShowDropdown(true)}
               placeholder="Search by city, name, or ZIP…"
-              className="flex-1 min-w-0 bg-transparent text-sm text-kawai-black placeholder:text-kawai-charcoal/40 focus:outline-none focus:ring-0 font-[family-name:var(--font-brand-sans)]"
+              className="flex-1 min-w-0 bg-transparent text-[16px] text-kawai-black placeholder:text-kawai-charcoal/40 focus:outline-none focus:ring-0 font-[family-name:var(--font-brand-sans)]"
             />
             {searchInput ? (
               <button

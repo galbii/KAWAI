@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { ShoppingCart, Check, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { createCart, addToCart as addToExistingCart } from '@/lib/shopify'
+import { createCart, addToCart as addToExistingCart, getUTMCartAttributes } from '@/lib/shopify'
 import { getCartId, saveCartId } from '@/lib/shopify/cart-storage'
 import { cn } from '@/lib/utils'
 
@@ -62,10 +62,10 @@ export function AddToCartButton({
       if (!cartId) {
         // No cart exists - create a new one with this item
         console.log('[AddToCartButton] Creating new cart with item')
-        cart = await createCart([{
-          merchandiseId: formattedVariantId as `gid://shopify/${string}/${string}`,
-          quantity,
-        }])
+        cart = await createCart(
+          [{ merchandiseId: formattedVariantId as `gid://shopify/${string}/${string}`, quantity }],
+          getUTMCartAttributes(),
+        )
 
         // Save cart ID to storage
         saveCartId(cart.id)

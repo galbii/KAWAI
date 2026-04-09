@@ -49,6 +49,8 @@ The Shopify integration library is a **production-ready, type-safe bridge** betw
          │  ├── products.ts               │
          │  ├── customers.ts              │
          │  ├── cart.ts                   │
+         │  ├── checkout.ts               │
+         │  ├── utm-tracking.ts           │
          │  └── types.ts                  │
          └────────┬───────────┬───────────┘
                   │           │
@@ -74,6 +76,7 @@ The Shopify integration library is a **production-ready, type-safe bridge** betw
 | **Navigation Menu** | `getProductTypesWithProducts()` | `navigation.ts` |
 | **Search/Filter** | `searchProducts()`, `getProductsByType()` | `products.ts` |
 | **Model Lookup** | `getProductByModel()` with metafield + tag fallback | `products.ts`, `fetch-product.ts` |
+| **UTM Attribution** | `buildCheckoutUrl()`, `getUTMCartAttributes()` | `checkout.ts`, `utm-tracking.ts` |
 
 ---
 
@@ -1562,36 +1565,87 @@ Get Shopify checkout URL for completing purchase.
 function getCheckoutUrl(cart: Cart): string | null
 ```
 
-**Usage Example:**
+**Note:** Prefer `buildCheckoutUrl()` over accessing `cart.checkoutUrl` directly — it appends stored UTM parameters automatically. See below.
 
+---
+
+#### `buildCheckoutUrl(baseUrl)` — `checkout.ts`
+
+Append stored first-touch UTM parameters to a Shopify checkout URL. Returns `baseUrl` unchanged when no UTMs are stored (new session, SSR, or user arrived without UTMs).
+
+**Type Signature:**
 ```typescript
-// Checkout button
-'use client'
-export function CheckoutButton({ cart }: { cart: Cart }) {
-  const handleCheckout = () => {
-    const url = getCheckoutUrl(cart)
-    if (url) {
-      window.location.href = url
-    } else {
-      alert('Unable to proceed to checkout')
-    }
-  }
+function buildCheckoutUrl(baseUrl: string): string
+```
 
-  return (
-    <button
-      onClick={handleCheckout}
-      disabled={!cart || cart.totalQuantity === 0}
-      className="btn-primary w-full"
-    >
-      Proceed to Checkout
-    </button>
-  )
-}
+**Usage:**
+```typescript
+import { buildCheckoutUrl } from '@/lib/shopify'
 
-// Or use cart.checkoutUrl directly
-<Link href={cart.checkoutUrl}>
-  Proceed to Checkout
-</Link>
+// All checkout entry points should use this instead of cart.checkoutUrl directly
+window.open(buildCheckoutUrl(cart.checkoutUrl), '_blank', 'noopener,noreferrer')
+```
+
+**Where it's used:** `CartSummary.tsx`, `ProductHeroBlock.tsx`, `CollectionProductRow.tsx`
+
+**Client-only** — reads `kawai-utm-first` cookie. Never call from Server Components.
+
+---
+
+#### `getUTMCartAttributes()` — `checkout.ts`
+
+Build Shopify cart attributes from stored first-touch UTM parameters. Pass as the second argument to `createCart()` to embed UTMs in the Shopify order object, making them visible in Shopify admin and accessible to Flow automations.
+
+**Type Signature:**
+```typescript
+function getUTMCartAttributes(): Array<{ key: string; value: string }>
+```
+
+**Returns:** Array of `{ key: '_utm_source', value: '...' }` entries (one per non-empty UTM param). Returns `[]` when no UTMs are stored — safe to pass unconditionally.
+
+**Attribute keys use underscore prefix (`_utm_*`)** so Shopify hides them from the customer-facing order UI while still recording them on the order object.
+
+**Usage:**
+```typescript
+import { createCart, getUTMCartAttributes } from '@/lib/shopify'
+
+// Always pass getUTMCartAttributes() when creating a cart
+const cart = await createCart(
+  [{ merchandiseId: variantId, quantity: 1 }],
+  getUTMCartAttributes(),
+)
+```
+
+**Where it's used:** `AddToCartButton.tsx`, `ProductHeroBlock.tsx`, `CollectionProductRow.tsx`
+
+**Client-only** — reads `kawai-utm-first` cookie. Never call from Server Components.
+
+---
+
+### UTM Attribution System
+
+Marketing attribution across the Shopify checkout boundary (different domain) requires explicit UTM preservation. The system handles this via two mechanisms:
+
+| Mechanism | Where | Purpose |
+|---|---|---|
+| **URL params on checkout URL** | `buildCheckoutUrl()` | Shopify analytics + GA4/Meta Pixel on checkout page |
+| **Cart attributes** | `getUTMCartAttributes()` | Shopify order data, admin reports, Flow automations |
+
+**UTM storage** (`utm-tracking.ts`):
+- `kawai-utm-first` cookie — first-touch, never overwritten (30-day expiry)
+- `kawai-utm-last` cookie — last-touch, always overwritten
+
+Both `buildCheckoutUrl` and `getUTMCartAttributes` read from the first-touch cookie for consistency.
+
+**Full attribution flow:**
+```
+User arrives via ?utm_source=google&utm_medium=cpc
+  → captureUTMParams() stores to kawai-utm-first cookie
+  → User browses, adds to cart
+  → createCart(lines, getUTMCartAttributes())  ← UTMs in order data
+  → User proceeds to checkout
+  → buildCheckoutUrl(cart.checkoutUrl)         ← UTMs in checkout URL
+  → Shopify checkout with full attribution
 ```
 
 ---
@@ -2516,7 +2570,37 @@ const refreshCart = async () => {
 - If metadata isn't cleared when cart is null, `getItemCount()` returns stale counts
 - This causes cart badge to show incorrect item counts after cart expiration
 
-### 7. Development Workflow
+### 7. UTM Attribution at Checkout
+
+✅ **Always use `buildCheckoutUrl()` when redirecting to checkout:**
+```typescript
+import { buildCheckoutUrl } from '@/lib/shopify'
+
+// Good - UTMs preserved across domain boundary
+window.open(buildCheckoutUrl(cart.checkoutUrl), '_blank', 'noopener,noreferrer')
+
+// Bad - UTMs lost when user lands on Shopify checkout
+window.open(cart.checkoutUrl, '_blank', 'noopener,noreferrer')
+```
+
+✅ **Always pass `getUTMCartAttributes()` when calling `createCart()`:**
+```typescript
+import { createCart, getUTMCartAttributes } from '@/lib/shopify'
+
+// Good - UTMs embedded in Shopify order object
+const cart = await createCart(lines, getUTMCartAttributes())
+
+// Bad - order has no attribution data in Shopify admin
+const cart = await createCart(lines)
+```
+
+✅ **Both helpers are safe to call unconditionally** — they return `baseUrl` / `[]` when no UTMs are stored, so no guard code is needed at call sites.
+
+❌ **Never call either helper from Server Components** — they read `document.cookie` and are client-only.
+
+❌ **Don't duplicate the UTM-appending logic** — always import from `@/lib/shopify`, never copy-paste the URL-building pattern inline.
+
+### 8. Development Workflow
 
 ✅ **Use TypeScript strict mode:**
 ```typescript

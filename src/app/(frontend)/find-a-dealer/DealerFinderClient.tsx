@@ -5,21 +5,23 @@ import type { Dealer } from '@/payload-types'
 import type { DealerWithDistance } from './types'
 import { DealerMapLibre } from './components/DealerMapLibre'
 import { DealerList } from './components/DealerList'
+import { DealerCard } from './components/DealerCard'
 import { SearchBar } from './components/SearchBar'
 import { FilterPanel } from './components/FilterPanel'
 import { DealerTypeFilter } from './components/DealerTypeFilter'
 import type { DealerType } from './components/DealerTypeFilter'
 import { DealerFinderMobile } from './components/DealerFinderMobile'
-import { ProductCategoryDisplay } from './components/ProductCategoryDisplay'
 import { cn } from '@/lib/utils'
 import { calculateDistance } from '@/lib/utils/dealer-search'
-import { MapPin, SlidersHorizontal } from 'lucide-react'
+import { MapPin, SlidersHorizontal, List, Map } from 'lucide-react'
 import './components/animations.css'
 
 interface Props {
   dealers: DealerWithDistance[]
   heading?: string | null
 }
+
+type DesktopView = 'list' | 'map'
 
 export function DealerFinderClient({ dealers, heading }: Props) {
   const resolvedHeading = heading ?? 'Find Authorized Kawai Piano Dealers'
@@ -30,7 +32,7 @@ export function DealerFinderClient({ dealers, heading }: Props) {
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [dealerTypeFilter, setDealerTypeFilter] = useState<DealerType>('all')
   const [searchResults, setSearchResults] = useState<DealerWithDistance[]>([])
-
+  const [desktopView, setDesktopView] = useState<DesktopView>('list')
 
   const dealerCounts = useMemo(() => {
     const counts = { all: dealers.length, shigeru: 0, acoustic: 0, digital: 0 }
@@ -106,8 +108,6 @@ export function DealerFinderClient({ dealers, heading }: Props) {
   const handleSearch = useCallback((results: Dealer[], location?: { lat: number; lng: number }) => {
     setSearchResults(results as DealerWithDistance[])
     if (location) setSearchLocation(location)
-    // Don't auto-select: selecting a dealer opens the map popup which steals focus
-    // from the search input. Let the user pick explicitly from the list or map.
     setSelectedDealer(null)
   }, [])
 
@@ -125,43 +125,133 @@ export function DealerFinderClient({ dealers, heading }: Props) {
 
       {/* Desktop View */}
       <div
-        className="hidden lg:flex"
+        className="hidden lg:flex flex-col"
         style={{ height: 'calc(100vh - var(--header-bottom, 70px))', minHeight: '560px' }}
       >
+        {/* ── Unified Control Bar ─────────────────────────────────────── */}
+        <div className="flex-shrink-0 bg-white border-b border-kawai-neutral shadow-sm">
 
-        {/* Dealer List Panel — full height */}
-        <div className="border-r border-kawai-neutral overflow-hidden bg-kawai-pearl/20 h-full w-[400px] flex-shrink-0 flex flex-col">
+          {/* Row 1: Brand + H1 + Search */}
+          <div className="px-8 pt-5 pb-4 flex items-end gap-8 border-b border-kawai-neutral/30">
+            <div className="flex-shrink-0">
+              <p className="text-kawai-red text-[9px] font-bold uppercase tracking-[0.32em] mb-2 font-[family-name:var(--font-brand-sans)]">
+                Kawai America Corporation
+              </p>
+              <h1
+                className="font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-[0.9] tracking-[-0.02em]"
+                style={{ fontSize: 'clamp(22px, 1.8vw, 30px)' }}
+              >
+                {resolvedHeading}
+              </h1>
+            </div>
 
-          {/* Title header */}
-          <div className="flex-shrink-0 bg-kawai-pearl px-8 pt-7 pb-6 border-b border-kawai-neutral">
-            <p className="text-kawai-red text-[9px] font-bold uppercase tracking-[0.32em] mb-4 font-[family-name:var(--font-brand-sans)]">
-              Kawai America Corporation
-            </p>
-            <h1
-              className="font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-[0.9] tracking-[-0.02em]"
-              style={{ fontSize: 'clamp(28px, 2.8vw, 40px)' }}
-            >
-              {resolvedHeading}
-            </h1>
+            <div className="flex-1 max-w-lg pb-0.5">
+              <SearchBar
+                dealers={dealers}
+                onSearch={handleSearch}
+                onLocationSearch={handleLocationSearch}
+                onDealerSelect={handleDealerSelect}
+                variant="inline"
+              />
+            </div>
           </div>
 
+          {/* Row 2: Type tabs + count + filters + view toggle */}
+          <div className="px-8 flex items-center h-[48px] gap-0">
+            <DealerTypeFilter
+              selected={dealerTypeFilter}
+              onChange={setDealerTypeFilter}
+              counts={dealerCounts}
+            />
+
+            <div className="flex-1" />
+
+            <span className="text-xs text-kawai-charcoal/35 font-[family-name:var(--font-brand-sans)] whitespace-nowrap mr-4 tabular-nums">
+              {filteredDealers.length} {filteredDealers.length === 1 ? 'dealer' : 'dealers'}
+            </span>
+
+            {/* Filters button */}
+            <button
+              onClick={() => setFiltersOpen(true)}
+              className={cn(
+                'flex items-center gap-2 h-[48px] px-4 text-xs uppercase tracking-[0.08em] font-semibold mr-3',
+                'font-[family-name:var(--font-brand-sans)] transition-colors -mb-px border-b-2',
+                'focus-visible:outline-2 focus-visible:outline-kawai-red',
+                activeFilterCount > 0
+                  ? 'text-kawai-red border-kawai-red'
+                  : 'text-kawai-charcoal/50 border-transparent hover:text-kawai-black hover:border-kawai-neutral'
+              )}
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" strokeWidth={2} />
+              <span>Filters</span>
+              {activeFilterCount > 0 && (
+                <span className="text-[10px] font-bold tabular-nums">{activeFilterCount}</span>
+              )}
+            </button>
+
+            {/* Divider */}
+            <div className="w-px h-5 bg-kawai-neutral/60 mr-3" />
+
+            {/* List / Map toggle pill */}
+            <div className="flex items-center rounded-lg border border-kawai-neutral bg-kawai-pearl/50 p-0.5 gap-0.5">
+              <button
+                onClick={() => setDesktopView('list')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-150',
+                  desktopView === 'list'
+                    ? 'bg-kawai-charcoal text-white shadow-sm'
+                    : 'text-kawai-charcoal/50 hover:text-kawai-black'
+                )}
+              >
+                <List className="w-3.5 h-3.5" strokeWidth={2.5} />
+                List
+              </button>
+              <button
+                onClick={() => setDesktopView('map')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-150',
+                  desktopView === 'map'
+                    ? 'bg-kawai-charcoal text-white shadow-sm'
+                    : 'text-kawai-charcoal/50 hover:text-kawai-black'
+                )}
+              >
+                <Map className="w-3.5 h-3.5" strokeWidth={2.5} />
+                Map
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Content: List or Map ─────────────────────────────────────── */}
+        {desktopView === 'list' ? (
+          /* List View — responsive card grid */
+          <div className="flex-1 overflow-y-auto bg-kawai-pearl/20 min-h-0">
             {filteredDealers.length > 0 ? (
-              <DealerList
-                dealers={filteredDealers}
-                selectedDealer={selectedDealer}
-                onDealerSelect={handleDealerSelect}
-              />
+              <div className="px-8 py-6">
+                <div className="grid grid-cols-2 xl:grid-cols-3 gap-3">
+                  {filteredDealers.map(dealer => (
+                    <div
+                      key={dealer.id}
+                      className="rounded-xl border border-kawai-neutral overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
+                    >
+                      <DealerCard
+                        dealer={dealer}
+                        isSelected={selectedDealer === dealer.id}
+                        onSelect={() => handleDealerSelect(dealer.id as string)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
             ) : (
-              <div className="flex items-center justify-center h-full p-8">
-                <div className="text-center max-w-xs">
+              <div className="flex items-center justify-center h-full p-12">
+                <div className="text-center max-w-sm">
                   <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-kawai-neutral/40 flex items-center justify-center">
                     <MapPin className="w-8 h-8 text-kawai-charcoal/25" strokeWidth={1.5} />
                   </div>
-                  <h3 className="text-sm font-semibold text-kawai-charcoal mb-2">
-                    No dealers found
-                  </h3>
+                  <h3 className="text-sm font-semibold text-kawai-charcoal mb-2">No dealers found</h3>
                   <p className="text-kawai-charcoal/55 leading-relaxed mb-5 text-xs">
-                    Try adjusting your filters or searching a different area.
+                    Try adjusting your filters or searching a different location.
                   </p>
                   <button
                     onClick={() => {
@@ -178,60 +268,32 @@ export function DealerFinderClient({ dealers, heading }: Props) {
               </div>
             )}
           </div>
+        ) : (
+          /* Map View — narrow list left + full map right */
+          <div className="flex-1 flex min-h-0">
 
-          {/* Right: Filter Bar + Map */}
-          <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-
-            {/* Filter Bar */}
-            <div className="bg-white border-b border-kawai-neutral shadow-sm flex-shrink-0">
-              <div className="border-b border-kawai-neutral/40">
-                <div className="px-6">
-                  <ProductCategoryDisplay dealerTypeFilter={dealerTypeFilter} />
-                </div>
-              </div>
-              <div className="px-6">
-                <div className="flex items-center h-[52px] gap-0">
-                  <DealerTypeFilter
-                    selected={dealerTypeFilter}
-                    onChange={setDealerTypeFilter}
-                    counts={dealerCounts}
-                  />
-                  <div className="flex-1" />
-                  <div className="w-72 mr-4">
-                    <SearchBar
-                      dealers={dealers}
-                      onSearch={handleSearch}
-                      onLocationSearch={handleLocationSearch}
-                      onDealerSelect={handleDealerSelect}
-                      variant="inline"
-                    />
+            {/* Left: scrollable dealer list */}
+            <div className="w-[360px] flex-shrink-0 border-r border-kawai-neutral overflow-hidden flex flex-col bg-white">
+              {filteredDealers.length > 0 ? (
+                <DealerList
+                  dealers={filteredDealers}
+                  selectedDealer={selectedDealer}
+                  onDealerSelect={handleDealerSelect}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full p-8">
+                  <div className="text-center max-w-xs">
+                    <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-kawai-neutral/40 flex items-center justify-center">
+                      <MapPin className="w-7 h-7 text-kawai-charcoal/25" strokeWidth={1.5} />
+                    </div>
+                    <p className="text-xs text-kawai-charcoal/55">No dealers match your filters.</p>
                   </div>
-                  <span className="text-xs text-kawai-charcoal/35 font-[family-name:var(--font-brand-sans)] whitespace-nowrap mr-4">
-                    {filteredDealers.length} {filteredDealers.length === 1 ? 'dealer' : 'dealers'}
-                  </span>
-                  <button
-                    onClick={() => setFiltersOpen(true)}
-                    className={cn(
-                      'flex items-center gap-2 h-[52px] px-4 text-xs uppercase tracking-[0.08em] font-semibold',
-                      'font-[family-name:var(--font-brand-sans)] transition-colors -mb-px border-b-2',
-                      'focus-visible:outline-2 focus-visible:outline-kawai-red',
-                      activeFilterCount > 0
-                        ? 'text-kawai-red border-kawai-red'
-                        : 'text-kawai-charcoal/50 border-transparent hover:text-kawai-black hover:border-kawai-neutral'
-                    )}
-                  >
-                    <SlidersHorizontal className="w-3.5 h-3.5" strokeWidth={2} />
-                    <span>Filters</span>
-                    {activeFilterCount > 0 && (
-                      <span className="text-[10px] font-bold tabular-nums">{activeFilterCount}</span>
-                    )}
-                  </button>
                 </div>
-              </div>
+              )}
             </div>
 
-            {/* Map */}
-            <div className="relative bg-kawai-neutral/20 flex-1 min-h-0">
+            {/* Right: map */}
+            <div className="flex-1 min-w-0 bg-kawai-neutral/20">
               <DealerMapLibre
                 dealers={filteredDealers}
                 searchCenter={searchLocation}
@@ -241,7 +303,8 @@ export function DealerFinderClient({ dealers, heading }: Props) {
               />
             </div>
 
-        </div>
+          </div>
+        )}
 
         {/* Filter Panel Drawer */}
         <FilterPanel

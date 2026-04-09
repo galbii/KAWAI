@@ -9850,7 +9850,7 @@ export interface Export {
  */
 export interface Import {
   id: string;
-  collectionSlug: 'products';
+  collectionSlug: 'products' | 'dealers';
   importMode?: ('create' | 'update' | 'upsert') | null;
   matchField?: string | null;
   status?: ('pending' | 'completed' | 'partial' | 'failed') | null;

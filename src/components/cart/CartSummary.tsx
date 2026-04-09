@@ -17,7 +17,7 @@ import { ExternalLink, Loader2, Tag } from 'lucide-react'
 import type { SimpleCart } from '@/lib/shopify/types'
 import { cn } from '@/lib/utils'
 import { trackBeginCheckout } from '@/lib/analytics/unified-tracking'
-import { getStoredUTMParams } from '@/lib/shopify/utm-tracking'
+import { buildCheckoutUrl } from '@/lib/shopify'
 
 // ============================================================================
 // Component Props
@@ -90,21 +90,7 @@ export function CartSummary({ cart, className }: CartSummaryProps) {
         })
       })
 
-      // Append UTM parameters to checkout URL for cross-domain attribution
-      const utmParams = getStoredUTMParams()
-      let finalCheckoutUrl = cart.checkoutUrl
-      if (utmParams) {
-        const utmString = Object.entries(utmParams)
-          .filter(([, v]) => Boolean(v))
-          .map(([k, v]) => `${k}=${encodeURIComponent(v as string)}`)
-          .join('&')
-        if (utmString) {
-          const separator = cart.checkoutUrl.includes('?') ? '&' : '?'
-          finalCheckoutUrl = `${cart.checkoutUrl}${separator}${utmString}`
-        }
-      }
-
-      window.open(finalCheckoutUrl, '_blank', 'noopener,noreferrer')
+      window.open(buildCheckoutUrl(cart.checkoutUrl), '_blank', 'noopener,noreferrer')
       setRedirecting(false)
     } catch (err) {
       console.error('[CartSummary] Checkout failed:', err)

@@ -227,19 +227,19 @@ export function DealerFinderMobile({ dealers }: Props) {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 relative overflow-hidden min-h-0">
+      <div className="flex-1 relative min-h-0" style={{ overflow: 'clip' }}>
         {/* Map View */}
         <div
           className={cn(
             "absolute inset-0 transition-transform duration-300 ease-out",
-            viewMode === 'map' ? "translate-x-0" : "translate-x-full"
+            viewMode === 'map' ? "translate-x-0" : "translate-x-full pointer-events-none"
           )}
         >
           <DealerMapLibre
             dealers={filteredDealers}
             searchCenter={searchLocation}
             searchRadius={selectedRadius}
-            selectedDealer={selectedDealer}
+            selectedDealer={viewMode === 'map' ? selectedDealer : null}
             onMarkerClick={handleDealerSelect}
           />
         </div>
@@ -248,7 +248,7 @@ export function DealerFinderMobile({ dealers }: Props) {
         <div
           className={cn(
             "absolute inset-0 overflow-y-auto bg-kawai-pearl/30 transition-transform duration-300 ease-out",
-            viewMode === 'list' ? "translate-x-0" : "-translate-x-full"
+            viewMode === 'list' ? "translate-x-0" : "-translate-x-full pointer-events-none"
           )}
         >
           {filteredDealers.length > 0 ? (

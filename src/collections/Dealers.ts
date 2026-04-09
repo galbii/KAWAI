@@ -389,6 +389,7 @@ export const Dealers: CollectionConfig = {
             {
               name: 'hours',
               type: 'array',
+              custom: { 'plugin-import-export': { disabled: true } },
               labels: {
                 singular: 'Day',
                 plural: 'Business Hours',
@@ -451,6 +452,7 @@ export const Dealers: CollectionConfig = {
             },
 
             imageField('dealerImage', {
+              custom: { 'plugin-import-export': { disabled: true } },
               admin: {
                 description: 'Showroom or business photo (optional, for enhanced listings)'
               }
@@ -487,6 +489,7 @@ export const Dealers: CollectionConfig = {
                 {
                   name: 'primaryMarkets',
                   type: 'array',
+                  custom: { 'plugin-import-export': { disabled: true } },
                   label: 'Primary Markets',
                   fields: [
                     {
@@ -505,6 +508,7 @@ export const Dealers: CollectionConfig = {
                 {
                   name: 'statesServed',
                   type: 'array',
+                  custom: { 'plugin-import-export': { disabled: true } },
                   label: 'States Served',
                   fields: [
                     {
@@ -561,6 +565,7 @@ export const Dealers: CollectionConfig = {
                 {
                   name: 'metaTitle',
                   type: 'text',
+                  custom: { 'plugin-import-export': { disabled: true } },
                   admin: {
                     description: 'Custom meta title (leave empty to auto-generate from dealer name)'
                   }
@@ -568,6 +573,7 @@ export const Dealers: CollectionConfig = {
                 {
                   name: 'metaDescription',
                   type: 'textarea',
+                  custom: { 'plugin-import-export': { disabled: true } },
                   maxLength: 160,
                   admin: {
                     description: 'Meta description for search engines (max 160 characters)'

@@ -34,7 +34,7 @@ export async function generateStaticParams() {
   }
 }
 
-function getPageData(slugPath: string, isDraftMode: boolean) {
+function getPageData(slugPath: string, isDraftMode: boolean): Promise<Page | null> {
   if (isDraftMode) {
     // Draft mode: never cache, always fetch live
     return (async () => {

@@ -13,6 +13,10 @@ import { organizationSchema, featuredProductsSchema } from "@/lib/seo/schemas";
 import { UTMCapture } from "@/components/analytics/UTMCapture";
 import { DealerDimensionTracker } from "@/components/analytics/DealerDimensionTracker";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
+import { ConditionalFooterWrapper } from "@/components/layout/ConditionalFooterWrapper";
+import { DealerPageLayoutWrapper } from "@/components/layout/DealerPageLayoutWrapper";
+import { NavigationProgress } from "@/components/layout/NavigationProgress";
+import { PageTransition } from "@/components/layout/PageTransition";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'),
@@ -87,7 +91,6 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
 
   // Check if this is any NAMM 2026 page (has its own custom header/footer)
   const isNAMMPage = pathname.startsWith('/namm-2026')
-  const isFindADealerPage = pathname === '/find-a-dealer'
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com';
 
@@ -118,6 +121,7 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
 
   return (
     <AdminBarProvider>
+      <NavigationProgress />
       <AdminBar />
       <NavigationContextProvider initialOrigin={initialOrigin}>
       {/* WebSite Schema for sitelinks search box */}
@@ -141,15 +145,21 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
           __html: JSON.stringify(featuredProductsSchema),
         }}
       />
-      <div className={isFindADealerPage ? "flex h-dvh flex-col m-0 p-0 overflow-hidden" : "flex min-h-screen flex-col m-0 p-0"}>
+      <DealerPageLayoutWrapper>
         {!isNAMMPage && <AnnouncementBarWrapper />}
         {!isNAMMPage && <HeaderDynamic />}
         {!isNAMMPage && <LayoutSpacer />}
         <main className="flex-1 m-0 p-0">
-          {children}
+          <PageTransition>
+            {children}
+          </PageTransition>
         </main>
-        {!isNAMMPage && !isFindADealerPage && <FooterDynamic />}
-      </div>
+        {!isNAMMPage && (
+          <ConditionalFooterWrapper>
+            <FooterDynamic />
+          </ConditionalFooterWrapper>
+        )}
+      </DealerPageLayoutWrapper>
       <Suspense fallback={null}>
         <UTMCapture />
       </Suspense>

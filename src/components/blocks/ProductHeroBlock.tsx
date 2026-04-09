@@ -22,8 +22,7 @@ import { ImageGalleryLightbox } from '@/components/ui/image-gallery-lightbox'
 import type { Product as ShopifyProduct } from '@/lib/shopify/types'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { FloatingAddToCartIntegrated } from '@/components/blocks/FloatingAddToCartIntegrated'
-import { createCart } from '@/lib/shopify'
-import { getStoredUTMParams } from '@/lib/shopify/utm-tracking'
+import { createCart, buildCheckoutUrl, getUTMCartAttributes } from '@/lib/shopify'
 import { trackAddToCart, trackBeginCheckout, trackBlockImpression, trackCTAClick } from '@/lib/analytics/unified-tracking'
 import type { CTATrackingConfig, BlockTrackingConfig } from '@/lib/analytics/unified-tracking'
 
@@ -211,17 +210,9 @@ export function ProductHeroBlock({
       const formattedVariantId = selectedVariant.id.startsWith('gid://')
         ? selectedVariant.id
         : `gid://shopify/ProductVariant/${selectedVariant.id}`
-      const utmParams = getStoredUTMParams()
-      const cartAttributes = [
-        { key: '_utm_source', value: utmParams?.utm_source ?? '' },
-        { key: '_utm_medium', value: utmParams?.utm_medium ?? '' },
-        { key: '_utm_campaign', value: utmParams?.utm_campaign ?? '' },
-        { key: '_utm_content', value: utmParams?.utm_content ?? '' },
-        { key: '_utm_term', value: utmParams?.utm_term ?? '' },
-      ].filter(a => a.value !== '')
       const cart = await createCart(
         [{ merchandiseId: formattedVariantId as `gid://shopify/${string}/${string}`, quantity: 1 }],
-        cartAttributes.length > 0 ? cartAttributes : undefined,
+        getUTMCartAttributes(),
       )
       if (cart.checkoutUrl) {
         const buyNowParams = {
@@ -238,19 +229,7 @@ export function ProductHeroBlock({
         }
         trackAddToCart(buyNowParams)
         trackBeginCheckout(buyNowParams)
-        // Append UTM parameters to checkout URL for cross-domain attribution
-        let buyNowCheckoutUrl = cart.checkoutUrl
-        if (utmParams) {
-          const utmString = Object.entries(utmParams)
-            .filter(([, v]) => Boolean(v))
-            .map(([k, v]) => `${k}=${encodeURIComponent(v as string)}`)
-            .join('&')
-          if (utmString) {
-            const separator = cart.checkoutUrl.includes('?') ? '&' : '?'
-            buyNowCheckoutUrl = `${cart.checkoutUrl}${separator}${utmString}`
-          }
-        }
-        window.open(buyNowCheckoutUrl, '_blank', 'noopener,noreferrer')
+        window.open(buildCheckoutUrl(cart.checkoutUrl), '_blank', 'noopener,noreferrer')
       }
     } catch (err) {
       console.error('[ProductHeroBlock] Buy Now error:', err)

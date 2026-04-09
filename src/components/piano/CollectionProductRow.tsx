@@ -5,8 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { createCart } from '@/lib/shopify'
-import { getStoredUTMParams } from '@/lib/shopify/utm-tracking'
+import { createCart, buildCheckoutUrl, getUTMCartAttributes } from '@/lib/shopify'
 import { trackAddToCart, trackBeginCheckout } from '@/lib/analytics/unified-tracking'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import type { CollectionProduct } from '@/components/piano/collection-page-content'
@@ -162,18 +161,9 @@ export function CollectionProductRow({
         ? selectedVariation.shopifyVariantId
         : `gid://shopify/ProductVariant/${selectedVariation.shopifyVariantId}`
 
-      const utmParams = getStoredUTMParams()
-      const cartAttributes = [
-        { key: '_utm_source', value: utmParams?.utm_source ?? '' },
-        { key: '_utm_medium', value: utmParams?.utm_medium ?? '' },
-        { key: '_utm_campaign', value: utmParams?.utm_campaign ?? '' },
-        { key: '_utm_content', value: utmParams?.utm_content ?? '' },
-        { key: '_utm_term', value: utmParams?.utm_term ?? '' },
-      ].filter((a) => a.value !== '')
-
       const cart = await createCart(
         [{ merchandiseId: formattedVariantId as `gid://shopify/${string}/${string}`, quantity: 1 }],
-        cartAttributes.length > 0 ? cartAttributes : undefined,
+        getUTMCartAttributes(),
       )
 
       const trackingParams = buildTrackingParams('buy_now')
@@ -181,18 +171,7 @@ export function CollectionProductRow({
       trackBeginCheckout(trackingParams)
 
       if (cart.checkoutUrl) {
-        let checkoutUrl = cart.checkoutUrl
-        if (utmParams) {
-          const utmString = Object.entries(utmParams)
-            .filter(([, v]) => Boolean(v))
-            .map(([k, v]) => `${k}=${encodeURIComponent(v as string)}`)
-            .join('&')
-          if (utmString) {
-            const sep = checkoutUrl.includes('?') ? '&' : '?'
-            checkoutUrl = `${checkoutUrl}${sep}${utmString}`
-          }
-        }
-        window.open(checkoutUrl, '_blank', 'noopener,noreferrer')
+        window.open(buildCheckoutUrl(cart.checkoutUrl), '_blank', 'noopener,noreferrer')
       }
     } catch (err) {
       console.error('[CollectionProductRow] Buy Now error:', err)

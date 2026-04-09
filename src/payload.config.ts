@@ -435,6 +435,12 @@ export default buildConfig({
           // could overwrite sync fields and corrupt the Shopify integration.
           import: false,
         },
+        {
+          slug: 'dealers',
+          export: {
+            format: 'csv',
+          },
+        },
       ],
       // Make the auto-created exports collection visible in the admin sidebar
       overrideExportCollection: ({ collection }) => ({
