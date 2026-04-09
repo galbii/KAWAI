@@ -6,10 +6,30 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
 // Regenerate every hour so CMS changes (new blog posts, artists, dealers) appear quickly
 export const revalidate = 3600
 
+/** Fetch the set of active CMS redirect source paths so they can be excluded from the sitemap. */
+async function getRedirectSourcePaths(): Promise<Set<string>> {
+  try {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'redirects',
+      where: { isActive: { equals: true } },
+      limit: 1000,
+      select: { from: true },
+      depth: 0,
+    })
+    return new Set(result.docs.map((r: any) => r.from as string))
+  } catch {
+    return new Set()
+  }
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const payload = await getPayloadClient()
     const sitemap: MetadataRoute.Sitemap = []
+
+    // Fetch active redirect sources upfront — these URLs must not appear in the sitemap
+    const redirectSources = await getRedirectSourcePaths()
 
     // ==========================================
     // STATIC ROUTES — Core / High Priority
@@ -116,9 +136,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     sitemap.push(
       { url: `${SITE_URL}/warranty-registration`, changeFrequency: 'yearly', priority: 0.5 },
+      { url: `${SITE_URL}/warranty`, changeFrequency: 'yearly', priority: 0.45 },
       { url: `${SITE_URL}/faq`, changeFrequency: 'monthly', priority: 0.6 },
       { url: `${SITE_URL}/careers`, changeFrequency: 'weekly', priority: 0.6 },
       { url: `${SITE_URL}/technical-support-division`, changeFrequency: 'monthly', priority: 0.55 },
+      { url: `${SITE_URL}/digital-piano-rebate`, changeFrequency: 'monthly', priority: 0.65 },
+      { url: `${SITE_URL}/privacy`, changeFrequency: 'yearly', priority: 0.3 },
     )
 
     // ==========================================
@@ -353,8 +376,84 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       console.error('❌ Sitemap: pages fetch failed', err)
     }
 
-    console.log(`✅ Sitemap total: ${sitemap.length} URLs`)
-    return sitemap
+    // ==========================================
+    // DYNAMIC — Job Listings (from CMS)
+    // ==========================================
+
+    try {
+      const jobsResult = await payload.find({
+        collection: 'jobs',
+        where: { status: { equals: 'open' } },
+        limit: 500,
+        select: { slug: true, updatedAt: true },
+        depth: 0,
+      })
+
+      const jobRoutes: MetadataRoute.Sitemap = jobsResult.docs
+        .filter((j: any) => j.slug)
+        .map((j: any) => ({
+          url: `${SITE_URL}/careers/${j.slug}`,
+          lastModified: new Date(j.updatedAt),
+          changeFrequency: 'weekly' as const,
+          priority: 0.55,
+        }))
+
+      sitemap.push(...jobRoutes)
+      console.log(`✅ Sitemap: ${jobRoutes.length} job listings`)
+    } catch (err) {
+      console.error('❌ Sitemap: jobs fetch failed', err)
+    }
+
+    // ==========================================
+    // DYNAMIC — Technical Support Hubs (from CMS)
+    // ==========================================
+
+    try {
+      const hubsResult = await payload.find({
+        collection: 'support-groups',
+        where: { isActive: { equals: true } },
+        limit: 100,
+        select: { slug: true, updatedAt: true },
+        depth: 0,
+      })
+
+      const hubRoutes: MetadataRoute.Sitemap = hubsResult.docs
+        .filter((h: any) => h.slug)
+        .map((h: any) => ({
+          url: `${SITE_URL}/technical-support-division/${h.slug}`,
+          lastModified: new Date(h.updatedAt),
+          changeFrequency: 'monthly' as const,
+          priority: 0.5,
+        }))
+
+      sitemap.push(...hubRoutes)
+      console.log(`✅ Sitemap: ${hubRoutes.length} support hubs`)
+    } catch (err) {
+      console.error('❌ Sitemap: support-groups fetch failed', err)
+    }
+
+    // ==========================================
+    // FILTER — Exclude active CMS redirect sources
+    // A URL that redirects elsewhere must not appear in the sitemap —
+    // search engines should only index the canonical destination.
+    // ==========================================
+
+    const filtered = sitemap.filter((entry) => {
+      try {
+        const path = new URL(entry.url).pathname
+        return !redirectSources.has(path)
+      } catch {
+        return true
+      }
+    })
+
+    const excluded = sitemap.length - filtered.length
+    if (excluded > 0) {
+      console.log(`✅ Sitemap: excluded ${excluded} redirect source(s)`)
+    }
+
+    console.log(`✅ Sitemap total: ${filtered.length} URLs`)
+    return filtered
 
   } catch (err) {
     console.error('❌ Sitemap: critical failure, returning fallback', err)

@@ -33,6 +33,14 @@ const SIDEBAR_CATEGORIES = [
     bannerOnly: true as const,
     accessoriesPanel: true as const,
   },
+  {
+    label: 'Apps & Software',
+    key: 'apps-software',
+    href: '/apps-software',
+    terms: [],
+    bannerOnly: true as const,
+    appsPanel: true as const,
+  },
 ] as const
 
 const NAV_SESSION_KEY = 'kawai-nav-state'
@@ -708,6 +716,100 @@ function AccessoriesBannerView({ onClose }: { onClose: () => void }) {
   )
 }
 
+// ─── Apps & Software Panel ────────────────────────────────────────────────────
+
+const APPS = [
+  {
+    key: 'piano-remote',
+    title: 'Piano Remote',
+    description: 'Control and customize your Kawai digital piano wirelessly via Bluetooth.',
+    href: 'https://www.kawai.com.au/piano-remote/',
+    badge: 'iOS & Android',
+    icon: '📱',
+  },
+  {
+    key: 'pianosmart',
+    title: 'PianoSmart',
+    description: 'Interactive lessons and guided practice for learners of all levels.',
+    href: 'https://www.kawai.com.au/pianosmart/',
+    badge: 'iOS & Android',
+    icon: '🎵',
+  },
+  {
+    key: 'virtual-technician',
+    title: 'Virtual Technician',
+    description: 'Fine-tune touch weight, voicing, and resonance to match your playing style.',
+    href: '/apps-software',
+    badge: 'Built-in + App',
+    icon: '⚙️',
+  },
+] as const
+
+function AppsSoftwarePanelView({ onClose }: { onClose: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="flex flex-col"
+    >
+      {/* Header */}
+      <div className="flex items-end justify-between mb-8">
+        <div>
+          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#B8AFA6] mb-2">Kawai</p>
+          <h2 className="text-3xl font-bold text-[#2C2C2C] font-serif leading-none">Apps &amp; Software</h2>
+        </div>
+        <Link
+          href="/apps-software"
+          onClick={onClose}
+          className="group flex items-center gap-2 text-sm font-medium text-[#A01829] hover:underline"
+        >
+          View All
+          <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+        </Link>
+      </div>
+
+      {/* App cards */}
+      <div className="grid grid-cols-3 gap-6">
+        {APPS.map((app, i) => (
+          <motion.div
+            key={app.key}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: 0.05 + i * 0.07, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            <Link
+              href={app.href}
+              onClick={onClose}
+              {...(app.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+              className="group flex flex-col h-full p-6 rounded-2xl border border-[#E8E4DF] bg-[#FAFAF8] hover:border-[#A01829] hover:shadow-[0_4px_20px_rgba(160,24,41,0.08)] transition-all duration-200"
+            >
+              <span className="text-3xl mb-4">{app.icon}</span>
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <h3 className="text-[15px] font-semibold text-[#1E1B16] font-serif leading-snug">{app.title}</h3>
+                <span className="flex-shrink-0 text-[9px] font-bold tracking-[0.18em] uppercase px-2 py-0.5 rounded-full bg-[#F0EDE7] text-[#8A8078] whitespace-nowrap">
+                  {app.badge}
+                </span>
+              </div>
+              <p className="text-sm text-[#8A8078] leading-relaxed flex-1">{app.description}</p>
+              <div className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-[#A01829] group-hover:underline">
+                Learn more
+                <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+              </div>
+            </Link>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Bottom ornament */}
+      <div className="flex items-center gap-3 mt-10 w-full max-w-[260px] mx-auto">
+        <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#D5C78C]" />
+        <div className="w-1 h-1 rounded-full bg-[#D5C78C]" />
+        <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#D5C78C]" />
+      </div>
+    </motion.div>
+  )
+}
+
 // ─── Top Tab Bar ──────────────────────────────────────────────────────────────
 
 function TopTabBar({ selectedKey, onSelect, onClose, productTypes }: {
@@ -940,6 +1042,14 @@ export function ProductsMegaMenu({
                         transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
                       >
                         <CollectionCarousel collections={collections} onClose={onClose} onCategorySelect={setSelectedKey} />
+                      </motion.div>
+                    ) : selectedCat && 'appsPanel' in selectedCat ? (
+                      <motion.div
+                        key="apps-panel"
+                        initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                      >
+                        <AppsSoftwarePanelView onClose={onClose} />
                       </motion.div>
                     ) : selectedCat && 'accessoriesPanel' in selectedCat ? (
                       <motion.div

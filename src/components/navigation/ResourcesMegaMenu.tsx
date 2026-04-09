@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Headphones, Briefcase, ArrowRight, Cpu, Building2, GraduationCap, BookOpen, Store } from 'lucide-react'
+import { Headphones, Briefcase, ArrowRight, Cpu, Building2, GraduationCap, BookOpen, Store, Shield } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 // ============================================================================
@@ -66,6 +66,12 @@ const allResourceItems: ResourceItem[] = [
     href: '/institutions/epic-program',
     icon: GraduationCap,
     migration: true,
+  },
+  {
+    title: 'Warranty',
+    description: 'View Kawai\'s warranty coverage, terms, and claim information for your piano.',
+    href: 'https://kawaius.com/warranty',
+    icon: Shield,
   },
   {
     title: 'Careers',
