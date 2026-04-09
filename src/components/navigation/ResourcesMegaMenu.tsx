@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Headphones, Briefcase, ArrowRight, Cpu, Building2, GraduationCap, BookOpen, Store, Shield } from 'lucide-react'
+import { Headphones, Briefcase, ArrowRight, Cpu, Building2, GraduationCap, BookOpen, Store, Shield, Globe, Wrench, Music, Info } from 'lucide-react'
+import type { ResourceLink } from '@/components/layout/header-dynamic'
 import { cn } from '@/lib/utils'
 
 // ============================================================================
@@ -17,6 +18,7 @@ interface ResourceItem {
   icon: React.ComponentType<{ className?: string }>
   comingSoon?: boolean
   migration?: boolean
+  openInNewTab?: boolean
 }
 
 interface ResourcesMegaMenuProps {
@@ -28,8 +30,24 @@ interface ResourcesMegaMenuProps {
   bannerImageUrl?: string | null
   bannerTitle?: string | null
   bannerDescription?: string | null
+  resourceLinks?: ResourceLink[]
   className?: string
   isHeaderScrolled?: boolean
+}
+
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  headphones: Headphones,
+  shield: Shield,
+  briefcase: Briefcase,
+  store: Store,
+  'building-2': Building2,
+  cpu: Cpu,
+  'graduation-cap': GraduationCap,
+  'book-open': BookOpen,
+  globe: Globe,
+  wrench: Wrench,
+  music: Music,
+  info: Info,
 }
 
 // ============================================================================
@@ -88,10 +106,6 @@ const allResourceItems: ResourceItem[] = [
   },
 ]
 
-const resourceItems = MIGRATION_NAV_ENABLED
-  ? allResourceItems
-  : allResourceItems.filter((item) => !item.migration)
-
 // ============================================================================
 // Component
 // ============================================================================
@@ -103,9 +117,29 @@ export function ResourcesMegaMenu({
   bannerImageUrl,
   bannerTitle,
   bannerDescription,
+  resourceLinks,
   className,
   isHeaderScrolled = false,
 }: ResourcesMegaMenuProps) {
+  // Use CMS-managed links when provided; fall back to hardcoded defaults.
+  // Migration items (gated by env flag) are always appended on top of whichever source is active.
+  const cmsItems: ResourceItem[] = (resourceLinks && resourceLinks.length > 0)
+    ? resourceLinks
+        .filter((l) => l.enabled !== false)
+        .map((l) => ({
+          title: l.title,
+          description: l.description ?? '',
+          href: l.href,
+          icon: ICON_MAP[l.icon ?? ''] ?? Headphones,
+          ...(l.openInNewTab !== undefined && { openInNewTab: l.openInNewTab }),
+        }))
+    : allResourceItems.filter((item) => !item.migration)
+
+  const migrationItems = MIGRATION_NAV_ENABLED
+    ? allResourceItems.filter((item) => item.migration)
+    : []
+
+  const activeItems: ResourceItem[] = [...cmsItems, ...migrationItems]
 
   return (
     <AnimatePresence>
@@ -164,7 +198,7 @@ export function ResourcesMegaMenu({
 
             {/* ── Link rows ──────────────────────────────────────────────── */}
             <div className="divide-y divide-kawai-black/[0.06] mb-8">
-              {resourceItems.map((item, index) => {
+              {activeItems.map((item, index) => {
                 const Icon = item.icon
                 const isDisabled = item.comingSoon
 
@@ -177,6 +211,8 @@ export function ResourcesMegaMenu({
                   >
                     <Link
                       href={isDisabled ? '#' : item.href}
+                      target={item.openInNewTab ? '_blank' : undefined}
+                      rel={item.openInNewTab ? 'noopener noreferrer' : undefined}
                       onClick={(e) => {
                         if (isDisabled) { e.preventDefault(); return }
                         onClose()

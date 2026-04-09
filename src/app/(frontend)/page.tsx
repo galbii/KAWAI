@@ -14,7 +14,6 @@ import { SimpleDivider } from "@/components/ui/SimpleDivider";
 import { getHomePageDataDirect, getActiveStorefrontsDirect } from "@/lib/payload/queries";
 import type { HomePageData } from "@/lib/types/homepage";
 import { AdminBarDoc } from '@/components/layout/AdminBarDoc';
-import { Suspense } from "react";
 import type { Metadata } from 'next';
 import { RenderBlocks } from '@/components/RenderBlocks';
 import { HomePageLivePreview } from '@/components/homepage/HomePageLivePreview';
@@ -81,109 +80,6 @@ export async function generateMetadata(): Promise<Metadata> {
       description: 'Discover premium KAWAI pianos at authorized dealers nationwide. Explore our collection of grand, upright, and digital pianos crafted with 95+ years of Japanese excellence.'
     };
   }
-}
-
-// Loading components for each section
-function HeroSkeleton() {
-  return (
-    <section className="relative min-h-screen flex items-center bg-kawai-black animate-pulse">
-      <div className="container mx-auto px-8 lg:px-16">
-        <div className="max-w-5xl">
-          <div className="h-8 bg-kawai-pearl/20 rounded mb-4 w-1/3"></div>
-          <div className="h-16 bg-kawai-pearl/20 rounded mb-8 w-3/4"></div>
-          <div className="h-6 bg-kawai-pearl/20 rounded mb-12 w-1/2"></div>
-          <div className="flex gap-4">
-            <div className="h-12 bg-kawai-pearl/20 rounded w-48"></div>
-            <div className="h-12 bg-kawai-pearl/20 rounded w-48"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ShowroomSkeleton() {
-  return (
-    <section className="bg-kawai-pearl py-24 animate-pulse">
-      <div className="container mx-auto px-6">
-        <div className="h-8 bg-kawai-black/20 rounded mx-auto mb-6 w-64"></div>
-        <div className="h-12 bg-kawai-black/20 rounded mx-auto mb-8 w-96"></div>
-        <div className="h-96 bg-kawai-black/20 rounded"></div>
-      </div>
-    </section>
-  );
-}
-
-function PianoCollectionSkeleton() {
-  return (
-    <section className="py-24 animate-pulse">
-      <div className="container mx-auto px-6">
-        <div className="h-8 bg-kawai-black/20 rounded mx-auto mb-6 w-48"></div>
-        <div className="h-12 bg-kawai-black/20 rounded mx-auto mb-8 w-72"></div>
-        <div className="h-80 bg-kawai-black/20 rounded"></div>
-      </div>
-    </section>
-  );
-}
-
-function PianoGallerySkeleton() {
-  return (
-    <section className="bg-kawai-pearl py-24 animate-pulse">
-      <div className="container mx-auto px-6">
-        <div className="h-8 bg-kawai-black/20 rounded mx-auto mb-6 w-64"></div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-64 bg-kawai-black/20 rounded"></div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function SimpleDividerSkeleton() {
-  return (
-    <div className="w-full h-0.5 bg-gray-300/50 animate-pulse" />
-  );
-}
-
-function NewsCarouselSkeleton() {
-  return (
-    <section className="py-24 animate-pulse">
-      <div className="container mx-auto px-6">
-        <div className="h-96 bg-kawai-black/20 rounded"></div>
-      </div>
-    </section>
-  );
-}
-
-function DealerLocationsSkeleton() {
-  return (
-    <section className="bg-kawai-pearl/20 py-24 animate-pulse">
-      <div className="container mx-auto px-6">
-        <div className="h-8 bg-kawai-black/20 rounded mx-auto mb-6 w-64"></div>
-        <div className="h-12 bg-kawai-black/20 rounded mx-auto mb-8 w-96"></div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-80 bg-kawai-black/20 rounded-2xl"></div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ContactFormSkeleton() {
-  return (
-    <section className="bg-kawai-pearl py-24 animate-pulse">
-      <div className="container mx-auto px-6">
-        <div className="h-8 bg-kawai-black/20 rounded mx-auto mb-6 w-64"></div>
-        <div className="max-w-4xl mx-auto">
-          <div className="h-96 bg-kawai-black/20 rounded"></div>
-        </div>
-      </div>
-    </section>
-  );
 }
 
 // Server Component that fetches data and renders sections
@@ -272,21 +168,5 @@ async function HomePageContent() {
 }
 
 export default function Home() {
-  return (
-    <>
-      <Suspense fallback={
-        <div className="min-h-screen">
-          <HeroSkeleton />
-          <SimpleDividerSkeleton />
-          <NewsCarouselSkeleton />
-          <DealerLocationsSkeleton />
-          <PianoCollectionSkeleton />
-          <PianoGallerySkeleton />
-          <ContactFormSkeleton />
-        </div>
-      }>
-        <HomePageContent />
-      </Suspense>
-    </>
-  );
+  return <HomePageContent />;
 }

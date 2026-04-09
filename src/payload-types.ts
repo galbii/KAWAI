@@ -8167,6 +8167,55 @@ export interface HomePage {
      */
     hubspotEmbedCode?: string | null;
   };
+  resourcesNav?: {
+    /**
+     * Links displayed in the Resources dropdown. Drag to reorder.
+     */
+    links?:
+      | {
+          /**
+           * Link heading text (e.g., "Support Center")
+           */
+          title: string;
+          /**
+           * Short subtitle shown below the title
+           */
+          description?: string | null;
+          /**
+           * Internal path (e.g., /careers) or full external URL (e.g., https://kawaius.com/warranty)
+           */
+          href: string;
+          /**
+           * Icon displayed next to the link
+           */
+          icon?:
+            | (
+                | 'headphones'
+                | 'shield'
+                | 'briefcase'
+                | 'store'
+                | 'building-2'
+                | 'cpu'
+                | 'graduation-cap'
+                | 'book-open'
+                | 'globe'
+                | 'wrench'
+                | 'music'
+                | 'info'
+              )
+            | null;
+          /**
+           * Enable for external URLs (e.g., kawaius.com links)
+           */
+          openInNewTab?: boolean | null;
+          /**
+           * Uncheck to hide this link without deleting it
+           */
+          enabled?: boolean | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
   /**
    * SEO and metadata configuration
    */
@@ -10570,6 +10619,21 @@ export interface HomePageSelect<T extends boolean = true> {
         bannerTitle?: T;
         bannerDescription?: T;
         hubspotEmbedCode?: T;
+      };
+  resourcesNav?:
+    | T
+    | {
+        links?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              href?: T;
+              icon?: T;
+              openInNewTab?: T;
+              enabled?: T;
+              id?: T;
+            };
       };
   seo?:
     | T

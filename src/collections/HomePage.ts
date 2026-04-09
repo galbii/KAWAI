@@ -1145,6 +1145,123 @@ export const HomePage: CollectionConfig = {
           ],
         },
 
+        // Resources Nav Tab
+        {
+          label: 'Resources Nav',
+          description: 'Manage the links shown in the Resources dropdown in the site navigation',
+          fields: [
+            {
+              name: 'resourcesNav',
+              type: 'group',
+              fields: [
+                {
+                  name: 'links',
+                  type: 'array',
+                  label: 'Resource Links',
+                  labels: {
+                    singular: 'Link',
+                    plural: 'Links',
+                  },
+                  admin: {
+                    description: 'Links displayed in the Resources dropdown. Drag to reorder.',
+                  },
+                  fields: [
+                    {
+                      name: 'title',
+                      type: 'text',
+                      required: true,
+                      admin: {
+                        description: 'Link heading text (e.g., "Support Center")',
+                      },
+                    },
+                    {
+                      name: 'description',
+                      type: 'text',
+                      admin: {
+                        description: 'Short subtitle shown below the title',
+                      },
+                    },
+                    {
+                      name: 'href',
+                      type: 'text',
+                      required: true,
+                      admin: {
+                        description: 'Internal path (e.g., /careers) or full external URL (e.g., https://kawaius.com/warranty)',
+                      },
+                    },
+                    {
+                      name: 'icon',
+                      type: 'select',
+                      defaultValue: 'headphones',
+                      admin: {
+                        description: 'Icon displayed next to the link',
+                      },
+                      options: [
+                        { label: 'Headphones', value: 'headphones' },
+                        { label: 'Shield', value: 'shield' },
+                        { label: 'Briefcase', value: 'briefcase' },
+                        { label: 'Store', value: 'store' },
+                        { label: 'Building', value: 'building-2' },
+                        { label: 'CPU / Tech', value: 'cpu' },
+                        { label: 'Graduation Cap', value: 'graduation-cap' },
+                        { label: 'Book', value: 'book-open' },
+                        { label: 'Globe', value: 'globe' },
+                        { label: 'Wrench', value: 'wrench' },
+                        { label: 'Music', value: 'music' },
+                        { label: 'Info', value: 'info' },
+                      ],
+                    },
+                    {
+                      name: 'openInNewTab',
+                      type: 'checkbox',
+                      label: 'Open in new tab',
+                      defaultValue: false,
+                      admin: {
+                        description: 'Enable for external URLs (e.g., kawaius.com links)',
+                      },
+                    },
+                    {
+                      name: 'enabled',
+                      type: 'checkbox',
+                      label: 'Enabled',
+                      defaultValue: true,
+                      admin: {
+                        description: 'Uncheck to hide this link without deleting it',
+                      },
+                    },
+                  ],
+                  defaultValue: [
+                    {
+                      title: 'Support Center',
+                      description: 'Troubleshooting, connectivity, firmware, warranty, and piano care — for owners, buyers, and technicians.',
+                      href: '/technical-support-division',
+                      icon: 'headphones',
+                      openInNewTab: false,
+                      enabled: true,
+                    },
+                    {
+                      title: 'Warranty',
+                      description: 'View Kawai\'s warranty coverage, terms, and claim information for your piano.',
+                      href: 'https://kawaius.com/warranty',
+                      icon: 'shield',
+                      openInNewTab: true,
+                      enabled: true,
+                    },
+                    {
+                      title: 'Careers',
+                      description: 'Join the Kawai team and help bring the world\'s finest pianos to musicians everywhere.',
+                      href: '/careers',
+                      icon: 'briefcase',
+                      openInNewTab: false,
+                      enabled: true,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+
         // SEO & Meta Tab
         {
           label: 'SEO & Meta',

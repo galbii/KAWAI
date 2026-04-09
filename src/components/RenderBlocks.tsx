@@ -214,15 +214,9 @@ function isValidBlockType(blockType: string | undefined): blockType is BlockType
 export function RenderBlocks({ blocks }: { blocks: Page['layout'] }) {
   const hasBlocks = blocks && Array.isArray(blocks) && blocks.length > 0
 
-  console.log('🎨 [RenderBlocks] Starting render...')
-  console.log('🎨 [RenderBlocks] Blocks received:', hasBlocks ? blocks.length : 0)
-
   if (!hasBlocks) {
-    console.log('🎨 [RenderBlocks] ⚠️ No blocks to render (blocks is empty, null, or not an array)')
     return null
   }
-
-  console.log('🎨 [RenderBlocks] Block types:', blocks.map(b => b.blockType).join(', '))
 
   return (
     <PageLayoutProvider blocks={blocks}>
@@ -230,31 +224,15 @@ export function RenderBlocks({ blocks }: { blocks: Page['layout'] }) {
         {blocks.map((block, index) => {
         const { blockType } = block
 
-        console.log(`🎨 [RenderBlocks] Rendering block ${index}:`, blockType)
-
-        // Validate block type and get component
         if (!isValidBlockType(blockType)) {
-          // Log unmapped blocks in development
-          if (process.env.NODE_ENV === 'development') {
-            console.warn(
-              `[RenderBlocks] Unmapped block type: "${blockType}"`,
-              '\nAvailable types:',
-              Object.keys(blockComponents).join(', ')
-            )
-          }
           return null
         }
 
         const Block = blockComponents[blockType]
 
         if (!Block) {
-          if (process.env.NODE_ENV === 'development') {
-            console.error(`[RenderBlocks] No component found for block type: "${blockType}"`)
-          }
           return null
         }
-
-        console.log(`🎨 [RenderBlocks] ✅ Rendering ${blockType} with component ${Block.name}`)
 
         return (
           <div

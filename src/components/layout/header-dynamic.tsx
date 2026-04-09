@@ -46,6 +46,15 @@ interface QuickLink {
   url: string
 }
 
+export interface ResourceLink {
+  title: string
+  description?: string
+  href: string
+  icon?: string
+  openInNewTab?: boolean
+  enabled?: boolean
+}
+
 function getDealerLocationBySlug(slug: string): Promise<DealerLocationData | null> {
   return unstable_cache(
     async () => {
@@ -176,6 +185,64 @@ const getSearchQuickLinks = unstable_cache(
     }
   },
   ['header-quick-links'],
+  { tags: ['home-page'], revalidate: 3600 }
+)
+
+const DEFAULT_RESOURCE_LINKS: ResourceLink[] = [
+  {
+    title: 'Support Center',
+    description: 'Troubleshooting, connectivity, firmware, warranty, and piano care — for owners, buyers, and technicians.',
+    href: '/technical-support-division',
+    icon: 'headphones',
+    openInNewTab: false,
+    enabled: true,
+  },
+  {
+    title: 'Warranty',
+    description: "View Kawai's warranty coverage, terms, and claim information for your piano.",
+    href: 'https://kawaius.com/warranty',
+    icon: 'shield',
+    openInNewTab: true,
+    enabled: true,
+  },
+  {
+    title: 'Careers',
+    description: "Join the Kawai team and help bring the world's finest pianos to musicians everywhere.",
+    href: '/careers',
+    icon: 'briefcase',
+    openInNewTab: false,
+    enabled: true,
+  },
+]
+
+const getResourcesNavConfig = unstable_cache(
+  async (): Promise<ResourceLink[]> => {
+    try {
+      const payload = await getPayload({ config })
+      const result = await payload.find({
+        collection: 'home-page',
+        limit: 1,
+        depth: 0,
+        select: { resourcesNav: true } as any,
+      })
+      const links = (result.docs[0] as any)?.resourcesNav?.links
+      if (Array.isArray(links) && links.length > 0) {
+        return links.map((l: any) => ({
+          title: l.title,
+          description: l.description ?? undefined,
+          href: l.href,
+          icon: l.icon ?? undefined,
+          openInNewTab: l.openInNewTab ?? false,
+          enabled: l.enabled ?? true,
+        }))
+      }
+      return DEFAULT_RESOURCE_LINKS
+    } catch (err) {
+      console.error('[getResourcesNavConfig]', err)
+      return DEFAULT_RESOURCE_LINKS
+    }
+  },
+  ['header-resources-nav'],
   { tags: ['home-page'], revalidate: 3600 }
 )
 
@@ -322,11 +389,12 @@ export async function HeaderDynamic() {
       locationData = await getDealerLocationBySlug(dealerSlug)
     }
 
-    // Fetch news items, register config, quick links, latest posts, and header settings
-    const [newsItems, registerConfig, quickLinks, latestPosts, headerSettings] = await Promise.all([
+    // Fetch news items, register config, quick links, resource links, latest posts, and header settings
+    const [newsItems, registerConfig, quickLinks, resourceLinks, latestPosts, headerSettings] = await Promise.all([
       getHomePageNewsItems(),
       getRegisterConfig(),
       getSearchQuickLinks(),
+      getResourcesNavConfig(),
       getLatestPosts(),
       getHeaderSettings(),
     ])
@@ -343,6 +411,7 @@ export async function HeaderDynamic() {
         latestPosts={latestPosts}
         registerConfig={registerConfig}
         quickLinks={quickLinks}
+        resourceLinks={resourceLinks}
         autoMinimize={headerSettings.autoMinimize}
       />
     )

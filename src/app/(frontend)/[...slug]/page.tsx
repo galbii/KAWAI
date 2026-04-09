@@ -1,69 +1,14 @@
-import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from 'next';
-import { getPayload } from 'payload';
 import { unstable_cache } from 'next/cache';
 import { draftMode } from 'next/headers';
-import config from '@payload-config';
 import type { Page } from '@/payload-types';
 import { Hero as PageHero } from '@/components/Hero';
 import { RenderBlocks } from '@/components/RenderBlocks';
 import { AdminBarDoc } from '@/components/layout/AdminBarDoc';
-import { getPayloadClient } from '@/lib/payload/queries';
+import { getPayloadClient, getActiveStorefrontSlugs } from '@/lib/payload/queries';
 
-/**
- * Page Content Component (for Pages collection)
- * Renders pages from the Pages collection with Hero and dynamic blocks
- */
-async function PageContent({ slug }: { slug: string[] }) {
-  const { isEnabled: isDraftMode } = await draftMode();
-  const payload = await getPayload({ config });
-
-  // Join slug array into path string (e.g., ["store", "houston", "shsu"] → "store/houston/shsu")
-  const slugPath = slug.join('/')
-
-  const page = await payload
-    .find({
-      collection: 'pages',
-      where: {
-        slug: { equals: slugPath },
-        // Only show published pages in production (unless in draft mode)
-        ...(isDraftMode ? {} : { _status: { equals: 'published' } }),
-      },
-      limit: 1,
-      // CRITICAL: depth must be at least 1 to populate blocks with relationships
-      // Blocks themselves don't need depth (they're inline), but their content might reference media
-      depth: 1,
-      draft: isDraftMode,
-      overrideAccess: isDraftMode,
-    })
-    .then(({ docs }) => docs?.[0] as Page);
-
-  // If page doesn't exist or isn't published, return 404
-  if (!page) {
-    notFound();
-  }
-
-  return (
-    <>
-      <AdminBarDoc
-        collection="pages"
-        id={String(page.id)}
-        collectionLabels={{ singular: 'Page', plural: 'Pages' }}
-      />
-      {/* Hero Section */}
-      {page.hero && <PageHero hero={page.hero} />}
-
-      {/* Dynamic Block Content */}
-      {page.layout?.length ? (
-        <RenderBlocks blocks={page.layout} />
-      ) : null}
-    </>
-  );
-}
-
-// Enable ISR (Incremental Static Regeneration)
-// Pages are statically generated at build time and revalidated every 1 hour
+// Enable ISR — pages statically generated at build, revalidated every 1 hour
 export const revalidate = 3600
 
 // Pre-generate all published pages at build time
@@ -73,31 +18,40 @@ export async function generateStaticParams() {
     const configPromise = await import('@payload-config')
     const payload = await getPayloadHMR({ config: configPromise.default })
 
-    // Fetch published pages from Pages collection
     const pages = await payload.find({
       collection: 'pages',
-      where: {
-        _status: {
-          equals: 'published',
-        },
-      },
+      where: { _status: { equals: 'published' } },
       limit: 100,
-      select: {
-        slug: true,
-      },
+      select: { slug: true },
     });
 
-    // Convert slug strings to arrays (e.g., "store/houston/shsu" → ["store", "houston", "shsu"])
     return pages.docs.map((page: any) => ({
       slug: page.slug ? page.slug.split('/') : []
     }));
   } catch (error) {
-    console.error('❌ [SEO] Error generating static params:', error)
+    console.error('❌ [generateStaticParams] Error:', error)
     return []
   }
 }
 
-function getPageMetadata(slugPath: string) {
+function getPageData(slugPath: string, isDraftMode: boolean) {
+  if (isDraftMode) {
+    // Draft mode: never cache, always fetch live
+    return (async () => {
+      const payload = await getPayloadClient()
+      return payload
+        .find({
+          collection: 'pages',
+          where: { slug: { equals: slugPath } },
+          limit: 1,
+          depth: 1,
+          draft: true,
+          overrideAccess: true,
+        })
+        .then(({ docs }) => docs[0] as Page ?? null)
+    })()
+  }
+
   return unstable_cache(
     async () => {
       const payload = await getPayloadClient()
@@ -111,43 +65,41 @@ function getPageMetadata(slugPath: string) {
           limit: 1,
           depth: 1,
         })
-        .then(({ docs }) => docs[0] ?? null)
+        .then(({ docs }) => docs[0] as Page ?? null)
     },
-    [`page-meta-${slugPath}`],
-    { tags: [`page-meta-${slugPath}`, 'pages'], revalidate: 3600 },
+    [`page-${slugPath}`],
+    { tags: [`page-${slugPath}`, 'pages'], revalidate: 3600 },
   )()
 }
 
-// Generate metadata for SEO - CRITICAL FOR GOOGLE INDEXING
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string[] }> }
 ): Promise<Metadata> {
   try {
     const { slug } = await params;
     const slugPath = slug.join('/')
-    const payload = await getPayloadClient()
 
-    // Check if this is a storefront (redirect will happen in page component)
-    const storefront = await payload
-      .find({
-        collection: 'storefronts',
-        where: {
-          slug: { equals: slug[0] || slugPath },
-          isActive: { equals: true },
-        },
-        limit: 1,
-        depth: 0,
-      })
-      .then(({ docs }) => docs[0] ?? null)
-
-    if (storefront) {
-      return {
-        title: 'Redirecting...',
-        robots: { index: false, follow: false },
-      };
+    // Use cached slug set — no DB hit for non-storefront pages
+    const storefrontSlugs = await getActiveStorefrontSlugs()
+    if (storefrontSlugs.includes(slug[0] ?? '')) {
+      return { title: 'Redirecting...', robots: { index: false, follow: false } };
     }
 
-    const page = await getPageMetadata(slugPath)
+    const page = await unstable_cache(
+      async () => {
+        const payload = await getPayloadClient()
+        return payload
+          .find({
+            collection: 'pages',
+            where: { slug: { equals: slugPath }, _status: { equals: 'published' } },
+            limit: 1,
+            depth: 1,
+          })
+          .then(({ docs }) => docs[0] ?? null)
+      },
+      [`page-meta-${slugPath}`],
+      { tags: [`page-meta-${slugPath}`, 'pages'], revalidate: 3600 },
+    )()
 
     if (!page) {
       return {
@@ -162,7 +114,6 @@ export async function generateMetadata(
     const metaDescription = page.seo?.metaDescription || `${page.title} - Kawai Pianos`;
     const ogTitle = page.seo?.openGraphTitle || metaTitle;
     const ogDescription = page.seo?.openGraphDescription || metaDescription;
-
     const ogImage = page.seo?.openGraphImage;
     const ogImageUrl = ogImage && typeof ogImage === 'object' && 'url' in ogImage && ogImage.url
       ? ogImage.url
@@ -172,14 +123,8 @@ export async function generateMetadata(
       title: { absolute: metaTitle },
       description: metaDescription,
       ...(page.seo?.keywords ? { keywords: page.seo.keywords } : {}),
-      alternates: {
-        canonical: `${siteUrl}/${slugPath}`,
-      },
-      robots: {
-        index: true,
-        follow: true,
-        googleBot: { index: true, follow: true },
-      },
+      alternates: { canonical: `${siteUrl}/${slugPath}` },
+      robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
       openGraph: {
         title: ogTitle,
         description: ogDescription,
@@ -197,99 +142,40 @@ export async function generateMetadata(
       },
     };
   } catch (error) {
-    console.error(`[SEO] Error generating metadata for page:`, error);
-    return {
-      title: 'Page | Kawai Pianos',
-      description: 'Kawai Pianos',
-    };
+    console.error(`[generateMetadata] Error:`, error);
+    return { title: 'Page | Kawai Pianos', description: 'Kawai Pianos' };
   }
 }
 
-/**
- * Dynamic Catch-All Route - /[...slug]
- *
- * Renders content from Pages collection for nested paths
- * Supports multi-segment slugs like "store/houston/shsu" or single segments like "about"
- * Storefronts are at /store/[storeslug]
- * Returns 404 if page not found
- */
 export default async function DynamicPage({ params }: { params: Promise<{ slug: string[] }> }) {
   const { slug } = await params;
   const slugPath = slug.join('/')
 
-  // CRITICAL: Check for storefront redirect BEFORE Suspense boundary
-  // This ensures server-side redirect (307) instead of client-side (meta tag)
-  // Only check first segment for storefront match
-  const payload = await getPayload({ config });
-  const storefront = await payload
-    .find({
-      collection: 'storefronts',
-      where: {
-        slug: { equals: slug[0] || slugPath },
-        isActive: { equals: true },
-      },
-      limit: 1,
-      depth: 0,
-    })
-    .then(({ docs }) => docs?.[0]);
-
-  // If storefront exists, redirect BEFORE any rendering starts
-  if (storefront) {
-    redirect(`/store/${slug[0]}`);
+  // Cached Set lookup — no DB query for non-storefront pages
+  const storefrontSlugs = await getActiveStorefrontSlugs()
+  if (storefrontSlugs.includes(slug[0] ?? '')) {
+    redirect(`/store/${slug[0]}`)
   }
 
-  // CRITICAL: Check page existence BEFORE Suspense boundary.
-  // Calling notFound() inside a Suspense causes a hydration mismatch — the
-  // skeleton is streamed to the client and then swapped mid-stream, which
-  // breaks React hydration and makes all interactive elements (including
-  // header links) unresponsive on 404 pages.
   const { isEnabled: isDraftMode } = await draftMode();
-  const pageExists = await payload
-    .find({
-      collection: 'pages',
-      where: {
-        slug: { equals: slugPath },
-        ...(isDraftMode ? {} : { _status: { equals: 'published' } }),
-      },
-      limit: 1,
-      depth: 0,
-      draft: isDraftMode,
-      overrideAccess: isDraftMode,
-    })
-    .then(({ docs }) => docs[0] ?? null);
 
-  if (!pageExists) {
-    notFound();
+  // Single query: fetch page at depth:1 — replaces the old depth:0 existence
+  // check + separate depth:1 render fetch. If null → 404, else → render.
+  const page = await getPageData(slugPath, isDraftMode)
+
+  if (!page) {
+    notFound()
   }
 
   return (
-    <Suspense fallback={<PageSkeleton />}>
-      <PageContent slug={slug} />
-    </Suspense>
-  );
-}
-
-/**
- * Page Loading Skeleton (for Pages collection)
- */
-function PageSkeleton() {
-  return (
-    <div className="min-h-screen animate-pulse">
-      <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
-        <div className="container">
-          <div className="max-w-4xl mx-auto">
-            <div className="h-12 bg-gray-200 rounded mb-6 w-3/4 mx-auto"></div>
-            <div className="h-6 bg-gray-200 rounded mb-4 w-1/2 mx-auto"></div>
-            <div className="h-12 bg-gray-200 rounded w-48 mx-auto"></div>
-          </div>
-        </div>
-      </section>
-
-      <div className="container my-16">
-        <div className="h-64 bg-gray-200 rounded mb-8"></div>
-        <div className="h-64 bg-gray-200 rounded mb-8"></div>
-        <div className="h-64 bg-gray-200 rounded"></div>
-      </div>
-    </div>
-  );
+    <>
+      <AdminBarDoc
+        collection="pages"
+        id={String(page.id)}
+        collectionLabels={{ singular: 'Page', plural: 'Pages' }}
+      />
+      {page.hero && <PageHero hero={page.hero} />}
+      {page.layout?.length ? <RenderBlocks blocks={page.layout} /> : null}
+    </>
+  )
 }

@@ -141,7 +141,7 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
           __html: JSON.stringify(featuredProductsSchema),
         }}
       />
-      <div className="flex min-h-screen flex-col m-0 p-0">
+      <div className={isFindADealerPage ? "flex h-dvh flex-col m-0 p-0 overflow-hidden" : "flex min-h-screen flex-col m-0 p-0"}>
         {!isNAMMPage && <AnnouncementBarWrapper />}
         {!isNAMMPage && <HeaderDynamic />}
         {!isNAMMPage && <LayoutSpacer />}

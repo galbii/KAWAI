@@ -22,7 +22,7 @@ interface Props {
 }
 
 export function DealerFinderClient({ dealers, heading }: Props) {
-  const resolvedHeading = heading ?? 'Our Authorized Dealers'
+  const resolvedHeading = heading ?? 'Find Authorized Kawai Piano Dealers'
   const [searchLocation, setSearchLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [selectedRadius, setSelectedRadius] = useState(25)
   const [selectedDealerTypes, setSelectedDealerTypes] = useState<string[]>([])

@@ -9,14 +9,14 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
 const fallbackMetadata: Metadata = {
   title: 'Find a KAWAI Piano Dealer | Authorized Dealers Near You',
   description:
-    'Locate authorized KAWAI piano dealers in your area. Find showrooms, services, and contact information for expert piano consultations and purchases.',
+    'Find authorized Kawai piano dealers near you. Search by ZIP code or city to locate showrooms, get contact info, and book an expert piano consultation.',
   alternates: {
     canonical: '/find-a-dealer',
   },
   openGraph: {
     title: 'Find a KAWAI Piano Dealer | Authorized Dealers Near You',
     description:
-      'Locate authorized KAWAI piano dealers in your area. Find showrooms, services, and contact information for expert piano consultations and purchases.',
+      'Find authorized Kawai piano dealers near you. Search by ZIP code or city to locate showrooms, get contact info, and book an expert piano consultation.',
     url: '/find-a-dealer',
     type: 'website',
     images: [
@@ -32,7 +32,7 @@ const fallbackMetadata: Metadata = {
     card: 'summary_large_image',
     title: 'Find a KAWAI Piano Dealer | Authorized Dealers Near You',
     description:
-      'Locate authorized KAWAI piano dealers in your area. Find showrooms, services, and contact information for expert piano consultations and purchases.',
+      'Find authorized Kawai piano dealers near you. Search by ZIP code or city to locate showrooms, get contact info, and book an expert piano consultation.',
   },
 }
 

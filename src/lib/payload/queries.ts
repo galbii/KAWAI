@@ -774,6 +774,31 @@ export async function getStorefrontBySlugDirect(slug: string): Promise<any | nul
 }
 
 /**
+ * Get active storefront slugs as a cached Set — used for fast redirect checks
+ * in the catch-all route without hitting MongoDB on every request.
+ */
+export const getActiveStorefrontSlugs = unstable_cache(
+  async (): Promise<string[]> => {
+    try {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'storefronts',
+        where: { isActive: { equals: true } },
+        select: { slug: true },
+        depth: 0,
+        limit: 200,
+      })
+      return result.docs.map((d: any) => d.slug as string).filter(Boolean)
+    } catch (error) {
+      console.error('Error fetching storefront slugs:', error)
+      return []
+    }
+  },
+  ['storefront-slugs'],
+  { tags: ['storefronts'], revalidate: 3600 }
+)
+
+/**
  * Get all active storefronts using direct Payload access
  * @returns Array of active Storefront objects sorted by most recently updated
  */

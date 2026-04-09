@@ -5,7 +5,7 @@ import { useQueryStates, parseAsString } from 'nuqs'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Bluetooth, BookOpen, Music2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ProductTypeNav, NavProduct, NavCollection } from '@/lib/payload/products-navigation'
 import { getProductsByCollection } from '@/lib/actions/collection-products'
@@ -717,91 +717,80 @@ function AccessoriesBannerView({ onClose }: { onClose: () => void }) {
 }
 
 // ─── Apps & Software Panel ────────────────────────────────────────────────────
-
-const APPS = [
-  {
-    key: 'piano-remote',
-    title: 'Piano Remote',
-    description: 'Control and customize your Kawai digital piano wirelessly via Bluetooth.',
-    href: 'https://www.kawai.com.au/piano-remote/',
-    badge: 'iOS & Android',
-    icon: '📱',
-  },
-  {
-    key: 'pianosmart',
-    title: 'PianoSmart',
-    description: 'Interactive lessons and guided practice for learners of all levels.',
-    href: 'https://www.kawai.com.au/pianosmart/',
-    badge: 'iOS & Android',
-    icon: '🎵',
-  },
-  {
-    key: 'virtual-technician',
-    title: 'Virtual Technician',
-    description: 'Fine-tune touch weight, voicing, and resonance to match your playing style.',
-    href: '/apps-software',
-    badge: 'Built-in + App',
-    icon: '⚙️',
-  },
-] as const
+// Shown when "Apps & Software" is selected in the sidebar.
 
 function AppsSoftwarePanelView({ onClose }: { onClose: () => void }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="flex flex-col"
+      className="flex flex-col items-center justify-center text-center py-16 px-8"
     >
-      {/* Header */}
-      <div className="flex items-end justify-between mb-8">
-        <div>
-          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#B8AFA6] mb-2">Kawai</p>
-          <h2 className="text-3xl font-bold text-[#2C2C2C] font-serif leading-none">Apps &amp; Software</h2>
+      {/* Ornamental rule */}
+      <div className="flex items-center gap-3 mb-8 w-full max-w-[260px]">
+        <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#D5C78C]" />
+        <div className="w-1 h-1 rounded-full bg-[#D5C78C]" />
+        <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#D5C78C]" />
+      </div>
+
+      <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#B8AFA6] mb-3">
+        Apps &amp; Software
+      </p>
+
+      <h2 className="text-4xl font-serif text-[#1E1B16] leading-[1.1] mb-4">
+        Coming Soon
+      </h2>
+
+      {/* App icons */}
+      <div className="flex items-center gap-8 mb-6">
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-12 h-12 rounded-2xl bg-[#F0EDE7] flex items-center justify-center">
+            <Bluetooth className="h-5 w-5 text-[#8A8078]" />
+          </div>
+          <span className="text-[10px] font-medium tracking-wide text-[#B8AFA6]">Piano Remote</span>
         </div>
-        <Link
-          href="/apps-software"
-          onClick={onClose}
-          className="group flex items-center gap-2 text-sm font-medium text-[#A01829] hover:underline"
-        >
-          View All
-          <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-        </Link>
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-12 h-12 rounded-2xl bg-[#F0EDE7] flex items-center justify-center">
+            <BookOpen className="h-5 w-5 text-[#8A8078]" />
+          </div>
+          <span className="text-[10px] font-medium tracking-wide text-[#B8AFA6]">PiaBookPlayer</span>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-12 h-12 rounded-2xl bg-[#F0EDE7] flex items-center justify-center">
+            <Music2 className="h-5 w-5 text-[#8A8078]" />
+          </div>
+          <span className="text-[10px] font-medium tracking-wide text-[#B8AFA6]">Aures Music</span>
+        </div>
       </div>
 
-      {/* App cards */}
-      <div className="grid grid-cols-3 gap-6">
-        {APPS.map((app, i) => (
-          <motion.div
-            key={app.key}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, delay: 0.05 + i * 0.07, ease: [0.25, 0.46, 0.45, 0.94] }}
-          >
-            <Link
-              href={app.href}
-              onClick={onClose}
-              {...(app.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-              className="group flex flex-col h-full p-6 rounded-2xl border border-[#E8E4DF] bg-[#FAFAF8] hover:border-[#A01829] hover:shadow-[0_4px_20px_rgba(160,24,41,0.08)] transition-all duration-200"
-            >
-              <span className="text-3xl mb-4">{app.icon}</span>
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <h3 className="text-[15px] font-semibold text-[#1E1B16] font-serif leading-snug">{app.title}</h3>
-                <span className="flex-shrink-0 text-[9px] font-bold tracking-[0.18em] uppercase px-2 py-0.5 rounded-full bg-[#F0EDE7] text-[#8A8078] whitespace-nowrap">
-                  {app.badge}
-                </span>
-              </div>
-              <p className="text-sm text-[#8A8078] leading-relaxed flex-1">{app.description}</p>
-              <div className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-[#A01829] group-hover:underline">
-                Learn more
-                <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
-              </div>
-            </Link>
-          </motion.div>
-        ))}
+      <p className="text-sm text-[#8A8078] leading-relaxed max-w-[220px] mb-5">
+        Companion apps and software to elevate your playing experience.
+      </p>
+
+      <div className="flex items-center gap-2 mb-8">
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A01829] opacity-60" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-[#A01829]" />
+        </span>
+        <span className="text-[11px] font-medium tracking-wide text-[#B8AFA6]">More details coming soon</span>
       </div>
 
-      {/* Bottom ornament */}
-      <div className="flex items-center gap-3 mt-10 w-full max-w-[260px] mx-auto">
+      <Link
+        href="/pianos"
+        onClick={onClose}
+        className={cn(
+          'group inline-flex items-center gap-2.5 px-6 py-2.5',
+          'border border-[#2C2C2C] rounded-full',
+          'text-xs font-semibold tracking-[0.12em] uppercase text-[#2C2C2C]',
+          'hover:bg-[#2C2C2C] hover:text-white transition-all duration-200'
+        )}
+      >
+        Explore Pianos
+        <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+      </Link>
+
+      {/* Ornamental rule */}
+      <div className="flex items-center gap-3 mt-8 w-full max-w-[260px]">
         <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#D5C78C]" />
         <div className="w-1 h-1 rounded-full bg-[#D5C78C]" />
         <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#D5C78C]" />

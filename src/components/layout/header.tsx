@@ -12,6 +12,7 @@ import { CartIcon } from '@/components/cart/CartIcon'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { ProductsMegaMenu } from '@/components/navigation/ProductsMegaMenu'
 import { ResourcesMegaMenu } from '@/components/navigation/ResourcesMegaMenu'
+import type { ResourceLink } from '@/components/layout/header-dynamic'
 import { RegisterPianoModal } from '@/components/navigation/RegisterPianoModal'
 import { NewsMegaMenu } from '@/components/navigation/NewsMegaMenu'
 import { SearchBar } from '@/components/search/SearchBar'
@@ -390,6 +391,7 @@ interface HeaderProps {
   latestPosts?: LatestPost[]
   registerConfig?: RegisterConfig
   quickLinks?: QuickLink[]
+  resourceLinks?: ResourceLink[]
   autoMinimize?: boolean
 }
 
@@ -409,7 +411,7 @@ const defaultNavigation: NavigationItem[] = [
   // Resources has been moved to ResourcesMegaMenu - rendered separately below
 ]
 
-export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isUniversityPage = false, isFindADealerPage = false, newsItems = [], latestPosts = [], registerConfig, quickLinks = [], autoMinimize = true }: HeaderProps) {
+export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isUniversityPage = false, isFindADealerPage = false, newsItems = [], latestPosts = [], registerConfig, quickLinks = [], resourceLinks, autoMinimize = true }: HeaderProps) {
   const pathname = usePathname()
   const isOnFindADealerPage = isFindADealerPage || pathname.startsWith('/find-a-dealer')
   const [isMounted, setIsMounted] = useState(false)
@@ -1396,6 +1398,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
           bannerImageUrl={registerConfig?.bannerImageUrl ?? null}
           bannerTitle={registerConfig?.bannerTitle ?? null}
           bannerDescription={registerConfig?.bannerDescription ?? null}
+          {...(resourceLinks !== undefined && { resourceLinks })}
           isHeaderScrolled={isScrolled}
         />
       </div>

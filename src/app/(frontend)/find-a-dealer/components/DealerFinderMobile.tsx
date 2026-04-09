@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useMemo } from 'react'
+import { motion } from 'framer-motion'
 import type { Dealer } from '@/payload-types'
 import type { DealerWithDistance } from '../types'
 import { DealerMapLibre } from './DealerMapLibre'
@@ -8,7 +9,7 @@ import { SearchBar } from './SearchBar'
 import { FilterPanel } from './FilterPanel'
 import { cn } from '@/lib/utils'
 import { calculateDistance } from '@/lib/utils/dealer-search'
-import { MapPin, SlidersHorizontal, Map, List, Piano, Briefcase, Star, X, Search } from 'lucide-react'
+import { MapPin, SlidersHorizontal, Map, List, Piano, Briefcase, Star, X } from 'lucide-react'
 
 interface Props {
   dealers: DealerWithDistance[]
@@ -19,16 +20,14 @@ type ViewMode = 'map' | 'list'
 
 export function DealerFinderMobile({ dealers }: Props) {
   const [searchLocation, setSearchLocation] = useState<{ lat: number; lng: number } | null>(null)
-  const [searchAddress, setSearchAddress] = useState<string>('')
   const [selectedRadius, setSelectedRadius] = useState(25)
   const [selectedDealerTypes, setSelectedDealerTypes] = useState<string[]>([])
   const [selectedDealer, setSelectedDealer] = useState<string | null>(null)
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const [viewMode, setViewMode] = useState<ViewMode>('map')
+  const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [dealerTypeFilter, setDealerTypeFilter] = useState<DealerTypeFilter>('all')
   const [dealerSheetOpen, setDealerSheetOpen] = useState(false)
   const [searchResults, setSearchResults] = useState<DealerWithDistance[]>([])
-  const [searchExpanded, setSearchExpanded] = useState(false)
 
   // Calculate dealer type counts
   const dealerCounts = useMemo(() => {
@@ -43,12 +42,10 @@ export function DealerFinderMobile({ dealers }: Props) {
 
   // Filter and sort dealers
   const filteredDealers: DealerWithDistance[] = useMemo(() => {
-    // Start with search results if available, otherwise all dealers
     let result = searchResults.length > 0
       ? searchResults.map(dealer => ({ ...dealer }))
       : dealers.map(dealer => ({ ...dealer }))
 
-    // Filter by dealer type pill
     if (dealerTypeFilter === 'shigeru') {
       result = result.filter(dealer => dealer.shigeruKawaiDealer === true)
     } else if (dealerTypeFilter === 'acoustic') {
@@ -57,7 +54,6 @@ export function DealerFinderMobile({ dealers }: Props) {
       result = result.filter(dealer => dealer.digitalPianoDealer === true)
     }
 
-    // Apply advanced filters
     if (selectedDealerTypes.length > 0) {
       result = result.filter(dealer =>
         selectedDealerTypes.some(type => {
@@ -69,7 +65,6 @@ export function DealerFinderMobile({ dealers }: Props) {
       )
     }
 
-    // Calculate distances and sort when a search location is set
     if (searchLocation) {
       result = result.map(dealer => {
         if (!dealer.coordinates?.latitude || !dealer.coordinates?.longitude) return dealer
@@ -91,7 +86,6 @@ export function DealerFinderMobile({ dealers }: Props) {
         return 0
       })
     } else {
-      // Sort featured first, then alphabetically
       result.sort((a, b) => {
         if (a.isFeatured && !b.isFeatured) return -1
         if (!a.isFeatured && b.isFeatured) return 1
@@ -102,29 +96,14 @@ export function DealerFinderMobile({ dealers }: Props) {
     return result
   }, [dealers, searchResults, searchLocation, dealerTypeFilter, selectedDealerTypes])
 
-  const handleLocationSearch = useCallback((location: { lat: number; lng: number }, address: string) => {
+  const handleLocationSearch = useCallback((location: { lat: number; lng: number }, _address: string) => {
     setSearchLocation(location)
-    setSearchAddress(address)
-    // Switch to map so the user sees the result
-    setViewMode('map')
   }, [])
 
   const handleDealerSearch = useCallback((results: Dealer[], location?: { lat: number; lng: number }) => {
     setSearchResults(results as DealerWithDistance[])
-    if (location) {
-      setSearchLocation(location)
-    }
-
-    // Auto-select first result and jump to map
-    if (results.length > 0) {
-      const first = results[0]
-      if (first?.id) {
-        setSelectedDealer(first.id as string)
-        setViewMode('map')
-      }
-    } else {
-      setSelectedDealer(null)
-    }
+    if (location) setSearchLocation(location)
+    setSelectedDealer(null)
   }, [])
 
   const handleDealerSelect = useCallback((dealerId: string | null) => {
@@ -151,10 +130,35 @@ export function DealerFinderMobile({ dealers }: Props) {
       className="lg:hidden flex flex-col overflow-hidden"
       style={{ height: 'calc(100dvh - var(--header-bottom, 70px))' }}
     >
-      {/* Filter Header */}
-      <div className="flex-shrink-0 bg-white border-b border-kawai-neutral/60 shadow-sm z-30">
-        {/* Dealer Type Tabs - Horizontal Scroll */}
-        <div className="overflow-x-auto scrollbar-hide">
+      {/* SEO: H1 accessible to screen readers and crawlers */}
+      <h1 className="sr-only">Find an Authorized Kawai Piano Dealer Near You</h1>
+
+      {/* Header: Search + Filters */}
+      <div className="flex-shrink-0 bg-white border-b border-kawai-neutral/60 shadow-sm" style={{ zIndex: 30 }}>
+
+        {/* Search Bar — always visible, enters with a gentle slide */}
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+          className="px-4 pt-3.5 pb-2"
+        >
+          <SearchBar
+            dealers={dealers}
+            onSearch={handleDealerSearch}
+            onLocationSearch={handleLocationSearch}
+            onDealerSelect={handleDealerSelect}
+            variant="inline"
+          />
+        </motion.div>
+
+        {/* Dealer Type Tabs */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.35, delay: 0.12 }}
+          className="overflow-x-auto scrollbar-hide"
+        >
           <div className="flex min-w-max border-b border-kawai-neutral">
             {[
               { value: 'all' as const, label: 'All Dealers', count: dealerCounts.all },
@@ -187,10 +191,15 @@ export function DealerFinderMobile({ dealers }: Props) {
               )
             })}
           </div>
-        </div>
+        </motion.div>
 
-        {/* Filters Bar */}
-        <div className="flex items-center justify-between px-4 py-3 bg-kawai-pearl/30 border-t border-kawai-neutral/40">
+        {/* Count + Filters row */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+          className="flex items-center justify-between px-4 py-2.5 bg-kawai-pearl/30 border-t border-kawai-neutral/40"
+        >
           <div className="text-sm text-kawai-charcoal/60">
             <span className="font-semibold text-kawai-charcoal">{filteredDealers.length}</span>
             {' '}{filteredDealers.length === 1 ? 'dealer' : 'dealers'}
@@ -214,10 +223,10 @@ export function DealerFinderMobile({ dealers }: Props) {
               </span>
             )}
           </button>
-        </div>
+        </motion.div>
       </div>
 
-      {/* Main Content Area — fills remaining space */}
+      {/* Main Content Area */}
       <div className="flex-1 relative overflow-hidden min-h-0">
         {/* Map View */}
         <div
@@ -244,13 +253,19 @@ export function DealerFinderMobile({ dealers }: Props) {
         >
           {filteredDealers.length > 0 ? (
             <div className="p-4 space-y-3 pb-24">
-              {filteredDealers.map(dealer => (
-                <MobileDealerCard
+              {filteredDealers.map((dealer, i) => (
+                <motion.div
                   key={dealer.id}
-                  dealer={dealer}
-                  isSelected={selectedDealer === dealer.id}
-                  onSelect={() => handleDealerSelect(dealer.id as string)}
-                />
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: Math.min(i * 0.03, 0.3), ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <MobileDealerCard
+                    dealer={dealer}
+                    isSelected={selectedDealer === dealer.id}
+                    onSelect={() => handleDealerSelect(dealer.id as string)}
+                  />
+                </motion.div>
               ))}
             </div>
           ) : (
@@ -263,7 +278,7 @@ export function DealerFinderMobile({ dealers }: Props) {
                   No dealers found
                 </h3>
                 <p className="text-kawai-charcoal/60 text-sm mb-6">
-                  Try adjusting your filters or search in a different area.
+                  Try adjusting your filters or searching a different area.
                 </p>
                 <button
                   onClick={() => {
@@ -283,57 +298,11 @@ export function DealerFinderMobile({ dealers }: Props) {
         </div>
       </div>
 
-      {/* Floating Search — FAB when idle, full bar when expanded */}
-      {searchExpanded ? (
-        <div className="fixed bottom-24 left-0 right-0 z-40 px-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setSearchExpanded(false)}
-              className="flex-shrink-0 w-12 h-12 rounded-2xl bg-white/95 border border-kawai-neutral/50 shadow-lg flex items-center justify-center active:scale-95 transition-transform"
-              aria-label="Close search"
-            >
-              <X className="w-5 h-5 text-kawai-charcoal/60" strokeWidth={2} />
-            </button>
-            <div className="flex-1 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-kawai-neutral/50">
-              <SearchBar
-                dealers={dealers}
-                onSearch={handleDealerSearch}
-                onLocationSearch={handleLocationSearch}
-                autoFocus
-              />
-            </div>
-          </div>
-        </div>
-      ) : (
-        <button
-          onClick={() => setSearchExpanded(true)}
-          className="fixed bottom-24 right-4 z-40 w-14 h-14 rounded-full bg-kawai-charcoal text-white shadow-2xl flex items-center justify-center active:scale-95 transition-transform animate-in fade-in duration-200"
-          aria-label="Search dealers"
-        >
-          <Search className="w-6 h-6" strokeWidth={2} />
-        </button>
-      )}
-
-      {/* Floating Bottom Navigation - Premium Touch Target */}
+      {/* Floating Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 z-40 pb-safe">
         <div className="mx-4 mb-4">
           <div className="bg-white rounded-2xl shadow-2xl border border-kawai-neutral/60 overflow-hidden backdrop-blur-xl">
             <div className="flex">
-              <button
-                onClick={() => setViewMode('map')}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-2 py-4 font-semibold text-sm transition-all duration-200",
-                  viewMode === 'map'
-                    ? "bg-kawai-charcoal text-white"
-                    : "bg-white text-kawai-charcoal/60 active:bg-kawai-pearl/30"
-                )}
-              >
-                <Map className="w-5 h-5" strokeWidth={2.5} />
-                <span>Map</span>
-              </button>
-
-              <div className="w-px bg-kawai-neutral" />
-
               <button
                 onClick={() => setViewMode('list')}
                 className={cn(
@@ -345,6 +314,21 @@ export function DealerFinderMobile({ dealers }: Props) {
               >
                 <List className="w-5 h-5" strokeWidth={2.5} />
                 <span>List ({filteredDealers.length})</span>
+              </button>
+
+              <div className="w-px bg-kawai-neutral" />
+
+              <button
+                onClick={() => setViewMode('map')}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 py-4 font-semibold text-sm transition-all duration-200",
+                  viewMode === 'map'
+                    ? "bg-kawai-charcoal text-white"
+                    : "bg-white text-kawai-charcoal/60 active:bg-kawai-pearl/30"
+                )}
+              >
+                <Map className="w-5 h-5" strokeWidth={2.5} />
+                <span>Map</span>
               </button>
             </div>
           </div>
@@ -381,7 +365,6 @@ export function DealerFinderMobile({ dealers }: Props) {
             </div>
 
             <div className="p-6 space-y-6">
-              {/* Address */}
               {selectedDealerData.address && (
                 <div>
                   <h4 className="text-xs font-semibold text-kawai-charcoal/40 uppercase tracking-wide mb-2">
@@ -394,7 +377,6 @@ export function DealerFinderMobile({ dealers }: Props) {
                 </div>
               )}
 
-              {/* Contact */}
               <div>
                 <h4 className="text-xs font-semibold text-kawai-charcoal/40 uppercase tracking-wide mb-3">
                   Contact
@@ -423,7 +405,6 @@ export function DealerFinderMobile({ dealers }: Props) {
                 </div>
               </div>
 
-              {/* Description */}
               {selectedDealerData.description && (
                 <div>
                   <h4 className="text-xs font-semibold text-kawai-charcoal/40 uppercase tracking-wide mb-2">
