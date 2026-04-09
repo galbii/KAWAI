@@ -90,7 +90,9 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${notoSans.variable} antialiased bg-kawai-black text-kawai-pearl`}>
-        {/* GA4 Consent Mode v2 — must run before GTM so tags are held until consent */}
+        {/* GA4 Consent Mode v2 — must run before GTM so tags use the correct defaults.
+            Reads vanilla-cookieconsent's saved cookie synchronously so returning visitors
+            who already accepted don't have their pageview dropped by the 500ms race. */}
         <Script
           id="gtag-consent-defaults"
           strategy="beforeInteractive"
@@ -98,12 +100,21 @@ export default function RootLayout({
             __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
+
+              // Read vanilla-cookieconsent's saved cookie (cc_cookie) synchronously.
+              // This runs before GTM so returning visitors get correct consent immediately.
+              var _ccCookie = (document.cookie.match(/(?:^|;\\s*)cc_cookie=([^;]*)/) || [])[1];
+              var _ccData = null;
+              try { _ccData = _ccCookie ? JSON.parse(decodeURIComponent(_ccCookie)) : null; } catch(e) {}
+              var _analyticsAccepted = _ccData && Array.isArray(_ccData.categories) && _ccData.categories.indexOf('analytics') !== -1;
+              var _marketingAccepted = _ccData && Array.isArray(_ccData.categories) && _ccData.categories.indexOf('marketing') !== -1;
+
               gtag('consent', 'default', {
-                'ad_storage': 'denied',
-                'ad_user_data': 'denied',
-                'ad_personalization': 'denied',
-                'analytics_storage': 'denied',
-                'wait_for_update': 500
+                'ad_storage':          _marketingAccepted ? 'granted' : 'denied',
+                'ad_user_data':        _marketingAccepted ? 'granted' : 'denied',
+                'ad_personalization':  _marketingAccepted ? 'granted' : 'denied',
+                'analytics_storage':   _analyticsAccepted ? 'granted' : 'denied',
+                'wait_for_update':     _ccData ? 0 : 2000
               });
             `,
           }}
