@@ -376,37 +376,14 @@ export function ProductHeroBlock({
   // Buy button logic - buyButton field removed from Product schema, use layout setting only
   const shouldShowBuyButton = showBuyButton
 
-  // Check if product tracks inventory
-  // Priority: Shopify variant's inventoryTracked field > CMS trackStock field
-  const tracksInventory = (() => {
-    // If we have Shopify product data and a selected variant, use the variant's inventoryTracked field
-    if (shopifyProduct && selectedVariant) {
-      return selectedVariant.inventoryTracked ?? false
-    }
-
-    // Fallback to CMS field (default to false if not set)
-    return product.inventory?.trackStock ?? false
-  })()
-
-  // NEW: Unified rendering condition for Add to Cart functionality
+  // Unified rendering condition for Add to Cart functionality.
+  // Uses Shopify's standard availableForSale signal (selectedVariant.available).
   // CRITICAL: This condition is used by BOTH the hero button AND the floating button
-  // to ensure consistent behavior across the page
-  const shouldShowAddToCart = () => {
-    // Must have Shopify product data
-    if (!shopifyProduct) return false
+  // to ensure consistent behavior across the page.
+  const canAddToCart = !!shopifyProduct && !!selectedVariant && selectedVariant.available
 
-    // Must have a selected variant
-    if (!selectedVariant) return false
-
-    // Must track inventory AND variant must be available
-    // (If inventory not tracked, show "Find a Dealer" instead)
-    return tracksInventory && selectedVariant.available
-  }
-
-  const canAddToCart = shouldShowAddToCart()
-
-  // True when inventory is tracked but the selected variant is specifically unavailable (not just untracked)
-  const isOutOfStock = tracksInventory && !!selectedVariant && !selectedVariant.available
+  // True when Shopify data exists but the selected variant is out of stock
+  const isOutOfStock = !!shopifyProduct && !!selectedVariant && !selectedVariant.available
 
   // Helper to get Shopify variant price for a CMS variation
   const getVariationPrice = (variationName: string) => {
@@ -555,10 +532,9 @@ export function ProductHeroBlock({
   // CONSOLIDATED: Debug log with variation image sizing and inventory tracking
   console.log('ProductHeroBlock - Debug:', {
     selectedVariation,
-    tracksInventory,
-    inventorySource: shopifyProduct && selectedVariant ? 'Shopify variant' : 'CMS field',
-    shopifyVariantTracked: selectedVariant?.inventoryTracked,
-    cmsTrackStock: product.inventory?.trackStock,
+    canAddToCart,
+    isOutOfStock,
+    shopifyVariantAvailable: selectedVariant?.available,
     displayImage: displayImage,
     displayImageType: typeof displayImage,
     displayImageUrl: typeof displayImage === 'object' ? displayImage?.url : displayImage,
@@ -807,8 +783,8 @@ export function ProductHeroBlock({
               </div>
             )}
 
-            {/* Dynamic Price Display - Only show when inventory is tracked */}
-            {variationsDisplayPrice && tracksInventory && (
+            {/* Dynamic Price Display - Show when Shopify product data is available */}
+            {variationsDisplayPrice && shopifyProduct && (
               <div className={cn("flex items-baseline gap-3", textColorClass)}>
                 <span className="text-3xl font-bold tracking-wide text-kawai-red">MSRP:</span>
                 {variationsDisplayPrice.type === 'single' ? (
@@ -932,125 +908,43 @@ export function ProductHeroBlock({
                   </>
                 ) : (
                   <div className="w-full flex flex-col gap-2">
-                    {/* Out of stock notice - only when inventory is tracked but variant is unavailable */}
                     {isOutOfStock && (
                       <p className="text-xs text-gray-400 text-center tracking-wide">
-                        {product?.backorder
-                          ? 'Available for backorder.'
-                          : 'Out of stock. Contact an Authorized Dealer.'}
+                        Out of stock. Contact an Authorized Dealer.
                       </p>
                     )}
 
-                    {isOutOfStock && product?.backorder && selectedVariant ? (
-                      /* Backorder: Add to Cart + Find a Dealer side-by-side, Buy now text link below */
-                      <>
-                        <div className="flex flex-col sm:flex-row gap-3">
-                          {/* Add to Cart — available forced true so backorder items can be added */}
-                          <AddToCartButton
-                            variantId={selectedVariant.id}
-                            quantity={1}
-                            available={true}
-                            className={cn(
-                              "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
-                              "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/20"
-                            )}
-                            onSuccess={() => {
-                              trackAddToCart({
-                                blockType: 'product-hero',
-                                blockData: { ctaTracking: ctaTracking ?? undefined },
-                                productName: product?.name || '',
-                                variantId: selectedVariant.id,
-                                variantName: selectedVariation >= 0 ? allVariations[selectedVariation]?.name ?? null : null,
-                                price: selectedVariant.price,
-                                currency: shopifyProduct?.price.currency ?? 'USD',
-                                productId: shopifyProduct?.handle ?? null,
-                                productCategory: shopifyProduct?.type ?? null,
-                                additionalProps: { button_type: 'backorder_add_to_cart' },
-                              })
-                            }}
-                          >
-                            Add to Cart
-                          </AddToCartButton>
-
-                          {/* Find a Dealer — outline */}
-                          <Button
-                            asChild
-                            className={cn(
-                              "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
-                              "border-2 border-gray-300 bg-white hover:bg-gray-50 text-gray-900 hover:border-gray-400"
-                            )}
-                          >
-                            <Link
-                              href="/find-a-dealer"
-                              onClick={() => trackCTAClick({
-                                blockType: 'product-hero',
-                                blockData: { ctaTracking: ctaTracking ?? undefined },
-                                ctaText: 'Find a Dealer',
-                                destination: '/find-a-dealer',
-                                additionalProps: {
-                                  product_name: product?.name,
-                                  product_slug: product?.slug,
-                                  button_type: 'find_a_dealer',
-                                  reason: 'backorder',
-                                },
-                              })}
-                            >
-                              <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
-                                <span>Find a Dealer</span>
-                                <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                                </svg>
-                              </span>
-                            </Link>
-                          </Button>
-                        </div>
-
-                        {/* Buy now — underlined text link, triggers checkout */}
-                        <button
-                          onClick={handleBuyNow}
-                          disabled={buyNowLoading}
-                          className={cn(
-                            "text-xs underline text-center opacity-60 hover:opacity-100 transition-opacity duration-200 disabled:cursor-not-allowed",
-                            textColorClass
-                          )}
-                        >
-                          {buyNowLoading ? 'Loading...' : 'Buy now'}
-                        </button>
-                      </>
-                    ) : (
-                      /* Default: Find a Dealer only — covers no-Shopify-data and non-backorder out-of-stock */
-                      <Button
-                        asChild
-                        className={cn(
-                          "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full",
-                          "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/20"
-                        )}
+                    <Button
+                      asChild
+                      className={cn(
+                        "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full",
+                        "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/20"
+                      )}
+                    >
+                      <Link
+                        href="/find-a-dealer"
+                        onClick={() => trackCTAClick({
+                          blockType: 'product-hero',
+                          blockData: { ctaTracking: ctaTracking ?? undefined },
+                          ctaText: 'Find a Local Dealer Near You',
+                          destination: '/find-a-dealer',
+                          additionalProps: {
+                            product_name: product?.name,
+                            product_slug: product?.slug,
+                            button_type: 'find_a_dealer',
+                            reason: isOutOfStock ? 'out_of_stock' : 'no_ecommerce',
+                          },
+                        })}
                       >
-                        <Link
-                          href="/find-a-dealer"
-                          onClick={() => trackCTAClick({
-                            blockType: 'product-hero',
-                            blockData: { ctaTracking: ctaTracking ?? undefined },
-                            ctaText: 'Find a Dealer',
-                            destination: '/find-a-dealer',
-                            additionalProps: {
-                              product_name: product?.name,
-                              product_slug: product?.slug,
-                              button_type: 'find_a_dealer',
-                              reason: isOutOfStock ? 'out_of_stock' : 'no_ecommerce',
-                            },
-                          })}
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
-                            <span>Find a Dealer</span>
-                            <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                            </svg>
-                          </span>
-                        </Link>
-                      </Button>
-                    )}
+                        <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
+                          <span>Find a Local Dealer Near You</span>
+                          <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        </span>
+                      </Link>
+                    </Button>
                   </div>
                 )}
               </div>

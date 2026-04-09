@@ -709,26 +709,6 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading }: 
 
   return (
     <div ref={containerRef} className="min-h-screen bg-kawai-pearl">
-      {/* ── Page H1 — SEO anchor; ghost text treatment keeps it visually light ── */}
-      {pageHeading && (
-        <div className="relative overflow-hidden h-20 select-none pointer-events-none" aria-hidden="false">
-          <h1
-            className="absolute inset-0 flex items-center px-6"
-            style={{
-              fontFamily: 'var(--font-brand-luxury)',
-              fontWeight: 700,
-              fontSize: 'clamp(3.5rem, 12vw, 10rem)',
-              lineHeight: 1,
-              letterSpacing: '-0.03em',
-              color: 'transparent',
-              WebkitTextStroke: '1px rgba(30,27,22,0.07)',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {pageHeading}
-          </h1>
-        </div>
-      )}
 
       {/* ── Mobile filter sheet ──────────────────────────────────── */}
       <MobileFilterSheet
@@ -743,7 +723,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading }: 
         onClearAll={clearAll}
       />
 
-      {/* ── Sticky filter bar — in document flow, sticks to header ── */}
+      {/* ── Sticky header — H1 zone + controls ── */}
       <div
         className="sticky z-40 bg-white border-b border-kawai-neutral shadow-sm"
         style={{ top: 'var(--header-bottom, 70px)' }}
@@ -753,41 +733,33 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading }: 
           {/* ── Desktop layout ───────────────────────────────────── */}
           <div className="hidden md:flex items-center h-14 gap-5">
 
-            {/* "Our Products" heading */}
-            <span
-              className="text-[1.35rem] text-kawai-black flex-shrink-0 whitespace-nowrap leading-none"
-              style={{ fontFamily: 'var(--font-brand-luxury)', fontWeight: 400, letterSpacing: '-0.01em' }}
-            >
-              Our Products
-            </span>
-
-            {/* Divider */}
-            <div className="h-4 w-px bg-kawai-neutral flex-shrink-0" />
-
             {/* Search — minimal underline */}
-            <div className="relative group flex-1 max-w-[200px]">
+            <div className="relative group w-52">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <Search size={14} className="text-kawai-charcoal/50" />
+              </div>
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search models…"
                 className={cn(
-                  'w-full bg-transparent border-0 border-b pb-1.5 pt-1 text-sm',
-                  'text-kawai-black placeholder:text-kawai-charcoal/35',
+                  'w-full h-9 bg-white pl-8 pr-8 text-sm rounded-sm',
+                  'text-kawai-black placeholder:text-kawai-charcoal/50',
                   'focus:outline-none focus:ring-0 font-[family-name:var(--font-brand-sans)]',
-                  'transition-colors duration-200',
-                  search ? 'border-kawai-black' : 'border-kawai-neutral group-hover:border-kawai-charcoal/50',
+                  'transition-colors duration-200 border',
+                  search ? 'border-kawai-black' : 'border-kawai-neutral hover:border-kawai-charcoal',
                 )}
               />
-              <div className="absolute right-0 bottom-1.5">
-                {search ? (
-                  <button onClick={() => setSearch('')} className="text-kawai-charcoal/40 hover:text-kawai-black transition-colors" aria-label="Clear search">
-                    <X size={12} />
-                  </button>
-                ) : (
-                  <Search size={12} className="text-kawai-charcoal/30" />
-                )}
-              </div>
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-kawai-charcoal/50 hover:text-kawai-black transition-colors"
+                  aria-label="Clear search"
+                >
+                  <X size={13} />
+                </button>
+              )}
             </div>
 
             {/* Spacer */}
@@ -801,7 +773,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading }: 
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 3 }}
                 transition={{ duration: 0.15 }}
-                className="text-xs text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] whitespace-nowrap tabular-nums"
+                className="text-xs font-medium text-kawai-charcoal font-[family-name:var(--font-brand-sans)] whitespace-nowrap tabular-nums"
               >
                 {filtered.length} {filtered.length === 1 ? 'instrument' : 'instruments'}
               </motion.span>
@@ -814,15 +786,15 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading }: 
                 aria-expanded={isFiltersOpen}
                 aria-haspopup="true"
                 className={cn(
-                  'flex items-center gap-2 h-8 px-4 text-xs uppercase tracking-[0.12em]',
-                  'border transition-all duration-200 font-[family-name:var(--font-brand-sans)]',
+                  'flex items-center gap-2 h-9 px-4 text-xs uppercase tracking-[0.12em] font-semibold',
+                  'border-2 transition-all duration-200 font-[family-name:var(--font-brand-sans)]',
                   'focus-visible:outline-2 focus-visible:outline-kawai-red',
                   isFiltersOpen || activeFilterCount > 0
                     ? 'bg-kawai-black border-kawai-black text-white'
-                    : 'border-kawai-neutral text-kawai-charcoal hover:border-kawai-charcoal',
+                    : 'border-kawai-charcoal text-kawai-charcoal hover:border-kawai-black hover:text-kawai-black',
                 )}
               >
-                <SlidersHorizontal size={12} />
+                <SlidersHorizontal size={14} />
                 <span>Filters</span>
                 <AnimatePresence>
                   {activeFilterCount > 0 && (
@@ -967,7 +939,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading }: 
             </div>
 
             {/* Divider */}
-            <div className="h-4 w-px bg-kawai-neutral flex-shrink-0" />
+            <div className="h-5 w-px bg-kawai-charcoal/25 flex-shrink-0" />
 
             {/* Sort */}
             <div className="relative flex-shrink-0">
@@ -975,8 +947,8 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading }: 
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
                 className={cn(
-                  'appearance-none text-xs bg-transparent border-0 border-b border-kawai-neutral pb-1 pr-4',
-                  'text-kawai-charcoal focus:outline-none focus:ring-0 cursor-pointer',
+                  'appearance-none h-9 bg-white border border-kawai-neutral pl-3 pr-8 text-xs font-medium',
+                  'text-kawai-charcoal focus:outline-none focus:ring-0 cursor-pointer rounded-sm',
                   'font-[family-name:var(--font-brand-sans)] hover:border-kawai-charcoal transition-colors',
                 )}
               >
@@ -984,7 +956,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading }: 
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
-              <ChevronDown size={9} className="absolute right-0 bottom-1.5 text-kawai-charcoal/35 pointer-events-none" />
+              <ChevronDown size={11} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-kawai-charcoal/60 pointer-events-none" />
             </div>
           </div>
 

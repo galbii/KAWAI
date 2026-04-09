@@ -613,26 +613,6 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
 
   return (
     <div ref={containerRef} className="min-h-screen bg-kawai-pearl">
-      {/* ── Page H1 — SEO anchor; ghost text treatment keeps it visually light ── */}
-      {(heading ?? category) && (
-        <div className="relative overflow-hidden h-20 select-none pointer-events-none" aria-hidden="false">
-          <h1
-            className="absolute inset-0 flex items-center px-6"
-            style={{
-              fontFamily: 'var(--font-brand-luxury)',
-              fontWeight: 700,
-              fontSize: 'clamp(3.5rem, 12vw, 10rem)',
-              lineHeight: 1,
-              letterSpacing: '-0.03em',
-              color: 'transparent',
-              WebkitTextStroke: '1px rgba(30,27,22,0.07)',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {heading ?? (category ? category.charAt(0).toUpperCase() + category.slice(1) + ' Pianos' : '')}
-          </h1>
-        </div>
-      )}
 
       {/* ── Mobile filter sheet ──────────────────────────────────── */}
       <MobileFilterSheet
@@ -646,7 +626,7 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
         onClearAll={clearAll}
       />
 
-      {/* ── Sticky filter bar — in document flow, sticks to header ── */}
+      {/* ── Sticky header — H1 zone + controls ── */}
       <div
         className="sticky z-40 bg-white border-b border-kawai-neutral shadow-sm"
         style={{ top: 'var(--header-bottom, 70px)' }}
@@ -654,56 +634,47 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
         <div className="max-w-7xl mx-auto px-6">
 
           {/* ── Desktop layout ───────────────────────────────────── */}
-          <div className="hidden md:flex items-center h-16 gap-6">
-            {/* Left: heading + back link, or spacer */}
+          <div className="hidden md:flex items-center h-14 gap-6">
+            {/* Left: back link */}
             {(heading ?? category) ? (
-              <div className="flex flex-col justify-center mr-auto">
-                <Link
-                  href="/pianos"
-                  className="inline-flex items-center gap-1 text-xs text-kawai-charcoal/50 hover:text-kawai-red transition-colors font-[family-name:var(--font-brand-sans)] leading-none mb-0.5"
-                >
-                  <span>←</span>
-                  <span>All Pianos</span>
-                </Link>
-                <span
-                  className="text-lg text-kawai-black font-[family-name:var(--font-brand-luxury)] leading-tight"
-                  style={{ fontWeight: 400 }}
-                >
-                  {heading ?? (category ? category.charAt(0).toUpperCase() + category.slice(1) + ' Pianos' : '')}
-                </span>
-              </div>
+              <Link
+                href="/pianos"
+                className="inline-flex items-center gap-1.5 text-xs text-kawai-charcoal/50 hover:text-kawai-red transition-colors font-[family-name:var(--font-brand-sans)] mr-auto flex-shrink-0"
+              >
+                <span>←</span>
+                <span>All Pianos</span>
+              </Link>
             ) : (
               <div className="flex-1" />
             )}
 
             {/* Search */}
-            <div className="relative w-72 group">
+            <div className="relative w-64 group">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <Search size={14} className="text-kawai-charcoal/50" />
+              </div>
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by model or name…"
                 className={cn(
-                  'w-full bg-transparent border-0 border-b pb-2 pt-1 text-sm',
-                  'text-kawai-black placeholder:text-kawai-charcoal/40',
+                  'w-full h-9 bg-white pl-8 pr-8 text-sm rounded-sm border',
+                  'text-kawai-black placeholder:text-kawai-charcoal/50',
                   'focus:outline-none focus:ring-0 font-[family-name:var(--font-brand-sans)]',
                   'transition-colors duration-200',
-                  search ? 'border-kawai-black' : 'border-kawai-neutral group-hover:border-kawai-charcoal',
+                  search ? 'border-kawai-black' : 'border-kawai-neutral hover:border-kawai-charcoal',
                 )}
               />
-              <div className="absolute right-0 bottom-2">
-                {search ? (
-                  <button
-                    onClick={() => setSearch('')}
-                    className="text-kawai-charcoal/50 hover:text-kawai-black transition-colors"
-                    aria-label="Clear search"
-                  >
-                    <X size={13} />
-                  </button>
-                ) : (
-                  <Search size={13} className="text-kawai-charcoal/40" />
-                )}
-              </div>
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-kawai-charcoal/50 hover:text-kawai-black transition-colors"
+                  aria-label="Clear search"
+                >
+                  <X size={13} />
+                </button>
+              )}
             </div>
 
             {/* Results count */}
@@ -714,19 +685,22 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 4 }}
                 transition={{ duration: 0.18 }}
-                className="text-sm text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)] whitespace-nowrap"
+                className="text-xs font-medium text-kawai-charcoal font-[family-name:var(--font-brand-sans)] whitespace-nowrap"
               >
                 {filtered.length} {filtered.length === 1 ? 'instrument' : 'instruments'}
               </motion.span>
             </AnimatePresence>
 
+            {/* Divider */}
+            <div className="h-5 w-px bg-kawai-charcoal/25 flex-shrink-0" />
+
             {/* Sort */}
-            <div className="relative">
+            <div className="relative flex-shrink-0">
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
                 className={cn(
-                  'appearance-none text-sm bg-transparent border-0 border-b border-kawai-neutral pb-1 pr-5',
+                  'appearance-none h-9 bg-white border border-kawai-neutral pl-3 pr-8 text-xs font-medium rounded-sm',
                   'text-kawai-charcoal focus:outline-none focus:ring-0 cursor-pointer',
                   'font-[family-name:var(--font-brand-sans)] hover:border-kawai-charcoal transition-colors',
                 )}
@@ -735,7 +709,7 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
-              <ChevronDown size={10} className="absolute right-0 bottom-2 text-kawai-charcoal/40 pointer-events-none" />
+              <ChevronDown size={11} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-kawai-charcoal/60 pointer-events-none" />
             </div>
           </div>
 

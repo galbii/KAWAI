@@ -221,7 +221,8 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, onDealerSelect,
       onDealerSelect?.(result.id)
     }
 
-    setTimeout(() => inputRef.current?.focus(), 0)
+    // Dismiss the mobile keyboard on selection
+    inputRef.current?.blur()
   }, [dealers, onSearch, onLocationSearch, onDealerSelect])
 
   const handleLocationSelect = useCallback((prediction: NominatimResult) => {
@@ -253,7 +254,8 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, onDealerSelect,
 
     onSearch(sorted, { lat, lng })
     onLocationSearch({ lat, lng }, prediction.display_name)
-    setTimeout(() => inputRef.current?.focus(), 0)
+    // Dismiss the mobile keyboard on selection
+    inputRef.current?.blur()
   }, [dealers, onSearch, onLocationSearch, searchInput])
 
   const handleUseMyLocation = useCallback(() => {

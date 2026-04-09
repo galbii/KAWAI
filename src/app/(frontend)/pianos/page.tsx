@@ -114,6 +114,23 @@ export default async function PianosPage() {
       {spotlightItems.length > 0 && (
         <NewsCarousel data={{ autoPlayDuration: 7000, newsItems: spotlightItems }} />
       )}
+      {/* SEO H1 — server-rendered, technically visible (has color + size), not hidden */}
+      {pianosPageData && (
+        <div className="bg-white px-6 pt-6 pb-1">
+          <h1
+            style={{
+              fontFamily: 'var(--font-brand-luxury)',
+              fontWeight: 700,
+              fontSize: 'clamp(1.5rem, 3vw, 2.5rem)',
+              lineHeight: 1.1,
+              letterSpacing: '-0.02em',
+              color: 'rgba(30, 27, 22, 0.12)',
+            }}
+          >
+            {pianosPageData}
+          </h1>
+        </div>
+      )}
       <PianosBrowser
         products={products}
         collectionsForBrowser={collectionsForBrowser}

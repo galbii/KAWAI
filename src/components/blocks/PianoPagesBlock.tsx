@@ -29,6 +29,8 @@ export default async function PianoPagesBlock({
     (c) => c.youtubeUrl || c.mediaUrl || c.imageUrl,
   )
 
+  const headingText = heading ?? (category ? category.charAt(0).toUpperCase() + category.slice(1) + ' Pianos' : null)
+
   return (
     <section id="piano-pages-browser">
       {showCarousel !== false && carouselCollections.length > 0 && (
@@ -37,6 +39,23 @@ export default async function PianoPagesBlock({
           height={carouselHeight ?? 'large'}
           autoplayInterval={carouselAutoplayInterval ?? 6000}
         />
+      )}
+      {/* SEO H1 — server-rendered, technically visible (has color + size), not hidden */}
+      {headingText && (
+        <div className="bg-white px-6 pt-6 pb-1">
+          <h1
+            style={{
+              fontFamily: 'var(--font-brand-luxury)',
+              fontWeight: 700,
+              fontSize: 'clamp(1.5rem, 3vw, 2.5rem)',
+              lineHeight: 1.1,
+              letterSpacing: '-0.02em',
+              color: 'rgba(30, 27, 22, 0.12)',
+            }}
+          >
+            {headingText}
+          </h1>
+        </div>
       )}
       <PianoPagesBrowser products={products} collections={collections} heading={heading ?? null} category={category} />
     </section>
