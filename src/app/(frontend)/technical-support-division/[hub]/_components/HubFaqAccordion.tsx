@@ -28,6 +28,89 @@ interface HubFaqAccordionProps {
   allQuestions: string[]
 }
 
+function FaqAccordionItem({
+  faq,
+  isOpen,
+  onToggle,
+  hubPath,
+  groupName,
+}: {
+  faq: FaqItem
+  isOpen: boolean
+  onToggle: () => void
+  hubPath: string
+  groupName?: string | undefined
+}) {
+  return (
+    <div className="relative border-b border-black/[0.08] last:border-0 group/item bg-white hover:bg-kawai-pearl transition-colors duration-300">
+      {/* Red left accent bar — grows on hover */}
+      <div className="absolute left-0 top-0 w-[2px] h-0 bg-kawai-red group-hover/item:h-full transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]" />
+
+      <button
+        onClick={() => {
+          if (!isOpen) {
+            fetch('/api/faq-view', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: faq.id }),
+            }).catch(() => {})
+          }
+          onToggle()
+        }}
+        className="w-full text-left py-8 pl-5 group/btn transition-colors duration-300"
+        aria-expanded={isOpen}
+      >
+        <p className="text-xs text-kawai-red font-[family-name:var(--font-brand-sans)] tracking-wide mb-2 opacity-0 group-hover/item:opacity-100 transition-opacity duration-300">
+          kawaius.com &rsaquo; {hubPath}{groupName ? ` \u203a ${groupName}` : ''}
+        </p>
+        <p className="text-xl md:text-2xl font-light text-kawai-black group-hover/item:translate-x-1 transition-transform duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] font-[family-name:var(--font-brand-serif)] leading-snug">
+          {faq.question}
+        </p>
+        {faq.excerpt && !isOpen && (
+          <p className="text-sm text-kawai-black/40 group-hover/item:text-kawai-black/60 mt-2 line-clamp-2 font-[family-name:var(--font-brand-sans)] leading-relaxed transition-colors duration-300">
+            {faq.excerpt}
+          </p>
+        )}
+      </button>
+
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="ml-5 border-l-2 border-l-kawai-red pl-6 pr-2 py-5 mb-6 bg-black/[0.02]">
+              {faq.excerpt ? (
+                <p className="text-kawai-black/80 text-base leading-relaxed mb-5 font-[family-name:var(--font-brand-sans)]">
+                  {faq.excerpt}
+                </p>
+              ) : (
+                <p className="text-kawai-black/30 text-base italic mb-5 font-[family-name:var(--font-brand-sans)]">
+                  No preview available.
+                </p>
+              )}
+              {faq.slug && (
+                <Link
+                  href={`/faq/${faq.slug}`}
+                  className="inline-flex items-center gap-2 text-kawai-red text-sm font-medium font-[family-name:var(--font-brand-sans)] hover:gap-3 transition-all duration-200"
+                >
+                  Read full answer
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
 export function HubFaqAccordion({ groups, hubLabel, featuredFaqs, allQuestions }: HubFaqAccordionProps) {
   const [openId, setOpenId] = useState<string | null>(null)
   const [activeCategory, setActiveCategory] = useState<string | null>('__popular__')
@@ -41,47 +124,70 @@ export function HubFaqAccordion({ groups, hubLabel, featuredFaqs, allQuestions }
 
   if (groups.length === 0) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}
-        className="py-32 text-center max-w-5xl mx-auto px-6"
-      >
-        <p className="text-kawai-black font-medium text-lg mb-2 font-[family-name:var(--font-brand-sans)]">
-          Coming soon
-        </p>
-        <p className="text-kawai-black/60 text-sm font-[family-name:var(--font-brand-sans)]">
-          Support articles are on their way.
-        </p>
-      </motion.div>
+      <div className="bg-white">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="py-32 text-center max-w-5xl mx-auto px-6"
+        >
+          <p className="text-kawai-black font-medium text-lg mb-2 font-[family-name:var(--font-brand-sans)]">
+            Coming soon
+          </p>
+          <p className="text-kawai-black/60 text-sm font-[family-name:var(--font-brand-sans)]">
+            Support articles are on their way.
+          </p>
+        </motion.div>
+      </div>
     )
   }
 
+  // Flatten FAQs for 3-column display
+  const displayFaqs: FaqItem[] =
+    activeCategory === '__popular__'
+      ? featuredFaqs
+      : visibleGroups.flatMap((g) => g.faqs)
+
+  // Build a map of faq id → group name for breadcrumbs
+  const faqGroupMap = new Map<string, string>()
+  for (const g of visibleGroups) {
+    for (const f of g.faqs) {
+      faqGroupMap.set(f.id, g.categoryName)
+    }
+  }
+
+  // Distribute evenly into 3 columns
+  const total = displayFaqs.length
+  const col1End = Math.ceil(total / 3)
+  const col2End = Math.ceil((total * 2) / 3)
+  const faqColumns = [
+    displayFaqs.slice(0, col1End),
+    displayFaqs.slice(col1End, col2End),
+    displayFaqs.slice(col2End),
+  ]
+
   return (
-    <div>
-      {/* SECTION 1 — CYCLING QUESTIONS "People also ask" */}
+    <div className="bg-white">
+      {/* CYCLING QUESTIONS */}
       <CyclingQuestions questions={allQuestions} />
 
-      {/* SECTION 2 — CATEGORY FILTER TABS */}
+      {/* CATEGORY FILTER TABS */}
       {groups.length > 0 && (
-        <div className="max-w-7xl mx-auto px-8 md:px-16 border-b border-kawai-black/[0.08]">
+        <div className="max-w-screen-2xl mx-auto px-10 md:px-20 xl:px-28 border-b border-black/[0.08]">
           <div className="flex items-end overflow-x-auto scrollbar-none">
-            {/* Popular — far left */}
             {featuredFaqs.length > 0 && (
               <button
                 onClick={() => setActiveCategory('__popular__')}
                 className={cn(
                   'flex-shrink-0 text-base font-medium px-6 py-5 border-b-2 transition-all duration-200 font-[family-name:var(--font-brand-sans)] tracking-wide whitespace-nowrap',
                   activeCategory === '__popular__'
-                    ? 'border-b-kawai-red text-kawai-black bg-kawai-black/[0.04]'
-                    : 'border-b-transparent text-kawai-black/70 hover:text-kawai-black hover:border-b-kawai-black/20 bg-transparent',
+                    ? 'border-b-kawai-red text-kawai-black bg-black/[0.03]'
+                    : 'border-b-transparent text-kawai-black/60 hover:text-kawai-black hover:border-b-black/20 bg-transparent',
                 )}
               >
                 Popular
               </button>
             )}
-
-            {/* Category tabs */}
             {groups.map((group) => (
               <button
                 key={group.categorySlug}
@@ -89,23 +195,21 @@ export function HubFaqAccordion({ groups, hubLabel, featuredFaqs, allQuestions }
                 className={cn(
                   'flex-shrink-0 text-base font-medium px-6 py-5 border-b-2 transition-all duration-200 font-[family-name:var(--font-brand-sans)] tracking-wide whitespace-nowrap',
                   activeCategory === group.categorySlug
-                    ? 'border-b-kawai-red text-kawai-black bg-kawai-black/[0.04]'
-                    : 'border-b-transparent text-kawai-black/70 hover:text-kawai-black hover:border-b-kawai-black/20 bg-transparent',
+                    ? 'border-b-kawai-red text-kawai-black bg-black/[0.03]'
+                    : 'border-b-transparent text-kawai-black/60 hover:text-kawai-black hover:border-b-black/20 bg-transparent',
                 )}
               >
-                {group.categoryName}{' '}
-                <span className="opacity-30 ml-1.5">{group.faqs.length}</span>
+                {group.categoryName}
+                <span className="opacity-30 ml-1.5 text-sm">{group.faqs.length}</span>
               </button>
             ))}
-
-            {/* All — pushed to far right */}
             <button
               onClick={() => setActiveCategory(null)}
               className={cn(
                 'flex-shrink-0 ml-auto text-base font-medium px-6 py-5 border-b-2 transition-all duration-200 font-[family-name:var(--font-brand-sans)] tracking-wide whitespace-nowrap',
                 activeCategory === null
-                  ? 'border-b-kawai-red text-kawai-black bg-kawai-black/[0.04]'
-                  : 'border-b-transparent text-kawai-black/70 hover:text-kawai-black hover:border-b-kawai-black/20 bg-transparent',
+                  ? 'border-b-kawai-red text-kawai-black bg-black/[0.03]'
+                  : 'border-b-transparent text-kawai-black/60 hover:text-kawai-black hover:border-b-black/20 bg-transparent',
               )}
             >
               All
@@ -114,174 +218,35 @@ export function HubFaqAccordion({ groups, hubLabel, featuredFaqs, allQuestions }
         </div>
       )}
 
-      {/* SECTION 3 — POPULAR QUESTIONS (shown when Popular tab active) */}
-      {featuredFaqs.length > 0 && activeCategory === '__popular__' && (
-        <div className="max-w-7xl mx-auto px-8 md:px-16 pt-20 pb-8">
-          <div className="flex items-center gap-6 mb-12">
-            <span className="text-[10px] font-semibold tracking-[0.45em] uppercase text-kawai-black/60 whitespace-nowrap font-[family-name:var(--font-brand-sans)]">
-              Popular Questions
-            </span>
-            <div className="flex-1 h-px bg-kawai-black/[0.07]" />
+      {/* 3-COLUMN FAQ GRID */}
+      <div className="max-w-screen-2xl mx-auto px-10 md:px-20 xl:px-28 py-16 pb-32">
+        {displayFaqs.length === 0 ? (
+          <p className="text-kawai-black/40 text-base font-[family-name:var(--font-brand-sans)] py-16 text-center">
+            No articles in this category yet.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-16 items-start">
+            {faqColumns.map((colFaqs, colIdx) => (
+              <div key={colIdx}>
+                {colFaqs.map((faq) => (
+                  <FaqAccordionItem
+                    key={faq.id}
+                    faq={faq}
+                    isOpen={openId === faq.id}
+                    onToggle={() => setOpenId(openId === faq.id ? null : faq.id)}
+                    hubPath={hubPath}
+                    groupName={
+                      activeCategory === '__popular__'
+                        ? faq.categories?.[0]?.name
+                        : faqGroupMap.get(faq.id)
+                    }
+                  />
+                ))}
+              </div>
+            ))}
           </div>
-
-          {featuredFaqs.map((faq, i) => {
-            const isOpen = openId === faq.id
-            const cat = faq.categories?.[0]
-            return (
-              <motion.div
-                key={faq.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: i * 0.07, ease: [0.25, 0.46, 0.45, 0.94] }}
-                className="border-b border-kawai-black/[0.08] last:border-0"
-              >
-                <button
-                  onClick={() => setOpenId(isOpen ? null : faq.id)}
-                  className="w-full text-left py-10 group/btn"
-                  aria-expanded={isOpen}
-                >
-                  <p className="text-2xl md:text-3xl lg:text-4xl font-light text-kawai-black group-hover/btn:text-kawai-black transition-colors duration-200 font-[family-name:var(--font-brand-serif)] mb-3 leading-snug">
-                    {faq.question}
-                  </p>
-                  <p className="text-xs text-kawai-red/40 font-[family-name:var(--font-brand-sans)] tracking-wide">
-                    kawaius.com &rsaquo; {hubPath}{cat ? ` \u203a ${cat.name}` : ''}
-                  </p>
-                  {faq.excerpt && !isOpen && (
-                    <p className="text-base text-kawai-black mt-3 line-clamp-1 font-[family-name:var(--font-brand-sans)] leading-relaxed">
-                      {faq.excerpt}
-                    </p>
-                  )}
-                </button>
-
-                <AnimatePresence initial={false}>
-                  {isOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-                      className="overflow-hidden"
-                    >
-                      <div className="bg-[#F5F3F0] border-l-[3px] border-l-kawai-red/50 px-10 py-9 mb-6">
-                        {faq.excerpt ? (
-                          <p className="text-kawai-black text-lg leading-relaxed mb-6 font-[family-name:var(--font-brand-sans)]">
-                            {faq.excerpt}
-                          </p>
-                        ) : (
-                          <p className="text-kawai-black/30 text-lg italic mb-6 font-[family-name:var(--font-brand-sans)]">
-                            No preview available.
-                          </p>
-                        )}
-                        {faq.slug && (
-                          <Link
-                            href={`/faq/${faq.slug}`}
-                            className="inline-flex items-center gap-2 text-kawai-red text-base font-medium font-[family-name:var(--font-brand-sans)] hover:gap-3 transition-all duration-200"
-                          >
-                            Read full answer
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                            </svg>
-                          </Link>
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            )
-          })}
-        </div>
-      )}
-
-      {/* SECTION 4 — GROUPED RESULTS (hidden when Popular tab active) */}
-      {activeCategory !== '__popular__' && <div className="max-w-7xl mx-auto px-8 md:px-16 pb-40">
-        {visibleGroups.map((group, gi) => (
-          <motion.section
-            key={group.categorySlug}
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-40px' }}
-            transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className={gi > 0 ? 'pt-20' : 'pt-14'}
-          >
-            <div className="flex items-center gap-6 mb-10">
-              <span className="text-[10px] font-semibold tracking-[0.45em] uppercase text-kawai-black/60 whitespace-nowrap font-[family-name:var(--font-brand-sans)]">
-                {group.categoryName}
-              </span>
-              <div className="flex-1 h-px bg-kawai-black/[0.07]" />
-              <span className="text-xs text-kawai-black/50 font-[family-name:var(--font-brand-sans)]">
-                {group.faqs.length}
-              </span>
-            </div>
-
-            {group.faqs.map((faq, fi) => {
-              const isOpen = openId === faq.id
-              return (
-                <motion.div
-                  key={faq.id}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.28, delay: fi * 0.04, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  className="border-b border-kawai-black/[0.07] last:border-0"
-                >
-                  <button
-                    onClick={() => setOpenId(isOpen ? null : faq.id)}
-                    className="w-full text-left py-9 group/btn"
-                    aria-expanded={isOpen}
-                  >
-                    <p className="text-2xl md:text-3xl font-light text-kawai-black group-hover/btn:text-kawai-black transition-colors duration-200 font-[family-name:var(--font-brand-serif)] mb-3 leading-snug">
-                      {faq.question}
-                    </p>
-                    <p className="text-xs text-kawai-red/35 font-[family-name:var(--font-brand-sans)] tracking-wide">
-                      kawaius.com &rsaquo; {hubPath} &rsaquo; {group.categoryName}
-                    </p>
-                    {faq.excerpt && !isOpen && (
-                      <p className="text-base text-kawai-black mt-3 line-clamp-1 font-[family-name:var(--font-brand-sans)] leading-relaxed">
-                        {faq.excerpt}
-                      </p>
-                    )}
-                  </button>
-
-                  <AnimatePresence initial={false}>
-                    {isOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-                        className="overflow-hidden"
-                      >
-                        <div className="bg-[#F5F3F0] border-l-[3px] border-l-kawai-red/50 px-10 py-9 mb-6">
-                          {faq.excerpt ? (
-                            <p className="text-kawai-black text-lg leading-relaxed mb-6 font-[family-name:var(--font-brand-sans)]">
-                              {faq.excerpt}
-                            </p>
-                          ) : (
-                            <p className="text-kawai-black/30 text-lg italic mb-6 font-[family-name:var(--font-brand-sans)]">
-                              No preview available.
-                            </p>
-                          )}
-                          {faq.slug && (
-                            <Link
-                              href={`/faq/${faq.slug}`}
-                              className="inline-flex items-center gap-2 text-kawai-red text-base font-medium font-[family-name:var(--font-brand-sans)] hover:gap-3 transition-all duration-200"
-                            >
-                              Read full answer
-                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                              </svg>
-                            </Link>
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              )
-            })}
-          </motion.section>
-        ))}
-      </div>}
+        )}
+      </div>
     </div>
   )
 }

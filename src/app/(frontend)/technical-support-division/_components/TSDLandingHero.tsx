@@ -68,14 +68,14 @@ function TypingAnimation() {
 
 export function TSDLandingHero({ groups }: { groups: GroupWindow[] }) {
   return (
-    <div className="min-h-screen bg-kawai-pearl flex flex-col items-center justify-center px-6 py-24">
+    <div className="min-h-screen bg-kawai-pearl flex flex-col items-center justify-center px-6 py-32">
 
       {/* Support Center eyebrow — moved above cards */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className="flex items-center gap-4 mb-14"
+        className="flex items-center gap-4 mb-16"
       >
         <div className="h-px w-12 bg-kawai-red/40" />
         <p className="text-[10px] text-kawai-black/60 tracking-[0.5em] uppercase font-medium font-[family-name:var(--font-brand-sans)]">
@@ -85,14 +85,14 @@ export function TSDLandingHero({ groups }: { groups: GroupWindow[] }) {
       </motion.div>
 
       {/* Hub Cards — full-width architectural panels */}
-      <div className={`grid grid-cols-1 gap-px w-full mb-20 border border-kawai-black/[0.08] mx-auto ${
+      <div className={`grid grid-cols-1 gap-px w-full mb-24 border border-kawai-black/[0.08] mx-auto ${
         groups.length === 1
-          ? 'md:grid-cols-1 max-w-sm'
+          ? 'md:grid-cols-1 max-w-2xl'
           : groups.length === 2
-            ? 'md:grid-cols-2 max-w-4xl'
+            ? 'md:grid-cols-2 max-w-5xl'
             : groups.length === 4
-              ? 'md:grid-cols-4 max-w-7xl'
-              : 'md:grid-cols-3 max-w-7xl'
+              ? 'md:grid-cols-4 max-w-screen-2xl'
+              : 'md:grid-cols-3 max-w-screen-2xl'
       }`}>
         {groups.map((win, index) => (
           <motion.div
@@ -108,7 +108,7 @@ export function TSDLandingHero({ groups }: { groups: GroupWindow[] }) {
           >
             <Link
               href={win.href}
-              className="group relative flex flex-col h-full min-h-[400px] md:min-h-[460px] overflow-hidden
+              className="group relative flex flex-col h-full min-h-[500px] md:min-h-[580px] overflow-hidden
                 bg-white
                 border-r border-kawai-black/[0.08] last:border-r-0
                 hover:bg-[#F0EDE8]
@@ -120,7 +120,7 @@ export function TSDLandingHero({ groups }: { groups: GroupWindow[] }) {
               {/* Oversized ghost number — architectural backdrop */}
               <span
                 aria-hidden
-                className="absolute right-[-0.1em] bottom-[-0.15em] text-[11rem] md:text-[14rem] font-bold leading-none select-none
+                className="absolute right-[-0.1em] bottom-[-0.15em] text-[14rem] md:text-[18rem] font-bold leading-none select-none
                   text-kawai-black/[0.04] group-hover:text-kawai-black/[0.07]
                   font-[family-name:var(--font-brand-sans)]
                   transition-colors duration-700"
@@ -128,7 +128,7 @@ export function TSDLandingHero({ groups }: { groups: GroupWindow[] }) {
                 {String(index + 1)}
               </span>
 
-              <div className="relative flex flex-col flex-1 p-8 md:p-10 lg:p-12">
+              <div className="relative flex flex-col flex-1 p-10 md:p-12 lg:p-16">
 
                 {/* Small index tag */}
                 <div className="flex items-center gap-3 mb-auto">
@@ -139,10 +139,10 @@ export function TSDLandingHero({ groups }: { groups: GroupWindow[] }) {
                 </div>
 
                 {/* Main content — pushed to bottom */}
-                <div className="mt-16 md:mt-20">
+                <div className="mt-20 md:mt-24">
 
                   {/* Heading — large editorial serif */}
-                  <h2 className="text-4xl md:text-[2.8rem] lg:text-[3.2rem] font-light leading-[1.05] tracking-tight
+                  <h2 className="text-5xl md:text-[3.2rem] lg:text-[3.8rem] xl:text-[4.5rem] font-light leading-[1.05] tracking-tight
                     text-kawai-black group-hover:text-kawai-black
                     font-[family-name:var(--font-brand-serif)]
                     transition-colors duration-500 whitespace-pre-line">
@@ -150,17 +150,17 @@ export function TSDLandingHero({ groups }: { groups: GroupWindow[] }) {
                   </h2>
 
                   {/* Animated red rule */}
-                  <div className="mt-5 h-px w-6 bg-kawai-red/30 group-hover:w-14 group-hover:bg-kawai-red/70 transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]" />
+                  <div className="mt-6 h-px w-6 bg-kawai-red/30 group-hover:w-14 group-hover:bg-kawai-red/70 transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]" />
 
                   {/* Description */}
-                  <p className="mt-5 text-sm text-kawai-black group-hover:text-kawai-black leading-relaxed
+                  <p className="mt-6 text-base text-kawai-black group-hover:text-kawai-black leading-relaxed
                     font-[family-name:var(--font-brand-sans)]
-                    transition-colors duration-500 whitespace-pre-line max-w-[26ch]">
+                    transition-colors duration-500 whitespace-pre-line max-w-[28ch]">
                     {win.description}
                   </p>
 
                   {/* Enter CTA */}
-                  <div className="mt-8 flex items-center gap-2 overflow-hidden">
+                  <div className="mt-10 flex items-center gap-2 overflow-hidden">
                     <span className="text-[11px] text-kawai-red/0 group-hover:text-kawai-red
                       font-[family-name:var(--font-brand-sans)] font-semibold tracking-[0.25em] uppercase
                       transition-colors duration-300">
@@ -189,7 +189,7 @@ export function TSDLandingHero({ groups }: { groups: GroupWindow[] }) {
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.55, duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className="max-w-2xl w-full"
+        className="max-w-3xl w-full"
       >
         <FaqSearch variant="hero" placeholder="Search for answers, guides, manuals…" />
       </motion.div>

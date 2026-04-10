@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { TSDLandingHero } from './_components/TSDLandingHero'
-import { getPayloadClient } from '@/lib/payload/queries'
+import { PopularFaqLinks } from './_components/PopularFaqLinks'
+import { getPayloadClient, getPopularFaqsGlobal } from '@/lib/payload/queries'
 
 export const revalidate = 3600
 
@@ -35,7 +35,7 @@ const jsonLd = {
 export default async function TSDLandingPage() {
   const payload = await getPayloadClient()
 
-  const [{ docs: supportGroups }, { docs: popularFaqs }] = await Promise.all([
+  const [{ docs: supportGroups }, popularFaqs] = await Promise.all([
     payload.find({
       collection: 'support-groups',
       where: { isActive: { equals: true } },
@@ -44,14 +44,7 @@ export default async function TSDLandingPage() {
       depth: 0,
       limit: 20,
     }),
-    payload.find({
-      collection: 'faqs',
-      where: { status: { equals: 'published' } },
-      select: { question: true, slug: true, excerpt: true, supportHub: true },
-      depth: 0,
-      limit: 6,
-      sort: '-publishedDate',
-    }),
+    getPopularFaqsGlobal(),
   ])
 
   const groups = supportGroups.map((g) => ({
@@ -70,34 +63,12 @@ export default async function TSDLandingPage() {
       <TSDLandingHero groups={groups} />
 
       {popularFaqs.length > 0 && (
-        <section className="bg-kawai-pearl pb-16">
-          <div className="max-w-2xl mx-auto px-6">
-            <p className="text-[10px] text-kawai-black/60 tracking-[0.35em] uppercase font-medium mb-5 font-[family-name:var(--font-brand-sans)]">
+        <section className="bg-kawai-pearl pb-24">
+          <div className="max-w-3xl mx-auto px-8">
+            <p className="text-[10px] text-kawai-black/60 tracking-[0.35em] uppercase font-medium mb-6 font-[family-name:var(--font-brand-sans)]">
               Popular Questions
             </p>
-            <ul className="space-y-0">
-              {popularFaqs.map((faq) => (
-                <li key={faq.id} className="border-b border-kawai-black/[0.08] last:border-0">
-                  <Link
-                    href={`/faq/${faq.slug}`}
-                    className="group flex items-center justify-between py-3.5 gap-4 transition-colors duration-150"
-                  >
-                    <span className="text-sm text-kawai-black group-hover:text-kawai-black font-[family-name:var(--font-brand-sans)] transition-colors duration-150 leading-snug">
-                      {faq.question}
-                    </span>
-                    <svg
-                      className="w-3.5 h-3.5 text-kawai-black/20 group-hover:text-kawai-red flex-shrink-0 transition-colors duration-150 group-hover:translate-x-0.5 transition-transform"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <PopularFaqLinks faqs={popularFaqs} />
           </div>
         </section>
       )}

@@ -1461,6 +1461,64 @@ export function getFaqsByHub(hub: string, categorySlug?: string) {
 }
 
 /**
+ * Top 10 most-viewed FAQs for a specific hub (sorted by viewCount desc).
+ * Short 5-min TTL — view counts update via /api/faq-view with skipRevalidation,
+ * so this cache refreshes on its own schedule rather than on every increment.
+ */
+export function getPopularFaqsByHub(hub: string) {
+  return unstable_cache(
+    async () => {
+      const payload = await getPayloadClient()
+
+      const groupResult = await payload.find({
+        collection: 'support-groups',
+        where: { slug: { equals: hub } },
+        depth: 0,
+        limit: 1,
+      })
+      const groupId = groupResult.docs[0]?.id
+      if (!groupId) return []
+
+      const result = await payload.find({
+        collection: 'faqs',
+        where: {
+          status: { equals: 'published' },
+          group: { equals: groupId },
+        },
+        sort: '-viewCount',
+        depth: 1,
+        limit: 10,
+        select: { question: true, slug: true, excerpt: true, categories: true, viewCount: true },
+      })
+      return result.docs
+    },
+    [`popular-faqs-hub-${hub}`],
+    { tags: ['faqs', `tsd-hub-${hub}`], revalidate: 300 }
+  )()
+}
+
+/**
+ * Top 10 most-viewed FAQs globally across all hubs.
+ * Used on the TSD landing page. Short 5-min TTL.
+ */
+export const getPopularFaqsGlobal = unstable_cache(
+  async () => {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'faqs',
+      where: { status: { equals: 'published' } },
+      sort: '-viewCount',
+      depth: 0,
+      limit: 10,
+      select: { question: true, slug: true, excerpt: true },
+    })
+    return result.docs
+  },
+  ['popular-faqs-global'],
+  { tags: ['faqs'], revalidate: 300 }
+)
+
+/**
  * Get all FAQ categories assigned to a specific TSD hub, sorted by displayOrder.
  */
 export function getFaqCategoriesByHub(hub: string) {
