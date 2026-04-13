@@ -14,7 +14,7 @@ interface FormFieldProps {
   disabled?: boolean
   icon?: React.ComponentType<{ className?: string }>
   helpText?: string
-  error?: FieldError | string
+  error?: FieldError | string | undefined
   register?: UseFormRegister<any>
   className?: string
   inputClassName?: string
