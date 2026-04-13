@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import type { MarketingI2LBlock, Media } from '@/payload-types'
 import { cn } from '@/lib/utils'
 import { getImagePropsWithFallback } from '@/lib/fallbacks/media'
-import { Button } from '@/components/ui/button'
 import { trackVideoInteraction, trackCTAClick, trackBlockImpression } from '@/lib/analytics/unified-tracking'
 
 interface MarketingI2LRendererProps extends MarketingI2LBlock {}
@@ -186,16 +185,16 @@ export function MarketingI2LRenderer({
   }, [enableKeyboardNav, goToPrevious, goToNext])
 
   return (
-    <section ref={sectionRef} className={cn('py-16 sm:py-24 lg:py-32', currentTheme.bg)}>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+    <section ref={sectionRef} className={cn('py-24 sm:py-32 lg:py-40', currentTheme.bg)}>
+      <div className="container mx-auto px-6 sm:px-8 lg:px-12 max-w-[1440px]">
         {/* Kawai Logo */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isVisible ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7 }}
-          className="flex flex-col items-center mb-8 lg:mb-12"
+          className="flex flex-col items-center mb-12 lg:mb-20"
         >
-          <div className="relative w-48 h-12 sm:w-56 sm:h-14 lg:w-64 lg:h-16 mb-4">
+          <div className="relative w-56 h-14 sm:w-64 sm:h-16 lg:w-80 lg:h-20 mb-6">
             <Image
               src="/images/logos/kawai-logo-red-2x.png"
               alt="Kawai Piano"
@@ -205,20 +204,20 @@ export function MarketingI2LRenderer({
             />
           </div>
           {subheading && (
-            <p className={cn('text-center text-sm sm:text-base lg:text-lg max-w-3xl', currentTheme.textMuted)}>
+            <p className={cn('text-center text-base sm:text-lg lg:text-xl max-w-3xl', currentTheme.textMuted)}>
               {subheading}
             </p>
           )}
         </motion.div>
 
-        {/* Main Content Grid - Matches PianoCollection layout exactly */}
-        <div className="grid lg:grid-cols-3 gap-8 lg:gap-12 items-start">
+        {/* Main Content Grid */}
+        <div className="grid lg:grid-cols-5 gap-10 lg:gap-16 items-center">
           {/* Left Column: Current Video Info */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={isVisible ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7 }}
-            className="lg:col-span-1 order-2 lg:order-1 min-w-0"
+            className="lg:col-span-2 order-2 lg:order-1 min-w-0"
           >
             <AnimatePresence mode="wait">
               {currentVideo && (
@@ -229,50 +228,21 @@ export function MarketingI2LRenderer({
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.5 }}
                 >
-                  {/* Section Label / Category Badge - matches PianoCollection spacing */}
-                  <div className={cn('text-xs font-medium tracking-[0.2em] uppercase mb-4 sm:mb-6', currentTheme.sectionLabel)}>
+                  {/* Section Label / Category Badge */}
+                  <div className={cn('text-xs font-semibold tracking-[0.25em] uppercase mb-5 sm:mb-7', currentTheme.sectionLabel)}>
                     {currentVideo.eyebrowText || sectionLabel || 'Instrumental To Life'}
                   </div>
 
-                  {/* Title - matches PianoCollection spacing */}
-                  <h2 className={cn('text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-light font-serif leading-tight mb-6 sm:mb-8', currentTheme.text)}>
+                  {/* Title */}
+                  <h2 className={cn('text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-light font-serif leading-tight mb-6 sm:mb-8', currentTheme.text)}>
                     {currentVideo.title}
                   </h2>
 
-                  {/* Description - matches PianoCollection spacing */}
+                  {/* Description */}
                   {currentVideo.description && (
-                    <p className={cn('text-lg sm:text-xl md:text-2xl leading-relaxed mb-8 sm:mb-12', currentTheme.textMuted)}>
+                    <p className={cn('text-base sm:text-lg md:text-xl leading-relaxed', currentTheme.textMuted)}>
                       {currentVideo.description}
                     </p>
-                  )}
-
-                  {/* Per-Video CTA Button */}
-                  {currentVideo.ctaText && currentVideo.ctaUrl && (
-                    <div className="mt-8 sm:mt-10">
-                      <Button
-                        variant={(currentVideo.ctaVariant as 'default' | 'outline') || 'default'}
-                        size="lg"
-                        asChild
-                        className="min-w-[180px] shadow-lg"
-                      >
-                        <Link
-                          href={currentVideo.ctaUrl}
-                          target={currentVideo.ctaOpenInNewTab ? '_blank' : undefined}
-                          rel={currentVideo.ctaOpenInNewTab ? 'noopener noreferrer' : undefined}
-                          onClick={() => {
-                            trackCTAClick({
-                              blockType: 'marketing-i2l',
-                              blockData: { ctaTracking: (currentVideo as any)?.ctaTracking },
-                              ctaText: currentVideo?.ctaText || '',
-                              destination: currentVideo?.ctaUrl || '',
-                              additionalProps: { video_title: currentVideo?.title, video_category: currentVideo?.category },
-                            })
-                          }}
-                        >
-                          {currentVideo.ctaText}
-                        </Link>
-                      </Button>
-                    </div>
                   )}
                 </motion.div>
               )}
@@ -281,7 +251,7 @@ export function MarketingI2LRenderer({
             {/* Thumbnail Carousel in Left Column - Only show if more than 1 video */}
             {videos.length > 1 && (
               <div
-                className="w-full mt-0 overflow-x-auto scrollbar-hide scroll-smooth"
+                className="w-full mt-8 overflow-x-auto scrollbar-hide scroll-smooth"
                 style={{
                   scrollbarWidth: 'none',
                   msOverflowStyle: 'none',
@@ -289,7 +259,7 @@ export function MarketingI2LRenderer({
               >
                 <div
                   ref={thumbnailsRef}
-                  className="flex gap-2 p-1"
+                  className="flex gap-3 p-1"
                 >
                   {videos.map((video, index) => {
                     const thumbYoutubeId = extractYouTubeId(video.youtubeUrl || '')
@@ -306,10 +276,10 @@ export function MarketingI2LRenderer({
                         key={index}
                         onClick={() => goToIndex(index)}
                         className={cn(
-                          'relative flex-shrink-0 w-20 h-12 rounded-md overflow-hidden transition-all duration-300 border-2',
+                          'relative flex-shrink-0 w-24 h-[54px] rounded-md overflow-hidden transition-all duration-300 border-2',
                           index === currentIndex
-                            ? currentTheme.thumbnailActive + ' ring-2 ring-kawai-red ring-offset-2 scale-105'
-                            : currentTheme.thumbnailBorder + ' hover:scale-105 opacity-60 hover:opacity-100'
+                            ? 'border-kawai-red ring-2 ring-kawai-red ring-offset-2 ring-offset-transparent scale-105'
+                            : currentTheme.thumbnailBorder + ' hover:scale-105 opacity-50 hover:opacity-100'
                         )}
                       >
                         {thumbnailUrl && (
@@ -318,7 +288,7 @@ export function MarketingI2LRenderer({
                             alt={video.title || `Video ${index + 1}`}
                             fill
                             className="object-cover"
-                            sizes="80px"
+                            sizes="96px"
                           />
                         )}
 
@@ -343,6 +313,66 @@ export function MarketingI2LRenderer({
                 </div>
               </div>
             )}
+
+            {/* CTA Buttons - Below thumbnail carousel */}
+            {currentVideo && (currentVideo.ctaText || (currentVideo as any).secondaryCtaText) && (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`cta-${currentIndex}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.4 }}
+                  className="flex flex-wrap items-center gap-4 mt-10"
+                >
+                  {/* Primary CTA */}
+                  {currentVideo.ctaText && currentVideo.ctaUrl && (
+                    <Link
+                      href={currentVideo.ctaUrl}
+                      target={currentVideo.ctaOpenInNewTab ? '_blank' : undefined}
+                      rel={currentVideo.ctaOpenInNewTab ? 'noopener noreferrer' : undefined}
+                      onClick={() => {
+                        trackCTAClick({
+                          blockType: 'marketing-i2l',
+                          blockData: { ctaTracking: (currentVideo as any)?.ctaTracking },
+                          ctaText: currentVideo?.ctaText || '',
+                          destination: currentVideo?.ctaUrl || '',
+                          additionalProps: { video_title: currentVideo?.title, video_category: currentVideo?.category },
+                        })
+                      }}
+                      className={cn(
+                        'inline-flex items-center gap-3 px-8 py-4 text-sm font-semibold tracking-wide uppercase transition-all duration-300 rounded-sm',
+                        currentVideo.ctaVariant === 'outline'
+                          ? 'border-2 border-kawai-pearl text-kawai-pearl hover:bg-kawai-pearl hover:text-kawai-black'
+                          : 'bg-kawai-red text-white hover:bg-kawai-red-700 shadow-brand-red-glow hover:shadow-lg hover:-translate-y-0.5'
+                      )}
+                    >
+                      {currentVideo.ctaText}
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
+                    </Link>
+                  )}
+
+                  {/* Secondary CTA */}
+                  {(currentVideo as any).secondaryCtaText && (currentVideo as any).secondaryCtaUrl && (
+                    <Link
+                      href={(currentVideo as any).secondaryCtaUrl}
+                      target={(currentVideo as any).secondaryCtaOpenInNewTab ? '_blank' : undefined}
+                      rel={(currentVideo as any).secondaryCtaOpenInNewTab ? 'noopener noreferrer' : undefined}
+                      className={cn(
+                        'inline-flex items-center gap-3 px-8 py-4 text-sm font-semibold tracking-wide uppercase transition-all duration-300 rounded-sm border-2',
+                        theme === 'dark'
+                          ? 'border-kawai-pearl/50 text-kawai-pearl hover:border-kawai-pearl hover:bg-kawai-pearl hover:text-kawai-black'
+                          : 'border-kawai-black/30 text-kawai-black hover:border-kawai-black hover:bg-kawai-black hover:text-kawai-pearl'
+                      )}
+                    >
+                      {(currentVideo as any).secondaryCtaText}
+                    </Link>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            )}
           </motion.div>
 
           {/* Right Column: Video Player */}
@@ -350,7 +380,7 @@ export function MarketingI2LRenderer({
             initial={{ opacity: 0, x: 30 }}
             animate={isVisible ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.2 }}
-            className="lg:col-span-2 relative order-1 lg:order-2 min-w-0"
+            className="lg:col-span-3 relative order-1 lg:order-2 min-w-0"
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
@@ -358,7 +388,7 @@ export function MarketingI2LRenderer({
             {/* Video Container with Navigation Arrows */}
             <div className="relative group w-full max-w-full">
               {/* YouTube Embed - Using aspect-video for proper 16:9 ratio */}
-              <div className="relative w-full max-w-full aspect-video rounded-lg shadow-2xl overflow-hidden bg-kawai-black">
+              <div className="relative w-full max-w-full aspect-video rounded-xl shadow-brand-premium overflow-hidden bg-kawai-black">
                 <AnimatePresence mode="wait">
                   {youtubeId && (
                     <motion.iframe
@@ -383,10 +413,10 @@ export function MarketingI2LRenderer({
                   {/* Left Arrow */}
                   <button
                     onClick={goToPrevious}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 hover:bg-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-lg z-10"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-kawai-black/70 hover:bg-kawai-red border border-white/20 hover:border-kawai-red rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-lg z-10 backdrop-blur-sm"
                     aria-label="Previous video"
                   >
-                    <svg className="w-6 h-6 text-kawai-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
@@ -394,10 +424,10 @@ export function MarketingI2LRenderer({
                   {/* Right Arrow */}
                   <button
                     onClick={goToNext}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 hover:bg-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-lg z-10"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-kawai-black/70 hover:bg-kawai-red border border-white/20 hover:border-kawai-red rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-lg z-10 backdrop-blur-sm"
                     aria-label="Next video"
                   >
-                    <svg className="w-6 h-6 text-kawai-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
                   </button>

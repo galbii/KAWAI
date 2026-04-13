@@ -13,6 +13,7 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { AdminBarDoc } from '@/components/layout/AdminBarDoc'
 import { getPayloadClient } from '@/lib/payload/queries'
+import { getSite, getSiteUrl, getSiteAlternates } from '@/lib/site-context'
 
 // Use ISR (Incremental Static Regeneration) for better SEO and performance
 // Pages are statically generated and revalidated every 1 hour
@@ -35,7 +36,8 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
     }
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
+  const site = await getSite()
+  const siteUrl = getSiteUrl(site)
 
   const title = product.seo?.metaTitle || product.name || 'Piano Product'
   const description = product.seo?.metaDescription || product.description || ''
@@ -59,7 +61,8 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
       ? { robots: { index: false, follow: false } }
       : {}),
     alternates: {
-      canonical: `${siteUrl}/products/${slug}`
+      canonical: `${siteUrl}/products/${slug}`,
+      languages: getSiteAlternates(`/products/${slug}`),
     },
     openGraph: {
       title,

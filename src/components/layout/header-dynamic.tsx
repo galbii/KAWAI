@@ -355,9 +355,10 @@ const getLatestPosts = unstable_cache(
 
 export async function HeaderDynamic() {
   try {
-    // Get current path and dealer context from cookie
+    // Get current path, site context, and dealer context from cookie
     const [headersList, cookieStore] = await Promise.all([headers(), cookies()])
     const pathname = headersList.get('x-pathname') || ''
+    const site = headersList.get('x-site') ?? 'us'
 
     // Check if we're on a signature page (signature, signature2, or gl-10-signature)
     const isSignaturePage = pathname.endsWith('/signature') || pathname.endsWith('/signature/') ||
@@ -385,7 +386,10 @@ export async function HeaderDynamic() {
     // This eliminates the client-side flash of un-branded → dealer header.
     let locationData: DealerLocationData | null = null
 
-    if (dealerSlug) {
+    if (site === 'cad') {
+      // Canadian site — show "Canada Music" branding in the logo, no storefront-specific nav
+      locationData = { locationName: 'Canada Music', slug: '', hasMusicSchool: false }
+    } else if (dealerSlug) {
       locationData = await getDealerLocationBySlug(dealerSlug)
     }
 

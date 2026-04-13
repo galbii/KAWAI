@@ -1,7 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { getPayloadClient } from '@/lib/payload/queries'
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
+import { getSite, getSiteUrl, getSiteAlternates } from '@/lib/site-context'
 
 // Regenerate every hour so CMS changes (new blog posts, artists, dealers) appear quickly
 export const revalidate = 3600
@@ -25,6 +24,9 @@ async function getRedirectSourcePaths(): Promise<Set<string>> {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
+    const site = await getSite()
+    const SITE_URL = getSiteUrl(site)
+
     const payload = await getPayloadClient()
     const sitemap: MetadataRoute.Sitemap = []
 
@@ -36,8 +38,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // ==========================================
 
     sitemap.push(
-      { url: SITE_URL, changeFrequency: 'daily', priority: 1.0 },
-      { url: `${SITE_URL}/pianos`, changeFrequency: 'daily', priority: 0.9 },
+      { url: SITE_URL, changeFrequency: 'daily', priority: 1.0, alternates: { languages: getSiteAlternates('/') } },
+      { url: `${SITE_URL}/pianos`, changeFrequency: 'daily', priority: 0.9, alternates: { languages: getSiteAlternates('/pianos') } },
       { url: `${SITE_URL}/find-my-piano`, changeFrequency: 'weekly', priority: 0.9 },
       { url: `${SITE_URL}/piano-finder`, changeFrequency: 'weekly', priority: 0.9 },
     )
@@ -47,11 +49,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // ==========================================
 
     sitemap.push(
-      { url: `${SITE_URL}/pianos/digital`, changeFrequency: 'weekly', priority: 0.85 },
-      { url: `${SITE_URL}/pianos/grand`, changeFrequency: 'weekly', priority: 0.85 },
-      { url: `${SITE_URL}/pianos/upright`, changeFrequency: 'weekly', priority: 0.85 },
-      { url: `${SITE_URL}/pianos/hybrid`, changeFrequency: 'weekly', priority: 0.85 },
-      { url: `${SITE_URL}/pianos/shigeru-kawai`, changeFrequency: 'weekly', priority: 0.9 },
+      { url: `${SITE_URL}/pianos/digital`, changeFrequency: 'weekly', priority: 0.85, alternates: { languages: getSiteAlternates('/pianos/digital') } },
+      { url: `${SITE_URL}/pianos/grand`, changeFrequency: 'weekly', priority: 0.85, alternates: { languages: getSiteAlternates('/pianos/grand') } },
+      { url: `${SITE_URL}/pianos/upright`, changeFrequency: 'weekly', priority: 0.85, alternates: { languages: getSiteAlternates('/pianos/upright') } },
+      { url: `${SITE_URL}/pianos/hybrid`, changeFrequency: 'weekly', priority: 0.85, alternates: { languages: getSiteAlternates('/pianos/hybrid') } },
+      { url: `${SITE_URL}/pianos/shigeru-kawai`, changeFrequency: 'weekly', priority: 0.9, alternates: { languages: getSiteAlternates('/pianos/shigeru-kawai') } },
       { url: `${SITE_URL}/pianos/shigeru-kawai/sk-ex`, changeFrequency: 'monthly', priority: 0.75 },
       { url: `${SITE_URL}/pianos/digital/ca901`, changeFrequency: 'monthly', priority: 0.7 },
       { url: `${SITE_URL}/pianos/search`, changeFrequency: 'weekly', priority: 0.7 },
@@ -203,6 +205,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           lastModified: new Date(p.updatedAt),
           changeFrequency: 'weekly' as const,
           priority: p.visibility?.featured ? 0.9 : 0.7,
+          alternates: { languages: getSiteAlternates(`/products/${p.slug}`) },
         }))
 
       sitemap.push(...productRoutes)
@@ -286,6 +289,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           lastModified: new Date(d.updatedAt),
           changeFrequency: 'monthly' as const,
           priority: 0.65,
+          alternates: { languages: getSiteAlternates(`/find-a-dealer/${d.slug}`) },
         }))
 
       sitemap.push(...dealerRoutes)
@@ -312,6 +316,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: new Date(s.updatedAt),
         changeFrequency: 'monthly' as const,
         priority: 0.7,
+        alternates: { languages: getSiteAlternates(`/store/${s.slug}`) },
       }))
 
       sitemap.push(...storefrontRoutes)
@@ -393,6 +398,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           lastModified: new Date(c.updatedAt),
           changeFrequency: 'weekly' as const,
           priority: 0.75,
+          alternates: { languages: getSiteAlternates(`/pianos/${c.handle}`) },
         }))
 
       sitemap.push(...collectionRoutes)
@@ -512,10 +518,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   } catch (err) {
     console.error('❌ Sitemap: critical failure, returning fallback', err)
 
+    const fallbackUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
     return [
-      { url: SITE_URL, changeFrequency: 'daily', priority: 1.0 },
-      { url: `${SITE_URL}/pianos`, changeFrequency: 'daily', priority: 0.9 },
-      { url: `${SITE_URL}/find-a-dealer`, changeFrequency: 'weekly', priority: 0.8 },
+      { url: fallbackUrl, changeFrequency: 'daily', priority: 1.0 },
+      { url: `${fallbackUrl}/pianos`, changeFrequency: 'daily', priority: 0.9 },
+      { url: `${fallbackUrl}/find-a-dealer`, changeFrequency: 'weekly', priority: 0.8 },
     ]
   }
 }

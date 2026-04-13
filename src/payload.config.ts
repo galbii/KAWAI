@@ -84,6 +84,7 @@ import {
   ArtistsGrid,
   BlogGrid,
   BlogLatest,
+  NewsletterPopup,
   // Events blocks
   UniversityHero,
   EventOverview,
@@ -341,6 +342,7 @@ export default buildConfig({
     ArtistsGrid,
     BlogGrid,
     BlogLatest,
+    NewsletterPopup,
 
     // Events blocks
     UniversityHero,

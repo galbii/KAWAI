@@ -937,7 +937,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
               )}
 
               {/* Visit Showroom CTA - Desktop (dealer location pages, not on music school pages) */}
-              {currentLocationData && !isLoadingLocation && !isSignaturePage && !isUniversityPage && !isMusicSchoolPage && (
+              {currentLocationData && currentLocationData.slug && !isLoadingLocation && !isSignaturePage && !isUniversityPage && !isMusicSchoolPage && (
                 <motion.div
                   className="hidden xl:flex items-center"
                   initial={{ opacity: 0, x: 20 }}

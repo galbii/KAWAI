@@ -9,7 +9,7 @@ const getProductByModelCached = cache(getProductByModel)
 // Import all block components
 import { HeroBlock } from '@/components/blocks/HeroBlock'
 import { ProductShowcaseBlock } from '@/components/blocks/ProductShowcaseBlock'
-import { ProductHeroBlock } from '@/components/blocks/ProductHeroBlock'
+import { ProductHeroBlockWrapper as ProductHeroBlock } from '@/components/blocks/ProductHeroBlockWrapper'
 import { ProductDescriptionRenderer } from '@/components/blocks/product/ProductDescriptionRenderer'
 import { ProductTechnicalSpecsRenderer } from '@/components/blocks/product/ProductTechnicalSpecsRenderer'
 import { ProductFeatureSlidesRenderer } from '@/components/blocks/product/ProductFeatureSlidesRenderer'

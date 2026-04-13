@@ -1,6 +1,5 @@
 import type { MetadataRoute } from 'next'
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
+import { getSite, getSiteUrl } from '@/lib/site-context'
 
 /**
  * Robots.txt configuration for KAWAI Piano website
@@ -10,7 +9,10 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
  * - Block admin and API routes
  * - Point to sitemap for efficient crawling
  */
-export default function robots(): MetadataRoute.Robots {
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const site = await getSite()
+  const baseUrl = getSiteUrl(site)
+
   return {
     rules: [
       {
@@ -26,6 +28,6 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: `${SITE_URL}/sitemap.xml`,
+    sitemap: `${baseUrl}/sitemap.xml`,
   }
 }

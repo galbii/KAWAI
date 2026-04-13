@@ -2,7 +2,7 @@
  * RenderBlocks - Universal Block Renderer
  *
  * Dynamically renders Payload CMS blocks from the `layout` field.
- * Supports 32 block types across 6 categories.
+ * Supports 33 block types across 6 categories.
  *
  * Block Categories:
  * - Legacy (4): archive, content, mediaBlock, cta
@@ -91,11 +91,12 @@ import { PianosBrowserBlock } from './blocks/PianosBrowserBlock'
 import { ArtistsGridBlock } from './blocks/ArtistsGridBlock'
 import { BlogGridBlock } from './blocks/BlogGridBlock'
 import { BlogLatestBlock } from './blocks/BlogLatestBlock'
+import { NewsletterPopupBlock } from './blocks/NewsletterPopupBlock'
 
 // Product Blocks - Product-specific showcases
 import PianoPagesBlock from './blocks/PianoPagesBlock'
 import { ProductShowcaseBlock } from './blocks/ProductShowcaseBlock'
-import { ProductHeroBlock } from './blocks/ProductHeroBlock'
+import { ProductHeroBlockWrapper as ProductHeroBlock } from './blocks/ProductHeroBlockWrapper'
 import { ImageGalleryBlock } from './blocks/ImageGalleryBlock'
 import { FeaturesListBlock } from './blocks/FeaturesListBlock'
 import { SpecificationsBlock } from './blocks/SpecificationsBlock'
@@ -164,6 +165,7 @@ const blockComponents = {
   'marketing-artists-grid': ArtistsGridBlock,
   'marketing-blog-grid': BlogGridBlock,
   'marketing-blog-latest': BlogLatestBlock,
+  'marketing-newsletter-popup': NewsletterPopupBlock,
 
   // Events blocks (events-*)
   'events-university-hero': UniversityHeroBlock,

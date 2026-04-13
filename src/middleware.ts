@@ -60,6 +60,11 @@ export async function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-pathname', pathname)
 
+  // Detect domain — used by layouts, metadata, sitemap, and robots for site-specific rendering
+  const host = request.headers.get('host') ?? ''
+  const site = host.startsWith('cad.') ? 'cad' : 'us'
+  requestHeaders.set('x-site', site)
+
   // Check CMS-managed redirects
   // Normalize pathname by stripping trailing slash (except root "/") so that
   // /old-page/ matches a stored redirect of /old-page

@@ -988,6 +988,66 @@ Access:
 
 ---
 
+## Multi-Domain Site Context (cad.kawaius.com)
+
+The site serves two domains from a single Next.js codebase. Middleware detects the domain and sets an `x-site` header on every request.
+
+### How it works
+
+**Middleware** (`src/middleware.ts`):
+```typescript
+const host = request.headers.get('host') ?? ''
+const site = host.startsWith('cad.') ? 'cad' : 'us'
+requestHeaders.set('x-site', site)
+```
+
+**Utility** (`src/lib/site-context.ts`) — the single source of truth:
+```typescript
+import { getSite, getSiteName, getSiteUrl, getSiteAlternates } from '@/lib/site-context'
+```
+- `getSite()` — async, server-only, returns `'us' | 'cad'`
+- `getSiteName(site)` — `'Kawai America'` or `'Kawai Canada'`
+- `getSiteUrl(site)` — `'https://www.kawaius.com'` or `'https://cad.kawaius.com'`
+- `getSiteAlternates(path)` — hreflang object for `alternates.languages` in metadata
+
+### Patterns
+
+**Server Components** — call `getSite()` directly:
+```typescript
+const site = await getSite()
+if (site === 'cad') { /* Canada-specific logic */ }
+```
+
+**Already-fetched headers** (e.g. inside `HeaderDynamic` which fetches `headers()` at the top) — read directly, don't call `getSite()`:
+```typescript
+const site = headersList.get('x-site') ?? 'us'
+```
+
+**Client Components** — cannot use `getSite()`. Create a thin server wrapper that reads `getSite()` and passes `isCanada` as a prop. See `src/components/blocks/ProductHeroBlockWrapper.tsx` as the pattern.
+
+### What's already implemented
+
+| Feature | File | What changes on CAD |
+|---------|------|---------------------|
+| Page title suffix | `src/app/layout.tsx` | "Kawai Canada" instead of "Kawai America" |
+| hreflang + canonical | All `generateMetadata` in `(frontend)/` | `en-CA` / `en-US` alternates |
+| Sitemap | `src/app/sitemap.ts` | Domain-aware base URL + alternates |
+| Robots.txt | `src/app/robots.ts` | Points to correct domain's sitemap |
+| Product Hero | `src/components/blocks/ProductHeroBlockWrapper.tsx` | Hides price, Buy Now, Add to Cart; shows Find a Dealer |
+| Header branding | `src/components/layout/header-dynamic.tsx` | Shows "Canada Music" in logo |
+
+### Adding new Canada-specific behavior
+
+For server components, it's one check:
+```typescript
+const site = await getSite()
+const isCanada = site === 'cad'
+```
+
+For client components, follow the `ProductHeroBlockWrapper` pattern — server wrapper passes `isCanada` prop down.
+
+---
+
 ## Common Gotchas
 
 | Gotcha | Detail |

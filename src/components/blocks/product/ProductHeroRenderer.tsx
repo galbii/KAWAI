@@ -1,15 +1,23 @@
 import React from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import type { ProductHeroBlock } from '@/payload-types'
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
 import { cn } from '@/lib/utils'
+import { getSite } from '@/lib/site-context'
 
 interface ProductHeroRendererProps extends ProductHeroBlock {}
 
-export function ProductHeroRenderer({
+export async function ProductHeroRenderer({
   layout,
   overrides,
 }: ProductHeroRendererProps) {
+  const site = await getSite()
+  const isCanada = site === 'cad'
+
+  // On the Canadian site: never show price, always show Find a Dealer CTA
+  const showPrice = isCanada ? false : (layout?.showPrice ?? false)
+  const showBuyButton = layout?.showBuyButton ?? false
   const bgColorClasses = {
     pearl: 'bg-kawai-pearl',
     white: 'bg-white',
@@ -104,6 +112,34 @@ export function ProductHeroRenderer({
 
         {/* Thin accent rule */}
         <div className={cn('w-12 h-px mb-10', isBlack ? 'bg-white/20' : 'bg-kawai-neutral')} />
+
+        {/* CTA — Find a Dealer (Canada) or Buy button (US) */}
+        {isCanada ? (
+          <Link
+            href="/find-a-dealer"
+            className={cn(
+              'inline-flex items-center gap-2 self-start',
+              'px-8 py-4 text-sm font-semibold tracking-[0.12em] uppercase',
+              'bg-kawai-red text-white hover:bg-kawai-red-700 transition-colors duration-200'
+            )}
+          >
+            Find a Dealer
+          </Link>
+        ) : showBuyButton && (
+          <Link
+            href="/find-a-dealer"
+            className={cn(
+              'inline-flex items-center gap-2 self-start',
+              'px-8 py-4 text-sm font-semibold tracking-[0.12em] uppercase',
+              isBlack
+                ? 'bg-white text-kawai-black hover:bg-kawai-pearl'
+                : 'bg-kawai-black text-white hover:bg-kawai-charcoal',
+              'transition-colors duration-200'
+            )}
+          >
+            Contact a Dealer
+          </Link>
+        )}
       </div>
     </section>
   )

@@ -109,6 +109,7 @@ export interface Config {
     'marketing-artists-grid': MarketingArtistsGridBlock;
     'marketing-blog-grid': MarketingBlogGridBlock;
     'marketing-blog-latest': MarketingBlogLatestBlock;
+    'marketing-newsletter-popup': MarketingNewsletterPopupBlock;
     'events-university-hero': EventsUniversityHeroBlock;
     'events-event-overview': EventsEventOverviewBlock;
     'product-showcase': ProductShowcaseBlock;
@@ -4571,6 +4572,18 @@ export interface MarketingI2LBlock {
      */
     ctaOpenInNewTab?: boolean | null;
     /**
+     * Optional secondary call-to-action button displayed alongside the primary CTA. Renders as a white outline button.
+     */
+    secondaryCtaText?: string | null;
+    /**
+     * Destination URL for the secondary button. Can be internal (/artists) or external.
+     */
+    secondaryCtaUrl?: string | null;
+    /**
+     * Open the secondary CTA link in a new browser tab.
+     */
+    secondaryCtaOpenInNewTab?: boolean | null;
+    /**
      * Track video engagement and watch behavior
      */
     videoTracking?: {
@@ -6256,6 +6269,128 @@ export interface MarketingBlogLatestBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketingNewsletterPopupBlock".
+ */
+export interface MarketingNewsletterPopupBlock {
+  /**
+   * Text displayed inside the popup modal
+   */
+  content?: {
+    /**
+     * Main headline
+     */
+    heading?: string | null;
+    /**
+     * Supporting text below the headline
+     */
+    subheading?: string | null;
+    /**
+     * Privacy / trust note shown beneath the submit button
+     */
+    privacyText?: string | null;
+    /**
+     * Heading shown after successful signup
+     */
+    successHeading?: string | null;
+    /**
+     * Body text shown after successful signup
+     */
+    successMessage?: string | null;
+  };
+  /**
+   * Form fields and Shopify tagging
+   */
+  form?: {
+    /**
+     * Show a First Name input field
+     */
+    showFirstName?: boolean | null;
+    /**
+     * Make First Name required
+     */
+    firstNameRequired?: boolean | null;
+    /**
+     * Show a Last Name input field
+     */
+    showLastName?: boolean | null;
+    /**
+     * Make Last Name required
+     */
+    lastNameRequired?: boolean | null;
+    /**
+     * Placeholder text for the email input
+     */
+    emailPlaceholder?: string | null;
+    /**
+     * Label for the submit button
+     */
+    submitText?: string | null;
+    /**
+     * Comma-separated tags added to the Shopify customer. 'newsletter' and 'source-newsletter-popup' are always included.
+     */
+    customTags?: string | null;
+  };
+  /**
+   * When and how the popup appears
+   */
+  behavior?: {
+    /**
+     * Milliseconds after page load before the popup appears (0 = immediate)
+     */
+    autoShowDelay?: number | null;
+    /**
+     * Also show popup when visitor scrolls 30% down the page (whichever comes first)
+     */
+    triggerOnScroll?: boolean | null;
+    /**
+     * Store a flag in localStorage so the popup only shows once per browser session
+     */
+    showOncePerSession?: boolean | null;
+    /**
+     * Override the localStorage key used to remember dismissal. Leave blank for the default key.
+     */
+    storageKey?: string | null;
+  };
+  /**
+   * Visual style of the popup
+   */
+  appearance?: {
+    /**
+     * Color scheme for the popup
+     */
+    theme?: ('light' | 'dark' | 'red') | null;
+    /**
+     * Maximum width of the popup modal
+     */
+    size?: ('sm' | 'md' | 'lg') | null;
+  };
+  /**
+   * Configure event tracking for this block
+   */
+  tracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('lead' | 'engagement' | 'conversion') | null;
+    /**
+     * Estimated value of a newsletter signup (USD)
+     */
+    conversionValue?: number | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-newsletter-popup';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "EventsUniversityHeroBlock".
  */
 export interface EventsUniversityHeroBlock {
@@ -7623,6 +7758,7 @@ export interface Page {
     | LayoutSideNavigationBlock
     | LayoutCalendlyEmbedBlock
     | LayoutBookingModalBlock
+    | MarketingNewsletterPopupBlock
   )[];
   /**
    * SEO and metadata configuration

@@ -26,6 +26,7 @@ import {
 } from '@/lib/payload/queries'
 import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
 import type { Product } from '@/payload-types'
+import { getSite, getSiteUrl, getSiteAlternates } from '@/lib/site-context'
 
 export const revalidate = 3600
 
@@ -60,6 +61,8 @@ export async function generateStaticParams(): Promise<Array<{ category: string }
  */
 export async function generateMetadata({ params }: CategoryPageParams): Promise<Metadata> {
   const { category } = await params
+  const site = await getSite()
+  const siteUrl = getSiteUrl(site)
 
   // Category metadata
   if (isValidCategory(category)) {
@@ -67,7 +70,7 @@ export async function generateMetadata({ params }: CategoryPageParams): Promise<
     if (!categoryConfig) return { title: 'Piano Category Not Found' }
 
     const stats = getCategoryStats(category)
-    const canonicalUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/pianos/${category}`
+    const canonicalUrl = `${siteUrl}/pianos/${category}`
 
     const baseMetadata: Metadata = {
       title: categoryConfig.metaTitle,
@@ -94,7 +97,10 @@ export async function generateMetadata({ params }: CategoryPageParams): Promise<
         description: categoryConfig.metaDescription,
         images: [getCategoryHeroImage(category)],
       },
-      alternates: { canonical: canonicalUrl },
+      alternates: {
+        canonical: canonicalUrl,
+        languages: getSiteAlternates(`/pianos/${category}`),
+      },
       other: {
         'price-range': categoryConfig.priceRange,
         'piano-category': categoryConfig.name,
@@ -109,7 +115,6 @@ export async function generateMetadata({ params }: CategoryPageParams): Promise<
   // Collection metadata
   const collection = await getCollectionByHandle(category)
   if (collection) {
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
     const canonicalUrl = `${siteUrl}/pianos/${category}`
     const description =
       collection.description ||
@@ -134,7 +139,10 @@ export async function generateMetadata({ params }: CategoryPageParams): Promise<
         title: `${collection.title} — Kawai Piano`,
         description,
       },
-      alternates: { canonical: canonicalUrl },
+      alternates: {
+        canonical: canonicalUrl,
+        languages: getSiteAlternates(`/pianos/${category}`),
+      },
     }
   }
 

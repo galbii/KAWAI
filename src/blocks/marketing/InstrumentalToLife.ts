@@ -188,6 +188,43 @@ export const InstrumentalToLife: Block = {
             condition: (_, siblingData) => Boolean(siblingData?.ctaText),
           },
         },
+        {
+          name: 'secondaryCtaText',
+          type: 'text',
+          label: 'Secondary CTA Button Text',
+          required: false,
+          admin: {
+            description: 'Optional secondary call-to-action button displayed alongside the primary CTA. Renders as a white outline button.',
+            placeholder: 'Watch More',
+          },
+        },
+        {
+          name: 'secondaryCtaUrl',
+          type: 'text',
+          label: 'Secondary CTA Link URL',
+          required: false,
+          admin: {
+            description: 'Destination URL for the secondary button. Can be internal (/artists) or external.',
+            placeholder: '/artists',
+            condition: (_, siblingData) => Boolean(siblingData?.secondaryCtaText),
+          },
+          validate: (value: string | null | undefined, { siblingData }: any) => {
+            if (siblingData?.secondaryCtaText && !value) {
+              return 'Secondary CTA URL is required when secondary CTA text is provided'
+            }
+            return true
+          },
+        },
+        {
+          name: 'secondaryCtaOpenInNewTab',
+          type: 'checkbox',
+          label: 'Open Secondary Link in New Tab',
+          defaultValue: false,
+          admin: {
+            description: 'Open the secondary CTA link in a new browser tab.',
+            condition: (_, siblingData) => Boolean(siblingData?.secondaryCtaText),
+          },
+        },
         videoTrackingField(),
         ctaTrackingField(),
       ],

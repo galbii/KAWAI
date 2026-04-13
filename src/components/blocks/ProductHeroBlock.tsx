@@ -27,6 +27,7 @@ import { trackAddToCart, trackBeginCheckout, trackBlockImpression, trackCTAClick
 import type { CTATrackingConfig, BlockTrackingConfig } from '@/lib/analytics/unified-tracking'
 
 interface ProductHeroBlockProps {
+  isCanada?: boolean
   layout?: {
     imagePosition?: 'left' | 'right' | null
     backgroundColor?: 'pearl' | 'white' | 'black' | null
@@ -64,6 +65,7 @@ interface ProductHeroBlockProps {
 }
 
 export function ProductHeroBlock({
+  isCanada = false,
   layout = {},
   secondaryCta = {},
   floatingCart = {}, // NEW: Floating cart configuration
@@ -386,7 +388,7 @@ export function ProductHeroBlock({
   // Uses Shopify's standard availableForSale signal (selectedVariant.available).
   // CRITICAL: This condition is used by BOTH the hero button AND the floating button
   // to ensure consistent behavior across the page.
-  const canAddToCart = !!shopifyProduct && !!selectedVariant && selectedVariant.available
+  const canAddToCart = !isCanada && !!shopifyProduct && !!selectedVariant && selectedVariant.available
 
   // True when Shopify data exists but the selected variant is out of stock
   const isOutOfStock = !!shopifyProduct && !!selectedVariant && !selectedVariant.available
@@ -790,7 +792,7 @@ export function ProductHeroBlock({
             )}
 
             {/* Dynamic Price Display - Show when Shopify product data is available */}
-            {variationsDisplayPrice && shopifyProduct && (
+            {!isCanada && variationsDisplayPrice && shopifyProduct && (
               <div className={cn("flex items-baseline gap-3", textColorClass)}>
                 <span className="text-3xl font-bold tracking-wide text-kawai-red">MSRP:</span>
                 {variationsDisplayPrice.type === 'single' ? (
@@ -932,7 +934,7 @@ export function ProductHeroBlock({
                         onClick={() => trackCTAClick({
                           blockType: 'product-hero',
                           blockData: { ctaTracking: ctaTracking ?? undefined },
-                          ctaText: 'Find a Local Dealer Near You',
+                          ctaText: 'Find a Dealer',
                           destination: '/find-a-dealer',
                           additionalProps: {
                             product_name: product?.name,
@@ -944,7 +946,7 @@ export function ProductHeroBlock({
                       >
                         <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
-                          <span>Find a Local Dealer Near You</span>
+                          <span>Find a Dealer</span>
                           <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                           </svg>

@@ -99,12 +99,13 @@ export function KawaiLogo({
 
   // Parse dealer name into location and suffix based on navigation context
   const parseLocationText = (dealerName?: string) => {
-    // If we're on the main site (not a dealer location), no text - just logo
-    if (!origin.isDealerLocation) {
+    // If we're on the main site (not a dealer location) and no name was explicitly
+    // passed (e.g. for cad.kawaius.com branding), show just the logo
+    if (!origin.isDealerLocation && !dealerName) {
       return { location: '', suffix: '' }
     }
 
-    // For dealer locations without a name, just show logo
+    // No name to display
     if (!dealerName) {
       return { location: '', suffix: '' }
     }
@@ -121,7 +122,9 @@ export function KawaiLogo({
       return { location: '', suffix: '' }
     }
 
-    return { location: locationName, suffix: 'Official Storefront' }
+    // Dealer storefronts get the "Official Storefront" sub-label; site-level branding (e.g. Canada) does not
+    const suffix = origin.isDealerLocation ? 'Official Storefront' : ''
+    return { location: locationName, suffix }
   }
 
   const { location, suffix } = parseLocationText(dealerName)

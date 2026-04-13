@@ -167,6 +167,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 'layout-side-navigation',           // Side Navigation
                 'layout-calendly-embed',            // Calendly Embed
                 'layout-booking-modal',             // Booking Modal
+                'marketing-newsletter-popup',       // Newsletter Popup (email capture modal)
               ] as any,
               blocks: [], // Required to be empty when using blockReferences
               required: true,

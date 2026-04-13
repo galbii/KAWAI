@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { getSite, getSiteName, getSiteUrl } from '@/lib/site-context'
 import { Inter, Crimson_Text, Playfair_Display, Cormorant_Garamond, Noto_Sans } from "next/font/google";
 import { GoogleTagManager } from '@next/third-parties/google';
 import Script from 'next/script';
@@ -56,16 +57,20 @@ const notoSans = Noto_Sans({
   preload: false,
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'),
-  title: {
-    template: '%s | Kawai Pianos',
-    default: 'Kawai Pianos',
-  },
-  openGraph: {
-    siteName: 'Kawai Pianos',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getSite()
+  const name = getSiteName(site)
+  return {
+    metadataBase: new URL(getSiteUrl(site)),
+    title: {
+      template: `%s | ${name}`,
+      default: name,
+    },
+    openGraph: {
+      siteName: name,
+    },
+  }
+}
 
 export const viewport: Viewport = {
   width: "device-width",

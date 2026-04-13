@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getSite, getSiteName, getSiteUrl, getSiteAlternates } from '@/lib/site-context'
 import { Suspense } from "react";
 import { HeaderDynamic } from "@/components/layout/header-dynamic";
 import { FooterDynamic } from "@/components/layout/footer-dynamic";
@@ -18,60 +19,69 @@ import { DealerPageLayoutWrapper } from "@/components/layout/DealerPageLayoutWra
 import { NavigationProgress } from "@/components/layout/NavigationProgress";
 import { PageTransition } from "@/components/layout/PageTransition";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'),
-  title: "Kawai Piano Store | Authorized Kawai Piano Dealer | Grand, Digital & Upright Pianos",
-  description: "Official Kawai Piano authorized dealer. Explore premium grand pianos, digital pianos, upright pianos, and exclusive Shigeru Kawai concert grands. Expert piano consultation, competitive prices, and 95+ years of Japanese craftsmanship. Browse our complete Kawai piano collection.",
-  keywords: [
-    "kawai piano",
-    "kawai pianos",
-    "kawai piano store",
-    "kawai piano gallery",
-    "kawai piano dealer",
-    "authorized kawai dealer",
-    "kawai piano for sale",
-    "kawai piano price",
-    "kawai grand piano",
-    "kawai digital piano",
-    "kawai upright piano",
-    "shigeru kawai",
-    "shigeru kawai piano",
-    "kawai piano dealer near me",
-    "kawai pianos near me",
-    "kawai piano review",
-    "best piano brands",
-    "japanese piano",
-    "piano store",
-    "piano gallery",
-    "piano dealer",
-    "buy kawai piano",
-    "kawai piano models",
-    "kawai acoustic piano",
-    "kawai hybrid piano"
-  ],
-  authors: [{ name: "Kawai Piano Gallery" }],
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
-  },
-  openGraph: {
-    title: "Kawai Piano Store | Authorized Dealer | Grand, Digital & Upright Pianos",
-    description: "Official Kawai Piano authorized dealer. Explore premium grand pianos, digital pianos, upright pianos, and exclusive Shigeru Kawai concert grands. Expert consultation and 95+ years of Japanese craftsmanship.",
-    type: "website",
-    locale: "en_US",
-    siteName: "Kawai Piano Gallery",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Kawai Piano Store | Authorized Dealer",
-    description: "Official Kawai Piano dealer. Grand pianos, digital pianos, upright pianos, and Shigeru Kawai concert grands. 95+ years of Japanese craftsmanship.",
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getSite()
+  const siteUrl = getSiteUrl(site)
+  const siteName = getSiteName(site)
+  return {
+    metadataBase: new URL(siteUrl),
+    title: `Kawai Piano Store | Authorized Kawai Piano Dealer | Grand, Digital & Upright Pianos`,
+    description: "Official Kawai Piano authorized dealer. Explore premium grand pianos, digital pianos, upright pianos, and exclusive Shigeru Kawai concert grands. Expert piano consultation, competitive prices, and 95+ years of Japanese craftsmanship. Browse our complete Kawai piano collection.",
+    keywords: [
+      "kawai piano",
+      "kawai pianos",
+      "kawai piano store",
+      "kawai piano gallery",
+      "kawai piano dealer",
+      "authorized kawai dealer",
+      "kawai piano for sale",
+      "kawai piano price",
+      "kawai grand piano",
+      "kawai digital piano",
+      "kawai upright piano",
+      "shigeru kawai",
+      "shigeru kawai piano",
+      "kawai piano dealer near me",
+      "kawai pianos near me",
+      "kawai piano review",
+      "best piano brands",
+      "japanese piano",
+      "piano store",
+      "piano gallery",
+      "piano dealer",
+      "buy kawai piano",
+      "kawai piano models",
+      "kawai acoustic piano",
+      "kawai hybrid piano"
+    ],
+    authors: [{ name: siteName }],
+    icons: {
+      icon: '/favicon.ico',
+      shortcut: '/favicon.ico',
+      apple: '/favicon.ico',
+    },
+    alternates: {
+      canonical: siteUrl,
+      languages: getSiteAlternates('/'),
+    },
+    openGraph: {
+      title: "Kawai Piano Store | Authorized Dealer | Grand, Digital & Upright Pianos",
+      description: "Official Kawai Piano authorized dealer. Explore premium grand pianos, digital pianos, upright pianos, and exclusive Shigeru Kawai concert grands. Expert consultation and 95+ years of Japanese craftsmanship.",
+      type: "website",
+      locale: site === 'cad' ? 'en_CA' : 'en_US',
+      siteName,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Kawai Piano Store | Authorized Dealer",
+      description: "Official Kawai Piano dealer. Grand pianos, digital pianos, upright pianos, and Shigeru Kawai concert grands. 95+ years of Japanese craftsmanship.",
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  }
+}
 
 export default async function FrontendLayout(props: { children: React.ReactNode }) {
   const { children } = props

@@ -6,7 +6,8 @@ import type { Page } from '@/payload-types';
 import { Hero as PageHero } from '@/components/Hero';
 import { RenderBlocks } from '@/components/RenderBlocks';
 import { AdminBarDoc } from '@/components/layout/AdminBarDoc';
-import { getPayloadClient, getActiveStorefrontSlugs } from '@/lib/payload/queries';
+import { getPayloadClient, getActiveStorefrontSlugs } from '@/lib/payload/queries'
+import { getSite, getSiteUrl, getSiteAlternates } from '@/lib/site-context';
 
 // Enable ISR — pages statically generated at build, revalidated every 1 hour
 export const revalidate = 3600
@@ -109,7 +110,8 @@ export async function generateMetadata(
       };
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com';
+    const site = await getSite()
+    const siteUrl = getSiteUrl(site)
     const metaTitle = page.seo?.metaTitle || `${page.title} | Kawai Pianos`;
     const metaDescription = page.seo?.metaDescription || `${page.title} - Kawai Pianos`;
     const ogTitle = page.seo?.openGraphTitle || metaTitle;
@@ -123,7 +125,10 @@ export async function generateMetadata(
       title: { absolute: metaTitle },
       description: metaDescription,
       ...(page.seo?.keywords ? { keywords: page.seo.keywords } : {}),
-      alternates: { canonical: `${siteUrl}/${slugPath}` },
+      alternates: {
+        canonical: `${siteUrl}/${slugPath}`,
+        languages: getSiteAlternates(`/${slugPath}`),
+      },
       robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
       openGraph: {
         title: ogTitle,

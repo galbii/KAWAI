@@ -18,6 +18,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from 'next';
 import { unstable_cache } from 'next/cache';
+import { getSite, getSiteUrl, getSiteAlternates } from '@/lib/site-context'
 
 /**
  * Transform raw Payload storefront data into structured HomePageData format
@@ -409,7 +410,8 @@ export async function generateMetadata(
       };
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com';
+    const site = await getSite()
+    const siteUrl = getSiteUrl(site)
 
     // Extract storefront name and city for SEO optimization
     const storefrontName = storefrontData.showroomSection?.showroomInfo?.name || 'Piano Gallery';
@@ -441,7 +443,8 @@ export async function generateMetadata(
       description: defaultDescription,
       keywords: storefrontData.seo?.keywords,
       alternates: {
-        canonical: `${siteUrl}/store/${storeslug}`
+        canonical: `${siteUrl}/store/${storeslug}`,
+        languages: getSiteAlternates(`/store/${storeslug}`),
       },
       robots: {
         index: true,
