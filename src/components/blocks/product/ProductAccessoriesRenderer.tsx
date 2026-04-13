@@ -146,17 +146,17 @@ function AccessoryCardItem({ accessory, isDark, index }: CardProps) {
       {/* Bottom panel */}
       <div className={`${bottomBg} px-4 pt-4 pb-4 flex flex-col flex-1`}>
         {/* Type */}
-        <p className="text-[9px] tracking-[0.4em] uppercase font-medium text-kawai-red mb-1.5">
+        <p className="text-[9px] tracking-[0.4em] uppercase font-bold text-kawai-red mb-1.5">
           {typeLabel}
         </p>
 
         {/* Name */}
-        <h3 className={`font-[family-name:var(--font-brand-luxury)] text-[1.1rem] leading-tight mb-1 ${nameColor}`}>
+        <h3 className={`font-[family-name:var(--font-brand-luxury)] font-semibold text-[1.15rem] leading-tight mb-1 ${nameColor}`}>
           {accessory.name ?? accessory.model}
         </h3>
 
         {/* Model */}
-        <p className={`text-[10px] tracking-[0.25em] uppercase ${modelColor}`}>
+        <p className={`text-[10px] tracking-[0.25em] uppercase font-semibold ${modelColor}`}>
           {accessory.model}
         </p>
       </div>
@@ -164,7 +164,7 @@ function AccessoryCardItem({ accessory, isDark, index }: CardProps) {
       {/* Button — sits below the card */}
       <Link
         href={href}
-        className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-kawai-black text-white text-[10px] tracking-[0.2em] uppercase font-medium transition-colors duration-300 hover:bg-kawai-red mt-3"
+        className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-kawai-black text-white text-[10px] tracking-[0.2em] uppercase font-bold transition-colors duration-300 hover:bg-kawai-red mt-3"
       >
         <span>Explore</span>
         <ArrowRight className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-0.5" />
@@ -233,14 +233,14 @@ export async function ProductAccessoriesRenderer({
             {/* Eyebrow */}
             <div className="flex items-center gap-3 mb-4">
               <span className="block w-5 h-px bg-kawai-red" aria-hidden="true" />
-              <p className="text-[10px] tracking-[0.4em] uppercase font-medium text-kawai-red">
+              <p className="text-[10px] tracking-[0.4em] uppercase font-bold text-kawai-red">
                 {eyebrow || 'Accessories'}
               </p>
             </div>
 
             {/* Heading */}
             <h2
-              className={`text-3xl md:text-[2.5rem] font-[family-name:var(--font-brand-luxury)] leading-tight ${headingColor}`}
+              className={`text-3xl md:text-[2.5rem] font-[family-name:var(--font-brand-luxury)] font-semibold leading-tight ${headingColor}`}
             >
               {heading || 'The Full Experience'}
             </h2>

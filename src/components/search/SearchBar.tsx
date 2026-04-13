@@ -333,52 +333,63 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     [filteredResults]
   )
 
+  // Priority order for piano categories — lower number = shown first
+  const PIANO_CATEGORY_PRIORITY: Record<string, number> = {
+    grand: 1, upright: 2, digital: 3, hybrid: 4,
+  }
+  const ACCESSORY_CATEGORY_TYPES = new Set(['accessory', 'accessories', 'software'])
+
+  const getProductSortPriority = (result: SearchResult): number => {
+    const cat = (result.productCategory || result.productType || 'other').toLowerCase()
+    if (ACCESSORY_CATEGORY_TYPES.has(cat)) return 99
+    return PIANO_CATEGORY_PRIORITY[cat] ?? 50
+  }
+
   // Group products dynamically by their category field (simple and flexible)
   const productsByCategory = useMemo(() => {
     const grouped = productResults.reduce((acc, result) => {
-      // Use productCategory as the primary grouping key
-      // Fallback to productType if no category, then 'Other' if neither exists
       const category = result.productCategory || result.productType || 'Other'
-
-      if (!acc[category]) {
-        acc[category] = []
-      }
+      if (!acc[category]) acc[category] = []
       acc[category].push(result)
-
       return acc
     }, {} as Record<string, SearchResult[]>)
-
     return grouped
   }, [productResults])
 
-  // Get available categories dynamically (whatever exists in the data)
+  // Get available categories sorted: pianos first, accessories/other last.
+  // Prepend an 'all' tab whenever more than one category exists.
   const availableCategories = useMemo(() => {
-    return Object.keys(productsByCategory)
+    const cats = Object.keys(productsByCategory).sort((a, b) => {
+      const aLow = a.toLowerCase()
+      const bLow = b.toLowerCase()
+      const aIsAccessory = ACCESSORY_CATEGORY_TYPES.has(aLow)
+      const bIsAccessory = ACCESSORY_CATEGORY_TYPES.has(bLow)
+      const aPriority = PIANO_CATEGORY_PRIORITY[aLow] ?? (aIsAccessory ? 99 : 50)
+      const bPriority = PIANO_CATEGORY_PRIORITY[bLow] ?? (bIsAccessory ? 99 : 50)
+      return aPriority - bPriority
+    })
+    return cats.length > 1 ? ['all', ...cats] : cats
   }, [productsByCategory])
 
   // Auto-generate label from category name (capitalize words)
   const getCategoryLabel = (category: string): string => {
+    if (category === 'all') return 'All'
     return category
       .split(/[-_\s]/)
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ')
   }
 
-  // Auto-select first category when results change
+  // Auto-select 'all' (or first category) when results change
   useEffect(() => {
     if (availableCategories.length === 0) {
       setSelectedProductCategory('')
       return
     }
-
-    // Keep current selection if it's still valid, otherwise select first category
     setSelectedProductCategory((current) => {
-      if (current && availableCategories.includes(current)) {
-        return current // Keep current selection
-      }
-      return availableCategories[0] ?? '' // Default to first category or empty string
+      if (current && availableCategories.includes(current)) return current
+      return availableCategories.includes('all') ? 'all' : (availableCategories[0] ?? '')
     })
-
     setSelectedIndex(0)
   }, [availableCategories])
 
@@ -387,15 +398,14 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     setSelectedIndex(0)
   }, [selectedProductCategory, categoryFilter])
 
-  // Get products for selected category
-  // Memoize to prevent unnecessary recalculations
+  // Get products for the selected tab.
+  // 'all' shows every product sorted by category priority (pianos before accessories).
   const displayedProducts = useMemo(() => {
-    // If no category is selected but we have available categories, show the first one's products
-    const categoryToShow = selectedProductCategory || availableCategories[0]
-    const products = categoryToShow ? productsByCategory[categoryToShow] || [] : []
-
-    return products
-  }, [selectedProductCategory, productsByCategory, availableCategories])
+    if (selectedProductCategory === 'all' || !selectedProductCategory) {
+      return productResults.slice().sort((a, b) => getProductSortPriority(a) - getProductSortPriority(b))
+    }
+    return productsByCategory[selectedProductCategory] ?? []
+  }, [selectedProductCategory, productsByCategory, productResults])
 
   // Debounced search
   useEffect(() => {
@@ -965,26 +975,10 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
-                            className="mb-7"
+                            className="mb-8"
                           >
                             <KawaiLogo size="sm" animated={false} nonClickable={true} />
                           </motion.div>
-
-                          {/* Tagline — ambient, not a headline */}
-                          <motion.p
-                            initial={{ opacity: 0, y: 6 }}
-                            animate={{ opacity: 0.45, y: 0 }}
-                            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.22 }}
-                            className="text-kawai-pearl mb-9 select-none"
-                            style={{
-                              fontFamily: 'var(--font-buena-park), serif',
-                              fontWeight: 300,
-                              fontSize: '1.35rem',
-                              letterSpacing: '0.06em',
-                            }}
-                          >
-                            Instrumental to Life.
-                          </motion.p>
 
                           {/* Red separator — draws in from center */}
                           <motion.div
@@ -997,7 +991,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
 
                           {/* Navigation links */}
                           <motion.nav
-                            className="w-full max-w-xs"
+                            className="w-full max-w-sm"
                             variants={quickLinksContainerVariants}
                             initial="hidden"
                             animate="show"
@@ -1013,7 +1007,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                 }}
                                 className="group w-full flex items-center justify-between px-6 py-3.5 border-b border-kawai-neutral/10 last:border-0 hover:bg-kawai-red/5 transition-colors duration-200"
                               >
-                                <span className="text-kawai-pearl/50 text-xs font-light tracking-[0.14em] uppercase group-hover:text-kawai-pearl/90 transition-colors duration-200">
+                                <span className="text-kawai-pearl/50 text-sm font-light tracking-[0.1em] uppercase whitespace-nowrap group-hover:text-kawai-pearl/90 transition-colors duration-200">
                                   {link.label}
                                 </span>
                                 <svg

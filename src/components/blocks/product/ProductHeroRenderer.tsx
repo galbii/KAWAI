@@ -10,89 +10,100 @@ export function ProductHeroRenderer({
   layout,
   overrides,
 }: ProductHeroRendererProps) {
-  // Background color class mapping
   const bgColorClasses = {
     pearl: 'bg-kawai-pearl',
     white: 'bg-white',
-    black: 'bg-black text-white',
-  }
-
-  // Image position class mapping
-  const imagePositionClasses = {
-    left: 'md:flex-row',
-    right: 'md:flex-row-reverse',
+    black: 'bg-kawai-black text-white',
   }
 
   const backgroundColor = layout?.backgroundColor || 'pearl'
   const imagePosition = layout?.imagePosition || 'left'
-  const showVariations = layout?.showVariations ?? true
-  const showPrice = layout?.showPrice ?? false
-  const showBuyButton = layout?.showBuyButton ?? true
+  const isBlack = backgroundColor === 'black'
+
+  const imageFirst = imagePosition === 'left'
 
   return (
-    <section className={cn(
-      'py-16 px-6',
-      bgColorClasses[backgroundColor as keyof typeof bgColorClasses]
-    )}>
-      <div className="max-w-7xl mx-auto">
-        <div className={cn(
-          'flex flex-col gap-12 items-center',
-          imagePositionClasses[imagePosition as keyof typeof imagePositionClasses]
-        )}>
-          {/* Product Image */}
-          {overrides?.customImage && (
-            <div className="flex-1 relative z-0 hover:z-10 group">
-              {(() => {
-                const imageProps = getImagePropsWithFallback(
-                  overrides.customImage,
-                  '/images/defaults/product-hero.jpg',
-                  'hero'
-                )
-                return (
-                  /* Scale + shadow layer — no overflow clip so it can pop outside */
-                  <div className="relative aspect-square transition-all duration-500 ease-[var(--ease-elegant)] group-hover:scale-[1.12] group-hover:shadow-[0_28px_64px_rgba(0,0,0,0.26)]">
-                    {/* Clip layer — keeps image cropped to square */}
-                    <div className="absolute inset-0 overflow-hidden">
-                      <Image
-                        {...imageProps}
-                        alt={overrides.customTitle || ''}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-kawai-black/0 group-hover:bg-kawai-black/10 transition-colors duration-500" />
-                    </div>
-                  </div>
-                )
-              })()}
-              {overrides?.badge && (
-                <div className="absolute top-4 right-4 bg-kawai-red text-white px-4 py-2 font-semibold text-sm tracking-wide">
-                  {overrides.badge}
-                </div>
-              )}
+    <section
+      className={cn(
+        'min-h-screen flex flex-col md:flex-row',
+        bgColorClasses[backgroundColor as keyof typeof bgColorClasses]
+      )}
+    >
+      {/* ── IMAGE HALF ─────────────────────────────────────────────────── */}
+      {overrides?.customImage && (
+        <div
+          className={cn(
+            'relative w-full md:w-1/2 min-h-[50vh] md:min-h-screen flex-shrink-0',
+            'group overflow-hidden',
+            !imageFirst && 'md:order-last'
+          )}
+        >
+          {(() => {
+            const imageProps = getImagePropsWithFallback(
+              overrides.customImage,
+              '/images/defaults/product-hero.jpg',
+              'hero'
+            )
+            return (
+              <Image
+                {...imageProps}
+                alt={overrides.customTitle || ''}
+                fill
+                className="object-cover object-center transition-transform duration-700 ease-[var(--ease-elegant)] group-hover:scale-[1.03]"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                priority
+              />
+            )
+          })()}
+
+          {/* Subtle inner shadow to ground the image edge */}
+          <div className="absolute inset-0 shadow-[inset_0_0_60px_rgba(30,27,22,0.08)] pointer-events-none" />
+
+          {/* Badge */}
+          {overrides?.badge && (
+            <div className="absolute top-6 right-6 bg-kawai-red text-white px-4 py-2 font-bold text-xs tracking-[0.2em] uppercase">
+              {overrides.badge}
             </div>
           )}
-
-          {/* Product Info */}
-          <div className="flex-1 flex flex-col justify-center">
-            {overrides?.customTitle && (
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-                {overrides.customTitle}
-              </h1>
-            )}
-
-            {overrides?.customDescription && (
-              <p className="text-xl mb-8 opacity-90">
-                {overrides.customDescription}
-              </p>
-            )}
-
-            {/* Placeholder for product-specific features */}
-            <div className="space-y-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Additional product details would be rendered here based on the product document data.
-              </p>
-            </div>
-          </div>
         </div>
+      )}
+
+      {/* ── TEXT HALF ──────────────────────────────────────────────────── */}
+      <div
+        className={cn(
+          'flex-1 flex flex-col justify-center',
+          'px-8 py-16 md:px-14 lg:px-20 xl:px-24',
+          'md:min-h-screen',
+          !imageFirst && 'md:order-first'
+        )}
+      >
+        {overrides?.customTitle && (
+          <h1
+            className={cn(
+              'font-[family-name:var(--font-brand-luxury)] font-semibold leading-[1.06] tracking-tight',
+              'text-8xl lg:text-9xl',
+              'mb-6',
+              isBlack ? 'text-white' : 'text-kawai-black'
+            )}
+          >
+            {overrides.customTitle}
+          </h1>
+        )}
+
+        {overrides?.customDescription && (
+          <p
+            className={cn(
+              'text-lg sm:text-xl leading-relaxed max-w-lg',
+              'mb-10',
+              isBlack ? 'text-white/70' : 'text-kawai-charcoal/70'
+            )}
+          >
+            {overrides.customDescription}
+          </p>
+        )}
+
+        {/* Thin accent rule */}
+        <div className={cn('w-12 h-px mb-10', isBlack ? 'bg-white/20' : 'bg-kawai-neutral')} />
       </div>
     </section>
   )

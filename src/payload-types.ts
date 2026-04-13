@@ -2101,6 +2101,10 @@ export interface Product {
          * Collection handle
          */
         handle?: string | null;
+        /**
+         * Collection image URL (synced from Shopify)
+         */
+        imageUrl?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -11320,6 +11324,7 @@ export interface ProductsSelect<T extends boolean = true> {
         shopifyCollectionId?: T;
         title?: T;
         handle?: T;
+        imageUrl?: T;
         id?: T;
       };
   shopifyMedia?:

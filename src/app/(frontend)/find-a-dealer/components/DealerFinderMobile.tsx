@@ -442,6 +442,7 @@ function MobileDealerCard({ dealer, isSelected, onSelect }: MobileDealerCardProp
   const hasShigeru = dealer.shigeruKawaiDealer === true
   const hasAcoustic = dealer.acousticPianoDealer === true
   const hasDigital = dealer.digitalPianoDealer === true
+  const hasProfessional = dealer.professionalProductDealer === true
 
   return (
     <button
@@ -482,23 +483,23 @@ function MobileDealerCard({ dealer, isSelected, onSelect }: MobileDealerCardProp
       </div>
 
       {/* Dealer Type Badges */}
-      <div className="flex flex-wrap gap-2 mb-3">
+      <div className="flex flex-wrap gap-1.5 mb-3">
         {hasShigeru && (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-kawai-gold/10 text-kawai-gold text-xs font-medium rounded-lg border border-kawai-gold/20">
-            <Star className="w-3 h-3" strokeWidth={2} />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-kawai-gold/10 text-xs font-medium rounded-full border border-kawai-gold/25" style={{ color: '#A07800' }}>
+            <Star className="w-3 h-3 flex-shrink-0" strokeWidth={2} />
             <span>Shigeru Kawai</span>
           </div>
         )}
         {hasAcoustic && (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-kawai-charcoal/5 text-kawai-charcoal/70 text-xs font-medium rounded-lg">
-            <Piano className="w-3 h-3" strokeWidth={2} />
-            <span>Acoustic Piano</span>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-kawai-charcoal/5 text-kawai-charcoal/60 text-xs font-medium rounded-full border border-kawai-charcoal/10">
+            <Piano className="w-3 h-3 flex-shrink-0" strokeWidth={2} />
+            <span>Acoustic</span>
           </div>
         )}
         {hasDigital && (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-kawai-charcoal/5 text-kawai-charcoal/70 text-xs font-medium rounded-lg">
-            <Briefcase className="w-3 h-3" strokeWidth={2} />
-            <span>Digital Piano</span>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-kawai-charcoal/5 text-kawai-charcoal/60 text-xs font-medium rounded-full border border-kawai-charcoal/10">
+            <Briefcase className="w-3 h-3 flex-shrink-0" strokeWidth={2} />
+            <span>Digital</span>
           </div>
         )}
       </div>
