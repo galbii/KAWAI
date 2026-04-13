@@ -243,6 +243,8 @@ function Inner(props: ProductFeatureSlidesBlock) {
       const scrollingDown  = currentScrollY > lastScrollY
       lastScrollY = currentScrollY
 
+      // Yield to programmatic nav scroll — don't snap mid-navigation
+      if ((window as any).__kawaiNavScrolling) return
       if (isSnapping) return
 
       const header       = document.querySelector('header')

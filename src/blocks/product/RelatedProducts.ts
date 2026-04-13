@@ -48,7 +48,7 @@ export const RelatedProducts: Block = {
     {
       name: 'displayMode',
       type: 'select',
-      defaultValue: 'both',
+      defaultValue: 'collection',
       options: [
         { label: 'Same Collection Only', value: 'collection' },
         { label: 'Accessories Only', value: 'accessories' },

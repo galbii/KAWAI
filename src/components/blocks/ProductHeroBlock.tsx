@@ -109,6 +109,12 @@ export function ProductHeroBlock({
     }
   }, [allVariations.length, selectedVariation])
 
+  // Sync mobile carousel to the variation image when selection changes
+  useEffect(() => {
+    setMobileCarouselIndex(currentImageIndex)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedVariation])
+
   // Fire impression event once on mount
   useEffect(() => {
     trackBlockImpression({
@@ -950,6 +956,13 @@ export function ProductHeroBlock({
               </div>
             )}
 
+            {/* Product Disclaimer */}
+            {product?.disclaimer && (
+              <p className={cn("text-xs leading-relaxed opacity-70 italic text-center", textColorClass)}>
+                {product.disclaimer}
+              </p>
+            )}
+
             {/* Value Propositions */}
             <div className="pt-1">
               <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mb-3" />
@@ -1082,12 +1095,6 @@ export function ProductHeroBlock({
               </p>
             </div>
 
-            {/* Product Disclaimer */}
-            {product?.disclaimer && (
-              <p className={cn("text-xs mt-2 leading-relaxed opacity-70", textColorClass)}>
-                {product.disclaimer}
-              </p>
-            )}
           </div>
 
           {/* Image Section - Desktop only (scrollable within fixed height) */}

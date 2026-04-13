@@ -65,6 +65,14 @@ const GRID_COLS = {
   '4': 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
 } as const
 
+// Width for orphaned last-row items — matches the responsive grid column widths
+// gap-4 (1rem) at sm, gap-5 (1.25rem) at md+
+const LAST_ROW_ITEM_CLASS = {
+  '2': 'w-full sm:w-[calc(50%_-_0.5rem)]',
+  '3': 'w-full sm:w-[calc(50%_-_0.5rem)] lg:w-[calc(33.333%_-_0.833rem)]',
+  '4': 'w-full sm:w-[calc(50%_-_0.5rem)] lg:w-[calc(25%_-_0.938rem)]',
+} as const
+
 // ─── Collection Card ──────────────────────────────────────────────────────────
 
 function CollectionCard({ collection, index }: { collection: NavCollection; index: number }) {
@@ -275,6 +283,13 @@ export function FeaturedCollectionsGrid({
   // Fall back to all collections if the selected category yields nothing
   const filtered = rawFiltered.length > 0 ? rawFiltered : collections
 
+  // Split into complete rows + orphaned last row (for centered partial rows)
+  const colCount = parseInt(columns)
+  const remainder = filtered.length % colCount
+  const hasOrphanRow = remainder !== 0
+  const mainItems = hasOrphanRow ? filtered.slice(0, filtered.length - remainder) : filtered
+  const orphanItems = hasOrphanRow ? filtered.slice(filtered.length - remainder) : []
+
   return (
     <section className="py-16 md:py-24 bg-kawai-pearl">
       <div className="container mx-auto px-6 md:px-10 max-w-screen-2xl">
@@ -345,10 +360,21 @@ export function FeaturedCollectionsGrid({
 
         {/* ── Grid ── */}
         <div className={cn('grid gap-4 md:gap-5', GRID_COLS[columns])}>
-          {filtered.map((collection, i) => (
+          {mainItems.map((collection, i) => (
             <CollectionCard key={collection.id} collection={collection} index={i} />
           ))}
         </div>
+
+        {/* ── Orphan row (centered when last row is incomplete) ── */}
+        {orphanItems.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-4 md:gap-5 mt-4 md:mt-5">
+            {orphanItems.map((collection, i) => (
+              <div key={collection.id} className={LAST_ROW_ITEM_CLASS[columns]}>
+                <CollectionCard collection={collection} index={mainItems.length + i} />
+              </div>
+            ))}
+          </div>
+        )}
 
 
         {/* Mobile header CTA */}

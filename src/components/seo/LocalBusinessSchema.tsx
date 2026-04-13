@@ -106,16 +106,28 @@ export function LocalBusinessSchema({ storefront, siteUrl }: LocalBusinessSchema
   const addressData = parseAddress(showroomInfo?.address);
   const hours = storefront.showroomSection?.hours;
 
+  // Normalize day abbreviations to Schema.org DayOfWeek values
+  const DAY_MAP: Record<string, string> = {
+    Sunday: 'Sunday', Sun: 'Sunday',
+    Monday: 'Monday', Mon: 'Monday',
+    Tuesday: 'Tuesday', Tue: 'Tuesday',
+    Wednesday: 'Wednesday', Wed: 'Wednesday',
+    Thursday: 'Thursday', Thu: 'Thursday',
+    Friday: 'Friday', Fri: 'Friday',
+    Saturday: 'Saturday', Sat: 'Saturday',
+  }
+
   // Build opening hours specification if hours data exists
   const openingHoursSpec = hours && hours.length > 0
     ? hours
         .map((h: any) => {
-          const { opens, closes } = parseHours(h.time);
+          const { opens, closes } = parseHours(h.hoursOpen);
           if (!opens || !closes) return null;
+          const dayOfWeek = DAY_MAP[h.day] ?? h.day;
 
           return {
             "@type": "OpeningHoursSpecification",
-            "dayOfWeek": h.day,
+            "dayOfWeek": `https://schema.org/${dayOfWeek}`,
             "opens": opens,
             "closes": closes
           };
@@ -126,12 +138,12 @@ export function LocalBusinessSchema({ storefront, siteUrl }: LocalBusinessSchema
   const schema = {
     "@context": "https://schema.org",
     "@type": "MusicStore",
-    "@id": `${siteUrl}/${storefront.slug}#organization`,
+    "@id": `${siteUrl}/store/${storefront.slug}#localbusiness`,
     "name": showroomInfo.name,
     "description": storefront.showroomSection?.showroomDescription,
-    "url": `${siteUrl}/${storefront.slug}`,
+    "url": `${siteUrl}/store/${storefront.slug}`,
     "telephone": showroomInfo.phone,
-    "email": storefront.showroomInfo?.email,
+    "email": storefront.showroomSection?.showroomInfo?.email,
 
     // Address
     "address": {

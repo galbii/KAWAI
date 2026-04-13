@@ -40,6 +40,7 @@ type RelatedProduct = {
   category?: string | null
   imageUrl?: string | null
   price?: { msrp?: number | null; currency?: string | null } | null
+  variants?: Array<{ price?: number | null; compareAtPrice?: number | null }> | null
 }
 
 // -------------------------------------------------------------------
@@ -60,16 +61,6 @@ function formatCategory(type: string | null | undefined): string {
   return CATEGORY_LABELS[type] ?? type
 }
 
-const GRID_COLS: Record<number, string> = {
-  2: 'grid-cols-2',
-  3: 'grid-cols-2 md:grid-cols-3',
-  4: 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
-  5: 'grid-cols-2 md:grid-cols-3 lg:grid-cols-5',
-  6: 'grid-cols-2 md:grid-cols-3 lg:grid-cols-3',
-  7: 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
-  8: 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
-}
-
 // -------------------------------------------------------------------
 // Product Card
 // -------------------------------------------------------------------
@@ -78,44 +69,64 @@ interface ProductCardProps {
   product: RelatedProduct
   showPrice: boolean
   isDark: boolean
+  index: number
 }
 
-function ProductCard({ product, showPrice, isDark }: ProductCardProps) {
-  const headingColor = isDark ? 'text-white' : 'text-kawai-black'
-  const subColor = isDark ? 'text-white/50' : 'text-kawai-charcoal/50'
-  const discoverColor = isDark
-    ? 'text-white/40 group-hover:text-white'
-    : 'text-kawai-charcoal/40 group-hover:text-kawai-red'
+function ProductCard({ product, showPrice, isDark, index }: ProductCardProps) {
+  const num = String(index + 1).padStart(2, '0')
+  const href = `/products/${product.slug}`
+
+  const numColor = isDark ? 'text-white/20' : 'text-kawai-charcoal/25'
+  const imgBg = isDark ? 'bg-[#252220]' : 'bg-white'
+  const nameColor = 'text-white'
+  const modelColor = 'text-white/40'
+
+  const typeLabel = formatCategory(product.type)
+
+  // Resolve price + compare-at from variants, fall back to msrp
+  const firstVariant = product.variants?.[0]
+  const salePrice = firstVariant?.price ?? null
+  const compareAtPrice = firstVariant?.compareAtPrice ?? null
+  const msrp = product.price?.msrp ?? null
+
+  const isOnSale =
+    salePrice !== null &&
+    compareAtPrice !== null &&
+    compareAtPrice > salePrice
+
+  const displayPrice = salePrice ?? msrp
+  const displayCompare = isOnSale ? compareAtPrice : null
 
   return (
-    <Link href={`/products/${product.slug}`} className="group block">
-      {/* Image */}
-      <div className="relative overflow-hidden rounded-sm mb-3 aspect-[4/3] bg-kawai-pearl">
+    <article className="group flex flex-col">
+      {/* Index number — sits above the card */}
+      <p className={`text-[10px] tracking-[0.35em] font-medium mb-3 select-none ${numColor}`}>
+        {num}
+      </p>
+
+      {/* Image zone — own link, not nested with the button below */}
+      <Link
+        href={href}
+        className={`block relative aspect-[4/3] overflow-hidden ${imgBg} flex-shrink-0`}
+        tabIndex={-1}
+        aria-hidden="true"
+      >
         {product.imageUrl ? (
           <Image
             src={product.imageUrl}
-            alt={product.name ?? product.model ?? 'Related piano'}
+            alt={product.name ?? product.model ?? 'Piano'}
             fill
-            className="object-cover object-center transition-transform duration-500 ease-[var(--ease-piano)] group-hover:scale-105"
+            className="object-cover object-center transition-transform duration-700 ease-[var(--ease-elegant)] group-hover:scale-105"
           />
         ) : (
-          /* Piano silhouette placeholder */
           <div className="w-full h-full flex items-center justify-center">
             <svg
-              className="w-16 h-16 text-kawai-neutral"
+              className={`w-14 h-14 ${isDark ? 'text-white/10' : 'text-kawai-neutral'}`}
               viewBox="0 0 48 36"
               fill="none"
               aria-hidden="true"
             >
-              <rect
-                x="1"
-                y="14"
-                width="46"
-                height="20"
-                rx="2"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              />
+              <rect x="1" y="14" width="46" height="20" rx="2" stroke="currentColor" strokeWidth="1.5" />
               {[6, 12, 19, 26, 33, 39].map((x) => (
                 <rect key={x} x={x} y="6" width="4" height="9" rx="1" fill="currentColor" />
               ))}
@@ -123,49 +134,63 @@ function ProductCard({ product, showPrice, isDark }: ProductCardProps) {
           </div>
         )}
 
-        {/* Type badge */}
-        {product.type && (
-          <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-kawai-black text-[10px] font-medium tracking-[0.15em] uppercase px-2.5 py-1 rounded-sm">
-            {formatCategory(product.type)}
-          </span>
+        {/* Price overlay — bottom-right */}
+        {showPrice && displayPrice !== null && (
+          <div className="absolute bottom-3 right-3 flex flex-col items-end gap-0.5">
+            {displayCompare !== null && (
+              <span className="bg-kawai-black/60 backdrop-blur-sm text-white/60 text-[10px] px-2 py-0.5 line-through">
+                {formatPrice(displayCompare)}
+              </span>
+            )}
+            <span
+              className={`backdrop-blur-sm text-[12px] font-medium px-2.5 py-1 ${
+                isOnSale
+                  ? 'bg-kawai-red text-white'
+                  : 'bg-kawai-black/70 text-white'
+              }`}
+            >
+              {formatPrice(displayPrice)}
+            </span>
+          </div>
         )}
-      </div>
 
-      {/* Text */}
-      <div>
-        <p className={`text-[10px] tracking-[0.25em] uppercase mb-0.5 font-medium ${subColor}`}>
-          {product.model}
-        </p>
-        <h3
-          className={`text-base font-[family-name:var(--font-brand-luxury)] leading-snug transition-colors group-hover:text-kawai-red ${headingColor}`}
-        >
+        <div className="absolute inset-0 bg-kawai-black/0 group-hover:bg-kawai-black/[0.04] transition-colors duration-500 pointer-events-none" />
+      </Link>
+
+      {/* Bottom panel — footer grey */}
+      <div className="bg-kawai-black/95 px-4 pt-4 pb-4 flex flex-col flex-1">
+        {/* Type */}
+        {typeLabel && (
+          <p className="text-[9px] tracking-[0.4em] uppercase font-medium text-kawai-red mb-1.5">
+            {typeLabel}
+          </p>
+        )}
+
+        {/* Name */}
+        <h3 className={`font-[family-name:var(--font-brand-luxury)] text-[1.1rem] leading-tight mb-1 ${nameColor}`}>
           {product.name ?? product.model}
         </h3>
 
-        {showPrice && product.price?.msrp ? (
-          <p className={`text-sm mt-1.5 ${subColor}`}>
-            <span className="text-[10px] tracking-widest mr-1">MSRP</span>
-            {formatPrice(product.price.msrp)}
-          </p>
-        ) : null}
-
-        <div
-          className={`flex items-center gap-1 mt-2.5 text-xs font-medium transition-all ${discoverColor}`}
-        >
-          <span>Discover</span>
-          <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-        </div>
+        {/* Model */}
+        <p className={`text-[10px] tracking-[0.25em] uppercase ${modelColor}`}>
+          {product.model}
+        </p>
       </div>
-    </Link>
+
+      {/* Explore button — below the card */}
+      <Link
+        href={href}
+        className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-kawai-black text-white text-[10px] tracking-[0.2em] uppercase font-medium transition-colors duration-300 hover:bg-kawai-red mt-3"
+      >
+        <span>Explore</span>
+        <ArrowRight className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-0.5" />
+      </Link>
+    </article>
   )
 }
 
 // -------------------------------------------------------------------
-// Main Renderer (async Server Component)
-// -------------------------------------------------------------------
-
-// -------------------------------------------------------------------
-// Shared render helper (used by both accessory and generic paths)
+// Shared render helper
 // -------------------------------------------------------------------
 
 interface RenderSectionArgs {
@@ -186,62 +211,91 @@ function renderSection({
   limit,
 }: RenderSectionArgs) {
   const isDark = theme === 'dark'
-  const sectionBg = isDark ? 'bg-kawai-black' : 'bg-[#f5f3f0]'
+  const sectionBg = isDark ? 'bg-kawai-black' : 'bg-kawai-pearl'
   const headingColor = isDark ? 'text-white' : 'text-kawai-black'
-  const subColor = isDark ? 'text-white/60' : 'text-kawai-charcoal/60'
-  const dividerColor = isDark ? 'bg-white/15' : 'bg-kawai-neutral'
+  const subColor = isDark ? 'text-white/50' : 'text-kawai-charcoal/55'
+  const dividerColor = isDark ? 'bg-white/10' : 'bg-kawai-neutral'
+  const countColor = isDark ? 'text-white/30' : 'text-kawai-charcoal/35'
 
-  const gridCols =
-    GRID_COLS[Math.min(allProducts.length, limit)] ??
-    'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
+  const count = allProducts.length
 
   return (
-    <section className={`py-16 md:py-24 ${sectionBg}`}>
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="mb-10 md:mb-12">
-          {sectionHeader?.eyebrow && (
-            <p className="text-[11px] tracking-[0.3em] uppercase text-kawai-red mb-3 font-medium">
-              {sectionHeader.eyebrow}
-            </p>
-          )}
-          <h2
-            className={`text-3xl md:text-4xl font-[family-name:var(--font-brand-luxury)] leading-tight ${headingColor}`}
-          >
-            {sectionHeader?.heading ?? 'You May Also Like'}
-          </h2>
-          {sectionHeader?.subheading && (
-            <p className={`mt-3 text-base max-w-2xl leading-relaxed ${subColor}`}>
-              {sectionHeader.subheading}
-            </p>
-          )}
-          <div className={`mt-6 w-12 h-px ${dividerColor}`} />
+    <section className={`py-20 md:py-28 ${sectionBg}`}>
+      <div className="max-w-7xl mx-auto px-6 lg:px-10">
+
+        {/* ── Section Header ────────────────────────────────────── */}
+        <div className="flex items-end justify-between mb-2">
+          <div>
+            {/* Eyebrow */}
+            <div className="flex items-center gap-3 mb-4">
+              <span className="block w-5 h-px bg-kawai-red" aria-hidden="true" />
+              <p className="text-[10px] tracking-[0.4em] uppercase font-medium text-kawai-red">
+                {sectionHeader?.eyebrow ?? 'Explore More'}
+              </p>
+            </div>
+
+            {/* Heading */}
+            <h2
+              className={`text-3xl md:text-[2.5rem] font-[family-name:var(--font-brand-luxury)] leading-tight ${headingColor}`}
+            >
+              {sectionHeader?.heading ?? 'You May Also Like'}
+            </h2>
+
+            {/* Subheading */}
+            {sectionHeader?.subheading && (
+              <p className={`mt-2 text-sm leading-relaxed ${subColor}`}>
+                {sectionHeader.subheading}
+              </p>
+            )}
+          </div>
+
+          {/* Item count — right-aligned, subtle */}
+          <p className={`text-[11px] tracking-[0.3em] uppercase font-medium pb-1 ${countColor}`}>
+            {count}&thinsp;{count === 1 ? 'item' : 'items'}
+          </p>
         </div>
 
+        {/* Full-width rule */}
+        <div className={`w-full h-px ${dividerColor} mt-6 mb-12`} />
+
+        {/* ── Cards ─────────────────────────────────────────────── */}
         {layout === 'carousel' ? (
           <RelatedProductsCarousel isDark={isDark}>
-            {allProducts.map((rp) => (
+            {allProducts.map((rp, i) => (
               <div
                 key={rp.id}
-                className="snap-start flex-shrink-0 w-[calc(50%-12px)] md:w-[calc(33.333%-16px)] lg:w-[calc(25%-18px)]"
+                className="snap-start flex-shrink-0 w-[72vw] sm:w-[42vw] md:w-[30vw] lg:w-[22vw]"
               >
-                <ProductCard product={rp} showPrice={showPrice ?? true} isDark={isDark} />
+                <ProductCard product={rp} showPrice={showPrice ?? true} isDark={isDark} index={i} />
               </div>
             ))}
           </RelatedProductsCarousel>
         ) : (
-          <div className={`grid gap-6 md:gap-8 ${gridCols}`}>
-            {allProducts.map((rp) => (
-              <ProductCard key={rp.id} product={rp} showPrice={showPrice ?? true} isDark={isDark} />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12 md:gap-x-8 md:gap-y-16 items-start">
+            {allProducts.map((rp, i) => (
+              <ProductCard
+                key={rp.id}
+                product={rp}
+                showPrice={showPrice ?? true}
+                isDark={isDark}
+                index={i}
+              />
             ))}
           </div>
         )}
+
+        {/* ── Footer rule ───────────────────────────────────────── */}
+        <div className={`w-full h-px ${dividerColor} mt-14 md:mt-20`} />
+
       </div>
     </section>
   )
 }
 
-// Cast as any to bypass Payload's generated ProductsSelect<T> strict typing
-// These are valid field names — types will be verified after next build
+// -------------------------------------------------------------------
+// Select fields
+// -------------------------------------------------------------------
+
 const SELECT_FIELDS = {
   model: true,
   name: true,
@@ -250,9 +304,9 @@ const SELECT_FIELDS = {
   category: true,
   imageUrl: true,
   price: true,
+  variants: true,
 } as any
 
-// Extract an ID string from a Payload relationship value (populated object or raw ID string)
 function extractId(val: unknown): string | null {
   if (!val) return null
   if (typeof val === 'string') return val
@@ -275,9 +329,22 @@ function dedupe(products: RelatedProduct[], limit: number): RelatedProduct[] {
   return result
 }
 
+/** Sort so non-accessories come first — pianos fill visible slots before accessories */
+function nonAccessoriesFirst(products: RelatedProduct[]): RelatedProduct[] {
+  return [...products].sort((a, b) => {
+    const aIsAccessory = a.type === 'accessory' ? 1 : 0
+    const bIsAccessory = b.type === 'accessory' ? 1 : 0
+    return aIsAccessory - bIsAccessory
+  })
+}
+
+// -------------------------------------------------------------------
+// Main Renderer (async Server Component)
+// -------------------------------------------------------------------
+
 export async function RelatedProductsRenderer({
   sectionHeader,
-  displayMode = 'both',
+  displayMode = 'collection',
   maxProducts = 4,
   layout = 'grid',
   showPrice = true,
@@ -290,8 +357,6 @@ export async function RelatedProductsRenderer({
   const payload = await getPayloadClient()
 
   // ── 0. Accessory page: show explicitly-linked compatible pianos ────
-  // When an accessory editor has hand-picked compatible piano models,
-  // render those as a single "Works With" section and stop.
   if (product.type === 'accessory') {
     const compatibleIds = ((product as any).compatibleProducts as unknown[])
       ?.map(extractId)
@@ -314,13 +379,10 @@ export async function RelatedProductsRenderer({
       return renderSection({ allProducts: pianos, sectionHeader, layout, showPrice, theme, limit })
     }
 
-    // Accessory with no compatible products linked — render nothing
     return null
   }
 
   // ── 1. Same-collection products ───────────────────────────────────
-  // Other products sharing a Shopify collection with this piano.
-  // Falls back to same product type if no Shopify collections are set.
   const collectionProducts: RelatedProduct[] = []
 
   if (displayMode === 'collection' || displayMode === 'both') {
@@ -345,7 +407,6 @@ export async function RelatedProductsRenderer({
         })
         collectionProducts.push(...(docs as RelatedProduct[]))
       } catch {
-        // Fallback to same product type
         if (product.type) {
           try {
             const { docs } = await payload.find({
@@ -386,8 +447,6 @@ export async function RelatedProductsRenderer({
   }
 
   // ── 2. Compatible accessories (reverse lookup) ────────────────────
-  // Find accessories where the editor has listed this product as compatible.
-  // This is intentionally a reverse lookup — not just "any accessory".
   const accessories: RelatedProduct[] = []
 
   if (displayMode === 'accessories' || displayMode === 'both') {
@@ -409,7 +468,7 @@ export async function RelatedProductsRenderer({
   }
 
   // ── 3. Render two independent sections ────────────────────────────
-  const collectionSlice = dedupe(collectionProducts, limit)
+  const collectionSlice = dedupe(nonAccessoriesFirst(collectionProducts), limit)
   const accessoriesSlice = dedupe(accessories, limit)
 
   if (collectionSlice.length === 0 && accessoriesSlice.length === 0) return null

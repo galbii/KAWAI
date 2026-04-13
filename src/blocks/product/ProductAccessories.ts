@@ -13,7 +13,7 @@ export const ProductAccessories: Block = {
     {
       name: 'heading',
       type: 'text',
-      defaultValue: 'Popular Additions',
+      defaultValue: 'The Full Experience',
       admin: {
         description: 'Section heading (default: "Popular Additions")',
       },

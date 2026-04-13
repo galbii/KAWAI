@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo, Fragment } from 'react'
 import { createPortal } from 'react-dom'
 import { Search, X, Loader2 } from 'lucide-react'
 import { useRouter, usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import Image from 'next/image'
 import { KawaiLogo } from '@/components/ui/kawai-logo'
 
@@ -658,6 +658,40 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   }, [isOpen, query])
 
 
+  // ── Animation variants ──────────────────────────────────────────────────
+  const backdropVariants = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { duration: 0.18, ease: 'easeOut' as const } },
+    exit: { opacity: 0, transition: { duration: 0.14, ease: 'easeIn' as const } },
+  }
+
+  const overlayVariants = {
+    hidden: { opacity: 0, y: -10 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.22, ease: [0.4, 0, 0.2, 1] as const } },
+    exit: { opacity: 0, y: -10, transition: { duration: 0.16, ease: [0.4, 0, 0.2, 1] as const } },
+  }
+
+  const sectionContainerVariants = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.06, delayChildren: 0.04 } },
+  }
+
+  const sectionVariants = {
+    hidden: { opacity: 0, y: 8 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] as const } },
+  }
+
+  const quickLinksContainerVariants = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.055, delayChildren: 0.12 } },
+  }
+
+  const quickLinkItemVariants = {
+    hidden: { opacity: 0, x: -5 },
+    show: { opacity: 1, x: 0, transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] as const } },
+  }
+  // ────────────────────────────────────────────────────────────────────────
+
   return (
     <>
       {/* Desktop Input Field (stays in header) - Hidden on mobile */}
@@ -725,11 +759,15 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
 
       {/* Glassmorphism Results Overlay */}
       {isMounted && createPortal(
-        <AnimatePresence>
-          {(isOpen || (isMobile && isInputFocused)) && (
-            <>
-              {/* Backdrop - Dark overlay covering full screen */}
-              <div
+        <Fragment>
+          <AnimatePresence>
+            {(isOpen || (isMobile && isInputFocused)) && (
+              <motion.div
+                key="search-backdrop"
+                variants={backdropVariants}
+                initial="hidden"
+                animate="show"
+                exit="exit"
                 className="fixed z-[9000] bg-black/40"
                 style={{
                   top: isMobile ? 0 : `${64 + announcementBarHeight}px`,
@@ -742,11 +780,18 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                   setIsMobileSearchOpen(false)
                 }}
               />
-
-              {/* Overlay Container - Floating on mobile, centered on desktop */}
-              <div
+            )}
+          </AnimatePresence>
+          <AnimatePresence>
+            {(isOpen || (isMobile && isInputFocused)) && (
+              <motion.div
+                key="search-overlay"
+                variants={overlayVariants}
+                initial="hidden"
+                animate="show"
+                exit="exit"
                 className={cn(
-                  "fixed z-[9001] pointer-events-none",
+                  "fixed z-[9004] pointer-events-none",
                   isMobile
                     ? "px-4 pb-4" // Padding around the glass card
                     : "flex items-center justify-center p-4 md:p-8" // Centered on desktop
@@ -828,13 +873,20 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                 key={category}
                                 onClick={() => setCategoryFilter(category)}
                                 className={cn(
-                                  'flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium transition-all whitespace-nowrap',
+                                  'relative flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap overflow-hidden',
                                   categoryFilter === category
-                                    ? 'bg-kawai-red text-white shadow-md'
+                                    ? 'text-white'
                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 )}
                               >
-                                {category.charAt(0).toUpperCase() + category.slice(1)}
+                                {categoryFilter === category && (
+                                  <motion.div
+                                    layoutId="mobile-filter-active"
+                                    className="absolute inset-0 bg-kawai-red rounded-full"
+                                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                                  />
+                                )}
+                                <span className="relative z-10">{category.charAt(0).toUpperCase() + category.slice(1)}</span>
                               </button>
                             ))}
                           </div>
@@ -845,7 +897,12 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                     {/* Quick Links - Sticky at top on mobile, hidden on desktop */}
                     {isMobile && query.length < 2 && (
                       <div className="flex-shrink-0 border-b border-gray-200/50">
-                        <div className="p-4 space-y-1">
+                        <motion.div
+                          className="p-4 space-y-1"
+                          variants={quickLinksContainerVariants}
+                          initial="hidden"
+                          animate="show"
+                        >
                           {/* Quick Links Header */}
                           <div className="flex items-center gap-2 mb-4 px-2">
                             <div className="h-px flex-1 bg-kawai-neutral/20" />
@@ -855,8 +912,9 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                             <div className="h-px flex-1 bg-kawai-neutral/20" />
                           </div>
                           {quickLinks.map((link, index) => (
-                            <button
+                            <motion.button
                               key={index}
+                              variants={quickLinkItemVariants}
                               onClick={() => {
                                 router.push(link.url)
                                 clearSearch()
@@ -876,9 +934,9 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
                                 </svg>
                               </div>
-                            </button>
+                            </motion.button>
                           ))}
-                        </div>
+                        </motion.div>
                       </div>
                     )}
 
@@ -898,138 +956,85 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                           : undefined
                       }
                     >
-                      {/* Welcome Screen - Show when search is empty (desktop only now) */}
+                      {/* Welcome Screen - desktop only */}
                       {query.length < 2 && !isMobile ? (
-                        <div className={cn(
-                          "flex flex-col items-center h-full",
-                          isMobile ? "justify-start pt-8" : "justify-center gap-12"
-                        )}>
-                          {/* Small KAWAI Logo - Desktop only */}
-                          {!isMobile && (
-                            <div className="flex items-center justify-center">
-                              <KawaiLogo
-                                size="sm"
-                                animated={false}
-                                nonClickable={true}
-                              />
-                            </div>
-                          )}
+                        <div className="flex flex-col items-center justify-center h-full">
 
-                          {/* Sequential Greeting Message with Buena Park font - Desktop only */}
-                          {!isMobile && (
-                            <div className="text-center px-4 relative" style={{ minHeight: '180px' }}>
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                {/* "Welcome," - Fades in then out */}
-                                <h2
-                                  className="text-kawai-pearl absolute text-5xl"
-                                  style={{
-                                    fontFamily: 'var(--font-buena-park), serif',
-                                    fontWeight: 400,
-                                    letterSpacing: '0.02em',
-                                    animation: 'fadeInOut 3s ease-in-out forwards'
-                                  }}
+                          {/* Logo */}
+                          <motion.div
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
+                            className="mb-7"
+                          >
+                            <KawaiLogo size="sm" animated={false} nonClickable={true} />
+                          </motion.div>
+
+                          {/* Tagline — ambient, not a headline */}
+                          <motion.p
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 0.45, y: 0 }}
+                            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.22 }}
+                            className="text-kawai-pearl mb-9 select-none"
+                            style={{
+                              fontFamily: 'var(--font-buena-park), serif',
+                              fontWeight: 300,
+                              fontSize: '1.35rem',
+                              letterSpacing: '0.06em',
+                            }}
+                          >
+                            Instrumental to Life.
+                          </motion.p>
+
+                          {/* Red separator — draws in from center */}
+                          <motion.div
+                            initial={{ scaleX: 0, opacity: 0 }}
+                            animate={{ scaleX: 1, opacity: 1 }}
+                            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.42 }}
+                            className="h-px bg-kawai-red mb-9"
+                            style={{ width: '28px', transformOrigin: 'center' }}
+                          />
+
+                          {/* Navigation links */}
+                          <motion.nav
+                            className="w-full max-w-xs"
+                            variants={quickLinksContainerVariants}
+                            initial="hidden"
+                            animate="show"
+                            transition={{ staggerChildren: 0.06, delayChildren: 0.58 }}
+                          >
+                            {quickLinks.map((link, index) => (
+                              <motion.button
+                                key={index}
+                                variants={quickLinkItemVariants}
+                                onClick={() => {
+                                  router.push(link.url)
+                                  clearSearch()
+                                }}
+                                className="group w-full flex items-center justify-between px-6 py-3.5 border-b border-kawai-neutral/10 last:border-0 hover:bg-kawai-red/5 transition-colors duration-200"
+                              >
+                                <span className="text-kawai-pearl/50 text-xs font-light tracking-[0.14em] uppercase group-hover:text-kawai-pearl/90 transition-colors duration-200">
+                                  {link.label}
+                                </span>
+                                <svg
+                                  className="w-3 h-3 text-kawai-red opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
                                 >
-                                  Welcome,
-                                </h2>
-
-                                {/* "Instrumental to Life." - Fades in after Welcome fades out */}
-                                <h3
-                                  className="text-kawai-pearl absolute text-4xl"
-                                  style={{
-                                    fontFamily: 'var(--font-buena-park), serif',
-                                    fontWeight: 300,
-                                    letterSpacing: '0.03em',
-                                    animation: 'fadeInAfter 3s ease-in-out 2s forwards',
-                                    opacity: 0
-                                  }}
-                                >
-                                  Instrumental to Life.
-                                </h3>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Quick Links - Desktop only (mobile has sticky version at top) */}
-                          {!isMobile && (
-                            <div className="w-full max-w-md space-y-1">
-                              {/* Quick Links Header */}
-                              <div className="flex items-center gap-2 mb-4 px-2">
-                                <div className="h-px flex-1 bg-kawai-neutral/20" />
-                                <h3 className="text-xs font-medium text-kawai-neutral uppercase tracking-widest">
-                                  Quick Links
-                                </h3>
-                                <div className="h-px flex-1 bg-kawai-neutral/20" />
-                              </div>
-                              {quickLinks.map((link, index) => (
-                                <button
-                                  key={index}
-                                  onClick={() => {
-                                    router.push(link.url)
-                                    clearSearch()
-                                  }}
-                                  className="group w-full px-6 py-4 text-left transition-all duration-200 hover:bg-kawai-red/5 border-l-2 border-transparent hover:border-kawai-red"
-                                >
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-kawai-pearl font-light text-lg tracking-wide group-hover:text-kawai-red transition-colors">
-                                      {link.label}
-                                    </span>
-                                    <svg
-                                      className="w-5 h-5 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
-                                      fill="none"
-                                      viewBox="0 0 24 24"
-                                      stroke="currentColor"
-                                    >
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                  </div>
-                                </button>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* CSS for sequential fade animation */}
-                          <style jsx>{`
-                            @keyframes fadeInOut {
-                              0% {
-                                opacity: 0;
-                                transform: translateY(10px);
-                              }
-                              15% {
-                                opacity: 1;
-                                transform: translateY(0);
-                              }
-                              50% {
-                                opacity: 1;
-                                transform: translateY(0);
-                              }
-                              65% {
-                                opacity: 0;
-                                transform: translateY(-10px);
-                              }
-                              100% {
-                                opacity: 0;
-                                transform: translateY(-10px);
-                              }
-                            }
-
-                            @keyframes fadeInAfter {
-                              0% {
-                                opacity: 0;
-                                transform: translateY(10px);
-                              }
-                              20% {
-                                opacity: 1;
-                                transform: translateY(0);
-                              }
-                              100% {
-                                opacity: 1;
-                                transform: translateY(0);
-                              }
-                            }
-                          `}</style>
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                              </motion.button>
+                            ))}
+                          </motion.nav>
                         </div>
                       ) : query.length >= 2 && filteredResults.length === 0 && !isLoading ? (
-                        <div className="flex flex-col items-center justify-center h-full">
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.96 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                          className="flex flex-col items-center justify-center h-full"
+                        >
                           <div className="w-16 h-16 rounded-full bg-kawai-black/40 backdrop-blur-xl flex items-center justify-center mb-4 border border-kawai-neutral/40">
                             <Search className="w-8 h-8 text-kawai-red" />
                           </div>
@@ -1039,12 +1044,17 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                           <p className="text-sm text-kawai-neutral text-center max-w-sm">
                             Try adjusting your search or browse our collections
                           </p>
-                        </div>
+                        </motion.div>
                       ) : (
-                        <div className="space-y-6">
+                        <motion.div
+                          className="space-y-6"
+                          variants={sectionContainerVariants}
+                          initial="hidden"
+                          animate="show"
+                        >
                           {/* Storefronts Section - Shown FIRST (highest priority) */}
                           {storefrontResults.length > 0 && (
-                            <div>
+                            <motion.div variants={sectionVariants}>
                               <div className="flex items-center gap-2 mb-3 px-2">
                                 <div className="h-px flex-1 bg-kawai-neutral/20" />
                                 <h3 className="text-xs font-medium text-kawai-neutral uppercase tracking-widest">
@@ -1101,12 +1111,12 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                   )
                                 })}
                               </div>
-                            </div>
+                            </motion.div>
                           )}
 
                           {/* Category Switcher */}
                           {productResults.length > 0 && (
-                            <div>
+                            <motion.div variants={sectionVariants}>
                               {/* Category Tabs */}
                               {availableCategories.length > 1 && (
                                 <div className="flex items-center gap-2 mb-3 px-2">
@@ -1123,13 +1133,20 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                           key={categoryKey}
                                           onClick={() => setSelectedProductCategory(categoryKey)}
                                           className={cn(
-                                            'px-3 py-1 text-xs font-medium uppercase tracking-widest transition-all whitespace-nowrap',
+                                            'relative pb-1 px-3 py-1 text-xs font-medium uppercase tracking-widest transition-colors whitespace-nowrap',
                                             isSelected
                                               ? 'text-kawai-red'
                                               : 'text-kawai-neutral hover:text-kawai-pearl'
                                           )}
                                         >
                                           {getCategoryLabel(categoryKey)}
+                                          {isSelected && (
+                                            <motion.div
+                                              layoutId="product-category-underline"
+                                              className="absolute bottom-0 left-3 right-3 h-px bg-kawai-red"
+                                              transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                                            />
+                                          )}
                                         </button>
                                       )
                                     })}
@@ -1215,12 +1232,12 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                   )
                                 })}
                               </div>
-                            </div>
+                            </motion.div>
                           )}
 
                           {/* Pages Section */}
                           {pageResults.length > 0 && (
-                            <div>
+                            <motion.div variants={sectionVariants}>
                               <div className="flex items-center gap-2 mb-3 px-2">
                                 <div className="h-px flex-1 bg-kawai-neutral/20" />
                                 <h3 className="text-xs font-medium text-kawai-neutral uppercase tracking-widest">
@@ -1266,9 +1283,9 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                   )
                                 })}
                               </div>
-                            </div>
+                            </motion.div>
                           )}
-                        </div>
+                        </motion.div>
                       )}
                     </div>
 
@@ -1284,13 +1301,20 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                                   key={category}
                                   onClick={() => setCategoryFilter(category)}
                                   className={cn(
-                                    'px-4 py-2 rounded-lg text-sm font-medium transition-all backdrop-blur-xl',
+                                    'relative px-4 py-2 rounded-lg text-sm font-medium transition-colors backdrop-blur-xl overflow-hidden',
                                     categoryFilter === category
-                                      ? 'bg-kawai-red text-white shadow-md'
+                                      ? 'text-white'
                                       : 'bg-kawai-black/60 text-kawai-pearl hover:bg-kawai-black/80 border border-kawai-neutral/40 hover:border-kawai-red/60'
                                   )}
                                 >
-                                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                                  {categoryFilter === category && (
+                                    <motion.div
+                                      layoutId="desktop-filter-active"
+                                      className="absolute inset-0 bg-kawai-red rounded-lg"
+                                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                                    />
+                                  )}
+                                  <span className="relative z-10">{category.charAt(0).toUpperCase() + category.slice(1)}</span>
                                 </button>
                               ))}
                             </div>
@@ -1357,10 +1381,10 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                   </div>
                 </div>
               </div>
-            </div>
-            </>
+            </motion.div>
           )}
-        </AnimatePresence>,
+        </AnimatePresence>
+        </Fragment>,
         document.body
       )}
 

@@ -13,6 +13,7 @@ interface ShopifyCollectionReference {
   shopifyCollectionId: string
   title: string
   handle: string
+  imageUrl?: string | null
 }
 
 /**
@@ -62,6 +63,7 @@ export async function upsertCollectionsFromProduct(
         shopifyCollectionId: collectionRef.shopifyCollectionId,
         title: collectionRef.title,
         handle: collectionRef.handle,
+        ...(collectionRef.imageUrl !== undefined ? { imageUrl: collectionRef.imageUrl } : {}),
         shopify: {
           syncStatus: 'synced' as const,
           lastSyncedAt: new Date().toISOString(),

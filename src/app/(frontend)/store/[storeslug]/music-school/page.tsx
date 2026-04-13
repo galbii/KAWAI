@@ -14,10 +14,20 @@ type Props = { params: Promise<{ storeslug: string }> }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { storeslug } = await params
   const school = await getMusicSchoolByStorefrontSlug(storeslug)
-  if (!school) return { title: 'Music School' }
+  const city = school?.contactInfo?.city
+  if (!school) return {
+    title: 'Piano Lessons | Kawai Music School',
+    description: 'Kawai Music School — expert piano instruction for all ages and skill levels.',
+  }
+  const defaultTitle = city
+    ? `Piano Lessons in ${city} | ${school.officialName || school.schoolName}`
+    : `${school.officialName || school.schoolName} | Piano Lessons`
+  const defaultDescription = city
+    ? `${school.officialName || school.schoolName} offers expert piano lessons in ${city} for all ages. Private lessons, group classes, and more on Kawai instruments.`
+    : school.about || `Expert piano instruction at ${school.officialName || school.schoolName}. All ages and skill levels welcome.`
   return {
-    title: school.metaTitle || `${school.schoolName} | Music School`,
-    description: school.metaDescription || school.about || undefined,
+    title: school.metaTitle || defaultTitle,
+    description: school.metaDescription || defaultDescription,
   }
 }
 
@@ -95,11 +105,11 @@ export default async function MusicSchoolPage({ params }: Props) {
         <div className="relative z-10 flex flex-col items-center text-center px-6 md:pr-20">
           <img
             src="https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/KMS%20Logo.webp"
-            alt="Kawai Music School"
+            alt={`Kawai Music School${school.contactInfo?.city ? ` ${school.contactInfo.city}` : ''}`}
             className="h-16 md:h-20 w-auto mb-10 opacity-95"
           />
           {school.contactInfo?.city && (
-            <div className="flex items-center gap-3 mb-10">
+            <div className="flex items-center gap-3 mb-4">
               <div className="h-px w-6 bg-kawai-red/50" />
               <span className="text-white/40 text-[10px] tracking-[0.4em] uppercase">
                 {school.contactInfo.city}
@@ -107,6 +117,10 @@ export default async function MusicSchoolPage({ params }: Props) {
               <div className="h-px w-6 bg-kawai-red/50" />
             </div>
           )}
+          {/* Visually hidden H1 for SEO — visible heading is the logo above */}
+          <h1 className="sr-only">
+            {school.metaTitle || `${school.officialName || school.schoolName}${school.contactInfo?.city ? ` — Piano Lessons in ${school.contactInfo.city}` : ' — Piano Lessons'}`}
+          </h1>
           <div className="flex flex-wrap gap-3 justify-center">
             <Link
               href={`${baseUrl}/programs`}

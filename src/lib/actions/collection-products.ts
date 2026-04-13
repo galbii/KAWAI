@@ -61,3 +61,4 @@ export async function getProductsByCollection(handle: string): Promise<NavProduc
     { tags: [`collection-${handle}`, 'products'], revalidate: 300 }
   )()
 }
+

@@ -364,6 +364,7 @@ export async function syncShopifyDataToProduct(
       shopifyCollectionId: collection.id,
       title: collection.title,
       handle: collection.handle,
+      imageUrl: (collection as any).image?.url ?? null,
     })) || []
 
     // Return update with both shopify group and main product fields

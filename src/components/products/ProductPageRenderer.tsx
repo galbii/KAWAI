@@ -1,6 +1,7 @@
 import { Product } from '@/payload-types'
 import { BlocksList } from '@/lib/blocks/BlockRenderer'
 import { BlockDebugger } from '@/components/debug/BlockDebugger'
+import { ProductSideNav } from '@/components/products/ProductSideNav'
 import { HeroBlock } from '@/components/blocks/HeroBlock'
 import { ProductShowcaseBlock } from '@/components/blocks/ProductShowcaseBlock'
 import { FeaturesListBlock } from '@/components/blocks/FeaturesListBlock'
@@ -29,6 +30,7 @@ export function ProductPageRenderer({ product }: ProductPageRendererProps) {
     <div className="min-h-screen">
       <BlocksList blocks={product.pageContent} product={product} />
       <BlockDebugger product={product} />
+      <ProductSideNav blocks={product.pageContent} />
     </div>
   )
 }

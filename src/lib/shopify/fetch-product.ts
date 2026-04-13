@@ -277,6 +277,9 @@ const PRODUCT_BY_ID_QUERY = `
           id
           title
           handle
+          image {
+            url
+          }
         }
       }
     }
@@ -465,6 +468,9 @@ const PRODUCT_BY_HANDLE_QUERY = `
           id
           title
           handle
+          image {
+            url
+          }
         }
       }
     }
@@ -665,6 +671,9 @@ const PRODUCT_BY_METAFIELD_QUERY = `
           id
           title
           handle
+          image {
+            url
+          }
         }
       }
     }

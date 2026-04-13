@@ -9533,6 +9533,62 @@ export interface MusicSchool {
       }[]
     | null;
   /**
+   * Add a city/suburb to generate a dedicated page (e.g. "Frisco" → /store/dallas/music-school/frisco). Use the SEO fields to control titles and descriptions.
+   */
+  serviceLocations?:
+    | {
+        /**
+         * Display name, e.g. "Frisco" or "Plano, TX"
+         */
+        cityName: string;
+        /**
+         * URL slug — lowercase, no spaces. e.g. "frisco" or "plano-tx"
+         */
+        slug: string;
+        /**
+         * Page H1 override. Defaults to "Piano Lessons in [City]".
+         */
+        headline?: string | null;
+        /**
+         * Optional intro paragraph about serving this area.
+         */
+        intro?: string | null;
+        /**
+         * SEO title override. Defaults to "[Headline] | [School Name]".
+         */
+        metaTitle?: string | null;
+        /**
+         * SEO description override.
+         */
+        metaDescription?: string | null;
+        /**
+         * List the lessons/programs available in this area. Displayed as feature cards on the page.
+         */
+        services?:
+          | {
+              /**
+               * e.g. "Private Piano Lessons" or "Kids Piano Classes"
+               */
+              name: string;
+              /**
+               * Brief description of this service.
+               */
+              description?: string | null;
+              /**
+               * e.g. "Ages 5–18" or "All ages welcome"
+               */
+              ageRange?: string | null;
+              /**
+               * e.g. "$150/month" or "Contact for pricing"
+               */
+              price?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * Page title for search engines (50–60 characters recommended)
    */
   metaTitle?: string | null;
@@ -11690,6 +11746,26 @@ export interface MusicSchoolsSelect<T extends boolean = true> {
           | T
           | {
               degree?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  serviceLocations?:
+    | T
+    | {
+        cityName?: T;
+        slug?: T;
+        headline?: T;
+        intro?: T;
+        metaTitle?: T;
+        metaDescription?: T;
+        services?:
+          | T
+          | {
+              name?: T;
+              description?: T;
+              ageRange?: T;
+              price?: T;
               id?: T;
             };
         id?: T;

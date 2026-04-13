@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getHomePageData } from "@/lib/payload";
+import { getHomePageDataDirect } from "@/lib/payload/queries";
 
 interface StorefrontData {
   locationName: string;
@@ -71,7 +71,7 @@ export async function generateMetadata({ params }: { params: Promise<{ storeslug
     }
 
     // Get SEO data from HomePage collection
-    const homePageData = await getHomePageData();
+    const homePageData = await getHomePageDataDirect();
     const seo = homePageData?.seo;
 
     // Create location-specific titles and descriptions using HomePage SEO data
@@ -158,72 +158,8 @@ export default async function StorefrontLayout({
     notFound();
   }
 
-  // Get homepage data for structured data description
-  const homePageData = await getHomePageData();
-
-  // Generate local business schema for this specific storefront
-  const businessDescription = homePageData?.heroSection?.description?.replace(/St\. Louis/g, storefrontData.locationName) ||
-    `${storefrontData.locationName} - Premier Kawai Piano Gallery offering expert piano consultation, services, and personalized guidance.`;
-
-  const localBusinessSchema = {
-    "@context": "https://schema.org",
-    "@type": "MusicStore",
-    "name": storefrontData.locationName,
-    "description": businessDescription,
-    "url": `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/store/${storeslug}`,
-    "brand": "Kawai",
-    "hasOfferCatalog": {
-      "@type": "OfferCatalog",
-      "name": "Piano Products & Services",
-      "itemListElement": [
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "name": "Kawai Grand Pianos",
-            "description": "Premium grand pianos featuring the revolutionary Millennium III Carbon Fiber Action for unmatched performance and durability"
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "name": "Kawai Digital Pianos",
-            "description": "Advanced digital pianos with authentic wooden-key action and world-class piano sound sampling"
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "name": "Kawai Upright Pianos",
-            "description": "Space-efficient upright pianos delivering rich tone and responsive touch for home and studio"
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "name": "Kawai Hybrid Pianos",
-            "description": "Revolutionary instruments combining acoustic piano touch with digital versatility"
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Piano Services & Consultation",
-            "description": "Expert piano consultation, delivery, tuning, and personalized guidance"
-          }
-        }
-      ]
-    }
-  };
-
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(localBusinessSchema),
-        }}
-      />
       {children}
     </>
   );

@@ -321,6 +321,60 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
 
     // ==========================================
+    // DYNAMIC — Music School pages
+    // ==========================================
+
+    try {
+      const musicSchoolsResult = await payload.find({
+        collection: 'music-schools',
+        where: { isActive: { equals: true } },
+        limit: 500,
+        depth: 1,
+        select: { serviceLocations: true, updatedAt: true, storefront: true },
+      })
+
+      let musicSchoolCount = 0
+      let serviceAreaCount = 0
+
+      for (const ms of musicSchoolsResult.docs) {
+        const storefrontSlug =
+          typeof ms.storefront === 'object' && ms.storefront !== null
+            ? (ms.storefront as any).slug
+            : null
+        if (!storefrontSlug) continue
+
+        const base = `${SITE_URL}/store/${storefrontSlug}/music-school`
+        const lastMod = new Date((ms as any).updatedAt)
+
+        // Core music school pages
+        sitemap.push(
+          { url: base, lastModified: lastMod, changeFrequency: 'monthly' as const, priority: 0.75 },
+          { url: `${base}/programs`, lastModified: lastMod, changeFrequency: 'monthly' as const, priority: 0.70 },
+          { url: `${base}/faculty`, lastModified: lastMod, changeFrequency: 'monthly' as const, priority: 0.60 },
+          { url: `${base}/policies`, lastModified: lastMod, changeFrequency: 'yearly' as const, priority: 0.50 },
+        )
+        musicSchoolCount++
+
+        // Service area landing pages
+        const locations: Array<{ slug?: string }> = (ms as any).serviceLocations ?? []
+        for (const loc of locations) {
+          if (!loc.slug) continue
+          sitemap.push({
+            url: `${base}/${loc.slug}`,
+            lastModified: lastMod,
+            changeFrequency: 'monthly' as const,
+            priority: 0.75,
+          })
+          serviceAreaCount++
+        }
+      }
+
+      console.log(`✅ Sitemap: ${musicSchoolCount} music schools (${serviceAreaCount} service area pages)`)
+    } catch (err) {
+      console.error('❌ Sitemap: music schools fetch failed', err)
+    }
+
+    // ==========================================
     // DYNAMIC — Shopify Collections (from CMS)
     // ==========================================
 

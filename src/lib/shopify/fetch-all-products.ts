@@ -190,6 +190,9 @@ const PRODUCTS_WITH_MODEL_QUERY = `
                 id
                 title
                 handle
+                image {
+                  url
+                }
               }
             }
           }

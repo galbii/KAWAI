@@ -457,6 +457,14 @@ export const Products: CollectionConfig = {
                     readOnly: true,
                   },
                 },
+                {
+                  name: 'imageUrl',
+                  type: 'text',
+                  admin: {
+                    description: 'Collection image URL (synced from Shopify)',
+                    readOnly: true,
+                  },
+                },
               ],
             },
 
@@ -1320,7 +1328,7 @@ export const Products: CollectionConfig = {
                   eyebrow: 'Explore More',
                   heading: 'You May Also Like',
                 },
-                displayMode: 'both',
+                displayMode: 'collection',
                 maxProducts: 4,
                 layout: 'grid',
                 showPrice: true,
@@ -1555,7 +1563,7 @@ export const Products: CollectionConfig = {
               eyebrow: 'Explore More',
               heading: 'You May Also Like',
             },
-            displayMode: 'both',
+            displayMode: 'collection',
             maxProducts: 4,
             layout: 'grid',
             showPrice: true,

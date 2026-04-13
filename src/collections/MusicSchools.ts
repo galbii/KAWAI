@@ -494,7 +494,91 @@ export const MusicSchools: CollectionConfig = {
             },
           ],
         },
-        // Tab 6: SEO
+        // Tab 6: Service Areas (local SEO landing pages)
+        {
+          label: 'Service Areas',
+          description: 'Each entry generates a local SEO page at /store/[storeslug]/music-school/[location-slug] targeting nearby cities and suburbs.',
+          fields: [
+            {
+              name: 'serviceLocations',
+              type: 'array',
+              label: 'Service Area Pages',
+              labels: { singular: 'Service Area', plural: 'Service Areas' },
+              admin: {
+                description:
+                  'Add a city/suburb to generate a dedicated page (e.g. "Frisco" → /store/dallas/music-school/frisco). Use the SEO fields to control titles and descriptions.',
+              },
+              fields: [
+                {
+                  name: 'cityName',
+                  type: 'text',
+                  required: true,
+                  admin: { description: 'Display name, e.g. "Frisco" or "Plano, TX"' },
+                },
+                {
+                  name: 'slug',
+                  type: 'text',
+                  required: true,
+                  admin: { description: 'URL slug — lowercase, no spaces. e.g. "frisco" or "plano-tx"' },
+                },
+                {
+                  name: 'headline',
+                  type: 'text',
+                  admin: { description: 'Page H1 override. Defaults to "Piano Lessons in [City]".' },
+                },
+                {
+                  name: 'intro',
+                  type: 'textarea',
+                  admin: { description: 'Optional intro paragraph about serving this area.' },
+                },
+                {
+                  name: 'metaTitle',
+                  type: 'text',
+                  admin: { description: 'SEO title override. Defaults to "[Headline] | [School Name]".' },
+                },
+                {
+                  name: 'metaDescription',
+                  type: 'textarea',
+                  admin: { description: 'SEO description override.' },
+                },
+                {
+                  name: 'services',
+                  type: 'array',
+                  label: 'Services Available in This Area',
+                  labels: { singular: 'Service', plural: 'Services' },
+                  admin: {
+                    description:
+                      'List the lessons/programs available in this area. Displayed as feature cards on the page.',
+                  },
+                  fields: [
+                    {
+                      name: 'name',
+                      type: 'text',
+                      required: true,
+                      admin: { description: 'e.g. "Private Piano Lessons" or "Kids Piano Classes"' },
+                    },
+                    {
+                      name: 'description',
+                      type: 'textarea',
+                      admin: { description: 'Brief description of this service.' },
+                    },
+                    {
+                      name: 'ageRange',
+                      type: 'text',
+                      admin: { description: 'e.g. "Ages 5–18" or "All ages welcome"' },
+                    },
+                    {
+                      name: 'price',
+                      type: 'text',
+                      admin: { description: 'e.g. "$150/month" or "Contact for pricing"' },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        // Tab 7: SEO
         {
           label: 'SEO',
           fields: [
