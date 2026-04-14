@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Narrow Tailwind v4 content scanning to src/ only.
+   Without explicit @source, v4 scans from the project root which may include
+   generated files and cause an oversized CSS bundle. */
+@source "../";
+
 /* Accessibility: Respect user's motion preferences */
 @media (prefers-reduced-motion: reduce) {
   *,

@@ -30,7 +30,7 @@
  * @see docs/BLOCKS.md for detailed block documentation
  */
 
-import React, { Fragment } from 'react'
+import React, { Fragment, Suspense } from 'react'
 import type { Page } from '@/payload-types'
 import { cn } from '@/lib/utils'
 import { PageLayoutProvider } from '@/lib/contexts/PageLayoutContext'
@@ -236,7 +236,11 @@ export function RenderBlocks({ blocks }: { blocks: Page['layout'] }) {
           return null
         }
 
-        return (
+        // Slow data-fetching blocks get their own Suspense boundary so they
+        // stream in without blocking the rest of the page.
+        const isAsyncBlock = (blockType as string) === 'marketing-blog-latest'
+
+        const blockEl = (
           <div
             key={index}
             id={`block-${block.id}`}
@@ -256,6 +260,12 @@ export function RenderBlocks({ blocks }: { blocks: Page['layout'] }) {
             />
           </div>
         )
+
+        return isAsyncBlock ? (
+          <Suspense key={index} fallback={<div className="bg-kawai-pearl py-16 lg:py-24" aria-hidden="true" />}>
+            {blockEl}
+          </Suspense>
+        ) : blockEl
       })}
     </Fragment>
     </PageLayoutProvider>

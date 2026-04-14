@@ -1,7 +1,25 @@
+import { unstable_cache } from 'next/cache'
 import type { MarketingBlogLatestBlock } from '@/payload-types'
 import type { Post } from '@/payload-types'
 import { getPayloadClient } from '@/lib/payload/queries'
 import { BlogLatestClient } from '@/components/blog/BlogLatestClient'
+
+const getPublishedPosts = unstable_cache(
+  async (): Promise<Post[]> => {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'posts',
+      where: { status: { equals: 'published' } },
+      limit: 200,
+      sort: '-publishedDate',
+      depth: 1,
+      overrideAccess: true,
+    })
+    return result.docs as Post[]
+  },
+  ['blog-latest-posts'],
+  { tags: ['posts'], revalidate: 300 },
+)
 
 export async function BlogLatestBlock({
   postLimit,
@@ -19,16 +37,7 @@ export async function BlogLatestBlock({
   let allPosts: Post[] = []
 
   try {
-    const payload = await getPayloadClient()
-    const result = await payload.find({
-      collection: 'posts',
-      where: { status: { equals: 'published' } },
-      limit: 200,
-      sort: '-publishedDate',
-      depth: 2,
-      overrideAccess: true,
-    })
-    allPosts = result.docs as Post[]
+    allPosts = await getPublishedPosts()
   } catch (error) {
     console.error('[BlogLatestBlock] Error fetching posts:', error)
   }
