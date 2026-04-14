@@ -302,7 +302,7 @@ function CarouselSlide({ collection, isActive, priority = false }: SlideProps) {
 
 export function CollectionVideoCarousel({
   collections,
-  autoplayInterval = 6000,
+  autoplayInterval = 3500,
   height = 'large',
 }: CollectionVideoCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0)
@@ -415,32 +415,70 @@ export function CollectionVideoCarousel({
             </svg>
           </button>
 
-          {/* Dot indicators */}
+          {/* Slide counter — editorial ma-style numbering */}
           <div
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2"
+            className="absolute bottom-8 right-5 md:right-7 z-30 select-none pointer-events-none"
+            aria-hidden="true"
+          >
+            <span
+              className="text-white/50 text-[11px] tracking-[0.25em] uppercase"
+              style={{ fontFamily: 'var(--font-family-cormorant)' }}
+            >
+              {String(activeIndex + 1).padStart(2, '0')}
+              <span className="mx-1.5 opacity-40">/</span>
+              {String(total).padStart(2, '0')}
+            </span>
+          </div>
+
+          {/* Progress rail indicators — thin segmented bars with animated fill */}
+          <div
+            className="absolute bottom-0 left-0 right-0 z-30 flex items-stretch gap-[3px] px-4 pb-[10px] pt-[8px]"
             role="tablist"
             aria-label="Carousel slides"
           >
-            {collections.map((collection, i) => (
-              <button
-                key={collection.handle}
-                role="tab"
-                aria-selected={i === activeIndex}
-                aria-label={`Go to slide ${i + 1}: ${collection.heading ?? collection.title}`}
-                onClick={() => goTo(i)}
-                className="p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white rounded"
-              >
-                <motion.div
-                  animate={{
-                    width: i === activeIndex ? 24 : 8,
-                    backgroundColor: i === activeIndex ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.5)',
-                  }}
-                  transition={{ duration: 0.22 }}
-                  className="h-1.5 rounded-full"
-                />
-              </button>
-            ))}
+            {collections.map((collection, i) => {
+              const isActive = i === activeIndex
+              const isCompleted = i < activeIndex
+              return (
+                <button
+                  key={collection.handle}
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-label={`Go to slide ${i + 1}: ${collection.heading ?? collection.title}`}
+                  onClick={() => goTo(i)}
+                  className="flex-1 h-[2px] rounded-full overflow-hidden focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/60 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent cursor-pointer group"
+                  style={{ background: 'rgba(255,255,255,0.22)' }}
+                >
+                  {isCompleted && (
+                    <div className="h-full w-full rounded-full bg-white/70" />
+                  )}
+                  {isActive && (
+                    <div
+                      key={`kawai-progress-${activeIndex}`}
+                      className="h-full w-full rounded-full bg-white"
+                      style={{
+                        transformOrigin: 'left center',
+                        transform: 'scaleX(0)',
+                        animation: `kawaiProgressFill ${autoplayInterval}ms linear forwards`,
+                        animationPlayState: isPaused ? 'paused' : 'running',
+                      }}
+                    />
+                  )}
+                  {!isActive && !isCompleted && (
+                    <div className="h-full w-0 group-hover:w-full rounded-full bg-white/30 transition-[width] duration-300" />
+                  )}
+                </button>
+              )
+            })}
           </div>
+
+          {/* CSS keyframe for progress fill animation */}
+          <style>{`
+            @keyframes kawaiProgressFill {
+              from { transform: scaleX(0); }
+              to   { transform: scaleX(1); }
+            }
+          `}</style>
         </>
       )}
     </div>

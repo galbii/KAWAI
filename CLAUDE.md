@@ -5,8 +5,8 @@ You are an expert Payload CMS developer working on KAWAI, a production-grade pia
 ## Environment
 
 - **Runtime**: Bun (mandatory — never use npm/yarn/pnpm)
-- **Framework**: Next.js 15.4 with App Router + Turbopack (`next dev --turbo`)
-- **CMS**: Payload CMS 3.52 (co-located in the same Next.js app)
+- **Framework**: Next.js 15.x with App Router + Turbopack (`next dev --turbo`)
+- **CMS**: Payload CMS 3.x (co-located in the same Next.js app)
 - **Database**: MongoDB Atlas (mongoose adapter, IPv4 forced, minPoolSize: 1)
 - **Storage**: Cloudflare R2 (S3-compatible, `forcePathStyle: true`)
 
@@ -20,8 +20,6 @@ You are an expert Payload CMS developer working on KAWAI, a production-grade pia
 | `bun run lint` | ESLint + TypeScript |
 | `bun run payload generate:importmap` | Regenerate admin import map after adding/moving admin components |
 | `bun run seed` | Seed database (`PAYLOAD_SEED=true`) |
-
-**Always run `bun run build` before considering code complete.**
 
 ---
 
@@ -73,7 +71,6 @@ src/app/
 - `@payloadcms/plugin-import-export` — bulk import/export
 - `@payloadcms/storage-s3` — Cloudflare R2 for Media collection
 - `pianosPageSeedPlugin` — seeds PianosPage initial data
-- `payloadCloudPlugin` — **currently disabled** (S3 plugin conflict)
 
 ### Block Categories (`src/blocks/`)
 
@@ -126,35 +123,33 @@ async function getPayloadClient(): Promise<Payload> {
 
 Wrap Payload queries in `unstable_cache` to cache across requests and enable tag-based on-demand revalidation.
 
-**Per-call pattern** (when cache key depends on arguments):
-
+**Per-call pattern** (key depends on argument — call immediately):
 ```typescript
-// src/components/layout/header-dynamic.tsx
-function getDealerLocationBySlug(slug: string) {
+function getDealerBySlug(slug: string) {
   return unstable_cache(
-    async () => {
-      const payload = await getPayload({ config })
-      const result = await payload.find({
-        collection: 'storefronts',
-        where: { slug: { equals: slug }, isActive: { equals: true } },
-        limit: 1,
-        select: { locationName: true, slug: true },  // Always select only needed fields
-      })
-      return result.docs[0] ?? null
-    },
-    [`header-storefront-${slug}`],                         // Unique key array
+    async () => { /* payload.find(...) */ },
+    [`storefront-${slug}`],
     { tags: [`storefront-${slug}`, 'storefronts'], revalidate: 3600 }
   )()
 }
 ```
 
-**Module-level pattern** (for queries with no dynamic args):
-
+**Module-level pattern** (no dynamic args — assign once, call like a function):
 ```typescript
-const getHomePageNewsItems = unstable_cache(
-  async () => { /* ... */ },
-  ['header-news-items'],
-  { tags: ['home-page'], revalidate: 300 }
+const getHomePageData = unstable_cache(
+  async () => { /* payload.find(...) */ },
+  ['home-page-data'],
+  { tags: ['home-page'], revalidate: 3600 }
+)
+```
+
+**Type annotation gotcha**: Inline `Promise<{ ... } | null>` inside `unstable_cache` throws a parse error. Extract to a named type alias:
+```typescript
+type HomePageData = { hero: any; blocks: any[] } | null
+const getHomePageData = unstable_cache(
+  async (): Promise<HomePageData> => { /* ... */ },
+  ['home-page-data'],
+  { tags: ['home-page'], revalidate: 3600 }
 )
 ```
 
@@ -180,8 +175,11 @@ Tag keys must be **globally unique** — collisions cause unrelated caches to in
 |-----------|---------|--------|
 | `generateStaticParams` / slug lists | `0` | Only IDs needed, no population |
 | List queries (cards, grids) | `1` | Populate one level (e.g. featured image) |
-| Detail pages with nested media | `2` | Max for most cases |
+| Pages/singletons with blocks + Media | `1` | ⚠️ See depth trap below — Media has no relationships |
+| Products / storefronts with nested docs | `2` | Justified only when referenced docs themselves have relationships |
 | Storefronts (complex nested data) | `3` | Explicitly justified in `queries.ts` |
+
+**⚠️ The depth: 2 trap for block-heavy pages** — `depth: 2` fires TWO rounds of MongoDB queries. Round 1 populates all direct relationships (e.g. block image → Media). Round 2 then inspects each populated document for *its* relationships. Since Media documents have no relationships, round 2 fires N queries that all return nothing — pure overhead. On a homepage with 15 blocks × 3 images each, this is 45 wasted roundtrips adding ~1.5–3 seconds per cache miss. Always use `depth: 1` for `home-page` and `pianos-page` collections.
 
 **Never use `depth: 3` or higher without justification** — each level multiplies MongoDB lookups recursively.
 
@@ -242,6 +240,49 @@ The admin import map (`autoGenerate: false` in `payload.config.ts`) must be rege
 bun run payload generate:importmap
 ```
 
+### 9. Layout Architecture — Never Call `headers()` in `(frontend)/layout.tsx`
+
+Calling `headers()` (or `cookies()`) anywhere in `src/app/(frontend)/layout.tsx` forces the **entire frontend route tree** into dynamic rendering — Cloudflare returns `BYPASS` instead of `HIT` for every page.
+
+**Rule**: `(frontend)/layout.tsx` must never import or call `headers()` or `cookies()`.
+
+**Pattern for path-based layout decisions**: Use `usePathname()` in a client shell component, not `headers()` in the server layout. Example: `NammAwareShell` (`src/components/layout/NammAwareShell.tsx`) uses `usePathname()` to suppress the header/footer on NAMM pages.
+
+Wrap all data-fetching layout components in `<Suspense fallback={null}>` so the static shell streams immediately while dynamic parts load. See `src/app/(frontend)/layout.tsx` for the current structure.
+
+### 10. Cloudflare Edge Caching Architecture
+
+**Why Cloudflare returns BYPASS instead of HIT**
+
+Next.js RSC (React Server Components) adds these response headers:
+```
+Vary: RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch
+```
+
+Cloudflare sees `Vary` on non-standard headers and refuses to cache (returns `BYPASS`). This is correct behavior — without differentiating cached copies by these headers, a full-page HTML response could be served to a prefetch request or vice-versa.
+
+**The fix: Cloudflare Cache Key configuration (dashboard, not code)**
+
+In Cloudflare dashboard → Caching → Cache Rules, create a rule for your domain that:
+1. Sets cache eligibility to "Eligible for cache"
+2. Adds these headers to the **Cache Key** so Cloudflare stores separate copies per RSC variant:
+   - `RSC`
+   - `Next-Router-State-Tree`
+   - `Next-Router-Prefetch`
+   - `Next-Router-Segment-Prefetch`
+
+This is a **dashboard configuration change** — no code change needed.
+
+**PPR (Partial Prerendering) — NOT available in stable Next.js**
+
+PPR (`experimental.ppr: 'incremental'`) requires the Next.js canary channel, not stable 15.x. Do NOT add it to `next.config.ts` on the stable release — it throws a hard build error.
+
+When PPR becomes stable, add `export const experimental_ppr = true` to individual page files after enabling `ppr: 'incremental'` in `next.config.ts`. The Suspense boundaries added in this session are already the correct prerequisite structure.
+
+### 11. Resource Hints
+
+Resource hints are declared in `src/app/layout.tsx` inside `<head>`. Use `preconnect` for domains needed on first paint (GTM, fonts, YouTube) and `dns-prefetch` for domains loaded later or conditionally (Meta, DoubleClick, PostHog). `preconnect` costs a real TCP+TLS handshake — only use it when the domain is virtually always needed.
+
 ---
 
 ## TypeScript Best Practices
@@ -262,23 +303,14 @@ bun run payload generate:importmap
 
 ### Null Safety Patterns
 
+Relationship fields (e.g. `featuredImage`) type as `Media | string | null` — use a type guard:
 ```typescript
-// Browser APIs
-if (!window.visualViewport) return
-const viewport = window.visualViewport
-const height = viewport.height
-
-// Relationship fields (Media | string | null)
 function isMediaObject(media: Media | string | null): media is Media {
   return typeof media === 'object' && media !== null && 'url' in media
 }
-
-// Array access
-const name = items[0]?.name ?? 'Default'
-
-// Optional refs
-inputRef.current?.focus()
 ```
+
+Array access always returns `T | undefined` (`noUncheckedIndexedAccess`) — use `items[0]?.name ?? 'Default'`.
 
 ### Path Aliases
 
@@ -497,34 +529,13 @@ export const MyCollection: CollectionConfig = {
 
 ## Hooks: On-Demand Revalidation
 
-```typescript
-import type { CollectionAfterChangeHook } from 'payload'
+`afterChange` hooks POST to `/api/revalidate` to bust the Next.js Data Cache. See existing hooks in `src/collections/` for the canonical pattern.
 
-export const revalidateStorefront: CollectionAfterChangeHook = async ({ doc, context }) => {
-  if (context.skipRevalidation) return doc
-  if (!doc.isActive) return doc
-
-  const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-
-  // Fire-and-forget — never await, never block the CMS save
-  fetch(`${baseURL}/api/revalidate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      secret: process.env.REVALIDATION_SECRET,
-      tag: `storefront-${doc.slug}`,
-    }),
-  }).catch((err) => console.error('Revalidation error:', err))
-
-  return doc
-}
-```
-
-Hook rules:
-1. Always pass `req` to nested Payload operations
-2. Use context flags to prevent infinite loops
-3. Fire-and-forget for revalidation (never await)
-4. Never throw — log and return doc
+**Hook rules:**
+1. Always pass `req` to nested Payload operations (transaction atomicity)
+2. Guard with `context.skipHook` flag to prevent infinite loops
+3. Fire-and-forget revalidation fetches — never `await` them
+4. Never throw — log and return `doc`
 
 ---
 
@@ -540,19 +551,7 @@ Hook rules:
 
 ### Forms & Modals
 
-```tsx
-import { Modal } from '@/components/ui/modal'
-import { FormField } from '@/components/ui/form-field'
-import { FormAlert } from '@/components/ui/form-alert'
-import { useModal } from '@/hooks'
-
-const { isOpen, open, close } = useModal({ autoShow: { delay: 2000 } })
-
-<Modal isOpen={isOpen} onClose={close} size="lg">
-  <FormField name="email" label="Email" register={register} error={errors.email} />
-  <FormAlert variant="success" title="Sent!" message="We'll be in touch." />
-</Modal>
-```
+Use shared primitives: `Modal`, `FormField`, `FormAlert` from `@/components/ui/`, `useModal` from `@/hooks`. Never build one-off form/modal patterns in page files.
 
 ### NavigationContext — Dealer Location System
 
@@ -585,27 +584,7 @@ This pattern is already applied in `KawaiLogo` — follow it for any new compone
 
 ### Server vs Client Components
 
-All components are Server Components by default. Add `'use client'` only for:
-- `useState`, `useEffect`, `useRef`
-- Browser APIs (localStorage, geolocation)
-- Third-party widgets (Calendly, Google Maps)
-
-```tsx
-// ✅ Server Component — can call Payload directly
-import { getPayloadClient } from '@/lib/payload/queries'
-
-export default async function ProductsPage() {
-  const payload = await getPayloadClient()
-  const { docs } = await payload.find({
-    collection: 'products',
-    where: { status: { equals: 'active' } },
-    select: { name: true, slug: true, imageUrl: true },
-    depth: 1,
-    limit: 50,
-  })
-  return <ProductGrid products={docs} />
-}
-```
+All components are Server Components by default. Add `'use client'` only for `useState`/`useEffect`/`useRef`, browser APIs (localStorage, geolocation), or third-party widgets (Calendly, Google Maps).
 
 ---
 
@@ -826,50 +805,11 @@ import { cn } from '@/lib/utils'  // clsx + tailwind-merge
 
 #### 3. CVA for component variants
 
-```typescript
-import { cva, type VariantProps } from 'class-variance-authority'
-
-const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-md font-medium transition-all",
-  {
-    variants: {
-      variant: {
-        primary: "bg-kawai-red text-white hover:bg-kawai-red-700 shadow-brand-red-glow",
-        secondary: "border border-kawai-neutral text-kawai-black hover:border-kawai-red",
-        ghost: "text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl",
-      },
-      size: {
-        sm: "h-8 px-3 text-sm",
-        md: "h-10 px-4",
-        lg: "h-12 px-6 text-base",
-      },
-    },
-    defaultVariants: { variant: "primary", size: "md" },
-  }
-)
-```
+Use `class-variance-authority` for type-safe variant props. Brand variant names: `primary` (kawai-red), `secondary` (bordered), `ghost` (text-only). See `src/components/ui/` for existing CVA implementations.
 
 #### 4. `@utility` for complex brand components
 
-For multi-property components with pseudo-class logic that would be unwieldy as utility strings, define them in `brand-components.css`:
-
-```css
-/* src/styles/brand-components.css */
-@utility card-brand-intimate {
-  background: var(--color-kawai-pearl);
-  border: 1px solid var(--color-kawai-neutral);
-  box-shadow: var(--shadow-brand-subtle);
-  border-radius: 0.5rem;
-  transition: all 0.3s var(--ease-piano);
-
-  &:hover {
-    box-shadow: var(--shadow-brand-medium);
-    transform: translateY(-2px);
-  }
-}
-```
-
-Then add the class name to the `@source inline()` safelist in `globals.css`.
+For multi-property components with pseudo-class logic that would be unwieldy as inline utilities, define them in `src/styles/brand-components.css` using the `@utility` directive, then add the class name to the `@source inline()` safelist in `globals.css`.
 
 ### Shadow Scale
 
@@ -921,6 +861,31 @@ Tailwind v4 only generates utilities that it can statically scan in source files
 
 **Always add new dynamic class names here** — otherwise they'll work in dev (JIT scanning) but disappear in production builds.
 
+### CSS File Isolation — Tailwind v4
+
+**Critical**: Tailwind v4 compiles each CSS file independently via PostCSS. A CSS file that uses `@apply`, `@layer`, or `@theme` directives MUST contain its own `@import "tailwindcss"` at the top. It cannot inherit Tailwind from another file's import.
+
+```css
+/* ✅ Every CSS file that uses @apply must have this */
+@import "tailwindcss";
+
+@layer base {
+  .my-component {
+    @apply shadow-lg text-kawai-black;  /* Works — Tailwind is imported */
+  }
+}
+```
+
+```css
+/* ❌ Will throw "Cannot apply unknown utility class 'shadow-lg'" at build time */
+/* (no @import "tailwindcss" at top) */
+@layer base {
+  .my-component { @apply shadow-lg; }
+}
+```
+
+Campaign-specific CSS files (e.g. university `globals.css`) must each have their own `@import "tailwindcss"`. Do not try to "share" the import from `src/app/globals.css`.
+
 ### Accessibility
 
 `prefers-reduced-motion` is handled globally in `globals.css` — all animation/transition durations are overridden to `0.01ms`. No per-component motion guards needed.
@@ -952,34 +917,7 @@ GET /api/featured-models  → Featured pianos
 
 ### Environment Variables
 
-```bash
-# Database
-DATABASE_URI=mongodb+srv://...
-
-# Payload
-PAYLOAD_SECRET=your-secret-32-chars-minimum
-
-# Cloudflare R2
-S3_ACCESS_KEY_ID=...
-S3_SECRET_ACCESS_KEY=...
-S3_ENDPOINT=https://{account}.r2.cloudflarestorage.com
-S3_BUCKET=kawaicms
-S3_REGION=auto
-NEXT_PUBLIC_S3_PUBLIC_URL=https://pub-{account}.r2.dev
-
-# Revalidation
-REVALIDATION_SECRET=...
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-
-# Shopify
-SHOPIFY_STORE_DOMAIN=your-store.myshopify.com
-SHOPIFY_APP_CLIENT_SECRET=shpss_...
-
-# Analytics
-NEXT_PUBLIC_GA_ID=G-xxxxxxxxxx
-NEXT_PUBLIC_META_PIXEL_ID=...
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=...
-```
+See `.env.example` for the full list. Key groups: `DATABASE_URI`, `PAYLOAD_SECRET`, `S3_*` (R2), `NEXT_PUBLIC_S3_PUBLIC_URL`, `REVALIDATION_SECRET`, `NEXT_PUBLIC_SITE_URL`, `SHOPIFY_*`, `NEXT_PUBLIC_GA_ID`, `NEXT_PUBLIC_META_PIXEL_ID`, `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`, `NEXT_PUBLIC_POSTHOG_KEY`.
 
 Access:
 - App: `http://localhost:3000`
@@ -1062,12 +1000,19 @@ For client components, follow the `ProductHeroBlockWrapper` pattern — server w
 | **`unstable_cache` key collisions** | Keys are global — always namespace them (e.g. `header-storefront-{slug}`) |
 | **npm instead of bun** | Always use `bun` — npm causes dependency conflicts |
 | **Top-level `console.log` in payload.config.ts** | Runs on every worker spawn — use sparingly |
-| **`searchPlugin` + `storefronts`** | Storefronts use `skipSync: true` and a manual afterChange hook due to a Payload 3.71.1 bug in polymorphic query parsing |
+| **`searchPlugin` + `storefronts`** | Storefronts use `skipSync: true` and a manual afterChange hook — the search plugin has a bug with polymorphic query parsing on the storefronts collection |
 | **`origin.isDealerLocation` in render** | Always gate on `mounted` state — server always renders `false`, client reads from sessionStorage. Skipping the guard causes React hydration error #418 |
 | **PostHog double-init** | `instrumentation-client.ts` auto-runs on client boot. `PHProvider` must check `if (posthog.__loaded) return` before calling `posthog.init()` |
 | **Meta Pixel duplicate** | `MetaPixel.tsx` uses `<Script>` for init — never add a `useEffect` that also calls `fbq('init')`. The Script is the single init point |
 | **`client.ts` in Server Components** | `src/lib/payload/client.ts` uses `fetch()` — calling it from a Server Component creates a self-fetch HTTP loop. Use `queries.ts` instead |
 | **Constant Contact is legacy** | New lead capture uses Shopify via `src/lib/actions/contact-form.ts`. CC integration still exists for list management but is not the primary CRM |
+| **`headers()` in `(frontend)/layout.tsx`** | Any call to `headers()` or `cookies()` in the frontend layout forces every page dynamic — Cloudflare returns `BYPASS`. Use `usePathname()` in a client shell component instead (see `NammAwareShell`) |
+| **Cloudflare BYPASS vs DYNAMIC** | `BYPASS` = cache rule fired but refused due to `Vary` header containing RSC headers. Fix: add RSC variant headers to Cloudflare Cache Key in dashboard. Not a code change. |
+| **PPR requires Next.js canary** | `experimental.ppr` throws a hard build error on stable Next.js 15.x. Do not add it until upgrading to canary. Suspense boundaries are still correct prep work. |
+| **`unstable_cache` inline type annotation** | `async (): Promise<{ field: string } \| null>` inside an `unstable_cache` argument fails to parse with "Expected ',', got ':'". Extract to a named type alias before the function. |
+| **`depth: 2` on block-heavy singletons** | On `home-page` / `pianos-page` with 15+ blocks × 3 images: depth:2 fires 45–90 wasted MongoDB roundtrips (round 2 inspects Media docs that have no relationships). Use `depth: 1`. |
+| **YouTube iframe cycling** | Auto-rotating carousels using `AnimatePresence` + `setInterval` remount the YouTube player every rotation. Pause the interval when the current slide has a `videoId` to prevent full player destruction/recreation. |
+| **Tailwind v4 CSS file isolation** | Each CSS file using `@apply` or `@layer` must have its own `@import "tailwindcss"`. Files cannot inherit Tailwind from another file — PostCSS compiles them independently. Missing import = build error "Cannot apply unknown utility class". |
 
 ---
 

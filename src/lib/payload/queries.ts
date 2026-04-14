@@ -664,29 +664,38 @@ export async function getActiveProductsDirect(
 /**
  * Get all catalog-visible products for the /pianos browse page.
  * Returns a lightweight shape — only the fields needed for product cards.
+ * Cached for 1 hour; invalidated by the 'products' tag.
  */
-export async function getCatalogProductsDirect(): Promise<
-  Array<{
-    id: string
-    model: string
-    name?: string | null
-    slug: string
-    type?: string | null
-    category?: string | null
-    imageUrl?: string | null
-    price?: { msrp?: number | null; currency?: string | null } | null
-    salePrice?: number | null
-    compareAtPrice?: number | null
-    shopifyCollections?: Array<{ title: string; handle: string }> | null
-    variations?: Array<{
-      name: string
-      price: number | null
-      compareAtPrice: number | null
-      imageUrl: string | null
-      available: boolean
-    }> | null
-  }>
-> {
+type CatalogProduct = {
+  id: string
+  model: string
+  name?: string | null
+  slug: string
+  type?: string | null
+  category?: string | null
+  imageUrl?: string | null
+  price?: { msrp?: number | null; currency?: string | null } | null
+  salePrice?: number | null
+  compareAtPrice?: number | null
+  shopifyCollections?: Array<{ title: string; handle: string }> | null
+  variations?: Array<{
+    name: string
+    price: number | null
+    compareAtPrice: number | null
+    imageUrl: string | null
+    available: boolean
+  }> | null
+}
+
+export function getCatalogProductsDirect(): Promise<CatalogProduct[]> {
+  return unstable_cache(
+    async (): Promise<CatalogProduct[]> => _getCatalogProductsDirect(),
+    ['catalog-products'],
+    { tags: ['products'], revalidate: 3600 },
+  )()
+}
+
+async function _getCatalogProductsDirect(): Promise<CatalogProduct[]> {
   try {
     const payload = await getPayloadClient()
 
@@ -830,14 +839,27 @@ export const getActiveStorefrontsDirect = unstable_cache(
     try {
       const payload = await getPayloadClient()
 
+      // depth: 0 — dealer-locations.tsx only reads scalar fields (id, slug,
+      // locationName, locationText, showroomInfo, establishedText, features).
+      // No Media or relationship population required, so depth: 2 was burning
+      // recursive MongoDB lookups for nothing.
       const result = await payload.find({
         collection: 'storefronts',
         where: {
           isActive: { equals: true }
         },
+        select: {
+          id: true,
+          slug: true,
+          locationName: true,
+          locationText: true,
+          establishedText: true,
+          showroomInfo: true,
+          features: true,
+        },
         sort: '-updatedAt',
         limit: 100,
-        depth: 2
+        depth: 0,
       })
 
       return result.docs
@@ -991,41 +1013,55 @@ function toRadians(degrees: number): number {
  * Get a single collection by its handle (Shopify slug).
  * Used for collection landing pages at /pianos/[handle].
  * depth:1 to populate the media relationship field.
+ * Cached per-handle for 1 hour; invalidated by the 'collections' tag.
  */
-export async function getCollectionByHandle(handle: string): Promise<any | null> {
-  try {
-    const payload = await getPayloadClient()
-    const result = await payload.find({
-      collection: 'collections',
-      where: { handle: { equals: handle } },
-      depth: 1,
-      limit: 1,
-    })
-    return result.docs[0] ?? null
-  } catch (error) {
-    console.error(`Error fetching collection by handle "${handle}":`, error)
-    return null
-  }
+export function getCollectionByHandle(handle: string): Promise<any | null> {
+  return unstable_cache(
+    async () => {
+      try {
+        const payload = await getPayloadClient()
+        const result = await payload.find({
+          collection: 'collections',
+          where: { handle: { equals: handle } },
+          depth: 1,
+          limit: 1,
+        })
+        return result.docs[0] ?? null
+      } catch (error) {
+        console.error(`Error fetching collection by handle "${handle}":`, error)
+        return null
+      }
+    },
+    [`collection-handle-${handle}`],
+    { tags: ['collections', `collection-${handle}`], revalidate: 3600 },
+  )()
 }
 
 /**
  * Get all collection handles for generateStaticParams.
  * Returns only the handle field to keep the query lightweight.
+ * Cached for 1 hour; invalidated by the 'collections' tag.
  */
-export async function getAllCollectionHandles(): Promise<string[]> {
-  try {
-    const payload = await getPayloadClient()
-    const result = await payload.find({
-      collection: 'collections',
-      select: { handle: true },
-      depth: 0,
-      limit: 500,
-    })
-    return result.docs.map((d) => d.handle).filter(Boolean) as string[]
-  } catch (error) {
-    console.error('Error fetching collection handles:', error)
-    return []
-  }
+export function getAllCollectionHandles(): Promise<string[]> {
+  return unstable_cache(
+    async () => {
+      try {
+        const payload = await getPayloadClient()
+        const result = await payload.find({
+          collection: 'collections',
+          select: { handle: true },
+          depth: 0,
+          limit: 500,
+        })
+        return result.docs.map((d) => d.handle).filter(Boolean) as string[]
+      } catch (error) {
+        console.error('Error fetching collection handles:', error)
+        return []
+      }
+    },
+    ['all-collection-handles'],
+    { tags: ['collections'], revalidate: 3600 },
+  )()
 }
 
 export interface CollectionForBrowser {
@@ -1109,34 +1145,43 @@ export const getCollectionsForBrowser = unstable_cache(
  * Get all catalog-visible products that belong to a specific collection.
  * Queries via the shopifyCollections.handle array field on products.
  * Returns a lightweight card-ready shape.
+ * Cached per-handle for 5 minutes (includes live Shopify variant prices).
  */
-export async function getProductsByCollectionHandle(handle: string): Promise<
-  Array<{
-    id: string
-    model: string
-    name?: string | null
-    slug: string
-    type?: string | null
-    imageUrl?: string | null
-    price?: { msrp?: number | null; currency?: string | null } | null
-    salePrice?: number | null
-    compareAtPrice?: number | null
-    description?: string | null
-    variations: Array<{
-      name: string
-      shopifyVariantId: string | null
-      price: number | null
-      compareAtPrice: number | null
-      available: boolean
-      imageUrl: string | null
-    }>
-    customMedia?: Array<{
-      id?: string | null
-      image: { url: string; alt?: string | null }
-      alt?: string | null
-    }> | null
+type CollectionProduct = {
+  id: string
+  model: string
+  name?: string | null
+  slug: string
+  type?: string | null
+  imageUrl?: string | null
+  price?: { msrp?: number | null; currency?: string | null } | null
+  salePrice?: number | null
+  compareAtPrice?: number | null
+  description?: string | null
+  variations: Array<{
+    name: string
+    shopifyVariantId: string | null
+    price: number | null
+    compareAtPrice: number | null
+    available: boolean
+    imageUrl: string | null
   }>
-> {
+  customMedia?: Array<{
+    id?: string | null
+    image: { url: string; alt?: string | null }
+    alt?: string | null
+  }> | null
+}
+
+export function getProductsByCollectionHandle(handle: string): Promise<CollectionProduct[]> {
+  return unstable_cache(
+    async (): Promise<CollectionProduct[]> => _getProductsByCollectionHandle(handle),
+    [`collection-products-${handle}`],
+    { tags: ['products', 'collections', `collection-${handle}`], revalidate: 300 },
+  )()
+}
+
+async function _getProductsByCollectionHandle(handle: string): Promise<CollectionProduct[]> {
   try {
     const payload = await getPayloadClient()
     const result = await payload.find({

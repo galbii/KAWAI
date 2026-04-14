@@ -236,9 +236,16 @@ export function RenderBlocks({ blocks }: { blocks: Page['layout'] }) {
           return null
         }
 
-        // Slow data-fetching blocks get their own Suspense boundary so they
-        // stream in without blocking the rest of the page.
-        const isAsyncBlock = (blockType as string) === 'marketing-blog-latest'
+        // Blocks that do their own async data fetching (uncached or expensive on
+        // cache miss) get individual Suspense boundaries so they stream in
+        // independently without blocking the rest of the page.
+        const ASYNC_BLOCK_TYPES = new Set([
+          'marketing-blog-latest',          // posts query (unstable_cache, 300s)
+          'marketing-featured-collections', // getNavCollections (unstable_cache, 300s)
+          'marketing-storefront-locations', // getActiveStorefrontsDirect (unstable_cache, 3600s)
+          'marketing-pianos-browser',       // getCatalogProductsDirect + getCollectionsForBrowser (unstable_cache, 3600s)
+        ])
+        const isAsyncBlock = ASYNC_BLOCK_TYPES.has(blockType as string)
 
         const blockEl = (
           <div

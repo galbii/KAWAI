@@ -63,7 +63,7 @@ export const PianoPages: Block = {
       name: 'carouselAutoplayInterval',
       type: 'number',
       label: 'Carousel Autoplay Interval (ms)',
-      defaultValue: 6000,
+      defaultValue: 3500,
       min: 2000,
       max: 30000,
       admin: {

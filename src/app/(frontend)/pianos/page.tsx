@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { unstable_cache } from 'next/cache'
 import {
   getCatalogProductsDirect,
   getProductSpotlightNewsItems,
@@ -48,42 +49,46 @@ export async function generateMetadata(): Promise<Metadata> {
   return getCMSPageMetadata('pianos', fallbackMetadata)
 }
 
-async function getPianosPageHeading(): Promise<string | null> {
-  try {
-    const payload = await getPayloadClient()
-    const result = await payload.find({
-      collection: 'pianos-page',
-      limit: 1,
-      depth: 0,
-    })
-    return result.docs[0]?.heroTitle ?? null
-  } catch {
-    return null
-  }
-}
-
-async function getCMSPianosPage(): Promise<Page | null> {
-  try {
-    const payload = await getPayloadClient()
-    const result = await payload.find({
-      collection: 'pages',
-      where: {
-        slug: { equals: 'pianos' },
-        _status: { equals: 'published' },
-      },
-      depth: 2,
-      limit: 1,
-    })
-    const page = result.docs[0] ?? null
-    if (page) {
-      console.log('[PianosPage] CMS override found — blocks:', page.layout?.length ?? 0)
+const getPianosPageHeading = unstable_cache(
+  async (): Promise<string | null> => {
+    try {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'pianos-page',
+        limit: 1,
+        depth: 0,
+      })
+      return result.docs[0]?.heroTitle ?? null
+    } catch {
+      return null
     }
-    return page
-  } catch (err) {
-    console.error('[PianosPage] CMS override query failed:', err)
-    return null
-  }
-}
+  },
+  ['pianos-page-heading'],
+  { tags: ['pianos-page'], revalidate: 3600 },
+)
+
+const getCMSPianosPage = unstable_cache(
+  async (): Promise<Page | null> => {
+    try {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'pages',
+        where: {
+          slug: { equals: 'pianos' },
+          _status: { equals: 'published' },
+        },
+        depth: 1,
+        limit: 1,
+      })
+      return result.docs[0] ?? null
+    } catch (err) {
+      console.error('[PianosPage] CMS override query failed:', err)
+      return null
+    }
+  },
+  ['cms-pianos-page'],
+  { tags: ['pages'], revalidate: 3600 },
+)
 
 export default async function PianosPage() {
   // Check for a CMS page with slug "pianos" — if published, it overrides the static layout

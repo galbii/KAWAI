@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { getPayload } from 'payload'
+import { unstable_cache } from 'next/cache'
 import config from '@/payload.config'
 import type { Product } from '@/payload-types'
 
@@ -243,9 +244,6 @@ export async function getProductTypesWithProducts(options?: {
   try {
     const payload = await getPayload({ config })
 
-    console.log('[Payload Products Navigation] Starting optimized query...')
-    const queryStartTime = Date.now()
-
     // OPTIMIZATION 1: Use `select` to fetch only required fields
     // This dramatically reduces database load and response size
     const result = await payload.find({
@@ -307,12 +305,7 @@ export async function getProductTypesWithProducts(options?: {
       pagination: false, // OPTIMIZATION 3: Disable pagination for faster query
     })
 
-    const queryEndTime = Date.now()
-    const queryTime = queryEndTime - queryStartTime
-
     const products = result.docs
-
-    console.log(`[Payload Products Navigation] Query completed in ${queryTime}ms - Found ${products.length} products`)
 
     // OPTIMIZATION 4: Group products in-memory by CATEGORY (single query instead of N queries)
     const categoryMap = new Map<string, Product[]>()
@@ -329,8 +322,6 @@ export async function getProductTypesWithProducts(options?: {
 
       categoryMap.get(categoryName)?.push(product)
     })
-
-    console.log(`[Payload Products Navigation] Grouped into ${categoryMap.size} categories`)
 
     /**
      * Convert a Product to a NavProduct shape shared by both the
@@ -394,13 +385,6 @@ export async function getProductTypesWithProducts(options?: {
         if (bIdx !== -1) return 1
         return a.type.localeCompare(b.type)
       })
-
-    console.log('[Payload Products Navigation] ✅ Navigation data prepared:', {
-      categories: types.length,
-      totalProducts: products.length,
-      queryTimeMs: queryTime,
-      avgProductsPerCategory: types.length > 0 ? Math.round(products.length / types.length) : 0,
-    })
 
     return {
       types,
@@ -536,9 +520,23 @@ export function getProductTypeSlug(type: string): string {
  *
  * @param limit - Maximum number of collections to return (default: 20)
  */
-export async function getNavCollections(
+export function getNavCollections(
   limit: number = 20,
   featuredOnly: boolean = true,
+  categoryFilter?: string,
+): Promise<NavCollection[]> {
+  // Per-call cache: key encodes all params so different arg combinations get
+  // independent cache entries. Tags align with the Collections collection hook.
+  return unstable_cache(
+    async () => _getNavCollections(limit, featuredOnly, categoryFilter),
+    [`nav-collections-${limit}-${featuredOnly ? 'featured' : 'all'}-${categoryFilter ?? 'all'}`],
+    { tags: ['collections'], revalidate: 300 },
+  )()
+}
+
+async function _getNavCollections(
+  limit: number,
+  featuredOnly: boolean,
   categoryFilter?: string,
 ): Promise<NavCollection[]> {
   try {

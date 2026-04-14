@@ -186,8 +186,6 @@ export async function generateStaticParams() {
       return product.visibility?.showInCatalog !== false
     })
 
-    console.log(`✅ [SEO] Pre-rendering ${visibleProducts.length} product pages for Google indexing`)
-
     return visibleProducts.map((product: any) => ({
       slug: product.slug,
     }))

@@ -24,8 +24,6 @@ const DISPLAY_SAMPLES = 6
 
 const getCachedProductsNavigation = unstable_cache(
   async (): Promise<ProductsNavigation> => {
-    console.log('[Products Navigation Cache] Cache miss - fetching from database')
-
     // Fetch more samples than we'll display so we can sort by featured-collection
     // priority before slicing. The final nav still shows DISPLAY_SAMPLES per category.
     const [navData, collections, allCollections] = await Promise.all([
@@ -90,23 +88,7 @@ const getCachedProductsNavigation = unstable_cache(
  */
 export async function fetchPayloadProductsNavigation(): Promise<ProductsNavigation> {
   try {
-    console.log('[Payload Products Navigation] Fetching navigation data...')
-    const startTime = Date.now()
-
-    const navData = await getCachedProductsNavigation()
-
-    const endTime = Date.now()
-    const responseTime = endTime - startTime
-
-    console.log('[Payload Products Navigation] ✅ Data loaded:', {
-      types: navData.types.length,
-      totalProducts: navData.totalProducts,
-      responseTimeMs: responseTime,
-      cached: responseTime < 50, // If < 50ms, it was cached
-      timestamp: new Date().toISOString()
-    })
-
-    return navData
+    return await getCachedProductsNavigation()
   } catch (error) {
     console.error('[Payload Products Navigation] ❌ Failed to load:', error)
 

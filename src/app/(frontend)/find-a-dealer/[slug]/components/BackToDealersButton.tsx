@@ -35,10 +35,8 @@ export function BackToDealersButton() {
   return (
     <div
       aria-hidden={!visible}
-      className="fixed z-50 left-4 sm:left-6"
+      className="fixed z-50 left-4 sm:left-6 top-[calc(4rem+0.875rem)] sm:top-[calc(5rem+0.875rem)]"
       style={{
-        // Sit just below the site header (~64px mobile, ~80px desktop)
-        top: 'calc(4rem + 0.875rem)',
         transition: 'opacity 450ms cubic-bezier(0.4, 0, 0.2, 1), transform 450ms cubic-bezier(0.4, 0, 0.2, 1)',
         opacity: visible ? 1 : 0,
         transform: visible ? 'translateX(0)' : 'translateX(-1.5rem)',

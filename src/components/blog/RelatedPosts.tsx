@@ -1,70 +1,47 @@
+import { unstable_cache } from 'next/cache'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Post, Category } from '@/payload-types'
 import { resolveMediaUrl } from '@/lib/payload'
+import { getPayloadClient } from '@/lib/payload/queries'
 
 interface RelatedPostsProps {
   relatedPosts?: (Post | string)[] | null
 }
 
-/**
- * RelatedPosts Component
- *
- * Displays related blog posts in a grid layout at the end of blog articles.
- * Fetches full post data from Payload Local API if only IDs are provided.
- * Uses KAWAI's existing BlogCard styling patterns for consistency.
- *
- * Features:
- * - Server Component (async/await)
- * - Fetches full post data using Payload Local API
- * - Responsive grid (1 column mobile, 2 columns tablet/desktop)
- * - Graceful handling of empty state
- * - KAWAI brand styling and hover effects
- */
+function fetchRelatedPosts(postIds: string[]): Promise<Post[]> {
+  // Sort IDs so different orderings of the same set share one cache entry.
+  const key = [...postIds].sort().join(',')
+  return unstable_cache(
+    async () => {
+      const payload = await getPayloadClient()
+      const { docs } = await payload.find({
+        collection: 'posts',
+        where: { id: { in: postIds }, status: { equals: 'published' } },
+        depth: 1,
+        limit: postIds.length,
+        overrideAccess: true,
+      })
+      return docs as Post[]
+    },
+    [`related-posts-${key}`],
+    { tags: ['posts'], revalidate: 300 },
+  )()
+}
+
 export async function RelatedPosts({ relatedPosts }: RelatedPostsProps) {
-  // Handle empty or missing relatedPosts
-  if (!relatedPosts || relatedPosts.length === 0) {
-    return null
-  }
+  if (!relatedPosts || relatedPosts.length === 0) return null
 
-  // Import Payload dynamically (server-side only)
-  const { getPayload } = await import('payload')
-  const configPromise = await import('@payload-config')
-  const payload = await configPromise.default
-
-  // Extract post IDs (handle both Post objects and string IDs)
   const postIds = relatedPosts
     .map((post) => (typeof post === 'string' ? post : post.id))
     .filter((id): id is string => Boolean(id))
 
-  // If no valid IDs, return null
-  if (postIds.length === 0) {
-    return null
-  }
+  if (postIds.length === 0) return null
 
-  // Fetch full post data from Payload Local API
   try {
-    const payloadInstance = await getPayload({ config: payload })
+    const posts = await fetchRelatedPosts(postIds)
 
-    const { docs: posts } = await payloadInstance.find({
-      collection: 'posts',
-      where: {
-        id: {
-          in: postIds,
-        },
-        status: {
-          equals: 'published',
-        },
-      },
-      depth: 1, // Populate featured image
-      limit: postIds.length,
-      overrideAccess: true, // Posts has no versioning — authenticatedOrPublished uses _status which doesn't exist
-    })
-
-    // If no posts found, return null
-    if (!posts || posts.length === 0) {
-      return null
-    }
+    if (!posts || posts.length === 0) return null
 
     // Category labels mapping
     const categoryLabels: Record<string, string> = {

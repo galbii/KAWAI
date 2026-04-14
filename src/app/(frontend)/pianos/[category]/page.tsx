@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { unstable_cache } from 'next/cache'
 import { RenderBlocks } from '@/components/RenderBlocks'
 import type { Page } from '@/payload-types'
 import { CategoryHero } from "@/components/piano/category-hero"
@@ -17,12 +16,12 @@ import {
   getCategoryHeroImage,
   getCategoryStats,
   getCategoryCTA,
-  type PianoCategorySlug
 } from '@/lib/data'
 import {
   getCollectionByHandle,
   getAllCollectionHandles,
   getProductsByCollectionHandle,
+  getPayloadClient,
 } from '@/lib/payload/queries'
 import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
 import type { Product } from '@/payload-types'
@@ -162,22 +161,28 @@ export async function generateMetadata({ params }: CategoryPageParams): Promise<
  * Static named routes (digital/, grand/, search/, compare/, shigeru-kawai/)
  * always take priority over this dynamic segment in Next.js App Router.
  */
-async function getCMSCategoryPage(slug: string): Promise<Page | null> {
-  try {
-    const payload = await getPayload({ config })
-    const result = await payload.find({
-      collection: 'pages',
-      where: {
-        slug: { equals: `pianos/${slug}` },
-        _status: { equals: 'published' },
-      },
-      depth: 2,
-      limit: 1,
-    })
-    return result.docs[0] ?? null
-  } catch {
-    return null
-  }
+function getCMSCategoryPage(slug: string): Promise<Page | null> {
+  return unstable_cache(
+    async () => {
+      try {
+        const payload = await getPayloadClient()
+        const result = await payload.find({
+          collection: 'pages',
+          where: {
+            slug: { equals: `pianos/${slug}` },
+            _status: { equals: 'published' },
+          },
+          depth: 1,
+          limit: 1,
+        })
+        return result.docs[0] ?? null
+      } catch {
+        return null
+      }
+    },
+    [`cms-category-page-${slug}`],
+    { tags: ['pages'], revalidate: 3600 },
+  )()
 }
 
 export default async function CategoryPage({ params }: CategoryPageParams) {
@@ -202,25 +207,42 @@ export default async function CategoryPage({ params }: CategoryPageParams) {
     let error: string | null = null
 
     try {
-      const payload = await getPayload({ config })
+      const getCategoryProducts = (cat: string) =>
+        unstable_cache(
+          async () => {
+            const payload = await getPayloadClient()
+            const { docs } = await payload.find({
+              collection: 'products',
+              where: {
+                and: [
+                  { status: { equals: 'active' } },
+                  { 'visibility.showInCatalog': { equals: true } },
+                  { type: { equals: cat } },
+                ],
+              },
+              select: {
+                model: true,
+                name: true,
+                slug: true,
+                imageUrl: true,
+                description: true,
+                visibility: true,
+              },
+              depth: 0,
+              sort: 'visibility.sortOrder',
+              limit: 100,
+            })
+            return docs
+          },
+          [`category-products-${cat}`],
+          { tags: ['products'], revalidate: 3600 },
+        )()
 
-      const { docs: products } = await payload.find({
-        collection: 'products',
-        where: {
-          and: [
-            { status: { equals: 'active' } },
-            { 'visibility.showInCatalog': { equals: true } },
-            { type: { equals: category } },
-          ],
-        },
-        depth: 2,
-        sort: 'visibility.sortOrder',
-        limit: 100
-      })
+      const products = await getCategoryProducts(category)
 
       const seriesMap = new Map<string, any>()
 
-      products.forEach((product: Product) => {
+      products.forEach((product) => {
         const seriesName = product.model?.match(/^[A-Z]+/)?.[0] || categoryConfig!.name || 'Other'
 
         if (!seriesMap.has(seriesName)) {

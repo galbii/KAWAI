@@ -1,6 +1,8 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { draftMode } from 'next/headers'
+import { unstable_cache } from 'next/cache'
+import { Suspense } from 'react'
 import type { Post } from '@/payload-types'
 import { resolveMediaUrl } from '@/lib/payload'
 import { getPayloadClient } from '@/lib/payload/queries'
@@ -16,10 +18,9 @@ interface BlogPostPageProps {
   params: Promise<{ slug: string }>
 }
 
-async function getPostBySlug(slug: string, isDraft: boolean = false): Promise<Post | null> {
+async function _fetchPostBySlug(slug: string, isDraft: boolean): Promise<Post | null> {
   try {
     const payload = await getPayloadClient()
-
     const posts = await payload.find({
       collection: 'posts',
       where: {
@@ -29,14 +30,27 @@ async function getPostBySlug(slug: string, isDraft: boolean = false): Promise<Po
       limit: 1,
       depth: 2,
       draft: isDraft,
-      overrideAccess: true, // Posts has no versioning — authenticatedOrPublished returns { _status: ... }
-    })                      // which would throw since _status doesn't exist. Filter by status in where instead.
-
+      overrideAccess: true, // Posts has no versioning — authenticatedOrPublished uses _status which doesn't exist
+    })
     return posts.docs[0] ?? null
   } catch (error) {
     console.error('Error fetching post:', error)
     return null
   }
+}
+
+function getPostBySlug(slug: string, isDraft: boolean = false): Promise<Post | null> {
+  // Never cache draft mode — editor must see live data.
+  if (isDraft) return _fetchPostBySlug(slug, true)
+
+  // Cached for production: generateMetadata and BlogPostPage both call this
+  // function. unstable_cache deduplicates the MongoDB hit so only one query
+  // runs per ISR revalidation cycle regardless of how many callers there are.
+  return unstable_cache(
+    () => _fetchPostBySlug(slug, false),
+    [`post-${slug}`],
+    { tags: ['posts', `post-${slug}`], revalidate: 300 },
+  )()
 }
 
 export async function generateMetadata(props: BlogPostPageProps): Promise<Metadata> {
@@ -157,9 +171,14 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
     // so they update in real-time as the editor types (no slot needed for layout).
     const sidebarSlot = <ArticleSidebar post={post} />
 
+    // RelatedPosts is an async server component that runs its own DB query.
+    // Wrapping in Suspense lets the article body stream to the user immediately
+    // while related posts resolve independently below the fold.
     const relatedPostsSlot =
       post.relatedPosts && post.relatedPosts.length > 0 ? (
-        <RelatedPosts relatedPosts={post.relatedPosts} />
+        <Suspense fallback={null}>
+          <RelatedPosts relatedPosts={post.relatedPosts} />
+        </Suspense>
       ) : null
 
     return (

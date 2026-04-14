@@ -56,6 +56,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       { url: `${SITE_URL}/pianos/shigeru-kawai`, changeFrequency: 'weekly', priority: 0.9, alternates: { languages: getSiteAlternates('/pianos/shigeru-kawai') } },
       { url: `${SITE_URL}/pianos/shigeru-kawai/sk-ex`, changeFrequency: 'monthly', priority: 0.75 },
       { url: `${SITE_URL}/pianos/digital/ca901`, changeFrequency: 'monthly', priority: 0.7 },
+      // SEO research landing pages — capture informational queries, funnel to category pages
+      { url: `${SITE_URL}/pianos/digital/es-series`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: getSiteAlternates('/pianos/digital/es-series') } },
+      { url: `${SITE_URL}/pianos/digital/ca-series`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: getSiteAlternates('/pianos/digital/ca-series') } },
+      { url: `${SITE_URL}/pianos/grand/gl-series`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: getSiteAlternates('/pianos/grand/gl-series') } },
+      { url: `${SITE_URL}/pianos/grand/gx-series`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: getSiteAlternates('/pianos/grand/gx-series') } },
+      { url: `${SITE_URL}/pianos/grand/shigeru-kawai`, changeFrequency: 'monthly', priority: 0.85, alternates: { languages: getSiteAlternates('/pianos/grand/shigeru-kawai') } },
       { url: `${SITE_URL}/pianos/search`, changeFrequency: 'weekly', priority: 0.7 },
       { url: `${SITE_URL}/pianos/compare`, changeFrequency: 'weekly', priority: 0.65 },
       { url: `${SITE_URL}/pianos/accessories`, changeFrequency: 'weekly', priority: 0.65 },
