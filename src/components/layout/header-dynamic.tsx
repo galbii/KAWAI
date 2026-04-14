@@ -1,8 +1,7 @@
 import { Header } from './header'
 import { headers, cookies } from 'next/headers'
 import { unstable_cache } from 'next/cache'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import { getPayloadClient } from '@/lib/payload/queries'
 import type { Media } from '@/payload-types'
 import type { LatestPost } from './header'
 
@@ -59,7 +58,7 @@ function getDealerLocationBySlug(slug: string): Promise<DealerLocationData | nul
   return unstable_cache(
     async () => {
       try {
-        const payload = await getPayload({ config })
+        const payload = await getPayloadClient()
 
         const storefrontResult = await payload.find({
           collection: 'storefronts',
@@ -105,7 +104,7 @@ function getDealerLocationBySlug(slug: string): Promise<DealerLocationData | nul
 export const getRegisterConfig = unstable_cache(
   async (): Promise<RegisterConfig> => {
     try {
-      const payload = await getPayload({ config })
+      const payload = await getPayloadClient()
       // No `select` — depth population doesn't reliably resolve relationships
       // inside group fields when select is active. Fetching the full doc is safe
       // since this is a singleton (1 document).
@@ -167,7 +166,7 @@ const DEFAULT_QUICK_LINKS: QuickLink[] = [
 const getSearchQuickLinks = unstable_cache(
   async (): Promise<QuickLink[]> => {
     try {
-      const payload = await getPayload({ config })
+      const payload = await getPayloadClient()
       const result = await payload.find({
         collection: 'home-page',
         limit: 1,
@@ -218,7 +217,7 @@ const DEFAULT_RESOURCE_LINKS: ResourceLink[] = [
 const getResourcesNavConfig = unstable_cache(
   async (): Promise<ResourceLink[]> => {
     try {
-      const payload = await getPayload({ config })
+      const payload = await getPayloadClient()
       const result = await payload.find({
         collection: 'home-page',
         limit: 1,
@@ -249,7 +248,7 @@ const getResourcesNavConfig = unstable_cache(
 const getHomePageNewsItems = unstable_cache(
   async (): Promise<NewsItem[]> => {
     try {
-      const payload = await getPayload({ config })
+      const payload = await getPayloadClient()
 
       const result = await payload.find({
         collection: 'home-page',
@@ -286,7 +285,7 @@ const getHomePageNewsItems = unstable_cache(
 const getHeaderSettings = unstable_cache(
   async (): Promise<{ autoMinimize: boolean }> => {
     try {
-      const payload = await getPayload({ config })
+      const payload = await getPayloadClient()
       const settings = await payload.findGlobal({ slug: 'header-settings' })
       return { autoMinimize: settings.autoMinimize ?? true }
     } catch (err) {
@@ -301,7 +300,7 @@ const getHeaderSettings = unstable_cache(
 const getLatestPosts = unstable_cache(
   async (): Promise<LatestPost[]> => {
     try {
-      const payload = await getPayload({ config })
+      const payload = await getPayloadClient()
       const result = await payload.find({
         collection: 'posts',
         where: { status: { equals: 'published' } },

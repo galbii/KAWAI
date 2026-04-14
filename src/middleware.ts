@@ -11,7 +11,7 @@ import type { ResolvedRedirect } from '@/app/(frontend)/api/redirects-list/route
 // ---------------------------------------------------------------------------
 let _cache: ResolvedRedirect[] | null = null
 let _cacheTime = 0
-const CACHE_TTL_MS = 30_000 // 30 seconds
+const CACHE_TTL_MS = 300_000 // 5 minutes
 
 async function getRedirects(baseUrl: string): Promise<ResolvedRedirect[]> {
   const now = Date.now()
@@ -62,7 +62,7 @@ export async function middleware(request: NextRequest) {
 
   // Detect domain — used by layouts, metadata, sitemap, and robots for site-specific rendering
   const host = request.headers.get('host') ?? ''
-  const site = host.startsWith('cad.') ? 'cad' : 'us'
+  const site = host.startsWith('ca.') ? 'cad' : 'us'
   requestHeaders.set('x-site', site)
 
   // Check CMS-managed redirects

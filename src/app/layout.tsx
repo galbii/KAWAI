@@ -91,7 +91,6 @@ export default function RootLayout({
           as="video"
           href="/assets/videos/Hero_compressed.mp4"
           type="video/mp4"
-          {...{ fetchPriority: 'high' }}
         />
       </head>
       <body className={`${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${notoSans.variable} antialiased bg-kawai-black text-kawai-pearl`}>

@@ -784,6 +784,9 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                   left: 0,
                   right: 0,
                   bottom: 0,
+                  // Disable pointer events while the exit animation plays so the fading
+                  // backdrop doesn't intercept clicks on page content underneath it.
+                  pointerEvents: (isOpen || (isMobile && isInputFocused)) ? 'auto' : 'none',
                 }}
                 onClick={() => {
                   setIsOpen(false)

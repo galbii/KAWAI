@@ -13,6 +13,7 @@ import { DealerInfo } from './components/DealerInfo'
 import { DealerMap } from './components/DealerMap'
 import { RelatedDealers } from './components/RelatedDealers'
 import { AdminBarDoc } from '@/components/layout/AdminBarDoc'
+import { BackToDealersButton } from './components/BackToDealersButton'
 
 // ISR: 15-minute revalidation
 export const revalidate = 900
@@ -137,6 +138,9 @@ async function DealerContent({ slug }: { slug: string }) {
         id={dealer.id}
         collectionLabels={{ singular: 'Dealer', plural: 'Dealers' }}
       />
+
+      {/* Fixed overlay back button — top-left, fades when sticky nav appears */}
+      <BackToDealersButton />
 
       {/* Local business structured data for Google */}
       <DealerBusinessSchema dealer={dealer} />

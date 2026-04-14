@@ -5,7 +5,7 @@ export type Site = 'us' | 'cad'
 
 export const SITE_URLS = {
   us: 'https://www.kawaius.com',
-  cad: 'https://cad.kawaius.com',
+  cad: 'https://ca.kawaius.com',
 } as const
 
 export async function getSite(): Promise<Site> {

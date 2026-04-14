@@ -744,33 +744,36 @@ export async function getCatalogProductsDirect(): Promise<
 }
 
 /**
- * Get a single storefront by slug using direct Payload access
- * @param slug - The URL-friendly slug identifier for the storefront
- * @returns Storefront object or null if not found
+ * Get a single storefront by slug using direct Payload access.
+ * Cached per-slug for 1 hour; invalidated by storefront-specific and global tags.
  */
-export async function getStorefrontBySlugDirect(slug: string): Promise<any | null> {
-  try {
-    const payload = await getPayloadClient()
+export function getStorefrontBySlugDirect(slug: string): Promise<any | null> {
+  return unstable_cache(
+    async () => {
+      try {
+        const payload = await getPayloadClient()
 
-    const result = await payload.find({
-      collection: 'storefronts',
-      where: {
-        slug: { equals: slug },
-        isActive: { equals: true }
-      },
-      depth: 3,
-      limit: 1,
-      // Disable Next.js caching for this query to ensure fresh data
-      // This is necessary because revalidatePath may not clear Payload query cache
-      overrideAccess: false,
-      draft: false
-    })
+        const result = await payload.find({
+          collection: 'storefronts',
+          where: {
+            slug: { equals: slug },
+            isActive: { equals: true }
+          },
+          depth: 2,
+          limit: 1,
+          overrideAccess: false,
+          draft: false
+        })
 
-    return result.docs[0] || null
-  } catch (error) {
-    console.error(`Error fetching storefront with slug "${slug}" using direct Payload access:`, error)
-    return null
-  }
+        return result.docs[0] || null
+      } catch (error) {
+        console.error(`Error fetching storefront with slug "${slug}" using direct Payload access:`, error)
+        return null
+      }
+    },
+    [`storefront-slug-${slug}`],
+    { tags: [`storefront-${slug}`, 'storefronts'], revalidate: 3600 }
+  )()
 }
 
 /**

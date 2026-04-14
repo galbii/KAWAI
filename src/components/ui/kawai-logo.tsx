@@ -100,7 +100,7 @@ export function KawaiLogo({
   // Parse dealer name into location and suffix based on navigation context
   const parseLocationText = (dealerName?: string) => {
     // If we're on the main site (not a dealer location) and no name was explicitly
-    // passed (e.g. for cad.kawaius.com branding), show just the logo
+    // passed (e.g. for ca.kawaius.com branding), show just the logo
     if (!origin.isDealerLocation && !dealerName) {
       return { location: '', suffix: '' }
     }
