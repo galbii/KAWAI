@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   params.set('format', 'json')
   params.set('addressdetails', '1')
   if (!params.has('limit')) params.set('limit', '7')
-  if (!params.has('countrycodes')) params.set('countrycodes', 'us')
+  if (!params.has('countrycodes')) params.set('countrycodes', 'us,ca')
 
   const res = await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`, {
     headers: {

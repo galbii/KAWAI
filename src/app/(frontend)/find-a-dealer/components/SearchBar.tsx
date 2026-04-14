@@ -66,6 +66,13 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, onDealerSelect,
     'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming'
   }
 
+  const CA_PROVINCES: Record<string, string> = {
+    'AB': 'Alberta', 'BC': 'British Columbia', 'MB': 'Manitoba', 'NB': 'New Brunswick',
+    'NL': 'Newfoundland and Labrador', 'NS': 'Nova Scotia', 'NT': 'Northwest Territories',
+    'NU': 'Nunavut', 'ON': 'Ontario', 'PE': 'Prince Edward Island', 'QC': 'Quebec',
+    'SK': 'Saskatchewan', 'YT': 'Yukon',
+  }
+
   // Suppress unused state warning — currentLocation used for future radius filtering
   void currentLocation
 
@@ -87,14 +94,18 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, onDealerSelect,
 
   const detectSearchType = useCallback((query: string): 'zip' | 'state' | 'city' | 'name' => {
     const trimmed = query.trim()
-    if (/^\d{5}$/.test(trimmed)) return 'zip'
+    // US ZIP code (5 digits) or Canadian postal code (A1A 1A1 or A1A1A1)
+    if (/^\d{5}$/.test(trimmed) || /^[A-Za-z]\d[A-Za-z][\s-]?\d[A-Za-z]\d$/.test(trimmed)) return 'zip'
     const upper = trimmed.toUpperCase()
-    if (US_STATES[upper]) return 'state'
-    if (Object.values(US_STATES).some(s => s.toLowerCase() === trimmed.toLowerCase())) return 'state'
+    if (US_STATES[upper] || CA_PROVINCES[upper]) return 'state'
+    if (
+      Object.values(US_STATES).some(s => s.toLowerCase() === trimmed.toLowerCase()) ||
+      Object.values(CA_PROVINCES).some(s => s.toLowerCase() === trimmed.toLowerCase())
+    ) return 'state'
     const nameMatches = dealers.filter(d => d.dealerName?.toLowerCase().includes(trimmed.toLowerCase()))
     if (nameMatches.length > 0) return 'name'
     return 'city'
-  }, [dealers, US_STATES])
+  }, [dealers, US_STATES, CA_PROVINCES])
 
   const handleInputChange = useCallback((value: string) => {
     setSearchInput(value)
@@ -124,12 +135,15 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, onDealerSelect,
 
       if (searchType === 'state') {
         const stateQuery = value.toUpperCase()
-        const stateName = US_STATES[stateQuery] ||
-          Object.entries(US_STATES).find(([, name]) => name.toLowerCase() === lowerQuery)?.[0]
+        const stateName =
+          US_STATES[stateQuery] ||
+          CA_PROVINCES[stateQuery] ||
+          Object.entries(US_STATES).find(([, name]) => name.toLowerCase() === lowerQuery)?.[0] ||
+          Object.entries(CA_PROVINCES).find(([, name]) => name.toLowerCase() === lowerQuery)?.[0]
 
         const stateDealers = dealers.filter(dealer => {
           const state = dealer.address?.state?.toUpperCase() || ''
-          return state === stateQuery || state === stateName
+          return state === stateQuery || state === stateName?.toUpperCase()
         })
 
         const sorted = sortDealers(stateDealers)
@@ -141,7 +155,7 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, onDealerSelect,
       } else if (searchType === 'zip') {
         // Geocode ZIP via Nominatim proxy
         try {
-          const res = await fetch(`/api/search/nominatim?postalcode=${encodeURIComponent(value)}&country=US&limit=1`)
+          const res = await fetch(`/api/search/nominatim?postalcode=${encodeURIComponent(value)}&countrycodes=us,ca&limit=1`)
           const results = (await res.json()) as NominatimResult[]
 
           if (results.length > 0 && results[0]) {

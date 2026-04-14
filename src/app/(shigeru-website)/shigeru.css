@@ -1,0 +1,47 @@
+/*
+ * Shigeru Kawai Microsite — Shared Patterns
+ *
+ * Imported once in (shigeru-website)/layout.tsx.
+ * Only patterns that repeat across multiple /shigeru/* pages live here.
+ * All layout, spacing, and color → Tailwind kawai-* tokens.
+ */
+
+/* Eyebrow label — used on every section header */
+.sk-eyebrow {
+  font-size: 0.625rem;       /* 10px */
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/* Gold horizontal rule — decorative separator */
+.sk-rule {
+  display: block;
+  height: 1px;
+  background-color: var(--color-kawai-gold);
+  opacity: 0.4;
+}
+
+/* Section padding — consistent vertical rhythm */
+.sk-section {
+  padding-top: 7rem;
+  padding-bottom: 7rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .sk-section {
+    padding-top: 9rem;
+    padding-bottom: 9rem;
+  }
+}
+
+/* Hide scrollbar on carousel — cross-browser */
+.sk-scroll-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.sk-scroll-hide::-webkit-scrollbar {
+  display: none;
+}

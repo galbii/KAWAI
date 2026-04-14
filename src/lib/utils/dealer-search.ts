@@ -73,7 +73,7 @@ export async function geocodeZipCode(
       : (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000')
 
     const response = await fetch(
-      `${baseUrl}/api/search/nominatim?postalcode=${encodeURIComponent(zipCode)}&country=US&limit=1`,
+      `${baseUrl}/api/search/nominatim?postalcode=${encodeURIComponent(zipCode)}&countrycodes=us,ca&limit=1`,
     )
 
     if (!response.ok) return null

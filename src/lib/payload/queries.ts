@@ -44,14 +44,15 @@ export async function getPayloadClient(): Promise<Payload> {
 /**
  * Get piano categories data using direct Payload access
  */
-export async function getPianoCategoriesDirect(): Promise<any[]> {
+export const getPianoCategoriesDirect = unstable_cache(
+  async (): Promise<any[]> => {
   try {
     const payload = await getPayloadClient()
 
     // Try to get categories from PianosPage collection first
     const pianosPageResult = await payload.find({
       collection: 'pianos-page',
-      depth: 2,
+      depth: 1,
       limit: 1
     })
 
@@ -117,19 +118,23 @@ export async function getPianoCategoriesDirect(): Promise<any[]> {
       highlight: "NOVUS & AnyTime Series"
     }
   ]
-}
+  },
+  ['pianos-page-categories'],
+  { tags: ['pianos-page'], revalidate: 3600 }
+)
 
 /**
  * Get featured models data using direct Payload access
  */
-export async function getFeaturedModelsDirect(): Promise<any[]> {
+export const getFeaturedModelsDirect = unstable_cache(
+  async (): Promise<any[]> => {
   try {
     const payload = await getPayloadClient()
 
     // Try to get featured models from PianosPage collection first
     const pianosPageResult = await payload.find({
       collection: 'pianos-page',
-      depth: 2,
+      depth: 1,
       limit: 1
     })
 
@@ -169,26 +174,34 @@ export async function getFeaturedModelsDirect(): Promise<any[]> {
       description: "Revolutionary hybrid piano combining a real grand piano action with advanced digital technology, offering the authentic touch of an acoustic grand with silent practice capabilities."
     }
   ]
-}
+  },
+  ['pianos-page-featured-models'],
+  { tags: ['pianos-page'], revalidate: 3600 }
+)
 
-/**
- * Get complete pianos page data using direct Payload access
- */
-export async function getPianosPageDataDirect(): Promise<{
+type PianosPageData = {
   hero: any
   categories: any[]
   featuredModels: any[]
   featuredModelsSection: any
   cta: any
   seo: any
-} | null> {
+} | null
+
+/**
+ * Get complete pianos page data using direct Payload access
+ */
+export const getPianosPageDataDirect = unstable_cache(
+  async (): Promise<PianosPageData> => {
   try {
     const payload = await getPayloadClient()
 
     // Get PianosPage collection data
+    // depth: 1 is sufficient — pianoCategories/featuredModels only have Media
+    // relationships which have no further references (no depth-2 queries needed).
     const pianosPageResult = await payload.find({
       collection: 'pianos-page',
-      depth: 2,
+      depth: 1,
       limit: 1
     })
 
@@ -266,7 +279,10 @@ export async function getPianosPageDataDirect(): Promise<{
       keywords: "kawai pianos, digital piano, grand piano, hybrid piano, upright piano"
     }
   }
-}
+  },
+  ['pianos-page-data'],
+  { tags: ['pianos-page'], revalidate: 3600 }
+)
 
 /**
  * Get homepage data using direct Payload access
@@ -277,9 +293,13 @@ export const getHomePageDataDirect = unstable_cache(
     const payload = await getPayloadClient()
 
     // Get HomePage collection data
+    // depth: 1 populates direct relationship fields (Media → url, alt, etc.)
+    // depth: 2 would also populate those Media documents' own relationships — but
+    // Media has no relationships, so depth: 2 just generates ~30-45 extra MongoDB
+    // no-op roundtrips that added ~2-3 seconds to every cache-miss render.
     const homePageResult = await payload.find({
       collection: 'home-page',
-      depth: 2,
+      depth: 1,
       limit: 1
     })
 
