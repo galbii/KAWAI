@@ -9,7 +9,7 @@ import { NavigationContextProvider } from "@/contexts/NavigationContext";
 import type { NavigationOrigin } from "@/lib/navigation-utils";
 import { AdminBarProvider } from "@/contexts/AdminBarContext";
 import { AdminBar } from "@/components/layout/AdminBar";
-import { headers, cookies } from 'next/headers';
+import { headers } from 'next/headers';
 import { organizationSchema, featuredProductsSchema } from "@/lib/seo/schemas";
 import { UTMCapture } from "@/components/analytics/UTMCapture";
 import { DealerDimensionTracker } from "@/components/analytics/DealerDimensionTracker";
@@ -86,14 +86,16 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function FrontendLayout(props: { children: React.ReactNode }) {
   const { children } = props
 
-  // Derive initial dealer context from cookie + pathname so the first client
-  // render matches the server render (no flash of un-branded → dealer header).
-  const [headersList, cookieStore] = await Promise.all([headers(), cookies()])
+  // Derive initial dealer context from pathname so the first server render can
+  // pre-populate NavigationContext for /store/* pages without reading cookies
+  // (which would force dynamic rendering and bypass edge-cache).
+  // The cookie-based fallback (user navigated away from a storefront) is handled
+  // client-side by NavigationContextProvider via sessionStorage.
+  const headersList = await headers()
   const rawPathname = headersList.get('x-pathname') || '/'
   const pathname = rawPathname.length > 1 ? rawPathname.replace(/\/$/, '') : rawPathname
-  const cookieDealerSlug = cookieStore.get('kawai-dealer-slug')?.value
   const pathDealerSlug = pathname.startsWith('/store/') ? pathname.split('/')[2] : undefined
-  const dealerSlug = pathDealerSlug ?? cookieDealerSlug
+  const dealerSlug = pathDealerSlug
 
   const initialOrigin: NavigationOrigin = dealerSlug
     ? { basePath: `/store/${dealerSlug}`, isDealerLocation: true, dealerSlug }

@@ -11,14 +11,25 @@ export function PHProvider({ children }: { children: React.ReactNode }) {
 
     posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
       ...(process.env.NEXT_PUBLIC_POSTHOG_HOST && { api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST }),
-      person_profiles: 'identified_only', // or 'always' to create profiles for anonymous users as well
+      person_profiles: 'identified_only',
       capture_pageview: false, // Disable automatic pageview capture, as we capture manually
-      capture_pageleave: true, // Enable pageleave capture
+      capture_pageleave: true,
       opt_out_capturing_by_default: true,
+      // Session recording starts disabled and is enabled only after the first
+      // user interaction (click or scroll). This eliminates the 6-second beacon
+      // loop on page load and avoids recording bandwidth on bounce sessions.
+      disable_session_recording: true,
       loaded: (posthog) => {
         if (process.env.NODE_ENV === 'development') posthog.debug()
       }
     })
+
+    // Enable session recording on first meaningful interaction
+    const enableRecording = () => {
+      posthog.startSessionRecording()
+    }
+    document.addEventListener('click', enableRecording, { once: true })
+    document.addEventListener('scroll', enableRecording, { once: true })
   }, [])
 
   return (

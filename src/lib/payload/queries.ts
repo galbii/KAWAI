@@ -1968,6 +1968,47 @@ export const getAccessoriesForPage = unstable_cache(
 )
 
 /**
+ * Get products by model prefix string — used by series showcase pages.
+ * Filters on the `model` field using a contains match (e.g. "CA", "ES", "GX", "GL", "SK-").
+ * Results are cached per prefix with 1-hour ISR + product-level invalidation tags.
+ */
+export const getProductsByModelPrefix = (prefix: string) =>
+  unstable_cache(
+    async () => {
+      const payload = await getPayloadClient()
+      const { docs } = await payload.find({
+        collection: 'products',
+        where: {
+          and: [
+            { status: { equals: 'active' } },
+            { 'visibility.showInCatalog': { equals: true } },
+            { model: { contains: prefix } },
+          ],
+        },
+        select: {
+          model: true,
+          name: true,
+          slug: true,
+          imageUrl: true,
+          price: true,
+          specifications: true,
+          highlights: true,
+          variations: true,
+          description: true,
+          type: true,
+          shopifyMedia: true,
+        } as any,
+        depth: 1,
+        sort: 'visibility.sortOrder',
+        limit: 50,
+      })
+      return docs
+    },
+    [`series-products-${prefix}`],
+    { tags: [`series-${prefix}`, 'products'], revalidate: 3600 },
+  )()
+
+/**
  * Get music school by storefront slug using direct Payload access
  */
 export async function getMusicSchoolByStorefrontSlug(storefrontSlug: string): Promise<any | null> {

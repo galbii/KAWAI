@@ -180,14 +180,25 @@ export function NewsMegaMenu({
                     {/* Image */}
                     <div className="absolute inset-0">
                       {current.videoUrl ? (
-                        /* Auto-playing muted video background */
-                        <iframe
-                          src={`https://www.youtube-nocookie.com/embed/${getYouTubeId(current.videoUrl)}?autoplay=1&mute=1&loop=1&playlist=${getYouTubeId(current.videoUrl)}&controls=0&rel=0&playsinline=1&modestbranding=1`}
-                          allow="autoplay; encrypted-media"
-                          title={current.title}
-                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                          style={{ width: '177.78vh', height: '100vh', minWidth: '100%', minHeight: '56.25vw', border: 'none' }}
-                        />
+                        /* YouTube thumbnail — static, no autoplay */
+                        <>
+                          <Image
+                            src={`https://img.youtube.com/vi/${getYouTubeId(current.videoUrl)}/maxresdefault.jpg`}
+                            alt={current.title}
+                            fill
+                            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                            sizes="(max-width: 1280px) 80vw, 85vw"
+                            priority={currentIndex === 0}
+                          />
+                          {/* Play icon badge */}
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className="w-14 h-14 rounded-full bg-kawai-black/50 border border-white/30 flex items-center justify-center">
+                              <svg className="w-5 h-5 text-white translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z" />
+                              </svg>
+                            </div>
+                          </div>
+                        </>
                       ) : (
                         <Image
                           src={current.image}
@@ -319,22 +330,24 @@ export function NewsMegaMenu({
                           style={{ height: 0, paddingBottom: '56.25%' }}
                         >
                           {videoId ? (
-                            /* Auto-playing muted embed — pointer-events-none so the <Link> still navigates on click.
-                               iframe fills the padding-box exactly: inset-0 spans top-padding-edge to bottom-padding-edge */
-                            <iframe
-                              src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&rel=0&playsinline=1&modestbranding=1`}
-                              allow="autoplay; encrypted-media"
-                              title={post.title}
-                              style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                width: '100%',
-                                height: '100%',
-                                border: 'none',
-                                pointerEvents: 'none',
-                              }}
-                            />
+                            /* YouTube thumbnail — static, no autoplay */
+                            <>
+                              <Image
+                                src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+                                alt={post.title}
+                                fill
+                                className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                                sizes="(max-width: 1280px) 25vw, 300px"
+                              />
+                              {/* Play icon badge */}
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <div className="w-9 h-9 rounded-full bg-kawai-black/50 border border-white/30 flex items-center justify-center">
+                                  <svg className="w-3.5 h-3.5 text-white translate-x-px" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z" />
+                                  </svg>
+                                </div>
+                              </div>
+                            </>
                           ) : post.featuredImage ? (
                             <Image
                               src={post.featuredImage}

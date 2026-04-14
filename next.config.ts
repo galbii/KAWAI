@@ -123,6 +123,18 @@ const nextConfig: NextConfig = {
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=()' },
         ],
       },
+      // Edge-cache public HTML pages at Cloudflare.
+      // s-maxage=300 matches the ISR revalidate window; stale-while-revalidate
+      // lets Cloudflare serve stale HTML for an extra 10 minutes while the
+      // origin generates a fresh copy in the background.
+      // Excludes: API routes (dynamic/private), Payload admin (auth-gated),
+      // Next.js internals (_next/static, _next/image already have their own headers).
+      {
+        source: '/((?!api|admin|_next).*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=600' },
+        ],
+      },
       // Relaxed CSP for the Payload admin UI (requires unsafe-inline + unsafe-eval)
       {
         source: '/admin(.*)',

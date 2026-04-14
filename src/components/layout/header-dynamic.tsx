@@ -1,5 +1,5 @@
 import { Header } from './header'
-import { headers, cookies } from 'next/headers'
+import { headers } from 'next/headers'
 import { unstable_cache } from 'next/cache'
 import { getPayloadClient } from '@/lib/payload/queries'
 import type { Media } from '@/payload-types'
@@ -279,7 +279,7 @@ const getHomePageNewsItems = unstable_cache(
     }
   },
   ['header-news-items'],
-  { tags: ['home-page'], revalidate: 300 }
+  { tags: ['home-page'], revalidate: 600 }
 )
 
 const getHeaderSettings = unstable_cache(
@@ -349,13 +349,17 @@ const getLatestPosts = unstable_cache(
     }
   },
   ['header-latest-posts'],
-  { tags: ['posts'], revalidate: 300 }
+  { tags: ['posts'], revalidate: 600 }
 )
 
 export async function HeaderDynamic() {
   try {
-    // Get current path, site context, and dealer context from cookie
-    const [headersList, cookieStore] = await Promise.all([headers(), cookies()])
+    // Get current path and site context from middleware-injected headers.
+    // Cookies are intentionally NOT read here — reading cookies forces dynamic
+    // rendering on every request, bypassing the Cloudflare edge cache.
+    // Cookie-based dealer context (user navigated away from a storefront) is
+    // handled client-side by NavigationContext via sessionStorage.
+    const headersList = await headers()
     const pathname = headersList.get('x-pathname') || ''
     const site = headersList.get('x-site') ?? 'us'
 
@@ -373,34 +377,27 @@ export async function HeaderDynamic() {
     // Check if we're on the find-a-dealer page (hide search on this page)
     const isFindADealerPage = pathname.startsWith('/find-a-dealer')
 
-    // Resolve dealer slug: pathname takes priority (user is on the storefront right now),
-    // cookie is the fallback (user navigated here from a storefront).
-    const pathDealerSlug = pathname.startsWith('/store/') ? pathname.split('/')[2] : undefined
-    const cookieDealerSlug = cookieStore.get('kawai-dealer-slug')?.value
-    const dealerSlug = pathDealerSlug ?? cookieDealerSlug
+    // Dealer slug from the URL path only (no cookie fallback — see comment above).
+    const dealerSlug = pathname.startsWith('/store/') ? pathname.split('/')[2] : undefined
 
     const staticNavigation: NavigationItem[] = []
 
-    // Fetch dealer location data server-side on every page where cookie is present.
-    // This eliminates the client-side flash of un-branded → dealer header.
-    let locationData: DealerLocationData | null = null
-
-    if (site === 'cad') {
-      // Canadian site — show "Canada Music" branding in the logo, no storefront-specific nav
-      locationData = { locationName: 'Canada Music', slug: '', hasMusicSchool: false }
-    } else if (dealerSlug) {
-      locationData = await getDealerLocationBySlug(dealerSlug)
-    }
-
-    // Fetch news items, register config, quick links, resource links, latest posts, and header settings
-    const [newsItems, registerConfig, quickLinks, resourceLinks, latestPosts, headerSettings] = await Promise.all([
-      getHomePageNewsItems(),
-      getRegisterConfig(),
-      getSearchQuickLinks(),
-      getResourcesNavConfig(),
-      getLatestPosts(),
-      getHeaderSettings(),
-    ])
+    // Fetch all header data in parallel — including the dealer location lookup
+    // which was previously a sequential await that blocked the rest of the fetches.
+    const [newsItems, registerConfig, quickLinks, resourceLinks, latestPosts, headerSettings, locationData] =
+      await Promise.all([
+        getHomePageNewsItems(),
+        getRegisterConfig(),
+        getSearchQuickLinks(),
+        getResourcesNavConfig(),
+        getLatestPosts(),
+        getHeaderSettings(),
+        site === 'cad'
+          ? Promise.resolve<DealerLocationData>({ locationName: 'Canada Music', slug: '', hasMusicSchool: false })
+          : dealerSlug
+          ? getDealerLocationBySlug(dealerSlug)
+          : Promise.resolve(null),
+      ])
 
     return (
       <Header
@@ -421,15 +418,19 @@ export async function HeaderDynamic() {
   } catch (error) {
     console.error('Error in HeaderDynamic:', error)
 
-    // Fallback to basic static navigation
-    const headersList = await headers()
-    const pathname = headersList.get('x-pathname') || ''
-    const isSignaturePage = pathname.endsWith('/signature') || pathname.endsWith('/signature/') ||
-                            pathname.endsWith('/signature2') || pathname.endsWith('/signature2/') ||
-                            pathname.endsWith('/gl-10-signature') || pathname.endsWith('/gl-10-signature/')
-    const isConcertArtistPage = pathname === '/concert-artist' || pathname === '/concert-artist/'
-    const isUniversityPage = pathname.includes('/university')
-    const isFindADealerPage = pathname.startsWith('/find-a-dealer')
+    // Fallback to basic static navigation — re-use already-read headers
+    // from outer scope if available, otherwise read fresh
+    let fallbackPathname = ''
+    try {
+      fallbackPathname = (await headers()).get('x-pathname') || ''
+    } catch { /* ignore */ }
+
+    const isSignaturePage = fallbackPathname.endsWith('/signature') || fallbackPathname.endsWith('/signature/') ||
+                            fallbackPathname.endsWith('/signature2') || fallbackPathname.endsWith('/signature2/') ||
+                            fallbackPathname.endsWith('/gl-10-signature') || fallbackPathname.endsWith('/gl-10-signature/')
+    const isConcertArtistPage = fallbackPathname === '/concert-artist' || fallbackPathname === '/concert-artist/'
+    const isUniversityPage = fallbackPathname.includes('/university')
+    const isFindADealerPage = fallbackPathname.startsWith('/find-a-dealer')
 
     return <Header navigation={[]} isSignaturePage={isSignaturePage} hidePianoLinks={isConcertArtistPage} isUniversityPage={isUniversityPage} isFindADealerPage={isFindADealerPage} newsItems={[]} />
   }
