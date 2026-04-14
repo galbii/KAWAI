@@ -1,6 +1,6 @@
 import React from 'react'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { unstable_cache } from 'next/cache'
+import { getPayloadClient } from '@/lib/payload/queries'
 import type { ArchiveBlock as ArchiveBlockProps, Post } from '@/payload-types'
 import { RichText } from '@/components/RichText'
 import Link from 'next/link'
@@ -26,28 +26,31 @@ export async function ArchiveBlock(props: Props) {
   let posts: Post[] = []
 
   if (populateBy === 'collection') {
-    const payload = await getPayload({ config })
-
-    const flattenedCategories = categories?.map((category) => {
+    const flattenedCategories = (categories?.map((category) => {
       if (typeof category === 'object') return category.id
       else return category
-    })
+    }) ?? []).filter(Boolean) as string[]
 
-    const fetchedPosts = await payload.find({
-      collection: 'posts',
-      depth: 1,
-      limit,
-      where: flattenedCategories && flattenedCategories.length > 0
-        ? {
-            categories: {
-              in: flattenedCategories,
-            },
-          }
-        : {},
-      sort: '-publishedDate',
-    })
+    const cacheKey = `archive-posts-${flattenedCategories.sort().join(',')}-${limit}`
+    const fetchPosts = unstable_cache(
+      async () => {
+        const payload = await getPayloadClient()
+        const result = await payload.find({
+          collection: 'posts',
+          depth: 1,
+          limit,
+          where: flattenedCategories.length > 0
+            ? { categories: { in: flattenedCategories } }
+            : {},
+          sort: '-publishedDate',
+        })
+        return result.docs as Post[]
+      },
+      [cacheKey],
+      { tags: ['posts'], revalidate: 300 }
+    )
 
-    posts = fetchedPosts.docs as Post[]
+    posts = await fetchPosts()
   } else {
     if (selectedDocs?.length) {
       const filteredSelectedPosts = selectedDocs

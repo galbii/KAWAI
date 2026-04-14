@@ -1,5 +1,6 @@
 import type { Dealer, Storefront } from '@/payload-types'
 import { getPayloadClient } from '@/lib/payload/queries'
+import { unstable_cache } from 'next/cache'
 import { DealerFinderClient } from '@/app/(frontend)/find-a-dealer/DealerFinderClient'
 import type { DealerWithDistance } from '@/app/(frontend)/find-a-dealer/types'
 
@@ -40,47 +41,54 @@ function storefrontToDealer(storefront: Storefront): DealerWithDistance {
   }
 }
 
-export async function DealerFinderMapBlock({ heading }: Props) {
-  const payload = await getPayloadClient()
+const getDealerMapData = unstable_cache(
+  async () => {
+    const payload = await getPayloadClient()
+    return Promise.all([
+      payload.find({
+        collection: 'dealers',
+        where: { isActive: { equals: true } },
+        depth: 0,
+        select: {
+          dealerName: true,
+          slug: true,
+          address: true,
+          coordinates: true,
+          contactInfo: true,
+          shigeruKawaiDealer: true,
+          acousticPianoDealer: true,
+          professionalProductDealer: true,
+          digitalPianoDealer: true,
+          isFeatured: true,
+          isActive: true,
+        },
+        limit: 1000,
+        sort: 'dealerName',
+      }),
+      payload.find({
+        collection: 'storefronts',
+        where: { isActive: { equals: true } },
+        depth: 0,
+        select: {
+          locationName: true,
+          slug: true,
+          address: true,
+          showroomInfo: true,
+          showroomDescription: true,
+          schemaData: true,
+          isActive: true,
+        },
+        limit: 1000,
+        sort: 'locationName',
+      }),
+    ])
+  },
+  ['dealer-map-data'],
+  { tags: ['dealers', 'storefronts'], revalidate: 3600 }
+)
 
-  const [dealersResponse, storefrontsResponse] = await Promise.all([
-    payload.find({
-      collection: 'dealers',
-      where: { isActive: { equals: true } },
-      depth: 0,
-      select: {
-        dealerName: true,
-        slug: true,
-        address: true,
-        coordinates: true,
-        contactInfo: true,
-        shigeruKawaiDealer: true,
-        acousticPianoDealer: true,
-        professionalProductDealer: true,
-        digitalPianoDealer: true,
-        isFeatured: true,
-        isActive: true,
-      },
-      limit: 1000,
-      sort: 'dealerName',
-    }),
-    payload.find({
-      collection: 'storefronts',
-      where: { isActive: { equals: true } },
-      depth: 0,
-      select: {
-        locationName: true,
-        slug: true,
-        address: true,
-        showroomInfo: true,
-        showroomDescription: true,
-        schemaData: true,
-        isActive: true,
-      },
-      limit: 1000,
-      sort: 'locationName',
-    }),
-  ])
+export async function DealerFinderMapBlock({ heading }: Props) {
+  const [dealersResponse, storefrontsResponse] = await getDealerMapData()
 
   const dealers = dealersResponse.docs as Dealer[]
   const storefronts = storefrontsResponse.docs as Storefront[]

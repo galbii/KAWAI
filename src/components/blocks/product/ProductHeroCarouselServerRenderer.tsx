@@ -1,6 +1,5 @@
 import type { ProductHeroCarouselBlock, Media } from '@/payload-types'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { getHomePageDataDirect } from '@/lib/payload/queries'
 import { ProductHeroCarouselRenderer } from './ProductHeroCarouselRenderer'
 import type { ProductHeroSlideData } from './ProductHeroCarouselRenderer'
 
@@ -10,24 +9,20 @@ import type { ProductHeroSlideData } from './ProductHeroCarouselRenderer'
  * Server component that fetches slides from the Homepage news tab (same
  * source as the News Carousel) and transforms them into the hero carousel
  * format. Block-level slides are appended after the homepage items.
+ *
+ * Uses the shared unstable_cache query to avoid a redundant MongoDB roundtrip
+ * (same cache entry as NewsCarouselRenderer and other homepage block renderers).
  */
 export async function ProductHeroCarouselServerRenderer(
   props: ProductHeroCarouselBlock & { headingLevel?: 'h1' | 'h2' }
 ) {
-  const payload = await getPayload({ config })
-
-  const homePage = await payload.find({
-    collection: 'home-page',
-    limit: 1,
-    depth: 2,
-  })
-
-  const homePageData = homePage.docs[0]
+  const homePageData = await getHomePageDataDirect()
+  const newsItems = homePageData?.newsCarouselSection?.newsItems
   let slides: ProductHeroSlideData[] = []
 
   // ── Map homepage news items → ProductHeroSlideData ────────────────────────
-  if (homePageData?.newsItems && Array.isArray(homePageData.newsItems)) {
-    slides = homePageData.newsItems.map((item: any): ProductHeroSlideData => ({
+  if (newsItems && Array.isArray(newsItems)) {
+    slides = newsItems.map((item: any): ProductHeroSlideData => ({
       mediaType: item.videoUrl ? 'youtube' : 'image',
       image: item.image ?? null,
       youtubeUrl: item.videoUrl ?? null,
@@ -63,7 +58,7 @@ export async function ProductHeroCarouselServerRenderer(
   // ── Resolve autoPlayDuration ──────────────────────────────────────────────
   const autoPlayDuration =
     props.settings?.autoPlayDuration ??
-    homePageData?.autoPlayDuration ??
+    homePageData?.newsCarouselSection?.autoPlayDuration ??
     7000
 
   return (

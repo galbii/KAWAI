@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+/* Dark mode variant — used by Payload admin components and university pages */
+@custom-variant dark (&:is(.dark *));
 
 /* Accessibility: Respect user's motion preferences */
 @media (prefers-reduced-motion: reduce) {

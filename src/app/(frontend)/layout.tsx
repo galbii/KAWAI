@@ -9,13 +9,13 @@ import { NavigationContextProvider } from "@/contexts/NavigationContext";
 import type { NavigationOrigin } from "@/lib/navigation-utils";
 import { AdminBarProvider } from "@/contexts/AdminBarContext";
 import { AdminBar } from "@/components/layout/AdminBar";
-import { headers } from 'next/headers';
 import { organizationSchema, featuredProductsSchema } from "@/lib/seo/schemas";
 import { UTMCapture } from "@/components/analytics/UTMCapture";
 import { DealerDimensionTracker } from "@/components/analytics/DealerDimensionTracker";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { ConditionalFooterWrapper } from "@/components/layout/ConditionalFooterWrapper";
 import { DealerPageLayoutWrapper } from "@/components/layout/DealerPageLayoutWrapper";
+import { NammAwareShell } from "@/components/layout/NammAwareShell";
 import { NavigationProgress } from "@/components/layout/NavigationProgress";
 import { PageTransition } from "@/components/layout/PageTransition";
 
@@ -86,23 +86,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function FrontendLayout(props: { children: React.ReactNode }) {
   const { children } = props
 
-  // Derive initial dealer context from pathname so the first server render can
-  // pre-populate NavigationContext for /store/* pages without reading cookies
-  // (which would force dynamic rendering and bypass edge-cache).
-  // The cookie-based fallback (user navigated away from a storefront) is handled
-  // client-side by NavigationContextProvider via sessionStorage.
-  const headersList = await headers()
-  const rawPathname = headersList.get('x-pathname') || '/'
-  const pathname = rawPathname.length > 1 ? rawPathname.replace(/\/$/, '') : rawPathname
-  const pathDealerSlug = pathname.startsWith('/store/') ? pathname.split('/')[2] : undefined
-  const dealerSlug = pathDealerSlug
-
-  const initialOrigin: NavigationOrigin = dealerSlug
-    ? { basePath: `/store/${dealerSlug}`, isDealerLocation: true, dealerSlug }
-    : { basePath: '/', isDealerLocation: false }
-
-  // Check if this is any NAMM 2026 page (has its own custom header/footer)
-  const isNAMMPage = pathname.startsWith('/namm-2026')
+  // Static initial origin — NavigationContextProvider populates dealer context
+  // client-side from sessionStorage after hydration (see NavigationContext.tsx).
+  // All components that branch on isDealerLocation already use a mounted guard,
+  // so the server render is always the non-dealer default regardless.
+  const initialOrigin: NavigationOrigin = { basePath: '/', isDealerLocation: false }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com';
 
@@ -158,19 +146,30 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
         }}
       />
       <DealerPageLayoutWrapper>
-        {!isNAMMPage && <AnnouncementBarWrapper />}
-        {!isNAMMPage && <HeaderDynamic />}
-        {!isNAMMPage && <LayoutSpacer />}
-        <main className="flex-1 m-0 p-0">
-          <PageTransition>
-            {children}
-          </PageTransition>
-        </main>
-        {!isNAMMPage && (
+        <NammAwareShell
+          announcementBar={
+            <Suspense fallback={null}>
+              <AnnouncementBarWrapper />
+            </Suspense>
+          }
+          header={
+            <Suspense fallback={null}>
+              <HeaderDynamic />
+            </Suspense>
+          }
+          layoutSpacer={<LayoutSpacer />}
+        >
+          <main className="flex-1 m-0 p-0">
+            <PageTransition>
+              {children}
+            </PageTransition>
+          </main>
           <ConditionalFooterWrapper>
-            <FooterDynamic />
+            <Suspense fallback={null}>
+              <FooterDynamic />
+            </Suspense>
           </ConditionalFooterWrapper>
-        )}
+        </NammAwareShell>
       </DealerPageLayoutWrapper>
       <Suspense fallback={null}>
         <UTMCapture />

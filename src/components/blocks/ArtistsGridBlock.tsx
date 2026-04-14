@@ -1,5 +1,6 @@
 import type { Artist } from '@/payload-types'
 import { getPayloadClient } from '@/lib/payload/queries'
+import { unstable_cache } from 'next/cache'
 import { ArtistsGrid } from '@/components/artists/ArtistsGrid'
 
 interface ArtistsGridBlockProps {
@@ -8,15 +9,24 @@ interface ArtistsGridBlockProps {
   limit?: number | null
 }
 
+const getArtistsGrid = unstable_cache(
+  async (limit: number) => {
+    const payload = await getPayloadClient()
+    const { docs } = await payload.find({
+      collection: 'artists',
+      where: { isActive: { equals: true } },
+      sort: '-featured,-updatedAt',
+      limit,
+      depth: 1,
+    })
+    return docs
+  },
+  ['artists-grid'],
+  { tags: ['artists'], revalidate: 3600 }
+)
+
 export async function ArtistsGridBlock({ title, showSearch, limit }: ArtistsGridBlockProps) {
-  const payload = await getPayloadClient()
-  const { docs } = await payload.find({
-    collection: 'artists',
-    where: { isActive: { equals: true } },
-    sort: '-featured,-updatedAt',
-    limit: limit ?? 200,
-    depth: 1,
-  })
+  const docs = await getArtistsGrid(limit ?? 200)
   return (
     <ArtistsGrid
       artists={docs as Artist[]}

@@ -196,16 +196,25 @@ export function FeaturedCollectionsCarousel({
   // Reset slide index when category changes
   useEffect(() => { setIdx(0) }, [selectedCategory])
 
+  // Derive videoId before the early return so hooks aren't called conditionally.
+  // Guard against empty active array (when collections is empty).
+  const currentCollection = total > 0 ? active[Math.min(idx, total - 1)] : undefined
+  const videoId = currentCollection ? getVideoId(currentCollection) : null
+
+  // Pause auto-rotation while a YouTube video is the background — cycling through
+  // video slides remounts the iframe every 6 seconds (AnimatePresence uses a key
+  // per slide), which re-initialises the full YouTube player environment each time.
+  const effectivePaused = paused || !!videoId
+
   useEffect(() => {
-    if (paused || total <= 1) return
+    if (effectivePaused || total <= 1) return
     const t = setInterval(next, AUTO_ROTATE_MS)
     return () => clearInterval(t)
-  }, [paused, next, total])
+  }, [effectivePaused, next, total])
 
   if (collections.length === 0) return null
 
   const collection = active[Math.min(idx, active.length - 1)]!
-  const videoId = getVideoId(collection)
   const imageUrl = videoId ? null : getStaticImageUrl(collection)
   const displayTitle = collection.heading || collection.title
   const collectionHref = `/pianos/${collection.handle}`

@@ -92,6 +92,19 @@ export default function RootLayout({
           href="/assets/videos/Hero_compressed.mp4"
           type="video/mp4"
         />
+        {/* Preconnect to high-priority third-party origins — saves one DNS+TCP+TLS
+            handshake per domain on first use. crossOrigin="anonymous" is required
+            for font origins (CORS). dns-prefetch is used for origins that load
+            conditionally (ad/analytics) to avoid holding open unused connections. */}
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://www.youtube-nocookie.com" />
+        <link rel="preconnect" href="https://img.youtube.com" />
+        <link rel="dns-prefetch" href="https://connect.facebook.net" />
+        <link rel="dns-prefetch" href="https://www.facebook.com" />
+        <link rel="dns-prefetch" href="https://stats.g.doubleclick.net" />
+        <link rel="dns-prefetch" href="https://us.posthog.com" />
       </head>
       <body className={`${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${notoSans.variable} antialiased bg-kawai-black text-kawai-pearl`}>
         {/* GA4 Consent Mode v2 — must run before GTM so tags use the correct defaults.

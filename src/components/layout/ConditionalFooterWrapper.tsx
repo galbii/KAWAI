@@ -4,6 +4,8 @@ import { usePathname } from 'next/navigation'
 
 // Paths where the site footer should be hidden (full-screen app-like pages)
 const FOOTERLESS_PATHS = ['/find-a-dealer']
+// Path prefixes where the footer should be hidden (have their own layout)
+const FOOTERLESS_PREFIXES = ['/namm-2026']
 
 interface Props {
   children: React.ReactNode
@@ -21,5 +23,6 @@ interface Props {
 export function ConditionalFooterWrapper({ children }: Props) {
   const pathname = usePathname()
   if (FOOTERLESS_PATHS.includes(pathname)) return null
+  if (FOOTERLESS_PREFIXES.some(prefix => pathname.startsWith(prefix))) return null
   return <>{children}</>
 }
