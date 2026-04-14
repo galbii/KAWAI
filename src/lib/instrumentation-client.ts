@@ -5,8 +5,12 @@ if (!posthog.__loaded) {
     api_host: "/ingest",
     ui_host: "https://us.posthog.com",
     defaults: '2025-05-24',
-    capture_exceptions: true, // This enables capturing exceptions using Error Tracking
+    capture_exceptions: true,
     debug: process.env.NODE_ENV === "development",
     opt_out_capturing_by_default: true,
+    // Session recording is disabled at init and enabled only after the user's
+    // first interaction (click/scroll) in providers.tsx — prevents the
+    // 6-second recording beacon from firing on every page load.
+    disable_session_recording: true,
   })
 }

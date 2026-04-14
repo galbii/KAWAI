@@ -1,39 +1,29 @@
 import type { MarketingNewsCarouselBlock } from '@/payload-types'
 import { NewsCarousel } from '@/components/homepage/news-carousel'
 import type { NewsCarouselSectionData, NewsItem } from '@/lib/types/homepage'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { getHomePageDataDirect } from '@/lib/payload/queries'
 
 export async function NewsCarouselRenderer(props: MarketingNewsCarouselBlock) {
-  const payload = await getPayload({ config })
+  // Use the shared cached query instead of a raw uncached getPayload() call.
+  // getHomePageDataDirect is wrapped in unstable_cache (TTL 300s, tag 'home-page')
+  // so this is a cache hit on any warm request — zero extra MongoDB roundtrips.
+  const homePageData = await getHomePageDataDirect()
+  const carouselSection = homePageData?.newsCarouselSection
 
   let newsItems: NewsItem[] = []
 
-  // Always fetch HomePage news items first
-  const homePage = await payload.find({
-    collection: 'home-page',
-    limit: 1,
-    depth: 2, // Populate media relationships
-  })
-
-  const homePageData = homePage.docs[0]
-
-  // Add homepage news items
-  if (homePageData?.newsItems && Array.isArray(homePageData.newsItems)) {
-    const homePageNewsItems: NewsItem[] = homePageData.newsItems.map((item: any) => ({
+  if (carouselSection?.newsItems && Array.isArray(carouselSection.newsItems)) {
+    newsItems = carouselSection.newsItems.map((item: any) => ({
       title: item.title,
       description: item.description,
       image: item.image ?? null,
       category: item.category,
       ...(item.link && { link: item.link }),
     }))
-
-    newsItems = homePageNewsItems
   }
 
-  // Append block news items if they exist (always additive)
+  // Append block-level news items if provided (always additive)
   if (props.newsItems && Array.isArray(props.newsItems) && props.newsItems.length > 0) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const blockNewsItems: NewsItem[] = props.newsItems.map((item: any) => ({
       title: item.title,
       description: item.description,
@@ -43,14 +33,12 @@ export async function NewsCarouselRenderer(props: MarketingNewsCarouselBlock) {
       ...(item.videoUrl && { videoUrl: item.videoUrl, videoSource: 'youtube' as const }),
       ...(item.youtubeZoom != null && { youtubeZoom: item.youtubeZoom }),
     }))
-
     newsItems = [...newsItems, ...blockNewsItems]
   }
 
-  // Use block autoPlayDuration if set, otherwise use homepage value, otherwise default to 7000
   const autoPlayDuration =
     props.autoPlayDuration ??
-    homePageData?.autoPlayDuration ??
+    carouselSection?.autoPlayDuration ??
     7000
 
   const carouselData: NewsCarouselSectionData = {

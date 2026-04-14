@@ -1,48 +1,42 @@
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { unstable_cache } from 'next/cache'
+import { getPayloadClient } from '@/lib/payload/queries'
 import { AnnouncementBar } from './AnnouncementBar'
+
+// Cached fetch — avoids a raw uncached MongoDB hit on every render.
+// Same home-page tag as all other header queries so a CMS save invalidates together.
+const getAnnouncementBarConfig = unstable_cache(
+  async () => {
+    try {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'home-page',
+        limit: 1,
+        depth: 0,
+        select: { announcementBar: true } as never,
+      })
+      return (result.docs[0] as any)?.announcementBar ?? null
+    } catch (err) {
+      console.error('[getAnnouncementBarConfig]', err)
+      return null
+    }
+  },
+  ['announcement-bar-config'],
+  { tags: ['home-page'], revalidate: 600 }
+)
 
 export async function AnnouncementBarWrapper() {
   try {
-    const payload = await getPayload({ config })
+    const announcementBar = await getAnnouncementBarConfig()
 
-    const result = await payload.find({
-      collection: 'home-page',
-      limit: 1,
-      depth: 0,
-    })
+    if (!announcementBar?.enabled) return null
+    if (!announcementBar.messages || announcementBar.messages.length === 0) return null
 
-    if (!result.docs || result.docs.length === 0) {
-      return null
-    }
-
-    const homePage = result.docs[0]
-    if (!homePage) {
-      return null
-    }
-
-    const announcementBar = homePage.announcementBar
-
-    // Check if announcement bar is enabled
-    if (!announcementBar?.enabled) {
-      return null
-    }
-
-    // Check if there are messages
-    if (!announcementBar.messages || announcementBar.messages.length === 0) {
-      return null
-    }
-
-    // Extract messages from the array
     const messages = announcementBar.messages
       .map((msg: { text: string }) => msg.text)
       .filter((text: string) => text && text.trim().length > 0)
 
-    if (messages.length === 0) {
-      return null
-    }
+    if (messages.length === 0) return null
 
-    // Build props object conditionally
     const barProps = {
       messages,
       style: announcementBar.style || ('gradient' as const),

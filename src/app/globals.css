@@ -126,16 +126,6 @@
   --spacing-brand-3xl: 4rem;         /* 64px */
   --spacing-brand-4xl: 6rem;         /* 96px */
 
-  /* Auto-generate Tailwind utilities for brand spacing */
-  --spacing-brand-xs: 0.25rem;
-  --spacing-brand-sm: 0.5rem;
-  --spacing-brand-md: 1rem;
-  --spacing-brand-lg: 1.5rem;
-  --spacing-brand-xl: 2rem;
-  --spacing-brand-2xl: 3rem;
-  --spacing-brand-3xl: 4rem;
-  --spacing-brand-4xl: 6rem;
-
   /* Custom Breakpoints */
   --breakpoint-3xl: 120rem;
 

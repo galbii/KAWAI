@@ -1,13 +1,10 @@
 import type { MarketingPianoCollectionBlock } from '@/payload-types'
 import { PianoCollection } from '@/components/homepage/piano-collection'
 import type { PianoCollectionSectionData } from '@/lib/types/homepage'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { getHomePageDataDirect } from '@/lib/payload/queries'
 
 export async function PianoCollectionRenderer(props: MarketingPianoCollectionBlock) {
-  const payload = await getPayload({ config })
-
-  // Check if block has any custom content
+  // Check if the block has custom content that overrides CMS homepage defaults
   const hasBlockContent = !!(
     props.collectionSectionHeader ||
     props.collectionTitle ||
@@ -20,7 +17,7 @@ export async function PianoCollectionRenderer(props: MarketingPianoCollectionBlo
   let collectionData: PianoCollectionSectionData
 
   if (hasBlockContent) {
-    // Use block values
+    // Block has its own content — use it directly, no DB call needed
     collectionData = {
       collectionSectionHeader: props.collectionSectionHeader ?? 'Featured Models',
       collectionTitle: props.collectionTitle ?? 'Kawai Piano Collection',
@@ -38,29 +35,25 @@ export async function PianoCollectionRenderer(props: MarketingPianoCollectionBlo
       },
     }
   } else {
-    // Fetch from HomePage tab
-    const homePage = await payload.find({
-      collection: 'home-page',
-      limit: 1,
-      depth: 0,
-    })
-
-    const homePageData = homePage.docs[0]
+    // Fall back to CMS homepage defaults — use the shared cached query
+    // (same unstable_cache entry as page.tsx, zero extra MongoDB roundtrips)
+    const homePageData = await getHomePageDataDirect()
+    const section = homePageData?.pianoCollectionSection
 
     collectionData = {
-      collectionSectionHeader: homePageData?.collectionSectionHeader ?? 'Featured Models',
-      collectionTitle: homePageData?.collectionTitle ?? 'Kawai Piano Collection',
-      collectionDescription: homePageData?.collectionDescription ?? '',
+      collectionSectionHeader: section?.collectionSectionHeader ?? 'Featured Models',
+      collectionTitle: section?.collectionTitle ?? 'Kawai Piano Collection',
+      collectionDescription: section?.collectionDescription ?? '',
       collectionCta: {
-        text: homePageData?.collectionCta?.text ?? 'Explore Collection',
-        link: homePageData?.collectionCta?.link ?? '/pianos',
+        text: section?.collectionCta?.text ?? 'Explore Collection',
+        link: section?.collectionCta?.link ?? '/pianos',
       },
       featuredVideo: {
-        ...(homePageData?.featuredVideo?.youtubeId && {
-          youtubeId: homePageData.featuredVideo.youtubeId
+        ...(section?.featuredVideo?.youtubeId && {
+          youtubeId: section.featuredVideo.youtubeId
         }),
-        width: homePageData?.featuredVideo?.width ?? 560,
-        height: homePageData?.featuredVideo?.height ?? 315,
+        width: section?.featuredVideo?.width ?? 560,
+        height: section?.featuredVideo?.height ?? 315,
       },
     }
   }

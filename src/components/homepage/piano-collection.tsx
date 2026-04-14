@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import YouTubeEmbed from "@/components/ui/youtube-embed";
 import { PianoCollectionProps, DEFAULT_PIANO_COLLECTION_DATA } from '@/lib/types/homepage';
 
 export function PianoCollection({ data = DEFAULT_PIANO_COLLECTION_DATA }: PianoCollectionProps) {
@@ -63,21 +64,20 @@ export function PianoCollection({ data = DEFAULT_PIANO_COLLECTION_DATA }: PianoC
             </Link>
           </motion.div>
 
-          {/* YouTube Video Embed - Simple responsive container */}
+          {/* YouTube Video — facade pattern: shows thumbnail until user clicks */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={isVisible ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.2 }}
             className="lg:col-span-2 relative order-1 lg:order-2"
           >
-            <div className="relative w-full overflow-hidden rounded-lg shadow-lg" style={{ paddingBottom: '56.25%' /* 16:9 aspect ratio */ }}>
-              <iframe
-                src={`https://www.youtube.com/embed/${data.featuredVideo?.youtubeId || "1cmwb6evs2A"}?modestbranding=1&rel=0`}
-                className="absolute top-0 left-0 w-full h-full rounded-lg"
-                allowFullScreen
-                frameBorder="0"
-              />
-            </div>
+            <YouTubeEmbed
+              videoId={data.featuredVideo?.youtubeId || "1cmwb6evs2A"}
+              title="Kawai Piano Collection"
+              aspectRatio="video"
+              className="rounded-lg shadow-lg"
+              privacy={true}
+            />
           </motion.div>
         </div>
 

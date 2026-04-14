@@ -1,13 +1,10 @@
 import type { MarketingPianoGalleryBlock } from '@/payload-types'
 import { PianoGallery } from '@/components/homepage/piano-gallery'
 import type { PianoGallerySectionData } from '@/lib/types/homepage'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { getHomePageDataDirect } from '@/lib/payload/queries'
 
 export async function PianoGalleryRenderer(props: MarketingPianoGalleryBlock) {
-  const payload = await getPayload({ config })
-
-  // Check if block has any custom content
+  // Check if the block has custom content that overrides CMS homepage defaults
   const hasBlockContent = !!(
     props.galleryTitle ||
     props.galleryDescription ||
@@ -17,7 +14,7 @@ export async function PianoGalleryRenderer(props: MarketingPianoGalleryBlock) {
   let galleryData: PianoGallerySectionData
 
   if (hasBlockContent) {
-    // Use block values
+    // Block has its own content — use it directly, no DB call needed
     galleryData = {
       galleryTitle: props.galleryTitle ?? 'Explore Our Piano Collection',
       galleryDescription: props.galleryDescription ?? '',
@@ -32,20 +29,16 @@ export async function PianoGalleryRenderer(props: MarketingPianoGalleryBlock) {
         : [],
     }
   } else {
-    // Fetch from HomePage tab
-    const homePage = await payload.find({
-      collection: 'home-page',
-      limit: 1,
-      depth: 2, // Populate media relationships for category images
-    })
-
-    const homePageData = homePage.docs[0]
+    // Fall back to CMS homepage defaults — use the shared cached query
+    // (same unstable_cache entry as page.tsx, zero extra MongoDB roundtrips)
+    const homePageData = await getHomePageDataDirect()
+    const section = homePageData?.pianoGallerySection
 
     galleryData = {
-      galleryTitle: homePageData?.galleryTitle ?? 'Explore Our Piano Collection',
-      galleryDescription: homePageData?.galleryDescription ?? '',
-      pianoCategories: homePageData?.pianoCategories
-        ? homePageData.pianoCategories.map((cat: any) => ({
+      galleryTitle: section?.galleryTitle ?? 'Explore Our Piano Collection',
+      galleryDescription: section?.galleryDescription ?? '',
+      pianoCategories: section?.pianoCategories
+        ? section.pianoCategories.map((cat: any) => ({
             model: cat.model,
             title: cat.title,
             description: cat.description,
