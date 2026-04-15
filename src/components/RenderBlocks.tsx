@@ -31,7 +31,6 @@
  */
 
 import React, { Fragment, Suspense } from 'react'
-import dynamic from 'next/dynamic'
 import type { Page } from '@/payload-types'
 import { cn } from '@/lib/utils'
 import { PageLayoutProvider } from '@/lib/contexts/PageLayoutContext'
@@ -60,14 +59,8 @@ import { VideoBackgroundBlock } from './blocks/VideoBackgroundBlock'
 import { BrandIntroBlock } from './blocks/BrandIntroBlock'
 import { BottomLeftPopupBlock } from './blocks/BottomLeftPopupBlock'
 import { SideNavigationBlock } from './blocks/SideNavigationBlock'
-const CalendlyEmbedBlock = dynamic(() => import('./blocks/CalendlyEmbedBlock').then(m => ({ default: m.CalendlyEmbedBlock })), {
-  ssr: false,
-  loading: () => <div className="h-[600px] bg-kawai-pearl animate-pulse rounded-lg" />,
-})
-const BookingModalBlock = dynamic(() => import('./blocks/BookingModalBlock').then(m => ({ default: m.BookingModalBlock })), {
-  ssr: false,
-  loading: () => null,
-})
+import { CalendlyEmbedBlockLazy as CalendlyEmbedBlock } from './blocks/CalendlyEmbedBlockLazy'
+import { BookingModalBlockLazy as BookingModalBlock } from './blocks/BookingModalBlockLazy'
 
 // Marketing Blocks - Conversion-focused
 import { HeroBlock } from './blocks/HeroBlock'
@@ -80,10 +73,7 @@ import { InstrumentalToLifeBlock } from './blocks/InstrumentalToLifeBlock'
 import { TechnicalShowcaseBlock } from './blocks/TechnicalShowcaseBlock'
 import { FindADealerBlock } from './blocks/FindADealerBlock'
 import { DealerFinderMapBlock } from './blocks/DealerFinderMapBlock'
-const ThreeDViewerBlock = dynamic(() => import('./blocks/ThreeDViewerBlock').then(m => ({ default: m.ThreeDViewerBlock })), {
-  ssr: false,
-  loading: () => <div className="h-[400px] bg-kawai-pearl animate-pulse rounded-lg" />,
-})
+import { ThreeDViewerBlockLazy as ThreeDViewerBlock } from './blocks/ThreeDViewerBlockLazy'
 import { InstagramCarouselBlock } from './blocks/InstagramCarouselBlock'
 import { ArtistCarouselBlock } from './blocks/ArtistCarouselBlock'
 import { HomePageHeroBlock } from './blocks/HomePageHeroBlock'

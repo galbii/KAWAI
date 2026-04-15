@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 import { getSite, getSiteName, getSiteUrl, getSiteAlternates } from '@/lib/site-context'
 import { Suspense } from "react";
 import { HeaderDynamic } from "@/components/layout/header-dynamic";
@@ -16,26 +15,10 @@ import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { ConditionalFooterWrapper } from "@/components/layout/ConditionalFooterWrapper";
 import { DealerPageLayoutWrapper } from "@/components/layout/DealerPageLayoutWrapper";
 import { NammAwareShell } from "@/components/layout/NammAwareShell";
-
-// Deferred client-only components — excluded from the SSR bundle entirely.
-// NavigationProgress and AdminBar both use browser APIs (intervals, ResizeObserver)
-// that are meaningless during SSR and would add unnecessary JS to the initial payload.
-// PageTransition uses usePathname + framer-motion; the page content is already
-// server-rendered so deferring the fade-in wrapper has zero visual impact on FCP.
-const NavigationProgress = dynamic(
-  () => import('@/components/layout/NavigationProgress').then(m => ({ default: m.NavigationProgress })),
-  { ssr: false }
-)
-
-const AdminBar = dynamic(
-  () => import('@/components/layout/AdminBar').then(m => ({ default: m.AdminBar })),
-  { ssr: false }
-)
-
-const PageTransition = dynamic(
-  () => import('@/components/layout/PageTransition').then(m => ({ default: m.PageTransition })),
-  { ssr: false }
-)
+// ClientOnlyOverlays defers NavigationProgress + AdminBar with ssr:false inside a
+// 'use client' file (required by Next.js App Router for dynamic with ssr:false).
+import { ClientOnlyOverlays } from "@/components/layout/ClientOnlyOverlays";
+import { PageTransition } from "@/components/layout/PageTransition";
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSite()
@@ -139,8 +122,7 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
 
   return (
     <AdminBarProvider>
-      <NavigationProgress />
-      <AdminBar />
+      <ClientOnlyOverlays />
       <NavigationContextProvider initialOrigin={initialOrigin}>
       {/* WebSite Schema for sitelinks search box */}
       <script
