@@ -23,6 +23,8 @@ export interface FeaturedCollectionsCarouselProps {
 
 const AUTO_ROTATE_MS = 6000
 
+const GRAIN_SVG = `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`
+
 const CATEGORY_LABELS: Record<string, string> = {
   digital: 'Digital',
   grand: 'Grand',
@@ -78,6 +80,19 @@ function getCategoryLabel(collection: NavCollection): string {
   return 'Collection'
 }
 
+// ─── Corner accent ────────────────────────────────────────────────────────────
+
+function CornerAccent({ className }: { className?: string }) {
+  return (
+    <div className={cn('absolute w-14 h-14 z-20 opacity-25 pointer-events-none', className)}>
+      <svg viewBox="0 0 100 100" className="text-white w-full h-full">
+        <line x1="0" y1="20" x2="20" y2="20" stroke="currentColor" strokeWidth="1.5" />
+        <line x1="20" y1="0" x2="20" y2="20" stroke="currentColor" strokeWidth="1.5" />
+      </svg>
+    </div>
+  )
+}
+
 // ─── Category filter bar ──────────────────────────────────────────────────────
 
 function CategoryBar({
@@ -116,6 +131,7 @@ function CategoryBar({
               )}
             >
               {label}
+              {/* Active underline */}
               {isActive && (
                 <motion.span
                   layoutId="cat-underline"
@@ -130,7 +146,9 @@ function CategoryBar({
 
       {/* Right: count + explore link */}
       <div className="flex items-center gap-5 shrink-0 pl-4">
-        <span className="hidden md:block text-[9px] tracking-[0.2em] uppercase text-white/25 font-[family-name:var(--font-brand-sans)]">
+        <span
+          className="hidden md:block text-[9px] tracking-[0.2em] uppercase text-white/25 font-[family-name:var(--font-brand-sans)]"
+        >
           {totalCount} {totalCount === 1 ? 'collection' : 'collections'}
         </span>
         <Link
@@ -179,6 +197,7 @@ export function FeaturedCollectionsCarousel({
   useEffect(() => { setIdx(0) }, [selectedCategory])
 
   // Derive videoId before the early return so hooks aren't called conditionally.
+  // Guard against empty active array (when collections is empty).
   const currentCollection = total > 0 ? active[Math.min(idx, total - 1)] : undefined
   const videoId = currentCollection ? getVideoId(currentCollection) : null
 
@@ -200,8 +219,7 @@ export function FeaturedCollectionsCarousel({
   const displayTitle = collection.heading || collection.title
   const collectionHref = `/pianos/${collection.handle}`
   const categoryLabel = getCategoryLabel(collection)
-  const safeIdx = Math.min(idx, active.length - 1)
-  const idxDisplay = String(safeIdx + 1).padStart(2, '0')
+  const idxDisplay = String(Math.min(idx, active.length - 1) + 1).padStart(2, '0')
   const totalDisplay = String(total).padStart(2, '0')
 
   return (
@@ -218,230 +236,198 @@ export function FeaturedCollectionsCarousel({
         />
       )}
 
-      {/* ── Split-screen carousel ────────────────────────────────── */}
+      {/* ── Carousel ─────────────────────────────────────────────── */}
       <section
-        className="relative overflow-visible bg-gradient-to-r from-stone-50 via-white to-stone-50 py-10 lg:py-14"
+        className="relative w-full overflow-hidden bg-kawai-black"
+        style={{ height: 'clamp(480px, 65vh, 760px)' }}
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
-        {/* Secondary gradient — matches ProductHeroBlock */}
-        <div className="absolute inset-0 bg-gradient-to-b from-stone-50/30 via-white to-stone-50/30 pointer-events-none" />
+        {/* Background crossfade */}
+        <AnimatePresence initial={false}>
+          <motion.div
+            key={`bg-${selectedCategory}-${idx}`}
+            className="absolute inset-0"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.9, ease: 'easeInOut' }}
+          >
+            {imageUrl ? (
+              <Image
+                src={imageUrl}
+                alt={displayTitle}
+                fill
+                priority
+                sizes="100vw"
+                className="object-cover"
+              />
+            ) : videoId ? (
+              <div className="absolute inset-0 overflow-hidden">
+                <iframe
+                  key={videoId}
+                  src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1`}
+                  allow="autoplay; encrypted-media"
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                  style={{ width: 'max(100%, 177.78vh)', height: 'max(100%, 56.25vw)' }}
+                  title={displayTitle}
+                />
+              </div>
+            ) : (
+              <div className="absolute inset-0 bg-kawai-black" />
+            )}
+          </motion.div>
+        </AnimatePresence>
 
-        <div className="container mx-auto px-6 lg:px-12 xl:px-16 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-x-8 items-start">
+        {/* Diagonal gradient overlay */}
+        <div
+          className="absolute inset-0 z-10 pointer-events-none"
+          style={{
+            background:
+              'linear-gradient(135deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.65) 100%)',
+          }}
+        />
 
-            {/* ── LEFT: floating white card ──────────────────────── */}
-            <div className={cn(
-              'space-y-5 order-2 lg:order-1 lg:col-span-5 lg:col-start-1',
-              'pt-6 lg:pt-0',
-              'lg:sticky lg:top-8 lg:self-start',
-              'lg:bg-white lg:rounded-2xl lg:px-8 lg:py-8',
-              'lg:shadow-[0_8px_32px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.04)]',
-              'lg:border lg:border-gray-100/80',
-            )}>
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={`content-${selectedCategory}-${idx}`}
-                  variants={contentVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                  className="space-y-5"
-                >
-                  {/* Eyebrow */}
-                  <motion.p
-                    variants={itemVariants}
-                    className="text-[9px] tracking-[0.35em] uppercase text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)]"
-                  >
-                    {eyebrow} · {categoryLabel}
-                  </motion.p>
+        {/* Grain texture */}
+        <div
+          className="absolute inset-0 z-10 opacity-[0.035] mix-blend-overlay pointer-events-none"
+          style={{ backgroundImage: GRAIN_SVG }}
+        />
 
-                  {/* Red rule */}
+        {/* Corner accents */}
+        <CornerAccent className="top-0 left-0" />
+        <CornerAccent className="bottom-0 right-0 rotate-180" />
+
+        {/* Top bar — eyebrow only (explore link moves to filter bar when filter enabled) */}
+        <div className="absolute top-0 left-0 right-0 z-20">
+          <div className="max-w-7xl mx-auto px-8 md:px-10 pt-8 flex items-center justify-between">
+            <p className="text-[9px] tracking-[0.35em] uppercase text-white/40 font-[family-name:var(--font-brand-sans)]">
+              {eyebrow}
+            </p>
+            {!showCategoryFilter && (
+              <Link
+                href={ctaHref}
+                className="group flex items-center gap-1.5 text-[9px] tracking-[0.25em] uppercase text-white/40 hover:text-white/75 transition-colors duration-200 font-[family-name:var(--font-brand-sans)]"
+              >
+                {ctaText}
+                <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {/* Bottom content */}
+        <div className="absolute bottom-0 left-0 right-0 z-20">
+          <div className="max-w-7xl mx-auto px-8 md:px-10 pb-10">
+            <div className="flex items-end justify-between gap-8">
+
+              {/* Left: staggered content */}
+              <div className="flex-1 min-w-0">
+                <AnimatePresence mode="wait" initial={false}>
                   <motion.div
-                    variants={itemVariants}
-                    className="w-10 h-px bg-kawai-red"
-                  />
-
-                  {/* Title */}
-                  <motion.h2
-                    variants={itemVariants}
-                    className="text-3xl md:text-4xl lg:text-5xl text-kawai-black leading-[1.05]"
-                    style={{
-                      fontFamily: 'var(--font-brand-luxury)',
-                      fontWeight: 400,
-                      letterSpacing: '-0.02em',
-                    }}
+                    key={`content-${selectedCategory}-${idx}`}
+                    variants={contentVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
                   >
-                    {displayTitle}
-                  </motion.h2>
-
-                  {/* Subheading */}
-                  {collection.subheading && (
                     <motion.p
                       variants={itemVariants}
-                      className="text-sm text-kawai-charcoal/60 max-w-md leading-relaxed font-[family-name:var(--font-brand-sans)]"
+                      className="text-[9px] tracking-[0.35em] uppercase text-white/45 mb-4 font-[family-name:var(--font-brand-sans)]"
                     >
-                      {collection.subheading}
+                      {categoryLabel}
                     </motion.p>
-                  )}
 
-                  {/* CTA */}
-                  <motion.div variants={itemVariants}>
-                    <Link
-                      href={collectionHref}
-                      className={cn(
-                        'inline-flex items-center justify-center gap-2.5 px-5 py-3 rounded-full',
-                        'text-[11px] uppercase tracking-[0.18em]',
-                        'bg-gradient-to-r from-kawai-red to-red-600 text-white',
-                        'hover:from-red-600 hover:to-red-700 hover:shadow-lg hover:shadow-kawai-red/20',
-                        'transition-all duration-300',
-                        'w-full lg:w-auto',
-                        'font-[family-name:var(--font-brand-sans)]',
-                      )}
-                    >
-                      Explore Collection
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </motion.div>
+                    <motion.div variants={itemVariants} className="w-10 h-px bg-white/30 mb-5" />
 
-                  {/* Counter + nav arrows — desktop only */}
-                  {total > 1 && (
-                    <motion.div
+                    <motion.h2
                       variants={itemVariants}
-                      className="hidden lg:flex items-center gap-3 pt-1"
+                      className="text-4xl md:text-5xl lg:text-6xl text-white leading-[1.02] mb-3 drop-shadow-2xl"
+                      style={{
+                        fontFamily: 'var(--font-brand-luxury)',
+                        fontWeight: 400,
+                        letterSpacing: '-0.02em',
+                        textShadow: '0 4px 24px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3)',
+                      }}
                     >
-                      <span
-                        className="tabular-nums text-[11px] text-kawai-charcoal/40 tracking-[0.1em] font-[family-name:var(--font-brand-sans)]"
+                      {displayTitle}
+                    </motion.h2>
+
+                    {collection.subheading && (
+                      <motion.p
+                        variants={itemVariants}
+                        className="text-sm text-white/55 mb-6 max-w-md leading-relaxed font-[family-name:var(--font-brand-sans)] drop-shadow-lg"
                       >
-                        <span className="text-kawai-black font-medium">{idxDisplay}</span>
-                        <span className="mx-1.5">/</span>
-                        {totalDisplay}
-                      </span>
-                      <div className="flex gap-2 ml-auto">
-                        <button
-                          onClick={prev}
-                          aria-label="Previous collection"
-                          className="w-9 h-9 border border-kawai-neutral flex items-center justify-center text-kawai-charcoal/50 hover:border-kawai-black hover:text-kawai-black transition-all duration-200 rounded-sm"
-                        >
-                          <ArrowLeft className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          onClick={next}
-                          aria-label="Next collection"
-                          className="w-9 h-9 border border-kawai-neutral flex items-center justify-center text-kawai-charcoal/50 hover:border-kawai-black hover:text-kawai-black transition-all duration-200 rounded-sm"
-                        >
-                          <ArrowRight className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
+                        {collection.subheading}
+                      </motion.p>
+                    )}
 
-                  {/* Progress bars — desktop only */}
-                  {total > 1 && (
-                    <motion.div variants={itemVariants} className="hidden lg:flex gap-1 pt-1">
-                      {active.map((col, i) => (
-                        <button
-                          key={`${col.id}-${i}`}
-                          onClick={() => setIdx(i)}
-                          aria-label={`Go to ${col.heading || col.title}`}
-                          className="flex-1 group relative h-px focus-visible:outline-none"
-                        >
-                          <div className="absolute inset-0 bg-kawai-neutral/40 group-hover:bg-kawai-neutral/70 transition-colors duration-150" />
-                          {i === safeIdx && (
-                            <motion.div
-                              layoutId={`progress-fill-${selectedCategory}`}
-                              className="absolute inset-0 bg-kawai-red"
-                              transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
-                            />
-                          )}
-                        </button>
-                      ))}
-                    </motion.div>
-                  )}
-
-                  {/* Explore all link — desktop only, visible when category filter not shown */}
-                  {!showCategoryFilter && (
-                    <motion.div variants={itemVariants}>
+                    <motion.div variants={itemVariants} className={cn(!collection.subheading && 'mt-2')}>
                       <Link
-                        href={ctaHref}
-                        className="group inline-flex items-center gap-1.5 text-[9px] tracking-[0.25em] uppercase text-kawai-charcoal/40 hover:text-kawai-charcoal transition-colors duration-200 font-[family-name:var(--font-brand-sans)]"
+                        href={collectionHref}
+                        className="inline-flex items-center gap-2.5 px-6 py-3 text-[11px] uppercase tracking-[0.18em] border border-white/40 text-white hover:bg-white hover:text-kawai-black hover:border-white transition-all duration-250 font-[family-name:var(--font-brand-sans)]"
                       >
-                        {ctaText}
-                        <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+                        Explore Collection
+                        <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
                     </motion.div>
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
 
-            {/* ── RIGHT: image / video panel ─────────────────────── */}
-            <div
-              className={cn(
-                'order-1 lg:order-2 lg:col-span-7 lg:col-start-6 lg:row-start-1',
-                'relative overflow-hidden rounded-xl lg:rounded-2xl',
-                'w-full aspect-[4/3] lg:aspect-auto lg:h-[680px]',
-                'group',
-              )}
-            >
-              {/* Background crossfade */}
-              <AnimatePresence initial={false}>
-                <motion.div
-                  key={`bg-${selectedCategory}-${idx}`}
-                  className="absolute inset-0"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.9, ease: 'easeInOut' }}
-                >
-                  {imageUrl ? (
-                    <Image
-                      src={imageUrl}
-                      alt={displayTitle}
-                      fill
-                      priority
-                      sizes="(max-width: 1024px) 100vw, 58vw"
-                      className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                    />
-                  ) : videoId ? (
-                    <div className="absolute inset-0 overflow-hidden">
-                      <iframe
-                        key={videoId}
-                        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1`}
-                        allow="autoplay; encrypted-media"
-                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                        style={{ width: 'max(100%, 177.78vh)', height: 'max(100%, 56.25vw)' }}
-                        title={displayTitle}
-                      />
-                    </div>
-                  ) : (
-                    <div className="absolute inset-0 bg-stone-100 flex items-center justify-center">
-                      <span className="text-sm text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)] tracking-widest uppercase">
-                        No media
-                      </span>
-                    </div>
-                  )}
-                </motion.div>
-              </AnimatePresence>
-
-              {/* Mobile dot indicators — overlaid on image, hidden on desktop */}
+              {/* Right: counter + nav */}
               {total > 1 && (
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 lg:hidden z-10 flex gap-1.5">
-                  {active.map((_, i) => (
+                <div className="flex-shrink-0 flex flex-col items-end gap-5 pb-1">
+                  <div
+                    className="text-white/30 font-[family-name:var(--font-brand-sans)] tabular-nums"
+                    style={{ fontSize: '11px', letterSpacing: '0.1em' }}
+                  >
+                    <span className="text-white/70">{idxDisplay}</span>
+                    <span className="mx-1.5">/</span>
+                    {totalDisplay}
+                  </div>
+                  <div className="flex items-center gap-3">
                     <button
-                      key={i}
-                      onClick={() => setIdx(i)}
-                      aria-label={`Go to slide ${i + 1}`}
-                      className={cn(
-                        'h-1.5 rounded-full transition-all duration-200',
-                        i === safeIdx ? 'w-4 bg-kawai-red' : 'w-1.5 bg-white/70',
-                      )}
-                    />
-                  ))}
+                      onClick={prev}
+                      aria-label="Previous collection"
+                      className="w-9 h-9 border border-white/25 flex items-center justify-center text-white/60 hover:border-white/60 hover:text-white transition-all duration-200"
+                    >
+                      <ArrowLeft className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={next}
+                      aria-label="Next collection"
+                      className="w-9 h-9 border border-white/25 flex items-center justify-center text-white/60 hover:border-white/60 hover:text-white transition-all duration-200"
+                    >
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
 
+            {/* Progress bars */}
+            {total > 1 && (
+              <div className="flex gap-1 mt-8">
+                {active.map((col, i) => (
+                  <button
+                    key={`${col.id}-${i}`}
+                    onClick={() => setIdx(i)}
+                    aria-label={`Go to ${col.heading || col.title}`}
+                    className="flex-1 group relative h-px focus-visible:outline-none"
+                  >
+                    <div className="absolute inset-0 bg-white/18 group-hover:bg-white/30 transition-colors duration-150" />
+                    {i === Math.min(idx, active.length - 1) && (
+                      <motion.div
+                        layoutId={`progress-fill-${selectedCategory}`}
+                        className="absolute inset-0 bg-white/75"
+                        transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
+                      />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>
