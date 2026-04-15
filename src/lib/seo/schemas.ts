@@ -257,4 +257,3 @@ export function generatePersonSchema(person: {
     ...(person.sameAs && person.sameAs.length > 0 && { "sameAs": person.sameAs }),
   };
 }
-}
