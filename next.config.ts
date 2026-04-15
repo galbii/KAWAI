@@ -23,7 +23,13 @@ const nextConfig: NextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 2592000,
     remotePatterns: [
-      // Current R2 CDN (from NEXT_PUBLIC_S3_PUBLIC_URL)
+      // Primary R2 CDN via custom domain (assets.kawaius.com → officialkawai R2 bucket)
+      {
+        protocol: 'https',
+        hostname: 'assets.kawaius.com',
+        pathname: '/**',
+      },
+      // Legacy R2 dev URL — kept so existing DB records still resolve
       {
         protocol: 'https',
         hostname: 'pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev',

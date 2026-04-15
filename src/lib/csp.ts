@@ -33,6 +33,9 @@ export function buildCspHeader(_isDev: boolean): string {
       'https://www.googletagmanager.com',
       'https://maps.googleapis.com',
 
+      // Google Ads — conversion tag scripts load from googleads.g.doubleclick.net
+      'https://googleads.g.doubleclick.net',
+
       // Meta
       'https://connect.facebook.net',
 
@@ -92,7 +95,9 @@ export function buildCspHeader(_isDev: boolean): string {
       // googlesyndication.com covers Google Ads conversion pixel pings
       'https://*.google-analytics.com',
       'https://www.googletagmanager.com',
+      'https://www.google.com',           // conversion beacons: /pagead/1p-conversion/, /ccm/collect, /rmkt/collect/
       'https://stats.g.doubleclick.net',
+      'https://googleads.g.doubleclick.net', // viewthrough conversion pixel
       'https://*.googleapis.com',
       'https://*.gstatic.com',
       'https://pagead2.googlesyndication.com',
@@ -131,10 +136,14 @@ export function buildCspHeader(_isDev: boolean): string {
       // stats.g.doubleclick.net receives GA4 data by default even without Google Ads
       // www.googletagmanager.com needed in connect-src so GTM can fetch its own container config
       // pagead2.googlesyndication.com — Google Ads conversion measurement (ccm/collect endpoint)
+      // www.google.com — Enhanced Conversions (/pagead/1p-conversion/), consent mode (/ccm/collect), remarketing (/rmkt/collect/)
+      // googleads.g.doubleclick.net — viewthrough conversion beacons
       'https://www.googletagmanager.com',
       'https://*.google-analytics.com',
       'https://analytics.google.com',
+      'https://www.google.com',
       'https://stats.g.doubleclick.net',
+      'https://googleads.g.doubleclick.net',
       'https://pagead2.googlesyndication.com',
       // Google Maps API (*.googleapis.com covers Places, Geocoding, Directions)
       'https://*.googleapis.com',

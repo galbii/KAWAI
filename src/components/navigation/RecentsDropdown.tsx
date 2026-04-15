@@ -37,42 +37,39 @@ export function RecentsDropdown({
         {!isOpen && (
           <motion.div
             key="recents-tab"
-            initial={{ x: 72, opacity: 0 }}
+            initial={{ x: 60, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 72, opacity: 0 }}
+            exit={{ x: 60, opacity: 0 }}
             transition={tabSpring}
-            whileHover={{ x: -6 }}
+            whileHover={{ x: -5 }}
             onMouseEnter={onTabMouseEnter}
             className="fixed right-0 top-1/2 -translate-y-1/2 z-[9200] cursor-pointer group"
           >
             <div
               className={cn(
-                'flex flex-col items-center justify-center gap-3',
-                'w-[34px] py-6',
-                'bg-white rounded-l-2xl',
-                'border-y border-l border-kawai-neutral/25',
-                'shadow-[-10px_0_32px_rgba(30,27,22,0.09),-3px_0_8px_rgba(30,27,22,0.05)]',
+                'relative flex flex-col items-center justify-center gap-3',
+                'w-[36px] py-6',
+                'rounded-l-xl overflow-hidden',
+                'bg-white/80 backdrop-blur-xl',
+                'border-y border-l border-black/[0.07]',
+                'shadow-[-4px_0_16px_rgba(0,0,0,0.06)]',
                 'transition-shadow duration-300',
-                'group-hover:shadow-[-14px_0_40px_rgba(30,27,22,0.14),-4px_0_12px_rgba(30,27,22,0.08)]',
+                'group-hover:shadow-[-6px_0_20px_rgba(0,0,0,0.09)]',
               )}
             >
-              {/* Accent line */}
-              <span className="w-[2px] h-5 rounded-full bg-kawai-red/30 group-hover:bg-kawai-red transition-colors duration-300" />
+              {/* Sheen */}
+              <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-transparent pointer-events-none" />
 
-              {/* Label */}
+              <span className="relative w-[1.5px] h-4 rounded-full bg-kawai-neutral group-hover:bg-kawai-red transition-colors duration-300" />
+
               <span
-                className="font-[family-name:var(--font-brand-sans)] text-kawai-charcoal group-hover:text-kawai-red tracking-[0.35em] uppercase select-none transition-colors duration-300"
-                style={{
-                  fontSize: '8px',
-                  writingMode: 'vertical-rl',
-                  transform: 'rotate(180deg)',
-                }}
+                className="relative font-[family-name:var(--font-brand-sans)] text-kawai-charcoal/60 group-hover:text-kawai-red tracking-[0.3em] uppercase select-none transition-colors duration-300"
+                style={{ fontSize: '9px', writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
               >
                 Recents
               </span>
 
-              {/* Accent line */}
-              <span className="w-[2px] h-5 rounded-full bg-kawai-red/30 group-hover:bg-kawai-red transition-colors duration-300" />
+              <span className="relative w-[1.5px] h-4 rounded-full bg-kawai-neutral group-hover:bg-kawai-red transition-colors duration-300" />
             </div>
           </motion.div>
         )}
@@ -83,40 +80,44 @@ export function RecentsDropdown({
         {isOpen && (
           <motion.div
             key="recents-panel"
-            initial={{ x: 280, opacity: 0 }}
+            initial={{ x: 260, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 280, opacity: 0 }}
+            exit={{ x: 260, opacity: 0 }}
             transition={panelSpring}
             onMouseEnter={onPanelMouseEnter}
             onMouseLeave={onPanelMouseLeave}
             className={cn(
               'fixed right-0 top-1/2 -translate-y-1/2 z-[9200]',
-              'w-[268px]',
-              'bg-white rounded-l-2xl overflow-hidden',
-              'border-y border-l border-kawai-neutral/25',
-              'shadow-[-16px_0_48px_rgba(30,27,22,0.12),-5px_0_16px_rgba(30,27,22,0.07)]',
+              'w-[248px]',
+              'rounded-l-xl overflow-hidden',
+              'bg-white/80 backdrop-blur-xl',
+              'border-y border-l border-black/[0.07]',
+              'shadow-[-6px_0_24px_rgba(0,0,0,0.07)]',
               className,
             )}
           >
+            {/* Sheen */}
+            <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-transparent pointer-events-none z-0" />
+
             {/* Header row */}
-            <div className="flex items-center justify-between px-5 pt-5 pb-3">
+            <div className="relative z-10 flex items-center justify-between px-4 pt-4 pb-2.5">
               <span
-                className="text-kawai-red font-[family-name:var(--font-brand-sans)] tracking-[0.45em] uppercase select-none"
-                style={{ fontSize: '9px' }}
+                className="text-kawai-red font-[family-name:var(--font-brand-sans)] tracking-[0.4em] uppercase select-none"
+                style={{ fontSize: '8px' }}
               >
                 Recents
               </span>
               <button
                 onClick={onClose}
-                className="text-kawai-charcoal/40 hover:text-kawai-black transition-colors duration-150"
+                className="text-kawai-charcoal/30 hover:text-kawai-charcoal transition-colors duration-150"
                 aria-label="Close recently visited"
               >
-                <X className="h-3 w-3" />
+                <X className="h-2.5 w-2.5" />
               </button>
             </div>
 
             {/* Entries */}
-            <div className="pb-4">
+            <div className="relative z-10 pb-3">
               {history.map((entry, i) => (
                 <Link
                   key={`${entry.path}-${entry.visitedAt}`}
@@ -124,28 +125,29 @@ export function RecentsDropdown({
                   onClick={onClose}
                   className={cn(
                     'group/entry flex flex-col',
-                    'px-5 py-3',
+                    'px-4 py-2.5',
                     'border-l-[2px] border-transparent hover:border-kawai-red',
-                    'transition-[border-color] duration-200',
-                    i > 0 && 'border-t border-kawai-neutral/15',
+                    'hover:bg-black/[0.02]',
+                    'transition-[border-color,background-color] duration-200',
+                    i > 0 && 'border-t border-black/[0.05]',
                   )}
                 >
                   <span
-                    className="font-[family-name:var(--font-brand-sans)] text-kawai-black group-hover/entry:text-kawai-red truncate transition-colors duration-150"
-                    style={{ fontSize: '13px', fontWeight: 500, lineHeight: '1.4' }}
+                    className="font-[family-name:var(--font-brand-sans)] text-kawai-black/80 group-hover/entry:text-kawai-red truncate transition-colors duration-150"
+                    style={{ fontSize: '12px', fontWeight: 500, lineHeight: '1.4' }}
                   >
                     {formatHistoryTitle(entry.title, entry.path)}
                   </span>
                   <div className="flex items-center justify-between gap-2 mt-0.5">
                     <span
-                      className="font-[family-name:var(--font-brand-sans)] text-kawai-charcoal/40 truncate"
-                      style={{ fontSize: '11px' }}
+                      className="font-[family-name:var(--font-brand-sans)] text-kawai-charcoal/35 truncate"
+                      style={{ fontSize: '10px' }}
                     >
                       {entry.path}
                     </span>
                     <span
-                      className="font-[family-name:var(--font-brand-sans)] text-kawai-charcoal/35 whitespace-nowrap shrink-0"
-                      style={{ fontSize: '11px' }}
+                      className="font-[family-name:var(--font-brand-sans)] text-kawai-charcoal/30 whitespace-nowrap shrink-0"
+                      style={{ fontSize: '10px' }}
                     >
                       {formatHistoryTime(entry.visitedAt)}
                     </span>

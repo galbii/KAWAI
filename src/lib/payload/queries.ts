@@ -1920,10 +1920,12 @@ export interface PianoForSelector {
   category?: string | null
   imageUrl?: string | null
   price?: { msrp?: number | null; currency?: string | null } | null
+  shopifyVariantId?: string | null
 }
 
 export interface AccessoryVariation {
   id?: string | null
+  shopifyVariantId?: string | null
   name: string
   price?: number | null
   compareAtPrice?: number | null
@@ -1971,23 +1973,28 @@ export const getCatalogPianoProducts = unstable_cache(
           imageUrl: true,
           price: true,
           visibility: true,
+          variations: true,
         },
         sort: 'visibility.sortOrder,name',
         depth: 0,
         limit: 500,
       })
-      return result.docs.map((doc) => ({
-        id: String(doc.id),
-        model: doc.model,
-        name: doc.name ?? null,
-        slug: doc.slug ?? '',
-        type: (doc.type as string | null | undefined) ?? null,
-        category: (doc.category as string | null | undefined) ?? null,
-        imageUrl: (doc.imageUrl as string | null | undefined) ?? null,
-        price: doc.price
-          ? { msrp: (doc.price as any).msrp ?? null, currency: (doc.price as any).currency ?? null }
-          : null,
-      }))
+      return result.docs.map((doc) => {
+        const variations = (doc.variations as any[] | null | undefined) ?? []
+        return {
+          id: String(doc.id),
+          model: doc.model,
+          name: doc.name ?? null,
+          slug: doc.slug ?? '',
+          type: (doc.type as string | null | undefined) ?? null,
+          category: (doc.category as string | null | undefined) ?? null,
+          imageUrl: (doc.imageUrl as string | null | undefined) ?? null,
+          price: doc.price
+            ? { msrp: (doc.price as any).msrp ?? null, currency: (doc.price as any).currency ?? null }
+            : null,
+          shopifyVariantId: (variations[0] as any)?.shopifyVariantId ?? null,
+        }
+      })
     } catch {
       return []
     }
@@ -2037,6 +2044,7 @@ export const getAccessoriesForPage = unstable_cache(
         // variations is an array of value objects (not a relationship), returned at any depth
         variations: ((doc.variations as any[] | null | undefined) ?? []).map((v: any) => ({
           id: v.id ?? null,
+          shopifyVariantId: v.shopifyVariantId ?? null,
           name: String(v.name ?? ''),
           price: v.price ?? null,
           compareAtPrice: v.compareAtPrice ?? null,

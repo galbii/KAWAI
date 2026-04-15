@@ -202,7 +202,7 @@ export function getOptimizedImageProps(
   }
 
   // Handle R2 URLs that already have optimization parameters
-  if (mediaUrl.includes('r2.dev') && mediaUrl.includes('?')) {
+  if ((mediaUrl.includes('r2.dev') || mediaUrl.startsWith(R2_PUBLIC_URL)) && mediaUrl.includes('?')) {
     const alt = typeof media === 'object' ? media.alt : ''
     return {
       src: mediaUrl,
@@ -390,7 +390,7 @@ export function supportsWebP(): Promise<boolean> {
  */
 export function isR2Url(url: string): boolean {
   try {
-    return url.includes(R2_PUBLIC_URL) || url.includes('r2.dev') || url.includes('.r2.cloudflarestorage.com')
+    return url.includes(R2_PUBLIC_URL) || url.includes('assets.kawaius.com') || url.includes('r2.dev') || url.includes('.r2.cloudflarestorage.com')
   } catch (error) {
     return false
   }

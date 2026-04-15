@@ -7,6 +7,8 @@ import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { Search, X, Plus, ArrowRight, Check, Headphones, Package, Layers, Lightbulb, LayoutGrid } from 'lucide-react'
 import { cn, formatPrice } from '@/lib/utils'
 import type { PianoForSelector, AccessoryForPage } from '@/lib/payload/queries'
+import { BuyNowButton } from './BuyNowButton'
+import type { BuyNowItem } from './BuyNowButton'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -610,12 +612,14 @@ function BuildCheckout({
   pianoCategory,
   equippedItems,
   total,
+  buyNowItems,
   onRemoveSlot,
 }: {
   pianoLabel: string
   pianoCategory: string
   equippedItems: Array<{ slotKey: string; slotLabel: string; accessory: AccessoryForPage; fill: SlotFill }>
   total: number
+  buyNowItems: BuyNowItem[]
   onRemoveSlot: (slotKey: string) => void
 }) {
   return (
@@ -696,13 +700,7 @@ function BuildCheckout({
             Find a Dealer
             <ArrowRight className="w-3 h-3" />
           </Link>
-          <Link
-            href="/find-a-dealer"
-            className="flex items-center justify-center gap-2 w-full py-3.5 bg-kawai-red text-white text-[10px] uppercase tracking-[0.22em] font-bold font-[family-name:var(--font-brand-sans)] hover:bg-red-700 transition-colors duration-200"
-          >
-            Buy Now
-            <ArrowRight className="w-3 h-3" />
-          </Link>
+          <BuyNowButton items={buyNowItems} />
         </div>
       </div>
     </div>
@@ -798,6 +796,34 @@ export function PianoBuilder({ pianos, accessories }: Props) {
       ),
     [equippedItems],
   )
+
+  const buyNowItems = useMemo((): BuyNowItem[] => {
+    const items: BuyNowItem[] = []
+
+    // Add the piano — variant ID from Payload sync; slug as handle fallback for live lookup
+    if (selectedPiano) {
+      items.push({
+        shopifyVariantId: selectedPiano.shopifyVariantId ?? null,
+        handle: selectedPiano.slug,
+        quantity: 1,
+      })
+    }
+
+    // Add each equipped accessory — prefer stored variant ID, fall back to handle lookup
+    for (const { accessory, fill } of equippedItems) {
+      const variantId =
+        fill.variationIndex !== null
+          ? (accessory.variations[fill.variationIndex]?.shopifyVariantId ?? accessory.variations[0]?.shopifyVariantId)
+          : accessory.variations[0]?.shopifyVariantId
+      items.push({
+        shopifyVariantId: variantId ?? null,
+        handle: accessory.slug ?? null,
+        quantity: 1,
+      })
+    }
+
+    return items
+  }, [selectedPiano, equippedItems])
 
   if (configurablePianos.length === 0) return null
 
@@ -1086,6 +1112,7 @@ export function PianoBuilder({ pianos, accessories }: Props) {
                       pianoCategory={activePianoCategory}
                       equippedItems={equippedItems}
                       total={total}
+                      buyNowItems={buyNowItems}
                       onRemoveSlot={handleSlotRemove}
                     />
                   </div>
@@ -1121,12 +1148,10 @@ export function PianoBuilder({ pianos, accessories }: Props) {
               >
                 Find Dealer
               </Link>
-              <Link
-                href="/find-a-dealer"
-                className="flex items-center gap-1.5 px-4 py-2.5 bg-kawai-red text-white text-[10px] uppercase tracking-[0.18em] font-bold font-[family-name:var(--font-brand-sans)] hover:bg-red-700 transition-colors duration-200"
-              >
-                Buy Now
-              </Link>
+              <BuyNowButton
+                items={buyNowItems}
+                className="px-4 py-2.5 w-auto"
+              />
             </div>
           </motion.div>
         )}
