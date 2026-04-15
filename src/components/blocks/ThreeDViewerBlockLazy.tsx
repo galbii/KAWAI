@@ -21,5 +21,6 @@ const Inner = dynamic(
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function ThreeDViewerBlockLazy(props: Record<string, any>) {
-  return <Inner {...props} />
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return <Inner {...(props as any)} />
 }
