@@ -84,9 +84,15 @@ export function LayoutHeroCarouselRenderer({
     none: 'p-4',
   }
 
-  // Auto-play functionality
+  // Auto-play functionality — deferred 2s so autoplay doesn't run during hydration
+  const [autoPlayReady, setAutoPlayReady] = useState(false)
   useEffect(() => {
-    if (!isPlaying || !isInView || slides.length <= 1 || !enableAutoPlay) return
+    const startDelay = setTimeout(() => setAutoPlayReady(true), 2000)
+    return () => clearTimeout(startDelay)
+  }, [])
+
+  useEffect(() => {
+    if (!isPlaying || !isInView || !autoPlayReady || slides.length <= 1 || !enableAutoPlay) return
 
     const slideTimer = setTimeout(() => {
       setCurrentIndex((prevIndex) =>
@@ -97,7 +103,7 @@ export function LayoutHeroCarouselRenderer({
     }, autoPlayDuration)
 
     return () => clearTimeout(slideTimer)
-  }, [isPlaying, currentIndex, isInView, slides.length, autoPlayDuration, enableAutoPlay, enableLoop])
+  }, [isPlaying, currentIndex, isInView, autoPlayReady, slides.length, autoPlayDuration, enableAutoPlay, enableLoop])
 
   // Navigation functions
   const goToPrevious = useCallback(() => {

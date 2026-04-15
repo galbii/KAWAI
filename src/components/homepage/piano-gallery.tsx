@@ -26,26 +26,33 @@ function PianoSection({ piano, index }: PianoSectionProps) {
   const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          // Start image animation immediately
-          setIsImageVisible(true);
-          
-          // Start text animation after a delay
-          setTimeout(() => {
-            setIsTextVisible(true);
-          }, 500);
-        }
-      },
-      { threshold: 0.3 }
-    );
+    let observer: IntersectionObserver | undefined;
+    // Push observer setup off the synchronous mount path to avoid blocking hydration
+    const raf = requestAnimationFrame(() => {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry?.isIntersecting) {
+            // Start image animation immediately
+            setIsImageVisible(true);
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
+            // Start text animation after a delay
+            setTimeout(() => {
+              setIsTextVisible(true);
+            }, 500);
+          }
+        },
+        { threshold: 0.3 }
+      );
 
-    return () => observer.disconnect();
+      if (sectionRef.current) {
+        observer.observe(sectionRef.current);
+      }
+    });
+
+    return () => {
+      cancelAnimationFrame(raf);
+      observer?.disconnect();
+    };
   }, []);
 
   const isEven = index % 2 === 0;
@@ -120,6 +127,7 @@ function PianoSection({ piano, index }: PianoSectionProps) {
                   {
                     className: 'w-full h-auto object-cover',
                     sizes: '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw',
+                    priority: index === 0,
                     context: {
                       category: piano.model.toLowerCase() as 'grand' | 'upright' | 'digital' | 'hybrid',
                       type: 'product'

@@ -29,7 +29,7 @@ export function ProductPageRenderer({ product }: ProductPageRendererProps) {
   return (
     <div className="min-h-screen">
       <BlocksList blocks={product.pageContent} product={product} />
-      <BlockDebugger product={product} />
+      {process.env.NODE_ENV === 'development' && <BlockDebugger product={product} />}
       <ProductSideNav blocks={product.pageContent} />
     </div>
   )

@@ -80,7 +80,10 @@ function CollectionCard({ collection, index }: { collection: NavCollection; inde
   const inView = useInView(ref, { once: true, amount: 0.15 })
 
   const imageUrl = getImageUrl(collection)
-  const displayTitle = collection.heading ?? collection.title
+  const rawTitle = collection.heading ?? collection.title
+  const displayTitle = rawTitle || (collection.handle
+    ? collection.handle.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+    : 'Piano Collection')
   const categoryLabels = getCategoryLabels(collection)
   const href = `/pianos/${collection.handle}`
   const showVideo = hasVideo(collection)

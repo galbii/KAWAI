@@ -22,7 +22,7 @@ const inter = Inter({
 const crimsonText = Crimson_Text({
   subsets: ["latin"],
   variable: "--font-crimson",
-  display: "swap",
+  display: "optional",
   weight: ["400", "600"],
   style: ["normal", "italic"],
   preload: false,
@@ -32,7 +32,7 @@ const crimsonText = Crimson_Text({
 const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-buena-park",
-  display: "swap",
+  display: "optional",
   weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
   preload: false,
@@ -42,7 +42,7 @@ const playfairDisplay = Playfair_Display({
 const cormorantGaramond = Cormorant_Garamond({
   subsets: ["latin"],
   variable: "--font-cormorant",
-  display: "swap",
+  display: "optional",
   weight: ["300", "400", "500", "600", "700"],
   style: ["normal", "italic"],
   preload: false,
@@ -52,7 +52,7 @@ const cormorantGaramond = Cormorant_Garamond({
 const notoSans = Noto_Sans({
   subsets: ["latin"],
   variable: "--font-noto",
-  display: "swap",
+  display: "optional",
   weight: ["300", "400", "500", "600"],
   preload: false,
 });
@@ -112,7 +112,7 @@ export default function RootLayout({
             who already accepted don't have their pageview dropped by the 500ms race. */}
         <Script
           id="gtag-consent-defaults"
-          strategy="beforeInteractive"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];

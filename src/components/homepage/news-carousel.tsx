@@ -36,16 +36,22 @@ export function NewsCarousel({ data }: NewsCarouselProps) {
   const minSwipeDistance = 50;
   const SLIDE_DURATION = carouselData.autoPlayDuration;
 
-  // Auto-play functionality
+  // Auto-play functionality — deferred 2s so autoplay doesn't run during hydration
+  const [autoPlayReady, setAutoPlayReady] = useState(false);
   useEffect(() => {
-    if (!isPlaying || !isInView || newsItems.length <= 1) return;
+    const startDelay = setTimeout(() => setAutoPlayReady(true), 2000);
+    return () => clearTimeout(startDelay);
+  }, []);
+
+  useEffect(() => {
+    if (!isPlaying || !isInView || !autoPlayReady || newsItems.length <= 1) return;
 
     const slideTimer = setTimeout(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % newsItems.length);
     }, SLIDE_DURATION);
 
     return () => clearTimeout(slideTimer);
-  }, [isPlaying, currentIndex, isInView, newsItems.length, SLIDE_DURATION]);
+  }, [isPlaying, currentIndex, isInView, autoPlayReady, newsItems.length, SLIDE_DURATION]);
 
   // Navigation functions
   const goToPrevious = () => {

@@ -27,6 +27,14 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
           '/terms',
         ],
       },
+      // Explicit rules for AI crawlers — signals intentional openness.
+      // Some providers (OpenAI, Anthropic, Perplexity) check for explicit allowances
+      // even when covered by the wildcard rule above.
+      {
+        userAgent: ['GPTBot', 'ClaudeBot', 'PerplexityBot', 'meta-externalagent', 'Applebot'],
+        allow: '/',
+        disallow: ['/admin/*', '/api/*'],
+      },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
   }

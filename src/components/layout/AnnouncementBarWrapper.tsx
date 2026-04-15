@@ -1,6 +1,14 @@
+import dynamic from 'next/dynamic'
 import { unstable_cache } from 'next/cache'
 import { getPayloadClient } from '@/lib/payload/queries'
-import { AnnouncementBar } from './AnnouncementBar'
+
+// AnnouncementBar uses useLayoutEffect to write a CSS variable to document.documentElement
+// and framer-motion for the marquee animation — both are browser-only. Deferring with
+// ssr: false removes it from the SSR bundle while keeping the cached server fetch above.
+const AnnouncementBar = dynamic(
+  () => import('./AnnouncementBar').then(m => ({ default: m.AnnouncementBar })),
+  { ssr: false }
+)
 
 // Cached fetch — avoids a raw uncached MongoDB hit on every render.
 // Same home-page tag as all other header queries so a CMS save invalidates together.

@@ -1,9 +1,17 @@
 'use client';
 
 import Image from 'next/image';
-import { GoogleMapsEmbed } from '@next/third-parties/google';
+import dynamic from 'next/dynamic';
 import type { ShowroomLocationProps } from "@/lib/types/homepage";
 import { DEFAULT_SHOWROOM_DATA } from "@/lib/types/homepage";
+
+const GoogleMapsEmbed = dynamic(
+  () => import('@next/third-parties/google').then((m) => ({ default: m.GoogleMapsEmbed })),
+  {
+    ssr: false,
+    loading: () => <div className="w-full h-[600px] bg-kawai-pearl animate-pulse" />,
+  }
+);
 
 // Helper function to get SVG icon based on icon name
 function getFeatureIconSvg(iconName: string) {

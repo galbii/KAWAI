@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { getSite, getSiteName, getSiteUrl, getSiteAlternates } from '@/lib/site-context'
 import { Suspense } from "react";
 import { HeaderDynamic } from "@/components/layout/header-dynamic";
@@ -8,7 +9,6 @@ import { LayoutSpacer } from "@/components/layout/LayoutSpacer";
 import { NavigationContextProvider } from "@/contexts/NavigationContext";
 import type { NavigationOrigin } from "@/lib/navigation-utils";
 import { AdminBarProvider } from "@/contexts/AdminBarContext";
-import { AdminBar } from "@/components/layout/AdminBar";
 import { organizationSchema, featuredProductsSchema } from "@/lib/seo/schemas";
 import { UTMCapture } from "@/components/analytics/UTMCapture";
 import { DealerDimensionTracker } from "@/components/analytics/DealerDimensionTracker";
@@ -16,8 +16,26 @@ import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { ConditionalFooterWrapper } from "@/components/layout/ConditionalFooterWrapper";
 import { DealerPageLayoutWrapper } from "@/components/layout/DealerPageLayoutWrapper";
 import { NammAwareShell } from "@/components/layout/NammAwareShell";
-import { NavigationProgress } from "@/components/layout/NavigationProgress";
-import { PageTransition } from "@/components/layout/PageTransition";
+
+// Deferred client-only components — excluded from the SSR bundle entirely.
+// NavigationProgress and AdminBar both use browser APIs (intervals, ResizeObserver)
+// that are meaningless during SSR and would add unnecessary JS to the initial payload.
+// PageTransition uses usePathname + framer-motion; the page content is already
+// server-rendered so deferring the fade-in wrapper has zero visual impact on FCP.
+const NavigationProgress = dynamic(
+  () => import('@/components/layout/NavigationProgress').then(m => ({ default: m.NavigationProgress })),
+  { ssr: false }
+)
+
+const AdminBar = dynamic(
+  () => import('@/components/layout/AdminBar').then(m => ({ default: m.AdminBar })),
+  { ssr: false }
+)
+
+const PageTransition = dynamic(
+  () => import('@/components/layout/PageTransition').then(m => ({ default: m.PageTransition })),
+  { ssr: false }
+)
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSite()

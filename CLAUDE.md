@@ -29,25 +29,27 @@ You are an expert Payload CMS developer working on KAWAI, a production-grade pia
 
 ```
 src/app/
-├── (frontend)/                      # Public website (Next.js routes)
-│   ├── page.tsx                     # Homepage (/)
-│   ├── pianos/                      # Piano catalog (/pianos, /pianos/[category])
-│   ├── products/[slug]/             # Product pages (ISR, revalidate: 3600)
-│   ├── store/[storeslug]/           # Dealer storefronts (/store/st-louis)
-│   │   ├── page.tsx                 # Main storefront page
-│   │   ├── signature/, signature2/  # Premium experience pages
-│   │   ├── university/              # University event pages
-│   │   ├── gl-10-signature/         # GL-10 product experience
-│   │   └── sk-experience/           # SK experience page
-│   ├── blog/[slug]/                 # Blog posts
-│   ├── artists/[slug]/              # Artist pages
-│   ├── find-a-dealer/[slug]/        # Dealer detail pages
-│   ├── concert-artist/              # Concert Artist CA page
-│   ├── namm-2026/                   # NAMM event pages
-│   └── [...slug]/                   # Catch-all (Pages collection)
-└── (payload)/                       # Payload Admin + REST + GraphQL APIs
+├── (frontend)/
+│   ├── page.tsx
+│   ├── pianos/         ← [category] handles BOTH category pages AND Shopify collection handles
+│   ├── products/[slug]/
+│   ├── store/[storeslug]/
+│   │   ├── page.tsx
+│   │   ├── signature/, signature2/
+│   │   ├── university/
+│   │   ├── gl-10-signature/
+│   │   └── sk-experience/
+│   ├── blog/[slug]/
+│   ├── artists/[slug]/
+│   ├── find-a-dealer/[slug]/
+│   ├── concert-artist/
+│   ├── namm-2026/
+│   └── [...slug]/
+└── (payload)/
     └── admin/, api/
 ```
+
+**`pianos/[category]` is dual-purpose**: `isValidCategory(category)` → category page; else → `getCollectionByHandle(handle)` → Shopify collection page or 404. `generateStaticParams` at `src/app/(frontend)/pianos/[category]/page.tsx` includes BOTH `getCategorySlugs()` AND `getAllCollectionHandles()` — always keep both when modifying that file.
 
 ### Collections (15 total, in `src/collections/`)
 
@@ -72,6 +74,8 @@ src/app/
 - `@payloadcms/storage-s3` — Cloudflare R2 for Media collection
 - `pianosPageSeedPlugin` — seeds PianosPage initial data
 
+**Search plugin + new collections**: Add new collections to the plugin's `collections` array normally. Exception: `storefronts` uses `skipSync: true` + a manual `afterChange` hook due to a plugin bug with polymorphic query parsing. Don't apply `skipSync` to other collections unless you hit the same error.
+
 ### Block Categories (`src/blocks/`)
 
 Blocks are registered globally in `payload.config.ts` and referenced by slug in collections.
@@ -79,11 +83,11 @@ Blocks are registered globally in `payload.config.ts` and referenced by slug in 
 | Category | Prefix | Examples |
 |----------|--------|---------|
 | `content/` | `content-*` | Text, Image, Video, Code, Banner |
-| `layout/` | `layout-*` | Columns, Spacer, Divider, HeroCarousel, VideoBackground, BrandIntro, BottomLeftPopup, SideNavigation, CalendlyEmbed, BookingModal |
-| `marketing/` | `marketing-*` | Hero, GrandHero, CallToAction, Testimonials, InstrumentalToLife, TechnicalShowcase, FindADealer, ThreeDViewer, InstagramCarousel, ArtistCarousel, HomePageHero, Showroom, PianoCollection, PianoGallery, NewsCarousel, ContactForm, StorefrontLocations, FeaturedModels |
+| `layout/` | `layout-*` | Columns, Spacer, HeroCarousel, VideoBackground, SideNavigation, CalendlyEmbed, BookingModal |
+| `marketing/` | `marketing-*` | Hero, GrandHero, CallToAction, Testimonials, FindADealer, ContactForm, FeaturedModels, and more |
 | `events/` | `events-*` | UniversityHero, EventOverview |
-| `product/` | `product-*` | ProductShowcase, ProductHero, ProductDescription, ImageGallery, FeaturesList, Specifications, TechnicalSpecifications, CollectionShowcase, FloatingAddToCart, ProductFeatureSlides |
-| Legacy (root) | — | TextContent, Hello, Archive, Content, MediaBlock, Cta (keep for backward compat) |
+| `product/` | `product-*` | ProductHero, ProductDescription, Specifications, CollectionShowcase, FloatingAddToCart, and more |
+| Legacy (root) | — | TextContent, Archive, Content, MediaBlock, Cta (backward compat) |
 
 ---
 
@@ -93,31 +97,7 @@ Blocks are registered globally in `payload.config.ts` and referenced by slug in 
 
 Module-level caches are destroyed on every hot reload in dev, forcing a new Atlas TLS handshake (~2–4s). Anchor the instance to `globalThis` to survive HMR.
 
-**Canonical pattern** (`src/lib/payload/queries.ts`):
-
-```typescript
-import 'server-only'
-import { getPayload } from 'payload'
-import type { Payload } from 'payload'
-import config from '@/payload.config'
-
-declare global {
-  // eslint-disable-next-line no-var
-  var __payloadInstance: Promise<Payload> | undefined
-}
-
-async function getPayloadClient(): Promise<Payload> {
-  if (process.env.NODE_ENV === 'development') {
-    if (!globalThis.__payloadInstance) {
-      globalThis.__payloadInstance = getPayload({ config })
-    }
-    return globalThis.__payloadInstance
-  }
-  return getPayload({ config }) // Production: internal module cache is sufficient
-}
-```
-
-**Use this function** for all server-side queries in `src/lib/payload/queries.ts`. Do not call `getPayload({ config })` directly in page files.
+The canonical implementation lives in `src/lib/payload/queries.ts` as `getPayloadClient()`. **Always use `getPayloadClient()` — never call `getPayload({ config })` directly in page files.**
 
 ### 2. `unstable_cache` for Server Component Queries
 
@@ -143,15 +123,7 @@ const getHomePageData = unstable_cache(
 )
 ```
 
-**Type annotation gotcha**: Inline `Promise<{ ... } | null>` inside `unstable_cache` throws a parse error. Extract to a named type alias:
-```typescript
-type HomePageData = { hero: any; blocks: any[] } | null
-const getHomePageData = unstable_cache(
-  async (): Promise<HomePageData> => { /* ... */ },
-  ['home-page-data'],
-  { tags: ['home-page'], revalidate: 3600 }
-)
-```
+**Type annotation gotcha**: Inline `Promise<{ ... } | null>` inside `unstable_cache` throws a parse error — extract to a named type alias before the function.
 
 ### 3. Cache Tag Naming Convention
 
@@ -252,26 +224,9 @@ Wrap all data-fetching layout components in `<Suspense fallback={null}>` so the 
 
 ### 10. Cloudflare Edge Caching Architecture
 
-**Why Cloudflare returns BYPASS instead of HIT**
+**BYPASS instead of HIT**: Next.js RSC adds `Vary: RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch` — Cloudflare refuses to cache when `Vary` contains non-standard headers.
 
-Next.js RSC (React Server Components) adds these response headers:
-```
-Vary: RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch
-```
-
-Cloudflare sees `Vary` on non-standard headers and refuses to cache (returns `BYPASS`). This is correct behavior — without differentiating cached copies by these headers, a full-page HTML response could be served to a prefetch request or vice-versa.
-
-**The fix: Cloudflare Cache Key configuration (dashboard, not code)**
-
-In Cloudflare dashboard → Caching → Cache Rules, create a rule for your domain that:
-1. Sets cache eligibility to "Eligible for cache"
-2. Adds these headers to the **Cache Key** so Cloudflare stores separate copies per RSC variant:
-   - `RSC`
-   - `Next-Router-State-Tree`
-   - `Next-Router-Prefetch`
-   - `Next-Router-Segment-Prefetch`
-
-This is a **dashboard configuration change** — no code change needed.
+**Fix (dashboard, not code)**: Cloudflare → Caching → Cache Rules → set cache eligible + add `RSC`, `Next-Router-State-Tree`, `Next-Router-Prefetch`, `Next-Router-Segment-Prefetch` to the Cache Key.
 
 **PPR (Partial Prerendering) — NOT available in stable Next.js**
 
@@ -426,58 +381,21 @@ The CSP is a structured TypeScript object — one array per directive. **Adding 
 ],
 ```
 
-Directive cheatsheet:
-- `script-src` — JS files and inline scripts
-- `style-src` — CSS files and inline styles
-- `img-src` — images (including CSS background-image)
-- `font-src` — web fonts
-- `frame-src` — iframes this page embeds (YouTube, Calendly, HubSpot forms)
-- `connect-src` — fetch/XHR/WebSocket (API calls the browser makes)
-- `media-src` — video and audio
-- `worker-src` — Web Workers
-
 `'unsafe-eval'` is added to `script-src` automatically in dev only (Turbopack needs it for source maps). Never add it for production.
 
 **Admin CSP**: The Payload admin panel (`/admin/*`) gets a separate relaxed policy (`ADMIN_CSP` constant). Don't tighten it — the admin UI requires `unsafe-inline` and `unsafe-eval` to function.
 
 ### Payload-level hardening — `src/payload.config.ts`
 
-```typescript
-serverURL: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
-// ↑ anchors CSRF protection — Payload auto-includes it in the allowlist
-
-maxDepth: 3,
-// ↑ caps ?depth= query param to prevent recursive MongoDB lookup abuse
-
-graphQL: { disable: process.env.NODE_ENV === 'production' },
-// ↑ kills GraphQL entirely in prod (no playground, no introspection)
-```
-
-No `cors:` or `csrf:` arrays — this is a co-located app. Adding them would break admin panel auth by replacing Payload's automatic same-origin allowlist.
+`serverURL` anchors CSRF; `maxDepth: 3` caps recursive lookup abuse; `graphQL: { disable: true }` in prod kills the playground. No `cors:` or `csrf:` arrays — co-located app, adding them breaks admin auth.
 
 ### Login protection — `src/collections/Users.ts`
 
-```typescript
-auth: {
-  maxLoginAttempts: 5,          // lock after 5 failed attempts
-  lockTime: 60 * 60 * 1000,    // 1 hour lockout
-  cookies: { secure: process.env.NODE_ENV === 'production' },
-}
-```
+`maxLoginAttempts: 5`, `lockTime: 1hr`, `cookies.secure` in prod.
 
 ### Route guards — `src/middleware.ts`
 
-`/api/access` is blocked for unauthenticated requests (it exposes the full schema structure). Pattern for adding more guards:
-
-```typescript
-if (pathname === '/api/your-route') {
-  const token = request.cookies.get('payload-token')
-  if (!token) return NextResponse.json({ errors: [{ message: 'Unauthorized' }] }, { status: 401 })
-  return NextResponse.next()
-}
-```
-
-The middleware matcher explicitly includes `/api/access` — any new route guard you add must also be in the matcher array.
+`/api/access` is blocked for unauthenticated requests (exposes full schema). Any new route guard must also be added to the middleware matcher array.
 
 ---
 
@@ -529,13 +447,25 @@ export const MyCollection: CollectionConfig = {
 
 ## Hooks: On-Demand Revalidation
 
-`afterChange` hooks POST to `/api/revalidate` to bust the Next.js Data Cache. See existing hooks in `src/collections/` for the canonical pattern.
+`afterChange` hooks POST to `/api/revalidate` to bust the Next.js Data Cache.
+
+**Canonical pattern** (copy for every new collection):
+```typescript
+const revalidateMyPage = async ({ doc }: { doc: MyType }) => {
+  fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/revalidate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ secret: process.env.REVALIDATION_SECRET, tag: `my-collection-${doc.slug}` }),
+  }).catch(err => console.error('Revalidation failed:', err))
+  return doc
+}
+```
 
 **Hook rules:**
 1. Always pass `req` to nested Payload operations (transaction atomicity)
 2. Guard with `context.skipHook` flag to prevent infinite loops
-3. Fire-and-forget revalidation fetches — never `await` them
-4. Never throw — log and return `doc`
+3. Fire-and-forget — never `await` the fetch, never throw
+4. Always return `doc`
 
 ---
 
@@ -679,20 +609,7 @@ Required env vars: `SHOPIFY_STORE_DOMAIN`, `SHOPIFY_APP_API_KEY`, `SHOPIFY_APP_C
 
 ### Constant Contact (`src/lib/constantcontact/`)
 
-**Purpose**: Legacy CRM integration (email lists, contact management). Currently supplementary — Shopify is the primary CRM for new leads.
-
-| File | Purpose |
-|------|---------|
-| `client.ts` | API client with rate limiting |
-| `auth.ts` + `auth-helpers.ts` | OAuth2 token management |
-| `credentials.ts` | Token storage (from `ConstantContactSettings` collection) |
-| `lists.ts` | List membership and contact creation |
-| `custom-fields.ts` | Maps `ConstantContactCustomFields` collection to API |
-| `music-school-export.ts` | Bulk export for music school programs |
-
-**Admin UI hooks**: `useConstantContact`, `useConstantContactForm` in `@/hooks`
-**Admin routes**: `/api/constant-contact/contacts`, `/api/constant-contact/lists`
-**Collections used**: `ConstantContactSettings` (OAuth tokens + config), `ConstantContactCustomFields` (field mapping)
+**Legacy** — Shopify is the primary CRM for new leads. CC handles existing list management only. Collections: `ConstantContactSettings` (OAuth tokens), `ConstantContactCustomFields` (field mapping). Admin hooks: `useConstantContact`, `useConstantContactForm`.
 
 ### Analytics
 
@@ -876,14 +793,6 @@ Tailwind v4 only generates utilities that it can statically scan in source files
 }
 ```
 
-```css
-/* ❌ Will throw "Cannot apply unknown utility class 'shadow-lg'" at build time */
-/* (no @import "tailwindcss" at top) */
-@layer base {
-  .my-component { @apply shadow-lg; }
-}
-```
-
 Campaign-specific CSS files (e.g. university `globals.css`) must each have their own `@import "tailwindcss"`. Do not try to "share" the import from `src/app/globals.css`.
 
 ### Accessibility
@@ -984,6 +893,22 @@ const isCanada = site === 'cad'
 
 For client components, follow the `ProductHeroBlockWrapper` pattern — server wrapper passes `isCanada` prop down.
 
+### Adding hreflang to a new page
+
+Every new page in `(frontend)/` needs `generateMetadata` with `getSiteAlternates`. Without this, the new page breaks `en-CA`/`en-US` alternates:
+
+```typescript
+import { getSite, getSiteAlternates } from '@/lib/site-context'
+
+export async function generateMetadata() {
+  const site = await getSite()
+  return {
+    title: 'Page Title',
+    alternates: getSiteAlternates('/your-path'),  // generates en-US + en-CA hreflang
+  }
+}
+```
+
 ---
 
 ## Common Gotchas
@@ -1018,24 +943,6 @@ For client components, follow the `ProductHeroBlockWrapper` pattern — server w
 
 ## Business Context
 
-**KAWAI** is a unified platform for Kawai Piano Corporation — piano retail, dealer management, lead generation, and content marketing.
+**KAWAI** is a unified platform for Kawai Piano Corporation — piano retail, dealer management, lead generation, and content marketing. Product lines: Digital (CA/CN/ES/KDP), Hybrid (Novus/AnyTime), Grand (SK/GX/GL), Upright (K/ND).
 
-### Product Lines
-
-- **Digital**: CA, CN, ES, KDP Series ($999–$6,399)
-- **Hybrid**: Novus, AnyTime Series ($9,500–$14,500)
-- **Grand**: Shigeru Kawai SK, GX BLAK, GL Series ($18,900–$200K+)
-- **Upright**: K Series, ND Series
-
-### Key Data Flows
-
-1. **Product Discovery**: `/` → `/pianos` → `/pianos/[category]` → `/products/[slug]`
-2. **Dealer Storefronts**: `/store/[storeslug]` — fully CMS-driven, ISR
-3. **Lead Capture**: Contact form → Shopify customer upsert → CRM
-4. **Content Updates**: CMS save → `afterChange` hook → POST `/api/revalidate` → `revalidateTag`
-
-### Resources
-
-- Payload Docs: https://payloadcms.com/docs
-- Payload LLM Context: https://payloadcms.com/llms-full.txt
-- Project Admin: http://localhost:3000/admin
+Payload Docs: https://payloadcms.com/docs
