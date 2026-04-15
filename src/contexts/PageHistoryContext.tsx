@@ -11,9 +11,6 @@
  *
  * Title timing: A 150ms timeout after pathname changes gives Next.js App Router
  * time to update <title> before we read document.title.
- *
- * Toggle: `isHistoryEnabled` persists to localStorage. When false, new pages are
- * not recorded (existing history is preserved until manually cleared).
  */
 
 import React, {
@@ -32,8 +29,6 @@ import {
   type PageHistoryEntry,
 } from '@/lib/page-history-storage'
 
-const HISTORY_ENABLED_KEY = 'kawai_history_enabled'
-
 // ============================================================================
 // Types
 // ============================================================================
@@ -42,9 +37,6 @@ interface PageHistoryContextType {
   history: PageHistoryEntry[]
   /** False on SSR and initial render — gate all history UI on this flag */
   isInitialized: boolean
-  /** Whether tracking is active — persisted to localStorage */
-  isHistoryEnabled: boolean
-  toggleHistory: () => void
   clearHistory: () => void
 }
 
@@ -62,21 +54,16 @@ export function PageHistoryProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const [history, setHistory] = useState<PageHistoryEntry[]>([])
   const [isInitialized, setIsInitialized] = useState(false)
-  const [isHistoryEnabled, setIsHistoryEnabled] = useState(true)
 
-  // Load history + enabled preference from localStorage once on client mount
+  // Load history from localStorage once on client mount
   useEffect(() => {
     setHistory(getPageHistory())
-    const stored = localStorage.getItem(HISTORY_ENABLED_KEY)
-    // Default to true if never set
-    setIsHistoryEnabled(stored === null ? true : stored === 'true')
     setIsInitialized(true)
   }, [])
 
   // Track pathname changes — wait 150ms for document.title to update
   useEffect(() => {
     if (!isInitialized) return
-    if (!isHistoryEnabled) return
     if (pathname.startsWith('/admin')) return
 
     const timer = setTimeout(() => {
@@ -86,15 +73,7 @@ export function PageHistoryProvider({ children }: { children: ReactNode }) {
     }, 150)
 
     return () => clearTimeout(timer)
-  }, [pathname, isInitialized, isHistoryEnabled])
-
-  const toggleHistory = useCallback(() => {
-    setIsHistoryEnabled((prev) => {
-      const next = !prev
-      localStorage.setItem(HISTORY_ENABLED_KEY, String(next))
-      return next
-    })
-  }, [])
+  }, [pathname, isInitialized])
 
   const clearHistory = useCallback(() => {
     clearPageHistory()
@@ -102,7 +81,7 @@ export function PageHistoryProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <PageHistoryContext.Provider value={{ history, isInitialized, isHistoryEnabled, toggleHistory, clearHistory }}>
+    <PageHistoryContext.Provider value={{ history, isInitialized, clearHistory }}>
       {children}
     </PageHistoryContext.Provider>
   )

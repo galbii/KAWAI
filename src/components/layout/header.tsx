@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { createPortal } from 'react-dom'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Menu, X, ChevronDown, Home, MapPin, Clock } from 'lucide-react'
+import { Menu, X, ChevronDown, Home, MapPin } from 'lucide-react'
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { KawaiLogo } from '@/components/ui/kawai-logo'
@@ -445,8 +445,9 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
   const isShowroomMenuOpen = activeMenu === 'showroom'
 
   // Page history — independent of activeMenu so it doesn't conflict with mega menus
-  const { history: recentHistory, isInitialized: isHistoryInitialized, isHistoryEnabled, toggleHistory } = usePageHistory()
+  const { history: recentHistory, isInitialized: isHistoryInitialized } = usePageHistory()
   const [isRecentsOpen, setIsRecentsOpen] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(false)
   const recentsTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const activeDropdown = activeMenu
 
@@ -491,6 +492,10 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
+    setIsDesktop(window.innerWidth >= 1280)
+    const handleResize = () => setIsDesktop(window.innerWidth >= 1280)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
   }, [])
 
   // Auto-hide: show nav on mount, then hide after 2s (only when autoMinimize is enabled)
@@ -765,27 +770,13 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   // Recents popup — independent of activeMenu; triggered by hovering the whole header
   const openRecents = useCallback(() => {
-    if (!isMounted || !isHistoryInitialized || !isHistoryEnabled || recentHistory.length === 0) return
+    if (!isMounted || !isHistoryInitialized || recentHistory.length === 0 || !isDesktop) return
     if (recentsTimeoutRef.current) clearTimeout(recentsTimeoutRef.current)
     setIsRecentsOpen(true)
-  }, [isMounted, isHistoryInitialized, isHistoryEnabled, recentHistory.length])
-
-  const handleToggleHistory = useCallback(() => {
-    const turningOn = !isHistoryEnabled
-    toggleHistory()
-    if (turningOn) {
-      // Show the popup when re-enabling (if there's history to show)
-      if (recentsTimeoutRef.current) clearTimeout(recentsTimeoutRef.current)
-      if (recentHistory.length > 0) setIsRecentsOpen(true)
-    } else {
-      // Immediately hide the popup when disabling
-      if (recentsTimeoutRef.current) clearTimeout(recentsTimeoutRef.current)
-      setIsRecentsOpen(false)
-    }
-  }, [isHistoryEnabled, toggleHistory, recentHistory.length])
+  }, [isMounted, isHistoryInitialized, recentHistory.length, isDesktop])
 
   const closeRecents = useCallback(() => {
-    recentsTimeoutRef.current = setTimeout(() => setIsRecentsOpen(false), 2000)
+    recentsTimeoutRef.current = setTimeout(() => setIsRecentsOpen(false), 700)
   }, [])
 
   const handleShowroomMenuOpen = useCallback(() => {
@@ -901,8 +892,6 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
         top: 'calc(var(--admin-bar-height, 0px) + var(--announcement-bar-height, 0px))'
       }}
       onClick={handleHeaderClick}
-      onMouseEnter={openRecents}
-      onMouseLeave={closeRecents}
     >
       {/* Top Row - Utility Bar (Full Width) */}
       <div className="border-b border-kawai-neutral/60 w-full bg-white">
@@ -1247,21 +1236,6 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                       Register Your Piano
                     </Link>
                   )}
-                  {isMounted && isHistoryInitialized && (
-                    <button
-                      onClick={handleToggleHistory}
-                      className={cn(
-                        'flex items-center gap-1.5 px-2.5 py-1.5 rounded transition-colors duration-200',
-                        'font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px] font-medium',
-                        isHistoryEnabled
-                          ? 'text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/80'
-                          : 'text-kawai-charcoal/60 hover:text-kawai-charcoal hover:bg-kawai-pearl/60'
-                      )}
-                    >
-                      <Clock className="h-3.5 w-3.5 flex-shrink-0" />
-                      <span>Toggle History</span>
-                    </button>
-                  )}
                 </div>
               </div>
             </nav>
@@ -1498,14 +1472,15 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
         />
       </div>
 
-      {/* Recents Popup — bottom-right corner, triggered by hovering the header */}
-      {isMounted && isHistoryInitialized && (
+      {/* Recents Popup — right edge, desktop only, triggered by hovering the header */}
+      {isMounted && isHistoryInitialized && isDesktop && (
         <RecentsDropdown
           isOpen={isRecentsOpen && !isSearchOpen}
           onClose={() => setIsRecentsOpen(false)}
           history={recentHistory}
           onPanelMouseEnter={openRecents}
           onPanelMouseLeave={closeRecents}
+          onTabMouseEnter={openRecents}
         />
       )}
 
