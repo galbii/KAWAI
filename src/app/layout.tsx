@@ -66,6 +66,9 @@ export async function generateMetadata(): Promise<Metadata> {
       template: `%s | ${name}`,
       default: name,
     },
+    // meta[name=author] signals content ownership to search engines and AI systems.
+    // Used for byline attribution when AI surfaces articles and product content.
+    authors: [{ name: 'Kawai America Corporation', url: getSiteUrl(site) }],
     openGraph: {
       siteName: name,
     },

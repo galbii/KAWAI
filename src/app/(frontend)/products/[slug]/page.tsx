@@ -116,6 +116,8 @@ export default async function ProductPage(props: PageProps) {
               // mpn: Kawai model number is the manufacturer part number (e.g. CA99, GX-7)
               ...(product.model ? { mpn: product.model, model: product.model } : {}),
               url: `${siteUrl}/products/${product.slug}`,
+              // dateModified drives Google freshness + AI system price/availability accuracy
+              ...(product.updatedAt ? { dateModified: product.updatedAt } : {}),
               offers: {
                 ...(product.price?.msrp != null ? { price: product.price.msrp } : {}),
                 currency: product.price?.currency || 'USD',
@@ -141,7 +143,7 @@ export default async function ProductPage(props: PageProps) {
                   grand: { name: 'Grand Pianos', url: `${siteUrl}/pianos/grand` },
                   upright: { name: 'Upright Pianos', url: `${siteUrl}/pianos/upright` },
                   hybrid: { name: 'Hybrid Pianos', url: `${siteUrl}/pianos/hybrid` },
-                  accessory: { name: 'Accessories', url: `${siteUrl}/pianos/accessories` },
+                  accessory: { name: 'Accessories', url: `${siteUrl}/accessories` },
                 }
                 return [typeMap[product.type ?? ''] ?? { name: 'Pianos', url: `${siteUrl}/pianos` }]
               })(),

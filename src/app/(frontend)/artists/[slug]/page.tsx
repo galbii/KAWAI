@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import { Instagram, Youtube, Music, Globe, Facebook, Twitter, Linkedin } from 'lucide-react'
 import { RenderBlocks } from '@/components/RenderBlocks'
 import { AdminBarDoc } from '@/components/layout/AdminBarDoc'
+import { generatePersonSchema } from '@/lib/seo/schemas'
 
 // Enable ISR with 15-minute revalidation
 export const revalidate = 900
@@ -297,12 +298,35 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
 
   const bioHtml = artist.bio ? serializeRichText(artist.bio) : ''
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
+
+  // Collect social links for sameAs — helps Google/AI systems link artist identity
+  const socialUrls = (artist.socialLinks ?? [])
+    .map((l: any) => l.url)
+    .filter(Boolean) as string[]
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-kawai-pearl via-white to-gray-50">
       <AdminBarDoc
         collection="artists"
         id={String(artist.id)}
         collectionLabels={{ singular: 'Artist', plural: 'Artists' }}
+      />
+      {/* Person + MusicPerformer schema — enables artist knowledge cards in Google,
+          ChatGPT Browse, and Perplexity. The dual @type maximises compatibility. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(generatePersonSchema({
+            name: artist.name,
+            description: artist.shortBio || undefined,
+            url: `${siteUrl}/artists/${artist.slug}`,
+            image: imageUrl !== '/images/defaults/artist-placeholder.jpg' ? imageUrl : undefined,
+            instrument: artist.instrument || undefined,
+            genre: artist.genre || undefined,
+            sameAs: socialUrls,
+          })).replace(/</g, '\\u003c'),
+        }}
       />
       {/* Hero Section */}
       <section className="relative bg-kawai-charcoal text-white overflow-hidden">

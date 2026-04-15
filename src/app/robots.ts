@@ -27,15 +27,40 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
           '/terms',
         ],
       },
-      // Explicit rules for AI crawlers — signals intentional openness.
-      // Some providers (OpenAI, Anthropic, Perplexity) check for explicit allowances
-      // even when covered by the wildcard rule above.
+      // ─── AI citation & search agents ──────────────────────────────────────────
+      // These are the retrieval/search crawlers that power ChatGPT Browse,
+      // Claude's web tool, Perplexity, Google AI Overviews, and Meta AI.
+      // Explicit allow overrides any upstream "Block AI Bots" firewall rules
+      // (e.g. Cloudflare Security → Bots → AI crawlers) for these agents.
+      // NOTE: If Cloudflare "Block AI Bots" is enabled it will prepend its own
+      // Disallow rules that override this file — turn it off in the dashboard.
       {
-        userAgent: ['GPTBot', 'ClaudeBot', 'PerplexityBot', 'meta-externalagent', 'Applebot'],
+        userAgent: [
+          'GPTBot',           // OpenAI general crawler (indexing + search)
+          'OAI-SearchBot',    // OpenAI ChatGPT Search / Browse retrieval agent
+          'ChatGPT-User',     // OpenAI ChatGPT real-time retrieval
+          'ClaudeBot',        // Anthropic Claude web tool
+          'PerplexityBot',    // Perplexity AI search crawler
+          'meta-externalagent', // Meta AI (Facebook/Instagram AI features)
+          'Applebot',         // Apple Spotlight / Safari Suggestions (not training)
+        ],
         allow: '/',
         disallow: ['/admin/*', '/api/*'],
       },
+      // ─── AI training-only agents (block) ──────────────────────────────────────
+      // Applebot-Extended is Apple Intelligence training — distinct from regular
+      // Applebot (search/citation). Block training; allow citation above.
+      {
+        userAgent: ['Applebot-Extended'],
+        disallow: ['/'],
+      },
     ],
-    sitemap: `${baseUrl}/sitemap.xml`,
+    // Declare all machine-readable content files so crawlers discover them
+    // without having to guess the path. llms.txt follows the llmstxt.org spec.
+    sitemap: [
+      `${baseUrl}/sitemap.xml`,
+      `${baseUrl}/llms.txt`,
+      `${baseUrl}/llms-full.txt`,
+    ],
   }
 }

@@ -65,6 +65,8 @@ export function generateProductSchema(product: {
   mpn?: string;
   url?: string;
   model?: string;
+  /** ISO 8601 datetime string — drives Google's freshness signal and AI dateModified indexing */
+  dateModified?: string;
   offers?: {
     price?: number;
     currency?: string;
@@ -110,6 +112,9 @@ export function generateProductSchema(product: {
         "url": product.image
       }
     }),
+    // dateModified tells Google (and AI systems like ChatGPT/Perplexity) how fresh
+    // this product data is — important for pricing and availability accuracy signals.
+    ...(product.dateModified && { "dateModified": product.dateModified }),
     "offers": {
       "@type": "Offer",
       "priceCurrency": offersData.currency || "USD",
@@ -202,4 +207,54 @@ export function generateBreadcrumbSchema(breadcrumbs: Array<{ name: string; url:
       "item": crumb.url
     }))
   };
+}
+
+/**
+ * Person / MusicPerformer Schema Generator
+ *
+ * Used on artist pages. Schema.org's MusicPerformer is a sub-type of
+ * PerformingGroup/Person — Google, ChatGPT, and Perplexity use this to
+ * surface artist cards and attribute piano-related content to named performers.
+ * Using the dual @type ["Person", "MusicPerformer"] maximises compatibility.
+ */
+export function generatePersonSchema(person: {
+  name: string;
+  description?: string;
+  image?: string;
+  url?: string;
+  /** Instrument(s) played — maps to schema.org/instrument */
+  instrument?: string | string[];
+  /** Musical genre(s) */
+  genre?: string | string[];
+  /** Social profile URLs (website, Instagram, YouTube, etc.) */
+  sameAs?: string[];
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": ["Person", "MusicPerformer"],
+    "name": person.name,
+    ...(person.description && { "description": person.description }),
+    ...(person.url && { "url": person.url }),
+    ...(person.image && {
+      "image": {
+        "@type": "ImageObject",
+        "url": person.image
+      }
+    }),
+    ...(person.instrument && {
+      "instrument": Array.isArray(person.instrument)
+        ? person.instrument
+        : [person.instrument]
+    }),
+    ...(person.genre && {
+      "genre": Array.isArray(person.genre) ? person.genre : [person.genre]
+    }),
+    "sponsor": {
+      "@type": "Organization",
+      "name": "Kawai America Corporation",
+      "url": "https://kawaius.com"
+    },
+    ...(person.sameAs && person.sameAs.length > 0 && { "sameAs": person.sameAs }),
+  };
+}
 }
