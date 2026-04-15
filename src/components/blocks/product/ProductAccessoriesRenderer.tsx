@@ -199,6 +199,7 @@ export async function ProductAccessoriesRenderer({
         and: [
           { compatibleProducts: { in: [String(product.id)] } } as any,
           { status: { equals: 'active' } },
+          { type: { equals: 'accessory' } },
         ],
       },
       select: SELECT_FIELDS,

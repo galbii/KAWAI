@@ -2,7 +2,7 @@
 // Merged with original WooCommerce redirect map (50 entries).
 // All redirects are site-relative paths on kawaius.com.
 // Grand piano entries originally mapped to kawaipianos.com; overridden to kawaius.com per product team.
-// Note: /product/f-351 uses /pianos/accessories (Accessories) — overrides /pianos/grand (Grand Discontinued).
+// Note: /product/f-351 uses /accessories (Accessories) — overrides /pianos/grand (Grand Discontinued).
 
 export type RedirectSeedEntry = {
   from: string
@@ -747,66 +747,66 @@ export const REDIRECTS_SEED_DATA: RedirectSeedEntry[] = [
   },
 
   // ─── Accessories ──────────────────────────────────────────────────────────
-  // Note: /product/f-351 uses /pianos/accessories (overrides the Grand Discontinued → /pianos/grand mapping)
+  // Note: /product/f-351 uses /accessories (overrides the Grand Discontinued → /pianos/grand mapping)
   {
     from: '/product/f-10h',
-    toUrl: '/pianos/accessories',
-    notes: '[Accessories] Confirmed — Foot pedal; corrected from /pianos/grand to /pianos/accessories',
+    toUrl: '/accessories',
+    notes: '[Accessories] Confirmed — Foot pedal; corrected from /pianos/grand to /accessories',
   },
   {
     from: '/product/f-302',
-    toUrl: '/pianos/accessories',
-    notes: '[Accessories] Confirmed — Triple pedal bar; corrected from /pianos/grand to /pianos/accessories',
+    toUrl: '/accessories',
+    notes: '[Accessories] Confirmed — Triple pedal bar; corrected from /pianos/grand to /accessories',
   },
   {
     from: '/product/f-350',
-    toUrl: '/pianos/accessories',
-    notes: '[Accessories] Confirmed — Triple pedal bar; corrected from /pianos/grand to /pianos/accessories',
+    toUrl: '/accessories',
+    notes: '[Accessories] Confirmed — Triple pedal bar; corrected from /pianos/grand to /accessories',
   },
   {
     from: '/product/f-351',
-    toUrl: '/pianos/accessories',
-    notes: '[Accessories] Confirmed — Triple pedal bar; corrected from /pianos/grand to /pianos/accessories',
+    toUrl: '/accessories',
+    notes: '[Accessories] Confirmed — Triple pedal bar; corrected from /pianos/grand to /accessories',
   },
   {
     from: '/product/gfp-3',
-    toUrl: '/pianos/accessories',
-    notes: '[Accessories] Confirmed — Grand Feel Triple Pedal; corrected from /pianos/grand to /pianos/accessories',
+    toUrl: '/accessories',
+    notes: '[Accessories] Confirmed — Grand Feel Triple Pedal; corrected from /pianos/grand to /accessories',
   },
   {
     from: '/product/hm-5',
-    toUrl: '/pianos/accessories',
-    notes: '[Accessories] Confirmed — Designer Stand; corrected from /pianos/grand to /pianos/accessories',
+    toUrl: '/accessories',
+    notes: '[Accessories] Confirmed — Designer Stand; corrected from /pianos/grand to /accessories',
   },
   {
     from: '/product/hml-1',
-    toUrl: '/pianos/accessories',
-    notes: '[Accessories] Confirmed — Designer Stand; corrected from /pianos/grand to /pianos/accessories',
+    toUrl: '/accessories',
+    notes: '[Accessories] Confirmed — Designer Stand; corrected from /pianos/grand to /accessories',
   },
   {
     from: '/product/hml-2',
-    toUrl: '/pianos/accessories',
-    notes: '[Accessories] Confirmed — Stand; corrected from /pianos/grand to /pianos/accessories',
+    toUrl: '/accessories',
+    notes: '[Accessories] Confirmed — Stand; corrected from /pianos/grand to /accessories',
   },
   {
     from: '/product/hml-3',
-    toUrl: '/pianos/accessories',
-    notes: '[Accessories] Confirmed — Designer Stand; corrected from /pianos/grand to /pianos/accessories',
+    toUrl: '/accessories',
+    notes: '[Accessories] Confirmed — Designer Stand; corrected from /pianos/grand to /accessories',
   },
   {
     from: '/product/sc-1',
-    toUrl: '/pianos/accessories',
-    notes: '[Accessories] Confirmed — Soft Case; corrected from /pianos/grand to /pianos/accessories',
+    toUrl: '/accessories',
+    notes: '[Accessories] Confirmed — Soft Case; corrected from /pianos/grand to /accessories',
   },
   {
     from: '/product/sc-2',
-    toUrl: '/pianos/accessories',
-    notes: '[Accessories] Confirmed — Soft Carry Case; corrected from /pianos/grand to /pianos/accessories',
+    toUrl: '/accessories',
+    notes: '[Accessories] Confirmed — Soft Carry Case; corrected from /pianos/grand to /accessories',
   },
   {
     from: '/product/sh-9',
-    toUrl: '/pianos/accessories',
-    notes: '[Accessories] Confirmed — Headphone; corrected from /pianos/grand to /pianos/accessories',
+    toUrl: '/accessories',
+    notes: '[Accessories] Confirmed — Headphone; corrected from /pianos/grand to /accessories',
   },
 
   // ─── Collections (WooCommerce product-category) ───────────────────────────

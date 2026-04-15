@@ -319,12 +319,12 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(generatePersonSchema({
             name: artist.name,
-            description: artist.shortBio || undefined,
             url: `${siteUrl}/artists/${artist.slug}`,
-            image: imageUrl !== '/images/defaults/artist-placeholder.jpg' ? imageUrl : undefined,
-            instrument: artist.instrument || undefined,
-            genre: artist.genre || undefined,
             sameAs: socialUrls,
+            ...(artist.shortBio ? { description: artist.shortBio } : {}),
+            ...(imageUrl !== '/images/defaults/artist-placeholder.jpg' ? { image: imageUrl } : {}),
+            ...(artist.instrument ? { instrument: artist.instrument } : {}),
+            ...(artist.genre ? { genre: artist.genre } : {}),
           })).replace(/</g, '\\u003c'),
         }}
       />

@@ -64,7 +64,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       { url: `${SITE_URL}/pianos/grand/shigeru-kawai`, changeFrequency: 'monthly', priority: 0.85, alternates: { languages: getSiteAlternates('/pianos/grand/shigeru-kawai') } },
       { url: `${SITE_URL}/pianos/search`, changeFrequency: 'weekly', priority: 0.7 },
       { url: `${SITE_URL}/pianos/compare`, changeFrequency: 'weekly', priority: 0.65 },
-      { url: `${SITE_URL}/pianos/accessories`, changeFrequency: 'weekly', priority: 0.65 },
+      { url: `${SITE_URL}/accessories`, changeFrequency: 'weekly', priority: 0.65 },
     )
 
     // ==========================================

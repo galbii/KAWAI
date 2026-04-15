@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { createPortal } from 'react-dom'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Menu, X, ChevronDown, Home, MapPin } from 'lucide-react'
+import { Menu, X, ChevronDown, Home, MapPin, Clock } from 'lucide-react'
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { KawaiLogo } from '@/components/ui/kawai-logo'
@@ -15,9 +15,12 @@ import { ResourcesMegaMenu } from '@/components/navigation/ResourcesMegaMenu'
 import type { ResourceLink } from '@/components/layout/header-dynamic'
 import { RegisterPianoModal } from '@/components/navigation/RegisterPianoModal'
 import { NewsMegaMenu } from '@/components/navigation/NewsMegaMenu'
+import { RecentsDropdown } from '@/components/navigation/RecentsDropdown'
 import { SearchBar } from '@/components/search/SearchBar'
 import { cn } from '@/lib/utils'
 import { useNavigationContext } from '@/contexts/NavigationContext'
+import { usePageHistory } from '@/contexts/PageHistoryContext'
+import { formatHistoryTitle, formatHistoryTime } from '@/lib/page-history-storage'
 import { getContextAwareUrl } from '@/lib/navigation-utils'
 import { fetchPayloadProductsNavigation } from '@/lib/actions/payload-products-navigation'
 import type { ProductsNavigation } from '@/lib/payload/products-navigation'
@@ -440,6 +443,11 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
   const isResourcesMenuOpen = activeMenu === 'resources'
   const isNewsMenuOpen = activeMenu === 'news'
   const isShowroomMenuOpen = activeMenu === 'showroom'
+
+  // Page history — independent of activeMenu so it doesn't conflict with mega menus
+  const { history: recentHistory, isInitialized: isHistoryInitialized, isHistoryEnabled, toggleHistory } = usePageHistory()
+  const [isRecentsOpen, setIsRecentsOpen] = useState(false)
+  const recentsTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const activeDropdown = activeMenu
 
   // Use navigation context to detect location changes
@@ -755,6 +763,31 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
     closeMenu()
   }, [closeMenu])
 
+  // Recents popup — independent of activeMenu; triggered by hovering the whole header
+  const openRecents = useCallback(() => {
+    if (!isMounted || !isHistoryInitialized || !isHistoryEnabled || recentHistory.length === 0) return
+    if (recentsTimeoutRef.current) clearTimeout(recentsTimeoutRef.current)
+    setIsRecentsOpen(true)
+  }, [isMounted, isHistoryInitialized, isHistoryEnabled, recentHistory.length])
+
+  const handleToggleHistory = useCallback(() => {
+    const turningOn = !isHistoryEnabled
+    toggleHistory()
+    if (turningOn) {
+      // Show the popup when re-enabling (if there's history to show)
+      if (recentsTimeoutRef.current) clearTimeout(recentsTimeoutRef.current)
+      if (recentHistory.length > 0) setIsRecentsOpen(true)
+    } else {
+      // Immediately hide the popup when disabling
+      if (recentsTimeoutRef.current) clearTimeout(recentsTimeoutRef.current)
+      setIsRecentsOpen(false)
+    }
+  }, [isHistoryEnabled, toggleHistory, recentHistory.length])
+
+  const closeRecents = useCallback(() => {
+    recentsTimeoutRef.current = setTimeout(() => setIsRecentsOpen(false), 2000)
+  }, [])
+
   const handleShowroomMenuOpen = useCallback(() => {
     if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current)
     setActiveMenu('showroom')
@@ -868,6 +901,8 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
         top: 'calc(var(--admin-bar-height, 0px) + var(--announcement-bar-height, 0px))'
       }}
       onClick={handleHeaderClick}
+      onMouseEnter={openRecents}
+      onMouseLeave={closeRecents}
     >
       {/* Top Row - Utility Bar (Full Width) */}
       <div className="border-b border-kawai-neutral/60 w-full bg-white">
@@ -1124,6 +1159,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                 isScrolled ? 'h-12' : 'h-14'
               )}>
                 {/* Left spacer — mirrors the Register button on the right */}
+                {/* Left spacer */}
                 <div className="flex-1" />
 
                 {/* Centered nav items */}
@@ -1198,10 +1234,11 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                       <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isResourcesMenuOpen && "rotate-180")} />
                     </button>
                   </div>
+
                 </div>
 
-                {/* Right column — Register button */}
-                <div className="flex-1 flex justify-end">
+                {/* Right column — History toggle + Register button */}
+                <div className="flex-1 flex items-center justify-end gap-3">
                   {registerConfig?.enabled !== false && (
                     <Link
                       href="/warranty-registration"
@@ -1209,6 +1246,21 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                     >
                       Register Your Piano
                     </Link>
+                  )}
+                  {isMounted && isHistoryInitialized && (
+                    <button
+                      onClick={handleToggleHistory}
+                      className={cn(
+                        'flex items-center gap-1.5 px-2.5 py-1.5 rounded transition-colors duration-200',
+                        'font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px] font-medium',
+                        isHistoryEnabled
+                          ? 'text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/80'
+                          : 'text-kawai-charcoal/60 hover:text-kawai-charcoal hover:bg-kawai-pearl/60'
+                      )}
+                    >
+                      <Clock className="h-3.5 w-3.5 flex-shrink-0" />
+                      <span>Toggle History</span>
+                    </button>
                   )}
                 </div>
               </div>
@@ -1290,6 +1342,35 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                           >
                             {link.label}
                           </ContextAwareLink>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Recently Visited — below quick links, only when history exists */}
+                    {isHistoryInitialized && recentHistory.length > 0 && (
+                      <div className="border-t border-kawai-neutral/60 pt-2">
+                        <p className="px-6 pb-2 text-xs font-semibold uppercase tracking-widest text-kawai-charcoal/50">
+                          Recents
+                        </p>
+                        {recentHistory.map((entry) => (
+                          <Link
+                            key={`${entry.path}-${entry.visitedAt}`}
+                            href={entry.path}
+                            onClick={closeMobileMenu}
+                            className="group flex items-center justify-between py-3 px-6 border-l-[3px] border-transparent hover:border-kawai-red hover:bg-kawai-pearl/50 transition-[border-color,background-color] duration-150 rounded-r-lg"
+                          >
+                            <div className="flex flex-col min-w-0 flex-1">
+                              <span className="text-kawai-charcoal group-hover:text-kawai-black font-medium text-base truncate transition-colors">
+                                {formatHistoryTitle(entry.title, entry.path)}
+                              </span>
+                              <span className="text-kawai-neutral/60 text-xs mt-0.5 truncate">
+                                {entry.path}
+                              </span>
+                            </div>
+                            <span className="text-kawai-neutral/50 text-xs ml-3 shrink-0">
+                              {formatHistoryTime(entry.visitedAt)}
+                            </span>
+                          </Link>
                         ))}
                       </div>
                     )}
@@ -1416,6 +1497,17 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
           latestPosts={latestPosts}
         />
       </div>
+
+      {/* Recents Popup — bottom-right corner, triggered by hovering the header */}
+      {isMounted && isHistoryInitialized && (
+        <RecentsDropdown
+          isOpen={isRecentsOpen && !isSearchOpen}
+          onClose={() => setIsRecentsOpen(false)}
+          history={recentHistory}
+          onPanelMouseEnter={openRecents}
+          onPanelMouseLeave={closeRecents}
+        />
+      )}
 
     </header>
 

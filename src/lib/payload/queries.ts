@@ -1922,6 +1922,16 @@ export interface PianoForSelector {
   price?: { msrp?: number | null; currency?: string | null } | null
 }
 
+export interface AccessoryVariation {
+  id?: string | null
+  name: string
+  price?: number | null
+  compareAtPrice?: number | null
+  available?: boolean | null
+  imageUrl?: string | null
+  sku?: string | null
+}
+
 export interface AccessoryForPage {
   id: string
   model: string
@@ -1932,6 +1942,7 @@ export interface AccessoryForPage {
   price?: { msrp?: number | null; currency?: string | null } | null
   compatibleProductIds: string[]
   accessoryType?: string | null
+  variations: AccessoryVariation[]
 }
 
 /**
@@ -2023,6 +2034,16 @@ export const getAccessoriesForPage = unstable_cache(
           (p: any) => String(p),
         ),
         accessoryType: (doc.accessoryType as string | null | undefined) ?? null,
+        // variations is an array of value objects (not a relationship), returned at any depth
+        variations: ((doc.variations as any[] | null | undefined) ?? []).map((v: any) => ({
+          id: v.id ?? null,
+          name: String(v.name ?? ''),
+          price: v.price ?? null,
+          compareAtPrice: v.compareAtPrice ?? null,
+          available: v.available ?? null,
+          imageUrl: v.imageUrl ?? null,
+          sku: v.sku ?? null,
+        })),
       }))
     } catch {
       return []

@@ -6,6 +6,7 @@ import { FooterDynamic } from "@/components/layout/footer-dynamic";
 import { AnnouncementBarWrapper } from "@/components/layout/AnnouncementBarWrapper";
 import { LayoutSpacer } from "@/components/layout/LayoutSpacer";
 import { NavigationContextProvider } from "@/contexts/NavigationContext";
+import { PageHistoryProvider } from "@/contexts/PageHistoryContext";
 import type { NavigationOrigin } from "@/lib/navigation-utils";
 import { AdminBarProvider } from "@/contexts/AdminBarContext";
 import { organizationSchema, featuredProductsSchema } from "@/lib/seo/schemas";
@@ -145,6 +146,7 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
           __html: JSON.stringify(featuredProductsSchema),
         }}
       />
+      <PageHistoryProvider>
       <DealerPageLayoutWrapper>
         <NammAwareShell
           announcementBar={
@@ -176,6 +178,7 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
       </Suspense>
       <DealerDimensionTracker />
       <CookieConsentBanner />
+      </PageHistoryProvider>
     </NavigationContextProvider>
     </AdminBarProvider>
   )

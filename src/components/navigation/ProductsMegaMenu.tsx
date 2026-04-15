@@ -28,7 +28,7 @@ const SIDEBAR_CATEGORIES = [
   {
     label: 'Accessories',
     key: 'accessories',
-    href: '/pianos/accessories',
+    href: '/accessories',
     terms: [],
     bannerOnly: true as const,
     accessoriesPanel: true as const,

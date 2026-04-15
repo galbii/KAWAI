@@ -37,7 +37,7 @@ interface Props {
   pageHeading?: string | undefined
 }
 
-const CATEGORIES = ['All', 'Grand', 'Shigeru', 'Digital', 'Upright', 'Hybrid'] as const
+const CATEGORIES = ['All', 'Grand', 'Shigeru', 'Digital', 'Upright', 'Hybrid', 'Accessories'] as const
 type Category = (typeof CATEGORIES)[number]
 
 const SORT_OPTIONS = [
@@ -257,6 +257,7 @@ function CollectionBanner({ collection }: { collection: CollectionForBrowser }) 
 function normalizeCategory(product: CatalogProduct): string {
   // Check canonical type field first (exact match — this is the source of truth)
   const type = product.type?.toLowerCase()
+  if (type === 'accessory') return 'Accessories'
   if (type === 'grand') return 'Grand'
   if (type === 'shigeru') return 'Shigeru'
   if (type === 'digital') return 'Digital'
@@ -320,6 +321,7 @@ interface MobileFilterSheetProps {
   setSort: (v: string) => void
   visibleCollections: Array<{ title: string; handle: string }>
   resultCount: number
+  itemLabel: string
   onClearAll: () => void
 }
 
@@ -336,6 +338,7 @@ function MobileFilterSheet({
   setSort,
   visibleCollections,
   resultCount,
+  itemLabel,
   onClearAll,
 }: MobileFilterSheetProps) {
   return (
@@ -536,7 +539,7 @@ function MobileFilterSheet({
                   'font-[family-name:var(--font-brand-sans)]',
                 )}
               >
-                Show {resultCount} {resultCount === 1 ? 'instrument' : 'instruments'}
+                Show {resultCount} {itemLabel}
               </button>
             </div>
           </motion.div>
@@ -598,6 +601,8 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading }: 
   }
 
   const visibleCollections = useMemo(() => {
+    // Accessories don't have Shopify collections — suppress the filter entirely
+    if (activeCategory === 'Accessories') return []
     if (collectionsForBrowser && collectionsForBrowser.length > 0) {
       if (activeCategory === 'All') return collectionsForBrowser
       const catLower = activeCategory.toLowerCase()
@@ -670,9 +675,12 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading }: 
 
     switch (sort) {
       case 'default': {
-        // Sort by the highest collectionPriority among the product's featured collections.
-        // Products with no featured collection get 0 and sort last.
+        // Accessories always sort after pianos in the "All" view.
+        // Within pianos: sort by the highest collectionPriority among featured collections.
         items.sort((a, b) => {
+          const aIsAccessory = (a.type ?? '').toLowerCase() === 'accessory'
+          const bIsAccessory = (b.type ?? '').toLowerCase() === 'accessory'
+          if (aIsAccessory !== bIsAccessory) return aIsAccessory ? 1 : -1
           const aMax = Math.max(0, ...(a.shopifyCollections ?? []).map((c) => featuredPriorityMap.get(c.handle) ?? 0))
           const bMax = Math.max(0, ...(b.shopifyCollections ?? []).map((c) => featuredPriorityMap.get(c.handle) ?? 0))
           return bMax - aMax
@@ -701,6 +709,10 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading }: 
 
   const gridKey = `${activeCategory}|${activeCollection}|${search.trim()}|${sort}`
 
+  const itemLabel = activeCategory === 'Accessories'
+    ? filtered.length === 1 ? 'accessory' : 'accessories'
+    : filtered.length === 1 ? 'instrument' : 'instruments'
+
   function clearAll() {
     setSearch('')
     setActiveCategory('All')
@@ -720,6 +732,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading }: 
         sort={sort} setSort={setSort}
         visibleCollections={visibleCollections}
         resultCount={filtered.length}
+        itemLabel={itemLabel}
         onClearAll={clearAll}
       />
 
@@ -775,7 +788,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading }: 
                 transition={{ duration: 0.15 }}
                 className="text-xs font-medium text-kawai-charcoal font-[family-name:var(--font-brand-sans)] whitespace-nowrap tabular-nums"
               >
-                {filtered.length} {filtered.length === 1 ? 'instrument' : 'instruments'}
+                {filtered.length} {itemLabel}
               </motion.span>
             </AnimatePresence>
 
@@ -1082,7 +1095,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading }: 
                 {activeCollectionObj.title}
               </h2>
               <span className="text-sm text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)]">
-                {filtered.length} {filtered.length === 1 ? 'instrument' : 'instruments'}
+                {filtered.length} {itemLabel}
               </span>
             </div>
             {(activeCollectionObj as CollectionForBrowser).subheading && (
@@ -1235,10 +1248,14 @@ function ProductCard({ product, index }: { product: CatalogProduct; index: numbe
             <span
               className={cn(
                 'px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] font-[family-name:var(--font-brand-sans)]',
-                category === 'Grand' ? 'bg-kawai-gold/20 text-kawai-charcoal' : 'bg-kawai-black/5 text-kawai-charcoal',
+                category === 'Grand'
+                  ? 'bg-kawai-gold/20 text-kawai-charcoal'
+                  : category === 'Accessories'
+                    ? 'bg-kawai-charcoal/10 text-kawai-charcoal/70'
+                    : 'bg-kawai-black/5 text-kawai-charcoal',
               )}
             >
-              {product.type ?? category}
+              {category === 'Accessories' ? 'Accessory' : (product.type ?? category)}
             </span>
           </div>
 

@@ -205,39 +205,35 @@ export default async function HubPage({ params }: Props) {
           allQuestions={allQuestions}
         />
 
-        {/* Contact / Support Request Form */}
-        <section className="bg-white border-t border-black/[0.06] py-24 md:py-32">
+        {/* Contact CTA — links to the dedicated request page */}
+        <section className="bg-kawai-pearl border-t border-black/[0.06] py-24 md:py-32">
           <div className="max-w-screen-2xl mx-auto px-10 md:px-20 xl:px-28">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 xl:gap-24 items-start">
-
-              {/* Left — sticky intro, offset clears main header + floating search bar */}
-              <div className="lg:sticky lg:top-44">
-                <div className="flex items-center gap-4 mb-10">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-10">
+              <div>
+                <div className="flex items-center gap-4 mb-8">
                   <div className="h-px w-10 bg-kawai-red" />
                   <p className="text-[10px] text-kawai-red tracking-[0.5em] uppercase font-semibold font-[family-name:var(--font-brand-sans)]">
                     Get in Touch
                   </p>
                 </div>
-                <h2 className="font-[family-name:var(--font-brand-serif)] font-light text-5xl md:text-6xl lg:text-[4rem] xl:text-[5rem] text-kawai-black leading-[0.95] tracking-tight mb-8">
+                <h2 className="font-[family-name:var(--font-brand-serif)] font-light text-5xl md:text-6xl lg:text-[4rem] xl:text-[5rem] text-kawai-black leading-[0.95] tracking-tight mb-5 max-w-xl">
                   Still have questions?
                 </h2>
-                <p className="text-kawai-black/60 text-base font-[family-name:var(--font-brand-sans)] leading-relaxed max-w-sm">
-                  Submit a support request and our team will get back to you as soon as possible.
+                <p className="text-kawai-black/55 text-base font-[family-name:var(--font-brand-sans)] leading-relaxed max-w-md">
+                  Submit a support request and our technical team will get back to you as soon as possible.
+                  Most requests are answered within one business day.
                 </p>
               </div>
 
-              {/* Right — form, unconstrained width */}
-              <div>
-                <iframe
-                  src="https://share.hsforms.com/22f9oRT3pQ96WhrVrK5C4jwd39hb"
-                  title="Kawai Technical Support Request"
-                  className="w-full border-0"
-                  style={{ height: '1100px', background: 'white' }}
-                  scrolling="no"
-                  loading="lazy"
-                />
-              </div>
-
+              <a
+                href="/technical-support-division/request"
+                className="inline-flex items-center gap-3 bg-kawai-red hover:bg-kawai-red-700 text-white font-[family-name:var(--font-brand-sans)] font-semibold text-sm tracking-wide px-8 py-4 transition-colors duration-200 flex-shrink-0"
+              >
+                Submit a Request
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </a>
             </div>
           </div>
         </section>

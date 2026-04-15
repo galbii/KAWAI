@@ -8,6 +8,8 @@ import { cn } from '@/lib/utils'
 import { AnimatePresence, motion } from 'framer-motion'
 import Image from 'next/image'
 import { KawaiLogo } from '@/components/ui/kawai-logo'
+import { usePageHistory } from '@/contexts/PageHistoryContext'
+import { formatHistoryTitle, formatHistoryTime } from '@/lib/page-history-storage'
 
 interface SearchResult {
   id: string
@@ -81,6 +83,8 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     { label: 'Register My Piano', url: '/register-my-piano' },
     { label: 'Kawai Exclusive Offers', url: '/explore' },
   ])
+
+  const { history: recentHistory, isInitialized: isHistoryInitialized } = usePageHistory()
 
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -953,6 +957,39 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                       </div>
                     )}
 
+                    {/* Recently Visited — mobile, shown below Quick Links */}
+                    {isMobile && query.length < 2 && isHistoryInitialized && recentHistory.length > 0 && (
+                      <div className="flex-shrink-0 border-b border-gray-200/50">
+                        <div className="px-4 pt-4 pb-2">
+                          <span
+                            className="block px-2 mb-3 text-kawai-neutral/50 font-[family-name:var(--font-brand-sans)] uppercase tracking-[0.45em] select-none"
+                            style={{ fontSize: '8px' }}
+                          >
+                            Recents
+                          </span>
+                          {recentHistory.map((entry) => (
+                            <button
+                              key={`${entry.path}-${entry.visitedAt}`}
+                              onClick={() => { router.push(entry.path); clearSearch() }}
+                              className="group w-full flex items-center justify-between px-4 py-3.5 text-left border-l-2 border-transparent hover:border-kawai-red transition-[border-color] duration-200"
+                            >
+                              <div className="flex flex-col min-w-0 flex-1 mr-3">
+                                <span className="text-kawai-pearl/80 font-[family-name:var(--font-brand-sans)] text-sm font-light group-hover:text-kawai-pearl transition-colors truncate">
+                                  {formatHistoryTitle(entry.title, entry.path)}
+                                </span>
+                                <span className="text-kawai-neutral/40 text-[10px] mt-0.5 truncate">
+                                  {entry.path}
+                                </span>
+                              </div>
+                              <span className="text-kawai-neutral/40 font-[family-name:var(--font-brand-sans)] whitespace-nowrap shrink-0" style={{ fontSize: '10px' }}>
+                                {formatHistoryTime(entry.visitedAt)}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Results */}
                     <div
                       ref={resultsContainerRef}
@@ -988,9 +1025,45 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                             initial={{ scaleX: 0, opacity: 0 }}
                             animate={{ scaleX: 1, opacity: 1 }}
                             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.42 }}
-                            className="h-px bg-kawai-red mb-9"
+                            className={isHistoryInitialized && recentHistory.length > 0 ? "h-px bg-kawai-red mb-4" : "h-px bg-kawai-red mb-9"}
                             style={{ width: '28px', transformOrigin: 'center' }}
                           />
+
+                          {/* Recently Visited — desktop, shown above Quick Links */}
+                          {isHistoryInitialized && recentHistory.length > 0 && (
+                            <motion.div
+                              className="w-full max-w-sm mb-5"
+                              initial={{ opacity: 0, y: 6 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
+                            >
+                              <span
+                                className="block px-6 mb-3 text-kawai-pearl/30 font-[family-name:var(--font-brand-sans)] uppercase tracking-[0.45em] select-none"
+                                style={{ fontSize: '8px' }}
+                              >
+                                Recents
+                              </span>
+                              <nav className="w-full">
+                                {recentHistory.map((entry) => (
+                                  <button
+                                    key={`${entry.path}-${entry.visitedAt}`}
+                                    onClick={() => { router.push(entry.path); clearSearch() }}
+                                    className="group w-full flex items-center justify-between px-6 py-3 border-b border-kawai-neutral/10 last:border-0 border-l-2 border-l-transparent hover:border-l-kawai-red transition-[border-color] duration-200"
+                                  >
+                                    <span className="text-kawai-pearl/55 text-sm font-light truncate group-hover:text-kawai-pearl/90 transition-colors duration-200 text-left">
+                                      {formatHistoryTitle(entry.title, entry.path)}
+                                    </span>
+                                    <span
+                                      className="text-kawai-neutral/40 font-[family-name:var(--font-brand-sans)] whitespace-nowrap ml-4 shrink-0"
+                                      style={{ fontSize: '10px' }}
+                                    >
+                                      {formatHistoryTime(entry.visitedAt)}
+                                    </span>
+                                  </button>
+                                ))}
+                              </nav>
+                            </motion.div>
+                          )}
 
                           {/* Navigation links */}
                           <motion.nav
