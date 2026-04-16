@@ -4,7 +4,6 @@ import { useEffect } from 'react'
 import * as CookieConsent from 'vanilla-cookieconsent'
 import 'vanilla-cookieconsent/dist/cookieconsent.css'
 import posthog from 'posthog-js'
-import { persistSessionUTMsToCookies } from '@/lib/shopify/utm-tracking'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -19,10 +18,6 @@ function applyAnalyticsConsent(accepted: boolean) {
   gtag('consent', 'update', { analytics_storage: accepted ? 'granted' : 'denied' })
   if (accepted) {
     posthog.opt_in_capturing()
-    // Persist UTMs from sessionStorage to cookies now that consent is granted.
-    // We can't rely on window.location.search here — the user may have navigated
-    // away from the original landing URL before accepting the banner.
-    persistSessionUTMsToCookies()
   } else {
     posthog.opt_out_capturing()
   }
@@ -99,10 +94,7 @@ export function CookieConsentBanner() {
             cookies: [
               { name: /^_ph_/ },
               { name: /^ph_/ },
-              { name: 'kawai-utm-first' },
-              { name: 'kawai-utm-last' },
-              { name: 'kawai-utm' }, // legacy — keep for existing cookies
-              { name: /^_ga/ }, // matches _ga and _ga_<stream-id>
+              { name: /^_ga/ },
               { name: '_gid' },
             ],
           },

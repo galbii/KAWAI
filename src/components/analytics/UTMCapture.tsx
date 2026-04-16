@@ -32,29 +32,23 @@
 
 import { useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { captureUTMParams, captureUTMParamsToSession } from '@/lib/shopify/utm-tracking'
-import * as CookieConsent from 'vanilla-cookieconsent'
+import { captureUTMParams } from '@/lib/shopify/utm-tracking'
+import { captureClickIds } from '@/lib/shopify/checkout'
 
 /**
  * UTM Capture Component
  *
- * Automatically captures UTM parameters from the URL on page load.
- * Only stores UTMs when the user has accepted analytics cookies.
- * For new visitors who later accept, CookieConsentBanner handles capture
- * in its onConsent callback.
+ * Captures UTM parameters from the URL on every page load and stores them
+ * in 30-day cookies for attribution (first-touch and last-touch).
+ * UTM cookies are treated as necessary/functional — no consent gate.
  */
 export function UTMCapture() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
     if (!searchParams) return
-    // Always capture to sessionStorage — no consent required for session-scoped storage.
-    // This preserves UTMs even if the user navigates before accepting the cookie banner.
-    captureUTMParamsToSession(searchParams)
-    // If consent already granted, also persist to 30-day cookies immediately.
-    if (CookieConsent.acceptedCategory('analytics')) {
-      captureUTMParams(searchParams)
-    }
+    captureUTMParams(searchParams)
+    captureClickIds(searchParams)
   }, [searchParams])
 
   // This component renders nothing - it's for analytics only
