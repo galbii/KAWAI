@@ -128,6 +128,7 @@ export interface Config {
     'product-faq': ProductFaqBlock;
     'product-piano-pages': ProductPianoPagesBlock;
     'product-accessories': ProductAccessoriesBlock;
+    'product-reference': ProductReferenceBlock;
     textContent: TextContentBlock;
     hello: HelloBlock;
     archive: ArchiveBlock;
@@ -7295,6 +7296,52 @@ export interface ProductPianoPagesBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductReferenceBlock".
+ */
+export interface ProductReferenceBlock {
+  /**
+   * Select a product from the catalog. Pricing and variants are pulled live from Shopify.
+   */
+  product: string | Product;
+  /**
+   * Choose which elements appear on the card. Price and cart actions are automatically hidden for the Canada site.
+   */
+  display?: {
+    /**
+     * Show live Shopify pricing
+     */
+    showPrice?: boolean | null;
+    /**
+     * Show Buy Now button (opens checkout)
+     */
+    showBuyNow?: boolean | null;
+    /**
+     * Show Add to Cart button
+     */
+    showAddToCart?: boolean | null;
+    /**
+     * Show product description excerpt
+     */
+    showDescription?: boolean | null;
+    /**
+     * Show variant selector when the product has multiple finishes or configurations
+     */
+    showVariantSelector?: boolean | null;
+  };
+  /**
+   * Visual layout of the product card
+   */
+  layout?: {
+    orientation?: ('horizontal' | 'vertical') | null;
+    imageSize?: ('small' | 'medium' | 'large') | null;
+    backgroundColor?: ('white' | 'pearl' | 'black') | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'product-reference';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TextContentBlock".
  */
 export interface TextContentBlock {
@@ -7524,6 +7571,7 @@ export interface Post {
         | MarketingFeaturedModelsBlock
         | MarketingArtistCarouselBlock
         | MarketingBlogLatestBlock
+        | ProductReferenceBlock
       )[]
     | null;
   /**

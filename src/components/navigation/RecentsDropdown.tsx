@@ -43,7 +43,7 @@ export function RecentsDropdown({
             transition={tabSpring}
             whileHover={{ x: -5 }}
             onMouseEnter={onTabMouseEnter}
-            className="fixed right-0 top-[70%] -translate-y-1/2 z-[9200] cursor-pointer group"
+            className="fixed right-0 top-[65%] -translate-y-1/2 z-[9200] cursor-pointer group"
           >
             <div
               className={cn(
@@ -87,7 +87,7 @@ export function RecentsDropdown({
             onMouseEnter={onPanelMouseEnter}
             onMouseLeave={onPanelMouseLeave}
             className={cn(
-              'fixed right-0 top-[70%] -translate-y-1/2 z-[9200]',
+              'fixed right-0 top-[65%] -translate-y-1/2 z-[9200]',
               'w-[248px]',
               'rounded-l-xl overflow-hidden',
               'bg-white/80 backdrop-blur-xl',

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { MapPin } from 'lucide-react'
@@ -8,8 +8,7 @@ import type { Product } from '@/payload-types'
 import type { Product as ShopifyProduct } from '@/lib/shopify'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { BuyNowButton } from '@/components/piano/BuyNowButton'
-import { cn } from '@/lib/utils'
-import { formatPrice } from '@/lib/utils'
+import { cn, formatPrice } from '@/lib/utils'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -28,93 +27,67 @@ interface LayoutOptions {
 }
 
 export interface ProductReferenceBlockProps {
-  product: Product
-  shopifyProduct: ShopifyProduct | null
+  /** Populated CMS Product object (relationship at depth ≥ 1) */
+  product: Product | string | null
+  /** Shopify product — available in server-rendered contexts; null in client-only (blog) contexts */
+  shopifyProduct?: ShopifyProduct | null
+  /** Canada site flag — passed by server wrapper; falls back to hostname detection */
   isCanada?: boolean
   display?: DisplayOptions | null
   layout?: LayoutOptions | null
 }
 
-// ─── Image size map ───────────────────────────────────────────────────────────
+// ─── Normalised variant shape (works with either data source) ─────────────────
 
-const IMAGE_WIDTH_CLASS = {
+interface NormalisedVariant {
+  id: string           // Shopify variant ID (numeric or GID)
+  title: string
+  price: number
+  compareAtPrice: number | null
+  available: boolean
+}
+
+function getVariants(
+  product: Product,
+  shopifyProduct: ShopifyProduct | null | undefined,
+): NormalisedVariant[] {
+  // Prefer live Shopify data when available (server-rendered path)
+  if (shopifyProduct?.variants?.length) {
+    return shopifyProduct.variants.map((v) => ({
+      id: v.id,
+      title: v.title,
+      price: v.price,
+      compareAtPrice: v.compareAtPrice ?? null,
+      available: v.available ?? true,
+    }))
+  }
+
+  // Fall back to CMS variations (client-rendered path — synced from Shopify on last save)
+  return (product.variations ?? [])
+    .filter((v): v is typeof v & { name: string } => Boolean(v.name))
+    .map((v) => ({
+      id: v.shopifyVariantId ?? '',
+      title: v.name,
+      price: v.price ?? 0,
+      compareAtPrice: v.compareAtPrice ?? null,
+      available: v.available ?? true,
+    }))
+    .filter((v) => v.id !== '')
+}
+
+// ─── Style maps ──────────────────────────────────────────────────────────────
+
+const IMAGE_WIDTH: Record<string, string> = {
   small:  'w-40 shrink-0',
   medium: 'w-56 shrink-0',
   large:  'w-72 shrink-0',
-} as const
-
-const IMAGE_ASPECT = {
-  small:  'aspect-[3/4]',
-  medium: 'aspect-[3/4]',
-  large:  'aspect-[3/4]',
-} as const
-
-// ─── Background styles ────────────────────────────────────────────────────────
-
-const BG_CLASS = {
-  white: 'bg-white',
-  pearl: 'bg-kawai-pearl',
-  black: 'bg-kawai-black',
-} as const
-
-const TEXT_CLASS = {
-  white: 'text-kawai-black',
-  pearl: 'text-kawai-black',
-  black: 'text-white',
-} as const
-
-const MUTED_CLASS = {
-  white: 'text-kawai-charcoal/60',
-  pearl: 'text-kawai-charcoal/60',
-  black: 'text-white/50',
-} as const
-
-const BORDER_CLASS = {
-  white: 'border-kawai-neutral',
-  pearl: 'border-kawai-neutral',
-  black: 'border-white/10',
-} as const
-
-// ─── Price display helper ─────────────────────────────────────────────────────
-
-function PriceDisplay({
-  shopifyProduct,
-  selectedVariantId,
-  muted,
-}: {
-  shopifyProduct: ShopifyProduct
-  selectedVariantId: string | null
-  muted: string
-}) {
-  const variant = selectedVariantId
-    ? shopifyProduct.variants.find((v) => v.id === selectedVariantId)
-    : shopifyProduct.variants[0]
-
-  if (!variant) {
-    return (
-      <p className={cn('text-lg font-semibold font-[family-name:var(--font-brand-sans)]')}>
-        {shopifyProduct.price.display}
-      </p>
-    )
-  }
-
-  const onSale = variant.compareAtPrice !== null && variant.compareAtPrice > variant.price
-
-  return (
-    <div className="flex items-baseline gap-2 flex-wrap">
-      <span className="text-lg font-bold font-[family-name:var(--font-brand-sans)] text-kawai-red">
-        {formatPrice(variant.price)}
-      </span>
-      {onSale && variant.compareAtPrice && (
-        <span className={cn('text-sm line-through font-[family-name:var(--font-brand-sans)]', muted)}>
-          {formatPrice(variant.compareAtPrice)}
-        </span>
-      )}
-    </div>
-  )
 }
+const BG:     Record<string, string> = { white: 'bg-white',        pearl: 'bg-kawai-pearl',  black: 'bg-kawai-black' }
+const TEXT:   Record<string, string> = { white: 'text-kawai-black', pearl: 'text-kawai-black', black: 'text-white' }
+const MUTED:  Record<string, string> = { white: 'text-kawai-charcoal/60', pearl: 'text-kawai-charcoal/60', black: 'text-white/50' }
+const BORDER: Record<string, string> = { white: 'border-kawai-neutral', pearl: 'border-kawai-neutral', black: 'border-white/10' }
 
-// ─── Variant selector ─────────────────────────────────────────────────────────
+// ─── Sub-components ──────────────────────────────────────────────────────────
 
 function VariantSelector({
   variants,
@@ -122,13 +95,12 @@ function VariantSelector({
   onSelect,
   borderClass,
 }: {
-  variants: ShopifyProduct['variants']
+  variants: NormalisedVariant[]
   selectedId: string | null
   onSelect: (id: string) => void
   borderClass: string
 }) {
   if (variants.length <= 1) return null
-
   return (
     <div className="flex flex-wrap gap-2">
       {variants.map((v) => (
@@ -152,74 +124,101 @@ function VariantSelector({
   )
 }
 
+function PriceRow({
+  variant,
+  mutedClass,
+}: {
+  variant: NormalisedVariant
+  mutedClass: string
+}) {
+  const onSale = variant.compareAtPrice !== null && variant.compareAtPrice > variant.price
+  return (
+    <div className="flex items-baseline gap-2 flex-wrap">
+      <span className="text-lg font-bold font-[family-name:var(--font-brand-sans)] text-kawai-red">
+        {formatPrice(variant.price)}
+      </span>
+      {onSale && variant.compareAtPrice && (
+        <span className={cn('text-sm line-through font-[family-name:var(--font-brand-sans)]', mutedClass)}>
+          {formatPrice(variant.compareAtPrice)}
+        </span>
+      )}
+    </div>
+  )
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function ProductReferenceBlock({
-  product,
+  product: productProp,
   shopifyProduct,
-  isCanada = false,
+  isCanada: isCanadaProp,
   display,
   layout,
 }: ProductReferenceBlockProps) {
-  const orientation   = layout?.orientation   ?? 'horizontal'
-  const imageSize     = layout?.imageSize     ?? 'medium'
-  const bg            = layout?.backgroundColor ?? 'white'
+  // Resolve relationship — may arrive as populated object or bare string ID
+  const product = typeof productProp === 'object' && productProp !== null ? productProp : null
 
-  const showPrice          = display?.showPrice          !== false
-  const showBuyNow         = display?.showBuyNow         !== false
-  const showAddToCart      = display?.showAddToCart      !== false
-  const showDescription    = display?.showDescription    !== false
+  // Canada detection: use prop when available (server path), fall back to hostname (client path)
+  const [isCanada, setIsCanada] = useState(isCanadaProp ?? false)
+  useEffect(() => {
+    if (isCanadaProp === undefined) {
+      setIsCanada(window.location.hostname.startsWith('cad.'))
+    }
+  }, [isCanadaProp])
+
+  const orientation  = layout?.orientation    ?? 'horizontal'
+  const imageSize    = layout?.imageSize      ?? 'medium'
+  const bg           = layout?.backgroundColor ?? 'white'
+
+  const showPrice           = display?.showPrice           !== false
+  const showBuyNow          = display?.showBuyNow          !== false
+  const showAddToCart       = display?.showAddToCart       !== false
+  const showDescription     = display?.showDescription     !== false
   const showVariantSelector = display?.showVariantSelector !== false
 
-  const variants = shopifyProduct?.variants ?? []
+  const variants = useMemo(
+    () => (product ? getVariants(product, shopifyProduct) : []),
+    [product, shopifyProduct],
+  )
 
-  // Default to first available variant
   const defaultVariantId = useMemo(() => {
-    const first = variants.find((v) => v.available) ?? variants[0]
-    return first?.id ?? null
+    return (variants.find((v) => v.available) ?? variants[0])?.id ?? null
   }, [variants])
 
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(defaultVariantId)
+  const selectedVariant = variants.find((v) => v.id === selectedVariantId) ?? null
 
-  const selectedVariant = selectedVariantId
-    ? variants.find((v) => v.id === selectedVariantId) ?? null
-    : null
+  const imageSrc = shopifyProduct?.image?.url ?? product?.imageUrl ?? null
+  const hasShopify  = shopifyProduct !== null && shopifyProduct !== undefined
+  const hasVariants = variants.length > 0
+  // Can transact when: not Canada, has variant IDs (either from Shopify or CMS sync)
+  const canTransact = !isCanada && hasVariants
 
-  // Derive display image: try Shopify product image, then CMS imageUrl
-  const imageSrc: string | null =
-    shopifyProduct?.image?.url ??
-    (typeof product.imageUrl === 'string' ? product.imageUrl : null)
+  if (!product) return null
 
-  const isHorizontal = orientation === 'horizontal'
-  const hasShopify   = shopifyProduct !== null
-  const canTransact  = !isCanada && hasShopify
-
-  const bgClass     = BG_CLASS[bg]
-  const textClass   = TEXT_CLASS[bg]
-  const mutedClass  = MUTED_CLASS[bg]
-  const borderClass = BORDER_CLASS[bg]
+  const bgClass     = BG[bg]     ?? BG.white
+  const textClass   = TEXT[bg]   ?? TEXT.white
+  const mutedClass  = MUTED[bg]  ?? MUTED.white
+  const borderClass = BORDER[bg] ?? BORDER.white
 
   return (
     <div
       className={cn(
-        'rounded-xl overflow-hidden border',
+        'rounded-xl overflow-hidden border my-6',
         bgClass,
         borderClass,
         'shadow-brand-subtle',
       )}
     >
-      <div
-        className={cn(
-          isHorizontal ? 'flex flex-col sm:flex-row' : 'flex flex-col',
-        )}
-      >
+      <div className={cn('flex', orientation === 'horizontal' ? 'flex-col sm:flex-row' : 'flex-col')}>
+
         {/* ── Image ── */}
         {imageSrc && (
           <div
             className={cn(
-              'relative overflow-hidden bg-kawai-pearl',
-              isHorizontal
-                ? cn(IMAGE_WIDTH_CLASS[imageSize], IMAGE_ASPECT[imageSize], 'sm:h-auto')
+              'relative overflow-hidden bg-kawai-pearl shrink-0',
+              orientation === 'horizontal'
+                ? cn(IMAGE_WIDTH[imageSize] ?? IMAGE_WIDTH.medium, 'aspect-[3/4] sm:h-auto')
                 : 'w-full aspect-[16/9]',
             )}
           >
@@ -228,46 +227,28 @@ export function ProductReferenceBlock({
               alt={product.name ?? product.model}
               fill
               className="object-contain p-4"
-              sizes={
-                isHorizontal
-                  ? '(max-width: 640px) 100vw, 288px'
-                  : '100vw'
-              }
+              sizes={orientation === 'horizontal' ? '(max-width: 640px) 100vw, 288px' : '100vw'}
             />
           </div>
         )}
 
         {/* ── Details ── */}
-        <div className={cn('flex flex-col justify-between p-6 flex-1', textClass)}>
+        <div className={cn('flex flex-col justify-between p-6 flex-1 min-w-0', textClass)}>
           <div className="space-y-4">
-            {/* Model badge + name */}
+
+            {/* Model + name */}
             <div>
-              <span
-                className={cn(
-                  'text-[10px] uppercase tracking-[0.25em] font-semibold font-[family-name:var(--font-brand-sans)]',
-                  mutedClass,
-                )}
-              >
+              <span className={cn('text-[10px] uppercase tracking-[0.25em] font-semibold font-[family-name:var(--font-brand-sans)]', mutedClass)}>
                 {product.model}
               </span>
-              <h3
-                className={cn(
-                  'text-xl font-semibold leading-snug mt-0.5 font-[family-name:var(--font-brand-serif)]',
-                  textClass,
-                )}
-              >
+              <h3 className={cn('text-xl font-semibold leading-snug mt-0.5 font-[family-name:var(--font-brand-serif)]', textClass)}>
                 {product.name ?? product.model}
               </h3>
             </div>
 
             {/* Description */}
             {showDescription && product.description && (
-              <p
-                className={cn(
-                  'text-sm leading-relaxed line-clamp-3 font-[family-name:var(--font-brand-sans)]',
-                  mutedClass,
-                )}
-              >
+              <p className={cn('text-sm leading-relaxed line-clamp-3 font-[family-name:var(--font-brand-sans)]', mutedClass)}>
                 {product.description}
               </p>
             )}
@@ -283,46 +264,35 @@ export function ProductReferenceBlock({
             )}
 
             {/* Price */}
-            {showPrice && canTransact && (
-              <PriceDisplay
-                shopifyProduct={shopifyProduct!}
-                selectedVariantId={selectedVariantId}
-                muted={mutedClass}
-              />
+            {showPrice && canTransact && selectedVariant && (
+              <PriceRow variant={selectedVariant} mutedClass={mutedClass} />
             )}
           </div>
 
           {/* ── CTAs ── */}
           <div className="mt-6 space-y-2">
-            {canTransact ? (
+            {canTransact && selectedVariant ? (
               <>
-                {/* Add to Cart */}
-                {showAddToCart && selectedVariant && (
+                {showAddToCart && (
                   <AddToCartButton
                     variantId={selectedVariant.id}
                     available={selectedVariant.available}
                     className="w-full"
                   />
                 )}
-
-                {/* Buy Now */}
-                {showBuyNow && selectedVariant && (
+                {showBuyNow && (
                   <BuyNowButton
                     items={[{ shopifyVariantId: selectedVariant.id, quantity: 1 }]}
                     className="w-full"
                   />
                 )}
-
-                {/* Learn more link */}
                 {product.slug && (
                   <Link
                     href={`/products/${product.slug}`}
                     className={cn(
                       'block text-center text-xs font-medium mt-1 transition-colors duration-150',
                       'font-[family-name:var(--font-brand-sans)]',
-                      bg === 'black'
-                        ? 'text-white/50 hover:text-white/80'
-                        : 'text-kawai-charcoal/50 hover:text-kawai-red',
+                      bg === 'black' ? 'text-white/50 hover:text-white/80' : 'text-kawai-charcoal/50 hover:text-kawai-red',
                     )}
                   >
                     View full product page →
@@ -330,17 +300,10 @@ export function ProductReferenceBlock({
                 )}
               </>
             ) : (
-              /* Canada / no Shopify: Find a Dealer */
               <div className="space-y-2">
                 <Link
                   href="/find-a-dealer"
-                  className={cn(
-                    'flex items-center justify-center gap-2 w-full py-3',
-                    'text-[10px] uppercase tracking-[0.22em] font-bold',
-                    'font-[family-name:var(--font-brand-sans)]',
-                    'bg-kawai-red text-white hover:bg-red-700 transition-colors duration-200',
-                    'rounded',
-                  )}
+                  className="flex items-center justify-center gap-2 w-full py-3 text-[10px] uppercase tracking-[0.22em] font-bold font-[family-name:var(--font-brand-sans)] bg-kawai-red text-white hover:bg-red-700 transition-colors duration-200 rounded"
                 >
                   <MapPin className="w-3.5 h-3.5" />
                   Find a Dealer
@@ -351,9 +314,7 @@ export function ProductReferenceBlock({
                     className={cn(
                       'block text-center text-xs font-medium mt-1 transition-colors duration-150',
                       'font-[family-name:var(--font-brand-sans)]',
-                      bg === 'black'
-                        ? 'text-white/50 hover:text-white/80'
-                        : 'text-kawai-charcoal/50 hover:text-kawai-red',
+                      bg === 'black' ? 'text-white/50 hover:text-white/80' : 'text-kawai-charcoal/50 hover:text-kawai-red',
                     )}
                   >
                     View full product page →

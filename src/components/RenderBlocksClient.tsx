@@ -40,6 +40,9 @@ import { CallToActionBlock } from '@/components/blocks/CallToActionBlock'
 import { FeaturedModelsBlock } from '@/components/blocks/FeaturedModelsBlock'
 import { ArtistCarouselBlock } from '@/components/blocks/ArtistCarouselBlock'
 
+// Product blocks — all `'use client'`, render purely from props
+import { ProductReferenceBlock } from '@/components/blocks/ProductReferenceBlock'
+
 // Map block slugs → client components (mirrors blockComponents in RenderBlocks.tsx)
 const POST_BLOCK_COMPONENTS = {
   'content-rich-text': RichTextContentBlock,
@@ -55,6 +58,7 @@ const POST_BLOCK_COMPONENTS = {
   'marketing-featured-models': FeaturedModelsBlock,
   'marketing-artist-carousel': ArtistCarouselBlock,
   // marketing-blog-latest is server-only — gets a placeholder (see below)
+  'product-reference': ProductReferenceBlock,
 } as const
 
 type ClientBlockType = keyof typeof POST_BLOCK_COMPONENTS

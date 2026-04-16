@@ -115,6 +115,7 @@ export const Posts: CollectionConfig = {
                 'marketing-featured-models',
                 'marketing-artist-carousel',
                 'marketing-blog-latest',
+                'product-reference',
               ] as any,
               blocks: [],
               defaultValue: [{ blockType: 'content-rich-text' }],
