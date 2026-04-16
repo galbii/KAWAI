@@ -80,6 +80,12 @@ const UTM_COOKIE_LEGACY = 'kawai-utm'
 const UTM_COOKIE_MAX_AGE = 60 * 60 * 24 * 30
 
 /**
+ * sessionStorage key for pre-consent UTM capture.
+ * Session-scoped so no cookie consent is required to write it.
+ */
+const UTM_SESSION_KEY = 'kawai-utm-session'
+
+/**
  * Standard UTM parameter names
  */
 const UTM_PARAMS = [
@@ -361,6 +367,86 @@ export function getUTMMetadata(): StoredUTMData | null {
  */
 export function hasStoredUTMs(): boolean {
   return getStoredUTMParams() !== null
+}
+
+// ============================================================================
+// Session Storage (Pre-Consent Capture)
+// ============================================================================
+
+/**
+ * Capture UTM parameters to sessionStorage without requiring cookie consent.
+ * sessionStorage is session-scoped and cleared when the tab closes, so it
+ * doesn't require the same consent as persistent cookies.
+ *
+ * Call this unconditionally on page load. Call persistSessionUTMsToCookies()
+ * once the user grants analytics consent.
+ */
+export function captureUTMParamsToSession(searchParams: URLSearchParams): UTMParams | null {
+  if (typeof window === 'undefined') return null
+
+  const utmParams: UTMParams = {}
+  let hasUTMs = false
+
+  for (const param of UTM_PARAMS) {
+    const value = searchParams.get(param)
+    if (value && value.trim()) {
+      utmParams[param] = value.trim()
+      hasUTMs = true
+    }
+  }
+
+  if (!hasUTMs) return null
+
+  try {
+    // Only write first-touch — don't overwrite if session already has UTMs
+    if (!sessionStorage.getItem(UTM_SESSION_KEY)) {
+      sessionStorage.setItem(
+        UTM_SESSION_KEY,
+        JSON.stringify({ params: utmParams, capturedAt: Date.now(), url: window.location.href }),
+      )
+    }
+    // Always update last-touch (separate key)
+    sessionStorage.setItem(
+      `${UTM_SESSION_KEY}-last`,
+      JSON.stringify({ params: utmParams, capturedAt: Date.now(), url: window.location.href }),
+    )
+    return utmParams
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Persist any UTMs captured in sessionStorage to 30-day cookies.
+ * Call this once the user grants analytics consent so attribution is
+ * preserved even if they accepted cookies after navigating away from
+ * the landing URL.
+ */
+export function persistSessionUTMsToCookies(): void {
+  if (typeof window === 'undefined') return
+
+  try {
+    const firstRaw = sessionStorage.getItem(UTM_SESSION_KEY)
+    const lastRaw = sessionStorage.getItem(`${UTM_SESSION_KEY}-last`)
+
+    if (firstRaw) {
+      const { params } = JSON.parse(firstRaw) as StoredUTMData
+      const sp = new URLSearchParams()
+      for (const [k, v] of Object.entries(params)) {
+        if (v) sp.set(k, v)
+      }
+      captureUTMParams(sp)
+    }
+
+    // Sync last-touch cookie if it differs from first-touch
+    if (lastRaw) {
+      const { params } = JSON.parse(lastRaw) as StoredUTMData
+      const serialized = JSON.stringify({ params, capturedAt: Date.now(), url: window.location.href })
+      writeCookie(UTM_COOKIE_LAST, serialized)
+    }
+  } catch {
+    // silently fail — attribution is best-effort
+  }
 }
 
 // ============================================================================

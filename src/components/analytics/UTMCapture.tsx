@@ -32,7 +32,7 @@
 
 import { useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { captureUTMParams } from '@/lib/shopify/utm-tracking'
+import { captureUTMParams, captureUTMParamsToSession } from '@/lib/shopify/utm-tracking'
 import * as CookieConsent from 'vanilla-cookieconsent'
 
 /**
@@ -47,7 +47,12 @@ export function UTMCapture() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    if (searchParams && CookieConsent.acceptedCategory('analytics')) {
+    if (!searchParams) return
+    // Always capture to sessionStorage — no consent required for session-scoped storage.
+    // This preserves UTMs even if the user navigates before accepting the cookie banner.
+    captureUTMParamsToSession(searchParams)
+    // If consent already granted, also persist to 30-day cookies immediately.
+    if (CookieConsent.acceptedCategory('analytics')) {
       captureUTMParams(searchParams)
     }
   }, [searchParams])
