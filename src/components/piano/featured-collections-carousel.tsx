@@ -21,7 +21,7 @@ export interface FeaturedCollectionsCarouselProps {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const AUTO_ROTATE_MS = 6000
+const AUTO_ROTATE_MS = 3000
 
 const GRAIN_SVG = `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`
 
@@ -174,7 +174,6 @@ export function FeaturedCollectionsCarousel({
 }: FeaturedCollectionsCarouselProps) {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [idx, setIdx] = useState(0)
-  const [paused, setPaused] = useState(false)
 
   // Derive available categories from all collections
   const availableCategories = Array.from(
@@ -196,21 +195,15 @@ export function FeaturedCollectionsCarousel({
   // Reset slide index when category changes
   useEffect(() => { setIdx(0) }, [selectedCategory])
 
-  // Derive videoId before the early return so hooks aren't called conditionally.
-  // Guard against empty active array (when collections is empty).
   const currentCollection = total > 0 ? active[Math.min(idx, total - 1)] : undefined
   const videoId = currentCollection ? getVideoId(currentCollection) : null
 
-  // Pause auto-rotation while a YouTube video is the background — cycling through
-  // video slides remounts the iframe every 6 seconds (AnimatePresence uses a key
-  // per slide), which re-initialises the full YouTube player environment each time.
-  const effectivePaused = paused || !!videoId
-
+  // Advance once from the first slide on mount
   useEffect(() => {
-    if (effectivePaused || total <= 1) return
-    const t = setInterval(next, AUTO_ROTATE_MS)
-    return () => clearInterval(t)
-  }, [effectivePaused, next, total])
+    if (total <= 1) return
+    const t = setTimeout(next, AUTO_ROTATE_MS)
+    return () => clearTimeout(t)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (collections.length === 0) return null
 
@@ -240,8 +233,6 @@ export function FeaturedCollectionsCarousel({
       <section
         className="relative w-full overflow-hidden bg-kawai-black"
         style={{ height: 'clamp(480px, 65vh, 760px)' }}
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
       >
         {/* Background crossfade */}
         <AnimatePresence initial={false}>
@@ -416,14 +407,19 @@ export function FeaturedCollectionsCarousel({
                     aria-label={`Go to ${col.heading || col.title}`}
                     className="flex-1 group relative h-px focus-visible:outline-none"
                   >
-                    <div className="absolute inset-0 bg-white/18 group-hover:bg-white/30 transition-colors duration-150" />
-                    {i === Math.min(idx, active.length - 1) && (
+                    <div className="absolute inset-0 bg-white/15" />
+                    {i === 0 && idx === 0 ? (
                       <motion.div
-                        layoutId={`progress-fill-${selectedCategory}`}
-                        className="absolute inset-0 bg-white/75"
-                        transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
+                        initial={{ scaleX: 0 }}
+                        animate={{ scaleX: 1 }}
+                        transition={{ duration: AUTO_ROTATE_MS / 1000, ease: 'linear' }}
+                        className="absolute inset-0 bg-white/60 origin-left"
                       />
-                    )}
+                    ) : i < Math.min(idx, active.length - 1) ? (
+                      <div className="absolute inset-0 bg-white/35" />
+                    ) : i === Math.min(idx, active.length - 1) ? (
+                      <div className="absolute inset-0 bg-white/60" />
+                    ) : null}
                   </button>
                 ))}
               </div>
