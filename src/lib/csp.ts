@@ -172,6 +172,10 @@ export function buildCspHeader(_isDev: boolean): string {
 
       // OpenFreeMap — map tile styles and vector tiles for the dealer locator
       'https://tiles.openfreemap.org',
+
+      // Carto — dark-matter tile style for the Shigeru Kawai dealer map
+      'https://basemaps.cartocdn.com',
+      'https://*.basemaps.cartocdn.com',
     ],
 
     'frame-src': [

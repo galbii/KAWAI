@@ -33,7 +33,7 @@ export function ArticleSidebar({ post, className = '' }: ArticleSidebarProps) {
 
   return (
     <aside
-      className={cn('hidden lg:block w-80 mr-12 h-full', className)}
+      className={cn('hidden lg:block w-72 shrink-0 h-full', className)}
       aria-label="Article sidebar"
     >
       <div

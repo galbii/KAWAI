@@ -55,7 +55,7 @@ export function BlogIndexClient({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: EASE_PIANO }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-20">
           {/* Red rule */}
           <div className="w-12 h-0.5 bg-kawai-red mb-8" />
 
@@ -91,7 +91,7 @@ export function BlogIndexClient({
       </motion.section>
 
       {/* ── Content ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         {!hasPosts ? (
           /* ── Empty State ── */
           <motion.div
@@ -167,7 +167,7 @@ export function BlogIndexClient({
                       </div>
 
                       {/* Content — right 40% */}
-                      <div className="flex flex-col justify-center p-10 lg:p-14">
+                      <div className="flex flex-col justify-center p-8 lg:p-10">
                         {/* Category + featured badge + date */}
                         <div className="flex items-center gap-3 mb-6 flex-wrap">
                           {featuredCategories[0] && (
@@ -246,7 +246,7 @@ export function BlogIndexClient({
                   <div className="flex-1 h-px bg-kawai-neutral" />
                 </motion.div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {gridPosts.map((post, i) => (
                     <BlogCardAnimated key={post.id} post={post} index={i} />
                   ))}

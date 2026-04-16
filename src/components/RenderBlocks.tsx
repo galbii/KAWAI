@@ -103,6 +103,7 @@ import { SpecificationsBlock } from './blocks/SpecificationsBlock'
 import { CollectionShowcaseBlock } from './blocks/CollectionShowcaseBlock'
 import { FloatingAddToCartBlock } from './blocks/FloatingAddToCartBlock'
 import { ProductHeroCarouselBlock } from './blocks/ProductHeroCarouselBlock'
+import { ProductReferenceBlockWrapper } from './blocks/ProductReferenceBlockWrapper'
 
 /**
  * Block Components Mapping
@@ -181,6 +182,7 @@ const blockComponents = {
   'product-collection-showcase': CollectionShowcaseBlock,
   'product-floating-add-to-cart': FloatingAddToCartBlock,
   'product-hero-carousel': ProductHeroCarouselBlock,
+  'product-reference': ProductReferenceBlockWrapper,
 } as const
 
 type BlockComponents = typeof blockComponents
@@ -244,6 +246,7 @@ export function RenderBlocks({ blocks }: { blocks: Page['layout'] }) {
           'marketing-featured-collections', // getNavCollections (unstable_cache, 300s)
           'marketing-storefront-locations', // getActiveStorefrontsDirect (unstable_cache, 3600s)
           'marketing-pianos-browser',       // getCatalogProductsDirect + getCollectionsForBrowser (unstable_cache, 3600s)
+          'product-reference',              // Shopify product fetch + site context
         ])
         const isAsyncBlock = ASYNC_BLOCK_TYPES.has(blockType as string)
 

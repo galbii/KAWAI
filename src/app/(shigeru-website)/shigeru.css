@@ -51,3 +51,9 @@
 .sk-scroll-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Dark inversion for the Shigeru dealer map.
+   Targets only the WebGL canvas — DOM-overlay markers and popups are unaffected. */
+.sk-map-dark .maplibregl-canvas {
+  filter: invert(1) hue-rotate(180deg) saturate(0.5) brightness(0.82);
+}

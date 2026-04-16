@@ -69,6 +69,15 @@ export interface NavCollection {
   bannerSize?: 'xxs' | 'xs' | 'small' | 'medium' | 'large' | 'fullscreen' | null
 }
 
+export interface NavAccessory {
+  id: string
+  model: string
+  name: string | null
+  slug: string | null
+  imageUrl: string | null
+  accessoryType: string | null
+}
+
 export interface ProductsNavigation {
   /** Products grouped by category for sidebar navigation */
   types: ProductTypeNav[]
@@ -76,6 +85,8 @@ export interface ProductsNavigation {
   collections?: NavCollection[]
   /** All collections (used for category tab filtering) */
   allCollections?: NavCollection[]
+  /** Accessories for the nav panel */
+  accessories?: NavAccessory[]
   /** Total number of active products */
   totalProducts: number
   /** Last updated timestamp */
@@ -601,6 +612,32 @@ async function _getNavCollections(
     })
   } catch (error) {
     console.error('[Payload Collections Navigation] Failed to fetch collections:', error)
+    return []
+  }
+}
+
+export async function getAccessoriesForNav(limit = 8): Promise<NavAccessory[]> {
+  try {
+    const payload = await getPayload({ config })
+    const result = await payload.find({
+      collection: 'products',
+      where: { and: [{ status: { equals: 'active' } }, { type: { equals: 'accessory' } }] },
+      select: { model: true, name: true, slug: true, imageUrl: true, accessoryType: true },
+      depth: 0,
+      limit,
+      pagination: false,
+    })
+
+    return result.docs.map((doc) => ({
+      id: String(doc.id),
+      model: doc.model,
+      name: (doc.name as string | null | undefined) ?? null,
+      slug: (doc.slug as string | null | undefined) ?? null,
+      imageUrl: (doc.imageUrl as string | null | undefined) ?? null,
+      accessoryType: (doc as any).accessoryType ?? null,
+    }))
+  } catch (error) {
+    console.error('[Payload Accessories Nav] Failed to fetch accessories:', error)
     return []
   }
 }

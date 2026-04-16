@@ -69,6 +69,7 @@ export { SoundCloudEmbed } from './product/SoundCloudEmbed'
 export { ProductFaqBlock } from './product/ProductFaq'
 export { PianoPages } from './product/PianoPages'
 export { ProductAccessories } from './product/ProductAccessories'
+export { ProductReference } from './product/ProductReference'
 
 // Legacy blocks (keep for backward compatibility - TODO: migrate away from these)
 export { Hello } from './Hello'

@@ -1,7 +1,7 @@
 'use server'
 
 import { unstable_cache } from 'next/cache'
-import { getProductTypesWithProducts, getNavCollections } from '@/lib/payload/products-navigation'
+import { getProductTypesWithProducts, getNavCollections, getAccessoriesForNav } from '@/lib/payload/products-navigation'
 import type { ProductsNavigation } from '@/lib/payload/products-navigation'
 
 /**
@@ -26,10 +26,11 @@ const getCachedProductsNavigation = unstable_cache(
   async (): Promise<ProductsNavigation> => {
     // Fetch more samples than we'll display so we can sort by featured-collection
     // priority before slicing. The final nav still shows DISPLAY_SAMPLES per category.
-    const [navData, collections, allCollections] = await Promise.all([
+    const [navData, collections, allCollections, accessories] = await Promise.all([
       getProductTypesWithProducts({ limit: 250, samplesPerType: 50 }),
       getNavCollections(20),       // featured only
       getNavCollections(50, false), // all
+      getAccessoriesForNav(8),
     ])
 
     // Build a map of collection handle → collectionPriority for featured collections only.
@@ -63,7 +64,7 @@ const getCachedProductsNavigation = unstable_cache(
       return { ...typeNav, products: sorted.slice(0, DISPLAY_SAMPLES) }
     })
 
-    return { ...navData, types: sortedTypes, collections, allCollections }
+    return { ...navData, types: sortedTypes, collections, allCollections, accessories }
   },
   ['products-navigation'], // Cache key
   {

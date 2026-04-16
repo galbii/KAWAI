@@ -24,11 +24,11 @@ export default async function AccessoriesPage() {
   return (
     <>
       <AccessoriesHero />
-      <div id="piano-builder">
-        <PianoBuilder pianos={pianos} accessories={accessories} />
-      </div>
       <div id="accessories-browse">
         <AccessoriesPageContent pianos={pianos} accessories={accessories} />
+      </div>
+      <div id="piano-builder">
+        <PianoBuilder pianos={pianos} accessories={accessories} />
       </div>
     </>
   )

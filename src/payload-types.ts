@@ -6101,6 +6101,10 @@ export interface MarketingRebateTableBlock {
      * e.g. "CN Series", "CA Series"
      */
     seriesName: string;
+    /**
+     * Optional: link a Collection to play its promo video in the series banner strip
+     */
+    collection?: (string | null) | Collection;
     models: {
       /**
        * Model number, e.g. "CN201"

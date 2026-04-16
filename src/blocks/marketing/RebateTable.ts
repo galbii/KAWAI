@@ -97,6 +97,15 @@ export const RebateTable: Block = {
           admin: { description: 'e.g. "CN Series", "CA Series"' },
         },
         {
+          name: 'collection',
+          type: 'relationship',
+          relationTo: 'collections',
+          hasMany: false,
+          admin: {
+            description: 'Optional: link a Collection to play its promo video in the series banner strip',
+          },
+        },
+        {
           name: 'models',
           type: 'array',
           required: true,

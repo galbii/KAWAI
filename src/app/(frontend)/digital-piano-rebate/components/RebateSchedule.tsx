@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
@@ -15,6 +15,8 @@ export type RebateModel = {
   productName?: string
   productImageUrl?: string
   productMsrp?: number
+  productCompareAtPrice?: number
+  productShopifyPrice?: number
   productCurrency?: string
   productVariantId?: string
   productAvailable?: boolean
@@ -24,6 +26,8 @@ export type RebateModel = {
 export type RebateSeries = {
   seriesName: string
   models: RebateModel[]
+  collectionYoutubeUrl?: string
+  collectionBannerImageUrl?: string
 }
 
 type Props = {
@@ -53,6 +57,11 @@ function maxRebate(series: RebateSeries): number {
   return Math.max(...series.models.map((m) => m.consumerRebate))
 }
 
+function extractYouTubeId(url: string): string | null {
+  const match = /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?/\s]{11})/.exec(url)
+  return match?.[1] ?? null
+}
+
 // ─── Price Display — animated strikethrough + sale price + % badge ────────────
 
 function PriceDisplay({
@@ -79,7 +88,7 @@ function PriceDisplay({
       {/* Original price with animated strikethrough */}
       <div className="relative inline-flex items-center">
         <span
-          className="text-kawai-charcoal/40 text-xs"
+          className="text-kawai-charcoal/40 text-sm"
           style={{ letterSpacing: '0.04em' }}
         >
           {formatPrice(msrp, currency)}
@@ -98,7 +107,7 @@ function PriceDisplay({
         initial={{ opacity: 0 }}
         animate={shouldShow ? { opacity: 1 } : { opacity: 0 }}
         transition={{ duration: 0.25, delay: delay + 0.4 }}
-        className="text-kawai-charcoal/25 text-[10px] leading-none select-none"
+        className="text-kawai-charcoal/25 text-xs leading-none select-none"
         aria-hidden="true"
       >
         →
@@ -109,7 +118,7 @@ function PriceDisplay({
         initial={{ opacity: 0, x: 4 }}
         animate={shouldShow ? { opacity: 1, x: 0 } : { opacity: 0, x: 4 }}
         transition={{ duration: 0.35, delay: delay + 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className="text-kawai-black font-semibold text-xs"
+        className="text-kawai-black font-semibold text-sm"
         style={{ letterSpacing: '0.03em' }}
       >
         {formatPrice(salePrice, currency)}
@@ -121,7 +130,7 @@ function PriceDisplay({
           initial={{ opacity: 0, scale: 0.75 }}
           animate={shouldShow ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.75 }}
           transition={{ duration: 0.3, delay: delay + 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="inline-flex items-center bg-kawai-red text-white text-[8px] tracking-[0.18em] uppercase font-semibold px-1.5 py-0.5 leading-none"
+          className="inline-flex items-center bg-kawai-red text-white text-[9px] tracking-[0.18em] uppercase font-semibold px-1.5 py-0.5 leading-none"
         >
           -{pctOff}%
         </motion.span>
@@ -152,7 +161,7 @@ function FilterBar({
               key={name}
               onClick={() => onSelect(name)}
               className={[
-                'relative px-5 py-2.5 text-[11px] tracking-[0.2em] uppercase font-medium whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red',
+                'relative px-5 py-2.5 text-xs tracking-[0.2em] uppercase font-medium whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red',
                 isActive
                   ? 'bg-kawai-black text-white'
                   : 'border border-kawai-neutral text-kawai-charcoal/45 hover:border-kawai-charcoal/30 hover:text-kawai-black',
@@ -169,7 +178,7 @@ function FilterBar({
   )
 }
 
-// ─── Sidebar Navigator ────────────────────────────────────────────────────────
+// ─── Sidebar Navigator — slim ─────────────────────────────────────────────────
 
 function SeriesSidebar({
   schedule,
@@ -180,25 +189,24 @@ function SeriesSidebar({
   selected: string
   onSelect: (name: string) => void
 }) {
-  const totalMax = Math.max(...schedule.map(maxRebate))
   const totalCount = schedule.reduce((acc, s) => acc + s.models.length, 0)
 
-  type SidebarItem = { name: string; topRebate: number; modelCount: number }
+  type SidebarItem = { name: string; modelCount: number }
 
   const items: SidebarItem[] = [
-    { name: ALL, topRebate: totalMax, modelCount: totalCount },
-    ...schedule.map((s) => ({ name: s.seriesName, topRebate: maxRebate(s), modelCount: s.models.length })),
+    { name: ALL, modelCount: totalCount },
+    ...schedule.map((s) => ({ name: s.seriesName, modelCount: s.models.length })),
   ]
 
   return (
     <nav className="bg-kawai-black" aria-label="Filter by series">
       {/* Header label */}
-      <div className="px-7 py-5 border-b border-white/[0.08]">
+      <div className="px-4 py-3 border-b border-white/[0.08]">
         <p
-          className="text-[9px] tracking-[0.3em] uppercase text-white/25 font-medium"
+          className="text-[10px] tracking-[0.3em] uppercase text-white/25 font-medium"
           style={{ fontFamily: 'var(--font-brand-sans)' }}
         >
-          Browse Series
+          Series
         </p>
       </div>
 
@@ -226,37 +234,28 @@ function SeriesSidebar({
             />
 
             {/* Content */}
-            <div className="flex-1 px-6 py-6">
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <span
-                  className={[
-                    'font-light transition-colors duration-200 leading-tight',
-                    isActive ? 'text-white' : 'text-white/40 group-hover:text-white/65',
-                  ].join(' ')}
-                  style={{
-                    fontFamily: 'var(--font-crimson), Georgia, serif',
-                    fontSize: '1.5rem',
-                    letterSpacing: '-0.02em',
-                  }}
-                >
-                  {item.name}
-                </span>
-                <ArrowRight
-                  className={[
-                    'h-3.5 w-3.5 flex-shrink-0 transition-all duration-300',
-                    isActive
-                      ? 'text-kawai-red opacity-100'
-                      : 'text-white/20 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5',
-                  ].join(' ')}
-                />
-              </div>
-
+            <div className="flex-1 px-4 py-4 flex items-center justify-between gap-2">
               <span
-                className="text-[9px] tracking-[0.2em] uppercase font-medium text-white/20"
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
+                className={[
+                  'font-light transition-colors duration-200 leading-tight truncate',
+                  isActive ? 'text-white' : 'text-white/40 group-hover:text-white/65',
+                ].join(' ')}
+                style={{
+                  fontFamily: 'var(--font-crimson), Georgia, serif',
+                  fontSize: '1.1rem',
+                  letterSpacing: '-0.01em',
+                }}
               >
-                {item.modelCount}&thinsp;{item.modelCount === 1 ? 'model' : 'models'}
+                {item.name}
               </span>
+              <ArrowRight
+                className={[
+                  'h-3 w-3 flex-shrink-0 transition-all duration-300',
+                  isActive
+                    ? 'text-kawai-red opacity-100'
+                    : 'text-white/20 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5',
+                ].join(' ')}
+              />
             </div>
           </motion.button>
         )
@@ -277,7 +276,8 @@ function SeriesBlock({
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, amount: isOnly ? 0 : 0.08 })
   const shouldShow = isOnly || inView
-  const topRebate = maxRebate(series)
+  const videoId = series.collectionYoutubeUrl ? extractYouTubeId(series.collectionYoutubeUrl) : null
+  const bannerImageUrl = !videoId ? (series.collectionBannerImageUrl ?? null) : null
 
   return (
     <div ref={ref}>
@@ -286,15 +286,49 @@ function SeriesBlock({
         initial={{ opacity: 0, y: -6 }}
         animate={shouldShow ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="flex items-center justify-between px-8 py-7 bg-kawai-black"
+        className={[
+          'relative flex items-end justify-between px-8 bg-kawai-black overflow-hidden',
+          (videoId || bannerImageUrl) ? 'min-h-[280px] pb-8 pt-8' : 'py-7',
+        ].join(' ')}
       >
-        <div className="flex items-center gap-5">
+        {/* Background video (when collection is linked) */}
+        {videoId && (
+          <>
+            <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+              <iframe
+                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&controls=0&playlist=${videoId}&playsinline=1&rel=0&disablekb=1&iv_load_policy=3`}
+                allow="autoplay; encrypted-media"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                style={{ width: '100vw', height: 'calc(100vw * 9 / 16)', minHeight: '300%' }}
+                title=""
+              />
+            </div>
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(30,27,22,0.70)', pointerEvents: 'none' }} aria-hidden="true" />
+          </>
+        )}
+
+        {/* Background image fallback (no video, but collection has media) */}
+        {bannerImageUrl && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={bannerImageUrl}
+              alt=""
+              aria-hidden="true"
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', pointerEvents: 'none' }}
+            />
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(30,27,22,0.65)', pointerEvents: 'none' }} aria-hidden="true" />
+          </>
+        )}
+
+        {/* Content — z-10 so it sits above the video */}
+        <div className="relative z-10 flex items-center gap-5">
           <span className="block w-px h-8 bg-kawai-red flex-shrink-0" />
           <span
             className="font-light text-white"
             style={{
               fontFamily: 'var(--font-crimson), Georgia, serif',
-              fontSize: 'clamp(1.5rem, 2.5vw, 2.25rem)',
+              fontSize: 'clamp(1.75rem, 2.5vw, 2.5rem)',
               letterSpacing: '-0.02em',
             }}
           >
@@ -302,19 +336,9 @@ function SeriesBlock({
           </span>
         </div>
 
-        <div className="flex items-center gap-5">
+        <div className="relative z-10 flex items-center gap-5">
           <span
-            className="text-kawai-red font-light"
-            style={{
-              fontFamily: 'var(--font-crimson), Georgia, serif',
-              fontSize: 'clamp(1.1rem, 1.75vw, 1.5rem)',
-              letterSpacing: '-0.015em',
-            }}
-          >
-            {formatSavings(topRebate)}
-          </span>
-          <span
-            className="hidden sm:block text-[9px] tracking-[0.25em] uppercase text-white/25 font-medium"
+            className="hidden sm:block text-[10px] tracking-[0.25em] uppercase text-white/25 font-medium"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             {series.models.length}&thinsp;{series.models.length === 1 ? 'model' : 'models'}
@@ -327,6 +351,17 @@ function SeriesBlock({
         {series.models.map((model, mIdx) => {
           const hasProduct = Boolean(model.productSlug)
           const isAvailable = model.productAvailable ?? true
+          const refPrice = model.productCompareAtPrice ?? model.productMsrp
+          const displayPrice =
+            model.productShopifyPrice != null
+              ? model.productShopifyPrice - model.consumerRebate
+              : refPrice != null
+                ? refPrice - model.consumerRebate
+                : null
+          const pctOff =
+            refPrice != null && displayPrice != null && refPrice > 0
+              ? Math.round(((refPrice - displayPrice) / refPrice) * 100)
+              : 0
 
           return (
             <motion.div
@@ -341,72 +376,69 @@ function SeriesBlock({
             >
               {/* ── MOBILE CARD (< lg) ── */}
               <div className="lg:hidden border border-kawai-neutral/60 bg-white overflow-hidden shadow-[0_2px_16px_rgba(0,0,0,0.05)]">
-                {/* Card top: image + info + inline savings */}
-                <div className="flex items-start gap-4 p-5">
-                  {model.productImageUrl && (
-                    <div className="flex-shrink-0 w-[76px] h-[76px] bg-kawai-pearl border border-kawai-neutral/40 flex items-center justify-center overflow-hidden">
-                      <Image
-                        src={model.productImageUrl}
-                        alt={model.productName ?? model.model}
-                        width={76}
-                        height={76}
-                        className="object-contain p-1.5"
-                      />
-                    </div>
-                  )}
+                {/* Image — full width on top */}
+                {model.productImageUrl && (
+                  <div className="w-full bg-white border-b border-kawai-neutral/40 flex items-center justify-center py-6 px-8">
+                    <Image
+                      src={model.productImageUrl}
+                      alt={model.productName ?? model.model}
+                      width={260}
+                      height={180}
+                      className="object-contain max-h-[180px] w-auto"
+                    />
+                  </div>
+                )}
 
-                  <div className="flex-1 min-w-0 pt-0.5">
-                    {/* Model name + savings on same row */}
-                    <div className="flex items-start justify-between gap-2">
-                      <span
-                        className="font-semibold text-kawai-black leading-tight"
-                        style={{ fontFamily: 'var(--font-brand-sans)', fontSize: '1.0625rem', letterSpacing: '0.06em' }}
-                      >
-                        {model.model}
-                      </span>
-                      <div className="flex-shrink-0 text-right">
-                        <p
-                          className="text-[8px] tracking-[0.35em] uppercase text-kawai-charcoal/35 leading-none mb-0.5"
-                          style={{ fontFamily: 'var(--font-brand-sans)' }}
-                        >
-                          Save
-                        </p>
-                        <p
-                          className="text-kawai-red font-light leading-none"
-                          style={{
-                            fontFamily: 'var(--font-crimson), Georgia, serif',
-                            fontSize: '1.875rem',
-                            letterSpacing: '-0.04em',
-                          }}
-                        >
-                          {formatSavings(model.consumerRebate)}
-                        </p>
-                      </div>
-                    </div>
-
-                    {model.productName && model.productName !== model.model && (
-                      <span
-                        className="block text-kawai-charcoal/55 text-sm mt-1 truncate"
-                        style={{ fontFamily: 'var(--font-brand-sans)' }}
-                      >
-                        {model.productName}
-                      </span>
-                    )}
+                {/* Info block */}
+                <div className="flex items-start justify-between gap-4 p-5">
+                  <div>
                     <span
-                      className="block text-kawai-charcoal/40 text-sm mt-0.5"
+                      className="font-semibold text-kawai-black leading-tight"
+                      style={{ fontFamily: 'var(--font-brand-sans)', fontSize: '1.25rem', letterSpacing: '0.04em' }}
+                    >
+                      {model.model}
+                    </span>
+                    <span
+                      className="block text-kawai-red text-xs font-semibold tracking-[0.1em] uppercase mt-0.5"
                       style={{ fontFamily: 'var(--font-brand-sans)' }}
                     >
-                      {model.finishes}
+                      Save {formatSavings(model.consumerRebate)}
                     </span>
-                    {model.productMsrp != null && (
-                      <div className="mt-1.5">
-                        <PriceDisplay
-                          msrp={model.productMsrp}
-                          rebate={model.consumerRebate}
-                          currency={model.productCurrency}
-                          shouldShow={shouldShow}
-                          delay={mIdx * 0.055 + 0.08}
-                        />
+                  </div>
+                  <div className="flex-shrink-0 text-right">
+                    <p
+                      className="text-[10px] tracking-[0.35em] uppercase text-kawai-charcoal/35 leading-none mb-1"
+                      style={{ fontFamily: 'var(--font-brand-sans)' }}
+                    >
+                      {refPrice != null ? 'Your Price' : 'Save'}
+                    </p>
+                    <div className="flex items-baseline justify-end gap-2">
+                      {refPrice != null && (
+                        <span
+                          className="text-kawai-charcoal/35 text-base line-through leading-none"
+                          style={{ fontFamily: 'var(--font-brand-sans)', letterSpacing: '0.04em' }}
+                        >
+                          {formatPrice(refPrice, model.productCurrency)}
+                        </span>
+                      )}
+                      <p
+                        className="text-kawai-red font-light leading-none"
+                        style={{
+                          fontFamily: 'var(--font-crimson), Georgia, serif',
+                          fontSize: '2.25rem',
+                          letterSpacing: '-0.04em',
+                        }}
+                      >
+                        {displayPrice != null
+                          ? formatPrice(displayPrice, model.productCurrency)
+                          : formatSavings(model.consumerRebate)}
+                      </p>
+                    </div>
+                    {pctOff > 0 && (
+                      <div className="flex justify-end mt-0.5">
+                        <span className="inline-flex items-center bg-kawai-red text-white text-[8px] tracking-[0.15em] uppercase font-semibold px-1.5 py-0.5 leading-none">
+                          -{pctOff}% off
+                        </span>
                       </div>
                     )}
                   </div>
@@ -421,128 +453,150 @@ function SeriesBlock({
                           variantId={model.productVariantId}
                           available={isAvailable}
                           size="sm"
-                          className="flex-1 bg-kawai-black hover:bg-kawai-charcoal text-white border-none text-[10px] tracking-[0.18em] uppercase font-semibold h-10 rounded-none"
+                          className="flex-1 bg-kawai-red hover:bg-kawai-red-700 text-white border-none text-xs tracking-[0.18em] uppercase font-semibold h-10 rounded-none"
                         />
                       )}
                       {model.productSlug && (
                         <Link
                           href={`/products/${model.productSlug}`}
-                          className="inline-flex items-center gap-1.5 text-[10px] tracking-[0.2em] uppercase font-medium text-kawai-charcoal/40 hover:text-kawai-red transition-colors duration-200 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red"
+                          className="inline-flex items-center gap-1.5 border border-kawai-black text-kawai-black hover:bg-kawai-black hover:text-white px-4 h-10 text-xs tracking-[0.18em] uppercase font-semibold transition-colors duration-200 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-black"
                           style={{ fontFamily: 'var(--font-brand-sans)' }}
                         >
                           View {model.model}
-                          <ArrowRight className="h-3 w-3" />
+                          <ArrowRight className="h-3.5 w-3.5" />
                         </Link>
                       )}
                     </>
                   ) : (
                     <Link
                       href="/find-a-dealer"
-                      className="inline-flex items-center gap-1.5 text-[10px] tracking-[0.2em] uppercase font-medium text-kawai-charcoal/55 hover:text-kawai-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red"
+                      className="inline-flex items-center gap-1.5 text-xs tracking-[0.2em] uppercase font-medium text-kawai-charcoal/55 hover:text-kawai-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red"
                       style={{ fontFamily: 'var(--font-brand-sans)' }}
                     >
                       Find a Local Dealer
-                      <ArrowRight className="h-3 w-3" />
+                      <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
                   )}
                 </div>
               </div>
 
-              {/* ── DESKTOP ROW (lg+) — original layout unchanged ── */}
+              {/* ── DESKTOP ROW (lg+) ── */}
               <div
-                className="group relative hidden lg:flex items-center justify-between px-8 border-t border-kawai-neutral/60 hover:bg-kawai-red/[0.025] transition-colors duration-200 cursor-default"
-                style={{ paddingTop: hasProduct ? '1.5rem' : '2rem', paddingBottom: hasProduct ? '1.5rem' : '2rem' }}
+                className="group relative hidden lg:flex items-stretch border-t border-kawai-neutral/60 hover:bg-kawai-red/[0.025] transition-colors duration-200 cursor-default min-h-[200px]"
               >
                 {/* Red left border on hover */}
                 <div
-                  className="absolute left-0 top-0 bottom-0 w-[3px] bg-kawai-red origin-center scale-y-0 group-hover:scale-y-100 transition-transform duration-300"
+                  className="absolute left-0 top-0 bottom-0 w-[3px] bg-kawai-red origin-center scale-y-0 group-hover:scale-y-100 transition-transform duration-300 z-10"
                   aria-hidden="true"
                 />
 
-                {/* Left: image + model info */}
-                <div className="flex items-center gap-5 min-w-0 pr-8">
-                  {model.productImageUrl && (
-                    <div className="flex-shrink-0 w-[90px] h-[90px] bg-kawai-pearl items-center justify-center overflow-hidden border border-kawai-neutral/40 transition-all duration-300 group-hover:border-kawai-neutral/80 flex">
-                      <Image
-                        src={model.productImageUrl}
-                        alt={model.productName ?? model.model}
-                        width={90}
-                        height={90}
-                        className="object-contain p-2 transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
-                  )}
+                {/* Left: large product image — flush, full height */}
+                {model.productImageUrl ? (
+                  <div className="flex-shrink-0 w-[240px] self-stretch bg-white flex items-center justify-center overflow-hidden border-r border-kawai-neutral/40 transition-colors duration-300 group-hover:border-kawai-neutral/70">
+                    <Image
+                      src={model.productImageUrl}
+                      alt={model.productName ?? model.model}
+                      width={240}
+                      height={200}
+                      className="object-contain p-6 w-full h-full transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex-shrink-0 w-6" />
+                )}
 
-                  <div className="flex flex-col gap-1 min-w-0">
+                {/* Middle: model info */}
+                <div className="flex-1 flex flex-col justify-center gap-1.5 px-8 py-6 min-w-0">
+                  <div className="flex items-center gap-3 flex-wrap">
                     <span
-                      className="font-semibold text-kawai-black flex-shrink-0"
-                      style={{ fontFamily: 'var(--font-brand-sans)', fontSize: '1.0625rem', letterSpacing: '0.06em' }}
+                      className="font-semibold text-kawai-black"
+                      style={{ fontFamily: 'var(--font-brand-sans)', fontSize: '1.5rem', letterSpacing: '0.04em' }}
                     >
                       {model.model}
                     </span>
-                    {model.productName && model.productName !== model.model && (
-                      <span className="text-kawai-charcoal/55 text-sm truncate" style={{ fontFamily: 'var(--font-brand-sans)' }}>
-                        {model.productName}
-                      </span>
-                    )}
-                    <span className="text-kawai-charcoal/40 text-sm truncate" style={{ fontFamily: 'var(--font-brand-sans)' }}>
-                      {model.finishes}
+                    <span
+                      className="inline-flex items-center bg-kawai-red/10 text-kawai-red text-[10px] tracking-[0.15em] uppercase font-semibold px-2 py-1 leading-none"
+                      style={{ fontFamily: 'var(--font-brand-sans)' }}
+                    >
+                      Save {formatSavings(model.consumerRebate)}
                     </span>
-                    {model.productMsrp != null && (
-                      <div className="mt-0.5">
-                        <PriceDisplay
-                          msrp={model.productMsrp}
-                          rebate={model.consumerRebate}
-                          currency={model.productCurrency}
-                          shouldShow={shouldShow}
-                          delay={mIdx * 0.055 + 0.08}
-                        />
-                      </div>
-                    )}
                   </div>
+                  {model.productName && model.productName !== model.model && (
+                    <span className="text-kawai-charcoal/55 text-base" style={{ fontFamily: 'var(--font-brand-sans)' }}>
+                      {model.productName}
+                    </span>
+                  )}
+                  <span className="text-kawai-charcoal/40 text-sm" style={{ fontFamily: 'var(--font-brand-sans)' }}>
+                    {model.finishes}
+                  </span>
                 </div>
 
-                {/* Right: save + amount + actions */}
-                <div className="flex-shrink-0 flex flex-col items-end gap-3">
+                {/* Right: price + actions */}
+                <div className="flex-shrink-0 flex flex-col items-end justify-center gap-3 px-8 py-6">
                   <div className="text-right">
-                    <p className="text-[9px] tracking-[0.35em] uppercase text-kawai-charcoal/30 mb-1 leading-none" style={{ fontFamily: 'var(--font-brand-sans)' }}>
-                      save
+                    <p className="text-[11px] tracking-[0.35em] uppercase text-kawai-charcoal/30 mb-1 leading-none" style={{ fontFamily: 'var(--font-brand-sans)' }}>
+                      {refPrice != null ? 'your price' : 'save'}
                     </p>
+                    <div className="flex items-baseline justify-end gap-3">
+                      {refPrice != null && (
+                        <span
+                          className="text-kawai-charcoal/30 text-xl line-through leading-none"
+                          style={{ fontFamily: 'var(--font-brand-sans)', letterSpacing: '0.04em' }}
+                        >
+                          {formatPrice(refPrice, model.productCurrency)}
+                        </span>
+                      )}
+                      <p
+                        className="text-kawai-red font-light leading-none"
+                        style={{ fontFamily: 'var(--font-crimson), Georgia, serif', fontSize: 'clamp(2.5rem, 4.5vw, 5.5rem)', letterSpacing: '-0.04em' }}
+                      >
+                        {displayPrice != null
+                          ? formatPrice(displayPrice, model.productCurrency)
+                          : formatSavings(model.consumerRebate)}
+                      </p>
+                    </div>
+                    {pctOff > 0 && (
+                      <div className="flex justify-end mt-1.5">
+                        <span className="inline-flex items-center bg-kawai-red text-white text-[9px] tracking-[0.15em] uppercase font-semibold px-1.5 py-0.5 leading-none">
+                          -{pctOff}%
+                        </span>
+                      </div>
+                    )}
                     <p
-                      className="text-kawai-red font-light leading-none"
-                      style={{ fontFamily: 'var(--font-crimson), Georgia, serif', fontSize: 'clamp(2.5rem, 4.5vw, 5.5rem)', letterSpacing: '-0.04em' }}
+                      className="text-kawai-charcoal/25 text-[11px] mt-2 leading-none italic"
+                      style={{ fontFamily: 'var(--font-brand-sans)' }}
                     >
-                      {formatSavings(model.consumerRebate)}
+                      Rebate applied at checkout
                     </p>
                   </div>
 
                   {hasProduct ? (
-                    <div className="flex flex-col items-end gap-2">
+                    <div className="flex flex-row items-center gap-2">
                       {model.productVariantId && (
                         <AddToCartButton
                           variantId={model.productVariantId}
                           available={isAvailable}
                           size="sm"
-                          className="bg-kawai-black hover:bg-kawai-charcoal text-white border-none text-[10px] tracking-[0.18em] uppercase font-semibold px-5 h-9 rounded-none"
+                          className="bg-kawai-red hover:bg-kawai-red-700 text-white border-none text-xs tracking-[0.18em] uppercase font-semibold px-5 h-9 rounded-none"
                         />
                       )}
                       <Link
                         href={`/products/${model.productSlug}`}
-                        className="inline-flex items-center gap-1.5 text-[10px] tracking-[0.2em] uppercase font-medium text-kawai-charcoal/40 hover:text-kawai-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red"
+                        className="inline-flex items-center gap-1.5 border border-kawai-black text-kawai-black hover:bg-kawai-black hover:text-white px-5 h-9 text-xs tracking-[0.18em] uppercase font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-black"
                         style={{ fontFamily: 'var(--font-brand-sans)' }}
                       >
                         View {model.model}
-                        <ArrowRight className="h-3 w-3" />
+                        <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
                     </div>
                   ) : (
                     <Link
                       href="/find-a-dealer"
-                      className="inline-flex items-center gap-1.5 text-[10px] tracking-[0.2em] uppercase font-medium text-kawai-charcoal/55 hover:text-kawai-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red"
+                      className="inline-flex items-center gap-1.5 text-xs tracking-[0.2em] uppercase font-medium text-kawai-charcoal/55 hover:text-kawai-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red"
                       style={{ fontFamily: 'var(--font-brand-sans)' }}
                     >
                       Find a Local Dealer
-                      <ArrowRight className="h-3 w-3" />
+                      <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
                   )}
                 </div>
@@ -569,7 +623,7 @@ function SeriesBlock({
             className="pointer-events-none absolute inset-0 -translate-x-full skew-x-[-20deg] bg-white/10 transition-transform duration-500 group-hover:translate-x-[120%]"
             aria-hidden="true"
           />
-          <span className="relative text-[11px] tracking-[0.22em] uppercase font-semibold text-white">
+          <span className="relative text-xs tracking-[0.22em] uppercase font-semibold text-white">
             Explore {series.seriesName}
           </span>
           <ArrowRight className="relative h-4 w-4 text-white transition-transform duration-300 group-hover:translate-x-0.5" />
@@ -581,7 +635,7 @@ function SeriesBlock({
           className="group relative inline-flex items-center gap-3 overflow-hidden border border-kawai-black/20 px-7 py-4 transition-all duration-300 hover:border-kawai-black hover:bg-kawai-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-black focus-visible:ring-offset-2"
           style={{ fontFamily: 'var(--font-brand-sans)' }}
         >
-          <span className="text-[11px] tracking-[0.22em] uppercase font-medium text-kawai-black/70 transition-colors duration-300 group-hover:text-white">
+          <span className="text-xs tracking-[0.22em] uppercase font-medium text-kawai-black/70 transition-colors duration-300 group-hover:text-white">
             View All Pianos
           </span>
           <ArrowRight className="h-4 w-4 text-kawai-black/40 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-white" />
@@ -600,28 +654,24 @@ export function RebateSchedule({
   deadline = 'June 30, 2026',
 }: Props) {
   const [selected, setSelected] = useState<string>(ALL)
-  const [filterFixed, setFilterFixed] = useState(false)
   const headerRef = useRef(null)
-  const sentinelRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
   const headerInView = useInView(headerRef, { once: true, amount: 0.4 })
 
-  // Fix the filter bar below the site header once the sentinel scrolls out of view.
-  // CSS sticky doesn't work here because the fixed site header sits above top:0.
-  // Using IntersectionObserver + position:fixed with --header-bottom is reliable.
-  useEffect(() => {
-    const sentinel = sentinelRef.current
-    if (!sentinel) return
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry == null) return
-        // Only fix when scrolled PAST (sentinel above viewport), not when below viewport
-        setFilterFixed(!entry.isIntersecting && entry.boundingClientRect.top < 0)
-      },
-      { threshold: 0 }
-    )
-    observer.observe(sentinel)
-    return () => observer.disconnect()
-  }, [])
+  function handleSelect(name: string) {
+    setSelected(name)
+    // Scroll so the first series row is just below the sticky filter bar
+    if (contentRef.current) {
+      const headerH = parseInt(
+        getComputedStyle(document.documentElement).getPropertyValue('--header-bottom').trim() || '70',
+      )
+      const filterBarH = 56 // py-3 (12px×2) + pills (~32px)
+      const rect = contentRef.current.getBoundingClientRect()
+      if (rect.top < headerH + filterBarH) {
+        window.scrollTo({ top: window.scrollY + rect.top - headerH - filterBarH - 8, behavior: 'smooth' })
+      }
+    }
+  }
 
   const filtered = selected === ALL ? schedule : schedule.filter((s) => s.seriesName === selected)
   const activeSeries = filtered[0]
@@ -638,7 +688,7 @@ export function RebateSchedule({
 
   return (
     <section id="schedule" className="bg-white py-16 lg:py-24">
-      <div className="container mx-auto px-4 lg:px-8 max-w-screen-xl">
+      <div className="container mx-auto px-4 lg:px-8 max-w-screen-2xl">
 
         {/* ── Section header ── */}
         <motion.div
@@ -651,7 +701,7 @@ export function RebateSchedule({
           <div className="flex items-center gap-3 mb-8">
             <span className="block w-8 h-px bg-kawai-red" />
             <span
-              className="text-[11px] tracking-[0.3em] uppercase text-kawai-charcoal/40 font-medium"
+              className="text-xs tracking-[0.3em] uppercase text-kawai-charcoal/40 font-medium"
               style={{ fontFamily: 'var(--font-brand-sans)' }}
             >
               {eyebrow}
@@ -677,36 +727,26 @@ export function RebateSchedule({
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.25 }}
               className="text-kawai-charcoal/45"
-              style={{ fontFamily: 'var(--font-brand-sans)', fontSize: '1rem' }}
+              style={{ fontFamily: 'var(--font-brand-sans)', fontSize: '1.125rem' }}
             >
               {subtitle}
             </motion.p>
           </AnimatePresence>
+
+          <p
+            className="mt-3 text-kawai-charcoal/35 text-sm italic"
+            style={{ fontFamily: 'var(--font-brand-sans)' }}
+          >
+            * Rebates are applied at checkout at participating authorized Kawai dealers.
+          </p>
         </motion.div>
 
-        {/* ── Mobile filter strip ── */}
-        {/* Sentinel: when this scrolls above the viewport the fixed bar appears */}
-        <div ref={sentinelRef} className="lg:hidden h-0" aria-hidden="true" />
-
-        {/* Fixed copy — sits just below the site header once sentinel is out of view */}
-        <AnimatePresence>
-          {filterFixed && (
-            <motion.div
-              initial={{ y: -8, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -8, opacity: 0 }}
-              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-              className="lg:hidden fixed left-0 right-0 z-50 px-4 py-3 bg-white/95 backdrop-blur-sm border-b border-kawai-neutral/50 shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
-              style={{ top: 'var(--header-bottom, 70px)' }}
-            >
-              <FilterBar series={schedule} selected={selected} onSelect={setSelected} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* In-flow copy — always rendered to hold space; invisible when fixed bar is active */}
-        <div className={`lg:hidden py-3 mb-6 transition-opacity duration-150 ${filterFixed ? 'invisible' : ''}`}>
-          <FilterBar series={schedule} selected={selected} onSelect={setSelected} />
+        {/* ── Mobile filter strip — sticky below the fixed header ── */}
+        <div
+          className="lg:hidden sticky z-40 py-3 bg-white border-b border-kawai-neutral/50 shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
+          style={{ top: 'var(--header-bottom, 70px)' }}
+        >
+          <FilterBar series={schedule} selected={selected} onSelect={handleSelect} />
         </div>
 
         {/* ── Sidebar + content layout ── */}
@@ -714,15 +754,15 @@ export function RebateSchedule({
           initial={{ opacity: 0 }}
           animate={headerInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.5, delay: 0.15 }}
-          className="lg:grid lg:grid-cols-[320px_1fr] lg:gap-0 lg:items-start"
+          className="mt-4 lg:mt-0 lg:grid lg:grid-cols-[160px_1fr] lg:gap-0 lg:items-start"
         >
           {/* ── Sidebar (desktop) ── */}
-          <div className="hidden lg:block lg:sticky lg:self-start" style={{ top: '6rem' }}>
-            <SeriesSidebar schedule={schedule} selected={selected} onSelect={setSelected} />
+          <div className="hidden lg:block lg:sticky lg:self-start" style={{ top: 'calc(var(--header-bottom, 70px) + 1.5rem)' }}>
+            <SeriesSidebar schedule={schedule} selected={selected} onSelect={handleSelect} />
           </div>
 
           {/* ── Content ── */}
-          <div className="lg:pl-10">
+          <div ref={contentRef} className="lg:pl-8">
             {/* Column hints */}
             <AnimatePresence>
               {selected !== ALL && (
@@ -734,13 +774,13 @@ export function RebateSchedule({
                   className="flex justify-between px-8 mb-3"
                 >
                   <span
-                    className="text-[10px] tracking-[0.3em] uppercase text-kawai-charcoal/25 font-medium"
+                    className="text-xs tracking-[0.3em] uppercase text-kawai-charcoal/25 font-medium"
                     style={{ fontFamily: 'var(--font-brand-sans)' }}
                   >
                     Model
                   </span>
                   <span
-                    className="text-[10px] tracking-[0.3em] uppercase text-kawai-charcoal/25 font-medium"
+                    className="text-xs tracking-[0.3em] uppercase text-kawai-charcoal/25 font-medium"
                     style={{ fontFamily: 'var(--font-brand-sans)' }}
                   >
                     You Save

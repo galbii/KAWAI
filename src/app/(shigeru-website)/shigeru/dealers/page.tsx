@@ -1,320 +1,222 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { unstable_cache } from 'next/cache'
+import { getPayloadClient } from '@/lib/payload/queries'
+import ShigeruDealerGrid, { type ShigeruDealerDoc } from '../_components/ShigeruDealerGrid'
+
+export const revalidate = 3600
 
 export const metadata: Metadata = {
-  title: 'Find a Shigeru Kawai Dealer | 45 Authorized Dealers Across North America',
+  title: 'Authorized Shigeru Kawai Dealers | Find a Dealer Near You',
   description:
-    "Find an authorized Shigeru Kawai dealer near you. 45 dealers across the United States and Canada ready to introduce you to the world's finest handcrafted grand pianos.",
+    'Find an authorized Shigeru Kawai dealer near you across the United States and Canada. Experience the SK Series grand pianos in person at a location near you.',
 }
 
-interface Dealer {
-  name: string
-  city: string
-  state: string
-  country: 'US' | 'Canada'
+// Canadian province codes — used to separate US from Canada
+const CANADIAN_PROVINCES = new Set([
+  'BC', 'ON', 'QC', 'AB', 'MB', 'SK', 'NS', 'NB', 'PE', 'NL', 'NT', 'YT', 'NU',
+])
+
+function isCanada(dealer: ShigeruDealerDoc): boolean {
+  const state = dealer.address?.state?.trim().toUpperCase() ?? ''
+  const country = dealer.address?.country?.toLowerCase() ?? ''
+  return CANADIAN_PROVINCES.has(state) || country.includes('canada')
 }
 
-const dealers: Dealer[] = [
-  { name: 'Alamo Music', city: 'Austin', state: 'TX', country: 'US' },
-  { name: 'Alamo Music Center', city: 'San Antonio', state: 'TX', country: 'US' },
-  { name: 'Artistic Pianos', city: 'San Marcos', state: 'CA', country: 'US' },
-  { name: 'Atlantic Music Center', city: 'Melbourne', state: 'FL', country: 'US' },
-  { name: 'Atlantic Music Center', city: 'Orlando', state: 'FL', country: 'US' },
-  { name: 'AZ Piano', city: 'Phoenix', state: 'AZ', country: 'US' },
-  { name: 'Boulder Piano Gallery', city: 'Boulder', state: 'CO', country: 'US' },
-  { name: 'Brock Family Music', city: 'Iowa City', state: 'IA', country: 'US' },
-  { name: "Cordogan's Pianoland", city: 'Geneva', state: 'IL', country: 'US' },
-  { name: 'Ellis Piano', city: 'Birmingham', state: 'AL', country: 'US' },
-  { name: 'England Piano & Organ', city: 'Atlanta', state: 'GA', country: 'US' },
-  { name: 'Family Music Center', city: 'Henderson', state: 'NV', country: 'US' },
-  { name: "Farley's House of Pianos", city: 'Madison', state: 'WI', country: 'US' },
-  { name: 'Freeburg Pianos', city: 'Hendersonville', state: 'NC', country: 'US' },
-  { name: 'Gilliam Music', city: 'Norman', state: 'OK', country: 'US' },
-  { name: 'Hartland Piano', city: 'Hartland', state: 'WI', country: 'US' },
-  { name: 'Henderson Music Company', city: 'Cincinnati', state: 'OH', country: 'US' },
-  { name: 'Hilbert Piano', city: 'Bristol', state: 'VT', country: 'US' },
-  { name: 'Kawai Piano Gallery', city: 'Houston', state: 'TX', country: 'US' },
-  { name: 'Kawai Piano Gallery', city: 'Plano', state: 'TX', country: 'US' },
-  { name: 'Kawai Piano Gallery by Herrin', city: 'Bluffton', state: 'SC', country: 'US' },
-  { name: 'Kawai Piano Gallery of Michigan', city: 'Bloomfield Hills', state: 'MI', country: 'US' },
-  { name: 'Kawai Piano Gallery of NY', city: 'Ozone Park', state: 'NY', country: 'US' },
-  { name: 'Kawai Piano Gallery of Ohio', city: 'Beachwood', state: 'OH', country: 'US' },
-  { name: 'Kawai Piano Gallery of Ohio', city: 'Columbus', state: 'OH', country: 'US' },
-  { name: 'Kawai Piano Gallery of Sacramento', city: 'Sacramento', state: 'CA', country: 'US' },
-  { name: "Kim's Piano", city: 'Stanton', state: 'CA', country: 'US' },
-  { name: 'Lane Music', city: 'Germantown', state: 'TN', country: 'US' },
-  { name: 'Lane Music', city: 'Brentwood', state: 'TN', country: 'US' },
-  { name: 'Lindeblad Piano Restoration', city: 'Pine Brook', state: 'NJ', country: 'US' },
-  { name: 'Maus Music', city: 'Raleigh', state: 'NC', country: 'US' },
-  { name: 'North American Headquarters', city: 'Rancho Dominguez', state: 'CA', country: 'US' },
-  { name: 'Piano Solutions', city: 'Carmel', state: 'IN', country: 'US' },
-  { name: 'Portland Piano Company', city: 'Portland', state: 'OR', country: 'US' },
-  { name: "Roger's Piano", city: 'Natick', state: 'MA', country: 'US' },
-  { name: 'San Mateo Piano', city: 'San Mateo', state: 'CA', country: 'US' },
-  { name: 'San Ramon Piano', city: 'Danville', state: 'CA', country: 'US' },
-  { name: 'Summerhays Piano Source', city: 'Murray', state: 'UT', country: 'US' },
-  { name: 'The Piano Company', city: 'Leesburg', state: 'VA', country: 'US' },
-  { name: 'West Michigan Piano', city: 'Kentwood', state: 'MI', country: 'US' },
-  // Canada
-  { name: 'Loewen Piano House', city: 'Richmond', state: 'BC', country: 'Canada' },
-  { name: 'Merriam Music', city: 'Oakville', state: 'ON', country: 'Canada' },
-  { name: 'Piano Vertu', city: 'Montreal', state: 'QC', country: 'Canada' },
-  { name: 'Standard Piano', city: 'Calgary', state: 'AB', country: 'Canada' },
-]
+// Named return type — avoids the unstable_cache inline-type parse error
+type DealerList = ShigeruDealerDoc[]
 
-const usDealers = dealers
-  .filter((d) => d.country === 'US' && d.name !== 'North American Headquarters')
-  .sort((a, b) => a.name.localeCompare(b.name))
+const getShigeruDealers = unstable_cache(
+  async (): Promise<DealerList> => {
+    const payload = await getPayloadClient()
+    const { docs } = await payload.find({
+      collection: 'dealers',
+      where: {
+        and: [
+          { isActive: { equals: true } },
+          { shigeruKawaiDealer: { equals: true } },
+        ],
+      },
+      select: {
+        dealerName: true,
+        isFeatured: true,
+        description: true,
+        address: true,
+        contactInfo: true,
+        coordinates: true,
+      },
+      sort: 'dealerName',
+      depth: 0,
+      limit: 300,
+    })
+    return docs as DealerList
+  },
+  ['shigeru-dealers'],
+  { tags: ['dealers', 'shigeru-dealers'], revalidate: 3600 },
+)
 
-const canadaDealers = dealers
-  .filter((d) => d.country === 'Canada')
-  .sort((a, b) => a.name.localeCompare(b.name))
+export default async function ShigeruDealersPage() {
+  const dealers = await getShigeruDealers()
 
-export default function DealersPage() {
+  const usDealers = dealers
+    .filter((d) => !isCanada(d))
+    .sort((a, b) => a.dealerName.localeCompare(b.dealerName))
+
+  const canadaDealers = dealers
+    .filter(isCanada)
+    .sort((a, b) => a.dealerName.localeCompare(b.dealerName))
+
+  const totalCount = dealers.length
+
   return (
-    <div className="bg-[#0a0a0a]">
+    <div className="min-h-screen bg-[#0a0a0a]">
 
-      {/* ── HERO ─────────────────────────────────────────────── */}
-      <section className="relative min-h-[60vh] flex flex-col items-center justify-center px-6 overflow-hidden pt-24">
+      {/* ── Hero ── */}
+      <section className="relative px-6 pt-36 pb-20 overflow-hidden">
+        {/* Atmospheric glow */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              'radial-gradient(ellipse 70% 50% at 50% 40%, rgba(213,199,140,0.06) 0%, transparent 70%)',
+              'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(213,199,140,0.055) 0%, transparent 70%)',
           }}
         />
-        <div className="relative z-10 flex flex-col items-center text-center max-w-3xl mx-auto">
+
+        <div className="relative z-10 max-w-6xl mx-auto">
+          {/* Eyebrow */}
           <p
-            className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase mb-10"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
+            className="text-kawai-gold/70 text-[10px] tracking-[0.45em] uppercase mb-6"
+            style={{ fontFamily: 'var(--font-oswald)' }}
           >
-            Authorized Dealers
+            Shigeru Kawai · North America
           </p>
+
+          {/* Title */}
           <h1
-            className="text-white font-light italic leading-[0.9] mb-8"
+            className="text-white font-bold uppercase leading-none mb-6"
             style={{
-              fontFamily: 'var(--font-brand-luxury)',
-              fontSize: 'clamp(2.8rem, 7vw, 5.5rem)',
+              fontFamily: 'var(--font-oswald)',
+              fontSize: 'clamp(2.6rem, 6vw, 5rem)',
+              letterSpacing: '0.02em',
             }}
           >
-            Find a Shigeru Kawai Dealer
+            Authorized
+            <br />
+            <span className="text-kawai-gold">Dealers</span>
           </h1>
-          <div className="flex items-center justify-center gap-5 mb-8">
-            <span className="block h-px w-16 bg-kawai-gold opacity-30" />
-            <span
-              className="text-kawai-gold text-[9px] tracking-[0.4em] uppercase opacity-60"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
-            >
-              North America
-            </span>
-            <span className="block h-px w-16 bg-kawai-gold opacity-30" />
-          </div>
-          <p
-            className="text-white/35 text-sm tracking-wide"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
-          >
-            45 authorized dealers across North America
-          </p>
-        </div>
-      </section>
 
-      {/* ── INTRO ────────────────────────────────────────────── */}
-      <section className="bg-kawai-pearl px-6 py-28">
-        <div className="max-w-3xl mx-auto text-center">
-          <p
-            className="text-kawai-charcoal/35 text-[10px] tracking-[0.45em] uppercase mb-8"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
-          >
-            The Experience
-          </p>
-          <span className="block w-8 h-px bg-kawai-gold/40 mx-auto mb-10" />
-          <p
-            className="text-kawai-black font-light italic leading-relaxed mb-8"
-            style={{
-              fontFamily: 'var(--font-brand-luxury)',
-              fontSize: 'clamp(1.1rem, 2vw, 1.45rem)',
-            }}
-          >
-            Experiencing a Shigeru Kawai in person is essential. The touch, the tone, the
-            resonance — these are dimensions that no description can fully convey. Visit an
-            authorized dealer and allow a Shigeru Kawai to speak for itself.
-          </p>
-          <span className="block w-8 h-px bg-kawai-gold/40 mx-auto mb-10" />
-          <p
-            className="text-kawai-charcoal/55 text-sm leading-relaxed"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
-          >
-            Every new Shigeru Kawai owner also receives an extraordinary in-home visit from an
-            elite Master Piano Artisan within the first two years — complete concert-level
-            regulation, voicing, and tuning, offered as a gift from Shigeru Kawai himself.
-          </p>
-        </div>
-      </section>
-
-      {/* ── US DEALERS ───────────────────────────────────────── */}
-      <section className="bg-[#0a0a0a] px-6 py-28">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-end gap-8 mb-16">
-            <div>
-              <p
-                className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase mb-3"
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
-              >
-                United States
-              </p>
-              <h2
-                className="text-white font-light italic leading-none"
-                style={{
-                  fontFamily: 'var(--font-brand-luxury)',
-                  fontSize: 'clamp(1.8rem, 4vw, 3rem)',
-                }}
-              >
-                United States — {usDealers.length} Dealers
-              </h2>
-            </div>
-            <span className="hidden md:block flex-1 h-px bg-white/5 mb-1" />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-white/[0.04]">
-            {usDealers.map((dealer) => (
-              <div
-                key={`${dealer.name}-${dealer.city}-${dealer.state}`}
-                className="bg-[#0a0a0a] hover:bg-[#0f0d09] px-7 py-6 transition-colors duration-300"
-              >
-                <p
-                  className="text-white/80 font-light leading-snug mb-2"
-                  style={{
-                    fontFamily: 'var(--font-brand-luxury)',
-                    fontSize: '1.05rem',
-                  }}
+          {/* Divider + stats row */}
+          <div className="flex flex-wrap items-center gap-6 mt-10">
+            <span className="block h-px w-12 bg-kawai-gold/30" aria-hidden />
+            <div className="flex flex-wrap gap-8">
+              <div>
+                <span
+                  className="block text-white font-bold text-2xl leading-none mb-0.5"
+                  style={{ fontFamily: 'var(--font-oswald)' }}
                 >
-                  {dealer.name}
-                </p>
-                <p
-                  className="text-kawai-gold text-[9px] tracking-[0.3em] uppercase"
-                  style={{ fontFamily: 'var(--font-brand-sans)' }}
+                  {totalCount}
+                </span>
+                <span
+                  className="text-white/30 text-[9px] tracking-[0.3em] uppercase"
+                  style={{ fontFamily: 'var(--font-oswald)' }}
                 >
-                  {dealer.city}, {dealer.state}
-                </p>
+                  Authorized Dealers
+                </span>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── CANADA DEALERS ───────────────────────────────────── */}
-      <section className="bg-kawai-pearl px-6 py-28">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-end gap-8 mb-16">
-            <div>
-              <p
-                className="text-kawai-charcoal/35 text-[10px] tracking-[0.45em] uppercase mb-3"
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
-              >
-                Canada
-              </p>
-              <h2
-                className="text-kawai-black font-light italic leading-none"
-                style={{
-                  fontFamily: 'var(--font-brand-luxury)',
-                  fontSize: 'clamp(1.8rem, 4vw, 3rem)',
-                }}
-              >
-                Canada — {canadaDealers.length} Dealers
-              </h2>
-            </div>
-            <span className="hidden md:block flex-1 h-px bg-kawai-neutral mb-1" />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-kawai-neutral/40">
-            {canadaDealers.map((dealer) => (
-              <div
-                key={`${dealer.name}-${dealer.city}`}
-                className="bg-kawai-pearl px-7 py-8 transition-colors duration-300 hover:bg-[#f5f0e8]"
-              >
-                <p
-                  className="text-kawai-black font-light leading-snug mb-2"
-                  style={{
-                    fontFamily: 'var(--font-brand-luxury)',
-                    fontSize: '1.05rem',
-                  }}
+              <div>
+                <span
+                  className="block text-white font-bold text-2xl leading-none mb-0.5"
+                  style={{ fontFamily: 'var(--font-oswald)' }}
                 >
-                  {dealer.name}
-                </p>
-                <p
-                  className="text-kawai-gold text-[9px] tracking-[0.3em] uppercase"
-                  style={{ fontFamily: 'var(--font-brand-sans)' }}
+                  {usDealers.length}
+                </span>
+                <span
+                  className="text-white/30 text-[9px] tracking-[0.3em] uppercase"
+                  style={{ fontFamily: 'var(--font-oswald)' }}
                 >
-                  {dealer.city}, {dealer.state}
-                </p>
+                  United States
+                </span>
               </div>
-            ))}
+              <div>
+                <span
+                  className="block text-white font-bold text-2xl leading-none mb-0.5"
+                  style={{ fontFamily: 'var(--font-oswald)' }}
+                >
+                  {canadaDealers.length}
+                </span>
+                <span
+                  className="text-white/30 text-[9px] tracking-[0.3em] uppercase"
+                  style={{ fontFamily: 'var(--font-oswald)' }}
+                >
+                  Canada
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── HEADQUARTERS CALLOUT ─────────────────────────────── */}
-      <section className="bg-[#0a0a0a] px-6 py-24">
-        <div className="max-w-3xl mx-auto">
-          <div className="border border-kawai-gold/30 p-10 md:p-14 text-center">
-            {/* Gold ornament */}
-            <span className="block w-8 h-px bg-kawai-gold/50 mx-auto mb-8" />
+      {/* ── Dealer grid + map (client component handles both) ── */}
+      <ShigeruDealerGrid usDealers={usDealers} canadaDealers={canadaDealers} />
+
+      {/* ── Headquarters ── */}
+      <section className="px-6 pb-24 border-t border-white/[0.04] pt-20">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between mb-8">
             <p
-              className="text-kawai-gold text-[9px] tracking-[0.45em] uppercase mb-6"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
+              className="text-white/20 text-[10px] tracking-[0.4em] uppercase"
+              style={{ fontFamily: 'var(--font-oswald)' }}
             >
               North American Headquarters
             </p>
-            <h3
-              className="text-white font-light italic leading-tight mb-6"
-              style={{
-                fontFamily: 'var(--font-brand-luxury)',
-                fontSize: 'clamp(1.4rem, 3vw, 2rem)',
-              }}
-            >
-              Kawai America Corporation
-            </h3>
-            <p
-              className="text-white/45 text-sm mb-2"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
-            >
-              2055 E University Dr
-            </p>
-            <p
-              className="text-white/45 text-sm mb-8"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
-            >
-              Rancho Dominguez, CA 90220
-            </p>
-            <span className="block w-8 h-px bg-kawai-gold/30 mx-auto mb-8" />
-            <p
-              className="text-kawai-gold/70 text-sm tracking-wide"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
-            >
-              Tel: +1 310-631-1771&ensp;&middot;&ensp;Press 3 for Sales
-            </p>
+            <span className="hidden md:block h-px flex-1 mx-8 bg-white/[0.04]" aria-hidden />
           </div>
-        </div>
-      </section>
 
-      {/* ── CTA ──────────────────────────────────────────────── */}
-      <section className="bg-[#0a0a0a] border-t border-white/[0.04] px-6 py-20">
-        <div className="max-w-xl mx-auto text-center">
-          <p
-            className="text-white/25 text-sm leading-relaxed mb-10"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
+          <div
+            className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/[0.04] overflow-hidden"
+            style={{ borderRadius: '10px' }}
           >
-            Have questions before visiting a dealer? Our team is here to help you find the right
-            Shigeru Kawai for your needs.
-          </p>
-          <Link
-            href="/shigeru/contact"
-            className="inline-flex items-center gap-3 border border-kawai-gold/35 hover:border-kawai-gold text-kawai-gold hover:bg-kawai-gold/5 px-10 py-4 text-[10px] tracking-[0.35em] uppercase transition-all duration-300"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
-          >
-            Contact Us
-          </Link>
+            <div className="bg-[#0e0e0e] p-8">
+              <p
+                className="text-kawai-gold font-semibold text-[15px] tracking-[0.06em] uppercase mb-3"
+                style={{ fontFamily: 'var(--font-oswald)' }}
+              >
+                Kawai America Corporation
+              </p>
+              <p className="text-white/40 text-sm leading-relaxed">
+                2055 E University Dr<br />
+                Rancho Dominguez, CA 90220
+              </p>
+            </div>
+            <div className="bg-[#0e0e0e] p-8">
+              <p
+                className="text-white/20 text-[9px] tracking-[0.3em] uppercase mb-3"
+                style={{ fontFamily: 'var(--font-oswald)' }}
+              >
+                Phone
+              </p>
+              <a
+                href="tel:+13106311771"
+                className="text-white/60 hover:text-white text-sm transition-colors duration-200"
+              >
+                +1 310-631-1771
+              </a>
+              <p className="text-white/25 text-xs mt-1">Press 3 for Sales</p>
+            </div>
+            <div className="bg-[#0e0e0e] p-8 flex flex-col justify-center">
+              <Link
+                href="/shigeru/contact"
+                style={{ fontFamily: 'var(--font-oswald)', borderRadius: '6px' }}
+                className="inline-flex items-center gap-2 border border-kawai-gold/30 hover:border-kawai-gold/65 text-kawai-gold text-[12px] font-semibold tracking-[0.08em] uppercase px-6 py-3 transition-all duration-300 hover:bg-kawai-gold/[0.06]"
+              >
+                Send an Inquiry
+                <svg width="12" height="9" viewBox="0 0 12 9" fill="none" aria-hidden="true">
+                  <path d="M1 4.5H11M7.5 1L11 4.5L7.5 8" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
     </div>

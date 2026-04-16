@@ -4,6 +4,7 @@ import { draftMode } from 'next/headers'
 import { unstable_cache } from 'next/cache'
 import { BlogIndexClient } from '@/components/blog/BlogIndexClient'
 import { getPayloadClient } from '@/lib/payload/queries'
+import { getSiteAlternates } from '@/lib/site-context'
 import { Hero as PageHero } from '@/components/Hero'
 import { RenderBlocks } from '@/components/RenderBlocks'
 import type { Post, Page } from '@/payload-types'
@@ -58,7 +59,21 @@ export async function generateMetadata(): Promise<Metadata> {
       title: { absolute: metaTitle },
       description: metaDescription,
       robots: { index: true, follow: true },
-      alternates: { canonical: `${siteUrl}/blog` },
+      alternates: {
+        canonical: `${siteUrl}/blog`,
+        languages: getSiteAlternates('/blog'),
+      },
+      openGraph: {
+        title: metaTitle,
+        description: metaDescription,
+        url: `${siteUrl}/blog`,
+        type: 'website',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: metaTitle,
+        description: metaDescription,
+      },
     }
   }
 
@@ -67,7 +82,10 @@ export async function generateMetadata(): Promise<Metadata> {
     description:
       'Explore our piano journal featuring education guides, product news, artist spotlights, maintenance tips, and more from KAWAI Piano Gallery.',
     robots: { index: true, follow: true },
-    alternates: { canonical: `${siteUrl}/blog` },
+    alternates: {
+      canonical: `${siteUrl}/blog`,
+      languages: getSiteAlternates('/blog'),
+    },
     openGraph: {
       title: 'The KAWAI Journal | Notes & Stories',
       description:
@@ -138,12 +156,48 @@ function getPosts(category?: string): Promise<PostsResult> {
   )()
 }
 
+const BLOG_DESCRIPTION =
+  'Explore our piano journal featuring education guides, product news, artist spotlights, and more.'
+
 export default async function BlogPage({ searchParams }: BlogPageProps) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
   const page = await getBlogPage()
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: 'Blog', item: `${siteUrl}/blog` },
+    ],
+  }
+
+  const collectionPageSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'The KAWAI Journal',
+    description: BLOG_DESCRIPTION,
+    url: `${siteUrl}/blog`,
+    publisher: { '@type': 'Organization', name: 'KAWAI Piano', url: siteUrl },
+  }
+
+  const schemas = (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionPageSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+    </>
+  )
 
   if (page) {
     return (
       <>
+        {schemas}
         {page.hero && <PageHero hero={page.hero} />}
         {page.layout?.length ? <RenderBlocks blocks={page.layout} /> : null}
       </>
@@ -153,15 +207,17 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   const { category } = await searchParams
   const { featuredPost, gridPosts } = await getPosts(category)
 
-  // Determine whether the hero is a truly featured post (has featured flag set)
   const heroIsFeatured = featuredPost?.featured === true
 
   return (
-    <BlogIndexClient
-      featuredPost={featuredPost}
-      heroIsFeatured={heroIsFeatured}
-      gridPosts={gridPosts}
-      {...(category !== undefined && { category })}
-    />
+    <>
+      {schemas}
+      <BlogIndexClient
+        featuredPost={featuredPost}
+        heroIsFeatured={heroIsFeatured}
+        gridPosts={gridPosts}
+        {...(category !== undefined && { category })}
+      />
+    </>
   )
 }

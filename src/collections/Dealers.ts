@@ -81,6 +81,12 @@ const revalidateDealer: CollectionAfterChangeHook = async ({ doc, context }) => 
     // Revalidate main finder page
     revalidatePath('/find-a-dealer')
 
+    // Revalidate Shigeru microsite dealers page if this is a Shigeru dealer
+    if (doc.shigeruKawaiDealer) {
+      revalidateTag('shigeru-dealers')
+      revalidatePath('/shigeru/dealers')
+    }
+
     console.log(`✅ Revalidated dealer page: /find-a-dealer/${doc.slug}`)
   } catch (error) {
     console.error(`❌ Revalidation failed for dealer ${doc.slug}:`, error)

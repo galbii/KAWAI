@@ -1432,6 +1432,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
             productTypes={productsNavData?.types || []}
             collections={productsNavData?.collections || []}
             {...(productsNavData?.allCollections !== undefined && { allCollections: productsNavData.allCollections })}
+            accessories={productsNavData?.accessories || []}
             isOpen={isProductsMenuOpen && isMounted && !isSearchOpen}
             onClose={() => setActiveMenu(null)}
             isLoading={!productsNavData}

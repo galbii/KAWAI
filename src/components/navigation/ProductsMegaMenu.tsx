@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, ArrowRight, Bluetooth, BookOpen, Music2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { ProductTypeNav, NavProduct, NavCollection } from '@/lib/payload/products-navigation'
+import type { ProductTypeNav, NavProduct, NavCollection, NavAccessory } from '@/lib/payload/products-navigation'
 import { getProductsByCollection } from '@/lib/actions/collection-products'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -62,6 +62,7 @@ interface ProductsMegaMenuProps {
   productTypes: ProductTypeNav[]
   collections: NavCollection[]
   allCollections?: NavCollection[]
+  accessories?: NavAccessory[]
   isOpen: boolean
   onClose: () => void
   className?: string
@@ -665,52 +666,61 @@ function BannerOnlyView({ label, href, externalCtaUrl, collectionHandle, collect
 
 // ─── Accessories Panel ────────────────────────────────────────────────────────
 // Shown when "Accessories" is selected in the sidebar.
+// Intentionally mirrors BannerOnlyView header + CategoryView card row.
 
-function AccessoriesBannerView({ onClose }: { onClose: () => void }) {
+function AccessoriesBannerView({ onClose, accessories }: { onClose: () => void; accessories: NavAccessory[] }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="flex flex-col items-center justify-center text-center py-16 px-8"
     >
-      {/* Ornamental rule */}
-      <div className="flex items-center gap-3 mb-8 w-full max-w-[260px]">
-        <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#D5C78C]" />
-        <div className="w-1 h-1 rounded-full bg-[#D5C78C]" />
-        <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#D5C78C]" />
+      {/* Header */}
+      <div className="mb-6">
+        <h2 className="text-3xl font-bold text-[#2C2C2C] font-serif leading-none">Accessories</h2>
       </div>
 
-      <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#B8AFA6] mb-3">
-        Accessories
-      </p>
+      {accessories.length > 0 ? (
+        <div className="flex gap-7 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {accessories.map((acc) => (
+            <div key={acc.id} className="min-w-[calc((100%-56px)/3)] flex-shrink-0">
+              <Link href={`/products/${acc.slug ?? acc.model}`} onClick={onClose} className="block group">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-white mb-4">
+                  {acc.imageUrl ? (
+                    <Image
+                      src={acc.imageUrl}
+                      alt={acc.name ?? acc.model}
+                      fill
+                      sizes="(max-width: 1280px) 22vw, 280px"
+                      className="object-contain p-2"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-xs uppercase tracking-widest text-[#C8C2BA]">No image</span>
+                    </div>
+                  )}
+                </div>
+                <h3 className="text-[15px] font-semibold text-[#2C2C2C] leading-snug line-clamp-2 font-serif px-0.5">
+                  {acc.model}
+                </h3>
+              </Link>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <p className="text-sm text-[#B8AFA6] mb-4">No accessories found.</p>
+        </div>
+      )}
 
-      <h2 className="text-4xl font-serif text-[#1E1B16] leading-[1.1] mb-4">
-        Coming Soon
-      </h2>
-
-      <p className="text-sm text-[#8A8078] leading-relaxed max-w-[220px] mb-8">
-        Benches, pedals, headphones, and care essentials — curated for the discerning pianist.
-      </p>
-
-      <Link
-        href="/pianos"
-        onClick={onClose}
-        className={cn(
-          'group inline-flex items-center gap-2.5 px-6 py-2.5',
-          'border border-[#2C2C2C] rounded-full',
-          'text-xs font-semibold tracking-[0.12em] uppercase text-[#2C2C2C]',
-          'hover:bg-[#2C2C2C] hover:text-white transition-all duration-200'
-        )}
-      >
-        Explore Pianos
-        <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
-      </Link>
-
-      {/* Ornamental rule */}
-      <div className="flex items-center gap-3 mt-8 w-full max-w-[260px]">
-        <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#D5C78C]" />
-        <div className="w-1 h-1 rounded-full bg-[#D5C78C]" />
-        <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#D5C78C]" />
+      <div className="flex justify-center mt-6">
+        <Link
+          href="/accessories"
+          onClick={onClose}
+          className="group inline-flex items-center gap-2 px-6 py-2.5 bg-[#1E1B16] hover:bg-[#2C2C2C] rounded-full text-sm font-semibold text-white transition-colors duration-150 whitespace-nowrap"
+        >
+          View All Accessories
+          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-150 group-hover:translate-x-0.5" />
+        </Link>
       </div>
     </motion.div>
   )
@@ -853,6 +863,7 @@ export function ProductsMegaMenu({
   productTypes,
   collections,
   allCollections,
+  accessories = [],
   isOpen,
   onClose,
   className,
@@ -1046,7 +1057,7 @@ export function ProductsMegaMenu({
                         initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                         transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
                       >
-                        <AccessoriesBannerView onClose={onClose} />
+                        <AccessoriesBannerView onClose={onClose} accessories={accessories} />
                       </motion.div>
                     ) : selectedCat && 'bannerOnly' in selectedCat ? (
                       <motion.div

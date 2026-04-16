@@ -105,6 +105,7 @@ import {
   ProductFaqBlock,
   PianoPages,
   ProductAccessories,
+  ProductReference,
   // Legacy blocks (keep for backward compatibility)
   TextContent,
   Hello,
@@ -365,6 +366,7 @@ export default buildConfig({
     ProductFaqBlock,
     PianoPages,
     ProductAccessories,
+    ProductReference,
 
     // Legacy blocks (keep for backward compatibility)
     TextContent,

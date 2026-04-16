@@ -27,6 +27,7 @@ import { RelatedProductsRenderer } from '@/components/blocks/product/RelatedProd
 import { SoundCloudEmbedRenderer } from '@/components/blocks/product/SoundCloudEmbedRenderer'
 import { ProductFaqRenderer } from '@/components/blocks/product/ProductFaqRenderer'
 import { ProductAccessoriesRenderer } from '@/components/blocks/product/ProductAccessoriesRenderer'
+import { ProductReferenceBlockWrapper } from '@/components/blocks/ProductReferenceBlockWrapper'
 
 // Block component mapping (using actual block slugs from block definitions)
 const BLOCK_COMPONENTS = {
@@ -49,6 +50,7 @@ const BLOCK_COMPONENTS = {
   'product-soundcloud-embed': SoundCloudEmbedRenderer,
   'product-faq': ProductFaqRenderer,
   'product-accessories': ProductAccessoriesRenderer,
+  'product-reference': ProductReferenceBlockWrapper,
   // Content blocks
   'content-text': TextContentBlock,
   'content-banner': BannerBlock,
@@ -137,6 +139,16 @@ export async function BlockRenderer({ block, index, product }: BlockRendererProp
       )
     }
     
+    // product-reference has its own relationship field — wrapper fetches its own data independently
+    if (blockType === 'product-reference') {
+      return (
+        <BlockComponent
+          key={block.id || `${blockType}-${index}`}
+          {...block}
+        />
+      )
+    }
+
     // For product-collection-showcase, product-related-products, and product-faq, pass the Payload product
     if (
       blockType === 'product-collection-showcase' ||

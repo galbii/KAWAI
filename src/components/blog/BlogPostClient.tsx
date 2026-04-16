@@ -162,27 +162,16 @@ export function BlogPostClient({
       )}
 
       {/* Two-Column Article Layout */}
-      <div className="max-w-7xl mx-auto px-6 md:px-12 py-16 md:py-24">
-        <div className="flex flex-col lg:flex-row gap-12">
-          {/* Sidebar Column — slide in from left on mount */}
-          {sidebarSlot && (
-            <motion.div
-              initial={{ opacity: 0, x: -24 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, ease: easeKawai, delay: 0.4 }}
-            >
-              {sidebarSlot}
-            </motion.div>
-          )}
-
-          {/* Main Content Column — slide up on mount */}
+      <div className="max-w-[1440px] mx-auto px-6 md:px-12 py-16 md:py-20">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Main Content Column — left, full width on mobile, flex-1 on desktop */}
           <motion.article
             className="flex-1 min-w-0"
             initial={{ opacity: 0, y: 32 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: easeKawai, delay: 0.2 }}
           >
-            <div className="max-w-3xl mx-auto lg:mx-0 bg-white rounded-lg shadow-sm p-8 md:p-12">
+            <div className="bg-white rounded-lg shadow-sm p-8 md:p-12">
 
               {/* Lead excerpt — large serif intro paragraph */}
               {post.excerpt && (
@@ -205,8 +194,8 @@ export function BlogPostClient({
 
             </div>
 
-            {/* Kawai Latest News — below article card */}
-            <div className="max-w-3xl mx-auto lg:mx-0 mt-8">
+            {/* Back link — below article card */}
+            <div className="mt-8">
               <Link
                 href="/blog"
                 className="inline-flex items-center gap-2 text-kawai-red hover:text-kawai-red/80 font-medium transition-colors font-[family-name:var(--font-brand-sans)]"
@@ -216,6 +205,17 @@ export function BlogPostClient({
               </Link>
             </div>
           </motion.article>
+
+          {/* Sidebar Column — right side, slide in from right on mount */}
+          {sidebarSlot && (
+            <motion.div
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, ease: easeKawai, delay: 0.4 }}
+            >
+              {sidebarSlot}
+            </motion.div>
+          )}
         </div>
       </div>
 
