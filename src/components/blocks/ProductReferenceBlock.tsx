@@ -196,10 +196,10 @@ export function ProductReferenceBlock({
 
   if (!product) return null
 
-  const bgClass     = BG[bg]     ?? BG.white
-  const textClass   = TEXT[bg]   ?? TEXT.white
-  const mutedClass  = MUTED[bg]  ?? MUTED.white
-  const borderClass = BORDER[bg] ?? BORDER.white
+  const bgClass     = BG[bg]     ?? 'bg-white'
+  const textClass   = TEXT[bg]   ?? 'text-kawai-black'
+  const mutedClass  = MUTED[bg]  ?? 'text-kawai-charcoal/60'
+  const borderClass = BORDER[bg] ?? 'border-kawai-neutral'
 
   return (
     <div
