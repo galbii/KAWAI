@@ -271,7 +271,7 @@ export function ProductReferenceBlock({
 
           {/* ── CTAs ── */}
           <div className="mt-6 space-y-2">
-            {canTransact && selectedVariant ? (
+            {canTransact && selectedVariant && selectedVariant.available ? (
               <>
                 {showAddToCart && (
                   <AddToCartButton
