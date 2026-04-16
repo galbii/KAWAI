@@ -57,6 +57,13 @@ export function captureClickIds(searchParams: URLSearchParams): void {
   }
 }
 
+// Matches unresolved Google Ads / Meta ValueTrack placeholders e.g. {campaign}, {keyword}
+const UNRESOLVED_PLACEHOLDER = /\{[^}]+\}/
+
+function isResolved(value: string): boolean {
+  return !UNRESOLVED_PLACEHOLDER.test(value)
+}
+
 // ============================================================================
 // URL helper
 // ============================================================================
@@ -76,7 +83,7 @@ export function buildCheckoutUrl(baseUrl: string): string {
 
   if (utmParams) {
     for (const [k, v] of Object.entries(utmParams)) {
-      if (typeof v === 'string' && v.length > 0) entries.push([k, v])
+      if (typeof v === 'string' && v.length > 0 && isResolved(v)) entries.push([k, v])
     }
   }
 
@@ -119,7 +126,7 @@ export function getUTMCartAttributes(): CartAttribute[] {
     ]
     for (const k of keys) {
       const v = utmParams[k]
-      if (typeof v === 'string' && v.length > 0) {
+      if (typeof v === 'string' && v.length > 0 && isResolved(v)) {
         attrs.push({ key: `_${k}`, value: v })
       }
     }

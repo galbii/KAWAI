@@ -53,6 +53,83 @@ function maxRebate(series: RebateSeries): number {
   return Math.max(...series.models.map((m) => m.consumerRebate))
 }
 
+// ─── Price Display — animated strikethrough + sale price + % badge ────────────
+
+function PriceDisplay({
+  msrp,
+  rebate,
+  currency,
+  shouldShow,
+  delay = 0,
+}: {
+  msrp: number
+  rebate: number
+  currency?: string
+  shouldShow: boolean
+  delay?: number
+}) {
+  const salePrice = msrp - rebate
+  const pctOff = msrp > 0 ? Math.round((rebate / msrp) * 100) : 0
+
+  return (
+    <div
+      className="flex items-center gap-2 flex-wrap"
+      style={{ fontFamily: 'var(--font-brand-sans)' }}
+    >
+      {/* Original price with animated strikethrough */}
+      <div className="relative inline-flex items-center">
+        <span
+          className="text-kawai-charcoal/40 text-xs"
+          style={{ letterSpacing: '0.04em' }}
+        >
+          {formatPrice(msrp, currency)}
+        </span>
+        <motion.span
+          initial={{ scaleX: 0 }}
+          animate={shouldShow ? { scaleX: 1 } : { scaleX: 0 }}
+          transition={{ duration: 0.45, delay: delay + 0.15, ease: [0.22, 1, 0.36, 1] }}
+          className="absolute top-1/2 left-0 right-0 h-[1.5px] bg-kawai-charcoal/55 origin-left -translate-y-1/2 pointer-events-none"
+          aria-hidden="true"
+        />
+      </div>
+
+      {/* Arrow separator */}
+      <motion.span
+        initial={{ opacity: 0 }}
+        animate={shouldShow ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.25, delay: delay + 0.4 }}
+        className="text-kawai-charcoal/25 text-[10px] leading-none select-none"
+        aria-hidden="true"
+      >
+        →
+      </motion.span>
+
+      {/* Sale price */}
+      <motion.span
+        initial={{ opacity: 0, x: 4 }}
+        animate={shouldShow ? { opacity: 1, x: 0 } : { opacity: 0, x: 4 }}
+        transition={{ duration: 0.35, delay: delay + 0.45, ease: [0.22, 1, 0.36, 1] }}
+        className="text-kawai-black font-semibold text-xs"
+        style={{ letterSpacing: '0.03em' }}
+      >
+        {formatPrice(salePrice, currency)}
+      </motion.span>
+
+      {/* % off badge */}
+      {pctOff > 0 && (
+        <motion.span
+          initial={{ opacity: 0, scale: 0.75 }}
+          animate={shouldShow ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.75 }}
+          transition={{ duration: 0.3, delay: delay + 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="inline-flex items-center bg-kawai-red text-white text-[8px] tracking-[0.18em] uppercase font-semibold px-1.5 py-0.5 leading-none"
+        >
+          -{pctOff}%
+        </motion.span>
+      )}
+    </div>
+  )
+}
+
 // ─── Mobile filter pill bar ────────────────────────────────────────────────────
 
 function FilterBar({
@@ -322,12 +399,15 @@ function SeriesBlock({
                       {model.finishes}
                     </span>
                     {model.productMsrp != null && (
-                      <span
-                        className="block text-kawai-charcoal/45 text-xs mt-1.5"
-                        style={{ fontFamily: 'var(--font-brand-sans)', letterSpacing: '0.04em' }}
-                      >
-                        From {formatPrice(model.productMsrp, model.productCurrency)}
-                      </span>
+                      <div className="mt-1.5">
+                        <PriceDisplay
+                          msrp={model.productMsrp}
+                          rebate={model.consumerRebate}
+                          currency={model.productCurrency}
+                          shouldShow={shouldShow}
+                          delay={mIdx * 0.055 + 0.08}
+                        />
+                      </div>
                     )}
                   </div>
                 </div>
@@ -409,9 +489,15 @@ function SeriesBlock({
                       {model.finishes}
                     </span>
                     {model.productMsrp != null && (
-                      <span className="text-kawai-charcoal/45 text-xs mt-0.5" style={{ fontFamily: 'var(--font-brand-sans)', letterSpacing: '0.04em' }}>
-                        From {formatPrice(model.productMsrp, model.productCurrency)}
-                      </span>
+                      <div className="mt-0.5">
+                        <PriceDisplay
+                          msrp={model.productMsrp}
+                          rebate={model.consumerRebate}
+                          currency={model.productCurrency}
+                          shouldShow={shouldShow}
+                          delay={mIdx * 0.055 + 0.08}
+                        />
+                      </div>
                     )}
                   </div>
                 </div>
