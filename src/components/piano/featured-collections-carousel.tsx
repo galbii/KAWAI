@@ -198,12 +198,12 @@ export function FeaturedCollectionsCarousel({
   const currentCollection = total > 0 ? active[Math.min(idx, total - 1)] : undefined
   const videoId = currentCollection ? getVideoId(currentCollection) : null
 
-  // Advance once from the first slide on mount
+  // Auto-advance through all slides
   useEffect(() => {
     if (total <= 1) return
-    const t = setTimeout(next, AUTO_ROTATE_MS)
-    return () => clearTimeout(t)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    const t = setInterval(next, AUTO_ROTATE_MS)
+    return () => clearInterval(t)
+  }, [next, total])
 
   if (collections.length === 0) return null
 
@@ -408,8 +408,9 @@ export function FeaturedCollectionsCarousel({
                     className="flex-1 group relative h-px focus-visible:outline-none"
                   >
                     <div className="absolute inset-0 bg-white/15" />
-                    {i === 0 && idx === 0 ? (
+                    {i === Math.min(idx, active.length - 1) ? (
                       <motion.div
+                        key={idx}
                         initial={{ scaleX: 0 }}
                         animate={{ scaleX: 1 }}
                         transition={{ duration: AUTO_ROTATE_MS / 1000, ease: 'linear' }}
@@ -417,8 +418,6 @@ export function FeaturedCollectionsCarousel({
                       />
                     ) : i < Math.min(idx, active.length - 1) ? (
                       <div className="absolute inset-0 bg-white/35" />
-                    ) : i === Math.min(idx, active.length - 1) ? (
-                      <div className="absolute inset-0 bg-white/60" />
                     ) : null}
                   </button>
                 ))}
