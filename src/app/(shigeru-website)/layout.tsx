@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import ShigeruHeader from './_components/ShigeruHeader'
 import './shigeru.css'
 
 export const metadata: Metadata = {
@@ -230,17 +231,13 @@ const faqSchema = {
   ],
 }
 
-const navLinks = [
-  { label: 'Grand Pianos', href: '/shigeru/models' },
-  { label: 'Artists', href: '/shigeru/artists' },
-  { label: 'About', href: '/shigeru/about' },
-  { label: 'Technology', href: '/shigeru/technology' },
-  { label: 'Institutions', href: '/shigeru/institutions' },
-  { label: 'Find a Dealer', href: '/shigeru/dealers' },
-]
-
 const footerLinks = [
-  ...navLinks,
+  { label: 'Home', href: '/shigeru' },
+  { label: 'Concert Grands', href: '/shigeru/models' },
+  { label: 'Authorized Dealers', href: '/shigeru/dealers' },
+  { label: 'Artists', href: '/shigeru/artists' },
+  { label: 'Artisans', href: '/shigeru/artisans' },
+  { label: 'Institutions', href: '/shigeru/institutions' },
   { label: 'Contact', href: '/shigeru/contact' },
 ]
 
@@ -261,51 +258,7 @@ export default function ShigeruLayout({ children }: { children: React.ReactNode 
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
-      {/* Standalone Shigeru Kawai header */}
-      <header
-        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-5"
-        style={{ background: 'linear-gradient(to bottom, rgba(10,10,10,0.95) 0%, transparent 100%)' }}
-      >
-        <Link
-          href="/shigeru"
-          className="flex flex-col items-start"
-          aria-label="Shigeru Kawai — Home"
-        >
-          <span
-            className="text-kawai-gold text-[9px] tracking-[0.5em] uppercase leading-none"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
-          >
-            Shigeru
-          </span>
-          <span
-            className="text-white text-[11px] tracking-[0.45em] uppercase leading-none mt-0.5"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
-          >
-            Kawai
-          </span>
-        </Link>
-
-        <nav className="hidden md:flex items-center gap-8" aria-label="Shigeru Kawai navigation">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-white/45 hover:text-white/90 text-[10px] tracking-[0.25em] uppercase transition-colors duration-200"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        <Link
-          href="/shigeru/contact"
-          className="hidden sm:inline-flex border border-kawai-gold/30 hover:border-kawai-gold text-kawai-gold text-[9px] tracking-[0.3em] uppercase px-5 py-2.5 transition-all duration-200 hover:bg-kawai-gold/5"
-          style={{ fontFamily: 'var(--font-brand-sans)' }}
-        >
-          Inquire
-        </Link>
-      </header>
+      <ShigeruHeader />
 
       <main className="flex-1">{children}</main>
 

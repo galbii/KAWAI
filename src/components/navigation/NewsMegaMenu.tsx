@@ -396,7 +396,7 @@ export function NewsMegaMenu({
                 <Link
                   href="/blog"
                   onClick={onClose}
-                  className="group inline-flex items-center gap-3 bg-kawai-red hover:bg-kawai-red-700 text-white px-5 py-3 transition-all duration-300"
+                  className="group inline-flex items-center gap-3 rounded-full bg-kawai-red border border-white/20 text-white px-5 py-3 hover:border-white/50 hover:shadow-[0_0_24px_rgba(225,25,34,0.55),0_4px_16px_rgba(225,25,34,0.35)] hover:brightness-110 hover:scale-[1.04] shadow-[0_2px_12px_rgba(225,25,34,0.3)] transition-all duration-200"
                 >
                   <span
                     className="font-[family-name:var(--font-brand-sans)] uppercase"

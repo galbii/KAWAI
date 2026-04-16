@@ -125,17 +125,17 @@ function PianoModelCard({
     <motion.button
       onClick={onSelect}
       aria-pressed={isSelected}
-      whileHover={{ y: -3 }}
+      whileHover={{ y: -2 }}
       transition={{ duration: 0.2 }}
       className={cn(
-        'relative flex-shrink-0 w-[200px] text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red',
+        'relative flex-shrink-0 w-[240px] text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red',
         'transition-opacity duration-200',
         !isSelected && 'hover:opacity-90',
       )}
     >
       <div
         className={cn(
-          'relative w-full aspect-[4/3] bg-kawai-pearl overflow-hidden transition-all duration-300',
+          'relative w-full aspect-[4/3] bg-white overflow-hidden transition-all duration-300',
           isSelected
             ? 'shadow-[0_8px_40px_rgba(0,0,0,0.14)]'
             : 'shadow-[0_1px_4px_rgba(0,0,0,0.06)] group-hover:shadow-[0_6px_24px_rgba(0,0,0,0.10)]',
@@ -146,12 +146,12 @@ function PianoModelCard({
             src={piano.imageUrl}
             alt={piano.name ?? piano.model}
             fill
-            className="object-contain p-4"
-            sizes="200px"
+            className="object-contain p-5"
+            sizes="240px"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <svg className="w-10 h-10 text-kawai-charcoal/15" viewBox="0 0 32 32" fill="none">
+            <svg className="w-12 h-12 text-kawai-charcoal/15" viewBox="0 0 32 32" fill="none">
               <rect x="2" y="14" width="28" height="12" rx="1" stroke="currentColor" strokeWidth="1.2" />
               <rect x="4" y="10" width="24" height="4" rx="0.4" stroke="currentColor" strokeWidth="1.2" />
             </svg>
@@ -161,16 +161,16 @@ function PianoModelCard({
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="absolute top-2.5 right-2.5 w-5 h-5 bg-kawai-red flex items-center justify-center"
+            className="absolute top-3 right-3 w-6 h-6 bg-kawai-red flex items-center justify-center"
           >
-            <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
+            <Check className="w-3 h-3 text-white" strokeWidth={3} />
           </motion.div>
         )}
       </div>
 
-      <div className="pt-2.5 pb-1">
+      <div className="pt-3 pb-1">
         <p className={cn(
-          'text-[11px] font-bold uppercase tracking-[0.18em] font-[family-name:var(--font-brand-sans)] transition-colors duration-200',
+          'text-[12px] font-bold uppercase tracking-[0.18em] font-[family-name:var(--font-brand-sans)] transition-colors duration-200',
           isSelected ? 'text-kawai-red' : 'text-kawai-black group-hover:text-kawai-red',
         )}>
           {piano.model}
@@ -226,38 +226,38 @@ function SlotCard({
       >
         <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-kawai-red" />
 
-        <div className="pl-4 pr-4 pt-4 pb-3 flex gap-3 items-start">
-          <div className="relative flex-shrink-0 w-16 h-16 bg-kawai-pearl overflow-hidden">
+        <div className="pl-5 pr-5 pt-5 pb-4 flex gap-4 items-start">
+          <div className="relative flex-shrink-0 w-20 h-20 bg-kawai-pearl overflow-hidden">
             {imageUrl ? (
               <Image
                 src={imageUrl}
                 alt={accessory.name ?? accessory.model}
                 fill
-                className="object-contain p-1"
-                sizes="64px"
+                className="object-contain p-1.5"
+                sizes="80px"
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center text-kawai-charcoal/20">
-                <Icon className="w-5 h-5" />
+                <Icon className="w-6 h-6" />
               </div>
             )}
           </div>
 
           <div className="flex-1 min-w-0">
-            <p className="text-[9px] uppercase tracking-[0.25em] text-kawai-red font-bold font-[family-name:var(--font-brand-sans)]">
+            <p className="text-[9px] uppercase tracking-[0.28em] text-kawai-red font-bold font-[family-name:var(--font-brand-sans)]">
               {slotDef.label}
             </p>
-            <p className="text-[13px] leading-snug font-[family-name:var(--font-brand-luxury)] text-kawai-black mt-0.5 line-clamp-2">
+            <p className="text-[14px] leading-snug font-[family-name:var(--font-brand-luxury)] text-kawai-black mt-1 line-clamp-2">
               {accessory.name ?? accessory.model}
             </p>
-            <div className="flex items-center gap-2 mt-1.5">
+            <div className="flex items-center gap-2 mt-2">
               {variation && (
-                <span className="px-1.5 py-0.5 text-[8px] uppercase tracking-[0.12em] bg-kawai-pearl text-kawai-charcoal font-[family-name:var(--font-brand-sans)]">
+                <span className="px-2 py-0.5 text-[9px] uppercase tracking-[0.12em] bg-kawai-pearl text-kawai-charcoal font-[family-name:var(--font-brand-sans)]">
                   {variation.name}
                 </span>
               )}
               {price != null && (
-                <span className="text-[12px] font-bold text-kawai-black font-[family-name:var(--font-brand-sans)]">
+                <span className="text-[13px] font-bold text-kawai-black font-[family-name:var(--font-brand-sans)]">
                   {formatPrice(price)}
                 </span>
               )}
@@ -267,15 +267,15 @@ function SlotCard({
           <button
             onClick={onRemove}
             aria-label={`Remove ${accessory.name ?? accessory.model}`}
-            className="flex-shrink-0 w-6 h-6 flex items-center justify-center text-kawai-charcoal/20 hover:text-kawai-red transition-colors duration-150"
+            className="flex-shrink-0 w-7 h-7 flex items-center justify-center text-kawai-charcoal/20 hover:text-kawai-red transition-colors duration-150"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         <button
           onClick={onOpen}
-          className="w-full border-t border-kawai-neutral/40 py-2 text-[9px] uppercase tracking-[0.25em] text-kawai-charcoal/30 hover:text-kawai-red hover:bg-kawai-pearl transition-all duration-150 font-[family-name:var(--font-brand-sans)] opacity-0 group-hover:opacity-100"
+          className="w-full border-t border-kawai-neutral/40 py-2.5 text-[9px] uppercase tracking-[0.25em] text-kawai-charcoal/30 hover:text-kawai-red hover:bg-kawai-pearl transition-all duration-150 font-[family-name:var(--font-brand-sans)] opacity-0 group-hover:opacity-100"
         >
           Change
         </button>
@@ -300,48 +300,46 @@ function SlotCard({
           : 'repeating-linear-gradient(0deg,transparent,transparent 7px,rgba(0,0,0,0.028) 7px,rgba(0,0,0,0.028) 8px),repeating-linear-gradient(90deg,transparent,transparent 7px,rgba(0,0,0,0.028) 7px,rgba(0,0,0,0.028) 8px)',
       }}
     >
-      <div className="p-5 flex flex-col items-center justify-center gap-2.5 min-h-[120px]">
+      <div className="p-6 flex flex-col items-center justify-center gap-3 min-h-[160px]">
         <div className={cn(
           'transition-colors duration-200',
           isActive ? 'text-kawai-red' : 'text-kawai-charcoal/25 group-hover:text-kawai-charcoal/50',
         )}>
-          <Icon className="w-5 h-5" />
+          <Icon className="w-6 h-6" />
         </div>
         <div className="text-center">
           <p className={cn(
-            'text-[10px] uppercase tracking-[0.22em] font-bold font-[family-name:var(--font-brand-sans)] transition-colors duration-200',
+            'text-[11px] uppercase tracking-[0.22em] font-bold font-[family-name:var(--font-brand-sans)] transition-colors duration-200',
             isActive ? 'text-kawai-red' : 'text-kawai-charcoal/40 group-hover:text-kawai-charcoal/70',
           )}>
             {slotDef.label}
           </p>
-          <p className="text-[9px] text-kawai-charcoal/22 font-[family-name:var(--font-brand-sans)] mt-0.5">
+          <p className="text-[10px] text-kawai-charcoal/25 font-[family-name:var(--font-brand-sans)] mt-0.5">
             {slotDef.description}
           </p>
         </div>
         <div className={cn(
-          'w-7 h-7 flex items-center justify-center border transition-all duration-200',
+          'w-8 h-8 flex items-center justify-center border transition-all duration-200',
           isActive
             ? 'border-kawai-red text-kawai-red'
             : 'border-kawai-charcoal/20 text-kawai-charcoal/30 group-hover:border-kawai-charcoal/50 group-hover:text-kawai-charcoal/60',
         )}>
-          <Plus className="w-3.5 h-3.5" />
+          <Plus className="w-4 h-4" />
         </div>
       </div>
     </motion.button>
   )
 }
 
-// ─── Picker Drawer ────────────────────────────────────────────────────────────
+// ─── Inline Picker Dropdown ───────────────────────────────────────────────────
 
-function PickerDrawer({
-  slotKey,
+function InlinePickerDropdown({
   slotLabel,
   options,
   currentFill,
   onSelect,
   onClose,
 }: {
-  slotKey: string
   slotLabel: string
   options: AccessoryForPage[]
   currentFill: SlotFill | undefined
@@ -356,7 +354,6 @@ function PickerDrawer({
   )
 
   const pendingAccessory = options.find((a) => a.id === pendingId) ?? null
-
   const confirmPrice = pendingAccessory ? resolvePrice(pendingAccessory, pendingVarIdx) : null
 
   function handleConfirm() {
@@ -365,168 +362,158 @@ function PickerDrawer({
   }
 
   return (
-    <>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-40 bg-kawai-black/20 backdrop-blur-[2px]"
-        onClick={onClose}
-      />
-
-      <motion.div
-        initial={{ x: '100%', opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={{ x: '100%', opacity: 0 }}
-        transition={{ type: 'spring', bounce: 0.05, duration: 0.45 }}
-        className="fixed right-0 top-0 bottom-0 z-50 w-full sm:w-[500px] bg-white shadow-[-8px_0_40px_rgba(0,0,0,0.08)] flex flex-col"
-      >
-        <div className="flex items-center justify-between px-7 pt-7 pb-6 border-b border-kawai-neutral/50">
-          <div>
-            <p className="text-[9px] uppercase tracking-[0.4em] text-kawai-red font-bold font-[family-name:var(--font-brand-sans)]">
-              Choose
-            </p>
-            <h3 className="text-3xl font-[family-name:var(--font-brand-luxury)] text-kawai-black mt-1 leading-none">
-              {slotLabel}
-            </h3>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-10 h-10 flex items-center justify-center text-kawai-charcoal/40 hover:text-kawai-black hover:bg-kawai-pearl transition-all duration-150"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
+    <motion.div
+      initial={{ opacity: 0, y: -6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -6 }}
+      transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="mt-3 bg-white border border-kawai-neutral/60 shadow-[0_4px_24px_rgba(0,0,0,0.07)]"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-kawai-neutral/40">
+        <div className="flex items-center gap-4">
+          <p className="text-[9px] uppercase tracking-[0.45em] text-kawai-red font-bold font-[family-name:var(--font-brand-sans)]">
+            Choose
+          </p>
+          <span className="w-px h-4 bg-kawai-neutral/60" />
+          <h4 className="text-base font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-none">
+            {slotLabel}
+          </h4>
         </div>
+        <button
+          onClick={onClose}
+          className="w-8 h-8 flex items-center justify-center text-kawai-charcoal/30 hover:text-kawai-black transition-colors duration-150"
+          aria-label="Close"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
 
-        <div className="flex-1 overflow-y-auto px-7 py-6 space-y-3">
-          {options.map((accessory) => {
-            const isSelected = pendingId === accessory.id
-            const thumb = resolveImage(accessory, isSelected ? pendingVarIdx : null)
-            const price = resolvePrice(accessory, isSelected ? pendingVarIdx : null)
+      {/* Options */}
+      <div className="max-h-[420px] overflow-y-auto divide-y divide-kawai-neutral/25">
+        {options.map((accessory) => {
+          const isSelected = pendingId === accessory.id
+          const thumb = resolveImage(accessory, isSelected ? pendingVarIdx : null)
+          const price = resolvePrice(accessory, isSelected ? pendingVarIdx : null)
 
-            return (
-              <div
-                key={accessory.id}
-                onClick={() => setPendingId(accessory.id)}
-                className={cn(
-                  'relative flex gap-4 p-4 cursor-pointer transition-all duration-200',
-                  isSelected
-                    ? 'bg-white shadow-[0_1px_4px_rgba(0,0,0,0.06),_0_8px_24px_rgba(0,0,0,0.08)] ring-1 ring-kawai-red/20'
-                    : 'bg-kawai-pearl/50 hover:bg-white hover:shadow-[0_1px_4px_rgba(0,0,0,0.06),_0_4px_16px_rgba(0,0,0,0.07)]',
-                )}
-              >
-                {isSelected && <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-kawai-red" />}
-
-                <div className="relative flex-shrink-0 w-16 h-16 bg-white overflow-hidden">
-                  {thumb ? (
-                    <Image
-                      src={thumb}
-                      alt={accessory.name ?? accessory.model}
-                      fill
-                      className="object-contain p-1.5"
-                      sizes="64px"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-kawai-charcoal/15">
-                      <Package className="w-5 h-5" />
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)]">
-                    {accessory.model}
-                  </p>
-                  <p className="text-base leading-snug font-[family-name:var(--font-brand-luxury)] text-kawai-black mt-0.5">
-                    {accessory.name ?? accessory.model}
-                  </p>
-
-                  {isSelected && accessory.variations.length > 1 && (
-                    <div className="flex flex-wrap gap-1.5 mt-2.5" onClick={(e) => e.stopPropagation()}>
-                      {accessory.variations.map((v, i) => {
-                        const isUnavail = v.available === false
-                        return (
-                          <button
-                            key={v.id ?? i}
-                            onClick={() => !isUnavail && setPendingVarIdx(i)}
-                            disabled={isUnavail}
-                            className={cn(
-                              'px-2.5 py-1 text-[9px] uppercase tracking-[0.1em] font-medium transition-all duration-150 font-[family-name:var(--font-brand-sans)]',
-                              'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-kawai-red',
-                              pendingVarIdx === i
-                                ? 'bg-kawai-black text-white'
-                                : isUnavail
-                                ? 'bg-kawai-neutral/20 text-kawai-charcoal/25 cursor-not-allowed line-through'
-                                : 'bg-kawai-neutral/50 text-kawai-charcoal hover:bg-kawai-black hover:text-white',
-                            )}
-                          >
-                            {v.name}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex-shrink-0 self-start text-right">
-                  {price != null ? (
-                    <p className="text-sm font-bold text-kawai-black font-[family-name:var(--font-brand-sans)]">
-                      {formatPrice(price)}
-                    </p>
-                  ) : (
-                    <p className="text-xs text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)]">
-                      Contact
-                    </p>
-                  )}
-                  {isSelected && (
-                    <div className="mt-1.5 w-5 h-5 bg-kawai-red flex items-center justify-center ml-auto">
-                      <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
-                    </div>
-                  )}
+          return (
+            <div
+              key={accessory.id}
+              onClick={() => { setPendingId(accessory.id); if (!isSelected) setPendingVarIdx(null) }}
+              className={cn(
+                'flex items-center gap-5 px-6 py-4 cursor-pointer transition-colors duration-150',
+                isSelected ? 'bg-kawai-pearl/50' : 'hover:bg-kawai-pearl/30',
+              )}
+            >
+              {/* Radio dot */}
+              <div className="flex-shrink-0">
+                <div className={cn(
+                  'w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all duration-150',
+                  isSelected ? 'border-kawai-red' : 'border-kawai-neutral',
+                )}>
+                  {isSelected && <div className="w-2 h-2 rounded-full bg-kawai-red" />}
                 </div>
               </div>
-            )
-          })}
-        </div>
 
-        <div className="border-t border-kawai-neutral/50 px-7 py-5">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              {pendingAccessory && (
-                <>
-                  <p className="text-sm font-[family-name:var(--font-brand-luxury)] text-kawai-black">
-                    {pendingAccessory.name ?? pendingAccessory.model}
+              {/* Thumbnail */}
+              <div className="relative flex-shrink-0 w-16 h-16 bg-white border border-kawai-neutral/40 overflow-hidden">
+                {thumb ? (
+                  <Image
+                    src={thumb}
+                    alt={accessory.name ?? accessory.model}
+                    fill
+                    className="object-contain p-1.5"
+                    sizes="64px"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-kawai-charcoal/15">
+                    <Package className="w-5 h-5" />
+                  </div>
+                )}
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] uppercase tracking-[0.18em] text-kawai-charcoal/35 font-[family-name:var(--font-brand-sans)]">
+                  {accessory.model}
+                </p>
+                <p className="text-[15px] leading-snug font-[family-name:var(--font-brand-luxury)] text-kawai-black mt-0.5">
+                  {accessory.name ?? accessory.model}
+                </p>
+
+                {isSelected && accessory.variations.length > 1 && (
+                  <div className="flex flex-wrap gap-2 mt-2.5" onClick={(e) => e.stopPropagation()}>
+                    {accessory.variations.map((v, i) => {
+                      const isUnavail = v.available === false
+                      return (
+                        <button
+                          key={v.id ?? i}
+                          onClick={() => !isUnavail && setPendingVarIdx(i)}
+                          disabled={isUnavail}
+                          className={cn(
+                            'px-3 py-1 text-[10px] uppercase tracking-[0.1em] font-medium transition-all duration-150 font-[family-name:var(--font-brand-sans)]',
+                            pendingVarIdx === i
+                              ? 'bg-kawai-black text-white'
+                              : isUnavail
+                              ? 'bg-kawai-neutral/20 text-kawai-charcoal/25 cursor-not-allowed line-through'
+                              : 'bg-kawai-neutral/40 text-kawai-charcoal hover:bg-kawai-black hover:text-white',
+                          )}
+                        >
+                          {v.name}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Price */}
+              <div className="flex-shrink-0 text-right">
+                {price != null ? (
+                  <p className="text-[15px] font-bold text-kawai-black font-[family-name:var(--font-brand-sans)]">
+                    {formatPrice(price)}
                   </p>
-                  {pendingAccessory.variations.length > 1 && pendingVarIdx !== null && (
-                    <p className="text-[11px] text-kawai-charcoal/45 font-[family-name:var(--font-brand-sans)] mt-0.5">
-                      {pendingAccessory.variations[pendingVarIdx]?.name}
-                    </p>
-                  )}
-                </>
-              )}
+                ) : (
+                  <p className="text-[12px] text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)]">Contact</p>
+                )}
+              </div>
             </div>
-            {confirmPrice != null && (
-              <p className="text-lg font-bold text-kawai-black font-[family-name:var(--font-brand-sans)]">
-                {formatPrice(confirmPrice)}
-              </p>
-            )}
-          </div>
-          <button
-            onClick={handleConfirm}
-            disabled={!pendingId}
-            className={cn(
-              'w-full py-3.5 text-[11px] uppercase tracking-[0.22em] font-bold font-[family-name:var(--font-brand-sans)] transition-all duration-200',
-              pendingId
-                ? 'bg-kawai-black text-white hover:bg-kawai-red'
-                : 'bg-kawai-neutral/40 text-kawai-charcoal/30 cursor-not-allowed',
-            )}
-          >
-            Add to Build
-          </button>
+          )
+        })}
+      </div>
+
+      {/* Footer */}
+      <div className="flex items-center justify-between gap-4 px-6 py-4 border-t border-kawai-neutral/40 bg-kawai-pearl/30">
+        <div className="min-w-0">
+          {pendingAccessory ? (
+            <p className="text-[13px] font-[family-name:var(--font-brand-luxury)] text-kawai-black truncate">
+              {pendingAccessory.name ?? pendingAccessory.model}
+              {confirmPrice != null && (
+                <span className="ml-2 text-[12px] font-bold font-[family-name:var(--font-brand-sans)] text-kawai-charcoal/55">
+                  — {formatPrice(confirmPrice)}
+                </span>
+              )}
+            </p>
+          ) : (
+            <p className="text-[12px] text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)]">
+              Select an option above
+            </p>
+          )}
         </div>
-      </motion.div>
-    </>
+        <button
+          onClick={handleConfirm}
+          disabled={!pendingId}
+          className={cn(
+            'flex-shrink-0 px-6 py-2.5 text-[10px] uppercase tracking-[0.22em] font-bold font-[family-name:var(--font-brand-sans)] transition-all duration-200',
+            pendingId
+              ? 'bg-kawai-black text-white hover:bg-kawai-red'
+              : 'bg-kawai-neutral/30 text-kawai-charcoal/25 cursor-not-allowed',
+          )}
+        >
+          Add to Build
+        </button>
+      </div>
+    </motion.div>
   )
 }
 
@@ -553,43 +540,43 @@ function CheckoutLineItem({
       : null
 
   return (
-    <li className="flex items-start gap-3 px-5 py-4 border-b border-white/[0.06]">
+    <li className="flex items-start gap-4 px-6 py-5 border-b border-white/[0.06]">
       {/* Thumbnail */}
-      <div className="relative flex-shrink-0 w-11 h-11 bg-white/[0.06] overflow-hidden">
+      <div className="relative flex-shrink-0 w-14 h-14 bg-white/[0.06] overflow-hidden">
         {imageUrl ? (
           <Image
             src={imageUrl}
             alt={accessory.name ?? accessory.model}
             fill
             className="object-contain p-1"
-            sizes="44px"
+            sizes="56px"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-white/15">
-            <Package className="w-4 h-4" />
+            <Package className="w-5 h-5" />
           </div>
         )}
       </div>
 
       {/* Details */}
       <div className="flex-1 min-w-0">
-        <p className="text-[8px] uppercase tracking-[0.35em] text-kawai-red font-bold font-[family-name:var(--font-brand-sans)]">
+        <p className="text-[9px] uppercase tracking-[0.35em] text-kawai-red font-bold font-[family-name:var(--font-brand-sans)]">
           {slotLabel}
         </p>
-        <p className="text-[13px] text-white font-[family-name:var(--font-brand-luxury)] mt-0.5 truncate leading-snug">
+        <p className="text-[14px] text-white font-[family-name:var(--font-brand-luxury)] mt-0.5 truncate leading-snug">
           {accessory.name ?? accessory.model}
         </p>
         {variation && (
-          <p className="text-[9px] text-white/30 font-[family-name:var(--font-brand-sans)] mt-0.5">
+          <p className="text-[10px] text-white/30 font-[family-name:var(--font-brand-sans)] mt-0.5">
             {variation.name}
           </p>
         )}
       </div>
 
       {/* Price + remove */}
-      <div className="flex-shrink-0 flex items-center gap-2 pt-0.5">
+      <div className="flex-shrink-0 flex items-center gap-2.5 pt-0.5">
         {price != null && (
-          <span className="text-[12px] font-medium text-white/50 font-[family-name:var(--font-brand-sans)]">
+          <span className="text-[13px] font-medium text-white/50 font-[family-name:var(--font-brand-sans)]">
             {formatPrice(price)}
           </span>
         )}
@@ -598,7 +585,7 @@ function CheckoutLineItem({
           aria-label={`Remove ${slotLabel}`}
           className="text-white/15 hover:text-kawai-red transition-colors duration-150"
         >
-          <X className="w-3 h-3" />
+          <X className="w-3.5 h-3.5" />
         </button>
       </div>
     </li>
@@ -623,17 +610,17 @@ function BuildCheckout({
   onRemoveSlot: (slotKey: string) => void
 }) {
   return (
-    <div className="bg-kawai-black text-white flex flex-col h-full overflow-hidden">
+    <div className="bg-[#161614] text-white flex flex-col h-full overflow-hidden border border-white/[0.05]">
 
       {/* Piano header */}
-      <div className="px-5 py-5 border-b border-white/[0.07]">
-        <p className="text-[8px] uppercase tracking-[0.45em] text-kawai-red font-bold font-[family-name:var(--font-brand-sans)]">
+      <div className="px-6 pt-6 pb-5 border-b border-white/[0.06]">
+        <p className="text-[8px] uppercase tracking-[0.5em] text-kawai-red font-bold font-[family-name:var(--font-brand-sans)] mb-2">
           Your Build
         </p>
-        <p className="text-[1.35rem] font-[family-name:var(--font-brand-luxury)] leading-tight mt-1.5">
+        <p className="text-[1.25rem] font-[family-name:var(--font-brand-luxury)] leading-tight tracking-wide">
           {pianoLabel}
         </p>
-        <p className="text-[9px] uppercase tracking-[0.2em] text-white/25 font-[family-name:var(--font-brand-sans)] mt-0.5">
+        <p className="text-[8px] uppercase tracking-[0.25em] text-white/20 font-[family-name:var(--font-brand-sans)] mt-1">
           {pianoCategory}
         </p>
       </div>
@@ -641,13 +628,15 @@ function BuildCheckout({
       {/* Line items */}
       <div className="flex-1 overflow-y-auto min-h-0">
         {equippedItems.length === 0 ? (
-          <div className="px-5 py-10 text-center">
-            <p className="text-[13px] text-white/18 font-[family-name:var(--font-brand-sans)] leading-relaxed italic">
+          <div className="px-6 py-12 flex flex-col items-center justify-center gap-3 text-center">
+            <div className="w-8 h-px bg-white/10" />
+            <p className="text-[12px] text-white/22 font-[family-name:var(--font-brand-sans)] leading-relaxed">
               Select accessories to<br />build your setup.
             </p>
+            <div className="w-8 h-px bg-white/10" />
           </div>
         ) : (
-          <ul>
+          <ul className="py-1">
             {equippedItems.map((item) => (
               <CheckoutLineItem
                 key={item.slotKey}
@@ -663,39 +652,28 @@ function BuildCheckout({
       </div>
 
       {/* Summary + CTAs */}
-      <div className="flex-shrink-0 border-t border-white/[0.07] px-5 py-5">
+      <div className="flex-shrink-0 border-t border-white/[0.06] px-6 py-5">
         {equippedItems.length > 0 && (
           <div className="mb-5">
-            {/* Subtotal rows */}
-            <div className="space-y-2 mb-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-[0.18em] text-white/30 font-[family-name:var(--font-brand-sans)]">
-                  {equippedItems.length} {equippedItems.length === 1 ? 'item' : 'items'}
-                </span>
-              </div>
+            <div className="flex items-baseline justify-between">
+              <span className="text-[9px] uppercase tracking-[0.3em] text-white/25 font-[family-name:var(--font-brand-sans)]">
+                Est. Total
+              </span>
+              <span className="text-[1.5rem] font-bold text-white font-[family-name:var(--font-brand-sans)] leading-none">
+                {total > 0 ? formatPrice(total) : '—'}
+              </span>
             </div>
-
-            <div className="border-t border-white/[0.07] pt-3">
-              <div className="flex items-baseline justify-between">
-                <span className="text-[10px] uppercase tracking-[0.22em] text-white/30 font-[family-name:var(--font-brand-sans)]">
-                  Est. Total
-                </span>
-                <span className="text-[1.6rem] font-bold text-white font-[family-name:var(--font-brand-sans)] leading-none">
-                  {total > 0 ? formatPrice(total) : '—'}
-                </span>
-              </div>
-              <p className="text-[8px] text-white/18 font-[family-name:var(--font-brand-sans)] mt-1.5 leading-relaxed">
-                MSRP pricing. Contact your authorized Kawai dealer for final pricing.
-              </p>
-            </div>
+            <p className="text-[8px] text-white/15 font-[family-name:var(--font-brand-sans)] mt-2 leading-relaxed">
+              MSRP. Contact your Kawai dealer for final pricing.
+            </p>
           </div>
         )}
 
         {/* CTAs */}
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           <Link
             href="/find-a-dealer"
-            className="flex items-center justify-center gap-2 w-full py-3.5 border border-white/18 text-white/60 text-[10px] uppercase tracking-[0.22em] font-bold font-[family-name:var(--font-brand-sans)] hover:border-white/45 hover:text-white/90 transition-all duration-200"
+            className="flex items-center justify-center gap-2 w-full py-3 border border-white/12 text-white/50 text-[9px] uppercase tracking-[0.3em] font-bold font-[family-name:var(--font-brand-sans)] hover:border-white/35 hover:text-white/80 transition-all duration-200"
           >
             Find a Dealer
             <ArrowRight className="w-3 h-3" />
@@ -873,39 +851,39 @@ export function PianoBuilder({ pianos, accessories }: Props) {
     <section className="bg-white border-t border-kawai-neutral/60">
 
       {/* ── Header ───────────────────────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-10 pt-16 pb-10">
-        <div className="flex items-end justify-between flex-wrap gap-6">
+      <div className="max-w-[1600px] mx-auto px-8 lg:px-16 pt-20 pb-14">
+        <div className="flex items-end justify-between flex-wrap gap-8">
           <div>
-            <p className="text-[10px] tracking-[0.45em] uppercase text-kawai-red font-bold mb-3 font-[family-name:var(--font-brand-sans)]">
+            <p className="text-[11px] tracking-[0.5em] uppercase text-kawai-red font-bold mb-4 font-[family-name:var(--font-brand-sans)]">
               Build Your Setup
             </p>
             <h2
               className="font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-none"
-              style={{ fontSize: 'clamp(2rem, 4.5vw, 3.25rem)' }}
+              style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)' }}
             >
               Compose your<br />
-              <em className="not-italic text-kawai-charcoal/30">perfect instrument.</em>
+              <em className="not-italic text-kawai-charcoal/25">perfect instrument.</em>
             </h2>
           </div>
-          <p className="text-[13px] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] max-w-xs leading-relaxed self-end pb-0.5">
+          <p className="text-[14px] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] max-w-sm leading-relaxed self-end pb-1">
             Select your piano, then equip it with compatible accessories.
           </p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-10">
+      <div className="max-w-[1600px] mx-auto px-8 lg:px-16">
         <div className="w-full h-px bg-kawai-neutral/60" />
       </div>
 
       {/* ── Step 1: Piano selector ────────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-10 py-10">
+      <div className="max-w-[1600px] mx-auto px-8 lg:px-16 py-12">
 
-        <div className="flex items-center gap-5 mb-7 flex-wrap">
-          <p className="text-[10px] uppercase tracking-[0.38em] text-kawai-charcoal/35 font-[family-name:var(--font-brand-sans)] flex-shrink-0">
+        <div className="flex items-center gap-6 mb-8 flex-wrap">
+          <p className="text-[11px] uppercase tracking-[0.4em] text-kawai-charcoal/35 font-[family-name:var(--font-brand-sans)] flex-shrink-0">
             01 — Your Piano
           </p>
-          <div className="flex-1 min-w-[200px] max-w-sm relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-kawai-charcoal/30 pointer-events-none" />
+          <div className="flex-1 min-w-[240px] max-w-md relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-kawai-charcoal/30 pointer-events-none" />
             <input
               ref={searchRef}
               type="text"
@@ -916,13 +894,13 @@ export function PianoBuilder({ pianos, accessories }: Props) {
               }}
               onKeyDown={(e) => { if (e.key === 'Enter' && showCustomOption) handleCustomConfirm() }}
               placeholder={isConfiguring ? (activePianoLabel ?? 'Search models…') : 'Search or enter your model…'}
-              className="w-full pl-9 pr-4 py-2.5 text-[12px] font-[family-name:var(--font-brand-sans)] text-kawai-black placeholder:text-kawai-charcoal/30 bg-kawai-pearl border border-kawai-neutral/60 focus:outline-none focus:border-kawai-red transition-colors duration-200"
+              className="w-full pl-11 pr-4 py-3 text-[13px] font-[family-name:var(--font-brand-sans)] text-kawai-black placeholder:text-kawai-charcoal/30 bg-kawai-pearl border border-kawai-neutral/60 focus:outline-none focus:border-kawai-red transition-colors duration-200"
             />
           </div>
           {isConfiguring && (
             <button
               onClick={handleReset}
-              className="text-[9px] uppercase tracking-[0.22em] text-kawai-charcoal/28 hover:text-kawai-red transition-colors duration-150 font-[family-name:var(--font-brand-sans)]"
+              className="text-[10px] uppercase tracking-[0.25em] text-kawai-charcoal/30 hover:text-kawai-red transition-colors duration-150 font-[family-name:var(--font-brand-sans)]"
             >
               Start over
             </button>
@@ -936,14 +914,14 @@ export function PianoBuilder({ pianos, accessories }: Props) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.2 }}
-              className="mb-6"
+              className="mb-7"
             >
               <button
                 onClick={handleCustomConfirm}
-                className="flex items-center gap-3 px-4 py-3 bg-kawai-pearl border border-dashed border-kawai-neutral hover:border-kawai-red hover:bg-white transition-all duration-200 group"
+                className="flex items-center gap-3 px-5 py-3.5 bg-kawai-pearl border border-dashed border-kawai-neutral hover:border-kawai-red hover:bg-white transition-all duration-200 group"
               >
-                <Plus className="w-3.5 h-3.5 text-kawai-charcoal/35 group-hover:text-kawai-red transition-colors duration-150" />
-                <span className="text-[11px] font-[family-name:var(--font-brand-sans)] text-kawai-charcoal/55 group-hover:text-kawai-black transition-colors duration-150">
+                <Plus className="w-4 h-4 text-kawai-charcoal/35 group-hover:text-kawai-red transition-colors duration-150" />
+                <span className="text-[12px] font-[family-name:var(--font-brand-sans)] text-kawai-charcoal/55 group-hover:text-kawai-black transition-colors duration-150">
                   Use <strong className="text-kawai-black font-semibold">&ldquo;{searchQuery.trim()}&rdquo;</strong> as my piano
                 </span>
               </button>
@@ -951,31 +929,31 @@ export function PianoBuilder({ pianos, accessories }: Props) {
           )}
         </AnimatePresence>
 
-        <div className="flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x">
+        <div className="flex gap-5 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x">
           {customPianoName && (
             <motion.div
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="flex-shrink-0 w-[200px] snap-start"
+              className="flex-shrink-0 w-[240px] snap-start"
             >
               <div className="relative w-full aspect-[4/3] bg-kawai-pearl flex items-center justify-center shadow-[0_8px_40px_rgba(0,0,0,0.12)]">
-                <svg className="w-10 h-10 text-kawai-charcoal/20" viewBox="0 0 32 32" fill="none">
+                <svg className="w-12 h-12 text-kawai-charcoal/20" viewBox="0 0 32 32" fill="none">
                   <rect x="2" y="14" width="28" height="12" rx="1" stroke="currentColor" strokeWidth="1.2" />
                   <rect x="4" y="10" width="24" height="4" rx="0.4" stroke="currentColor" strokeWidth="1.2" />
                 </svg>
-                <div className="absolute top-2.5 right-2.5 w-5 h-5 bg-kawai-red flex items-center justify-center">
-                  <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
+                <div className="absolute top-3 right-3 w-6 h-6 bg-kawai-red flex items-center justify-center">
+                  <Check className="w-3 h-3 text-white" strokeWidth={3} />
                 </div>
               </div>
-              <div className="pt-2.5">
-                <p className="text-[11px] font-bold uppercase tracking-[0.18em] font-[family-name:var(--font-brand-sans)] text-kawai-red truncate">
+              <div className="pt-3">
+                <p className="text-[12px] font-bold uppercase tracking-[0.18em] font-[family-name:var(--font-brand-sans)] text-kawai-red truncate">
                   {customPianoName}
                 </p>
-                <p className="text-[9px] uppercase tracking-[0.15em] text-kawai-charcoal/28 font-[family-name:var(--font-brand-sans)] mt-0.5">
+                <p className="text-[10px] uppercase tracking-[0.15em] text-kawai-charcoal/28 font-[family-name:var(--font-brand-sans)] mt-0.5">
                   My piano
                 </p>
               </div>
-              <div className="h-[2px] bg-kawai-red mt-1" />
+              <div className="h-[2px] bg-kawai-red mt-1.5" />
             </motion.div>
           )}
 
@@ -991,7 +969,7 @@ export function PianoBuilder({ pianos, accessories }: Props) {
         </div>
 
         {searchQuery.trim() && filteredPianos.length === 0 && !showCustomOption && (
-          <p className="mt-4 text-xs text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)] italic">
+          <p className="mt-5 text-[13px] text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)] italic">
             No catalog models match — type above and press Enter to use your own model.
           </p>
         )}
@@ -1008,8 +986,8 @@ export function PianoBuilder({ pianos, accessories }: Props) {
             transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="overflow-hidden border-t border-kawai-neutral/60"
           >
-            <div className="max-w-7xl mx-auto px-6 lg:px-10 py-12">
-              <div className="grid lg:grid-cols-[1fr_340px] gap-8 items-start">
+            <div className="max-w-[1600px] mx-auto px-8 lg:px-16 py-14">
+              <div className="grid lg:grid-cols-[1fr_420px] gap-10 items-start">
 
                 {/* ── Left: image + slot grid ───────────────────────────────── */}
                 <div className="min-w-0">
@@ -1022,21 +1000,21 @@ export function PianoBuilder({ pianos, accessories }: Props) {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.4 }}
-                      className="relative w-full bg-kawai-pearl mb-8 overflow-hidden"
-                      style={{ aspectRatio: '16 / 7' }}
+                      className="relative w-full bg-kawai-pearl mb-10 overflow-hidden"
+                      style={{ aspectRatio: '16 / 8' }}
                     >
                       {selectedPiano?.imageUrl ? (
                         <Image
                           src={selectedPiano.imageUrl}
                           alt={selectedPiano.model}
                           fill
-                          className="object-contain p-8 lg:p-12"
-                          sizes="(max-width: 1024px) 100vw, calc(100vw - 400px)"
+                          className="object-contain p-10 lg:p-16"
+                          sizes="(max-width: 1024px) 100vw, calc(100vw - 480px)"
                           priority
                         />
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <svg className="w-20 h-20 text-kawai-charcoal/10" viewBox="0 0 32 32" fill="none">
+                          <svg className="w-24 h-24 text-kawai-charcoal/10" viewBox="0 0 32 32" fill="none">
                             <rect x="2" y="14" width="28" height="12" rx="1" stroke="currentColor" strokeWidth="1" />
                             <rect x="4" y="10" width="24" height="4" rx="0.4" stroke="currentColor" strokeWidth="1" />
                             <rect x="5.5" y="6" width="3" height="7" rx="0.3" fill="currentColor" opacity="0.18" />
@@ -1048,13 +1026,13 @@ export function PianoBuilder({ pianos, accessories }: Props) {
                       )}
 
                       {/* Model label bottom-left */}
-                      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-kawai-pearl/80 to-transparent">
-                        <p className="text-[9px] uppercase tracking-[0.4em] text-kawai-red font-bold font-[family-name:var(--font-brand-sans)]">
+                      <div className="absolute bottom-0 left-0 right-0 px-6 py-5 bg-gradient-to-t from-kawai-pearl/90 to-transparent">
+                        <p className="text-[10px] uppercase tracking-[0.45em] text-kawai-red font-bold font-[family-name:var(--font-brand-sans)]">
                           {activePianoCategory}
                         </p>
                         <p
-                          className="font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-none mt-0.5"
-                          style={{ fontSize: 'clamp(1.25rem, 2.5vw, 1.75rem)' }}
+                          className="font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-none mt-1"
+                          style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)' }}
                         >
                           {activePianoLabel}
                         </p>
@@ -1063,7 +1041,7 @@ export function PianoBuilder({ pianos, accessories }: Props) {
                       {/* Change model */}
                       <button
                         onClick={handleReset}
-                        className="absolute top-3 right-3 text-[8px] uppercase tracking-[0.3em] text-kawai-charcoal/35 hover:text-kawai-red transition-colors duration-150 font-[family-name:var(--font-brand-sans)] bg-white/70 px-2.5 py-1.5"
+                        className="absolute top-4 right-4 text-[9px] uppercase tracking-[0.3em] text-kawai-charcoal/40 hover:text-kawai-red transition-colors duration-150 font-[family-name:var(--font-brand-sans)] bg-white/80 px-3 py-2"
                       >
                         Change
                       </button>
@@ -1071,7 +1049,7 @@ export function PianoBuilder({ pianos, accessories }: Props) {
                   </AnimatePresence>
 
                   {/* Slot section label */}
-                  <p className="text-[10px] uppercase tracking-[0.38em] text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)] mb-6">
+                  <p className="text-[11px] uppercase tracking-[0.4em] text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)] mb-6">
                     02 — Equip Your Setup
                     {customPianoName && (
                       <span className="ml-3 text-kawai-charcoal/18 normal-case tracking-normal lowercase">
@@ -1082,7 +1060,7 @@ export function PianoBuilder({ pianos, accessories }: Props) {
 
                   {/* Slot grid */}
                   <LayoutGroup id="slots">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                       {availableSlots.map((slotDef) => (
                         <SlotCard
                           key={slotDef.key}
@@ -1090,12 +1068,26 @@ export function PianoBuilder({ pianos, accessories }: Props) {
                           fill={slots[slotDef.key]}
                           accessories={accessories}
                           isActive={activeSlot === slotDef.key}
-                          onOpen={() => setActiveSlot(slotDef.key)}
+                          onOpen={() => setActiveSlot(activeSlot === slotDef.key ? null : slotDef.key)}
                           onRemove={() => handleSlotRemove(slotDef.key)}
                         />
                       ))}
                     </div>
                   </LayoutGroup>
+
+                  {/* Inline picker dropdown */}
+                  <AnimatePresence>
+                    {activeSlot && pickerOptions.length > 0 && (
+                      <InlinePickerDropdown
+                        key={activeSlot}
+                        slotLabel={SLOT_TYPES.find((s) => s.key === activeSlot)?.label ?? activeSlot}
+                        options={pickerOptions}
+                        currentFill={slots[activeSlot]}
+                        onSelect={handleSlotFill}
+                        onClose={() => setActiveSlot(null)}
+                      />
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* ── Right: checkout panel ─────────────────────────────────── */}
@@ -1104,7 +1096,7 @@ export function PianoBuilder({ pianos, accessories }: Props) {
                     className="hidden lg:flex flex-col sticky overflow-hidden"
                     style={{
                       top: 'var(--header-bottom, 80px)',
-                      maxHeight: 'calc(100vh - var(--header-bottom, 80px) - 40px)',
+                      maxHeight: 'calc(100vh - var(--header-bottom, 80px) - 48px)',
                     }}
                   >
                     <BuildCheckout
@@ -1131,44 +1123,29 @@ export function PianoBuilder({ pianos, accessories }: Props) {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}
             transition={{ type: 'spring', bounce: 0.1, duration: 0.4 }}
-            className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-kawai-black border-t border-white/10 px-5 py-4 flex items-center justify-between gap-4"
+            className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-kawai-black border-t border-white/10 px-6 py-5 flex items-center justify-between gap-4"
           >
             <div>
-              <p className="text-[8px] uppercase tracking-[0.3em] text-kawai-red font-bold font-[family-name:var(--font-brand-sans)]">
+              <p className="text-[9px] uppercase tracking-[0.3em] text-kawai-red font-bold font-[family-name:var(--font-brand-sans)]">
                 {equippedItems.length} {equippedItems.length === 1 ? 'item' : 'items'}
               </p>
-              <p className="text-lg font-bold text-white font-[family-name:var(--font-brand-sans)] leading-none mt-0.5">
+              <p className="text-xl font-bold text-white font-[family-name:var(--font-brand-sans)] leading-none mt-1">
                 {total > 0 ? formatPrice(total) : '—'}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2.5">
               <Link
                 href="/find-a-dealer"
-                className="flex items-center gap-1.5 px-4 py-2.5 border border-white/20 text-white/65 text-[10px] uppercase tracking-[0.18em] font-bold font-[family-name:var(--font-brand-sans)] hover:border-white/50 transition-all duration-200"
+                className="flex items-center gap-1.5 px-5 py-3 border border-white/20 text-white/65 text-[10px] uppercase tracking-[0.18em] font-bold font-[family-name:var(--font-brand-sans)] hover:border-white/50 transition-all duration-200"
               >
                 Find Dealer
               </Link>
               <BuyNowButton
                 items={buyNowItems}
-                className="px-4 py-2.5 w-auto"
+                className="px-5 py-3 w-auto"
               />
             </div>
           </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Picker drawer ─────────────────────────────────────────────────────── */}
-      <AnimatePresence>
-        {activeSlot && (
-          <PickerDrawer
-            key={activeSlot}
-            slotKey={activeSlot}
-            slotLabel={SLOT_TYPES.find((s) => s.key === activeSlot)?.label ?? activeSlot}
-            options={pickerOptions}
-            currentFill={slots[activeSlot]}
-            onSelect={handleSlotFill}
-            onClose={() => setActiveSlot(null)}
-          />
         )}
       </AnimatePresence>
 

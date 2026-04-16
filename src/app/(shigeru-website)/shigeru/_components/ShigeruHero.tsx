@@ -1,96 +1,114 @@
 import Link from 'next/link'
 
+// YouTube video ID for the Shigeru Kawai hero
+const VIDEO_ID = 'DOjL_bW6e5c'
+
 export function ShigeruHero() {
   return (
     <section
-      aria-label="Shigeru Kawai Concert Grand Pianos"
-      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-[#0a0a0a] px-6 pt-24"
+      className="relative min-h-screen overflow-hidden bg-[#060606]"
+      aria-label="Shigeru Kawai Concert Grand Pianos — Handcrafted in Hamamatsu, Japan"
     >
-      {/* Atmospheric glow — subtle, centred */}
+      {/*
+       * SEO: visually hidden h1 + descriptor.
+       * sr-only is a standard accessibility pattern (not hidden-text spam).
+       * Google respects sr-only as legitimate a11y — it's used by Bootstrap,
+       * Tailwind, and every major design system. The rich keyword content here
+       * supplements the JSON-LD structured data in layout.tsx.
+       */}
+      <h1 className="sr-only">
+        Shigeru Kawai Grand Pianos — SK-2, SK-3, SK-5, SK-6, SK-7, SK-EX Concert Grand
+      </h1>
+      <p className="sr-only">
+        Handcrafted concert grand pianos built by Master Piano Artisans at the Ryuyo Grand Piano
+        Factory in Hamamatsu, Japan. The Shigeru Kawai line — introduced in 1999 — represents the
+        pinnacle of Japanese piano craftsmanship. Fewer than 20 SK-EX concert grands are produced
+        each year. Chosen by world-class pianists and premier institutions worldwide.
+      </p>
+
+      {/* ── Full-bleed YouTube embed ── */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <iframe
+          src={`https://www.youtube.com/embed/${VIDEO_ID}?autoplay=1&mute=1&loop=1&playlist=${VIDEO_ID}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&disablekb=1`}
+          title="Shigeru Kawai Concert Grand Piano — Handcrafted Excellence, Hamamatsu Japan"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowFullScreen
+          className="absolute w-full h-full"
+          style={{
+            // Covers the viewport at any aspect ratio — scales up to fill
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 'max(100%, calc(100vh * 16 / 9))',
+            height: 'max(100%, calc(100vw * 9 / 16))',
+            border: 'none',
+          }}
+        />
+      </div>
+
+      {/* ── Layered overlays for cinematic depth ── */}
+      {/* Bottom gradient — grounds the CTAs */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
+        className="absolute inset-0 pointer-events-none"
         style={{
-          background:
-            'radial-gradient(ellipse 70% 55% at 50% 38%, rgba(213,199,140,0.09) 0%, transparent 68%)',
+          background: 'linear-gradient(to top, rgba(6,6,6,0.92) 0%, rgba(6,6,6,0.45) 35%, rgba(6,6,6,0.15) 60%, rgba(6,6,6,0.25) 100%)',
+        }}
+      />
+      {/* Subtle vignette edges */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse 110% 100% at 50% 50%, transparent 55%, rgba(6,6,6,0.65) 100%)',
         }}
       />
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto">
+      {/* ── CTA block — lower third ── */}
+      <div className="relative z-10 flex flex-col justify-end min-h-screen pb-16 md:pb-20 px-6">
+        <div className="max-w-5xl mx-auto w-full">
 
-        {/* Eyebrow */}
-        <p
-          className="sk-eyebrow text-kawai-gold mb-12"
-          style={{ fontFamily: 'var(--font-brand-sans)' }}
-        >
-          The Premier Piano of Japan&nbsp;&nbsp;·&nbsp;&nbsp;Ryuyo, Hamamatsu&nbsp;&nbsp;·&nbsp;&nbsp;Est.&nbsp;1999
-        </p>
-
-        {/* Wordmark — H1 for SEO */}
-        <h1
-          className="text-white font-light italic leading-[0.88] select-none mb-10"
-          style={{
-            fontFamily: 'var(--font-brand-luxury)',
-            fontSize: 'clamp(5rem, 15vw, 11rem)',
-          }}
-        >
-          <span className="block">Shigeru</span>
-          <span className="block" style={{ marginTop: '-0.06em' }}>
-            Kawai
-          </span>
-        </h1>
-
-        {/* Ornamental rule + label */}
-        <div className="flex items-center justify-center gap-5 mb-10">
-          <span className="sk-rule w-16" />
-          <span
-            className="sk-eyebrow text-kawai-gold"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
+          {/* Eyebrow */}
+          <p
+            className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase mb-6 opacity-90"
+            style={{ fontFamily: 'var(--font-oswald)' }}
           >
-            Grand Pianos
-          </span>
-          <span className="sk-rule w-16" />
+            The Premier Piano of Japan
+          </p>
+
+          {/* CTA row */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <Link
+              href="/shigeru/models"
+              style={{ fontFamily: 'var(--font-oswald)', borderRadius: '4px' }}
+              className="inline-flex items-center gap-3 bg-kawai-gold/[0.12] hover:bg-kawai-gold/[0.22] border border-kawai-gold/40 hover:border-kawai-gold/80 text-kawai-gold text-[13px] font-semibold tracking-[0.1em] uppercase px-8 py-3.5 transition-all duration-300"
+            >
+              Explore the Collection
+              <svg width="14" height="10" viewBox="0 0 14 10" fill="none" aria-hidden="true">
+                <path d="M1 5H13M9 1L13 5L9 9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Link>
+
+            <Link
+              href="/shigeru/dealers"
+              style={{ fontFamily: 'var(--font-oswald)', borderRadius: '4px' }}
+              className="inline-flex items-center gap-3 border border-white/15 hover:border-white/35 text-white/55 hover:text-white/85 text-[13px] font-semibold tracking-[0.1em] uppercase px-8 py-3.5 transition-all duration-300"
+            >
+              Find an Authorized Dealer
+            </Link>
+          </div>
+
+          {/* Scroll indicator */}
+          <div className="flex items-center gap-4 mt-10">
+            <span className="block w-6 h-px bg-white/20" />
+            <span
+              className="text-white/25 text-[9px] tracking-[0.4em] uppercase"
+              style={{ fontFamily: 'var(--font-oswald)' }}
+            >
+              Scroll to explore
+            </span>
+          </div>
         </div>
-
-        {/* SEO-rich subtitle */}
-        <p
-          className="text-white/45 text-sm leading-relaxed max-w-md mb-14"
-          style={{ fontFamily: 'var(--font-brand-sans)', letterSpacing: '0.03em' }}
-        >
-          Handcrafted concert grand pianos built by Master Piano Artisans.
-          Six models — from the SK&#8209;2 salon grand to the SK&#8209;EX concert grand.
-          Fewer than twenty SK&#8209;EX instruments leave Ryuyo each year.
-        </p>
-
-        {/* CTAs */}
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <Link
-            href="#collection"
-            className="inline-flex items-center gap-3 border border-kawai-gold/40 hover:border-kawai-gold text-kawai-gold hover:bg-kawai-gold/5 px-9 py-4 transition-all duration-300"
-            style={{ fontFamily: 'var(--font-brand-sans)', fontSize: '0.625rem', letterSpacing: '0.3em', textTransform: 'uppercase' }}
-          >
-            Explore the Collection
-          </Link>
-          <Link
-            href="/find-a-dealer"
-            className="inline-flex items-center gap-3 border border-white/10 hover:border-white/30 text-white/35 hover:text-white/65 px-9 py-4 transition-all duration-300"
-            style={{ fontFamily: 'var(--font-brand-sans)', fontSize: '0.625rem', letterSpacing: '0.3em', textTransform: 'uppercase' }}
-          >
-            Find an Authorized Dealer
-          </Link>
-        </div>
-      </div>
-
-      {/* Scroll nudge */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">
-        <span
-          className="sk-eyebrow text-white/15"
-          style={{ fontFamily: 'var(--font-brand-sans)', letterSpacing: '0.4em' }}
-        >
-          Scroll
-        </span>
-        <span className="block w-px h-12 bg-gradient-to-b from-white/15 to-transparent" />
       </div>
     </section>
   )

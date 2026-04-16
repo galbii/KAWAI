@@ -952,7 +952,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                 >
                   <ContextAwareLink
                     href="/find-a-dealer"
-                    className="flex items-center gap-2 rounded-md bg-kawai-red px-4 py-2.5 text-[11px] tracking-[0.08em] uppercase font-semibold text-white hover:bg-kawai-red-700 shadow-sm transition-all duration-200 font-[family-name:var(--font-brand-sans)]"
+                    className="flex items-center gap-2 rounded-full bg-kawai-red border border-white/20 px-5 py-2.5 text-[11px] tracking-[0.08em] uppercase font-semibold text-white hover:border-white/50 hover:shadow-[0_0_24px_rgba(225,25,34,0.55),0_4px_16px_rgba(225,25,34,0.35)] hover:scale-[1.04] hover:brightness-110 shadow-[0_2px_12px_rgba(225,25,34,0.3)] transition-all duration-200 font-[family-name:var(--font-brand-sans)]"
                   >
                     <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
                     Find a Dealer
@@ -1231,7 +1231,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                   {registerConfig?.enabled !== false && (
                     <Link
                       href="/warranty-registration"
-                      className="rounded-md bg-kawai-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-kawai-charcoal"
+                      className="rounded-full bg-kawai-black border border-white/20 px-5 py-2 text-sm font-medium text-white hover:bg-kawai-charcoal hover:border-white/40 hover:shadow-[0_0_20px_rgba(30,27,22,0.6),0_4px_16px_rgba(30,27,22,0.4)] hover:scale-[1.04] hover:brightness-150 shadow-[0_2px_12px_rgba(0,0,0,0.25)] transition-all duration-200"
                     >
                       Register Your Piano
                     </Link>
@@ -1372,7 +1372,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                     <Link
                       href="/warranty-registration"
                       onClick={closeMobileMenu}
-                      className="block w-full rounded-lg bg-kawai-black px-5 py-3.5 text-sm font-semibold text-white text-center transition-colors hover:bg-kawai-charcoal active:scale-[0.98]"
+                      className="block w-full rounded-full bg-kawai-black border border-white/20 px-5 py-3.5 text-sm font-semibold text-white text-center hover:bg-kawai-charcoal hover:border-white/40 hover:brightness-150 shadow-[0_2px_12px_rgba(0,0,0,0.25)] transition-all duration-200 active:scale-[0.97]"
                     >
                       Register Your Piano
                     </Link>
@@ -1380,7 +1380,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                   {!currentLocationData && (
                     <ContextAwareLink
                       href="/find-a-dealer"
-                      className="block w-full rounded-lg bg-kawai-red px-5 py-3.5 text-sm font-semibold text-white text-center transition-colors hover:bg-kawai-red-700 active:scale-[0.98]"
+                      className="block w-full rounded-full bg-kawai-red border border-white/20 px-5 py-3.5 text-sm font-semibold text-white text-center hover:border-white/50 hover:shadow-[0_0_24px_rgba(225,25,34,0.55),0_4px_16px_rgba(225,25,34,0.35)] hover:brightness-110 shadow-[0_2px_12px_rgba(225,25,34,0.3)] transition-all duration-200 active:scale-[0.97]"
                       onClick={closeMobileMenu}
                     >
                       Find a Dealer

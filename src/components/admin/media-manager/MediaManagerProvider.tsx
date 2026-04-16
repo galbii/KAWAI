@@ -880,13 +880,14 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
 
   // Copy URL to clipboard with toast feedback
   const copyPublicUrl = useCallback(async (url: string) => {
+    const cleanUrl = url.trim()
     try {
-      await navigator.clipboard.writeText(url)
+      await navigator.clipboard.writeText(cleanUrl)
       showToast('success', 'URL copied to clipboard')
     } catch (error) {
       // Fallback for older browsers
       const textArea = document.createElement('textarea')
-      textArea.value = url
+      textArea.value = cleanUrl
       textArea.style.position = 'fixed'
       textArea.style.left = '-999999px'
       document.body.appendChild(textArea)

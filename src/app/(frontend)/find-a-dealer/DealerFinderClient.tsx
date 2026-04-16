@@ -24,7 +24,7 @@ interface Props {
 type DesktopView = 'list' | 'map'
 
 export function DealerFinderClient({ dealers, heading }: Props) {
-  const resolvedHeading = heading ?? 'Find Authorized Kawai Piano Dealers'
+  const resolvedHeading = heading ?? 'Find an Authorized Kawai Dealer Near You'
   const [searchLocation, setSearchLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [selectedRadius, setSelectedRadius] = useState(25)
   const [selectedDealerTypes, setSelectedDealerTypes] = useState<string[]>([])

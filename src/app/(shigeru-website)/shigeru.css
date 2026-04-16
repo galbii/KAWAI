@@ -6,8 +6,14 @@
  * All layout, spacing, and color → Tailwind kawai-* tokens.
  */
 
+/* Oswald as the primary display font for the entire Shigeru microsite */
+.sk-font {
+  font-family: var(--font-oswald), var(--font-brand-sans), sans-serif;
+}
+
 /* Eyebrow label — used on every section header */
 .sk-eyebrow {
+  font-family: var(--font-oswald), var(--font-brand-sans), sans-serif;
   font-size: 0.625rem;       /* 10px */
   letter-spacing: 0.45em;
   text-transform: uppercase;

@@ -7,14 +7,14 @@ import { DealerFinderMapBlock } from '@/components/blocks/DealerFinderMapBlock'
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
 
 const fallbackMetadata: Metadata = {
-  title: 'Find a KAWAI Piano Dealer | Authorized Dealers Near You',
+  title: 'Find an Authorized Kawai Dealer Near You',
   description:
     'Find authorized Kawai piano dealers near you. Search by ZIP code or city to locate showrooms, get contact info, and book an expert piano consultation.',
   alternates: {
     canonical: '/find-a-dealer',
   },
   openGraph: {
-    title: 'Find a KAWAI Piano Dealer | Authorized Dealers Near You',
+    title: 'Find an Authorized Kawai Dealer Near You',
     description:
       'Find authorized Kawai piano dealers near you. Search by ZIP code or city to locate showrooms, get contact info, and book an expert piano consultation.',
     url: '/find-a-dealer',
@@ -30,7 +30,7 @@ const fallbackMetadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Find a KAWAI Piano Dealer | Authorized Dealers Near You',
+    title: 'Find an Authorized Kawai Dealer Near You',
     description:
       'Find authorized Kawai piano dealers near you. Search by ZIP code or city to locate showrooms, get contact info, and book an expert piano consultation.',
   },

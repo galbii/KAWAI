@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { getSite, getSiteName, getSiteUrl } from '@/lib/site-context'
-import { Inter, Crimson_Text, Playfair_Display, Cormorant_Garamond, Noto_Sans } from "next/font/google";
+import { Inter, Crimson_Text, Playfair_Display, Cormorant_Garamond, Noto_Sans, Oswald } from "next/font/google";
 import { GoogleTagManager } from '@next/third-parties/google';
 import Script from 'next/script';
 import { Suspense } from 'react';
@@ -57,6 +57,15 @@ const notoSans = Noto_Sans({
   preload: false,
 });
 
+// Condensed bold display font — primary for Shigeru Kawai microsite
+const oswald = Oswald({
+  subsets: ["latin"],
+  variable: "--font-oswald",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+  preload: false,
+});
+
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSite()
   const name = getSiteName(site)
@@ -109,7 +118,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://stats.g.doubleclick.net" />
         <link rel="dns-prefetch" href="https://us.posthog.com" />
       </head>
-      <body className={`${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${notoSans.variable} antialiased bg-kawai-black text-kawai-pearl`}>
+      <body className={`${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${notoSans.variable} ${oswald.variable} antialiased bg-kawai-black text-kawai-pearl`}>
         {/* GA4 Consent Mode v2 — must run before GTM so tags use the correct defaults.
             Reads vanilla-cookieconsent's saved cookie synchronously so returning visitors
             who already accepted don't have their pageview dropped by the 500ms race. */}
