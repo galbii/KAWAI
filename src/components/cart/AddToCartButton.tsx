@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { ShoppingCart, Check, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { createCart, addToCart as addToExistingCart, getUTMCartAttributes } from '@/lib/shopify'
+import { updateCartAttributes } from '@/lib/shopify/cart'
 import { getCartId, saveCartId } from '@/lib/shopify/cart-storage'
 import { cn } from '@/lib/utils'
 
@@ -77,6 +78,12 @@ export function AddToCartButton({
           merchandiseId: formattedVariantId as `gid://shopify/${string}/${string}`,
           quantity,
         }])
+        // Write UTM attributes to the existing cart so the Order captures attribution
+        // even when the cart pre-dates the current paid-traffic session.
+        const utmAttrs = getUTMCartAttributes()
+        if (utmAttrs.length > 0) {
+          updateCartAttributes(cartId, utmAttrs).catch(() => {})
+        }
       }
 
       if (cart) {

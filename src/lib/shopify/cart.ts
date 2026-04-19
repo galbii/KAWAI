@@ -30,6 +30,7 @@ import {
   CART_LINES_REMOVE_MUTATION,
   GET_CART_QUERY,
   CART_DISCOUNT_CODES_UPDATE_MUTATION,
+  CART_ATTRIBUTES_UPDATE_MUTATION,
 } from './queries'
 import { extractId } from './products'
 import type {
@@ -558,6 +559,54 @@ export async function removeDiscountCode(
   }
 
   return transformCart(data.cartDiscountCodesUpdate.cart)
+}
+
+/**
+ * Update cart-level attributes (e.g. UTM attribution data).
+ * Merges with existing attributes — Shopify replaces the full attributes array,
+ * so callers should pass only keys they intend to set/overwrite.
+ *
+ * @example
+ * ```typescript
+ * await updateCartAttributes(cartId, getUTMCartAttributes())
+ * ```
+ */
+export async function updateCartAttributes(
+  cartId: string,
+  attributes: Array<{ key: string; value: string }>,
+  options?: ShopifyRequestOptions
+): Promise<SimpleCart> {
+  if (attributes.length === 0) {
+    const cart = await getCart(cartId, options)
+    if (!cart) throw new CartError('Cart not found')
+    return cart
+  }
+
+  const formattedCartId = cartId.startsWith('gid://')
+    ? (cartId as ShopifyGID)
+    : (`gid://shopify/Cart/${cartId}` as ShopifyGID)
+
+  interface CartAttributesUpdateResponse {
+    cartAttributesUpdate: { cart: Cart | null; userErrors: CartUserError[] }
+  }
+  interface CartAttributesUpdateVariables {
+    cartId: ShopifyGID
+    attributes: Array<{ key: string; value: string }>
+  }
+
+  const data = await shopifyClient.query<CartAttributesUpdateResponse, CartAttributesUpdateVariables>(
+    CART_ATTRIBUTES_UPDATE_MUTATION,
+    { cartId: formattedCartId, attributes },
+    { cache: 'no-store', revalidate: false, ...options }
+  )
+
+  throwIfErrors(data.cartAttributesUpdate.userErrors, 'attributes update')
+
+  if (!data.cartAttributesUpdate.cart) {
+    throw new CartError('Failed to update cart attributes: no cart returned')
+  }
+
+  return transformCart(data.cartAttributesUpdate.cart)
 }
 
 /**

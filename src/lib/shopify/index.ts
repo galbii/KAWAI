@@ -358,6 +358,7 @@ export type { PayloadShopifyMedia } from './transform-media-to-payload'
 // ============================================================================
 
 export { buildCheckoutUrl, getUTMCartAttributes } from './checkout'
+export { updateCartAttributes } from './cart'
 export type { CartAttribute } from './checkout'
 
 // ============================================================================

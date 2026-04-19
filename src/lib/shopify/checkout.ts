@@ -5,7 +5,7 @@
  * Safe to import in 'use client' components; never import server-side.
  */
 
-import { getStoredUTMParams } from './utm-tracking'
+import { getStoredUTMParams, getLastTouchUTMParams } from './utm-tracking'
 import type { UTMParams } from './utm-tracking'
 
 // ============================================================================
@@ -76,7 +76,9 @@ function isResolved(value: string): boolean {
  * window.open(buildCheckoutUrl(cart.checkoutUrl), '_blank', 'noopener,noreferrer')
  */
 export function buildCheckoutUrl(baseUrl: string): string {
-  const utmParams = getStoredUTMParams()
+  // Last-touch: the campaign that drove this specific checkout visit.
+  // Falls back to first-touch when no last-touch cookie exists.
+  const utmParams = getLastTouchUTMParams() ?? getStoredUTMParams()
   const clickIds = getStoredClickIds()
 
   const entries: [string, string][] = []

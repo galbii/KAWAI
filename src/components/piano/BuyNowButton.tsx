@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ArrowRight } from 'lucide-react'
-import { createCart, addToCart } from '@/lib/shopify/cart'
+import { createCart, addToCart, updateCartAttributes } from '@/lib/shopify/cart'
 import { getProductByHandle } from '@/lib/shopify'
 import { buildCheckoutUrl, getUTMCartAttributes } from '@/lib/shopify/checkout'
 import { getCartId, saveCartId } from '@/lib/shopify/cart-storage'
@@ -97,6 +97,11 @@ export function BuyNowButton({ items, className, children = 'Buy Now', disabled 
       const existingCartId = getCartId()
       if (existingCartId) {
         cart = await addToCart(existingCartId, lines)
+        // Write UTM attributes before redirecting so the Order has attribution data.
+        const utmAttrs = getUTMCartAttributes()
+        if (utmAttrs.length > 0) {
+          await updateCartAttributes(existingCartId, utmAttrs).catch(() => {})
+        }
       } else {
         cart = await createCart(lines, getUTMCartAttributes())
         saveCartId(cart.id)

@@ -842,3 +842,20 @@ export const CART_DISCOUNT_CODES_UPDATE_MUTATION = `
     }
   }
 `
+
+export const CART_ATTRIBUTES_UPDATE_MUTATION = `
+  ${CART_FRAGMENT}
+
+  mutation CartAttributesUpdate($cartId: ID!, $attributes: [AttributeInput!]!) {
+    cartAttributesUpdate(cartId: $cartId, attributes: $attributes) {
+      cart {
+        ...CartFragment
+      }
+      userErrors {
+        code
+        message
+        field
+      }
+    }
+  }
+`
