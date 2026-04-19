@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Suspense } from 'react'
+import { UTMCapture } from '@/components/analytics/UTMCapture'
 
 export const metadata: Metadata = {
   title: 'Kawai ES60 Digital Piano | Best for Beginners Under $500 | 88 Weighted Keys',
@@ -65,6 +67,9 @@ export default function CinematicLayout({
   return (
     <div className="h-screen w-screen overflow-hidden bg-black">
       {children}
+      <Suspense fallback={null}>
+        <UTMCapture />
+      </Suspense>
     </div>
   );
 }

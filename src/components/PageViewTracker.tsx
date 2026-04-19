@@ -10,14 +10,32 @@ export default function PageViewTracker() {
   const posthog = usePostHog()
 
   useEffect(() => {
-    if (pathname && posthog) {
-      let url = window.origin + pathname
-      if (searchParams.toString()) {
-        url = url + `?${searchParams.toString()}`
-      }
-      posthog.capture('$pageview', {
-        $current_url: url
+    if (!pathname) return
+
+    const url = searchParams.toString()
+      ? `${window.origin}${pathname}?${searchParams.toString()}`
+      : `${window.origin}${pathname}`
+
+    // PostHog
+    if (posthog) {
+      posthog.capture('$pageview', { $current_url: url })
+    }
+
+    // GA4 — explicit page_view on every SPA navigation.
+    // GTM fires once on initial HTML load; subsequent Next.js client-side
+    // route changes are invisible to GTM without this call.
+    if (window.gtag) {
+      window.gtag('event', 'page_view', {
+        page_path: pathname,
+        page_location: url,
+        page_title: document.title,
       })
+    }
+
+    // Meta Pixel — fbq() is called once on consent grant (CookieConsentBanner.tsx).
+    // Re-fire PageView on every navigation so Meta sees the full session.
+    if (window.fbq) {
+      window.fbq('track', 'PageView')
     }
   }, [pathname, searchParams, posthog])
 
