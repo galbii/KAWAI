@@ -1311,6 +1311,94 @@ async function _getProductsByCollectionHandle(handle: string): Promise<Collectio
   }
 }
 
+export type GrandSaleProduct = {
+  id: string
+  model: string
+  name?: string | null
+  slug: string
+  type?: string | null
+  imageUrl?: string | null
+  description?: string | null
+  price?: { msrp?: number | null; currency?: string | null } | null
+  specifications?: Array<{ spec?: string | null; type?: string | null; details?: string | null }> | null
+  highlights?: Array<{ highlight?: string | null; description?: string | null }> | null
+  variations?: Array<{
+    name: string
+    price: number | null
+    compareAtPrice: number | null
+    available: boolean
+  }> | null
+}
+
+/**
+ * Get active grand piano products for the Grand Spring Sale landing page.
+ * Includes specs, highlights, pricing, and variations for rich product cards.
+ * Cached for 1 hour; invalidated by the 'products' tag.
+ */
+export const getGrandPianoSaleProducts = unstable_cache(
+  async (): Promise<GrandSaleProduct[]> => {
+    try {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'products',
+        where: {
+          and: [
+            { status: { not_equals: 'discontinued' } },
+            {
+              or: [
+                { type: { equals: 'grand' } },
+                { type: { equals: 'shigeru' } },
+                { category: { like: '%Grand%' } },
+                { category: { like: '%grand%' } },
+              ],
+            },
+          ],
+        },
+        select: {
+          model: true,
+          name: true,
+          slug: true,
+          type: true,
+          imageUrl: true,
+          description: true,
+          price: true,
+          specifications: true,
+          highlights: true,
+          variations: true,
+        },
+        sort: 'price.msrp',
+        depth: 0,
+        limit: 20,
+      })
+      return result.docs.map((doc: any) => ({
+        id: String(doc.id),
+        model: doc.model ?? '',
+        name: doc.name ?? null,
+        slug: doc.slug ?? '',
+        type: doc.type ?? null,
+        imageUrl: doc.imageUrl ?? null,
+        description: doc.description ?? null,
+        price: doc.price ? { msrp: doc.price.msrp ?? null, currency: doc.price.currency ?? null } : null,
+        specifications: Array.isArray(doc.specifications) ? doc.specifications : null,
+        highlights: Array.isArray(doc.highlights) ? doc.highlights : null,
+        variations: Array.isArray(doc.variations)
+          ? doc.variations.map((v: any) => ({
+              name: v.name ?? '',
+              price: typeof v.price === 'number' ? v.price : null,
+              compareAtPrice: typeof v.compareAtPrice === 'number' ? v.compareAtPrice : null,
+              available: v.available === true,
+            }))
+          : null,
+      }))
+    } catch (error) {
+      console.error('Error fetching grand piano sale products:', error)
+      return []
+    }
+  },
+  ['grand-sale-products'],
+  { tags: ['products'], revalidate: 3600 },
+)
+
 /**
  * Get news items from the HomePage collection that have category 'view-product'.
  * Used to display a product spotlight carousel on the /pianos page.

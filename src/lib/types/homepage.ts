@@ -36,6 +36,7 @@ export interface ShowroomInfo {
   name: string
   address: string
   phone: string
+  email?: string | null
   serviceArea: string
 }
 

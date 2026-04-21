@@ -95,7 +95,7 @@ function CollectionCard({ collection, index }: { collection: NavCollection; inde
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay: index * 0.07, ease: [0.22, 1, 0.36, 1] }}
     >
-      <Link href={href} className="group block relative overflow-hidden bg-kawai-black" style={{ aspectRatio: '4/3' }}>
+      <Link href={href} className="group block relative overflow-hidden rounded-lg bg-kawai-black" style={{ aspectRatio: '4/3' }}>
 
         {/* ── Background image ── */}
         {imageUrl ? (

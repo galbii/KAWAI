@@ -54,6 +54,14 @@ export interface ResourceLink {
   enabled?: boolean
 }
 
+export interface StoreLocationNavItem {
+  id: string
+  slug: string
+  locationName: string
+  city?: string | null
+  state?: string | null
+}
+
 function getDealerLocationBySlug(slug: string): Promise<DealerLocationData | null> {
   return unstable_cache(
     async () => {
@@ -213,6 +221,32 @@ const DEFAULT_RESOURCE_LINKS: ResourceLink[] = [
     enabled: true,
   },
 ]
+
+const getActiveStorefrontsForNav = unstable_cache(
+  async (): Promise<StoreLocationNavItem[]> => {
+    try {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'storefronts',
+        where: { isActive: { equals: true } },
+        depth: 0,
+        limit: 50,
+      })
+      return result.docs.map((doc: any) => ({
+        id: String(doc.id),
+        slug: doc.slug ?? '',
+        locationName: doc.locationName ?? '',
+        city: doc.address?.city ?? null,
+        state: doc.address?.state ?? null,
+      }))
+    } catch (err) {
+      console.error('[getActiveStorefrontsForNav]', err)
+      return []
+    }
+  },
+  ['header-storefronts-nav'],
+  { tags: ['storefronts'], revalidate: 3600 }
+)
 
 const getResourcesNavConfig = unstable_cache(
   async (): Promise<ResourceLink[]> => {
@@ -384,7 +418,7 @@ export async function HeaderDynamic() {
 
     // Fetch all header data in parallel — including the dealer location lookup
     // which was previously a sequential await that blocked the rest of the fetches.
-    const [newsItems, registerConfig, quickLinks, resourceLinks, latestPosts, headerSettings, locationData] =
+    const [newsItems, registerConfig, quickLinks, resourceLinks, latestPosts, headerSettings, locationData, storeLocations] =
       await Promise.all([
         getHomePageNewsItems(),
         getRegisterConfig(),
@@ -397,6 +431,7 @@ export async function HeaderDynamic() {
           : dealerSlug
           ? getDealerLocationBySlug(dealerSlug)
           : Promise.resolve(null),
+        getActiveStorefrontsForNav(),
       ])
 
     return (
@@ -412,6 +447,7 @@ export async function HeaderDynamic() {
         registerConfig={registerConfig}
         quickLinks={quickLinks}
         resourceLinks={resourceLinks}
+        storeLocations={storeLocations}
         autoMinimize={headerSettings.autoMinimize}
       />
     )

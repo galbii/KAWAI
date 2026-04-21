@@ -224,7 +224,8 @@
   border-kawai-neutral,
   border-kawai-gold,
   card-brand-news,
-  overlay-brand-news
+  overlay-brand-news,
+  font-kawai-script
 }");
 
 @import "../styles/brand-components.css";

@@ -10,6 +10,12 @@
    COMPLEX BRAND COMPONENTS - Using @utility for multi-property components
    ========================================================================== */
 
+/* Campaign script font — Great Vibes loaded by Next.js on body as --font-great-vibes.
+   Must be @utility (not @theme) so the var() resolves in element context, not :root. */
+@utility font-kawai-script {
+  font-family: var(--font-great-vibes), cursive;
+}
+
 @utility btn-brand-primary {
   display: inline-flex;
   align-items: center;

@@ -1,0 +1,50 @@
+/* Maplibre popup reset for stores map */
+.stores-map-popup .maplibregl-popup-content {
+  padding: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #E8E4DE;
+  min-width: 220px;
+  max-width: 260px;
+  font-family: inherit;
+}
+
+.stores-map-popup .maplibregl-popup-tip {
+  border-top-color: #E8E4DE;
+}
+
+.stores-map-popup .maplibregl-popup-close-button {
+  font-size: 18px;
+  line-height: 1;
+  color: #999;
+  padding: 6px 10px;
+  top: 4px;
+  right: 2px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.stores-map-popup .maplibregl-popup-close-button:hover {
+  color: #E11922;
+  background: none;
+}
+
+/* Official stores marker */
+.stores-marker {
+  cursor: pointer;
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              filter 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stores-marker:hover {
+  transform: scale(1.15) translateY(-2px);
+  filter: drop-shadow(0 4px 10px rgba(225, 25, 34, 0.55));
+}
+
+.stores-marker.selected {
+  transform: scale(1.2) translateY(-3px);
+  filter: drop-shadow(0 6px 14px rgba(225, 25, 34, 0.65));
+}

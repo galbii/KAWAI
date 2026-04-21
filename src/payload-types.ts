@@ -8786,6 +8786,10 @@ export interface Storefront {
      */
     phone: string;
     /**
+     * Contact email address (displayed in the showroom info section)
+     */
+    email?: string | null;
+    /**
      * Service area description
      */
     serviceArea: string;
@@ -11039,6 +11043,7 @@ export interface StorefrontsSelect<T extends boolean = true> {
         name?: T;
         address?: T;
         phone?: T;
+        email?: T;
         serviceArea?: T;
       };
   address?:

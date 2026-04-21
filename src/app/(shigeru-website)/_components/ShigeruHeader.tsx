@@ -90,10 +90,10 @@ export default function ShigeruHeader() {
       {/* ── Floating glassmorphism pill ── */}
       <div className="fixed top-5 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
         <header className="pointer-events-auto w-full max-w-4xl" style={pillStyle}>
-          <div className="flex items-center justify-between h-[58px] px-5 md:px-7">
+          <div className="relative flex items-center md:justify-between h-[58px] px-5 md:px-7">
 
-            {/* Logo */}
-            <Link href="/shigeru" aria-label="Shigeru Kawai — Home" className="flex items-center shrink-0">
+            {/* Logo — absolute center on mobile, static left on desktop */}
+            <Link href="/shigeru" aria-label="Shigeru Kawai — Home" className="flex items-center shrink-0 absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0">
               <Image
                 src="https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/Shigeru%20Kawai%20logo.webp"
                 alt="Shigeru Kawai"
@@ -159,8 +159,8 @@ export default function ShigeruHeader() {
               })}
             </nav>
 
-            {/* Right side */}
-            <div className="flex items-center gap-3 shrink-0">
+            {/* Right side — ml-auto pushes hamburger right on mobile; md:justify-between handles desktop */}
+            <div className="flex items-center gap-3 shrink-0 ml-auto md:ml-0">
               {/* Contact pill — desktop */}
               <Link
                 href="/shigeru/contact"

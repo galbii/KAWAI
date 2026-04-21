@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { getSite, getSiteName, getSiteUrl } from '@/lib/site-context'
-import { Inter, Crimson_Text, Playfair_Display, Cormorant_Garamond, Noto_Sans, Oswald } from "next/font/google";
+import { Inter, Crimson_Text, Playfair_Display, Cormorant_Garamond, Noto_Sans, Oswald, Great_Vibes } from "next/font/google";
 import { GoogleTagManager } from '@next/third-parties/google';
 import Script from 'next/script';
 import { Suspense } from 'react';
@@ -42,7 +42,7 @@ const playfairDisplay = Playfair_Display({
 const cormorantGaramond = Cormorant_Garamond({
   subsets: ["latin"],
   variable: "--font-cormorant",
-  display: "optional",
+  display: "swap",
   weight: ["300", "400", "500", "600", "700"],
   style: ["normal", "italic"],
   preload: false,
@@ -54,6 +54,15 @@ const notoSans = Noto_Sans({
   variable: "--font-noto",
   display: "optional",
   weight: ["300", "400", "500", "600"],
+  preload: false,
+});
+
+// Elegant flowing script — Grand Spring Sale hero
+const greatVibes = Great_Vibes({
+  subsets: ["latin"],
+  variable: "--font-great-vibes",
+  display: "swap",
+  weight: ["400"],
   preload: false,
 });
 
@@ -118,7 +127,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://stats.g.doubleclick.net" />
         <link rel="dns-prefetch" href="https://us.posthog.com" />
       </head>
-      <body className={`${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${notoSans.variable} ${oswald.variable} antialiased bg-kawai-black text-kawai-pearl`}>
+      <body className={`${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${notoSans.variable} ${oswald.variable} ${greatVibes.variable} antialiased bg-kawai-black text-kawai-pearl`}>
         {/* GA4 Consent Mode v2 — must run before GTM so tags use the correct defaults.
             Reads vanilla-cookieconsent's saved cookie synchronously so returning visitors
             who already accepted don't have their pageview dropped by the 500ms race. */}

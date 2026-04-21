@@ -5,6 +5,8 @@ import {
   ContactForm,
   ShowroomLocation
 } from "@/components/homepage";
+import { CampaignNavigator } from "@/components/storefronts/CampaignNavigator";
+import { SpringSpecialsBanner } from "@/components/storefronts/SpringSpecialsBanner";
 import { MusicSchoolSection } from "@/components/music-school/MusicSchoolSection";
 import { PianoRentalsSection } from '@/components/storefronts/piano-rentals-section'
 import { FacilityRentalsSection } from '@/components/storefronts/facility-rentals-section'
@@ -289,6 +291,9 @@ async function StorefrontContent({ storeslug }: { storeslug: string }) {
         {/* Showroom Location Section */}
         <ShowroomLocation {...(storefrontData?.showroomSection && { data: storefrontData.showroomSection })} />
 
+        {/* Spring Specials Promotional Banner */}
+        <SpringSpecialsBanner storeslug={storeslug} />
+
         {/* Piano Rentals Section */}
         <PianoRentalsSection data={rawStorefrontData ?? {}} />
 
@@ -497,16 +502,19 @@ export default async function StorefrontPage({ params }: { params: Promise<{ sto
   const { storeslug } = await params;
 
   return (
-    <Suspense fallback={
-      <div className="min-h-screen">
-        <NewsCarouselSkeleton />
-        <ShowroomSkeleton />
-        <PianoCollectionSkeleton />
-        <PianoGallerySkeleton />
-        <ContactFormSkeleton />
-      </div>
-    }>
-      <StorefrontContent storeslug={storeslug} />
-    </Suspense>
+    <>
+      <Suspense fallback={
+        <div className="min-h-screen">
+          <NewsCarouselSkeleton />
+          <ShowroomSkeleton />
+          <PianoCollectionSkeleton />
+          <PianoGallerySkeleton />
+          <ContactFormSkeleton />
+        </div>
+      }>
+        <StorefrontContent storeslug={storeslug} />
+      </Suspense>
+      <CampaignNavigator storeslug={storeslug} />
+    </>
   );
 }

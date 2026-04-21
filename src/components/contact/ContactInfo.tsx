@@ -3,6 +3,7 @@ import Link from 'next/link';
 import {
   MapPinIcon,
   PhoneIcon,
+  EnvelopeIcon,
   ClockIcon,
   UserGroupIcon,
   WrenchScrewdriverIcon,
@@ -105,13 +106,25 @@ export function ContactInfo({ data = DEFAULT_CONTACT_INFO_DATA }: ContactInfoPro
 
               <div className="flex items-center">
                 <PhoneIcon className="w-5 h-5 text-kawai-red mr-3" />
-                <Link 
+                <Link
                   href={`tel:${data.showroomInfo.phone}`}
                   className="text-kawai-black hover:text-kawai-red font-medium transition-colors"
                 >
                   {data.showroomInfo.phone}
                 </Link>
               </div>
+
+              {data.showroomInfo.email && (
+                <div className="flex items-center">
+                  <EnvelopeIcon className="w-5 h-5 text-kawai-red mr-3" />
+                  <Link
+                    href={`mailto:${data.showroomInfo.email}`}
+                    className="text-kawai-black hover:text-kawai-red font-medium transition-colors"
+                  >
+                    {data.showroomInfo.email}
+                  </Link>
+                </div>
+              )}
 
               <div className="pt-4 border-t border-kawai-black/10">
                 <p className="text-sm text-kawai-black/60">

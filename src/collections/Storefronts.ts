@@ -259,6 +259,13 @@ export const Storefronts: CollectionConfig = {
                   }
                 },
                 {
+                  name: 'email',
+                  type: 'email',
+                  admin: {
+                    description: 'Contact email address (displayed in the showroom info section)'
+                  }
+                },
+                {
                   name: 'serviceArea',
                   type: 'text',
                   required: true,

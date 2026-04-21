@@ -1,10 +1,11 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Headphones, Briefcase, ArrowRight, Cpu, Building2, GraduationCap, BookOpen, Store, Shield, Globe, Wrench, Music, Info } from 'lucide-react'
-import type { ResourceLink } from '@/components/layout/header-dynamic'
+import { Headphones, Briefcase, ArrowRight, Cpu, Building2, GraduationCap, BookOpen, Store, Shield, Globe, Wrench, Music, Info, ChevronDown, MapPin } from 'lucide-react'
+import type { ResourceLink, StoreLocationNavItem } from '@/components/layout/header-dynamic'
 import { cn } from '@/lib/utils'
 
 // ============================================================================
@@ -31,6 +32,7 @@ interface ResourcesMegaMenuProps {
   bannerTitle?: string | null
   bannerDescription?: string | null
   resourceLinks?: ResourceLink[]
+  storeLocations?: StoreLocationNavItem[] | undefined
   className?: string
   isHeaderScrolled?: boolean
 }
@@ -106,6 +108,10 @@ const allResourceItems: ResourceItem[] = [
   },
 ]
 
+function displayStoreName(store: StoreLocationNavItem): string {
+  return store.locationName.replace(/^kawai\s+/i, '').trim() || store.locationName
+}
+
 // ============================================================================
 // Component
 // ============================================================================
@@ -118,9 +124,17 @@ export function ResourcesMegaMenu({
   bannerTitle,
   bannerDescription,
   resourceLinks,
+  storeLocations,
   className,
   isHeaderScrolled = false,
 }: ResourcesMegaMenuProps) {
+  const [isStoresExpanded, setIsStoresExpanded] = useState(false)
+
+  // Reset accordion when the menu closes so it doesn't appear pre-expanded on next open
+  useEffect(() => {
+    if (!isOpen) setIsStoresExpanded(false)
+  }, [isOpen])
+
   // Use CMS-managed links when provided; fall back to hardcoded defaults.
   // Migration items (gated by env flag) are always appended on top of whichever source is active.
   const cmsItems: ResourceItem[] = (resourceLinks && resourceLinks.length > 0)
@@ -171,30 +185,103 @@ export function ResourcesMegaMenu({
               Resources
             </p>
 
-            {/* ── Kawai Stores — featured row ────────────────────────────── */}
-            <Link
-              href="/stores"
-              onClick={onClose}
-              className="group relative flex items-center justify-between py-4 pl-5 pr-2 mb-2 border-b border-kawai-black/[0.06] transition-colors duration-200"
-            >
-              <div className="absolute left-0 top-0 w-[2px] h-0 bg-kawai-red group-hover:h-full transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]" />
-              <div className="flex items-baseline gap-2.5">
-                <Image
-                  src="/images/Kawai (Red)(2).png"
-                  alt="KAWAI"
-                  width={52}
-                  height={16}
-                  className="h-[14px] w-auto self-center"
-                />
-                <span className="text-[17px] font-semibold text-kawai-black/80 group-hover:text-kawai-black font-[family-name:var(--font-brand-sans)] transition-colors duration-200">
-                  Stores
-                </span>
-                <span className="text-xs text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] hidden sm:inline">
-                  — official showrooms
-                </span>
-              </div>
-              <ArrowRight className="w-4 h-4 text-kawai-red/0 group-hover:text-kawai-red group-hover:translate-x-0.5 transition-all duration-200 flex-shrink-0" />
-            </Link>
+            {/* ── Kawai Stores — expandable featured row ─────────────────── */}
+            <div className="mb-2 border-b border-kawai-black/[0.06]">
+              <button
+                onClick={() => { if (storeLocations && storeLocations.length > 0) setIsStoresExpanded((v) => !v) }}
+                className={cn(
+                  'group relative w-full flex items-center justify-between py-4 pl-5 pr-3 transition-colors duration-200 text-left',
+                  storeLocations && storeLocations.length > 0 ? 'cursor-pointer' : 'cursor-default'
+                )}
+              >
+                <div className={cn(
+                  'absolute left-0 top-0 w-[2px] bg-kawai-red transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]',
+                  isStoresExpanded ? 'h-full' : 'h-0 group-hover:h-full'
+                )} />
+                <div className="flex items-baseline gap-2.5">
+                  <Image
+                    src="/images/Kawai (Red)(2).png"
+                    alt="KAWAI"
+                    width={52}
+                    height={16}
+                    className="h-[14px] w-auto self-center"
+                  />
+                  <span className={cn(
+                    'text-[17px] font-semibold font-[family-name:var(--font-brand-sans)] transition-colors duration-200',
+                    isStoresExpanded ? 'text-kawai-black' : 'text-kawai-black/80 group-hover:text-kawai-black'
+                  )}>
+                    Stores
+                  </span>
+                  <span className="text-xs text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] hidden sm:inline">
+                    — official showrooms
+                  </span>
+                </div>
+                {storeLocations && storeLocations.length > 0 ? (
+                  <motion.div
+                    animate={{ rotate: isStoresExpanded ? 180 : 0 }}
+                    transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                    className="flex-shrink-0"
+                  >
+                    <ChevronDown className={cn(
+                      'w-4 h-4 transition-colors duration-200',
+                      isStoresExpanded ? 'text-kawai-red' : 'text-kawai-charcoal/35 group-hover:text-kawai-red/60'
+                    )} />
+                  </motion.div>
+                ) : (
+                  <ArrowRight className="w-4 h-4 text-kawai-red/0 group-hover:text-kawai-red group-hover:translate-x-0.5 transition-all duration-200 flex-shrink-0" />
+                )}
+              </button>
+
+              {/* Expanded locations grid */}
+              <AnimatePresence initial={false}>
+                {isStoresExpanded && storeLocations && storeLocations.length > 0 && (
+                  <motion.div
+                    key="stores-expanded"
+                    initial={{ maxHeight: 0, opacity: 0 }}
+                    animate={{ maxHeight: 600, opacity: 1 }}
+                    exit={{ maxHeight: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    style={{ overflow: 'hidden' }}
+                  >
+                    <div className="px-5 pt-1 pb-5">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mb-4">
+                        {storeLocations.map((store, i) => (
+                          <motion.div
+                            key={store.id}
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.18, delay: i * 0.025, ease: [0.25, 0.46, 0.45, 0.94] }}
+                          >
+                            <Link
+                              href={`/store/${store.slug}`}
+                              onClick={onClose}
+                              className="group/loc relative flex flex-col gap-0.5 py-2.5 px-3 rounded-md border border-kawai-neutral/50 hover:border-kawai-red/25 hover:bg-kawai-red/[0.025] transition-all duration-200 overflow-hidden"
+                            >
+                              <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-kawai-red scale-y-0 group-hover/loc:scale-y-100 transition-transform duration-200 origin-center" />
+                              <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-kawai-black/80 group-hover/loc:text-kawai-black font-[family-name:var(--font-brand-sans)] leading-none truncate">
+                                {displayStoreName(store)}
+                              </span>
+                            </Link>
+                          </motion.div>
+                        ))}
+                      </div>
+
+                      <div className="flex justify-end">
+                        <Link
+                          href="/stores"
+                          onClick={onClose}
+                          className="group/all inline-flex items-center gap-2 px-5 py-2.5 bg-kawai-red text-white hover:bg-kawai-red/85 transition-colors duration-200 rounded-sm font-[family-name:var(--font-brand-sans)] text-[11px] font-semibold uppercase tracking-[0.18em]"
+                        >
+                          <MapPin className="w-3.5 h-3.5" />
+                          View all showrooms
+                          <ArrowRight className="w-3.5 h-3.5 group-hover/all:translate-x-0.5 transition-transform duration-200" />
+                        </Link>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             {/* ── Link rows ──────────────────────────────────────────────── */}
             <div className="divide-y divide-kawai-black/[0.06] mb-8">

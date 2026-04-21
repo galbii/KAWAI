@@ -121,6 +121,25 @@ export function ShowroomLocation({ data = DEFAULT_SHOWROOM_DATA }: ShowroomLocat
                       </div>
                     </div>
 
+                    {data.showroomInfo.email && (
+                      <div className="flex items-start space-x-4">
+                        <div className="w-6 h-6 bg-kawai-red/10 rounded-full flex items-center justify-center mt-1 flex-shrink-0">
+                          <svg className="w-3 h-3 text-kawai-red" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-kawai-black font-medium text-sm mb-1">Email</p>
+                          <a
+                            href={`mailto:${data.showroomInfo.email}`}
+                            className="text-kawai-black/70 hover:text-kawai-red transition-colors text-sm"
+                          >
+                            {data.showroomInfo.email}
+                          </a>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="flex items-start space-x-4">
                       <div className="w-6 h-6 bg-kawai-red/10 rounded-full flex items-center justify-center mt-1 flex-shrink-0">
                         <svg className="w-3 h-3 text-kawai-red" fill="currentColor" viewBox="0 0 24 24">
