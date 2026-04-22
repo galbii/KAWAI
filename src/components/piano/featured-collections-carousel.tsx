@@ -168,6 +168,7 @@ function CategoryBar({
 export function FeaturedCollectionsCarousel({
   collections,
   eyebrow = 'Featured Collections',
+  heading,
   ctaText = 'Explore All',
   ctaHref = '/pianos',
   showCategoryFilter = false,
@@ -211,8 +212,7 @@ export function FeaturedCollectionsCarousel({
   const imageUrl = videoId ? null : getStaticImageUrl(collection)
   const displayTitle = collection.heading || collection.title
   const collectionHref = `/pianos/${collection.handle}`
-  const categoryLabel = getCategoryLabel(collection)
-  const idxDisplay = String(Math.min(idx, active.length - 1) + 1).padStart(2, '0')
+const idxDisplay = String(Math.min(idx, active.length - 1) + 1).padStart(2, '0')
   const totalDisplay = String(total).padStart(2, '0')
 
   return (
@@ -232,7 +232,7 @@ export function FeaturedCollectionsCarousel({
       {/* ── Carousel ─────────────────────────────────────────────── */}
       <section
         className="relative w-full overflow-hidden bg-kawai-black"
-        style={{ height: 'clamp(480px, 65vh, 760px)' }}
+        style={{ height: 'clamp(600px, 78vh, 920px)' }}
       >
         {/* Background crossfade */}
         <AnimatePresence initial={false}>
@@ -289,31 +289,52 @@ export function FeaturedCollectionsCarousel({
         <CornerAccent className="top-0 left-0" />
         <CornerAccent className="bottom-0 right-0 rotate-180" />
 
-        {/* Top bar — eyebrow only (explore link moves to filter bar when filter enabled) */}
-        <div className="absolute top-0 left-0 right-0 z-20">
-          <div className="max-w-7xl mx-auto px-8 md:px-10 pt-8 flex items-center justify-between">
-            <p className="text-[9px] tracking-[0.35em] uppercase text-white/40 font-[family-name:var(--font-brand-sans)]">
-              {eyebrow}
-            </p>
-            {!showCategoryFilter && (
-              <Link
-                href={ctaHref}
-                className="group flex items-center gap-1.5 text-[9px] tracking-[0.25em] uppercase text-white/40 hover:text-white/75 transition-colors duration-200 font-[family-name:var(--font-brand-sans)]"
-              >
-                {ctaText}
-                <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
-              </Link>
-            )}
+        {/* Minimal top-right link */}
+        {!showCategoryFilter && (
+          <div className="absolute top-0 right-0 z-20 px-10 md:px-14 pt-10">
+            <Link
+              href={ctaHref}
+              className="group flex items-center gap-2 text-[11px] tracking-[0.28em] uppercase text-white/35 hover:text-white/70 transition-colors duration-200 font-[family-name:var(--font-brand-sans)]"
+            >
+              {ctaText}
+              <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+            </Link>
           </div>
-        </div>
+        )}
 
         {/* Bottom content */}
         <div className="absolute bottom-0 left-0 right-0 z-20">
-          <div className="max-w-7xl mx-auto px-8 md:px-10 pb-10">
+          <div className="max-w-7xl mx-auto px-10 md:px-14 pb-20">
             <div className="flex items-end justify-between gap-8">
 
-              {/* Left: staggered content */}
+              {/* Left: fixed category headline + animated collection info */}
               <div className="flex-1 min-w-0">
+
+                {/* Category name — fixed, dominant, not animated */}
+                {heading ? (
+                  <h1
+                    className="text-7xl md:text-8xl lg:text-9xl text-white leading-[0.92] mb-5"
+                    style={{
+                      fontFamily: 'var(--font-brand-sans)',
+                      fontWeight: 900,
+                      letterSpacing: '-0.035em',
+                    }}
+                  >
+                    {heading}
+                  </h1>
+                ) : (
+                  <p
+                    className="text-4xl md:text-5xl text-white leading-none mb-5"
+                    style={{ fontFamily: 'var(--font-brand-sans)', fontWeight: 900, letterSpacing: '-0.03em' }}
+                  >
+                    {eyebrow}
+                  </p>
+                )}
+
+                {/* Kawai-red accent bar */}
+                <div className="w-12 h-[3px] bg-kawai-red mb-6" />
+
+                {/* Per-slide collection info — animated */}
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={`content-${selectedCategory}-${idx}`}
@@ -322,44 +343,31 @@ export function FeaturedCollectionsCarousel({
                     animate="visible"
                     exit="exit"
                   >
+                    {/* Collection name */}
                     <motion.p
                       variants={itemVariants}
-                      className="text-[9px] tracking-[0.35em] uppercase text-white/45 mb-4 font-[family-name:var(--font-brand-sans)]"
-                    >
-                      {categoryLabel}
-                    </motion.p>
-
-                    <motion.div variants={itemVariants} className="w-10 h-px bg-white/30 mb-5" />
-
-                    <motion.h2
-                      variants={itemVariants}
-                      className="text-4xl md:text-5xl lg:text-6xl text-white leading-[1.02] mb-3 drop-shadow-2xl"
-                      style={{
-                        fontFamily: 'var(--font-brand-luxury)',
-                        fontWeight: 400,
-                        letterSpacing: '-0.02em',
-                        textShadow: '0 4px 24px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3)',
-                      }}
+                      className="text-2xl md:text-3xl text-white/70 mb-2 leading-snug"
+                      style={{ fontFamily: 'var(--font-brand-luxury)', fontWeight: 400, fontStyle: 'italic' }}
                     >
                       {displayTitle}
-                    </motion.h2>
+                    </motion.p>
 
                     {collection.subheading && (
                       <motion.p
                         variants={itemVariants}
-                        className="text-sm text-white/55 mb-6 max-w-md leading-relaxed font-[family-name:var(--font-brand-sans)] drop-shadow-lg"
+                        className="text-sm text-white/45 mb-6 max-w-lg leading-relaxed font-[family-name:var(--font-brand-sans)]"
                       >
                         {collection.subheading}
                       </motion.p>
                     )}
 
-                    <motion.div variants={itemVariants} className={cn(!collection.subheading && 'mt-2')}>
+                    <motion.div variants={itemVariants} className={cn(!collection.subheading && 'mt-5')}>
                       <Link
                         href={collectionHref}
-                        className="inline-flex items-center gap-2.5 px-6 py-3 text-[11px] uppercase tracking-[0.18em] border border-white/40 text-white hover:bg-white hover:text-kawai-black hover:border-white transition-all duration-250 font-[family-name:var(--font-brand-sans)]"
+                        className="inline-flex items-center gap-3 px-10 py-5 text-sm font-semibold uppercase tracking-[0.18em] bg-white text-kawai-black hover:bg-kawai-pearl transition-colors duration-300 font-[family-name:var(--font-brand-sans)]"
                       >
                         Explore Collection
-                        <ArrowRight className="h-3.5 w-3.5" />
+                        <ArrowRight className="h-5 w-5" />
                       </Link>
                     </motion.div>
                   </motion.div>
@@ -370,27 +378,27 @@ export function FeaturedCollectionsCarousel({
               {total > 1 && (
                 <div className="flex-shrink-0 flex flex-col items-end gap-5 pb-1">
                   <div
-                    className="text-white/30 font-[family-name:var(--font-brand-sans)] tabular-nums"
-                    style={{ fontSize: '11px', letterSpacing: '0.1em' }}
+                    className="text-white/25 font-[family-name:var(--font-brand-sans)] tabular-nums"
+                    style={{ fontSize: '13px', letterSpacing: '0.1em' }}
                   >
-                    <span className="text-white/70">{idxDisplay}</span>
-                    <span className="mx-1.5">/</span>
+                    <span className="text-white/60">{idxDisplay}</span>
+                    <span className="mx-2">/</span>
                     {totalDisplay}
                   </div>
                   <div className="flex items-center gap-3">
                     <button
                       onClick={prev}
                       aria-label="Previous collection"
-                      className="w-9 h-9 border border-white/25 flex items-center justify-center text-white/60 hover:border-white/60 hover:text-white transition-all duration-200"
+                      className="w-12 h-12 border border-white/20 flex items-center justify-center text-white/50 hover:border-white/55 hover:text-white transition-all duration-200"
                     >
-                      <ArrowLeft className="h-3.5 w-3.5" />
+                      <ArrowLeft className="h-4 w-4" />
                     </button>
                     <button
                       onClick={next}
                       aria-label="Next collection"
-                      className="w-9 h-9 border border-white/25 flex items-center justify-center text-white/60 hover:border-white/60 hover:text-white transition-all duration-200"
+                      className="w-12 h-12 border border-white/20 flex items-center justify-center text-white/50 hover:border-white/55 hover:text-white transition-all duration-200"
                     >
-                      <ArrowRight className="h-3.5 w-3.5" />
+                      <ArrowRight className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
@@ -399,13 +407,13 @@ export function FeaturedCollectionsCarousel({
 
             {/* Progress bars */}
             {total > 1 && (
-              <div className="flex gap-1 mt-8">
+              <div className="flex gap-1.5 mt-10">
                 {active.map((col, i) => (
                   <button
                     key={`${col.id}-${i}`}
                     onClick={() => setIdx(i)}
                     aria-label={`Go to ${col.heading || col.title}`}
-                    className="flex-1 group relative h-px focus-visible:outline-none"
+                    className="flex-1 group relative h-[3px] focus-visible:outline-none"
                   >
                     <div className="absolute inset-0 bg-white/15" />
                     {i === Math.min(idx, active.length - 1) ? (

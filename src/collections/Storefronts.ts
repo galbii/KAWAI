@@ -414,6 +414,13 @@ export const Storefronts: CollectionConfig = {
               }
             },
             {
+              name: 'calendlyUrl',
+              type: 'text',
+              admin: {
+                description: 'Calendly booking URL for trade-in appointments (e.g. https://calendly.com/your-store/trade-in)',
+              },
+            },
+            {
               name: 'showroomCtas',
               type: 'group',
               fields: [

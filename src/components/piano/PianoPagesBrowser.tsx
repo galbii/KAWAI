@@ -71,34 +71,6 @@ function parseYouTubeId(url: string): string | null {
   return null
 }
 
-const bannerHeightClasses: Record<string, string> = {
-  xxs: 'h-[150px]',
-  xs: 'h-[250px]',
-  small: 'h-[400px]',
-  medium: 'h-[600px]',
-  large: 'h-[800px]',
-  fullscreen: 'h-screen min-h-[600px]',
-}
-
-const bannerColorClasses: Record<string, string> = {
-  white: 'text-white',
-  black: 'text-kawai-black',
-  'kawai-red': 'text-kawai-red',
-  'kawai-gold': 'text-[#D4AF37]',
-}
-
-const bannerAlignmentClasses: Record<string, string> = {
-  left: 'text-left items-start',
-  center: 'text-center items-center',
-  right: 'text-right items-end',
-}
-
-const bannerHeadingSizeClasses: Record<string, string> = {
-  small: 'text-2xl md:text-3xl lg:text-4xl',
-  medium: 'text-3xl md:text-4xl lg:text-5xl',
-  large: 'text-4xl md:text-5xl lg:text-6xl',
-  xl: 'text-5xl md:text-6xl lg:text-7xl',
-}
 
 const bannerContainerVariants = {
   hidden: { opacity: 0 },
@@ -110,40 +82,38 @@ const bannerItemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const } },
 }
 
-function CollectionBanner({ collection }: { collection: CollectionForBrowser }) {
+const CATEGORY_LABELS: Record<string, string> = {
+  digital: 'Digital Pianos',
+  grand: 'Grand Pianos',
+  upright: 'Upright Pianos',
+  hybrid: 'Hybrid Pianos',
+}
+
+function CollectionBanner({
+  collection,
+  category,
+}: {
+  collection: CollectionForBrowser
+  category?: string | null
+}) {
   const [isVideoLoaded, setIsVideoLoaded] = useState(false)
 
   const videoId = collection.youtubeUrl ? parseYouTubeId(collection.youtubeUrl) : null
   const fallbackImage = collection.mediaUrl ?? collection.imageUrl ?? null
-
-  const safeBannerSize = 'small'
-  const safeTextColor = collection.textColor ?? 'white'
-  const safeTextAlignment = collection.textAlignment ?? 'center'
-  const safeOverlayOpacity = collection.overlayOpacity ?? 50
-  const safeHeadingSize = collection.headingSize ?? 'medium'
-  const safeFontFamily = collection.fontFamily ?? 'serif'
-
   const hasMedia = !!(videoId || fallbackImage)
-  const hasContent = !!(collection.heading || collection.subheading)
 
-  // Render nothing if no media and no content
-  if (!hasMedia && !hasContent) return null
+  const categoryLabel = category ? (CATEGORY_LABELS[category] ?? null) : null
+  const collectionHeading = collection.heading ?? null
 
   return (
-    <section
-      className={cn(
-        'relative w-full overflow-hidden',
-        bannerHeightClasses[safeBannerSize] ?? bannerHeightClasses.xs,
-      )}
-    >
-      {/* YouTube video background — full-cover 16:9 technique */}
+    <section className="relative w-full overflow-hidden h-[480px]">
+      {/* Video background */}
       {videoId && (
         <div className="absolute inset-0 z-0">
           <iframe
             src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1`}
             className={cn(
-              'absolute top-1/2 left-1/2 w-[177.77777778vh] min-w-full h-[56.25vw] min-h-full -translate-x-1/2 -translate-y-1/2 pointer-events-none',
-              'transition-opacity duration-1000',
+              'absolute top-1/2 left-1/2 w-[177.77777778vh] min-w-full h-[56.25vw] min-h-full -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-opacity duration-1000',
               isVideoLoaded ? 'opacity-100' : 'opacity-0',
             )}
             allow="autoplay; encrypted-media"
@@ -156,97 +126,108 @@ function CollectionBanner({ collection }: { collection: CollectionForBrowser }) 
       {/* Fallback image */}
       {!videoId && fallbackImage && (
         <div className="absolute inset-0 z-0">
-          <Image src={fallbackImage} alt={collection.heading ?? collection.title} fill className="object-cover" sizes="100vw" priority />
+          <Image
+            src={fallbackImage}
+            alt={collectionHeading ?? collection.title}
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority
+          />
         </div>
       )}
 
-      {/* Dark background when no media */}
-      {!hasMedia && (
-        <div className="absolute inset-0 z-0 bg-kawai-black" />
-      )}
+      {/* Dark base when no media */}
+      {!hasMedia && <div className="absolute inset-0 z-0 bg-kawai-black" />}
 
-      {/* Gradient overlay + grain */}
+      {/* Gradient — heavy on left for text, lighter right to show media */}
       <div
-        className="absolute inset-0 z-10"
+        className="absolute inset-0 z-10 pointer-events-none"
         style={{
-          background: `linear-gradient(135deg, rgba(0,0,0,${safeOverlayOpacity / 100 * 0.7}) 0%, rgba(0,0,0,${safeOverlayOpacity / 100 * 0.5}) 50%, rgba(0,0,0,${safeOverlayOpacity / 100 * 0.8}) 100%)`,
+          background:
+            'linear-gradient(105deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.30) 100%)',
         }}
-      >
-        <div
-          className="absolute inset-0 opacity-[0.03] mix-blend-overlay"
-          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
-        />
-      </div>
+      />
 
-      {/* Corner accents */}
-      <div className="absolute top-0 left-0 w-16 h-16 z-20 opacity-30">
-        <svg viewBox="0 0 100 100" className={bannerColorClasses[safeTextColor] ?? 'text-white'}>
-          <line x1="0" y1="20" x2="20" y2="20" stroke="currentColor" strokeWidth="1" />
-          <line x1="20" y1="0" x2="20" y2="20" stroke="currentColor" strokeWidth="1" />
+      {/* Bottom fade to ensure text always readable */}
+      <div
+        className="absolute inset-x-0 bottom-0 h-40 z-10 pointer-events-none"
+        style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.65), transparent)' }}
+      />
+
+      {/* Grain texture */}
+      <div
+        className="absolute inset-0 z-10 opacity-[0.03] mix-blend-overlay pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+        }}
+      />
+
+      {/* Corner accent — top left only */}
+      <div className="absolute top-0 left-0 w-16 h-16 z-20 opacity-25 pointer-events-none">
+        <svg viewBox="0 0 100 100" className="text-white w-full h-full">
+          <line x1="0" y1="20" x2="20" y2="20" stroke="currentColor" strokeWidth="1.5" />
+          <line x1="20" y1="0" x2="20" y2="20" stroke="currentColor" strokeWidth="1.5" />
         </svg>
       </div>
-      <div className="absolute bottom-0 right-0 w-16 h-16 z-20 opacity-30 rotate-180">
-        <svg viewBox="0 0 100 100" className={bannerColorClasses[safeTextColor] ?? 'text-white'}>
-          <line x1="0" y1="20" x2="20" y2="20" stroke="currentColor" strokeWidth="1" />
-          <line x1="20" y1="0" x2="20" y2="20" stroke="currentColor" strokeWidth="1" />
-        </svg>
-      </div>
 
-      {/* Content */}
+      {/* Content — bottom-left, editorial layout */}
       <motion.div
-        className={cn(
-          'relative z-30 container mx-auto px-6 md:px-12 h-full flex flex-col justify-center',
-          bannerAlignmentClasses[safeTextAlignment] ?? bannerAlignmentClasses.center,
-        )}
+        className="absolute bottom-0 left-0 right-0 z-20 max-w-7xl mx-auto px-8 md:px-12 pb-12"
         variants={bannerContainerVariants}
         initial="hidden"
         animate="visible"
       >
-        {collection.heading && (
-          <motion.h2
+        {/* Eyebrow */}
+        <motion.p
+          variants={bannerItemVariants}
+          className="text-[11px] tracking-[0.38em] uppercase text-white/40 mb-4 font-[family-name:var(--font-brand-sans)]"
+        >
+          Kawai Piano Catalog
+        </motion.p>
+
+        {/* Divider */}
+        <motion.div
+          variants={bannerItemVariants}
+          className="w-14 h-px mb-6"
+          style={{ background: 'linear-gradient(90deg, rgba(255,255,255,0.35) 0%, transparent 100%)' }}
+        />
+
+        {/* Category name — primary headline */}
+        {categoryLabel && (
+          <motion.h1
             variants={bannerItemVariants}
-            className={cn(
-              'font-bold leading-[1.1] mb-4 drop-shadow-2xl',
-              bannerHeadingSizeClasses[safeHeadingSize] ?? bannerHeadingSizeClasses.medium,
-              bannerColorClasses[safeTextColor] ?? 'text-white',
-              safeFontFamily === 'serif' ? 'tracking-tight' : 'tracking-wide',
-            )}
+            className="text-5xl md:text-6xl lg:text-7xl text-white leading-[1.02] mb-3 drop-shadow-2xl"
             style={{
-              fontFamily: safeFontFamily === 'serif' ? 'Playfair Display, serif' : 'Inter, sans-serif',
+              fontFamily: 'var(--font-brand-luxury)',
+              fontWeight: 400,
+              letterSpacing: '-0.02em',
               textShadow: '0 4px 24px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3)',
             }}
           >
-            {collection.heading}
-          </motion.h2>
+            {categoryLabel}
+          </motion.h1>
         )}
 
-        {collection.heading && collection.subheading && (
-          <motion.div
+        {/* Collection heading — secondary context */}
+        {collectionHeading && (
+          <motion.p
             variants={bannerItemVariants}
-            className={cn(
-              'w-12 h-[2px] mb-4',
-              safeTextAlignment === 'center' && 'mx-auto',
-              safeTextAlignment === 'right' && 'ml-auto',
-            )}
-            style={{
-              background: `linear-gradient(90deg, ${safeTextColor === 'kawai-red' ? '#C41E3A' : safeTextColor === 'kawai-gold' ? '#D4AF37' : safeTextColor === 'black' ? '#1a1a1a' : '#ffffff'} 0%, transparent 100%)`,
-            }}
-          />
+            className="text-lg md:text-xl text-white/65 mb-3 font-[family-name:var(--font-brand-sans)] drop-shadow-lg"
+          >
+            {collectionHeading}
+          </motion.p>
         )}
 
+        {/* Subheading */}
         {collection.subheading && (
           <motion.p
             variants={bannerItemVariants}
-            className={cn(
-              'text-base md:text-lg leading-relaxed max-w-2xl font-light tracking-wide opacity-90 drop-shadow-lg',
-              bannerColorClasses[safeTextColor] ?? 'text-white',
-            )}
-            style={{ fontFamily: 'Inter, sans-serif', textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}
+            className="text-sm text-white/50 max-w-2xl leading-relaxed font-[family-name:var(--font-brand-sans)]"
           >
             {collection.subheading}
           </motion.p>
         )}
-
       </motion.div>
     </section>
   )
@@ -541,9 +522,10 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
     return visibleCollections.find((c) => c.title === activeCollection)?.handle ?? null
   }, [activeCollection, visibleCollections])
 
-  const activeCollectionObj = useMemo(() => {
+  const activeCollectionObj = useMemo((): CollectionForBrowser | null => {
     if (activeCollection === 'All') return null
-    return visibleCollections.find((c) => c.title === activeCollection) ?? null
+    const found = visibleCollections.find((c) => c.title === activeCollection)
+    return (found as CollectionForBrowser | undefined) ?? null
   }, [activeCollection, visibleCollections])
 
   const featuredCollections = useMemo((): NavCollection[] => {
@@ -878,7 +860,7 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
           >
-            <CollectionBanner collection={activeCollectionObj} />
+            <CollectionBanner collection={activeCollectionObj} category={category ?? null} />
           </motion.div>
         ) : featuredCollections.length > 0 ? (
           <motion.div
@@ -891,39 +873,25 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
             <FeaturedCollectionsCarousel
               collections={featuredCollections}
               eyebrow="Featured Collections"
-              heading="Shop by Collection"
             />
           </motion.div>
         ) : null}
       </AnimatePresence>
 
-      {/* ── Collection Title ────────────────────────────────────── */}
+      {/* ── Collection instrument count ──────────────────────────── */}
       <AnimatePresence>
         {activeCollectionObj && (
           <motion.div
-            key={`title-${activeCollectionObj.title}`}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="max-w-7xl mx-auto px-6 pt-10 pb-2"
+            key={`count-${activeCollectionObj.title}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="max-w-7xl mx-auto px-8 md:px-12 pt-6 pb-2"
           >
-            <div className="flex items-baseline gap-4">
-              <h2
-                className="text-4xl md:text-5xl lg:text-6xl text-kawai-black"
-                style={{ fontFamily: 'var(--font-brand-luxury)', fontWeight: 700 }}
-              >
-                {activeCollectionObj.title}
-              </h2>
-              <span className="text-sm text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)]">
-                {filtered.length} {filtered.length === 1 ? 'instrument' : 'instruments'}
-              </span>
-            </div>
-            {(activeCollectionObj as CollectionForBrowser).subheading && (
-              <p className="mt-2 text-sm text-kawai-charcoal/60 font-[family-name:var(--font-brand-sans)] max-w-2xl">
-                {(activeCollectionObj as CollectionForBrowser).subheading}
-              </p>
-            )}
+            <p className="text-xs text-kawai-charcoal/40 tracking-[0.15em] uppercase font-[family-name:var(--font-brand-sans)]">
+              {filtered.length} {filtered.length === 1 ? 'instrument' : 'instruments'}
+            </p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -970,9 +938,9 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
           >
             <Link
               href={`/pianos/${activeCollectionHandle}`}
-              className="inline-flex items-center gap-3 px-12 py-4 text-base font-semibold tracking-[0.1em] uppercase bg-kawai-black text-white hover:bg-kawai-charcoal transition-colors duration-300 font-[family-name:var(--font-brand-sans)]"
+              className="inline-flex items-center gap-3 px-12 py-4 text-base font-semibold tracking-[0.1em] uppercase bg-white text-kawai-black border-2 border-kawai-black hover:bg-kawai-pearl transition-colors duration-300 font-[family-name:var(--font-brand-sans)]"
             >
-              View the Full Collection
+              Explore the Full Collection
               <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>

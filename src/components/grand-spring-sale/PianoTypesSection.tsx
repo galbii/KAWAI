@@ -23,17 +23,15 @@ const PIANO_TYPES = [
   {
     name: 'Baby Grand',
     sizeRange: "4'10\" – 5'11\"",
-    headline: 'Intimate grandeur for every home.',
-    copy: 'The baby grand brings the soul of a concert instrument into spaces you actually live in. Rich, resonant tone that fills a room without overwhelming it — the choice of discerning homes everywhere.',
-    from: 'Starting from $8,995',
+    headline: 'Concert sound. Every room.',
+    copy: 'Rich, warm tone in a form that fits your home. The ideal grand for living spaces — Kawai quality without compromise.',
     accent: 'Warm. Intimate. Timeless.',
   },
   {
     name: 'Grand Piano',
     sizeRange: "6' – 9'",
-    headline: 'Concert presence. Home address.',
-    copy: 'When the room deserves more and the player demands everything, the full grand delivers. Longer strings, greater dynamic range, a touch that responds to every nuance of expression.',
-    from: 'Starting from $14,995',
+    headline: 'Full range. Full expression.',
+    copy: 'Longer strings, deeper tone, greater dynamic range. For players who want concert-level performance at home.',
     accent: 'Powerful. Expressive. Uncompromising.',
   },
 ]
@@ -94,10 +92,10 @@ export function PianoTypesSection({ storeslug }: PianoTypesSectionProps) {
               className="font-[family-name:var(--font-brand-serif)] text-kawai-black leading-[1.1]"
               style={{ fontSize: 'clamp(2.2rem, 5vw, 3.5rem)' }}
             >
-              Two expressions of the grand ideal.
+              Spring Savings
             </h2>
             <p className="mt-4 text-kawai-charcoal/55 text-lg max-w-xl mx-auto leading-relaxed font-[family-name:var(--font-brand-sans)]">
-              Both forms. Every key. Exclusive spring pricing.
+              Limited time offers when you book an in-store appointment today.
             </p>
           </div>
 
@@ -157,10 +155,7 @@ export function PianoTypesSection({ storeslug }: PianoTypesSectionProps) {
                   </p>
 
                   {/* Footer */}
-                  <div className="mt-auto flex items-center justify-between pt-4 border-t border-kawai-neutral/40">
-                    <span className="text-kawai-charcoal/40 text-xs font-[family-name:var(--font-brand-sans)]">
-                      {piano.from}
-                    </span>
+                  <div className="mt-auto flex items-center justify-end pt-4 border-t border-kawai-neutral/40">
                     <button
                       onClick={() => scrollTo('grand-showcase')}
                       className="pts-see-models inline-flex items-center gap-1.5 text-kawai-black hover:text-kawai-red text-sm font-medium tracking-[0.05em] transition-colors font-[family-name:var(--font-brand-sans)]"

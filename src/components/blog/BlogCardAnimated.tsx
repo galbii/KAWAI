@@ -6,15 +6,22 @@ import type { Post } from '@/payload-types'
 
 interface BlogCardAnimatedProps {
   post: Post
-  index: number
+  // Position within the current load wave (0-based). -1 = already visible, skip animation.
+  waveIndex: number
 }
 
-export function BlogCardAnimated({ post, index }: BlogCardAnimatedProps) {
+export function BlogCardAnimated({ post, waveIndex }: BlogCardAnimatedProps) {
+  const shouldAnimate = waveIndex >= 0
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.1 + index * 0.07, ease: [0.4, 0, 0.2, 1] }}
+      initial={shouldAnimate ? { opacity: 0, y: 14, scale: 0.98 } : false}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={
+        shouldAnimate
+          ? { duration: 0.6, delay: waveIndex * 0.06, ease: [0.16, 1, 0.3, 1] }
+          : { duration: 0 }
+      }
       className="h-full"
     >
       <BlogCard post={post} className="h-full" />

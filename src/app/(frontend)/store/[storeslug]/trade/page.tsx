@@ -10,7 +10,6 @@ import {
   TradeInHero,
   TradeInCalculator,
   HowItWorks,
-  AppraisalForm,
   GrandSpringLink,
 } from '@/components/trade-in'
 import { StorefrontVisitSection } from '@/components/grand-spring-sale'
@@ -67,6 +66,7 @@ async function TradePageContent({ storeslug }: { storeslug: string }) {
   const mapApiKey: string | null =
     storefront.mapApiKey ?? process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? null
   const directionsLink: string | null = storefront.showroomCtas?.directionsLink ?? null
+  const calendlyUrl: string | null = storefront.calendlyUrl ?? null
 
   return (
     <>
@@ -75,11 +75,7 @@ async function TradePageContent({ storeslug }: { storeslug: string }) {
       <HowItWorks />
 
       <Suspense>
-        <TradeInCalculator products={products} />
-      </Suspense>
-
-      <Suspense>
-        <AppraisalForm storeslug={storeslug} products={products} />
+        <TradeInCalculator products={products} calendlyUrl={calendlyUrl} locationName={locationName} storeslug={storeslug} />
       </Suspense>
 
       <StorefrontVisitSection
@@ -93,6 +89,7 @@ async function TradePageContent({ storeslug }: { storeslug: string }) {
       />
 
       <GrandSpringLink storeslug={storeslug} />
+      <CampaignNavigator storeslug={storeslug} calendlyUrl={calendlyUrl} locationName={locationName} />
     </>
   )
 }
@@ -125,7 +122,6 @@ export default async function TradeInPage({
       <Suspense>
         <TradePageContent storeslug={storeslug} />
       </Suspense>
-      <CampaignNavigator storeslug={storeslug} />
     </main>
   )
 }

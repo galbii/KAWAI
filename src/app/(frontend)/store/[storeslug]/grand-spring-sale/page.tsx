@@ -12,7 +12,7 @@ import {
   TradeInBanner,
   TestimonialsSection,
   StorefrontVisitSection,
-  SaleLeadForm,
+  GrandSpringBooking,
   PianoTypesSection,
   EventDetailsSection,
 } from '@/components/grand-spring-sale'
@@ -65,6 +65,7 @@ async function GrandSpringContent({ storeslug }: { storeslug: string }) {
   const hours = storefront.hours ?? null
   const mapApiKey: string | null = storefront.mapApiKey ?? process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? null
   const directionsLink: string | null = storefront.showroomCtas?.directionsLink ?? null
+  const calendlyUrl: string | null = storefront.calendlyUrl ?? null
   const testimonials = storefront.customerTestimonials ?? null
 
   return (
@@ -105,7 +106,8 @@ async function GrandSpringContent({ storeslug }: { storeslug: string }) {
         storeslug={storeslug}
       />
 
-      <SaleLeadForm storeslug={storeslug} products={products} />
+      <GrandSpringBooking locationName={locationName} calendlyUrl={calendlyUrl} storeslug={storeslug} />
+      <CampaignNavigator storeslug={storeslug} calendlyUrl={calendlyUrl} locationName={locationName} />
     </>
   )
 }
@@ -138,7 +140,6 @@ export default async function GrandSpringSalePage({
       <Suspense>
         <GrandSpringContent storeslug={storeslug} />
       </Suspense>
-      <CampaignNavigator storeslug={storeslug} />
     </main>
   )
 }

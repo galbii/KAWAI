@@ -82,7 +82,7 @@ export function BlogCard({ post, className, featured }: BlogCardProps) {
           ) : (
             <div className="absolute inset-0 bg-kawai-pearl flex items-center justify-center p-8">
               <Image
-                src="/images/kawai-logo-red-1x.png"
+                src="/images/Kawai (Red)(2).png"
                 alt="KAWAI"
                 fill
                 className="object-contain p-8"

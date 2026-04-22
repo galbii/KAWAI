@@ -51,11 +51,7 @@ export function TradeInBanner({ storeslug }: TradeInBannerProps) {
           {/* CTA */}
           <div className="flex-shrink-0">
             <a
-              href="#grand-lead-form"
-              onClick={(e) => {
-                e.preventDefault()
-                document.getElementById('grand-lead-form')?.scrollIntoView({ behavior: 'smooth' })
-              }}
+              href={`/store/${storeslug}/trade`}
               className="inline-flex items-center gap-3 px-7 py-4 bg-kawai-black hover:bg-kawai-charcoal text-white text-sm tracking-[0.1em] uppercase font-medium transition-colors rounded-sm whitespace-nowrap group"
             >
               Get a trade-in estimate

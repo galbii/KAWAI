@@ -95,46 +95,46 @@ export function EventDetailsSection({
             </div>
 
             {/* Main split: info left, map right */}
-            <div className="md:flex min-h-[480px]">
+            <div className="flex flex-col md:flex-row min-h-[480px] md:min-h-[80vh]">
 
               {/* Left: Event info */}
-              <div className="md:w-[42%] flex flex-col p-8 md:p-10 border-b md:border-b-0 md:border-r border-kawai-neutral/50">
+              <div className="order-2 md:order-1 md:w-[42%] flex flex-col p-8 md:p-12 md:border-r border-kawai-neutral/50">
 
                 {/* KAWAI wordmark + event title */}
-                <div className="mb-8">
+                <div className="mb-8 md:mb-10">
                   <Image
                     src="/images/logos/kawai-logo-red-2x.png"
                     alt="Kawai"
                     width={100}
                     height={20}
-                    className="object-contain mb-4"
+                    className="object-contain mb-4 md:w-[130px]"
                   />
                   <h2
                     className="font-kawai-script text-kawai-black leading-[1]"
-                    style={{ fontSize: 'clamp(2.4rem, 5vw, 3.6rem)' }}
+                    style={{ fontSize: 'clamp(2.4rem, 5vw, 5rem)' }}
                   >
                     Grand Spring Sale
                   </h2>
-                  <p className="text-kawai-charcoal/50 text-xs tracking-[0.25em] uppercase font-medium mt-2 font-[family-name:var(--font-brand-sans)]">
+                  <p className="text-kawai-charcoal/50 text-xs md:text-sm tracking-[0.25em] uppercase font-medium mt-2 font-[family-name:var(--font-brand-sans)]">
                     May 1 – 17, 2026
                   </p>
                 </div>
 
                 {/* Divider */}
-                <div className="h-px bg-kawai-neutral/50 mb-7" />
+                <div className="h-px bg-kawai-neutral/50 mb-7 md:mb-9" />
 
                 {/* Location details */}
-                <div className="space-y-4 flex-1">
+                <div className="space-y-4 md:space-y-6 flex-1">
                   {locationName && (
-                    <p className="font-[family-name:var(--font-brand-serif)] text-kawai-black text-lg leading-snug">
+                    <p className="font-[family-name:var(--font-brand-serif)] text-kawai-black text-lg md:text-2xl leading-snug">
                       {locationName}
                     </p>
                   )}
 
                   {address && (
                     <div className="flex items-start gap-3">
-                      <MapPinIcon className="w-4 h-4 text-kawai-red mt-0.5 flex-shrink-0" />
-                      <p className="text-kawai-charcoal/70 text-sm leading-relaxed font-[family-name:var(--font-brand-sans)]">
+                      <MapPinIcon className="w-4 h-4 md:w-5 md:h-5 text-kawai-red mt-0.5 flex-shrink-0" />
+                      <p className="text-kawai-charcoal/70 text-sm md:text-base leading-relaxed font-[family-name:var(--font-brand-sans)]">
                         {address}
                       </p>
                     </div>
@@ -142,10 +142,10 @@ export function EventDetailsSection({
 
                   {phone && (
                     <div className="flex items-center gap-3">
-                      <PhoneIcon className="w-4 h-4 text-kawai-red flex-shrink-0" />
+                      <PhoneIcon className="w-4 h-4 md:w-5 md:h-5 text-kawai-red flex-shrink-0" />
                       <a
                         href={`tel:${phone.replace(/\D/g, '')}`}
-                        className="text-kawai-charcoal/70 text-sm hover:text-kawai-red transition-colors font-[family-name:var(--font-brand-sans)]"
+                        className="text-kawai-charcoal/70 text-sm md:text-base hover:text-kawai-red transition-colors font-[family-name:var(--font-brand-sans)]"
                       >
                         {phone}
                       </a>
@@ -154,8 +154,8 @@ export function EventDetailsSection({
 
                   {hours && hours.length > 0 && (
                     <div className="flex items-start gap-3">
-                      <ClockIcon className="w-4 h-4 text-kawai-red mt-0.5 flex-shrink-0" />
-                      <div className="text-xs space-y-1 flex-1 font-[family-name:var(--font-brand-sans)]">
+                      <ClockIcon className="w-4 h-4 md:w-5 md:h-5 text-kawai-red mt-0.5 flex-shrink-0" />
+                      <div className="text-xs md:text-sm space-y-1.5 flex-1 font-[family-name:var(--font-brand-sans)]">
                         {hours.slice(0, 7).map((h, i) => {
                           const isToday = (h.day ?? '').toLowerCase().includes(todayName.toLowerCase())
                           return (
@@ -167,7 +167,7 @@ export function EventDetailsSection({
                                   : 'text-kawai-charcoal/45'
                               }`}
                             >
-                              <span className="min-w-[5rem]">{h.day}</span>
+                              <span className="min-w-[5rem] md:min-w-[6rem]">{h.day}</span>
                               <span>{h.hours}</span>
                             </div>
                           )
@@ -178,16 +178,16 @@ export function EventDetailsSection({
                 </div>
 
                 {/* CTAs */}
-                <div className="mt-8 space-y-2.5">
+                <div className="mt-8 md:mt-12 space-y-3">
                   <button
                     onClick={() => scrollTo('grand-lead-form')}
-                    className="w-full inline-flex items-center justify-center px-6 py-3.5 bg-kawai-red hover:bg-kawai-red/90 text-white text-sm tracking-[0.12em] uppercase font-medium transition-colors rounded-sm shadow-[0_4px_20px_rgba(225,25,34,0.3)] font-[family-name:var(--font-brand-sans)]"
+                    className="w-full inline-flex items-center justify-center px-6 py-3.5 md:py-4 bg-kawai-red hover:bg-kawai-red/90 text-white text-sm md:text-base tracking-[0.12em] uppercase font-medium transition-colors rounded-sm shadow-[0_4px_20px_rgba(225,25,34,0.3)] font-[family-name:var(--font-brand-sans)]"
                   >
                     Book an Appointment
                   </button>
                   <button
                     onClick={() => scrollTo('grand-showcase')}
-                    className="w-full inline-flex items-center justify-center px-6 py-3.5 border border-kawai-black/20 hover:border-kawai-black/40 text-kawai-black text-sm tracking-[0.12em] uppercase font-medium transition-colors rounded-sm font-[family-name:var(--font-brand-sans)]"
+                    className="w-full inline-flex items-center justify-center px-6 py-3.5 md:py-4 border border-kawai-black/20 hover:border-kawai-black/40 text-kawai-black text-sm md:text-base tracking-[0.12em] uppercase font-medium transition-colors rounded-sm font-[family-name:var(--font-brand-sans)]"
                   >
                     Browse the Collection
                   </button>
@@ -196,9 +196,9 @@ export function EventDetailsSection({
                       href={resolvedDirections}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full inline-flex items-center justify-center gap-1.5 py-2 text-kawai-charcoal/40 hover:text-kawai-red text-xs tracking-[0.12em] uppercase font-medium transition-colors font-[family-name:var(--font-brand-sans)]"
+                      className="w-full inline-flex items-center justify-center gap-1.5 py-2 text-kawai-charcoal/40 hover:text-kawai-red text-xs md:text-sm tracking-[0.12em] uppercase font-medium transition-colors font-[family-name:var(--font-brand-sans)]"
                     >
-                      <MapPinIcon className="w-3.5 h-3.5" />
+                      <MapPinIcon className="w-3.5 h-3.5 md:w-4 md:h-4" />
                       Get Directions
                     </a>
                   )}
@@ -206,7 +206,7 @@ export function EventDetailsSection({
               </div>
 
               {/* Right: Map */}
-              <div className="md:w-[58%] relative bg-kawai-neutral/30 min-h-[320px]">
+              <div className="order-1 md:order-2 md:w-[58%] relative bg-kawai-neutral/30 min-h-[320px] border-b md:border-b-0 border-kawai-neutral/50">
                 {mapSrc && !mapError ? (
                   <>
                     {!mapLoaded && (

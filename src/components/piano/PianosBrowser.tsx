@@ -1149,9 +1149,9 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading }: 
           >
             <Link
               href={`/pianos/${activeCollectionHandle}`}
-              className="inline-flex items-center gap-3 px-12 py-4 text-base font-semibold tracking-[0.1em] uppercase bg-kawai-black text-white hover:bg-kawai-charcoal transition-colors duration-300 font-[family-name:var(--font-brand-sans)]"
+              className="inline-flex items-center gap-3 px-12 py-4 text-base font-semibold tracking-[0.1em] uppercase bg-white text-kawai-black border-2 border-kawai-black hover:bg-kawai-pearl transition-colors duration-300 font-[family-name:var(--font-brand-sans)]"
             >
-              View the Full Collection
+              Explore the Full Collection
               <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>

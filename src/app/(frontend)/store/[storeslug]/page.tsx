@@ -288,11 +288,11 @@ async function StorefrontContent({ storeslug }: { storeslug: string }) {
         {/* News Carousel Section */}
         <NewsCarousel {...(storefrontData?.newsCarouselSection && { data: storefrontData.newsCarouselSection })} />
 
-        {/* Showroom Location Section */}
-        <ShowroomLocation {...(storefrontData?.showroomSection && { data: storefrontData.showroomSection })} />
-
         {/* Spring Specials Promotional Banner */}
         <SpringSpecialsBanner storeslug={storeslug} />
+
+        {/* Showroom Location Section */}
+        <ShowroomLocation {...(storefrontData?.showroomSection && { data: storefrontData.showroomSection })} />
 
         {/* Piano Rentals Section */}
         <PianoRentalsSection data={rawStorefrontData ?? {}} />

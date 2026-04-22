@@ -178,7 +178,7 @@ export function BlogGridClient({
                         ) : (
                           <div className="absolute inset-0 bg-kawai-pearl flex items-center justify-center">
                             <Image
-                              src="/images/kawai-logo-red-1x.png"
+                              src="/images/Kawai (Red)(2).png"
                               alt="KAWAI"
                               fill
                               className="object-contain p-16"
@@ -277,7 +277,7 @@ export function BlogGridClient({
                   transition={{ duration: 0.4, ease: EASE_PIANO }}
                 >
                   {gridPosts.map((post, i) => (
-                    <BlogCardAnimated key={post.id} post={post} index={i} />
+                    <BlogCardAnimated key={post.id} post={post} waveIndex={i} />
                   ))}
                 </motion.div>
 

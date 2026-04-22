@@ -103,12 +103,12 @@ export function CollectionShowcaseBlock({
 
   // Banner height mapping
   const heightClasses = {
-    xxs: 'h-[150px]',
-    xs: 'h-[250px]',
-    small: 'h-[400px]',
-    medium: 'h-[600px]',
-    large: 'h-[800px]',
-    fullscreen: 'h-screen min-h-[600px]',
+    xxs: 'h-[200px]',
+    xs: 'h-[360px]',
+    small: 'h-[480px]',
+    medium: 'h-[640px]',
+    large: 'h-[860px]',
+    fullscreen: 'h-screen min-h-[700px]',
   }
 
   // Text alignment mapping
@@ -416,20 +416,14 @@ export function CollectionShowcaseBlock({
           </motion.p>
         )}
 
-        {/* View Collection CTA — appears on product pages to link to the collection page */}
-        {showViewCollectionLink && isCollectionObject && collection.handle && (
+        {/* Explore Collection CTA */}
+        {collection.handle && (
           <motion.div variants={itemVariants} className="mt-8">
             <Link
               href={`/pianos/${collection.handle}`}
-              className={cn(
-                'inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold tracking-wide',
-                'border rounded transition-all duration-300',
-                safeTextColor === 'white' || safeTextColor === 'kawai-gold'
-                  ? 'border-white/60 text-white hover:bg-white hover:text-kawai-black'
-                  : 'border-kawai-black/60 text-kawai-black hover:bg-kawai-black hover:text-white',
-              )}
+              className="inline-flex items-center gap-2 px-8 py-4 text-sm font-semibold tracking-[0.12em] uppercase bg-white text-kawai-black hover:bg-kawai-pearl transition-colors duration-300 font-[family-name:var(--font-brand-sans)]"
             >
-              Explore the Collection
+              Explore the Full Collection
               <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>

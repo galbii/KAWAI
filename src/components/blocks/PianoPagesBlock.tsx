@@ -36,8 +36,9 @@ export default async function PianoPagesBlock({
       {showCarousel !== false && carouselCollections.length > 0 && (
         <CollectionVideoCarousel
           collections={carouselCollections}
+          category={category}
           height={carouselHeight ?? 'large'}
-          autoplayInterval={carouselAutoplayInterval ?? 3500}
+          autoplayInterval={carouselAutoplayInterval ?? 4000}
         />
       )}
       {/* SEO H1 — server-rendered, technically visible (has color + size), not hidden */}

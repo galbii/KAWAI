@@ -1328,6 +1328,23 @@ export type GrandSaleProduct = {
     compareAtPrice: number | null
     available: boolean
   }> | null
+  customMedia?: Array<{
+    mediaType?: 'media' | 'youtube' | null
+    image?: { url: string; alt?: string | null } | null
+    youtubeUrl?: string | null
+    alt?: string | null
+  }> | null
+  shopifyMedia?: Array<{
+    mediaType?: 'IMAGE' | 'VIDEO' | 'MODEL_3D' | 'EXTERNAL_VIDEO' | null
+    imageUrl?: string | null
+    imageWidth?: number | null
+    imageHeight?: number | null
+    alt?: string | null
+    videoUrl?: string | null
+    thumbnailUrl?: string | null
+    embedUrl?: string | null
+    host?: 'YOUTUBE' | 'VIMEO' | null
+  }> | null
 }
 
 /**
@@ -1344,6 +1361,8 @@ export const getGrandPianoSaleProducts = unstable_cache(
         where: {
           and: [
             { status: { not_equals: 'discontinued' } },
+            { model: { not_equals: 'SK-EX' } },
+            { model: { not_equals: 'CR45' } },
             {
               or: [
                 { type: { equals: 'grand' } },
@@ -1365,9 +1384,11 @@ export const getGrandPianoSaleProducts = unstable_cache(
           specifications: true,
           highlights: true,
           variations: true,
+          customMedia: true,
+          shopifyMedia: true,
         },
         sort: 'price.msrp',
-        depth: 0,
+        depth: 1,
         limit: 20,
       })
       return result.docs.map((doc: any) => ({
@@ -1387,6 +1408,33 @@ export const getGrandPianoSaleProducts = unstable_cache(
               price: typeof v.price === 'number' ? v.price : null,
               compareAtPrice: typeof v.compareAtPrice === 'number' ? v.compareAtPrice : null,
               available: v.available === true,
+            }))
+          : null,
+        customMedia: Array.isArray(doc.customMedia)
+          ? doc.customMedia.map((m: any) => ({
+              mediaType: m.mediaType ?? null,
+              image:
+                typeof m.image === 'object' &&
+                m.image !== null &&
+                typeof (m.image as any).url === 'string' &&
+                (m.image as any).url
+                  ? { url: (m.image as any).url as string, alt: (m.image as any).alt ?? null }
+                  : null,
+              youtubeUrl: m.youtubeUrl ?? null,
+              alt: m.alt ?? null,
+            }))
+          : null,
+        shopifyMedia: Array.isArray(doc.shopifyMedia)
+          ? doc.shopifyMedia.map((m: any) => ({
+              mediaType: m.mediaType ?? null,
+              imageUrl: m.imageUrl ?? null,
+              imageWidth: m.imageWidth ?? null,
+              imageHeight: m.imageHeight ?? null,
+              alt: m.alt ?? null,
+              videoUrl: m.videoUrl ?? null,
+              thumbnailUrl: m.thumbnailUrl ?? null,
+              embedUrl: m.embedUrl ?? null,
+              host: m.host ?? null,
             }))
           : null,
       }))

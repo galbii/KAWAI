@@ -47,13 +47,14 @@ export async function BlogLatestBlock({
   return (
     <section className="bg-kawai-pearl py-16 lg:py-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-12">
-          <h2 className="text-5xl lg:text-7xl font-[family-name:var(--font-brand-serif)] font-semibold leading-[1.0] tracking-tight text-kawai-black mb-4">
-            Latest News &amp; Articles
-          </h2>
-          <div className="flex items-center">
-            <div className="w-10 h-px bg-kawai-red" />
-            <div className="flex-1 h-px bg-kawai-neutral" />
+        <div className="mb-12 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-kawai-red font-[family-name:var(--font-brand-sans)] mb-3">
+              From the Blog
+            </p>
+            <h2 className="text-5xl lg:text-6xl font-[family-name:var(--font-brand-serif)] font-semibold leading-[1.0] tracking-tight text-kawai-black">
+              Latest News &amp; Articles
+            </h2>
           </div>
         </div>
 

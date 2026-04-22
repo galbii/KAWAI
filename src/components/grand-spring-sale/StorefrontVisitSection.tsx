@@ -90,9 +90,9 @@ export function StorefrontVisitSection({
 
         {/* Content grid */}
         <div className="bg-white rounded-xl shadow-brand-medium overflow-hidden border border-kawai-neutral/60">
-          <div className="md:flex">
+          <div className="flex flex-col md:flex-row">
             {/* Location info panel */}
-            <div className="md:w-2/5 p-8 md:p-10 flex flex-col justify-between">
+            <div className="order-2 md:order-1 md:w-2/5 p-8 md:p-10 flex flex-col justify-between">
               <div>
                 <h3 className="text-xl font-medium text-kawai-black mb-6 font-[family-name:var(--font-brand-serif)]">
                   {locationName ?? 'Our Showroom'}
@@ -180,7 +180,7 @@ export function StorefrontVisitSection({
             </div>
 
             {/* Map panel */}
-            <div className="md:w-3/5 relative bg-kawai-pearl/40 min-h-[320px] md:min-h-[460px]">
+            <div className="order-1 md:order-2 md:w-3/5 relative bg-kawai-pearl/40 min-h-[320px] md:min-h-[460px]">
               {mapSrc && !mapError ? (
                 <>
                   {!mapLoaded && (

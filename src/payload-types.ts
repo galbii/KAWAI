@@ -8853,6 +8853,10 @@ export interface Storefront {
    */
   mapApiKey?: string | null;
   /**
+   * Calendly booking URL for trade-in appointments (e.g. https://calendly.com/your-store/trade-in)
+   */
+  calendlyUrl?: string | null;
+  /**
    * Call-to-action buttons for the showroom section
    */
   showroomCtas: {
@@ -11071,6 +11075,7 @@ export interface StorefrontsSelect<T extends boolean = true> {
         id?: T;
       };
   mapApiKey?: T;
+  calendlyUrl?: T;
   showroomCtas?:
     | T
     | {

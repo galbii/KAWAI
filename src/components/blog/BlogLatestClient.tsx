@@ -34,10 +34,15 @@ export function BlogLatestClient({
   secondaryCtaHref,
 }: BlogLatestClientProps) {
   const [visibleCount, setVisibleCount] = useState(pageSize)
+  const [waveStart, setWaveStart] = useState(0)
 
   const visiblePosts = allPosts.slice(0, visibleCount)
   const hasMore = visibleCount < allPosts.length
-  const remaining = allPosts.length - visibleCount
+
+  function loadMore() {
+    setWaveStart(visibleCount)
+    setVisibleCount((c) => c + pageSize)
+  }
 
   const hasCtas = showCta || (showSecondaryCta && secondaryCtaLabel)
 
@@ -55,14 +60,18 @@ export function BlogLatestClient({
         transition={{ duration: 0.4, ease: EASE_PIANO }}
       >
         {visiblePosts.map((post, i) => (
-          <BlogCardAnimated key={post.id} post={post} index={i} />
+          <BlogCardAnimated
+            key={post.id}
+            post={post}
+            waveIndex={i >= waveStart ? i - waveStart : -1}
+          />
         ))}
       </motion.div>
 
-      {/* Load more + CTAs — all in one row */}
+      {/* Buttons row */}
       {(hasMore || hasCtas) && (
         <motion.div
-          className="flex flex-wrap items-center justify-center gap-4 mt-14"
+          className="flex flex-wrap items-center justify-center gap-3 mt-12"
           initial={{ opacity: 0, y: 8 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={VIEWPORT}
@@ -70,29 +79,16 @@ export function BlogLatestClient({
         >
           {hasMore && (
             <button
-              onClick={() => setVisibleCount((c) => c + pageSize)}
+              onClick={loadMore}
               className={cn(
-                'inline-flex items-center gap-3 px-10 py-4 rounded-full',
-                'border border-kawai-neutral bg-white text-kawai-black',
-                'text-base font-semibold font-[family-name:var(--font-brand-sans)] tracking-wide',
-                'transition-all duration-300 ease-[var(--ease-piano)]',
-                'hover:border-kawai-red hover:text-kawai-red hover:shadow-brand-red-glow',
+                'inline-flex items-center px-8 py-4 rounded-lg',
+                'bg-white border border-kawai-neutral text-kawai-black',
+                'text-base font-semibold font-[family-name:var(--font-brand-sans)]',
+                'transition-all duration-200 ease-[var(--ease-piano)]',
+                'hover:border-kawai-charcoal/30 hover:shadow-sm',
               )}
             >
-              <span>Load more stories</span>
-              <span className="text-sm text-kawai-charcoal/40">{remaining} remaining</span>
-              <svg
-                viewBox="0 0 16 16"
-                className="w-4 h-4 shrink-0"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M8 3v10M3 8l5 5 5-5" />
-              </svg>
+              Load more stories
             </button>
           )}
 
@@ -100,11 +96,11 @@ export function BlogLatestClient({
             <Link
               href={secondaryCtaHref || '#'}
               className={cn(
-                'inline-flex items-center gap-2 px-10 py-4 rounded-full',
-                'border border-kawai-neutral bg-white text-kawai-black',
-                'text-base font-semibold font-[family-name:var(--font-brand-sans)] tracking-wide',
-                'transition-all duration-300 ease-[var(--ease-piano)]',
-                'hover:border-kawai-red hover:text-kawai-red',
+                'inline-flex items-center px-8 py-4 rounded-lg',
+                'bg-white border border-kawai-neutral text-kawai-black',
+                'text-base font-semibold font-[family-name:var(--font-brand-sans)]',
+                'transition-all duration-200 ease-[var(--ease-piano)]',
+                'hover:border-kawai-charcoal/30 hover:shadow-sm',
               )}
             >
               {secondaryCtaLabel}
@@ -115,26 +111,14 @@ export function BlogLatestClient({
             <Link
               href={ctaHref}
               className={cn(
-                'inline-flex items-center gap-2 px-10 py-4 rounded-full',
+                'inline-flex items-center px-8 py-4 rounded-lg',
                 'bg-kawai-red text-white',
-                'text-base font-semibold font-[family-name:var(--font-brand-sans)] tracking-wide',
-                'transition-all duration-300 ease-[var(--ease-piano)]',
-                'hover:bg-kawai-red-700 hover:shadow-brand-red-glow',
+                'text-base font-semibold font-[family-name:var(--font-brand-sans)]',
+                'transition-all duration-200 ease-[var(--ease-piano)]',
+                'hover:bg-kawai-red-700',
               )}
             >
               {ctaLabel}
-              <svg
-                viewBox="0 0 10 10"
-                className="w-3 h-3 shrink-0"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M1 5h8M5.5 1.5 9 5l-3.5 3.5" />
-              </svg>
             </Link>
           )}
         </motion.div>

@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { CollectionForBrowser } from '@/lib/payload/queries'
 
@@ -11,289 +11,142 @@ import type { CollectionForBrowser } from '@/lib/payload/queries'
 
 export interface CollectionVideoCarouselProps {
   collections: CollectionForBrowser[]
+  category?: string | null
   autoplayInterval?: number
   height?: 'medium' | 'large' | 'fullscreen'
 }
 
+const CATEGORY_LABELS: Record<string, string> = {
+  digital: 'Digital Pianos',
+  grand: 'Grand Pianos',
+  upright: 'Upright Pianos',
+  hybrid: 'Hybrid Pianos',
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/**
- * Parse YouTube URL to extract video ID.
- * Supports: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID, raw 11-char ID
- */
 function parseYouTubeId(url: string): string | null {
   if (!url) return null
-
   const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\?\/]+)/,
-    /^([a-zA-Z0-9_-]{11})$/, // Direct ID
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?/]+)/,
+    /^([a-zA-Z0-9_-]{11})$/,
   ]
-
   for (const pattern of patterns) {
     const match = url.match(pattern)
     if (match) return match[1] ?? null
   }
-
   return null
 }
 
-// ─── Height mapping ───────────────────────────────────────────────────────────
-
 const heightClasses = {
-  medium: 'h-[50vh] min-h-[400px]',
-  large: 'h-[70vh] min-h-[500px]',
+  medium: 'h-[50vh] min-h-[420px]',
+  large: 'h-[70vh] min-h-[520px]',
   fullscreen: 'h-screen',
-} as const
-
-// ─── Text alignment mapping ───────────────────────────────────────────────────
-
-const alignmentClasses = {
-  left: 'text-left items-start',
-  center: 'text-center items-center',
-  right: 'text-right items-end',
-} as const
-
-// ─── Text color mapping ───────────────────────────────────────────────────────
-
-const colorClasses = {
-  white: 'text-white',
-  black: 'text-kawai-black',
-  'kawai-red': 'text-kawai-red',
-  'kawai-gold': 'text-[#D4AF37]',
-} as const
-
-// ─── Heading size mapping ─────────────────────────────────────────────────────
-
-const headingSizeClasses = {
-  small: 'text-3xl md:text-4xl lg:text-5xl',
-  medium: 'text-4xl md:text-5xl lg:text-6xl',
-  large: 'text-5xl md:text-6xl lg:text-7xl',
-  xl: 'text-6xl md:text-7xl lg:text-8xl',
 } as const
 
 // ─── Animation variants ───────────────────────────────────────────────────────
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.2,
-    },
-  },
-}
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
+const slideContentVariants = {
+  hidden: { opacity: 0, y: 14 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.8,
-      ease: [0.22, 1, 0.36, 1] as const,
-    },
+    transition: { staggerChildren: 0.1, delayChildren: 0.05 },
+  },
+  exit: { opacity: 0, transition: { duration: 0.2 } },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 14 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
   },
 }
 
-// ─── Individual Slide ─────────────────────────────────────────────────────────
+// ─── Background slide (media only) ───────────────────────────────────────────
 
-interface SlideProps {
+function MediaSlide({
+  collection,
+  isActive,
+  priority = false,
+  overlayOpacity,
+}: {
   collection: CollectionForBrowser
   isActive: boolean
   priority?: boolean
-}
-
-function CarouselSlide({ collection, isActive, priority = false }: SlideProps) {
+  overlayOpacity: number
+}) {
   const [isVideoLoaded, setIsVideoLoaded] = useState(false)
-
   const videoId = collection.youtubeUrl ? parseYouTubeId(collection.youtubeUrl) : null
   const fallbackImage = collection.mediaUrl ?? collection.imageUrl ?? null
-  const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : fallbackImage
-
-  const safeTextAlignment = (collection.textAlignment as keyof typeof alignmentClasses) ?? 'left'
-  const safeTextColor = (collection.textColor as keyof typeof colorClasses) ?? 'white'
-  const safeOverlayOpacity = collection.overlayOpacity ?? 50
-  const safeHeadingSize = (collection.headingSize as keyof typeof headingSizeClasses) ?? 'large'
-
-  const heading = collection.heading ?? collection.title
-  const subheading = collection.subheading
+  const thumbnailUrl = videoId
+    ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+    : fallbackImage
 
   return (
     <div
       className={cn(
-        'absolute inset-0 transition-opacity duration-[800ms] ease-in-out',
-        isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'
+        'absolute inset-0 transition-opacity duration-[900ms] ease-in-out',
+        isActive ? 'opacity-100 z-10' : 'opacity-0 z-0',
       )}
       aria-hidden={!isActive}
     >
-      {/* YouTube video background */}
+      {/* YouTube */}
       {videoId && (
         <div className="absolute inset-0 overflow-hidden bg-black">
-          {/* Thumbnail shown until iframe loads */}
           {thumbnailUrl && (
-            <div
-              className={cn(
-                'absolute inset-0 transition-opacity duration-700',
-                isVideoLoaded ? 'opacity-0' : 'opacity-100'
-              )}
-            >
-              <Image
-                src={thumbnailUrl}
-                alt={heading}
-                fill
-                className="object-cover"
-                sizes="100vw"
-                priority={priority}
-              />
+            <div className={cn('absolute inset-0 transition-opacity duration-700', isVideoLoaded ? 'opacity-0' : 'opacity-100')}>
+              <Image src={thumbnailUrl} alt={collection.title} fill className="object-cover" sizes="100vw" priority={priority} />
             </div>
           )}
-
-          {/* Full-cover iframe — only mount when slide has been active at least once */}
           {isActive && (
             <iframe
               src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&controls=0&playlist=${videoId}&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3`}
               className={cn(
-                'absolute top-1/2 left-1/2',
-                'w-[177.77777778vh] min-w-full h-[56.25vw] min-h-full',
-                '-translate-x-1/2 -translate-y-1/2',
-                'pointer-events-none',
-                'transition-opacity duration-1000',
-                isVideoLoaded ? 'opacity-100' : 'opacity-0'
+                'absolute top-1/2 left-1/2 w-[177.78vh] min-w-full h-[56.25vw] min-h-full -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-opacity duration-1000',
+                isVideoLoaded ? 'opacity-100' : 'opacity-0',
               )}
               allow="autoplay; loop"
               onLoad={() => setIsVideoLoaded(true)}
-              title={`${heading} collection video`}
+              title={`${collection.title} video`}
             />
           )}
         </div>
       )}
 
-      {/* Fallback image background (no video) */}
+      {/* Static image */}
       {!videoId && fallbackImage && (
         <div className="absolute inset-0">
-          <Image
-            src={fallbackImage}
-            alt={heading}
-            fill
-            className="object-cover"
-            sizes="100vw"
-            priority={priority}
-          />
+          <Image src={fallbackImage} alt={collection.title} fill className="object-cover" sizes="100vw" priority={priority} />
         </div>
       )}
 
-      {/* No media: dark base */}
+      {/* Dark base */}
       {!videoId && !fallbackImage && <div className="absolute inset-0 bg-kawai-black" />}
 
-      {/* Gradient + noise overlay */}
+      {/* Gradient overlay — heavier left for text, lighter right */}
       <div
-        className="absolute inset-0 z-10"
+        className="absolute inset-0"
         style={{
-          background: `
-            linear-gradient(
-              135deg,
-              rgba(0, 0, 0, ${(safeOverlayOpacity / 100) * 0.7}) 0%,
-              rgba(0, 0, 0, ${(safeOverlayOpacity / 100) * 0.5}) 50%,
-              rgba(0, 0, 0, ${(safeOverlayOpacity / 100) * 0.8}) 100%
-            )
-          `,
+          background: `linear-gradient(105deg, rgba(0,0,0,${(overlayOpacity / 100) * 0.85}) 0%, rgba(0,0,0,${(overlayOpacity / 100) * 0.5}) 50%, rgba(0,0,0,${(overlayOpacity / 100) * 0.35}) 100%)`,
         }}
-      >
-        {/* Subtle grain — wabi-sabi texture */}
-        <div
-          className="absolute inset-0 opacity-[0.03] mix-blend-overlay"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-          }}
-        />
-      </div>
+      />
 
-      {/* Content */}
-      <motion.div
-        key={isActive ? 'active' : 'inactive'}
-        className={cn(
-          'relative z-20 h-full container mx-auto px-6 md:px-12',
-          'flex flex-col justify-end pb-16 md:pb-20',
-          alignmentClasses[safeTextAlignment] ?? alignmentClasses.left
-        )}
-        variants={containerVariants}
-        initial="hidden"
-        animate={isActive ? 'visible' : 'hidden'}
-      >
-        {heading && (
-          <motion.h2
-            variants={itemVariants}
-            className={cn(
-              'font-bold leading-[1.1] tracking-tight mb-4',
-              'drop-shadow-2xl',
-              'font-[family-name:var(--font-brand-luxury)]',
-              headingSizeClasses[safeHeadingSize] ?? headingSizeClasses.large,
-              colorClasses[safeTextColor] ?? colorClasses.white
-            )}
-            style={{ textShadow: '0 4px 24px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3)' }}
-          >
-            {heading}
-          </motion.h2>
-        )}
+      {/* Bottom fade */}
+      <div
+        className="absolute inset-x-0 bottom-0 h-48 pointer-events-none"
+        style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)' }}
+      />
 
-        {/* Decorative divider */}
-        {heading && subheading && (
-          <motion.div
-            variants={itemVariants}
-            className={cn(
-              'w-16 h-[2px] mb-4',
-              safeTextAlignment === 'center' && 'mx-auto',
-              safeTextAlignment === 'right' && 'ml-auto'
-            )}
-            style={{
-              background: `linear-gradient(90deg, ${
-                safeTextColor === 'kawai-red'
-                  ? '#E11922'
-                  : safeTextColor === 'kawai-gold'
-                    ? '#D4AF37'
-                    : safeTextColor === 'black'
-                      ? '#1a1a1a'
-                      : '#ffffff'
-              } 0%, transparent 100%)`,
-            }}
-          />
-        )}
-
-        {subheading && (
-          <motion.p
-            variants={itemVariants}
-            className={cn(
-              'text-lg md:text-xl lg:text-2xl',
-              'leading-relaxed max-w-2xl',
-              'font-light tracking-wide mb-8',
-              'opacity-90 drop-shadow-lg',
-              colorClasses[safeTextColor] ?? colorClasses.white
-            )}
-            style={{ textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}
-          >
-            {subheading}
-          </motion.p>
-        )}
-
-        {/* Explore CTA */}
-        <motion.div variants={itemVariants}>
-          <Link
-            href={`/pianos/${collection.handle}`}
-            className={cn(
-              'inline-flex items-center gap-2 px-6 py-3',
-              'text-sm font-semibold tracking-wide',
-              'bg-kawai-red text-white hover:bg-kawai-red-700',
-              'transition-colors duration-300 rounded'
-            )}
-          >
-            Explore Collection
-            <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </Link>
-        </motion.div>
-      </motion.div>
+      {/* Grain */}
+      <div
+        className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+        }}
+      />
     </div>
   )
 }
@@ -302,160 +155,188 @@ function CarouselSlide({ collection, isActive, priority = false }: SlideProps) {
 
 export function CollectionVideoCarousel({
   collections,
-  autoplayInterval = 3500,
+  category,
+  autoplayInterval = 4000,
   height = 'large',
 }: CollectionVideoCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const total = collections.length
-
-  const goTo = useCallback(
-    (index: number) => {
-      setActiveIndex(((index % total) + total) % total)
-    },
-    [total]
-  )
-
+  const goTo = useCallback((index: number) => setActiveIndex(((index % total) + total) % total), [total])
   const goPrev = useCallback(() => goTo(activeIndex - 1), [activeIndex, goTo])
   const goNext = useCallback(() => goTo(activeIndex + 1), [activeIndex, goTo])
 
-  // Auto-advance
   useEffect(() => {
     if (total <= 1 || isPaused) return
-
-    intervalRef.current = setInterval(() => {
-      setActiveIndex((i) => (i + 1) % total)
-    }, autoplayInterval)
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
-    }
+    const t = setInterval(() => setActiveIndex((i) => (i + 1) % total), autoplayInterval)
+    return () => clearInterval(t)
   }, [total, isPaused, autoplayInterval])
 
-  // Keyboard navigation
   useEffect(() => {
     const el = containerRef.current
     if (!el || total <= 1) return
-
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault()
-        goPrev()
-      } else if (e.key === 'ArrowRight') {
-        e.preventDefault()
-        goNext()
-      }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); goPrev() }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); goNext() }
     }
-
     el.addEventListener('keydown', handleKey)
     return () => el.removeEventListener('keydown', handleKey)
   }, [goPrev, goNext, total])
 
-  // Nothing to render
   if (total === 0) return null
 
-  const isSingle = total === 1
-  const firstCollection = collections[0]
-  if (!firstCollection) return null
+  const collection = collections[activeIndex] ?? collections[0]!
+  const categoryLabel = category ? (CATEGORY_LABELS[category] ?? null) : null
+  const overlayOpacity = collection.overlayOpacity ?? 50
+const displayTitle = collection.heading ?? collection.title
+  const idxDisplay = String(activeIndex + 1).padStart(2, '0')
+  const totalDisplay = String(total).padStart(2, '0')
 
   return (
     <div
       ref={containerRef}
       className={cn('relative w-full overflow-hidden bg-black', heightClasses[height])}
-      tabIndex={isSingle ? undefined : 0}
-      aria-label="Collection video carousel"
+      tabIndex={total > 1 ? 0 : undefined}
+      aria-label="Collection carousel"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onFocus={() => setIsPaused(true)}
       onBlur={() => setIsPaused(false)}
     >
-      {/* Slides */}
-      {collections.map((collection, i) => (
-        <CarouselSlide
-          key={collection.handle}
-          collection={collection}
+      {/* Background media slides */}
+      {collections.map((col, i) => (
+        <MediaSlide
+          key={col.handle}
+          collection={col}
           isActive={i === activeIndex}
           priority={i === 0}
+          overlayOpacity={overlayOpacity}
         />
       ))}
 
-      {/* Arrow controls — only when multiple slides */}
-      {!isSingle && (
-        <>
-          <button
-            onClick={goPrev}
-            aria-label="Previous collection"
-            className={cn(
-              'absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-30',
-              'w-11 h-11 flex items-center justify-center rounded-full',
-              'bg-black/40 hover:bg-black/60 text-white',
-              'transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white'
-            )}
-          >
-            <svg viewBox="0 0 16 16" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M10 3L5 8l5 5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
+      {/* Corner accent */}
+      <div className="absolute top-0 left-0 w-14 h-14 z-20 opacity-20 pointer-events-none">
+        <svg viewBox="0 0 100 100" className="text-white w-full h-full">
+          <line x1="0" y1="20" x2="20" y2="20" stroke="currentColor" strokeWidth="1.5" />
+          <line x1="20" y1="0" x2="20" y2="20" stroke="currentColor" strokeWidth="1.5" />
+        </svg>
+      </div>
 
-          <button
-            onClick={goNext}
-            aria-label="Next collection"
-            className={cn(
-              'absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-30',
-              'w-11 h-11 flex items-center justify-center rounded-full',
-              'bg-black/40 hover:bg-black/60 text-white',
-              'transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white'
-            )}
-          >
-            <svg viewBox="0 0 16 16" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M6 3l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
+      {/* Fixed content overlay — bottom left */}
+      <div className="absolute bottom-0 left-0 right-0 z-20 max-w-7xl mx-auto px-10 md:px-14 pb-16">
+        <div className="flex items-end justify-between gap-8">
 
-          {/* Slide counter — editorial ma-style numbering */}
-          <div
-            className="absolute bottom-8 right-5 md:right-7 z-30 select-none pointer-events-none"
-            aria-hidden="true"
-          >
-            <span
-              className="text-white/50 text-[11px] tracking-[0.25em] uppercase"
-              style={{ fontFamily: 'var(--font-family-cormorant)' }}
-            >
-              {String(activeIndex + 1).padStart(2, '0')}
-              <span className="mx-1.5 opacity-40">/</span>
-              {String(total).padStart(2, '0')}
-            </span>
+          {/* Left column: category (fixed) + collection (animated) */}
+          <div className="flex-1 min-w-0">
+
+            {/* Category heading — fixed, dominant */}
+            {categoryLabel ? (
+              <h1
+                className="text-7xl md:text-8xl lg:text-9xl text-white leading-[0.92] mb-5"
+                style={{
+                  fontFamily: 'var(--font-brand-sans)',
+                  fontWeight: 900,
+                  letterSpacing: '-0.035em',
+                }}
+              >
+                {categoryLabel}
+              </h1>
+            ) : (
+              <p
+                className="text-4xl md:text-5xl text-white leading-none mb-5"
+                style={{ fontFamily: 'var(--font-brand-sans)', fontWeight: 900, letterSpacing: '-0.03em' }}
+              >
+                Kawai Pianos
+              </p>
+            )}
+
+            {/* Kawai-red accent bar */}
+            <div className="w-12 h-[3px] bg-kawai-red mb-6" />
+
+            {/* Per-slide collection info — animated */}
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={activeIndex}
+                variants={slideContentVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                <motion.p
+                  variants={itemVariants}
+                  className="text-2xl md:text-3xl text-white/70 mb-2 leading-snug"
+                  style={{ fontFamily: 'var(--font-brand-luxury)', fontWeight: 400, fontStyle: 'italic' }}
+                >
+                  {displayTitle}
+                </motion.p>
+
+                {collection.subheading && (
+                  <motion.p
+                    variants={itemVariants}
+                    className="text-sm text-white/45 mb-6 max-w-lg leading-relaxed font-[family-name:var(--font-brand-sans)]"
+                  >
+                    {collection.subheading}
+                  </motion.p>
+                )}
+
+              </motion.div>
+            </AnimatePresence>
           </div>
 
-          {/* Progress rail indicators — thin segmented bars with animated fill */}
-          <div
-            className="absolute bottom-0 left-0 right-0 z-30 flex items-stretch gap-[3px] px-4 pb-[10px] pt-[8px]"
-            role="tablist"
-            aria-label="Carousel slides"
-          >
-            {collections.map((collection, i) => {
+          {/* Right column: counter + nav */}
+          {total > 1 && (
+            <div className="flex-shrink-0 flex flex-col items-end gap-5 pb-1">
+              <div
+                className="text-white/25 tabular-nums font-[family-name:var(--font-brand-sans)]"
+                style={{ fontSize: '13px', letterSpacing: '0.1em' }}
+              >
+                <span className="text-white/60">{idxDisplay}</span>
+                <span className="mx-2">/</span>
+                {totalDisplay}
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={goPrev}
+                  aria-label="Previous collection"
+                  className="w-12 h-12 border border-white/20 flex items-center justify-center text-white/50 hover:border-white/55 hover:text-white transition-all duration-200"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={goNext}
+                  aria-label="Next collection"
+                  className="w-12 h-12 border border-white/20 flex items-center justify-center text-white/50 hover:border-white/55 hover:text-white transition-all duration-200"
+                >
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Progress bars */}
+        {total > 1 && (
+          <div className="flex gap-1.5 mt-10" role="tablist">
+            {collections.map((col, i) => {
               const isActive = i === activeIndex
               const isCompleted = i < activeIndex
               return (
                 <button
-                  key={collection.handle}
+                  key={col.handle}
                   role="tab"
                   aria-selected={isActive}
-                  aria-label={`Go to slide ${i + 1}: ${collection.heading ?? collection.title}`}
+                  aria-label={`Go to ${col.heading ?? col.title}`}
                   onClick={() => goTo(i)}
-                  className="flex-1 h-[2px] rounded-full overflow-hidden focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/60 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent cursor-pointer group"
-                  style={{ background: 'rgba(255,255,255,0.22)' }}
+                  className="flex-1 h-[3px] overflow-hidden focus-visible:outline-none cursor-pointer"
+                  style={{ background: 'rgba(255,255,255,0.15)' }}
                 >
-                  {isCompleted && (
-                    <div className="h-full w-full rounded-full bg-white/70" />
-                  )}
+                  {isCompleted && <div className="h-full w-full bg-white/50" />}
                   {isActive && (
                     <div
-                      key={`kawai-progress-${activeIndex}`}
-                      className="h-full w-full rounded-full bg-white"
+                      key={`progress-${activeIndex}`}
+                      className="h-full w-full bg-white"
                       style={{
                         transformOrigin: 'left center',
                         transform: 'scaleX(0)',
@@ -464,23 +345,20 @@ export function CollectionVideoCarousel({
                       }}
                     />
                   )}
-                  {!isActive && !isCompleted && (
-                    <div className="h-full w-0 group-hover:w-full rounded-full bg-white/30 transition-[width] duration-300" />
-                  )}
                 </button>
               )
             })}
           </div>
+        )}
+      </div>
 
-          {/* CSS keyframe for progress fill animation */}
-          <style>{`
-            @keyframes kawaiProgressFill {
-              from { transform: scaleX(0); }
-              to   { transform: scaleX(1); }
-            }
-          `}</style>
-        </>
-      )}
+
+      <style>{`
+        @keyframes kawaiProgressFill {
+          from { transform: scaleX(0); }
+          to   { transform: scaleX(1); }
+        }
+      `}</style>
     </div>
   )
 }

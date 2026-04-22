@@ -90,12 +90,12 @@ export function TradeInHero({ locationName }: TradeInHeroProps) {
             />
           </div>
 
-          {/* "Trade" — flowing script */}
+          {/* "Spring Trade In" — flowing script */}
           <h1
             className="tih-a3 font-kawai-script text-kawai-black leading-[1]"
-            style={{ fontSize: 'clamp(7rem, 20vw, 18rem)' }}
+            style={{ fontSize: 'clamp(4rem, 14vw, 13rem)' }}
           >
-            Trade
+            Spring Trade In
           </h1>
 
           {/* Ruled divider with campaign label */}
@@ -105,7 +105,7 @@ export function TradeInHero({ locationName }: TradeInHeroProps) {
               className="text-kawai-black font-[family-name:var(--font-brand-sans)] font-medium tracking-[0.4em] uppercase whitespace-nowrap"
               style={{ fontSize: 'clamp(0.85rem, 1.6vw, 1.2rem)' }}
             >
-              Spring Offer
+              Until May 17th
             </span>
             <div className="flex-1 h-px bg-kawai-black/40" aria-hidden />
           </div>
@@ -135,18 +135,22 @@ export function TradeInHero({ locationName }: TradeInHeroProps) {
           {/* CTAs */}
           <div className="tih-a5 flex flex-col sm:flex-row items-center gap-3">
             <a
-              href="#appraisal-form"
+              href="#how-it-works"
               onClick={(e) => {
                 e.preventDefault()
-                document.getElementById('appraisal-form')?.scrollIntoView({ behavior: 'smooth' })
+                document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })
               }}
               className="inline-flex items-center px-8 py-4 bg-kawai-red hover:bg-kawai-red/90 text-white text-sm tracking-[0.12em] uppercase font-medium transition-colors rounded-sm shadow-[0_4px_24px_rgba(225,25,34,0.35)]"
             >
-              Get an Estimate
+              Claim Bonus
             </a>
 
             <a
               href="#trade-calculator"
+              onClick={(e) => {
+                e.preventDefault()
+                document.getElementById('trade-calculator')?.scrollIntoView({ behavior: 'smooth' })
+              }}
               className="inline-flex items-center px-8 py-4 border border-kawai-black/25 bg-black/8 backdrop-blur-sm text-kawai-black hover:bg-black/15 hover:border-kawai-black/40 text-sm tracking-[0.12em] uppercase font-medium transition-all rounded-sm"
             >
               Learn More
