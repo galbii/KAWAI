@@ -134,7 +134,7 @@ export function GrandSpringHero({ locationName, storeslug }: GrandSpringHeroProp
           {/* CTAs */}
           <div className="gsh-a5 flex flex-col sm:flex-row items-center gap-3">
             <a
-              href="/pianos/grand"
+              href="#grand-showcase"
               className="inline-flex items-center px-8 py-4 bg-kawai-red hover:bg-kawai-red/90 text-white text-sm tracking-[0.12em] uppercase font-medium transition-colors rounded-sm shadow-[0_4px_24px_rgba(225,25,34,0.35)]"
             >
               View Collection
