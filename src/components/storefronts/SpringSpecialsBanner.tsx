@@ -62,11 +62,11 @@ export function SpringSpecialsBanner({ storeslug }: SpringSpecialsBannerProps) {
 
             {/* Eyebrow */}
             <div className="flex items-center justify-center gap-2.5 mb-6">
-              <SakuraIcon className="w-3.5 h-3.5 text-kawai-red/50" />
-              <span className="text-kawai-red/65 text-[0.65rem] tracking-[0.32em] uppercase font-semibold font-[family-name:var(--font-brand-sans)]">
+              <SakuraIcon className="w-4 h-4 text-kawai-red/50" />
+              <span className="text-kawai-red/65 text-xs md:text-sm tracking-[0.28em] uppercase font-semibold font-[family-name:var(--font-brand-sans)]">
                 Limited Time Spring Offers
               </span>
-              <SakuraIcon className="w-3.5 h-3.5 text-kawai-red/50" />
+              <SakuraIcon className="w-4 h-4 text-kawai-red/50" />
             </div>
 
             {/* Script headline */}
@@ -80,28 +80,28 @@ export function SpringSpecialsBanner({ storeslug }: SpringSpecialsBannerProps) {
             {/* Ruled divider */}
             <div className="flex items-center gap-5 max-w-sm mx-auto mb-10">
               <div className="flex-1 h-px bg-kawai-black/25" />
-              <span className="text-kawai-black/45 text-[0.6rem] tracking-[0.4em] uppercase font-semibold font-[family-name:var(--font-brand-sans)] whitespace-nowrap">
+              <span className="text-kawai-black/45 text-xs md:text-sm tracking-[0.35em] uppercase font-semibold font-[family-name:var(--font-brand-sans)] whitespace-nowrap">
                 Kawai · May 1–17
               </span>
               <div className="flex-1 h-px bg-kawai-black/25" />
             </div>
 
             {/* Stats */}
-            <div className="flex items-start justify-center gap-10 md:gap-16">
+            <div className="flex items-start justify-center gap-8 md:gap-16">
               {[
                 { value: '0%',   label: 'Financing',     sub: '36 months · no interest' },
                 { value: 'Sale', label: 'Spring Pricing', sub: 'Select grand pianos'     },
                 { value: '+$500',label: 'Trade-In Bonus', sub: 'Over any appraisal'      },
               ].map(({ value, label, sub }) => (
-                <div key={label} className="flex flex-col items-center gap-1">
-                  <div className="ssb-bar w-7 h-[2px] bg-kawai-red mb-2" aria-hidden />
-                  <span className="font-kawai-script text-kawai-black leading-none" style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2.2rem)' }}>
+                <div key={label} className="flex flex-col items-center gap-1.5">
+                  <div className="ssb-bar w-8 h-[2px] bg-kawai-red mb-2" aria-hidden />
+                  <span className="font-kawai-script text-kawai-black leading-none" style={{ fontSize: 'clamp(2.2rem, 4vw, 3.2rem)' }}>
                     {value}
                   </span>
-                  <span className="text-kawai-black text-[0.6rem] tracking-[0.22em] uppercase font-semibold mt-0.5 font-[family-name:var(--font-brand-sans)]">
+                  <span className="text-kawai-black text-xs md:text-sm tracking-[0.2em] uppercase font-semibold mt-1 font-[family-name:var(--font-brand-sans)]">
                     {label}
                   </span>
-                  <span className="text-kawai-black/40 text-[0.58rem] tracking-wide font-[family-name:var(--font-brand-sans)]">
+                  <span className="text-kawai-black/50 text-xs md:text-sm tracking-wide font-[family-name:var(--font-brand-sans)]">
                     {sub}
                   </span>
                 </div>
@@ -235,7 +235,7 @@ export function SpringSpecialsBanner({ storeslug }: SpringSpecialsBannerProps) {
           </div>
 
           {/* Fine print */}
-          <p className="text-center text-kawai-charcoal/35 text-[0.65rem] mt-6 tracking-wide font-[family-name:var(--font-brand-sans)]">
+          <p className="text-center text-kawai-charcoal/45 text-xs mt-6 tracking-wide font-[family-name:var(--font-brand-sans)]">
             Offers valid May 1–17, 2026. Financing subject to credit approval. Trade-in value based on independent appraisal plus $500 bonus credit.
           </p>
 

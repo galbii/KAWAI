@@ -100,7 +100,7 @@ function Input({
     <input
       {...props}
       className={cn(
-        'w-full px-4 py-3 text-sm text-kawai-black bg-white border rounded-sm outline-none transition-all duration-200',
+        'w-full px-4 py-3 text-[16px] sm:text-sm text-kawai-black bg-white border rounded-sm outline-none transition-all duration-200',
         'placeholder:text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)]',
         error
           ? 'border-kawai-red/60 ring-1 ring-kawai-red/20 bg-kawai-red-50'
