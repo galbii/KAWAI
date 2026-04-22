@@ -1,3 +1,7 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+
 function SakuraIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden>
@@ -54,11 +58,11 @@ const FALLBACK_TESTIMONIALS: Testimonial[] = [
 
 function StarRating({ rating }: { rating: number }) {
   return (
-    <div className="flex gap-0.5">
+    <div className="flex gap-1">
       {Array.from({ length: 5 }).map((_, i) => (
         <svg
           key={i}
-          className={`w-3.5 h-3.5 ${i < rating ? 'text-kawai-red' : 'text-kawai-charcoal/20'}`}
+          className={`w-3.5 h-3.5 ${i < rating ? 'text-kawai-red' : 'text-kawai-neutral'}`}
           fill="currentColor"
           viewBox="0 0 20 20"
         >
@@ -71,54 +75,140 @@ function StarRating({ rating }: { rating: number }) {
 
 export function TestimonialsSection({ testimonials }: TestimonialsSectionProps) {
   const featured = testimonials && testimonials.length >= 2
-    ? testimonials.filter((t) => t.testimonialText && t.customerName).slice(0, 3)
+    ? testimonials.filter((t) => t.testimonialText && t.customerName).slice(0, 6)
     : FALLBACK_TESTIMONIALS
+
+  const [index, setIndex] = useState(0)
+  const [visible, setVisible] = useState(true)
 
   if (featured.length === 0) return null
 
+  const go = (next: number) => {
+    setVisible(false)
+    setTimeout(() => {
+      setIndex((next + featured.length) % featured.length)
+      setVisible(true)
+    }, 220)
+  }
+
+  const t = featured[index]!
+
   return (
-    <section className="py-16 md:py-24 bg-white/85 backdrop-blur-md border-b border-kawai-neutral/60">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="text-center mb-14">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <SakuraIcon className="w-4 h-4 text-kawai-red/60" />
-            <p className="text-kawai-red/60 text-xs tracking-[0.2em] uppercase font-medium">
-              From Our Customers
-            </p>
+    <section className="py-20 md:py-32 bg-white/85 backdrop-blur-md border-b border-kawai-neutral/60 overflow-hidden">
+      <style>{`
+        .ts-fade { transition: opacity 0.22s ease, transform 0.22s ease; }
+        .ts-fade-in { opacity: 1; transform: translateY(0); }
+        .ts-fade-out { opacity: 0; transform: translateY(8px); }
+      `}</style>
+
+      <div className="max-w-4xl mx-auto px-8">
+
+        {/* Eyebrow */}
+        <div className="flex items-center justify-center gap-3 mb-16">
+          <div className="h-px w-12 bg-kawai-red/30" />
+          <SakuraIcon className="w-3.5 h-3.5 text-kawai-red/50" />
+          <span className="font-kawai-script text-kawai-red/70" style={{ fontSize: 'clamp(1.1rem, 2vw, 1.4rem)' }}>
+            From Our Customers
+          </span>
+          <SakuraIcon className="w-3.5 h-3.5 text-kawai-red/50" />
+          <div className="h-px w-12 bg-kawai-red/30" />
+        </div>
+
+        {/* Card */}
+        <div
+          className={`ts-fade ${visible ? 'ts-fade-in' : 'ts-fade-out'} bg-kawai-pearl rounded-xl border border-kawai-neutral/70 shadow-brand-premium px-10 py-12 md:px-14 md:py-14 relative overflow-hidden`}
+          aria-live="polite"
+        >
+          {/* Decorative opening mark — sits inside the card */}
+          <div
+            className="font-[family-name:var(--font-brand-serif)] text-kawai-red/10 leading-none select-none absolute top-4 left-8 pointer-events-none"
+            style={{ fontSize: 'clamp(6rem, 12vw, 9rem)', lineHeight: 0.75 }}
+            aria-hidden
+          >
+            &ldquo;
           </div>
-          <h2 className="text-4xl md:text-5xl font-semibold font-[family-name:var(--font-brand-serif)] text-kawai-black">
-            What grand piano ownership actually feels like.
-          </h2>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {featured.map((t, i) => (
-            <div
-              key={i}
-              className="bg-kawai-pearl p-8 rounded-lg border border-kawai-neutral/60 shadow-brand-subtle flex flex-col"
-            >
-              {/* Rating */}
-              <div className="mb-5">
-                <StarRating rating={t.rating ?? 5} />
-              </div>
+          {/* Stars */}
+          <div className="mb-6 relative z-10">
+            <StarRating rating={t.rating ?? 5} />
+          </div>
 
-              {/* Quote */}
-              <blockquote className="text-kawai-charcoal/80 text-base leading-relaxed flex-1 mb-6">
-                &ldquo;{t.testimonialText}&rdquo;
-              </blockquote>
+          {/* Quote */}
+          <blockquote
+            className="font-[family-name:var(--font-brand-serif)] italic text-kawai-black leading-[1.55] relative z-10"
+            style={{ fontSize: 'clamp(1.35rem, 2.5vw, 1.9rem)' }}
+          >
+            {t.testimonialText}
+          </blockquote>
 
-              {/* Attribution */}
-              <div className="pt-5 border-t border-kawai-neutral">
-                <div className="font-semibold text-kawai-black text-base">{t.customerName}</div>
-                {(t.customerCity ?? t.pianoModel) && (
-                  <div className="text-kawai-charcoal/50 text-sm mt-0.5">
-                    {[t.pianoModel, t.customerCity].filter(Boolean).join(' · ')}
-                  </div>
-                )}
-              </div>
+          {/* Divider + attribution */}
+          <div className="mt-10 pt-8 border-t border-kawai-neutral flex items-center justify-between gap-6 flex-wrap relative z-10">
+            <div>
+              <p className="text-kawai-black font-semibold text-base tracking-wide">
+                {t.customerName}
+              </p>
+              {(t.pianoModel ?? t.customerCity) && (
+                <p className="text-kawai-charcoal/45 text-xs tracking-[0.15em] uppercase mt-1">
+                  {[t.pianoModel, t.customerCity].filter(Boolean).join(' · ')}
+                </p>
+              )}
             </div>
-          ))}
+
+            {/* Counter */}
+            {featured.length > 1 && (
+              <p className="text-kawai-charcoal/30 text-xs tracking-[0.2em] tabular-nums">
+                {String(index + 1).padStart(2, '0')} / {String(featured.length).padStart(2, '0')}
+              </p>
+            )}
+          </div>
         </div>
+
+        {/* Navigation */}
+        {featured.length > 1 && (
+          <div className="mt-12 flex items-center justify-between">
+            {/* Prev */}
+            <button
+              onClick={() => go(index - 1)}
+              aria-label="Previous testimonial"
+              className="group flex items-center gap-2 text-kawai-charcoal/40 hover:text-kawai-black transition-colors duration-200"
+            >
+              <svg className="w-5 h-5 transition-transform duration-200 group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+              </svg>
+              <span className="text-xs tracking-[0.2em] uppercase hidden sm:block">Prev</span>
+            </button>
+
+            {/* Dot indicators */}
+            <div className="flex items-center gap-2">
+              {featured.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => go(i)}
+                  aria-label={`Go to testimonial ${i + 1}`}
+                  className="transition-all duration-300 rounded-full"
+                  style={{
+                    width: i === index ? '2rem' : '0.375rem',
+                    height: '0.375rem',
+                    background: i === index ? '#E11922' : '#DBDBDB',
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Next */}
+            <button
+              onClick={() => go(index + 1)}
+              aria-label="Next testimonial"
+              className="group flex items-center gap-2 text-kawai-charcoal/40 hover:text-kawai-black transition-colors duration-200"
+            >
+              <span className="text-xs tracking-[0.2em] uppercase hidden sm:block">Next</span>
+              <svg className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
+          </div>
+        )}
+
       </div>
     </section>
   )

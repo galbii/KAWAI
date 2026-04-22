@@ -71,20 +71,17 @@ export default async function ShigeruDealersPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
 
-      {/* ── Hero ── */}
-      <section className="relative px-6 pt-36 pb-20 overflow-hidden bg-white">
-        <div className="relative z-10 max-w-6xl mx-auto">
-          {/* Eyebrow */}
+      {/* ── Hero: white title zone ── */}
+      <section className="bg-white px-6 pt-36 pb-12">
+        <div className="max-w-6xl mx-auto">
           <p
             className="text-kawai-charcoal/40 text-[10px] tracking-[0.45em] uppercase mb-6"
             style={{ fontFamily: 'var(--font-oswald)' }}
           >
             Shigeru Kawai · North America
           </p>
-
-          {/* Title */}
           <h1
-            className="text-kawai-black font-bold uppercase leading-none mb-6"
+            className="text-kawai-black font-bold uppercase leading-none"
             style={{
               fontFamily: 'var(--font-oswald)',
               fontSize: 'clamp(2.6rem, 6vw, 5rem)',
@@ -95,20 +92,24 @@ export default async function ShigeruDealersPage() {
             <br />
             <span className="text-kawai-gold">Dealers</span>
           </h1>
+        </div>
+      </section>
 
-          {/* Divider + stats row */}
-          <div className="flex flex-wrap items-center gap-6 mt-10">
-            <span className="block h-px w-12 bg-kawai-gold/40" aria-hidden />
-            <div className="flex flex-wrap gap-8">
+      {/* ── Stats: dark zone ── */}
+      <section className="px-6 pt-10 pb-10 bg-[#0a0a0a]">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-wrap items-center gap-8">
+            <span className="block h-px w-14 bg-kawai-gold/30" aria-hidden />
+            <div className="flex flex-wrap gap-12">
               <div>
                 <span
-                  className="block text-kawai-black font-bold text-2xl leading-none mb-0.5"
-                  style={{ fontFamily: 'var(--font-oswald)' }}
+                  className="block text-white font-bold leading-none mb-2"
+                  style={{ fontFamily: 'var(--font-oswald)', fontSize: 'clamp(2.5rem, 5vw, 4rem)' }}
                 >
                   {totalCount}
                 </span>
                 <span
-                  className="text-kawai-charcoal/40 text-[9px] tracking-[0.3em] uppercase"
+                  className="text-white/30 text-[9px] tracking-[0.35em] uppercase"
                   style={{ fontFamily: 'var(--font-oswald)' }}
                 >
                   Authorized Dealers
@@ -116,13 +117,13 @@ export default async function ShigeruDealersPage() {
               </div>
               <div>
                 <span
-                  className="block text-kawai-black font-bold text-2xl leading-none mb-0.5"
-                  style={{ fontFamily: 'var(--font-oswald)' }}
+                  className="block text-white font-bold leading-none mb-2"
+                  style={{ fontFamily: 'var(--font-oswald)', fontSize: 'clamp(2.5rem, 5vw, 4rem)' }}
                 >
                   {usDealers.length}
                 </span>
                 <span
-                  className="text-kawai-charcoal/40 text-[9px] tracking-[0.3em] uppercase"
+                  className="text-white/30 text-[9px] tracking-[0.35em] uppercase"
                   style={{ fontFamily: 'var(--font-oswald)' }}
                 >
                   United States
@@ -130,13 +131,13 @@ export default async function ShigeruDealersPage() {
               </div>
               <div>
                 <span
-                  className="block text-kawai-black font-bold text-2xl leading-none mb-0.5"
-                  style={{ fontFamily: 'var(--font-oswald)' }}
+                  className="block text-white font-bold leading-none mb-2"
+                  style={{ fontFamily: 'var(--font-oswald)', fontSize: 'clamp(2.5rem, 5vw, 4rem)' }}
                 >
                   {canadaDealers.length}
                 </span>
                 <span
-                  className="text-kawai-charcoal/40 text-[9px] tracking-[0.3em] uppercase"
+                  className="text-white/30 text-[9px] tracking-[0.35em] uppercase"
                   style={{ fontFamily: 'var(--font-oswald)' }}
                 >
                   Canada

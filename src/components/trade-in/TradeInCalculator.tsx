@@ -11,32 +11,25 @@ function formatUSD(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n)
 }
 
-function useAnimatedValue(target: number, duration = 380) {
-  const [current, setCurrent] = useState(target)
+function useAnimatedValue(target: number, duration = 750) {
+  const [current, setCurrent] = useState(0)
   const animRef = useRef<number | null>(null)
-  const fromRef = useRef(target)
+  const fromRef = useRef(0)
 
   useEffect(() => {
     if (animRef.current) cancelAnimationFrame(animRef.current)
     const start = fromRef.current
     const end = target
     const startTime = performance.now()
-
     const tick = (now: number) => {
       const t = Math.min((now - startTime) / duration, 1)
       const eased = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
       setCurrent(Math.round(start + (end - start) * eased))
-      if (t < 1) {
-        animRef.current = requestAnimationFrame(tick)
-      } else {
-        fromRef.current = target
-      }
+      if (t < 1) animRef.current = requestAnimationFrame(tick)
+      else fromRef.current = target
     }
-
     animRef.current = requestAnimationFrame(tick)
-    return () => {
-      if (animRef.current) cancelAnimationFrame(animRef.current)
-    }
+    return () => { if (animRef.current) cancelAnimationFrame(animRef.current) }
   }, [target, duration])
 
   return current
@@ -45,320 +38,434 @@ function useAnimatedValue(target: number, duration = 380) {
 const APPRAISAL_MIN = 500
 const APPRAISAL_MAX = 15000
 const KAWAI_BONUS = 500
-const FINANCING_MONTHS = 36
 
-type FilterKey = 'all' | 'under-15k' | '15k-25k' | 'over-25k'
-const FILTERS: { key: FilterKey; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'under-15k', label: 'Under $15k' },
-  { key: '15k-25k', label: '$15k–$25k' },
-  { key: 'over-25k', label: 'Over $25k' },
-]
-function matchesFilter(p: GrandSaleProduct, filter: FilterKey): boolean {
-  const msrp = p.price?.msrp ?? 0
-  if (filter === 'all') return true
-  if (filter === 'under-15k') return msrp < 15000
-  if (filter === '15k-25k') return msrp >= 15000 && msrp <= 25000
-  if (filter === 'over-25k') return msrp > 25000
-  return true
-}
+type Step = 1 | 2 | 3
+type RevealPhase = 'calculating' | 'piano' | 'bonus' | 'total' | 'cta'
 
-export function TradeInCalculator({ products }: TradeInCalculatorProps) {
-  const grandProducts = products.filter((p) => (p.price?.msrp ?? 0) > 0)
-
-  const defaultProduct = grandProducts[0] ?? null
+export function TradeInCalculator({ products: _ }: TradeInCalculatorProps) {
+  const [step, setStep] = useState<Step>(1)
   const [appraisalValue, setAppraisalValue] = useState(3500)
-  const [selectedProductId, setSelectedProductId] = useState(defaultProduct?.id ?? '')
-  const [activeFilter, setActiveFilter] = useState<FilterKey>('all')
-
-  const selectedProduct = grandProducts.find((p) => p.id === selectedProductId) ?? defaultProduct
-  const grandMsrp = selectedProduct?.price?.msrp ?? 9595
+  const [pianoBrand, setPianoBrand] = useState('')
+  const [pianoModel, setPianoModel] = useState('')
+  const [phase, setPhase] = useState<RevealPhase>('calculating')
 
   const totalCredit = appraisalValue + KAWAI_BONUS
-  const balance = Math.max(grandMsrp - totalCredit, 0)
-  const monthly = balance > 0 ? Math.ceil(balance / FINANCING_MONTHS) : 0
+  const animTotal = useAnimatedValue(
+    phase === 'total' || phase === 'cta' ? totalCredit : 0,
+    900
+  )
 
-  const animCredit = useAnimatedValue(totalCredit)
-  const animBalance = useAnimatedValue(balance)
-  const animMonthly = useAnimatedValue(monthly)
+  const sliderPct = ((appraisalValue - APPRAISAL_MIN) / (APPRAISAL_MAX - APPRAISAL_MIN)) * 100
 
-  const sliderPercent = ((appraisalValue - APPRAISAL_MIN) / (APPRAISAL_MAX - APPRAISAL_MIN)) * 100
+  useEffect(() => {
+    if (step !== 3) return
+    setPhase('calculating')
+    const timers = [
+      setTimeout(() => setPhase('piano'),  1200),
+      setTimeout(() => setPhase('bonus'),  2100),
+      setTimeout(() => setPhase('total'),  2900),
+      setTimeout(() => setPhase('cta'),    4000),
+    ]
+    return () => timers.forEach(clearTimeout)
+  }, [step])
+
+  const reset = () => {
+    setStep(1)
+    setPianoBrand('')
+    setPianoModel('')
+    setPhase('calculating')
+  }
 
   return (
-    <section id="trade-calculator" className="bg-kawai-black/90 backdrop-blur-md py-20 md:py-28">
-      <div className="max-w-6xl mx-auto px-6">
-        {/* Section label */}
-        <div className="flex items-center gap-4 mb-10">
-          <div className="h-px w-8 bg-kawai-red/40" />
-          <span className="text-kawai-red/60 text-xs tracking-[0.2em] uppercase font-medium">
-            Your Trade-In Math
-          </span>
+    <section id="trade-calculator" className="bg-kawai-black/90 backdrop-blur-md py-24 md:py-32">
+      <style>{`
+        /* ── Slider ── */
+        .tc-range { -webkit-appearance: none; appearance: none; width: 100%; height: 1px; border-radius: 0; cursor: pointer; outline: none; }
+        .tc-range::-webkit-slider-thumb {
+          -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+          background: #E11922; margin-top: -8.5px; cursor: pointer;
+          box-shadow: 0 0 0 3px rgba(225,25,34,0.18), 0 0 14px rgba(225,25,34,0.35);
+          transition: box-shadow 0.25s ease, transform 0.2s ease;
+        }
+        .tc-range:hover::-webkit-slider-thumb {
+          box-shadow: 0 0 0 5px rgba(225,25,34,0.22), 0 0 22px rgba(225,25,34,0.5);
+          transform: scale(1.1);
+        }
+        .tc-range::-moz-range-thumb {
+          width: 18px; height: 18px; border-radius: 50%; background: #E11922; border: none;
+          box-shadow: 0 0 0 3px rgba(225,25,34,0.18);
+        }
+
+        /* ── Step entrance ── */
+        @keyframes tc-step-enter {
+          from { opacity: 0; transform: translateY(22px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .tc-step { animation: tc-step-enter 0.6s cubic-bezier(0.22,1,0.36,1) both; }
+
+        /* ── Calculating bars ── */
+        @keyframes tc-bar {
+          0%, 100% { transform: scaleY(0.25); opacity: 0.25; }
+          50%       { transform: scaleY(1);    opacity: 1; }
+        }
+        .tc-bar   { animation: tc-bar 1s ease-in-out infinite; transform-origin: bottom; }
+        .tc-bar-b { animation: tc-bar 1s ease-in-out 0.18s infinite; transform-origin: bottom; }
+        .tc-bar-c { animation: tc-bar 1s ease-in-out 0.36s infinite; transform-origin: bottom; }
+        .tc-bar-d { animation: tc-bar 1s ease-in-out 0.54s infinite; transform-origin: bottom; }
+        .tc-bar-e { animation: tc-bar 1s ease-in-out 0.72s infinite; transform-origin: bottom; }
+
+        /* ── Piano line ── */
+        @keyframes tc-line-in {
+          from { opacity: 0; transform: translateX(-14px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        .tc-line { animation: tc-line-in 0.55s cubic-bezier(0.22,1,0.36,1) both; }
+
+        /* ── Bonus pop ── */
+        @keyframes tc-bonus {
+          0%   { opacity: 0; transform: scaleX(0.85) scaleY(0.7) translateY(10px); }
+          55%  { transform: scaleX(1.02) scaleY(1.04) translateY(-2px); }
+          80%  { transform: scaleX(0.99) scaleY(0.99); }
+          100% { opacity: 1; transform: scaleX(1) scaleY(1) translateY(0); }
+        }
+        .tc-bonus { animation: tc-bonus 0.7s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+        /* Bonus shimmer sweep */
+        @keyframes tc-sweep {
+          0%   { transform: translateX(-100%); }
+          100% { transform: translateX(200%); }
+        }
+        .tc-sweep { animation: tc-sweep 0.9s ease both 0.15s; }
+
+        /* ── Gold total ── */
+        @keyframes tc-total {
+          from { opacity: 0; transform: translateY(10px) scale(0.96); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .tc-total { animation: tc-total 0.65s cubic-bezier(0.22,1,0.36,1) both; }
+
+        /* ── CTA ── */
+        @keyframes tc-cta {
+          from { opacity: 0; transform: translateY(18px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .tc-cta { animation: tc-cta 0.75s cubic-bezier(0.22,1,0.36,1) both; }
+
+        /* ── Inputs ── */
+        .tc-input {
+          background: transparent; border: none; border-bottom: 1px solid rgba(250,248,245,0.1);
+          color: #FAF8F5; width: 100%; padding: 1rem 0; font-size: 1.25rem; outline: none;
+          font-family: inherit; transition: border-color 0.25s ease;
+        }
+        .tc-input::placeholder { color: rgba(250,248,245,0.18); font-style: italic; }
+        .tc-input:focus { border-bottom-color: rgba(225,25,34,0.45); }
+      `}</style>
+
+      <div className="max-w-2xl mx-auto px-6">
+
+        {/* ── Header bar ── */}
+        <div className="flex items-center justify-between mb-16">
+          <div className="flex items-center gap-3">
+            <div className="h-px w-6 bg-kawai-red/35" />
+            <span className="text-kawai-red/45 text-xs tracking-[0.3em] uppercase font-medium">
+              Claim Your Bonus
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {([1, 2, 3] as const).map((s) => (
+              <div
+                key={s}
+                className="rounded-full transition-all duration-500 ease-out"
+                style={{
+                  width:      s === step ? '1.6rem' : '0.28rem',
+                  height:     '0.28rem',
+                  background: s === step ? '#E11922' : s < step ? 'rgba(225,25,34,0.38)' : 'rgba(255,255,255,0.13)',
+                }}
+              />
+            ))}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
-          {/* Left — controls */}
-          <div>
-            <h2
-              className="font-[family-name:var(--font-family-cormorant)] font-normal text-white mb-3 leading-tight"
-              style={{ fontSize: 'clamp(2rem, 4vw, 3.25rem)' }}
-            >
-              Run the numbers
-              <br />
-              <span className="text-kawai-pearl/40">before you come in.</span>
-            </h2>
-            <p className="text-kawai-pearl/45 text-base leading-relaxed mb-12">
-              Use your best estimate for your piano&apos;s value. The actual appraisal happens
-              in-store — this is just to show you what&apos;s possible.
+        {/* ══════════════════════════════════════════
+            STEP 1 — Estimated value
+        ══════════════════════════════════════════ */}
+        {step === 1 && (
+          <div className="tc-step">
+            <p className="text-kawai-pearl/25 text-sm tracking-[0.25em] uppercase text-center mb-8">
+              What is your piano estimated at?
             </p>
 
-            {/* Appraisal value slider */}
-            <div className="mb-10">
-              <div className="flex justify-between items-baseline mb-4">
-                <label className="text-kawai-pearl/50 text-sm tracking-wide">
-                  My piano is worth approximately
+            {/* Hero number */}
+            <div className="text-center mb-12">
+              <div
+                className="font-[family-name:var(--font-family-cormorant)] text-kawai-pearl tabular-nums leading-none"
+                style={{ fontSize: 'clamp(6rem, 16vw, 10rem)' }}
+              >
+                {formatUSD(appraisalValue)}
+              </div>
+              <p className="text-kawai-pearl/20 text-sm mt-4 tracking-wide italic font-[family-name:var(--font-family-cormorant)]">
+                estimated value
+              </p>
+            </div>
+
+            {/* Slider */}
+            <div className="mb-3">
+              <input
+                type="range"
+                min={APPRAISAL_MIN}
+                max={APPRAISAL_MAX}
+                step={100}
+                value={appraisalValue}
+                onChange={(e) => setAppraisalValue(Number(e.target.value))}
+                className="tc-range"
+                style={{
+                  background: `linear-gradient(to right, #E11922 ${sliderPct}%, rgba(255,255,255,0.08) ${sliderPct}%)`,
+                }}
+              />
+            </div>
+            <div className="flex justify-between text-kawai-pearl/30 text-sm tracking-wide mb-14">
+              <span>{formatUSD(APPRAISAL_MIN)}</span>
+              <span>{formatUSD(APPRAISAL_MAX)}</span>
+            </div>
+
+            <div className="h-px bg-white/5 mb-10" />
+
+            <button
+              onClick={() => setStep(2)}
+              className="w-full flex items-center justify-between px-7 py-5 border border-white/10 hover:border-kawai-red/35 text-kawai-pearl/50 hover:text-kawai-pearl text-sm tracking-[0.2em] uppercase transition-all duration-300 group"
+            >
+              <span>Continue</span>
+              <svg className="w-4 h-4 group-hover:translate-x-1.5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+              </svg>
+            </button>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════
+            STEP 2 — Brand + model
+        ══════════════════════════════════════════ */}
+        {step === 2 && (
+          <div className="tc-step">
+
+            {/* Top row: back + confirmed value */}
+            <div className="flex items-center justify-between mb-14">
+              <button
+                onClick={() => setStep(1)}
+                className="flex items-center gap-2 text-kawai-pearl/30 hover:text-kawai-pearl/60 text-xs tracking-[0.2em] uppercase transition-colors"
+              >
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                </svg>
+                Back
+              </button>
+              <span className="font-[family-name:var(--font-family-cormorant)] text-kawai-pearl/30 tabular-nums" style={{ fontSize: '2rem' }}>
+                {formatUSD(appraisalValue)}
+              </span>
+            </div>
+
+            {/* Heading */}
+            <h2
+              className="font-[family-name:var(--font-family-cormorant)] font-light leading-[1.05] mb-14"
+              style={{ fontSize: 'clamp(3rem, 7vw, 5rem)' }}
+            >
+              <span className="text-kawai-pearl">Tell us about</span>
+              <br />
+              <span className="text-kawai-pearl/30">your piano.</span>
+            </h2>
+
+            {/* Fields */}
+            <div className="space-y-10 mb-14">
+              <div>
+                <label className="text-kawai-pearl/35 text-xs tracking-[0.22em] uppercase block mb-3">
+                  Brand <span className="text-kawai-red/60">*</span>
                 </label>
-                <span
-                  className="font-[family-name:var(--font-family-cormorant)] text-kawai-pearl"
-                  style={{ fontSize: '1.75rem' }}
-                >
-                  {formatUSD(appraisalValue)}
-                </span>
+                <input
+                  type="text"
+                  value={pianoBrand}
+                  onChange={(e) => setPianoBrand(e.target.value)}
+                  placeholder="Yamaha, Steinway, Baldwin…"
+                  className="tc-input"
+                  autoFocus
+                />
               </div>
 
-              <div className="relative">
+              <div>
+                <label className="text-kawai-pearl/35 text-xs tracking-[0.22em] uppercase block mb-3">
+                  Model
+                  <span className="text-kawai-pearl/20 ml-2 normal-case tracking-normal text-xs">— optional</span>
+                </label>
                 <input
-                  type="range"
-                  min={APPRAISAL_MIN}
-                  max={APPRAISAL_MAX}
-                  step={100}
-                  value={appraisalValue}
-                  onChange={(e) => setAppraisalValue(Number(e.target.value))}
-                  className="w-full h-1 appearance-none cursor-pointer rounded-none"
-                  style={{
-                    background: `linear-gradient(to right, #E11922 0%, #E11922 ${sliderPercent}%, rgba(255,255,255,0.1) ${sliderPercent}%, rgba(255,255,255,0.1) 100%)`,
-                    // Thumb styling via global CSS is ideal; using inline style as fallback
-                  }}
+                  type="text"
+                  value={pianoModel}
+                  onChange={(e) => setPianoModel(e.target.value)}
+                  placeholder="U1, Baby Grand, Studio Upright…"
+                  className="tc-input"
                 />
-                <style>{`
-                  input[type=range]::-webkit-slider-thumb {
-                    -webkit-appearance: none;
-                    width: 20px;
-                    height: 20px;
-                    background: #E11922;
-                    border-radius: 50%;
-                    cursor: pointer;
-                    box-shadow: 0 0 0 3px rgba(225,25,34,0.2);
-                  }
-                  input[type=range]::-moz-range-thumb {
-                    width: 20px;
-                    height: 20px;
-                    background: #E11922;
-                    border-radius: 50%;
-                    border: none;
-                    cursor: pointer;
-                  }
-                `}</style>
-              </div>
-              <div className="flex justify-between text-kawai-pearl/25 text-xs mt-2">
-                <span>{formatUSD(APPRAISAL_MIN)}</span>
-                <span>{formatUSD(APPRAISAL_MAX)}</span>
               </div>
             </div>
 
-            {/* Grand model selector */}
-            {grandProducts.length > 0 && (
-              <div>
-                <label className="text-kawai-pearl/50 text-sm tracking-wide block mb-4">
-                  I&apos;m interested in
-                </label>
+            {/* Reveal button */}
+            <button
+              onClick={() => setStep(3)}
+              disabled={!pianoBrand.trim()}
+              className="w-full flex items-center justify-center gap-3 px-7 py-5 bg-kawai-red hover:bg-kawai-red/88 disabled:opacity-25 disabled:cursor-not-allowed text-white transition-all duration-300 group relative overflow-hidden"
+            >
+              {/* Hover shimmer */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/8 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
+              <span className="text-sm tracking-[0.2em] uppercase font-medium relative z-10">
+                Reveal My Bonus
+              </span>
+              <svg className="w-4 h-4 relative z-10 group-hover:rotate-12 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z" />
+              </svg>
+            </button>
 
-                {/* Price-range filter chips */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {FILTERS.map(({ key, label }) => (
-                    <button
-                      key={key}
-                      onClick={() => setActiveFilter(key)}
-                      className={`px-3.5 py-1.5 text-xs tracking-[0.08em] uppercase rounded-sm border transition-colors ${
-                        activeFilter === key
-                          ? 'bg-kawai-red border-kawai-red text-white'
-                          : 'bg-white/5 border-white/15 text-kawai-pearl/50 hover:border-white/30 hover:text-kawai-pearl/70'
-                      }`}
-                    >
-                      {label}
-                    </button>
+            {!pianoBrand.trim() && (
+              <p className="text-kawai-pearl/18 text-xs text-center mt-4 tracking-wide">
+                Enter your piano brand to continue
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════
+            STEP 3 — The Reveal
+        ══════════════════════════════════════════ */}
+        {step === 3 && (
+          <div className="tc-step">
+
+            {/* ── Phase: calculating ── */}
+            {phase === 'calculating' && (
+              <div className="flex flex-col items-center justify-center py-20 gap-10">
+                {/* Animated equalizer bars */}
+                <div className="flex items-end gap-1 h-8">
+                  {[['tc-bar', 'h-4'], ['tc-bar-b', 'h-7'], ['tc-bar-c', 'h-5'], ['tc-bar-d', 'h-8'], ['tc-bar-e', 'h-3']].map(([cls, h], i) => (
+                    <div
+                      key={i}
+                      className={`w-0.5 rounded-sm bg-kawai-red ${cls}`}
+                      style={{ height: h === 'h-3' ? '0.75rem' : h === 'h-4' ? '1rem' : h === 'h-5' ? '1.25rem' : h === 'h-7' ? '1.75rem' : '2rem' }}
+                    />
                   ))}
                 </div>
-
-                {/* Filtered product list */}
-                <div className="space-y-1.5">
-                  {grandProducts
-                    .filter((p) => matchesFilter(p, activeFilter))
-                    .map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => setSelectedProductId(p.id)}
-                        className={`w-full flex items-center justify-between px-4 py-3 rounded-sm border text-left transition-colors ${
-                          selectedProductId === p.id
-                            ? 'bg-white/8 border-kawai-red/40 text-kawai-pearl'
-                            : 'bg-white/3 border-white/8 text-kawai-pearl/60 hover:bg-white/5 hover:border-white/15 hover:text-kawai-pearl/80'
-                        }`}
-                      >
-                        <span className="text-sm">{p.name ?? p.model}</span>
-                        {p.price?.msrp ? (
-                          <span className="flex items-baseline gap-1.5">
-                            <span className="text-kawai-red text-[0.65rem] tracking-[0.12em] uppercase font-medium">MSRP</span>
-                            <span className={`font-[family-name:var(--font-family-cormorant)] text-base tabular-nums ${selectedProductId === p.id ? 'text-kawai-pearl' : 'text-kawai-pearl/40'}`}>
-                              {formatUSD(p.price.msrp)}
-                            </span>
-                          </span>
-                        ) : null}
-                      </button>
-                    ))}
-                  {grandProducts.filter((p) => matchesFilter(p, activeFilter)).length === 0 && (
-                    <p className="text-kawai-pearl/30 text-sm py-2 px-1">No models in this range.</p>
-                  )}
-                  <button
-                    onClick={() => setSelectedProductId('')}
-                    className={`w-full flex items-center px-4 py-3 rounded-sm border text-left transition-colors ${
-                      selectedProductId === ''
-                        ? 'bg-white/8 border-kawai-red/40 text-kawai-pearl'
-                        : 'bg-white/3 border-white/8 text-kawai-pearl/40 hover:bg-white/5 hover:border-white/15 hover:text-kawai-pearl/60'
-                    }`}
+                <div className="text-center">
+                  <p
+                    className="font-[family-name:var(--font-family-cormorant)] italic text-kawai-pearl/40"
+                    style={{ fontSize: 'clamp(1.3rem, 3vw, 1.8rem)' }}
                   >
-                    <span className="text-sm">Not sure yet</span>
-                  </button>
+                    Appraising your{' '}
+                    <span className="text-kawai-pearl/70 not-italic">{pianoBrand}</span>
+                    {pianoModel && <span className="text-kawai-pearl/45 not-italic"> {pianoModel}</span>}
+                    <span className="text-kawai-red">…</span>
+                  </p>
                 </div>
               </div>
             )}
-          </div>
 
-          {/* Right — the ledger */}
-          <div>
-            <div
-              className="border border-white/8 rounded-lg p-8 md:p-10"
-              style={{ background: 'rgba(255,255,255,0.02)' }}
-            >
-              {/* Ledger header */}
-              <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/8">
-                <span className="text-kawai-pearl/30 text-xs tracking-[0.3em] uppercase">
-                  Trade-In Summary
-                </span>
-                <div className="w-1.5 h-1.5 rounded-full bg-kawai-red animate-pulse" />
-              </div>
-
-              {/* Line items */}
-              <div className="space-y-0">
-                {/* Appraisal */}
-                <div className="flex justify-between items-baseline py-3.5 border-b border-white/5">
-                  <span className="text-kawai-pearl/45 text-sm">Your piano (estimated)</span>
-                  <span className="text-kawai-pearl/70 font-[family-name:var(--font-family-cormorant)] text-xl tabular-nums">
-                    {formatUSD(appraisalValue)}
-                  </span>
-                </div>
-
-                {/* Bonus */}
-                <div className="flex justify-between items-baseline py-3.5 border-b border-white/5">
-                  <div>
-                    <span className="text-kawai-pearl/45 text-sm">Kawai Spring bonus</span>
-                    <span className="ml-2 text-kawai-red/60 text-xs">ends May 17</span>
+            {/* ── Phase: piano + beyond ── */}
+            {phase !== 'calculating' && (
+              <div>
+                {/* Piano line */}
+                <div className="tc-line">
+                  <div className="flex items-baseline justify-between py-5 border-b border-white/6">
+                    <div>
+                      <p className="text-kawai-pearl/60 text-sm">
+                        {pianoBrand}{pianoModel ? ` — ${pianoModel}` : ''}
+                      </p>
+                      <p className="text-kawai-pearl/22 text-xs mt-0.5 tracking-wide italic font-[family-name:var(--font-family-cormorant)]">
+                        estimated value
+                      </p>
+                    </div>
+                    <span
+                      className="font-[family-name:var(--font-family-cormorant)] text-kawai-pearl/65 tabular-nums"
+                      style={{ fontSize: '2rem' }}
+                    >
+                      {formatUSD(appraisalValue)}
+                    </span>
                   </div>
-                  <span className="text-kawai-pearl/70 font-[family-name:var(--font-family-cormorant)] text-xl tabular-nums">
-                    + {formatUSD(KAWAI_BONUS)}
-                  </span>
                 </div>
 
-                {/* Total credit */}
-                <div className="flex justify-between items-baseline py-4 border-b border-kawai-gold/20 mb-1">
-                  <span className="text-kawai-pearl/70 text-sm font-medium">Total trade-in credit</span>
-                  <span
-                    className="font-[family-name:var(--font-family-cormorant)] text-kawai-gold"
-                    style={{ fontSize: '1.6rem' }}
-                  >
-                    {formatUSD(animCredit)}
-                  </span>
-                </div>
-
-                {/* Grand price */}
-                {selectedProduct && (
-                  <>
-                    <div className="flex justify-between items-baseline py-3.5 border-b border-white/5 mt-1">
-                      <span className="text-kawai-pearl/45 text-sm">
-                        {selectedProduct.name ?? selectedProduct.model}
-                      </span>
-                      <span className="text-kawai-pearl/70 font-[family-name:var(--font-family-cormorant)] text-xl tabular-nums">
-                        {formatUSD(grandMsrp)}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between items-baseline py-3.5 border-b border-white/5">
-                      <span className="text-kawai-pearl/45 text-sm">After your trade-in</span>
-                      <span className="text-kawai-pearl/70 font-[family-name:var(--font-family-cormorant)] text-xl tabular-nums">
-                        − {formatUSD(Math.min(totalCredit, grandMsrp))}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between items-baseline py-4 border-b border-white/10 mb-1">
-                      <span className="text-kawai-pearl/70 text-sm font-medium">Balance</span>
+                {/* Bonus line */}
+                {(phase === 'bonus' || phase === 'total' || phase === 'cta') && (
+                  <div className="tc-bonus relative overflow-hidden">
+                    {/* Shimmer sweep */}
+                    <div className="tc-sweep absolute inset-0 bg-gradient-to-r from-transparent via-white/12 to-transparent skew-x-12 pointer-events-none z-10" />
+                    <div className="flex items-center justify-between py-5 px-5 -mx-5 border-b border-kawai-red/18"
+                      style={{ background: 'rgba(225,25,34,0.07)' }}>
+                      <div>
+                        <p className="text-kawai-red font-semibold text-sm tracking-wide">
+                          Kawai Spring Bonus
+                        </p>
+                        <p className="text-kawai-red/35 text-xs mt-0.5">
+                          Up to $500 added · ends May 17
+                        </p>
+                      </div>
                       <span
-                        className="font-[family-name:var(--font-family-cormorant)] text-white"
-                        style={{ fontSize: '1.6rem' }}
+                        className="font-[family-name:var(--font-family-cormorant)] text-kawai-red tabular-nums font-light"
+                        style={{ fontSize: '2rem' }}
                       >
-                        {formatUSD(animBalance)}
+                        + up to {formatUSD(KAWAI_BONUS)}
                       </span>
                     </div>
-                  </>
+                  </div>
                 )}
 
-                {/* Monthly payment — the reveal */}
-                <div className="pt-5">
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <div className="text-kawai-pearl/40 text-xs tracking-wide mb-1">
-                        0% financing / 36 months
-                      </div>
-                      <div className="text-kawai-pearl/60 text-sm">Your monthly payment</div>
+                {/* Total */}
+                {(phase === 'total' || phase === 'cta') && (
+                  <div className="tc-total pt-12 pb-6 text-center">
+                    <p className="text-kawai-pearl/22 text-[0.58rem] tracking-[0.4em] uppercase mb-5">
+                      Your estimated trade-in value — up to
+                    </p>
+                    <div
+                      className="font-[family-name:var(--font-family-cormorant)] text-kawai-gold tabular-nums leading-none"
+                      style={{ fontSize: 'clamp(5rem, 13vw, 8rem)' }}
+                    >
+                      {formatUSD(animTotal)}
                     </div>
-                    <div className="text-right">
-                      <div
-                        className="font-[family-name:var(--font-family-cormorant)] text-kawai-red leading-none tabular-nums"
-                        style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)' }}
-                      >
-                        {monthly === 0 ? '$0' : formatUSD(animMonthly)}
-                      </div>
-                      {monthly > 0 && (
-                        <div className="text-kawai-pearl/30 text-xs mt-1">/month†</div>
-                      )}
-                      {monthly === 0 && (
-                        <div className="text-kawai-red/50 text-xs mt-1">Fully covered by trade-in</div>
-                      )}
-                    </div>
+                    <p className="text-kawai-pearl/18 text-xs mt-5 leading-relaxed max-w-xs mx-auto">
+                      Subject to in-store certified appraisal. Final offer may vary
+                      based on condition and market demand — we always aim to beat any independent quote.
+                    </p>
                   </div>
-                </div>
+                )}
+
+                {/* CTA */}
+                {phase === 'cta' && (
+                  <div className="tc-cta mt-6 space-y-3">
+                    <div className="h-px bg-white/6 mb-6" />
+                    <a
+                      href="#appraisal-form"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        document.getElementById('appraisal-form')?.scrollIntoView({ behavior: 'smooth' })
+                      }}
+                      className="w-full flex flex-col items-center gap-1.5 px-6 py-6 bg-kawai-red hover:bg-kawai-red/90 text-white transition-all duration-300 group relative overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/8 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
+                      <span className="text-[0.58rem] tracking-[0.35em] uppercase opacity-65 font-medium relative z-10">
+                        Lock in your bonus at the
+                      </span>
+                      <span className="font-kawai-script leading-none relative z-10" style={{ fontSize: 'clamp(1.9rem, 4.5vw, 2.6rem)' }}>
+                        Grand Piano Spring Sale
+                      </span>
+                      <svg className="w-3.5 h-3.5 mt-1 opacity-55 group-hover:translate-y-0.5 transition-transform duration-300 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" />
+                      </svg>
+                    </a>
+
+                    <button
+                      onClick={reset}
+                      className="w-full text-kawai-pearl/18 hover:text-kawai-pearl/45 text-[0.62rem] tracking-[0.2em] uppercase transition-colors py-3"
+                    >
+                      Start over
+                    </button>
+                  </div>
+                )}
               </div>
-
-              {/* CTA */}
-              <a
-                href="#appraisal-form"
-                onClick={(e) => {
-                  e.preventDefault()
-                  document.getElementById('appraisal-form')?.scrollIntoView({ behavior: 'smooth' })
-                }}
-                className="mt-8 w-full flex items-center justify-between px-6 py-4 bg-kawai-red hover:bg-kawai-red/90 text-white text-sm tracking-[0.08em] uppercase font-medium transition-colors rounded-sm group"
-              >
-                <span>Begin appraisal request</span>
-                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                </svg>
-              </a>
-            </div>
-
-            {/* Disclaimer */}
-            <p className="text-kawai-pearl/20 text-xs mt-4 leading-relaxed">
-              †Estimates are illustrative. Trade-in value based on in-store certified appraisal.
-              0% APR / 36-month financing subject to credit approval.
-            </p>
+            )}
           </div>
-        </div>
+        )}
+
       </div>
     </section>
   )

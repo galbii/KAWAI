@@ -72,11 +72,11 @@ async function TradePageContent({ storeslug }: { storeslug: string }) {
     <>
       <TradeInHero locationName={locationName} />
 
+      <HowItWorks />
+
       <Suspense>
         <TradeInCalculator products={products} />
       </Suspense>
-
-      <HowItWorks />
 
       <Suspense>
         <AppraisalForm storeslug={storeslug} products={products} />

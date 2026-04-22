@@ -8,12 +8,13 @@ import {
 } from '@/lib/payload/queries'
 import {
   GrandSpringHero,
-  FinancingSection,
   GrandPianoShowcase,
   TradeInBanner,
   TestimonialsSection,
   StorefrontVisitSection,
   SaleLeadForm,
+  PianoTypesSection,
+  EventDetailsSection,
 } from '@/components/grand-spring-sale'
 import { CampaignNavigator } from '@/components/storefronts/CampaignNavigator'
 
@@ -66,19 +67,23 @@ async function GrandSpringContent({ storeslug }: { storeslug: string }) {
   const directionsLink: string | null = storefront.showroomCtas?.directionsLink ?? null
   const testimonials = storefront.customerTestimonials ?? null
 
-  const lowestMsrp = products.reduce<number | null>((min, p) => {
-    const msrp = p.price?.msrp ?? null
-    if (msrp === null) return min
-    return min === null || msrp < min ? msrp : min
-  }, null)
-
   return (
     <>
       <GrandSpringHero locationName={locationName} storeslug={storeslug} />
 
       <Suspense>
-        <FinancingSection exampleMsrp={lowestMsrp ?? 9995} />
+        <PianoTypesSection storeslug={storeslug} />
       </Suspense>
+
+      <EventDetailsSection
+        locationName={locationName}
+        address={address}
+        phone={phone}
+        hours={hours}
+        mapApiKey={mapApiKey}
+        directionsLink={directionsLink}
+        storeslug={storeslug}
+      />
 
       <Suspense>
         <GrandPianoShowcase products={products} storeslug={storeslug} />

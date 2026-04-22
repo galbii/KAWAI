@@ -151,11 +151,11 @@ export default function ShigeruDealerGrid({
   ]
 
   return (
-    <div className="bg-[#0a0a0a] px-6 pb-28">
+    <div className="bg-[#0a0a0a] px-6 pt-6 pb-28">
       <div className="max-w-6xl mx-auto">
 
         {/* ── Filter tabs ── */}
-        <div className="flex items-center gap-2 mb-8 flex-wrap">
+        <div className="border-t border-white/[0.06] mb-8 pt-8 flex items-center gap-2 flex-wrap">
           {tabs.map((tab) => {
             const active = region === tab.id
             return (
