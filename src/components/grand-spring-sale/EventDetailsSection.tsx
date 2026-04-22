@@ -3,10 +3,11 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { MapPinIcon, PhoneIcon, ClockIcon } from '@heroicons/react/24/outline'
+import { BookingModal } from '@/components/trade-in/BookingModal'
 
 interface HoursEntry {
   day?: string | null
-  hours?: string | null
+  time?: string | null
 }
 
 interface EventDetailsSectionProps {
@@ -17,6 +18,7 @@ interface EventDetailsSectionProps {
   mapApiKey?: string | null
   directionsLink?: string | null
   storeslug: string
+  calendlyUrl?: string | null
 }
 
 function buildMapEmbedUrl(address: string, apiKey?: string | null): string {
@@ -37,9 +39,11 @@ export function EventDetailsSection({
   mapApiKey,
   directionsLink,
   storeslug,
+  calendlyUrl,
 }: EventDetailsSectionProps) {
   const [mapLoaded, setMapLoaded] = useState(false)
   const [mapError, setMapError] = useState(false)
+  const [bookingOpen, setBookingOpen] = useState(false)
 
   const resolvedDirections = directionsLink ?? (address ? buildDirectionsUrl(address) : null)
   const mapSrc = address ? buildMapEmbedUrl(address, mapApiKey) : null
@@ -168,7 +172,7 @@ export function EventDetailsSection({
                               }`}
                             >
                               <span className="min-w-[5rem] md:min-w-[6rem]">{h.day}</span>
-                              <span>{h.hours}</span>
+                              <span>{h.time}</span>
                             </div>
                           )
                         })}
@@ -180,7 +184,7 @@ export function EventDetailsSection({
                 {/* CTAs */}
                 <div className="mt-8 md:mt-12 space-y-3">
                   <button
-                    onClick={() => scrollTo('grand-lead-form')}
+                    onClick={() => setBookingOpen(true)}
                     className="w-full inline-flex items-center justify-center px-6 py-3.5 md:py-4 bg-kawai-red hover:bg-kawai-red/90 text-white text-sm md:text-base tracking-[0.12em] uppercase font-medium transition-colors rounded-sm shadow-[0_4px_20px_rgba(225,25,34,0.3)] font-[family-name:var(--font-brand-sans)]"
                   >
                     Book an Appointment
@@ -263,6 +267,14 @@ export function EventDetailsSection({
 
         </div>
       </section>
+
+      <BookingModal
+        open={bookingOpen}
+        onClose={() => setBookingOpen(false)}
+        calendlyUrl={calendlyUrl}
+        locationName={locationName}
+        storeslug={storeslug}
+      />
     </>
   )
 }

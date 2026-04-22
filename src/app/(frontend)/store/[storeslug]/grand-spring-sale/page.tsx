@@ -84,6 +84,7 @@ async function GrandSpringContent({ storeslug }: { storeslug: string }) {
         mapApiKey={mapApiKey}
         directionsLink={directionsLink}
         storeslug={storeslug}
+        calendlyUrl={calendlyUrl}
       />
 
       <Suspense>
@@ -104,6 +105,7 @@ async function GrandSpringContent({ storeslug }: { storeslug: string }) {
         mapApiKey={mapApiKey}
         directionsLink={directionsLink}
         storeslug={storeslug}
+        calendlyUrl={calendlyUrl}
       />
 
       <GrandSpringBooking locationName={locationName} calendlyUrl={calendlyUrl} storeslug={storeslug} />

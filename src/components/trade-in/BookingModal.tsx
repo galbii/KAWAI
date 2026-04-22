@@ -20,7 +20,6 @@ interface ContactForm {
   lastName: string
   email: string
   phone: string
-  acceptsMarketing: boolean
 }
 
 type FormErrors = Partial<Record<keyof ContactForm, string>>
@@ -147,7 +146,7 @@ function SakuraMark() {
 
 export function BookingModal({ open, onClose, calendlyUrl, locationName, storeslug }: BookingModalProps) {
   const [step, setStep] = useState<1 | 2>(1)
-  const [form, setForm] = useState<ContactForm>({ firstName: '', lastName: '', email: '', phone: '', acceptsMarketing: false })
+  const [form, setForm] = useState<ContactForm>({ firstName: '', lastName: '', email: '', phone: '' })
   const [errors, setErrors] = useState<FormErrors>({})
   const [iframeLoading, setIframeLoading] = useState(true)
 
@@ -184,7 +183,6 @@ export function BookingModal({ open, onClose, calendlyUrl, locationName, storesl
       email: form.email,
       phone: form.phone ? toE164US(form.phone) : undefined,
       storeslug,
-      acceptsMarketing: form.acceptsMarketing,
     })
   }
 
@@ -192,7 +190,7 @@ export function BookingModal({ open, onClose, calendlyUrl, locationName, storesl
 
   function handleClose() {
     setStep(1)
-    setForm({ firstName: '', lastName: '', email: '', phone: '', acceptsMarketing: false })
+    setForm({ firstName: '', lastName: '', email: '', phone: '' })
     setErrors({})
     setIframeLoading(true)
     onClose()
@@ -361,33 +359,6 @@ export function BookingModal({ open, onClose, calendlyUrl, locationName, storesl
                 </Field>
               </div>
 
-              {/* Marketing consent */}
-              <label className="flex items-start gap-3 cursor-pointer mb-7 group">
-                <div className="relative flex-shrink-0 mt-0.5">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={form.acceptsMarketing}
-                    onChange={(e) => setForm(f => ({ ...f, acceptsMarketing: e.target.checked }))}
-                  />
-                  <div className={cn(
-                    'w-4 h-4 rounded-sm border transition-all duration-150',
-                    form.acceptsMarketing
-                      ? 'bg-kawai-red border-kawai-red'
-                      : 'bg-white border-kawai-neutral group-hover:border-kawai-charcoal/40'
-                  )}>
-                    {form.acceptsMarketing && (
-                      <svg className="w-full h-full text-white p-[2px]" fill="none" viewBox="0 0 16 16" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l3.5 3.5 6.5-6.5" />
-                      </svg>
-                    )}
-                  </div>
-                </div>
-                <span className="text-kawai-charcoal/55 text-xs leading-relaxed">
-                  I&apos;d like to receive exclusive promotions, offers, and piano news from Kawai.
-                </span>
-              </label>
-
               {/* CTA */}
               <button
                 onClick={handleContinue}
@@ -400,8 +371,14 @@ export function BookingModal({ open, onClose, calendlyUrl, locationName, storesl
                 </svg>
               </button>
 
+              {/* Implicit consent disclosure */}
+              <p className="mt-4 text-kawai-charcoal/40 text-[0.68rem] leading-relaxed text-center">
+                By submitting this form, you agree to receive promotional emails and
+                updates from Kawai Piano. You may unsubscribe at any time.
+              </p>
+
               {/* Offer reminder */}
-              <div className="mt-5 flex items-center justify-center gap-2">
+              <div className="mt-4 flex items-center justify-center gap-2">
                 <div className="w-1 h-1 rounded-full bg-kawai-red animate-pulse" />
                 <p className="text-kawai-charcoal/35 text-[0.65rem] tracking-[0.1em] uppercase">
                   Spring offer ends May 17, 2026

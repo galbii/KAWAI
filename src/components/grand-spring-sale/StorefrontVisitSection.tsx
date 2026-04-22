@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { MapPinIcon, PhoneIcon, ClockIcon } from '@heroicons/react/24/outline'
+import { BookingModal } from '@/components/trade-in/BookingModal'
 
 function SakuraIcon({ className }: { className?: string }) {
   return (
@@ -20,7 +21,7 @@ function SakuraIcon({ className }: { className?: string }) {
 
 interface HoursEntry {
   day?: string | null
-  hours?: string | null
+  time?: string | null
 }
 
 interface StorefrontVisitSectionProps {
@@ -31,6 +32,7 @@ interface StorefrontVisitSectionProps {
   mapApiKey?: string | null
   directionsLink?: string | null
   storeslug: string
+  calendlyUrl?: string | null
 }
 
 function buildMapEmbedUrl(address: string, apiKey?: string | null): string {
@@ -53,9 +55,11 @@ export function StorefrontVisitSection({
   mapApiKey,
   directionsLink,
   storeslug,
+  calendlyUrl,
 }: StorefrontVisitSectionProps) {
   const [mapLoaded, setMapLoaded] = useState(false)
   const [mapError, setMapError] = useState(false)
+  const [bookingOpen, setBookingOpen] = useState(false)
 
   const resolvedDirections = directionsLink ?? (address ? buildDirectionsUrl(address) : null)
   const mapSrc = address ? buildMapEmbedUrl(address, mapApiKey) : null
@@ -69,6 +73,7 @@ export function StorefrontVisitSection({
   )
 
   return (
+    <>
     <section className="py-16 md:py-24 border-t border-white/20">
       <div className="max-w-6xl mx-auto px-6">
         {/* Header */}
@@ -126,7 +131,7 @@ export function StorefrontVisitSection({
                       <div className="text-sm space-y-1">
                         {todayHours && (
                           <p className="text-kawai-black font-medium">
-                            Today: <span className="font-normal">{todayHours.hours}</span>
+                            Today: <span className="font-normal">{todayHours.time}</span>
                           </p>
                         )}
                         {hours.slice(0, 7).map((h, i) => (
@@ -139,7 +144,7 @@ export function StorefrontVisitSection({
                             }`}
                           >
                             <span className="min-w-[5rem]">{h.day}</span>
-                            <span>{h.hours}</span>
+                            <span>{h.time}</span>
                           </div>
                         ))}
                       </div>
@@ -166,16 +171,12 @@ export function StorefrontVisitSection({
                     </div>
                   </a>
                 )}
-                <a
-                  href="#grand-lead-form"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    document.getElementById('grand-lead-form')?.scrollIntoView({ behavior: 'smooth' })
-                  }}
+                <button
+                  onClick={() => setBookingOpen(true)}
                   className="w-full inline-flex items-center justify-center px-6 py-3 border border-kawai-black/20 text-kawai-black hover:border-kawai-black/50 text-sm font-medium tracking-wide transition-colors rounded-sm"
                 >
                   Schedule a Visit
-                </a>
+                </button>
               </div>
             </div>
 
@@ -231,5 +232,14 @@ export function StorefrontVisitSection({
         </div>
       </div>
     </section>
+
+      <BookingModal
+        open={bookingOpen}
+        onClose={() => setBookingOpen(false)}
+        calendlyUrl={calendlyUrl}
+        locationName={locationName}
+        storeslug={storeslug}
+      />
+    </>
   )
 }

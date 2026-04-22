@@ -9,7 +9,6 @@ export interface BookingLeadInput {
   email: string
   phone?: string | undefined
   storeslug?: string | null | undefined
-  acceptsMarketing?: boolean | undefined
 }
 
 const CUSTOMER_EMAIL_MARKETING_CONSENT_UPDATE = `
@@ -64,14 +63,10 @@ export async function captureBookingLead(input: BookingLeadInput): Promise<void>
       note: 'Grand Spring Sale — booking appointment inquiry',
     })
 
-    const promises: Promise<unknown>[] = []
+    const promises: Promise<unknown>[] = [setMarketingConsent(customer.id)]
 
     if (input.storeslug) {
       promises.push(addCustomerLocation(customer.id, input.storeslug))
-    }
-
-    if (input.acceptsMarketing) {
-      promises.push(setMarketingConsent(customer.id))
     }
 
     await Promise.allSettled(promises)

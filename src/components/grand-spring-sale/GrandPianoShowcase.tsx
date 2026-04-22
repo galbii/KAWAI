@@ -282,7 +282,7 @@ export function GrandPianoShowcase({ products }: GrandPianoShowcaseProps) {
             </div>
 
             {/* Type filters */}
-            <div className="flex gap-1.5 flex-shrink-0 overflow-x-auto scrollbar-none">
+            <div className="flex gap-1.5 flex-1 min-w-0 overflow-x-auto scrollbar-none">
               {TYPE_FILTERS.map(({ key, label }) => {
                 const count = key === 'all' ? products.length
                   : key === 'baby-grand' ? babGrandCount

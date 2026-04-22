@@ -72,7 +72,7 @@ async function TradePageContent({ storeslug }: { storeslug: string }) {
     <>
       <TradeInHero locationName={locationName} />
 
-      <HowItWorks />
+      <HowItWorks phone={phone} />
 
       <Suspense>
         <TradeInCalculator products={products} calendlyUrl={calendlyUrl} locationName={locationName} storeslug={storeslug} />
@@ -86,6 +86,7 @@ async function TradePageContent({ storeslug }: { storeslug: string }) {
         mapApiKey={mapApiKey}
         directionsLink={directionsLink}
         storeslug={storeslug}
+        calendlyUrl={calendlyUrl}
       />
 
       <GrandSpringLink storeslug={storeslug} />

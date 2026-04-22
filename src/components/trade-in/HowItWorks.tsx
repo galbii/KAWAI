@@ -1,5 +1,9 @@
 'use client'
 
+interface HowItWorksProps {
+  phone?: string | null
+}
+
 const STEPS = [
   {
     number: '01',
@@ -21,7 +25,7 @@ const STEPS = [
   },
 ]
 
-export function HowItWorks() {
+export function HowItWorks({ phone }: HowItWorksProps) {
   return (
     <section id="how-it-works" className="border-y border-white/20 py-20 md:py-28">
       <div className="max-w-5xl mx-auto px-6">
@@ -73,6 +77,17 @@ export function HowItWorks() {
                     <span className="inline-block mt-3 px-3 py-1 bg-kawai-red text-white text-[0.65rem] tracking-[0.2em] uppercase font-semibold rounded-sm">
                       {badge}
                     </span>
+                  )}
+                  {number === '01' && phone && (
+                    <p className="mt-3 text-kawai-charcoal/50 text-sm">
+                      Have questions?{' '}
+                      <a
+                        href={`tel:${phone.replace(/\D/g, '')}`}
+                        className="text-kawai-charcoal/70 hover:text-kawai-red transition-colors underline underline-offset-2 decoration-kawai-charcoal/30 hover:decoration-kawai-red"
+                      >
+                        {phone}
+                      </a>
+                    </p>
                   )}
                 </div>
               </div>
