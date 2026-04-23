@@ -183,7 +183,13 @@ export function BookingModal({ open, onClose, calendlyUrl, locationName, storesl
 
       if (data.event === 'calendly.event_scheduled' && !pixelFiredRef.current) {
         pixelFiredRef.current = true
-        trackSchedule({ content_name: 'Grand Spring Sale Appointment', content_category: locationName ?? undefined })
+        trackSchedule(locationName ? { content_name: 'Grand Spring Sale Appointment', content_category: locationName } : { content_name: 'Grand Spring Sale Appointment' })
+        window.dataLayer = window.dataLayer ?? []
+        window.dataLayer.push({
+          event: 'calendly_booking_confirmed',
+          event_category: 'booking',
+          event_label: locationName ?? 'Grand Spring Sale Appointment',
+        })
       }
     }
 
@@ -218,10 +224,10 @@ export function BookingModal({ open, onClose, calendlyUrl, locationName, storesl
       storeslug,
     })
     // Lead fires here — contact info submitted, customer entering the funnel
-    trackLead({ content_name: 'Grand Spring Sale Booking', content_category: locationName ?? undefined })
+    trackLead(locationName ? { content_name: 'Grand Spring Sale Booking', content_category: locationName } : { content_name: 'Grand Spring Sale Booking' })
     // No Calendly configured — confirmation screen is the terminal state, fire Schedule now
     if (!calendlyUrl) {
-      trackSchedule({ content_name: 'Grand Spring Sale Appointment', content_category: locationName ?? undefined })
+      trackSchedule({ content_name: 'Grand Spring Sale Appointment', ...(locationName ? { content_category: locationName } : {}) })
     }
   }
 

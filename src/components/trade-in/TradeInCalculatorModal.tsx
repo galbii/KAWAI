@@ -35,7 +35,7 @@ function ValuatorStep({
   phone,
   onCalculate,
 }: {
-  phone?: string | null
+  phone?: string | null | undefined
   onCalculate: () => void
 }) {
   return (
