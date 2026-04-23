@@ -34,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com';
 
       return {
-        title: homePageData.seo.metaTitle || 'KAWAI ™ | Digital and Acoustic Pianos',
+        title: { absolute: homePageData.seo.metaTitle || 'Kawai America | Grand, Upright, Hybrid & Digital Pianos' },
         description: homePageData.seo.metaDescription || 'Discover premium KAWAI pianos at authorized dealers nationwide. Explore our collection of grand, upright, and digital pianos. Find a KAWAI storefront near you.',
         keywords: homePageData.seo.keywords,
         alternates: {
@@ -64,7 +64,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
     // Fallback metadata if CMS data is unavailable
     return {
-      title: 'KAWAI ™ | Digital and Acoustic Pianos',
+      title: { absolute: 'Kawai America | Grand, Upright, Hybrid & Digital Pianos' },
       description: 'Discover premium KAWAI pianos at authorized dealers nationwide. Explore our collection of grand, upright, and digital pianos crafted with 95+ years of Japanese excellence.',
       keywords: ['kawai piano', 'piano dealer', 'grand piano', 'digital piano', 'upright piano', 'piano store', 'kawai authorized dealer'],
       alternates: {
@@ -76,7 +76,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
     // Error fallback
     return {
-      title: 'KAWAI ™ | Digital and Acoustic Pianos',
+      title: { absolute: 'Kawai America | Grand, Upright, Hybrid & Digital Pianos' },
       description: 'Discover premium KAWAI pianos at authorized dealers nationwide. Explore our collection of grand, upright, and digital pianos crafted with 95+ years of Japanese excellence.'
     };
   }

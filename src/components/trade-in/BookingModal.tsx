@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { cn } from '@/lib/utils'
 import { captureBookingLead } from '@/lib/actions/booking-lead'
+import { trackLead, trackSchedule } from '@/components/MetaPixel'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -44,6 +45,8 @@ function buildCalendlyUrl(base: string, form: ContactForm): string {
     email: form.email,
     ...(phone ? { a1: phone } : {}),
     hide_gdpr_banner: '1',
+    embed_type: 'Inline',
+    embed_domain: window.location.hostname,
   })
   return `${base}${base.includes('?') ? '&' : '?'}${params.toString()}`
 }
@@ -151,12 +154,42 @@ export function BookingModal({ open, onClose, calendlyUrl, locationName, storesl
   const [iframeLoading, setIframeLoading] = useState(true)
 
   const [mounted, setMounted] = useState(false)
+  const pixelFiredRef = useRef(false)
+
   useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
+    if (!open) pixelFiredRef.current = false
     return () => { document.body.style.overflow = '' }
   }, [open])
+
+  // Listen for Calendly booking completion and fire Schedule pixel once
+  useEffect(() => {
+    if (!open || step !== 2 || !calendlyUrl) return
+
+    function handleMessage(e: MessageEvent) {
+      // Calendly may post as a plain object or a JSON string — handle both
+      let data = e.data
+      if (typeof data === 'string') {
+        try { data = JSON.parse(data) } catch { return }
+      }
+
+      if (!data?.event || typeof data.event !== 'string') return
+      if (!data.event.startsWith('calendly')) return
+
+      // Log all Calendly messages so we can confirm what's arriving
+      console.log('[Calendly postMessage]', data.event, data)
+
+      if (data.event === 'calendly.event_scheduled' && !pixelFiredRef.current) {
+        pixelFiredRef.current = true
+        trackSchedule({ content_name: 'Grand Spring Sale Appointment', content_category: locationName ?? undefined })
+      }
+    }
+
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [open, step, calendlyUrl, locationName])
 
   if (!open || !mounted) return null
 
@@ -176,7 +209,7 @@ export function BookingModal({ open, onClose, calendlyUrl, locationName, storesl
     if (Object.keys(errs).length > 0) { setErrors(errs); return }
     setIframeLoading(true)
     setStep(2)
-    // Fire-and-forget CRM capture
+    // Fire-and-forget CRM capture — tags customer with 'baby-grand' + storeslug in Shopify
     captureBookingLead({
       firstName: form.firstName,
       lastName: form.lastName,
@@ -184,6 +217,12 @@ export function BookingModal({ open, onClose, calendlyUrl, locationName, storesl
       phone: form.phone ? toE164US(form.phone) : undefined,
       storeslug,
     })
+    // Lead fires here — contact info submitted, customer entering the funnel
+    trackLead({ content_name: 'Grand Spring Sale Booking', content_category: locationName ?? undefined })
+    // No Calendly configured — confirmation screen is the terminal state, fire Schedule now
+    if (!calendlyUrl) {
+      trackSchedule({ content_name: 'Grand Spring Sale Appointment', content_category: locationName ?? undefined })
+    }
   }
 
   function handleBack() { setStep(1) }

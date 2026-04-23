@@ -109,13 +109,12 @@ export function SpringSpecialsBanner({ storeslug }: SpringSpecialsBannerProps) {
             </div>
           </div>
 
-          {/* ── Split panels ────────────────────────────────────────── */}
-          <div className="grid grid-cols-1 md:grid-cols-2 rounded-sm overflow-hidden border border-kawai-neutral shadow-brand-premium">
+          {/* ── Full-width Grand Spring Sale panel ─────────────────── */}
+          <div className="rounded-sm overflow-hidden border border-kawai-neutral shadow-brand-premium">
 
-            {/* Left — Dark: Grand Spring Sale */}
             <a
               href={`/store/${storeslug}/grand-spring-sale`}
-              className="ssb-panel-dark relative bg-kawai-black overflow-hidden flex flex-col min-h-[480px] p-10 md:p-12 border-b md:border-b-0 md:border-r border-white/10 group"
+              className="ssb-panel-dark relative bg-kawai-black overflow-hidden flex flex-col md:flex-row min-h-[420px] group"
             >
               {/* Red top bar */}
               <div className="absolute top-0 left-0 right-0 h-[3px] bg-kawai-red" />
@@ -123,113 +122,71 @@ export function SpringSpecialsBanner({ storeslug }: SpringSpecialsBannerProps) {
               {/* Ghost numeral */}
               <span
                 className="ssb-numeral-dark absolute -bottom-8 -left-4 font-[family-name:var(--font-brand-serif)] text-white opacity-[0.05] leading-none select-none pointer-events-none"
-                style={{ fontSize: 'clamp(180px, 30vw, 260px)' }}
+                style={{ fontSize: 'clamp(180px, 25vw, 320px)' }}
                 aria-hidden
               >
                 I
               </span>
 
-              {/* Content */}
-              <div className="relative z-10 flex flex-col h-full">
-
-                <p className="text-kawai-red text-[0.6rem] tracking-[0.32em] uppercase font-semibold mb-8 font-[family-name:var(--font-brand-sans)]">
-                  Spring Offer · 01
-                </p>
-
-                <div
-                  className="font-kawai-script text-white leading-[1] mb-2"
-                  style={{ fontSize: 'clamp(2.8rem, 5vw, 4rem)' }}
-                >
-                  Grand Spring Sale
+              {/* Left: headline block */}
+              <div className="relative z-10 flex flex-col justify-between p-10 md:p-14 md:w-1/2 border-b md:border-b-0 md:border-r border-white/10">
+                <div>
+                  <p className="text-kawai-red text-[0.6rem] tracking-[0.32em] uppercase font-semibold mb-8 font-[family-name:var(--font-brand-sans)]">
+                    Spring Offer · 2026
+                  </p>
+                  <div
+                    className="font-kawai-script text-white leading-[1] mb-3"
+                    style={{ fontSize: 'clamp(3rem, 6vw, 5rem)' }}
+                  >
+                    Grand Spring Sale
+                  </div>
+                  <p className="text-kawai-red/70 text-[0.65rem] tracking-[0.22em] uppercase font-medium font-[family-name:var(--font-brand-sans)]">
+                    0% Financing · 36 Months
+                  </p>
                 </div>
 
-                <p className="text-kawai-red/70 text-[0.65rem] tracking-[0.22em] uppercase font-medium mb-7 font-[family-name:var(--font-brand-sans)]">
-                  0% Financing · 36 Months
-                </p>
-
-                <div className="h-px bg-white/12 mb-7" />
-
-                <h3
-                  className="font-[family-name:var(--font-brand-serif)] text-white/90 leading-snug mb-4"
-                  style={{ fontSize: 'clamp(1.1rem, 1.8vw, 1.3rem)' }}
-                >
-                  Play now. Pay nothing for three years.
-                </h3>
-
-                <p className="text-white/50 text-sm leading-relaxed font-[family-name:var(--font-brand-sans)] flex-1">
-                  Every Kawai grand on our showroom floor — GL, GX, and Shigeru SK series — at 0% interest for 36 months. Come play before you decide.
-                </p>
-
                 <div className="mt-10">
-                  <span className="ssb-cta-red inline-flex w-full items-center justify-center gap-3 px-6 py-4 bg-kawai-red text-white text-xs tracking-[0.15em] uppercase font-semibold font-[family-name:var(--font-brand-sans)] rounded-sm">
+                  <span className="ssb-cta-red inline-flex w-full md:w-auto items-center justify-center gap-3 px-8 py-4 bg-kawai-red text-white text-xs tracking-[0.15em] uppercase font-semibold font-[family-name:var(--font-brand-sans)] rounded-sm">
                     Explore the Collection
                     <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                     </svg>
                   </span>
                 </div>
-
               </div>
-            </a>
 
-            {/* Right — Light: Trade-In Offer */}
-            <a
-              href={`/store/${storeslug}/trade`}
-              className="ssb-panel-light relative bg-white overflow-hidden flex flex-col min-h-[480px] p-10 md:p-12 group"
-            >
-              {/* Red top bar */}
-              <div className="absolute top-0 left-0 right-0 h-[3px] bg-kawai-red" />
-
-              {/* Ghost numeral */}
-              <span
-                className="ssb-numeral-light absolute -bottom-8 -right-4 font-[family-name:var(--font-brand-serif)] text-kawai-black opacity-[0.04] leading-none select-none pointer-events-none"
-                style={{ fontSize: 'clamp(180px, 30vw, 260px)' }}
-                aria-hidden
-              >
-                II
-              </span>
-
-              {/* Content */}
-              <div className="relative z-10 flex flex-col h-full">
-
-                <p className="text-kawai-black/40 text-[0.6rem] tracking-[0.32em] uppercase font-semibold mb-8 font-[family-name:var(--font-brand-sans)]">
-                  Spring Offer · 02
-                </p>
-
-                <div
-                  className="font-kawai-script text-kawai-black leading-[1] mb-2"
-                  style={{ fontSize: 'clamp(2.8rem, 5vw, 4rem)' }}
-                >
-                  Trade-In Offer
+              {/* Right: body copy + stats */}
+              <div className="relative z-10 flex flex-col justify-center p-10 md:p-14 md:w-1/2 gap-8">
+                <div>
+                  <h3
+                    className="font-[family-name:var(--font-brand-serif)] text-white/90 leading-snug mb-3"
+                    style={{ fontSize: 'clamp(1.2rem, 2vw, 1.5rem)' }}
+                  >
+                    Play now. Pay nothing for three years.
+                  </h3>
+                  <p className="text-white/50 text-sm leading-relaxed font-[family-name:var(--font-brand-sans)]">
+                    Every Kawai grand on our showroom floor — GL, GX, and Shigeru SK series — at 0% interest for 36 months. Plus $500 over any trade-in appraisal. Come play before you decide.
+                  </p>
                 </div>
 
-                <p className="text-kawai-charcoal/50 text-[0.65rem] tracking-[0.22em] uppercase font-medium mb-7 font-[family-name:var(--font-brand-sans)]">
-                  $500 Over Any Appraisal
-                </p>
-
-                <div className="h-px bg-kawai-neutral/70 mb-7" />
-
-                <h3
-                  className="font-[family-name:var(--font-brand-serif)] text-kawai-black leading-snug mb-4"
-                  style={{ fontSize: 'clamp(1.1rem, 1.8vw, 1.3rem)' }}
-                >
-                  Your current piano earns its keep.
-                </h3>
-
-                <p className="text-kawai-charcoal/60 text-sm leading-relaxed font-[family-name:var(--font-brand-sans)] flex-1">
-                  Already own a piano? We&apos;ll give you $500 over any independent appraisal toward a new Kawai grand. No gimmicks — just a fair trade.
-                </p>
-
-                <div className="mt-10">
-                  <span className="ssb-cta-dark inline-flex w-full items-center justify-center gap-3 px-6 py-4 bg-kawai-black text-white text-xs tracking-[0.15em] uppercase font-semibold font-[family-name:var(--font-brand-sans)] rounded-sm">
-                    Get a Trade-In Estimate
-                    <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                    </svg>
-                  </span>
+                <div className="grid grid-cols-3 gap-4 pt-6 border-t border-white/10">
+                  {[
+                    { value: '0%',    label: 'Interest' },
+                    { value: '36mo',  label: 'Financing' },
+                    { value: '+$500', label: 'Trade-In' },
+                  ].map(({ value, label }) => (
+                    <div key={label} className="text-center">
+                      <div className="font-kawai-script text-white/90 leading-none mb-1" style={{ fontSize: 'clamp(1.4rem, 2.5vw, 2rem)' }}>
+                        {value}
+                      </div>
+                      <div className="text-white/35 text-[10px] tracking-[0.2em] uppercase font-[family-name:var(--font-brand-sans)]">
+                        {label}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-
               </div>
+
             </a>
 
           </div>

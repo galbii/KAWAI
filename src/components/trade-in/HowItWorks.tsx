@@ -2,6 +2,8 @@
 
 interface HowItWorksProps {
   phone?: string | null
+  ctaHref?: string
+  ctaLabel?: string
 }
 
 const STEPS = [
@@ -25,25 +27,25 @@ const STEPS = [
   },
 ]
 
-export function HowItWorks({ phone }: HowItWorksProps) {
+export function HowItWorks({ phone, ctaHref = '#trade-calculator', ctaLabel = 'Claim Bonus' }: HowItWorksProps) {
   return (
-    <section id="how-it-works" className="border-y border-white/20 py-20 md:py-28">
+    <section id="how-it-works" className="border-y border-kawai-neutral/40 py-24 md:py-32 bg-transparent">
       <div className="max-w-5xl mx-auto px-6">
         {/* Header */}
-        <div className="mb-16">
+        <div className="mb-20">
           <div className="flex items-center gap-4 mb-6">
             <div className="h-px w-8 bg-kawai-red/40" />
-            <span className="text-kawai-red/60 text-xs tracking-[0.2em] uppercase font-medium">Trade In Policy</span>
+            <span className="text-kawai-red text-xs tracking-[0.2em] uppercase font-medium">Trade In Policy</span>
           </div>
           <p
-            className="font-[family-name:var(--font-brand-sans)] font-medium text-kawai-black/50 tracking-[0.3em] uppercase mb-3"
-            style={{ fontSize: 'clamp(0.7rem, 1.2vw, 0.85rem)' }}
+            className="font-[family-name:var(--font-brand-sans)] font-medium text-kawai-black/50 tracking-[0.3em] uppercase mb-4"
+            style={{ fontSize: 'clamp(0.75rem, 1.2vw, 0.9rem)' }}
           >
             Three Steps
           </p>
           <h2
-            className="font-[family-name:var(--font-family-cormorant)] font-normal text-kawai-black leading-tight"
-            style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}
+            className="font-[family-name:var(--font-family-cormorant)] font-semibold text-kawai-black leading-tight"
+            style={{ fontSize: 'clamp(2.5rem, 5vw, 3.75rem)' }}
           >
             Claim Your Bonus
           </h2>
@@ -54,36 +56,44 @@ export function HowItWorks({ phone }: HowItWorksProps) {
           {/* Vertical connector line on desktop */}
           <div className="hidden md:block absolute left-[2.25rem] top-12 bottom-12 w-px bg-kawai-neutral" aria-hidden />
 
-          <div className="space-y-12">
+          <div className="space-y-14">
             {STEPS.map(({ number, title, body, badge }) => (
-              <div key={number} className="relative flex gap-8 md:gap-12 items-start">
+              <div key={number} className="relative flex gap-8 md:gap-14 items-start">
                 {/* Step number */}
-                <div className="flex-shrink-0 w-[4.5rem] h-[4.5rem] flex items-center justify-center border border-kawai-red/20 bg-white rounded-sm relative z-10">
+                <div className="flex-shrink-0 w-[4.5rem] h-[4.5rem] flex items-center justify-center border border-kawai-red/30 bg-white rounded-sm relative z-10">
                   <span
-                    className="font-[family-name:var(--font-family-cormorant)] text-kawai-red"
-                    style={{ fontSize: '1.5rem', lineHeight: 1 }}
+                    className="font-[family-name:var(--font-family-cormorant)] text-kawai-red font-semibold"
+                    style={{ fontSize: '1.6rem', lineHeight: 1 }}
                   >
                     {number}
                   </span>
                 </div>
 
                 {/* Content */}
-                <div className="pt-3 flex-1">
-                  <h3 className="text-kawai-black text-xl font-medium mb-3 font-[family-name:var(--font-brand-serif)]">
+                <div className="pt-2 flex-1">
+                  <h3
+                    className="text-kawai-black font-bold mb-4 font-[family-name:var(--font-brand-serif)]"
+                    style={{ fontSize: 'clamp(1.2rem, 2vw, 1.5rem)' }}
+                  >
                     {title}
                   </h3>
-                  <p className="text-kawai-charcoal/65 leading-relaxed">{body}</p>
+                  <p
+                    className="text-kawai-charcoal/80 leading-relaxed font-medium"
+                    style={{ fontSize: 'clamp(1rem, 1.5vw, 1.125rem)' }}
+                  >
+                    {body}
+                  </p>
                   {badge && (
-                    <span className="inline-block mt-3 px-3 py-1 bg-kawai-red text-white text-[0.65rem] tracking-[0.2em] uppercase font-semibold rounded-sm">
+                    <span className="inline-block mt-4 px-3 py-1.5 bg-kawai-red text-white text-[0.65rem] tracking-[0.2em] uppercase font-semibold rounded-sm">
                       {badge}
                     </span>
                   )}
                   {number === '01' && phone && (
-                    <p className="mt-3 text-kawai-charcoal/50 text-sm">
+                    <p className="mt-4 text-kawai-charcoal/60 text-base">
                       Have questions?{' '}
                       <a
                         href={`tel:${phone.replace(/\D/g, '')}`}
-                        className="text-kawai-charcoal/70 hover:text-kawai-red transition-colors underline underline-offset-2 decoration-kawai-charcoal/30 hover:decoration-kawai-red"
+                        className="text-kawai-charcoal/80 hover:text-kawai-red transition-colors underline underline-offset-2 decoration-kawai-charcoal/30 hover:decoration-kawai-red"
                       >
                         {phone}
                       </a>
@@ -96,16 +106,17 @@ export function HowItWorks({ phone }: HowItWorksProps) {
         </div>
 
         {/* CTA */}
-        <div className="mt-16 flex justify-center">
+        <div className="mt-20 flex justify-center">
           <a
-            href="#trade-calculator"
+            href={ctaHref}
             onClick={(e) => {
               e.preventDefault()
-              document.getElementById('trade-calculator')?.scrollIntoView({ behavior: 'smooth' })
+              const id = ctaHref.startsWith('#') ? ctaHref.slice(1) : null
+              if (id) document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
             }}
-            className="inline-flex items-center px-10 py-4 bg-kawai-red hover:bg-kawai-red/90 text-white text-sm tracking-[0.12em] uppercase font-medium transition-colors rounded-sm shadow-[0_4px_24px_rgba(225,25,34,0.35)]"
+            className="inline-flex items-center px-12 py-5 bg-kawai-red hover:bg-kawai-red/90 text-white text-sm tracking-[0.12em] uppercase font-semibold transition-colors rounded-sm shadow-[0_4px_24px_rgba(225,25,34,0.35)]"
           >
-            Claim Bonus
+            {ctaLabel}
           </a>
         </div>
       </div>

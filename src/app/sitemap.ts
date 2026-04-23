@@ -62,8 +62,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       { url: `${SITE_URL}/pianos/grand/gl-series`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: getSiteAlternates('/pianos/grand/gl-series') } },
       { url: `${SITE_URL}/pianos/grand/gx-series`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: getSiteAlternates('/pianos/grand/gx-series') } },
       { url: `${SITE_URL}/pianos/grand/shigeru-kawai`, changeFrequency: 'monthly', priority: 0.85, alternates: { languages: getSiteAlternates('/pianos/grand/shigeru-kawai') } },
-      { url: `${SITE_URL}/pianos/search`, changeFrequency: 'weekly', priority: 0.7 },
-      { url: `${SITE_URL}/pianos/compare`, changeFrequency: 'weekly', priority: 0.65 },
+      // /pianos/search and /pianos/compare are noindexed utility pages — excluded from sitemap
       { url: `${SITE_URL}/accessories`, changeFrequency: 'weekly', priority: 0.65 },
     )
 

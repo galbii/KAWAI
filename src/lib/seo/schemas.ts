@@ -37,7 +37,13 @@ export const organizationSchema = {
     "contactType": "customer service",
     "areaServed": "US",
     "availableLanguage": ["English"]
-  }
+  },
+  "sameAs": [
+    "https://www.facebook.com/KawaiPianosUS/",
+    "https://www.instagram.com/kawaipianosus/",
+    "https://www.youtube.com/@KawaiPianosUS",
+    "https://www.linkedin.com/company/9083672"
+  ]
 };
 
 /**

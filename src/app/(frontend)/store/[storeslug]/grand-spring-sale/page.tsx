@@ -6,11 +6,11 @@ import {
   getActiveStorefrontSlugs,
   getGrandPianoSaleProducts,
 } from '@/lib/payload/queries'
+import { HowItWorks } from '@/components/trade-in/HowItWorks'
 import {
   GrandSpringHero,
   GrandPianoShowcase,
   TradeInBanner,
-  TestimonialsSection,
   StorefrontVisitSection,
   GrandSpringBooking,
   PianoTypesSection,
@@ -66,8 +66,6 @@ async function GrandSpringContent({ storeslug }: { storeslug: string }) {
   const mapApiKey: string | null = storefront.mapApiKey ?? process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? null
   const directionsLink: string | null = storefront.showroomCtas?.directionsLink ?? null
   const calendlyUrl: string | null = storefront.calendlyUrl ?? null
-  const testimonials = storefront.customerTestimonials ?? null
-
   return (
     <>
       <GrandSpringHero locationName={locationName} storeslug={storeslug} />
@@ -91,11 +89,9 @@ async function GrandSpringContent({ storeslug }: { storeslug: string }) {
         <GrandPianoShowcase products={products} storeslug={storeslug} />
       </Suspense>
 
-      <Suspense>
-        <TestimonialsSection testimonials={testimonials} />
-      </Suspense>
+      <TradeInBanner storeslug={storeslug} phone={phone} calendlyUrl={calendlyUrl} locationName={locationName} />
 
-      <TradeInBanner storeslug={storeslug} />
+      <HowItWorks phone={phone} ctaHref="#grand-lead-form" ctaLabel="Book Your Appointment" />
 
       <StorefrontVisitSection
         locationName={locationName}
@@ -132,7 +128,7 @@ export default async function GrandSpringSalePage({
           muted
           loop
           playsInline
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover scale-110"
           aria-hidden
         >
           <source src={VIDEO_SRC} type="video/mp4" />

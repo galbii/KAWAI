@@ -44,7 +44,7 @@ export function GrandSpringBooking({ locationName, calendlyUrl, storeslug }: Gra
             className="font-[family-name:var(--font-family-cormorant)] font-normal text-kawai-black leading-tight mb-6"
             style={{ fontSize: 'clamp(2.2rem, 5vw, 3.5rem)' }}
           >
-            Ready to play one?
+            Reserve your Spot.
           </h2>
 
           <p className="text-kawai-charcoal/65 text-base md:text-lg leading-relaxed max-w-xl mx-auto mb-12">
@@ -60,7 +60,7 @@ export function GrandSpringBooking({ locationName, calendlyUrl, storeslug }: Gra
             ].map((pill) => (
               <span
                 key={pill}
-                className="px-4 py-1.5 rounded-full border border-kawai-black/15 text-kawai-black/50 text-xs tracking-[0.15em] uppercase font-medium"
+                className="px-4 py-1.5 rounded-full border border-kawai-black/30 bg-white/60 text-kawai-black/80 text-xs tracking-[0.15em] uppercase font-medium backdrop-blur-sm"
               >
                 {pill}
               </span>

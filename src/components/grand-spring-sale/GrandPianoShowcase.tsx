@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import type { GrandSaleProduct } from '@/lib/payload/queries'
 import { ProductMediaModal } from './ProductMediaModal'
@@ -25,10 +26,7 @@ interface GrandPianoShowcaseProps {
   storeslug: string
 }
 
-function extractSpec(
-  specs: GrandSaleProduct['specifications'],
-  keywords: string[],
-): string | null {
+function extractSpec(specs: GrandSaleProduct['specifications'], keywords: string[]): string | null {
   if (!specs) return null
   const normalized = keywords.map((k) => k.toLowerCase())
   const match = specs.find((s) => {
@@ -38,39 +36,50 @@ function extractSpec(
   return match?.details ?? match?.type ?? null
 }
 
-// Classify a product as baby grand (< 6') or full grand (6'+) based on model name.
-// GL series and GX-1/GX-2 are baby grands; GX-3+, SK series are full grands.
+// Only GL-10 and GL-20 are baby grands; everything else is a full grand.
 function getPianoType(product: GrandSaleProduct): 'baby-grand' | 'grand' {
-  const model = (product.model ?? '').toUpperCase().trim()
-  if (/^GL[-\s]?\d/i.test(model)) return 'baby-grand'
-  if (/^GX[-\s]?[12]($|[^0-9])/i.test(model)) return 'baby-grand'
+  const model = (product.model ?? '').replace(/[-\s]/g, '').toUpperCase()
+  if (/^GL10($|[^0-9])/i.test(model)) return 'baby-grand'
+  if (/^GL20($|[^0-9])/i.test(model)) return 'baby-grand'
   return 'grand'
 }
 
 type TypeFilter = 'all' | 'baby-grand' | 'grand'
 
 const TYPE_FILTERS: { key: TypeFilter; label: string; sub: string }[] = [
-  { key: 'all',        label: 'All Models',   sub: 'Every grand on sale' },
-  { key: 'baby-grand', label: 'Baby Grand',   sub: "4'10\" – 5'11\""    },
-  { key: 'grand',      label: 'Grand Piano',  sub: "6' – 9'"             },
+  { key: 'all',        label: 'All Models',  sub: 'Every grand on sale' },
+  { key: 'baby-grand', label: 'Baby Grand',  sub: 'GL-10 · GL-20'       },
+  { key: 'grand',      label: 'Grand Piano', sub: "6′ – 9′"             },
 ]
 
-function matchesFilters(
-  product: GrandSaleProduct,
-  typeFilter: TypeFilter,
-  query: string,
-): boolean {
+function matchesFilters(product: GrandSaleProduct, typeFilter: TypeFilter, query: string): boolean {
   if (typeFilter !== 'all' && getPianoType(product) !== typeFilter) return false
   if (query.trim()) {
     const q = query.toLowerCase()
-    const haystack = [product.name, product.model, product.description]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase()
+    const haystack = [product.name, product.model, product.description].filter(Boolean).join(' ').toLowerCase()
     if (!haystack.includes(q)) return false
   }
   return true
 }
+
+// ── Animation variants ──────────────────────────────────────────────────────
+
+const fadeUp = {
+  hidden:  { opacity: 0, y: 28 },
+  visible: { opacity: 1, y: 0  },
+}
+
+const staggerGrid = {
+  hidden:  {},
+  visible: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+}
+
+const cardVariant = {
+  hidden:  { opacity: 0, y: 32 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const } },
+}
+
+// ── ProductCard ─────────────────────────────────────────────────────────────
 
 function ProductCard({
   product,
@@ -81,115 +90,122 @@ function ProductCard({
 }) {
   const length = extractSpec(product.specifications, ['length', 'cabinet length', 'piano length'])
   const action = extractSpec(product.specifications, ['action', 'key action'])
-  const keys = extractSpec(product.specifications, ['keys', 'keyboard range', 'number of keys'])
+  const keys   = extractSpec(product.specifications, ['keys', 'keyboard range', 'number of keys'])
 
   const specs = [
     length && { label: 'Length', value: length },
     action && { label: 'Action', value: action },
-    keys && { label: 'Keys', value: keys },
+    keys   && { label: 'Keys',   value: keys   },
   ].filter(Boolean) as Array<{ label: string; value: string }>
 
   const fallbackSpecs = (product.highlights ?? [])
     .slice(0, 3)
-    .map((h) => ({ label: 'Highlight', value: h.highlight ?? '' }))
+    .map((h) => ({ label: 'Feature', value: h.highlight ?? '' }))
     .filter((h) => h.value)
 
   const displaySpecs = specs.length >= 2 ? specs.slice(0, 3) : fallbackSpecs.slice(0, 3)
-
-  const pianoType = getPianoType(product)
+  const pianoType    = getPianoType(product)
 
   return (
-    <div className="group bg-white border border-kawai-neutral/60 rounded-lg overflow-hidden hover:shadow-brand-medium hover:border-kawai-red/20 transition-all duration-300 flex flex-col">
-      {/* Product image */}
-      <div className="relative aspect-[3/2] bg-white overflow-hidden">
+    <motion.article variants={cardVariant} className="group flex flex-col bg-white">
+
+      {/* ── Image stage ── */}
+      <div className="relative overflow-hidden bg-white" style={{ aspectRatio: '4/3' }}>
         {product.imageUrl ? (
           <img
             src={product.imageUrl}
-            alt={product.name ?? product.model}
-            className="w-full h-full object-contain p-4"
+            alt={product.name ?? product.model ?? ''}
+            className="w-full h-full object-contain p-6 transition-transform duration-700 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.04]"
             loading="lazy"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <svg className="w-16 h-16 text-kawai-charcoal/20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
+            <svg className="w-20 h-20 text-kawai-neutral" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={0.75}
+                d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
             </svg>
           </div>
         )}
-        {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-          <span className="px-2 py-1 bg-kawai-red text-white text-[10px] tracking-[0.1em] uppercase font-medium rounded-sm">
-            In-Store Discount
-          </span>
-          <span className="px-2 py-1 bg-kawai-black/80 text-white text-[10px] tracking-[0.08em] uppercase font-medium rounded-sm">
-            {pianoType === 'baby-grand' ? 'Baby Grand' : 'Grand Piano'}
-          </span>
-        </div>
-      </div>
 
-      {/* Card content */}
-      <div className="p-6 flex flex-col flex-1">
-        <div className="mb-1">
-          <span className="text-kawai-charcoal/50 text-xs tracking-[0.2em] uppercase">Kawai</span>
-        </div>
-        <h3 className="text-xl font-medium text-kawai-black mb-1 font-[family-name:var(--font-brand-serif)]">
-          {product.name ?? product.model}
-        </h3>
-        <p className="text-kawai-charcoal/50 text-xs uppercase tracking-wider mb-4">
-          {product.model}
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white/80 to-transparent pointer-events-none" />
+
+        <p className="absolute bottom-3 left-4 text-kawai-charcoal/50 text-[10px] tracking-[0.28em] uppercase font-[family-name:var(--font-brand-sans)]">
+          {pianoType === 'baby-grand' ? 'Baby Grand' : 'Grand Piano'}
         </p>
 
+        <span className="absolute top-3 right-3 px-2.5 py-1 bg-kawai-red text-white text-[9px] tracking-[0.2em] uppercase font-semibold font-[family-name:var(--font-brand-sans)]">
+          In-Store Discount
+        </span>
+
+        {/* Gold reveal line on hover */}
+        <div className="absolute inset-x-0 top-0 h-[2px] bg-[#d5c78c] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]" />
+      </div>
+
+      {/* ── Card body ── */}
+      <div className="flex flex-col flex-1 p-6 border-x border-b border-kawai-neutral/50">
+        <p className="text-kawai-charcoal/40 text-[10px] tracking-[0.3em] uppercase mb-2 font-[family-name:var(--font-brand-sans)]">
+          Kawai · {product.model}
+        </p>
+
+        <h3
+          className="font-[family-name:var(--font-family-cormorant)] text-kawai-black leading-tight mb-4"
+          style={{ fontSize: 'clamp(1.25rem, 2vw, 1.55rem)', fontWeight: 500 }}
+        >
+          {product.name ?? product.model}
+        </h3>
+
         {displaySpecs.length > 0 && (
-          <div className="grid grid-cols-1 gap-2 mb-5 pt-4 border-t border-kawai-neutral/60">
+          <dl className="space-y-2 pt-4 border-t border-kawai-neutral/40 mb-5">
             {displaySpecs.map(({ label, value }) => (
-              <div key={label} className="flex justify-between items-baseline gap-4">
-                <span className="text-kawai-charcoal/50 text-xs">{label}</span>
-                <span className="text-kawai-black text-xs font-medium text-right">{value}</span>
+              <div key={label} className="flex items-baseline justify-between gap-4">
+                <dt className="text-kawai-charcoal/40 text-[11px] tracking-[0.1em] uppercase font-[family-name:var(--font-brand-sans)]">
+                  {label}
+                </dt>
+                <dd className="text-kawai-black text-[11px] font-medium text-right font-[family-name:var(--font-brand-sans)]">
+                  {value}
+                </dd>
               </div>
             ))}
-          </div>
+          </dl>
         )}
 
-        <div className="mt-auto">
+        <div className="mt-auto space-y-2">
+          <button
+            onClick={() => onOpenModal(product)}
+            className="w-full inline-flex items-center justify-between px-5 py-3.5 bg-kawai-black hover:bg-kawai-charcoal text-white text-[10px] tracking-[0.22em] uppercase font-semibold transition-colors duration-200 font-[family-name:var(--font-brand-sans)] group/btn"
+          >
+            Explore Model
+            <svg className="w-3.5 h-3.5 transition-transform duration-200 group-hover/btn:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+            </svg>
+          </button>
 
-          <div className="flex gap-3">
-            <button
-              onClick={() => onOpenModal(product)}
-              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-kawai-black hover:bg-kawai-charcoal text-white text-sm font-medium tracking-wide transition-colors rounded-sm group/btn"
-            >
-              Explore Model
-              <div className="w-5 h-5 rounded-full border border-white/30 group-hover/btn:border-white/60 group-hover/btn:bg-white/10 flex items-center justify-center transition-all">
-                <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                </svg>
-              </div>
-            </button>
-            <a
-              href="#grand-lead-form"
-              onClick={(e) => {
-                e.preventDefault()
-                document.getElementById('grand-lead-form')?.scrollIntoView({ behavior: 'smooth' })
-              }}
-              className="flex-1 inline-flex items-center justify-center px-4 py-3 border border-kawai-red text-kawai-red hover:bg-kawai-red hover:text-white text-sm font-medium tracking-wide transition-colors rounded-sm"
-            >
-              Request Pricing
-            </a>
-          </div>
+          <a
+            href="#grand-lead-form"
+            onClick={(e) => {
+              e.preventDefault()
+              document.getElementById('grand-lead-form')?.scrollIntoView({ behavior: 'smooth' })
+            }}
+            className="w-full inline-flex items-center justify-center px-5 py-3 bg-kawai-red hover:bg-kawai-red/90 text-white text-[10px] tracking-[0.22em] uppercase font-semibold transition-all duration-200 font-[family-name:var(--font-brand-sans)]"
+          >
+            Request Pricing
+          </a>
         </div>
       </div>
-    </div>
+    </motion.article>
   )
 }
 
+// ── Main component ──────────────────────────────────────────────────────────
+
 export function GrandPianoShowcase({ products }: GrandPianoShowcaseProps) {
-  const [activeType, setActiveType] = useState<TypeFilter>('all')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isStuck, setIsStuck] = useState(false)
+  const [activeType,   setActiveType  ] = useState<TypeFilter>('all')
+  const [searchQuery,  setSearchQuery ] = useState('')
+  const [isStuck,      setIsStuck     ] = useState(false)
   const [modalProduct, setModalProduct] = useState<GrandSaleProduct | null>(null)
+  const stickyRef  = useRef<HTMLDivElement>(null)
+  const inputRef   = useRef<HTMLInputElement>(null)
 
-  const stickyRef = useRef<HTMLDivElement>(null)
-
-  // Detect when the toolbar becomes stuck so we can show a shadow
   useEffect(() => {
     const el = stickyRef.current
     if (!el) return
@@ -204,104 +220,150 @@ export function GrandPianoShowcase({ products }: GrandPianoShowcaseProps) {
     return () => { observer.disconnect(); sentinel.remove() }
   }, [])
 
-  const filtered = products.filter((p) => matchesFilters(p, activeType, searchQuery))
-  const hasProducts = products.length > 0
-
-  const babGrandCount = products.filter((p) => getPianoType(p) === 'baby-grand').length
-  const grandCount    = products.filter((p) => getPianoType(p) === 'grand').length
+  const filtered       = products.filter((p) => matchesFilters(p, activeType, searchQuery))
+  const hasProducts    = products.length > 0
+  const babyGrandCount = products.filter((p) => getPianoType(p) === 'baby-grand').length
+  const grandCount     = products.filter((p) => getPianoType(p) === 'grand').length
+  const isFiltered     = activeType !== 'all' || !!searchQuery
 
   if (!hasProducts) {
     return (
-      <section id="grand-showcase" className="py-20 bg-white/88 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-6 text-center">
-          <p className="text-kawai-charcoal/60">Grand piano collection coming soon. Contact us for availability.</p>
+      <section id="grand-showcase" className="py-24 bg-kawai-pearl/90 backdrop-blur-md">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <p className="font-[family-name:var(--font-family-cormorant)] text-kawai-charcoal/40 text-2xl font-light">
+            Grand piano collection coming soon.
+          </p>
         </div>
       </section>
     )
   }
 
   return (
-    <section id="grand-showcase" className="bg-white/88 backdrop-blur-md">
+    <section id="grand-showcase" className="bg-kawai-pearl">
 
-      {/* ── Section header ──────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-6 pt-10 md:pt-20 pb-6 md:pb-10">
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <SakuraIcon className="w-4 h-4 text-kawai-red/60" />
-            <p className="text-kawai-red/60 text-xs tracking-[0.2em] uppercase font-medium">
-              Grand Piano Collection
-            </p>
+      {/* ── Section header ─────────────────────────────────────────── */}
+      <motion.div
+        className="max-w-7xl mx-auto px-6 pt-16 md:pt-24 pb-10 md:pb-14"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: '-60px' }}
+        variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.12 } } }}
+      >
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 md:gap-16">
+          <div>
+            <motion.div variants={fadeUp} transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="flex items-center gap-3 mb-5"
+            >
+              <div className="h-px w-10 bg-[#d5c78c]" />
+              <SakuraIcon className="w-3 h-3 text-kawai-red/50" />
+              <p className="text-kawai-charcoal/45 text-[10px] tracking-[0.32em] uppercase font-[family-name:var(--font-brand-sans)]">
+                Grand Piano Collection · Spring 2026
+              </p>
+            </motion.div>
+
+            <motion.h2
+              variants={fadeUp}
+              transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="font-[family-name:var(--font-family-cormorant)] text-kawai-black leading-none"
+              style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 400 }}
+            >
+              Piano Availability
+            </motion.h2>
           </div>
-          <h2 className="text-2xl md:text-4xl font-light font-[family-name:var(--font-brand-serif)] text-kawai-black mb-2 md:mb-4">
-            Piano Availability
-          </h2>
-          <p className="text-kawai-charcoal/60 text-sm md:text-base max-w-xl mx-auto">
-            Secure big discounts on our curated collection of grand and baby grand pianos.
-          </p>
-        </div>
-      </div>
 
-      {/* ── Sticky search + filter toolbar ──────────────────────── */}
+          <motion.p
+            variants={fadeUp}
+            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className="text-kawai-charcoal/50 text-sm leading-relaxed max-w-xs md:text-right font-[family-name:var(--font-brand-sans)] md:pb-1"
+          >
+            Every instrument available for in-store trial. Exclusive spring pricing applied at showroom.
+          </motion.p>
+        </div>
+      </motion.div>
+
+      {/* ── Sticky toolbar ─────────────────────────────────────────── */}
       <div
         ref={stickyRef}
         className={cn(
-          'sticky z-20 bg-white/95 backdrop-blur-md border-b border-kawai-neutral transition-shadow',
-          isStuck && 'shadow-brand-medium',
+          'sticky z-20 bg-kawai-pearl backdrop-blur-md border-y border-kawai-neutral/60 transition-shadow duration-300',
+          isStuck && 'shadow-[0_6px_24px_rgba(30,27,22,0.09)]',
         )}
-        style={{ top: 'var(--header-bottom, 120px)' }}
+        style={{ top: 'var(--header-bottom, 70px)' }}
       >
-        <div className="max-w-7xl mx-auto px-6 py-3">
-          <div className="flex flex-row gap-2 items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 space-y-3">
 
-            {/* Search input */}
-            <div className="relative w-36 sm:flex-1 min-w-0 flex-shrink-0">
-              <svg
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-kawai-charcoal/35 pointer-events-none"
-                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-              </svg>
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search models, e.g. GX-3, GL-20…"
-                className="w-full pl-10 pr-4 py-2.5 bg-kawai-pearl border border-kawai-neutral rounded-sm text-sm text-kawai-black placeholder:text-kawai-charcoal/35 focus:outline-none focus:border-kawai-red/40 focus:ring-1 focus:ring-kawai-red/20 transition font-[family-name:var(--font-brand-sans)]"
-              />
+          {/* Search input — full-width, prominent */}
+          <div
+            className={cn(
+              'flex items-center gap-3 w-full bg-white border rounded-xl px-4 py-3.5 transition-all duration-200 shadow-sm',
+              searchQuery
+                ? 'border-kawai-red/40 ring-2 ring-kawai-red/10'
+                : 'border-kawai-neutral hover:border-kawai-charcoal/30',
+            )}
+            onClick={() => inputRef.current?.focus()}
+          >
+            <svg
+              className="w-5 h-5 text-kawai-charcoal/40 flex-shrink-0 pointer-events-none"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            </svg>
+
+            <input
+              ref={inputRef}
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by model — GX-3, GL-10, SK-EX…"
+              className="flex-1 bg-transparent border-0 text-sm text-kawai-black placeholder:text-kawai-charcoal/35 focus:outline-none font-[family-name:var(--font-brand-sans)]"
+            />
+
+            <AnimatePresence>
               {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-kawai-charcoal/40 hover:text-kawai-black transition-colors"
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.15 }}
+                  onClick={() => { setSearchQuery(''); inputRef.current?.focus() }}
+                  className="w-6 h-6 rounded-full bg-kawai-charcoal/10 hover:bg-kawai-red hover:text-white text-kawai-charcoal/50 flex items-center justify-center transition-colors flex-shrink-0"
                   aria-label="Clear search"
                 >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                   </svg>
-                </button>
+                </motion.button>
               )}
-            </div>
+            </AnimatePresence>
+          </div>
 
-            {/* Type filters */}
-            <div className="flex gap-1.5 flex-1 min-w-0 overflow-x-auto scrollbar-none">
+          {/* Category selector — segmented control with sliding pill */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 flex items-center bg-kawai-black/[0.06] rounded-xl p-1 gap-0.5">
               {TYPE_FILTERS.map(({ key, label }) => {
-                const count = key === 'all' ? products.length
-                  : key === 'baby-grand' ? babGrandCount
-                  : grandCount
+                const count  = key === 'all' ? products.length : key === 'baby-grand' ? babyGrandCount : grandCount
+                const active = activeType === key
                 return (
                   <button
                     key={key}
                     onClick={() => setActiveType(key)}
                     className={cn(
-                      'relative px-4 py-2.5 text-xs font-medium rounded-sm border transition-all tracking-wide whitespace-nowrap font-[family-name:var(--font-brand-sans)]',
-                      activeType === key
-                        ? 'bg-kawai-black text-white border-kawai-black'
-                        : 'bg-white text-kawai-charcoal border-kawai-neutral hover:border-kawai-black/40 hover:text-kawai-black',
+                      'relative flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-colors duration-150 whitespace-nowrap font-[family-name:var(--font-brand-sans)]',
+                      active ? 'text-kawai-black' : 'text-kawai-charcoal/50 hover:text-kawai-charcoal/80',
                     )}
                   >
-                    {label}
+                    {/* Sliding background pill */}
+                    {active && (
+                      <motion.span
+                        layoutId="filter-pill"
+                        className="absolute inset-0 bg-white rounded-lg shadow-sm"
+                        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                      />
+                    )}
+                    <span className="relative z-10">{label}</span>
                     <span className={cn(
-                      'ml-1.5 text-[10px] tabular-nums',
-                      activeType === key ? 'text-white/60' : 'text-kawai-charcoal/40',
+                      'relative z-10 text-[10px] tabular-nums font-medium transition-colors',
+                      active ? 'text-kawai-red' : 'text-kawai-charcoal/30',
                     )}>
                       {count}
                     </span>
@@ -309,62 +371,82 @@ export function GrandPianoShowcase({ products }: GrandPianoShowcaseProps) {
                 )
               })}
             </div>
-          </div>
 
-          {/* Active filter context line */}
-          {(activeType !== 'all' || searchQuery) && (
-            <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-kawai-neutral/60">
-              <span className="text-kawai-charcoal/50 text-xs font-[family-name:var(--font-brand-sans)]">
-                {filtered.length} model{filtered.length !== 1 ? 's' : ''} shown
-                {activeType !== 'all' && (
-                  <> · <span className="text-kawai-black font-medium">
-                    {TYPE_FILTERS.find(f => f.key === activeType)?.label}
-                    {' '}
-                    <span className="font-normal text-kawai-charcoal/40">
-                      ({TYPE_FILTERS.find(f => f.key === activeType)?.sub})
-                    </span>
-                  </span></>
-                )}
-                {searchQuery && (
-                  <> · searching <span className="text-kawai-black font-medium">&ldquo;{searchQuery}&rdquo;</span></>
-                )}
-              </span>
-              <button
-                onClick={() => { setActiveType('all'); setSearchQuery('') }}
-                className="ml-auto text-kawai-red text-xs hover:underline font-[family-name:var(--font-brand-sans)]"
-              >
-                Clear all
-              </button>
-            </div>
-          )}
+            {/* Clear button — only when filtered */}
+            <AnimatePresence>
+              {isFiltered && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.85, x: 8 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.85, x: 8 }}
+                  transition={{ duration: 0.18 }}
+                  onClick={() => { setActiveType('all'); setSearchQuery('') }}
+                  className="flex items-center gap-1.5 px-3 py-2.5 text-kawai-red text-[10px] tracking-[0.15em] uppercase font-semibold hover:bg-kawai-red/8 rounded-lg transition-colors flex-shrink-0 font-[family-name:var(--font-brand-sans)]"
+                >
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                  Clear
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
-      {/* ── Product grid ────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-6 pb-16 md:pb-24 pt-4 md:pt-8">
-        {filtered.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-kawai-charcoal/50 mb-3 font-[family-name:var(--font-brand-sans)]">
-              No models match your search.
-            </p>
-            <button
-              className="text-kawai-red text-sm underline font-[family-name:var(--font-brand-sans)]"
-              onClick={() => { setActiveType('all'); setSearchQuery('') }}
+      {/* ── Product grid ───────────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto px-6 pt-8 md:pt-10 pb-20 md:pb-28">
+        <AnimatePresence mode="wait">
+          {filtered.length === 0 ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="text-center py-28"
             >
-              Clear filters
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((product) => (
-              <ProductCard key={product.id} product={product} onOpenModal={setModalProduct} />
-            ))}
-          </div>
-        )}
+              <p className="font-[family-name:var(--font-family-cormorant)] text-kawai-charcoal/35 mb-5" style={{ fontSize: '2rem', fontWeight: 400 }}>
+                No instruments found
+              </p>
+              <button
+                className="text-kawai-red text-[10px] tracking-[0.25em] uppercase font-semibold hover:underline font-[family-name:var(--font-brand-sans)]"
+                onClick={() => { setActiveType('all'); setSearchQuery('') }}
+              >
+                Clear filters
+              </button>
+            </motion.div>
+          ) : (
+            <motion.div key="grid" initial="hidden" animate="visible" exit={{ opacity: 0 }}>
+              {/* Result count */}
+              <motion.p
+                variants={fadeUp}
+                transition={{ duration: 0.4 }}
+                className="text-kawai-charcoal/40 text-[10px] tracking-[0.25em] uppercase mb-6 font-[family-name:var(--font-brand-sans)]"
+              >
+                {filtered.length} instrument{filtered.length !== 1 ? 's' : ''}
+                {activeType !== 'all' && <> · {TYPE_FILTERS.find(f => f.key === activeType)?.label}</>}
+              </motion.p>
 
+              {/* Gallery grid with stagger */}
+              <motion.div
+                variants={staggerGrid}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-kawai-neutral/50"
+              >
+                {filtered.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onOpenModal={setModalProduct}
+                  />
+                ))}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* ── Product media modal ─────────────────────────────────── */}
+      {/* ── Media modal ────────────────────────────────────────────── */}
       {modalProduct && (
         <ProductMediaModal
           product={modalProduct}

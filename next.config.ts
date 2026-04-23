@@ -98,6 +98,13 @@ const nextConfig: NextConfig = {
         destination: '/pianos/:slug',
         permanent: true,
       },
+      // Redirect singular /product/ path to plural /products/ (canonical URL pattern)
+      // Hardcoded /product/ links exist in ES60 slides, concert-artist, and legacy content
+      {
+        source: '/product/:slug*',
+        destination: '/products/:slug*',
+        permanent: true,
+      },
     ]
   },
   async rewrites() {

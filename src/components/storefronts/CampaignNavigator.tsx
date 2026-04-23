@@ -35,7 +35,7 @@ const CAMPAIGNS = [
   },
   {
     key: 'trade',
-    href: (slug: string) => `/store/${slug}/trade`,
+    href: (slug: string) => `/store/${slug}/grand-spring-sale#how-it-works`,
     label: '$500 Bonus',
     benefit: 'Up to $500 when you trade in any piano',
     tag: 'Trade-In',
@@ -122,6 +122,20 @@ export function CampaignNavigator({ storeslug, calendlyUrl, locationName }: Camp
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
+              </div>
+
+              {/* Back to storefront */}
+              <div className="px-3 pt-3 pb-1">
+                <a
+                  href={`/store/${storeslug}`}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-kawai-charcoal/50 hover:text-kawai-black transition-colors group"
+                >
+                  <svg className="w-3.5 h-3.5 transition-transform duration-200 group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                  </svg>
+                  <span className="text-xs font-medium font-[family-name:var(--font-brand-sans)]">Back to Storefront</span>
+                </a>
               </div>
 
               {/* Campaign rows */}
