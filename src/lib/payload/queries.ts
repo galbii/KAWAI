@@ -669,6 +669,7 @@ export async function getActiveProductsDirect(
 type CatalogProduct = {
   id: string
   model: string
+  modelLabel?: string | null
   name?: string | null
   slug: string
   type?: string | null
@@ -707,6 +708,7 @@ async function _getCatalogProductsDirect(): Promise<CatalogProduct[]> {
       },
       select: {
         model: true,
+        modelLabel: true,
         name: true,
         slug: true,
         type: true,
@@ -725,6 +727,7 @@ async function _getCatalogProductsDirect(): Promise<CatalogProduct[]> {
     return result.docs.map((doc) => ({
       id: String(doc.id),
       model: doc.model,
+      modelLabel: (doc as any).modelLabel ?? null,
       name: doc.name ?? null,
       slug: doc.slug ?? '',
       type: doc.type ?? null,

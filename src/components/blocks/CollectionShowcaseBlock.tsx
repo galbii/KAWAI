@@ -416,8 +416,8 @@ export function CollectionShowcaseBlock({
           </motion.p>
         )}
 
-        {/* Explore Collection CTA */}
-        {collection.handle && (
+        {/* Explore Collection CTA — only on product-page showcase blocks, not collection pages */}
+        {showViewCollectionLink && collection.handle && (
           <motion.div variants={itemVariants} className="mt-8">
             <Link
               href={`/pianos/${collection.handle}`}

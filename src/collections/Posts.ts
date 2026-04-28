@@ -27,9 +27,17 @@ export const Posts: CollectionConfig = {
     livePreview: {
       url: ({ data }) => {
         const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-        // If no slug yet, use a placeholder
-        const slug = data.slug || 'preview'
-        return `${baseURL}/blog/${slug}`
+        const slug = (data.slug as string) || 'preview'
+        // Route through /api/preview so Next.js draft mode is enabled before the
+        // iframe loads the post page. Without this, draft/unpublished posts return
+        // 404 because the page query filters to status=published when not in draft mode.
+        const params = new URLSearchParams({
+          slug,
+          collection: 'posts',
+          path: `/blog/${slug}`,
+          previewSecret: process.env.PREVIEW_SECRET || '',
+        })
+        return `${baseURL}/api/preview?${params.toString()}`
       },
     },
     preview: ({ slug, collection }) => {

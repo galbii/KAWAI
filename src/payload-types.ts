@@ -2005,6 +2005,10 @@ export interface Product {
    */
   model: string;
   /**
+   * Optional display label — overrides the model shown in the product hero, piano browser, and piano page browser. Leave blank to use the model identifier.
+   */
+  modelLabel?: string | null;
+  /**
    * Product name (synced from Shopify, or auto-generated from model)
    */
   name?: string | null;
@@ -11489,6 +11493,7 @@ export interface SupportGroupsSelect<T extends boolean = true> {
  */
 export interface ProductsSelect<T extends boolean = true> {
   model?: T;
+  modelLabel?: T;
   name?: T;
   slug?: T;
   status?: T;

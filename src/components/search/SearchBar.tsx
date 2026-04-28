@@ -76,6 +76,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   const [keyboardHeight, setKeyboardHeight] = useState(0)
   const [isInputFocused, setIsInputFocused] = useState(false)
   const [announcementBarHeight, setAnnouncementBarHeight] = useState(0)
+  const [adminBarHeight, setAdminBarHeight] = useState(0)
   const [visualViewportHeight, setVisualViewportHeight] = useState(0)
   const [quickLinks, setQuickLinks] = useState<QuickLink[]>([
     { label: 'Instrumental to Life', url: '/instrumental-to-life' },
@@ -159,23 +160,20 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     }
   }, [])
 
-  // Read announcement bar height from CSS variable
+  // Read announcement bar and admin bar heights from CSS variables
   useEffect(() => {
-    const updateAnnouncementBarHeight = () => {
-      const height = getComputedStyle(document.documentElement)
-        .getPropertyValue('--announcement-bar-height')
-      const heightValue = parseInt(height) || 0
-      setAnnouncementBarHeight(heightValue)
+    const updateBarHeights = () => {
+      const style = getComputedStyle(document.documentElement)
+      setAnnouncementBarHeight(parseInt(style.getPropertyValue('--announcement-bar-height')) || 0)
+      setAdminBarHeight(parseInt(style.getPropertyValue('--admin-bar-height')) || 0)
     }
 
-    // Initial read
-    updateAnnouncementBarHeight()
+    updateBarHeights()
 
-    // Watch for changes to the CSS variable
-    const observer = new MutationObserver(updateAnnouncementBarHeight)
+    const observer = new MutationObserver(updateBarHeights)
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['style']
+      attributeFilter: ['style'],
     })
 
     return () => observer.disconnect()
@@ -784,7 +782,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                 exit="exit"
                 className="fixed z-[9000] bg-black/40"
                 style={{
-                  top: isMobile ? 0 : `${64 + announcementBarHeight}px`,
+                  top: isMobile ? 0 : `${64 + announcementBarHeight + adminBarHeight}px`,
                   left: 0,
                   right: 0,
                   bottom: 0,
@@ -831,7 +829,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                         display: 'flex',
                         flexDirection: 'column',
                       }
-                    : { top: `${64 + announcementBarHeight}px`, left: 0, right: 0, bottom: 0 }
+                    : { top: `${64 + announcementBarHeight + adminBarHeight}px`, left: 0, right: 0, bottom: 0 }
                 }
                 onKeyDown={handleKeyboardNavigation}
               >

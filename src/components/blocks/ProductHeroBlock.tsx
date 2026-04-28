@@ -273,7 +273,7 @@ export function ProductHeroBlock({
   const TitleTag = headingLevel === 'h2' ? 'h2' : 'h1'
 
   // CONSOLIDATED: Use the new root-level model field
-  const modelDisplay = product.model || product.name
+  const modelDisplay = (product as any).modelLabel || product.model || product.name
 
   const hasVariations = allVariations.length > 0
 

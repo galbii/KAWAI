@@ -13,6 +13,7 @@ import type { NavCollection } from '@/lib/payload/products-navigation'
 export interface CatalogProduct {
   id: string
   model: string
+  modelLabel?: string | null
   name?: string | null
   slug: string
   type?: string | null
@@ -675,6 +676,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, is
       items = items.filter(
         (p) =>
           p.model.toLowerCase().includes(q) ||
+          (p.modelLabel ?? '').toLowerCase().includes(q) ||
           (p.name ?? '').toLowerCase().includes(q) ||
           (p.type ?? '').toLowerCase().includes(q),
       )
@@ -752,12 +754,12 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, is
         <div className="max-w-7xl mx-auto px-6">
 
           {/* ── Desktop layout ───────────────────────────────────── */}
-          <div className="hidden md:flex items-center h-14 gap-5">
+          <div className="hidden md:flex items-center h-18 gap-5">
 
             {/* Search — minimal underline */}
-            <div className="relative group w-52">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <Search size={14} className="text-kawai-charcoal/50" />
+            <div className="relative group w-72">
+              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                <Search size={16} className="text-kawai-charcoal/50" />
               </div>
               <input
                 type="text"
@@ -765,7 +767,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, is
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search models…"
                 className={cn(
-                  'w-full h-9 bg-white pl-8 pr-8 text-sm rounded-sm',
+                  'w-full h-11 bg-white pl-10 pr-9 text-sm rounded-sm',
                   'text-kawai-black placeholder:text-kawai-charcoal/50',
                   'focus:outline-none focus:ring-0 font-[family-name:var(--font-brand-sans)]',
                   'transition-colors duration-200 border',
@@ -775,10 +777,10 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, is
               {search && (
                 <button
                   onClick={() => setSearch('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-kawai-charcoal/50 hover:text-kawai-black transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-kawai-charcoal/50 hover:text-kawai-black transition-colors"
                   aria-label="Clear search"
                 >
-                  <X size={13} />
+                  <X size={14} />
                 </button>
               )}
             </div>
@@ -794,7 +796,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, is
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 3 }}
                 transition={{ duration: 0.15 }}
-                className="text-xs font-medium text-kawai-charcoal font-[family-name:var(--font-brand-sans)] whitespace-nowrap tabular-nums"
+                className="text-sm font-medium text-kawai-charcoal font-[family-name:var(--font-brand-sans)] whitespace-nowrap tabular-nums"
               >
                 {filtered.length} {itemLabel}
               </motion.span>
@@ -807,7 +809,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, is
                 aria-expanded={isFiltersOpen}
                 aria-haspopup="true"
                 className={cn(
-                  'flex items-center gap-2 h-9 px-4 text-xs uppercase tracking-[0.12em] font-semibold',
+                  'flex items-center gap-2.5 h-11 px-5 text-sm uppercase tracking-[0.12em] font-semibold',
                   'border-2 transition-all duration-200 font-[family-name:var(--font-brand-sans)]',
                   'focus-visible:outline-2 focus-visible:outline-kawai-red',
                   isFiltersOpen || activeFilterCount > 0
@@ -815,7 +817,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, is
                     : 'border-kawai-charcoal text-kawai-charcoal hover:border-kawai-black hover:text-kawai-black',
                 )}
               >
-                <SlidersHorizontal size={14} />
+                <SlidersHorizontal size={16} />
                 <span>Filters</span>
                 <AnimatePresence>
                   {activeFilterCount > 0 && (
@@ -824,7 +826,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, is
                       animate={{ scale: 1, opacity: 1 }}
                       exit={{ scale: 0, opacity: 0 }}
                       transition={{ duration: 0.15, type: 'spring', bounce: 0.3 }}
-                      className="flex items-center justify-center w-4 h-4 rounded-full bg-kawai-red text-white text-[9px] font-bold leading-none"
+                      className="flex items-center justify-center w-5 h-5 rounded-full bg-kawai-red text-white text-[10px] font-bold leading-none"
                     >
                       {activeFilterCount}
                     </motion.span>
@@ -960,7 +962,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, is
             </div>
 
             {/* Divider */}
-            <div className="h-5 w-px bg-kawai-charcoal/25 flex-shrink-0" />
+            <div className="h-6 w-px bg-kawai-charcoal/25 flex-shrink-0" />
 
             {/* Sort */}
             <div className="relative flex-shrink-0">
@@ -968,7 +970,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, is
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
                 className={cn(
-                  'appearance-none h-9 bg-white border border-kawai-neutral pl-3 pr-8 text-xs font-medium',
+                  'appearance-none h-11 bg-white border border-kawai-neutral pl-4 pr-10 text-sm font-medium',
                   'text-kawai-charcoal focus:outline-none focus:ring-0 cursor-pointer rounded-sm',
                   'font-[family-name:var(--font-brand-sans)] hover:border-kawai-charcoal transition-colors',
                 )}
@@ -977,7 +979,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, is
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
-              <ChevronDown size={11} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-kawai-charcoal/60 pointer-events-none" />
+              <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-kawai-charcoal/60 pointer-events-none" />
             </div>
           </div>
 
@@ -1247,7 +1249,7 @@ function ProductCard({ product, index, isCanada = false }: { product: CatalogPro
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#F0EDE8]">
               <PianoSilhouette />
               <span className="text-[10px] uppercase tracking-[0.25em] text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)]">
-                {product.model}
+                {product.modelLabel ?? product.model}
               </span>
             </div>
           )}
@@ -1351,13 +1353,13 @@ function ProductCard({ product, index, isCanada = false }: { product: CatalogPro
         {/* Card body */}
         <div className="flex flex-col flex-1 p-8">
           <p className="text-sm uppercase tracking-[0.3em] text-kawai-charcoal/50 mb-1 font-[family-name:var(--font-brand-sans)]">
-            {product.model}
+            {product.modelLabel ?? product.model}
           </p>
           <h2
             className="text-2xl leading-tight text-kawai-black mb-auto"
             style={{ fontFamily: 'var(--font-brand-luxury)', fontWeight: 400 }}
           >
-            {product.name ?? product.model}
+            {product.name ?? product.modelLabel ?? product.model}
           </h2>
 
           {/* Active finish + count */}

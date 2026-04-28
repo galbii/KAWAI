@@ -200,6 +200,14 @@ export const Products: CollectionConfig = {
               }
             },
             {
+              name: 'modelLabel',
+              type: 'text',
+              admin: {
+                description: 'Optional display label — overrides the model shown in the product hero, piano browser, and piano page browser. Leave blank to use the model identifier.',
+                placeholder: 'e.g. "CA-99" if model is stored as "CA99"',
+              },
+            },
+            {
               name: 'name',
               type: 'text',
               admin: {

@@ -165,11 +165,80 @@ export function CollectionPageContent({ collection, products }: CollectionPageCo
   return (
     <div className="min-h-screen bg-white text-kawai-black">
       {/* ── Hero banner ────────────────────────────────────────────────────────── */}
-      <CollectionShowcaseBlock
-        collection={collection}
-        bannerSize="medium"
-        showViewCollectionLink={false}
-      />
+      <div className="relative">
+        <CollectionShowcaseBlock
+          collection={collection}
+          bannerSize="medium"
+          showViewCollectionLink={false}
+        />
+
+        {/* Glassmorphism CTAs — bottom-center overlay */}
+        <div className="absolute bottom-10 left-0 right-0 z-40 flex flex-col sm:flex-row items-center justify-center gap-3 px-6">
+          {/* Learn More — frosted glass primary */}
+          <a
+            href="#products"
+            onClick={(e) => {
+              e.preventDefault()
+              const el = document.getElementById('products')
+              if (el) {
+                const offset = 80
+                const top = el.getBoundingClientRect().top + window.scrollY - offset
+                window.scrollTo({ top, behavior: 'smooth' })
+              }
+            }}
+            className="group inline-flex items-center gap-2.5 px-7 py-3.5 text-[11px] font-semibold tracking-[0.18em] uppercase text-white transition-all duration-300"
+            style={{
+              background: 'rgba(255,255,255,0.10)',
+              backdropFilter: 'blur(18px) saturate(160%)',
+              WebkitBackdropFilter: 'blur(18px) saturate(160%)',
+              border: '1px solid rgba(255,255,255,0.22)',
+              fontFamily: 'var(--font-brand-sans)',
+            }}
+            onMouseEnter={(e) => {
+              ;(e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.18)'
+              ;(e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.38)'
+            }}
+            onMouseLeave={(e) => {
+              ;(e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.10)'
+              ;(e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.22)'
+            }}
+          >
+            Learn More
+            <svg
+              viewBox="0 0 16 16"
+              className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-y-0.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M8 3v10M4 9l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </a>
+
+          {/* Browse All Pianos — minimal glass outline */}
+          <Link
+            href="/pianos"
+            className="inline-flex items-center gap-2.5 px-7 py-3.5 text-[11px] font-semibold tracking-[0.18em] uppercase text-white/65 hover:text-white transition-all duration-300"
+            style={{
+              background: 'rgba(255,255,255,0.03)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              fontFamily: 'var(--font-brand-sans)',
+            }}
+            onMouseEnter={(e) => {
+              ;(e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.22)'
+              ;(e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'
+            }}
+            onMouseLeave={(e) => {
+              ;(e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.10)'
+              ;(e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'
+            }}
+          >
+            Browse All Pianos
+          </Link>
+        </div>
+      </div>
 
       {/* ── Sticky breadcrumb — tracks header via CSS var ───────────────────── */}
       <div
@@ -188,6 +257,17 @@ export function CollectionPageContent({ collection, products }: CollectionPageCo
             <Link href="/pianos" className="text-kawai-charcoal/50 hover:text-kawai-black transition-colors duration-200">
               Pianos
             </Link>
+            {primaryCategory && (
+              <>
+                <span className="text-kawai-charcoal/25">·</span>
+                <Link
+                  href={`/pianos/${primaryCategory}`}
+                  className="text-kawai-charcoal/50 hover:text-kawai-black transition-colors duration-200"
+                >
+                  {categoryLabel}
+                </Link>
+              </>
+            )}
             <span className="text-kawai-charcoal/25">·</span>
             <span className="text-kawai-black font-bold">{collection.title}</span>
           </nav>
@@ -250,7 +330,7 @@ export function CollectionPageContent({ collection, products }: CollectionPageCo
 
       {/* ── Product rows ─────────────────────────────────────────────────────── */}
       {hasProducts ? (
-        <main className="overflow-hidden">
+        <main id="products" className="overflow-hidden">
           {products.map((product, index) => (
             <div key={product.id}>
               <CollectionProductRow

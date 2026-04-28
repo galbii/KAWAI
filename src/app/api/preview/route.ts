@@ -63,7 +63,7 @@ export async function GET(
 
   const draft = await draftMode()
 
-  if (!user) {
+  if (!user?.user) {
     draft.disable()
     console.error('[Preview] User not authenticated')
     return new Response('You are not allowed to preview this page', {
@@ -71,7 +71,7 @@ export async function GET(
     })
   }
 
-  console.log(`[Preview] Enabling draft mode for user: ${user?.user?.email || 'unknown'}, path: ${path}`)
+  console.log(`[Preview] Enabling draft mode for user: ${user.user.email || 'unknown'}, path: ${path}`)
 
   // Enable draft mode
   draft.enable()

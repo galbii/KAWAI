@@ -13,6 +13,7 @@ import type { NavCollection } from '@/lib/payload/products-navigation'
 export interface CatalogProduct {
   id: string
   model: string
+  modelLabel?: string | null
   name?: string | null
   slug: string
   type?: string | null
@@ -568,6 +569,7 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
       items = items.filter(
         (p) =>
           p.model.toLowerCase().includes(q) ||
+          (p.modelLabel ?? '').toLowerCase().includes(q) ||
           (p.name ?? '').toLowerCase().includes(q) ||
           (p.type ?? '').toLowerCase().includes(q),
       )
@@ -624,12 +626,12 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
         <div className="max-w-7xl mx-auto px-6">
 
           {/* ── Desktop layout ───────────────────────────────────── */}
-          <div className="hidden md:flex items-center h-14 gap-6">
+          <div className="hidden md:flex items-center h-18 gap-6">
             {/* Left: back link */}
             {(heading ?? category) ? (
               <Link
                 href="/pianos"
-                className="inline-flex items-center gap-1.5 text-xs text-kawai-charcoal/50 hover:text-kawai-red transition-colors font-[family-name:var(--font-brand-sans)] mr-auto flex-shrink-0"
+                className="inline-flex items-center gap-1.5 text-sm text-kawai-charcoal/50 hover:text-kawai-red transition-colors font-[family-name:var(--font-brand-sans)] mr-auto flex-shrink-0"
               >
                 <span>←</span>
                 <span>All Pianos</span>
@@ -639,9 +641,9 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
             )}
 
             {/* Search */}
-            <div className="relative w-64 group">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <Search size={14} className="text-kawai-charcoal/50" />
+            <div className="relative w-80 group">
+              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                <Search size={16} className="text-kawai-charcoal/50" />
               </div>
               <input
                 type="text"
@@ -649,7 +651,7 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by model or name…"
                 className={cn(
-                  'w-full h-9 bg-white pl-8 pr-8 text-sm rounded-sm border',
+                  'w-full h-11 bg-white pl-10 pr-9 text-sm rounded-sm border',
                   'text-kawai-black placeholder:text-kawai-charcoal/50',
                   'focus:outline-none focus:ring-0 font-[family-name:var(--font-brand-sans)]',
                   'transition-colors duration-200',
@@ -659,10 +661,10 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
               {search && (
                 <button
                   onClick={() => setSearch('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-kawai-charcoal/50 hover:text-kawai-black transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-kawai-charcoal/50 hover:text-kawai-black transition-colors"
                   aria-label="Clear search"
                 >
-                  <X size={13} />
+                  <X size={14} />
                 </button>
               )}
             </div>
@@ -675,14 +677,14 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 4 }}
                 transition={{ duration: 0.18 }}
-                className="text-xs font-medium text-kawai-charcoal font-[family-name:var(--font-brand-sans)] whitespace-nowrap"
+                className="text-sm font-medium text-kawai-charcoal font-[family-name:var(--font-brand-sans)] whitespace-nowrap"
               >
                 {filtered.length} {filtered.length === 1 ? 'instrument' : 'instruments'}
               </motion.span>
             </AnimatePresence>
 
             {/* Divider */}
-            <div className="h-5 w-px bg-kawai-charcoal/25 flex-shrink-0" />
+            <div className="h-6 w-px bg-kawai-charcoal/25 flex-shrink-0" />
 
             {/* Sort */}
             <div className="relative flex-shrink-0">
@@ -690,7 +692,7 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
                 className={cn(
-                  'appearance-none h-9 bg-white border border-kawai-neutral pl-3 pr-8 text-xs font-medium rounded-sm',
+                  'appearance-none h-11 bg-white border border-kawai-neutral pl-4 pr-10 text-sm font-medium rounded-sm',
                   'text-kawai-charcoal focus:outline-none focus:ring-0 cursor-pointer',
                   'font-[family-name:var(--font-brand-sans)] hover:border-kawai-charcoal transition-colors',
                 )}
@@ -699,7 +701,7 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
-              <ChevronDown size={11} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-kawai-charcoal/60 pointer-events-none" />
+              <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-kawai-charcoal/60 pointer-events-none" />
             </div>
           </div>
 
@@ -772,15 +774,15 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
         {/* ── Collection row — inside sticky bar ───────────────────── */}
         {visibleCollections.length > 0 && (
           <div className="border-t border-kawai-neutral/40 bg-white">
-            <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-3 overflow-x-auto scrollbar-none">
-              <span className="text-xs uppercase tracking-[0.2em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] flex-shrink-0">
+            <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-1 overflow-x-auto scrollbar-none">
+              <span className="text-xs uppercase tracking-[0.2em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] flex-shrink-0 mr-2">
                 Collection
               </span>
 
               <button
                 onClick={() => handleCollectionChange('All')}
                 className={cn(
-                  'flex-shrink-0 px-4 py-1.5 text-sm uppercase tracking-[0.15em] transition-colors duration-200 font-[family-name:var(--font-brand-sans)] border-b-2',
+                  'flex-shrink-0 px-5 py-2 text-sm uppercase tracking-[0.12em] transition-colors duration-200 font-[family-name:var(--font-brand-sans)] border-b-2',
                   activeCollection === 'All' ? 'text-kawai-red border-kawai-red' : 'text-kawai-charcoal/60 border-transparent hover:text-kawai-charcoal',
                 )}
               >
@@ -792,7 +794,7 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
                   key={col.title}
                   onClick={() => handleCollectionChange(col.title)}
                   className={cn(
-                    'flex-shrink-0 px-4 py-1.5 text-sm uppercase tracking-[0.15em] transition-colors duration-200 font-[family-name:var(--font-brand-sans)] border-b-2',
+                    'flex-shrink-0 px-5 py-2 text-sm uppercase tracking-[0.12em] transition-colors duration-200 font-[family-name:var(--font-brand-sans)] border-b-2',
                     activeCollection === col.title ? 'text-kawai-red border-kawai-red' : 'text-kawai-charcoal/60 border-transparent hover:text-kawai-charcoal',
                   )}
                 >
@@ -1044,7 +1046,7 @@ function ProductCard({ product, index, isCanada = false }: { product: CatalogPro
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#F0EDE8]">
               <PianoSilhouette />
               <span className="text-[10px] uppercase tracking-[0.25em] text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)]">
-                {product.model}
+                {product.modelLabel ?? product.model}
               </span>
             </div>
           )}
@@ -1144,13 +1146,13 @@ function ProductCard({ product, index, isCanada = false }: { product: CatalogPro
         {/* Card body */}
         <div className="flex flex-col flex-1 p-8">
           <p className="text-sm uppercase tracking-[0.3em] text-kawai-charcoal/50 mb-1 font-[family-name:var(--font-brand-sans)]">
-            {product.model}
+            {product.modelLabel ?? product.model}
           </p>
           <h2
             className="text-2xl leading-tight text-kawai-black mb-auto"
             style={{ fontFamily: 'var(--font-brand-luxury)', fontWeight: 400 }}
           >
-            {product.name ?? product.model}
+            {product.name ?? product.modelLabel ?? product.model}
           </h2>
 
           {/* Active finish + count */}

@@ -1,12 +1,30 @@
 'use client'
 
+import type React from 'react'
 import Link from 'next/link'
 import { Phone, Mail, MapPin, Facebook, Instagram, Youtube, Linkedin } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useActionState } from 'react'
+import { cn } from '@/lib/utils'
 import { KawaiLogo } from '@/components/ui/kawai-logo'
 import { Button } from '@/components/ui/button'
 import { submitNewsletterSignup, type NewsletterSignupResult } from '@/lib/actions/newsletter-signup'
+
+function TikTokIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={cn(className)} aria-hidden="true">
+      <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.27 8.27 0 004.84 1.55V6.79a4.85 4.85 0 01-1.07-.1z" />
+    </svg>
+  )
+}
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={cn(className)} aria-hidden="true">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.738l7.73-8.835L1.254 2.25H8.08l4.261 5.636 5.903-5.636zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  )
+}
 
 // All footer quick links removed per user request
 // const footerLinks = {
@@ -33,11 +51,15 @@ import { submitNewsletterSignup, type NewsletterSignupResult } from '@/lib/actio
 //   },
 // }
 
-const socialLinks = [
+type SocialIconComponent = React.ComponentType<{ className?: string }>
+
+const socialLinks: Array<{ icon: SocialIconComponent; href: string; label: string }> = [
   { icon: Instagram, href: 'https://www.instagram.com/kawaipianosus/', label: 'Instagram' },
   { icon: Facebook, href: 'https://www.facebook.com/KawaiPianosUS/', label: 'Facebook' },
-  { icon: Linkedin, href: 'https://www.linkedin.com/company/9083672', label: 'LinkedIn' },
+  { icon: TikTokIcon, href: 'https://www.tiktok.com/@kawaipianosus', label: 'TikTok' },
+  { icon: XIcon, href: 'https://x.com/KawaiPianosUS', label: 'X / Twitter' },
   { icon: Youtube, href: 'https://www.youtube.com/@KawaiPianosUS', label: 'YouTube' },
+  { icon: Linkedin, href: 'https://www.linkedin.com/company/9083672', label: 'LinkedIn' },
 ]
 
 interface DealerLocationContactData {
@@ -199,6 +221,10 @@ export function Footer({ locationContactData, isSignaturePage = false }: FooterP
               <span className="hidden md:inline text-kawai-neutral/40">·</span>
               <Link href="/terms" className="hover:text-kawai-red transition-colors">
                 Terms of Service
+              </Link>
+              <span className="hidden md:inline text-kawai-neutral/40">·</span>
+              <Link href="/return-policy" className="hover:text-kawai-red transition-colors">
+                Return Policy
               </Link>
             </div>
 

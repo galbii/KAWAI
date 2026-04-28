@@ -77,7 +77,7 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
         {/* Dealer Name */}
         <h3
           className={cn(
-            'text-[15px] font-semibold leading-snug mb-1.5',
+            'text-[15px] font-semibold leading-snug mb-1.5 font-[family-name:var(--font-brand-serif)]',
             isSelected ? 'text-kawai-black' : 'text-kawai-charcoal'
           )}
         >
@@ -94,7 +94,7 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
         {(dealer.address?.city || dealer.address?.state) && (
           <div className="flex items-center gap-1.5 mb-3">
             <MapPin className="w-3.5 h-3.5 text-kawai-charcoal/35 flex-shrink-0" strokeWidth={2} />
-            <span className="text-[13px] text-kawai-charcoal/55">
+            <span className="text-[13px] text-kawai-charcoal/65">
               {[dealer.address.city, dealer.address.state].filter(Boolean).join(', ')}
             </span>
           </div>
@@ -112,12 +112,12 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
               </span>
             )}
             {hasAcoustic && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-wide bg-kawai-charcoal/5 text-kawai-charcoal/60 border border-kawai-charcoal/10">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-wide bg-kawai-charcoal/8 text-kawai-charcoal/70 border border-kawai-charcoal/20">
                 Acoustic
               </span>
             )}
             {hasDigital && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-wide bg-kawai-charcoal/5 text-kawai-charcoal/60 border border-kawai-charcoal/10">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-wide bg-kawai-red/8 text-kawai-red/80 border border-kawai-red/20">
                 Digital
               </span>
             )}
@@ -132,7 +132,7 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
         {dealer.contactInfo?.phone && (
           <a
             href={`tel:${dealer.contactInfo.phone}`}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[12px] font-medium text-kawai-charcoal bg-kawai-pearl hover:bg-kawai-neutral/40 rounded-md transition-colors border border-kawai-neutral"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[12px] font-medium text-kawai-charcoal bg-white hover:bg-kawai-pearl rounded-full transition-colors border border-kawai-neutral hover:border-kawai-charcoal/30"
             onClick={(e) => e.stopPropagation()}
           >
             <Phone className="w-3.5 h-3.5" strokeWidth={2} />
@@ -150,7 +150,7 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
               destination: `/find-a-dealer/${dealer.slug}`,
             })
           }}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[12px] font-semibold rounded-md transition-all duration-200 group bg-kawai-black hover:bg-kawai-charcoal text-white"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[12px] font-semibold rounded-full transition-all duration-200 group bg-kawai-red hover:bg-kawai-red-700 text-white shadow-[0_2px_8px_rgba(225,25,34,0.25)] hover:shadow-[0_2px_16px_rgba(225,25,34,0.4)]"
         >
           View Details
           <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" strokeWidth={2.5} />
@@ -215,7 +215,7 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
               )}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 px-4 py-2 text-[12px] font-medium text-kawai-charcoal bg-white hover:bg-kawai-pearl rounded-md transition-colors w-full border border-kawai-neutral"
+              className="flex items-center justify-center gap-2 px-4 py-2 text-[12px] font-medium text-kawai-charcoal bg-white hover:bg-kawai-pearl rounded-full transition-colors w-full border border-kawai-neutral hover:border-kawai-charcoal/30"
               onClick={(e) => {
                 e.stopPropagation()
                 trackCTAClick({
