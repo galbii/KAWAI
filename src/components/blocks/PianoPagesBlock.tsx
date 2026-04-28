@@ -1,4 +1,5 @@
 import { getCollectionsForCategory, getCatalogProductsByCategory } from '@/lib/payload/queries'
+import { getSite } from '@/lib/site-context'
 import { CollectionVideoCarousel } from '@/components/piano/CollectionVideoCarousel'
 import PianoPagesBrowser from '@/components/piano/PianoPagesBrowser'
 
@@ -20,9 +21,10 @@ export default async function PianoPagesBlock({
 }: Props) {
   if (!category) return null
 
-  const [products, collections] = await Promise.all([
+  const [products, collections, site] = await Promise.all([
     getCatalogProductsByCategory(category),
     getCollectionsForCategory(category),
+    getSite(),
   ])
 
   const carouselCollections = collections.filter(
@@ -58,7 +60,7 @@ export default async function PianoPagesBlock({
           </h1>
         </div>
       )}
-      <PianoPagesBrowser products={products} collections={collections} heading={heading ?? null} category={category} />
+      <PianoPagesBrowser products={products} collections={collections} heading={heading ?? null} category={category} isCanada={site === 'cad'} />
     </section>
   )
 }

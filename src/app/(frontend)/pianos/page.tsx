@@ -6,6 +6,7 @@ import {
   getCollectionsForBrowser,
   getPayloadClient,
 } from '@/lib/payload/queries'
+import { getSite } from '@/lib/site-context'
 import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
 import { PianosBrowser } from '@/components/piano/PianosBrowser'
 import { NewsCarousel } from '@/components/homepage/news-carousel'
@@ -107,11 +108,12 @@ export default async function PianosPage() {
   }
 
   // Default static layout
-  const [products, spotlightItems, collectionsForBrowser, pianosPageData] = await Promise.all([
+  const [products, spotlightItems, collectionsForBrowser, pianosPageData, site] = await Promise.all([
     getCatalogProductsDirect(),
     getProductSpotlightNewsItems(),
     getCollectionsForBrowser(),
     getPianosPageHeading(),
+    getSite(),
   ])
 
   return (
@@ -140,6 +142,7 @@ export default async function PianosPage() {
         products={products}
         collectionsForBrowser={collectionsForBrowser}
         pageHeading={pianosPageData ?? undefined}
+        isCanada={site === 'cad'}
       />
     </>
   )

@@ -28,7 +28,7 @@ function GridCard({
 }) {
   const ordinal = String(index + 1).padStart(2, '0')
   const city = displayCity(storefront.locationName, storefront.showroomInfo?.address)
-  const typeBadge = storefront.locationText || `${city}'s Premier Piano Dealer`
+  const typeBadge = storefront.locationText || `${city}'s Official Store`
 
   return (
     <button

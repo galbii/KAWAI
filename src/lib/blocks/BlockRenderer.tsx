@@ -3,6 +3,7 @@ import type { Product } from '@/payload-types'
 import { populateBlockData } from '@/lib/blockDataPopulation'
 import { validateBlock, logBlockValidation } from './BlockValidator'
 import { getProductByModel } from '@/lib/shopify'
+import { getSite } from '@/lib/site-context'
 
 const getProductByModelCached = cache(getProductByModel)
 
@@ -156,7 +157,8 @@ export async function BlockRenderer({ block, index, product }: BlockRendererProp
       blockType === 'product-faq' ||
       blockType === 'product-accessories'
     ) {
-      const populatedBlock = { ...block, product }
+      const site = await getSite()
+      const populatedBlock = { ...block, product, isCanada: site === 'cad' }
       return <BlockComponent key={block.id || `${blockType}-${index}`} {...populatedBlock} />
     }
 

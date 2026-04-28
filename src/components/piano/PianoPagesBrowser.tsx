@@ -36,6 +36,7 @@ interface Props {
   collections?: CollectionForBrowser[]
   heading?: string | null
   category?: 'digital' | 'grand' | 'upright' | 'hybrid' | null
+  isCanada?: boolean
 }
 
 const SORT_OPTIONS = [
@@ -280,6 +281,7 @@ interface MobileFilterSheetProps {
   visibleCollections: Array<{ title: string; handle: string }>
   resultCount: number
   onClearAll: () => void
+  sortOptions: typeof SORT_OPTIONS[number][]
 }
 
 function MobileFilterSheet({
@@ -294,6 +296,7 @@ function MobileFilterSheet({
   visibleCollections,
   resultCount,
   onClearAll,
+  sortOptions,
 }: MobileFilterSheetProps) {
   return (
     <AnimatePresence>
@@ -432,7 +435,7 @@ function MobileFilterSheet({
                   Sort By
                 </p>
                 <div className="space-y-1">
-                  {SORT_OPTIONS.map((o) => (
+                  {sortOptions.map((o) => (
                     <button
                       key={o.value}
                       onClick={() => setSort(o.value)}
@@ -480,12 +483,16 @@ function MobileFilterSheet({
 
 /* ── Main Component ────────────────────────────────────────────── */
 
-export default function PianoPagesBrowser({ products, collections, heading, category }: Props) {
+export default function PianoPagesBrowser({ products, collections, heading, category, isCanada = false }: Props) {
   const [search, setSearch] = useState('')
   const [activeCollection, setActiveCollection] = useState<string>('All')
   const [sort, setSort] = useState<string>('default')
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+
+  const sortOptions = isCanada
+    ? SORT_OPTIONS.filter((o) => o.value !== 'price-asc' && o.value !== 'price-desc')
+    : [...SORT_OPTIONS]
 
   // Lock body scroll when mobile sheet is open
   useEffect(() => {
@@ -606,6 +613,7 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
         visibleCollections={visibleCollections}
         resultCount={filtered.length}
         onClearAll={clearAll}
+        sortOptions={sortOptions}
       />
 
       {/* ── Sticky header — H1 zone + controls ── */}
@@ -687,7 +695,7 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
                   'font-[family-name:var(--font-brand-sans)] hover:border-kawai-charcoal transition-colors',
                 )}
               >
-                {SORT_OPTIONS.map((o) => (
+                {sortOptions.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
@@ -909,7 +917,7 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
             >
               {filtered.map((product, index) => (
-                <ProductCard key={product.id} product={product} index={index} />
+                <ProductCard key={product.id} product={product} index={index} isCanada={isCanada} />
               ))}
             </motion.div>
           ) : (
@@ -986,7 +994,7 @@ function normalizeCategory(product: CatalogProduct): string {
   return 'Other'
 }
 
-function ProductCard({ product, index }: { product: CatalogProduct; index: number }) {
+function ProductCard({ product, index, isCanada = false }: { product: CatalogProduct; index: number; isCanada?: boolean }) {
   const [activeVariantIdx, setActiveVariantIdx] = useState(0)
   const category = normalizeCategory(product)
 
@@ -1166,7 +1174,7 @@ function ProductCard({ product, index }: { product: CatalogProduct; index: numbe
 
           <div className="flex items-end justify-between">
             <div className="flex flex-col gap-1">
-              {isOnSale ? (
+              {!isCanada && (isOnSale ? (
                 <>
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-[10px] font-bold tracking-widest text-kawai-red uppercase font-[family-name:var(--font-brand-sans)]">MSRP</span>
@@ -1187,7 +1195,7 @@ function ProductCard({ product, index }: { product: CatalogProduct; index: numbe
                 </>
               ) : (
                 <p className="text-xs italic text-kawai-charcoal/60 font-[family-name:var(--font-brand-sans)]">Contact for Price</p>
-              )}
+              ))}
             </div>
 
             <span

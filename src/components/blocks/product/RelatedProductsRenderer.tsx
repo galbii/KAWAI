@@ -29,6 +29,7 @@ interface RelatedProductsBlockData {
 interface RelatedProductsRendererProps extends RelatedProductsBlockData {
   /** Injected by BlockRenderer — the current page's product document */
   product: Product
+  isCanada?: boolean
 }
 
 type RelatedProduct = {
@@ -350,7 +351,9 @@ export async function RelatedProductsRenderer({
   showPrice = true,
   theme = 'light',
   product,
+  isCanada = false,
 }: RelatedProductsRendererProps) {
+  const effectiveShowPrice = isCanada ? false : (showPrice ?? true)
   if (!product) return null
 
   const limit = Math.min(Math.max(maxProducts ?? 4, 2), 8)
@@ -376,7 +379,7 @@ export async function RelatedProductsRenderer({
       } catch { /* silent */ }
 
       if (pianos.length === 0) return null
-      return renderSection({ allProducts: pianos, sectionHeader, layout, showPrice, theme, limit })
+      return renderSection({ allProducts: pianos, sectionHeader, layout, showPrice: effectiveShowPrice, theme, limit })
     }
 
     return null
@@ -474,7 +477,7 @@ export async function RelatedProductsRenderer({
   if (collectionSlice.length === 0 && accessoriesSlice.length === 0) return null
 
   const collectionSection = collectionSlice.length > 0
-    ? renderSection({ allProducts: collectionSlice, sectionHeader, layout, showPrice, theme, limit })
+    ? renderSection({ allProducts: collectionSlice, sectionHeader, layout, showPrice: effectiveShowPrice, theme, limit })
     : null
 
   const accessoriesSection = accessoriesSlice.length > 0
@@ -482,7 +485,7 @@ export async function RelatedProductsRenderer({
         allProducts: accessoriesSlice,
         sectionHeader: { eyebrow: 'Accessories', heading: 'Compatible Accessories' },
         layout,
-        showPrice,
+        showPrice: effectiveShowPrice,
         theme,
         limit,
       })

@@ -3,21 +3,13 @@
 import { Media, Product } from '@/payload-types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
 import { Card, CardContent } from '@/components/ui/card'
 import { getOptimizedImageProps } from '@/lib/media/r2-utils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect, createElement, useRef } from 'react'
-import { ShoppingCart, Heart, Share2, CheckCircle, Sparkles, Clock, Play, Volume2, Images, ChevronLeft, ChevronRight, Truck, Shield, RotateCcw, GraduationCap, Headphones as HeadphonesIcon } from 'lucide-react'
+import { Images, ChevronLeft, ChevronRight, Truck, Shield, RotateCcw, Headphones as HeadphonesIcon } from 'lucide-react'
 import { cn, formatPrice } from '@/lib/utils'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 import { ImageGalleryLightbox } from '@/components/ui/image-gallery-lightbox'
 import type { Product as ShopifyProduct } from '@/lib/shopify/types'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
@@ -283,13 +275,6 @@ export function ProductHeroBlock({
   // CONSOLIDATED: Use the new root-level model field
   const modelDisplay = product.model || product.name
 
-  // Key features removed from Product schema - should come from Page Content blocks
-  const keyFeatures: string[] = [
-        "Millennium III Hybrid Action Technology",
-        "Hand-selected premium soundboard materials",
-        "Professional-grade KAWAI precision craftsmanship"
-      ]
-
   const hasVariations = allVariations.length > 0
 
   // Get display image - priority: custom override > selected variation image > main product image > imageUrl fallback
@@ -536,36 +521,6 @@ export function ProductHeroBlock({
   }
   
   const statusBadge = getStatusBadge()
-  
-  // CONSOLIDATED: Debug log with variation image sizing and inventory tracking
-  console.log('ProductHeroBlock - Debug:', {
-    selectedVariation,
-    canAddToCart,
-    isOutOfStock,
-    shopifyVariantAvailable: selectedVariant?.available,
-    displayImage: displayImage,
-    displayImageType: typeof displayImage,
-    displayImageUrl: typeof displayImage === 'object' ? displayImage?.url : displayImage,
-    isVariationImageSelected: selectedVariation >= 0,
-    variationImageData: selectedVariation >= 0 && allVariations[selectedVariation] ? {
-      variationName: allVariations[selectedVariation]?.name,
-      hasMediaImage: !!(allVariations[selectedVariation]?.image),
-      hasImageUrl: !!(allVariations[selectedVariation]?.imageUrl),
-      mediaImageUrl: typeof allVariations[selectedVariation]?.image === 'object' ?
-        allVariations[selectedVariation]?.image?.url : null,
-      imageUrl: allVariations[selectedVariation]?.imageUrl,
-      selectedImageSource: (() => {
-        const variation = allVariations[selectedVariation]
-        if (variation?.image && typeof variation.image === 'object' && variation.image.url) return 'Media object'
-        if (variation?.imageUrl) return 'imageUrl string'
-        return 'fallback to main'
-      })()
-    } : null,
-    mainImageData: {
-      hasImageUrl: !!(product?.imageUrl),
-      imageUrl: product?.imageUrl
-    }
-  })
   
   // Open lightbox at a specific index
   const openLightbox = (index: number) => {
@@ -967,131 +922,50 @@ export function ProductHeroBlock({
 
             {/* Value Propositions */}
             <div className="pt-1">
-              <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mb-3" />
+              <div className="h-px bg-gradient-to-r from-transparent via-kawai-neutral to-transparent mb-3" />
               <div className="grid grid-cols-2 gap-1.5">
 
                 {/* Free Shipping */}
-                <div className="flex items-start gap-2.5 p-3 rounded-xl border border-gray-100 bg-stone-50/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200">
+                <div className="flex items-start gap-2.5 p-3 rounded-xl border border-kawai-neutral/60 bg-kawai-pearl/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200">
                   <Truck className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Free Shipping</p>
-                    <p className="text-[9px] text-gray-400 mt-1 leading-tight">Shipped in 1–3 days</p>
+                    <p className="text-[9px] text-kawai-charcoal/50 mt-1 leading-tight">Ships in 1–3 business days</p>
                   </div>
                 </div>
 
-                {/* Warranty — links to registration */}
-                <Link href="/warranty-registration" className="flex items-start gap-2.5 p-3 rounded-xl border border-gray-100 bg-stone-50/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200 group">
+                {/* Warranty */}
+                <Link href="/warranty-registration" className="flex items-start gap-2.5 p-3 rounded-xl border border-kawai-neutral/60 bg-kawai-pearl/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200 group">
                   <Shield className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Warranty</p>
-                    <p className="text-[9px] text-kawai-red mt-1 leading-tight underline underline-offset-2 group-hover:no-underline transition-all">Learn more →</p>
+                    <p className="text-[9px] text-kawai-red mt-1 leading-tight underline underline-offset-2 group-hover:no-underline transition-all">Register yours →</p>
                   </div>
                 </Link>
 
-                {/* Returns Policy */}
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <button className="flex items-start gap-2.5 p-3 rounded-xl border border-gray-100 bg-stone-50/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200 text-left w-full group cursor-pointer">
-                      <RotateCcw className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Returns</p>
-                        <p className="text-[9px] text-kawai-red mt-1 leading-tight underline underline-offset-2 group-hover:no-underline transition-all">View policy →</p>
-                      </div>
-                    </button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle className="text-lg font-semibold tracking-tight text-kawai-black">Return Policy</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-5 text-sm text-kawai-charcoal leading-relaxed">
+                {/* Returns */}
+                <Link href="/return-policy" className="flex items-start gap-2.5 p-3 rounded-xl border border-kawai-neutral/60 bg-kawai-pearl/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200 group">
+                  <RotateCcw className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Returns</p>
+                    <p className="text-[9px] text-kawai-red mt-1 leading-tight underline underline-offset-2 group-hover:no-underline transition-all">15-day policy →</p>
+                  </div>
+                </Link>
 
-                      <p className="text-xs text-gray-500 leading-relaxed">
-                        These policies apply to instruments purchased directly from Kawai America at kawaius.com.
-                      </p>
-
-                      {/* 3 policy cards */}
-                      <div className="space-y-3">
-                        {[
-                          {
-                            title: '15-Day Return Policy',
-                            badge: '15 Days',
-                            body: 'Changed your mind? No problem. We accept returns on instruments within 15 days of delivery — no questions asked. The instrument must be returned in its original packaging and in new, unplayed condition. Accessories are not eligible for return. Please note that original and return shipping charges are non-refundable, and you are responsible for the cost of return shipping.',
-                          },
-                          {
-                            title: 'Arrived Damaged?',
-                            badge: 'Report Within 5 Days',
-                            body: 'If your instrument arrives with visible or concealed damage from shipping, please report it within 5 days of delivery. Email contact@kawaius.com with your model, serial number, order number, and photos of the damage. When shipping damage is confirmed, return shipping and replacement are on us.',
-                          },
-                          {
-                            title: 'Defective Instrument',
-                            badge: 'Report Promptly',
-                            body: 'In the rare event your instrument doesn\'t perform as expected, reach out to us as soon as possible at contact@kawaius.com or call (310) 631-1771 (Mon–Fri, 8am–5pm PT) with your model, serial number, and order number. A product specialist will assess the issue and, if a defect is confirmed, we\'ll arrange repair or replacement at no cost to you — including shipping both ways.',
-                          },
-                        ].map(({ title, badge, body }) => (
-                          <div key={title} className="bg-white border border-kawai-neutral rounded-lg p-4">
-                            <div className="flex items-start justify-between gap-2 mb-1.5">
-                              <p className="font-semibold text-kawai-black text-xs">{title}</p>
-                              <span className="flex-shrink-0 text-[9px] font-semibold bg-kawai-red/10 text-kawai-red px-2 py-0.5 rounded-full">{badge}</span>
-                            </div>
-                            <p className="text-xs text-kawai-charcoal/70 leading-relaxed">{body}</p>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* How to return — step by step */}
-                      <div>
-                        <div className="flex items-center gap-2 mb-4">
-                          <div className="h-px flex-1 bg-kawai-neutral" />
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-kawai-charcoal/40 px-2 whitespace-nowrap">How to Return</p>
-                          <div className="h-px flex-1 bg-kawai-neutral" />
-                        </div>
-                        <div className="space-y-3">
-                          {[
-                            {
-                              num: '1',
-                              title: 'Email Us',
-                              body: 'Send an email to contact@kawaius.com with your model, serial number, and original order number. Our team will review your request and send return instructions within 1–2 business days.',
-                            },
-                            {
-                              num: '2',
-                              title: 'Pack Your Piano',
-                              body: 'Repack the instrument securely in its original box and packaging materials. Once you\'ve shipped it back to us, we\'ll handle the rest — you\'ll receive a confirmation email as soon as we receive and inspect the return.',
-                            },
-                            {
-                              num: '3',
-                              title: 'Your Refund',
-                              body: 'Once the instrument passes inspection, your refund will be issued to your original payment method. Please allow 5–10 business days for the refund to appear. Your refund will reflect the full purchase price minus the original and return shipping costs.',
-                            },
-                          ].map(({ num, title, body }) => (
-                            <div key={num} className="flex gap-3">
-                              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-kawai-charcoal text-white text-[10px] font-bold flex items-center justify-center mt-0.5">{num}</span>
-                              <div>
-                                <p className="font-semibold text-kawai-black text-xs mb-1">{title}</p>
-                                <p className="text-xs text-kawai-charcoal/70 leading-relaxed">{body}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                    </div>
-                  </DialogContent>
-                </Dialog>
-
-                {/* Expert Support */}
-                <Link href="/technical-support-division" className="flex items-start gap-2.5 p-3 rounded-xl border border-gray-100 bg-stone-50/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200 group">
+                {/* Support */}
+                <Link href="/technical-support-division" className="flex items-start gap-2.5 p-3 rounded-xl border border-kawai-neutral/60 bg-kawai-pearl/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200 group">
                   <HeadphonesIcon className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Expert Support</p>
-                    <p className="text-[9px] text-gray-400 mt-1 leading-tight">We&apos;re here to help</p>
+                    <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Support</p>
+                    <p className="text-[9px] text-kawai-red mt-1 leading-tight underline underline-offset-2 group-hover:no-underline transition-all">Get help →</p>
                   </div>
                 </Link>
 
               </div>
 
               {/* Subscription nudge */}
-              <p className="text-center text-[10px] text-gray-400 mt-2">
-                <Link href="/warranty-registration" className="hover:text-kawai-red transition-colors duration-200 underline underline-offset-2 decoration-gray-300 hover:decoration-kawai-red">
+              <p className="text-center text-[10px] text-kawai-charcoal/40 mt-2">
+                <Link href="/warranty-registration" className="hover:text-kawai-red transition-colors duration-200 underline underline-offset-2 decoration-kawai-neutral hover:decoration-kawai-red">
                   3 Month Subscription with your Product Registration
                 </Link>
               </p>
@@ -1222,19 +1096,6 @@ export function ProductHeroBlock({
       {/* CRITICAL: This button receives variant selection from parent state */}
       {/* User selects variation → Both hero AND floating button add same variant */}
       {floatingEnabled && canAddToCart && selectedVariant && (() => {
-        // Debug: Log what we're passing to floating button
-        console.log('[ProductHeroBlock] Rendering FloatingAddToCart:', {
-          floatingEnabled,
-          canAddToCart,
-          hasSelectedVariant: !!selectedVariant,
-          variantName: floatingShowVariantName && selectedVariation >= 0 && availableVariations[selectedVariation]
-            ? availableVariations[selectedVariation]?.name
-            : null,
-          availableVariationsCount: availableVariations.length,
-          selectedVariation,
-          availableVariations: availableVariations.map(v => ({ name: v.name, available: v.available }))
-        })
-
         return (
           <FloatingAddToCartIntegrated
             variantId={selectedVariant.id}
@@ -1254,8 +1115,6 @@ export function ProductHeroBlock({
             }))}
             selectedVariationIndex={selectedVariation}
             onVariationChange={(index) => {
-              // Update parent state when variation is changed from floating button
-              console.log('[ProductHeroBlock] Variation changed to index:', index)
               setSelectedVariation(index)
             }}
             onAddToCart={() => {

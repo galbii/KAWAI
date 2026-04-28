@@ -16,6 +16,7 @@ interface ProductAccessoriesRendererProps {
   layout?: 'grid' | 'carousel' | null
   theme?: 'light' | 'dark' | null
   product: Product
+  isCanada?: boolean
 }
 
 type AccessoryCard = {
@@ -53,9 +54,10 @@ interface CardProps {
   accessory: AccessoryCard
   isDark: boolean
   index: number
+  isCanada?: boolean
 }
 
-function AccessoryCardItem({ accessory, isDark, index }: CardProps) {
+function AccessoryCardItem({ accessory, isDark, index, isCanada = false }: CardProps) {
   const num = String(index + 1).padStart(2, '0')
   const href = `/products/${accessory.slug ?? accessory.model}`
 
@@ -119,7 +121,7 @@ function AccessoryCardItem({ accessory, isDark, index }: CardProps) {
         )}
 
         {/* Price overlay — bottom-right of image */}
-        {displayPrice !== null && (
+        {!isCanada && displayPrice !== null && (
           <div className="absolute bottom-3 right-3 flex flex-col items-end gap-0.5">
             {/* Compare-at / original price (struck through) */}
             {displayCompare !== null && (
@@ -184,6 +186,7 @@ export async function ProductAccessoriesRenderer({
   layout = 'grid',
   theme = 'light',
   product,
+  isCanada = false,
 }: ProductAccessoriesRendererProps) {
   if (!product) return null
 
@@ -270,7 +273,7 @@ export async function ProductAccessoriesRenderer({
                 key={accessory.id}
                 className="snap-start flex-shrink-0 w-[72vw] sm:w-[42vw] md:w-[30vw] lg:w-[22vw]"
               >
-                <AccessoryCardItem accessory={accessory} isDark={isDark} index={i} />
+                <AccessoryCardItem accessory={accessory} isDark={isDark} index={i} isCanada={isCanada} />
               </div>
             ))}
           </div>
@@ -283,6 +286,7 @@ export async function ProductAccessoriesRenderer({
                 accessory={accessory}
                 isDark={isDark}
                 index={i}
+                isCanada={isCanada}
               />
             ))}
           </div>
