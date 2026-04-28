@@ -36,20 +36,22 @@ function extractSpec(specs: GrandSaleProduct['specifications'], keywords: string
   return match?.details ?? match?.type ?? null
 }
 
-// Only GL-10 and GL-20 are baby grands; everything else is a full grand.
-function getPianoType(product: GrandSaleProduct): 'baby-grand' | 'grand' {
+// Only GL-10 and GL-20 are baby grands; SK series are Shigeru; everything else is a full grand.
+function getPianoType(product: GrandSaleProduct): 'baby-grand' | 'grand' | 'shigeru' {
+  if (product.type === 'shigeru') return 'shigeru'
   const model = (product.model ?? '').replace(/[-\s]/g, '').toUpperCase()
   if (/^GL10($|[^0-9])/i.test(model)) return 'baby-grand'
   if (/^GL20($|[^0-9])/i.test(model)) return 'baby-grand'
   return 'grand'
 }
 
-type TypeFilter = 'all' | 'baby-grand' | 'grand'
+type TypeFilter = 'all' | 'baby-grand' | 'grand' | 'shigeru'
 
 const TYPE_FILTERS: { key: TypeFilter; label: string; sub: string }[] = [
-  { key: 'all',        label: 'All Models',  sub: 'Every grand on sale' },
-  { key: 'baby-grand', label: 'Baby Grand',  sub: 'GL-10 · GL-20'       },
-  { key: 'grand',      label: 'Grand Piano', sub: "6′ – 9′"             },
+  { key: 'all',        label: 'All Models',    sub: 'Every grand on sale' },
+  { key: 'baby-grand', label: 'Baby Grand',    sub: 'GL-10 · GL-20'       },
+  { key: 'grand',      label: 'Grand Piano',   sub: "6′ – 9′"             },
+  { key: 'shigeru',    label: 'Shigeru Kawai', sub: 'SK Series'           },
 ]
 
 function matchesFilters(product: GrandSaleProduct, typeFilter: TypeFilter, query: string): boolean {
@@ -130,7 +132,7 @@ function ProductCard({
         <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white/80 to-transparent pointer-events-none" />
 
         <p className="absolute bottom-3 left-4 text-kawai-charcoal/50 text-[10px] tracking-[0.28em] uppercase font-[family-name:var(--font-brand-sans)]">
-          {pianoType === 'baby-grand' ? 'Baby Grand' : 'Grand Piano'}
+          {pianoType === 'baby-grand' ? 'Baby Grand' : pianoType === 'shigeru' ? 'Shigeru Kawai' : 'Grand Piano'}
         </p>
 
         <span className="absolute top-3 right-3 px-2.5 py-1 bg-kawai-red text-white text-[9px] tracking-[0.2em] uppercase font-semibold font-[family-name:var(--font-brand-sans)]">
@@ -144,7 +146,7 @@ function ProductCard({
       {/* ── Card body ── */}
       <div className="flex flex-col flex-1 p-6 border-x border-b border-kawai-neutral/50">
         <p className="text-kawai-charcoal/40 text-[10px] tracking-[0.3em] uppercase mb-2 font-[family-name:var(--font-brand-sans)]">
-          Kawai · {product.model}
+          {pianoType === 'shigeru' ? 'Shigeru Kawai' : 'Kawai'} · {product.model}
         </p>
 
         <h3
@@ -224,6 +226,14 @@ export function GrandPianoShowcase({ products }: GrandPianoShowcaseProps) {
   const hasProducts    = products.length > 0
   const babyGrandCount = products.filter((p) => getPianoType(p) === 'baby-grand').length
   const grandCount     = products.filter((p) => getPianoType(p) === 'grand').length
+  const shigeruCount   = products.filter((p) => getPianoType(p) === 'shigeru').length
+  const countMap: Record<TypeFilter, number> = {
+    all:          products.length,
+    'baby-grand': babyGrandCount,
+    grand:        grandCount,
+    shigeru:      shigeruCount,
+  }
+  const visibleFilters = TYPE_FILTERS.filter(({ key }) => countMap[key] > 0 || key === 'all')
   const isFiltered     = activeType !== 'all' || !!searchQuery
 
   if (!hasProducts) {
@@ -340,8 +350,8 @@ export function GrandPianoShowcase({ products }: GrandPianoShowcaseProps) {
           {/* Category selector — segmented control with sliding pill */}
           <div className="flex items-center gap-3">
             <div className="flex-1 flex items-center bg-kawai-black/[0.06] rounded-xl p-1 gap-0.5">
-              {TYPE_FILTERS.map(({ key, label }) => {
-                const count  = key === 'all' ? products.length : key === 'baby-grand' ? babyGrandCount : grandCount
+              {visibleFilters.map(({ key, label }) => {
+                const count  = countMap[key]
                 const active = activeType === key
                 return (
                   <button
