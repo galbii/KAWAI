@@ -1,3 +1,7 @@
+'use client'
+
+import { useState, useEffect, useCallback } from 'react'
+
 const FEATURED_ARTISTS = [
   {
     name: 'Joe Bongiorno',
@@ -26,92 +30,118 @@ const FEATURED_ARTISTS = [
 ] as const
 
 export function ShigeruArtistsSection() {
+  const [current, setCurrent] = useState(0)
+  const [fading, setFading] = useState(false)
+
+  const goTo = useCallback((index: number) => {
+    setFading(true)
+    setTimeout(() => {
+      setCurrent(index)
+      setFading(false)
+    }, 350)
+  }, [])
+
+  const next = useCallback(() => {
+    goTo((current + 1) % FEATURED_ARTISTS.length)
+  }, [current, goTo])
+
+  useEffect(() => {
+    const id = setInterval(next, 6000)
+    return () => clearInterval(id)
+  }, [next])
+
+  const artist = FEATURED_ARTISTS[current]
+
   return (
-    <section
-      aria-label="Shigeru Kawai Artists"
-      className="bg-[#0a0a0a] sk-section"
-    >
-      <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
-
-        {/* Header */}
-        <div className="mb-16">
-          <p
-            className="sk-eyebrow text-kawai-gold mb-4"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
+    <section aria-label="Shigeru Kawai Artists" className="bg-[#0a0a0a] sk-section">
+      <div className="max-w-screen-xl mx-auto px-6 lg:px-16">
+        {/* Carousel slide */}
+        <div className="relative">
+          {/* Quote area */}
+          <div
+            className="py-24 lg:py-36 transition-opacity duration-350"
+            style={{ opacity: fading ? 0 : 1 }}
           >
-            Shigeru Kawai Artists
-          </p>
-          <h2
-            className="text-white font-light italic leading-tight max-w-xl"
-            style={{
-              fontFamily: 'var(--font-brand-luxury)',
-              fontSize: 'clamp(1.8rem, 4vw, 3rem)',
-            }}
-          >
-            Played on the World&rsquo;s
-            <br />
-            Greatest Stages
-          </h2>
-        </div>
-
-        {/* Artist grid — 2 cols desktop, 1 col mobile */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/[0.04]">
-          {FEATURED_ARTISTS.map((artist) => (
-            <article
-              key={artist.name}
-              className="bg-[#0a0a0a] hover:bg-[#0e0c09] transition-colors duration-500 p-10 lg:p-12 flex flex-col"
+            {/* Opening mark */}
+            <span
+              className="block text-kawai-gold/15 font-light italic leading-none select-none mb-10"
+              style={{ fontFamily: 'var(--font-brand-luxury)', fontSize: '9rem' }}
+              aria-hidden="true"
             >
-              {/* Opening mark */}
-              <span
-                className="text-kawai-gold/25 font-light italic leading-none select-none mb-5"
-                style={{ fontFamily: 'var(--font-brand-luxury)', fontSize: '4rem' }}
-                aria-hidden="true"
-              >
-                &ldquo;
-              </span>
+              &ldquo;
+            </span>
 
-              {/* Quote */}
-              <blockquote
-                className="text-white/75 font-light italic leading-relaxed flex-1"
-                style={{
-                  fontFamily: 'var(--font-brand-luxury)',
-                  fontSize: 'clamp(1rem, 1.8vw, 1.35rem)',
-                }}
-              >
-                {artist.quote}
-              </blockquote>
+            {/* Quote */}
+            <blockquote
+              className="text-white/75 font-light italic leading-relaxed max-w-4xl"
+              style={{
+                fontFamily: 'var(--font-brand-luxury)',
+                fontSize: 'clamp(1.6rem, 3.2vw, 2.75rem)',
+              }}
+            >
+              {artist?.quote}
+            </blockquote>
 
-              {/* Attribution */}
-              <div className="flex items-center gap-4 mt-10">
-                <span className="sk-rule w-8" />
-                <div>
-                  <p
-                    className="text-white text-sm font-medium mb-0.5"
-                    style={{ fontFamily: 'var(--font-brand-sans)' }}
-                  >
-                    {artist.name}
-                  </p>
-                  <p
-                    className="sk-eyebrow text-kawai-gold/60"
-                    style={{ fontFamily: 'var(--font-brand-sans)', letterSpacing: '0.3em' }}
-                  >
-                    {artist.role}
-                  </p>
-                </div>
+            {/* Artist overlay — name + rule */}
+            <div className="flex items-center gap-6 mt-16">
+              <span className="block h-px w-12 bg-kawai-gold/40 flex-shrink-0" />
+              <div>
+                <p
+                  className="text-white font-semibold tracking-[0.12em] uppercase mb-1.5"
+                  style={{ fontFamily: 'var(--font-oswald)', fontSize: '1rem' }}
+                >
+                  {artist?.name}
+                </p>
+                <p
+                  className="text-kawai-gold/55 tracking-[0.25em] uppercase"
+                  style={{ fontFamily: 'var(--font-oswald)', fontSize: '0.7rem' }}
+                >
+                  {artist?.role}
+                </p>
               </div>
-            </article>
-          ))}
-        </div>
+            </div>
+          </div>
 
-        {/* View all link */}
-        <div className="mt-12 flex justify-end">
-          <a
-            href="/shigeru/artists"
-            className="inline-flex items-center gap-3 text-white/30 hover:text-kawai-gold transition-colors duration-300"
-            style={{ fontFamily: 'var(--font-brand-sans)', fontSize: '0.625rem', letterSpacing: '0.3em', textTransform: 'uppercase' }}
-          >
-            View all artists&nbsp;→
-          </a>
+          {/* Bottom bar — dots + view all */}
+          <div className="flex items-center justify-between border-t border-white/[0.06] pt-8 pb-4">
+            {/* Dot navigation */}
+            <div className="flex items-center gap-4" role="tablist" aria-label="Artist slides">
+              {FEATURED_ARTISTS.map((a, i) => (
+                <button
+                  key={a.name}
+                  role="tab"
+                  aria-selected={i === current}
+                  aria-label={`Go to ${a.name}`}
+                  onClick={() => goTo(i)}
+                  className="group flex items-center justify-center w-8 h-8 focus:outline-none"
+                >
+                  <span
+                    className="block rounded-full transition-all duration-300"
+                    style={{
+                      width: i === current ? '28px' : '5px',
+                      height: '5px',
+                      backgroundColor:
+                        i === current ? 'var(--color-kawai-gold)' : 'rgba(255,255,255,0.18)',
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
+
+            {/* View all link */}
+            <a
+              href="/shigeru/artists"
+              className="inline-flex items-center gap-3 text-white/30 hover:text-kawai-gold transition-colors duration-300"
+              style={{
+                fontFamily: 'var(--font-oswald)',
+                fontSize: '0.7rem',
+                letterSpacing: '0.25em',
+                textTransform: 'uppercase',
+              }}
+            >
+              View all artists&nbsp;→
+            </a>
+          </div>
         </div>
       </div>
     </section>

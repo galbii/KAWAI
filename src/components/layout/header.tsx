@@ -936,7 +936,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                 >
                   <ContextAwareLink
                     href="/find-a-dealer"
-                    className="flex items-center gap-2 rounded-full bg-kawai-red border border-white/20 px-5 py-2.5 text-[11px] tracking-[0.08em] uppercase font-semibold text-white hover:border-white/50 hover:shadow-[0_0_24px_rgba(225,25,34,0.55),0_4px_16px_rgba(225,25,34,0.35)] hover:scale-[1.04] hover:brightness-110 shadow-[0_2px_12px_rgba(225,25,34,0.3)] transition-all duration-200 font-[family-name:var(--font-brand-sans)]"
+                    className="flex items-center gap-2 rounded-full bg-kawai-red border border-white/20 px-5 py-2.5 text-[11px] tracking-[0.08em] uppercase font-semibold text-white hover:brightness-95 hover:border-white/35 shadow-[0_2px_12px_rgba(225,25,34,0.3)] transition-all duration-200 font-[family-name:var(--font-brand-sans)]"
                   >
                     <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
                     Find a Dealer
@@ -1144,13 +1144,14 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                   >
                     <button
                       className={cn(
-                        "flex items-center px-3 py-2 font-medium text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/80 transition-colors rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]",
+                        "px-3 py-2 font-medium text-kawai-charcoal transition-all duration-200 rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]",
+                        "hover:text-kawai-red/75 hover:bg-kawai-red/[0.06]",
+                        isNewsMenuOpen ? "text-kawai-red/80 bg-kawai-red/[0.07]" : "",
                         isMounted ? "cursor-pointer" : "cursor-default opacity-50"
                       )}
                       disabled={!isMounted}
                     >
-                      <span>News</span>
-                      <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isNewsMenuOpen && "rotate-180")} />
+                      News
                     </button>
                   </div>
 
@@ -1159,16 +1160,18 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                     <div
                       onMouseEnter={productsNavData && isMounted ? handleProductsMenuOpen : undefined}
                       onMouseLeave={productsNavData && isMounted ? handleProductsMenuClose : undefined}
-                      className="flex items-center"
                     >
                       <Link
                         href="/pianos"
                         onClick={() => setActiveMenu(null)}
-                        className="px-3 py-2 font-medium text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/80 transition-colors rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]"
+                        className={cn(
+                          "block px-3 py-2 font-medium text-kawai-charcoal transition-all duration-200 rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]",
+                          "hover:text-kawai-red/75 hover:bg-kawai-red/[0.06]",
+                          isProductsMenuOpen && "text-kawai-red/80 bg-kawai-red/[0.07]"
+                        )}
                       >
                         Products
                       </Link>
-                      <ChevronDown className={cn("h-4 w-4 text-kawai-charcoal transition-transform duration-200 -ml-1 mr-1", isProductsMenuOpen && "rotate-180")} />
                     </div>
                   )}
 
@@ -1177,7 +1180,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                     <ContextAwareLink
                       key={item.label}
                       href={item.href || '#'}
-                      className="px-3 py-2 font-medium text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/80 transition-colors rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]"
+                      className="px-3 py-2 font-medium text-kawai-charcoal hover:text-kawai-red/75 hover:bg-kawai-red/[0.06] transition-all duration-200 rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]"
                     >
                       {item.label}
                     </ContextAwareLink>
@@ -1186,7 +1189,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                   {/* Support Link */}
                   <ContextAwareLink
                     href="/technical-support-division"
-                    className="px-3 py-2 font-medium text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/80 transition-colors rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]"
+                    className="px-3 py-2 font-medium text-kawai-charcoal hover:text-kawai-red/75 hover:bg-kawai-red/[0.06] transition-all duration-200 rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]"
                   >
                     Support
                   </ContextAwareLink>
@@ -1198,13 +1201,14 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                   >
                     <button
                       className={cn(
-                        "flex items-center px-3 py-2 font-medium text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/80 transition-colors rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]",
+                        "px-3 py-2 font-medium text-kawai-charcoal transition-all duration-200 rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]",
+                        "hover:text-kawai-red/75 hover:bg-kawai-red/[0.06]",
+                        isResourcesMenuOpen ? "text-kawai-red/80 bg-kawai-red/[0.07]" : "",
                         isMounted ? "cursor-pointer" : "cursor-default opacity-50"
                       )}
                       disabled={!isMounted}
                     >
-                      <span>Resources</span>
-                      <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform duration-200", isResourcesMenuOpen && "rotate-180")} />
+                      Resources
                     </button>
                   </div>
 
@@ -1215,7 +1219,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                   {registerConfig?.enabled !== false && (
                     <Link
                       href="/warranty-registration"
-                      className="rounded-full bg-kawai-black border border-white/20 px-5 py-2 text-sm font-medium text-white hover:bg-kawai-charcoal hover:border-white/40 hover:shadow-[0_0_20px_rgba(30,27,22,0.6),0_4px_16px_rgba(30,27,22,0.4)] hover:scale-[1.04] hover:brightness-150 shadow-[0_2px_12px_rgba(0,0,0,0.25)] transition-all duration-200"
+                      className="rounded-full bg-kawai-black border border-white/20 px-5 py-2 text-sm font-medium text-white hover:bg-kawai-charcoal hover:border-white/30 shadow-[0_2px_12px_rgba(0,0,0,0.25)] transition-all duration-200"
                     >
                       Register Your Piano
                     </Link>

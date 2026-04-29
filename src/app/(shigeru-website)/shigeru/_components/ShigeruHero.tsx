@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { buildYouTubeEmbedUrl } from '@/lib/utils/youtube'
 
 // YouTube video ID for the Shigeru Kawai hero
 const VIDEO_ID = 'DOjL_bW6e5c'
@@ -27,23 +28,32 @@ export function ShigeruHero() {
       </p>
 
       {/* ── Full-bleed YouTube embed ── */}
-      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-        <iframe
-          src={`https://www.youtube.com/embed/${VIDEO_ID}?autoplay=1&mute=1&loop=1&playlist=${VIDEO_ID}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&disablekb=1`}
-          title="Shigeru Kawai Concert Grand Piano — Handcrafted Excellence, Hamamatsu Japan"
-          allow="autoplay; fullscreen; picture-in-picture"
-          allowFullScreen
-          className="absolute w-full h-full"
-          style={{
-            // Covers the viewport at any aspect ratio — scales up to fill
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 'max(100%, calc(100vh * 16 / 9))',
-            height: 'max(100%, calc(100vw * 9 / 16))',
-            border: 'none',
-          }}
-        />
+      {/*
+       * overflow-hidden clips the scaled-up iframe container, pushing YouTube's
+       * hover-triggered title bar and chrome outside the visible viewport.
+       * Scale of 1.25 gives ~12.5% bleed on each edge — enough to hide UI overlays.
+       * pointer-events-none prevents hover from triggering YouTube's UI in the first place.
+       */}
+      <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ transform: 'scale(1.25)', transformOrigin: 'center center' }}
+        >
+          <iframe
+            src={buildYouTubeEmbedUrl(VIDEO_ID)}
+            title="Shigeru Kawai Concert Grand Piano — Handcrafted Excellence, Hamamatsu Japan"
+            allow="autoplay; picture-in-picture"
+            className="absolute"
+            style={{
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 'max(100%, calc(100vh * 16 / 9))',
+              height: 'max(100%, calc(100vw * 9 / 16))',
+              border: 'none',
+            }}
+          />
+        </div>
       </div>
 
       {/* ── Layered overlays for cinematic depth ── */}
