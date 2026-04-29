@@ -95,7 +95,7 @@ function getDealerLocationBySlug(slug: string): Promise<DealerLocationData | nul
         })
 
         return {
-          locationName: location.locationName,
+          locationName: location.showroomInfo?.name || location.locationName,
           slug: location.slug,
           hasMusicSchool: musicSchoolResult.docs.length > 0,
         }

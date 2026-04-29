@@ -461,7 +461,6 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const [productsNavData, setProductsNavData] = useState<ProductsNavigation | null>(null)
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
   const [currentLocationData, setCurrentLocationData] = useState<DealerLocationData | null>(locationData || null)
-  const [isLoadingLocation, setIsLoadingLocation] = useState(false)
 const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isAutoHidden, setIsAutoHidden] = useState(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
@@ -485,9 +484,6 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
   const recentsTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const activeDropdown = activeMenu
-
-  // Use navigation context to detect location changes
-  const { origin, isInitialized } = useNavigationContext()
 
   // Feature flag: Control Products menu visibility
   // Only show Products menu if feature flag is enabled (NEXT_PUBLIC_SHOW_PRODUCTS_MENU=true)
@@ -555,58 +551,11 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
     }
   }, [])
   
-  // Fetch dealer location data when origin changes - but only after animation completes
+  // Location data is server-driven: show banner only on /store/* pages.
+  // locationData is non-null when HeaderDynamic detects a /store/* pathname.
   useEffect(() => {
-    const fetchDealerData = async () => {
-      if (!isInitialized || !isMounted) return
-      
-      // If not a dealer location, clear location data
-      if (!origin.isDealerLocation || !origin.dealerSlug) {
-        setCurrentLocationData(null)
-        return
-      }
-      
-      // If we already have data for this slug, don't refetch
-      if (currentLocationData && currentLocationData.slug === origin.dealerSlug) {
-        return
-      }
-      
-      setIsLoadingLocation(true)
-
-      try {
-        const [storefrontResponse, musicSchoolResponse] = await Promise.all([
-          fetch(`/api/storefronts/by-slug/${origin.dealerSlug}`),
-          fetch(`/api/music-schools/by-storefront/${origin.dealerSlug}`),
-        ])
-        const result = await storefrontResponse.json()
-        const musicSchoolResult = await musicSchoolResponse.json()
-
-        if (result.success && result.data) {
-          const locationData = {
-            locationName: result.data.showroomSection?.showroomInfo?.name || origin.dealerSlug,
-            slug: origin.dealerSlug,
-            hasMusicSchool: musicSchoolResult.hasMusicSchool === true,
-          }
-          setCurrentLocationData(locationData)
-        } else {
-          console.warn(`Failed to fetch storefront data for ${origin.dealerSlug}:`, result.error)
-          setCurrentLocationData(null)
-        }
-      } catch (error) {
-        console.error(`Error fetching storefront data for ${origin.dealerSlug}:`, error)
-        setCurrentLocationData(null)
-      } finally {
-        setIsLoadingLocation(false)
-      }
-    }
-    
-    fetchDealerData()
-  }, [origin.isDealerLocation, origin.dealerSlug, isInitialized, isMounted, currentLocationData?.slug])
-  
-  // Update current location data when initial locationData prop changes - but only after animation completes
-  useEffect(() => {
-    if (locationData && isMounted) {
-      setCurrentLocationData(locationData)
+    if (isMounted) {
+      setCurrentLocationData(locationData ?? null)
     }
   }, [locationData, isMounted])
   
@@ -996,7 +945,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
               )}
 
               {/* Visit Showroom CTA - Desktop (dealer location pages, not on music school pages) */}
-              {currentLocationData && currentLocationData.slug && !isLoadingLocation && !isSignaturePage && !isUniversityPage && !isMusicSchoolPage && (
+              {currentLocationData && currentLocationData.slug && !isSignaturePage && !isUniversityPage && !isMusicSchoolPage && (
                 <motion.div
                   className="hidden xl:flex items-center"
                   initial={{ opacity: 0, x: 20 }}
@@ -1015,7 +964,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
               )}
 
               {/* Kawai Music School dropdown - Desktop (dealer location pages, only if school exists, not on music school pages) */}
-              {currentLocationData?.hasMusicSchool && !isLoadingLocation && !isSignaturePage && !isUniversityPage && !isMusicSchoolPage && (
+              {currentLocationData?.hasMusicSchool && !isSignaturePage && !isUniversityPage && !isMusicSchoolPage && (
                 <motion.div
                   className="hidden xl:flex items-center"
                   initial={{ opacity: 0, x: 20 }}

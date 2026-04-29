@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { ShigeruHero } from './_components/ShigeruHero'
-import { ShigeruModelCarousel } from './_components/ShigeruModelCarousel'
+import { ShigeruProductShowcase } from './_components/ShigeruProductShowcase'
 import { ShigeruArtistsSection } from './_components/ShigeruArtistsSection'
 import { MasterArtisansSection } from './_components/MasterArtisansSection'
 import { ShigeruContactBox } from './_components/ShigeruContactBox'
@@ -53,7 +53,7 @@ export default function ShigeruPage() {
       />
 
       <ShigeruHero />
-      <ShigeruModelCarousel />
+      <ShigeruProductShowcase />
       <ShigeruArtistsSection />
       <MasterArtisansSection />
       <ShigeruContactBox />
