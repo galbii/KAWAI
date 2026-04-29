@@ -53,7 +53,7 @@ export function ShigeruArtistsSection() {
   const artist = FEATURED_ARTISTS[current]
 
   return (
-    <section aria-label="Shigeru Kawai Artists" className="bg-[#0a0a0a] sk-section">
+    <section aria-label="Shigeru Kawai Artists" className="bg-white sk-section">
       <div className="max-w-screen-xl mx-auto px-6 lg:px-16">
         {/* Carousel slide */}
         <div className="relative">
@@ -64,7 +64,7 @@ export function ShigeruArtistsSection() {
           >
             {/* Opening mark */}
             <span
-              className="block text-kawai-gold/15 font-light italic leading-none select-none mb-10"
+              className="block text-kawai-gold/20 font-light italic leading-none select-none mb-10"
               style={{ fontFamily: 'var(--font-brand-luxury)', fontSize: '9rem' }}
               aria-hidden="true"
             >
@@ -73,7 +73,7 @@ export function ShigeruArtistsSection() {
 
             {/* Quote */}
             <blockquote
-              className="text-white/75 font-light italic leading-relaxed max-w-4xl"
+              className="text-kawai-black/70 font-light italic leading-relaxed max-w-4xl"
               style={{
                 fontFamily: 'var(--font-brand-luxury)',
                 fontSize: 'clamp(1.6rem, 3.2vw, 2.75rem)',
@@ -87,14 +87,14 @@ export function ShigeruArtistsSection() {
               <span className="block h-px w-12 bg-kawai-gold/40 flex-shrink-0" />
               <div>
                 <p
-                  className="text-white font-semibold tracking-[0.12em] uppercase mb-1.5"
+                  className="text-kawai-black font-semibold tracking-[0.12em] uppercase mb-1.5"
                   style={{ fontFamily: 'var(--font-oswald)', fontSize: '1rem' }}
                 >
                   {artist?.name}
                 </p>
                 <p
-                  className="text-kawai-gold/55 tracking-[0.25em] uppercase"
-                  style={{ fontFamily: 'var(--font-oswald)', fontSize: '0.7rem' }}
+                  className="text-kawai-gold-on-light tracking-[0.25em] uppercase"
+                  style={{ fontFamily: 'var(--font-oswald)', fontSize: '0.8rem' }}
                 >
                   {artist?.role}
                 </p>
@@ -103,7 +103,7 @@ export function ShigeruArtistsSection() {
           </div>
 
           {/* Bottom bar — dots + view all */}
-          <div className="flex items-center justify-between border-t border-white/[0.06] pt-8 pb-4">
+          <div className="flex items-center justify-between border-t border-kawai-black/[0.07] pt-8 pb-4">
             {/* Dot navigation */}
             <div className="flex items-center gap-4" role="tablist" aria-label="Artist slides">
               {FEATURED_ARTISTS.map((a, i) => (
@@ -121,7 +121,7 @@ export function ShigeruArtistsSection() {
                       width: i === current ? '28px' : '5px',
                       height: '5px',
                       backgroundColor:
-                        i === current ? 'var(--color-kawai-gold)' : 'rgba(255,255,255,0.18)',
+                        i === current ? 'var(--color-kawai-gold)' : 'rgba(0,0,0,0.15)',
                     }}
                   />
                 </button>
@@ -131,7 +131,7 @@ export function ShigeruArtistsSection() {
             {/* View all link */}
             <a
               href="/shigeru/artists"
-              className="inline-flex items-center gap-3 text-white/30 hover:text-kawai-gold transition-colors duration-300"
+              className="inline-flex items-center gap-3 text-kawai-charcoal/40 hover:text-kawai-gold transition-colors duration-300"
               style={{
                 fontFamily: 'var(--font-oswald)',
                 fontSize: '0.7rem',

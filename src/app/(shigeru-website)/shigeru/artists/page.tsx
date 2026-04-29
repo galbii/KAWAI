@@ -241,9 +241,9 @@ export default function ArtistsPage() {
                 The Roster
               </p>
               <h2
-                className="text-white font-light italic leading-none"
+                className="text-white font-light leading-none tracking-[0.04em]"
                 style={{
-                  fontFamily: 'var(--font-brand-luxury)',
+                  fontFamily: 'var(--font-oswald)',
                   fontSize: 'clamp(1.8rem, 4vw, 3rem)',
                 }}
               >
@@ -257,21 +257,21 @@ export default function ArtistsPage() {
             {artists.map((artist) => (
               <article
                 key={artist.name}
-                className="bg-[#0a0a0a] hover:bg-[#0f0d09] px-8 py-7 flex flex-col transition-colors duration-400"
+                className="bg-[#0a0a0a] hover:bg-[#0f0d09] px-10 py-10 flex flex-col transition-colors duration-400"
               >
-                <span className="block w-4 h-px bg-kawai-gold/40 mb-5" />
+                <span className="block w-6 h-px bg-kawai-gold/40 mb-6" />
                 <p
-                  className="text-white font-light italic leading-snug mb-3"
+                  className="text-white font-semibold leading-snug mb-3 tracking-[0.04em]"
                   style={{
-                    fontFamily: 'var(--font-brand-luxury)',
-                    fontSize: 'clamp(1rem, 1.5vw, 1.2rem)',
+                    fontFamily: 'var(--font-oswald)',
+                    fontSize: 'clamp(1.15rem, 1.8vw, 1.4rem)',
                   }}
                 >
                   {artist.name}
                 </p>
                 <p
-                  className="text-kawai-gold text-[9px] tracking-[0.3em] uppercase leading-relaxed"
-                  style={{ fontFamily: 'var(--font-brand-sans)' }}
+                  className="text-kawai-gold tracking-[0.3em] uppercase leading-relaxed"
+                  style={{ fontFamily: 'var(--font-oswald)', fontSize: '11px' }}
                 >
                   {artist.role}
                 </p>

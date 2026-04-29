@@ -5482,6 +5482,14 @@ export interface Artist {
    */
   isActive?: boolean | null;
   /**
+   * Artist plays or endorses Shigeru Kawai instruments
+   */
+  isShigeruArtist?: boolean | null;
+  /**
+   * Geographic region or base (e.g. "US", "UK", "Nashville")
+   */
+  region?: string | null;
+  /**
    * Artist profile photo or performance image
    */
   image?: (string | null) | Media;
@@ -5516,9 +5524,22 @@ export interface Artist {
     [k: string]: unknown;
   };
   /**
-   * Primary musical genre
+   * Musical genre(s) — free-form to support combinations (e.g. "classical/rock", "jazz/gospel")
    */
-  genre?: ('classical' | 'jazz' | 'contemporary' | 'pop' | 'rock' | 'blues' | 'world' | 'film' | 'other') | null;
+  genre?: string | null;
+  /**
+   * Optional artist quote for use in marketing and artist profiles
+   */
+  quote?: {
+    /**
+     * A quote from the artist about KAWAI or their music
+     */
+    text?: string | null;
+    /**
+     * When the artist said or published this quote
+     */
+    date?: string | null;
+  };
   /**
    * Primary KAWAI instrument type
    */
@@ -5527,6 +5548,23 @@ export interface Artist {
    * KAWAI piano model used by this artist (links to product page)
    */
   kawaiModel?: (string | null) | Product;
+  /**
+   * Audience reach metrics for internal roster vetting — update periodically
+   */
+  audienceMetrics?: {
+    /**
+     * Instagram follower count (e.g. "3M", "130.6K")
+     */
+    instagramFollowers?: string | null;
+    /**
+     * YouTube subscriber count (e.g. "11M", "47.6K")
+     */
+    youtubeSubscribers?: string | null;
+    /**
+     * Spotify monthly listener count (e.g. "47.4M", "569K")
+     */
+    spotifyMonthlyListeners?: string | null;
+  };
   /**
    * Add social media profiles, streaming platforms, and website links
    */
@@ -5626,6 +5664,14 @@ export interface Artist {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Roster action for this artist — reviewed during audits
+   */
+  internalStatus?: ('keep' | 'under-review' | 'recommend-removal' | 'reach-out') | null;
+  /**
+   * Internal notes (website status, instrument concerns, open questions, etc.) — never shown publicly
+   */
+  internalNotes?: string | null;
   /**
    * SEO and social media optimization
    */
@@ -11375,14 +11421,29 @@ export interface ArtistsSelect<T extends boolean = true> {
   slug?: T;
   featured?: T;
   isActive?: T;
+  isShigeruArtist?: T;
+  region?: T;
   image?: T;
   imageUrl?: T;
   heroImageUrl?: T;
   shortBio?: T;
   bio?: T;
   genre?: T;
+  quote?:
+    | T
+    | {
+        text?: T;
+        date?: T;
+      };
   instrument?: T;
   kawaiModel?: T;
+  audienceMetrics?:
+    | T
+    | {
+        instagramFollowers?: T;
+        youtubeSubscribers?: T;
+        spotifyMonthlyListeners?: T;
+      };
   socialLinks?:
     | T
     | {
@@ -11414,6 +11475,8 @@ export interface ArtistsSelect<T extends boolean = true> {
         featured?: T;
         id?: T;
       };
+  internalStatus?: T;
+  internalNotes?: T;
   seo?:
     | T
     | {

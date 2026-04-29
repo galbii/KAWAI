@@ -56,6 +56,8 @@ export async function GET(request: NextRequest) {
         { storefrontCity: { contains: term } },             // Match city (e.g. "Chicago")
         { storefrontAddress: { contains: term } },          // Match address
         { storefrontSlug: { contains: term } },             // Match slug (e.g. "st-louis")
+        { collectionHandle: { contains: term } },            // Match collection handle (e.g. "ms-2c")
+        { collectionTitle: { contains: term } },             // Match collection title
       ]),
     }
 
@@ -101,6 +103,9 @@ export async function GET(request: NextRequest) {
         storefrontPhone: (doc as any).storefrontPhone,
         storefrontCity: (doc as any).storefrontCity,
         storefrontRegion: (doc as any).storefrontRegion,
+        // Include denormalized collection fields
+        collectionHandle: (doc as any).collectionHandle,
+        collectionTitle: (doc as any).collectionTitle,
       }
     })
 

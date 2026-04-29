@@ -1,6 +1,8 @@
 import type { CollectionConfig } from 'payload'
 import { imageField } from '@/lib/payload/fields/media'
 
+const adminOnly = ({ req: { user } }: { req: { user: unknown } }) => Boolean(user)
+
 export const Artists: CollectionConfig = {
   slug: 'artists',
   labels: {
@@ -61,6 +63,23 @@ export const Artists: CollectionConfig = {
         position: 'sidebar'
       }
     },
+    {
+      name: 'isShigeruArtist',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Artist plays or endorses Shigeru Kawai instruments',
+        position: 'sidebar'
+      }
+    },
+    {
+      name: 'region',
+      type: 'text',
+      admin: {
+        description: 'Geographic region or base (e.g. "US", "UK", "Nashville")',
+        position: 'sidebar'
+      }
+    },
 
     // Tabs for organized content
     {
@@ -110,20 +129,34 @@ export const Artists: CollectionConfig = {
             },
             {
               name: 'genre',
-              type: 'select',
-              options: [
-                { label: 'Classical', value: 'classical' },
-                { label: 'Jazz', value: 'jazz' },
-                { label: 'Contemporary', value: 'contemporary' },
-                { label: 'Pop', value: 'pop' },
-                { label: 'Rock', value: 'rock' },
-                { label: 'Blues', value: 'blues' },
-                { label: 'World Music', value: 'world' },
-                { label: 'Film & TV', value: 'film' },
-                { label: 'Other', value: 'other' }
+              type: 'text',
+              admin: {
+                description: 'Musical genre(s) — free-form to support combinations (e.g. "classical/rock", "jazz/gospel")'
+              }
+            },
+            {
+              name: 'quote',
+              type: 'group',
+              fields: [
+                {
+                  name: 'text',
+                  type: 'textarea',
+                  admin: {
+                    description: 'A quote from the artist about KAWAI or their music',
+                    placeholder: '"The KAWAI SK-EX is the finest instrument I have ever played."'
+                  }
+                },
+                {
+                  name: 'date',
+                  type: 'date',
+                  admin: {
+                    description: 'When the artist said or published this quote',
+                    date: { pickerAppearance: 'monthOnly', displayFormat: 'MMMM yyyy' }
+                  }
+                }
               ],
               admin: {
-                description: 'Primary musical genre'
+                description: 'Optional artist quote for use in marketing and artist profiles'
               }
             },
             {
@@ -154,8 +187,41 @@ export const Artists: CollectionConfig = {
         // Social Media Tab
         {
           label: 'Social Media',
-          description: 'Social media profiles and streaming platform links',
+          description: 'Social media profiles, streaming links, and audience metrics',
           fields: [
+            {
+              name: 'audienceMetrics',
+              type: 'group',
+              fields: [
+                {
+                  name: 'instagramFollowers',
+                  type: 'text',
+                  admin: {
+                    description: 'Instagram follower count (e.g. "3M", "130.6K")',
+                    placeholder: '130.6K'
+                  }
+                },
+                {
+                  name: 'youtubeSubscribers',
+                  type: 'text',
+                  admin: {
+                    description: 'YouTube subscriber count (e.g. "11M", "47.6K")',
+                    placeholder: '47.6K'
+                  }
+                },
+                {
+                  name: 'spotifyMonthlyListeners',
+                  type: 'text',
+                  admin: {
+                    description: 'Spotify monthly listener count (e.g. "47.4M", "569K")',
+                    placeholder: '47.4M'
+                  }
+                }
+              ],
+              admin: {
+                description: 'Audience reach metrics for internal roster vetting — update periodically'
+              }
+            },
             {
               name: 'socialLinks',
               type: 'array',
@@ -353,6 +419,36 @@ export const Artists: CollectionConfig = {
               ],
               admin: {
                 description: 'Recent performances, recordings, or projects with KAWAI pianos (up to 5)'
+              }
+            }
+          ]
+        },
+
+        // Internal Tab
+        {
+          label: 'Internal',
+          description: 'Roster management notes — not visible on the frontend',
+          fields: [
+            {
+              name: 'internalStatus',
+              type: 'select',
+              options: [
+                { label: 'Keep', value: 'keep' },
+                { label: 'Under Review', value: 'under-review' },
+                { label: 'Recommend Removal', value: 'recommend-removal' },
+                { label: 'Reach Out', value: 'reach-out' },
+              ],
+              access: { read: adminOnly },
+              admin: {
+                description: 'Roster action for this artist — reviewed during audits'
+              }
+            },
+            {
+              name: 'internalNotes',
+              type: 'textarea',
+              access: { read: adminOnly },
+              admin: {
+                description: 'Internal notes (website status, instrument concerns, open questions, etc.) — never shown publicly'
               }
             }
           ]

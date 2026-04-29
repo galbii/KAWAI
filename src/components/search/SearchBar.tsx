@@ -17,6 +17,17 @@ const PIANO_CATEGORY_PRIORITY: Record<string, number> = {
 }
 const ACCESSORY_CATEGORY_TYPES = new Set(['accessory', 'accessories', 'software'])
 
+// Infer relationTo from the doc field, falling back to denormalized fields when
+// the polymorphic relationship isn't populated (depth:0 or missing doc field).
+function getRelationTo(result: { doc?: { relationTo?: string }; storefrontSlug?: string; productSlug?: string; collectionHandle?: string; pageSlug?: string }): string {
+  if (result.doc?.relationTo) return result.doc.relationTo
+  if (result.storefrontSlug) return 'storefronts'
+  if (result.productSlug) return 'products'
+  if (result.collectionHandle) return 'collections'
+  if (result.pageSlug) return 'pages'
+  return ''
+}
+
 interface SearchResult {
   id: string
   title: string
@@ -29,7 +40,7 @@ interface SearchResult {
       name?: string
       type?: string
     }
-    relationTo: 'products' | 'pages' | 'storefronts'
+    relationTo: 'products' | 'pages' | 'storefronts' | 'collections'
   }
   excerpt?: string
   category?: string
@@ -51,6 +62,9 @@ interface SearchResult {
   storefrontPhone?: string
   storefrontCity?: string
   storefrontRegion?: string
+  // Denormalized collection fields (stored directly in search doc)
+  collectionHandle?: string
+  collectionTitle?: string
 }
 
 interface SearchBarProps {
@@ -63,7 +77,7 @@ interface QuickLink {
   url: string
 }
 
-type CategoryFilter = 'all' | 'storefronts' | 'products' | 'pages'
+type CategoryFilter = 'all' | 'storefronts' | 'products' | 'collections' | 'pages'
 
 export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   const pathname = usePathname()
@@ -264,9 +278,8 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     return () => document.removeEventListener('keydown', handleGlobalKeyPress)
   }, [])
 
-  // Collection-aware URL routing
   const getResultUrl = (result: SearchResult): string => {
-    const collectionSlug = result.doc.relationTo
+    const collectionSlug = getRelationTo(result)
 
     if (collectionSlug === 'storefronts') {
       // Use denormalized storefrontSlug for reliable navigation
@@ -278,6 +291,12 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
       // Use denormalized productSlug for reliable navigation
       const slug = result.productSlug || (typeof result.doc.value === 'object' ? result.doc.value.slug : '')
       return `/products/${slug}`
+    }
+
+    if (collectionSlug === 'collections') {
+      // Collection pages live at /pianos/{handle}
+      const handle = result.collectionHandle || (typeof result.doc.value === 'object' ? result.doc.value.slug : '')
+      return `/pianos/${handle}`
     }
 
     if (collectionSlug === 'pages') {
@@ -322,23 +341,28 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   const filteredResults = useMemo(() => {
     return results.filter(result => {
       if (categoryFilter === 'all') return true
-      return result.doc.relationTo === categoryFilter
+      return getRelationTo(result) === categoryFilter
     })
   }, [results, categoryFilter])
 
   // Separate storefronts, products, and pages - memoized
   const storefrontResults = useMemo(() =>
-    filteredResults.filter(r => r.doc.relationTo === 'storefronts'),
+    filteredResults.filter(r => getRelationTo(r) === 'storefronts'),
     [filteredResults]
   )
 
   const productResults = useMemo(() =>
-    filteredResults.filter(r => r.doc.relationTo === 'products'),
+    filteredResults.filter(r => getRelationTo(r) === 'products'),
     [filteredResults]
   )
 
   const pageResults = useMemo(() =>
-    filteredResults.filter(r => r.doc.relationTo === 'pages'),
+    filteredResults.filter(r => getRelationTo(r) === 'pages'),
+    [filteredResults]
+  )
+
+  const collectionResults = useMemo(() =>
+    filteredResults.filter(r => getRelationTo(r) === 'collections'),
     [filteredResults]
   )
 
@@ -573,8 +597,8 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
       return
     }
 
-    // Combine displayed storefronts, products and pages for navigation
-    const allDisplayedResults = [...storefrontResults, ...displayedProducts, ...pageResults]
+    // Combine all displayed sections for navigation
+    const allDisplayedResults = [...storefrontResults, ...collectionResults, ...displayedProducts, ...pageResults]
     if (allDisplayedResults.length === 0) return
 
     switch (event.key) {
@@ -586,39 +610,35 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
         event.preventDefault()
         setSelectedIndex((prev) => (prev - 1 + allDisplayedResults.length) % allDisplayedResults.length)
         break
-      case 'Tab':
+      case 'Tab': {
         event.preventDefault()
-        // Jump to next section
+        // Section offsets: storefronts → collections → products → pages
+        const collOffset = storefrontResults.length
+        const prodOffset = collOffset + collectionResults.length
+        const pageOffset = prodOffset + displayedProducts.length
         if (event.shiftKey) {
-          // Shift+Tab - Jump to previous section
-          if (selectedIndex >= storefrontResults.length + displayedProducts.length) {
-            // On pages → jump to first product (or first storefront if no products)
-            setSelectedIndex(displayedProducts.length > 0 ? storefrontResults.length : 0)
-          } else if (selectedIndex >= storefrontResults.length) {
-            // On products → jump to first storefront
+          if (selectedIndex >= pageOffset) {
+            setSelectedIndex(displayedProducts.length > 0 ? prodOffset : collOffset > 0 ? collOffset : 0)
+          } else if (selectedIndex >= prodOffset) {
+            setSelectedIndex(collectionResults.length > 0 ? collOffset : 0)
+          } else if (selectedIndex >= collOffset) {
             setSelectedIndex(0)
           } else {
-            // On storefronts → wrap to first page (or last product if no pages)
-            if (pageResults.length > 0) {
-              setSelectedIndex(storefrontResults.length + displayedProducts.length)
-            } else if (displayedProducts.length > 0) {
-              setSelectedIndex(storefrontResults.length + displayedProducts.length - 1)
-            }
+            setSelectedIndex(pageResults.length > 0 ? pageOffset : displayedProducts.length > 0 ? prodOffset - 1 : collectionResults.length > 0 ? collOffset - 1 : 0)
           }
         } else {
-          // Tab - Jump to next section
           if (selectedIndex < storefrontResults.length) {
-            // On storefronts → jump to first product (or first page if no products)
-            setSelectedIndex(displayedProducts.length > 0 ? storefrontResults.length : storefrontResults.length + displayedProducts.length)
-          } else if (selectedIndex < storefrontResults.length + displayedProducts.length) {
-            // On products → jump to first page (or first storefront if no pages)
-            setSelectedIndex(pageResults.length > 0 ? storefrontResults.length + displayedProducts.length : 0)
+            setSelectedIndex(collectionResults.length > 0 ? collOffset : displayedProducts.length > 0 ? prodOffset : pageOffset)
+          } else if (selectedIndex < prodOffset) {
+            setSelectedIndex(displayedProducts.length > 0 ? prodOffset : pageResults.length > 0 ? pageOffset : 0)
+          } else if (selectedIndex < pageOffset) {
+            setSelectedIndex(pageResults.length > 0 ? pageOffset : 0)
           } else {
-            // On pages → wrap to first storefront
             setSelectedIndex(0)
           }
         }
         break
+      }
       case 'Home':
         event.preventDefault()
         setSelectedIndex(0)
@@ -644,6 +664,11 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
         break
       case '4':
         event.preventDefault()
+        setCategoryFilter('collections')
+        setSelectedIndex(0)
+        break
+      case '5':
+        event.preventDefault()
         setCategoryFilter('pages')
         setSelectedIndex(0)
         break
@@ -659,7 +684,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
         inputRef.current?.blur()
         break
     }
-  }, [storefrontResults, displayedProducts, pageResults, selectedIndex, navigateToResult])
+  }, [storefrontResults, collectionResults, displayedProducts, pageResults, selectedIndex, navigateToResult])
 
   // Scroll selected item into view
   useEffect(() => {
@@ -890,7 +915,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                       <div className="flex-shrink-0 border-b border-gray-200/50">
                         <div className="overflow-x-auto scrollbar-hide px-4 py-3">
                           <div className="flex gap-2 min-w-min">
-                            {(['all', 'storefronts', 'products', 'pages'] as CategoryFilter[]).map((category) => (
+                            {(['all', 'storefronts', 'products', 'collections', 'pages'] as CategoryFilter[]).map((category) => (
                               <button
                                 key={category}
                                 onClick={() => setCategoryFilter(category)}
@@ -1189,6 +1214,57 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                             </motion.div>
                           )}
 
+                          {/* Collections Section */}
+                          {collectionResults.length > 0 && (
+                            <motion.div variants={sectionVariants}>
+                              <div className="flex items-center gap-2 mb-3 px-2">
+                                <div className="h-px flex-1 bg-kawai-neutral/20" />
+                                <h3 className="text-xs font-medium text-kawai-neutral uppercase tracking-widest">
+                                  Collections
+                                </h3>
+                                <div className="h-px flex-1 bg-kawai-neutral/20" />
+                              </div>
+                              <div className="space-y-1">
+                                {collectionResults.map((result, colIndex) => {
+                                  const index = storefrontResults.length + colIndex
+                                  const title = result.collectionTitle || result.title
+                                  return (
+                                    <button
+                                      key={result.id}
+                                      id={`search-result-${index}`}
+                                      onClick={() => navigateToResult(result)}
+                                      className={cn(
+                                        "group w-full px-6 py-4 text-left transition-all duration-200 hover:bg-kawai-red/5 border-l-2 border-transparent hover:border-kawai-red",
+                                        selectedIndex === index && "bg-kawai-red/10 border-kawai-red"
+                                      )}
+                                    >
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex-1 min-w-0">
+                                          <span className="text-kawai-pearl font-light text-base tracking-wide group-hover:text-kawai-red transition-colors">
+                                            {title}
+                                          </span>
+                                          {result.excerpt && (
+                                            <p className="text-xs text-kawai-neutral mt-0.5 line-clamp-1">
+                                              {result.excerpt}
+                                            </p>
+                                          )}
+                                        </div>
+                                        <svg
+                                          className="w-5 h-5 ml-4 flex-shrink-0 text-kawai-neutral group-hover:text-kawai-red transition-all group-hover:translate-x-1"
+                                          fill="none"
+                                          viewBox="0 0 24 24"
+                                          stroke="currentColor"
+                                        >
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                                        </svg>
+                                      </div>
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            </motion.div>
+                          )}
+
                           {/* Category Switcher */}
                           {productResults.length > 0 && (
                             <motion.div variants={sectionVariants}>
@@ -1243,8 +1319,8 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
 
                               <div className="space-y-1">
                                 {displayedProducts.map((result, productIndex) => {
-                                  // Calculate global index (offset by storefronts)
-                                  const index = storefrontResults.length + productIndex
+                                  // Calculate global index (offset by storefronts + collections)
+                                  const index = storefrontResults.length + collectionResults.length + productIndex
 
                                   const model = result.productModel || result.title
                                   const category = result.productCategory || result.category
@@ -1323,7 +1399,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                               <div className="space-y-1">
                                 {pageResults.map((result, pageIndex) => {
                                   // Calculate global index (offset by storefronts and displayed products)
-                                  const resultIndex = storefrontResults.length + displayedProducts.length + pageIndex
+                                  const resultIndex = storefrontResults.length + collectionResults.length + displayedProducts.length + pageIndex
                                   return (
                                     <button
                                       key={result.id}
@@ -1371,7 +1447,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                           {/* Only show filters when there are search results */}
                           {query.length >= 2 && (
                             <div className="flex items-center gap-2">
-                              {(['all', 'storefronts', 'products', 'pages'] as CategoryFilter[]).map((category) => (
+                              {(['all', 'storefronts', 'products', 'collections', 'pages'] as CategoryFilter[]).map((category) => (
                                 <button
                                   key={category}
                                   onClick={() => setCategoryFilter(category)}

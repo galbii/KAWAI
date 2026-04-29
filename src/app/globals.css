@@ -24,7 +24,8 @@
   --color-kawai-charcoal: #2C2C2C;   /* Charcoal Gray */
   --color-kawai-pearl: #FAF8F5;      /* Warm Off-White / Light Beige */
   --color-kawai-neutral: #DBDBDB;    /* Light Grey */
-  --color-kawai-gold: #d5c78c;       /* Shigeru Kawai Gold */
+  --color-kawai-gold: #d5c78c;       /* Shigeru Kawai Gold — use on dark backgrounds */
+  --color-kawai-gold-on-light: #8C6E28; /* Deeper warm gold — legible on white/light backgrounds */
 
   /* Extended Kawai Red Scale */
   --color-kawai-red-50: #fef2f2;
