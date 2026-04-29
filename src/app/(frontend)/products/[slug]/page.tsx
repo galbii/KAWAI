@@ -39,7 +39,18 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const site = await getSite()
   const siteUrl = getSiteUrl(site)
 
-  const title = product.seo?.metaTitle || product.name || 'Piano Product'
+  const typeLabels: Record<string, string> = {
+    digital: 'Digital Piano',
+    grand: 'Grand Piano',
+    upright: 'Upright Piano',
+    hybrid: 'Hybrid Piano',
+    shigeru: 'Shigeru Kawai',
+    accessory: 'Piano Accessory',
+  }
+  const typeLabel = product.type ? (typeLabels[product.type] ?? null) : null
+  const collectionTitle = product.shopifyCollections?.[0]?.title ?? null
+  const autoTitle = [product.name, typeLabel, collectionTitle].filter(Boolean).join(' | ') || 'Piano Product'
+  const title = product.seo?.metaTitle || autoTitle
   const description = product.seo?.metaDescription || product.description || ''
 
   const ogImageRaw = product.seo?.ogImage

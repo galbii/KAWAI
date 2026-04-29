@@ -253,7 +253,7 @@ export function ProductHeroCarouselRenderer({
             {currentSlide.mediaType === 'youtube' && currentSlide.youtubeUrl ? (
               <YouTubeBackground
                 url={currentSlide.youtubeUrl}
-                zoom={currentSlide.youtubeZoom ?? 1.15}
+                zoom={currentSlide.youtubeZoom ?? 1.3}
               />
             ) : currentSlide.mediaType === 'video' && currentSlide.videoFile ? (
               <UploadedVideoBackground
@@ -555,8 +555,8 @@ function YouTubeBackground({ url, zoom }: { url: string; zoom: number }) {
         onLoad={() => setReady(true)}
         title="Slide background video"
       />
-      {/* Prevents user from clicking into the iframe / pausing YouTube */}
-      <div className="pointer-events-none absolute inset-0 z-10" />
+      {/* Intercepts all pointer events so YouTube never sees hover/click — prevents controls from appearing */}
+      <div className="absolute inset-0 z-10" />
     </div>
   )
 }

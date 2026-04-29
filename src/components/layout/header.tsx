@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { createPortal } from 'react-dom'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Menu, X, ChevronDown, Home, MapPin } from 'lucide-react'
+import { Menu, X, ChevronDown, ChevronRight, Home, MapPin, Newspaper, Layers, BookOpen } from 'lucide-react'
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { KawaiLogo } from '@/components/ui/kawai-logo'
@@ -24,6 +24,9 @@ import { formatHistoryTitle, formatHistoryTime } from '@/lib/page-history-storag
 import { getContextAwareUrl } from '@/lib/navigation-utils'
 import { fetchPayloadProductsNavigation } from '@/lib/actions/payload-products-navigation'
 import type { ProductsNavigation } from '@/lib/payload/products-navigation'
+import { MobileProductsSheet } from '@/components/navigation/mobile/MobileProductsSheet'
+import { MobileResourcesSheet } from '@/components/navigation/mobile/MobileResourcesSheet'
+import { MobileNewsSheet } from '@/components/navigation/mobile/MobileNewsSheet'
 
 // ── Social icons ─────────────────────────────────────────────────────────────
 
@@ -484,6 +487,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
   const recentsTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const activeDropdown = activeMenu
+  const [activeMobileSheet, setActiveMobileSheet] = useState<'products' | 'resources' | 'news' | null>(null)
 
   // Feature flag: Control Products menu visibility
   // Only show Products menu if feature flag is enabled (NEXT_PUBLIC_SHOW_PRODUCTS_MENU=true)
@@ -1325,16 +1329,47 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                       Home
                     </Link>
 
-                    {/* Products */}
-                    {isProductsMenuEnabled && (
-                      <Link
-                        href="/pianos"
-                        className="block py-4 px-6 text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/50 font-medium text-xl transition-colors rounded-lg"
-                        onClick={closeMobileMenu}
+                    {/* Feature nav: Products / News / Resources as sheet launchers */}
+                    <div className="border-t border-kawai-neutral/60 pt-2">
+                      <p className="px-6 pb-2 text-xs font-semibold uppercase tracking-widest text-kawai-charcoal/50">
+                        Explore
+                      </p>
+
+                      {isProductsMenuEnabled && (
+                        <button
+                          onClick={() => setActiveMobileSheet('products')}
+                          className="flex items-center justify-between w-full py-4 px-6 text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/50 font-medium text-base transition-colors rounded-lg group"
+                        >
+                          <span className="flex items-center gap-3">
+                            <Layers className="w-5 h-5 text-kawai-charcoal/50 group-hover:text-kawai-red transition-colors" />
+                            Browse Pianos
+                          </span>
+                          <ChevronRight className="w-4 h-4 text-kawai-charcoal/30 group-hover:text-kawai-red group-hover:translate-x-0.5 transition-all" />
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => setActiveMobileSheet('news')}
+                        className="flex items-center justify-between w-full py-4 px-6 text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/50 font-medium text-base transition-colors rounded-lg group"
                       >
-                        Products
-                      </Link>
-                    )}
+                        <span className="flex items-center gap-3">
+                          <Newspaper className="w-5 h-5 text-kawai-charcoal/50 group-hover:text-kawai-red transition-colors" />
+                          News & Stories
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-kawai-charcoal/30 group-hover:text-kawai-red group-hover:translate-x-0.5 transition-all" />
+                      </button>
+
+                      <button
+                        onClick={() => setActiveMobileSheet('resources')}
+                        className="flex items-center justify-between w-full py-4 px-6 text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/50 font-medium text-base transition-colors rounded-lg group"
+                      >
+                        <span className="flex items-center gap-3">
+                          <BookOpen className="w-5 h-5 text-kawai-charcoal/50 group-hover:text-kawai-red transition-colors" />
+                          Showrooms & Resources
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-kawai-charcoal/30 group-hover:text-kawai-red group-hover:translate-x-0.5 transition-all" />
+                      </button>
+                    </div>
 
                     {/* Quick Links from CMS — directly under Home */}
                     {quickLinks.length > 0 && (
@@ -1384,18 +1419,20 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                       </div>
                     )}
 
-                    {/* Nav items (Artists, etc.) */}
-                    {navigation.length > 0 && (
+                    {/* Nav items (Artists, etc.) — skip items handled by sheets above */}
+                    {navigation.filter((item) => !['News', 'Resources'].includes(item.label)).length > 0 && (
                       <div className="border-t border-kawai-neutral/60 pt-2">
-                        {navigation.map((item) => (
-                          <MobileMenuItem
-                            key={item.label}
-                            item={item}
-                            onClose={closeMobileMenu}
-                            isOpen={openMobileItems.has(item.label)}
-                            onToggle={() => toggleMobileItem(item.label)}
-                          />
-                        ))}
+                        {navigation
+                          .filter((item) => !['News', 'Resources'].includes(item.label))
+                          .map((item) => (
+                            <MobileMenuItem
+                              key={item.label}
+                              item={item}
+                              onClose={closeMobileMenu}
+                              isOpen={openMobileItems.has(item.label)}
+                              onToggle={() => toggleMobileItem(item.label)}
+                            />
+                          ))}
                       </div>
                     )}
                   </div>
@@ -1527,6 +1564,35 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
         above the floating add-to-cart button's z-[9000] which is also in root stacking context.
         (Inside <header z-50>, child z-indexes are capped at that stacking context level.) */}
     <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+
+    {/* Mobile sheets — rendered outside <header> to escape stacking context */}
+    {isMounted && (
+      <>
+        <MobileProductsSheet
+          isOpen={activeMobileSheet === 'products'}
+          onBack={() => setActiveMobileSheet(null)}
+          onNavigate={() => { setActiveMobileSheet(null); closeMobileMenu() }}
+          productsNavData={productsNavData}
+          isLoading={!productsNavData}
+        />
+        <MobileNewsSheet
+          isOpen={activeMobileSheet === 'news'}
+          onBack={() => setActiveMobileSheet(null)}
+          onNavigate={() => { setActiveMobileSheet(null); closeMobileMenu() }}
+          newsItems={newsItems}
+          latestPosts={latestPosts}
+        />
+        <MobileResourcesSheet
+          isOpen={activeMobileSheet === 'resources'}
+          onBack={() => setActiveMobileSheet(null)}
+          onNavigate={() => { setActiveMobileSheet(null); closeMobileMenu() }}
+          storeLocations={storeLocations}
+          {...(resourceLinks !== undefined && { resourceLinks })}
+          registerEnabled={registerConfig?.enabled !== false}
+        />
+      </>
+    )}
+
     <RegisterPianoModal
       isOpen={isRegisterModalOpen}
       onClose={() => setIsRegisterModalOpen(false)}
