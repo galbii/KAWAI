@@ -38,12 +38,27 @@ function extractYouTubeId(url: string): string | null {
   return m?.[1] ?? null
 }
 
+function hasMedia(col: NavCollection): boolean {
+  if (col.youtubeUrl) return true
+  if (col.imageUrl) return true
+  if (col.mediaUrl) return true
+  return false
+}
+
+function sortCollections(collections: NavCollection[]): NavCollection[] {
+  return [...collections].sort((a, b) => {
+    const aHas = hasMedia(a) ? 0 : 1
+    const bHas = hasMedia(b) ? 0 : 1
+    return aHas - bHas
+  })
+}
+
 function getCollectionsForKey(collections: NavCollection[], key: CategoryKey): NavCollection[] {
-  if (key === 'all') return collections
+  if (key === 'all') return sortCollections(collections)
   if (key === 'accessories') return []
   const cat = CATEGORIES.find((c) => c.key === key)
   if (!cat || cat.terms.length === 0) return []
-  return collections.filter((col) => {
+  const filtered = collections.filter((col) => {
     if (col.pianoCategories && col.pianoCategories.length > 0) {
       return col.pianoCategories.includes(key)
     }
@@ -51,9 +66,64 @@ function getCollectionsForKey(collections: NavCollection[], key: CategoryKey): N
     const handleLower = col.handle.toLowerCase()
     return cat.terms.some((term) => titleLower.includes(term) || handleLower.includes(term))
   })
+  return sortCollections(filtered)
 }
 
-// ─── Collection Card ──────────────────────────────────────────────────────────
+// ─── Placeholder card (no media) ──────────────────────────────────────────────
+
+function CollectionPlaceholder({ col, onNavigate }: { col: NavCollection; onNavigate: () => void }) {
+  return (
+    <Link
+      href={`/pianos/${col.handle}`}
+      onClick={onNavigate}
+      className="group relative block rounded-xl overflow-hidden aspect-[4/3] border border-kawai-neutral/40 hover:border-kawai-red/40 transition-colors bg-white"
+    >
+      {/* subtle dot-grid texture */}
+      <div
+        className="absolute inset-0 opacity-[0.06]"
+        style={{
+          backgroundImage: 'radial-gradient(circle, #1E1B16 1px, transparent 1px)',
+          backgroundSize: '12px 12px',
+        }}
+      />
+
+      {/* thin red top accent */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-kawai-red opacity-70 group-hover:opacity-100 transition-opacity" />
+
+      {/* centred content */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center px-3 gap-2">
+        {/* small horizontal rule */}
+        <div className="w-6 h-px bg-kawai-red/60" />
+
+        <p
+          className="text-kawai-black text-center leading-tight font-light tracking-wide"
+          style={{
+            fontFamily: 'var(--font-family-cormorant, var(--font-brand-luxury, serif))',
+            fontSize: 'clamp(0.9rem, 3.5vw, 1.05rem)',
+          }}
+        >
+          {col.heading ?? col.title}
+        </p>
+
+        {col.productCount > 0 && (
+          <p className="text-[9px] uppercase tracking-[0.2em] text-kawai-charcoal/40">
+            {col.productCount} models
+          </p>
+        )}
+      </div>
+
+      {/* KAWAI watermark bottom-right */}
+      <span className="absolute bottom-2.5 right-3 text-[8px] font-semibold tracking-[0.25em] uppercase text-kawai-charcoal/20 group-hover:text-kawai-red/30 transition-colors select-none">
+        KAWAI
+      </span>
+
+      {/* red left accent on press */}
+      <div className="absolute top-0 left-0 w-0.5 h-full bg-kawai-red scale-y-0 group-active:scale-y-100 transition-transform duration-200 origin-top" />
+    </Link>
+  )
+}
+
+// ─── Media card ───────────────────────────────────────────────────────────────
 
 function CollectionCard({ col, onNavigate }: { col: NavCollection; onNavigate: () => void }) {
   const ytId = col.youtubeUrl ? extractYouTubeId(col.youtubeUrl) : null
@@ -61,23 +131,21 @@ function CollectionCard({ col, onNavigate }: { col: NavCollection; onNavigate: (
     ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg`
     : col.imageUrl ?? col.mediaUrl ?? null
 
+  if (!thumbUrl) return <CollectionPlaceholder col={col} onNavigate={onNavigate} />
+
   return (
     <Link
       href={`/pianos/${col.handle}`}
       onClick={onNavigate}
       className="group relative block rounded-xl overflow-hidden bg-kawai-black aspect-[4/3] shadow-brand-medium"
     >
-      {thumbUrl ? (
-        <Image
-          src={thumbUrl}
-          alt={col.title}
-          fill
-          sizes="(max-width: 640px) 45vw, 200px"
-          className="object-cover transition-transform duration-500 group-active:scale-105"
-        />
-      ) : (
-        <div className="absolute inset-0 bg-kawai-charcoal" />
-      )}
+      <Image
+        src={thumbUrl}
+        alt={col.title}
+        fill
+        sizes="(max-width: 640px) 45vw, 200px"
+        className="object-cover transition-transform duration-500 group-active:scale-105"
+      />
       {/* gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
       {/* text */}

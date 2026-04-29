@@ -11,6 +11,12 @@ import { KawaiLogo } from '@/components/ui/kawai-logo'
 import { usePageHistory } from '@/contexts/PageHistoryContext'
 import { formatHistoryTitle, formatHistoryTime } from '@/lib/page-history-storage'
 
+// Module-level constants — avoids new object/Set on every component render
+const PIANO_CATEGORY_PRIORITY: Record<string, number> = {
+  grand: 1, upright: 2, digital: 3, hybrid: 4,
+}
+const ACCESSORY_CATEGORY_TYPES = new Set(['accessory', 'accessories', 'software'])
+
 interface SearchResult {
   id: string
   title: string
@@ -93,6 +99,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   const mobileInputRef = useRef<HTMLInputElement>(null)
   const resultsContainerRef = useRef<HTMLDivElement>(null)
   const measuringKeyboardRef = useRef(false)
+  const abortControllerRef = useRef<AbortController | null>(null)
   const router = useRouter()
 
   // Measure keyboard height - returns true if keyboard detected
@@ -335,17 +342,11 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     [filteredResults]
   )
 
-  // Priority order for piano categories — lower number = shown first
-  const PIANO_CATEGORY_PRIORITY: Record<string, number> = {
-    grand: 1, upright: 2, digital: 3, hybrid: 4,
-  }
-  const ACCESSORY_CATEGORY_TYPES = new Set(['accessory', 'accessories', 'software'])
-
-  const getProductSortPriority = (result: SearchResult): number => {
+  const getProductSortPriority = useCallback((result: SearchResult): number => {
     const cat = (result.productCategory || result.productType || 'other').toLowerCase()
     if (ACCESSORY_CATEGORY_TYPES.has(cat)) return 99
     return PIANO_CATEGORY_PRIORITY[cat] ?? 50
-  }
+  }, [])
 
   // Group products dynamically by their category field (simple and flexible)
   const productsByCategory = useMemo(() => {
@@ -407,11 +408,11 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
       return productResults.slice().sort((a, b) => getProductSortPriority(a) - getProductSortPriority(b))
     }
     return productsByCategory[selectedProductCategory] ?? []
-  }, [selectedProductCategory, productsByCategory, productResults])
+  }, [selectedProductCategory, productsByCategory, productResults, getProductSortPriority])
 
-  // Debounced search
+  // Debounced search — AbortController cancels in-flight fetches when query changes,
+  // preventing stale responses from overwriting fresher results and corrupting category state.
   useEffect(() => {
-    // Clear results if query is too short, but keep overlay open if focused
     if (query.length < 2) {
       setResults([])
       setIsLoading(false)
@@ -421,22 +422,33 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     setIsLoading(true)
 
     const timeoutId = setTimeout(async () => {
+      // Cancel any previous in-flight request
+      abortControllerRef.current?.abort()
+      const controller = new AbortController()
+      abortControllerRef.current = controller
+
       try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
+          signal: controller.signal,
+        })
         if (!response.ok) throw new Error('Search failed')
 
         const data = await response.json()
         setResults(data.results || [])
         setSelectedIndex(0)
       } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') return
         console.error('Search error:', error)
         setResults([])
       } finally {
-        setIsLoading(false)
+        if (!controller.signal.aborted) setIsLoading(false)
       }
     }, 300)
 
-    return () => clearTimeout(timeoutId)
+    return () => {
+      clearTimeout(timeoutId)
+      abortControllerRef.current?.abort()
+    }
   }, [query])
 
   // Track if mouse is over the overlay to prevent closing on scroll
@@ -493,14 +505,9 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   // Navigate to result
   const navigateToResult = useCallback((result: SearchResult) => {
     const url = getResultUrl(result)
-    console.log('Navigating to:', url, {
-      title: result.title,
-      relationTo: result.doc.relationTo,
-      productSlug: result.productSlug,
-    })
     router.push(url)
     clearSearch()
-  }, [router])
+  }, [router, clearSearch])
 
   // Clear search
   const clearSearch = useCallback(() => {
@@ -511,10 +518,10 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     setIsInputFocused(false)
     setSelectedIndex(0)
     setCategoryFilter('all')
+    setSelectedProductCategory('')
     inputRef.current?.blur()
     mobileInputRef.current?.blur()
     onOpenChange?.(false)
-    // Stop any active keyboard polling
     measuringKeyboardRef.current = false
   }, [onOpenChange])
 

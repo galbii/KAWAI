@@ -113,7 +113,7 @@ export function MobileResourcesSheet({
                 <ArrowLeft className="w-4 h-4" />
                 <span className="text-sm font-medium">Back</span>
               </button>
-              <h2 className="text-base font-bold tracking-tight text-kawai-black">Showrooms & Resources</h2>
+              <h2 className="text-base font-bold tracking-tight text-kawai-black">Official Stores & Resources</h2>
               <button
                 onClick={onNavigate}
                 className="p-1.5 rounded-md hover:bg-kawai-neutral/30 transition-colors"

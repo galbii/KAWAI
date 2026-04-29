@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { createPortal } from 'react-dom'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Menu, X, ChevronDown, ChevronRight, Home, MapPin, Newspaper, Layers, BookOpen } from 'lucide-react'
+import { Menu, X, ChevronDown, ChevronRight, Home, MapPin, Newspaper, Layers, Store } from 'lucide-react'
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { KawaiLogo } from '@/components/ui/kawai-logo'
@@ -1364,8 +1364,8 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                         className="flex items-center justify-between w-full py-4 px-6 text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl/50 font-medium text-base transition-colors rounded-lg group"
                       >
                         <span className="flex items-center gap-3">
-                          <BookOpen className="w-5 h-5 text-kawai-charcoal/50 group-hover:text-kawai-red transition-colors" />
-                          Showrooms & Resources
+                          <Store className="w-5 h-5 text-kawai-charcoal/50 group-hover:text-kawai-red transition-colors" />
+                          Official Stores & Resources
                         </span>
                         <ChevronRight className="w-4 h-4 text-kawai-charcoal/30 group-hover:text-kawai-red group-hover:translate-x-0.5 transition-all" />
                       </button>

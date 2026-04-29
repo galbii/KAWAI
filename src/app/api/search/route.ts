@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { getPayloadClient } from '@/lib/payload/queries'
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,7 +19,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const payload = await getPayload({ config })
+    const payload = await getPayloadClient()
 
     // Synonym expansion for better search results
     // Map user search terms to database-friendly terms
@@ -64,45 +63,12 @@ export async function GET(request: NextRequest) {
       collection: 'search',
       where: whereClause,
       limit,
-      depth: 2, // Include relationship data (doc.value)
+      depth: 2,
       sort: '-priority', // Higher priority first (products = 20, pages = 10)
     })
 
-    // Debug: Log raw search result
-    console.log('\n=== SEARCH API DEBUG ===')
-    console.log('Total results:', results.totalDocs)
-
-    const firstResult = results.docs[0]
-    if (firstResult) {
-      console.log('First result structure:', {
-        id: firstResult.id,
-        title: firstResult.title,
-        'doc.relationTo': firstResult.doc?.relationTo,
-        'doc.value type': typeof firstResult.doc?.value,
-        'doc.value is string': typeof firstResult.doc?.value === 'string',
-        'doc.value (preview)': typeof firstResult.doc?.value === 'string'
-          ? firstResult.doc.value
-          : firstResult.doc?.value ? `[Object with keys: ${Object.keys(firstResult.doc.value).join(', ')}]` : 'undefined',
-      })
-    }
-
     // Transform to match SearchBar expected format
     const transformedResults = results.docs.map(doc => {
-      // Check if doc.value is populated as an object or just an ID string
-      const isPopulated = typeof doc.doc?.value === 'object' && doc.doc?.value !== null
-
-      // Debug: Log product data structure
-      if (doc.doc?.relationTo === 'products') {
-        console.log(`\nProduct result [${doc.id}]:`, {
-          title: doc.title,
-          'productModel (denormalized)': (doc as any).productModel,
-          'productType (denormalized)': (doc as any).productType,
-          'productCategory (denormalized)': (doc as any).productCategory,
-          'productImageUrl (denormalized)': (doc as any).productImageUrl,
-          'productSlug (denormalized)': (doc as any).productSlug,
-        })
-      }
-
       // Transform tags from array format [{tag: string}] to string[]
       let transformedTags: string[] = []
       if (Array.isArray(doc.tags)) {
@@ -138,10 +104,8 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    console.log('=== END DEBUG ===\n')
-
     return NextResponse.json({
-      results: transformedResults, // Must be 'results' not 'docs'
+      results: transformedResults,
       totalDocs: results.totalDocs,
     })
   } catch (error) {
