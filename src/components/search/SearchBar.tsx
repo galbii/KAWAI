@@ -502,13 +502,6 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     }
   }, [isMobile, isOpen])
 
-  // Navigate to result
-  const navigateToResult = useCallback((result: SearchResult) => {
-    const url = getResultUrl(result)
-    router.push(url)
-    clearSearch()
-  }, [router, clearSearch])
-
   // Clear search
   const clearSearch = useCallback(() => {
     setQuery('')
@@ -524,6 +517,13 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
     onOpenChange?.(false)
     measuringKeyboardRef.current = false
   }, [onOpenChange])
+
+  // Navigate to result
+  const navigateToResult = useCallback((result: SearchResult) => {
+    const url = getResultUrl(result)
+    router.push(url)
+    clearSearch()
+  }, [router, clearSearch])
 
   const openMobileSearch = useCallback(() => {
     setIsMobileSearchOpen(true)
