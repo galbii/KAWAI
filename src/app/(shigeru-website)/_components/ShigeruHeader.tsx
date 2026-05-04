@@ -11,7 +11,26 @@ type NavItem =
   | { label: string; href: string; children?: never }
   | { label: string; href: null; children: NavChild[] }
 
-const navItems: NavItem[] = [
+const leftNav: NavItem[] = [
+  { label: 'Home', href: '/shigeru' },
+  { label: 'Concert Grands', href: '/shigeru/models' },
+  { label: 'Artists', href: '/shigeru/artists' },
+]
+
+const rightNav: NavItem[] = [
+  { label: 'Authorized Dealers', href: '/shigeru/dealers' },
+  {
+    label: 'Resources',
+    href: null,
+    children: [
+      { label: 'Artisans', href: '/shigeru/artisans' },
+      { label: 'Institutions', href: '/shigeru/institutions' },
+    ],
+  },
+  { label: 'Contact', href: '/shigeru/contact' },
+]
+
+const mobileNavItems: NavItem[] = [
   { label: 'Home', href: '/shigeru' },
   { label: 'Concert Grands', href: '/shigeru/models' },
   { label: 'Authorized Dealers', href: '/shigeru/dealers' },
@@ -24,49 +43,41 @@ const navItems: NavItem[] = [
       { label: 'Institutions', href: '/shigeru/institutions' },
     ],
   },
-]
-
-const mobileNavItems = [
-  ...navItems,
-  { label: 'Contact', href: '/shigeru/contact' } as NavItem,
+  { label: 'Contact', href: '/shigeru/contact' },
 ]
 
 const f = { fontFamily: 'var(--font-oswald)' }
-
-const pillStyle: React.CSSProperties = {
-  background: 'rgba(8, 8, 8, 0.72)',
-  backdropFilter: 'blur(24px) saturate(180%)',
-  WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-  border: '1px solid rgba(255,255,255,0.09)',
-  borderRadius: '56px',
-  boxShadow: '0 8px 40px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06)',
-}
+const SCROLL_THRESHOLD = 80
+const ease = [0.25, 0.46, 0.45, 0.94] as const
 
 const dropdownStyle: React.CSSProperties = {
-  background: 'rgba(8, 8, 8, 0.88)',
+  background: 'rgba(18,16,12,0.98)',
   backdropFilter: 'blur(24px) saturate(180%)',
   WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-  border: '1px solid rgba(255,255,255,0.09)',
-  borderRadius: '24px',
-  boxShadow: '0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.05)',
+  border: '1px solid rgba(255,255,255,0.07)',
+  borderRadius: '4px',
+  boxShadow: '0 12px 40px rgba(0,0,0,0.7)',
 }
 
-export default function ShigeruHeader() {
-  const pathname = usePathname()
-  const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+const linkBase = 'text-[11px] font-semibold tracking-[0.14em] uppercase transition-colors duration-300'
 
-  useEffect(() => {
-    setMobileOpen(false)
-    setDropdownOpen(false)
-  }, [pathname])
+// ── Nav side bar ────────────────────────────────────────────────────────────
 
-  useEffect(() => {
-    document.body.style.overflow = mobileOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
-  }, [mobileOpen])
-
+function NavBar({
+  items,
+  pathname,
+  openDropdown,
+  onDropdownEnter,
+  onDropdownLeave,
+  side,
+}: {
+  items: NavItem[]
+  pathname: string
+  openDropdown: string | null
+  onDropdownEnter: (label: string) => void
+  onDropdownLeave: () => void
+  side: 'left' | 'right'
+}) {
   function isActive(item: NavItem): boolean {
     if (item.href === '/shigeru') return pathname === '/shigeru'
     if (item.href) return pathname.startsWith(item.href)
@@ -74,180 +85,288 @@ export default function ShigeruHeader() {
     return false
   }
 
-  function openDropdown() {
-    if (leaveTimer.current) clearTimeout(leaveTimer.current)
-    setDropdownOpen(true)
+  return (
+    <nav
+      className={`hidden md:flex items-center ${side === 'right' ? 'justify-end' : 'justify-start'}`}
+      aria-label={side === 'left' ? 'Primary navigation' : 'Secondary navigation'}
+    >
+      {items.map((item, idx) => {
+        const active = isActive(item)
+        const isContact = item.href === '/shigeru/contact'
+        const textColor = active
+          ? 'text-white'
+          : isContact
+            ? 'text-kawai-gold hover:text-kawai-gold/75 font-bold'
+            : 'text-white/60 hover:text-white'
+
+        return (
+          <div key={item.label} className="flex items-center">
+            {idx > 0 && (
+              <span className="block w-px h-3 bg-white/25 mx-5 shrink-0" aria-hidden />
+            )}
+
+            {item.children ? (
+              <div
+                onMouseEnter={() => onDropdownEnter(item.label)}
+                onMouseLeave={onDropdownLeave}
+                className="relative"
+              >
+                <button
+                  style={f}
+                  aria-expanded={openDropdown === item.label}
+                  aria-haspopup="true"
+                  className={[linkBase, 'flex items-center gap-1 cursor-default select-none', textColor].join(' ')}
+                >
+                  {item.label}
+                  <motion.span
+                    animate={{ rotate: openDropdown === item.label ? 180 : 0 }}
+                    transition={{ duration: 0.18 }}
+                    aria-hidden
+                  >
+                    <svg width="7" height="5" viewBox="0 0 7 5" fill="none">
+                      <path d="M1 1L3.5 3.5L6 1" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </motion.span>
+                </button>
+              </div>
+            ) : (
+              <Link href={item.href} style={f} className={[linkBase, textColor].join(' ')}>
+                {item.label}
+              </Link>
+            )}
+          </div>
+        )
+      })}
+    </nav>
+  )
+}
+
+// ── Main component ───────────────────────────────────────────────────────────
+
+export default function ShigeruHeader() {
+  const pathname = usePathname()
+  const isHomepage = pathname === '/shigeru'
+
+  const [scrolled, setScrolled] = useState(false)
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+  const [logoHovered, setLogoHovered] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  const navLeaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const logoLeaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Transparency only applies on the /shigeru homepage — all other pages are always solid
+  const transparent = isHomepage && !scrolled
+
+  useEffect(() => {
+    function onScroll() { setScrolled(window.scrollY > SCROLL_THRESHOLD) }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    setMobileOpen(false)
+    setOpenDropdown(null)
+    setLogoHovered(false)
+  }, [pathname])
+
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [mobileOpen])
+
+  function handleDropdownEnter(label: string) {
+    if (navLeaveTimer.current) clearTimeout(navLeaveTimer.current)
+    setOpenDropdown(label)
+  }
+  function handleDropdownLeave() {
+    navLeaveTimer.current = setTimeout(() => setOpenDropdown(null), 150)
   }
 
-  function scheduleClose() {
-    leaveTimer.current = setTimeout(() => setDropdownOpen(false), 150)
+  function handleLogoEnter() {
+    if (logoLeaveTimer.current) clearTimeout(logoLeaveTimer.current)
+    setLogoHovered(true)
+  }
+  function handleLogoLeave() {
+    logoLeaveTimer.current = setTimeout(() => setLogoHovered(false), 180)
   }
 
-  const linkBase = 'text-[13px] font-semibold tracking-[0.06em] uppercase transition-colors duration-250'
+  const activeDropdownItem = openDropdown
+    ? [...leftNav, ...rightNav].find((i) => i.label === openDropdown && i.children)
+    : null
+
+  function isActive(item: NavItem): boolean {
+    if (item.href === '/shigeru') return pathname === '/shigeru'
+    if (item.href) return pathname.startsWith(item.href)
+    return false
+  }
 
   return (
     <>
-      {/* ── Floating glassmorphism pill ── */}
-      <div className="fixed top-5 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
-        <header className="pointer-events-auto w-full max-w-4xl" style={pillStyle}>
-          <div className="relative flex items-center md:justify-between h-[58px] px-5 md:px-7">
+      {/* ── Header ── */}
+      <header
+        className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
+        style={{
+          background: transparent ? 'transparent' : 'rgba(16,14,10,0.97)',
+          backdropFilter: transparent ? 'none' : 'blur(20px) saturate(160%)',
+          WebkitBackdropFilter: transparent ? 'none' : 'blur(20px) saturate(160%)',
+          borderBottom: transparent ? '1px solid transparent' : '1px solid rgba(255,255,255,0.05)',
+        }}
+      >
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center h-[68px] px-8 md:px-14 max-w-screen-2xl mx-auto">
 
-            {/* Logo — absolute center on mobile, static left on desktop */}
-            <Link href="/shigeru" aria-label="Shigeru Kawai — Home" className="flex items-center shrink-0 absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0">
+          {/* Left nav */}
+          <NavBar
+            items={leftNav}
+            pathname={pathname}
+            openDropdown={openDropdown}
+            onDropdownEnter={handleDropdownEnter}
+            onDropdownLeave={handleDropdownLeave}
+            side="left"
+          />
+
+          {/* Center logo with Kawai parent-brand hover dropdown */}
+          <div
+            className="relative flex items-center justify-center px-8"
+            onMouseEnter={handleLogoEnter}
+            onMouseLeave={handleLogoLeave}
+          >
+            <Link href="/shigeru" aria-label="Shigeru Kawai — Home" className="flex items-center justify-center">
               <Image
-                src="https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/Shigeru%20Kawai%20logo.webp"
+                src="https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/Shigeru%20Kawai%20logo%20(white).webp"
                 alt="Shigeru Kawai"
                 width={0}
                 height={0}
-                sizes="180px"
+                sizes="160px"
                 priority
-                className="h-[44px] w-auto object-contain"
+                className="h-[46px] w-auto object-contain transition-opacity duration-300"
+                style={{ opacity: logoHovered ? 0.7 : 1 }}
               />
             </Link>
 
-            {/* Desktop nav — hidden on mobile */}
-            <nav className="hidden md:flex items-center gap-7" aria-label="Shigeru Kawai navigation">
-              {navItems.map((item) => {
-                const active = isActive(item)
-
-                if (item.children) {
-                  return (
-                    <div
-                      key={item.label}
-                      onMouseEnter={openDropdown}
-                      onMouseLeave={scheduleClose}
-                      className="relative"
-                    >
-                      <button
-                        style={f}
-                        aria-expanded={dropdownOpen}
-                        aria-haspopup="true"
-                        className={[
-                          linkBase,
-                          'flex items-center gap-1.5 cursor-default select-none',
-                          active ? 'text-white' : 'text-white/55 hover:text-white/90',
-                        ].join(' ')}
-                      >
-                        {item.label}
-                        <motion.span
-                          animate={{ rotate: dropdownOpen ? 180 : 0 }}
-                          transition={{ duration: 0.18 }}
-                          aria-hidden
-                        >
-                          <svg width="7" height="5" viewBox="0 0 7 5" fill="none">
-                            <path d="M1 1L3.5 3.5L6 1" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        </motion.span>
-                      </button>
-                    </div>
-                  )
-                }
-
-                return (
+            {/* Kawai parent brand dropdown */}
+            <AnimatePresence>
+              {logoHovered && (
+                <motion.div
+                  className="absolute top-full mt-3 left-1/2 -translate-x-1/2 pointer-events-auto z-50"
+                  initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                  transition={{ duration: 0.18, ease }}
+                >
                   <Link
-                    key={item.href}
-                    href={item.href}
-                    style={f}
-                    className={[
-                      linkBase,
-                      active ? 'text-white' : 'text-white/55 hover:text-white/90',
-                    ].join(' ')}
+                    href="/"
+                    aria-label="Back to Kawai America"
+                    className="flex flex-col items-center gap-3 px-8 py-5 group"
+                    style={dropdownStyle}
                   >
-                    {item.label}
+                    <Image
+                      src="/images/Kawai (Red).png"
+                      alt="Kawai America"
+                      width={120}
+                      height={40}
+                      className="object-contain transition-opacity duration-200 group-hover:opacity-75"
+                      style={{ height: '28px', width: 'auto' }}
+                    />
+                    <span
+                      className="text-white/30 group-hover:text-white/55 transition-colors duration-200 text-[8px] tracking-[0.4em] uppercase whitespace-nowrap"
+                      style={f}
+                    >
+                      Kawai America
+                    </span>
                   </Link>
-                )
-              })}
-            </nav>
-
-            {/* Right side — ml-auto pushes hamburger right on mobile; md:justify-between handles desktop */}
-            <div className="flex items-center gap-3 shrink-0 ml-auto md:ml-0">
-              {/* Contact pill — desktop */}
-              <Link
-                href="/shigeru/contact"
-                style={{ ...f, borderRadius: '999px' }}
-                className="hidden md:inline-flex items-center border border-kawai-gold/30 hover:border-kawai-gold/65 text-kawai-gold text-[12px] font-semibold tracking-[0.08em] uppercase px-5 py-2 transition-all duration-300 hover:bg-kawai-gold/[0.06]"
-              >
-                Contact
-              </Link>
-
-              {/* Hamburger — mobile */}
-              <button
-                onClick={() => setMobileOpen(true)}
-                className="flex flex-col justify-center gap-[5px] w-8 h-8 md:hidden"
-                aria-label="Open navigation"
-              >
-                <span className="block h-px w-5 bg-white/65" />
-                <span className="block h-px w-3.5 bg-white/65" />
-                <span className="block h-px w-5 bg-white/65" />
-              </button>
-            </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        </header>
-      </div>
 
-      {/* ── Resources dropdown ── */}
+          {/* Right nav + mobile hamburger */}
+          <div className="flex items-center justify-end">
+            <NavBar
+              items={rightNav}
+              pathname={pathname}
+              openDropdown={openDropdown}
+              onDropdownEnter={handleDropdownEnter}
+              onDropdownLeave={handleDropdownLeave}
+              side="right"
+            />
+
+            {/* Mobile hamburger */}
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="flex flex-col justify-center gap-[5px] w-9 h-9 md:hidden"
+              aria-label="Open navigation"
+            >
+              <span className="block h-px w-5 bg-white/70" />
+              <span className="block h-px w-3.5 bg-white/70" />
+              <span className="block h-px w-5 bg-white/70" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* ── Nav dropdown (Resources etc.) ── */}
       <AnimatePresence>
-        {dropdownOpen && (
+        {activeDropdownItem?.children && (
           <motion.div
-            className="fixed top-[84px] left-0 right-0 z-40 flex justify-center pointer-events-none"
-            initial={{ opacity: 0, y: -8 }}
+            className="fixed top-[68px] left-0 right-0 z-40 flex justify-center pointer-events-none"
+            initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.16, ease: [0.25, 0.46, 0.45, 0.94] }}
-            onMouseEnter={openDropdown}
-            onMouseLeave={scheduleClose}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.16, ease }}
+            onMouseEnter={() => handleDropdownEnter(openDropdown!)}
+            onMouseLeave={handleDropdownLeave}
           >
             <div
               className="pointer-events-auto flex items-center px-8 py-4"
               style={dropdownStyle}
               role="menu"
-              aria-label="Resources"
+              aria-label={activeDropdownItem.label}
             >
-              {navItems
-                .find((i) => i.children)
-                ?.children?.map((child, idx, arr) => (
-                  <div key={child.href} className="flex items-center">
-                    <Link
-                      href={child.href}
-                      role="menuitem"
-                      style={f}
-                      className={[
-                        'text-[13px] font-semibold tracking-[0.06em] uppercase transition-colors duration-200 px-7',
-                        pathname.startsWith(child.href) ? 'text-white' : 'text-white/50 hover:text-white/90',
-                      ].join(' ')}
-                    >
-                      {child.label}
-                    </Link>
-                    {idx < arr.length - 1 && (
-                      <span className="block w-px h-3 bg-kawai-gold/20 shrink-0" aria-hidden />
-                    )}
-                  </div>
-                ))}
+              {activeDropdownItem.children.map((child, idx, arr) => (
+                <div key={child.href} className="flex items-center">
+                  <Link
+                    href={child.href}
+                    role="menuitem"
+                    style={f}
+                    className={[
+                      'text-[11px] font-semibold tracking-[0.14em] uppercase transition-colors duration-200 px-6',
+                      pathname.startsWith(child.href) ? 'text-white' : 'text-white/50 hover:text-white',
+                    ].join(' ')}
+                  >
+                    {child.label}
+                  </Link>
+                  {idx < arr.length - 1 && (
+                    <span className="block w-px h-3 bg-kawai-gold/20 shrink-0" aria-hidden />
+                  )}
+                </div>
+              ))}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Mobile full-screen overlay ── */}
+      {/* ── Mobile overlay ── */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
             className="fixed inset-0 z-[60] flex flex-col"
-            style={{ background: 'rgba(6,6,6,0.97)', backdropFilter: 'blur(32px)', WebkitBackdropFilter: 'blur(32px)' }}
+            style={{ background: 'rgba(10,9,6,0.98)', backdropFilter: 'blur(32px)', WebkitBackdropFilter: 'blur(32px)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ duration: 0.22, ease }}
           >
             {/* Top bar */}
-            <div className="flex items-center justify-between px-6 h-[72px] border-b border-white/[0.06] shrink-0">
+            <div className="flex items-center justify-between px-6 h-[68px] border-b border-white/[0.06] shrink-0">
               <Link href="/shigeru" onClick={() => setMobileOpen(false)}>
                 <Image
-                  src="https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/Shigeru%20Kawai%20logo.webp"
+                  src="https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/Shigeru%20Kawai%20logo%20(white).webp"
                   alt="Shigeru Kawai"
                   width={0}
                   height={0}
-                  sizes="180px"
+                  sizes="160px"
                   className="h-[40px] w-auto object-contain"
                 />
               </Link>
@@ -264,6 +383,36 @@ export default function ShigeruHeader() {
 
             {/* Nav items */}
             <nav className="flex flex-col px-8 pt-12 gap-8 overflow-y-auto" aria-label="Mobile navigation">
+              {/* Kawai parent brand link at top of mobile menu */}
+              <motion.div
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.02, duration: 0.26, ease }}
+              >
+                <Link
+                  href="/"
+                  className="inline-flex items-center gap-3"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <Image
+                    src="/images/Kawai (Red).png"
+                    alt="Kawai America"
+                    width={80}
+                    height={24}
+                    className="object-contain"
+                    style={{ height: '18px', width: 'auto' }}
+                  />
+                  <span
+                    className="text-white/20 text-[9px] tracking-[0.35em] uppercase"
+                    style={f}
+                  >
+                    ← Kawai America
+                  </span>
+                </Link>
+              </motion.div>
+
+              <span className="block h-px bg-white/[0.06]" aria-hidden />
+
               {mobileNavItems.map((item, i) => {
                 if ('children' in item && item.children) {
                   return (
@@ -271,7 +420,7 @@ export default function ShigeruHeader() {
                       key={item.label}
                       initial={{ opacity: 0, x: -12 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.05 + 0.05, duration: 0.26, ease: [0.25, 0.46, 0.45, 0.94] }}
+                      transition={{ delay: i * 0.05 + 0.08, duration: 0.26, ease }}
                     >
                       <span style={f} className="block text-[10px] tracking-[0.2em] uppercase text-white/30 mb-5">
                         {item.label}
@@ -296,19 +445,21 @@ export default function ShigeruHeader() {
                 }
 
                 const href = item.href ?? '/shigeru'
+                const isContact = href === '/shigeru/contact'
+
                 return (
                   <motion.div
                     key={href}
                     initial={{ opacity: 0, x: -12 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.05 + 0.05, duration: 0.26, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    transition={{ delay: i * 0.05 + 0.08, duration: 0.26, ease }}
                   >
                     <Link
                       href={href}
                       style={f}
                       className={[
                         'block text-[16px] font-semibold tracking-[0.04em] uppercase transition-colors duration-200',
-                        isActive(item) ? 'text-white' : 'text-white/60 hover:text-white',
+                        isActive(item) ? 'text-white' : isContact ? 'text-kawai-gold' : 'text-white/60 hover:text-white',
                       ].join(' ')}
                     >
                       {item.label}

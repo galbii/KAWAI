@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { SHIGERU_MODELS } from '../../_data/models'
+import { getShigeruPageData } from '../../_data/shopify'
 
 export async function generateStaticParams() {
   return SHIGERU_MODELS.map((m) => ({ model: m.slug }))
@@ -35,6 +37,13 @@ export default async function ModelPage({
   const nextModel =
     currentIndex < SHIGERU_MODELS.length - 1 ? SHIGERU_MODELS[currentIndex + 1] : null
 
+  // Fetch Shopify data — shares the same cache entry as the home + models pages
+  const productData = await getShigeruPageData()
+  const shopifyKey = slug.replace(/-/g, '')
+  const shopify = productData[shopifyKey] ?? null
+  const imageUrl = shopify?.imageUrl ?? null
+  const finishes = shopify?.finishes?.length ? shopify.finishes : model.finishes
+
   const productSchema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -46,23 +55,30 @@ export default async function ModelPage({
   }
 
   const specs = [
-    { label: 'Length', value: model.feet, sub: model.cm },
-    { label: 'Width', value: model.width, sub: model.widthCm },
-    { label: 'Weight', value: model.weight, sub: model.weightKg },
+    {
+      label: 'Length',
+      value: shopify?.specLength ?? model.feet,
+      sub: shopify?.specLengthSub ?? model.cm,
+    },
+    {
+      label: 'Width',
+      value: shopify?.specWidth ?? model.width,
+      sub: shopify?.specWidthSub ?? model.widthCm,
+    },
+    {
+      label: 'Weight',
+      value: shopify?.specWeight ?? model.weight,
+      sub: shopify?.specWeightSub ?? model.weightKg,
+    },
     {
       label: 'Beams',
-      value: model.beams.toString(),
+      value: shopify?.specBeams ?? model.beams.toString(),
       sub: model.beams === 5 ? 'Concert specification' : 'Premium specification',
     },
     {
-      label: model.finishes.length === 1 ? 'Finish' : 'Finishes',
-      value: model.finishes[0] ?? '',
-      sub:
-        model.finishes.length > 1
-          ? model.finishes
-              .slice(1)
-              .join(' · ')
-          : undefined,
+      label: finishes.length === 1 ? 'Finish' : 'Finishes',
+      value: finishes[0] ?? '',
+      sub: finishes.length > 1 ? finishes.slice(1).join(' · ') : undefined,
     },
     {
       label: 'Warranty',
@@ -179,6 +195,22 @@ export default async function ModelPage({
             <span className="block w-px h-14 bg-gradient-to-b from-white/15 to-transparent" />
           </div>
         </section>
+
+        {/* ── PIANO IMAGE ─────────────────────────────────────────── */}
+        {imageUrl && (
+          <section className="bg-[#0a0a0a] px-6 pb-20 flex justify-center">
+            <div className="relative w-full max-w-4xl" style={{ aspectRatio: '4/3' }}>
+              <Image
+                src={imageUrl}
+                alt={`Shigeru Kawai ${model.name}`}
+                fill
+                className="object-contain"
+                sizes="(max-width: 768px) 100vw, 896px"
+                priority
+              />
+            </div>
+          </section>
+        )}
 
         {/* ── SPECIFICATIONS ──────────────────────────────────────── */}
         <section className="bg-kawai-pearl px-6 py-28">

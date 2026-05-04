@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { SHIGERU_MODELS } from '../_data/models'
+import { getShigeruPageData } from '../_data/shopify'
 import { HeroAnimated } from './_components/HeroAnimated'
 import { ModelCard } from './_components/ModelCard'
 import { ModelProgressIndicator } from './_components/ModelProgressIndicator'
@@ -32,7 +33,9 @@ const standardFeatures = [
   'Final voicing by Master Piano Artisan (MPA)',
 ]
 
-export default function ModelsPage() {
+export default async function ModelsPage() {
+  const productData = await getShigeruPageData()
+
   return (
     <div className="bg-[#0a0a0a]">
 
@@ -54,9 +57,19 @@ export default function ModelsPage() {
 
       {/* ── ALTERNATING MODEL CARDS ───────────────────────────── */}
       <section>
-        {SHIGERU_MODELS.map((model, i) => (
-          <ModelCard key={model.slug} model={model} index={i} />
-        ))}
+        {SHIGERU_MODELS.map((model, i) => {
+          const shopifyKey = model.slug.replace(/-/g, '')
+          const shopifyData = productData[shopifyKey] ?? null
+          return (
+            <ModelCard
+              key={model.slug}
+              model={model}
+              index={i}
+              imageUrl={shopifyData?.imageUrl ?? null}
+              shopifyFinishes={shopifyData?.finishes ?? null}
+            />
+          )
+        })}
       </section>
 
       {/* ── COMPARISON TABLE ──────────────────────────────────── */}

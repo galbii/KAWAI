@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import ShigeruHeader from './_components/ShigeruHeader'
 import './shigeru.css'
 
@@ -264,41 +265,42 @@ export default function ShigeruLayout({ children }: { children: React.ReactNode 
 
       {/* Shigeru Kawai footer */}
       <footer className="bg-[#0a0a0a] border-t border-white/[0.04]">
+        {/* Logo */}
+        <div className="flex justify-center pt-12 pb-8">
+          <Link href="/shigeru" aria-label="Shigeru Kawai — Home">
+            <Image
+              src="https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/Shigeru%20Kawai%20logo%20(white).webp"
+              alt="Shigeru Kawai"
+              width={0}
+              height={0}
+              sizes="200px"
+              className="h-[52px] w-auto object-contain opacity-70 hover:opacity-100 transition-opacity duration-300"
+            />
+          </Link>
+        </div>
+
         {/* Footer nav links */}
-        <div className="flex items-center justify-center gap-8 px-8 py-8 flex-wrap">
+        <div className="flex items-center justify-center gap-8 px-8 pb-10 flex-wrap">
           {footerLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-white/25 hover:text-white/60 text-[9px] tracking-[0.3em] uppercase transition-colors duration-200"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
+              className="text-white/35 hover:text-white/70 text-[11px] tracking-[0.25em] uppercase transition-colors duration-200"
+              style={{ fontFamily: 'var(--font-oswald)' }}
             >
               {link.label}
             </Link>
           ))}
         </div>
 
-        {/* Bottom row */}
-        <div className="flex items-center justify-between px-8 pb-8 gap-4">
+        {/* Copyright */}
+        <div className="flex justify-center px-8 pb-10">
           <span
-            className="text-kawai-gold text-[9px] tracking-[0.4em] uppercase"
-            style={{ fontFamily: 'var(--font-brand-sans)', fontVariant: 'small-caps' }}
-          >
-            Shigeru Kawai
-          </span>
-          <span
-            className="text-white/25 text-[9px] tracking-[0.2em] text-center"
+            className="text-white/30 text-[12px] tracking-[0.15em] text-center"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
-            &copy; 2026 Kawai Musical Instruments. All rights reserved.
+            &copy; 2026 Kawai America Corporation. All rights reserved.
           </span>
-          <Link
-            href="https://kawaius.com"
-            className="text-white/20 hover:text-white/50 text-[9px] tracking-[0.3em] uppercase transition-colors duration-200"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
-          >
-            kawaius.com
-          </Link>
         </div>
       </footer>
     </>

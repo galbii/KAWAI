@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence, LayoutGroup, type MotionStyle } from 'framer-motion'
 import { getOptimizedImageProps } from '@/lib/media/r2-utils'
 import { SHIGERU_MODELS } from '../_data/models'
+import type { ShigeruModelShopifyData } from '../_data/shopify'
 
 const ease = [0.25, 0.46, 0.45, 0.94] as const
 
@@ -32,18 +33,6 @@ const markIn = {
   enter: { opacity: 0, scale: 1.07 },
   center: { opacity: 1, scale: 1 },
   exit: { opacity: 0, scale: 0.93 },
-}
-
-type ShigeruModelShopifyData = {
-  imageUrl: string | null
-  finishes: string[]
-  specLength: string | null
-  specLengthSub: string | null
-  specWidth: string | null
-  specWidthSub: string | null
-  specWeight: string | null
-  specWeightSub: string | null
-  specBeams: string | null
 }
 
 type Props = {

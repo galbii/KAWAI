@@ -2,6 +2,7 @@
 
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
+import Image from 'next/image'
 import Link from 'next/link'
 import type { ShigeruModel } from '../../_data/models'
 
@@ -10,13 +11,18 @@ const ease = [0.25, 0.46, 0.45, 0.94] as const
 interface Props {
   model: ShigeruModel
   index: number
+  imageUrl?: string | null
+  shopifyFinishes?: string[] | null
 }
 
-export function ModelCard({ model, index }: Props) {
+export function ModelCard({ model, index, imageUrl, shopifyFinishes }: Props) {
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, amount: 0.15 })
   const isEven = index % 2 === 0
   const isLast = model.slug === 'sk-ex'
+
+  // Prefer Shopify finishes (live data) over static fallback
+  const finishes = shopifyFinishes?.length ? shopifyFinishes : model.finishes
 
   function text(delay: number) {
     return {
@@ -57,10 +63,6 @@ export function ModelCard({ model, index }: Props) {
             }
             transition={{ duration: 1.15, ease }}
           >
-            {/*
-              Placeholder — replace this <div> with <Image> when piano photos are ready.
-              Props needed: src, alt={model.name}, fill, sizes, className="object-contain"
-            */}
             <div
               className="relative w-full aspect-[4/3] flex items-center justify-center"
               style={{
@@ -68,24 +70,31 @@ export function ModelCard({ model, index }: Props) {
                   'radial-gradient(ellipse 80% 70% at 50% 58%, rgba(213,199,140,0.05) 0%, transparent 68%)',
               }}
             >
-              <span
-                className="select-none font-light italic leading-none"
-                style={{
-                  fontFamily: 'var(--font-brand-luxury)',
-                  fontSize: 'clamp(4.5rem, 16vw, 13rem)',
-                  color: `rgba(255,255,255,${isLast ? 0.055 : 0.038})`,
-                }}
-                aria-hidden="true"
-              >
-                {model.name}
-              </span>
-              <span className="absolute inset-6 lg:inset-10 border border-dashed border-white/[0.06]" />
-              <span
-                className="absolute bottom-8 lg:bottom-11 left-1/2 -translate-x-1/2 text-white/[0.14] text-[8px] tracking-[0.4em] uppercase whitespace-nowrap"
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
-              >
-                Image coming soon
-              </span>
+              {imageUrl ? (
+                <Image
+                  src={imageUrl}
+                  alt={model.name}
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 1024px) 100vw, 52vw"
+                  priority={index === 0}
+                />
+              ) : (
+                <>
+                  <span
+                    className="select-none font-light italic leading-none"
+                    style={{
+                      fontFamily: 'var(--font-brand-luxury)',
+                      fontSize: 'clamp(4.5rem, 16vw, 13rem)',
+                      color: `rgba(255,255,255,${isLast ? 0.055 : 0.038})`,
+                    }}
+                    aria-hidden="true"
+                  >
+                    {model.name}
+                  </span>
+                  <span className="absolute inset-6 lg:inset-10 border border-dashed border-white/[0.06]" />
+                </>
+              )}
             </div>
           </motion.div>
 
@@ -194,9 +203,9 @@ export function ModelCard({ model, index }: Props) {
             </motion.ul>
 
             {/* Finish pills */}
-            {model.finishes.length > 1 && (
+            {finishes.length > 1 && (
               <motion.div className="flex flex-wrap gap-2 mb-9" {...text(0.72)}>
-                {model.finishes.map((f) => (
+                {finishes.map((f) => (
                   <span
                     key={f}
                     className="border border-white/[0.08] text-white/25 text-[8px] tracking-[0.22em] uppercase px-3 py-1"
