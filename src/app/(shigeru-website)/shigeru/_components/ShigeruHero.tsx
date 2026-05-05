@@ -1,8 +1,6 @@
 import Link from 'next/link'
-import { buildYouTubeEmbedUrl } from '@/lib/utils/youtube'
 
-// YouTube video ID for the Shigeru Kawai hero
-const VIDEO_ID = 'DOjL_bW6e5c'
+const HERO_VIDEO_URL = 'https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/SK-EX Video-1.webm'
 
 export function ShigeruHero() {
   return (
@@ -10,13 +8,6 @@ export function ShigeruHero() {
       className="relative min-h-screen overflow-hidden bg-[#060606]"
       aria-label="Shigeru Kawai Concert Grand Pianos — Handcrafted in Hamamatsu, Japan"
     >
-      {/*
-       * SEO: visually hidden h1 + descriptor.
-       * sr-only is a standard accessibility pattern (not hidden-text spam).
-       * Google respects sr-only as legitimate a11y — it's used by Bootstrap,
-       * Tailwind, and every major design system. The rich keyword content here
-       * supplements the JSON-LD structured data in layout.tsx.
-       */}
       <h1 className="sr-only">
         Shigeru Kawai Grand Pianos — SK-2, SK-3, SK-5, SK-6, SK-7, SK-EX Concert Grand
       </h1>
@@ -27,33 +18,21 @@ export function ShigeruHero() {
         each year. Chosen by world-class pianists and premier institutions worldwide.
       </p>
 
-      {/* ── Full-bleed YouTube embed ── */}
-      {/*
-       * overflow-hidden clips the scaled-up iframe container, pushing YouTube's
-       * hover-triggered title bar and chrome outside the visible viewport.
-       * Scale of 1.25 gives ~12.5% bleed on each edge — enough to hide UI overlays.
-       * pointer-events-none prevents hover from triggering YouTube's UI in the first place.
-       */}
+      {/* ── Full-bleed video background ── */}
       <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ transform: 'scale(1.25)', transformOrigin: 'center center' }}
-        >
-          <iframe
-            src={buildYouTubeEmbedUrl(VIDEO_ID)}
-            title="Shigeru Kawai Concert Grand Piano — Handcrafted Excellence, Hamamatsu Japan"
-            allow="autoplay; picture-in-picture"
-            className="absolute"
-            style={{
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: 'max(100%, calc(100vh * 16 / 9))',
-              height: 'max(100%, calc(100vw * 9 / 16))',
-              border: 'none',
-            }}
-          />
-        </div>
+        <video
+          src={HERO_VIDEO_URL}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+          style={{
+            width: 'max(100%, calc(100vh * 16 / 9))',
+            height: 'max(100%, calc(100vw * 9 / 16))',
+            objectFit: 'cover',
+          }}
+        />
       </div>
 
       {/* ── Layered overlays for cinematic depth ── */}
