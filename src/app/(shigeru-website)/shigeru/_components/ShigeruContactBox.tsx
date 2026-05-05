@@ -42,7 +42,7 @@ export function ShigeruContactBox() {
     <section
       id="contact"
       aria-label="Contact Shigeru Kawai"
-      className="bg-white sk-section border-t border-kawai-black/[0.07]"
+      className="bg-[#0a0a0a] sk-section border-t border-white/[0.06]"
     >
       <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
@@ -56,7 +56,7 @@ export function ShigeruContactBox() {
               Private Inquiry
             </p>
             <h2
-              className="text-kawai-black font-extrabold uppercase leading-[0.9] mb-8"
+              className="text-white font-extrabold uppercase leading-[0.9] mb-8"
               style={{
                 fontFamily: 'var(--font-oswald)',
                 fontSize: 'clamp(2.6rem, 4.5vw, 4rem)',
@@ -66,7 +66,7 @@ export function ShigeruContactBox() {
               Get in Touch
             </h2>
             <p
-              className="text-kawai-charcoal/55 text-base leading-relaxed mb-10 max-w-sm"
+              className="text-white/55 text-base leading-relaxed mb-10 max-w-sm"
               style={{ fontFamily: 'var(--font-brand-sans)' }}
             >
               Shigeru Kawai grand pianos are available by private appointment through our network of
@@ -74,7 +74,7 @@ export function ShigeruContactBox() {
             </p>
             <a
               href="mailto:contact@kawaius.com"
-              className="inline-flex items-center gap-2 text-kawai-charcoal/35 hover:text-kawai-gold transition-colors duration-300"
+              className="inline-flex items-center gap-2 text-white/35 hover:text-kawai-gold transition-colors duration-300"
               style={{ fontFamily: 'var(--font-oswald)', fontSize: '0.78rem', letterSpacing: '0.2em', textTransform: 'uppercase' }}
             >
               contact@kawaius.com
@@ -88,7 +88,7 @@ export function ShigeruContactBox() {
               <div className="border border-kawai-gold/25 p-10 flex flex-col items-start gap-6">
                 <span className="block h-px w-10 bg-kawai-gold opacity-40" />
                 <p
-                  className="text-kawai-black font-light italic"
+                  className="text-white font-light italic"
                   style={{
                     fontFamily: 'var(--font-brand-luxury)',
                     fontSize: 'clamp(1.2rem, 2.5vw, 1.6rem)',
@@ -97,14 +97,14 @@ export function ShigeruContactBox() {
                   Thank you, {form.name.split(' ')[0] ?? form.name}.
                 </p>
                 <p
-                  className="text-kawai-charcoal/50 text-sm leading-relaxed"
+                  className="text-white/50 text-sm leading-relaxed"
                   style={{ fontFamily: 'var(--font-brand-sans)' }}
                 >
                   {result?.message ?? 'A Shigeru Kawai specialist will be in touch shortly.'}
                 </p>
                 <button
                   onClick={() => { setStatus('idle'); setForm({ name: '', email: '', message: '' }) }}
-                  className="mt-2 text-kawai-charcoal/30 hover:text-kawai-gold transition-colors duration-300 text-[10px] tracking-[0.35em] uppercase"
+                  className="mt-2 text-white/30 hover:text-kawai-gold transition-colors duration-300 text-[10px] tracking-[0.35em] uppercase"
                   style={{ fontFamily: 'var(--font-oswald)' }}
                 >
                   Send another inquiry →
@@ -130,7 +130,7 @@ export function ShigeruContactBox() {
                     value={form.name}
                     onChange={update('name')}
                     placeholder="Your name"
-                    className="bg-transparent border-b border-kawai-black/15 focus:border-kawai-gold text-kawai-black text-base py-3 outline-none placeholder:text-kawai-charcoal/30 transition-colors duration-300"
+                    className="bg-transparent border-b border-white/15 focus:border-kawai-gold text-white text-base py-3 outline-none placeholder:text-white/25 transition-colors duration-300"
                     style={{ fontFamily: 'var(--font-brand-sans)' }}
                   />
                 </div>
@@ -152,7 +152,7 @@ export function ShigeruContactBox() {
                     value={form.email}
                     onChange={update('email')}
                     placeholder="your@email.com"
-                    className="bg-transparent border-b border-kawai-black/15 focus:border-kawai-gold text-kawai-black text-base py-3 outline-none placeholder:text-kawai-charcoal/30 transition-colors duration-300"
+                    className="bg-transparent border-b border-white/15 focus:border-kawai-gold text-white text-base py-3 outline-none placeholder:text-white/25 transition-colors duration-300"
                     style={{ fontFamily: 'var(--font-brand-sans)' }}
                   />
                 </div>
@@ -173,7 +173,7 @@ export function ShigeruContactBox() {
                     value={form.message}
                     onChange={update('message')}
                     placeholder="Tell us which model interests you, or ask a question…"
-                    className="bg-transparent border-b border-kawai-black/15 focus:border-kawai-gold text-kawai-black text-base py-3 outline-none placeholder:text-kawai-charcoal/30 transition-colors duration-300 resize-none"
+                    className="bg-transparent border-b border-white/15 focus:border-kawai-gold text-white text-base py-3 outline-none placeholder:text-white/25 transition-colors duration-300 resize-none leading-relaxed"
                     style={{ fontFamily: 'var(--font-brand-sans)' }}
                   />
                 </div>
@@ -181,7 +181,7 @@ export function ShigeruContactBox() {
                 {/* Error message */}
                 {status === 'error' && result && (
                   <p
-                    className="text-red-600/60 text-sm"
+                    className="text-red-400/70 text-sm"
                     style={{ fontFamily: 'var(--font-brand-sans)' }}
                   >
                     {result.message}

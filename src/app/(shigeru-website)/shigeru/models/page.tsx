@@ -73,7 +73,7 @@ export default async function ModelsPage() {
       </section>
 
       {/* ── COMPARISON TABLE ──────────────────────────────────── */}
-      <section className="bg-white px-6 py-32">
+      <section className="bg-[#0a0a0a] px-6 py-32">
         <div className="max-w-6xl mx-auto">
           <p
             className="text-kawai-gold text-[13px] tracking-[0.45em] uppercase text-center mb-8"
@@ -82,7 +82,7 @@ export default async function ModelsPage() {
             At a Glance
           </p>
           <h2
-            className="text-kawai-black font-bold text-center mb-20 leading-tight uppercase"
+            className="text-white font-bold text-center mb-20 leading-tight uppercase"
             style={{
               fontFamily: 'var(--font-oswald)',
               fontSize: 'clamp(2.2rem, 3.5vw, 3.2rem)',
@@ -111,12 +111,12 @@ export default async function ModelsPage() {
                 {SHIGERU_MODELS.map((model, i) => (
                   <tr
                     key={model.slug}
-                    className={`border-b ${i === SHIGERU_MODELS.length - 1 ? 'border-transparent' : 'border-kawai-black/[0.08]'} group`}
+                    className={`border-b ${i === SHIGERU_MODELS.length - 1 ? 'border-transparent' : 'border-white/[0.08]'} group`}
                   >
                     <td className="py-6 pr-8">
                       <Link
                         href={`/shigeru/models/${model.slug}`}
-                        className="text-kawai-black group-hover:text-kawai-charcoal transition-colors duration-200"
+                        className="text-white group-hover:text-white/70 transition-colors duration-200"
                         style={{
                           fontFamily: 'var(--font-oswald)',
                           fontSize: '1.5rem',
@@ -130,7 +130,7 @@ export default async function ModelsPage() {
                     </td>
                     <td className="py-6 pr-8">
                       <span
-                        className="text-kawai-charcoal/60 text-sm"
+                        className="text-white/50 text-sm"
                         style={{ fontFamily: 'var(--font-brand-sans)' }}
                       >
                         {model.type}
@@ -138,34 +138,34 @@ export default async function ModelsPage() {
                     </td>
                     <td className="py-6 pr-8">
                       <span
-                        className="text-kawai-black text-base"
+                        className="text-white text-base"
                         style={{ fontFamily: 'var(--font-brand-sans)' }}
                       >
                         {model.feet}
-                        <span className="text-kawai-charcoal/40 text-sm ml-2">{model.cm}</span>
+                        <span className="text-white/35 text-sm ml-2">{model.cm}</span>
                       </span>
                     </td>
                     <td className="py-6 pr-8">
                       <span
-                        className="text-kawai-black text-base"
+                        className="text-white text-base"
                         style={{ fontFamily: 'var(--font-brand-sans)' }}
                       >
                         {model.width}
-                        <span className="text-kawai-charcoal/40 text-sm ml-2">{model.widthCm}</span>
+                        <span className="text-white/35 text-sm ml-2">{model.widthCm}</span>
                       </span>
                     </td>
                     <td className="py-6 pr-8">
                       <span
-                        className="text-kawai-black text-base"
+                        className="text-white text-base"
                         style={{ fontFamily: 'var(--font-brand-sans)' }}
                       >
                         {model.weight}
-                        <span className="text-kawai-charcoal/40 text-sm ml-2">{model.weightKg}</span>
+                        <span className="text-white/35 text-sm ml-2">{model.weightKg}</span>
                       </span>
                     </td>
                     <td className="py-6">
                       <span
-                        className="text-kawai-charcoal/55 text-sm leading-relaxed"
+                        className="text-white/50 text-sm leading-relaxed"
                         style={{ fontFamily: 'var(--font-brand-sans)' }}
                       >
                         {model.finishes.join(' · ')}
@@ -231,7 +231,7 @@ export default async function ModelsPage() {
       </section>
 
       {/* ── CTA ───────────────────────────────────────────────── */}
-      <section className="bg-white border-t border-kawai-black/[0.07] px-6 py-32">
+      <section className="bg-[#0a0a0a] border-t border-white/[0.06] px-6 py-32">
         <div className="max-w-xl mx-auto text-center">
           <span className="block h-px w-12 bg-kawai-gold opacity-40 mx-auto mb-16" />
 
@@ -242,7 +242,7 @@ export default async function ModelsPage() {
             Experience Shigeru Kawai
           </p>
           <h2
-            className="text-kawai-black font-bold leading-tight mb-8 uppercase"
+            className="text-white font-bold leading-tight mb-8 uppercase"
             style={{
               fontFamily: 'var(--font-oswald)',
               fontSize: 'clamp(2.8rem, 6vw, 4.5rem)',
@@ -252,7 +252,7 @@ export default async function ModelsPage() {
             Hear One in Person
           </h2>
           <p
-            className="text-kawai-charcoal/60 text-base leading-relaxed mb-16 max-w-md mx-auto"
+            className="text-white/55 text-base leading-relaxed mb-16 max-w-md mx-auto"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             No description can replace the experience of sitting before a Shigeru Kawai grand.
@@ -269,7 +269,7 @@ export default async function ModelsPage() {
             </Link>
             <Link
               href="/shigeru/contact"
-              className="inline-flex items-center gap-3 border-2 border-kawai-black/15 hover:border-kawai-black/30 text-kawai-charcoal/50 hover:text-kawai-charcoal/80 px-11 py-5 transition-all duration-300"
+              className="inline-flex items-center gap-3 border-2 border-white/15 hover:border-white/35 text-white/45 hover:text-white/75 px-11 py-5 transition-all duration-300"
               style={{ fontFamily: 'var(--font-oswald)', fontSize: '0.92rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase' }}
             >
               Contact Us

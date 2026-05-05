@@ -73,7 +73,7 @@ export default function ContactPage() {
       </section>
 
       {/* ── CONTACT OPTIONS ──────────────────────────────────── */}
-      <section className="bg-white px-6 py-28 border-t border-kawai-black/[0.07]">
+      <section className="bg-[#0a0a0a] px-6 py-28 border-t border-white/[0.06]">
         <div className="max-w-6xl mx-auto">
 
           {/* Section header */}
@@ -84,14 +84,14 @@ export default function ContactPage() {
             >
               Direct Contact
             </p>
-            <span className="block h-px flex-1 bg-kawai-black/[0.07]" />
+            <span className="block h-px flex-1 bg-white/[0.07]" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-kawai-black/[0.07]">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/[0.06]">
             {contactOptions.map((option) => (
               <div
                 key={option.category}
-                className="bg-white px-10 py-14 flex flex-col"
+                className="bg-[#0a0a0a] px-10 py-14 flex flex-col"
               >
                 <span className="block w-8 h-px bg-kawai-gold opacity-50 mb-8" />
                 <p
@@ -101,7 +101,7 @@ export default function ContactPage() {
                   {option.category}
                 </p>
                 <p
-                  className="text-kawai-black font-bold uppercase leading-tight mb-3"
+                  className="text-white font-bold uppercase leading-tight mb-3"
                   style={{
                     fontFamily: 'var(--font-oswald)',
                     fontSize: 'clamp(1.05rem, 1.6vw, 1.35rem)',
@@ -111,13 +111,13 @@ export default function ContactPage() {
                   {option.value}
                 </p>
                 <p
-                  className="text-kawai-charcoal/45 text-[10px] tracking-[0.2em] uppercase mb-8"
+                  className="text-white/40 text-[10px] tracking-[0.2em] uppercase mb-8"
                   style={{ fontFamily: 'var(--font-oswald)' }}
                 >
                   {option.note}
                 </p>
                 <p
-                  className="text-kawai-charcoal/55 text-sm leading-relaxed mt-auto"
+                  className="text-white/50 text-sm leading-relaxed mt-auto"
                   style={{ fontFamily: 'var(--font-brand-sans)' }}
                 >
                   {option.description}
@@ -286,7 +286,7 @@ export default function ContactPage() {
       </section>
 
       {/* ── DEALER LOCATOR CTA ───────────────────────────────── */}
-      <section className="bg-white px-6 py-28 border-t border-kawai-black/[0.07]">
+      <section className="bg-[#0a0a0a] px-6 py-28 border-t border-white/[0.06]">
         <div className="max-w-2xl mx-auto text-center">
           <span className="block h-px w-10 bg-kawai-gold opacity-40 mx-auto mb-12" />
           <p
@@ -296,7 +296,7 @@ export default function ContactPage() {
             Visit in Person
           </p>
           <h2
-            className="text-kawai-black font-bold uppercase leading-tight mb-8"
+            className="text-white font-bold uppercase leading-tight mb-8"
             style={{
               fontFamily: 'var(--font-oswald)',
               fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)',
@@ -306,7 +306,7 @@ export default function ContactPage() {
             Find a Dealer Near You
           </h2>
           <p
-            className="text-kawai-charcoal/55 text-base leading-relaxed mb-12 max-w-md mx-auto"
+            className="text-white/55 text-base leading-relaxed mb-12 max-w-md mx-auto"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             45 authorized Shigeru Kawai dealers across North America are ready to introduce you to
