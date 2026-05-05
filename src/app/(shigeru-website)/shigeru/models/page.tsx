@@ -37,7 +37,7 @@ export default async function ModelsPage() {
   const productData = await getShigeruPageData()
 
   return (
-    <div className="bg-[#0a0a0a]">
+    <div className="bg-kawai-pearl">
 
       {/* ── FIXED PROGRESS INDICATOR ──────────────────────────── */}
       <ModelProgressIndicator />
@@ -178,7 +178,7 @@ export default async function ModelsPage() {
       </section>
 
       {/* ── STANDARD FEATURES ─────────────────────────────────── */}
-      <section className="bg-[#0a0a0a] px-6 py-28">
+      <section className="bg-white px-6 py-28">
         <div className="max-w-5xl mx-auto">
           <p
             className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase text-center mb-6"
@@ -187,7 +187,7 @@ export default async function ModelsPage() {
             Standard Across All Models
           </p>
           <h2
-            className="text-white font-light italic text-center mb-4 leading-tight"
+            className="text-kawai-black font-light italic text-center mb-4 leading-tight"
             style={{
               fontFamily: 'var(--font-brand-luxury)',
               fontSize: 'clamp(1.6rem, 3vw, 2.4rem)',
@@ -196,7 +196,7 @@ export default async function ModelsPage() {
             Built Into Every Instrument
           </h2>
           <p
-            className="text-white/25 text-sm text-center mb-16 max-w-lg mx-auto leading-relaxed"
+            className="text-kawai-charcoal/50 text-sm text-center mb-16 max-w-lg mx-auto leading-relaxed"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             Every Shigeru Kawai grand piano — from SK-2 to SK-EX — includes these features as
@@ -208,7 +208,7 @@ export default async function ModelsPage() {
               <div key={feature} className="flex items-start gap-4">
                 <span className="mt-2 flex-shrink-0 block w-1 h-1 rounded-full bg-kawai-gold opacity-60" />
                 <p
-                  className="text-white/35 text-sm leading-snug"
+                  className="text-kawai-charcoal/65 text-sm leading-snug"
                   style={{ fontFamily: 'var(--font-brand-sans)' }}
                 >
                   {feature}
@@ -218,7 +218,7 @@ export default async function ModelsPage() {
           </div>
 
           <p
-            className="text-white/15 text-xs text-center mt-14 italic"
+            className="text-kawai-charcoal/35 text-xs text-center mt-14 italic"
             style={{ fontFamily: 'var(--font-brand-luxury)' }}
           >
             All models include a 10-year transferrable warranty and Master Piano Artisan
@@ -228,7 +228,7 @@ export default async function ModelsPage() {
       </section>
 
       {/* ── CTA ───────────────────────────────────────────────── */}
-      <section className="bg-[#0a0a0a] border-t border-white/[0.05] px-6 py-28">
+      <section className="bg-kawai-pearl border-t border-kawai-black/[0.07] px-6 py-28">
         <div className="max-w-xl mx-auto text-center">
           <span className="block h-px w-10 bg-kawai-gold opacity-40 mx-auto mb-14" />
 
@@ -239,7 +239,7 @@ export default async function ModelsPage() {
             Experience Shigeru Kawai
           </p>
           <h2
-            className="text-white font-light italic leading-tight mb-6"
+            className="text-kawai-black font-light italic leading-tight mb-6"
             style={{
               fontFamily: 'var(--font-brand-luxury)',
               fontSize: 'clamp(2rem, 5vw, 3.2rem)',
@@ -248,7 +248,7 @@ export default async function ModelsPage() {
             Hear One in Person
           </h2>
           <p
-            className="text-white/35 text-sm leading-relaxed mb-14 max-w-sm mx-auto"
+            className="text-kawai-charcoal/60 text-sm leading-relaxed mb-14 max-w-sm mx-auto"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             No description can replace the experience of sitting before a Shigeru Kawai grand.
@@ -258,14 +258,14 @@ export default async function ModelsPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/shigeru/dealers"
-              className="inline-flex items-center gap-3 border border-kawai-gold/35 hover:border-kawai-gold text-kawai-gold hover:bg-kawai-gold/5 px-9 py-4 text-[10px] tracking-[0.3em] uppercase transition-all duration-300"
+              className="inline-flex items-center gap-3 border border-kawai-gold/50 hover:border-kawai-gold text-kawai-gold hover:bg-kawai-gold/[0.08] px-9 py-4 text-[10px] tracking-[0.3em] uppercase transition-all duration-300"
               style={{ fontFamily: 'var(--font-brand-sans)' }}
             >
               Find a Dealer
             </Link>
             <Link
               href="/shigeru/contact"
-              className="inline-flex items-center gap-3 border border-white/10 hover:border-white/25 text-white/35 hover:text-white/60 px-9 py-4 text-[10px] tracking-[0.3em] uppercase transition-all duration-300"
+              className="inline-flex items-center gap-3 border border-kawai-black/15 hover:border-kawai-black/30 text-kawai-charcoal/50 hover:text-kawai-charcoal/80 px-9 py-4 text-[10px] tracking-[0.3em] uppercase transition-all duration-300"
               style={{ fontFamily: 'var(--font-brand-sans)' }}
             >
               Contact Us

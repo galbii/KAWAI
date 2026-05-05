@@ -36,7 +36,7 @@ export function ModelCard({ model, index, imageUrl, shopifyFinishes }: Props) {
     <article
       id={`model-${model.slug}`}
       ref={ref}
-      className="relative border-t border-white/[0.05] overflow-hidden"
+      className="relative border-t border-kawai-black/[0.07] overflow-hidden"
     >
       {/* SK-EX ambient gold glow */}
       {isLast && (
@@ -86,13 +86,13 @@ export function ModelCard({ model, index, imageUrl, shopifyFinishes }: Props) {
                     style={{
                       fontFamily: 'var(--font-brand-luxury)',
                       fontSize: 'clamp(4.5rem, 16vw, 13rem)',
-                      color: `rgba(255,255,255,${isLast ? 0.055 : 0.038})`,
+                      color: `rgba(0,0,0,${isLast ? 0.055 : 0.038})`,
                     }}
                     aria-hidden="true"
                   >
                     {model.name}
                   </span>
-                  <span className="absolute inset-6 lg:inset-10 border border-dashed border-white/[0.06]" />
+                  <span className="absolute inset-6 lg:inset-10 border border-dashed border-kawai-black/[0.08]" />
                 </>
               )}
             </div>
@@ -102,7 +102,7 @@ export function ModelCard({ model, index, imageUrl, shopifyFinishes }: Props) {
           <div className="w-full lg:w-[44%]">
             {/* Counter */}
             <motion.p
-              className="text-white/[0.12] text-[9px] tracking-[0.45em] uppercase mb-7"
+              className="text-kawai-charcoal/[0.25] text-[9px] tracking-[0.45em] uppercase mb-7"
               style={{ fontFamily: 'var(--font-brand-sans)' }}
               {...text(0.05)}
             >
@@ -112,7 +112,7 @@ export function ModelCard({ model, index, imageUrl, shopifyFinishes }: Props) {
             {/* Model name — clip reveal from bottom */}
             <div className="overflow-hidden mb-4">
               <motion.h2
-                className="text-white font-light italic leading-[0.88]"
+                className="text-kawai-black font-light italic leading-[0.88]"
                 style={{
                   fontFamily: 'var(--font-brand-luxury)',
                   fontSize: 'clamp(3.2rem, 7.5vw, 6.5rem)',
@@ -146,7 +146,7 @@ export function ModelCard({ model, index, imageUrl, shopifyFinishes }: Props) {
 
             {/* Dimensions */}
             <motion.p
-              className="text-white/[0.22] text-xs tracking-widest mb-5"
+              className="text-kawai-charcoal/45 text-xs tracking-widest mb-5"
               style={{ fontFamily: 'var(--font-brand-sans)' }}
               {...text(0.4)}
             >
@@ -158,7 +158,7 @@ export function ModelCard({ model, index, imageUrl, shopifyFinishes }: Props) {
 
             {/* Tagline */}
             <motion.p
-              className="text-white/55 font-light italic leading-snug mb-8"
+              className="text-kawai-charcoal/75 font-light italic leading-snug mb-8"
               style={{
                 fontFamily: 'var(--font-brand-luxury)',
                 fontSize: 'clamp(1.05rem, 1.8vw, 1.35rem)',
@@ -193,7 +193,7 @@ export function ModelCard({ model, index, imageUrl, shopifyFinishes }: Props) {
                 >
                   <span className="mt-[7px] flex-shrink-0 w-[3px] h-[3px] rounded-full bg-kawai-gold/50" />
                   <span
-                    className="text-white/30 text-sm leading-snug"
+                    className="text-kawai-charcoal/60 text-sm leading-snug"
                     style={{ fontFamily: 'var(--font-brand-sans)' }}
                   >
                     {pt}
@@ -208,7 +208,7 @@ export function ModelCard({ model, index, imageUrl, shopifyFinishes }: Props) {
                 {finishes.map((f) => (
                   <span
                     key={f}
-                    className="border border-white/[0.08] text-white/25 text-[8px] tracking-[0.22em] uppercase px-3 py-1"
+                    className="border border-kawai-black/[0.1] text-kawai-charcoal/50 text-[8px] tracking-[0.22em] uppercase px-3 py-1"
                     style={{ fontFamily: 'var(--font-brand-sans)' }}
                   >
                     {f}

@@ -37,7 +37,7 @@ export function HeroAnimated() {
       />
 
       <motion.h1
-        className="text-white font-light italic leading-[0.9] mb-10"
+        className="text-kawai-black font-light italic leading-[0.9] mb-10"
         style={{
           fontFamily: 'var(--font-brand-luxury)',
           fontSize: 'clamp(3.5rem, 10vw, 8rem)',
@@ -48,7 +48,7 @@ export function HeroAnimated() {
       </motion.h1>
 
       <motion.p
-        className="text-white/35 text-sm leading-relaxed max-w-lg mx-auto"
+        className="text-kawai-charcoal/60 text-sm leading-relaxed max-w-lg mx-auto"
         style={{ fontFamily: 'var(--font-brand-sans)' }}
         variants={fadeUp}
       >
@@ -63,13 +63,13 @@ export function HeroAnimated() {
         variants={fadeUp}
       >
         <span
-          className="text-white text-[9px] tracking-[0.3em] uppercase"
+          className="text-kawai-charcoal/50 text-[9px] tracking-[0.3em] uppercase"
           style={{ fontFamily: 'var(--font-brand-sans)' }}
         >
           Explore
         </span>
         <motion.span
-          className="block w-px bg-white/40"
+          className="block w-px bg-kawai-charcoal/25"
           initial={{ height: 0 }}
           animate={{ height: '2rem' }}
           transition={{ duration: 0.8, ease, delay: 1.8 }}

@@ -50,7 +50,7 @@ export function ModelProgressIndicator() {
                 style={{
                   height: '22px',
                   backgroundColor:
-                    i <= activeIndex ? 'rgba(213,199,140,0.5)' : 'rgba(255,255,255,0.1)',
+                    i <= activeIndex ? 'rgba(213,199,140,0.5)' : 'rgba(0,0,0,0.15)',
                 }}
               />
             )}
@@ -75,7 +75,7 @@ export function ModelProgressIndicator() {
                     ? 'rgba(213,199,140,1)'
                     : isPast
                       ? 'rgba(213,199,140,0.45)'
-                      : 'rgba(255,255,255,0.2)',
+                      : 'rgba(0,0,0,0.2)',
                   boxShadow: isActive ? '0 0 10px 2px rgba(213,199,140,0.45)' : 'none',
                 }}
               />
@@ -90,7 +90,7 @@ export function ModelProgressIndicator() {
                 className="text-[8px] tracking-[0.3em] uppercase whitespace-nowrap"
                 style={{
                   fontFamily: 'var(--font-brand-sans)',
-                  color: isActive ? 'rgba(213,199,140,0.8)' : 'rgba(255,255,255,0.35)',
+                  color: isActive ? 'rgba(213,199,140,0.8)' : 'rgba(0,0,0,0.4)',
                 }}
               >
                 {model.name}
@@ -100,7 +100,7 @@ export function ModelProgressIndicator() {
                 style={{
                   backgroundColor: isActive
                     ? 'rgba(213,199,140,0.5)'
-                    : 'rgba(255,255,255,0.15)',
+                    : 'rgba(0,0,0,0.15)',
                 }}
               />
             </div>
