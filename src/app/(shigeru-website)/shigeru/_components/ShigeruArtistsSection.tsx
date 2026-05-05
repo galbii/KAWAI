@@ -55,46 +55,48 @@ export function ShigeruArtistsSection() {
   return (
     <section aria-label="Shigeru Kawai Artists" className="bg-white sk-section">
       <div className="max-w-screen-xl mx-auto px-6 lg:px-16">
-        {/* Carousel slide */}
+
+        {/* Section header — matches models page pattern */}
+        <div className="flex items-center gap-6 mb-20 lg:mb-28">
+          <p
+            className="text-kawai-gold text-[11px] tracking-[0.5em] uppercase"
+            style={{ fontFamily: 'var(--font-oswald)' }}
+          >
+            From the Artists
+          </p>
+          <span className="block h-px flex-1 bg-kawai-black/[0.07]" />
+        </div>
+
+        {/* Carousel */}
         <div className="relative">
-          {/* Quote area */}
           <div
-            className="py-24 lg:py-36 transition-opacity duration-350"
+            className="transition-opacity duration-350"
             style={{ opacity: fading ? 0 : 1 }}
           >
-            {/* Opening mark */}
-            <span
-              className="block text-kawai-gold/20 font-light italic leading-none select-none mb-10"
-              style={{ fontFamily: 'var(--font-brand-luxury)', fontSize: '9rem' }}
-              aria-hidden="true"
-            >
-              &ldquo;
-            </span>
-
-            {/* Quote */}
+            {/* Quote — Cormorant italic, full width */}
             <blockquote
-              className="text-kawai-black/70 font-light italic leading-relaxed max-w-4xl"
+              className="text-kawai-black/70 font-light italic leading-[1.35] max-w-5xl mb-16"
               style={{
                 fontFamily: 'var(--font-brand-luxury)',
-                fontSize: 'clamp(1.6rem, 3.2vw, 2.75rem)',
+                fontSize: 'clamp(1.8rem, 3.5vw, 3rem)',
               }}
             >
-              {artist?.quote}
+              &ldquo;{artist?.quote}&rdquo;
             </blockquote>
 
-            {/* Artist overlay — name + rule */}
-            <div className="flex items-center gap-6 mt-16">
-              <span className="block h-px w-12 bg-kawai-gold/40 flex-shrink-0" />
+            {/* Attribution */}
+            <div className="flex items-center gap-6">
+              <span className="block h-px w-10 bg-kawai-gold/50 flex-shrink-0" />
               <div>
                 <p
-                  className="text-kawai-black font-semibold tracking-[0.12em] uppercase mb-1.5"
+                  className="text-kawai-black font-bold tracking-[0.12em] uppercase mb-1.5"
                   style={{ fontFamily: 'var(--font-oswald)', fontSize: '1rem' }}
                 >
                   {artist?.name}
                 </p>
                 <p
-                  className="text-kawai-gold-on-light tracking-[0.25em] uppercase"
-                  style={{ fontFamily: 'var(--font-oswald)', fontSize: '0.8rem' }}
+                  className="text-kawai-gold/70 tracking-[0.28em] uppercase"
+                  style={{ fontFamily: 'var(--font-oswald)', fontSize: '0.75rem' }}
                 >
                   {artist?.role}
                 </p>
@@ -103,8 +105,7 @@ export function ShigeruArtistsSection() {
           </div>
 
           {/* Bottom bar — dots + view all */}
-          <div className="flex items-center justify-between border-t border-kawai-black/[0.07] pt-8 pb-4">
-            {/* Dot navigation */}
+          <div className="flex items-center justify-between border-t border-kawai-black/[0.07] mt-16 pt-8 pb-4">
             <div className="flex items-center gap-4" role="tablist" aria-label="Artist slides">
               {FEATURED_ARTISTS.map((a, i) => (
                 <button
@@ -128,14 +129,13 @@ export function ShigeruArtistsSection() {
               ))}
             </div>
 
-            {/* View all link */}
             <a
               href="/shigeru/artists"
-              className="inline-flex items-center gap-3 text-kawai-charcoal/40 hover:text-kawai-gold transition-colors duration-300"
+              className="inline-flex items-center gap-3 text-kawai-charcoal/35 hover:text-kawai-gold transition-colors duration-300"
               style={{
                 fontFamily: 'var(--font-oswald)',
-                fontSize: '0.7rem',
-                letterSpacing: '0.25em',
+                fontSize: '0.72rem',
+                letterSpacing: '0.28em',
                 textTransform: 'uppercase',
               }}
             >
