@@ -63,7 +63,7 @@ export function ShigeruContactBox() {
                 letterSpacing: '0.04em',
               }}
             >
-              Arrange a<br />Private Audition
+              Get in Touch
             </h2>
             <p
               className="text-kawai-charcoal/55 text-base leading-relaxed mb-10 max-w-sm"
