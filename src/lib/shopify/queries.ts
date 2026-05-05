@@ -186,6 +186,13 @@ export const GET_PRODUCT_BY_HANDLE = `
         value
         type
       }
+      metafield_ownermanual: metafield(namespace: "custom", key: "ownermanual") {
+        reference {
+          ... on GenericFile {
+            url
+          }
+        }
+      }
     }
   }
 `
@@ -228,6 +235,13 @@ export const GET_PRODUCT_BY_ID = `
         key
         value
         type
+      }
+      metafield_ownermanual: metafield(namespace: "custom", key: "ownermanual") {
+        reference {
+          ... on GenericFile {
+            url
+          }
+        }
       }
     }
   }

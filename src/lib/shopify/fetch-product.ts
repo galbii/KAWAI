@@ -103,6 +103,7 @@ export interface ShopifyProductData {
       width: number | null
       height: number | null
     } | null
+    ownersManual?: string | null
     specifications?: ShopifySpecification[]
     highlights?: ShopifyHighlight[]
     specificationJson?: Record<string, unknown> | null
@@ -353,6 +354,14 @@ const PRODUCT_BY_ID_QUERY = `
       value
       type
     }
+
+    metafield_ownermanual: metafield(namespace: "custom", key: "ownermanual") {
+      reference {
+        ... on GenericFile {
+          url
+        }
+      }
+    }
   }
 `
 
@@ -479,6 +488,14 @@ const PRODUCT_BY_HANDLE_QUERY = `
       key
       value
       type
+    }
+
+    metafield_ownermanual: metafield(namespace: "custom", key: "ownermanual") {
+      reference {
+        ... on GenericFile {
+          url
+        }
+      }
     }
   }
 `
@@ -652,6 +669,14 @@ const PRODUCT_BY_METAFIELD_QUERY = `
       key
       value
       type
+    }
+
+    metafield_ownermanual: metafield(namespace: "custom", key: "ownermanual") {
+      reference {
+        ... on GenericFile {
+          url
+        }
+      }
     }
 
     seo {
@@ -862,6 +887,7 @@ function transformShopifyProduct(shopifyProduct: any): ShopifyProductData {
 
     metafields: {
       model: shopifyProduct.metafield_model?.value || undefined,
+      ownersManual: shopifyProduct.metafield_ownermanual?.reference?.url || null,
 
       // Parse blueprint file reference
       blueprint: (() => {

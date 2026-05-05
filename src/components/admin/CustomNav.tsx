@@ -6,19 +6,22 @@ import { useConfig } from '@payloadcms/ui'
 import { createPortal } from 'react-dom'
 import { CollectionsModal } from './CollectionsModal'
 
-// ── Design Tokens ─────────────────────────────────────────────────────────
+// ── Design Tokens — glass-optimised ──────────────────────────────────────
+// The .nav element's backdrop-filter + rgba background is in custom.scss.
+// These tokens control only the interactive surfaces layered on top of it.
 const t = {
-  navBg:    '#0A0A0E',
-  surface:  '#141420',
-  card:     '#191926',
-  cardHov:  '#1E1E2C',
-  line:     '#1C1C2C',
-  lineStr:  '#252535',
-  loFaint:  '#2A2A40',
-  high:     '#ECECF2',
-  mid:      '#8484A0',
-  lo:       '#4C4C68',
+  navBg:    'transparent',                      // glass applied via CSS on .nav
+  surface:  'rgba(255,255,255,0.04)',
+  card:     'rgba(255,255,255,0.05)',
+  cardHov:  'rgba(255,255,255,0.08)',
+  line:     'rgba(255,255,255,0.07)',
+  lineStr:  'rgba(255,255,255,0.11)',
+  loFaint:  'rgba(99,102,241,0.18)',
+  high:     'rgba(255,255,255,0.92)',
+  mid:      'rgba(255,255,255,0.46)',
+  lo:       'rgba(255,255,255,0.22)',
   violet:   '#6366F1',
+  violetGlass: 'rgba(99,102,241,0.14)',
   jade:     '#2EC4A0',
   gold:     '#E8A84E',
   pink:     '#EC4899',
@@ -103,17 +106,19 @@ function NavTip({ label, show, anchorRef }: {
       top: pos.top,
       left: pos.left,
       transform: 'translateY(-50%)',
-      background: '#1A1A28',
-      border: `1px solid ${t.loFaint}`,
-      color: t.high,
-      padding: '6px 12px',
+      background: 'rgba(14,14,28,0.88)',
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      border: '1px solid rgba(255,255,255,0.10)',
+      color: 'rgba(255,255,255,0.88)',
+      padding: '6px 13px',
       borderRadius: 8,
       fontSize: 13,
       fontWeight: 500,
       whiteSpace: 'nowrap',
       zIndex: 99999,
       pointerEvents: 'none',
-      boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+      boxShadow: '0 8px 28px rgba(0,0,0,0.5)',
     }}>
       {label}
     </div>,
@@ -137,26 +142,59 @@ function NavRow({ item, active, collapsed }: { item: NavItem; active: boolean; c
         display: 'flex',
         alignItems: 'center',
         gap: 11,
-        height: 48,
+        height: 46,
         padding: '0 18px',
-        borderRadius: 11,
-        margin: '2px 6px',
+        borderRadius: 10,
+        margin: '1px 6px',
         color: active ? t.high : hov ? t.high : t.mid,
-        background: active ? t.cardHov : hov ? t.surface : 'transparent',
+        // Glass active: violet tint + inset ring. Hover: lighter glass tint.
+        background: active
+          ? t.violetGlass
+          : hov
+            ? t.surface
+            : 'transparent',
+        boxShadow: active
+          ? 'inset 0 0 0 1px rgba(99,102,241,0.22)'
+          : hov
+            ? 'inset 0 0 0 1px rgba(255,255,255,0.06)'
+            : 'none',
         textDecoration: 'none',
-        transition: 'color 0.12s, background 0.12s',
+        transition: 'color 0.14s, background 0.14s, box-shadow 0.14s',
         justifyContent: collapsed ? 'center' : 'flex-start',
       }}
     >
+      {/* Active indicator — violet glow bar replacing the old red bar */}
       {active && (
         <div style={{
-          position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)',
-          width: 3, height: 24, borderRadius: '0 2px 2px 0', background: t.red,
+          position: 'absolute',
+          left: 0,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: 3,
+          height: 22,
+          borderRadius: '0 3px 3px 0',
+          background: 'linear-gradient(180deg, #818CF8 0%, #6366F1 100%)',
+          boxShadow: '0 0 10px rgba(99,102,241,0.7)',
         }} />
       )}
-      <item.Ic size={20} />
+
+      {/* Icon — slightly brighter when active */}
+      <span style={{
+        display: 'flex',
+        color: active ? '#818CF8' : hov ? t.high : t.mid,
+        transition: 'color 0.14s',
+        flexShrink: 0,
+      }}>
+        <item.Ic size={20} />
+      </span>
+
       {!collapsed && (
-        <span style={{ fontSize: 14, fontWeight: active ? 600 : 400, whiteSpace: 'nowrap' }}>
+        <span style={{
+          fontSize: 14,
+          fontWeight: active ? 600 : 400,
+          whiteSpace: 'nowrap',
+          letterSpacing: active ? '0.01em' : '0',
+        }}>
           {item.label}
         </span>
       )}
@@ -184,20 +222,20 @@ function BotAction({
     display: 'flex',
     alignItems: 'center',
     gap: 11,
-    height: 44,
+    height: 40,
     padding: '0 18px',
     width: 'calc(100% - 12px)',
     margin: '1px 6px',
-    borderRadius: 10,
-    color: hov ? t.mid : t.lo,
-    background: hov ? t.surface : 'transparent',
+    borderRadius: 9,
+    color: hov ? 'rgba(255,255,255,0.38)' : 'rgba(255,255,255,0.18)',
+    background: hov ? 'rgba(255,255,255,0.04)' : 'transparent',
     textDecoration: 'none',
     border: 'none',
     cursor: 'pointer',
     fontFamily: 'inherit',
-    fontSize: 13.5,
-    fontWeight: 500,
-    transition: 'color 0.12s, background 0.12s',
+    fontSize: 13,
+    fontWeight: 400,
+    transition: 'color 0.14s, background 0.14s',
     justifyContent: collapsed ? 'center' : 'flex-start',
     boxSizing: 'border-box',
   }
@@ -329,33 +367,67 @@ export function CustomNav() {
       <CollectionsModal open={modalOpen} onClose={() => setModalOpen(false)} recent={recent} />
 
       {/*
-       * This div IS the nav content. It lives inside Payload's .nav element
-       * (.nav__scroll > .nav__wrap > HERE). The .nav element's width is controlled
-       * by --nav-width via custom.scss, so we just fill 100% height.
+       * WHY position:fixed here (not in CSS):
+       *
+       * When admin.components.Nav is set to a custom component, Payload's
+       * DefaultNav — and its NavWrapper (<aside class="nav">) — are skipped
+       * entirely. Our component renders as a direct child of .template-default,
+       * a normal CSS Grid item. Any CSS rules targeting ".nav" have no effect.
+       *
+       * Setting position:fixed here, directly on the root div, is the only
+       * reliable way to pin the sidebar to the viewport. The grid column
+       * (var(--nav-width)) still allocates space, keeping the content area
+       * correctly indented even though the sidebar is out of flow.
+       *
+       * Width tracks the CSS variable --nav-width (toggled by .kawai-expanded
+       * on <html>), so expand/collapse transitions work via CSS variable change.
+       *
+       * The transform:none on .template-default in custom.scss prevents the
+       * parent grid wrapper from creating a new fixed-positioning containing
+       * block (which would make position:fixed scroll with the page).
        */}
       <div
         onMouseEnter={() => { if (collapsed) setHovExpanded(true) }}
         onMouseLeave={() => setHovExpanded(false)}
         style={{
+          // ── Viewport anchor ──────────────────────────────────────────
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          height: '100dvh',
+          width: 'var(--nav-width)',
+          zIndex: 20,
+          overflow: 'hidden',
+          transition: 'width var(--kawai-nav-trans, 0.28s cubic-bezier(0.4,0,0.2,1))',
+
+          // ── Flex column (header | scrollable nav | bottom) ───────────
           display: 'flex',
           flexDirection: 'column',
-          height: '100%',
-          background: t.navBg,
+
+          // ── Glassmorphism surface ─────────────────────────────────────
+          background: 'rgba(6, 6, 18, 0.80)',
+          backdropFilter: 'blur(32px) saturate(170%)',
+          WebkitBackdropFilter: 'blur(32px) saturate(170%)',
+          borderRight: '1px solid rgba(255,255,255,0.07)',
+          boxShadow: 'inset -1px 0 0 rgba(99,102,241,0.14), 6px 0 40px rgba(0,0,0,0.6)',
+
           userSelect: 'none',
         }}
       >
 
-        {/* ── Header — click to collapse/expand ───────────────────────── */}
+        {/* ── Header ──────────────────────────────────────────────────── */}
         <button
           onClick={toggle}
           title={collapsed ? 'Pin sidebar open' : 'Collapse sidebar'}
           style={{
             display: 'flex', alignItems: 'center',
-            height: 60, padding: '0 12px', gap: 10,
+            height: 62, padding: '0 14px', gap: 11,
             flexShrink: 0,
-            // border shorthand first, then borderBottom override to show divider
-            border: 'none', borderBottom: `1px solid ${t.line}`,
-            background: 'none', cursor: 'pointer',
+            border: 'none',
+            borderBottom: '1px solid rgba(255,255,255,0.07)',
+            // Slightly elevated glass surface for the header
+            background: 'rgba(255,255,255,0.03)',
+            cursor: 'pointer',
             width: '100%', textAlign: 'left',
             justifyContent: !isExpanded ? 'center' : 'flex-start',
           }}
@@ -363,29 +435,42 @@ export function CustomNav() {
           <PianoLogo size={34} />
           {isExpanded && (
             <div style={{ minWidth: 0, overflow: 'hidden', flex: 1 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: t.high, letterSpacing: '0.05em', lineHeight: 1.2 }}>KAWAI</div>
-              <div style={{ fontSize: 10, color: t.lo, letterSpacing: '0.1em', lineHeight: 1.2 }}>ADMIN PANEL</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: t.high, letterSpacing: '0.06em', lineHeight: 1.2 }}>KAWAI</div>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.12em', lineHeight: 1.4, textTransform: 'uppercase' }}>Admin Panel</div>
             </div>
           )}
           {isExpanded && (
-            <span style={{ color: collapsed ? t.violet : t.lo, flexShrink: 0, display: 'flex' }} title={collapsed ? 'Click to pin open' : 'Click to collapse'}>
+            <span style={{
+              color: collapsed ? 'rgba(99,102,241,0.7)' : 'rgba(255,255,255,0.2)',
+              flexShrink: 0, display: 'flex',
+              transition: 'color 0.14s',
+            }}>
               <IcoChevL size={13} />
             </span>
           )}
         </button>
 
-        {/* ── Primary Nav ─────────────────────────────────────────────── */}
-        <nav style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '10px 0' }}>
+        {/* ── Primary Nav — scrollable zone ───────────────────────────── */}
+        <nav
+          className="kawai-nav-scroll"
+          style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', padding: '10px 0' }}
+        >
           {PRIMARY.map(item => (
             <NavRow key={item.slug} item={item} active={isActive(item)} collapsed={!isExpanded} />
           ))}
         </nav>
 
-        {/* ── Bottom ──────────────────────────────────────────────────── */}
-        <div style={{ borderTop: `1px solid ${t.line}`, padding: '8px 0', flexShrink: 0 }}>
+        {/* ── Bottom — pinned to base of viewport ─────────────────────── */}
+        <div style={{
+          borderTop: '1px solid rgba(255,255,255,0.07)',
+          padding: '8px 0 10px',
+          flexShrink: 0,
+          // Slightly denser glass at the bottom for visual anchoring
+          background: 'rgba(0,0,0,0.12)',
+        }}>
 
-          {/* All Collections CTA */}
-          <div style={{ padding: '4px 6px 4px' }}>
+          {/* All Collections — primary glass CTA */}
+          <div style={{ padding: '4px 6px 6px' }}>
             <button
               ref={allBtnRef}
               onClick={() => setModalOpen(true)}
@@ -393,23 +478,28 @@ export function CustomNav() {
               onMouseLeave={() => setAllBtnHov(false)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 11,
-                width: '100%', height: 46, padding: '0 18px',
-                borderRadius: 11,
-                border: `1px solid ${allBtnHov ? t.violet : t.lineStr}`,
-                background: allBtnHov ? t.cardHov : t.card,
-                color: t.high, cursor: 'pointer', fontFamily: 'inherit',
-                fontSize: 14, fontWeight: 600,
-                transition: 'background 0.12s, border-color 0.12s',
+                width: '100%', height: 44, padding: '0 18px',
+                borderRadius: 10,
+                border: `1px solid ${allBtnHov ? 'rgba(99,102,241,0.35)' : 'rgba(255,255,255,0.09)'}`,
+                background: allBtnHov ? 'rgba(99,102,241,0.14)' : 'rgba(255,255,255,0.04)',
+                color: allBtnHov ? t.high : 'rgba(255,255,255,0.60)',
+                cursor: 'pointer', fontFamily: 'inherit',
+                fontSize: 13.5, fontWeight: 600,
+                transition: 'background 0.14s, border-color 0.14s, color 0.14s',
                 justifyContent: !isExpanded ? 'center' : 'flex-start',
                 boxSizing: 'border-box',
+                boxShadow: allBtnHov ? 'inset 0 0 0 1px rgba(99,102,241,0.22)' : 'none',
               }}
             >
-              <IcoGrid size={19} />
+              <span style={{ color: allBtnHov ? '#818CF8' : 'rgba(255,255,255,0.35)', display: 'flex', transition: 'color 0.14s' }}>
+                <IcoGrid size={18} />
+              </span>
               {isExpanded && <span style={{ whiteSpace: 'nowrap' }}>All Collections</span>}
             </button>
             <NavTip label="All Collections" show={!isExpanded && allBtnHov} anchorRef={allBtnRef} />
           </div>
 
+          {/* External links — visually dimmed to signal they leave the CMS */}
           <BotAction label="View Live Site"  Ic={IcoExt}  collapsed={!isExpanded} href={siteURL}                    external />
           <BotAction label="Shopify Admin"   Ic={IcoShop} collapsed={!isExpanded} href="https://admin.shopify.com" external />
         </div>

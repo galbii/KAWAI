@@ -2279,8 +2279,9 @@ export interface Product {
       }[]
     | null;
   /**
-   * Full specification sheet as JSON (synced from Shopify custom.specification-json metafield). Used by the Technical Specifications block with "JSON" data source.
+   * Owner's manual PDF URL (synced from Shopify custom.ownermanual metafield)
    */
+  ownersManualUrl?: string | null;
   specificationJson?:
     | {
         [k: string]: unknown;
@@ -11648,6 +11649,7 @@ export interface ProductsSelect<T extends boolean = true> {
         type?: T;
         details?: T;
       };
+  ownersManualUrl?: T;
   specificationJson?: T;
   highlights?:
     | T

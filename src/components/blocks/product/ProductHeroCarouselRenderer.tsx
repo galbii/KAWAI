@@ -529,10 +529,30 @@ function YouTubeBackground({ url, zoom }: { url: string; zoom: number }) {
   const [ready, setReady] = useState(false)
   const embedUrl = getYouTubeEmbedUrl(url)
 
-  // Fallback: surface the video after 1.5 s even if the onLoad event doesn't fire
   useEffect(() => {
-    const t = setTimeout(() => setReady(true), 1500)
-    return () => clearTimeout(t)
+    // Reveal only once the player is actually playing (playerState === 1).
+    // YouTube's iframe API sends postMessage events when enablejsapi=1 is set.
+    // Falling back to 4 s covers browsers/networks where the message never fires.
+    const fallback = setTimeout(() => setReady(true), 4000)
+
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        const data =
+          typeof event.data === 'string' ? JSON.parse(event.data) : event.data
+        if (data?.event === 'infoDelivery' && data?.info?.playerState === 1) {
+          setReady(true)
+          clearTimeout(fallback)
+        }
+      } catch {
+        // ignore non-JSON messages from other origins
+      }
+    }
+
+    window.addEventListener('message', handleMessage)
+    return () => {
+      clearTimeout(fallback)
+      window.removeEventListener('message', handleMessage)
+    }
   }, [])
 
   if (!embedUrl) return null
@@ -548,15 +568,14 @@ function YouTubeBackground({ url, zoom }: { url: string; zoom: number }) {
           'transition-opacity duration-1000',
           ready ? 'opacity-100' : 'opacity-0'
         )}
-        // Translate(-50%,-50%) + scale() combined in one declaration to prevent conflict
-        style={{ transform: `translate(-50%, -50%) scale(${zoom})` }}
+        // pointerEvents: none → YouTube's document never receives mouse events, so
+        // its hover-triggered transport controls (center pause, skip buttons) never appear.
+        // translate + scale combined in one declaration to prevent Tailwind transform conflict.
+        style={{ transform: `translate(-50%, -50%) scale(${zoom})`, pointerEvents: 'none' }}
         allow="autoplay; encrypted-media"
         frameBorder="0"
-        onLoad={() => setReady(true)}
         title="Slide background video"
       />
-      {/* Intercepts all pointer events so YouTube never sees hover/click — prevents controls from appearing */}
-      <div className="absolute inset-0 z-10" />
     </div>
   )
 }

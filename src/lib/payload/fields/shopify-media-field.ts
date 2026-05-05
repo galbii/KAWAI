@@ -44,7 +44,7 @@ export function shopifyMediaField(): ArrayField {
       description:
         'Media items synced from Shopify (images, videos, 3D models, external videos) - Auto-populated from Shopify Admin API',
       readOnly: true, // Prevent manual editing (synced from Shopify)
-      initCollapsed: false, // Show by default for visibility
+      initCollapsed: true,
     },
     fields: [
       // Media Type (required for type discrimination)

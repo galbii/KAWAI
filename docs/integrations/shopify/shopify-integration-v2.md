@@ -170,6 +170,35 @@ The integration maintains backward compatibility with tag-based product lookup. 
 
 **Best Practice:** Set both `custom.model` metafield AND product tag for maximum reliability during migration.
 
+### File Metafields (e.g. Owner's Manual)
+
+File-type metafields cannot be queried via the `metafields(identifiers: [...])` array — they require a separate aliased field with a `reference` sub-selection to resolve the CDN URL:
+
+```graphql
+metafield_ownermanual: metafield(namespace: "custom", key: "ownermanual") {
+  reference {
+    ... on GenericFile {
+      url
+    }
+  }
+}
+```
+
+This is already handled automatically in `GET_PRODUCT_BY_HANDLE` and `GET_PRODUCT_BY_ID`. The resolved URL is available on the `Product` domain type as `ownersManualUrl: string | null`.
+
+**Setup in Shopify:**
+- Namespace: `custom`, Key: `ownermanual`, Type: **File** (one), Storefront API access: **enabled**
+- Upload the PDF to a product in Shopify Admin — the CDN URL is resolved at query time
+
+**Frontend usage:**
+```typescript
+const product = await getProductByHandle('ca99-digital-piano')
+
+if (product.ownersManualUrl) {
+  // Link to PDF download
+}
+```
+
 ---
 
 ## Environment Setup
@@ -649,6 +678,8 @@ interface Product {
   } | null
   images: Array<{url: string, alt: string, width: number, height: number}>
   variants: ProductVariant[]
+  /** Owner's manual PDF URL (from custom.ownermanual metafield, null if not set) */
+  ownersManualUrl: string | null
   metadata: Record<string, unknown> // Parsed metafields
 }
 ```
@@ -867,6 +898,7 @@ interface ShopifyProductData {
   }>
   metafields?: {
     model?: string
+    ownersManual?: string | null  // URL from custom.ownermanual (GenericFile reference)
   }
   availableForSale: boolean
   createdAt: string
@@ -883,8 +915,9 @@ const product = await fetchShopifyProductByModel('CA99')
 
 if (product) {
   console.log(product.title)
-  console.log(product.metafields?.model) // "CA99"
-  console.log(product.price.display)     // "$1,299.00"
+  console.log(product.metafields?.model)        // "CA99"
+  console.log(product.metafields?.ownersManual) // "https://cdn.shopify.com/.../manual.pdf"
+  console.log(product.price.display)            // "$1,299.00"
 }
 ```
 

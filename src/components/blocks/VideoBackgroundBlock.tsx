@@ -82,15 +82,39 @@ export function VideoBackgroundBlock({
   }, [])
 
   useEffect(() => {
-    // Fallback: Show media after 2 seconds if load event doesn't fire
-    if ((videoSource === 'youtube' || videoSource === 'image') && !isMediaReady) {
-      const fallbackTimer = setTimeout(() => {
-        setIsMediaReady(true)
-      }, 2000)
-      return () => clearTimeout(fallbackTimer)
+    if (videoSource === 'image') {
+      // Image: onLoad handles it; 2s fallback just in case
+      const t = setTimeout(() => setIsMediaReady(true), 2000)
+      return () => clearTimeout(t)
     }
+
+    if (videoSource === 'youtube') {
+      // Reveal only when YouTube signals playerState === 1 (actually playing).
+      // The 4s fallback covers browsers where the postMessage never fires.
+      const fallback = setTimeout(() => setIsMediaReady(true), 4000)
+
+      const handleMessage = (event: MessageEvent) => {
+        try {
+          const data =
+            typeof event.data === 'string' ? JSON.parse(event.data) : event.data
+          if (data?.event === 'infoDelivery' && data?.info?.playerState === 1) {
+            setIsMediaReady(true)
+            clearTimeout(fallback)
+          }
+        } catch {
+          // ignore non-JSON messages from other origins
+        }
+      }
+
+      window.addEventListener('message', handleMessage)
+      return () => {
+        clearTimeout(fallback)
+        window.removeEventListener('message', handleMessage)
+      }
+    }
+
     return undefined
-  }, [videoSource, isMediaReady])
+  }, [videoSource])
 
   const handleMediaReady = () => {
     setIsMediaReady(true)
@@ -189,20 +213,21 @@ export function VideoBackgroundBlock({
 
         {/* YouTube Video */}
         {videoSource === 'youtube' && youtubeEmbedUrl && (
-          <div className="relative h-full w-full">
+          <div className="relative h-full w-full overflow-hidden">
             <iframe
               src={youtubeEmbedUrl}
               className={cn(
+                // pointer-events-none: YouTube's document never receives mouse events,
+                // so its hover-triggered transport controls never render.
+                'pointer-events-none',
                 'absolute left-1/2 top-1/2 h-[56.25vw] min-h-screen w-[177.77vh] min-w-full -translate-x-1/2 -translate-y-1/2 object-cover transition-opacity duration-[1800ms] ease-out',
-                videoScaleClass
+                videoScaleClass,
+                isMediaReady ? 'opacity-100' : 'opacity-0'
               )}
               allow="autoplay; encrypted-media"
               frameBorder="0"
-              onLoad={handleMediaReady}
               title="Background video"
             />
-            {/* Transparent overlay prevents user interaction with video */}
-            <div className="pointer-events-none absolute inset-0 z-10" />
           </div>
         )}
 

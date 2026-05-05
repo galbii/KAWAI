@@ -34,7 +34,9 @@ import { SpecificationRowLabel as SpecificationRowLabel_1091d94778fdba3b9f9086a7
 import { VariationRowLabel as VariationRowLabel_e070f1ecdc2279c31ac736f90d4c5bf7 } from '../../../components/admin/VariationRowLabel'
 import { ExportListMenuItem as ExportListMenuItem_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { ProductsListToolbar as ProductsListToolbar_a0d9fee0546177f42149c7c463677b6e } from '../../../components/admin/ProductsListToolbar'
+import { ShopifySyncButton as ShopifySyncButton_5c5632c46a533ea1baf23ee47504cc71 } from '../../../components/admin/ShopifySyncButton'
 import { GeocodeButton as GeocodeButton_8375e85e78c6cb75ee71f674d8be8598 } from '../../../components/admin/GeocodeButton'
+import { ImportListMenuItem as ImportListMenuItem_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { SeedDealersButton as SeedDealersButton_e23770bdac2ef90b66daaeba172fe468 } from '../../../components/admin/FindADealerButton'
 import { FindADealerListButton as FindADealerListButton_e23770bdac2ef90b66daaeba172fe468 } from '../../../components/admin/FindADealerButton'
 import { FindADealerDocButton as FindADealerDocButton_e23770bdac2ef90b66daaeba172fe468 } from '../../../components/admin/FindADealerButton'
@@ -115,7 +117,9 @@ export const importMap = {
   "/components/admin/VariationRowLabel#VariationRowLabel": VariationRowLabel_e070f1ecdc2279c31ac736f90d4c5bf7,
   "@payloadcms/plugin-import-export/rsc#ExportListMenuItem": ExportListMenuItem_cdf7e044479f899a31f804427d568b36,
   "/components/admin/ProductsListToolbar#ProductsListToolbar": ProductsListToolbar_a0d9fee0546177f42149c7c463677b6e,
+  "/components/admin/ShopifySyncButton#ShopifySyncButton": ShopifySyncButton_5c5632c46a533ea1baf23ee47504cc71,
   "/components/admin/GeocodeButton#GeocodeButton": GeocodeButton_8375e85e78c6cb75ee71f674d8be8598,
+  "@payloadcms/plugin-import-export/rsc#ImportListMenuItem": ImportListMenuItem_cdf7e044479f899a31f804427d568b36,
   "/components/admin/FindADealerButton#SeedDealersButton": SeedDealersButton_e23770bdac2ef90b66daaeba172fe468,
   "/components/admin/FindADealerButton#FindADealerListButton": FindADealerListButton_e23770bdac2ef90b66daaeba172fe468,
   "/components/admin/FindADealerButton#FindADealerDocButton": FindADealerDocButton_e23770bdac2ef90b66daaeba172fe468,

@@ -160,6 +160,11 @@ export const Products: CollectionConfig = {
       beforeList: [
         '/components/admin/ProductsListToolbar#ProductsListToolbar',
       ],
+      edit: {
+        beforeDocumentControls: [
+          '/components/admin/ShopifySyncButton#ShopifySyncButton',
+        ],
+      },
     },
     livePreview: {
       url: ({ data }) => {
@@ -580,14 +585,33 @@ export const Products: CollectionConfig = {
               ],
             },
 
-            // Specification JSON - custom.specification-json metafield from Shopify
+            // Owner's Manual - custom.ownermanual metafield from Shopify
             {
-              name: 'specificationJson',
-              type: 'json',
+              name: 'ownersManualUrl',
+              type: 'text',
               admin: {
-                description: 'Full specification sheet as JSON (synced from Shopify custom.specification-json metafield). Used by the Technical Specifications block with "JSON" data source.',
+                description: "Owner's manual PDF URL (synced from Shopify custom.ownermanual metafield)",
                 readOnly: true,
               },
+            },
+
+            // Specification JSON - custom.specification-json metafield from Shopify
+            {
+              type: 'collapsible',
+              label: 'Specification JSON',
+              admin: {
+                initCollapsed: true,
+                description: 'Full specification sheet as JSON (synced from Shopify custom.specification-json metafield). Used by the Technical Specifications block with "JSON" data source.',
+              },
+              fields: [
+                {
+                  name: 'specificationJson',
+                  type: 'json',
+                  admin: {
+                    readOnly: true,
+                  },
+                },
+              ],
             },
 
             // Highlights - Custom metaobject list from Shopify

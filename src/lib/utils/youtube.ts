@@ -71,7 +71,7 @@ export function buildYouTubeEmbedUrl(videoId: string): string {
     autoplay: '1',
     mute: '1',
     loop: '1',
-    playlist: videoId, // Required for loop
+    playlist: videoId, // Required for loop to work on a single video
     controls: '0',
     rel: '0',
     playsinline: '1',
@@ -79,7 +79,10 @@ export function buildYouTubeEmbedUrl(videoId: string): string {
     fs: '0',
     iv_load_policy: '3',
     cc_load_policy: '0',
-    color: 'white',
+    // enablejsapi: allows this window to receive postMessage state-change events
+    // from the iframe so we can reveal the video only once it's actually playing
+    // (playerState === 1), not on the earlier iframe-document onLoad event.
+    enablejsapi: '1',
   })
 
   return `https://www.youtube.com/embed/${videoId}?${params.toString()}`

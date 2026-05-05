@@ -194,9 +194,9 @@ export const Posts: CollectionConfig = {
             {
               name: 'tags',
               type: 'text',
+              hasMany: true,
               admin: {
-                description: 'Comma-separated tags for SEO and filtering',
-                placeholder: 'digital piano, grand piano, Kawai CA99',
+                description: 'Type a tag and press Enter to add it. Each tag is stored separately.',
               },
             },
           ],
@@ -304,6 +304,11 @@ export const Posts: CollectionConfig = {
         // Set publishedDate on first publish
         if (data.status === 'published' && !data.publishedDate) {
           data.publishedDate = new Date().toISOString()
+        }
+
+        // Migrate legacy comma-separated tags string → string[]
+        if (typeof data.tags === 'string') {
+          data.tags = (data.tags as string).split(',').map((t) => t.trim()).filter(Boolean)
         }
 
         return data

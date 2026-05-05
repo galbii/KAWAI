@@ -27,12 +27,22 @@ html.kawai-expanded {
  *   .template-default--nav-hydrated { grid-template-columns: 0 auto }
  *   .template-default .nav          { display: none }
  * We override so the nav is always an inline grid column, never an overlay.
+ *
+ * CRITICAL — transform: none:
+ * CSS transforms (including Payload's page-transition transforms) create a
+ * new containing block for position:fixed descendants. If .template-default
+ * has any non-none transform, .nav's position:fixed becomes relative to that
+ * element and scrolls with the page instead of staying viewport-anchored.
+ * Clearing it here ensures .nav is ALWAYS fixed to the viewport.
  */
 .template-default,
 .template-default--nav-hydrated,
 .template-default--nav-hydrated.template-default--nav-open {
   grid-template-columns: var(--nav-width) auto !important;
   transition: grid-template-columns var(--kawai-nav-trans) !important;
+  transform: none !important;
+  will-change: auto !important;
+  perspective: none !important;
 }
 
 .template-default .nav,
@@ -40,65 +50,65 @@ html.kawai-expanded {
   display: flex !important;   /* shown at all widths */
 }
 
-/* ── 3. Nav element sizing & visibility ──────────────────────────────── */
+/* ── 2b. Content area — explicit grid column to avoid sidebar overlap ── */
+/*
+ * CustomNav is position:fixed — out-of-flow elements don't participate in
+ * CSS Grid auto-placement. Without this, .template-default__wrap auto-places
+ * in column 1 (x=0), overlapping the fixed sidebar.
+ */
+.template-default__wrap {
+  grid-column: 2 !important;
+  min-width: 0 !important;
+}
+
+/* ── 3. Nav placeholder — keeps the grid column alive ────────────────── */
+/*
+ * ARCHITECTURE NOTE — why we don't style position:fixed here:
+ *
+ * When admin.components.Nav is a custom component, Payload's DefaultNav and
+ * its NavWrapper (<aside class="nav">) are bypassed. Our CustomNav renders
+ * as a DIRECT CHILD of .template-default — no .nav element is created.
+ * Targeting ".nav" here has zero effect on our sidebar.
+ *
+ * position:fixed, height, backdrop-filter, and all glass styles are applied
+ * inline in CustomNav.tsx instead. The grid column (--nav-width) still
+ * allocates space here so .template-default__wrap is correctly indented.
+ *
+ * We keep minimal .nav rules only for defensive compatibility in case
+ * Payload renders a stray .nav element in some admin sub-route.
+ */
 .nav {
   width: var(--nav-width) !important;
   min-width: var(--nav-width) !important;
   max-width: var(--nav-width) !important;
-  transition: width var(--kawai-nav-trans),
-              min-width var(--kawai-nav-trans),
-              max-width var(--kawai-nav-trans) !important;
-
-  /* Always visible — bypass the opacity:0 / --nav-open animation */
-  opacity: 1 !important;
-
-  /*
-   * position: fixed is the only reliable way to keep the nav in the viewport.
-   *
-   * Why not sticky? Payload's globals.css sets `body { overflow-x: hidden }`
-   * which promotes body to a block formatting context in some browsers,
-   * silently breaking position:sticky on any descendant (sticky becomes
-   * relative to body's scroll context rather than the viewport, and since body
-   * has no fixed height, the nav scrolls away with the page content).
-   *
-   * Fixed positioning is always viewport-relative — no ancestor overflow,
-   * BFC, or z-index stacking context can interfere with it.
-   *
-   * Layout consistency: the grid-template-columns still allocates the first
-   * column as var(--nav-width), keeping the content area naturally offset.
-   * The fixed nav overlays that same column, so visually nothing changes —
-   * except the nav now stays in view as the user scrolls.
-   *
-   * All tooltips use createPortal so overflow:hidden is safe.
-   */
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  height: 100vh !important;
-  overflow: hidden !important;
-  z-index: var(--z-nav, 20) !important;
-
-  /* Remove Payload's right border — CustomNav renders its own */
   border-right: none !important;
+  opacity: 1 !important;
 }
 
-/* ── 4. Nav scroll/wrap containers ──────────────────────────────────── */
+/* ── 3b. Admin page background — glass needs depth to show through ────── */
 /*
- * Payload wraps our Nav component in .nav__scroll > .nav__wrap.
- * These are transparent pass-throughs so our flex column fills 100vh.
- * overflow: hidden prevents double-scrollbar; the inner <nav> element
- * in CustomNav handles its own overflow-y:auto for the item list.
+ * backdrop-filter blurs what's visually behind the sidebar. A gradient on
+ * the page body gives the blur something interesting to diffuse.
  */
-.nav__scroll {
-  padding: 0 !important;
-  overflow: hidden !important;
-  height: 100% !important;
+body {
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 0%, rgba(99, 102, 241, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 90% 100%, rgba(46, 196, 160, 0.04) 0%, transparent 60%),
+    #07070F !important;
 }
 
-.nav__wrap {
-  overflow: hidden !important;
-  flex-grow: 1 !important;
-  height: 100% !important;
+/* ── 4. Thin violet scrollbar for the nav item list ─────────────────── */
+.kawai-nav-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99, 102, 241, 0.25) transparent;
+
+  &::-webkit-scrollbar { width: 3px; }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.25);
+    border-radius: 2px;
+    &:hover { background: rgba(99, 102, 241, 0.45); }
+  }
+  &::-webkit-scrollbar-track { background: transparent; }
 }
 
 /* ── 5. App header ───────────────────────────────────────────────────── */

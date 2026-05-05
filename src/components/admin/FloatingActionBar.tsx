@@ -62,8 +62,8 @@ const IcoPlus = ({ open }: { open: boolean }) => (
 interface ActionItemProps {
   label: string
   icon: React.ReactNode
-  onClick?: () => void
-  href?: string
+  onClick?: (() => void) | undefined
+  href?: string | undefined
   visible: boolean
   openDelay: number
   closeDelay: number

@@ -179,6 +179,10 @@ export interface ShopifyProduct {
   variants: Connection<ProductVariant>
   /** Custom metafields */
   metafields: (Metafield | null)[]
+  /** Owner's manual file reference (custom.ownermanual metafield) */
+  metafield_ownermanual?: {
+    reference: { url: string } | null
+  } | null
 }
 
 // ============================================================================
@@ -248,6 +252,8 @@ export interface Product {
       alt: string
     } | null
   }>
+  /** Owner's manual PDF URL (from custom.ownermanual metafield) */
+  ownersManualUrl: string | null
   /** Custom metadata */
   metadata?: Record<string, unknown>
 }

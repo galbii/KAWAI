@@ -148,10 +148,16 @@ const nextConfig: NextConfig = {
           { key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=600' },
         ],
       },
-      // Relaxed CSP for the Payload admin UI (requires unsafe-inline + unsafe-eval)
+      // Relaxed CSP for the Payload admin UI (requires unsafe-inline + unsafe-eval).
+      // COEP credentialless + COOP same-origin-allow-popups enable SharedArrayBuffer,
+      // which is required by @ffmpeg/ffmpeg v0.12 (used for browser-side video compression).
       {
         source: '/admin(.*)',
-        headers: [{ key: 'Content-Security-Policy', value: ADMIN_CSP }],
+        headers: [
+          { key: 'Content-Security-Policy', value: ADMIN_CSP },
+          { key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' },
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' },
+        ],
       },
       // Frontend CSP — edit src/lib/csp.ts to add/remove third-party domains
       {

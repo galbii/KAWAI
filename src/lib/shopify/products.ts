@@ -144,6 +144,7 @@ function transformAdminProductToStorefront(adminProduct: ShopifyProductData): Pr
       inventoryTracked: variant.inventoryTracked ?? false,
       image: null, // Admin API doesn't include variant images in this query
     })),
+    ownersManualUrl: adminProduct.metafields?.ownersManual ?? null,
     metadata: {
       model: adminProduct.metafields?.model,
     },
@@ -223,6 +224,7 @@ export function transformProduct(shopifyProduct: ShopifyProduct): Product {
     image,
     images,
     variants,
+    ownersManualUrl: shopifyProduct.metafield_ownermanual?.reference?.url ?? null,
     metadata,
   }
 }

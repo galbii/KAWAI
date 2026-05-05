@@ -45,16 +45,33 @@ export function NewsVideoBackground({
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isVideoReady, setIsVideoReady] = useState(false)
 
-  // Fallback: Show video after 2 seconds if load event doesn't fire
   useEffect(() => {
-    if (videoSource === 'youtube' && !isVideoReady) {
-      const fallbackTimer = setTimeout(() => {
-        setIsVideoReady(true)
-      }, 2000)
-      return () => clearTimeout(fallbackTimer)
+    if (videoSource !== 'youtube') return
+
+    // Reveal only once the player is actually playing (playerState === 1).
+    // YouTube's iframe sends postMessage events when enablejsapi=1 is in the URL.
+    // The 4 s fallback covers networks or browsers where the message never fires.
+    const fallback = setTimeout(() => setIsVideoReady(true), 4000)
+
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        const data =
+          typeof event.data === 'string' ? JSON.parse(event.data) : event.data
+        if (data?.event === 'infoDelivery' && data?.info?.playerState === 1) {
+          setIsVideoReady(true)
+          clearTimeout(fallback)
+        }
+      } catch {
+        // ignore non-JSON messages from other origins
+      }
     }
-    return undefined
-  }, [videoSource, isVideoReady])
+
+    window.addEventListener('message', handleMessage)
+    return () => {
+      clearTimeout(fallback)
+      window.removeEventListener('message', handleMessage)
+    }
+  }, [videoSource])
 
   const handleVideoReady = () => {
     setIsVideoReady(true)
@@ -74,7 +91,7 @@ export function NewsVideoBackground({
       {/* Background Video */}
       <div className="absolute inset-0">
         {videoSource === 'youtube' ? (
-          // YouTube Embed (minimized UI - title/channel overlay still appears per YouTube policy)
+          // YouTube Embed — hidden until postMessage signals playerState === 1 (actually playing)
           <div className="relative h-full w-full">
             <iframe
               src={embedUrl}
@@ -82,16 +99,14 @@ export function NewsVideoBackground({
                 'absolute left-1/2 top-1/2 h-[56.25vw] min-h-screen w-[177.77vh] min-w-full object-cover transition-opacity duration-1000',
                 isVideoReady ? 'opacity-100' : 'opacity-0'
               )}
-              // Combine translate and scale in one declaration — setting style.transform overrides
-              // Tailwind's utility transforms, so both must live here together.
-              style={{ transform: `translate(-50%, -50%) scale(${zoom})` }}
+              // pointerEvents: none → YouTube's document never receives mouse events, so
+              // its hover-triggered transport controls (center pause, skip buttons) never appear.
+              // translate + scale combined in one declaration to prevent Tailwind transform conflict.
+              style={{ transform: `translate(-50%, -50%) scale(${zoom})`, pointerEvents: 'none' }}
               allow="autoplay; encrypted-media"
               frameBorder="0"
-              onLoad={handleVideoReady}
               title={`${title} - Background video`}
             />
-            {/* Transparent overlay prevents user interaction with video */}
-            <div className="pointer-events-none absolute inset-0 z-10" />
           </div>
         ) : (
           // Direct MP4 Video
