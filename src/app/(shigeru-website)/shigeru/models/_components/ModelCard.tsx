@@ -103,7 +103,7 @@ export function ModelCard({ model, index, imageUrl, shopifyFinishes }: Props) {
             {/* Counter */}
             <motion.p
               className="text-kawai-charcoal/[0.25] text-[9px] tracking-[0.45em] uppercase mb-7"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
+              style={{ fontFamily: 'var(--font-oswald)' }}
               {...text(0.05)}
             >
               0{index + 1}&ensp;/&ensp;06
@@ -112,10 +112,11 @@ export function ModelCard({ model, index, imageUrl, shopifyFinishes }: Props) {
             {/* Model name — clip reveal from bottom */}
             <div className="overflow-hidden mb-4">
               <motion.h2
-                className="text-kawai-black font-light italic leading-[0.88]"
+                className="text-kawai-black font-extrabold leading-[0.88] uppercase"
                 style={{
-                  fontFamily: 'var(--font-brand-luxury)',
+                  fontFamily: 'var(--font-oswald)',
                   fontSize: 'clamp(3.2rem, 7.5vw, 6.5rem)',
+                  letterSpacing: '0.04em',
                 }}
                 initial={{ y: '105%', opacity: 0.2 }}
                 animate={isInView ? { y: 0, opacity: 1 } : { y: '105%', opacity: 0.2 }}
@@ -138,7 +139,7 @@ export function ModelCard({ model, index, imageUrl, shopifyFinishes }: Props) {
               />
               <p
                 className="text-kawai-gold text-[9px] tracking-[0.4em] uppercase"
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
+                style={{ fontFamily: 'var(--font-oswald)' }}
               >
                 {model.type}
               </p>
@@ -147,7 +148,7 @@ export function ModelCard({ model, index, imageUrl, shopifyFinishes }: Props) {
             {/* Dimensions */}
             <motion.p
               className="text-kawai-charcoal/45 text-xs tracking-widest mb-5"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
+              style={{ fontFamily: 'var(--font-oswald)' }}
               {...text(0.4)}
             >
               {model.feet}&ensp;·&ensp;{model.cm}
@@ -208,8 +209,8 @@ export function ModelCard({ model, index, imageUrl, shopifyFinishes }: Props) {
                 {finishes.map((f) => (
                   <span
                     key={f}
-                    className="border border-kawai-black/[0.1] text-kawai-charcoal/50 text-[8px] tracking-[0.22em] uppercase px-3 py-1"
-                    style={{ fontFamily: 'var(--font-brand-sans)' }}
+                    className="border border-kawai-black/[0.1] text-kawai-charcoal/50 text-[8px] tracking-[0.28em] uppercase px-3 py-1"
+                    style={{ fontFamily: 'var(--font-oswald)' }}
                   >
                     {f}
                   </span>
@@ -221,8 +222,8 @@ export function ModelCard({ model, index, imageUrl, shopifyFinishes }: Props) {
             <motion.div {...text(0.8)}>
               <Link
                 href={`/shigeru/models/${model.slug}`}
-                className="group/cta inline-flex items-center gap-3 border border-kawai-gold/30 hover:border-kawai-gold text-kawai-gold/65 hover:text-kawai-gold hover:bg-kawai-gold/[0.04] px-8 py-3.5 text-[9px] tracking-[0.35em] uppercase transition-all duration-300"
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
+                className="group/cta inline-flex items-center gap-3 border-2 border-kawai-gold/50 hover:border-kawai-gold text-kawai-gold hover:bg-kawai-gold/[0.08] px-8 py-4 transition-all duration-300"
+                style={{ fontFamily: 'var(--font-oswald)', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.25em', textTransform: 'uppercase' }}
               >
                 Explore {model.name}
                 <span

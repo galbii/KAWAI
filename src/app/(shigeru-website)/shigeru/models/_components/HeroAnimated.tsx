@@ -24,7 +24,7 @@ export function HeroAnimated() {
     >
       <motion.p
         className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase mb-10"
-        style={{ fontFamily: 'var(--font-brand-sans)' }}
+        style={{ fontFamily: 'var(--font-oswald)' }}
         variants={fadeUp}
       >
         Shigeru Kawai
@@ -37,10 +37,11 @@ export function HeroAnimated() {
       />
 
       <motion.h1
-        className="text-kawai-black font-light italic leading-[0.9] mb-10"
+        className="text-kawai-black font-extrabold leading-[0.85] mb-10 uppercase"
         style={{
-          fontFamily: 'var(--font-brand-luxury)',
-          fontSize: 'clamp(3.5rem, 10vw, 8rem)',
+          fontFamily: 'var(--font-oswald)',
+          fontSize: 'clamp(4rem, 12vw, 10rem)',
+          letterSpacing: '0.04em',
         }}
         variants={fadeUp}
       >

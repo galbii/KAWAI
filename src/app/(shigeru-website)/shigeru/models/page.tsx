@@ -37,7 +37,7 @@ export default async function ModelsPage() {
   const productData = await getShigeruPageData()
 
   return (
-    <div className="bg-kawai-pearl">
+    <div className="bg-white">
 
       {/* ── FIXED PROGRESS INDICATOR ──────────────────────────── */}
       <ModelProgressIndicator />
@@ -73,19 +73,20 @@ export default async function ModelsPage() {
       </section>
 
       {/* ── COMPARISON TABLE ──────────────────────────────────── */}
-      <section className="bg-kawai-pearl px-6 py-28">
+      <section className="bg-white px-6 py-28">
         <div className="max-w-6xl mx-auto">
           <p
-            className="text-kawai-charcoal/40 text-[10px] tracking-[0.45em] uppercase text-center mb-6"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
+            className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase text-center mb-6"
+            style={{ fontFamily: 'var(--font-oswald)' }}
           >
             At a Glance
           </p>
           <h2
-            className="text-kawai-black font-light italic text-center mb-16 leading-tight"
+            className="text-kawai-black font-bold text-center mb-16 leading-tight uppercase"
             style={{
-              fontFamily: 'var(--font-brand-luxury)',
-              fontSize: 'clamp(1.6rem, 3vw, 2.4rem)',
+              fontFamily: 'var(--font-oswald)',
+              fontSize: 'clamp(1.8rem, 3vw, 2.6rem)',
+              letterSpacing: '0.06em',
             }}
           >
             Model Specifications
@@ -99,7 +100,7 @@ export default async function ModelsPage() {
                     <th
                       key={h}
                       className="text-left py-4 pr-8 last:pr-0 text-kawai-gold text-[9px] tracking-[0.4em] uppercase font-normal"
-                      style={{ fontFamily: 'var(--font-brand-sans)' }}
+                      style={{ fontFamily: 'var(--font-oswald)' }}
                     >
                       {h}
                     </th>
@@ -182,15 +183,16 @@ export default async function ModelsPage() {
         <div className="max-w-5xl mx-auto">
           <p
             className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase text-center mb-6"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
+            style={{ fontFamily: 'var(--font-oswald)' }}
           >
             Standard Across All Models
           </p>
           <h2
-            className="text-kawai-black font-light italic text-center mb-4 leading-tight"
+            className="text-kawai-black font-bold text-center mb-4 leading-tight uppercase"
             style={{
-              fontFamily: 'var(--font-brand-luxury)',
-              fontSize: 'clamp(1.6rem, 3vw, 2.4rem)',
+              fontFamily: 'var(--font-oswald)',
+              fontSize: 'clamp(1.8rem, 3vw, 2.6rem)',
+              letterSpacing: '0.06em',
             }}
           >
             Built Into Every Instrument
@@ -228,21 +230,22 @@ export default async function ModelsPage() {
       </section>
 
       {/* ── CTA ───────────────────────────────────────────────── */}
-      <section className="bg-kawai-pearl border-t border-kawai-black/[0.07] px-6 py-28">
+      <section className="bg-white border-t border-kawai-black/[0.07] px-6 py-28">
         <div className="max-w-xl mx-auto text-center">
           <span className="block h-px w-10 bg-kawai-gold opacity-40 mx-auto mb-14" />
 
           <p
             className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase mb-6"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
+            style={{ fontFamily: 'var(--font-oswald)' }}
           >
             Experience Shigeru Kawai
           </p>
           <h2
-            className="text-kawai-black font-light italic leading-tight mb-6"
+            className="text-kawai-black font-bold leading-tight mb-6 uppercase"
             style={{
-              fontFamily: 'var(--font-brand-luxury)',
-              fontSize: 'clamp(2rem, 5vw, 3.2rem)',
+              fontFamily: 'var(--font-oswald)',
+              fontSize: 'clamp(2.2rem, 5vw, 3.6rem)',
+              letterSpacing: '0.05em',
             }}
           >
             Hear One in Person
@@ -258,15 +261,15 @@ export default async function ModelsPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/shigeru/dealers"
-              className="inline-flex items-center gap-3 border border-kawai-gold/50 hover:border-kawai-gold text-kawai-gold hover:bg-kawai-gold/[0.08] px-9 py-4 text-[10px] tracking-[0.3em] uppercase transition-all duration-300"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
+              className="inline-flex items-center gap-3 border-2 border-kawai-gold/50 hover:border-kawai-gold text-kawai-gold hover:bg-kawai-gold/[0.08] px-9 py-4 transition-all duration-300"
+              style={{ fontFamily: 'var(--font-oswald)', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase' }}
             >
               Find a Dealer
             </Link>
             <Link
               href="/shigeru/contact"
-              className="inline-flex items-center gap-3 border border-kawai-black/15 hover:border-kawai-black/30 text-kawai-charcoal/50 hover:text-kawai-charcoal/80 px-9 py-4 text-[10px] tracking-[0.3em] uppercase transition-all duration-300"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
+              className="inline-flex items-center gap-3 border-2 border-kawai-black/15 hover:border-kawai-black/30 text-kawai-charcoal/50 hover:text-kawai-charcoal/80 px-9 py-4 transition-all duration-300"
+              style={{ fontFamily: 'var(--font-oswald)', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase' }}
             >
               Contact Us
             </Link>
