@@ -20,7 +20,7 @@ const SIDEBAR_CATEGORIES = [
   {
     label: 'Shigeru Kawai',
     key: 'shigeru-kawai',
-    href: '/pianos/shigeru-kawai',
+    href: '/shigeru',
     terms: [],
     bannerOnly: true as const,
     comingSoon: true as const,

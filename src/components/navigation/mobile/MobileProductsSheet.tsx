@@ -27,7 +27,7 @@ const CATEGORIES = [
   { label: 'Hybrid',        key: 'hybrid',        href: '/pianos/hybrid',        terms: ['hybrid'] },
   { label: 'Upright',       key: 'upright',       href: '/pianos/upright',       terms: ['upright'] },
   { label: 'Grand',         key: 'grand',         href: '/pianos/grand',         terms: ['grand', 'baby grand', 'baby-grand', 'gl series'] },
-  { label: 'Shigeru Kawai', key: 'shigeru-kawai', href: '/pianos/shigeru-kawai', terms: ['shigeru'] },
+  { label: 'Shigeru Kawai', key: 'shigeru-kawai', href: '/shigeru', terms: ['shigeru'] },
   { label: 'Accessories',   key: 'accessories',   href: '/accessories',          terms: [] },
 ] as const
 
