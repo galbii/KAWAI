@@ -43,7 +43,7 @@ export default async function ModelsPage() {
       <ModelProgressIndicator />
 
       {/* ── HERO ──────────────────────────────────────────────── */}
-      <section className="relative min-h-[75vh] flex flex-col items-center justify-center px-6 pt-24 pb-24 overflow-hidden">
+      <section className="relative min-h-[88vh] flex flex-col items-center justify-center px-6 pt-40 pb-36 overflow-hidden">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0"
@@ -73,19 +73,19 @@ export default async function ModelsPage() {
       </section>
 
       {/* ── COMPARISON TABLE ──────────────────────────────────── */}
-      <section className="bg-white px-6 py-28">
+      <section className="bg-white px-6 py-32">
         <div className="max-w-6xl mx-auto">
           <p
-            className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase text-center mb-6"
+            className="text-kawai-gold text-[13px] tracking-[0.45em] uppercase text-center mb-8"
             style={{ fontFamily: 'var(--font-oswald)' }}
           >
             At a Glance
           </p>
           <h2
-            className="text-kawai-black font-bold text-center mb-16 leading-tight uppercase"
+            className="text-kawai-black font-bold text-center mb-20 leading-tight uppercase"
             style={{
               fontFamily: 'var(--font-oswald)',
-              fontSize: 'clamp(1.8rem, 3vw, 2.6rem)',
+              fontSize: 'clamp(2.2rem, 3.5vw, 3.2rem)',
               letterSpacing: '0.06em',
             }}
           >
@@ -99,7 +99,7 @@ export default async function ModelsPage() {
                   {['Model', 'Type', 'Length', 'Width', 'Weight', 'Finishes'].map((h) => (
                     <th
                       key={h}
-                      className="text-left py-4 pr-8 last:pr-0 text-kawai-gold text-[9px] tracking-[0.4em] uppercase font-normal"
+                      className="text-left py-5 pr-8 last:pr-0 text-kawai-gold text-[11px] tracking-[0.4em] uppercase font-normal"
                       style={{ fontFamily: 'var(--font-oswald)' }}
                     >
                       {h}
@@ -113,58 +113,59 @@ export default async function ModelsPage() {
                     key={model.slug}
                     className={`border-b ${i === SHIGERU_MODELS.length - 1 ? 'border-transparent' : 'border-kawai-black/[0.08]'} group`}
                   >
-                    <td className="py-5 pr-8">
+                    <td className="py-6 pr-8">
                       <Link
                         href={`/shigeru/models/${model.slug}`}
                         className="text-kawai-black group-hover:text-kawai-charcoal transition-colors duration-200"
                         style={{
-                          fontFamily: 'var(--font-brand-luxury)',
-                          fontSize: '1.25rem',
-                          fontStyle: 'italic',
-                          fontWeight: 300,
+                          fontFamily: 'var(--font-oswald)',
+                          fontSize: '1.5rem',
+                          fontWeight: 700,
+                          letterSpacing: '0.04em',
+                          textTransform: 'uppercase',
                         }}
                       >
                         {model.name}
                       </Link>
                     </td>
-                    <td className="py-5 pr-8">
+                    <td className="py-6 pr-8">
                       <span
-                        className="text-kawai-charcoal/60 text-xs"
+                        className="text-kawai-charcoal/60 text-sm"
                         style={{ fontFamily: 'var(--font-brand-sans)' }}
                       >
                         {model.type}
                       </span>
                     </td>
-                    <td className="py-5 pr-8">
+                    <td className="py-6 pr-8">
                       <span
-                        className="text-kawai-black text-sm"
+                        className="text-kawai-black text-base"
                         style={{ fontFamily: 'var(--font-brand-sans)' }}
                       >
                         {model.feet}
-                        <span className="text-kawai-charcoal/40 text-xs ml-1.5">{model.cm}</span>
+                        <span className="text-kawai-charcoal/40 text-sm ml-2">{model.cm}</span>
                       </span>
                     </td>
-                    <td className="py-5 pr-8">
+                    <td className="py-6 pr-8">
                       <span
-                        className="text-kawai-black text-sm"
+                        className="text-kawai-black text-base"
                         style={{ fontFamily: 'var(--font-brand-sans)' }}
                       >
                         {model.width}
-                        <span className="text-kawai-charcoal/40 text-xs ml-1.5">{model.widthCm}</span>
+                        <span className="text-kawai-charcoal/40 text-sm ml-2">{model.widthCm}</span>
                       </span>
                     </td>
-                    <td className="py-5 pr-8">
+                    <td className="py-6 pr-8">
                       <span
-                        className="text-kawai-black text-sm"
+                        className="text-kawai-black text-base"
                         style={{ fontFamily: 'var(--font-brand-sans)' }}
                       >
                         {model.weight}
-                        <span className="text-kawai-charcoal/40 text-xs ml-1.5">{model.weightKg}</span>
+                        <span className="text-kawai-charcoal/40 text-sm ml-2">{model.weightKg}</span>
                       </span>
                     </td>
-                    <td className="py-5">
+                    <td className="py-6">
                       <span
-                        className="text-kawai-charcoal/55 text-xs leading-relaxed"
+                        className="text-kawai-charcoal/55 text-sm leading-relaxed"
                         style={{ fontFamily: 'var(--font-brand-sans)' }}
                       >
                         {model.finishes.join(' · ')}
@@ -179,38 +180,38 @@ export default async function ModelsPage() {
       </section>
 
       {/* ── STANDARD FEATURES ─────────────────────────────────── */}
-      <section className="bg-white px-6 py-28">
+      <section className="bg-white px-6 py-32">
         <div className="max-w-5xl mx-auto">
           <p
-            className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase text-center mb-6"
+            className="text-kawai-gold text-[13px] tracking-[0.45em] uppercase text-center mb-8"
             style={{ fontFamily: 'var(--font-oswald)' }}
           >
             Standard Across All Models
           </p>
           <h2
-            className="text-kawai-black font-bold text-center mb-4 leading-tight uppercase"
+            className="text-kawai-black font-bold text-center mb-6 leading-tight uppercase"
             style={{
               fontFamily: 'var(--font-oswald)',
-              fontSize: 'clamp(1.8rem, 3vw, 2.6rem)',
+              fontSize: 'clamp(2.2rem, 3.5vw, 3.2rem)',
               letterSpacing: '0.06em',
             }}
           >
             Built Into Every Instrument
           </h2>
           <p
-            className="text-kawai-charcoal/50 text-sm text-center mb-16 max-w-lg mx-auto leading-relaxed"
+            className="text-kawai-charcoal/50 text-base text-center mb-20 max-w-xl mx-auto leading-relaxed"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             Every Shigeru Kawai grand piano — from SK-2 to SK-EX — includes these features as
             standard. No options. No tiers. Only the finest.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-16 gap-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-16 gap-y-7">
             {standardFeatures.map((feature) => (
               <div key={feature} className="flex items-start gap-4">
-                <span className="mt-2 flex-shrink-0 block w-1 h-1 rounded-full bg-kawai-gold opacity-60" />
+                <span className="mt-[9px] flex-shrink-0 block w-1 h-1 rounded-full bg-kawai-gold opacity-60" />
                 <p
-                  className="text-kawai-charcoal/65 text-sm leading-snug"
+                  className="text-kawai-charcoal/65 text-base leading-snug"
                   style={{ fontFamily: 'var(--font-brand-sans)' }}
                 >
                   {feature}
@@ -220,7 +221,7 @@ export default async function ModelsPage() {
           </div>
 
           <p
-            className="text-kawai-charcoal/35 text-xs text-center mt-14 italic"
+            className="text-kawai-charcoal/35 text-sm text-center mt-16 italic"
             style={{ fontFamily: 'var(--font-brand-luxury)' }}
           >
             All models include a 10-year transferrable warranty and Master Piano Artisan
@@ -230,28 +231,28 @@ export default async function ModelsPage() {
       </section>
 
       {/* ── CTA ───────────────────────────────────────────────── */}
-      <section className="bg-white border-t border-kawai-black/[0.07] px-6 py-28">
+      <section className="bg-white border-t border-kawai-black/[0.07] px-6 py-32">
         <div className="max-w-xl mx-auto text-center">
-          <span className="block h-px w-10 bg-kawai-gold opacity-40 mx-auto mb-14" />
+          <span className="block h-px w-12 bg-kawai-gold opacity-40 mx-auto mb-16" />
 
           <p
-            className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase mb-6"
+            className="text-kawai-gold text-[13px] tracking-[0.45em] uppercase mb-8"
             style={{ fontFamily: 'var(--font-oswald)' }}
           >
             Experience Shigeru Kawai
           </p>
           <h2
-            className="text-kawai-black font-bold leading-tight mb-6 uppercase"
+            className="text-kawai-black font-bold leading-tight mb-8 uppercase"
             style={{
               fontFamily: 'var(--font-oswald)',
-              fontSize: 'clamp(2.2rem, 5vw, 3.6rem)',
+              fontSize: 'clamp(2.8rem, 6vw, 4.5rem)',
               letterSpacing: '0.05em',
             }}
           >
             Hear One in Person
           </h2>
           <p
-            className="text-kawai-charcoal/60 text-sm leading-relaxed mb-14 max-w-sm mx-auto"
+            className="text-kawai-charcoal/60 text-base leading-relaxed mb-16 max-w-md mx-auto"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             No description can replace the experience of sitting before a Shigeru Kawai grand.
@@ -261,21 +262,21 @@ export default async function ModelsPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/shigeru/dealers"
-              className="inline-flex items-center gap-3 border-2 border-kawai-gold/50 hover:border-kawai-gold text-kawai-gold hover:bg-kawai-gold/[0.08] px-9 py-4 transition-all duration-300"
-              style={{ fontFamily: 'var(--font-oswald)', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase' }}
+              className="inline-flex items-center gap-3 border-2 border-kawai-gold/50 hover:border-kawai-gold text-kawai-gold hover:bg-kawai-gold/[0.08] px-11 py-5 transition-all duration-300"
+              style={{ fontFamily: 'var(--font-oswald)', fontSize: '0.92rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase' }}
             >
               Find a Dealer
             </Link>
             <Link
               href="/shigeru/contact"
-              className="inline-flex items-center gap-3 border-2 border-kawai-black/15 hover:border-kawai-black/30 text-kawai-charcoal/50 hover:text-kawai-charcoal/80 px-9 py-4 transition-all duration-300"
-              style={{ fontFamily: 'var(--font-oswald)', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase' }}
+              className="inline-flex items-center gap-3 border-2 border-kawai-black/15 hover:border-kawai-black/30 text-kawai-charcoal/50 hover:text-kawai-charcoal/80 px-11 py-5 transition-all duration-300"
+              style={{ fontFamily: 'var(--font-oswald)', fontSize: '0.92rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase' }}
             >
               Contact Us
             </Link>
           </div>
 
-          <span className="block h-px w-10 bg-kawai-gold opacity-40 mx-auto mt-14" />
+          <span className="block h-px w-12 bg-kawai-gold opacity-40 mx-auto mt-16" />
         </div>
       </section>
 

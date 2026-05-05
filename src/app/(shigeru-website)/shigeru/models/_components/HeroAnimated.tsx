@@ -17,13 +17,13 @@ const fadeUp = {
 export function HeroAnimated() {
   return (
     <motion.div
-      className="relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto"
+      className="relative z-10 flex flex-col items-center text-center max-w-5xl mx-auto"
       initial="hidden"
       animate="visible"
       variants={stagger}
     >
       <motion.p
-        className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase mb-10"
+        className="text-kawai-gold text-[13px] tracking-[0.45em] uppercase mb-12"
         style={{ fontFamily: 'var(--font-oswald)' }}
         variants={fadeUp}
       >
@@ -31,16 +31,16 @@ export function HeroAnimated() {
       </motion.p>
 
       <motion.span
-        className="block h-px w-10 bg-kawai-gold mx-auto mb-10"
+        className="block h-px w-12 bg-kawai-gold mx-auto mb-12"
         style={{ opacity: 0.4 }}
         variants={fadeUp}
       />
 
       <motion.h1
-        className="text-kawai-black font-extrabold leading-[0.85] mb-10 uppercase"
+        className="text-kawai-black font-extrabold leading-[0.85] mb-14 uppercase"
         style={{
           fontFamily: 'var(--font-oswald)',
-          fontSize: 'clamp(4rem, 12vw, 10rem)',
+          fontSize: 'clamp(5rem, 14vw, 13rem)',
           letterSpacing: '0.04em',
         }}
         variants={fadeUp}
@@ -49,7 +49,7 @@ export function HeroAnimated() {
       </motion.h1>
 
       <motion.p
-        className="text-kawai-charcoal/60 text-sm leading-relaxed max-w-lg mx-auto"
+        className="text-kawai-charcoal/60 text-base leading-relaxed max-w-xl mx-auto"
         style={{ fontFamily: 'var(--font-brand-sans)' }}
         variants={fadeUp}
       >
@@ -59,12 +59,12 @@ export function HeroAnimated() {
       </motion.p>
 
       <motion.div
-        className="mt-16 flex flex-col items-center gap-2"
+        className="mt-20 flex flex-col items-center gap-2"
         style={{ opacity: 0.3 }}
         variants={fadeUp}
       >
         <span
-          className="text-kawai-charcoal/50 text-[9px] tracking-[0.3em] uppercase"
+          className="text-kawai-charcoal/50 text-[10px] tracking-[0.3em] uppercase"
           style={{ fontFamily: 'var(--font-brand-sans)' }}
         >
           Explore
@@ -72,7 +72,7 @@ export function HeroAnimated() {
         <motion.span
           className="block w-px bg-kawai-charcoal/25"
           initial={{ height: 0 }}
-          animate={{ height: '2rem' }}
+          animate={{ height: '2.5rem' }}
           transition={{ duration: 0.8, ease, delay: 1.8 }}
         />
       </motion.div>
