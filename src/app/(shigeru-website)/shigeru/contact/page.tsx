@@ -33,82 +33,86 @@ const contactOptions = [
 
 export default function ContactPage() {
   return (
-    <div className="bg-[#0a0a0a]">
+    <div className="bg-white">
 
       {/* ── HERO ─────────────────────────────────────────────── */}
-      <section className="relative min-h-[55vh] flex flex-col items-center justify-center px-6 overflow-hidden pt-24">
+      <section className="relative min-h-[55vh] flex flex-col items-center justify-center px-6 overflow-hidden pt-36 pb-24">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              'radial-gradient(ellipse 60% 45% at 50% 40%, rgba(213,199,140,0.06) 0%, transparent 70%)',
+              'radial-gradient(ellipse 60% 45% at 50% 40%, rgba(213,199,140,0.05) 0%, transparent 70%)',
           }}
         />
-        <div className="relative z-10 flex flex-col items-center text-center max-w-3xl mx-auto">
+        <div className="relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto">
           <p
-            className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase mb-10"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
+            className="text-kawai-charcoal/30 text-[11px] tracking-[0.55em] uppercase mb-14"
+            style={{ fontFamily: 'var(--font-oswald)' }}
           >
-            Get in Touch
+            Shigeru Kawai
           </p>
           <h1
-            className="text-white font-light italic leading-[0.9] mb-8"
+            className="text-kawai-black font-extrabold uppercase leading-none mb-10"
             style={{
-              fontFamily: 'var(--font-brand-luxury)',
-              fontSize: 'clamp(2.8rem, 7vw, 5.5rem)',
+              fontFamily: 'var(--font-oswald)',
+              fontSize: 'clamp(4rem, 10vw, 9rem)',
+              letterSpacing: '0.04em',
             }}
           >
-            Contact Shigeru Kawai
+            Get in Touch
           </h1>
-          <div className="flex items-center justify-center gap-5">
-            <span className="block h-px w-16 bg-kawai-gold opacity-30" />
-            <span
-              className="text-kawai-gold text-[9px] tracking-[0.4em] uppercase opacity-60"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
-            >
-              We Welcome Your Inquiry
-            </span>
-            <span className="block h-px w-16 bg-kawai-gold opacity-30" />
-          </div>
+          <span className="block h-px w-14 bg-kawai-gold mb-10" style={{ opacity: 0.4 }} />
+          <p
+            className="text-kawai-charcoal/45 text-sm"
+            style={{ fontFamily: 'var(--font-brand-sans)', letterSpacing: '0.04em' }}
+          >
+            We welcome your inquiry and respond within one business day
+          </p>
         </div>
       </section>
 
       {/* ── CONTACT OPTIONS ──────────────────────────────────── */}
-      <section className="bg-kawai-pearl px-6 py-28">
+      <section className="bg-white px-6 py-28 border-t border-kawai-black/[0.07]">
         <div className="max-w-6xl mx-auto">
-          <p
-            className="text-kawai-charcoal/35 text-[10px] tracking-[0.45em] uppercase text-center mb-16"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
-          >
-            Direct Contact
-          </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-kawai-neutral/40">
+          {/* Section header */}
+          <div className="flex items-center gap-6 mb-20">
+            <p
+              className="text-kawai-gold text-[11px] tracking-[0.5em] uppercase whitespace-nowrap"
+              style={{ fontFamily: 'var(--font-oswald)' }}
+            >
+              Direct Contact
+            </p>
+            <span className="block h-px flex-1 bg-kawai-black/[0.07]" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-kawai-black/[0.07]">
             {contactOptions.map((option) => (
               <div
                 key={option.category}
-                className="bg-kawai-pearl px-8 py-12 flex flex-col"
+                className="bg-white px-10 py-14 flex flex-col"
               >
-                <span className="block w-6 h-px bg-kawai-gold/40 mb-6" />
+                <span className="block w-8 h-px bg-kawai-gold opacity-50 mb-8" />
                 <p
-                  className="text-kawai-gold text-[9px] tracking-[0.4em] uppercase mb-5"
-                  style={{ fontFamily: 'var(--font-brand-sans)', fontVariant: 'small-caps' }}
+                  className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase mb-6"
+                  style={{ fontFamily: 'var(--font-oswald)' }}
                 >
                   {option.category}
                 </p>
                 <p
-                  className="text-kawai-black font-light italic leading-tight mb-2"
+                  className="text-kawai-black font-bold uppercase leading-tight mb-3"
                   style={{
-                    fontFamily: 'var(--font-brand-luxury)',
-                    fontSize: 'clamp(1.15rem, 1.8vw, 1.4rem)',
+                    fontFamily: 'var(--font-oswald)',
+                    fontSize: 'clamp(1.05rem, 1.6vw, 1.35rem)',
+                    letterSpacing: '0.03em',
                   }}
                 >
                   {option.value}
                 </p>
                 <p
-                  className="text-kawai-charcoal/50 text-xs tracking-wide mb-6"
-                  style={{ fontFamily: 'var(--font-brand-sans)' }}
+                  className="text-kawai-charcoal/45 text-[10px] tracking-[0.2em] uppercase mb-8"
+                  style={{ fontFamily: 'var(--font-oswald)' }}
                 >
                   {option.note}
                 </p>
@@ -125,35 +129,37 @@ export default function ContactPage() {
       </section>
 
       {/* ── CONTACT FORM ─────────────────────────────────────── */}
-      <section className="bg-[#0a0a0a] px-6 py-28">
+      <section className="bg-white px-6 py-28 border-t border-kawai-black/[0.07]">
         <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-16">
+
+          {/* Section header */}
+          <div className="mb-16">
             <p
-              className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase mb-4"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
+              className="text-kawai-gold text-[11px] tracking-[0.5em] uppercase mb-8"
+              style={{ fontFamily: 'var(--font-oswald)' }}
             >
               Send a Message
             </p>
             <h2
-              className="text-white font-light italic leading-tight"
+              className="text-kawai-black font-bold uppercase leading-tight"
               style={{
-                fontFamily: 'var(--font-brand-luxury)',
-                fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)',
+                fontFamily: 'var(--font-oswald)',
+                fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)',
+                letterSpacing: '0.05em',
               }}
             >
-              We Respond Within One Business Day
+              We Respond Within<br />One Business Day
             </h2>
           </div>
 
-          {/* TODO: wire to Server Action */}
-          <form className="flex flex-col gap-7">
+          <form className="flex flex-col gap-8">
 
             {/* Name */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               <label
                 htmlFor="name"
-                className="text-kawai-gold text-[9px] tracking-[0.4em] uppercase"
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
+                className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase"
+                style={{ fontFamily: 'var(--font-oswald)' }}
               >
                 Full Name
               </label>
@@ -163,17 +169,17 @@ export default function ContactPage() {
                 type="text"
                 autoComplete="name"
                 placeholder="Your full name"
-                className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-kawai-gold/50 text-white/80 px-5 py-4 text-sm outline-none transition-colors duration-200 placeholder:text-white/20"
+                className="w-full bg-transparent border-b border-kawai-black/15 focus:border-kawai-gold text-kawai-black text-base px-0 py-3 outline-none transition-colors duration-300 placeholder:text-kawai-charcoal/30"
                 style={{ fontFamily: 'var(--font-brand-sans)' }}
               />
             </div>
 
             {/* Email */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               <label
                 htmlFor="email"
-                className="text-kawai-gold text-[9px] tracking-[0.4em] uppercase"
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
+                className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase"
+                style={{ fontFamily: 'var(--font-oswald)' }}
               >
                 Email Address
               </label>
@@ -183,17 +189,17 @@ export default function ContactPage() {
                 type="email"
                 autoComplete="email"
                 placeholder="your@email.com"
-                className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-kawai-gold/50 text-white/80 px-5 py-4 text-sm outline-none transition-colors duration-200 placeholder:text-white/20"
+                className="w-full bg-transparent border-b border-kawai-black/15 focus:border-kawai-gold text-kawai-black text-base px-0 py-3 outline-none transition-colors duration-300 placeholder:text-kawai-charcoal/30"
                 style={{ fontFamily: 'var(--font-brand-sans)' }}
               />
             </div>
 
             {/* Phone */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               <label
                 htmlFor="phone"
-                className="text-kawai-gold text-[9px] tracking-[0.4em] uppercase"
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
+                className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase"
+                style={{ fontFamily: 'var(--font-oswald)' }}
               >
                 Phone Number
               </label>
@@ -203,17 +209,17 @@ export default function ContactPage() {
                 type="tel"
                 autoComplete="tel"
                 placeholder="+1 (000) 000-0000"
-                className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-kawai-gold/50 text-white/80 px-5 py-4 text-sm outline-none transition-colors duration-200 placeholder:text-white/20"
+                className="w-full bg-transparent border-b border-kawai-black/15 focus:border-kawai-gold text-kawai-black text-base px-0 py-3 outline-none transition-colors duration-300 placeholder:text-kawai-charcoal/30"
                 style={{ fontFamily: 'var(--font-brand-sans)' }}
               />
             </div>
 
             {/* Department */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               <label
                 htmlFor="department"
-                className="text-kawai-gold text-[9px] tracking-[0.4em] uppercase"
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
+                className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase"
+                style={{ fontFamily: 'var(--font-oswald)' }}
               >
                 Department
               </label>
@@ -221,28 +227,17 @@ export default function ContactPage() {
                 <select
                   id="department"
                   name="department"
-                  className="w-full appearance-none bg-white/[0.04] border border-white/[0.08] focus:border-kawai-gold/50 text-white/80 px-5 py-4 text-sm outline-none transition-colors duration-200 cursor-pointer"
+                  className="w-full appearance-none bg-transparent border-b border-kawai-black/15 focus:border-kawai-gold text-kawai-black text-base px-0 py-3 outline-none transition-colors duration-300 cursor-pointer"
                   style={{ fontFamily: 'var(--font-brand-sans)' }}
                 >
-                  <option value="" className="bg-[#0a0a0a] text-white/60">
-                    Select a department
-                  </option>
-                  <option value="sales" className="bg-[#0a0a0a] text-white/80">
-                    Sales
-                  </option>
-                  <option value="technical" className="bg-[#0a0a0a] text-white/80">
-                    Technical
-                  </option>
-                  <option value="dealer" className="bg-[#0a0a0a] text-white/80">
-                    Dealer Inquiry
-                  </option>
-                  <option value="other" className="bg-[#0a0a0a] text-white/80">
-                    Other
-                  </option>
+                  <option value="">Select a department</option>
+                  <option value="sales">Sales</option>
+                  <option value="technical">Technical</option>
+                  <option value="dealer">Dealer Inquiry</option>
+                  <option value="other">Other</option>
                 </select>
-                {/* Custom dropdown arrow */}
                 <span
-                  className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-kawai-gold/40"
+                  className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-kawai-gold/40 text-sm"
                   aria-hidden="true"
                 >
                   ↓
@@ -251,20 +246,20 @@ export default function ContactPage() {
             </div>
 
             {/* Message */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               <label
                 htmlFor="message"
-                className="text-kawai-gold text-[9px] tracking-[0.4em] uppercase"
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
+                className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase"
+                style={{ fontFamily: 'var(--font-oswald)' }}
               >
                 Message
               </label>
               <textarea
                 id="message"
                 name="message"
-                rows={6}
+                rows={5}
                 placeholder="Tell us about your inquiry…"
-                className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-kawai-gold/50 text-white/80 px-5 py-4 text-sm outline-none transition-colors duration-200 placeholder:text-white/20 resize-none leading-relaxed"
+                className="w-full bg-transparent border-b border-kawai-black/15 focus:border-kawai-gold text-kawai-black text-base px-0 py-3 outline-none transition-colors duration-300 placeholder:text-kawai-charcoal/30 resize-none leading-relaxed"
                 style={{ fontFamily: 'var(--font-brand-sans)' }}
               />
             </div>
@@ -273,15 +268,15 @@ export default function ContactPage() {
             <div className="pt-2">
               <button
                 type="submit"
-                className="w-full border border-kawai-gold/35 hover:border-kawai-gold text-kawai-gold hover:bg-kawai-gold/5 px-10 py-4 text-[10px] tracking-[0.35em] uppercase transition-all duration-300 cursor-pointer"
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
+                className="w-full border-2 border-kawai-gold/50 hover:border-kawai-gold text-kawai-gold hover:bg-kawai-gold/[0.08] py-5 transition-all duration-300 cursor-pointer"
+                style={{ fontFamily: 'var(--font-oswald)', fontSize: '0.88rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase' }}
               >
                 Send Inquiry
               </button>
             </div>
 
             <p
-              className="text-white/20 text-[10px] text-center tracking-wide"
+              className="text-kawai-charcoal/30 text-xs text-center tracking-wide"
               style={{ fontFamily: 'var(--font-brand-sans)' }}
             >
               Your information is kept strictly confidential and will not be shared with third parties.
@@ -291,25 +286,27 @@ export default function ContactPage() {
       </section>
 
       {/* ── DEALER LOCATOR CTA ───────────────────────────────── */}
-      <section className="bg-kawai-pearl px-6 py-24">
+      <section className="bg-white px-6 py-28 border-t border-kawai-black/[0.07]">
         <div className="max-w-2xl mx-auto text-center">
+          <span className="block h-px w-10 bg-kawai-gold opacity-40 mx-auto mb-12" />
           <p
-            className="text-kawai-charcoal/35 text-[10px] tracking-[0.45em] uppercase mb-6"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
+            className="text-kawai-gold text-[11px] tracking-[0.5em] uppercase mb-8"
+            style={{ fontFamily: 'var(--font-oswald)' }}
           >
             Visit in Person
           </p>
           <h2
-            className="text-kawai-black font-light italic leading-tight mb-6"
+            className="text-kawai-black font-bold uppercase leading-tight mb-8"
             style={{
-              fontFamily: 'var(--font-brand-luxury)',
-              fontSize: 'clamp(1.4rem, 3vw, 2.2rem)',
+              fontFamily: 'var(--font-oswald)',
+              fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)',
+              letterSpacing: '0.05em',
             }}
           >
-            Looking for a dealer near you?
+            Find a Dealer Near You
           </h2>
           <p
-            className="text-kawai-charcoal/55 text-sm leading-relaxed mb-10 max-w-md mx-auto"
+            className="text-kawai-charcoal/55 text-base leading-relaxed mb-12 max-w-md mx-auto"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             45 authorized Shigeru Kawai dealers across North America are ready to introduce you to
@@ -317,13 +314,15 @@ export default function ContactPage() {
           </p>
           <Link
             href="/shigeru/dealers"
-            className="inline-flex items-center gap-3 border border-kawai-gold/40 hover:border-kawai-gold text-kawai-gold hover:bg-kawai-gold/5 px-10 py-4 text-[10px] tracking-[0.35em] uppercase transition-all duration-300"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
+            className="inline-flex items-center gap-3 border-2 border-kawai-gold/50 hover:border-kawai-gold text-kawai-gold hover:bg-kawai-gold/[0.08] px-10 py-5 transition-all duration-300"
+            style={{ fontFamily: 'var(--font-oswald)', fontSize: '0.88rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase' }}
           >
             Find an Authorized Dealer
           </Link>
+          <span className="block h-px w-10 bg-kawai-gold opacity-40 mx-auto mt-12" />
         </div>
       </section>
+
     </div>
   )
 }

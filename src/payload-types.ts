@@ -6287,6 +6287,14 @@ export interface MarketingBlogGridBlock {
  */
 export interface MarketingBlogLatestBlock {
   /**
+   * Small label above the heading. Defaults to "From the Blog" if left empty.
+   */
+  eyebrow?: string | null;
+  /**
+   * Main section heading. Defaults to "Latest News & Articles" if left empty.
+   */
+  heading?: string | null;
+  /**
    * Number of latest posts to display
    */
   postLimit?: number | null;

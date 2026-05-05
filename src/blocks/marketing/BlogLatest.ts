@@ -9,6 +9,22 @@ export const BlogLatest: Block = {
   },
   fields: [
     {
+      name: 'eyebrow',
+      type: 'text',
+      admin: {
+        description: 'Small label above the heading. Defaults to "From the Blog" if left empty.',
+        placeholder: 'From the Blog',
+      },
+    },
+    {
+      name: 'heading',
+      type: 'text',
+      admin: {
+        description: 'Main section heading. Defaults to "Latest News & Articles" if left empty.',
+        placeholder: 'Latest News & Articles',
+      },
+    },
+    {
       name: 'postLimit',
       type: 'number',
       min: 3,

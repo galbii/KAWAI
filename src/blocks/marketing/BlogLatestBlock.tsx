@@ -22,6 +22,8 @@ const getPublishedPosts = unstable_cache(
 )
 
 export async function BlogLatestBlock({
+  eyebrow,
+  heading,
   postLimit,
   columns,
   showCta,
@@ -50,10 +52,10 @@ export async function BlogLatestBlock({
         <div className="mb-12 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-kawai-red font-[family-name:var(--font-brand-sans)] mb-3">
-              From the Blog
+              {eyebrow || 'From the Blog'}
             </p>
             <h2 className="text-5xl lg:text-6xl font-[family-name:var(--font-brand-serif)] font-semibold leading-[1.0] tracking-tight text-kawai-black">
-              Latest News &amp; Articles
+              {heading || 'Latest News & Articles'}
             </h2>
           </div>
         </div>

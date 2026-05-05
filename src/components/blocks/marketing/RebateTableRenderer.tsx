@@ -5,6 +5,7 @@ import { RebateSchedule } from '@/app/(frontend)/digital-piano-rebate/components
 import type { RebateSeries } from '@/app/(frontend)/digital-piano-rebate/components/RebateSchedule'
 import { getProductByModel } from '@/lib/shopify'
 import { getPayloadClient } from '@/lib/payload/queries'
+import { getSite } from '@/lib/site-context'
 
 const getProductByModelCached = cache(getProductByModel)
 
@@ -51,6 +52,8 @@ type PopulatedProductPage = {
 
 export async function RebateTableRenderer(props: MarketingRebateTableBlock) {
   const { eyebrow, heading, deadline, schedule: rawSchedule } = props
+  const site = await getSite()
+  const isCanada = site === 'cad'
 
   const schedule: RebateSeries[] = await Promise.all(
     (rawSchedule ?? []).map(async (series) => {
@@ -148,6 +151,7 @@ export async function RebateTableRenderer(props: MarketingRebateTableBlock) {
   return (
     <RebateSchedule
       schedule={schedule}
+      isCanada={isCanada}
       {...(eyebrow != null ? { eyebrow } : {})}
       {...(heading != null ? { heading } : {})}
       {...(deadline != null ? { deadline } : {})}

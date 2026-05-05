@@ -35,6 +35,7 @@ type Props = {
   heading?: string
   deadline?: string
   schedule: RebateSeries[]
+  isCanada?: boolean
 }
 
 const ALL = 'All'
@@ -264,14 +265,155 @@ function SeriesSidebar({
   )
 }
 
+// ─── Model sub-components — Canada-aware, shared by mobile card + desktop row ──
+
+type ModelPriceProps = {
+  refPrice: number | undefined
+  displayPrice: number | null
+  pctOff: number
+  currency?: string
+  consumerRebate: number
+  isCanada: boolean
+  size: 'mobile' | 'desktop'
+}
+
+function ModelPrice({ refPrice, displayPrice, pctOff, currency, consumerRebate, isCanada, size }: ModelPriceProps) {
+  if (isCanada) return null
+  const isMobile = size === 'mobile'
+  return (
+    <div className={isMobile ? 'flex-shrink-0 text-right' : 'text-right'}>
+      <p
+        className={isMobile
+          ? 'text-[10px] tracking-[0.35em] uppercase text-kawai-charcoal/35 leading-none mb-1'
+          : 'text-[11px] tracking-[0.35em] uppercase text-kawai-charcoal/30 mb-1 leading-none'}
+        style={{ fontFamily: 'var(--font-brand-sans)' }}
+      >
+        {refPrice != null ? (isMobile ? 'Your Price' : 'your price') : 'save'}
+      </p>
+      <div className={`flex items-baseline justify-end ${isMobile ? 'gap-2' : 'gap-3'}`}>
+        {refPrice != null && (
+          <span
+            className={isMobile
+              ? 'text-kawai-charcoal/35 text-base line-through leading-none'
+              : 'text-kawai-charcoal/30 text-xl line-through leading-none'}
+            style={{ fontFamily: 'var(--font-brand-sans)', letterSpacing: '0.04em' }}
+          >
+            {formatPrice(refPrice, currency)}
+          </span>
+        )}
+        <p
+          className="text-kawai-red font-light leading-none"
+          style={{
+            fontFamily: 'var(--font-crimson), Georgia, serif',
+            fontSize: isMobile ? '2.25rem' : 'clamp(2.5rem, 4.5vw, 5.5rem)',
+            letterSpacing: '-0.04em',
+          }}
+        >
+          {displayPrice != null ? formatPrice(displayPrice, currency) : formatSavings(consumerRebate)}
+        </p>
+      </div>
+      {pctOff > 0 && (
+        <div className="flex justify-end mt-0.5">
+          <span className={`inline-flex items-center bg-kawai-red text-white tracking-[0.15em] uppercase font-semibold px-1.5 py-0.5 leading-none ${isMobile ? 'text-[8px]' : 'text-[9px]'}`}>
+            -{pctOff}%{isMobile ? ' off' : ''}
+          </span>
+        </div>
+      )}
+      {!isMobile && (
+        <p className="text-kawai-charcoal/25 text-[11px] mt-2 leading-none italic" style={{ fontFamily: 'var(--font-brand-sans)' }}>
+          Rebate applied at checkout
+        </p>
+      )}
+    </div>
+  )
+}
+
+type ModelCtaProps = {
+  model: string
+  productSlug?: string
+  productVariantId?: string
+  isAvailable: boolean
+  hasProduct: boolean
+  isCanada: boolean
+  size: 'mobile' | 'desktop'
+}
+
+function ModelCta({ model, productSlug, productVariantId, isAvailable, hasProduct, isCanada, size }: ModelCtaProps) {
+  const h = size === 'mobile' ? 'h-10' : 'h-9'
+  const px = size === 'mobile' ? 'px-4' : 'px-5'
+
+  if (isCanada) {
+    return (
+      <>
+        {productSlug && (
+          <Link
+            href={`/products/${productSlug}`}
+            className={`inline-flex items-center gap-1.5 border border-kawai-black text-kawai-black hover:bg-kawai-black hover:text-white ${px} ${h} text-xs tracking-[0.18em] uppercase font-semibold transition-colors duration-200 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-black`}
+            style={{ fontFamily: 'var(--font-brand-sans)' }}
+          >
+            View {model}
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        )}
+        <Link
+          href="/find-a-dealer"
+          className={`inline-flex items-center gap-1.5 bg-kawai-red hover:bg-kawai-red-700 text-white ${px} ${h} text-xs tracking-[0.18em] uppercase font-semibold transition-colors duration-200 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red`}
+          style={{ fontFamily: 'var(--font-brand-sans)' }}
+        >
+          Find a Dealer
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      </>
+    )
+  }
+
+  if (hasProduct) {
+    return (
+      <>
+        {productVariantId && (
+          <AddToCartButton
+            variantId={productVariantId}
+            available={isAvailable}
+            size="sm"
+            className={`bg-kawai-red hover:bg-kawai-red-700 text-white border-none text-xs tracking-[0.18em] uppercase font-semibold ${px} ${h} rounded-none${size === 'mobile' ? ' flex-1' : ''}`}
+          />
+        )}
+        {productSlug && (
+          <Link
+            href={`/products/${productSlug}`}
+            className={`inline-flex items-center gap-1.5 border border-kawai-black text-kawai-black hover:bg-kawai-black hover:text-white ${px} ${h} text-xs tracking-[0.18em] uppercase font-semibold transition-colors duration-200 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-black`}
+            style={{ fontFamily: 'var(--font-brand-sans)' }}
+          >
+            View {model}
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        )}
+      </>
+    )
+  }
+
+  return (
+    <Link
+      href="/find-a-dealer"
+      className="inline-flex items-center gap-1.5 text-xs tracking-[0.2em] uppercase font-medium text-kawai-charcoal/55 hover:text-kawai-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red"
+      style={{ fontFamily: 'var(--font-brand-sans)' }}
+    >
+      Find a Local Dealer
+      <ArrowRight className="h-3.5 w-3.5" />
+    </Link>
+  )
+}
+
 // ─── Series Block ─────────────────────────────────────────────────────────────
 
 function SeriesBlock({
   series,
   isOnly,
+  isCanada = false,
 }: {
   series: RebateSeries
   isOnly: boolean
+  isCanada?: boolean
 }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, amount: isOnly ? 0 : 0.08 })
@@ -405,78 +547,28 @@ function SeriesBlock({
                       Save {formatSavings(model.consumerRebate)}
                     </span>
                   </div>
-                  <div className="flex-shrink-0 text-right">
-                    <p
-                      className="text-[10px] tracking-[0.35em] uppercase text-kawai-charcoal/35 leading-none mb-1"
-                      style={{ fontFamily: 'var(--font-brand-sans)' }}
-                    >
-                      {refPrice != null ? 'Your Price' : 'Save'}
-                    </p>
-                    <div className="flex items-baseline justify-end gap-2">
-                      {refPrice != null && (
-                        <span
-                          className="text-kawai-charcoal/35 text-base line-through leading-none"
-                          style={{ fontFamily: 'var(--font-brand-sans)', letterSpacing: '0.04em' }}
-                        >
-                          {formatPrice(refPrice, model.productCurrency)}
-                        </span>
-                      )}
-                      <p
-                        className="text-kawai-red font-light leading-none"
-                        style={{
-                          fontFamily: 'var(--font-crimson), Georgia, serif',
-                          fontSize: '2.25rem',
-                          letterSpacing: '-0.04em',
-                        }}
-                      >
-                        {displayPrice != null
-                          ? formatPrice(displayPrice, model.productCurrency)
-                          : formatSavings(model.consumerRebate)}
-                      </p>
-                    </div>
-                    {pctOff > 0 && (
-                      <div className="flex justify-end mt-0.5">
-                        <span className="inline-flex items-center bg-kawai-red text-white text-[8px] tracking-[0.15em] uppercase font-semibold px-1.5 py-0.5 leading-none">
-                          -{pctOff}% off
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                  <ModelPrice
+                    refPrice={refPrice}
+                    displayPrice={displayPrice}
+                    pctOff={pctOff}
+                    currency={model.productCurrency}
+                    consumerRebate={model.consumerRebate}
+                    isCanada={isCanada}
+                    size="mobile"
+                  />
                 </div>
 
                 {/* CTA strip */}
                 <div className="flex items-center gap-3 px-5 py-4 border-t border-kawai-neutral/40 bg-white">
-                  {hasProduct ? (
-                    <>
-                      {model.productVariantId && (
-                        <AddToCartButton
-                          variantId={model.productVariantId}
-                          available={isAvailable}
-                          size="sm"
-                          className="flex-1 bg-kawai-red hover:bg-kawai-red-700 text-white border-none text-xs tracking-[0.18em] uppercase font-semibold h-10 rounded-none"
-                        />
-                      )}
-                      {model.productSlug && (
-                        <Link
-                          href={`/products/${model.productSlug}`}
-                          className="inline-flex items-center gap-1.5 border border-kawai-black text-kawai-black hover:bg-kawai-black hover:text-white px-4 h-10 text-xs tracking-[0.18em] uppercase font-semibold transition-colors duration-200 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-black"
-                          style={{ fontFamily: 'var(--font-brand-sans)' }}
-                        >
-                          View {model.model}
-                          <ArrowRight className="h-3.5 w-3.5" />
-                        </Link>
-                      )}
-                    </>
-                  ) : (
-                    <Link
-                      href="/find-a-dealer"
-                      className="inline-flex items-center gap-1.5 text-xs tracking-[0.2em] uppercase font-medium text-kawai-charcoal/55 hover:text-kawai-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red"
-                      style={{ fontFamily: 'var(--font-brand-sans)' }}
-                    >
-                      Find a Local Dealer
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  )}
+                  <ModelCta
+                    model={model.model}
+                    productSlug={model.productSlug}
+                    productVariantId={model.productVariantId}
+                    isAvailable={isAvailable}
+                    hasProduct={hasProduct}
+                    isCanada={isCanada}
+                    size="mobile"
+                  />
                 </div>
               </div>
 
@@ -533,72 +625,26 @@ function SeriesBlock({
 
                 {/* Right: price + actions */}
                 <div className="flex-shrink-0 flex flex-col items-end justify-center gap-3 px-8 py-6">
-                  <div className="text-right">
-                    <p className="text-[11px] tracking-[0.35em] uppercase text-kawai-charcoal/30 mb-1 leading-none" style={{ fontFamily: 'var(--font-brand-sans)' }}>
-                      {refPrice != null ? 'your price' : 'save'}
-                    </p>
-                    <div className="flex items-baseline justify-end gap-3">
-                      {refPrice != null && (
-                        <span
-                          className="text-kawai-charcoal/30 text-xl line-through leading-none"
-                          style={{ fontFamily: 'var(--font-brand-sans)', letterSpacing: '0.04em' }}
-                        >
-                          {formatPrice(refPrice, model.productCurrency)}
-                        </span>
-                      )}
-                      <p
-                        className="text-kawai-red font-light leading-none"
-                        style={{ fontFamily: 'var(--font-crimson), Georgia, serif', fontSize: 'clamp(2.5rem, 4.5vw, 5.5rem)', letterSpacing: '-0.04em' }}
-                      >
-                        {displayPrice != null
-                          ? formatPrice(displayPrice, model.productCurrency)
-                          : formatSavings(model.consumerRebate)}
-                      </p>
-                    </div>
-                    {pctOff > 0 && (
-                      <div className="flex justify-end mt-1.5">
-                        <span className="inline-flex items-center bg-kawai-red text-white text-[9px] tracking-[0.15em] uppercase font-semibold px-1.5 py-0.5 leading-none">
-                          -{pctOff}%
-                        </span>
-                      </div>
-                    )}
-                    <p
-                      className="text-kawai-charcoal/25 text-[11px] mt-2 leading-none italic"
-                      style={{ fontFamily: 'var(--font-brand-sans)' }}
-                    >
-                      Rebate applied at checkout
-                    </p>
+                  <ModelPrice
+                    refPrice={refPrice}
+                    displayPrice={displayPrice}
+                    pctOff={pctOff}
+                    currency={model.productCurrency}
+                    consumerRebate={model.consumerRebate}
+                    isCanada={isCanada}
+                    size="desktop"
+                  />
+                  <div className="flex flex-row items-center gap-2">
+                    <ModelCta
+                      model={model.model}
+                      productSlug={model.productSlug}
+                      productVariantId={model.productVariantId}
+                      isAvailable={isAvailable}
+                      hasProduct={hasProduct}
+                      isCanada={isCanada}
+                      size="desktop"
+                    />
                   </div>
-
-                  {hasProduct ? (
-                    <div className="flex flex-row items-center gap-2">
-                      {model.productVariantId && (
-                        <AddToCartButton
-                          variantId={model.productVariantId}
-                          available={isAvailable}
-                          size="sm"
-                          className="bg-kawai-red hover:bg-kawai-red-700 text-white border-none text-xs tracking-[0.18em] uppercase font-semibold px-5 h-9 rounded-none"
-                        />
-                      )}
-                      <Link
-                        href={`/products/${model.productSlug}`}
-                        className="inline-flex items-center gap-1.5 border border-kawai-black text-kawai-black hover:bg-kawai-black hover:text-white px-5 h-9 text-xs tracking-[0.18em] uppercase font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-black"
-                        style={{ fontFamily: 'var(--font-brand-sans)' }}
-                      >
-                        View {model.model}
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </Link>
-                    </div>
-                  ) : (
-                    <Link
-                      href="/find-a-dealer"
-                      className="inline-flex items-center gap-1.5 text-xs tracking-[0.2em] uppercase font-medium text-kawai-charcoal/55 hover:text-kawai-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red"
-                      style={{ fontFamily: 'var(--font-brand-sans)' }}
-                    >
-                      Find a Local Dealer
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  )}
                 </div>
               </div>
             </motion.div>
@@ -652,6 +698,7 @@ export function RebateSchedule({
   eyebrow = 'Spring 2026 Savings',
   heading = 'Digital Piano Rebates',
   deadline = 'June 30, 2026',
+  isCanada = false,
 }: Props) {
   const [selected, setSelected] = useState<string>(ALL)
   const headerRef = useRef(null)
@@ -804,6 +851,7 @@ export function RebateSchedule({
                       key={series.seriesName}
                       series={series}
                       isOnly={selected !== ALL}
+                      isCanada={isCanada}
                     />
                   ))}
                 </div>
