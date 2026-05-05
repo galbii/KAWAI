@@ -8,6 +8,7 @@ import { FolderTree } from './FolderTree'
 import { ToastContainer } from './Toast'
 import { ImageEditor } from './ImageEditor'
 import { MediaEditPanel } from './MediaEditPanel'
+import { VideoCompressor } from './VideoCompressor'
 
 // ─── Design tokens ──────────────────────────────────────────────────────────
 const c = {
@@ -99,6 +100,10 @@ export function MediaManagerModal() {
     moveMediaToFolder,
     replaceMediaFile,
     modalOptions,
+    compressingVideoFile,
+    onVideoCompressed,
+    onVideoSkipped,
+    onVideoCancel,
   } = useMediaManager()
 
   const [isDragging, setIsDragging] = useState(false)
@@ -979,6 +984,16 @@ export function MediaManagerModal() {
             setEditingExistingFile(null)
             setEditingExistingMediaId(null)
           }}
+        />
+      )}
+
+      {/* ── Video Compressor ─────────────────────────────────────────────── */}
+      {compressingVideoFile && (
+        <VideoCompressor
+          file={compressingVideoFile}
+          onComplete={onVideoCompressed}
+          onSkip={onVideoSkipped}
+          onCancel={onVideoCancel}
         />
       )}
 

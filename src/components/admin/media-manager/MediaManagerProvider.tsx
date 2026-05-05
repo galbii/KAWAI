@@ -11,6 +11,7 @@ import type {
   FolderApiResponse,
 } from './types'
 import type { ToastMessage } from './Toast'
+import { isCompressibleVideo } from '@/lib/video/compressVideo'
 
 interface ExtendedState extends MediaManagerState {
   toasts: ToastMessage[]
@@ -19,6 +20,9 @@ interface ExtendedState extends MediaManagerState {
   editingMedia: MediaItem | null
   pendingFiles: File[]
   modalOptions: import('./types').MediaManagerModalOptions | null
+  // Video compression
+  compressingVideoFile: File | null
+  pendingVideoFiles: File[]
 }
 
 const initialState: ExtendedState = {
@@ -38,6 +42,9 @@ const initialState: ExtendedState = {
   editingMedia: null,
   pendingFiles: [],
   modalOptions: null,
+  // Video compression
+  compressingVideoFile: null,
+  pendingVideoFiles: [],
   // Folder state
   folders: [],
   folderTree: [],
@@ -71,6 +78,11 @@ interface ExtendedContextValue extends MediaManagerContextValue {
   replaceMediaFile: (id: string, file: File, convertToWebp?: boolean) => Promise<void>
   setFileTypeFilter: (filter: string | null) => void
   setSortOrder: (order: string) => void
+  // Video compression
+  compressingVideoFile: File | null
+  onVideoCompressed: (compressed: File) => void
+  onVideoSkipped: (original: File) => void
+  onVideoCancel: () => void
 }
 
 const MediaManagerContext = createContext<ExtendedContextValue | null>(null)
@@ -553,17 +565,30 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
     }
   }, [fetchMedia, showToast, state.currentFolder])
 
-  // Handle file selection — images open in ImageEditor first, then metadata form.
-  // Non-image files (PDF, video, audio) upload directly.
+  // Handle file selection — images open in ImageEditor, MP4/MOV open VideoCompressor,
+  // everything else (PDF, audio, other video formats) uploads directly.
   const handleFilesSelected = useCallback((files: FileList | File[]) => {
     const fileArray = Array.from(files)
 
     const imageFiles = fileArray.filter(f => f.type.startsWith('image/'))
-    const otherFiles = fileArray.filter(f => !f.type.startsWith('image/'))
+    const videoFiles = fileArray.filter(f => isCompressibleVideo(f))
+    const otherFiles = fileArray.filter(f => !f.type.startsWith('image/') && !isCompressibleVideo(f))
 
-    // Non-image files (PDF, video, audio) upload directly without a form
+    // Non-image, non-compressible files upload directly
     if (otherFiles.length > 0) {
       uploadFilesDirectly(otherFiles)
+    }
+
+    // MP4/MOV — queue through VideoCompressor (one at a time, similar to ImageEditor queue)
+    if (videoFiles.length > 0) {
+      const firstVideo = videoFiles[0]
+      if (firstVideo) {
+        setState(prev => ({
+          ...prev,
+          pendingVideoFiles: videoFiles,
+          compressingVideoFile: firstVideo,
+        }))
+      }
     }
 
     // Image files — open ImageEditor first so user can crop/adjust before metadata
@@ -578,6 +603,41 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
       }
     }
   }, [uploadFilesDirectly])
+
+  // Called when VideoCompressor finishes — upload the compressed WebM then advance queue
+  const onVideoCompressed = useCallback((compressed: File) => {
+    uploadFilesDirectly([compressed])
+    setState(prev => {
+      const remaining = prev.pendingVideoFiles.slice(1)
+      return {
+        ...prev,
+        pendingVideoFiles: remaining,
+        compressingVideoFile: remaining[0] ?? null,
+      }
+    })
+  }, [uploadFilesDirectly])
+
+  // Called when user skips compression — upload original, advance queue
+  const onVideoSkipped = useCallback((original: File) => {
+    uploadFilesDirectly([original])
+    setState(prev => {
+      const remaining = prev.pendingVideoFiles.slice(1)
+      return {
+        ...prev,
+        pendingVideoFiles: remaining,
+        compressingVideoFile: remaining[0] ?? null,
+      }
+    })
+  }, [uploadFilesDirectly])
+
+  // Called when user cancels — discard remaining video queue
+  const onVideoCancel = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      pendingVideoFiles: [],
+      compressingVideoFile: null,
+    }))
+  }, [])
 
   // Upload edited file and move to next in queue
   const uploadEditedFile = useCallback(async (file: File) => {
@@ -949,6 +1009,10 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
     moveMediaToFolder,
     updateMedia,
     replaceMediaFile,
+    // Video compression
+    onVideoCompressed,
+    onVideoSkipped,
+    onVideoCancel,
   }
 
   return (

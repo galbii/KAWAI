@@ -606,14 +606,80 @@ function BannerOnlyView({ label, href, externalCtaUrl, collectionHandle, collect
   const ctaHref = externalCtaUrl ?? href
   const isExternal = Boolean(externalCtaUrl)
 
+  /* ── Shigeru Kawai branded panel (comingSoon = true) ── */
+  if (comingSoon) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="rounded-2xl overflow-hidden bg-[#0a0a0a] flex flex-col"
+      >
+        {/* Banner image area */}
+        {collection && (collection.imageUrl || collection.mediaUrl || collection.youtubeUrl) && (() => {
+          const videoId = collection.youtubeUrl ? extractYouTubeId(collection.youtubeUrl) : null
+          const imgUrl = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : collection.imageUrl ?? collection.mediaUrl ?? null
+          return imgUrl ? (
+            <div className="relative h-[180px] overflow-hidden">
+              <Image src={imgUrl} alt={label} fill sizes="100vw" className="object-cover opacity-40" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-[#0a0a0a]" />
+            </div>
+          ) : null
+        })()}
+
+        {/* Content */}
+        <div className="px-8 pt-7 pb-8 flex flex-col gap-5">
+          {/* Eyebrow */}
+          <p
+            className="text-kawai-gold text-[10px] tracking-[0.5em] uppercase"
+            style={{ fontFamily: 'var(--font-oswald)' }}
+          >
+            Grand Piano Collection
+          </p>
+
+          {/* Title + rule */}
+          <div>
+            <h2
+              className="text-white font-extrabold uppercase leading-none"
+              style={{
+                fontFamily: 'var(--font-oswald)',
+                fontSize: 'clamp(1.6rem, 2.5vw, 2rem)',
+                letterSpacing: '0.04em',
+              }}
+            >
+              Shigeru Kawai
+            </h2>
+            <span className="block mt-3 h-px w-10 bg-kawai-gold opacity-40" />
+          </div>
+
+          {/* Descriptor */}
+          <p
+            className="text-white/45 text-sm leading-relaxed max-w-[22ch]"
+            style={{ fontFamily: 'var(--font-brand-sans)' }}
+          >
+            Six handcrafted grand pianos, built at the Ryuyo factory in Hamamatsu, Japan.
+          </p>
+
+          {/* CTA */}
+          <Link
+            href={ctaHref}
+            onClick={onClose}
+            className="self-start inline-flex items-center gap-3 border-2 border-kawai-gold/50 hover:border-kawai-gold text-kawai-gold hover:bg-kawai-gold/[0.08] px-7 py-3 transition-all duration-300"
+            style={{ fontFamily: 'var(--font-oswald)', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase' }}
+          >
+            Explore Collection
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      </motion.div>
+    )
+  }
+
   return (
     <div>
       {/* Header */}
       <div className="flex items-end justify-between mb-6">
         <h2 className="text-3xl font-bold text-[#2C2C2C] font-serif leading-none">{label}</h2>
-        {comingSoon ? (
-          <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#B8AFA6]">Coming Soon</span>
-        ) : isExternal ? (
+        {isExternal ? (
           <a
             href={ctaHref}
             target="_blank"
@@ -634,31 +700,13 @@ function BannerOnlyView({ label, href, externalCtaUrl, collectionHandle, collect
 
       {/* Banner */}
       {collection ? (
-        <CollectionVideoBanner collection={collection} onClose={onClose} heightClass={heightClass} {...(externalCtaUrl !== undefined && { externalCtaUrl })} {...(comingSoon && { comingSoon })} />
+        <CollectionVideoBanner collection={collection} onClose={onClose} heightClass={heightClass} {...(externalCtaUrl !== undefined && { externalCtaUrl })} />
       ) : (
         <div className="flex items-center justify-center py-16">
           <Link href={href} onClick={onClose} className="text-sm font-medium text-[#A01829] hover:underline">
             Explore {label} →
           </Link>
         </div>
-      )}
-
-      {/* Post-banner CTA — only for comingSoon panels */}
-      {comingSoon && (
-        <motion.div
-          initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25, delay: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="flex justify-center mt-5"
-        >
-          <Link
-            href="/pianos"
-            onClick={onClose}
-            className="group inline-flex items-center gap-2.5 px-6 py-2.5 bg-[#E11922] hover:bg-[#C41019] rounded-full text-sm font-semibold text-white transition-colors duration-200"
-          >
-            Browse All Products
-            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-          </Link>
-        </motion.div>
       )}
     </div>
   )

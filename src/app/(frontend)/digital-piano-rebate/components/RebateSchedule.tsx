@@ -271,7 +271,7 @@ type ModelPriceProps = {
   refPrice: number | undefined
   displayPrice: number | null
   pctOff: number
-  currency?: string
+  currency: string | undefined
   consumerRebate: number
   isCanada: boolean
   size: 'mobile' | 'desktop'
@@ -330,8 +330,8 @@ function ModelPrice({ refPrice, displayPrice, pctOff, currency, consumerRebate, 
 
 type ModelCtaProps = {
   model: string
-  productSlug?: string
-  productVariantId?: string
+  productSlug: string | undefined
+  productVariantId: string | undefined
   isAvailable: boolean
   hasProduct: boolean
   isCanada: boolean
