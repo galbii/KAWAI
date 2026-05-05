@@ -9,7 +9,7 @@ import { CollectionsModal } from './CollectionsModal'
 // ── Icons ─────────────────────────────────────────────────────────────────────
 
 const IcoDash = () => (
-  <svg width={14} height={14} viewBox="0 0 20 20" fill="none" aria-hidden="true">
+  <svg width={18} height={18} viewBox="0 0 20 20" fill="none" aria-hidden="true">
     <rect x="2" y="2" width="7" height="7" rx="1.5" fill="currentColor" />
     <rect x="11" y="2" width="7" height="7" rx="1.5" fill="currentColor" />
     <rect x="2" y="11" width="7" height="7" rx="1.5" fill="currentColor" />
@@ -18,7 +18,7 @@ const IcoDash = () => (
 )
 
 const IcoGrid = () => (
-  <svg width={14} height={14} viewBox="0 0 20 20" fill="none" aria-hidden="true">
+  <svg width={18} height={18} viewBox="0 0 20 20" fill="none" aria-hidden="true">
     <rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
     <rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
     <rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
@@ -27,7 +27,7 @@ const IcoGrid = () => (
 )
 
 const IcoImg = () => (
-  <svg width={14} height={14} viewBox="0 0 20 20" fill="none" aria-hidden="true">
+  <svg width={18} height={18} viewBox="0 0 20 20" fill="none" aria-hidden="true">
     <rect x="2" y="4" width="16" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" />
     <circle cx="7" cy="8.5" r="1.5" fill="currentColor" />
     <path
@@ -42,8 +42,8 @@ const IcoImg = () => (
 
 const IcoPlus = ({ open }: { open: boolean }) => (
   <svg
-    width={16}
-    height={16}
+    width={22}
+    height={22}
     viewBox="0 0 16 16"
     fill="none"
     aria-hidden="true"
@@ -76,17 +76,17 @@ function ActionItem({ label, icon, onClick, href, visible, openDelay, closeDelay
   const pill: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
-    gap: 10,
-    height: 38,
-    paddingLeft: 10,
-    paddingRight: 16,
+    gap: 14,
+    height: 52,
+    paddingLeft: 14,
+    paddingRight: 22,
     background: hov ? 'rgba(99,102,241,0.16)' : 'rgba(18,18,30,0.94)',
     border: `1px solid ${hov ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.07)'}`,
-    borderRadius: 19,
+    borderRadius: 26,
     color: hov ? '#C7D2FE' : 'rgba(255,255,255,0.65)',
     cursor: 'pointer',
     fontFamily: '"JetBrains Mono", "Fira Code", ui-monospace, monospace',
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: 500,
     letterSpacing: '0.055em',
     textTransform: 'uppercase',
@@ -112,9 +112,9 @@ function ActionItem({ label, icon, onClick, href, visible, openDelay, closeDelay
   }
 
   const iconBox: React.CSSProperties = {
-    width: 26,
-    height: 26,
-    borderRadius: 7,
+    width: 34,
+    height: 34,
+    borderRadius: 10,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -182,8 +182,8 @@ export function FloatingActionBar() {
   const n = actions.length
 
   const triggerStyle: React.CSSProperties = {
-    width: 50,
-    height: 50,
+    width: 64,
+    height: 64,
     borderRadius: '50%',
     background: open
       ? 'linear-gradient(140deg, #6366F1 0%, #818CF8 100%)'
@@ -213,13 +213,13 @@ export function FloatingActionBar() {
     <div
       style={{
         position: 'fixed',
-        right: 24,
-        bottom: 24,
+        right: 28,
+        bottom: 28,
         zIndex: 9998,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-end',
-        gap: 8,
+        gap: 10,
       }}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
