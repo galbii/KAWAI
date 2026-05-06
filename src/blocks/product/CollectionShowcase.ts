@@ -193,5 +193,31 @@ export const CollectionShowcase: Block = {
         placeholder: 'https://www.youtube.com/watch?v=...',
       },
     },
+    {
+      name: 'actionLabel',
+      type: 'text',
+      defaultValue: 'Touch & Action',
+      admin: {
+        description: 'Tab label for the Action metafield',
+        placeholder: 'Touch & Action',
+      },
+    },
+    {
+      name: 'toneLabel',
+      type: 'text',
+      defaultValue: 'Sound & Tone',
+      admin: {
+        description: 'Tab label for the Tone metafield',
+        placeholder: 'Sound & Tone',
+      },
+    },
+    {
+      name: 'featuresLabel',
+      type: 'text',
+      defaultValue: 'Connectivity & Features',
+      admin: {
+        description: 'Tab label for the Features metafield',
+      },
+    },
   ],
 }

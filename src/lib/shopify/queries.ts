@@ -181,6 +181,8 @@ export const GET_PRODUCT_BY_HANDLE = `
         { namespace: "custom", key: "dimensions" }
         { namespace: "custom", key: "highlights" }
         { namespace: "custom", key: "series" }
+        { namespace: "custom", key: "action" }
+        { namespace: "custom", key: "tone" }
       ]) {
         key
         value
@@ -231,6 +233,8 @@ export const GET_PRODUCT_BY_ID = `
       metafields(identifiers: [
         { namespace: "custom", key: "specifications" }
         { namespace: "custom", key: "features" }
+        { namespace: "custom", key: "action" }
+        { namespace: "custom", key: "tone" }
       ]) {
         key
         value

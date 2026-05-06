@@ -254,6 +254,12 @@ export interface Product {
   }>
   /** Owner's manual PDF URL (from custom.ownermanual metafield) */
   ownersManualUrl: string | null
+  /** Action descriptors (from custom.action list metafield, e.g. ["Light", "Medium"]) */
+  action: string[]
+  /** Tone descriptors (from custom.tone list metafield, e.g. ["Bright", "Warm"]) */
+  tone: string[]
+  /** Feature list (from custom.features list metafield) */
+  features: string[]
   /** Custom metadata */
   metadata?: Record<string, unknown>
 }

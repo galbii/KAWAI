@@ -2282,6 +2282,33 @@ export interface Product {
    * Owner's manual PDF URL (synced from Shopify custom.ownermanual metafield)
    */
   ownersManualUrl?: string | null;
+  action?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  tone?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  features?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   specificationJson?:
     | {
         [k: string]: unknown;
@@ -3083,6 +3110,18 @@ export interface ProductCollectionShowcaseBlock {
    * Optional: YouTube URL to override the collection's default video on this block only.
    */
   overrideYoutubeUrl?: string | null;
+  /**
+   * Tab label for the Action metafield
+   */
+  actionLabel?: string | null;
+  /**
+   * Tab label for the Tone metafield
+   */
+  toneLabel?: string | null;
+  /**
+   * Tab label for the Features metafield
+   */
+  featuresLabel?: string | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'product-collection-showcase';
@@ -7655,9 +7694,9 @@ export interface Post {
    */
   relatedPosts?: (string | Post)[] | null;
   /**
-   * Comma-separated tags for SEO and filtering
+   * Type a tag and press Enter to add it. Each tag is stored separately.
    */
-  tags?: string | null;
+  tags?: string[] | null;
   /**
    * Post publication status
    */
@@ -11650,6 +11689,9 @@ export interface ProductsSelect<T extends boolean = true> {
         details?: T;
       };
   ownersManualUrl?: T;
+  action?: T;
+  tone?: T;
+  features?: T;
   specificationJson?: T;
   highlights?:
     | T

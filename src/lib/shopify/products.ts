@@ -145,6 +145,9 @@ function transformAdminProductToStorefront(adminProduct: ShopifyProductData): Pr
       image: null, // Admin API doesn't include variant images in this query
     })),
     ownersManualUrl: adminProduct.metafields?.ownersManual ?? null,
+    action: adminProduct.metafields?.action ?? [],
+    tone: adminProduct.metafields?.tone ?? [],
+    features: adminProduct.metafields?.features ?? [],
     metadata: {
       model: adminProduct.metafields?.model,
     },
@@ -225,6 +228,9 @@ export function transformProduct(shopifyProduct: ShopifyProduct): Product {
     images,
     variants,
     ownersManualUrl: shopifyProduct.metafield_ownermanual?.reference?.url ?? null,
+    action: Array.isArray(metadata.action) ? (metadata.action as string[]) : [],
+    tone: Array.isArray(metadata.tone) ? (metadata.tone as string[]) : [],
+    features: Array.isArray(metadata.features) ? (metadata.features as string[]) : [],
     metadata,
   }
 }

@@ -104,10 +104,13 @@ export interface ShopifyProductData {
       height: number | null
     } | null
     ownersManual?: string | null
+    action?: string[]
+    tone?: string[]
+    features?: string[]
     specifications?: ShopifySpecification[]
     highlights?: ShopifyHighlight[]
     specificationJson?: Record<string, unknown> | null
-    [key: string]: string | ShopifySpecification[] | ShopifyHighlight[] | Record<string, unknown> | { url: string; alt: string | null; width: number | null; height: number | null } | null | undefined
+    [key: string]: string | string[] | ShopifySpecification[] | ShopifyHighlight[] | Record<string, unknown> | { url: string; alt: string | null; width: number | null; height: number | null } | null | undefined
   }
   availableForSale: boolean
   createdAt: string
@@ -355,6 +358,24 @@ const PRODUCT_BY_ID_QUERY = `
       type
     }
 
+    metafield_action: metafield(namespace: "custom", key: "action") {
+      key
+      value
+      type
+    }
+
+    metafield_tone: metafield(namespace: "custom", key: "tone") {
+      key
+      value
+      type
+    }
+
+    metafield_features: metafield(namespace: "custom", key: "features") {
+      key
+      value
+      type
+    }
+
     metafield_ownermanual: metafield(namespace: "custom", key: "ownermanual") {
       reference {
         ... on GenericFile {
@@ -485,6 +506,24 @@ const PRODUCT_BY_HANDLE_QUERY = `
     }
 
     metafield_specification_json: metafield(namespace: "custom", key: "specification_json") {
+      key
+      value
+      type
+    }
+
+    metafield_action: metafield(namespace: "custom", key: "action") {
+      key
+      value
+      type
+    }
+
+    metafield_tone: metafield(namespace: "custom", key: "tone") {
+      key
+      value
+      type
+    }
+
+    metafield_features: metafield(namespace: "custom", key: "features") {
       key
       value
       type
@@ -666,6 +705,24 @@ const PRODUCT_BY_METAFIELD_QUERY = `
     }
 
     metafield_specification_json: metafield(namespace: "custom", key: "specification_json") {
+      key
+      value
+      type
+    }
+
+    metafield_action: metafield(namespace: "custom", key: "action") {
+      key
+      value
+      type
+    }
+
+    metafield_tone: metafield(namespace: "custom", key: "tone") {
+      key
+      value
+      type
+    }
+
+    metafield_features: metafield(namespace: "custom", key: "features") {
       key
       value
       type
@@ -1021,6 +1078,17 @@ function transformShopifyProduct(shopifyProduct: any): ShopifyProductData {
           console.warn('[transformShopifyProduct] Failed to parse specification-json metafield:', raw)
           return null
         }
+      })(),
+
+      // Parse list.single_line_text_field metafields (JSON-encoded string arrays)
+      action: (() => {
+        try { return JSON.parse(shopifyProduct.metafield_action?.value || '[]') as string[] } catch { return [] }
+      })(),
+      tone: (() => {
+        try { return JSON.parse(shopifyProduct.metafield_tone?.value || '[]') as string[] } catch { return [] }
+      })(),
+      features: (() => {
+        try { return JSON.parse(shopifyProduct.metafield_features?.value || '[]') as string[] } catch { return [] }
       })(),
     },
 

@@ -595,6 +595,53 @@ export const Products: CollectionConfig = {
               },
             },
 
+            // Action / Tone / Features — list.single_line_text_field metafields from Shopify
+            {
+              type: 'collapsible',
+              label: 'Action',
+              admin: {
+                initCollapsed: true,
+                description: 'Playing action descriptors (synced from Shopify custom.action metafield)',
+              },
+              fields: [
+                {
+                  name: 'action',
+                  type: 'json',
+                  admin: { readOnly: true },
+                },
+              ],
+            },
+            {
+              type: 'collapsible',
+              label: 'Tone',
+              admin: {
+                initCollapsed: true,
+                description: 'Tone descriptors (synced from Shopify custom.tone metafield)',
+              },
+              fields: [
+                {
+                  name: 'tone',
+                  type: 'json',
+                  admin: { readOnly: true },
+                },
+              ],
+            },
+            {
+              type: 'collapsible',
+              label: 'Features',
+              admin: {
+                initCollapsed: true,
+                description: 'Feature list (synced from Shopify custom.features metafield)',
+              },
+              fields: [
+                {
+                  name: 'features',
+                  type: 'json',
+                  admin: { readOnly: true },
+                },
+              ],
+            },
+
             // Specification JSON - custom.specification-json metafield from Shopify
             {
               type: 'collapsible',

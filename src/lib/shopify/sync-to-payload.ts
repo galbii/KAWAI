@@ -58,6 +58,9 @@ export type ShopifyDataUpdate = Partial<
     shopify?: Partial<ShopifyGroup>
     specificationJson?: Record<string, unknown> | null
     ownersManualUrl?: string | null
+    action?: string[]
+    tone?: string[]
+    features?: string[]
   }
 >
 
@@ -389,6 +392,9 @@ export async function syncShopifyDataToProduct(
       variations, // Already null if no true variations exist
       specificationJson: shopifyData.metafields?.specificationJson ?? null,
       ownersManualUrl: shopifyData.metafields?.ownersManual ?? null,
+      action: shopifyData.metafields?.action ?? [],
+      tone: shopifyData.metafields?.tone ?? [],
+      features: shopifyData.metafields?.features ?? [],
 
       // Update shopify sync group (read-only metadata)
       shopify: {
