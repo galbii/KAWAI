@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Headphones, Briefcase, ArrowRight, Cpu, Building2, GraduationCap, BookOpen, Store, Shield, Globe, Wrench, Music, Info, MapPin } from 'lucide-react'
 import type { ResourceLink, StoreLocationNavItem } from '@/components/layout/header-dynamic'
+
 import { cn } from '@/lib/utils'
 
 // ============================================================================
@@ -413,6 +414,7 @@ export function ResourcesMegaMenu({
 
             </div>
           </div>
+
         </motion.div>
       )}
     </AnimatePresence>

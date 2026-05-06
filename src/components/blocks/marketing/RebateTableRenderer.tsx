@@ -6,6 +6,7 @@ import type { RebateSeries } from '@/app/(frontend)/digital-piano-rebate/compone
 import { getProductByModel } from '@/lib/shopify'
 import { getPayloadClient } from '@/lib/payload/queries'
 import { getSite } from '@/lib/site-context'
+import { getConsumerRebate } from '@/lib/rebates/canada-rebates'
 
 const getProductByModelCached = cache(getProductByModel)
 
@@ -130,7 +131,7 @@ export async function RebateTableRenderer(props: MarketingRebateTableBlock) {
           return {
             model: m.model,
             finishes: m.finishes ?? '',
-            consumerRebate: m.consumerRebate,
+            consumerRebate: getConsumerRebate(m.model, isCanada, m.consumerRebate),
             ...(isObj && productPage.slug ? { productSlug: productPage.slug } : {}),
             ...(isObj && productPage.name ? { productName: productPage.name } : {}),
             ...(isObj && productPage.imageUrl ? { productImageUrl: productPage.imageUrl } : {}),

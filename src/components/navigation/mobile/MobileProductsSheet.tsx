@@ -53,6 +53,13 @@ function sortCollections(collections: NavCollection[]): NavCollection[] {
   })
 }
 
+function isShigeruCollection(col: NavCollection): boolean {
+  if (col.pianoCategories && col.pianoCategories.length > 0) {
+    return col.pianoCategories.includes('shigeru-kawai')
+  }
+  return col.title.toLowerCase().includes('shigeru') || col.handle.toLowerCase().includes('shigeru')
+}
+
 function getCollectionsForKey(collections: NavCollection[], key: CategoryKey): NavCollection[] {
   if (key === 'all') return sortCollections(collections)
   if (key === 'accessories') return []
@@ -71,10 +78,10 @@ function getCollectionsForKey(collections: NavCollection[], key: CategoryKey): N
 
 // ─── Placeholder card (no media) ──────────────────────────────────────────────
 
-function CollectionPlaceholder({ col, onNavigate }: { col: NavCollection; onNavigate: () => void }) {
+function CollectionPlaceholder({ col, onNavigate, href }: { col: NavCollection; onNavigate: () => void; href?: string | undefined }) {
   return (
     <Link
-      href={`/pianos/${col.handle}`}
+      href={href ?? `/pianos/${col.handle}`}
       onClick={onNavigate}
       className="group relative block rounded-xl overflow-hidden aspect-[4/3] border border-kawai-neutral/40 hover:border-kawai-red/40 transition-colors bg-white"
     >
@@ -125,17 +132,16 @@ function CollectionPlaceholder({ col, onNavigate }: { col: NavCollection; onNavi
 
 // ─── Media card ───────────────────────────────────────────────────────────────
 
-function CollectionCard({ col, onNavigate }: { col: NavCollection; onNavigate: () => void }) {
+function CollectionCard({ col, onNavigate, href }: { col: NavCollection; onNavigate: () => void; href?: string | undefined }) {
   const ytId = col.youtubeUrl ? extractYouTubeId(col.youtubeUrl) : null
-  const thumbUrl = ytId
-    ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg`
-    : col.imageUrl ?? col.mediaUrl ?? null
+  const thumbnail = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : null
+  const thumbUrl = col.mediaUrl ?? thumbnail ?? col.imageUrl ?? null
 
-  if (!thumbUrl) return <CollectionPlaceholder col={col} onNavigate={onNavigate} />
+  if (!thumbUrl) return <CollectionPlaceholder col={col} onNavigate={onNavigate} href={href} />
 
   return (
     <Link
-      href={`/pianos/${col.handle}`}
+      href={href ?? `/pianos/${col.handle}`}
       onClick={onNavigate}
       className="group relative block rounded-xl overflow-hidden bg-kawai-black aspect-[4/3] shadow-brand-medium"
     >
@@ -270,7 +276,12 @@ export function MobileProductsSheet({
               ) : filteredCollections.length > 0 ? (
                 <div className="grid grid-cols-2 gap-3 pt-2">
                   {filteredCollections.map((col) => (
-                    <CollectionCard key={col.id} col={col} onNavigate={onNavigate} />
+                    <CollectionCard
+                      key={col.id}
+                      col={col}
+                      onNavigate={onNavigate}
+                      href={isShigeruCollection(col) ? '/shigeru' : undefined}
+                    />
                   ))}
                 </div>
               ) : (

@@ -608,26 +608,28 @@ function BannerOnlyView({ label, href, externalCtaUrl, collectionHandle, collect
 
   /* ── Shigeru Kawai branded panel (comingSoon = true) ── */
   if (comingSoon) {
+    const videoId = collection?.youtubeUrl ? extractYouTubeId(collection.youtubeUrl) : null
+    const imgUrl = videoId
+      ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+      : collection?.imageUrl ?? collection?.mediaUrl ?? null
+
     return (
       <motion.div
         initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className="rounded-2xl overflow-hidden bg-[#0a0a0a] flex flex-col"
+        className="rounded-2xl overflow-hidden bg-[#0a0a0a] relative"
+        style={{ minHeight: '320px' }}
       >
-        {/* Banner image area */}
-        {collection && (collection.imageUrl || collection.mediaUrl || collection.youtubeUrl) && (() => {
-          const videoId = collection.youtubeUrl ? extractYouTubeId(collection.youtubeUrl) : null
-          const imgUrl = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : collection.imageUrl ?? collection.mediaUrl ?? null
-          return imgUrl ? (
-            <div className="relative h-[180px] overflow-hidden">
-              <Image src={imgUrl} alt={label} fill sizes="100vw" className="object-cover opacity-40" />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-[#0a0a0a]" />
-            </div>
-          ) : null
-        })()}
+        {/* Full-bleed background image */}
+        {imgUrl && (
+          <Image src={imgUrl} alt={label} fill sizes="100vw" className="object-cover" />
+        )}
 
-        {/* Content */}
-        <div className="px-8 pt-7 pb-8 flex flex-col gap-5">
+        {/* Gradient so text stays legible */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
+
+        {/* Content overlaid on image */}
+        <div className="relative px-8 pt-7 pb-8 flex flex-col gap-5 h-full justify-end" style={{ minHeight: '320px' }}>
           {/* Eyebrow */}
           <p
             className="text-kawai-gold text-[10px] tracking-[0.5em] uppercase"

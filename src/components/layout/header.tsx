@@ -27,6 +27,7 @@ import type { ProductsNavigation } from '@/lib/payload/products-navigation'
 import { MobileProductsSheet } from '@/components/navigation/mobile/MobileProductsSheet'
 import { MobileResourcesSheet } from '@/components/navigation/mobile/MobileResourcesSheet'
 import { MobileNewsSheet } from '@/components/navigation/mobile/MobileNewsSheet'
+import { MobileShigeruSheet } from '@/components/navigation/mobile/MobileShigeruSheet'
 
 // ── Social icons ─────────────────────────────────────────────────────────────
 
@@ -475,6 +476,14 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
   const lastScrollTime = useRef(0)
   const isScrolledRef = useRef(false)
 
+  // Derive Shigeru collection thumbnail — same source as desktop BannerOnlyView
+  const shigeruCol = (productsNavData?.allCollections ?? productsNavData?.collections ?? [])
+    .find((c) => c.pianoCategories?.includes('shigeru-kawai') || c.handle === 'shigeru-kawai')
+  const shigeruYtId = shigeruCol?.youtubeUrl?.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/)?.[1] ?? null
+  const shigeruImageUrl = shigeruYtId
+    ? `https://img.youtube.com/vi/${shigeruYtId}/maxresdefault.jpg`
+    : shigeruCol?.imageUrl ?? shigeruCol?.mediaUrl ?? null
+
   // Derived menu open states for readability
   const isProductsMenuOpen = activeMenu === 'products'
   const isResourcesMenuOpen = activeMenu === 'resources'
@@ -487,7 +496,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
   const recentsTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const activeDropdown = activeMenu
-  const [activeMobileSheet, setActiveMobileSheet] = useState<'products' | 'resources' | 'news' | null>(null)
+  const [activeMobileSheet, setActiveMobileSheet] = useState<'products' | 'resources' | 'news' | 'shigeru' | null>(null)
 
   // Feature flag: Control Products menu visibility
   // Only show Products menu if feature flag is enabled (NEXT_PUBLIC_SHOW_PRODUCTS_MENU=true)
@@ -1369,6 +1378,21 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                         </span>
                         <ChevronRight className="w-4 h-4 text-kawai-charcoal/30 group-hover:text-kawai-red group-hover:translate-x-0.5 transition-all" />
                       </button>
+
+                      <button
+                        onClick={() => setActiveMobileSheet('shigeru')}
+                        className="relative w-full overflow-hidden rounded-xl group mx-6"
+                        style={{ width: 'calc(100% - 48px)', height: '90px' }}
+                        aria-label="Explore Shigeru Kawai"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src="https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/Shigeru-Kawai-scaled-2966385513.webp"
+                          alt="Shigeru Kawai"
+                          className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                          style={{ background: '#ffffff' }}
+                        />
+                      </button>
                     </div>
 
                     {/* Quick Links from CMS — directly under Home */}
@@ -1589,6 +1613,12 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
           storeLocations={storeLocations}
           {...(resourceLinks !== undefined && { resourceLinks })}
           registerEnabled={registerConfig?.enabled !== false}
+        />
+        <MobileShigeruSheet
+          isOpen={activeMobileSheet === 'shigeru'}
+          onBack={() => setActiveMobileSheet(null)}
+          onNavigate={() => { setActiveMobileSheet(null); closeMobileMenu() }}
+          imageUrl={shigeruImageUrl}
         />
       </>
     )}
