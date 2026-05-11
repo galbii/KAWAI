@@ -367,30 +367,38 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   )
 
   const getProductSortPriority = useCallback((result: SearchResult): number => {
-    const cat = (result.productCategory || result.productType || 'other').toLowerCase()
-    if (ACCESSORY_CATEGORY_TYPES.has(cat)) return 99
-    return PIANO_CATEGORY_PRIORITY[cat] ?? 50
+    // Check productType first, then fall back to the general category field so
+    // accessories that have a null productType (e.g. not yet re-synced) still
+    // sort after pianos.
+    const typeNorm = (result.productType || result.category || 'other').toLowerCase()
+    if (ACCESSORY_CATEGORY_TYPES.has(typeNorm)) return 99
+    const catNorm = (result.productType || result.productCategory || 'other').toLowerCase()
+    return PIANO_CATEGORY_PRIORITY[catNorm] ?? 50
   }, [])
 
-  // Group products dynamically by their category field (simple and flexible)
+  // Group products by type. All accessory variants ('accessory', 'accessories',
+  // 'software') collapse into a single 'Accessories' bucket so they share one tab.
   const productsByCategory = useMemo(() => {
     const grouped = productResults.reduce((acc, result) => {
-      const category = result.productCategory || result.productType || 'Other'
-      if (!acc[category]) acc[category] = []
-      acc[category].push(result)
+      const typeNorm = (result.productType || result.category || '').toLowerCase()
+      const key = ACCESSORY_CATEGORY_TYPES.has(typeNorm)
+        ? 'Accessories'
+        : result.productType || result.productCategory || 'Other'
+      if (!acc[key]) acc[key] = []
+      acc[key].push(result)
       return acc
     }, {} as Record<string, SearchResult[]>)
     return grouped
   }, [productResults])
 
-  // Get available categories sorted: pianos first, accessories/other last.
+  // Get available categories sorted: pianos first, Accessories last.
   // Prepend an 'all' tab whenever more than one category exists.
   const availableCategories = useMemo(() => {
     const cats = Object.keys(productsByCategory).sort((a, b) => {
       const aLow = a.toLowerCase()
       const bLow = b.toLowerCase()
-      const aIsAccessory = ACCESSORY_CATEGORY_TYPES.has(aLow)
-      const bIsAccessory = ACCESSORY_CATEGORY_TYPES.has(bLow)
+      const aIsAccessory = aLow === 'accessories' || ACCESSORY_CATEGORY_TYPES.has(aLow)
+      const bIsAccessory = bLow === 'accessories' || ACCESSORY_CATEGORY_TYPES.has(bLow)
       const aPriority = PIANO_CATEGORY_PRIORITY[aLow] ?? (aIsAccessory ? 99 : 50)
       const bPriority = PIANO_CATEGORY_PRIORITY[bLow] ?? (bIsAccessory ? 99 : 50)
       return aPriority - bPriority
@@ -1128,6 +1136,12 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                             ))}
                           </motion.nav>
                         </div>
+                      ) : query.length >= 2 && isLoading && filteredResults.length === 0 ? (
+                        // Loading state — keep this branch separate so the results motion.div
+                        // only mounts when children are ready. If it mounted empty here, Framer
+                        // Motion would complete the hidden→show stagger with no children, then
+                        // newly-arriving children would be stuck at opacity:0 (v12 behavior).
+                        null
                       ) : query.length >= 2 && filteredResults.length === 0 && !isLoading ? (
                         <motion.div
                           initial={{ opacity: 0, scale: 0.96 }}

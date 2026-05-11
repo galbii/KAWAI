@@ -1326,14 +1326,68 @@ export const Products: CollectionConfig = {
             // Accessories block only belongs on piano pages, not on accessory products themselves
             const needsAccessories = !isAccessory && !blockTypes.has('product-accessories')
             const needsFaq = !blockTypes.has('product-faq')
+            const needsCollectionShowcase = !isAccessory && !blockTypes.has('product-collection-showcase')
 
-            if (!needsSoundCloud && !needsRelated && !needsAccessories && !needsFaq) {
+            if (!needsSoundCloud && !needsRelated && !needsAccessories && !needsFaq && !needsCollectionShowcase) {
               summary.skipped++
               continue
             }
 
             // Build updated blocks array — insert each block at the right position
             const newBlocks = [...pageContent]
+
+            if (needsCollectionShowcase) {
+              // Resolve collection ID from product's shopifyCollections (same logic as beforeChange hook)
+              const shopifyCollections = Array.isArray((product as any).shopifyCollections)
+                ? (product as any).shopifyCollections
+                : []
+              const firstShopifyCollection = shopifyCollections[0]
+              let collectionId: string | number | null = null
+
+              if (firstShopifyCollection?.shopifyCollectionId || firstShopifyCollection?.handle) {
+                try {
+                  const whereQuery: any = {}
+                  if (firstShopifyCollection.shopifyCollectionId) {
+                    whereQuery.shopifyCollectionId = { equals: firstShopifyCollection.shopifyCollectionId }
+                  } else if (firstShopifyCollection.handle) {
+                    whereQuery.handle = { equals: firstShopifyCollection.handle }
+                  }
+                  const { docs: matchingCollections } = await req.payload.find({
+                    collection: 'collections',
+                    where: whereQuery,
+                    limit: 1,
+                    depth: 0,
+                    req,
+                  })
+                  if (matchingCollections.length > 0 && matchingCollections[0]) {
+                    collectionId = matchingCollections[0].id
+                  }
+                } catch (err) {
+                  console.error(`[PatchBlocks] Error resolving collection for ${product.model}:`, err)
+                }
+              }
+
+              if (collectionId) {
+                // Insert after product-description (or after product-hero as fallback)
+                const descIdx = newBlocks.findIndex((b: any) => b?.blockType === 'product-description')
+                const heroIdx = newBlocks.findIndex((b: any) => b?.blockType === 'product-hero')
+                const insertAfter = descIdx !== -1 ? descIdx : heroIdx
+                const showcaseBlock = {
+                  blockType: 'product-collection-showcase',
+                  enabled: true,
+                  collection: collectionId,
+                  customSubheading: null,
+                }
+                if (insertAfter !== -1) {
+                  newBlocks.splice(insertAfter + 1, 0, showcaseBlock)
+                } else {
+                  newBlocks.push(showcaseBlock)
+                }
+                console.log(`[PatchBlocks] Adding collection-showcase to ${product.model} (collection: ${collectionId})`)
+              } else {
+                console.log(`[PatchBlocks] Skipping collection-showcase for ${product.model} — no collection resolved`)
+              }
+            }
 
             if (needsAccessories) {
               // Insert immediately after product-description (or after product-hero as fallback)
@@ -1545,11 +1599,17 @@ export const Products: CollectionConfig = {
               console.error('⚠️ Error finding/creating collection for default block:', error)
             }
 
-            collectionShowcaseBlock = {
-              blockType: 'product-collection-showcase',
-              enabled: true,
-              collection: collectionId,
-              customSubheading: null,
+            // Only create the block if we have a valid collection ID.
+            // A null collection would fail the required: true validation on the field.
+            if (collectionId) {
+              collectionShowcaseBlock = {
+                blockType: 'product-collection-showcase',
+                enabled: true,
+                collection: collectionId,
+                customSubheading: null,
+              }
+            } else {
+              console.log(`⚠️ Skipping collection-showcase block — could not resolve a collection ID`)
             }
           }
 
@@ -1596,13 +1656,26 @@ export const Products: CollectionConfig = {
 
           console.log(`📝 Added default product-description block`)
 
-          // 3. Collection Showcase (after Product Description)
+          // 3. Accessories (piano products only — not on accessory products themselves)
+          if (data.type !== 'accessory') {
+            defaultBlocks.push({
+              blockType: 'product-accessories',
+              heading: 'Accessories & Add-Ons',
+              eyebrow: 'Enhance Your Piano',
+              maxItems: 8,
+              layout: 'grid',
+              theme: 'light',
+            })
+            console.log(`🎸 Added default product-accessories block`)
+          }
+
+          // 4. Collection Showcase (after accessories)
           if (collectionShowcaseBlock) {
             defaultBlocks.push(collectionShowcaseBlock)
             console.log(`🎯 Added default collection-showcase block with collection: ${collectionShowcaseBlock.collection}`)
           }
 
-          // 4. SoundCloud Embed (before feature slides — empty URL = hidden until configured)
+          // 5. SoundCloud Embed (before feature slides — empty URL = hidden until configured)
           defaultBlocks.push({
             blockType: 'product-soundcloud-embed',
             soundcloudUrl: null,
@@ -1618,7 +1691,7 @@ export const Products: CollectionConfig = {
 
           console.log(`🎵 Added default product-soundcloud-embed block`)
 
-          // 5. Feature Slides
+          // 6. Feature Slides
           defaultBlocks.push({
             blockType: 'product-feature-slides',
             features: [],
@@ -1628,14 +1701,25 @@ export const Products: CollectionConfig = {
 
           console.log(`🎞 Added default product-feature-slides block`)
 
-          // 5. Technical Specs
+          // 7. Technical Specs
           defaultBlocks.push({
             blockType: 'product-technical-specs',
           })
 
           console.log(`📐 Added default product-technical-specs block`)
 
-          // 6. Related Products (always last — helps customers discover the catalog)
+          // FAQ (after technical specs)
+          defaultBlocks.push({
+            blockType: 'product-faq',
+            heading: 'FAQ',
+            subheading: null,
+            theme: 'pearl',
+            showViewAllLink: true,
+          })
+
+          console.log(`❓ Added default product-faq block`)
+
+          // Related Products (always last — helps customers discover the catalog)
           defaultBlocks.push({
             blockType: 'product-related-products',
             sectionHeader: {
@@ -1652,7 +1736,13 @@ export const Products: CollectionConfig = {
           console.log(`🔗 Added default product-related-products block`)
 
           data.pageContent = defaultBlocks
-          console.log(`✅ Added ${defaultBlocks.length} default blocks: hero, description, ${collectionShowcaseBlock ? 'collection-showcase, ' : ''}soundcloud-embed, feature-slides, technical-specs, related-products (operation: ${operation})`)
+          const seededNames = [
+            'hero', 'description',
+            data.type !== 'accessory' ? 'accessories' : null,
+            collectionShowcaseBlock ? 'collection-showcase' : null,
+            'soundcloud-embed', 'feature-slides', 'technical-specs', 'faq', 'related-products',
+          ].filter(Boolean).join(', ')
+          console.log(`✅ Added ${defaultBlocks.length} default blocks: ${seededNames} (operation: ${operation})`)
         }
 
         // Set sync status to pending if auto-sync is enabled and product should sync

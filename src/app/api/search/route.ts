@@ -43,11 +43,25 @@ export async function GET(request: NextRequest) {
       expandedTerms.push(...synonymMap[queryLower])
     }
 
+    // Model number normalization: generate dash ↔ no-dash variants so that
+    // "es60" and "es-60" (or "ca401" / "ca-401") return the same results.
+    // Iterate over a snapshot so newly added terms don't re-process themselves.
+    for (const term of [...expandedTerms]) {
+      const withDash = term.match(/^([a-zA-Z]+)-(\d+)$/)
+      if (withDash) expandedTerms.push(`${withDash[1]}${withDash[2]}`)
+
+      const withoutDash = term.match(/^([a-zA-Z]+)(\d+)$/)
+      if (withoutDash) expandedTerms.push(`${withoutDash[1]}-${withoutDash[2]}`)
+    }
+
+    // Deduplicate — prevents duplicate where conditions for the same term
+    const uniqueTerms = [...new Set(expandedTerms.map(t => t.toLowerCase()))]
+
     // Build comprehensive where clause using Payload query operators
     // - 'like' operator: matches documents where all words are present
     // - 'contains' operator: case-insensitive substring matching
     const whereClause: any = {
-      or: expandedTerms.flatMap(term => [
+      or: uniqueTerms.flatMap(term => [
         { title: { like: term } },                          // Match all words in title
         { title: { contains: term } },                      // Substring match in title
         { excerpt: { contains: term } },                    // Substring match in excerpt

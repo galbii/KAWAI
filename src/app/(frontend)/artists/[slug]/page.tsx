@@ -63,6 +63,7 @@ async function getArtist(slug: string) {
           }
         ]
       },
+      depth: 1,
       limit: 1
     })
 
